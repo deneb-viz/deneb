@@ -1,0 +1,165 @@
+@powerbi-bg-light: #eaeaea;
+@powerbi-bg-lighter: #f3f2f1;
+@powerbi-pane-border: #e1dfdd;
+@pbiviz-dark: #333333;
+
+@font-family-sans-serif: 'Segoe UI', wf_segoe-ui_normal, helvetica, arial,
+    sans-serif;
+@font-small: 0.8rem;
+
+/* Iconography */
+.visual-header-image {
+    background-repeat: no-repeat;
+    background-position: right;
+    background-size: auto 100%;
+    height: 64px;
+    min-width: 64px;
+}
+
+.visual-header-image.logo {
+    background-image: url('../assets/logo_single_colour.svg');
+}
+
+.visual-header-image.spec-error {
+    background-image: url('../assets/error.svg');
+}
+
+.visual-header-image.cog {
+    background-image: url('../assets/cog.svg');
+}
+
+.visual-header-image.edit {
+    background-image: url('../assets/edit.svg');
+}
+
+/* Non-Fluent UI elements */
+#sandbox-host {
+    overflow: auto !important;
+}
+#visualEditor {
+    height: 100vh;
+    width: 100vw;
+    cursor: auto;
+
+    .editor-heading {
+        cursor: pointer;
+    }
+}
+section {
+    display: flex;
+    flex-flow: column;
+    height: 100vh;
+}
+#editorPane.expanded {
+    .editor-heading {
+        float: left;
+        width: 100%;
+    }
+}
+#editorPane.collapsed {
+    padding-top: 8px;
+    padding-bottom: 16px;
+    height: 100vh;
+    background-color: @powerbi-bg-lighter;
+    border: 1px solid @powerbi-pane-border;
+
+    .editor-expand {
+        margin-left: 10px;
+    }
+    .editor-heading {
+        transform: rotate(90deg);
+        line-height: 1;
+        white-space: nowrap;
+        margin-top: 25px;
+        /* Legacy vendor prefixes that you probably don't need... */
+        /* Safari */
+        -webkit-transform: rotate(90deg);
+        /* Firefox */
+        -moz-transform: rotate(90deg);
+        /* IE */
+        -ms-transform: rotate(90deg);
+        /* Opera */
+        -o-transform: rotate(90deg);
+    }
+}
+
+/* Containers */
+.jsoneditor-container {
+    height: 100%;
+    width: 100%;
+}
+.editor-container,
+.settings-container,
+.new-spec-container {
+    padding-top: 8px;
+    min-height: 100%;
+    max-height: 100%;
+    min-width: 100%;
+    max-width: 100%;
+}
+.new-spec-container {
+    overflow-y: none;
+}
+.editor-pane-pivot {
+    width: 100%;
+}
+
+/* Split Pane overrides */
+.Resizer {
+    background: @powerbi-bg-light;
+    z-index: 1;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    -moz-background-clip: padding;
+    -webkit-background-clip: padding;
+    background-clip: padding-box;
+}
+.Resizer:hover {
+    -webkit-transition: all 2s ease;
+    transition: all 2s ease;
+}
+.Pane.vertical.Pane1 {
+    overflow: auto;
+}
+.Pane.vertical.Pane2 {
+    overflow: auto;
+}
+.Resizer.vertical {
+    width: 3px;
+    border: 1px solid @powerbi-pane-border;
+    cursor: col-resize;
+}
+.Resizer.disabled {
+    cursor: not-allowed;
+}
+.Resizer.disabled:hover {
+    border-color: transparent;
+}
+
+/* JSON Editor overrides */
+.jsoneditor-statusbar,
+.ace_gutter,
+div.pico-modal-header,
+.pico-close,
+.jsoneditor-jmespath-label {
+    color: @pbiviz-dark !important;
+}
+.jsoneditor-modal,
+.pico-modal-header,
+.jsoneditor-modal-input,
+.jsoneditor-modal table td {
+    font-family: @font-family-sans-serif !important;
+    font-size: @font-small;
+}
+.jsoneditor {
+    height: 100%;
+}
+div.jsoneditor,
+div.jsoneditor-menu {
+    border-color: @powerbi-pane-border;
+}
+div.jsoneditor-menu,
+div.pico-modal-header {
+    background-color: @powerbi-bg-light !important;
+}

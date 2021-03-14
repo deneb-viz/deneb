@@ -1,0 +1,193 @@
+{
+    "dataRoles": [
+        {
+            "displayNameKey": "Roles_Values",
+            "descriptionKey": "Roles_Values_Description",
+            "displayName": "Values",
+            "description": "Values description.",
+            "name": "dataset",
+            "kind": "GroupingOrMeasure"
+        }
+    ],
+    "objects": {
+        "vega": {
+            "displayNameKey": "Objects_Vega",
+            "descriptionKey": "Objects_Vega_Description",
+            "displayName": "Grammar",
+            "description": "Grammar description.",
+            "properties": {
+                "jsonSpec": {
+                    "displayNameKey": "Objects_Vega_JsonSpec",
+                    "descriptionKey": "Objects_Vega_JsonSpec_Description",
+                    "displayName": "JSON Spec",
+                    "description": "JSON Spec description.",
+                    "type": {
+                        "text": true
+                    }
+                },
+                "jsonConfig": {
+                    "displayNameKey": "Objects_Vega_JsonConfig",
+                    "descriptionKey": "Objects_Vega_JsonConfig_Description",
+                    "displayName": "JSON Config",
+                    "description": "JSON Config description.",
+                    "type": {
+                        "text": true
+                    }
+                },
+                "provider": {
+                    "displayNameKey": "Objects_Vega_Provider",
+                    "descriptionKey": "Objects_Vega_Provider_Description",
+                    "displayName": "Provider",
+                    "description": "Provider description.",
+                    "type": {
+                        "enumeration": [
+                            {
+                                "displayNameKey": "Provider_VegaLite",
+                                "displayName": "vegaLite",
+                                "value": "vegaLite"
+                            },
+                            {
+                                "displayNameKey": "Provider_Vega",
+                                "displayName": "vega",
+                                "value": "vega"
+                            }
+                        ]
+                    }
+                },
+                "renderMode": {
+                    "displayNameKey": "Objects_Vega_RenderMode",
+                    "descriptionKey": "Objects_Vega_RenderMode_Description",
+                    "displayName": "Render Mode",
+                    "description": "Render Mode description.",
+                    "type": {
+                        "enumeration": [
+                            {
+                                "displayNameKey": "Enum_Grammar_RenderMode_Svg",
+                                "displayName": "svg",
+                                "value": "svg"
+                            },
+                            {
+                                "displayNameKey": "Enum_Grammar_RenderMode_Canvas",
+                                "displayName": "canvas",
+                                "value": "canvas"
+                            }
+                        ]
+                    }
+                },
+                "enableTooltips": {
+                    "displayNameKey": "Objects_Vega_EnableTooltips",
+                    "descriptionKey": "Objects_Vega_EnableTooltips_Description",
+                    "displayName": "Tooltips",
+                    "description": "Tooltips description.",
+                    "type": { "bool": true }
+                },
+                "enableContextMenu": {
+                    "displayNameKey": "Objects_Vega_EnableContextMenu",
+                    "descriptionKey": "Objects_Vega_EnableContextMenu_Description",
+                    "displayName": "Context Menu",
+                    "description": "Context Menu description.",
+                    "type": { "bool": true }
+                },
+                "enableSelection": {
+                    "displayNameKey": "Objects_Vega_EnableSelection",
+                    "descriptionKey": "Objects_Vega_EnableSelection_Description",
+                    "displayName": "Selections",
+                    "description": "Selections description.",
+                    "type": { "bool": true }
+                },
+                "isNewDialogOpen": {
+                    "displayName": "Show New Dialog?",
+                    "type": { "bool": true }
+                }
+            }
+        },
+        "editor": {
+            "displayNameKey": "Objects_Editor",
+            "descriptionKey": "Objects_Editor_Description",
+            "displayName": "Editor Options",
+            "description": "Editor Options description.",
+            "properties": {
+                "position": {
+                    "displayNameKey": "Objects_Editor_Position",
+                    "descriptionKey": "Objects_Editor_Position_Description",
+                    "displayName": "Position",
+                    "description": "Position description.",
+                    "type": {
+                        "enumeration": [
+                            {
+                                "displayNameKey": "Enum_Position_Left",
+                                "displayName": "left",
+                                "value": "left"
+                            },
+                            {
+                                "displayNameKey": "Enum_Position_Right",
+                                "displayName": "right",
+                                "value": "right"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "dataLimit": {
+            "displayNameKey": "Objects_DataLimit",
+            "descriptionKey": "Objects_DataLimit_Description",
+            "displayName": "Data Limit Options",
+            "description": "Data Limit Options description.",
+            "properties": {
+                "override": {
+                    "displayNameKey": "Objects_DataLimit_Override",
+                    "descriptionKey": "Objects_DataLimit_Override_Description",
+                    "displayName": "Override Row Limit",
+                    "description": "Override Row Limit description.",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "showInfo": {
+                    "displayNameKey": "Objects_DataLimit_ShowProgress",
+                    "descriptionKey": "Objects_DataLimit_ShowProgress_Description",
+                    "displayName": "Show Loading Progress",
+                    "description": "Show loading progress description.",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "showCustomVisualNotes": {
+                    "displayNameKey": "Objects_DataLimit_ShowCustomVisualNotes",
+                    "descriptionKey": "Objects_DataLimit_ShowCustomVisualNotes_Description",
+                    "displayName": "Show Data Loading Notes",
+                    "description": "Show Data Loading Notes description.",
+                    "type": {
+                        "bool": true
+                    }
+                }
+            }
+        }
+    },
+    "dataViewMappings": [
+        {
+            "table": {
+                "rows": {
+                    "for": {
+                        "in": "dataset"
+                    },
+                    "dataReductionAlgorithm": {
+                        "window": {
+                            "count": 10000
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    "supportsLandingPage": true,
+    "suppressDefaultTitle": true,
+    "tooltips": {
+        "supportedTypes": {
+            "default": true,
+            "canvas": true
+        }
+    },
+    "advancedEditModeSupport": 2
+}
