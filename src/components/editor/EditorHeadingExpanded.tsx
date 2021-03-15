@@ -16,7 +16,8 @@ const EditorHeadingExpanded = () => {
             Debugger.log('Toggling pane expansion...');
             dispatch(toggleEditorPane());
         },
-        tooltip_i18_key = 'Tooltip_Collapse_Editor_Pane';
+        tooltip_i18_key = 'Tooltip_Collapse_Editor_Pane',
+        iconName = position === 'left' ? 'ChevronLeft' : 'ChevronRight';
 
     return (
         <>
@@ -43,12 +44,7 @@ const EditorHeadingExpanded = () => {
                     className='editor-collapse'
                     onClick={togglePane}
                 >
-                    <FontIcon
-                        iconName={
-                            position === 'left' ? 'ChevronLeft' : 'ChevronRight'
-                        }
-                        className={buttonIconClass}
-                    />
+                    <FontIcon iconName={iconName} className={buttonIconClass} />
                 </div>
             </TooltipHost>
         </>

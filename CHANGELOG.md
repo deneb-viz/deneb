@@ -1,3 +1,9 @@
+## 0.2.0.81
+
+### Housekeeping
+
+-   Fixed linting issues with chevron icon in header (#17)
+
 ## 0.1.0.80
 
 ### Improvements
