@@ -16,7 +16,8 @@ const EditorPaneCollapsed = () => {
             Debugger.log('Toggling pane expansion...');
             dispatch(toggleEditorPane());
         },
-        tooltip_i18_key = 'Tooltip_Expand_Editor_Pane';
+        tooltip_i18_key = 'Tooltip_Expand_Editor_Pane',
+        iconName = position === 'left' ? 'ChevronRight' : 'ChevronLeft';
 
     return (
         <div id='editorPane' className='collapsed'>
@@ -27,11 +28,7 @@ const EditorPaneCollapsed = () => {
                 <div onClick={togglePane} role='button'>
                     <div role='button' className='editor-expand'>
                         <FontIcon
-                            iconName={
-                                position === 'left'
-                                    ? 'ChevronRight'
-                                    : 'ChevronLeft'
-                            }
+                            iconName={iconName}
                             className={buttonIconClass}
                         />
                     </div>

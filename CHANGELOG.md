@@ -1,3 +1,10 @@
+## 0.2.0.81
+
+### Housekeeping
+
+-   Fixed linting issues with chevron icon in header (#17)
+-   Renamed anything to do with editor pane sizing to be more appropriate for the current interface logic (#14)
+
 ## 0.1.0.80
 
 ### Improvements

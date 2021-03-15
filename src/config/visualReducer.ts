@@ -21,10 +21,7 @@ const visualReducer: IVisualSliceState = {
     dataViewObjects: {},
     dataWindowsLoaded: 0,
     editMode: EditMode.Default,
-    editorPaneDefaultWidth: null,
-    editorPaneExpandedWidth: null,
     editorPaneIsExpanded: true,
-    editorPaneWidth: null,
     fixResult: {
         success: true,
         dismissed: false,
@@ -38,6 +35,9 @@ const visualReducer: IVisualSliceState = {
     launchUrl: null,
     loader: specificationService.resolveLoaderLogic(),
     locale: '',
+    resizablePaneDefaultWidth: null,
+    resizablePaneExpandedWidth: null,
+    resizablePaneWidth: null,
     selectedOperation: 'spec',
     selectionManager: null,
     spec: {

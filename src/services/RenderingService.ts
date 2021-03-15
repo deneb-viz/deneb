@@ -39,7 +39,7 @@ export class RenderingService implements IRenderingService {
     }
 
     @standardLog()
-    getDefaultEditorPaneWidthInPx(
+    getResizablePaneDefaultWidth(
         viewport: IViewport,
         position: TEditorPosition
     ) {
@@ -50,8 +50,8 @@ export class RenderingService implements IRenderingService {
     }
 
     @standardLog()
-    resolveEditorPaneSize(
-        editorPaneExpandedWidth: number,
+    getResizablePaneSize(
+        paneExpandedWidth: number,
         editorPaneIsExpanded: boolean,
         viewport: IViewport,
         position: TEditorPosition
@@ -61,16 +61,16 @@ export class RenderingService implements IRenderingService {
                     ? viewport.width - splitPaneDefaults.collapsedSize
                     : splitPaneDefaults.collapsedSize,
             resolvedWidth =
-                (editorPaneIsExpanded && editorPaneExpandedWidth) ||
+                (editorPaneIsExpanded && paneExpandedWidth) ||
                 (editorPaneIsExpanded &&
-                    this.getDefaultEditorPaneWidthInPx(viewport, position)) ||
+                    this.getResizablePaneDefaultWidth(viewport, position)) ||
                 collapsedSize;
         Debugger.log(`Pane width resolved as ${resolvedWidth}px`);
         return resolvedWidth;
     }
 
     @standardLog()
-    resolveEditorPaneMinSize() {
+    getResizablePaneMinSize() {
         Debugger.log('Resolving minimum size for pane...');
         const {
                 editorPaneIsExpanded,
@@ -95,7 +95,7 @@ export class RenderingService implements IRenderingService {
     }
 
     @standardLog()
-    resolveEditorPaneMaxSize() {
+    getResizablePaneMaxSize() {
         Debugger.log('Resolving maximum size for pane...');
         const {
                 editorPaneIsExpanded,
@@ -117,7 +117,7 @@ export class RenderingService implements IRenderingService {
     @standardLog()
     calculateVegaViewport(
         viewport: IViewport,
-        editorPaneWidth: number,
+        paneWidth: number,
         interfaceType: TVisualInterface,
         position: TEditorPosition
     ) {
@@ -125,8 +125,8 @@ export class RenderingService implements IRenderingService {
             width =
                 (interfaceType === 'Edit' &&
                     (position === 'right'
-                        ? editorPaneWidth
-                        : viewport.width - editorPaneWidth)) ||
+                        ? paneWidth
+                        : viewport.width - paneWidth)) ||
                 viewport.width;
         height -= visualViewportAdjust.top;
         width -= visualViewportAdjust.left;

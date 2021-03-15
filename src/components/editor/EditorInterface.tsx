@@ -13,8 +13,8 @@ import NewVisualDialog from '../create/NewVisualDialog';
 const EditorInterface: React.FC = () => {
     Debugger.log('Rendering Component: [EditorInterface]...');
     const {
-            editorPaneDefaultWidth,
-            editorPaneWidth,
+            resizablePaneDefaultWidth,
+            resizablePaneWidth,
             editorPaneIsExpanded,
             settings
         } = useSelector(state).visual,
@@ -34,9 +34,9 @@ const EditorInterface: React.FC = () => {
             event.preventDefault();
             if (editorPaneIsExpanded) {
                 Debugger.log(
-                    `Resetting pane to default - ${editorPaneDefaultWidth}px...`
+                    `Resetting pane to default - ${resizablePaneDefaultWidth}px...`
                 );
-                handleResize(editorPaneDefaultWidth);
+                handleResize(resizablePaneDefaultWidth);
             }
         },
         editorPane = (
@@ -55,9 +55,9 @@ const EditorInterface: React.FC = () => {
         <div id='visualEditor'>
             <SplitPane
                 split='vertical'
-                minSize={renderingService.resolveEditorPaneMinSize()}
-                maxSize={renderingService.resolveEditorPaneMaxSize()}
-                size={editorPaneWidth}
+                minSize={renderingService.getResizablePaneMinSize()}
+                maxSize={renderingService.getResizablePaneMaxSize()}
+                size={resizablePaneWidth}
                 onChange={handleResize}
                 onResizerDoubleClick={resolveDoubleClick}
                 allowResize={editorPaneIsExpanded}
