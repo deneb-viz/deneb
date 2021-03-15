@@ -252,49 +252,49 @@ export interface IRenderingService {
      */
     resolveInterfaceType: (state: IVisualSliceState) => TVisualInterface;
     /**
-     * Calculate the default size of the editor pane (in px) based on current viewport size and config defaults.
+     * Calculate the default size of the resizable pane (in px) based on current viewport size and config defaults.
      *
      * @param viewport - current visual viewport dimensions.
      * @param position - current editor position.
      */
-    getDefaultEditorPaneWidthInPx: (
+    getResizablePaneDefaultWidth: (
         viewport: IViewport,
         position: TEditorPosition
     ) => number;
     /**
-     * Based on the current state of the editor pane, resolve its actual width on the screen.
+     * Based on the current state of the resizable pane, resolve its actual width on the screen.
      *
-     * @param editorPaneExpandedWidth - current width of the expanded editor pane.
-     * @param editorPaneIsExpanded - flag confirming whether pane is expanded or collapsed.
+     * @param paneExpandedWidth - current width of the expanded resizable pane.
+     * @param editorPaneIsExpanded - flag confirming whether editor pane is expanded or collapsed.
      * @param viewport - current visual viewport dimensions.
      * @param position - current editor position.
      */
-    resolveEditorPaneSize: (
-        editorPaneExpandedWidth: number,
+    getResizablePaneSize: (
+        paneExpandedWidth: number,
         editorPaneIsExpanded: boolean,
         viewport: IViewport,
         position: TEditorPosition
     ) => number;
     /**
-     * Work out what the minimum size of the editor pane should be (in px), based on the persisted visual (store) state.
+     * Work out what the minimum size of the resizable pane should be (in px), based on the persisted visual (store) state.
      */
-    resolveEditorPaneMinSize: () => number;
+    getResizablePaneMinSize: () => number;
     /**
-     * Work out what the maximum size of the editor pane should be (in px), based on the persisted visual (store) state.
+     * Work out what the maximum size of the resizable pane should be (in px), based on the persisted visual (store) state.
      */
-    resolveEditorPaneMaxSize: () => number;
+    getResizablePaneMaxSize: () => number;
     /**
      * Calculate the dimensions of the Vega/Vega-Lite visual viewport (height/width) based on the interface state and a number
      * of other factors (including any config defaults).
      *
      * @param viewport - current visual viewport dimensions.
-     * @param editorPaneWidth - current width of editor pane.
+     * @param paneWidth - current width of resizable pane.
      * @param interfaceType - the current interface the visual is displaying for the end user.
      * @param position - current editor position.
      */
     calculateVegaViewport: (
         viewport: IViewport,
-        editorPaneWidth: number,
+        paneWidth: number,
         interfaceType: TVisualInterface,
         position: TEditorPosition
     ) => IViewport;
@@ -439,10 +439,7 @@ export interface IVisualSliceState {
     dataViewObjects: DataViewObjects;
     dataWindowsLoaded: number;
     editMode: EditMode;
-    editorPaneDefaultWidth: number;
-    editorPaneExpandedWidth: number;
     editorPaneIsExpanded: boolean;
-    editorPaneWidth: number;
     fixResult: IFixResult;
     i18n: ILocalizationManager;
     interfaceType: TVisualInterface;
@@ -451,6 +448,9 @@ export interface IVisualSliceState {
     launchUrl: (url: string) => void;
     loader: Loader;
     locale: string;
+    resizablePaneDefaultWidth: number;
+    resizablePaneExpandedWidth: number;
+    resizablePaneWidth: number;
     settings: VisualSettings;
     selectedOperation: TEditorOperation;
     selectionManager: ISelectionManager;
