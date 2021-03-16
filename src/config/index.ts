@@ -3,7 +3,7 @@ import Ace = ace.Ace;
 
 import { visual } from '../../pbiviz.json';
 import { devDependencies } from '../../package.json';
-import { TEditorPosition, TSpecProvider, TSpecRenderMode } from '../types';
+import { TEditorPosition, TLocale, TSpecProvider, TSpecRenderMode } from '../types';
 import { locales } from './locales';
 import { theme } from './theme';
 import { CommandService } from '../services/CommandService';
@@ -13,6 +13,7 @@ import { CommandService } from '../services/CommandService';
  */
 export {
     dataLimitDefaults,
+    developerDefaults,
     editorDefaults,
     editorKeyBindings,
     locales,
@@ -101,6 +102,18 @@ const splitPaneDefaults = {
     maxSizePercent: 0.6,
     // The width of the collapsed editor pane (px).
     collapsedSize: 36
+};
+
+/**
+ * =======================
+ * Developer Mode Defaults
+ * =======================
+ * 
+ * When developer mode is enabled, we have a specific object and properties available, so we'll add any
+ * suitable defaults to this object.
+ */
+const developerDefaults = {
+    locale: <TLocale>'en-US'
 };
 
 /**

@@ -59,6 +59,8 @@ export type TSupportedValueTypeDescriptor =
     | 'dateTime'
     | 'duration'
     | 'binary';
+// Locales (currently for debugging only)
+export type TLocale = 'en-US' | 'de-DE' | 'fr-FR';
 
 /**
  * ========

@@ -1,5 +1,9 @@
 ## 0.2.0.81
 
+### Improvements
+
+-   Added switchable locale in dev tools, which will assist with debugging formatting and other i18n stuff (#19)
+
 ### Housekeeping
 
 -   Fixed linting issues with chevron icon in header (#17)
