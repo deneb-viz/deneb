@@ -18,6 +18,7 @@ import {
 } from '../types';
 import Debugger from '../Debugger';
 import { visualReducer as initialState } from '../config/visualReducer';
+import { visualFeatures } from '../config';
 
 const visualSlice = createSlice({
     name: 'visual',
@@ -56,6 +57,9 @@ const visualSlice = createSlice({
             state.dataViewObjects =
                 pl.options.dataViews[0]?.metadata.objects || {};
 
+            if (visualFeatures.developerMode) {
+                state.locale = pl.settings?.developer?.locale || state.locale;
+            }
             // If editing report and focus mode, then we're in the editor
             const interfaceType = renderingService.resolveInterfaceType(
                 <IVisualSliceState>state
@@ -70,7 +74,10 @@ const visualSlice = createSlice({
                 if (state.resizablePaneWidth === null || positionSwitch) {
                     state.resizablePaneWidth = state.resizablePaneDefaultWidth;
                 }
-                if (state.resizablePaneExpandedWidth === null || positionSwitch) {
+                if (
+                    state.resizablePaneExpandedWidth === null ||
+                    positionSwitch
+                ) {
                     state.resizablePaneExpandedWidth = renderingService.getResizablePaneDefaultWidth(
                         pl.options.viewport,
                         state.settings.editor.position

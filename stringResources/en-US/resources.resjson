@@ -1,6 +1,13 @@
 {
     "Roles_Values": "Values",
     "Roles_Values_Description": "Visual data values.",
+    "Objects_Developer": "Developer Menu",
+    "Objects_Developer_Description": "Options used for development of the visual.",
+    "Objects_Developer_Locale": "Locale",
+    "Objects_Developer_Locale_Description": "Provide a manual locale for the visual (to facilitate testing of i18n and formatting)",
+    "Enum_Locale_en-US": "English",
+    "Enum_Locale_de-DE": "Deutsch",
+    "Enum_Locale_fr-FR": "français",
     "Objects_Vega": "Vega",
     "Objects_Vega_Description": "Properties that manage the supplied source code for the visual.",
     "Objects_Vega_JsonSpec": "JSON Spec",

@@ -59,6 +59,8 @@ export type TSupportedValueTypeDescriptor =
     | 'dateTime'
     | 'duration'
     | 'binary';
+// Locales (currently for debugging only)
+export type TLocale = 'en-US' | 'de-DE' | 'fr-FR';
 
 /**
  * ========
@@ -382,6 +384,10 @@ export interface ISpecificationHandlerService {
      * to make things as "at home" in Power BI as possible.
      */
     getInitialConfig: () => void;
+    /**
+     * Apply any custom expressions that we have written (e.g. formatting) to the specification prior to rendering.
+     */
+    registerCustomExpressions: () => void;
 }
 
 /**

@@ -35,6 +35,7 @@
         "office-ui-fabric-react": "^7.156.0",
         "powerbi-visuals-api": "3.4.0",
         "powerbi-visuals-utils-dataviewutils": "2.2.1",
+        "powerbi-visuals-utils-formattingutils": "^4.7.1",
         "powerbi-visuals-utils-interactivityutils": "^5.7.0",
         "prettier": "^2.2.1",
         "react": "^17.0.1",

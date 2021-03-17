@@ -11,7 +11,7 @@ export const vLineConfInterval: IVegaTemplate = {
             {
                 name: 'xscale',
                 domain: {
-                    data: 'values',
+                    data: 'dataset',
                     field: '$xAxis$'
                 },
                 range: 'width',
@@ -20,7 +20,7 @@ export const vLineConfInterval: IVegaTemplate = {
             {
                 name: 'yscale',
                 domain: {
-                    data: 'values',
+                    data: 'dataset',
                     field: '$maxValue$'
                 },
                 range: 'height',
@@ -48,7 +48,7 @@ export const vLineConfInterval: IVegaTemplate = {
                     field: 'datum["$xAxis$"]'
                 },
                 from: {
-                    data: 'values'
+                    data: 'dataset'
                 },
                 encode: {
                     update: {
@@ -84,7 +84,7 @@ export const vLineConfInterval: IVegaTemplate = {
                     field: 'datum["$xAxis$"]'
                 },
                 from: {
-                    data: 'values'
+                    data: 'dataset'
                 },
                 encode: {
                     update: {

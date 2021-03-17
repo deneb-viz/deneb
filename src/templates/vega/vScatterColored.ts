@@ -8,7 +8,7 @@ export const vScatterColored: IVegaTemplate = {
     spec: {
         data: [
             {
-                name: 'values',
+                name: 'dataset',
                 transform: [
                     {
                         type: 'filter',
@@ -22,7 +22,7 @@ export const vScatterColored: IVegaTemplate = {
             {
                 name: 'xscale',
                 domain: {
-                    data: 'values',
+                    data: 'dataset',
                     field: '$xAxis$'
                 },
                 range: 'width',
@@ -31,7 +31,7 @@ export const vScatterColored: IVegaTemplate = {
             {
                 name: 'yscale',
                 domain: {
-                    data: 'values',
+                    data: 'dataset',
                     field: '$yAxis$'
                 },
                 range: 'height',
@@ -41,7 +41,7 @@ export const vScatterColored: IVegaTemplate = {
                 name: 'color',
                 type: 'ordinal',
                 domain: {
-                    data: 'values',
+                    data: 'dataset',
                     field: '$series$',
                     sort: true
                 },
@@ -66,7 +66,7 @@ export const vScatterColored: IVegaTemplate = {
                 type: 'symbol',
                 style: ['point'],
                 from: {
-                    data: 'values'
+                    data: 'dataset'
                 },
                 encode: {
                     update: {

@@ -10,6 +10,39 @@
         }
     ],
     "objects": {
+        "developer": {
+            "displayNameKey": "Objects_Developer",
+            "descriptionKey": "Objects_Developer_Description",
+            "displayName": "Developer Options",
+            "description": "Developer Options description.",
+            "properties": {
+                "locale": {
+                    "displayNameKey": "Objects_Developer_Locale",
+                    "descriptionKey": "Objects_Developer_Locale_Description",
+                    "displayName": "Locale",
+                    "description": "Locale description.",
+                    "type": {
+                        "enumeration": [
+                            {
+                                "displayNameKey": "Enum_Locale_en-US",
+                                "displayName": "en-US",
+                                "value": "en-US"
+                            },
+                            {
+                                "displayNameKey": "Enum_Locale_de-DE",
+                                "displayName": "de-DE",
+                                "value": "de-DE"
+                            },
+                            {
+                                "displayNameKey": "Enum_Locale_fr-FR",
+                                "displayName": "fr-FR",
+                                "value": "fr-FR"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
         "vega": {
             "displayNameKey": "Objects_Vega",
             "descriptionKey": "Objects_Vega_Description",

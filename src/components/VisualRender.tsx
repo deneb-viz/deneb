@@ -39,6 +39,7 @@ const VisualRender = () => {
             locales.format[locale] || locales.format[locales.default],
         timeFormatLocale =
             locales.timeFormat[locale] || locales.timeFormat[locales.default];
+    specificationService.registerCustomExpressions();
 
     switch (spec?.status) {
         case 'error': {

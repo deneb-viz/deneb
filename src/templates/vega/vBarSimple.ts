@@ -12,7 +12,7 @@ export const vBarSimple: IVegaTemplate = {
                 name: 'yscale',
                 type: 'band',
                 domain: {
-                    data: 'values',
+                    data: 'dataset',
                     field: '$yAxis$'
                 },
                 range: 'height',
@@ -22,7 +22,7 @@ export const vBarSimple: IVegaTemplate = {
             {
                 name: 'xscale',
                 domain: {
-                    data: 'values',
+                    data: 'dataset',
                     field: '$xAxis$'
                 },
                 nice: true,
@@ -45,7 +45,7 @@ export const vBarSimple: IVegaTemplate = {
             {
                 type: 'rect',
                 from: {
-                    data: 'values'
+                    data: 'dataset'
                 },
                 encode: {
                     enter: {
