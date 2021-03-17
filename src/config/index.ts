@@ -198,6 +198,36 @@ const editorKeyBindings: Ace.Command[] = [
         exec: (editor, service: CommandService) => {
             service.openHelpSite();
         }
+    },
+    {
+        name: 'selectSpecificationPivot',
+        bindKey: {
+            win: 'Ctrl-Alt-1',
+            mac: 'Command-Alt-1'
+        },
+        exec: (editor, service: CommandService) => {
+            service.openEditorPivotItem('spec');
+        }
+    },
+    {
+        name: 'selectConfigPivot',
+        bindKey: {
+            win: 'Ctrl-Alt-2',
+            mac: 'Command-Alt-2'
+        },
+        exec: (editor, service: CommandService) => {
+            service.openEditorPivotItem('config');
+        }
+    },
+    {
+        name: 'selectSettingsPivot',
+        bindKey: {
+            win: 'Ctrl-Alt-3',
+            mac: 'Command-Alt-3'
+        },
+        exec: (editor, service: CommandService) => {
+            service.openEditorPivotItem('settings');
+        }
     }
 ];
 

@@ -4,9 +4,17 @@ import Ace = ace.Ace;
 import Debugger, { standardLog } from '../Debugger';
 import { propertyService, specificationService } from '.';
 import store from '../store';
-import { toggleAutoApply } from '../store/visualReducer';
+import {
+    toggleAutoApply,
+    updateSelectedOperation
+} from '../store/visualReducer';
 import { updateSelectedTemplate } from '../store/templateReducer';
-import { ICommandService, TSpecProvider, TSpecRenderMode } from '../types';
+import {
+    ICommandService,
+    TEditorOperation,
+    TSpecProvider,
+    TSpecRenderMode
+} from '../types';
 import { editorKeyBindings, visualMetadata } from '../config';
 
 const owner = 'CommandService';
@@ -82,6 +90,12 @@ export class CommandService implements ICommandService {
                 { name: 'isNewDialogOpen', value: false }
             ])
         );
+    }
+
+    @standardLog()
+    openEditorPivotItem(operation: TEditorOperation) {
+        Debugger.log(`Attempting to open editor pivot item: ${operation}...`);
+        store.dispatch(updateSelectedOperation(operation));
     }
 
     @standardLog()

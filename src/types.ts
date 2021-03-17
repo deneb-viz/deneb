@@ -109,6 +109,10 @@ export interface ICommandService {
      */
     openHelpSite: () => void;
     /**
+     * Open a specific pivot item from the editor.
+     */
+    openEditorPivotItem: (operation: TEditorOperation) => void;
+    /**
      * Binds specified custom hotkeys to Ace editor instance.
      *
      * @param editor - instance to bind commands to.

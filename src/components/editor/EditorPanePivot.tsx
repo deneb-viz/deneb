@@ -1,22 +1,21 @@
 import * as React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { Pivot, PivotItem } from '@fluentui/react-tabs';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';
-import { updateSelectedOperation } from '../../store/visualReducer';
 import { TEditorOperation } from '../../types';
+import { commandService } from '../../services';
 
 const EditorPanePivot = () => {
     Debugger.log('Rendering Component: [EditorPanePivot]...');
     const { i18n, selectedOperation } = useSelector(state).visual,
-        dispatch = useDispatch(),
         getTabId = (itemKey: string) => {
             return `editor-pivot-${itemKey}`;
         },
         handlePivotClick = (item: PivotItem) => {
-            dispatch(
-                updateSelectedOperation(item.props.itemKey as TEditorOperation)
+            commandService.openEditorPivotItem(
+                item.props.itemKey as TEditorOperation
             );
         };
 
