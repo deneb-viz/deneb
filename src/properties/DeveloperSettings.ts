@@ -27,11 +27,10 @@ export default class DeveloperSettings extends SettingsBase {
         Debugger.log('Processing enumeration...');
         enumerationObject.instances.map((i) => {
             if (!visualFeatures.developerMode) {
-                Debugger.log("Removing object & properties...");
+                Debugger.log('Removing object & properties...');
                 enumerationObject.instances = [];
             }
         });
         return enumerationObject;
     }
-
 }

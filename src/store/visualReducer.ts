@@ -74,7 +74,10 @@ const visualSlice = createSlice({
                 if (state.resizablePaneWidth === null || positionSwitch) {
                     state.resizablePaneWidth = state.resizablePaneDefaultWidth;
                 }
-                if (state.resizablePaneExpandedWidth === null || positionSwitch) {
+                if (
+                    state.resizablePaneExpandedWidth === null ||
+                    positionSwitch
+                ) {
                     state.resizablePaneExpandedWidth = renderingService.getResizablePaneDefaultWidth(
                         pl.options.viewport,
                         state.settings.editor.position

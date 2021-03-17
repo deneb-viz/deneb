@@ -1708,6 +1708,19 @@ powerbi-visuals-utils-dataviewutils@2.2.1:
   resolved "https://registry.yarnpkg.com/powerbi-visuals-utils-dataviewutils/-/powerbi-visuals-utils-dataviewutils-2.2.1.tgz#52656d657b8b1adfb78da1fb62f4fa311c580303"
   integrity sha512-Ai+TM1gj6DpAsNbn0IhOwUCAPfcaH4Z7y6Ow2OwAfbxNpELwQSF0S8D+vlJN2AoqV/ruQhnEngUC88mMFNyvJQ==
 
+powerbi-visuals-utils-dataviewutils@2.4.1:
+  version "2.4.1"
+  resolved "https://registry.yarnpkg.com/powerbi-visuals-utils-dataviewutils/-/powerbi-visuals-utils-dataviewutils-2.4.1.tgz#8657a24d773ac9e471b621195f04e9a24ccd8138"
+  integrity sha512-xgI4ru1KWcYFTbftLsR7Pzg14cslVPajUZUyRk6nzCEQvUMN/kVtPpVT5+s8UuhDZe7zpqSDAhSGS5yAcn9GcA==
+
+powerbi-visuals-utils-formattingutils@^4.7.1:
+  version "4.7.1"
+  resolved "https://registry.yarnpkg.com/powerbi-visuals-utils-formattingutils/-/powerbi-visuals-utils-formattingutils-4.7.1.tgz#6e8233cbf90d4770595f889eea6f5afacc055475"
+  integrity sha512-17pOtW+UNjhPz+dotk9Cu9FBLPueVU0MV6uXPjlu6Uu7YvqA/7GCUsopAq/erCI8e8vgTQZkHy9jwGbPJM+LaQ==
+  dependencies:
+    powerbi-visuals-utils-dataviewutils "2.4.1"
+    powerbi-visuals-utils-typeutils "2.3.1"
+
 powerbi-visuals-utils-interactivityutils@^5.7.0:
   version "5.7.0"
   resolved "https://registry.yarnpkg.com/powerbi-visuals-utils-interactivityutils/-/powerbi-visuals-utils-interactivityutils-5.7.0.tgz#bf4bf45636612ae3305ddf340a959d419da30e00"
@@ -1730,6 +1743,13 @@ powerbi-visuals-utils-typeutils@2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/powerbi-visuals-utils-typeutils/-/powerbi-visuals-utils-typeutils-2.3.0.tgz#59594be462cabd072f2df409fad01368081ce017"
   integrity sha512-Bv3aHTS1jkLh4v7FY1eMf2r0PzHkO4OR/b677nRlanKiuCglSFAmUC7PTKbp2+sFpHyDi6V/8nE1QCVWnczfRw==
+  dependencies:
+    coveralls "^3.1.0"
+
+powerbi-visuals-utils-typeutils@2.3.1:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/powerbi-visuals-utils-typeutils/-/powerbi-visuals-utils-typeutils-2.3.1.tgz#b5bcc4764513a9afcd8a1a090f7fd11ae26c6855"
+  integrity sha512-mO2MCTR/nqbQjtZDZTP7k80Sr/oNNIR6a2t5s6fmn9yGoRS4ne7ZNJRhNnyBbyz9Frapvqnr1/OeBuRUYnU1jw==
   dependencies:
     coveralls "^3.1.0"
 

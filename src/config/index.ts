@@ -3,7 +3,12 @@ import Ace = ace.Ace;
 
 import { visual } from '../../pbiviz.json';
 import { devDependencies } from '../../package.json';
-import { TEditorPosition, TLocale, TSpecProvider, TSpecRenderMode } from '../types';
+import {
+    TEditorPosition,
+    TLocale,
+    TSpecProvider,
+    TSpecRenderMode
+} from '../types';
 import { locales } from './locales';
 import { theme } from './theme';
 import { CommandService } from '../services/CommandService';
@@ -108,7 +113,7 @@ const splitPaneDefaults = {
  * =======================
  * Developer Mode Defaults
  * =======================
- * 
+ *
  * When developer mode is enabled, we have a specific object and properties available, so we'll add any
  * suitable defaults to this object.
  */

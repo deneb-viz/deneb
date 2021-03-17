@@ -1,10 +1,12 @@
 import powerbi from 'powerbi-visuals-api';
 import ISelectionId = powerbi.visuals.ISelectionId;
+import { valueFormatter } from 'powerbi-visuals-utils-formattingutils';
 
 import jsonrepair from 'jsonrepair';
 import * as Vega from 'vega';
 import Config = Vega.Config;
 import Spec = Vega.Spec;
+import expressionFunction = Vega.expressionFunction;
 import * as VegaLite from 'vega-lite';
 import { TopLevelSpec } from 'vega-lite';
 
@@ -256,12 +258,31 @@ export class SpecificationService implements ISpecificationHandlerService {
         return {
             ...{
                 background: null, // so we can defer to the Power BI background, if applied
+                customFormatTypes: true,
                 range: {
                     category: themeColors
                 }
             },
             ...this.getParsedConfigFromSettings()
         };
+    }
+
+    @standardLog()
+    registerCustomExpressions() {
+        const { locale } = store.getState().visual;
+        Debugger.log('Registering custom formatters...');
+        expressionFunction('pbiFormat', (datum: any, params: string) => {
+            Debugger.log(
+                `Formatting value: ${datum} with format "${params}"...`
+            );
+            const fmt = valueFormatter.create({
+                    format: `${params}`,
+                    cultureSelector: locale
+                }),
+                value = fmt.format(datum);
+            Debugger.log(`Formatted value: ${value}`);
+            return value;
+        });
     }
 
     /**
