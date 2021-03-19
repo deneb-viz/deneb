@@ -6,6 +6,7 @@ import { propertyService, specificationService } from '.';
 import store from '../store';
 import {
     toggleAutoApply,
+    fourd3d3d,
     updateSelectedOperation
 } from '../store/visualReducer';
 import { updateSelectedTemplate } from '../store/templateReducer';
@@ -15,7 +16,7 @@ import {
     TSpecProvider,
     TSpecRenderMode
 } from '../types';
-import { editorKeyBindings, visualMetadata } from '../config';
+import { visualMetadata } from '../config';
 
 const owner = 'CommandService';
 
@@ -105,15 +106,7 @@ export class CommandService implements ICommandService {
         launchUrl(visualMetadata.supportUrl);
     }
 
-    @standardLog()
-    bindAceEditorKeysToCommands(editor: Ace.Editor) {
-        editorKeyBindings.forEach((kb) => {
-            Debugger.log(`Binding ${kb.name} hotkey...`);
-            editor.commands.addCommand({
-                name: kb.name,
-                bindKey: kb.bindKey,
-                exec: (editor) => kb.exec(editor, this)
-            });
-        });
+    fourd3d3d() {
+        store.dispatch(fourd3d3d(true));
     }
 }

@@ -8,6 +8,7 @@ import Debugger from '../Debugger';
 import { locales, visualFeatures } from '../config';
 import { state } from '../store';
 import SpecificationError from './status/SpecificationError';
+import FourD3D3D3 from '../components/editor/FourD3D3D3';
 import NewVisualPlaceholder from './create/NewVisualPlaceholder';
 import { selectionHandlerService, specificationService } from '../services';
 
@@ -16,6 +17,7 @@ const VisualRender = () => {
 
     const {
             dataset,
+            fourd3d3d,
             i18n,
             loader,
             locale,
@@ -39,6 +41,7 @@ const VisualRender = () => {
             locales.format[locale] || locales.format[locales.default],
         timeFormatLocale =
             locales.timeFormat[locale] || locales.timeFormat[locales.default];
+    if (fourd3d3d) return <FourD3D3D3 />;
     specificationService.registerCustomExpressions();
 
     switch (spec?.status) {
@@ -72,7 +75,6 @@ const VisualRender = () => {
                     );
                 }
                 case 'vega': {
-                    // TODO: Add handler for click data point
                     const VegaChart = createClassFromSpec({
                         spec: spec.spec
                     });

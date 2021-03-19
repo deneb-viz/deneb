@@ -28,6 +28,7 @@ const visualReducer: IVisualSliceState = {
         spec: null,
         config: null
     },
+    fourd3d3d: false,
     i18n: null,
     interfaceType: 'Landing',
     isInFocus: false,

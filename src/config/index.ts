@@ -11,7 +11,6 @@ import {
 } from '../types';
 import { locales } from './locales';
 import { theme } from './theme';
-import { CommandService } from '../services/CommandService';
 
 /**
  * Core configuration that should be referenced by other files
@@ -20,7 +19,6 @@ export {
     dataLimitDefaults,
     developerDefaults,
     editorDefaults,
-    editorKeyBindings,
     locales,
     splitPaneDefaults,
     theme,
@@ -139,97 +137,6 @@ const editorDefaults = {
     // Position in the pane
     position: <TEditorPosition>'left'
 };
-
-/**
- * ===================
- * Editor Key Bindings
- * ===================
- *
- * Ace editor (and JSONEditor) both have a whole bunch of standard key bindings/shortcuts. Our visual
- * has a few of its own, or replaces them, so this is where we configure them.
- */
-const editorKeyBindings: Ace.Command[] = [
-    {
-        name: 'applyChanges',
-        bindKey: {
-            win: 'Ctrl-Enter',
-            mac: 'Command-Enter'
-        },
-        exec: (editor, service: CommandService) => {
-            service.applyChanges();
-        }
-    },
-    {
-        name: 'toggleAutoApplyChanges',
-        bindKey: {
-            win: 'Ctrl-Shift-Enter',
-            mac: 'Command-Shift-Enter'
-        },
-        exec: (editor, service: CommandService) => {
-            service.toggleAutoApply();
-        }
-    },
-    {
-        name: 'repairFormatJson',
-        bindKey: {
-            win: 'Ctrl-\\',
-            mac: 'Command-\\'
-        },
-        exec: (editor, service: CommandService) => {
-            service.repairFormatJson();
-        }
-    },
-    {
-        name: 'createNewSpec',
-        bindKey: {
-            win: 'Ctrl-Alt-n',
-            mac: 'Command-Alt-n'
-        },
-        exec: (editor, service: CommandService) => {
-            service.createNewSpec();
-        }
-    },
-    {
-        name: 'getHelp',
-        bindKey: {
-            win: 'Ctrl-Alt-h',
-            mac: 'Command-Alt-h'
-        },
-        exec: (editor, service: CommandService) => {
-            service.openHelpSite();
-        }
-    },
-    {
-        name: 'selectSpecificationPivot',
-        bindKey: {
-            win: 'Ctrl-Alt-1',
-            mac: 'Command-Alt-1'
-        },
-        exec: (editor, service: CommandService) => {
-            service.openEditorPivotItem('spec');
-        }
-    },
-    {
-        name: 'selectConfigPivot',
-        bindKey: {
-            win: 'Ctrl-Alt-2',
-            mac: 'Command-Alt-2'
-        },
-        exec: (editor, service: CommandService) => {
-            service.openEditorPivotItem('config');
-        }
-    },
-    {
-        name: 'selectSettingsPivot',
-        bindKey: {
-            win: 'Ctrl-Alt-3',
-            mac: 'Command-Alt-3'
-        },
-        exec: (editor, service: CommandService) => {
-            service.openEditorPivotItem('settings');
-        }
-    }
-];
 
 /**
  * ===================================

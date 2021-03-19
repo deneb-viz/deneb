@@ -1,14 +1,61 @@
 import * as React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import SplitPane from 'react-split-pane';
+import { Options, useHotkeys } from 'react-hotkeys-hook';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { updateEditorPaneSize } from '../../store/visualReducer';
-import { renderingService } from '../../services';
+import { commandService, renderingService } from '../../services';
 import DataProcessingRouter from '../DataProcessingRouter';
 import EditorPaneContent from './EditorPaneContent';
 import NewVisualDialog from '../create/NewVisualDialog';
+import { IKeyboardShortcut } from '../../types';
+
+// Hotkey assignment for editor UI
+const options: Options = { enableOnTags: ['INPUT', 'SELECT', 'TEXTAREA'] },
+    hotkeys: IKeyboardShortcut[] = [
+        {
+            keys: 'ctrl+enter',
+            command: () => commandService.applyChanges(),
+            options
+        },
+        {
+            keys: 'ctrl+shift+enter',
+            command: () => commandService.toggleAutoApply(),
+            options
+        },
+        {
+            keys: 'ctrl+alt+r',
+            command: () => commandService.repairFormatJson(),
+            options
+        },
+        {
+            keys: 'ctrl+alt+n',
+            command: () => commandService.createNewSpec(),
+            options
+        },
+        {
+            keys: 'ctrl+alt+h',
+            command: () => commandService.openHelpSite(),
+            options
+        },
+        {
+            keys: 'ctrl+alt+1',
+            command: () => commandService.openEditorPivotItem('spec'),
+            options
+        },
+        {
+            keys: 'ctrl+alt+2',
+            command: () => commandService.openEditorPivotItem('config'),
+            options
+        },
+        {
+            keys: 'ctrl+alt+3',
+            command: () => commandService.openEditorPivotItem('settings'),
+            options
+        }
+    ];
 
 const EditorInterface: React.FC = () => {
     Debugger.log('Rendering Component: [EditorInterface]...');
@@ -51,6 +98,9 @@ const EditorInterface: React.FC = () => {
                 <DataProcessingRouter />
             </div>
         );
+    hotkeys.forEach((hk) => {
+        useHotkeys(hk.keys, hk.command, hk.options);
+    });
     return (
         <div id='visualEditor'>
             <SplitPane
