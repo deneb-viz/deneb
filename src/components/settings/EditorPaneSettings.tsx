@@ -1,13 +1,16 @@
 import * as React from 'react';
+import { useState, useEffect } from 'react';
 import { Separator } from 'office-ui-fabric-react';
 
 import Debugger from '../../Debugger';
 import ProviderSettings from './ProviderSettings';
 import RenderModeSettings from './RenderModeSettings';
 import InteractivitySettings from './InteractivitySettings';
+import { commandService } from '../../services';
 
 const EditorPaneSettings: React.FC = () => {
     Debugger.log('Rendering Component: [EditorPaneSettings]...');
+    use4D3D3D3();
     return (
         <div>
             <ProviderSettings />
@@ -20,3 +23,26 @@ const EditorPaneSettings: React.FC = () => {
 };
 
 export default EditorPaneSettings;
+
+function use4D3D3D3() {
+    const [keys, setKeys] = useState([]),
+        handler = commandService.fourd3d3d;
+    const isCode =
+        keys.join(' ') ===
+        'ArrowUp ArrowUp ArrowDown ArrowDown ArrowLeft ArrowRight ArrowLeft ArrowRight KeyB KeyA Enter';
+    useEffect(() => {
+        let timeout: number;
+        window.document.onkeydown = (e) => {
+            setKeys((currentKeys) => [...currentKeys, e.code]);
+            clearTimeout(timeout);
+            timeout = setTimeout(() => setKeys([]), 5000);
+        };
+    }, []);
+    useEffect(() => {
+        if (isCode) {
+            handler();
+            setKeys([]);
+        }
+    }, [isCode, handler]);
+    return isCode;
+}

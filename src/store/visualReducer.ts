@@ -199,6 +199,9 @@ const visualSlice = createSlice({
         },
         dismissFixError: (state) => {
             state.fixResult.dismissed = true;
+        },
+        fourd3d3d: (state, action: PayloadAction<boolean>) => {
+            state.fourd3d3d = action.payload;
         }
     }
 });
@@ -221,6 +224,7 @@ export const {
     updateSpec,
     visualConstructor,
     visualUpdate,
+    fourd3d3d,
     updateSelectedOperation,
     updateFixStatus
 } = visualSlice.actions;

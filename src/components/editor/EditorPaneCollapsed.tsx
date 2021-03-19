@@ -1,20 +1,18 @@
 import * as React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { FontIcon, Text, TooltipHost } from 'office-ui-fabric-react';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';
-import { toggleEditorPane } from '../../store/visualReducer';
+import { commandService } from '../../services';
 import { buttonIconClass } from '../../config/styles';
 
 const EditorPaneCollapsed = () => {
     Debugger.log('Rendering Component: [EditorPaneCollapsed]...');
     const { i18n, settings } = useSelector(state).visual,
         { position } = settings.editor,
-        dispatch = useDispatch(),
         togglePane = () => {
-            Debugger.log('Toggling pane expansion...');
-            dispatch(toggleEditorPane());
+            commandService.toggleEditorPane()
         },
         tooltip_i18_key = 'Tooltip_Expand_Editor_Pane',
         iconName = position === 'left' ? 'ChevronRight' : 'ChevronLeft';

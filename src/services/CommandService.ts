@@ -4,10 +4,20 @@ import Ace = ace.Ace;
 import Debugger, { standardLog } from '../Debugger';
 import { propertyService, specificationService } from '.';
 import store from '../store';
-import { toggleAutoApply } from '../store/visualReducer';
+import {
+    toggleAutoApply,
+    toggleEditorPane,
+    fourd3d3d,
+    updateSelectedOperation
+} from '../store/visualReducer';
 import { updateSelectedTemplate } from '../store/templateReducer';
-import { ICommandService, TSpecProvider, TSpecRenderMode } from '../types';
-import { editorKeyBindings, visualMetadata } from '../config';
+import {
+    ICommandService,
+    TEditorOperation,
+    TSpecProvider,
+    TSpecRenderMode
+} from '../types';
+import { visualMetadata } from '../config';
 
 const owner = 'CommandService';
 
@@ -85,6 +95,12 @@ export class CommandService implements ICommandService {
     }
 
     @standardLog()
+    openEditorPivotItem(operation: TEditorOperation) {
+        Debugger.log(`Attempting to open editor pivot item: ${operation}...`);
+        store.dispatch(updateSelectedOperation(operation));
+    }
+
+    @standardLog()
     openHelpSite() {
         Debugger.log('Launching support URL...', visualMetadata.supportUrl);
         const { launchUrl } = store.getState().visual;
@@ -92,14 +108,13 @@ export class CommandService implements ICommandService {
     }
 
     @standardLog()
-    bindAceEditorKeysToCommands(editor: Ace.Editor) {
-        editorKeyBindings.forEach((kb) => {
-            Debugger.log(`Binding ${kb.name} hotkey...`);
-            editor.commands.addCommand({
-                name: kb.name,
-                bindKey: kb.bindKey,
-                exec: (editor) => kb.exec(editor, this)
-            });
-        });
+    toggleEditorPane() {
+        Debugger.log('Toggling pane expansion...');
+        this.applyChanges();
+        store.dispatch(toggleEditorPane());
+    }
+
+    fourd3d3d() {
+        store.dispatch(fourd3d3d(true));
     }
 }

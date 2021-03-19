@@ -22,9 +22,11 @@ import Ace = ace.Ace;
 import JSONEditor from 'jsoneditor';
 import { TopLevelSpec, Config as VLConfig } from 'vega-lite';
 import { Config, Spec, TooltipHandler, Loader } from 'vega';
+import { Options } from 'react-hotkeys-hook';
 
 import VisualSettings from './properties/VisualSettings';
 import DataLimitSettings from './properties/DataLimitSettings';
+import { CommandService } from './services/CommandService';
 
 /**
  * =====
@@ -93,6 +95,10 @@ export interface ICommandService {
      */
     toggleAutoApply: () => void;
     /**
+     * Hande the show/hide of the editor pane.
+     */
+    toggleEditorPane: () => void;
+    /**
      * Handle the Repair/Format JSON command.
      */
     repairFormatJson: () => void;
@@ -109,11 +115,9 @@ export interface ICommandService {
      */
     openHelpSite: () => void;
     /**
-     * Binds specified custom hotkeys to Ace editor instance.
-     *
-     * @param editor - instance to bind commands to.
+     * Open a specific pivot item from the editor.
      */
-    bindAceEditorKeysToCommands: (editor: Ace.Editor) => void;
+    openEditorPivotItem: (operation: TEditorOperation) => void;
 }
 
 /**
@@ -446,6 +450,7 @@ export interface IVisualSliceState {
     dataWindowsLoaded: number;
     editMode: EditMode;
     editorPaneIsExpanded: boolean;
+    fourd3d3d: boolean;
     fixResult: IFixResult;
     i18n: ILocalizationManager;
     interfaceType: TVisualInterface;
@@ -582,6 +587,12 @@ export interface IVisualValueRow {
     __identity__: ISelectionId;
     // String representation of Selection ID
     __key__: string;
+}
+
+export interface IKeyboardShortcut {
+    keys: string;
+    command: () => void;
+    options: Options;
 }
 
 export interface ICompiledSpec {

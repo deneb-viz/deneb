@@ -61,7 +61,6 @@ export class EditorService implements IEditorService {
             enableBasicAutocompletion: true,
             enableLiveAutocompletion: true
         });
-        this.setAceEditorKeyBindings();
         this.setInitialText();
     }
 
@@ -201,16 +200,6 @@ export class EditorService implements IEditorService {
     private setAceEditorOptions(optList: { [key: string]: any }) {
         Debugger.log('Setting JSON editor options for Ace...');
         this.getAceEditorInstance().setOptions(optList);
-    }
-
-    /**
-     * Ensure that all hotkeys from config are bound to the embedded editor.
-     */
-    @standardLog()
-    private setAceEditorKeyBindings() {
-        Debugger.log('Binding hotkeys to editor...');
-        const editor = this.getAceEditorInstance();
-        commandService.bindAceEditorKeysToCommands(editor);
     }
 
     /**
