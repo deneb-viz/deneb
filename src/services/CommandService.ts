@@ -6,6 +6,7 @@ import { propertyService, specificationService } from '.';
 import store from '../store';
 import {
     toggleAutoApply,
+    toggleEditorPane,
     fourd3d3d,
     updateSelectedOperation
 } from '../store/visualReducer';
@@ -104,6 +105,13 @@ export class CommandService implements ICommandService {
         Debugger.log('Launching support URL...', visualMetadata.supportUrl);
         const { launchUrl } = store.getState().visual;
         launchUrl(visualMetadata.supportUrl);
+    }
+
+    @standardLog()
+    toggleEditorPane() {
+        Debugger.log('Toggling pane expansion...');
+        this.applyChanges();
+        store.dispatch(toggleEditorPane());
     }
 
     fourd3d3d() {

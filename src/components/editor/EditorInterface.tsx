@@ -54,6 +54,11 @@ const options: Options = { enableOnTags: ['INPUT', 'SELECT', 'TEXTAREA'] },
             keys: 'ctrl+alt+3',
             command: () => commandService.openEditorPivotItem('settings'),
             options
+        },
+        {
+            keys: 'ctrl+alt+space',
+            command: () => commandService.toggleEditorPane(),
+            options
         }
     ];
 

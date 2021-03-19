@@ -95,6 +95,10 @@ export interface ICommandService {
      */
     toggleAutoApply: () => void;
     /**
+     * Hande the show/hide of the editor pane.
+     */
+    toggleEditorPane: () => void;
+    /**
      * Handle the Repair/Format JSON command.
      */
     repairFormatJson: () => void;

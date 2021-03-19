@@ -18,6 +18,7 @@ const FourD3D3D3: React.FC = () => {
         <div
             className='fourd3d3d'
             style={{ width, height }}
+            role='button'
             onClick={handleDismiss}
         />
     );
