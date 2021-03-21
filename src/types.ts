@@ -3,7 +3,7 @@ import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import DataView = powerbi.DataView;
 import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
-import DataViewTable = powerbi.DataViewTable;
+import DataViewCategorical = powerbi.DataViewCategorical;
 import ISelectionIdBuilder = powerbi.visuals.ISelectionIdBuilder;
 import ISelectionId = powerbi.visuals.ISelectionId;
 import ITooltipService = powerbi.extensibility.ITooltipService;
@@ -131,7 +131,7 @@ export interface IDataViewService {
     /**
      * Checks for valid dataview and provides count of values.
      */
-    getRowCount: (dataView: DataView) => number;
+    getRowCount: (categorical: DataViewCategorical) => number;
     /**
      * Validates the data view, to confirm that we can get past the splash screen.
      *
@@ -148,7 +148,7 @@ export interface IDataViewService {
      * @param selectionIdBuilder - instance of builder, used for creating selection ID for each table row.
      */
     getMappedDataset: (
-        table: DataViewTable,
+        categorical: DataViewCategorical,
         selectionIdBuilder: () => ISelectionIdBuilder
     ) => IVisualDataset;
     /**
@@ -573,8 +573,8 @@ export interface IVisualValueMetadata {
 export interface ITableColumnMetadata extends DataViewMetadataColumn {
     // Flag to confirm if this is a column, according to the data model
     isColumn: boolean;
-    // Flag to confirm if this is a generated raw value
-    isRaw: boolean;
+    // Original dataView index (from categories or values)
+    sourceIndex: number;
 }
 
 /**

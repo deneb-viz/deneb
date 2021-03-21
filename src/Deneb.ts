@@ -153,7 +153,7 @@ export class Deneb implements IVisual {
                             hasValidDataViewMapping &&
                             dataViewService.validateDataViewRoles(
                                 options.dataViews,
-                                ['values']
+                                ['dataset']
                             ),
                         hasValidDataView =
                             hasValidDataViewMapping && hasValidDataRoles;
@@ -189,7 +189,7 @@ export class Deneb implements IVisual {
                     store.dispatch(
                         updateDataset(
                             dataViewService.getMappedDataset(
-                                options.dataViews[0]?.table,
+                                options.dataViews[0]?.categorical,
                                 this.host.createSelectionIdBuilder
                             )
                         )

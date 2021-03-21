@@ -256,18 +256,6 @@ export class EditorService implements IEditorService {
             `Resolving completer metadata for [${column.displayName}]...`
         );
         switch (true) {
-            case column.isRaw && column.isMeasure: {
-                Debugger.log('Type: raw value (measure)');
-                return `${localisationManager.getDisplayName(
-                    'Completer_Cap_Measure'
-                )} ${localisationManager.getDisplayName('Completer_Cap_Raw')}`;
-            }
-            case column.isRaw: {
-                Debugger.log('Type: raw value (column)');
-                return `${localisationManager.getDisplayName(
-                    'Completer_Cap_Column'
-                )} ${localisationManager.getDisplayName('Completer_Cap_Raw')}`;
-            }
             case column.isMeasure: {
                 Debugger.log('Type: measure');
                 return localisationManager.getDisplayName(
@@ -295,9 +283,6 @@ export class EditorService implements IEditorService {
             `Resolving completer score for [${column.displayName}]...`
         );
         switch (true) {
-            case column.isRaw: {
-                return 1000 + index;
-            }
             case column.isMeasure:
             case column.isColumn: {
                 return 2000 + index;
