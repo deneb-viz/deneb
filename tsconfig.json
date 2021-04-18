@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        "allowJs": false,
+        "jsx": "react",
+        "types": [
+            "react",
+            "react-dom"
+        ],
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "module": "es6",
+        "target": "es6",
+        "sourceMap": true,
+        "outDir": "./.tmp/build/",
+        "moduleResolution": "node",
+        "declaration": true,
+        "lib": [
+            "es2019",
+            "dom"
+        ],
+        "alwaysStrict": true,
+        "resolveJsonModule": true
+    },
+    "files": [
+        "src/Deneb.ts"
+    ]
+}
