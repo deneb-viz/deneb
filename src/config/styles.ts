@@ -15,7 +15,11 @@ import {
     mergeStyles,
     mergeStyleSets,
     FontSizes,
-    FontWeights
+    FontWeights,
+    ITextFieldStyles,
+    IDetailsListStyles,
+    IStyleSet,
+    IPivotStyles
 } from '@fluentui/react';
 
 import { theme } from './theme';
@@ -27,17 +31,23 @@ import {
 } from 'office-ui-fabric-react';
 
 export {
+    actionButtonStyles,
     buttonIconClass,
     choiceGroupStyles,
     choiceItemStyles,
     choiceStackTokens,
     commandBarStyles,
     commandBarButtonStyles,
+    detailListStyles,
     editorPaneExpandedStackStyles,
     editorPaneExpandedStackItemStyles,
     editorPaneExpandedOuterStackTokens,
     editorPaneExpandedInnerStackTokens,
     errorVerticalStackStyles,
+    exportPivotAssistiveTextStyles,
+    exportPivotAssistiveToastTextStyles,
+    exportPivotStyles,
+    iconButtonStyles,
     landingHorizontalSeparatorStyles,
     landingResourceInnerStackTokens,
     landingVerticalOuterStackTokens,
@@ -57,6 +67,7 @@ export {
     modalDialogStackItemWrapperStyles,
     modalDialogInnerStackTokens,
     primaryButtonStyles,
+    templateExportInfoStackTokens,
     templatePickerDropdownStyles,
     templatePickerItemListStyles,
     templatePickerStackStyles,
@@ -64,7 +75,11 @@ export {
     templatePickerStackSeparatorStyles,
     templatePickerStackItemListStyles,
     templatePickerNonShrinkingStackItemStyles,
-    templatePickerStackTokens
+    templatePickerStackTokens,
+    templateTypeIconStyles,
+    templateTypeIconOptionStyles,
+    templateTypeInfoIconStyles,
+    textFieldStyles
 };
 
 const defaultTheme: ITheme = getTheme();
@@ -165,6 +180,56 @@ const buttonIconClass = mergeStyles({
         label: {
             color: theme.palette.black,
             fontWeight: FontWeights.regular
+        }
+    },
+    iconButtonStyles: IButtonStyles = {
+        root: {
+            boxSizing: 'border-box',
+            display: 'flex',
+            selectors: {
+                '&:hover': { background: theme.palette.neutralLight },
+                '&:focus': { background: theme.palette.neutralLighterAlt }
+            }
+        },
+        icon: { color: theme.palette.neutralPrimary },
+        iconHovered: { color: theme.palette.neutralDark },
+        iconPressed: { color: theme.palette.neutralDark },
+        label: { color: theme.palette.neutralPrimary },
+        labelHovered: { color: theme.palette.neutralDark }
+    },
+    actionButtonStyles: IButtonStyles = {
+        root: {
+            boxSizing: 'border-box',
+            display: 'flex',
+            padding: 10,
+            selectors: {
+                '&:hover': { background: theme.palette.neutralLight },
+                '&:focus': { background: theme.palette.neutralLighterAlt }
+            }
+        },
+        icon: { color: theme.palette.neutralPrimary },
+        iconHovered: { color: theme.palette.neutralDark },
+        iconPressed: { color: theme.palette.neutralDark },
+        label: { color: theme.palette.neutralPrimary },
+        labelHovered: { color: theme.palette.neutralDark }
+    },
+    templateTypeIconStyles: IButtonStyles = {
+        icon: { color: theme.palette.neutralPrimary },
+        iconHovered: { color: theme.palette.neutralDark },
+        iconPressed: { color: theme.palette.neutralDark }
+    },
+    templateTypeIconOptionStyles: IButtonStyles = {
+        ...templateTypeIconStyles,
+        ...{
+            root: {
+                marginRight: '8px',
+                cursor: 'pointer'
+            }
+        }
+    },
+    templateTypeInfoIconStyles: IButtonStyles = {
+        root: {
+            cursor: 'pointer'
         }
     };
 
@@ -313,6 +378,9 @@ const templatePickerItemListStyles = mergeStyleSets({
     templatePickerStackTokens: IStackTokens = {
         childrenGap: 50
     },
+    templateExportInfoStackTokens: IStackTokens = {
+        childrenGap: 5
+    },
     templatePickerDropdownStyles: Partial<IDropdownStyles> = {
         dropdown: { width: 300 }
     };
@@ -386,4 +454,42 @@ const modalDialogContentStyles = (viewport: IViewport) => {
     modalDialogInnerStackTokens: IStackTokens = {
         childrenGap: 15,
         padding: 10
+    };
+
+// Export dialog - pivot-level assistive text
+const exportPivotAssistiveTextStyles: ITextStyles = {
+        root: {
+            display: 'inline-block',
+            paddingTop: '8px'
+        }
+    },
+    exportPivotAssistiveToastTextStyles: ITextStyles = {
+        root: {
+            display: 'inline-block',
+            paddingTop: '8px',
+            paddingRight: '8px'
+        }
+    },
+    exportPivotStyles: Partial<IStyleSet<IPivotStyles>> = {
+        itemContainer: {
+            marginTop: '10px',
+            height: '100%'
+        }
+    };
+
+// Form fields
+const textFieldStyles: Partial<ITextFieldStyles> = {
+        root: { marginLeft: 35, width: 300 }
+    },
+    detailListStyles: IDetailsListStyles = {
+        root: {},
+        headerWrapper: {
+            root: {
+                borderBottom: null
+            }
+        },
+        focusZone: {
+            borderBottom: null
+        },
+        contentWrapper: {}
     };

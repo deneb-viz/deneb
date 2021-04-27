@@ -1,9 +1,25 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import * as _ from 'lodash';
 
 import Debugger from '../Debugger';
 import { templateService } from '../services';
-import { IPlaceholderValuePayload, TSpecProvider } from '../types';
+import {
+    IPlaceholderValuePayload,
+    ITemplateExportFieldUpdatePayload,
+    ITemplateImportErrorPayload,
+    ITemplateImportPayload,
+    TExportOperation,
+    TTemplateExportState,
+    TTemplateImportState,
+    TTemplateProvider
+} from '../types';
 import { templateReducer as initialState } from '../config/templateReducer';
+import {
+    IDenebTemplateMetadata,
+    ITemplateDatasetField
+} from '../schema/template-v1';
+import { TopLevelSpec } from 'vega-lite';
+import { Spec } from 'vega';
 
 const templateSlice = createSlice({
     name: 'templates',
@@ -11,23 +27,114 @@ const templateSlice = createSlice({
     reducers: {
         updateSelectedDialogProvider: (
             state,
-            action: PayloadAction<TSpecProvider>
+            action: PayloadAction<TTemplateProvider>
         ) => {
-            const templateIdx = 0;
-            state.selectedProvider = action.payload;
-            state.selectedTemplateIndex = templateIdx;
-            state.templateToApply = state[state.selectedProvider][templateIdx];
-            state.allPlaceholdersSupplied = templateService.getPlaceholderResolutionStatus(
-                state.templateToApply
-            );
+            state.templateProvider = action.payload;
+            state.templateFile = null;
+            state.templateImportState = 'None';
+            state.templateImportErrorMessage = null;
+            state.templateSchemaErrors = [];
+            state.templateFileRawContent = null;
+            switch (state.templateProvider) {
+                case 'import': {
+                    state.selectedTemplateIndex = null;
+                    state.templateToApply = null;
+                    state.allImportCriteriaApplied = false;
+                    state.specProvider = null;
+                    break;
+                }
+                default: {
+                    const templateIdx = 0;
+                    state.specProvider = state.templateProvider;
+                    state.selectedTemplateIndex = templateIdx;
+                    state.templateToApply =
+                        state[state.templateProvider][templateIdx];
+                    state.allImportCriteriaApplied = templateService.getPlaceholderResolutionStatus(
+                        <Spec | TopLevelSpec>state.templateToApply
+                    );
+                }
+            }
+        },
+        updateTemplateExportState: (
+            state,
+            action: PayloadAction<TTemplateExportState>
+        ) => {
+            state.templateExportState = action.payload;
+            state.templateExportErrorMessage = null;
+        },
+        updateTemplateImportState: (
+            state,
+            action: PayloadAction<TTemplateImportState>
+        ) => {
+            state.templateImportState = action.payload;
+        },
+        templateImportError: (
+            state,
+            action: PayloadAction<ITemplateImportErrorPayload>
+        ) => {
+            state.templateImportState = 'Error';
+            state.templateImportErrorMessage =
+                action.payload.templateImportErrorMessage;
+            state.templateSchemaErrors = action.payload.templateSchemaErrors;
+        },
+        templateImportSuccess: (
+            state,
+            action: PayloadAction<ITemplateImportPayload>
+        ) => {
+            state.templateImportState = 'Success';
+            state.templateFile = action.payload.templateFile;
+            state.templateFileRawContent =
+                action.payload.templateFileRawContent;
+            state.templateToApply = action.payload.templateToApply;
+            state.specProvider =
+                action.payload.provider ||
+                (<IDenebTemplateMetadata>(
+                    action.payload.templateToApply.usermeta
+                )).deneb.provider;
+        },
+        templateExportError: (state, action: PayloadAction<string>) => {
+            state.templateExportState = 'Error';
+            state.templateExportErrorMessage = action.payload;
         },
         updateSelectedTemplate: (state, action: PayloadAction<number>) => {
             state.selectedTemplateIndex = action.payload;
             state.templateToApply =
-                state[state.selectedProvider][action.payload];
-            state.allPlaceholdersSupplied = templateService.getPlaceholderResolutionStatus(
-                state.templateToApply
+                state[state.templateProvider][action.payload];
+            state.allImportCriteriaApplied = templateService.getPlaceholderResolutionStatus(
+                <Spec | TopLevelSpec>state.templateToApply
             );
+        },
+        updateSelectedExportOperation: (
+            state,
+            action: PayloadAction<TExportOperation>
+        ) => {
+            state.selectedExportOperation = action.payload;
+        },
+        updateExportTemplatePropertyBySelector: (
+            state,
+            action: PayloadAction<ITemplateExportFieldUpdatePayload>
+        ) => {
+            let newState = { ...state.templateExportMetadata };
+            _.set(newState, action.payload.selector, action.payload.value);
+            state.templateExportMetadata = { ...newState };
+        },
+        newExportTemplateMetadata: (state, action) => {
+            state.templateExportMetadata = templateService.newExportTemplateMetadata();
+        },
+        syncExportTemplateDataset: (
+            state,
+            action: PayloadAction<ITemplateDatasetField[]>
+        ) => {
+            let newState = action.payload.map((d) => {
+                let match = state.templateExportMetadata.dataset.find(
+                    (ds) => ds.key === d.key
+                );
+                if (match) {
+                    return match;
+                }
+                return d;
+            });
+            state.templateExportMetadata.dataset = [...newState];
         },
         patchTemplatePlaceholder: (
             state,
@@ -35,15 +142,16 @@ const templateSlice = createSlice({
         ) => {
             Debugger.log('Updating template placeholder.', action.payload);
             const pl = action.payload,
-                phIdx = state.templateToApply?.placeholders.findIndex(
-                    (ph) => ph.key === pl.key
-                );
+                phIdx = (<IDenebTemplateMetadata>(
+                    state.templateToApply?.usermeta
+                ))?.dataset.findIndex((ph) => ph.key === pl.key);
             if (phIdx > -1) {
-                state.templateToApply.placeholders[phIdx].suppliedObjectName =
-                    pl.objectName;
+                (<IDenebTemplateMetadata>(
+                    state.templateToApply?.usermeta
+                )).dataset[phIdx].suppliedObjectName = pl.objectName;
             }
-            state.allPlaceholdersSupplied = templateService.getPlaceholderResolutionStatus(
-                state.templateToApply
+            state.allImportCriteriaApplied = templateService.getPlaceholderResolutionStatus(
+                <Spec | TopLevelSpec>state.templateToApply
             );
         }
     }
@@ -52,9 +160,18 @@ const templateSlice = createSlice({
 const templateReducer = templateSlice.reducer;
 
 export const {
+    newExportTemplateMetadata,
+    syncExportTemplateDataset,
     patchTemplatePlaceholder,
+    templateExportError,
+    templateImportError,
+    templateImportSuccess,
     updateSelectedDialogProvider,
-    updateSelectedTemplate
+    updateSelectedExportOperation,
+    updateSelectedTemplate,
+    updateTemplateExportState,
+    updateTemplateImportState,
+    updateExportTemplatePropertyBySelector
 } = templateSlice.actions;
 
 export default templateReducer;

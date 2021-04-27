@@ -9,6 +9,10 @@ import Spec = Vega.Spec;
 import expressionFunction = Vega.expressionFunction;
 import * as VegaLite from 'vega-lite';
 import { TopLevelSpec } from 'vega-lite';
+import * as Ajv from 'ajv';
+import * as draft06 from 'ajv/lib/refs/json-schema-draft-06.json';
+import * as vegaSchema from 'vega/build/vega-schema.json';
+import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
 
 import Debugger, { standardLog } from '../Debugger';
 import {
@@ -30,8 +34,6 @@ import {
     IFixResult,
     IFixStatus,
     ISpecificationHandlerService,
-    IVegaLiteTemplate,
-    IVegaTemplate,
     TEditorOperation,
     TSpecProvider
 } from '../types';
@@ -39,8 +41,12 @@ import {
 const owner = 'SpecificationService';
 
 export class SpecificationService implements ISpecificationHandlerService {
+    private ajv: Ajv.Ajv = new Ajv({});
+
     constructor() {
         Debugger.log(`Instantiating new ${owner}...`);
+        this.ajv.addFormat('color-hex', () => true); // Handles schema issue w/vega & vega-lite
+        this.ajv.addMetaSchema(draft06);
     }
 
     @standardLog()
@@ -49,8 +55,30 @@ export class SpecificationService implements ISpecificationHandlerService {
         return Vega.loader();
     }
 
+    @standardLog()
+    determineProviderFromSpec(spec: Spec | TopLevelSpec): TSpecProvider {
+        Debugger.log('Trying Vega-Lite...');
+        const vegaLiteValidator = this.ajv.compile(vegaLiteSchema),
+            vlValid = vegaLiteValidator(spec);
+        if (vlValid) {
+            Debugger.log('✅ Resolved as Vega-Lite');
+            return 'vegaLite';
+        }
+        Debugger.log('❌ not Vega-Lite');
+        Debugger.log('Trying Vega...');
+        const vegaValidator = this.ajv.compile(vegaSchema),
+            vValid = vegaValidator(spec);
+        if (vValid) {
+            Debugger.log('✅ Resolved as Vega');
+            return 'vega';
+        }
+        Debugger.log('❌ not Vega');
+        Debugger.log("❌ Couldn't resolve provider from supplied spec");
+        return null;
+    }
+
     @standardLog({ profile: true, owner })
-    parse() {
+    parseActiveSpec() {
         Debugger.log('Attempting to parse JSON spec...');
         const { allowInteractions, settings } = store.getState().visual,
             {
@@ -77,7 +105,7 @@ export class SpecificationService implements ISpecificationHandlerService {
 
             switch (provider) {
                 case 'vegaLite': {
-                    // TODO: This should be done somewhere else, probably
+                    /**TODO: This should be done somewhere else, probably
                     Debugger.log(
                         'Patching data point and context menu selections...'
                     );
@@ -107,6 +135,7 @@ export class SpecificationService implements ISpecificationHandlerService {
                             value: this.getExistingSelectors()
                         });
                     }
+                    */
                     Debugger.log('Attempting Vega-Lite...');
                     VegaLite.compile(<TopLevelSpec>parsedSpec);
                     Debugger.log('Vega-Lite spec parsed successfully :)');
@@ -114,6 +143,7 @@ export class SpecificationService implements ISpecificationHandlerService {
                 }
                 case 'vega': {
                     Debugger.log('Attempting Vega...');
+                    /**
                     Debugger.log(
                         'Patching data point and context menu selections...'
                     );
@@ -123,7 +153,7 @@ export class SpecificationService implements ISpecificationHandlerService {
                     parsedSpec.signals.push({
                         name: '__context__',
                         on: [{ events: 'contextmenu', update: 'datum' }]
-                    });
+                    });*/
                     Vega.parse(<Spec>parsedSpec);
                     Debugger.log('Vega spec parsed successfully :)');
                     break;
@@ -176,10 +206,7 @@ export class SpecificationService implements ISpecificationHandlerService {
     }
 
     @standardLog()
-    createFromTemplate(
-        provider: TSpecProvider,
-        template: IVegaLiteTemplate | IVegaTemplate
-    ) {
+    createFromTemplate(provider: TSpecProvider, template: Spec | TopLevelSpec) {
         Debugger.log('Creating new spec from template...');
 
         const jsonSpec = templateService.getReplacedTemplate(template),
@@ -376,11 +403,8 @@ export class SpecificationService implements ISpecificationHandlerService {
         );
     }
 
-    /**
-     * Gets the `config` from our visual objects and parses it to JSON.
-     */
     @standardLog()
-    private getParsedConfigFromSettings(): Config {
+    getParsedConfigFromSettings(): Config {
         const { vega } = store.getState().visual.settings;
         try {
             return JSON.parse(this.resolveUrls(vega.jsonConfig));

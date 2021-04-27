@@ -19,12 +19,13 @@ export {
     dataLimitDefaults,
     developerDefaults,
     editorDefaults,
+    exportFieldConstraints,
     locales,
+    metaVersion,
     splitPaneDefaults,
     theme,
     vegaResources,
     vegaSettingsDefaults,
-    vegaVersions,
     visualFeatures,
     visual as visualMetadata,
     visualViewportAdjust
@@ -77,6 +78,13 @@ const visualFeatures = {
 };
 
 /**
+ * ======
+ * Template metadata version
+ * ======
+ */
+const metaVersion = 1;
+
+/**
  * =================
  * Vega view spacing
  * =================
@@ -84,8 +92,8 @@ const visualFeatures = {
  * How much spacing (in px) to apply to the Vega visual, within its visible area.
  */
 const visualViewportAdjust = {
-    top: 10,
-    left: 10
+    top: 5,
+    left: 5
 };
 
 /**
@@ -164,6 +172,31 @@ const vegaSettingsDefaults = {
 };
 
 /**
+ * TODO: doc and figure out if we can token this into the schema somewhere
+ */
+const exportFieldConstraints = {
+    dataset: {
+        name: {
+            maxLength: 100
+        },
+        description: {
+            maxLength: 300
+        }
+    },
+    information: {
+        name: {
+            maxLength: 100
+        },
+        description: {
+            maxLength: 300
+        },
+        author: {
+            maxLength: 100
+        }
+    }
+};
+
+/**
  * ========================
  * Vega/Vega-Lite Assistive
  * ========================
@@ -172,18 +205,16 @@ const vegaSettingsDefaults = {
  */
 
 // Embedded versions - read from `package.json`, so that we can automate the packaged Vega and Vega-Lite versions on the
-// visual's landing page.
-const vegaVersions = {
-    vegaLite: devDependencies['vega-lite'],
-    vega: devDependencies.vega
-};
-
-// URLs or resources that we might want to expose to the user within the visual.
+// visual's landing page, plus URLs or resources that we might want to expose to the user within the visual.
 const vegaResources = {
     vega: {
-        documentationUrl: 'https://vega.github.io/vega/docs/'
+        version: devDependencies.vega,
+        documentationUrl: 'https://vega.github.io/vega/docs/',
+        schemaUrl: 'https://vega.github.io/schema/vega/v5.json'
     },
     vegaLite: {
-        documentationUrl: 'https://vega.github.io/vega-lite/docs/'
+        version: devDependencies['vega-lite'],
+        documentationUrl: 'https://vega.github.io/vega-lite/docs/',
+        schemaUrl: 'https://vega.github.io/schema/vega-lite/v5.json'
     }
 };

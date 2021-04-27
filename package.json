@@ -3,11 +3,16 @@
     "license": "MIT",
     "scripts": {
         "pbiviz": "pbiviz",
-        "start": "pbiviz start",
-        "package": "pbiviz package",
+        "start": "npm run template-schemagen && pbiviz start",
+        "package": "npm run template-schemagen && pbiviz package",
         "lint": "tslint -c tslint.json -p tsconfig.json",
-        "prettier-format": "prettier --config .prettierrc src/**/*.ts* --write"
+        "prettier-format": "prettier --config .prettierrc src/**/*.ts* --write",
+        "template-schemagen": "typescript-json-schema ./src/schema/template-v1.ts IDenebTemplateMetadata -o ./src/schema/deneb-template-usermeta-v1.json --required --topRef",
+        "precommit-msg": "echo 'Pre-commit checks...' && exit 0"
     },
+    "pre-commit": [
+        "precommit-msg"
+    ],
     "devDependencies": {
         "@babel/polyfill": "^7.12.1",
         "@babel/runtime": "7.6.0",
@@ -54,6 +59,8 @@
         "tslint": "^5.18.0",
         "tslint-microsoft-contrib": "^6.2.0",
         "typescript": "3.6.3",
+        "typescript-json-schema": "^0.50.0",
+        "uuid": "^8.3.2",
         "vega": "5.19.1",
         "vega-lite": "5.0.0"
     }

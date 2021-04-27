@@ -32,6 +32,7 @@ const visualReducer: IVisualSliceState = {
     i18n: null,
     interfaceType: 'Landing',
     isInFocus: false,
+    isExportDialogVisible: false,
     isNewDialogVisible: true,
     launchUrl: null,
     loader: specificationService.resolveLoaderLogic(),
