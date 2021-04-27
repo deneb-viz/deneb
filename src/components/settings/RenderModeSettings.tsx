@@ -11,7 +11,6 @@ import { state } from '../../store';
 
 const RenderModeSettings = () => {
     Debugger.log('Rendering Component: [RenderModeSettings]...');
-    Debugger.log('Rendering Component: [EditorContainer]...');
     const { i18n, settings } = useSelector(state).visual,
         { vega } = settings,
         handleRenderMode = React.useCallback(

@@ -3,7 +3,6 @@ import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 
 import * as React from 'react';
 import { Stack, Text, Separator } from 'office-ui-fabric-react';
-import { ProgressIndicator } from 'office-ui-fabric-react/lib/ProgressIndicator';
 
 import Debugger from '../../Debugger';
 import {
@@ -18,6 +17,7 @@ import {
 } from '../../config/styles';
 import { IDataFetchingProps } from '../../types';
 import DataLimitSettings from '../../properties/DataLimitSettings';
+import Progress from './Progress';
 
 const DataFetching = (props: IDataFetchingProps) => {
     const { i18n, dataRowsLoaded, dataLimit } = props;
@@ -41,7 +41,7 @@ const DataFetching = (props: IDataFetchingProps) => {
                                         {i18n.getDisplayName('Fetching_Data')}
                                     </Text>
                                 </div>
-                                <ProgressIndicator
+                                <Progress
                                     description={`${dataRowsLoaded} ${i18n.getDisplayName(
                                         'Fetching_Data_Progress_Suffix'
                                     )}`}

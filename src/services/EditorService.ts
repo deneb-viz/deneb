@@ -17,7 +17,7 @@ import * as vegaSchema from 'vega/build/vega-schema.json';
 import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
 
 import Debugger, { standardLog } from '../Debugger';
-import { commandService, specificationService } from '.';
+import { specificationService } from '.';
 import { editorDefaults } from '../config';
 import {
     IEditorService,
@@ -37,6 +37,7 @@ export class EditorService implements IEditorService {
         Debugger.log(`Instantiating new ${owner}...`);
         this.handleTextEntry = this.handleTextEntry.bind(this);
         this.role = role;
+        // TODO: See if we can consolidate into SpecificationService
         this.ajv.addFormat('color-hex', () => true); // Handles schema issue w/vega & vega-lite
         this.ajv.addMetaSchema(draft06);
     }

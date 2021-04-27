@@ -1,11 +1,13 @@
 import * as React from 'react';
 
+import { connect } from 'react-redux';
+
 import Debugger, { standardLog } from '../../Debugger';
 import { configEditorService, specEditorService } from '../../services';
 
 import { IEditorProps, IEditorService } from '../../types';
 
-class Editor extends React.Component<IEditorProps, {}> {
+class Editor extends React.Component<IEditorProps> {
     // Container the editor will reside in
     private container: HTMLDivElement;
     // Editor services, which will handle most of the stuff we need
@@ -27,8 +29,10 @@ class Editor extends React.Component<IEditorProps, {}> {
         Debugger.log('Updated Component: [Editor]');
         this.editor.setProviderSchema();
         this.editor.resize();
-        this.editor.focus();
-        this.editor.updateCompleters();
+        if (!this.props.isDialogOpen) {
+            this.editor.focus();
+            this.editor.updateCompleters();
+        }
     }
 
     @standardLog()

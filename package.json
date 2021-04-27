@@ -3,11 +3,16 @@
     "license": "MIT",
     "scripts": {
         "pbiviz": "pbiviz",
-        "start": "pbiviz start",
-        "package": "pbiviz package",
+        "start": "npm run template-schemagen && pbiviz start",
+        "package": "npm run template-schemagen && pbiviz package",
         "lint": "tslint -c tslint.json -p tsconfig.json",
-        "prettier-format": "prettier --config .prettierrc src/**/*.ts* --write"
+        "prettier-format": "prettier --config .prettierrc src/**/*.ts* --write",
+        "template-schemagen": "typescript-json-schema ./src/schema/template-v1.ts IDenebTemplateMetadata -o ./src/schema/deneb-template-usermeta-v1.json --required --topRef",
+        "precommit-msg": "echo 'Pre-commit checks...' && exit 0"
     },
+    "pre-commit": [
+        "precommit-msg"
+    ],
     "devDependencies": {
         "@babel/polyfill": "^7.12.1",
         "@babel/runtime": "7.6.0",
@@ -18,6 +23,7 @@
         "@types/d3-format": "^2.0.0",
         "@types/d3-time-format": "^3.0.0",
         "@types/jsoneditor": "^8.6.0",
+        "@types/lodash": "^4.14.168",
         "@types/react": "^17.0.0",
         "@types/react-dom": "^17.0.0",
         "@types/react-redux": "^7.1.15",
@@ -28,15 +34,16 @@
         "core-js": "3.6.0",
         "d3-format": "^2.0.0",
         "d3-time-format": "^3.0.0",
-        "fast-copy": "^2.1.1",
         "jsoneditor": "^9.1.9",
         "jsonrepair": "^2.0.0",
+        "lodash": "^4.17.21",
         "office-ui-fabric-core": "^11.0.0",
         "office-ui-fabric-react": "^7.156.0",
         "powerbi-visuals-api": "3.4.0",
         "powerbi-visuals-utils-dataviewutils": "2.2.1",
         "powerbi-visuals-utils-formattingutils": "^4.7.1",
         "powerbi-visuals-utils-interactivityutils": "^5.7.0",
+        "pre-commit": "^1.2.2",
         "prettier": "^2.2.1",
         "react": "^17.0.1",
         "react-ace": "^9.2.1",
@@ -52,6 +59,8 @@
         "tslint": "^5.18.0",
         "tslint-microsoft-contrib": "^6.2.0",
         "typescript": "3.6.3",
+        "typescript-json-schema": "^0.50.0",
+        "uuid": "^8.3.2",
         "vega": "5.19.1",
         "vega-lite": "5.0.0"
     }

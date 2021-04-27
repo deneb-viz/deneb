@@ -184,7 +184,6 @@ const visualSlice = createSlice({
             );
         },
         toggleAutoApply: (state) => {
-            // TODO: some logic needed here to prevent in some situations
             state.autoApply = !state.autoApply;
         },
         updateSelectedOperation: (
@@ -202,6 +201,9 @@ const visualSlice = createSlice({
         },
         fourd3d3d: (state, action: PayloadAction<boolean>) => {
             state.fourd3d3d = action.payload;
+        },
+        updateExportDialog: (state, action: PayloadAction<boolean>) => {
+            state.isExportDialogVisible = action.payload;
         }
     }
 });
@@ -220,6 +222,7 @@ export const {
     updateDataset,
     updateDataViewFlags,
     updateEditorPaneSize,
+    updateExportDialog,
     updateInterfaceType,
     updateSpec,
     visualConstructor,

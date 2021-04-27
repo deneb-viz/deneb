@@ -10,6 +10,7 @@ import { commandService, renderingService } from '../../services';
 import DataProcessingRouter from '../DataProcessingRouter';
 import EditorPaneContent from './EditorPaneContent';
 import NewVisualDialog from '../create/NewVisualDialog';
+import ExportVisualDialog from '../export/ExportVisualDialog';
 import { IKeyboardShortcut } from '../../types';
 
 // Hotkey assignment for editor UI
@@ -28,6 +29,11 @@ const options: Options = { enableOnTags: ['INPUT', 'SELECT', 'TEXTAREA'] },
         {
             keys: 'ctrl+alt+r',
             command: () => commandService.repairFormatJson(),
+            options
+        },
+        {
+            keys: 'ctrl+alt+e',
+            command: () => commandService.createExportableTemplate(),
             options
         },
         {
@@ -68,6 +74,7 @@ const EditorInterface: React.FC = () => {
             resizablePaneDefaultWidth,
             resizablePaneWidth,
             editorPaneIsExpanded,
+            isNewDialogVisible,
             settings
         } = useSelector(state).visual,
         { editor } = settings,
@@ -121,6 +128,7 @@ const EditorInterface: React.FC = () => {
                 {editor.position === 'left' ? editorPreview : editorPane}
             </SplitPane>
             <NewVisualDialog />
+            <ExportVisualDialog />
         </div>
     );
 };

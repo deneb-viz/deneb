@@ -7,11 +7,10 @@ import ISelectionIdBuilder = powerbi.visuals.ISelectionIdBuilder;
 import {
     IDataViewService,
     IVisualDataset,
-    IVisualValueMetadata,
-    IVisualValueRow
+    IVisualValueMetadata
 } from '../types';
 import Debugger, { standardLog } from '../Debugger';
-import { selectionHandlerService } from '.';
+import { selectionHandlerService, templateService } from '.';
 
 const owner = 'DataViewService';
 
@@ -86,18 +85,24 @@ export class DataViewService implements IDataViewService {
             Debugger.log('Getting metadata for all dataView columns...');
             Debugger.log('Columns', columns);
             Debugger.log('Field Values', fieldValues);
-            columns.forEach((c) => {
+            columns.forEach((c, ci) => {
                 metadata[`${c.column.displayName}`] = {
                     ...c.column,
                     ...{
                         isColumn: !c.column.isMeasure,
-                        sourceIndex: c.sourceIndex
+                        sourceIndex: c.sourceIndex,
+                        templateMetadata: templateService.resolveVisualMetaToDatasetField(
+                            c.column
+                        )
                     }
                 };
             });
             Debugger.log('Getting data values...');
             if (hasData) {
-                const rows = [...Array(rowCount).keys()],
+                const rows = Array.apply(null, { length: rowCount }).map(
+                        Number.call,
+                        Number
+                    ),
                     values = rows.map((r, ri) => {
                         const identity = selectionIdBuilder();
                         let valueRow = {};
