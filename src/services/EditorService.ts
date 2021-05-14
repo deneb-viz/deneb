@@ -2,7 +2,7 @@ import powerbi from 'powerbi-visuals-api';
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 
 import * as ace from 'ace-builds';
-import * as Ajv from 'ajv';
+import Ajv from 'ajv';
 import * as draft06 from 'ajv/lib/refs/json-schema-draft-06.json';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-chrome';

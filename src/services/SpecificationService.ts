@@ -9,7 +9,7 @@ import Spec = Vega.Spec;
 import expressionFunction = Vega.expressionFunction;
 import * as VegaLite from 'vega-lite';
 import { TopLevelSpec } from 'vega-lite';
-import * as Ajv from 'ajv';
+import Ajv from 'ajv';
 import * as draft06 from 'ajv/lib/refs/json-schema-draft-06.json';
 import * as vegaSchema from 'vega/build/vega-schema.json';
 import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';

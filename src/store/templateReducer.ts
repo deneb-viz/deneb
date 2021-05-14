@@ -130,7 +130,13 @@ const templateSlice = createSlice({
                     (ds) => ds.key === d.key
                 );
                 if (match) {
-                    return match;
+                    return {
+                        ...match,
+                        ...{
+                            name: d.name,
+                            namePlaceholder: d.namePlaceholder
+                        }
+                    };
                 }
                 return d;
             });
