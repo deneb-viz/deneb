@@ -2,7 +2,7 @@ import powerbi from 'powerbi-visuals-api';
 import ValueTypeDescriptor = powerbi.ValueTypeDescriptor;
 import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 
-import * as Ajv from 'ajv';
+import Ajv from 'ajv';
 import { v4 as uuidv4 } from 'uuid';
 import { Spec } from 'vega';
 import { TopLevelSpec } from 'vega-lite';
@@ -26,6 +26,11 @@ import {
 } from '../schema/template-v1';
 import * as _ from 'lodash';
 import { metaVersion, vegaResources, visualMetadata } from '../config';
+import {
+    encodeDataViewFieldForSpec,
+    getEscapedReplacerPattern,
+    replaceExportTemplatePlaceholders
+} from '../util';
 
 const owner = 'TemplateService';
 
@@ -70,8 +75,11 @@ export class TemplateService implements ITemplateService {
         let usermeta = this.resolveExportUserMeta(),
             baseSpec = JSON.stringify(spec.spec);
         usermeta.dataset.forEach((ph) => {
-            const pattern = this.placeholderExportReplacerPattern(ph);
-            baseSpec = baseSpec.replace(pattern, ph.key);
+            baseSpec = replaceExportTemplatePlaceholders(
+                baseSpec,
+                ph.namePlaceholder,
+                ph.key
+            );
             delete ph.namePlaceholder;
         });
         const outSpec = _.merge(
@@ -94,7 +102,7 @@ export class TemplateService implements ITemplateService {
         let jsonSpec = specificationService.indentJson(templateToApply);
         Debugger.log('Processing placeholders...');
         (<IDenebTemplateMetadata>template?.usermeta)?.dataset?.forEach((ph) => {
-            const pattern = this.placeholderImportReplacerPattern(ph);
+            const pattern = new RegExp(getEscapedReplacerPattern(ph.key), 'g');
             jsonSpec = jsonSpec.replace(pattern, ph.suppliedObjectName);
         });
         Debugger.log('Processed template', jsonSpec);
@@ -177,10 +185,11 @@ export class TemplateService implements ITemplateService {
     resolveVisualMetaToDatasetField(
         metadata: DataViewMetadataColumn
     ): ITemplateDatasetField {
+        const encodedName = encodeDataViewFieldForSpec(metadata.displayName);
         return {
             key: metadata.queryName,
-            name: metadata.displayName,
-            namePlaceholder: metadata.displayName,
+            name: encodedName,
+            namePlaceholder: encodedName,
             description: '',
             kind: (metadata.isMeasure && 'measure') || 'column',
             type: this.resolveValueDescriptor(metadata.type)
@@ -274,38 +283,6 @@ export class TemplateService implements ITemplateService {
                 };
             })
         };
-    }
-
-    /**
-     * When importing a template, any occurrences of the supplied `IDatasetField` placeholder's
-     * `key` needs to be globally substituted with the user's choice for this placeholder. This
-     * method will create a regular expression that can be used to perform a global replace of
-     * its `key` across the string representation of the spec prior to import.
-     *
-     * @param dsf
-     * @returns
-     */
-    private placeholderImportReplacerPattern(dsf: ITemplateDatasetField) {
-        return new RegExp(
-            dsf.key.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'),
-            'g'
-        );
-    }
-
-    /**
-     * When exporting a template, any occurrences of columns or measures need to be replaced
-     * in the spec. This takes a given `ITemplateDatasetField` and creates a regular expression
-     * that can be used to perform a global replace of its `namePlaceholder` across the string
-     * representation of that spec prior to generating the JSON for export.
-     *
-     * @param dsf - dataset field (placeholder) to interrogate
-     * @returns regular expression
-     */
-    private placeholderExportReplacerPattern(dsf: ITemplateDatasetField) {
-        return new RegExp(
-            dsf.namePlaceholder.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'),
-            'g'
-        );
     }
 
     /**
