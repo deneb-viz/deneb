@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { useId } from '@uifabric/react-hooks';
 import { IIconProps } from 'office-ui-fabric-react';
 import { ActionButton } from 'office-ui-fabric-react/lib/Button';
+import { v4 as uuidv4 } from 'uuid';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';
@@ -17,9 +18,12 @@ const ImportTemplateControl: React.FC = () => {
         { visual } = root,
         { i18n } = visual,
         inputRef = React.useRef<HTMLInputElement>(null),
+        [fileKey, setFileKey] = React.useState(uuidv4()),
         handleActionClick = () => inputRef.current.click(),
         handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+            e.preventDefault();
             templateService.handleFileSelect(e.target.files);
+            setFileKey(uuidv4());
         },
         inputId = useId('importTemplate');
     return (
@@ -35,6 +39,7 @@ const ImportTemplateControl: React.FC = () => {
                 <input
                     id={inputId}
                     ref={inputRef}
+                    key={fileKey}
                     type='file'
                     onChange={handleInput}
                     accept='application/json'
