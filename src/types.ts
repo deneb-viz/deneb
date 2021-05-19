@@ -402,10 +402,6 @@ export interface ISpecificationHandlerService {
         template: Spec | TopLevelSpec
     ) => void;
     /**
-     * Get a new instance of the `TooltipHandlerService`, suitable for inclusion in a Vage or Vega-Lite view.
-     */
-    getTooltipHandler: () => TooltipHandler;
-    /**
      * For the specification and configuration in each editor, attempt to fix any simple issues that might prevent it from being
      * valid JSON. We'll also indent it if valid. If it doesn't work, we'll update the store with the error details so that we
      * can inform the user to take action.

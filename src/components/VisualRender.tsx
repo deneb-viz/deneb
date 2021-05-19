@@ -11,6 +11,7 @@ import SpecificationError from './status/SpecificationError';
 import FourD3D3D3 from '../components/editor/FourD3D3D3';
 import NewVisualPlaceholder from './create/NewVisualPlaceholder';
 import { selectionHandlerService, specificationService } from '../services';
+import { tooltip } from '../api';
 
 const VisualRender = () => {
     Debugger.log('Rendering Component: [VisualRender]...');
@@ -23,6 +24,7 @@ const VisualRender = () => {
             locale,
             settings,
             spec,
+            tooltipService,
             vegaViewport
         } = useSelector(state).visual,
         { vega } = settings,
@@ -30,9 +32,10 @@ const VisualRender = () => {
         data = { dataset: _.cloneDeep(dataset.values) },
         specification = _.cloneDeep(spec.spec),
         config = specificationService.getInitialConfig(),
-        tooltip =
-            visualFeatures.tooltipHandler &&
-            specificationService.getTooltipHandler(),
+        tooltipHandler = tooltip.getTooltipHandler(
+            settings.vega.enableTooltips,
+            tooltipService
+        ),
         renderMode = vega.renderMode as Vega.Renderers,
         signalListeners: SignalListeners = {
             __select__: selectionHandlerService.handleDataPoint,
@@ -66,7 +69,7 @@ const VisualRender = () => {
                             actions={false}
                             width={width}
                             height={height}
-                            tooltip={tooltip}
+                            tooltip={tooltipHandler}
                             config={config}
                             signalListeners={signalListeners}
                             formatLocale={formatLocale}
@@ -87,7 +90,7 @@ const VisualRender = () => {
                             actions={false}
                             width={width}
                             height={height}
-                            tooltip={tooltip}
+                            tooltip={tooltipHandler}
                             config={config}
                             signalListeners={signalListeners}
                             formatLocale={formatLocale}

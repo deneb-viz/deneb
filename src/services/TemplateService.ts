@@ -26,11 +26,7 @@ import {
 } from '../schema/template-v1';
 import * as _ from 'lodash';
 import { metaVersion, vegaResources, visualMetadata } from '../config';
-import {
-    encodeDataViewFieldForSpec,
-    getEscapedReplacerPattern,
-    replaceExportTemplatePlaceholders
-} from '../util';
+import * as api from '../api';
 
 const owner = 'TemplateService';
 
@@ -75,7 +71,7 @@ export class TemplateService implements ITemplateService {
         let usermeta = this.resolveExportUserMeta(),
             baseSpec = JSON.stringify(spec.spec);
         usermeta.dataset.forEach((ph) => {
-            baseSpec = replaceExportTemplatePlaceholders(
+            baseSpec = api.template.replaceExportTemplatePlaceholders(
                 baseSpec,
                 ph.namePlaceholder,
                 ph.key
@@ -102,7 +98,10 @@ export class TemplateService implements ITemplateService {
         let jsonSpec = specificationService.indentJson(templateToApply);
         Debugger.log('Processing placeholders...');
         (<IDenebTemplateMetadata>template?.usermeta)?.dataset?.forEach((ph) => {
-            const pattern = new RegExp(getEscapedReplacerPattern(ph.key), 'g');
+            const pattern = new RegExp(
+                api.template.getEscapedReplacerPattern(ph.key),
+                'g'
+            );
             jsonSpec = jsonSpec.replace(pattern, ph.suppliedObjectName);
         });
         Debugger.log('Processed template', jsonSpec);
@@ -185,7 +184,9 @@ export class TemplateService implements ITemplateService {
     resolveVisualMetaToDatasetField(
         metadata: DataViewMetadataColumn
     ): ITemplateDatasetField {
-        const encodedName = encodeDataViewFieldForSpec(metadata.displayName);
+        const encodedName = api.dataView.encodeFieldForSpec(
+            metadata.displayName
+        );
         return {
             key: metadata.queryName,
             name: encodedName,

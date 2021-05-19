@@ -1,11 +1,10 @@
-import {
-    getEscapedReplacerPattern,
-    getExportFieldTokenPatterns,
-    replaceTemplateFieldWithToken,
-    replaceExportTemplatePlaceholders
-} from '../../src/util/template';
+import { template } from '../../src/api';
+import getEscapedReplacerPattern = template.getEscapedReplacerPattern;
+import getExportFieldTokenPatterns = template.getExportFieldTokenPatterns;
+import replaceTemplateFieldWithToken = template.replaceTemplateFieldWithToken;
+import replaceExportTemplatePlaceholders = template.replaceExportTemplatePlaceholders;
 
-describe('Utils: Template', () => {
+describe('API: Template', () => {
     describe('getEscapedReplacerPattern', () => {
         it('Simple Value', () => {
             const value = 'Simple';

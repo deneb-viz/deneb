@@ -22,7 +22,6 @@ import {
     specEditorService,
     templateService
 } from '.';
-import { TooltipHandlerService } from '../services/TooltipHandlerService';
 import store from '../store';
 import { updateSpec, updateFixStatus } from '../store/visualReducer';
 import {
@@ -221,16 +220,6 @@ export class SpecificationService implements ISpecificationHandlerService {
         );
         specEditorService.setText(jsonSpec);
         configEditorService.setText(jsonConfig);
-    }
-
-    @standardLog()
-    getTooltipHandler() {
-        const { settings, tooltipService } = store.getState().visual,
-            { vega } = settings;
-        return (
-            vega.enableTooltips &&
-            new TooltipHandlerService(tooltipService).call
-        );
     }
 
     @standardLog()

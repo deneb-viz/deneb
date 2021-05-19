@@ -11,7 +11,7 @@ import {
 } from '../types';
 import Debugger, { standardLog } from '../Debugger';
 import { selectionHandlerService, templateService } from '.';
-import { encodeDataViewFieldForSpec } from '../util';
+import * as api from '../api';
 
 const owner = 'DataViewService';
 
@@ -88,7 +88,7 @@ export class DataViewService implements IDataViewService {
             Debugger.log('Field Values', fieldValues);
             columns.forEach((c, ci) => {
                 metadata[
-                    `${encodeDataViewFieldForSpec(c.column.displayName)}`
+                    `${api.dataView.encodeFieldForSpec(c.column.displayName)}`
                 ] = {
                     ...c.column,
                     ...{
@@ -117,7 +117,7 @@ export class DataViewService implements IDataViewService {
                                 value = base;
                             if (c?.column.roles?.dataset) {
                                 valueRow[
-                                    encodeDataViewFieldForSpec(
+                                    api.dataView.encodeFieldForSpec(
                                         c.column.displayName
                                     )
                                 ] = value;
