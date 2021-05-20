@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { Separator } from 'office-ui-fabric-react';
+import { Separator } from '@fluentui/react/lib/Separator';
 
 import Debugger from '../../Debugger';
 import ProviderSettings from './ProviderSettings';

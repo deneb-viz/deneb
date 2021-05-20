@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
 
-import { useId } from '@uifabric/react-hooks';
-import { IconButton, IIconProps } from 'office-ui-fabric-react';
+import { useId } from '@fluentui/react-hooks';
+import { IconButton } from '@fluentui/react/lib/Button';
+import { IIconProps } from '@fluentui/react/lib/Icon';
 
 import Debugger from '../../Debugger';
 import {

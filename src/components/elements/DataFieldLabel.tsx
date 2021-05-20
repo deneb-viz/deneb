@@ -1,6 +1,7 @@
 import * as React from 'react';
 
-import { Label, Stack } from 'office-ui-fabric-react';
+import { Label } from '@fluentui/react/lib/Label';
+import { Stack } from '@fluentui/react/lib/Stack';
 
 import Debugger from '../../Debugger';
 import { IDataFieldLabelProps } from '../../types';

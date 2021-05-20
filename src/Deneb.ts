@@ -2,7 +2,6 @@ import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import './../style/visual.less';
 import powerbi from 'powerbi-visuals-api';
-import 'office-ui-fabric-core/dist/css/fabric.min.css';
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import IVisual = powerbi.extensibility.visual.IVisual;
@@ -17,7 +16,8 @@ import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { loadTheme, initializeIcons } from 'office-ui-fabric-react';
+import { initializeIcons } from '@fluentui/react'
+import { loadTheme } from '@fluentui/react/lib/Styling';
 
 import { theme } from './config';
 import Debugger, { standardLog } from './Debugger';

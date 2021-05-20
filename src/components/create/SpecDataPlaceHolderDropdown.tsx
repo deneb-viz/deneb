@@ -5,8 +5,8 @@ import {
     Dropdown,
     IDropdownOption,
     IDropdownProps
-} from 'office-ui-fabric-react/lib/Dropdown';
-import { Icon, IconButton, Label, Stack } from 'office-ui-fabric-react';
+} from '@fluentui/react/lib/Dropdown';
+import { Icon } from '@fluentui/react/lib/Icon';
 
 import Debugger from '../../Debugger';
 import { templateService } from '../../services';

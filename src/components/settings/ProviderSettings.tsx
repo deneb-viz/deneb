@@ -1,7 +1,10 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
-import { Text } from 'office-ui-fabric-react';
-import { ChoiceGroup, IChoiceGroupOption } from 'office-ui-fabric-react';
+import { Text } from '@fluentui/react/lib/Text';
+import {
+    ChoiceGroup,
+    IChoiceGroupOption
+} from '@fluentui/react/lib/ChoiceGroup';
 
 import Debugger from '../../Debugger';
 import { commandService } from '../../services';

@@ -19,16 +19,14 @@ import {
     ITextFieldStyles,
     IDetailsListStyles,
     IStyleSet,
-    IPivotStyles
-} from '@fluentui/react';
-
-import { theme } from './theme';
-import {
+    IPivotStyles,
     IButtonStyles,
     ICommandBarStyles,
     ISeparatorStyles,
     ITextStyles
-} from 'office-ui-fabric-react';
+} from '@fluentui/react';
+
+import { theme } from './theme';
 
 export {
     actionButtonStyles,

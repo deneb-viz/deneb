@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
 
-import { Text } from 'office-ui-fabric-react/lib/Text';
+import { Text } from '@fluentui/react/lib/Text';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';

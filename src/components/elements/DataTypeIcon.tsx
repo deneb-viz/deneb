@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { IconButton, Label, Stack } from 'office-ui-fabric-react';
+import { IconButton } from '@fluentui/react/lib/Button';
 
 import Debugger from '../../Debugger';
 import { templateService } from '../../services';

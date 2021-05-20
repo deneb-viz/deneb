@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
-import { FontIcon, Text, TooltipHost } from 'office-ui-fabric-react';
+import { FontIcon } from '@fluentui/react/lib/Icon';
+import { Text } from '@fluentui/react/lib/Text';
+import { TooltipHost } from '@fluentui/react/lib/Tooltip';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';

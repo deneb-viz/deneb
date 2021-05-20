@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
-import { Text, Stack, Label } from 'office-ui-fabric-react';
+import { Label } from '@fluentui/react/lib/Label';
+import { Stack } from '@fluentui/react/lib/Stack';
+import { Text } from '@fluentui/react/lib/Text';
 
 import Debugger from '../../Debugger';
 import { choiceStackTokens } from '../../config/styles';

@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
 
-import { Stack, Text } from 'office-ui-fabric-react';
-import { PrimaryButton } from 'office-ui-fabric-react/lib/Button';
+import { Stack } from '@fluentui/react/lib/Stack';
+import { Text } from '@fluentui/react/lib/Text';
+import { PrimaryButton } from '@fluentui/react/lib/Button';
 
 import Debugger from '../../Debugger';
 import {

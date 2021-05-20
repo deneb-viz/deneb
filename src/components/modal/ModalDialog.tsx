@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
 
-import { useId } from '@uifabric/react-hooks';
-import { Modal } from 'office-ui-fabric-react';
+import { useId } from '@fluentui/react-hooks';
+import { Modal } from '@fluentui/react/lib/Modal';
 
 import Debugger from '../../Debugger';
 import { modalDialogContentStyles } from '../../config/styles';

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Pivot, PivotItem } from '@fluentui/react-tabs';
+import { Pivot, PivotItem } from '@fluentui/react';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';

@@ -2,7 +2,9 @@ import powerbi from 'powerbi-visuals-api';
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 
 import * as React from 'react';
-import { Stack, Text, Separator } from 'office-ui-fabric-react';
+import { Stack } from '@fluentui/react/lib/Stack';
+import { Separator } from '@fluentui/react/lib/Separator';
+import { Text } from '@fluentui/react/lib/Text';
 
 import Debugger from '../../Debugger';
 import {

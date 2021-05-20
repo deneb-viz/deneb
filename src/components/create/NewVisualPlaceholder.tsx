@@ -3,7 +3,9 @@ import EditMode = powerbi.EditMode;
 
 import * as React from 'react';
 import { useSelector } from 'react-redux';
-import { Stack, Text, Separator } from 'office-ui-fabric-react';
+import { Separator } from '@fluentui/react/lib/Separator';
+import { Stack } from '@fluentui/react/lib/Stack';
+import { Text } from '@fluentui/react/lib/Text';
 
 import Debugger from '../../Debugger';
 import {

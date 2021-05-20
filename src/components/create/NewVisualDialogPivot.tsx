@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Pivot, PivotItem, IPivotStyles } from '@fluentui/react-tabs';
-import { IStyleSet } from 'office-ui-fabric-react/lib/Styling';
+import { Pivot, PivotItem, IPivotStyles } from '@fluentui/react/lib/Pivot';
+import { IStyleSet } from '@fluentui/react/lib/Styling';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';

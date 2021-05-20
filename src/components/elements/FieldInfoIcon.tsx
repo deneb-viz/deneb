@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { IconButton } from 'office-ui-fabric-react';
+import { IconButton } from '@fluentui/react/lib/Button';
 
 import Debugger from '../../Debugger';
 import { IFieldInfoIconProps } from '../../types';

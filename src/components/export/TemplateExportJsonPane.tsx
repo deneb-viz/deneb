@@ -2,13 +2,11 @@ import * as React from 'react';
 import { useSelector } from 'react-redux';
 import * as _ from 'lodash';
 
-import { Stack } from 'office-ui-fabric-react/lib/Stack';
-import { Text } from 'office-ui-fabric-react/lib/Text';
-import {
-    ITextFieldStyles,
-    TextField
-} from 'office-ui-fabric-react/lib/TextField';
-import { IconButton, IIconProps } from 'office-ui-fabric-react';
+import { Stack } from '@fluentui/react/lib/Stack';
+import { Text } from '@fluentui/react/lib/Text';
+import { ITextFieldStyles, TextField } from '@fluentui/react/lib/TextField';
+import { IconButton } from '@fluentui/react/lib/Button';
+import { IIconProps } from '@fluentui/react/lib/Icon';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';

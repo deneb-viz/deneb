@@ -2,11 +2,8 @@ import * as React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import * as _ from 'lodash';
 
-import {
-    ITextFieldProps,
-    TextField
-} from 'office-ui-fabric-react/lib/TextField';
-import { IStackTokens, Stack } from 'office-ui-fabric-react/lib/Stack';
+import { ITextFieldProps, TextField } from '@fluentui/react/lib/TextField';
+import { IStackTokens, Stack } from '@fluentui/react/lib/Stack';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';
@@ -14,7 +11,7 @@ import { updateExportTemplatePropertyBySelector } from '../../store/templateRedu
 import { editorDefaults } from '../../config';
 import { ICappedTextFieldProps } from '../../types';
 import FieldInfoIcon from './FieldInfoIcon';
-import { IRenderFunction } from '@uifabric/utilities';
+import { IRenderFunction } from '@fluentui/react/lib/Utilities';
 
 const stackTokens: IStackTokens = {
     childrenGap: 4

@@ -1,29 +1,16 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
 
-import { Text } from 'office-ui-fabric-react/lib/Text';
-import {
-    Stack,
-    IStackProps,
-    IStackStyles
-} from 'office-ui-fabric-react/lib/Stack';
-
 import {
     DetailsList,
     DetailsListLayoutMode,
-    Selection,
     IColumn,
     SelectionMode,
     IDetailsHeaderProps
-} from 'office-ui-fabric-react/lib/DetailsList';
-import {
-    ITextFieldStyles,
-    TextField
-} from 'office-ui-fabric-react/lib/TextField';
+} from '@fluentui/react/lib/DetailsList';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';
-import ExportDataFieldDefinition from './ExportDataFieldDefinition';
 import { ITemplateDatasetField } from '../../schema/template-v1';
 
 import DataTypeIcon from '../elements/DataTypeIcon';

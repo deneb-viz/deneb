@@ -1,6 +1,9 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
-import { CommandBar, ICommandBarItemProps } from 'office-ui-fabric-react';
+import {
+    CommandBar,
+    ICommandBarItemProps
+} from '@fluentui/react/lib/CommandBar';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';
