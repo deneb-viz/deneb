@@ -21,10 +21,11 @@ import { specificationService } from '.';
 import { editorDefaults } from '../config';
 import {
     IEditorService,
-    ITableColumnMetadata,
     TEditorOperation
 } from '../types';
 import store from '../store';
+import { dataset } from '../api'
+import ITableColumnMetadata = dataset.ITableColumnMetadata;
 
 const owner = 'EditorService';
 

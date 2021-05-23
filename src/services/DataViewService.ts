@@ -5,13 +5,14 @@ import DataViewCategorical = powerbi.DataViewCategorical;
 import ISelectionIdBuilder = powerbi.visuals.ISelectionIdBuilder;
 
 import {
-    IDataViewService,
-    IVisualDataset,
-    IVisualValueMetadata
+    IDataViewService
 } from '../types';
 import Debugger, { standardLog } from '../Debugger';
 import { selectionHandlerService, templateService } from '.';
 import * as api from '../api';
+import IVisualDataset = api.dataset.IVisualDataset;
+import IVisualValueMetadata = api.dataset.IVisualValueMetadata;
+
 
 const owner = 'DataViewService';
 
@@ -54,10 +55,7 @@ export class DataViewService implements IDataViewService {
     }
 
     @standardLog({ profile: true, owner })
-    getMappedDataset(
-        categorical: DataViewCategorical,
-        selectionIdBuilder: () => ISelectionIdBuilder
-    ): IVisualDataset {
+    getMappedDataset(categorical: DataViewCategorical): IVisualDataset {
         Debugger.log('Mapping data view into visual dataset...');
         Debugger.log('Initialising empty dataset...');
         const categories = categorical?.categories,
@@ -107,7 +105,6 @@ export class DataViewService implements IDataViewService {
                         Number
                     ),
                     values = rows.map((r, ri) => {
-                        const identity = selectionIdBuilder();
                         let valueRow = {};
                         columns.forEach((c, ci) => {
                             const val = fieldValues[ci][ri],
@@ -122,25 +119,19 @@ export class DataViewService implements IDataViewService {
                                     )
                                 ] = value;
                             }
-                            switch (true) {
-                                case c?.column.isMeasure: {
-                                    identity.withMeasure(c.column.queryName);
-                                    break;
-                                }
-                                default: {
-                                    identity.withCategory(
-                                        categories[c?.sourceIndex],
-                                        ri
-                                    );
-                                }
-                            }
                         });
+                        const identity = api.selection.createSelectionId(
+                            metadata,
+                            categories,
+                            ri
+                        );
                         return {
                             ...{
-                                __identity__: identity.createSelectionId(),
+                                __identity__: identity,
                                 __key__: selectionHandlerService.getSidString(
-                                    identity.createSelectionId()
-                                )
+                                    identity
+                                ),
+                                identityIndex: ri
                             },
                             ...valueRow
                         };

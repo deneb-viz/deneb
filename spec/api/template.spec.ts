@@ -1,4 +1,4 @@
-import { template } from '../../src/api';
+import * as template from '../../src/api/template';
 import getEscapedReplacerPattern = template.getEscapedReplacerPattern;
 import getExportFieldTokenPatterns = template.getExportFieldTokenPatterns;
 import replaceTemplateFieldWithToken = template.replaceTemplateFieldWithToken;

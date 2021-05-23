@@ -4,17 +4,45 @@ Internal API methods for Deneb.
 
 ## API Reference
 
+-   [dataset](#dataset)
 -   [dataView](#dataView)
 -   [event](#event)
 -   [selection](#selection)
+-   [store](#store)
 -   [template](#template)
 -   [tooltip](#tooltip)
 
 ---
 
+## dataset
+
+> dataset.**getDataset**()
+
+Get current processed dataset (metadata and values) from Deneb's Redux store.
+
+> dataset.**getMetadata**()
+
+Get all metadata for current processed dataset from Deneb's Redux store.
+
+> dataset.**getMetadataByKeys**(_keys_)
+
+Get a reduced set of metadata based on an array of key names from Deneb's Redux store.
+
+> dataset.**getValues**()
+
+Get all values (excluding metadata) for current processed dataset from Deneb's Redux store.
+
+> dataset.**getValueForDatum**(_metadata_, _datum_)
+
+For the supplied (subset of) _metadata_ and _datum_ attempt to find the first matching row in the visual's processed dataset for this combination.
+
 ## dataView
 
 Functions and helpers for working with the visual data view.
+
+> dataView.**getCategoryColumns**()
+
+Retrieve all `powerbi.DataViewCategoryColumn[]` entries from the visual's data view, which are available from Deneb's Redux store.
 
 > dataView.**encodeDataViewFieldForSpec**(_displayName_)
 
@@ -31,9 +59,41 @@ For the supplied event, returns an [x, y] array of mouse coordinates.
 
 ## selection
 
+> selection.**createSelectionId**(_metadata_, _categories_, _rowIndex_)
+
+For the supplied (subset of) _metadata_, Power BI data view _categories_ and _rowIndex_, attempt to generate a valid `powerbi.visuals.ISelectionId`.
+
+Will return a `null` selector if one cannot be resolved.
+
+> selection.**getSelectionIdBuilder**()
+
+Get a new instance of a `powerbi.visuals.ISelectionIdBuilder` from Deneb's Redux store, so that we can use to to create selection IDs for data points.
+
+> selection.**resolveDatumForKeywords**()
+
+For a given datum, ensure that the `selectionKeywords` are stripped out so that we can get actual fields and values assigned to a datum.
+
+> selection.**resolveDatumForMetadata**(_metadata_, _datum_)
+
+For a given (subset of) _metadata_ and _datum_, create an `IVisualValueRow` that can be used to search for matching values in the visual's dataset.
+
+> selection.**resolveDatumValueForMetadataColumn**(_column_, _value_)
+
+Because Vega's tooltip channel supplies datum field values as strings, for a supplied metadata _column_ and _datum_, attempt to resolve it to a pure type, so that we can try to use its value to reconcile against the visual's dataset in order to resolve selection IDs.
+
 > selection.**selectionKeywords**
 
 Array of reserved keywords used to handle selection IDs from the visual's default data view.
+
+> selection.**IVegaViewDatum**
+
+Interface specifying a flexible key/value pair object, which is supplied from Vega's tooltip handler and usually casted as `any`.
+
+## store
+
+> store.**getState**()
+
+Returns the current state from Deneb's Redux store.
 
 ## template
 
@@ -81,17 +141,13 @@ Functions and helpers for managing tooltip display.
 
 Get a new custom Vega tooltip handler for Power BI. If the supplied setting is enabled, will return a `resolveTooltipContent` handler for the supplied _tooltipService_.
 
-> tooltip.**ITooltipDatum**
-
-Interface specifying a flexible key/value pair object, which is supplied from Vega's tooltip handler and usually casted as `any`.
-
 > 🔒 tooltip.**extractTooltipDataItemsFromObject**(_tooltip_)
 
 For a given Vega `tooltip` object (key-value pairs), extract any non-reserved keys, and structure suitably as an array of standard Power BI tooltip items (`VisualTooltipDataItem[]`).
 
-> 🔒 tooltip.**getTooltipIdentity**(_datum_)
+> 🔒 tooltip.**getTooltipIdentity**(_datum_, _tooltip_)
 
-For a supplied `datum` object from a Vega tooltip handler, attempt to identify a valid Power BI selection ID that can be added to the tooltip call for any report pages that Power BI may have for the selector.
+For a supplied `datum` object from a Vega tooltip handler, attempt to identify a valid Power BI selection ID that can be added to the tooltip call for any report pages that Power BI may have for the selector. If there is no explicit identity discoverable in the datum, then it will attempt to create a selection ID from the dataset and data view based on known values.
 
 Returns single item array containing valid `ISelectionId` (or `null` if a selection ID cannot be resolved).
 

@@ -16,7 +16,7 @@ import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { initializeIcons } from '@fluentui/react'
+import { initializeIcons } from '@fluentui/react';
 import { loadTheme } from '@fluentui/react/lib/Styling';
 
 import { theme } from './config';
@@ -188,12 +188,13 @@ export class Deneb implements IVisual {
                 );
                 if (!dataLoadingService.canFetchMore) {
                     store.dispatch(
-                        updateDataset(
-                            dataViewService.getMappedDataset(
-                                options.dataViews[0]?.categorical,
-                                this.host.createSelectionIdBuilder
+                        updateDataset({
+                            categories:
+                                options.dataViews[0]?.categorical?.categories,
+                            dataset: dataViewService.getMappedDataset(
+                                options.dataViews[0]?.categorical
                             )
-                        )
+                        })
                     );
                     store.dispatch(
                         syncExportTemplateDataset(

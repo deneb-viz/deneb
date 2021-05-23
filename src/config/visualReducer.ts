@@ -10,6 +10,7 @@ const visualReducer: IVisualSliceState = {
     allowInteractions: false,
     autoApply: false,
     canAutoApply: true,
+    categories: [],
     dataset: dataViewService.getEmptyDataset(),
     dataProcessingStage: 'Initial',
     dataRowsLoaded: 0,
@@ -41,6 +42,7 @@ const visualReducer: IVisualSliceState = {
     resizablePaneExpandedWidth: null,
     resizablePaneWidth: null,
     selectedOperation: 'spec',
+    selectionIdBuilder: null,
     selectionManager: null,
     spec: {
         status: 'new',

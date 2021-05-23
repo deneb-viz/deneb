@@ -16,6 +16,7 @@ import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 import VisualObjectInstancesToPersist = powerbi.VisualObjectInstancesToPersist;
 import DataViewPropertyValue = powerbi.DataViewPropertyValue;
 import ValueTypeDescriptor = powerbi.ValueTypeDescriptor;
+import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 
 import JSONEditor from 'jsoneditor';
 import { TopLevelSpec } from 'vega-lite';
@@ -30,6 +31,7 @@ import {
     TDatasetFieldType
 } from './schema/template-v1';
 import { ErrorObject } from 'ajv';
+import { IVisualDataset } from './api/dataset';
 
 /**
  * =====
@@ -175,10 +177,7 @@ export interface IDataViewService {
      * @param table - table data from visual data view.
      * @param selectionIdBuilder - instance of builder, used for creating selection ID for each table row.
      */
-    getMappedDataset: (
-        categorical: DataViewCategorical,
-        selectionIdBuilder: () => ISelectionIdBuilder
-    ) => IVisualDataset;
+    getMappedDataset: (categorical: DataViewCategorical) => IVisualDataset;
     /**
      * Validates the data view, to confirm that we can get past the spash screen
      *
@@ -520,6 +519,7 @@ export interface IVisualSliceState {
     allowInteractions: boolean;
     autoApply: boolean;
     canAutoApply: boolean;
+    categories: DataViewCategoryColumn[];
     dataset: IVisualDataset;
     dataProcessingStage: TDataProcessingStage;
     dataRowsLoaded: number;
@@ -543,6 +543,7 @@ export interface IVisualSliceState {
     resizablePaneWidth: number;
     settings: VisualSettings;
     selectedOperation: TEditorOperation;
+    selectionIdBuilder: () => ISelectionIdBuilder;
     selectionManager: ISelectionManager;
     spec: ICompiledSpec;
     themeColors: string[];
@@ -577,6 +578,11 @@ export interface ITemplateSliceState {
 }
 
 // Action Payloads...
+export interface IVisualDatasetUpdatePayload {
+    categories: DataViewCategoryColumn[];
+    dataset: IVisualDataset;
+}
+
 export interface ISpecDataPlaceHolderDropdownProps {
     datasetField: ITemplateDatasetField;
 }
@@ -630,47 +636,7 @@ export interface ITemplateExportFieldUpdatePayload {
     value: string;
 }
 
-/**
- * Processed visual data and column metadata for rendering
- */
-export interface IVisualDataset {
-    // All column information that we need to know about (including generated raw values)
-    metadata: IVisualValueMetadata;
-    // Raw data values for each column
-    values: IVisualValueRow[];
-}
 
-/**
- * The structure of our visual dataset column metadata
- */
-export interface IVisualValueMetadata {
-    // Column name & metadata
-    [key: string]: ITableColumnMetadata;
-}
-
-/**
- * Custom data role metadata, needed to manage functionality within the editors
- */
-export interface ITableColumnMetadata extends DataViewMetadataColumn {
-    // Flag to confirm if this is a column, according to the data model
-    isColumn: boolean;
-    // Original dataView index (from categories or values)
-    sourceIndex: number;
-    // Template export object (which allos customisation from base, while preserving)
-    templateMetadata: ITemplateDatasetField;
-}
-
-/**
- * Represents each values entry from the dataView
- */
-export interface IVisualValueRow {
-    // Allow key/value pairs for any objects added to the content data role
-    [key: string]: any;
-    // Selection ID for row
-    __identity__: ISelectionId;
-    // String representation of Selection ID
-    __key__: string;
-}
 
 export interface IKeyboardShortcut {
     keys: string;

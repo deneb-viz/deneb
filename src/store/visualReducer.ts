@@ -6,7 +6,6 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { dataViewService, renderingService } from '../services';
 import {
     ICompiledSpec,
-    IVisualDataset,
     IVisualUpdatePayload,
     TDataProcessingStage,
     IDataViewFlags,
@@ -14,7 +13,8 @@ import {
     IEditorPaneUpdatePayload,
     TEditorOperation,
     IFixResult,
-    IVisualSliceState
+    IVisualSliceState,
+    IVisualDatasetUpdatePayload
 } from '../types';
 import Debugger from '../Debugger';
 import { visualReducer as initialState } from '../config/visualReducer';
@@ -38,6 +38,7 @@ const visualSlice = createSlice({
                     Debugger.log('Select callback executed from visual host.');
                 }
             );
+            state.selectionIdBuilder = pl.createSelectionIdBuilder;
             state.selectionManager = selectionManager;
             state.tooltipService = pl.tooltipService;
             state.allowInteractions = pl.allowInteractions;
@@ -118,8 +119,12 @@ const visualSlice = createSlice({
         ) => {
             state.interfaceType = action.payload;
         },
-        updateDataset: (state, action: PayloadAction<IVisualDataset>) => {
-            state.dataset = action.payload;
+        updateDataset: (
+            state,
+            action: PayloadAction<IVisualDatasetUpdatePayload>
+        ) => {
+            state.categories = action.payload.categories || [];
+            state.dataset = action.payload.dataset;
             state.dataProcessingStage = 'Processed';
             state.interfaceType = renderingService.resolveInterfaceType(
                 <IVisualSliceState>state
