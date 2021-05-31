@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useSelector } from 'react-redux';
 import { createClassFromSpec, VegaLite, SignalListeners } from 'react-vega';
 import * as Vega from 'vega';
-import copy from 'fast-copy';
+import * as _ from 'lodash';
 
 import Debugger from '../Debugger';
 import { locales, visualFeatures } from '../config';
@@ -27,7 +27,8 @@ const VisualRender = () => {
         } = useSelector(state).visual,
         { vega } = settings,
         { height, width } = vegaViewport,
-        data = { dataset: copy(dataset.values) },
+        data = { dataset: _.cloneDeep(dataset.values) },
+        specification = _.cloneDeep(spec.spec),
         config = specificationService.getInitialConfig(),
         tooltip =
             visualFeatures.tooltipHandler &&
@@ -59,7 +60,7 @@ const VisualRender = () => {
                     );
                     return (
                         <VegaLite
-                            spec={spec.spec}
+                            spec={specification}
                             data={data}
                             renderer={renderMode}
                             actions={false}
@@ -76,7 +77,7 @@ const VisualRender = () => {
                 }
                 case 'vega': {
                     const VegaChart = createClassFromSpec({
-                        spec: spec.spec
+                        spec: specification
                     });
                     Debugger.log('Rendering Vega spec...', spec, data, config);
                     return (

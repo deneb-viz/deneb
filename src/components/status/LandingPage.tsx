@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { Link, Stack, Text, Separator } from 'office-ui-fabric-react';
 
 import Debugger from '../../Debugger';
-import { vegaVersions, visualMetadata, vegaResources } from '../../config';
+import { visualMetadata, vegaResources } from '../../config';
 import {
     landingVisualNameStyles,
     landingVisualDescriptionStyles,
@@ -24,7 +24,7 @@ import {
 import { state } from '../../store';
 
 const LandingPage = () => {
-    Debugger.log('Rendering component: [VisualLandingPage]');
+    Debugger.log('Rendering component: [LandingPage]');
     const root = useSelector(state),
         { i18n } = root.visual;
     return (
@@ -56,11 +56,11 @@ const LandingPage = () => {
                                     <Text styles={landingVisualVersionStyles}>
                                         {visualMetadata.version} |{' '}
                                         {i18n.getDisplayName('Provider_Vega')}:{' '}
-                                        {vegaVersions.vega} |{' '}
+                                        {vegaResources.vega.version} |{' '}
                                         {i18n.getDisplayName(
                                             'Provider_VegaLite'
                                         )}
-                                        : {vegaVersions.vegaLite}
+                                        : {vegaResources.vegaLite.version}
                                     </Text>
                                 </div>
                             </Stack.Item>

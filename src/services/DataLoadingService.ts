@@ -35,7 +35,7 @@ export class DataLoadingService implements IDataLoadingService {
         if (this.featureIsEnabled) {
             Debugger.log('Feature enabled. Attempting...');
             const dataView = options.dataViews[0],
-                rowsLoaded = dataViewService.getRowCount(dataView),
+                rowsLoaded = dataViewService.getRowCount(dataView?.categorical),
                 { dataWindowsLoaded } = store.getState().visual;
             if (
                 options.operationKind === VisualDataChangeOperationKind.Create

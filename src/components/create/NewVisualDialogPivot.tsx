@@ -6,7 +6,7 @@ import { IStyleSet } from 'office-ui-fabric-react/lib/Styling';
 import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { updateSelectedDialogProvider } from '../../store/templateReducer';
-import { TSpecProvider } from '../../types';
+import { TTemplateProvider } from '../../types';
 
 const pivotStyles: Partial<IStyleSet<IPivotStyles>> = {
     itemContainer: {
@@ -18,15 +18,16 @@ const pivotStyles: Partial<IStyleSet<IPivotStyles>> = {
 const NewVisualDialogPivot = () => {
     Debugger.log('Rendering Component: [NewVisualDialogPivot]...');
     const { i18n } = useSelector(state).visual,
-        { selectedProvider } = useSelector(state).templates,
+        { templateProvider: selectedProvider } = useSelector(state).templates,
         dispatch = useDispatch(),
         getTabId = (itemKey: string) => {
             return `new-spec-pivot-${itemKey}`;
         },
         handlePivotClick = (item: PivotItem) => {
+            Debugger.log(`${item.props.itemKey} selected. Dispatching...`);
             dispatch(
                 updateSelectedDialogProvider(
-                    item.props.itemKey as TSpecProvider
+                    item.props.itemKey as TTemplateProvider
                 )
             );
         };
@@ -34,7 +35,7 @@ const NewVisualDialogPivot = () => {
     return (
         <div className='new-spec-dialog-pivot'>
             <Pivot
-                aria-label='Separately Rendered Content Pivot Example'
+                aria-label='Template Provider Selection'
                 selectedKey={selectedProvider}
                 getTabId={getTabId}
                 styles={pivotStyles}
@@ -48,6 +49,10 @@ const NewVisualDialogPivot = () => {
                 <PivotItem
                     headerText={i18n.getDisplayName('Provider_Vega')}
                     itemKey='vega'
+                />
+                <PivotItem
+                    headerText={i18n.getDisplayName('Provider_Import')}
+                    itemKey='import'
                 />
             </Pivot>
         </div>

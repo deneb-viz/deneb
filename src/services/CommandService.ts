@@ -2,18 +2,24 @@ import * as ace from 'ace-builds';
 import Ace = ace.Ace;
 
 import Debugger, { standardLog } from '../Debugger';
-import { propertyService, specificationService } from '.';
+import { propertyService, specificationService, templateService } from '.';
 import store from '../store';
 import {
     toggleAutoApply,
     toggleEditorPane,
     fourd3d3d,
+    updateExportDialog,
     updateSelectedOperation
 } from '../store/visualReducer';
-import { updateSelectedTemplate } from '../store/templateReducer';
+import {
+    newExportTemplateMetadata,
+    updateSelectedTemplate,
+    updateTemplateExportState
+} from '../store/templateReducer';
 import {
     ICommandService,
     TEditorOperation,
+    TModalDialogType,
     TSpecProvider,
     TSpecRenderMode
 } from '../types';
@@ -85,13 +91,31 @@ export class CommandService implements ICommandService {
     }
 
     @standardLog()
-    closeNewDialog() {
+    createExportableTemplate() {
+        Debugger.log('Opening export spec dialog...');
+        Debugger.log('Flagging modal dialog for open...');
+        // TODO: this does not take the non-persisted spec, so needs tying-in with the dirty flag work (#10)
+        store.dispatch(updateExportDialog(true));
+    }
+
+    @standardLog()
+    closeModalDialog(type: TModalDialogType) {
         Debugger.log('Closing modal dialog...');
-        propertyService.updateObjectProperties(
-            propertyService.resolveObjectProperties('vega', [
-                { name: 'isNewDialogOpen', value: false }
-            ])
-        );
+        switch (type) {
+            case 'new': {
+                propertyService.updateObjectProperties(
+                    propertyService.resolveObjectProperties('vega', [
+                        { name: 'isNewDialogOpen', value: false }
+                    ])
+                );
+                break;
+            }
+            case 'export': {
+                store.dispatch(updateExportDialog(false));
+                store.dispatch(updateTemplateExportState('None'));
+                break;
+            }
+        }
     }
 
     @standardLog()

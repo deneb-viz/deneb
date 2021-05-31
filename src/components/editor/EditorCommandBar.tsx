@@ -77,26 +77,35 @@ function getItems(): ICommandBarItemProps[] {
 
 function getFarItems(): ICommandBarItemProps[] {
     Debugger.log('Getting CommandBar _farItems...');
-    const { i18n } = useSelector(state).visual,
+    const { i18n, spec } = useSelector(state).visual,
         handleNewSpec = () => commandService.createNewSpec(),
+        handleExport = () => commandService.createExportableTemplate(),
         handleSupport = () => commandService.openHelpSite();
     return [
         {
             key: 'reset',
             text: i18n.getDisplayName('Button_New'),
             iconOnly: true,
-            // This needs an ariaLabel since it's icon-only
             ariaLabel: i18n.getDisplayName('Button_New'),
             iconProps: { iconName: 'Page' },
             buttonStyles: commandBarButtonStyles,
             onClick: handleNewSpec
         },
         {
+            key: 'export',
+            text: i18n.getDisplayName('Button_Export'),
+            iconOnly: true,
+            ariaLabel: i18n.getDisplayName('Button_Export'),
+            iconProps: { iconName: 'Share' },
+            buttonStyles: commandBarButtonStyles,
+            disabled: !(spec?.status === 'valid'),
+            onClick: handleExport
+        },
+        {
             key: 'help',
             text: i18n.getDisplayName('Button_Help'),
             ariaLabel: i18n.getDisplayName('Button_Reset'),
             iconOnly: true,
-            // This needs an ariaLabel since it's icon-only
             iconProps: { iconName: 'Help' },
             buttonStyles: commandBarButtonStyles,
             onClick: handleSupport

@@ -8,7 +8,12 @@ import EditorPaneSettings from '../settings/EditorPaneSettings';
 
 const EditorOperationContainer: React.FC = () => {
     Debugger.log('Rendering Component: [EditorContainer]...');
-    const { selectedOperation } = useSelector(state).visual;
+    const {
+            selectedOperation,
+            isNewDialogVisible,
+            isExportDialogVisible
+        } = useSelector(state).visual,
+        isDialogOpen = isNewDialogVisible || isExportDialogVisible;
     return (
         <>
             <div
@@ -17,7 +22,7 @@ const EditorOperationContainer: React.FC = () => {
                     display: selectedOperation === 'spec' ? 'inherit' : 'none'
                 }}
             >
-                <Editor operation='spec' />
+                <Editor operation='spec' isDialogOpen={isDialogOpen} />
             </div>
             <div
                 className='editor-container'
@@ -25,7 +30,7 @@ const EditorOperationContainer: React.FC = () => {
                     display: selectedOperation === 'config' ? 'inherit' : 'none'
                 }}
             >
-                <Editor operation='config' />
+                <Editor operation='config' isDialogOpen={isDialogOpen} />
             </div>
             <div
                 className='settings-container'

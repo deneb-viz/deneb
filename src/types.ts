@@ -3,7 +3,7 @@ import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import DataView = powerbi.DataView;
 import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
-import DataViewTable = powerbi.DataViewTable;
+import DataViewCategorical = powerbi.DataViewCategorical;
 import ISelectionIdBuilder = powerbi.visuals.ISelectionIdBuilder;
 import ISelectionId = powerbi.visuals.ISelectionId;
 import ITooltipService = powerbi.extensibility.ITooltipService;
@@ -12,21 +12,24 @@ import ViewMode = powerbi.ViewMode;
 import EditMode = powerbi.EditMode;
 import DataViewObjects = powerbi.DataViewObjects;
 import ISelectionManager = powerbi.extensibility.ISelectionManager;
-import VisualDataRoleKind = powerbi.VisualDataRoleKind;
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 import VisualObjectInstancesToPersist = powerbi.VisualObjectInstancesToPersist;
 import DataViewPropertyValue = powerbi.DataViewPropertyValue;
+import ValueTypeDescriptor = powerbi.ValueTypeDescriptor;
 
-import * as ace from 'ace-builds';
-import Ace = ace.Ace;
 import JSONEditor from 'jsoneditor';
-import { TopLevelSpec, Config as VLConfig } from 'vega-lite';
+import { TopLevelSpec } from 'vega-lite';
 import { Config, Spec, TooltipHandler, Loader } from 'vega';
 import { Options } from 'react-hotkeys-hook';
 
 import VisualSettings from './properties/VisualSettings';
 import DataLimitSettings from './properties/DataLimitSettings';
-import { CommandService } from './services/CommandService';
+import {
+    ITemplateDatasetField,
+    IDenebTemplateMetadata,
+    TDatasetFieldType
+} from './schema/template-v1';
+import { ErrorObject } from 'ajv';
 
 /**
  * =====
@@ -38,6 +41,10 @@ import { CommandService } from './services/CommandService';
 export type TSpecRenderMode = 'svg' | 'canvas';
 // Used to constrain spec providers to supported types.
 export type TSpecProvider = 'vega' | 'vegaLite';
+// Used for creating a new specification - can either be from existing templates, or imported
+export type TTemplateProvider = TSpecProvider | 'import';
+// USed to handle which export operation we currently have open
+export type TExportOperation = 'information' | 'dataset' | 'template';
 // Used to specify the types of operatons we should have within the pivot control in the editor pane.
 export type TEditorOperation = 'spec' | 'config' | 'settings';
 // Specify the start or end of a console group for the `Debugger`.
@@ -46,12 +53,29 @@ export type TDebugMethodMarkerExtent = 'start' | 'end';
 export type TVisualInterface = 'Landing' | 'View' | 'Edit';
 // Position of editor within the interface
 export type TEditorPosition = 'left' | 'right';
+// Modal dialog type (used for specific ops handling)
+export type TModalDialogType = 'new' | 'export';
 // Stages to within the store when processing data, and therefore give us some UI hooks for the end-user.
 export type TDataProcessingStage =
     | 'Initial'
     | 'Fetching'
     | 'Processing'
     | 'Processed';
+// Stages we go through when importing a template so that the interface can respond accordingly.
+export type TTemplateImportState =
+    | 'None'
+    | 'Supplied'
+    | 'Loading'
+    | 'Validating'
+    | 'Success'
+    | 'Error';
+// Stages we go through when exporting a template so that the interface can respond accordingly.
+export type TTemplateExportState =
+    | 'None'
+    | 'Validating'
+    | 'Editing'
+    | 'Success'
+    | 'Error';
 // Template type constraints for placeholders (currently not used).
 export type TSupportedValueTypeDescriptor =
     | 'text'
@@ -103,13 +127,17 @@ export interface ICommandService {
      */
     repairFormatJson: () => void;
     /**
+     * Handle the Generate JSON Template command.
+     */
+    createExportableTemplate: () => void;
+    /**
      * Handle the Create New Spec command.
      */
     createNewSpec: () => void;
     /**
-     * Handle the necessary logic required to close down the New Sepcification dialog.
+     * Handle the necessary logic required to close down a modal dialog.
      */
-    closeNewDialog: () => void;
+    closeModalDialog: (type: TModalDialogType) => void;
     /**
      * Handle the Get Help command.
      */
@@ -131,7 +159,7 @@ export interface IDataViewService {
     /**
      * Checks for valid dataview and provides count of values.
      */
-    getRowCount: (dataView: DataView) => number;
+    getRowCount: (categorical: DataViewCategorical) => number;
     /**
      * Validates the data view, to confirm that we can get past the splash screen.
      *
@@ -148,7 +176,7 @@ export interface IDataViewService {
      * @param selectionIdBuilder - instance of builder, used for creating selection ID for each table row.
      */
     getMappedDataset: (
-        table: DataViewTable,
+        categorical: DataViewCategorical,
         selectionIdBuilder: () => ISelectionIdBuilder
     ) => IVisualDataset;
     /**
@@ -352,7 +380,7 @@ export interface ISpecificationHandlerService {
      * Take user input (specification and configuration), apply any specified integration features to them (such as selection
      * and context menu) and attempt to parse as a valid Vega or Vega-Lite spec for rendering later on.
      */
-    parse: () => void;
+    parseActiveSpec: () => void;
     /**
      * Resolve the spec/config and pass to the `PropertyService` for persistence.
      */
@@ -371,7 +399,7 @@ export interface ISpecificationHandlerService {
      */
     createFromTemplate: (
         provider: TSpecProvider,
-        template: IVegaLiteTemplate | IVegaTemplate
+        template: Spec | TopLevelSpec
     ) => void;
     /**
      * Get a new instance of the `TooltipHandlerService`, suitable for inclusion in a Vage or Vega-Lite view.
@@ -389,9 +417,20 @@ export interface ISpecificationHandlerService {
      */
     getInitialConfig: () => void;
     /**
+     * Gets the `config` from our visual objects and parses it to JSON.
+     */
+    getParsedConfigFromSettings: () => Config;
+    /**
      * Apply any custom expressions that we have written (e.g. formatting) to the specification prior to rendering.
      */
     registerCustomExpressions: () => void;
+    /**
+     * For the supplied spec, parse it to determine which provider we should use when importing it (precedence is Vega-Lite),
+     * and will then fall-back to Vega if VL is not valid.
+     *
+     * @param spec - specification to analyse
+     */
+    determineProviderFromSpec: (spec: Spec | TopLevelSpec) => TSpecProvider;
 }
 
 /**
@@ -401,22 +440,65 @@ export interface ITemplateService {
     /**
      * For a supplied template, substitute placeholder values and return a stringified representation of the object.
      */
-    getReplacedTemplate: (
-        template: IVegaTemplate | IVegaLiteTemplate
-    ) => string;
+    getReplacedTemplate: (template: Spec | TopLevelSpec) => string;
     /**
      * Enumerate a template's placeholders and confirm they all have values supplied by the user. If a template doesn't have any
      * placeholders then this will also be regarded as fulfilled.
      *
      * @param template - the template object to inspect.
      */
-    getPlaceholderResolutionStatus: (template: ITemplateBase) => boolean;
+    getPlaceholderResolutionStatus: (template: Spec | TopLevelSpec) => boolean;
     /**
      * Supply assistive text to a placeholder, based on whether it allows columns, measures or both.
      *
      * @param placeholder - the placeholder to interrogate.
      */
-    getPlaceholderDropdownText: (placeholder: ISpecDataPlaceholder) => string;
+    getPlaceholderDropdownText: (datasetField: ITemplateDatasetField) => string;
+    /**
+     * Attempt to load the selected template JSON file and validate it.
+     *
+     * @param files - the `FileList` object to attempt load from.
+     */
+    handleFileSelect: (files: FileList) => void;
+    /**
+     * For a given column or measure (or template placeholder), resolve the UI icon for its data type.
+     *
+     * @param type - the data type to resolve.
+     */
+    resolveTypeIcon: (type: TDatasetFieldType) => string;
+    /**
+     * For a given column or measure (or template placeholder), resolve the UI tooltip/title text for its data type.
+     *
+     * @param type - the data type to resolve.
+     */
+    resolveTypeIconTitle: (type: TDatasetFieldType) => string;
+    /**
+     * For a given column or measure (or template placeholder), resolve its type against the Power BI value descriptor.
+     *
+     * @param type - the data type to resolve.
+     */
+    resolveValueDescriptor: (type: ValueTypeDescriptor) => TDatasetFieldType;
+    /**
+     * Checks to see if current spec is valid and updates store state for UI accordingly.
+     */
+    validateSpecificationForExport: () => void;
+    /**
+     * For a given `DataViewMetadataColumn`, produces a new `ITemplateDatasetField` object that can be used for templating
+     * purposes.
+     *
+     * @param metadata data view column to map
+     */
+    resolveVisualMetaToDatasetField: (
+        metadata: DataViewMetadataColumn
+    ) => ITemplateDatasetField;
+    /**
+     * Combines spec, config and specified metadata to produce a valid JSON template for export.
+     */
+    getExportTemplate: () => string;
+    /**
+     * Instantiates a new object for export template metadata, ready for population.
+     */
+    newExportTemplateMetadata: () => IDenebTemplateMetadata;
 }
 
 /**
@@ -456,6 +538,7 @@ export interface IVisualSliceState {
     interfaceType: TVisualInterface;
     isInFocus: boolean;
     isNewDialogVisible: boolean;
+    isExportDialogVisible: boolean;
     launchUrl: (url: string) => void;
     loader: Loader;
     locale: string;
@@ -479,42 +562,27 @@ export interface IVisualSliceState {
  */
 export interface ITemplateSliceState {
     selectedTemplateIndex: number;
-    templateToApply: IVegaTemplate | IVegaLiteTemplate;
-    allPlaceholdersSupplied: boolean;
-    selectedProvider: TSpecProvider;
-    vegaLite: IVegaLiteTemplate[];
-    vega: IVegaTemplate[];
+    templateFile: File;
+    templateImportState: TTemplateImportState;
+    templateExportState: TTemplateExportState;
+    templateImportErrorMessage: string;
+    templateExportErrorMessage: string;
+    templateSchemaErrors: ErrorObject[];
+    templateFileRawContent: string;
+    templateToApply: Spec | TopLevelSpec;
+    templateExportMetadata: IDenebTemplateMetadata;
+    allImportCriteriaApplied: boolean;
+    allExportCriteriaApplied: boolean;
+    templateProvider: TTemplateProvider;
+    specProvider: TSpecProvider;
+    selectedExportOperation: TExportOperation;
+    vegaLite: TopLevelSpec[];
+    vega: Spec[];
 }
 
 // Action Payloads...
-
-export interface ITemplateBase {
-    name: string;
-    description: string;
-    placeholders?: ISpecDataPlaceholder[];
-}
-
-export interface IVegaTemplate extends ITemplateBase {
-    spec: Spec;
-    config: Config;
-}
-
-export interface IVegaLiteTemplate extends ITemplateBase {
-    spec: TopLevelSpec;
-    config: VLConfig;
-}
-
-export interface ISpecDataPlaceholder {
-    key: string;
-    displayName: string;
-    description?: string;
-    allowTypes: TSupportedValueTypeDescriptor[];
-    allowKind: VisualDataRoleKind;
-    suppliedObjectName?: string;
-}
-
 export interface ISpecDataPlaceHolderDropdownProps {
-    placeholder: ISpecDataPlaceholder;
+    datasetField: ITemplateDatasetField;
 }
 
 export interface IPlaceholderValuePayload {
@@ -549,6 +617,23 @@ export interface IEditorReferencePayload {
     editor: JSONEditor;
 }
 
+export interface ITemplateImportPayload {
+    templateFile: File;
+    templateFileRawContent: string;
+    templateToApply: Spec | TopLevelSpec;
+    provider?: TSpecProvider;
+}
+
+export interface ITemplateImportErrorPayload {
+    templateImportErrorMessage: string;
+    templateSchemaErrors: ErrorObject[];
+}
+
+export interface ITemplateExportFieldUpdatePayload {
+    selector: string;
+    value: string;
+}
+
 /**
  * Processed visual data and column metadata for rendering
  */
@@ -573,8 +658,10 @@ export interface IVisualValueMetadata {
 export interface ITableColumnMetadata extends DataViewMetadataColumn {
     // Flag to confirm if this is a column, according to the data model
     isColumn: boolean;
-    // Flag to confirm if this is a generated raw value
-    isRaw: boolean;
+    // Original dataView index (from categories or values)
+    sourceIndex: number;
+    // Template export object (which allos customisation from base, while preserving)
+    templateMetadata: ITemplateDatasetField;
 }
 
 /**
@@ -630,6 +717,7 @@ export interface IDebugProfileDetail {
 
 export interface IEditorProps {
     operation: TEditorOperation;
+    isDialogOpen: boolean;
 }
 
 export interface IUiBaseProps {
@@ -643,6 +731,37 @@ export interface ISpecificationErrorProps extends IUiBaseProps {
 export interface IDataFetchingProps extends IUiBaseProps {
     dataRowsLoaded: number;
     dataLimit: DataLimitSettings;
+}
+
+export interface IModalDialogProps {
+    type: TModalDialogType;
+    visible: boolean;
+}
+
+export interface IModalHeaderProps {
+    type: TModalDialogType;
+}
+export interface IProgressProps {
+    description: string;
+}
+
+export interface IDataFieldLabelProps {
+    datasetField: ITemplateDatasetField;
+}
+
+export interface IFieldInfoIconProps {
+    description: string;
+}
+
+export interface ICappedTextFieldProps {
+    id: string;
+    i18nLabel: string;
+    i18nPlaceholder: string;
+    i18nAssistiveText?: string;
+    maxLength: number;
+    multiline?: boolean;
+    inline?: boolean;
+    description?: string;
 }
 
 export interface ILocaleConfiguration {

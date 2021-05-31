@@ -12,7 +12,7 @@ const EditorPaneCollapsed = () => {
     const { i18n, settings } = useSelector(state).visual,
         { position } = settings.editor,
         togglePane = () => {
-            commandService.toggleEditorPane()
+            commandService.toggleEditorPane();
         },
         tooltip_i18_key = 'Tooltip_Expand_Editor_Pane',
         iconName = position === 'left' ? 'ChevronRight' : 'ChevronLeft';

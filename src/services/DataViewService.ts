@@ -1,17 +1,17 @@
 import powerbi from 'powerbi-visuals-api';
 import DataView = powerbi.DataView;
 import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
-import DataViewTable = powerbi.DataViewTable;
+import DataViewCategorical = powerbi.DataViewCategorical;
 import ISelectionIdBuilder = powerbi.visuals.ISelectionIdBuilder;
 
 import {
     IDataViewService,
     IVisualDataset,
-    IVisualValueMetadata,
-    IVisualValueRow
+    IVisualValueMetadata
 } from '../types';
 import Debugger, { standardLog } from '../Debugger';
-import { selectionHandlerService } from '.';
+import { selectionHandlerService, templateService } from '.';
+import { encodeDataViewFieldForSpec } from '../util';
 
 const owner = 'DataViewService';
 
@@ -30,9 +30,13 @@ export class DataViewService implements IDataViewService {
     }
 
     @standardLog()
-    getRowCount(dataView: DataView) {
+    getRowCount(categorical: DataViewCategorical) {
         Debugger.log('Counting data view rows...');
-        return dataView?.table?.rows?.length || 0;
+        return (
+            categorical?.categories?.[0]?.values?.length ||
+            categorical?.values?.[0]?.values?.length ||
+            0
+        );
     }
 
     @standardLog()
@@ -51,47 +55,96 @@ export class DataViewService implements IDataViewService {
 
     @standardLog({ profile: true, owner })
     getMappedDataset(
-        table: DataViewTable,
+        categorical: DataViewCategorical,
         selectionIdBuilder: () => ISelectionIdBuilder
     ): IVisualDataset {
         Debugger.log('Mapping data view into visual dataset...');
         Debugger.log('Initialising empty dataset...');
-        const columns = table.columns,
-            rows = table.rows || [],
-            hasData = rows.length > 0,
+        const categories = categorical?.categories,
+            values = categorical?.values,
+            columns = [
+                ...(categories?.map((c, ci) => ({
+                    column: c.source,
+                    source: 'categories',
+                    sourceIndex: ci
+                })) || []),
+                ...(values?.map((v, vi) => ({
+                    column: v.source,
+                    source: 'values',
+                    sourceIndex: vi
+                })) || [])
+            ],
+            fieldValues = [
+                ...(categories?.map((c) => c.values) || []),
+                ...(values?.map((v) => v.values) || [])
+            ],
+            rowCount = this.getRowCount(categorical),
+            hasData = rowCount > 0,
             dataset = this.getEmptyDataset(),
             metadata: IVisualValueMetadata = {};
         try {
             Debugger.log('Getting metadata for all dataView columns...');
-            columns.forEach((c) => {
-                metadata[`${c.displayName}`] = {
-                    ...c,
-                    ...{ isColumn: !c.isMeasure, isRaw: false }
+            Debugger.log('Columns', columns);
+            Debugger.log('Field Values', fieldValues);
+            columns.forEach((c, ci) => {
+                metadata[
+                    `${encodeDataViewFieldForSpec(c.column.displayName)}`
+                ] = {
+                    ...c.column,
+                    ...{
+                        isColumn: !c.column.isMeasure,
+                        sourceIndex: c.sourceIndex,
+                        templateMetadata: templateService.resolveVisualMetaToDatasetField(
+                            c.column
+                        )
+                    }
                 };
             });
             Debugger.log('Getting data values...');
-
             if (hasData) {
-                const values = table.rows.map((r, ri) => {
-                    const identity = selectionIdBuilder()
-                        .withTable(table, ri)
-                        .createSelectionId();
-                    let valueRow: IVisualValueRow = {
-                        __identity__: identity,
-                        __key__: selectionHandlerService.getSidString(identity)
-                    };
-                    r.forEach((c, ci) => {
-                        const col = columns[ci],
-                            base = col?.type.dateTime
-                                ? new Date(c.toString())
-                                : c,
-                            value = base;
-                        if (col?.roles?.dataset) {
-                            valueRow[col.displayName] = value;
-                        }
+                const rows = Array.apply(null, { length: rowCount }).map(
+                        Number.call,
+                        Number
+                    ),
+                    values = rows.map((r, ri) => {
+                        const identity = selectionIdBuilder();
+                        let valueRow = {};
+                        columns.forEach((c, ci) => {
+                            const val = fieldValues[ci][ri],
+                                base = c?.column.type.dateTime
+                                    ? new Date(val.toString())
+                                    : val,
+                                value = base;
+                            if (c?.column.roles?.dataset) {
+                                valueRow[
+                                    encodeDataViewFieldForSpec(
+                                        c.column.displayName
+                                    )
+                                ] = value;
+                            }
+                            switch (true) {
+                                case c?.column.isMeasure: {
+                                    identity.withMeasure(c.column.queryName);
+                                    break;
+                                }
+                                default: {
+                                    identity.withCategory(
+                                        categories[c?.sourceIndex],
+                                        ri
+                                    );
+                                }
+                            }
+                        });
+                        return {
+                            ...{
+                                __identity__: identity.createSelectionId(),
+                                __key__: selectionHandlerService.getSidString(
+                                    identity.createSelectionId()
+                                )
+                            },
+                            ...valueRow
+                        };
                     });
-                    return valueRow;
-                });
                 dataset.metadata = metadata;
                 dataset.values = values;
             }
@@ -107,11 +160,11 @@ export class DataViewService implements IDataViewService {
     @standardLog()
     validateDataViewMapping(dataViews?: DataView[]) {
         Debugger.log(
-            'Testing [table] data view mapping has basic requirements...'
+            'Testing [categorical] data view mapping has basic requirements...'
         );
         const result =
             (dataViews?.length > 0 &&
-                dataViews[0]?.table &&
+                dataViews[0]?.categorical &&
                 dataViews[0]?.metadata?.columns &&
                 true) ||
             false;

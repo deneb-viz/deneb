@@ -4,7 +4,8 @@
         "jsx": "react",
         "types": [
             "react",
-            "react-dom"
+            "react-dom",
+            "jest"
         ],
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
@@ -19,7 +20,8 @@
             "dom"
         ],
         "alwaysStrict": true,
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+        "esModuleInterop": true
     },
     "files": [
         "src/Deneb.ts"

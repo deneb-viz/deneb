@@ -1,0 +1,171 @@
+{
+    "$ref": "#/definitions/IDenebTemplateMetadata",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "IDenebTemplateMetadata": {
+            "description": "Main template definition.",
+            "properties": {
+                "dataset": {
+                    "description": "Dataset columns or measures used by the template, that the end-user will need to supply for it to work.",
+                    "items": {
+                        "$ref": "#/definitions/ITemplateDatasetField"
+                    },
+                    "type": "array",
+                    "uniqueItems": true
+                },
+                "deneb": {
+                    "$ref": "#/definitions/IDenebUserMeta",
+                    "description": "Deneb Information"
+                },
+                "information": {
+                    "$ref": "#/definitions/ITemplateInformation",
+                    "description": "High-level information or metadata about the template."
+                }
+            },
+            "required": [
+                "dataset",
+                "deneb",
+                "information"
+            ],
+            "type": "object"
+        },
+        "IDenebUserMeta": {
+            "additionalProperties": false,
+            "properties": {
+                "build": {
+                    "description": "Which version the visual was built with. Uses semantic versioning. Can be spoofed but might be handy at some point.",
+                    "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+                    "type": "string"
+                },
+                "metaVersion": {
+                    "description": "Template metadata version. Will be capped to the version matching this definition.",
+                    "maximum": 1,
+                    "minimum": 1,
+                    "type": "number"
+                },
+                "provider": {
+                    "$ref": "#/definitions/TProvider",
+                    "description": "Provider details for the template."
+                }
+            },
+            "required": [
+                "build",
+                "metaVersion",
+                "provider"
+            ],
+            "type": "object"
+        },
+        "ITemplateDatasetField": {
+            "additionalProperties": false,
+            "properties": {
+                "description": {
+                    "description": "Optional assistive text to display to the end-user when adding fields to the template.",
+                    "maxLength": 300,
+                    "type": "string"
+                },
+                "key": {
+                    "description": "Unique field placeholder name. Must start and end with __ (double-underscore) and can only use alpha-numeric characters in-between.",
+                    "maxLength": 30,
+                    "pattern": "^__[a-zA-Z0-9]+__$",
+                    "type": "string"
+                },
+                "kind": {
+                    "$ref": "#/definitions/TDatasetFieldKind",
+                    "description": "Specifies whether a column or measure (or either) should be used for this placeholder."
+                },
+                "name": {
+                    "maxLength": 30,
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/TDatasetFieldType",
+                    "description": "The list of data types that can be used for this placeholder, for any columns or measures in the data model."
+                }
+            },
+            "required": [
+                "key",
+                "kind",
+                "name",
+                "type"
+            ],
+            "type": "object"
+        },
+        "ITemplateInformation": {
+            "additionalProperties": true,
+            "properties": {
+                "author": {
+                    "description": "The author of the template, for follow-up... or kudos!",
+                    "maxLength": 100,
+                    "type": "string"
+                },
+                "description": {
+                    "description": "More detailed (but still short!) description of the template's purpose.",
+                    "maxLength": 300,
+                    "type": "string"
+                },
+                "generated": {
+                    "description": "Generation date and time of template.",
+                    "format": "date-time",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Display name of template.",
+                    "maxLength": 100,
+                    "type": "string"
+                },
+                "previewImageBase64PNG": {
+                    "description": "Base64-encoded image/png string, representing a preview image for the template in external tools.",
+                    "type": "string"
+                },
+                "supportUri": {
+                    "description": "Valid URI for a descriptive reference, e.g. blog post/support site etc.",
+                    "format": "uri",
+                    "type": "string"
+                },
+                "uuid": {
+                    "description": "Unique identifier of template.",
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "videoUri": {
+                    "description": "Valid URI for a sample or instructional video.",
+                    "format": "uri",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "author",
+                "generated",
+                "name",
+                "uuid"
+            ],
+            "type": "object"
+        },
+        "TDatasetFieldKind": {
+            "enum": [
+                "any",
+                "column",
+                "measure"
+            ],
+            "type": "string"
+        },
+        "TDatasetFieldType": {
+            "enum": [
+                "bool",
+                "dateTime",
+                "numeric",
+                "other",
+                "text"
+            ],
+            "type": "string"
+        },
+        "TProvider": {
+            "enum": [
+                "vega",
+                "vegaLite"
+            ],
+            "type": "string"
+        }
+    }
+}
+

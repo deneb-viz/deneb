@@ -40,6 +40,7 @@ import {
     recordInvalidDataView,
     updateDataset
 } from './store/visualReducer';
+import { syncExportTemplateDataset } from './store/templateReducer';
 
 const owner = 'Visual';
 
@@ -153,7 +154,7 @@ export class Deneb implements IVisual {
                             hasValidDataViewMapping &&
                             dataViewService.validateDataViewRoles(
                                 options.dataViews,
-                                ['values']
+                                ['dataset']
                             ),
                         hasValidDataView =
                             hasValidDataViewMapping && hasValidDataRoles;
@@ -189,9 +190,16 @@ export class Deneb implements IVisual {
                     store.dispatch(
                         updateDataset(
                             dataViewService.getMappedDataset(
-                                options.dataViews[0]?.table,
+                                options.dataViews[0]?.categorical,
                                 this.host.createSelectionIdBuilder
                             )
+                        )
+                    );
+                    store.dispatch(
+                        syncExportTemplateDataset(
+                            Object.entries(
+                                store.getState().visual.dataset.metadata
+                            ).map(([k, v]) => v.templateMetadata)
                         )
                     );
                     Debugger.log('Finished processing dataView.');
@@ -208,7 +216,7 @@ export class Deneb implements IVisual {
         Debugger.log('Existing selections', selectionManager.getSelectionIds());
 
         if (store.getState().visual.dataProcessingStage === 'Processed') {
-            specificationService.parse();
+            specificationService.parseActiveSpec();
         }
     }
 

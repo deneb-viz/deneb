@@ -2,12 +2,11 @@ import powerbi from 'powerbi-visuals-api';
 import VisualObjectInstancesToPersist = powerbi.VisualObjectInstancesToPersist;
 import DataViewPropertyValue = powerbi.DataViewPropertyValue;
 
-import copy from 'fast-copy';
-
 import Debugger, { standardLog } from '../Debugger';
 import VisualSettings from '../properties/VisualSettings';
 import store from '../store';
 import { IPropertyService } from '../types';
+import * as _ from 'lodash';
 
 const owner = 'PropertyService';
 
@@ -63,7 +62,7 @@ export class PropertyService implements IPropertyService {
                 {
                     objectName: objectName,
                     selector: null,
-                    properties: copy(dataViewObjects[objectName]) || {}
+                    properties: _.cloneDeep(dataViewObjects[objectName]) || {}
                 }
             ]
         };

@@ -200,16 +200,17 @@
     },
     "dataViewMappings": [
         {
-            "table": {
-                "rows": {
-                    "for": {
-                        "in": "dataset"
-                    },
+            "categorical": {
+                "categories": {
+                    "select": [{ "bind": { "to": "dataset" } }],
                     "dataReductionAlgorithm": {
                         "window": {
                             "count": 10000
                         }
                     }
+                },
+                "values": {
+                    "select": [{ "bind": { "to": "dataset" } }]
                 }
             }
         }

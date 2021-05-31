@@ -10,8 +10,7 @@ import { choiceGroupStyles, choiceItemStyles } from '../../config/styles';
 import { state } from '../../store';
 
 const ProviderSettings = () => {
-    Debugger.log('Rendering Component: [RenderModeSettings]...');
-    Debugger.log('Rendering Component: [EditorContainer]...');
+    Debugger.log('Rendering Component: [ProviderSettings]...');
     const { i18n, settings } = useSelector(state).visual,
         { vega } = settings,
         handleProvider = React.useCallback(
