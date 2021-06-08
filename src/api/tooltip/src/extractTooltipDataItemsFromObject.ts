@@ -1,7 +1,7 @@
 import powerbi from 'powerbi-visuals-api';
 import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
 
-import { selectionKeywords, resolveDatumForKeywords } from '../../selection';
+import { resolveDatumForKeywords } from '../../selection';
 
 export const extractTooltipDataItemsFromObject = (
     tooltip: Object

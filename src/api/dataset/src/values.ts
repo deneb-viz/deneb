@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { getDataset } from './getDataset';
 import { resolveDatumForMetadata } from '../../selection/src/datum';
 import { IVegaViewDatum } from '../../selection/src/interfaces';
-import { IVisualValueMetadata, IVisualValueRow } from '../../../types';
+import { IVisualValueMetadata, IVisualValueRow } from './interfaces';
 
 export const getValues = () => getDataset().values;
 

@@ -4,7 +4,7 @@ import {
     ITableColumnMetadata,
     IVisualValueMetadata,
     IVisualValueRow
-} from '../../../types';
+} from '../../dataset';
 import { IVegaViewDatum } from './interfaces';
 import { selectionKeywords } from './selectionKeyWords';
 

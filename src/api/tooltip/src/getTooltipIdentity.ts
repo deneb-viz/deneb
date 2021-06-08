@@ -15,7 +15,9 @@ export const getTooltipIdentity = (datum: IVegaViewDatum): [ISelectionId] => {
     const metadata = getMetadataByKeys(_.keys(datum)),
         value = getValueForDatum(metadata, datum),
         categories = getCategoryColumns(),
-        selectionId = value && createSelectionId(metadata, categories, value.identityIndex);
+        selectionId =
+            value &&
+            createSelectionId(metadata, categories, value.identityIndex);
 
     return selectionId ? [selectionId] : null;
 };

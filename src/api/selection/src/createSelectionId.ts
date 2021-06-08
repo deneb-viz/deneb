@@ -3,7 +3,7 @@ import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 import _ from 'lodash';
 
 import { getSelectionIdBuilder } from './getSelectionIdBuilder';
-import { IVisualValueMetadata } from '../../../types';
+import { IVisualValueMetadata } from '../../dataset';
 
 export const createSelectionId = (
     metadata: IVisualValueMetadata,
@@ -18,10 +18,7 @@ export const createSelectionId = (
                 break;
             }
             default: {
-                identity.withCategory(
-                    categories[v.sourceIndex],
-                    rowIndex
-                );
+                identity.withCategory(categories[v.sourceIndex], rowIndex);
             }
         }
     });
