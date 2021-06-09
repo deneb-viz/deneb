@@ -5,7 +5,6 @@ import DataViewMetadata = powerbi.DataViewMetadata;
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 
 import Debugger, { standardLog } from '../Debugger';
-import { visualFeatures } from '../config';
 import DataLimitSettings from '../properties/DataLimitSettings';
 import store from '../store';
 import {
@@ -16,13 +15,13 @@ import {
 } from '../store/visualReducer';
 import { dataViewService } from '.';
 import { IDataLoadingService } from '../types';
+import { isFetchMoreEnabled  } from '../api/dataView';
 
-const enabled = visualFeatures.fetchMoreData,
-    owner = 'DataLimitService';
+const owner = 'DataLimitService';
 
 export class DataLoadingService implements IDataLoadingService {
     canFetchMore: boolean = false;
-    private featureIsEnabled = enabled;
+    private featureIsEnabled = isFetchMoreEnabled;
 
     @standardLog({ profile: true, owner })
     handleDataFetch(

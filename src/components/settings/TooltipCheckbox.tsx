@@ -3,9 +3,9 @@ import { useSelector } from 'react-redux';
 import { Checkbox } from '@fluentui/react/lib/Checkbox';
 
 import Debugger from '../../Debugger';
-import { visualFeatures } from '../../config';
 import { state } from '../../store';
 import { commandService } from '../../services';
+import { isHandlerEnabled } from '../../api/tooltip';
 
 const TooltipCheckbox = () => {
     Debugger.log('Rendering Component: [TooltipCheckbox]...');
@@ -20,7 +20,7 @@ const TooltipCheckbox = () => {
             []
         );
     return (
-        visualFeatures.tooltipHandler && (
+        isHandlerEnabled && (
             <Checkbox
                 label={i18n.getDisplayName('Objects_Vega_EnableTooltips')}
                 checked={vega.enableTooltips}

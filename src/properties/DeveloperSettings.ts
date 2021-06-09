@@ -3,8 +3,8 @@ import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnume
 
 import SettingsBase from './SettingsBase';
 import Debugger from '../Debugger';
-import { visualFeatures } from '../config';
 import { TLocale } from '../types';
+import { isDeveloperModeEnabled } from '../api/developer';
 
 /**
  * Manages data limit override preferences for the visual.
@@ -26,7 +26,7 @@ export default class DeveloperSettings extends SettingsBase {
     ): VisualObjectInstanceEnumerationObject {
         Debugger.log('Processing enumeration...');
         enumerationObject.instances.map((i) => {
-            if (!visualFeatures.developerMode) {
+            if (!isDeveloperModeEnabled) {
                 Debugger.log('Removing object & properties...');
                 enumerationObject.instances = [];
             }

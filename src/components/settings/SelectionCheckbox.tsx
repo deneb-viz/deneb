@@ -3,9 +3,9 @@ import { useSelector } from 'react-redux';
 import { Checkbox } from '@fluentui/react/lib/Checkbox';
 
 import Debugger from '../../Debugger';
-import { visualFeatures } from '../../config';
 import { state } from '../../store';
 import { commandService } from '../../services';
+import { isDataPointEnabled } from '../../api/selection';
 
 const SelectionCheckbox = () => {
     Debugger.log('Rendering Component: [SelectionCheckbox]...');
@@ -27,7 +27,7 @@ const SelectionCheckbox = () => {
         ),
         disabled = vega.provider !== 'vegaLite';
     return (
-        visualFeatures.selectionDataPoint && (
+        isDataPointEnabled && (
             <Checkbox
                 label={i18n.getDisplayName('Objects_Vega_EnableSelection')}
                 checked={vega.enableSelection}

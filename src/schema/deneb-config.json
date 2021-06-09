@@ -1,0 +1,46 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "features": {
+            "type": "object",
+            "properties": {
+                "unitTestCanary": {
+                    "description": "Used to validate unit testing functionality. Should always be `false`.",
+                    "type": "boolean",
+                    "enum": [false]
+                },
+                "developerMode": {
+                    "description": "Provides a means of enabling developer-specific functionality independent of debugging.",
+                    "type": "boolean"
+                },
+                "enableExternalUri": {
+                    "description": "Enable external URIs in specifications for data and images - if enabled, we'll preserve any URI/URL-based content in specifications and config, although these will be subject to the standard CORS limitations that custom visuals are subject to. If disabled, then we process text for any occurrences of a URI and strip it out (except for `data:` URIs). I had attempted this by creating a custom loader for Vega but it seems to work for data and ignore images, so whilst this approach is crude, it works for our purposes.",
+                    "type": "boolean"
+                },
+                "fetchMoreData": {
+                    "description": "Enables the Fetch More Data API and Data Limit property menu functionality.",
+                    "type": "boolean"
+                },
+                "selectionContextMenu": {
+                    "description": "Enables the Power BI context menu to display on data points (if they can be resolved) via Visual Editor settings. This currently only works for single view Vega-Lite specifications and needs further R&D.",
+                    "type": "boolean"
+                },
+                "selectionDataPoint": {
+                    "description": "Enables the Power BI selection manager to accept signals from Vega-Lite selections and (if they resolve to the `dataView`) cross-highlight other visuals. Visual authors will need to apply their own visual encoding of selections to indicate which points are currently selected.",
+                    "type": "boolean"
+                },
+                "tooltipHandler": {
+                    "description": "Allows custom `TooltipHandler` to be enabled via Visual Editor settings. This will resolve tooltips for data points using the Power BI tooltip APIs based on signals from Vega/Vega-Lite.",
+                    "type": "boolean"
+                },
+                "tooltipResolveNumberFieldFormat": {
+                    "description": "If a field in a Vega tooltip's `datum` object is present in the `tooltip` object, attempt to find a corresponding field name in the visual dataset metadata, and get its format string (if not already formatted in the spec).",
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "required": ["features"]
+}

@@ -4,7 +4,6 @@ import ITooltipService = powerbi.extensibility.ITooltipService;
 import { resolveCoordinates } from '../../event';
 import { getTooltipIdentity } from './getTooltipIdentity';
 import { extractTooltipDataItemsFromObject } from './extractTooltipDataItemsFromObject';
-import { resolveDatumForKeywords } from '../../selection';
 
 export const resolveTooltipContent = (tooltipService: ITooltipService) => (
     handler: any,
@@ -13,6 +12,8 @@ export const resolveTooltipContent = (tooltipService: ITooltipService) => (
     value: any
 ) => {
     const coordinates = resolveCoordinates(event),
+    const 
+        coordinates = resolveCoordinates(event),
         dataItems = extractTooltipDataItemsFromObject(item.tooltip),
         isTouchEvent = false,
         identities = getTooltipIdentity(item?.datum);

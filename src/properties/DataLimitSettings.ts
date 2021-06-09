@@ -4,13 +4,14 @@ import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnume
 import SettingsBase from './SettingsBase';
 import Debugger from '../Debugger';
 import { dataLimitDefaults as defaults } from '../config';
+import { isFetchMoreEnabled  } from '../api/dataView';
 
 /**
  * Manages data limit override preferences for the visual.
  */
 export default class DataLimitSettings extends SettingsBase {
     // Feature enabled or not
-    public enabled: boolean = defaults.enabled;
+    public enabled: boolean = isFetchMoreEnabled;
     // Allow override of `dataReductionAlgorithm` limit.
     public override: boolean = defaults.override;
     // Display information about the custom visual limitations and recommendations for end users.

@@ -4,9 +4,9 @@ import { interactivityUtils } from 'powerbi-visuals-utils-interactivityutils';
 import getEvent = interactivityUtils.getEvent;
 
 import Debugger, { standardLog } from '../Debugger';
-import { visualFeatures } from '../config';
 import store from '../store';
 import { ISelectionHandlerService } from '../types';
+import { isContextMenuEnabled, isDataPointEnabled } from '../api/selection';
 
 const owner = 'SelectionHandlerService';
 
@@ -26,7 +26,7 @@ export class SelectionHandlerService implements ISelectionHandlerService {
             } = store.getState().visual,
             { vega } = settings,
             isSelectionEnabled =
-                visualFeatures.selectionDataPoint &&
+                isDataPointEnabled &&
                 vega.enableSelection &&
                 allowInteractions &&
                 vega.provider === 'vegaLite';
@@ -112,7 +112,7 @@ export class SelectionHandlerService implements ISelectionHandlerService {
         Debugger.log('Selection ID', selectionId);
         mouseEvent && mouseEvent.preventDefault();
         mouseEvent &&
-            visualFeatures.selectionContextMenu &&
+            isContextMenuEnabled &&
             vega.enableContextMenu &&
             allowInteractions &&
             selectionManager.showContextMenu(selectionId, {

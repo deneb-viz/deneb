@@ -26,8 +26,7 @@ import store from '../store';
 import { updateSpec, updateFixStatus } from '../store/visualReducer';
 import {
     editorDefaults,
-    vegaSettingsDefaults,
-    visualFeatures
+    vegaSettingsDefaults
 } from '../config';
 import {
     IFixResult,
@@ -36,6 +35,7 @@ import {
     TEditorOperation,
     TSpecProvider
 } from '../types';
+import { isFeatureEnabled } from '../api/features';
 
 const owner = 'SpecificationService';
 
@@ -410,7 +410,7 @@ export class SpecificationService implements ISpecificationHandlerService {
      * @param content - text to search/process.
      */
     private resolveUrls(content: string) {
-        if (!visualFeatures.enableExternalUri) {
+        if (!isFeatureEnabled('enableExternalUri')) {
             Debugger.log(
                 'External URIs disabled in features Stripping URIs from content...'
             );

@@ -3,9 +3,9 @@ import { useSelector } from 'react-redux';
 import { Checkbox } from '@fluentui/react/lib/Checkbox';
 
 import Debugger from '../../Debugger';
-import { visualFeatures } from '../../config';
 import { state } from '../../store';
 import { commandService } from '../../services';
+import { isContextMenuEnabled } from '../../api/selection';
 
 const ContextMenuCheckbox = () => {
     Debugger.log('Rendering Component: [ContextMenuCheckbox]...');
@@ -23,7 +23,7 @@ const ContextMenuCheckbox = () => {
             []
         );
     return (
-        visualFeatures.selectionContextMenu && (
+        isContextMenuEnabled && (
             <Checkbox
                 label={i18n.getDisplayName('Objects_Vega_EnableContextMenu')}
                 checked={vega.enableContextMenu}

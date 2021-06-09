@@ -1,6 +1,3 @@
-import * as ace from 'ace-builds';
-import Ace = ace.Ace;
-
 import { visual } from '../../pbiviz.json';
 import { devDependencies } from '../../package.json';
 import {
@@ -38,43 +35,10 @@ export {
  */
 const visualFeatures = {
     /**
-     * Enables debugger, which is basically a ton of logging.
+     * Enables debugger, which is basically a ton of logging. TODO: Remove this as we migrate across
+     * to a more functional programming-based approach.
      */
-    debug: false,
-    /**
-     * Provides a means of enabling developer-specific functionality independent of debugging.
-     */
-    developerMode: false,
-    /**
-     * Enables the Fetch More Data API and Data Limit property menu functionality.
-     */
-    fetchMoreData: true,
-    /**
-     * Allows custom `TooltipHandler` to be enabled via Visual Editor settings. This will resolve
-     * tooltips for data points using the Power BI tooltip APIs based on signals from Vega/Vega-Lite.
-     */
-    tooltipHandler: true,
-    /**
-     * Enables the Power BI context menu to display on data points (if they can be resolved) via
-     * Visual Editor settings. This currently only works for single view Vega-Lite specifications
-     * and needs further R&D.
-     */
-    selectionContextMenu: false,
-    /**
-     * Enables the Power BI selection manager to accept signals from Vega-Lite selections and (if
-     * they resolve to the `dataView`) cross-highlight other visuals. Visual authors will need to
-     * apply their own visual encoding of selections to indicate which points are currently selected.
-     */
-    selectionDataPoint: false,
-    /**
-     * Enable external URIs in specifications for data and images - if enabled, we'll preserve any
-     * URI/URL-based content in specifications and config, although these will be subject to the
-     * standard CORS limitations that custom visuals are subject to.
-     * If disabled, then we process text for any occurrences of a URI and strip it out (except for
-     * data: URIs). I had attempted this by creating a custom loader for Vega but it seems to work
-     * for data and ignore images, so whilst this approach is crude, it works for our purposes.
-     */
-    enableExternalUri: false
+    debug: false
 };
 
 /**
@@ -154,7 +118,6 @@ const editorDefaults = {
 
 // `DataLimitSettings`
 const dataLimitDefaults = {
-    enabled: visualFeatures.fetchMoreData,
     override: false,
     showCustomVisualNotes: true
 };
