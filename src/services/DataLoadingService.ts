@@ -15,7 +15,7 @@ import {
 } from '../store/visualReducer';
 import { dataViewService } from '.';
 import { IDataLoadingService } from '../types';
-import { isFetchMoreEnabled  } from '../api/dataView';
+import { isFetchMoreEnabled } from '../api/dataView';
 
 const owner = 'DataLimitService';
 

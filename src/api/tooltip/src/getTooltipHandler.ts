@@ -7,9 +7,8 @@ import { isHandlerEnabled } from './isHandlerEnabled';
 export const getTooltipHandler = (
     isSettingEnabled: boolean,
     tooltipService: ITooltipService
-) => (
-        (isHandlerEnabled &&
-            isSettingEnabled &&
-            resolveTooltipContent(tooltipService)) ||
-        undefined
-    );
+) =>
+    (isHandlerEnabled &&
+        isSettingEnabled &&
+        resolveTooltipContent(tooltipService)) ||
+    undefined;

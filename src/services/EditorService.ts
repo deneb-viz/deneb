@@ -18,13 +18,10 @@ import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
 
 import Debugger, { standardLog } from '../Debugger';
 import { specificationService } from '.';
-import { editorDefaults } from '../config';
-import {
-    IEditorService,
-    TEditorOperation
-} from '../types';
+import { IEditorService, TEditorOperation } from '../types';
 import store from '../store';
-import { dataset } from '../api'
+import { dataset } from '../api';
+import { getConfig } from '../api/config';
 import ITableColumnMetadata = dataset.ITableColumnMetadata;
 
 const owner = 'EditorService';
@@ -55,7 +52,7 @@ export class EditorService implements IEditorService {
             theme: 'ace/theme/chrome',
             onChange: this.debounceInput(
                 this.handleTextEntry,
-                editorDefaults.debounceInterval
+                getConfig().editorDefaults.debounceInterval
             )
         });
         this.setAceEditorOptions({

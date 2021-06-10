@@ -17,9 +17,9 @@ describe('API: tooltip', () => {
                 { displayName: 'category', value: 'Test' },
                 { displayName: 'value', value: '1.38' }
             ];
-        it ('Dummy', () => {
+        it('Dummy', () => {
             expect(1).toEqual(1);
-        })
+        });
         // it('Simple object', () => {
         //     const result = extractTooltipDataItemsFromObject(basicKeyValue);
         //     expect(result).toMatchObject(basicKeyValueResult);

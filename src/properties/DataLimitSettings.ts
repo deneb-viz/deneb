@@ -4,7 +4,7 @@ import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnume
 import SettingsBase from './SettingsBase';
 import Debugger from '../Debugger';
 import { dataLimitDefaults as defaults } from '../config';
-import { isFetchMoreEnabled  } from '../api/dataView';
+import { isFetchMoreEnabled } from '../api/dataView';
 
 /**
  * Manages data limit override preferences for the visual.

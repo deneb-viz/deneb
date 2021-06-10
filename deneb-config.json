@@ -9,5 +9,30 @@
         "tooltipHandler": true,
         "tooltipResolveNumberFieldFormat": true,
         "unitTestCanary": false
+    },
+    "providerResources": {
+        "vega": {
+            "documentationUrl": "https://vega.github.io/vega/docs/",
+            "schemaUrl": "https://vega.github.io/schema/vega/v5.json"
+        },
+        "vegaLite": {
+            "documentationUrl": "https://vega.github.io/vega-lite/docs/",
+            "schemaUrl": "https://vega.github.io/schema/vega-lite/v5.json"
+        }
+    },
+    "editorDefaults": {
+        "debounceInterval": 200,
+        "tabSize": 2,
+        "position": "left"
+    },
+    "splitPaneDefaults": {
+        "minSize": 350,
+        "defaultSizePercent": 0.4,
+        "maxSizePercent": 0.6,
+        "collapsedSize": 36
+    },
+    "visualViewPortAdjust": {
+        "top": 5,
+        "left": 5
     }
 }

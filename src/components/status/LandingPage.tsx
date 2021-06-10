@@ -9,7 +9,6 @@ import { Stack } from '@fluentui/react/lib/Stack';
 import { Text } from '@fluentui/react/lib/Text';
 
 import Debugger from '../../Debugger';
-import { visualMetadata, vegaResources } from '../../config';
 import {
     landingVisualNameStyles,
     landingVisualDescriptionStyles,
@@ -25,11 +24,17 @@ import {
     linkStyles
 } from '../../config/styles';
 import { state } from '../../store';
+import {
+    getConfig,
+    getVisualMetadata,
+    providerVersions
+} from '../../api/config';
 
 const LandingPage = () => {
     Debugger.log('Rendering component: [LandingPage]');
     const root = useSelector(state),
-        { i18n } = root.visual;
+        { i18n } = root.visual,
+        visualMetadata = getVisualMetadata();
     return (
         <>
             <Stack
@@ -59,11 +64,11 @@ const LandingPage = () => {
                                     <Text styles={landingVisualVersionStyles}>
                                         {visualMetadata.version} |{' '}
                                         {i18n.getDisplayName('Provider_Vega')}:{' '}
-                                        {vegaResources.vega.version} |{' '}
+                                        {providerVersions.vega} |{' '}
                                         {i18n.getDisplayName(
                                             'Provider_VegaLite'
                                         )}
-                                        : {vegaResources.vegaLite.version}
+                                        : {providerVersions.vegaLite}
                                     </Text>
                                 </div>
                             </Stack.Item>
@@ -98,14 +103,16 @@ export default LandingPage;
 function resolveResourceDetail() {
     const root = useSelector(state),
         { i18n, launchUrl } = root.visual,
+        visualMetadata = getVisualMetadata(),
+        { providerResources } = getConfig(),
         openSupportLink = () => {
             launchUrl(visualMetadata.supportUrl);
         },
         openVegaDocLink = () => {
-            launchUrl(vegaResources.vega.documentationUrl);
+            launchUrl(providerResources.vega.documentationUrl);
         },
         openVegaLiteDocLink = () => {
-            launchUrl(vegaResources.vegaLite.documentationUrl);
+            launchUrl(providerResources.vegaLite.documentationUrl);
         };
     return (
         <div>

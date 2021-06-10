@@ -3,7 +3,7 @@ import encodeFieldForSpec = dataView.encodeFieldForSpec;
 
 describe('API: Data View', () => {
     describe('encodeDataViewFieldForSpec', () => {
-        it ('Dummy', () => {
+        it('Dummy', () => {
             expect(1).toEqual(1);
         });
         // it('Simple Name', () => {

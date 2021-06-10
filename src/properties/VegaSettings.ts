@@ -25,12 +25,10 @@ export default class VegaSettings extends SettingsBase {
     public jsonConfig = defaults.jsonConfig;
     public provider = defaults.provider;
     public renderMode = defaults.renderMode;
-    public enableTooltips =
-        isHandlerEnabled && defaults.enableTooltips;
+    public enableTooltips = isHandlerEnabled && defaults.enableTooltips;
     public enableContextMenu =
         isContextMenuEnabled && defaults.enableContextMenu;
-    public enableSelection =
-        isDataPointEnabled && defaults.enableSelection;
+    public enableSelection = isDataPointEnabled && defaults.enableSelection;
     public isNewDialogOpen = defaults.isNewDialogOpen;
 
     /**

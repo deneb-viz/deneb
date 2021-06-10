@@ -4,7 +4,6 @@ import ViewMode = powerbi.ViewMode;
 import EditMode = powerbi.EditMode;
 
 import Debugger, { standardLog } from '../Debugger';
-import { splitPaneDefaults, visualViewportAdjust } from '../config';
 import store from '../store';
 import {
     TVisualInterface,
@@ -12,10 +11,14 @@ import {
     IRenderingService,
     TEditorPosition
 } from '../types';
+import { getConfig } from '../api/config';
 
 const owner = 'RenderingService';
 
 export class RenderingService implements IRenderingService {
+    private splitPaneDefaults = getConfig().splitPaneDefaults;
+    private visualViewportAdjust = getConfig().visualViewPortAdjust;
+
     constructor() {
         Debugger.log(`Instantiating new ${owner}...`);
     }
@@ -44,9 +47,11 @@ export class RenderingService implements IRenderingService {
         position: TEditorPosition
     ) {
         if (position === 'right') {
-            return viewport.width * (1 - splitPaneDefaults.defaultSizePercent);
+            return (
+                viewport.width * (1 - this.splitPaneDefaults.defaultSizePercent)
+            );
         }
-        return viewport.width * splitPaneDefaults.defaultSizePercent;
+        return viewport.width * this.splitPaneDefaults.defaultSizePercent;
     }
 
     @standardLog()
@@ -58,8 +63,8 @@ export class RenderingService implements IRenderingService {
     ) {
         const collapsedSize =
                 position === 'right'
-                    ? viewport.width - splitPaneDefaults.collapsedSize
-                    : splitPaneDefaults.collapsedSize,
+                    ? viewport.width - this.splitPaneDefaults.collapsedSize
+                    : this.splitPaneDefaults.collapsedSize,
             resolvedWidth =
                 (editorPaneIsExpanded && paneExpandedWidth) ||
                 (editorPaneIsExpanded &&
@@ -78,7 +83,7 @@ export class RenderingService implements IRenderingService {
                 viewport
             } = store.getState().visual,
             { editor } = settings,
-            { minSize, maxSizePercent, collapsedSize } = splitPaneDefaults;
+            { minSize, maxSizePercent, collapsedSize } = this.splitPaneDefaults;
         let resolvedCollapsedSize =
                 editor.position === 'right'
                     ? viewport.width - collapsedSize
@@ -103,7 +108,7 @@ export class RenderingService implements IRenderingService {
                 viewport
             } = store.getState().visual,
             { editor } = settings,
-            { maxSizePercent, minSize, collapsedSize } = splitPaneDefaults,
+            { maxSizePercent, minSize, collapsedSize } = this.splitPaneDefaults,
             resolvedSize =
                 (editorPaneIsExpanded &&
                     (editor.position === 'right'
@@ -128,8 +133,8 @@ export class RenderingService implements IRenderingService {
                         ? paneWidth
                         : viewport.width - paneWidth)) ||
                 viewport.width;
-        height -= visualViewportAdjust.top;
-        width -= visualViewportAdjust.left;
+        height -= this.visualViewportAdjust.top;
+        width -= this.visualViewportAdjust.left;
         return { width, height };
     }
 }

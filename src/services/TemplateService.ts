@@ -25,8 +25,10 @@ import {
     TDatasetFieldType
 } from '../schema/template-v1';
 import * as _ from 'lodash';
-import { metaVersion, vegaResources, visualMetadata } from '../config';
+import { metaVersion } from '../config';
 import * as api from '../api';
+import getConfig = api.config.getConfig;
+import getVisualMetadata = api.config.getVisualMetadata;
 
 const owner = 'TemplateService';
 
@@ -36,6 +38,7 @@ export class TemplateService implements ITemplateService {
     }
 
     newExportTemplateMetadata(): IDenebTemplateMetadata {
+        const visualMetadata = getVisualMetadata();
         return {
             deneb: {
                 build: visualMetadata.version,
@@ -59,9 +62,10 @@ export class TemplateService implements ITemplateService {
         const { visual } = store.getState(),
             { settings, spec } = visual,
             { vega } = settings,
+            { providerResources } = getConfig(),
             vSchema = (
-                (vega.provider === 'vega' && vegaResources.vega) ||
-                vegaResources.vegaLite
+                (vega.provider === 'vega' && providerResources.vega) ||
+                providerResources.vegaLite
             ).schemaUrl,
             baseObj = {
                 $schema: vSchema,
@@ -249,6 +253,7 @@ export class TemplateService implements ITemplateService {
         Debugger.log('Resolving user metadata for spec...');
         const { visual, templates } = store.getState(),
             { i18n } = visual,
+            visualMetadata = getVisualMetadata(),
             { templateExportMetadata } = templates;
         return {
             deneb: {

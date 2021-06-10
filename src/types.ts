@@ -636,8 +636,6 @@ export interface ITemplateExportFieldUpdatePayload {
     value: string;
 }
 
-
-
 export interface IKeyboardShortcut {
     keys: string;
     command: () => void;

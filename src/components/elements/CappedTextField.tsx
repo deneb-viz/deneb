@@ -8,7 +8,7 @@ import { IStackTokens, Stack } from '@fluentui/react/lib/Stack';
 import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { updateExportTemplatePropertyBySelector } from '../../store/templateReducer';
-import { editorDefaults } from '../../config';
+import { getConfig } from '../../api/config';
 import { ICappedTextFieldProps } from '../../types';
 import FieldInfoIcon from './FieldInfoIcon';
 import { IRenderFunction } from '@fluentui/react/lib/Utilities';
@@ -34,7 +34,7 @@ const CappedTextField: React.FC<ICappedTextFieldProps> = (props) => {
                         value
                     })
                 );
-            }, editorDefaults.debounceInterval),
+            }, getConfig().editorDefaults.debounceInterval),
             []
         ),
         onChangeField = (

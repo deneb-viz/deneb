@@ -23,7 +23,7 @@ import {
     TSpecProvider,
     TSpecRenderMode
 } from '../types';
-import { visualMetadata } from '../config';
+import { getVisualMetadata } from '../api/config';
 
 const owner = 'CommandService';
 
@@ -126,6 +126,7 @@ export class CommandService implements ICommandService {
 
     @standardLog()
     openHelpSite() {
+        const visualMetadata = getVisualMetadata();
         Debugger.log('Launching support URL...', visualMetadata.supportUrl);
         const { launchUrl } = store.getState().visual;
         launchUrl(visualMetadata.supportUrl);

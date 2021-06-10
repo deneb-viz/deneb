@@ -8,7 +8,7 @@
  */
 import { Spec, BaseData, AutoSize } from 'vega';
 import { TopLevelSpec } from 'vega-lite';
-import { vegaResources } from '../config';
+import { getConfig } from '../api/config';
 
 import { dataRoles } from '../../capabilities.json';
 
@@ -23,8 +23,9 @@ function vegaDataModelRef(): BaseData {
         name: dataRoles[0].name
     };
 }
-const vegaProviderInfo = vegaResources.vega.schemaUrl;
-const vegaLiteProviderInfo = vegaResources.vegaLite.schemaUrl;
+const providerInfo = getConfig().providerResources;
+const vegaProviderInfo = providerInfo.vega.schemaUrl;
+const vegaLiteProviderInfo = providerInfo.vegaLite.schemaUrl;
 const authorInfo = 'Deneb';
 
 export {

@@ -21,9 +21,17 @@ Internal API methods for Deneb.
 
 Intended to provide methods for working with visual configuration (stored in `/deneb-config.json`). The schema/documentation for the config is in `/schema/deneb-config.json`.
 
-#### config.**getConfig()**
+#### config.**getConfig**()
 
 Get object representation of visual configuration.
+
+#### config.**getVisualMetadata**()
+
+Get object representation of visual metadata (from pbiviz.json).
+
+#### config.**providerVersions**
+
+Object containing packaged versions for Vega and Vega-Lite, as derived from `package.json`.
 
 ## dataset
 

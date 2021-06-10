@@ -24,10 +24,7 @@ import {
 } from '.';
 import store from '../store';
 import { updateSpec, updateFixStatus } from '../store/visualReducer';
-import {
-    editorDefaults,
-    vegaSettingsDefaults
-} from '../config';
+import { vegaSettingsDefaults } from '../config';
 import {
     IFixResult,
     IFixStatus,
@@ -36,6 +33,7 @@ import {
     TSpecProvider
 } from '../types';
 import { isFeatureEnabled } from '../api/features';
+import { getConfig } from '../api/config';
 
 const owner = 'SpecificationService';
 
@@ -201,7 +199,7 @@ export class SpecificationService implements ISpecificationHandlerService {
     @standardLog()
     indentJson(json: object) {
         Debugger.log('Formatting JSON...');
-        return JSON.stringify(json, null, editorDefaults.tabSize);
+        return JSON.stringify(json, null, getConfig().editorDefaults.tabSize);
     }
 
     @standardLog()

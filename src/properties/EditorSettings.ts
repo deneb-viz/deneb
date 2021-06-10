@@ -1,5 +1,5 @@
 import SettingsBase from './SettingsBase';
-import { editorDefaults as defaults } from '../config';
+import { getConfig } from '../api/config';
 import { TEditorPosition } from '../types';
 
 /**
@@ -7,5 +7,7 @@ import { TEditorPosition } from '../types';
  */
 export default class EditorSettings extends SettingsBase {
     // Preferred editor position within interface
-    public position: TEditorPosition = defaults.position;
+    public position: TEditorPosition = <TEditorPosition>(
+        getConfig().editorDefaults.position
+    );
 }

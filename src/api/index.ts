@@ -9,4 +9,15 @@ import * as store from './store';
 import * as template from './template';
 import * as tooltip from './tooltip';
 
-export { config, dataset, dataView, developer, event, features, selection, store, template, tooltip };
+export {
+    config,
+    dataset,
+    dataView,
+    developer,
+    event,
+    features,
+    selection,
+    store,
+    template,
+    tooltip
+};

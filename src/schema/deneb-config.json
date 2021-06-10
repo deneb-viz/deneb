@@ -1,9 +1,28 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
+    "definitions": {
+        "IProviderSettings": {
+            "type": "object",
+            "required": ["documentationUrl", "schemaUrl"],
+            "properties": {
+                "documentationUrl": {
+                    "description": "Location of applicable provider documentation",
+                    "type": "string"
+                },
+                "schemaUrl": {
+                    "description": "Location of applicable provider JSON schema.",
+                    "type": "string"
+                }
+            }
+        }
+    },
     "properties": {
         "features": {
+            "description": "Visual feature switches.",
             "type": "object",
+            "additionalProperties": false,
+            "required": ["unitTestCanary"],
             "properties": {
                 "unitTestCanary": {
                     "description": "Used to validate unit testing functionality. Should always be `false`.",
@@ -38,9 +57,92 @@
                     "description": "If a field in a Vega tooltip's `datum` object is present in the `tooltip` object, attempt to find a corresponding field name in the visual dataset metadata, and get its format string (if not already formatted in the spec).",
                     "type": "boolean"
                 }
-            },
-            "additionalProperties": false
+            }
+        },
+        "providerResources": {
+            "description": "Embedded versions - used to help automate the packaged Vega and Vega-Lite versions on the visual's landing page, plus URLs or resources that we might want to expose to the user within the visual.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["vega", "vegaLite"],
+            "properties": {
+                "vega": {
+                    "$ref": "#/definitions/IProviderSettings",
+                    "description": ""
+                },
+                "vegaLite": {
+                    "$ref": "#/definitions/IProviderSettings",
+                    "description": ""
+                }
+            }
+        },
+        "editorDefaults": {
+            "description": "For the Ace editor used with `jsoneditor`, this object tracks any configuration values that aren't covered in any logic or properties elsewhere.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["debounceInterval", "tabSize"],
+            "properties": {
+                "debounceInterval": {
+                    "description": "Time (in ms) before debouncing user input to Redux, the longer the interval, the less chatty things are, but the longer the perceived lag for things to happen after the user finishes typing in the editor.",
+                    "type": "integer"
+                },
+                "tabSize": {
+                    "description": "Number of tabs to apply per level when formatting JSON.",
+                    "type": "integer"
+                },
+                "position": {
+                    "description": "Position in the pane",
+                    "enum": ["left", "right"]
+                }
+            }
+        },
+        "splitPaneDefaults": {
+            "description": "For the Editor pane, we're using `react-split-pane` to allow the author to resize it. This object specifies the sizes we should allow for this pane within the visual viewport.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "minSize",
+                "defaultSizePercent",
+                "maxSizePercent",
+                "collapsedSize"
+            ],
+            "properties": {
+                "minSize": {
+                    "description": "Minimum allowed size of expanded editor pane (px).",
+                    "type": "integer"
+                },
+                "defaultSizePercent": {
+                    "description": "Default percentage of viewport to allocate for the expanded editor pane.",
+                    "type": "number"
+                },
+                "maxSizePercent": {
+                    "description": "Maximum percentage of viewport to allow for the expanded editor pane.",
+                    "type": "number"
+                },
+                "collapsedSize": {
+                    "description": "The width of the collapsed editor pane (px).",
+                    "type": "integer"
+                }
+            }
+        },
+        "visualViewPortAdjust": {
+            "description": "For the rendered Vega spec, how much spacing (in px) to apply to the visual, within its visible area.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["top", "left"],
+            "properties": {
+                "top": {
+                    "type": "integer"
+                },
+                "left": {
+                    "type": "integer"
+                }
+            }
         }
     },
-    "required": ["features"]
+    "required": [
+        "features",
+        "editorDefaults",
+        "splitPaneDefaults",
+        "visualViewPortAdjust"
+    ]
 }

@@ -4,15 +4,12 @@ import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import DataViewCategorical = powerbi.DataViewCategorical;
 import ISelectionIdBuilder = powerbi.visuals.ISelectionIdBuilder;
 
-import {
-    IDataViewService
-} from '../types';
+import { IDataViewService } from '../types';
 import Debugger, { standardLog } from '../Debugger';
 import { selectionHandlerService, templateService } from '.';
 import * as api from '../api';
 import IVisualDataset = api.dataset.IVisualDataset;
 import IVisualValueMetadata = api.dataset.IVisualValueMetadata;
-
 
 const owner = 'DataViewService';
 
