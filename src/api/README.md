@@ -10,6 +10,8 @@ Internal API methods for Deneb.
 -   [developer](#developer)
 -   [event](#event)
 -   [features](#features)
+-   [formatting](#formatting)
+-   [i18n](#i18n)
 -   [selection](#selection)
 -   [store](#store)
 -   [template](#template)
@@ -109,6 +111,18 @@ For working with enabled visual features.
 #### features.**isFeatureEnabled(_feature_)**
 
 Check config for named feature flag and verify that it's enabled. Also returns `false` if flag does not exist.
+
+## formatting
+
+#### formatting.**createFormatterFromString**(_format_)
+
+Convenience function that creates a Power BI `valueFormatter.IValueFormatter` using the supplied format string, and using the visual's locale.
+
+## i18n
+
+#### i18n.**getLocale()**
+
+Convenience function that returns the visual's locale (or overridden locale is using developer mode) from Deneb's Redux store.
 
 ## selection
 
@@ -210,11 +224,34 @@ Convenience constant that confirms whether the `tooltipHandler` feature switch i
 
 For a given Vega `tooltip` object (key-value pairs), extract any non-reserved keys, and structure suitably as an array of standard Power BI tooltip items (`VisualTooltipDataItem[]`).
 
+#### 🔒 tooltip.**getFieldsEligibleForAutoFormat**(_tooltip_)
+
+For given Vega `tooltip` object (key-value pairs), return an object of fields from the visual dataset's metadata that are in the tooltip, and eligible for automatic formatting. Eligibility criteria is as follows:
+
+-   The `tooltipResolveNumberFieldFormat` feature is enabled, and:
+-   The field display name has a corresponding entry in the visual datset's metadata, and:
+-   The field is a number type, and:
+-   The tooltip value exactly matches the number representation in the `datum`.
+
 #### 🔒 tooltip.**getTooltipIdentity**(_datum_, _tooltip_)
 
 For a supplied `datum` object from a Vega tooltip handler, attempt to identify a valid Power BI selection ID that can be added to the tooltip call for any report pages that Power BI may have for the selector. If there is no explicit identity discoverable in the datum, then it will attempt to create a selection ID from the dataset and data view based on known values.
 
 Returns single item array containing valid `ISelectionId` (or `null` if a selection ID cannot be resolved).
+
+#### 🔒 tooltip.**hideTooltip**(_tooltipService_)
+
+Request Power BI hides the tooltip.
+
+#### tooltip.**isResolveNumberFormatEnabled**
+
+Convenience constant that confirms whether the `tooltipResolveNumberFieldFormat` feature switch is enabled (via [features](#features) API).
+
+The truthiness of this result depends on [tooltip.**isHandlerEnabled**](#tooltipishandlerenabled) being `true` also.
+
+#### 🔒 tooltip.**isTouchEvent**
+
+Convenience constant for tooltip events, as it's required by Power BI.
 
 #### 🔒 tooltip.**resolveTooltipContent**(_tooltipService_)(_vegaTooltip_)
 

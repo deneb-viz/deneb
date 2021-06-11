@@ -1,3 +1,11 @@
-export { encodeFieldForSpec } from './src/encodeFieldForSpec';
-export { getCategoryColumns } from './src/getCategoryColumns';
-export { isFetchMoreEnabled } from './src/isFetchMoreEnabled';
+export { encodeFieldForSpec, getCategoryColumns, isFetchMoreEnabled };
+
+import { isFeatureEnabled } from '../features';
+import { getState } from '../store';
+
+const encodeFieldForSpec = (displayName: string) =>
+    displayName.replace(/([\\".\[\]])/g, '_');
+
+const getCategoryColumns = () => getState().visual.categories;
+
+const isFetchMoreEnabled = isFeatureEnabled('fetchMoreData');

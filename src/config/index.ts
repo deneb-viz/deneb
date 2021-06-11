@@ -10,7 +10,6 @@ export {
     developerDefaults,
     exportFieldConstraints,
     locales,
-    metaVersion,
     theme,
     vegaSettingsDefaults,
     visualFeatures
@@ -28,13 +27,6 @@ const visualFeatures = {
      */
     debug: false
 };
-
-/**
- * ======
- * Template metadata version
- * ======
- */
-const metaVersion = 1;
 
 /**
  * =======================

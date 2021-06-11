@@ -59,6 +59,18 @@
                 }
             }
         },
+        "templates": {
+            "description": "Used to manage handling of template functionality.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["metadataVersion"],
+            "properties": {
+                "metadataVersion": {
+                    "description": "Template metadata version",
+                    "type": "integer"
+                }
+            }
+        },
         "providerResources": {
             "description": "Embedded versions - used to help automate the packaged Vega and Vega-Lite versions on the visual's landing page, plus URLs or resources that we might want to expose to the user within the visual.",
             "type": "object",
@@ -141,6 +153,7 @@
     },
     "required": [
         "features",
+        "templates",
         "editorDefaults",
         "splitPaneDefaults",
         "visualViewPortAdjust"

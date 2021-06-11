@@ -1,6 +1,5 @@
 import powerbi from 'powerbi-visuals-api';
 import ISelectionId = powerbi.visuals.ISelectionId;
-import { valueFormatter } from 'powerbi-visuals-utils-formattingutils';
 
 import jsonrepair from 'jsonrepair';
 import * as Vega from 'vega';
@@ -34,6 +33,7 @@ import {
 } from '../types';
 import { isFeatureEnabled } from '../api/features';
 import { getConfig } from '../api/config';
+import { createFormatterFromString } from '../api/formatting';
 
 const owner = 'SpecificationService';
 
@@ -289,11 +289,7 @@ export class SpecificationService implements ISpecificationHandlerService {
             Debugger.log(
                 `Formatting value: ${datum} with format "${params}"...`
             );
-            const fmt = valueFormatter.create({
-                    format: `${params}`,
-                    cultureSelector: locale
-                }),
-                value = fmt.format(datum);
+            const value = createFormatterFromString(`${params}`).format(datum);
             Debugger.log(`Formatted value: ${value}`);
             return value;
         });

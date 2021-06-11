@@ -10,6 +10,9 @@
         "tooltipResolveNumberFieldFormat": true,
         "unitTestCanary": false
     },
+    "templates": {
+        "metadataVersion": 1
+    },
     "providerResources": {
         "vega": {
             "documentationUrl": "https://vega.github.io/vega/docs/",

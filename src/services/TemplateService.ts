@@ -25,7 +25,6 @@ import {
     TDatasetFieldType
 } from '../schema/template-v1';
 import * as _ from 'lodash';
-import { metaVersion } from '../config';
 import * as api from '../api';
 import getConfig = api.config.getConfig;
 import getVisualMetadata = api.config.getVisualMetadata;
@@ -38,11 +37,12 @@ export class TemplateService implements ITemplateService {
     }
 
     newExportTemplateMetadata(): IDenebTemplateMetadata {
-        const visualMetadata = getVisualMetadata();
+        const visualMetadata = getVisualMetadata(),
+            { metadataVersion } = getConfig().templates;
         return {
             deneb: {
                 build: visualMetadata.version,
-                metaVersion,
+                metaVersion: metadataVersion,
                 provider: null
             },
             information: {
@@ -254,11 +254,12 @@ export class TemplateService implements ITemplateService {
         const { visual, templates } = store.getState(),
             { i18n } = visual,
             visualMetadata = getVisualMetadata(),
+            { metadataVersion } = getConfig().templates,
             { templateExportMetadata } = templates;
         return {
             deneb: {
                 build: visualMetadata.version,
-                metaVersion,
+                metaVersion: metadataVersion,
                 provider: visual.settings.vega.provider
             },
             information: {
