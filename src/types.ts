@@ -32,6 +32,8 @@ import {
 } from './schema/template-v1';
 import { ErrorObject } from 'ajv';
 import { IVisualDataset } from './api/dataset';
+import { TVisualInterface } from './api/interface';
+import { TTemplateExportState, TTemplateImportState } from './api/template';
 
 /**
  * =====
@@ -51,10 +53,7 @@ export type TExportOperation = 'information' | 'dataset' | 'template';
 export type TEditorOperation = 'spec' | 'config' | 'settings';
 // Specify the start or end of a console group for the `Debugger`.
 export type TDebugMethodMarkerExtent = 'start' | 'end';
-// The types of interface we need to render within the visual.
-export type TVisualInterface = 'Landing' | 'View' | 'Edit';
-// Position of editor within the interface
-export type TEditorPosition = 'left' | 'right';
+
 // Modal dialog type (used for specific ops handling)
 export type TModalDialogType = 'new' | 'export';
 // Stages to within the store when processing data, and therefore give us some UI hooks for the end-user.
@@ -63,21 +62,6 @@ export type TDataProcessingStage =
     | 'Fetching'
     | 'Processing'
     | 'Processed';
-// Stages we go through when importing a template so that the interface can respond accordingly.
-export type TTemplateImportState =
-    | 'None'
-    | 'Supplied'
-    | 'Loading'
-    | 'Validating'
-    | 'Success'
-    | 'Error';
-// Stages we go through when exporting a template so that the interface can respond accordingly.
-export type TTemplateExportState =
-    | 'None'
-    | 'Validating'
-    | 'Editing'
-    | 'Success'
-    | 'Error';
 // Template type constraints for placeholders (currently not used).
 export type TSupportedValueTypeDescriptor =
     | 'text'
@@ -275,65 +259,6 @@ export interface IPropertyService {
 }
 
 /**
- * API for managing interface and sizing within the visual.
- */
-export interface IRenderingService {
-    /**
-     * Based on the state of the store, determine what interface should be displayed to the end-user.
-     *
-     * @param state - the current visual (store) state for inspection.
-     */
-    resolveInterfaceType: (state: IVisualSliceState) => TVisualInterface;
-    /**
-     * Calculate the default size of the resizable pane (in px) based on current viewport size and config defaults.
-     *
-     * @param viewport - current visual viewport dimensions.
-     * @param position - current editor position.
-     */
-    getResizablePaneDefaultWidth: (
-        viewport: IViewport,
-        position: TEditorPosition
-    ) => number;
-    /**
-     * Based on the current state of the resizable pane, resolve its actual width on the screen.
-     *
-     * @param paneExpandedWidth - current width of the expanded resizable pane.
-     * @param editorPaneIsExpanded - flag confirming whether editor pane is expanded or collapsed.
-     * @param viewport - current visual viewport dimensions.
-     * @param position - current editor position.
-     */
-    getResizablePaneSize: (
-        paneExpandedWidth: number,
-        editorPaneIsExpanded: boolean,
-        viewport: IViewport,
-        position: TEditorPosition
-    ) => number;
-    /**
-     * Work out what the minimum size of the resizable pane should be (in px), based on the persisted visual (store) state.
-     */
-    getResizablePaneMinSize: () => number;
-    /**
-     * Work out what the maximum size of the resizable pane should be (in px), based on the persisted visual (store) state.
-     */
-    getResizablePaneMaxSize: () => number;
-    /**
-     * Calculate the dimensions of the Vega/Vega-Lite visual viewport (height/width) based on the interface state and a number
-     * of other factors (including any config defaults).
-     *
-     * @param viewport - current visual viewport dimensions.
-     * @param paneWidth - current width of resizable pane.
-     * @param interfaceType - the current interface the visual is displaying for the end user.
-     * @param position - current editor position.
-     */
-    calculateVegaViewport: (
-        viewport: IViewport,
-        paneWidth: number,
-        interfaceType: TVisualInterface,
-        position: TEditorPosition
-    ) => IViewport;
-}
-
-/**
  * API to handle signals from a Vega/Vega-Lite view and convert any elegible data point logic into suitable Power BI selection
  * operations.
  */
@@ -354,15 +279,6 @@ export interface ISelectionHandlerService {
      * @param selection - array of selected data from Vega view.
      */
     handleContextMenu: (name: string, selection: any) => void;
-    /**
-     * We have some compatibility issues between `powerbi.extensibility.ISelectionId` and `powerbi.visuals.ISelectionId`,
-     * as well as needing to coerce Selection IDs to strings so that we can set intial selections for Vega-Lite (as objects
-     * aren't supported). This consolidates the logic we're using to resolve a Selection ID to a string for use across the
-     * visual.
-     *
-     * @param id - the selection ID we wish to stringify.
-     */
-    getSidString: (id: ISelectionId) => string;
 }
 
 /**
@@ -426,74 +342,6 @@ export interface ISpecificationHandlerService {
      * @param spec - specification to analyse
      */
     determineProviderFromSpec: (spec: Spec | TopLevelSpec) => TSpecProvider;
-}
-
-/**
- * API to handle operations around visual template operations.
- */
-export interface ITemplateService {
-    /**
-     * For a supplied template, substitute placeholder values and return a stringified representation of the object.
-     */
-    getReplacedTemplate: (template: Spec | TopLevelSpec) => string;
-    /**
-     * Enumerate a template's placeholders and confirm they all have values supplied by the user. If a template doesn't have any
-     * placeholders then this will also be regarded as fulfilled.
-     *
-     * @param template - the template object to inspect.
-     */
-    getPlaceholderResolutionStatus: (template: Spec | TopLevelSpec) => boolean;
-    /**
-     * Supply assistive text to a placeholder, based on whether it allows columns, measures or both.
-     *
-     * @param placeholder - the placeholder to interrogate.
-     */
-    getPlaceholderDropdownText: (datasetField: ITemplateDatasetField) => string;
-    /**
-     * Attempt to load the selected template JSON file and validate it.
-     *
-     * @param files - the `FileList` object to attempt load from.
-     */
-    handleFileSelect: (files: FileList) => void;
-    /**
-     * For a given column or measure (or template placeholder), resolve the UI icon for its data type.
-     *
-     * @param type - the data type to resolve.
-     */
-    resolveTypeIcon: (type: TDatasetFieldType) => string;
-    /**
-     * For a given column or measure (or template placeholder), resolve the UI tooltip/title text for its data type.
-     *
-     * @param type - the data type to resolve.
-     */
-    resolveTypeIconTitle: (type: TDatasetFieldType) => string;
-    /**
-     * For a given column or measure (or template placeholder), resolve its type against the Power BI value descriptor.
-     *
-     * @param type - the data type to resolve.
-     */
-    resolveValueDescriptor: (type: ValueTypeDescriptor) => TDatasetFieldType;
-    /**
-     * Checks to see if current spec is valid and updates store state for UI accordingly.
-     */
-    validateSpecificationForExport: () => void;
-    /**
-     * For a given `DataViewMetadataColumn`, produces a new `ITemplateDatasetField` object that can be used for templating
-     * purposes.
-     *
-     * @param metadata data view column to map
-     */
-    resolveVisualMetaToDatasetField: (
-        metadata: DataViewMetadataColumn
-    ) => ITemplateDatasetField;
-    /**
-     * Combines spec, config and specified metadata to produce a valid JSON template for export.
-     */
-    getExportTemplate: () => string;
-    /**
-     * Instantiates a new object for export template metadata, ready for population.
-     */
-    newExportTemplateMetadata: () => IDenebTemplateMetadata;
 }
 
 /**
@@ -624,16 +472,6 @@ export interface ITemplateImportPayload {
     templateFileRawContent: string;
     templateToApply: Spec | TopLevelSpec;
     provider?: TSpecProvider;
-}
-
-export interface ITemplateImportErrorPayload {
-    templateImportErrorMessage: string;
-    templateSchemaErrors: ErrorObject[];
-}
-
-export interface ITemplateExportFieldUpdatePayload {
-    selector: string;
-    value: string;
 }
 
 export interface IKeyboardShortcut {

@@ -3,9 +3,9 @@ import * as React from 'react';
 import { IconButton } from '@fluentui/react/lib/Button';
 
 import Debugger from '../../Debugger';
-import { templateService } from '../../services';
 import { IDataFieldLabelProps } from '../../types';
 import { templateTypeIconStyles } from '../../config/styles';
+import { resolveTypeIcon, resolveTypeIconTitle } from '../../api/template';
 
 const DataTypeIcon: React.FC<IDataFieldLabelProps> = (props) => {
     const { datasetField } = props;
@@ -13,10 +13,10 @@ const DataTypeIcon: React.FC<IDataFieldLabelProps> = (props) => {
     return (
         <IconButton
             iconProps={{
-                iconName: templateService.resolveTypeIcon(datasetField.type)
+                iconName: resolveTypeIcon(datasetField.type)
             }}
-            title={templateService.resolveTypeIconTitle(datasetField.type)}
-            ariaLabel={templateService.resolveTypeIconTitle(datasetField.type)}
+            title={resolveTypeIconTitle(datasetField.type)}
+            ariaLabel={resolveTypeIconTitle(datasetField.type)}
             styles={templateTypeIconStyles}
         />
     );

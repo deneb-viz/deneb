@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { actionButtonStyles } from '../../config/styles';
-import { templateService } from '../../services';
+import { onTemplateFileSelect } from '../../api/template';
 
 const importIcon: IIconProps = { iconName: 'OpenFile' };
 
@@ -22,7 +22,7 @@ const ImportTemplateControl: React.FC = () => {
         handleActionClick = () => inputRef.current.click(),
         handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
             e.preventDefault();
-            templateService.handleFileSelect(e.target.files);
+            onTemplateFileSelect(e.target.files);
             setFileKey(uuidv4());
         },
         inputId = useId('importTemplate');

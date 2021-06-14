@@ -2,15 +2,10 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import * as _ from 'lodash';
 
 import Debugger from '../Debugger';
-import { templateService } from '../services';
 import {
     IPlaceholderValuePayload,
-    ITemplateExportFieldUpdatePayload,
-    ITemplateImportErrorPayload,
     ITemplateImportPayload,
     TExportOperation,
-    TTemplateExportState,
-    TTemplateImportState,
     TTemplateProvider
 } from '../types';
 import { templateReducer as initialState } from '../config/templateReducer';
@@ -20,6 +15,14 @@ import {
 } from '../schema/template-v1';
 import { TopLevelSpec } from 'vega-lite';
 import { Spec } from 'vega';
+import {
+    getPlaceholderResolutionStatus,
+    getNewExportTemplateMetadata,
+    ITemplateExportFieldUpdatePayload,
+    ITemplateImportErrorPayload,
+    TTemplateExportState,
+    TTemplateImportState
+} from '../api/template';
 
 const templateSlice = createSlice({
     name: 'templates',
@@ -49,7 +52,7 @@ const templateSlice = createSlice({
                     state.selectedTemplateIndex = templateIdx;
                     state.templateToApply =
                         state[state.templateProvider][templateIdx];
-                    state.allImportCriteriaApplied = templateService.getPlaceholderResolutionStatus(
+                    state.allImportCriteriaApplied = getPlaceholderResolutionStatus(
                         <Spec | TopLevelSpec>state.templateToApply
                     );
                 }
@@ -100,7 +103,7 @@ const templateSlice = createSlice({
             state.selectedTemplateIndex = action.payload;
             state.templateToApply =
                 state[state.templateProvider][action.payload];
-            state.allImportCriteriaApplied = templateService.getPlaceholderResolutionStatus(
+            state.allImportCriteriaApplied = getPlaceholderResolutionStatus(
                 <Spec | TopLevelSpec>state.templateToApply
             );
         },
@@ -119,7 +122,7 @@ const templateSlice = createSlice({
             state.templateExportMetadata = { ...newState };
         },
         newExportTemplateMetadata: (state, action) => {
-            state.templateExportMetadata = templateService.newExportTemplateMetadata();
+            state.templateExportMetadata = getNewExportTemplateMetadata();
         },
         syncExportTemplateDataset: (
             state,
@@ -156,7 +159,7 @@ const templateSlice = createSlice({
                     state.templateToApply?.usermeta
                 )).dataset[phIdx].suppliedObjectName = pl.objectName;
             }
-            state.allImportCriteriaApplied = templateService.getPlaceholderResolutionStatus(
+            state.allImportCriteriaApplied = getPlaceholderResolutionStatus(
                 <Spec | TopLevelSpec>state.templateToApply
             );
         }

@@ -1,8 +1,5 @@
-import * as ace from 'ace-builds';
-import Ace = ace.Ace;
-
 import Debugger, { standardLog } from '../Debugger';
-import { propertyService, specificationService, templateService } from '.';
+import { propertyService, specificationService } from '.';
 import store from '../store';
 import {
     toggleAutoApply,
@@ -12,7 +9,6 @@ import {
     updateSelectedOperation
 } from '../store/visualReducer';
 import {
-    newExportTemplateMetadata,
     updateSelectedTemplate,
     updateTemplateExportState
 } from '../store/templateReducer';

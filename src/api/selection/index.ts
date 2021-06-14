@@ -1,6 +1,7 @@
 export {
     createSelectionId,
     getSelectionIdBuilder,
+    getSidString,
     isContextMenuEnabled,
     isDataPointEnabled,
     resolveDatumForKeywords,
@@ -11,7 +12,9 @@ export {
 };
 
 import powerbi from 'powerbi-visuals-api';
+import ISelectionId = powerbi.visuals.ISelectionId;
 import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
+
 import _ from 'lodash';
 
 import {
@@ -43,6 +46,8 @@ const createSelectionId = (
 };
 
 const getSelectionIdBuilder = () => getState().visual.selectionIdBuilder();
+
+const getSidString = (id: ISelectionId) => JSON.stringify(id.getSelector());
 
 const isContextMenuEnabled = isFeatureEnabled('selectionContextMenu');
 

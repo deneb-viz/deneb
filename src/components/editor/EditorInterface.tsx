@@ -6,12 +6,16 @@ import { Options, useHotkeys } from 'react-hotkeys-hook';
 import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { updateEditorPaneSize } from '../../store/visualReducer';
-import { commandService, renderingService } from '../../services';
+import { commandService } from '../../services';
 import DataProcessingRouter from '../DataProcessingRouter';
 import EditorPaneContent from './EditorPaneContent';
 import NewVisualDialog from '../create/NewVisualDialog';
 import ExportVisualDialog from '../export/ExportVisualDialog';
 import { IKeyboardShortcut } from '../../types';
+import {
+    getResizablePaneMaxSize,
+    getResizablePaneMinSize
+} from '../../api/interface';
 
 // Hotkey assignment for editor UI
 const options: Options = { enableOnTags: ['INPUT', 'SELECT', 'TEXTAREA'] },
@@ -117,8 +121,8 @@ const EditorInterface: React.FC = () => {
         <div id='visualEditor'>
             <SplitPane
                 split='vertical'
-                minSize={renderingService.getResizablePaneMinSize()}
-                maxSize={renderingService.getResizablePaneMaxSize()}
+                minSize={getResizablePaneMinSize()}
+                maxSize={getResizablePaneMaxSize()}
                 size={resizablePaneWidth}
                 onChange={handleResize}
                 onResizerDoubleClick={resolveDoubleClick}

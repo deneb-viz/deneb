@@ -17,8 +17,8 @@ import {
     templatePickerStackStyles,
     templatePickerNonShrinkingStackItemStyles
 } from '../../config/styles';
-import { templateService } from '../../services';
 import { iconButtonStyles } from '../../config/styles';
+import { getExportTemplate } from '../../api/template';
 
 const textStyles: Partial<ITextFieldStyles> = {
     root: {
@@ -103,7 +103,7 @@ const TemplateExportJsonPane: React.FC = () => {
                     componentRef={textAreaRef}
                     multiline
                     readOnly
-                    value={templateService.getExportTemplate()}
+                    value={getExportTemplate()}
                     styles={textStyles}
                     resizable={false}
                 />

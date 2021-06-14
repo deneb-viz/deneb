@@ -1,4 +1,4 @@
-import { extractTooltipDataItemsFromObject } from '../../src/api/tooltip/src/extractTooltipDataItemsFromObject';
+import {} from '../../src/api/tooltip';
 
 describe('API: tooltip', () => {
     describe('extractTooltipDataItemsFromObject', () => {

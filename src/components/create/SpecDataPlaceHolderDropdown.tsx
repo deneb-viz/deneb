@@ -9,17 +9,19 @@ import {
 import { Icon } from '@fluentui/react/lib/Icon';
 
 import Debugger from '../../Debugger';
-import { templateService } from '../../services';
 import { ISpecDataPlaceHolderDropdownProps } from '../../types';
 import {
     templatePickerDropdownStyles,
-    templateTypeIconStyles,
-    templateTypeIconOptionStyles,
-    templateTypeInfoIconStyles
+    templateTypeIconOptionStyles
 } from '../../config/styles';
 import { state } from '../../store';
 import { patchTemplatePlaceholder } from '../../store/templateReducer';
 import DataFieldLabel from '../elements/DataFieldLabel';
+import {
+    getPlaceholderDropdownText,
+    resolveTypeIcon,
+    resolveValueDescriptor
+} from '../../api/template';
 
 const SpecDataPlaceHolderDropdown: React.FC<ISpecDataPlaceHolderDropdownProps> = (
     props
@@ -53,9 +55,7 @@ const SpecDataPlaceHolderDropdown: React.FC<ISpecDataPlaceHolderDropdownProps> =
                     disabled: disabled,
                     data: {
                         placeholder: datasetField,
-                        icon: templateService.resolveTypeIcon(
-                            templateService.resolveValueDescriptor(v.type)
-                        )
+                        icon: resolveTypeIcon(resolveValueDescriptor(v.type))
                     }
                 };
             });
@@ -78,9 +78,7 @@ const SpecDataPlaceHolderDropdown: React.FC<ISpecDataPlaceHolderDropdownProps> =
                 </div>
             );
         },
-        placeholderText = templateService.getPlaceholderDropdownText(
-            datasetField
-        ),
+        placeholderText = getPlaceholderDropdownText(datasetField),
         selectedKey = selectedItem ? selectedItem.key : undefined;
     return (
         <Dropdown

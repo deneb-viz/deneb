@@ -2,14 +2,14 @@ import powerbi from 'powerbi-visuals-api';
 import DataView = powerbi.DataView;
 import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import DataViewCategorical = powerbi.DataViewCategorical;
-import ISelectionIdBuilder = powerbi.visuals.ISelectionIdBuilder;
 
 import { IDataViewService } from '../types';
 import Debugger, { standardLog } from '../Debugger';
-import { selectionHandlerService, templateService } from '.';
 import * as api from '../api';
-import IVisualDataset = api.dataset.IVisualDataset;
-import IVisualValueMetadata = api.dataset.IVisualValueMetadata;
+
+import { IVisualDataset, IVisualValueMetadata } from '../api/dataset';
+import { getSidString } from '../api/selection';
+import { resolveVisualMetaToDatasetField } from '../api/template';
 
 const owner = 'DataViewService';
 
@@ -89,7 +89,7 @@ export class DataViewService implements IDataViewService {
                     ...{
                         isColumn: !c.column.isMeasure,
                         sourceIndex: c.sourceIndex,
-                        templateMetadata: templateService.resolveVisualMetaToDatasetField(
+                        templateMetadata: resolveVisualMetaToDatasetField(
                             c.column
                         )
                     }
@@ -125,9 +125,7 @@ export class DataViewService implements IDataViewService {
                         return {
                             ...{
                                 __identity__: identity,
-                                __key__: selectionHandlerService.getSidString(
-                                    identity
-                                ),
+                                __key__: getSidString(identity),
                                 identityIndex: ri
                             },
                             ...valueRow

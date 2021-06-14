@@ -17,7 +17,7 @@ import ExportVisualDialogPivot from './ExportVisualDialogPivot';
 import TemplateExportDatasetPane from './TemplateExportDatasetPane';
 import TemplateExportInformationPane from './TemplateExportInformationPane';
 import TemplateExportJsonPane from './TemplateExportJsonPane';
-import { templateService } from '../../services';
+import { validateSpecificationForExport } from '../../api/template';
 
 export const ExportVisualDialogBody = () => {
     Debugger.log('Rendering Component: [ExportVisualDialogBody]...');
@@ -40,7 +40,7 @@ export const ExportVisualDialogBody = () => {
         resolveExportBodyContent = () => {
             switch (templateExportState) {
                 case 'None': {
-                    templateService.validateSpecificationForExport();
+                    validateSpecificationForExport();
                     return '';
                 }
                 case 'Validating':

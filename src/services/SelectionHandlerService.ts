@@ -121,8 +121,4 @@ export class SelectionHandlerService implements ISelectionHandlerService {
             });
         Debugger.log('Context menu should now be visible..?');
     }
-
-    getSidString(id: ISelectionId) {
-        return JSON.stringify(id.getSelector());
-    }
 }

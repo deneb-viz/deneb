@@ -3,13 +3,12 @@ import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { dataViewService, renderingService } from '../services';
+import { dataViewService } from '../services';
 import {
     ICompiledSpec,
     IVisualUpdatePayload,
     TDataProcessingStage,
     IDataViewFlags,
-    TVisualInterface,
     IEditorPaneUpdatePayload,
     TEditorOperation,
     IFixResult,
@@ -19,6 +18,13 @@ import {
 import Debugger from '../Debugger';
 import { visualReducer as initialState } from '../config/visualReducer';
 import { isDeveloperModeEnabled } from '../api/developer';
+import {
+    calculateVegaViewport,
+    getResizablePaneDefaultWidth,
+    getResizablePaneSize,
+    resolveInterfaceType,
+    TVisualInterface
+} from '../api/interface';
 
 const visualSlice = createSlice({
     name: 'visual',
@@ -62,11 +68,14 @@ const visualSlice = createSlice({
                 state.locale = pl.settings?.developer?.locale || state.locale;
             }
             // If editing report and focus mode, then we're in the editor
-            const interfaceType = renderingService.resolveInterfaceType(
-                <IVisualSliceState>state
+            const interfaceType = resolveInterfaceType(
+                state.dataViewFlags,
+                state.editMode,
+                state.isInFocus,
+                state.viewMode
             );
             Debugger.log(`Interface type: ${interfaceType}`);
-            state.resizablePaneDefaultWidth = renderingService.getResizablePaneDefaultWidth(
+            state.resizablePaneDefaultWidth = getResizablePaneDefaultWidth(
                 pl.options.viewport,
                 state.settings.editor.position
             );
@@ -79,14 +88,14 @@ const visualSlice = createSlice({
                     state.resizablePaneExpandedWidth === null ||
                     positionSwitch
                 ) {
-                    state.resizablePaneExpandedWidth = renderingService.getResizablePaneDefaultWidth(
+                    state.resizablePaneExpandedWidth = getResizablePaneDefaultWidth(
                         pl.options.viewport,
                         state.settings.editor.position
                     );
                 }
             }
             state.interfaceType = interfaceType;
-            state.resizablePaneWidth = renderingService.getResizablePaneSize(
+            state.resizablePaneWidth = getResizablePaneSize(
                 state.resizablePaneExpandedWidth,
                 state.editorPaneIsExpanded,
                 state.viewport,
@@ -94,7 +103,7 @@ const visualSlice = createSlice({
             );
 
             // Resolve visual viewport
-            state.vegaViewport = renderingService.calculateVegaViewport(
+            state.vegaViewport = calculateVegaViewport(
                 state.viewport,
                 state.resizablePaneWidth,
                 state.interfaceType,
@@ -109,8 +118,11 @@ const visualSlice = createSlice({
         },
         updateDataViewFlags: (state, action: PayloadAction<IDataViewFlags>) => {
             state.dataViewFlags = action.payload;
-            state.interfaceType = renderingService.resolveInterfaceType(
-                <IVisualSliceState>state
+            state.interfaceType = resolveInterfaceType(
+                state.dataViewFlags,
+                state.editMode,
+                state.isInFocus,
+                state.viewMode
             );
         },
         updateInterfaceType: (
@@ -126,10 +138,13 @@ const visualSlice = createSlice({
             state.categories = action.payload.categories || [];
             state.dataset = action.payload.dataset;
             state.dataProcessingStage = 'Processed';
-            state.interfaceType = renderingService.resolveInterfaceType(
-                <IVisualSliceState>state
+            state.interfaceType = resolveInterfaceType(
+                state.dataViewFlags,
+                state.editMode,
+                state.isInFocus,
+                state.viewMode
             );
-            state.resizablePaneWidth = renderingService.getResizablePaneSize(
+            state.resizablePaneWidth = getResizablePaneSize(
                 state.resizablePaneExpandedWidth,
                 state.editorPaneIsExpanded,
                 state.viewport,
@@ -162,7 +177,7 @@ const visualSlice = createSlice({
             action: PayloadAction<IEditorPaneUpdatePayload>
         ) => {
             const { editorPaneWidth, editorPaneExpandedWidth } = action.payload;
-            state.vegaViewport = renderingService.calculateVegaViewport(
+            state.vegaViewport = calculateVegaViewport(
                 state.viewport,
                 editorPaneWidth,
                 state.interfaceType,
@@ -173,7 +188,7 @@ const visualSlice = createSlice({
         },
         toggleEditorPane: (state) => {
             const newExpansionState = !state.editorPaneIsExpanded,
-                newWidth = renderingService.getResizablePaneSize(
+                newWidth = getResizablePaneSize(
                     state.resizablePaneExpandedWidth,
                     newExpansionState,
                     state.viewport,
@@ -181,7 +196,7 @@ const visualSlice = createSlice({
                 );
             state.editorPaneIsExpanded = newExpansionState;
             state.resizablePaneWidth = newWidth;
-            state.vegaViewport = renderingService.calculateVegaViewport(
+            state.vegaViewport = calculateVegaViewport(
                 state.viewport,
                 newWidth,
                 state.interfaceType,

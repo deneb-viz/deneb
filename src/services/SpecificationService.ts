@@ -14,13 +14,7 @@ import * as vegaSchema from 'vega/build/vega-schema.json';
 import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
 
 import Debugger, { standardLog } from '../Debugger';
-import {
-    configEditorService,
-    propertyService,
-    selectionHandlerService,
-    specEditorService,
-    templateService
-} from '.';
+import { configEditorService, propertyService, specEditorService } from '.';
 import store from '../store';
 import { updateSpec, updateFixStatus } from '../store/visualReducer';
 import { vegaSettingsDefaults } from '../config';
@@ -34,6 +28,8 @@ import {
 import { isFeatureEnabled } from '../api/features';
 import { getConfig } from '../api/config';
 import { createFormatterFromString } from '../api/formatting';
+import { getSidString } from '../api/selection';
+import { getReplacedTemplate } from '../api/template';
 
 const owner = 'SpecificationService';
 
@@ -206,7 +202,7 @@ export class SpecificationService implements ISpecificationHandlerService {
     createFromTemplate(provider: TSpecProvider, template: Spec | TopLevelSpec) {
         Debugger.log('Creating new spec from template...');
 
-        const jsonSpec = templateService.getReplacedTemplate(template),
+        const jsonSpec = getReplacedTemplate(template),
             jsonConfig = this.indentJson(template.config);
         propertyService.updateObjectProperties(
             propertyService.resolveObjectProperties('vega', [
@@ -372,10 +368,8 @@ export class SpecificationService implements ISpecificationHandlerService {
                         (id: ISelectionId) =>
                             dataset.values.find(
                                 (v) =>
-                                    selectionHandlerService.getSidString(
-                                        v.__identity__
-                                    ) ===
-                                    selectionHandlerService.getSidString(id)
+                                    getSidString(v.__identity__) ===
+                                    getSidString(id)
                             )?.__key__
                     )
                     .filter((k) => k !== undefined)
