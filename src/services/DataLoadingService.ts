@@ -13,9 +13,8 @@ import {
     updateDataProcessingStage,
     dataLoadingComplete
 } from '../store/visualReducer';
-import { dataViewService } from '.';
 import { IDataLoadingService } from '../types';
-import { isFetchMoreEnabled } from '../api/dataView';
+import { getRowCount, isFetchMoreEnabled } from '../api/dataView';
 
 const owner = 'DataLimitService';
 
@@ -34,7 +33,7 @@ export class DataLoadingService implements IDataLoadingService {
         if (this.featureIsEnabled) {
             Debugger.log('Feature enabled. Attempting...');
             const dataView = options.dataViews[0],
-                rowsLoaded = dataViewService.getRowCount(dataView?.categorical),
+                rowsLoaded = getRowCount(dataView?.categorical),
                 { dataWindowsLoaded } = store.getState().visual;
             if (
                 options.operationKind === VisualDataChangeOperationKind.Create

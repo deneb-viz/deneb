@@ -3,7 +3,6 @@ import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { dataViewService } from '../services';
 import {
     ICompiledSpec,
     IVisualUpdatePayload,
@@ -12,11 +11,11 @@ import {
     IEditorPaneUpdatePayload,
     TEditorOperation,
     IFixResult,
-    IVisualSliceState,
     IVisualDatasetUpdatePayload
 } from '../types';
 import Debugger from '../Debugger';
 import { visualReducer as initialState } from '../config/visualReducer';
+import { getEmptyDataset } from '../api/dataset';
 import { isDeveloperModeEnabled } from '../api/developer';
 import {
     calculateVegaViewport,
@@ -162,7 +161,7 @@ const visualSlice = createSlice({
         recordInvalidDataView: (state) => {
             state.interfaceType = 'Landing';
             state.dataProcessingStage = 'Processed';
-            state.dataset = dataViewService.getEmptyDataset();
+            state.dataset = getEmptyDataset();
             state.dataRowsLoaded = 0;
             state.dataWindowsLoaded = 0;
         },

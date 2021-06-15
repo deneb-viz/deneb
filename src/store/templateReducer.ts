@@ -4,7 +4,6 @@ import * as _ from 'lodash';
 import Debugger from '../Debugger';
 import {
     IPlaceholderValuePayload,
-    ITemplateImportPayload,
     TExportOperation,
     TTemplateProvider
 } from '../types';
@@ -20,6 +19,7 @@ import {
     getNewExportTemplateMetadata,
     ITemplateExportFieldUpdatePayload,
     ITemplateImportErrorPayload,
+    ITemplateImportPayload,
     TTemplateExportState,
     TTemplateImportState
 } from '../api/template';

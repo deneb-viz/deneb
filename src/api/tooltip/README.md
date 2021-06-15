@@ -16,12 +16,6 @@ Functions and helpers for managing tooltip display.
 
 Convenience constant that confirms whether the `tooltipHandler` feature switch is enabled (via [features](../features/README.md) API).
 
-#### `isResolveNumberFormatEnabled`
-
-Convenience constant that confirms whether the `tooltipResolveNumberFieldFormat` feature switch is enabled (via [features](../features/README.md) API).
-
-The truthiness of this result depends on [`isHandlerEnabled`](#tooltipishandlerenabled) being `true` also.
-
 #### 🔒 `isTouchEvent`
 
 Convenience constant for tooltip events, as it's required by Power BI.
@@ -56,6 +50,12 @@ Returns single item array containing valid `ISelectionId` (or `null` if a select
 #### `hideTooltip`(_tooltipService_)
 
 Request Power BI hides the tooltip.
+
+#### `isResolveNumberFormatEnabled`()
+
+Confirms whether the `tooltipResolveNumberFieldFormat` feature switch is enabled (via [features](../features/README.md) API).
+
+The truthiness of this result depends on [`isHandlerEnabled`](#tooltipishandlerenabled) being `true` also.
 
 #### `resolveTooltipContent`(_tooltipService_)(_vegaTooltip_)
 

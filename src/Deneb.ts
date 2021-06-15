@@ -26,7 +26,6 @@ import VisualSettings from './properties/VisualSettings';
 
 import {
     dataLoadingService,
-    dataViewService,
     propertyService,
     specificationService
 } from './services';
@@ -41,6 +40,11 @@ import {
     updateDataset
 } from './store/visualReducer';
 import { syncExportTemplateDataset } from './store/templateReducer';
+import {
+    getMappedDataset,
+    validateDataViewMapping,
+    validateDataViewRoles
+} from './api/dataView';
 
 const owner = 'Visual';
 
@@ -147,15 +151,14 @@ export class Deneb implements IVisual {
                     Debugger.log(
                         'First data segment. Doing initial state checks...'
                     );
-                    const hasValidDataViewMapping = dataViewService.validateDataViewMapping(
+                    const hasValidDataViewMapping = validateDataViewMapping(
                             options.dataViews
                         ),
                         hasValidDataRoles =
                             hasValidDataViewMapping &&
-                            dataViewService.validateDataViewRoles(
-                                options.dataViews,
-                                ['dataset']
-                            ),
+                            validateDataViewRoles(options.dataViews, [
+                                'dataset'
+                            ]),
                         hasValidDataView =
                             hasValidDataViewMapping && hasValidDataRoles;
                     Debugger.log('Dispatching ');
@@ -191,7 +194,7 @@ export class Deneb implements IVisual {
                         updateDataset({
                             categories:
                                 options.dataViews[0]?.categorical?.categories,
-                            dataset: dataViewService.getMappedDataset(
+                            dataset: getMappedDataset(
                                 options.dataViews[0]?.categorical
                             )
                         })

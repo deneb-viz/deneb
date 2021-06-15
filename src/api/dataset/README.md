@@ -16,6 +16,10 @@ Functions and helpers for working with the visual dataset.
 
 Get current processed dataset (metadata and values) from Deneb's Redux store.
 
+#### `getEmptyDataset`()
+
+Ensures an empty dataset is made available.
+
 #### `getMetadata`()
 
 Get all metadata for current processed dataset from Deneb's Redux store.

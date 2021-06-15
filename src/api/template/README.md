@@ -58,9 +58,9 @@ For a given column or measure (or template placeholder), resolve the UI tooltip/
 
 For a given column or measure (or template placeholder), resolve its type against the corresponding Power BI value descriptor.
 
-#### `resolveVisualMetaToDatasetField`(_metadata_)
+#### `resolveVisualMetaToDatasetField`(_metadata_, _encodedName_)
 
-For a given `DataViewMetadataColumn`, produces a new `ITemplateDatasetField` object that can be used for templating purposes.
+For a given `DataViewMetadataColumn`, and its encoded name produces a new `ITemplateDatasetField` object that can be used for templating purposes.
 
 #### `validateSpecificationForExport`()
 
@@ -131,6 +131,10 @@ Payload for suppliying import error details to the Redux store.
 #### `ITemplateExportFieldUpdatePayload`
 
 Payload for supplying state of export field values for templates.
+
+#### `ITemplateImportPayload`
+
+Payload for suppliying import templte details to the Redux store.
 
 ## Types
 

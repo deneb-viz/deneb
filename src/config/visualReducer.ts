@@ -4,14 +4,15 @@ import EditMode = powerbi.EditMode;
 
 import { IVisualSliceState } from '../types';
 import VisualSettings from '../properties/VisualSettings';
-import { dataViewService, specificationService } from '../services';
+import { specificationService } from '../services';
+import { getEmptyDataset } from '../api/dataset';
 
 const visualReducer: IVisualSliceState = {
     allowInteractions: false,
     autoApply: false,
     canAutoApply: true,
     categories: [],
-    dataset: dataViewService.getEmptyDataset(),
+    dataset: getEmptyDataset(),
     dataProcessingStage: 'Initial',
     dataRowsLoaded: 0,
     dataViewFlags: {

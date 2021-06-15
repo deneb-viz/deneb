@@ -1,11 +1,7 @@
 import powerbi from 'powerbi-visuals-api';
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
-import DataView = powerbi.DataView;
-import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
-import DataViewCategorical = powerbi.DataViewCategorical;
 import ISelectionIdBuilder = powerbi.visuals.ISelectionIdBuilder;
-import ISelectionId = powerbi.visuals.ISelectionId;
 import ITooltipService = powerbi.extensibility.ITooltipService;
 import IViewport = powerbi.IViewport;
 import ViewMode = powerbi.ViewMode;
@@ -15,7 +11,6 @@ import ISelectionManager = powerbi.extensibility.ISelectionManager;
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 import VisualObjectInstancesToPersist = powerbi.VisualObjectInstancesToPersist;
 import DataViewPropertyValue = powerbi.DataViewPropertyValue;
-import ValueTypeDescriptor = powerbi.ValueTypeDescriptor;
 import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 
 import JSONEditor from 'jsoneditor';
@@ -27,8 +22,7 @@ import VisualSettings from './properties/VisualSettings';
 import DataLimitSettings from './properties/DataLimitSettings';
 import {
     ITemplateDatasetField,
-    IDenebTemplateMetadata,
-    TDatasetFieldType
+    IDenebTemplateMetadata
 } from './schema/template-v1';
 import { ErrorObject } from 'ajv';
 import { IVisualDataset } from './api/dataset';
@@ -132,42 +126,6 @@ export interface ICommandService {
      * Open a specific pivot item from the editor.
      */
     openEditorPivotItem: (operation: TEditorOperation) => void;
-}
-
-/**
- * API for working with the visual data view and structing data for use.
- */
-export interface IDataViewService {
-    /**
-     * Ensures an empty dataset is made available.
-     */
-    getEmptyDataset: () => IVisualDataset;
-    /**
-     * Checks for valid dataview and provides count of values.
-     */
-    getRowCount: (categorical: DataViewCategorical) => number;
-    /**
-     * Validates the data view, to confirm that we can get past the splash screen.
-     *
-     * @param dataViews - Visual dataView from update.
-     */
-    validateDataViewRoles: (
-        dataViews?: DataView[],
-        dataRoles?: string[]
-    ) => boolean;
-    /**
-     * Processes the data in the visual's data view into an object suitable for the visual's API.
-     *
-     * @param table - table data from visual data view.
-     * @param selectionIdBuilder - instance of builder, used for creating selection ID for each table row.
-     */
-    getMappedDataset: (categorical: DataViewCategorical) => IVisualDataset;
-    /**
-     * Validates the data view, to confirm that we can get past the spash screen
-     *
-     * @param dataViews - visual dataView from update options.
-     */
-    validateDataViewMapping: (dataViews: DataView[]) => boolean;
 }
 
 /**
@@ -465,13 +423,6 @@ export interface IFixPayload {
 export interface IEditorReferencePayload {
     role: TEditorOperation;
     editor: JSONEditor;
-}
-
-export interface ITemplateImportPayload {
-    templateFile: File;
-    templateFileRawContent: string;
-    templateToApply: Spec | TopLevelSpec;
-    provider?: TSpecProvider;
 }
 
 export interface IKeyboardShortcut {
