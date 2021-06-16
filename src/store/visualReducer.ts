@@ -4,13 +4,11 @@ import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import {
-    ICompiledSpec,
     IVisualUpdatePayload,
     TDataProcessingStage,
     IDataViewFlags,
     IEditorPaneUpdatePayload,
     TEditorOperation,
-    IFixResult,
     IVisualDatasetUpdatePayload
 } from '../types';
 import Debugger from '../Debugger';
@@ -24,6 +22,7 @@ import {
     resolveInterfaceType,
     TVisualInterface
 } from '../api/interface';
+import { ICompiledSpec, IFixResult } from '../api/specification';
 
 const visualSlice = createSlice({
     name: 'visual',
@@ -33,6 +32,7 @@ const visualSlice = createSlice({
             const pl = action.payload;
             state.i18n = pl.createLocalizationManager();
             state.launchUrl = pl.launchUrl;
+            state.persistProperties = pl.persistProperties;
             state.locale = pl.locale;
             state.themeColors = pl.colorPalette['colors']?.map(
                 (c: any) => c.value

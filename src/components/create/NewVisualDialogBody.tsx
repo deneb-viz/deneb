@@ -16,7 +16,7 @@ import {
 import { state } from '../../store';
 import NewVisualDialogPivot from './NewVisualDialogPivot';
 import TemplateManagementPane from './TemplateManagementPane';
-import { specificationService } from '../../services';
+import { createFromTemplate } from '../../api/specification';
 
 export const NewVisualDialogBody = () => {
     Debugger.log('Rendering Component: [NewVisualDialogBody]...');
@@ -29,10 +29,7 @@ export const NewVisualDialogBody = () => {
         } = root.templates,
         handleCreate = () => {
             Debugger.log('Create button clicked. Here goes...');
-            specificationService.createFromTemplate(
-                specProvider,
-                templateToApply
-            );
+            createFromTemplate(specProvider, templateToApply);
         },
         createDisabled = !allImportCriteriaApplied;
 

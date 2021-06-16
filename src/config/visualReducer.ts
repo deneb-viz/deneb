@@ -4,8 +4,8 @@ import EditMode = powerbi.EditMode;
 
 import { IVisualSliceState } from '../types';
 import VisualSettings from '../properties/VisualSettings';
-import { specificationService } from '../services';
 import { getEmptyDataset } from '../api/dataset';
+import { resolveLoaderLogic } from '../api/specification';
 
 const visualReducer: IVisualSliceState = {
     allowInteractions: false,
@@ -37,8 +37,9 @@ const visualReducer: IVisualSliceState = {
     isExportDialogVisible: false,
     isNewDialogVisible: true,
     launchUrl: null,
-    loader: specificationService.resolveLoaderLogic(),
+    loader: resolveLoaderLogic(),
     locale: '',
+    persistProperties: null,
     resizablePaneDefaultWidth: null,
     resizablePaneExpandedWidth: null,
     resizablePaneWidth: null,

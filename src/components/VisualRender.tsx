@@ -5,13 +5,17 @@ import * as Vega from 'vega';
 import * as _ from 'lodash';
 
 import Debugger from '../Debugger';
-import { locales, visualFeatures } from '../config';
+import { locales } from '../config';
 import { state } from '../store';
 import SpecificationError from './status/SpecificationError';
 import FourD3D3D3 from '../components/editor/FourD3D3D3';
 import NewVisualPlaceholder from './create/NewVisualPlaceholder';
-import { selectionHandlerService, specificationService } from '../services';
-import { tooltip } from '../api';
+import { selectionHandlerService } from '../services';
+import {
+    getInitialConfig,
+    registerCustomExpressions
+} from '../api/specification';
+import { getTooltipHandler } from '../api/tooltip';
 
 const VisualRender = () => {
     Debugger.log('Rendering Component: [VisualRender]...');
@@ -31,8 +35,8 @@ const VisualRender = () => {
         { height, width } = vegaViewport,
         data = { dataset: _.cloneDeep(dataset.values) },
         specification = _.cloneDeep(spec.spec),
-        config = specificationService.getInitialConfig(),
-        tooltipHandler = tooltip.getTooltipHandler(
+        config = getInitialConfig(),
+        tooltipHandler = getTooltipHandler(
             settings.vega.enableTooltips,
             tooltipService
         ),
@@ -46,7 +50,7 @@ const VisualRender = () => {
         timeFormatLocale =
             locales.timeFormat[locale] || locales.timeFormat[locales.default];
     if (fourd3d3d) return <FourD3D3D3 />;
-    specificationService.registerCustomExpressions();
+    registerCustomExpressions();
 
     switch (spec?.status) {
         case 'error': {

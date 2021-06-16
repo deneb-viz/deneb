@@ -1,5 +1,4 @@
 import Debugger, { standardLog } from '../Debugger';
-import { propertyService, specificationService } from '.';
 import store from '../store';
 import {
     toggleAutoApply,
@@ -16,10 +15,14 @@ import {
     ICommandService,
     TEditorOperation,
     TModalDialogType,
-    TSpecProvider,
     TSpecRenderMode
 } from '../types';
 import { getVisualMetadata } from '../api/config';
+import {
+    resolveObjectProperties,
+    updateObjectProperties
+} from '../api/properties';
+import { fixAndFormat, persist, TSpecProvider } from '../api/specification';
 
 const owner = 'CommandService';
 
@@ -31,34 +34,34 @@ export class CommandService implements ICommandService {
     @standardLog()
     updateProvider(provider: TSpecProvider) {
         Debugger.log('Updating spec provider in visual properties...');
-        const replace = propertyService.resolveObjectProperties('vega', [
+        const replace = resolveObjectProperties('vega', [
             { name: 'provider', value: provider }
         ]);
-        propertyService.updateObjectProperties(replace);
+        updateObjectProperties(replace);
     }
 
     @standardLog()
     updateRenderMode(renderMode: TSpecRenderMode) {
         Debugger.log('Updating spec render mode in visual properties...');
-        const replace = propertyService.resolveObjectProperties('vega', [
+        const replace = resolveObjectProperties('vega', [
             { name: 'renderMode', value: renderMode }
         ]);
-        propertyService.updateObjectProperties(replace);
+        updateObjectProperties(replace);
     }
 
     @standardLog()
     updateBooleanProperty(name: string, value: boolean) {
         Debugger.log('Updating boolean prop...');
-        const replace = propertyService.resolveObjectProperties('vega', [
+        const replace = resolveObjectProperties('vega', [
             { name: name, value: value }
         ]);
-        propertyService.updateObjectProperties(replace);
+        updateObjectProperties(replace);
     }
 
     @standardLog()
     applyChanges() {
         Debugger.log('Applying changes...');
-        specificationService.persist();
+        persist();
     }
 
     @standardLog()
@@ -71,15 +74,15 @@ export class CommandService implements ICommandService {
     @standardLog()
     repairFormatJson() {
         Debugger.log('Fixing spec and config...');
-        specificationService.fixAndFormat();
+        fixAndFormat();
     }
 
     @standardLog()
     createNewSpec() {
         Debugger.log('Opening new spec dialog...');
         Debugger.log('Flagging modal dialog for open...');
-        propertyService.updateObjectProperties(
-            propertyService.resolveObjectProperties('vega', [
+        updateObjectProperties(
+            resolveObjectProperties('vega', [
                 { name: 'isNewDialogOpen', value: true }
             ])
         );
@@ -99,8 +102,8 @@ export class CommandService implements ICommandService {
         Debugger.log('Closing modal dialog...');
         switch (type) {
             case 'new': {
-                propertyService.updateObjectProperties(
-                    propertyService.resolveObjectProperties('vega', [
+                updateObjectProperties(
+                    resolveObjectProperties('vega', [
                         { name: 'isNewDialogOpen', value: false }
                     ])
                 );

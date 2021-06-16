@@ -17,11 +17,11 @@ import * as vegaSchema from 'vega/build/vega-schema.json';
 import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
 
 import Debugger, { standardLog } from '../Debugger';
-import { specificationService } from '.';
 import { IEditorService, TEditorOperation } from '../types';
 import store from '../store';
 import { dataset } from '../api';
 import { getConfig } from '../api/config';
+import { persist } from '../api/specification';
 import ITableColumnMetadata = dataset.ITableColumnMetadata;
 
 const owner = 'EditorService';
@@ -160,7 +160,7 @@ export class EditorService implements IEditorService {
         Debugger.log('Handling text entry...');
         const { autoApply } = store.getState().visual;
         if (autoApply) {
-            specificationService.persist();
+            persist();
         }
         // resolve dirty flag
     }

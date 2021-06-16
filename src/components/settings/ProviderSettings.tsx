@@ -8,7 +8,7 @@ import {
 
 import Debugger from '../../Debugger';
 import { commandService } from '../../services';
-import { TSpecProvider } from '../../types';
+import { TSpecProvider } from '../../api/specification';
 import { choiceGroupStyles, choiceItemStyles } from '../../config/styles';
 import { state } from '../../store';
 

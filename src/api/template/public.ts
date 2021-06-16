@@ -13,10 +13,12 @@ import {
 
 import { getConfig, getVisualMetadata } from '../config/public';
 import { getHostLM } from '../i18n/public';
+import {
+    getParsedConfigFromSettings,
+    indentJson,
+    TSpecProvider
+} from '../specification/public';
 import { getState } from '../store/public';
-
-import { specificationService } from '../../services'; // TODO: Needs moving into API (TBD)
-import { TSpecProvider } from '../../types';
 
 import {
     getEscapedReplacerPattern,
@@ -56,10 +58,10 @@ export const getExportTemplate = () => {
     const outSpec = _.merge(
         baseObj,
         { usermeta },
-        { config: specificationService.getParsedConfigFromSettings() },
+        { config: getParsedConfigFromSettings() },
         JSON.parse(baseSpec)
     );
-    return specificationService.indentJson(outSpec);
+    return indentJson(outSpec);
 };
 
 export const getNewExportTemplateMetadata = (): IDenebTemplateMetadata => {
@@ -113,7 +115,7 @@ export const getReplacedTemplate = (template: Spec | TopLevelSpec) => {
     delete templateToApply.$schema;
     delete templateToApply.config;
     delete templateToApply.usermeta;
-    let jsonSpec = specificationService.indentJson(templateToApply);
+    let jsonSpec = indentJson(templateToApply);
     (<IDenebTemplateMetadata>template?.usermeta)?.dataset?.forEach((ph) => {
         const pattern = new RegExp(getEscapedReplacerPattern(ph.key), 'g');
         jsonSpec = jsonSpec.replace(pattern, ph.suppliedObjectName);

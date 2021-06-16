@@ -24,11 +24,7 @@ import Debugger, { standardLog } from './Debugger';
 import App from './components/App';
 import VisualSettings from './properties/VisualSettings';
 
-import {
-    dataLoadingService,
-    propertyService,
-    specificationService
-} from './services';
+import { dataLoadingService } from './services';
 
 import store from './store';
 import {
@@ -45,6 +41,7 @@ import {
     validateDataViewMapping,
     validateDataViewRoles
 } from './api/dataView';
+import { parseActiveSpec } from './api/specification';
 
 const owner = 'Visual';
 
@@ -72,8 +69,6 @@ export class Deneb implements IVisual {
             this.container = options.element;
             Debugger.log('Setting host services...');
             this.host = options.host;
-            Debugger.log('Binding property service...');
-            propertyService.persistProperties = this.host.persistProperties;
             Debugger.log('Getting events service...');
             this.events = this.host.eventService;
             Debugger.log('Creating main React component...');
@@ -220,7 +215,7 @@ export class Deneb implements IVisual {
         Debugger.log('Existing selections', selectionManager.getSelectionIds());
 
         if (store.getState().visual.dataProcessingStage === 'Processed') {
-            specificationService.parseActiveSpec();
+            parseActiveSpec();
         }
     }
 
