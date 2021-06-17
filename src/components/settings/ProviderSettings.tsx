@@ -7,7 +7,7 @@ import {
 } from '@fluentui/react/lib/ChoiceGroup';
 
 import Debugger from '../../Debugger';
-import { commandService } from '../../services';
+import { updateProvider } from '../../api/commands';
 import { TSpecProvider } from '../../api/specification';
 import { choiceGroupStyles, choiceItemStyles } from '../../config/styles';
 import { state } from '../../store';
@@ -22,7 +22,7 @@ const ProviderSettings = () => {
                 option: IChoiceGroupOption
             ) => {
                 Debugger.log(`Updating provider to ${option.key}...`);
-                commandService.updateProvider(option.key as TSpecProvider);
+                updateProvider(option.key as TSpecProvider);
             },
             []
         ),

@@ -6,68 +6,78 @@ import { Options, useHotkeys } from 'react-hotkeys-hook';
 import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { updateEditorPaneSize } from '../../store/visualReducer';
-import { commandService } from '../../services';
 import DataProcessingRouter from '../DataProcessingRouter';
 import EditorPaneContent from './EditorPaneContent';
 import NewVisualDialog from '../create/NewVisualDialog';
 import ExportVisualDialog from '../export/ExportVisualDialog';
 import { IKeyboardShortcut } from '../../types';
 import {
+    applyChanges,
+    createExportableTemplate,
+    createNewSpec,
+    openEditorPivotItem,
+    openHelpSite,
+    repairFormatJson,
+    toggleAutoApply,
+    toggleEditorPane
+} from '../../api/commands';
+import {
     getResizablePaneMaxSize,
     getResizablePaneMinSize
 } from '../../api/interface';
 
 // Hotkey assignment for editor UI
+// TODO: Move to commands API & config
 const options: Options = { enableOnTags: ['INPUT', 'SELECT', 'TEXTAREA'] },
     hotkeys: IKeyboardShortcut[] = [
         {
             keys: 'ctrl+enter',
-            command: () => commandService.applyChanges(),
+            command: () => applyChanges(),
             options
         },
         {
             keys: 'ctrl+shift+enter',
-            command: () => commandService.toggleAutoApply(),
+            command: () => toggleAutoApply(),
             options
         },
         {
             keys: 'ctrl+alt+r',
-            command: () => commandService.repairFormatJson(),
+            command: () => repairFormatJson(),
             options
         },
         {
             keys: 'ctrl+alt+e',
-            command: () => commandService.createExportableTemplate(),
+            command: () => createExportableTemplate(),
             options
         },
         {
             keys: 'ctrl+alt+n',
-            command: () => commandService.createNewSpec(),
+            command: () => createNewSpec(),
             options
         },
         {
             keys: 'ctrl+alt+h',
-            command: () => commandService.openHelpSite(),
+            command: () => openHelpSite(),
             options
         },
         {
             keys: 'ctrl+alt+1',
-            command: () => commandService.openEditorPivotItem('spec'),
+            command: () => openEditorPivotItem('spec'),
             options
         },
         {
             keys: 'ctrl+alt+2',
-            command: () => commandService.openEditorPivotItem('config'),
+            command: () => openEditorPivotItem('config'),
             options
         },
         {
             keys: 'ctrl+alt+3',
-            command: () => commandService.openEditorPivotItem('settings'),
+            command: () => openEditorPivotItem('settings'),
             options
         },
         {
             keys: 'ctrl+alt+space',
-            command: () => commandService.toggleEditorPane(),
+            command: () => toggleEditorPane(),
             options
         }
     ];

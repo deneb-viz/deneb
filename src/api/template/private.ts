@@ -13,12 +13,10 @@ import {
     templateExportError,
     templateImportError,
     templateImportSuccess,
-    updateTemplateExportState,
     updateTemplateImportState
 } from '../../store/templateReducer';
 
-import { ITemplateImportPayload } from './public';
-import { TTemplateExportState, TTemplateImportState } from './public';
+import { ITemplateImportPayload, TTemplateImportState } from './public';
 
 import * as schema_v1 from '../../schema/deneb-template-usermeta-v1.json'; // TODO: Needs moving into API (Template)
 
@@ -127,27 +125,27 @@ export const resolveExportUserMeta = (): IDenebTemplateMetadata => {
     };
 };
 
-export const updateExportError = (i18nKey: string) =>
+export const updateExportError = (i18nKey: string) => {
     getStore().dispatch(
         templateExportError(getHostLM().getDisplayName(i18nKey))
     );
-
-export const updateExportState = (state: TTemplateExportState) =>
-    getStore().dispatch(updateTemplateExportState(state));
+};
 
 export const updateImportError = (
     i18nKey: string,
     errors: ErrorObject[] = []
-) =>
+) => {
     getStore().dispatch(
         templateImportError({
             templateImportErrorMessage: getHostLM().getDisplayName(i18nKey),
             templateSchemaErrors: errors
         })
     );
+};
 
-export const updateImportState = (state: TTemplateImportState) =>
+export const updateImportState = (state: TTemplateImportState) => {
     getStore().dispatch(updateTemplateImportState(state));
+};
 
 export const updateImportSuccess = (payload: ITemplateImportPayload) => {
     getStore().dispatch(templateImportSuccess(payload));

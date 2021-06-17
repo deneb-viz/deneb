@@ -11,8 +11,8 @@ import {
     modalDialogContentStyles
 } from '../../config/styles';
 import { state } from '../../store';
-import { commandService } from '../../services';
 import { IModalHeaderProps } from '../../types';
+import { closeModalDialog } from '../../api/commands';
 
 const cancelIcon: IIconProps = { iconName: 'Cancel' };
 
@@ -22,7 +22,7 @@ export const ModalHeader = (props: IModalHeaderProps) => {
         { i18n, viewport } = root.visual,
         modalStyles = modalDialogContentStyles(viewport),
         handleClose = () => {
-            commandService.closeModalDialog(props.type);
+            closeModalDialog(props.type);
         },
         resolveTitle = () => {
             switch (props.type) {

@@ -1,1 +1,5 @@
-export { resolveObjectProperties, updateObjectProperties } from './public';
+export {
+    resolveObjectProperties,
+    updateObjectProperties,
+    IPersistenceProperty
+} from './public';

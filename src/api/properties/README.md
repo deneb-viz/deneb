@@ -36,4 +36,8 @@ Convenience function that returns the visual host's `persistProperties` instance
 
 ## Interfaces
 
+#### `IPersistenceProperty`
+
+Property name and optional value for persistence operations.
+
 ## Types

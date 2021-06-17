@@ -35,10 +35,6 @@ import { TTemplateExportState, TTemplateImportState } from './api/template';
  * =====
  */
 
-// Used to constrain Vega rendering to supported types.
-export type TSpecRenderMode = 'svg' | 'canvas';
-// Used to constrain spec providers to supported types.
-// export type TSpecProvider = 'vega' | 'vegaLite';
 // Used for creating a new specification - can either be from existing templates, or imported
 export type TTemplateProvider = TSpecProvider | 'import';
 // USed to handle which export operation we currently have open
@@ -73,60 +69,6 @@ export type TLocale = 'en-US' | 'de-DE' | 'fr-FR';
  * Services
  * ========
  */
-
-/**
- * API for menu and keyboard commands within the visual.
- */
-export interface ICommandService {
-    /**
-     * Handle the change in provider from one to the other and update necessary store dependencies and properties.
-     */
-    updateProvider: (provider: TSpecProvider) => void;
-    /**
-     * Handle the change in render mode from one to the other and update necessary store dependencies and properties.
-     */
-    updateRenderMode: (renderMode: TSpecRenderMode) => void;
-    /**
-     * Generic handler for a boolean (checkbox) property in the settings pane.
-     */
-    updateBooleanProperty: (name: string, value: boolean) => void;
-    /**
-     * Handle the Apply Changes command.
-     */
-    applyChanges: () => void;
-    /**
-     * Handle the Toggle Auto Apply command.
-     */
-    toggleAutoApply: () => void;
-    /**
-     * Hande the show/hide of the editor pane.
-     */
-    toggleEditorPane: () => void;
-    /**
-     * Handle the Repair/Format JSON command.
-     */
-    repairFormatJson: () => void;
-    /**
-     * Handle the Generate JSON Template command.
-     */
-    createExportableTemplate: () => void;
-    /**
-     * Handle the Create New Spec command.
-     */
-    createNewSpec: () => void;
-    /**
-     * Handle the necessary logic required to close down a modal dialog.
-     */
-    closeModalDialog: (type: TModalDialogType) => void;
-    /**
-     * Handle the Get Help command.
-     */
-    openHelpSite: () => void;
-    /**
-     * Open a specific pivot item from the editor.
-     */
-    openEditorPivotItem: (operation: TEditorOperation) => void;
-}
 
 /**
  * API to handle all logic around fetching more data from the data model, if needed.

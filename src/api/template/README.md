@@ -62,6 +62,10 @@ For a given column or measure (or template placeholder), resolve its type agains
 
 For a given `DataViewMetadataColumn`, and its encoded name produces a new `ITemplateDatasetField` object that can be used for templating purposes.
 
+#### `updateExportState`(_state_)
+
+Persist the supplied `TTemplateExportState` to Deneb's Redux store.
+
 #### `validateSpecificationForExport`()
 
 Checks to see if current spec is valid and updates store state for UI accordingly.
@@ -105,10 +109,6 @@ Generates a suitable `usermeta` object for the current `templateReducer` state a
 #### `updateExportError`(_i18nKey_)
 
 Persist the supplied export error information to the Redux store.
-
-#### `updateExportState`(_state_)
-
-Persist the supplied `TTemplateExportState` to Deneb's Redux store.
 
 #### `updateImportError`(_i18nKey_, _errors_)
 

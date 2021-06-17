@@ -4,7 +4,7 @@ import { Checkbox } from '@fluentui/react/lib/Checkbox';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';
-import { commandService } from '../../services';
+import { updateBooleanProperty } from '../../api/commands';
 import { isContextMenuEnabled } from '../../api/selection';
 
 const ContextMenuCheckbox = () => {
@@ -15,10 +15,7 @@ const ContextMenuCheckbox = () => {
             (ev: React.FormEvent<HTMLElement>, checked: boolean): void => {
                 const value = !!checked;
                 Debugger.log(`Updating context menu to ${checked}...`);
-                commandService.updateBooleanProperty(
-                    'enableContextMenu',
-                    value
-                );
+                updateBooleanProperty('enableContextMenu', value);
             },
             []
         );

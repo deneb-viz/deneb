@@ -8,7 +8,14 @@ import {
 import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { commandBarStyles, commandBarButtonStyles } from '../../config/styles';
-import { commandService } from '../../services';
+import {
+    applyChanges,
+    createExportableTemplate,
+    createNewSpec,
+    openHelpSite,
+    repairFormatJson,
+    toggleAutoApply
+} from '../../api/commands';
 
 const EditorCommandBar: React.FC = () => {
     Debugger.log('Rendering Component: [EditorCommandBar]...');
@@ -31,9 +38,9 @@ const EditorCommandBar: React.FC = () => {
 function getItems(): ICommandBarItemProps[] {
     Debugger.log('Getting CommandBar _items...');
     const { autoApply, canAutoApply, i18n } = useSelector(state).visual,
-        handleApply = () => commandService.applyChanges(),
-        handleAutoApply = () => commandService.toggleAutoApply(),
-        handleFix = () => commandService.repairFormatJson();
+        handleApply = () => applyChanges(),
+        handleAutoApply = () => toggleAutoApply(),
+        handleFix = () => repairFormatJson();
     return [
         {
             key: 'applyChanges',
@@ -81,9 +88,9 @@ function getItems(): ICommandBarItemProps[] {
 function getFarItems(): ICommandBarItemProps[] {
     Debugger.log('Getting CommandBar _farItems...');
     const { i18n, spec } = useSelector(state).visual,
-        handleNewSpec = () => commandService.createNewSpec(),
-        handleExport = () => commandService.createExportableTemplate(),
-        handleSupport = () => commandService.openHelpSite();
+        handleNewSpec = () => createNewSpec(),
+        handleExport = () => createExportableTemplate(),
+        handleSupport = () => openHelpSite();
     return [
         {
             key: 'reset',

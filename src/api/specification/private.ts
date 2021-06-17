@@ -31,11 +31,13 @@ export const cleanJsonInputForPersistence = (
     return clean;
 };
 
-export const dispatchFixStatus = (result: IFixResult) =>
+export const dispatchFixStatus = (result: IFixResult) => {
     getStore().dispatch(updateFixStatus(result));
+};
 
-export const dispatchSpec = (compiledSpec: ICompiledSpec) =>
+export const dispatchSpec = (compiledSpec: ICompiledSpec) => {
     getStore().dispatch(updateSpec(compiledSpec));
+};
 
 export const getBaseValidator = () =>
     new Ajv({}).addFormat('color-hex', () => true).addMetaSchema(draft06);

@@ -7,10 +7,10 @@ import {
 } from '@fluentui/react/lib/ChoiceGroup';
 
 import Debugger from '../../Debugger';
-import { commandService } from '../../services';
-import { TSpecRenderMode } from '../../types';
 import { choiceGroupStyles, choiceItemStyles } from '../../config/styles';
 import { state } from '../../store';
+import { updateRenderMode } from '../../api/commands';
+import { TSpecRenderMode } from '../../api/specification';
 
 const RenderModeSettings = () => {
     Debugger.log('Rendering Component: [RenderModeSettings]...');
@@ -22,7 +22,7 @@ const RenderModeSettings = () => {
                 option: IChoiceGroupOption
             ) => {
                 Debugger.log(`Updating render mode to ${option.key}...`);
-                commandService.updateRenderMode(option.key as TSpecRenderMode);
+                updateRenderMode(option.key as TSpecRenderMode);
             },
             []
         ),

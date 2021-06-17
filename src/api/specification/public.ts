@@ -261,3 +261,5 @@ export interface IFixStatus {
 }
 
 export type TSpecProvider = 'vega' | 'vegaLite';
+
+export type TSpecRenderMode = 'svg' | 'canvas';

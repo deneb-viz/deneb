@@ -6,15 +6,15 @@ import { TooltipHost } from '@fluentui/react/lib/Tooltip';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';
-import { commandService } from '../../services';
 import { buttonIconClass } from '../../config/styles';
+import { toggleEditorPane } from '../../api/commands';
 
 const EditorHeadingExpanded = () => {
     Debugger.log('Rendering Component: [EditorHeadingExpanded]...');
     const { i18n, settings } = useSelector(state).visual,
         { position } = settings.editor,
         togglePane = () => {
-            commandService.toggleEditorPane();
+            toggleEditorPane();
         },
         tooltip_i18_key = 'Tooltip_Collapse_Editor_Pane',
         iconName = position === 'left' ? 'ChevronLeft' : 'ChevronRight';

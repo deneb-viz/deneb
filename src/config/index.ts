@@ -1,7 +1,7 @@
-import { TLocale, TSpecRenderMode } from '../types';
+import { TLocale } from '../types';
 import { locales } from './locales';
 import { theme } from './theme';
-import { TSpecProvider } from '../api/specification';
+import { TSpecProvider, TSpecRenderMode } from '../api/specification';
 
 /**
  * Core configuration that should be referenced by other files

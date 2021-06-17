@@ -5,7 +5,7 @@ import { Pivot, PivotItem } from '@fluentui/react/lib/Pivot';
 import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { TEditorOperation } from '../../types';
-import { commandService } from '../../services';
+import { openEditorPivotItem } from '../../api/commands';
 
 const EditorPanePivot = () => {
     Debugger.log('Rendering Component: [EditorPanePivot]...');
@@ -14,9 +14,7 @@ const EditorPanePivot = () => {
             return `editor-pivot-${itemKey}`;
         },
         handlePivotClick = (item: PivotItem) => {
-            commandService.openEditorPivotItem(
-                item.props.itemKey as TEditorOperation
-            );
+            openEditorPivotItem(item.props.itemKey as TEditorOperation);
         };
 
     return (

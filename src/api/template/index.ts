@@ -7,14 +7,14 @@ export {
     onTemplateFileSelect,
     resolveTypeIcon,
     resolveTypeIconTitle,
-    validateSpecificationForExport,
     ITemplateImportErrorPayload,
     ITemplateExportFieldUpdatePayload,
-    ITemplateImportPayload,
     TTemplateExportState,
+    ITemplateImportPayload,
     TTemplateImportState
 } from './public';
 export {
     resolveValueDescriptor,
-    resolveVisualMetaToDatasetField
+    resolveVisualMetaToDatasetField,
+    validateSpecificationForExport
 } from './public_noconflict';

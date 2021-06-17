@@ -1,6 +1,6 @@
 # Deneb - Specification API
 
-Handles operations are specification parsing and persistence
+Handles operations around specification parsing and persistence.
 
 -   [Constants](#constants)
 -   [Public Methods](#public-methods)
@@ -107,3 +107,7 @@ Represents the status and additional metadata of a fix and repair against an ind
 #### `TSpecProvider`
 
 Valid providers for the visual.
+
+#### `TSpecRenderMode`
+
+Used to constrain Vega rendering to supported types.

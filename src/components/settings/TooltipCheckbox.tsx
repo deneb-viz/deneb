@@ -4,7 +4,7 @@ import { Checkbox } from '@fluentui/react/lib/Checkbox';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';
-import { commandService } from '../../services';
+import { updateBooleanProperty } from '../../api/commands';
 import { isHandlerEnabled } from '../../api/tooltip';
 
 const TooltipCheckbox = () => {
@@ -15,7 +15,7 @@ const TooltipCheckbox = () => {
             (ev: React.FormEvent<HTMLElement>, checked: boolean): void => {
                 const value = !!checked;
                 Debugger.log(`Updating tooltips to ${checked}...`);
-                commandService.updateBooleanProperty('enableTooltips', value);
+                updateBooleanProperty('enableTooltips', value);
             },
             []
         );

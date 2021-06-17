@@ -25,8 +25,6 @@ import {
     onReaderLoad,
     replaceExportTemplatePlaceholders,
     resolveExportUserMeta,
-    updateExportError,
-    updateExportState,
     updateImportError,
     updateImportState
 } from './private';
@@ -165,16 +163,6 @@ export const resolveTypeIconTitle = (type: TDatasetFieldType) => {
             return i18n.getDisplayName('Template_Type_Descriptor_DateTime');
         default:
             return i18n.getDisplayName('Template_Import_Not_Deneb');
-    }
-};
-
-export const validateSpecificationForExport = () => {
-    const { spec } = getState().visual;
-    updateExportState('Validating');
-    if (spec.status === 'valid') {
-        updateExportState('Editing');
-    } else {
-        updateExportError('Template_Export_Bad_Spec');
     }
 };
 

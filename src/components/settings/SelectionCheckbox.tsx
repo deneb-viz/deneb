@@ -4,7 +4,7 @@ import { Checkbox } from '@fluentui/react/lib/Checkbox';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';
-import { commandService } from '../../services';
+import { updateBooleanProperty } from '../../api/commands';
 import { isDataPointEnabled } from '../../api/selection';
 
 const SelectionCheckbox = () => {
@@ -21,7 +21,7 @@ const SelectionCheckbox = () => {
                     );
                     selectionManager.clear();
                 }
-                commandService.updateBooleanProperty('enableSelection', value);
+                updateBooleanProperty('enableSelection', value);
             },
             []
         ),

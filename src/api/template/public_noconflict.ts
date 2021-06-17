@@ -6,6 +6,11 @@ import {
     ITemplateDatasetField,
     TDatasetFieldType
 } from '../../schema/template-v1';
+import { updateTemplateExportState } from '../../store/templateReducer';
+
+import { getState, getStore } from '../store/public';
+import { TTemplateExportState } from './public';
+import { updateExportError } from './private';
 
 export const resolveValueDescriptor = (
     type: ValueTypeDescriptor
@@ -36,4 +41,18 @@ export const resolveVisualMetaToDatasetField = (
         kind: (metadata.isMeasure && 'measure') || 'column',
         type: resolveValueDescriptor(metadata.type)
     };
+};
+
+export const updateExportState = (state: TTemplateExportState) => {
+    getStore().dispatch(updateTemplateExportState(state));
+};
+
+export const validateSpecificationForExport = () => {
+    const { spec } = getState().visual;
+    updateExportState('Validating');
+    if (spec.status === 'valid') {
+        updateExportState('Editing');
+    } else {
+        updateExportError('Template_Export_Bad_Spec');
+    }
 };

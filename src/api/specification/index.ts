@@ -13,5 +13,6 @@ export {
     IFixPayload,
     IFixResult,
     IFixStatus,
-    TSpecProvider
+    TSpecProvider,
+    TSpecRenderMode
 } from './public';

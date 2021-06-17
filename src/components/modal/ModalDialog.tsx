@@ -8,8 +8,8 @@ import Debugger from '../../Debugger';
 import { modalDialogContentStyles } from '../../config/styles';
 import { state } from '../../store';
 import ModalHeader from '../modal/ModalHeader';
-import { commandService } from '../../services';
 import { IModalDialogProps } from '../../types';
+import { closeModalDialog } from '../../api/commands';
 
 export const ModalDialog: React.FunctionComponent<IModalDialogProps> = (
     props: React.PropsWithChildren<IModalDialogProps>
@@ -19,7 +19,7 @@ export const ModalDialog: React.FunctionComponent<IModalDialogProps> = (
         { viewport } = root.visual,
         modalStyles = modalDialogContentStyles(viewport),
         handleClose = () => {
-            commandService.closeModalDialog(props.type);
+            closeModalDialog(props.type);
         };
     const titleId = useId('modal-dialog');
 

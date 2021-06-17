@@ -8,10 +8,7 @@ import { getNewObjectInstance, persistProperties } from './private';
 
 export const resolveObjectProperties = (
     objectName: string,
-    properties: {
-        name: string;
-        value?: DataViewPropertyValue;
-    }[]
+    properties: IPersistenceProperty[]
 ) => {
     try {
         let changes = getNewObjectInstance(objectName);
@@ -28,3 +25,8 @@ export const resolveObjectProperties = (
 export const updateObjectProperties = (
     changes: VisualObjectInstancesToPersist
 ) => persistProperties()(changes);
+
+export interface IPersistenceProperty {
+    name: string;
+    value?: DataViewPropertyValue;
+}
