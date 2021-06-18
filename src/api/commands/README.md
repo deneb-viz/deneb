@@ -12,6 +12,10 @@ Handles menu and keyboard commands within the visual.
 
 ## Constants
 
+#### 🔒 `hotkeyOptions`
+
+Constant specifying `react-hotkeys-hook` bindings for particular HTML elements.
+
 ## Public Methods
 
 #### `applyChanges`()
@@ -29,6 +33,14 @@ Handle the Generate JSON Template command.
 #### `createNewSpec`()
 
 Handle the Create New Spec command.
+
+#### `focusFirstPivot`()
+
+'Escape hatch' method to set current window focus to the first pivot element (Specification). This is ideal for situations where the user might be inside an editor, where the tab key is bound to indent/outdent.
+
+#### `getVisualHotkeys`()
+
+Get an object array of visual hotkeys and their bindings from configuration, suitable for use in `react-hotkeys-hook`.
 
 #### `openEditorPivotItem`(_operation_)
 
@@ -84,10 +96,16 @@ Manages dispatch of the editor pane command method to the Redux store.
 
 Manages dispatch of the export dialog command method to the Redux store.
 
+#### `getCommandKeyBinding`(_command_)
+
+Convenience method to get key binding details from configuration for the specified command.
+
 #### `handlePersist`(_property_)
 
 Manages persistence of a properties object to the Redux store from an operation.
 
 ## Interfaces
+
+#### `IKeyboardShortcut`
 
 ## Types

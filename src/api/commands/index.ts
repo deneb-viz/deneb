@@ -4,6 +4,7 @@ export {
     createExportableTemplate,
     createNewSpec,
     fourd3d3d,
+    getVisualHotkeys,
     openEditorPivotItem,
     openHelpSite,
     repairFormatJson,
@@ -11,5 +12,6 @@ export {
     toggleEditorPane,
     updateBooleanProperty,
     updateProvider,
-    updateRenderMode
+    updateRenderMode,
+    IKeyboardShortcut
 } from './public';

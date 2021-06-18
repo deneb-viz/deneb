@@ -7,7 +7,6 @@ import * as VegaLite from 'vega-lite';
 import { TopLevelSpec } from 'vega-lite';
 import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
 
-import { vegaSettingsDefaults } from '../../config';
 import { configEditorService, specEditorService } from '../../services'; // TODO: dependencies on class instances
 
 import { getConfig } from '../config/public';
@@ -19,6 +18,7 @@ import {
 import { getState } from '../store/public';
 import { getReplacedTemplate } from '../template/public';
 import {
+    propertyDefaults,
     cleanJsonInputForPersistence,
     dispatchFixStatus,
     dispatchSpec,
@@ -112,12 +112,12 @@ export const getParsedConfigFromSettings = (): Config => {
     try {
         return JSON.parse(resolveUrls(vega.jsonConfig));
     } catch (e) {
-        return JSON.parse(vegaSettingsDefaults.jsonConfig);
+        return JSON.parse(propertyDefaults.jsonConfig);
     }
 };
 
 export const indentJson = (json: object) =>
-    JSON.stringify(json, null, getConfig().editorDefaults.tabSize);
+    JSON.stringify(json, null, getConfig().propertyDefaults.editor.tabSize);
 
 export const registerCustomExpressions = () =>
     expressionFunction('pbiFormat', (datum: any, params: string) =>
@@ -137,8 +137,8 @@ export const parseActiveSpec = () => {
             // Spec hasn't been edited yet
             dispatchSpec({
                 status: 'new',
-                spec: vegaSettingsDefaults.jsonSpec,
-                rawSpec: vegaSettingsDefaults.jsonConfig
+                spec: propertyDefaults.jsonSpec,
+                rawSpec: propertyDefaults.jsonConfig
             });
             return;
         }

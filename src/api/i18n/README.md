@@ -27,3 +27,7 @@ Convenience function that returns the visual's locale (or overridden locale is u
 ## Interfaces
 
 ## Types
+
+#### `TLocale`
+
+List of supported locales used for developer mode locale/formatting testing, without having to reconfigure the Power BI Service.

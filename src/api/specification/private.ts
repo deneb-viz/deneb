@@ -6,14 +6,16 @@ import * as draft06 from 'ajv/lib/refs/json-schema-draft-06.json';
 import jsonrepair from 'jsonrepair';
 
 import { TEditorOperation } from '../../types';
-import { vegaSettingsDefaults } from '../../config';
 import { updateFixStatus, updateSpec } from '../../store/visualReducer';
 
+import { getConfig } from '../config';
 import { isFeatureEnabled } from '../features/public';
 import { getHostLM } from '../i18n/public';
 import { getSidString } from '../selection/public';
 import { getState, getStore } from '../store/public';
 import { indentJson, ICompiledSpec, IFixStatus, IFixResult } from './public';
+
+export const propertyDefaults = getConfig().propertyDefaults.vega;
 
 export const cleanJsonInputForPersistence = (
     operation: TEditorOperation,
@@ -23,9 +25,9 @@ export const cleanJsonInputForPersistence = (
     if (clean === '') {
         switch (operation) {
             case 'spec':
-                return vegaSettingsDefaults.jsonSpec;
+                return propertyDefaults.jsonSpec;
             case 'config':
-                return vegaSettingsDefaults.jsonConfig;
+                return propertyDefaults.jsonConfig;
         }
     }
     return clean;

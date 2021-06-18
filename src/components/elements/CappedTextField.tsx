@@ -34,7 +34,7 @@ const CappedTextField: React.FC<ICappedTextFieldProps> = (props) => {
                         value
                     })
                 );
-            }, getConfig().editorDefaults.debounceInterval),
+            }, getConfig().propertyDefaults.editor.debounceInterval),
             []
         ),
         onChangeField = (

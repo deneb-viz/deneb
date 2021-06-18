@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { getConfig, getVisualMetadata } from '../config/public';
 import { getHostLM } from '../i18n/public';
-import { determineProviderFromSpec } from '../specification/public';
+import { determineProviderFromSpec, TSpecProvider } from '../specification/public';
 import { getState, getStore } from '../store/public';
 import { IDenebTemplateMetadata } from '../../schema/template-v1'; // TODO: Move to template API
 import {
@@ -95,7 +95,7 @@ export const resolveExportUserMeta = (): IDenebTemplateMetadata => {
         deneb: {
             build: visualMetadata.version,
             metaVersion: metadataVersion,
-            provider: visual.settings.vega.provider
+            provider: <TSpecProvider>visual.settings.vega.provider
         },
         information: {
             name:

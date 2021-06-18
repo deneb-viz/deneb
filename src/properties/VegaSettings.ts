@@ -3,10 +3,12 @@ import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnume
 
 import SettingsBase from './SettingsBase';
 import Debugger from '../Debugger';
-import { vegaSettingsDefaults as defaults } from '../config';
+import { getConfig } from '../api/config';
 import { isHandlerEnabled } from '../api/tooltip';
 import { isContextMenuEnabled, isDataPointEnabled } from '../api/selection';
 import { isDeveloperModeEnabled } from '../api/developer';
+
+const defaults = getConfig().propertyDefaults.vega;
 
 /**
  * Manages the specification grammar and the user-provided source

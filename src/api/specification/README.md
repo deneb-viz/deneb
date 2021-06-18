@@ -12,6 +12,10 @@ Handles operations around specification parsing and persistence.
 
 ## Constants
 
+#### 🔒 `propertyDefaults`
+
+Convenience constant that gets the `vega` property defaults from the `config` API.
+
 ## Public Methods
 
 #### `createFromTemplate`(_provider_, _template_)

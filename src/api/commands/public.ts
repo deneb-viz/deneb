@@ -1,4 +1,5 @@
 import { TEditorOperation, TModalDialogType } from '../../types';
+import { Options } from 'react-hotkeys-hook';
 
 import { getVisualMetadata } from '../config/public';
 import {
@@ -16,6 +17,8 @@ import {
     dispatchEditorPivotItem,
     dispatchExportDialog,
     dispatchFourd3d3d,
+    getCommandKeyBinding,
+    hotkeyOptions as options,
     handlePersist
 } from './private';
 
@@ -42,7 +45,67 @@ export const createNewSpec = () => {
     dispatchDefaultTemplate();
 };
 
+export const focusFirstPivot = () => document.getElementById("editor-pivot-spec").focus();
+
 export const fourd3d3d = () => dispatchFourd3d3d();
+
+export const getVisualHotkeys = (): IKeyboardShortcut[] => [
+    {
+        keys: getCommandKeyBinding('applyChanges'),
+        command: () => applyChanges(),
+        options
+    },
+    {
+        keys: getCommandKeyBinding('autoApplyToggle'),
+        command: () => toggleAutoApply(),
+        options
+    },
+    {
+        keys: getCommandKeyBinding('repairFormatJson'),
+        command: () => repairFormatJson(),
+        options
+    },
+    {
+        keys: getCommandKeyBinding('newTemplate'),
+        command: () => createExportableTemplate(),
+        options
+    },
+    {
+        keys: getCommandKeyBinding('newSpecification'),
+        command: () => createNewSpec(),
+        options
+    },
+    {
+        keys: getCommandKeyBinding('openHelpUrl'),
+        command: () => openHelpSite(),
+        options
+    },
+    {
+        keys: getCommandKeyBinding('navigateSpecification'),
+        command: () => openEditorPivotItem('spec'),
+        options
+    },
+    {
+        keys: getCommandKeyBinding('navigateConfig'),
+        command: () => openEditorPivotItem('config'),
+        options
+    },
+    {
+        keys: getCommandKeyBinding('navigateSettings'),
+        command: () => openEditorPivotItem('settings'),
+        options
+    },
+    {
+        keys: getCommandKeyBinding('toggleEditorPane'),
+        command: () => toggleEditorPane(),
+        options
+    },
+    {
+        keys: getCommandKeyBinding('editorFocusOut'),
+        command: () => focusFirstPivot(),
+        options
+    }
+];
 
 export const openEditorPivotItem = (operation: TEditorOperation) =>
     dispatchEditorPivotItem(operation);
@@ -73,3 +136,9 @@ export const updateProvider = (provider: TSpecProvider) =>
 
 export const updateRenderMode = (renderMode: TSpecRenderMode) =>
     handlePersist({ name: 'renderMode', value: renderMode });
+
+export interface IKeyboardShortcut {
+    keys: string;
+    command: () => void;
+    options: Options;
+}

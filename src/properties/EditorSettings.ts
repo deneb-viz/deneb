@@ -8,6 +8,6 @@ import { TEditorPosition } from '../api/interface';
 export default class EditorSettings extends SettingsBase {
     // Preferred editor position within interface
     public position: TEditorPosition = <TEditorPosition>(
-        getConfig().editorDefaults.position
+        getConfig().propertyDefaults.editor.position
     );
 }

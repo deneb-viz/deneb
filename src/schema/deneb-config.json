@@ -15,6 +15,101 @@
                     "type": "string"
                 }
             }
+        },
+        "IDataLimitDefaults": {
+            "type": "object",
+            "required": ["override", "showCustomVisualNotes"],
+            "properties": {
+                "override": {
+                    "description": "Allow override of `dataReductionAlgorithm` limit.",
+                    "type": "boolean"
+                },
+                "showCustomVisualNotes": {
+                    "description": "Display information about the custom visual limitations and recommendations for end users.",
+                    "type": "boolean"
+                }
+            }
+        },
+        "IDeveloperDefaults": {
+            "description": "Default values for visual developer properties.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["locale"],
+            "properties": {
+                "locale": {
+                    "description": "Default locale used for format debugging.",
+                    "enum": ["en-US", "de-DE", "fr-FR"]
+                }
+            }
+        },
+        "IEditorDefaults": {
+            "description": "For the Ace editor used with `jsoneditor`, this object tracks any configuration values that aren't covered in any logic or properties elsewhere.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["debounceInterval", "tabSize", "position"],
+            "properties": {
+                "debounceInterval": {
+                    "description": "Time (in ms) before debouncing user input to Redux, the longer the interval, the less chatty things are, but the longer the perceived lag for things to happen after the user finishes typing in the editor.",
+                    "type": "integer"
+                },
+                "tabSize": {
+                    "description": "Number of tabs to apply per level when formatting JSON.",
+                    "type": "integer"
+                },
+                "position": {
+                    "description": "Position in the pane",
+                    "enum": ["left", "right"]
+                }
+            }
+        },
+        "IVegaDefaults": {
+            "description": "Default values for Vega-based properties.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "jsonSpec",
+                "jsonConfig",
+                "provider",
+                "renderMode",
+                "enableContextMenu",
+                "enableTooltips",
+                "enableSelection",
+                "isNewDialogOpen"
+            ],
+            "properties": {
+                "jsonSpec": {
+                    "description": "Visual specification.",
+                    "type": ["null", "string"]
+                },
+                "jsonConfig": {
+                    "description": "Visual configuration.",
+                    "type": "string"
+                },
+                "provider": {
+                    "description": "Provider used for rendering specification.",
+                    "enum": ["vega", "vegaLite"]
+                },
+                "renderMode": {
+                    "description": "Mode used for rendering specification.",
+                    "enum": ["canvas", "svg"]
+                },
+                "enableContextMenu": {
+                    "description": "Enable context-menu functionality.",
+                    "type": "boolean"
+                },
+                "enableTooltips": {
+                    "description": "Enable tooltip handler.",
+                    "type": "boolean"
+                },
+                "enableSelection": {
+                    "description": "Enable data point selection.",
+                    "type": "boolean"
+                },
+                "isNewDialogOpen": {
+                    "description": "Indicates that the new specification should show when advanced editor is opened.",
+                    "type": "boolean"
+                }
+            }
         }
     },
     "properties": {
@@ -59,6 +154,70 @@
                 }
             }
         },
+        "keyBindings": {
+            "description": "Shortcut key combinations for visual commands and operations.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "applyChanges",
+                "autoApplyToggle",
+                "repairFormatJson",
+                "newTemplate",
+                "newSpecification",
+                "openHelpUrl",
+                "navigateSpecification",
+                "navigateConfig",
+                "navigateSettings",
+                "toggleEditorPane",
+                "editorFocusOut"
+            ],
+            "properties": {
+                "applyChanges": {
+                    "description": "Command to apply editor changes to visual properties.",
+                    "type": "string"
+                },
+                "autoApplyToggle": {
+                    "description": "Command to enable auto-apply of changes in the editor.",
+                    "type": "string"
+                },
+                "repairFormatJson": {
+                    "description": "Command to repair and format JSON in the editors.",
+                    "type": "string"
+                },
+                "newTemplate": {
+                    "description": "Command to open the exportable template dialog.",
+                    "type": "string"
+                },
+                "newSpecification": {
+                    "description": "Command to open the new specification dialog.",
+                    "type": "string"
+                },
+                "openHelpUrl": {
+                    "description": "Command to navigate to the documentation site.",
+                    "type": "string"
+                },
+                "navigateSpecification": {
+                    "description": "Command to set focus to the Specification editor.",
+                    "type": "string"
+                },
+                "navigateConfig": {
+                    "description": "Command to set focus to the Config editor.",
+                    "type": "string"
+                },
+                "navigateSettings": {
+                    "description": "Command to set focus to the Settings pane.",
+                    "type": "string"
+                },
+                "toggleEditorPane": {
+                    "description": "Command to toggle display of the Editor pane.",
+                    "type": "string"
+                },
+                "editorFocusOut": {
+                    "description": "Command to focus out of editor and back to main pane.",
+                    "type": "string"
+                }
+            }
+        },
         "templates": {
             "description": "Used to manage handling of template functionality.",
             "type": "object",
@@ -79,32 +238,24 @@
             "properties": {
                 "vega": {
                     "$ref": "#/definitions/IProviderSettings",
-                    "description": ""
+                    "description": "Resource details for Vega."
                 },
                 "vegaLite": {
                     "$ref": "#/definitions/IProviderSettings",
-                    "description": ""
+                    "description": "Resource details for Vega-Lite."
                 }
             }
         },
-        "editorDefaults": {
-            "description": "For the Ace editor used with `jsoneditor`, this object tracks any configuration values that aren't covered in any logic or properties elsewhere.",
+        "propertyDefaults": {
+            "description": "Default values for visual properties",
             "type": "object",
             "additionalProperties": false,
-            "required": ["debounceInterval", "tabSize"],
+            "required": ["dataLimit", "developer", "editor", "vega"],
             "properties": {
-                "debounceInterval": {
-                    "description": "Time (in ms) before debouncing user input to Redux, the longer the interval, the less chatty things are, but the longer the perceived lag for things to happen after the user finishes typing in the editor.",
-                    "type": "integer"
-                },
-                "tabSize": {
-                    "description": "Number of tabs to apply per level when formatting JSON.",
-                    "type": "integer"
-                },
-                "position": {
-                    "description": "Position in the pane",
-                    "enum": ["left", "right"]
-                }
+                "dataLimit": { "$ref": "#/definitions/IDataLimitDefaults" },
+                "developer": { "$ref": "#/definitions/IDeveloperDefaults" },
+                "editor": { "$ref": "#/definitions/IEditorDefaults" },
+                "vega": { "$ref": "#/definitions/IVegaDefaults" }
             }
         },
         "splitPaneDefaults": {
@@ -154,7 +305,7 @@
     "required": [
         "features",
         "templates",
-        "editorDefaults",
+        "propertyDefaults",
         "splitPaneDefaults",
         "visualViewPortAdjust"
     ]

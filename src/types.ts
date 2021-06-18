@@ -15,7 +15,6 @@ import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 import JSONEditor from 'jsoneditor';
 import { TopLevelSpec } from 'vega-lite';
 import { Spec, Loader } from 'vega';
-import { Options } from 'react-hotkeys-hook';
 
 import VisualSettings from './properties/VisualSettings';
 import DataLimitSettings from './properties/DataLimitSettings';
@@ -61,8 +60,6 @@ export type TSupportedValueTypeDescriptor =
     | 'dateTime'
     | 'duration'
     | 'binary';
-// Locales (currently for debugging only)
-export type TLocale = 'en-US' | 'de-DE' | 'fr-FR';
 
 /**
  * ========
@@ -254,43 +251,10 @@ export interface IEditorPaneUpdatePayload {
     editorPaneExpandedWidth: number;
 }
 
-// export interface IFixPayload {
-//     status: IFixStatus;
-//     rawSpec: string;
-//     rawConfig: string;
-// }
-
 export interface IEditorReferencePayload {
     role: TEditorOperation;
     editor: JSONEditor;
 }
-
-export interface IKeyboardShortcut {
-    keys: string;
-    command: () => void;
-    options: Options;
-}
-
-// export interface ICompiledSpec {
-//     status: 'valid' | 'error' | 'new';
-//     spec: object;
-//     rawSpec: string;
-//     message?: string;
-// }
-
-// export interface IFixResult {
-//     spec: IFixStatus;
-//     config: IFixStatus;
-//     success: boolean;
-//     dismissed: boolean;
-//     error?: string;
-// }
-
-// export interface IFixStatus {
-//     success: boolean;
-//     text: string;
-//     error?: string;
-// }
 
 export interface IDebugLogOptions {
     owner?: string;

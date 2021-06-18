@@ -1,1 +1,1 @@
-export { getHostLM, getLocale } from './public';
+export { getHostLM, getLocale, TLocale } from './public';

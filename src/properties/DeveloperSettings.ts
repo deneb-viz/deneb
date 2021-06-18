@@ -3,7 +3,8 @@ import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnume
 
 import SettingsBase from './SettingsBase';
 import Debugger from '../Debugger';
-import { TLocale } from '../types';
+import { TLocale } from '../api/i18n';
+import { getConfig } from '../api/config';
 import { isDeveloperModeEnabled } from '../api/developer';
 
 /**
@@ -11,7 +12,7 @@ import { isDeveloperModeEnabled } from '../api/developer';
  */
 export default class DeveloperSettings extends SettingsBase {
     // Locale override for testing formatting and i18n
-    public locale: TLocale = 'en-US';
+    public locale: TLocale = <TLocale>getConfig().propertyDefaults.developer.locale;
 
     /**
      * Business logic for the properties within this menu.

@@ -52,7 +52,7 @@ export class EditorService implements IEditorService {
             theme: 'ace/theme/chrome',
             onChange: this.debounceInput(
                 this.handleTextEntry,
-                getConfig().editorDefaults.debounceInterval
+                getConfig().propertyDefaults.editor.debounceInterval
             )
         });
         this.setAceEditorOptions({

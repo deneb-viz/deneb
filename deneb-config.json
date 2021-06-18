@@ -10,6 +10,19 @@
         "tooltipResolveNumberFieldFormat": true,
         "unitTestCanary": false
     },
+    "keyBindings": {
+        "applyChanges": "ctrl+enter",
+        "autoApplyToggle": "ctrl+shift+enter",
+        "repairFormatJson": "ctrl+alt+r",
+        "newTemplate": "ctrl+alt+e",
+        "newSpecification": "ctrl+alt+n",
+        "openHelpUrl": "ctrl+alt+h",
+        "navigateSpecification": "ctrl+alt+1",
+        "navigateConfig": "ctrl+alt+2",
+        "navigateSettings": "ctrl+alt+3",
+        "toggleEditorPane": "ctrl+alt+space",
+        "editorFocusOut": "esc"
+    },
     "templates": {
         "metadataVersion": 1
     },
@@ -23,10 +36,23 @@
             "schemaUrl": "https://vega.github.io/schema/vega-lite/v5.json"
         }
     },
-    "editorDefaults": {
-        "debounceInterval": 200,
-        "tabSize": 2,
-        "position": "left"
+    "propertyDefaults": {
+        "dataLimit": {
+            "override": false,
+            "showCustomVisualNotes": true
+        },
+        "developer": { "locale": "en-US" },
+        "editor": { "debounceInterval": 200, "tabSize": 2, "position": "left" },
+        "vega": {
+            "jsonSpec": null,
+            "jsonConfig": "{}",
+            "provider": "vegaLite",
+            "renderMode": "canvas",
+            "enableContextMenu": true,
+            "enableTooltips": true,
+            "enableSelection": false,
+            "isNewDialogOpen": true
+        }
     },
     "splitPaneDefaults": {
         "minSize": 350,
