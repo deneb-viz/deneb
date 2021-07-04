@@ -47,7 +47,7 @@
             "jsonSpec": null,
             "jsonConfig": "{}",
             "provider": "vegaLite",
-            "renderMode": "canvas",
+            "renderMode": "svg",
             "enableContextMenu": true,
             "enableTooltips": true,
             "enableSelection": false,

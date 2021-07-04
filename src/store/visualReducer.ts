@@ -5,7 +5,6 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import {
     IVisualUpdatePayload,
-    TDataProcessingStage,
     IDataViewFlags,
     IEditorPaneUpdatePayload,
     IVisualDatasetUpdatePayload
@@ -13,6 +12,7 @@ import {
 import Debugger from '../Debugger';
 import { visualReducer as initialState } from '../config/visualReducer';
 import { getEmptyDataset } from '../api/dataset';
+import { IDataProcessingPayload } from '../api/dataView';
 import { isDeveloperModeEnabled } from '../api/developer';
 import { TEditorRole } from '../api/editor';
 import {
@@ -31,6 +31,7 @@ const visualSlice = createSlice({
         visualConstructor: (state, action: PayloadAction<IVisualHost>) => {
             const pl = action.payload;
             state.i18n = pl.createLocalizationManager();
+            state.fetchMoreData = pl.fetchMoreData;
             state.launchUrl = pl.launchUrl;
             state.persistProperties = pl.persistProperties;
             state.locale = pl.locale;
@@ -111,9 +112,10 @@ const visualSlice = createSlice({
         },
         updateDataProcessingStage: (
             state,
-            action: PayloadAction<TDataProcessingStage>
+            action: PayloadAction<IDataProcessingPayload>
         ) => {
-            state.dataProcessingStage = action.payload;
+            state.dataProcessingStage = action.payload.dataProcessingStage;
+            state.canFetchMore = action.payload.canFetchMore;
         },
         updateDataViewFlags: (state, action: PayloadAction<IDataViewFlags>) => {
             state.dataViewFlags = action.payload;
@@ -150,9 +152,10 @@ const visualSlice = createSlice({
                 state.settings.editor.position
             );
         },
-        resetLoadingCounters: (state) => {
+        resetLoadingCounters: (state, action?: PayloadAction<boolean>) => {
             state.dataWindowsLoaded = 0;
             state.dataWindowsLoaded = 0;
+            state.canFetchMore = action.payload || false;
         },
         recordDataWindowLoad: (state, action: PayloadAction<number>) => {
             state.dataWindowsLoaded++;
@@ -167,6 +170,7 @@ const visualSlice = createSlice({
         },
         dataLoadingComplete: (state) => {
             state.dataProcessingStage = 'Processing';
+            state.canFetchMore = false;
         },
         updateSpec: (state, action: PayloadAction<ICompiledSpec>) => {
             state.spec = action.payload;

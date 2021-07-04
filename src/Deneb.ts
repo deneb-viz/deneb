@@ -25,7 +25,7 @@ import Debugger, { standardLog } from './Debugger';
 import App from './components/App';
 import VisualSettings from './properties/VisualSettings';
 
-import { dataLoadingService } from './services';
+// import { dataLoadingService } from './services';
 
 import store from './store';
 import {
@@ -38,7 +38,9 @@ import {
 } from './store/visualReducer';
 import { syncExportTemplateDataset } from './store/templateReducer';
 import {
+    canFetchMore,
     getMappedDataset,
+    handleDataFetch,
     validateDataViewMapping,
     validateDataViewRoles
 } from './api/dataView';
@@ -101,7 +103,6 @@ export class Deneb implements IVisual {
             Debugger.log('Parsed settings', this.settings);
 
             // Handle the update options and dispatch to store as needed
-            // VisualHelper.resolveUpdateOptions(options, settings);
             this.resolveUpdateOptions(options);
 
             // Signal that we've finished rendering
@@ -143,7 +144,12 @@ export class Deneb implements IVisual {
                     Debugger.log(
                         'First data segment. Doing initial state checks...'
                     );
-                    store.dispatch(updateDataProcessingStage('Fetching'));
+                    store.dispatch(
+                        updateDataProcessingStage({
+                            dataProcessingStage: 'Fetching',
+                            canFetchMore: canFetchMore()
+                        })
+                    );
                     Debugger.log(
                         'First data segment. Doing initial state checks...'
                     );
@@ -180,12 +186,8 @@ export class Deneb implements IVisual {
                 }
 
                 Debugger.log('Delegating additional data fetch...');
-                dataLoadingService.handleDataFetch(
-                    options,
-                    this.settings.dataLimit,
-                    this.host
-                );
-                if (!dataLoadingService.canFetchMore) {
+                handleDataFetch(options);
+                if (!canFetchMore()) {
                     store.dispatch(
                         updateDataset({
                             categories:

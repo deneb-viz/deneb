@@ -1,6 +1,7 @@
 import powerbi from 'powerbi-visuals-api';
 import DataView = powerbi.DataView;
 import DataViewCategorical = powerbi.DataViewCategorical;
+import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import _ from 'lodash';
 
 import { getEmptyDataset, IVisualDataset } from '../dataset/public';
@@ -8,14 +9,20 @@ import { isFeatureEnabled } from '../features/public';
 import { getState } from '../store/public';
 import { createSelectionId, getSidString } from '../selection/public';
 import {
+    dispatchLoadingComplete,
     getConsolidatedFields,
     getConsolidatedMetadata,
     getConsolidatedValues,
     getDataRoleIndex,
-    getDataRow
+    getDataRow,
+    getRowCount,
+    handleDataLoad
 } from './private';
 
 export const isFetchMoreEnabled = isFeatureEnabled('fetchMoreData');
+
+export const canFetchMore = () =>
+    isFetchMoreEnabled && getState().visual.canFetchMore;
 
 export const getCategoryColumns = () => getState()?.visual?.categories || [];
 
@@ -55,10 +62,13 @@ export const getMappedDataset = (
     }
 };
 
-export const getRowCount = (categorical: DataViewCategorical) =>
-    categorical?.categories?.[0]?.values?.length ||
-    categorical?.values?.[0]?.values?.length ||
-    0;
+export const handleDataFetch = (options: VisualUpdateOptions) => {
+    if (isFetchMoreEnabled) {
+        handleDataLoad(options);
+    } else {
+        dispatchLoadingComplete();
+    }
+};
 
 export const validateDataViewMapping = (dataViews?: DataView[]) =>
     (dataViews?.length > 0 &&
@@ -85,3 +95,14 @@ export interface IAugmentedMetadataField {
     source: string;
     sourceIndex: number;
 }
+
+export interface IDataProcessingPayload {
+    dataProcessingStage: TDataProcessingStage;
+    canFetchMore: boolean;
+}
+
+export type TDataProcessingStage =
+    | 'Initial'
+    | 'Fetching'
+    | 'Processing'
+    | 'Processed';

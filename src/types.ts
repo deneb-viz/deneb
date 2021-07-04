@@ -8,7 +8,6 @@ import ViewMode = powerbi.ViewMode;
 import EditMode = powerbi.EditMode;
 import DataViewObjects = powerbi.DataViewObjects;
 import ISelectionManager = powerbi.extensibility.ISelectionManager;
-import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 import VisualObjectInstancesToPersist = powerbi.VisualObjectInstancesToPersist;
 import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 
@@ -24,6 +23,7 @@ import {
 } from './schema/template-v1';
 import { ErrorObject } from 'ajv';
 import { IVisualDataset } from './api/dataset';
+import { TDataProcessingStage } from './api/dataView';
 import { TEditorRole } from './api/editor';
 import { TVisualInterface } from './api/interface';
 import { ICompiledSpec, IFixResult, TSpecProvider } from './api/specification';
@@ -41,15 +41,8 @@ export type TTemplateProvider = TSpecProvider | 'import';
 export type TExportOperation = 'information' | 'dataset' | 'template';
 // Specify the start or end of a console group for the `Debugger`.
 export type TDebugMethodMarkerExtent = 'start' | 'end';
-
 // Modal dialog type (used for specific ops handling)
 export type TModalDialogType = 'new' | 'export';
-// Stages to within the store when processing data, and therefore give us some UI hooks for the end-user.
-export type TDataProcessingStage =
-    | 'Initial'
-    | 'Fetching'
-    | 'Processing'
-    | 'Processed';
 // Template type constraints for placeholders (currently not used).
 export type TSupportedValueTypeDescriptor =
     | 'text'
@@ -65,25 +58,6 @@ export type TSupportedValueTypeDescriptor =
  * Services
  * ========
  */
-
-/**
- * API to handle all logic around fetching more data from the data model, if needed.
- */
-export interface IDataLoadingService {
-    /**
-     * Look at the data limit settings and data view, and carry out additional loading of data if required.
-     *
-     * @param options - visual update options.
-     * @param settings - the current properties from the visual, to determine what additional loading should be
-     *  carried out (if any).
-     * @param host - visual host services (for calling `fetchMoreData`).
-     */
-    handleDataFetch: (
-        options: VisualUpdateOptions,
-        settings: DataLimitSettings,
-        host: IVisualHost
-    ) => void;
-}
 
 /**
  * API to handle signals from a Vega/Vega-Lite view and convert any elegible data point logic into suitable Power BI selection
@@ -121,6 +95,7 @@ export interface IVisualSliceState {
     allowInteractions: boolean;
     autoApply: boolean;
     canAutoApply: boolean;
+    canFetchMore: boolean;
     categories: DataViewCategoryColumn[];
     dataset: IVisualDataset;
     dataProcessingStage: TDataProcessingStage;
@@ -130,6 +105,7 @@ export interface IVisualSliceState {
     dataWindowsLoaded: number;
     editMode: EditMode;
     editorPaneIsExpanded: boolean;
+    fetchMoreData: (aggregateSegments?: boolean) => boolean;
     fourd3d3d: boolean;
     fixResult: IFixResult;
     i18n: ILocalizationManager;

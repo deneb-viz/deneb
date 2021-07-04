@@ -1,9 +1,12 @@
 export {
+    canFetchMore,
     getCategoryColumns,
     getMappedDataset,
-    getRowCount,
+    handleDataFetch,
     isFetchMoreEnabled,
     validateDataViewMapping,
     validateDataViewRoles,
-    IAugmentedMetadataField
+    IAugmentedMetadataField,
+    IDataProcessingPayload,
+    TDataProcessingStage
 } from './public';

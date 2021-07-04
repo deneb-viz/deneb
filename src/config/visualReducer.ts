@@ -11,6 +11,7 @@ const visualReducer: IVisualSliceState = {
     allowInteractions: false,
     autoApply: false,
     canAutoApply: true,
+    canFetchMore: false,
     categories: [],
     dataset: getEmptyDataset(),
     dataProcessingStage: 'Initial',
@@ -24,6 +25,7 @@ const visualReducer: IVisualSliceState = {
     dataWindowsLoaded: 0,
     editMode: EditMode.Default,
     editorPaneIsExpanded: true,
+    fetchMoreData: null,
     fixResult: {
         success: true,
         dismissed: false,
