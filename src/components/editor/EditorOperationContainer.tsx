@@ -22,7 +22,7 @@ const EditorOperationContainer: React.FC = () => {
                     display: selectedOperation === 'spec' ? 'inherit' : 'none'
                 }}
             >
-                <Editor operation='spec' isDialogOpen={isDialogOpen} />
+                <Editor role='spec' />
             </div>
             <div
                 className='editor-container'
@@ -30,7 +30,7 @@ const EditorOperationContainer: React.FC = () => {
                     display: selectedOperation === 'config' ? 'inherit' : 'none'
                 }}
             >
-                <Editor operation='config' isDialogOpen={isDialogOpen} />
+                <Editor role='config' />
             </div>
             <div
                 className='settings-container'

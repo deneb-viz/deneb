@@ -8,9 +8,9 @@ import {
     updateSelectedOperation
 } from '../../store/visualReducer';
 import { updateSelectedTemplate } from '../../store/templateReducer';
-import { TEditorOperation } from '../../types';
 
 import { getConfig } from '../config/public';
+import { TEditorRole } from '../editor/public';
 import {
     resolveObjectProperties,
     updateObjectProperties,
@@ -30,7 +30,7 @@ export const dispatchDefaultTemplate = () => {
     getStore().dispatch(updateSelectedTemplate(0));
 };
 
-export const dispatchEditorPivotItem = (operation: TEditorOperation) => {
+export const dispatchEditorPivotItem = (operation: TEditorRole) => {
     getStore().dispatch(updateSelectedOperation(operation));
 };
 

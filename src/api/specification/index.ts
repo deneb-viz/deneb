@@ -2,6 +2,7 @@ export {
     createFromTemplate,
     determineProviderFromSpec,
     fixAndFormat,
+    getBaseValidator,
     getInitialConfig,
     getParsedConfigFromSettings,
     indentJson,

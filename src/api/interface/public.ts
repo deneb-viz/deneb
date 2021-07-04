@@ -83,6 +83,11 @@ export const getResizablePaneSize = (
     return resolvedWidth;
 };
 
+export const isDialogOpen = () => {
+    const { isNewDialogVisible, isExportDialogVisible } = getState().visual;
+    return isNewDialogVisible || isExportDialogVisible;
+};
+
 export const resolveInterfaceType = (
     dataViewFlags: IDataViewFlags,
     editMode: EditMode,

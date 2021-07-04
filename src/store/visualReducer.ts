@@ -8,13 +8,13 @@ import {
     TDataProcessingStage,
     IDataViewFlags,
     IEditorPaneUpdatePayload,
-    TEditorOperation,
     IVisualDatasetUpdatePayload
 } from '../types';
 import Debugger from '../Debugger';
 import { visualReducer as initialState } from '../config/visualReducer';
 import { getEmptyDataset } from '../api/dataset';
 import { isDeveloperModeEnabled } from '../api/developer';
+import { TEditorRole } from '../api/editor';
 import {
     calculateVegaViewport,
     getResizablePaneDefaultWidth,
@@ -207,7 +207,7 @@ const visualSlice = createSlice({
         },
         updateSelectedOperation: (
             state,
-            action: PayloadAction<TEditorOperation>
+            action: PayloadAction<TEditorRole>
         ) => {
             state.selectedOperation = action.payload;
         },

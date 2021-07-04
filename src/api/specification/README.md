@@ -30,6 +30,10 @@ For the supplied spec, parse it to determine which provider we should use when i
 
 For the specification and configuration in each editor, attempt to fix any simple issues that might prevent it from being valid JSON. We'll also indent it if valid. If it doesn't work, we'll update the store with the error details so that we can inform the user to take action.
 
+#### `getBaseValidator`()
+
+Get a new instance of `Ajv`, with the necessary base configuration for validating a Vega or Vega-Lite specification.
+
 #### `getInitialConfig`()
 
 Retrieves the config from our visual properties, and enriches it with anything we want to abstract out from the end-user to make things as "at home" in Power BI as possible.
@@ -67,10 +71,6 @@ Dispatch the results of a fix and repair operation to the Redux store.
 #### `dispatchSpec`(_compiledSpec_)
 
 Dispatch a compiled specification to the Redux store.
-
-#### `getBaseValidator`()
-
-Get a new instance of `Ajv`, with the necessary base configuration for validating a Vega or Vega-Lite specification.
 
 #### `getExistingSelectors`()
 

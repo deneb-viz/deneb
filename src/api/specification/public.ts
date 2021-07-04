@@ -6,8 +6,10 @@ import * as vegaSchema from 'vega/build/vega-schema.json';
 import * as VegaLite from 'vega-lite';
 import { TopLevelSpec } from 'vega-lite';
 import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
+import Ajv from 'ajv';
+import * as draft06 from 'ajv/lib/refs/json-schema-draft-06.json';
 
-import { configEditorService, specEditorService } from '../../services'; // TODO: dependencies on class instances
+import { configEditorService, specEditorService } from '../editor/public';
 
 import { getConfig } from '../config/public';
 import { createFormatterFromString } from '../formatting/public';
@@ -92,6 +94,9 @@ export const fixAndFormat = () => {
         persist();
     } catch (e) {}
 };
+
+export const getBaseValidator = () =>
+    new Ajv({}).addFormat('color-hex', () => true).addMetaSchema(draft06);
 
 export const getInitialConfig = () => {
     const { themeColors } = getState().visual;

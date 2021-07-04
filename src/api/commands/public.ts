@@ -1,7 +1,8 @@
-import { TEditorOperation, TModalDialogType } from '../../types';
+import { TModalDialogType } from '../../types';
 import { Options } from 'react-hotkeys-hook';
 
 import { getVisualMetadata } from '../config/public';
+import { TEditorRole } from '../editor/public';
 import {
     fixAndFormat,
     persist,
@@ -45,7 +46,8 @@ export const createNewSpec = () => {
     dispatchDefaultTemplate();
 };
 
-export const focusFirstPivot = () => document.getElementById("editor-pivot-spec").focus();
+export const focusFirstPivot = () =>
+    document.getElementById('editor-pivot-spec').focus();
 
 export const fourd3d3d = () => dispatchFourd3d3d();
 
@@ -107,7 +109,7 @@ export const getVisualHotkeys = (): IKeyboardShortcut[] => [
     }
 ];
 
-export const openEditorPivotItem = (operation: TEditorOperation) =>
+export const openEditorPivotItem = (operation: TEditorRole) =>
     dispatchEditorPivotItem(operation);
 
 export const openHelpSite = () => {

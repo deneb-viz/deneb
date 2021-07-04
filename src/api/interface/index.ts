@@ -4,6 +4,7 @@ export {
     getResizablePaneMaxSize,
     getResizablePaneMinSize,
     getResizablePaneSize,
+    isDialogOpen,
     resolveInterfaceType,
     TEditorPosition,
     TVisualInterface

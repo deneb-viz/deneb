@@ -12,7 +12,9 @@ import { isDeveloperModeEnabled } from '../api/developer';
  */
 export default class DeveloperSettings extends SettingsBase {
     // Locale override for testing formatting and i18n
-    public locale: TLocale = <TLocale>getConfig().propertyDefaults.developer.locale;
+    public locale: TLocale = <TLocale>(
+        getConfig().propertyDefaults.developer.locale
+    );
 
     /**
      * Business logic for the properties within this menu.

@@ -24,6 +24,7 @@ import {
 } from './schema/template-v1';
 import { ErrorObject } from 'ajv';
 import { IVisualDataset } from './api/dataset';
+import { TEditorRole } from './api/editor';
 import { TVisualInterface } from './api/interface';
 import { ICompiledSpec, IFixResult, TSpecProvider } from './api/specification';
 import { TTemplateExportState, TTemplateImportState } from './api/template';
@@ -38,8 +39,6 @@ import { TTemplateExportState, TTemplateImportState } from './api/template';
 export type TTemplateProvider = TSpecProvider | 'import';
 // USed to handle which export operation we currently have open
 export type TExportOperation = 'information' | 'dataset' | 'template';
-// Used to specify the types of operatons we should have within the pivot control in the editor pane.
-export type TEditorOperation = 'spec' | 'config' | 'settings';
 // Specify the start or end of a console group for the `Debugger`.
 export type TDebugMethodMarkerExtent = 'start' | 'end';
 
@@ -84,45 +83,6 @@ export interface IDataLoadingService {
         settings: DataLimitSettings,
         host: IVisualHost
     ) => void;
-}
-
-/**
- * API for instnantiating and maintaining visual JSON editors.
- */
-export interface IEditorService {
-    /**
-     * Creates instance of JSONEditor in the specified container.
-     */
-    createEditor: (container: HTMLDivElement) => void;
-    /**
-     * Ensures that the current editor's schema validation is correct, based on mode and provider.
-     */
-    setProviderSchema: () => void;
-    /**
-     * Ensure editor is resized correctly for container (typically needs to be called when the pane
-     * is resized, so that wrapping etc. is as expected).
-     */
-    resize: () => void;
-    /**
-     * Ensure the specified editor gets focus (typically required after the user has clicked a
-     * button on the command bar, or some other external task has been carried out).
-     */
-    focus: () => void;
-    /**
-     * Ensure that editor completers are updated/synced to match anything the user has added to
-     * (or removed from) the Values data role.
-     */
-    updateCompleters: () => void;
-    /**
-     * Gets the current text from the embedded Ace editor with JSONEditor.
-     */
-    getText: () => void;
-    /**
-     * Sets the embedd Ace editor text within JSONEditor (using the JSONEditor method removes
-     * undo from the embedded editor, so we want to ensure we have sensible encapsulation to
-     * prevent this as much as possible).
-     */
-    setText: (text: string) => void;
 }
 
 /**
@@ -185,7 +145,7 @@ export interface IVisualSliceState {
     resizablePaneExpandedWidth: number;
     resizablePaneWidth: number;
     settings: VisualSettings;
-    selectedOperation: TEditorOperation;
+    selectedOperation: TEditorRole;
     selectionIdBuilder: () => ISelectionIdBuilder;
     selectionManager: ISelectionManager;
     spec: ICompiledSpec;
@@ -252,7 +212,7 @@ export interface IEditorPaneUpdatePayload {
 }
 
 export interface IEditorReferencePayload {
-    role: TEditorOperation;
+    role: TEditorRole;
     editor: JSONEditor;
 }
 
@@ -266,11 +226,6 @@ export interface IDebugProfileDetail {
     owner: string;
     methodName: string;
     duration: number;
-}
-
-export interface IEditorProps {
-    operation: TEditorOperation;
-    isDialogOpen: boolean;
 }
 
 export interface IUiBaseProps {

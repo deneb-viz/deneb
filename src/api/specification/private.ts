@@ -1,24 +1,28 @@
 import powerbi from 'powerbi-visuals-api';
 import ISelectionId = powerbi.visuals.ISelectionId;
 
-import Ajv from 'ajv';
-import * as draft06 from 'ajv/lib/refs/json-schema-draft-06.json';
 import jsonrepair from 'jsonrepair';
 
-import { TEditorOperation } from '../../types';
 import { updateFixStatus, updateSpec } from '../../store/visualReducer';
 
 import { getConfig } from '../config';
+import { TEditorRole } from '../editor/public';
 import { isFeatureEnabled } from '../features/public';
 import { getHostLM } from '../i18n/public';
 import { getSidString } from '../selection/public';
 import { getState, getStore } from '../store/public';
-import { indentJson, ICompiledSpec, IFixStatus, IFixResult } from './public';
+import {
+    getBaseValidator,
+    indentJson,
+    ICompiledSpec,
+    IFixStatus,
+    IFixResult
+} from './public';
 
 export const propertyDefaults = getConfig().propertyDefaults.vega;
 
 export const cleanJsonInputForPersistence = (
-    operation: TEditorOperation,
+    operation: TEditorRole,
     input: string
 ): string => {
     const clean = input.trim();
@@ -40,9 +44,6 @@ export const dispatchFixStatus = (result: IFixResult) => {
 export const dispatchSpec = (compiledSpec: ICompiledSpec) => {
     getStore().dispatch(updateSpec(compiledSpec));
 };
-
-export const getBaseValidator = () =>
-    new Ajv({}).addFormat('color-hex', () => true).addMetaSchema(draft06);
 
 export const getExistingSelectors = () => {
     const { dataset, selectionManager } = getState().visual;
@@ -98,7 +99,7 @@ export const resolveUrls = (content: string) =>
     content;
 
 export const tryFixAndFormat = (
-    operation: TEditorOperation,
+    operation: TEditorRole,
     input: string
 ): IFixStatus => {
     const lm = getHostLM();

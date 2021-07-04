@@ -6,7 +6,7 @@ import Debugger from '../Debugger';
 import { getConfig } from '../api/config';
 import { isFetchMoreEnabled } from '../api/dataView';
 
-const defaults = getConfig().propertyDefaults.dataLimit
+const defaults = getConfig().propertyDefaults.dataLimit;
 
 /**
  * Manages data limit override preferences for the visual.

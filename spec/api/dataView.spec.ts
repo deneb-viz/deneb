@@ -1,5 +1,5 @@
-import * as dataView from '../../src/api/dataView';
-import encodeFieldForSpec = dataView.encodeFieldForSpec;
+// import * as dataView from '../../src/api/dataView';
+// import encodeFieldForSpec = dataView.encodeFieldForSpec;
 
 describe('API: Data View', () => {
     describe('encodeDataViewFieldForSpec', () => {

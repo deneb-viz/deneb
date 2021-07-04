@@ -4,12 +4,7 @@ import { theme } from './theme';
 /**
  * Core configuration that should be referenced by other files
  */
-export {
-    exportFieldConstraints,
-    locales,
-    theme,
-    visualFeatures
-};
+export { exportFieldConstraints, locales, theme, visualFeatures };
 
 /**
  * =======================
