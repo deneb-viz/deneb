@@ -34,6 +34,10 @@ Handle the Generate JSON Template command.
 
 Handle the Create New Spec command.
 
+#### `discardChanges`()
+
+Handle the discard operation from the apply dialog, if the editors are dirty and the creator exits without applying them.
+
 #### `focusFirstPivot`()
 
 'Escape hatch' method to set current window focus to the first pivot element (Specification). This is ideal for situations where the user might be inside an editor, where the tab key is bound to indent/outdent.
@@ -41,6 +45,10 @@ Handle the Create New Spec command.
 #### `getVisualHotkeys`()
 
 Get an object array of visual hotkeys and their bindings from configuration, suitable for use in `react-hotkeys-hook`.
+
+#### `isApplyButtonEnabled`()
+
+Check auto-apply and dirty status to determine whether the Apply button should be enabled or not.
 
 #### `openEditorPivotItem`(_operation_)
 

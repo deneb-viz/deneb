@@ -27,7 +27,8 @@ export const extractTooltipDataItemsFromObject = (
         value: `${
             (autoFormatMetadata[k] &&
                 createFormatterFromString(autoFormatMetadata[k].format).format(
-                    _.toNumber(v)
+                    (autoFormatMetadata[k].type.numeric && _.toNumber(v)) ||
+                        (autoFormatMetadata[k].type.dateTime && v)
                 )) ||
             v
         }`

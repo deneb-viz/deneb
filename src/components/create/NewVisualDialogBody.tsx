@@ -10,13 +10,13 @@ import {
     modalDialogStackStyles,
     modalDialogStackItemStyles,
     modalDialogStackItemWrapperStyles,
-    modalDialogInnerStackTokens,
-    primaryButtonStyles
+    modalDialogInnerStackTokens
 } from '../../config/styles';
 import { state } from '../../store';
 import NewVisualDialogPivot from './NewVisualDialogPivot';
 import TemplateManagementPane from './TemplateManagementPane';
 import { createFromTemplate } from '../../api/specification';
+import { fluent } from '../../api';
 
 export const NewVisualDialogBody = () => {
     Debugger.log('Rendering Component: [NewVisualDialogBody]...');
@@ -55,7 +55,7 @@ export const NewVisualDialogBody = () => {
             </Stack.Item>
             <Stack.Item shrink styles={modalDialogStackItemStyles} align='end'>
                 <PrimaryButton
-                    styles={primaryButtonStyles}
+                    styles={fluent.buttonStyles}
                     onClick={handleCreate}
                     text={i18n.getDisplayName('Button_Create')}
                     disabled={createDisabled}

@@ -4,7 +4,7 @@ import { Spec } from 'vega';
 import { TopLevelSpec } from 'vega-lite';
 import { v4 as uuidv4 } from 'uuid';
 
-import { getConfig, getVisualMetadata } from '../config/public';
+import { getConfig, getVisualMetadata } from '../config';
 import { getHostLM } from '../i18n/public';
 import {
     determineProviderFromSpec,

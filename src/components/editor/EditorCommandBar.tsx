@@ -12,6 +12,7 @@ import {
     applyChanges,
     createExportableTemplate,
     createNewSpec,
+    isApplyButtonEnabled,
     openHelpSite,
     repairFormatJson,
     toggleAutoApply
@@ -52,7 +53,7 @@ function getItems(): ICommandBarItemProps[] {
                 iconName: 'Play'
             },
             buttonStyles: commandBarButtonStyles,
-            disabled: canAutoApply && autoApply,
+            disabled: isApplyButtonEnabled(),
             onClick: handleApply
         },
         {

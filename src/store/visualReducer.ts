@@ -227,6 +227,15 @@ const visualSlice = createSlice({
         },
         updateExportDialog: (state, action: PayloadAction<boolean>) => {
             state.isExportDialogVisible = action.payload;
+        },
+        updateDirtyFlag: (state, action: PayloadAction<boolean>) => {
+            state.isDirty = action.payload;
+        },
+        updateStagedSpecData: (state, action: PayloadAction<string>) => {
+            state.stagedSpec = action.payload;
+        },
+        updateStagedConfigData: (state, action: PayloadAction<string>) => {
+            state.stagedConfig = action.payload;
         }
     }
 });
@@ -251,8 +260,11 @@ export const {
     visualConstructor,
     visualUpdate,
     fourd3d3d,
+    updateDirtyFlag,
     updateSelectedOperation,
-    updateFixStatus
+    updateFixStatus,
+    updateStagedSpecData,
+    updateStagedConfigData
 } = visualSlice.actions;
 
 export default visualReducer;

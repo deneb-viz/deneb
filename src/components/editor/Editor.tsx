@@ -1,11 +1,11 @@
 import React from 'react';
 
-import {
-    getAssignedEditor,
-    handleComponentUpdate,
-    IVisualEditor,
-    IVisualEditorProps
-} from '../../api/editor';
+import { editor, specification } from '../../api';
+import getAssignedEditor = editor.getAssignedEditor;
+import handleComponentUpdate = editor.handleComponentUpdate;
+import IVisualEditor = editor.IVisualEditor;
+import IVisualEditorProps = editor.IVisualEditorProps;
+import stageEditorData = specification.stageEditorData;
 
 class Editor extends React.Component<IVisualEditorProps> {
     private container: HTMLDivElement;
@@ -31,6 +31,10 @@ class Editor extends React.Component<IVisualEditorProps> {
     componentDidMount() {
         this.editor = getAssignedEditor(this.props.role);
         this.editor.createEditor(this.container);
+    }
+
+    componentWillUnmount() {
+        stageEditorData(this.editor.role);
     }
 
     private bindEditorElement(element: HTMLDivElement) {

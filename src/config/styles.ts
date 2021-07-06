@@ -64,7 +64,6 @@ export {
     modalDialogStackItemStyles,
     modalDialogStackItemWrapperStyles,
     modalDialogInnerStackTokens,
-    primaryButtonStyles,
     templateExportInfoStackTokens,
     templatePickerDropdownStyles,
     templatePickerItemListStyles,

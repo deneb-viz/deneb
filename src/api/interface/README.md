@@ -34,6 +34,10 @@ Work out what the minimum size of the resizable pane should be (in px), based on
 
 Based on the current state of the resizable pane, resolve its actual width on the screen.
 
+#### `isApplyDialogHidden`()
+
+Determine whether the apply changes dialog should be hidden or not. This dialog is used to prompt the user to save their changes if they leave the editor and the editors are dirty.
+
 #### `isDialogOpen`()
 
 Determine whether Deneb is currently showing a dialog, based on the Redux store.

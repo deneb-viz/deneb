@@ -6,7 +6,11 @@ import jsonrepair from 'jsonrepair';
 import { updateFixStatus, updateSpec } from '../../store/visualReducer';
 
 import { getConfig } from '../config';
-import { TEditorRole } from '../editor/public';
+import {
+    configEditorService,
+    specEditorService,
+    TEditorRole
+} from '../editor/public';
 import { isFeatureEnabled } from '../features/public';
 import { getHostLM } from '../i18n/public';
 import { getSidString } from '../selection/public';
@@ -66,6 +70,14 @@ export const getExistingSelectors = () => {
         undefined
     );
 };
+
+export const getCleanEditorJson = (role: TEditorRole) =>
+    cleanJsonInputForPersistence(
+        role,
+        role === 'spec'
+            ? specEditorService.getText()
+            : configEditorService.getText()
+    );
 
 export const getSchemaValidator = (schema: Object) =>
     getBaseValidator().compile(schema);

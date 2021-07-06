@@ -152,5 +152,9 @@
     "Template_Export_Kind_any": "COLUMN/MEASURE:",
     "Template_Export_Json_Assistive": "Your generated template is shown below. You can go back and refine details and re-generate, or copy it to your clipboard.",
     "Template_Export_Json_Copied": "Copied to Clipboard!",
-    "Modal_Close": "Close without making changes."
+    "Modal_Close": "Close without making changes.",
+    "Dialog_Unapplied_Changes_Title": "Unapplied Changes",
+    "Dialog_Unapplied_Changes_Subtext": "Would you like to apply them now?",
+    "Dialog_Unapplied_Changes_Apply": "Apply",
+    "Dialog_Unapplied_Changes_Discard": "Discard"
 }

@@ -6,6 +6,7 @@ import { state } from '../store';
 import DataFetching from './status/DataFetching';
 import VisualRender from './VisualRender';
 import LandingPage from './status/LandingPage';
+import ApplyDialog from './modal/ApplyDialog';
 
 const DataProcessingRouter = () => {
     Debugger.log('Rendering component: [DataProcessingRouter]');
@@ -34,6 +35,7 @@ const DataProcessingRouter = () => {
             return (
                 <div id='renderedVisual'>
                     <VisualRender />
+                    <ApplyDialog />
                 </div>
             );
         }

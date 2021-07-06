@@ -7,11 +7,12 @@ import _ from 'lodash';
 import * as vegaSchema from 'vega/build/vega-schema.json';
 import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
 
-import { getConfig } from '../config/public';
+import { updateDirtyFlag } from '../../store/visualReducer';
+import { getConfig } from '../config';
 import { ITableColumnMetadata } from '../dataset/public';
 import { getHostLM } from '../i18n/public';
-import { persist } from '../specification/public';
-import { getState } from '../store/public';
+import { hasLiveSpecChanged, persist } from '../specification/public';
+import { getState, getStore } from '../store/public';
 import { TEditorRole } from './public';
 
 export const debounceInput = () =>
@@ -54,8 +55,9 @@ export const handleTextEntry = () => {
     const { autoApply } = getState().visual;
     if (autoApply) {
         persist();
+    } else {
+        getStore().dispatch(updateDirtyFlag(hasLiveSpecChanged()));
     }
-    // resolve dirty flag
 };
 
 export const resolveCompleterMeta = (field: ITableColumnMetadata) => {

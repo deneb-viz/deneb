@@ -36,6 +36,7 @@ const visualReducer: IVisualSliceState = {
     i18n: null,
     interfaceType: 'Landing',
     isInFocus: false,
+    isDirty: false,
     isExportDialogVisible: false,
     isNewDialogVisible: true,
     launchUrl: null,
@@ -54,6 +55,8 @@ const visualReducer: IVisualSliceState = {
         rawSpec: null,
         message: 'Spec has not yet been parsed'
     },
+    stagedConfig: null,
+    stagedSpec: null,
     themeColors: [],
     tooltipService: null,
     updates: 0,

@@ -1,7 +1,7 @@
 import { TModalDialogType } from '../../types';
 import { Options } from 'react-hotkeys-hook';
 
-import { getVisualMetadata } from '../config/public';
+import { getVisualMetadata } from '../config';
 import { TEditorRole } from '../editor/public';
 import {
     fixAndFormat,
@@ -14,6 +14,7 @@ import { updateExportState } from '../template/public_noconflict';
 import {
     dispatchAutoApply,
     dispatchDefaultTemplate,
+    dispatchDiscardChanges,
     dispatchEditorPaneToggle,
     dispatchEditorPivotItem,
     dispatchExportDialog,
@@ -45,6 +46,8 @@ export const createNewSpec = () => {
     handlePersist({ name: 'isNewDialogOpen', value: true });
     dispatchDefaultTemplate();
 };
+
+export const discardChanges = () => dispatchDiscardChanges();
 
 export const focusFirstPivot = () =>
     document.getElementById('editor-pivot-spec').focus();
@@ -108,6 +111,11 @@ export const getVisualHotkeys = (): IKeyboardShortcut[] => [
         options
     }
 ];
+
+export const isApplyButtonEnabled = () => {
+    const { autoApply, canAutoApply, isDirty } = getState().visual;
+    return (canAutoApply && autoApply) || !isDirty;
+};
 
 export const openEditorPivotItem = (operation: TEditorRole) =>
     dispatchEditorPivotItem(operation);

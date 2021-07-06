@@ -42,13 +42,17 @@ Retrieves the config from our visual properties, and enriches it with anything w
 
 Gets the `config` from our visual objects and parses it to JSON.
 
+#### `hasLiveSpecChanged`()
+
+Looks at the active specification and config in the visual editors and compares with persisted values in the visual properties. Used to set the `isDirty` flag in the Redux store.
+
 #### `indentJson`(_json_)
 
 For the supplied object, convert to string and indent according to specified tab size.
 
 #### `persist`()
 
-Resolve the spec/config and use the `properties` API for persistence.
+Resolve the spec/config and use the `properties` API for persistence. Also resets the `isDirty` flag in the Redux store.
 
 #### `registerCustomExpressions`()
 
@@ -57,6 +61,10 @@ Apply any custom expressions that we have written (e.g. formatting) to the speci
 #### `resolveLoaderLogic`()
 
 Create a custom Vega loader for the visual. The intention was to ensure that we could use this to disable loading of external content. However, it worked for data but not for images. This is essentially a stub, but it's left here in case we can make it work the correct way in future.
+
+#### `stageEditorData`(_role_)
+
+Add the specified editor's current text to the staging area in the Redux store. This can then be used for persistence, or application of changes if the creator exits the advanced editor and there are unapplied changes.
 
 ## Private Methods
 
@@ -71,6 +79,10 @@ Dispatch the results of a fix and repair operation to the Redux store.
 #### `dispatchSpec`(_compiledSpec_)
 
 Dispatch a compiled specification to the Redux store.
+
+#### `getCleanEditorJson`(_role_)
+
+Further abstracts the `cleanJsonInputForPersistence` workflow so that calling functions are easier to follow.
 
 #### `getExistingSelectors`()
 

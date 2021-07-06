@@ -11,7 +11,7 @@ import {
     ITemplateDatasetField
 } from '../../schema/template-v1';
 
-import { getConfig, getVisualMetadata } from '../config/public';
+import { getConfig, getVisualMetadata } from '../config';
 import { getHostLM } from '../i18n/public';
 import {
     getParsedConfigFromSettings,

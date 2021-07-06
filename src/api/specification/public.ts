@@ -9,19 +9,23 @@ import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
 import Ajv from 'ajv';
 import * as draft06 from 'ajv/lib/refs/json-schema-draft-06.json';
 
-import { configEditorService, specEditorService } from '../editor/public';
+import {
+    configEditorService,
+    specEditorService,
+    TEditorRole
+} from '../editor/public';
 
-import { getConfig } from '../config/public';
+import { getConfig } from '../config';
 import { createFormatterFromString } from '../formatting/public';
 import {
     resolveObjectProperties,
     updateObjectProperties
 } from '../properties/public';
-import { getState } from '../store/public';
+import { getState, getStore } from '../store/public';
 import { getReplacedTemplate } from '../template/public';
 import {
     propertyDefaults,
-    cleanJsonInputForPersistence,
+    getCleanEditorJson,
     dispatchFixStatus,
     dispatchSpec,
     getSchemaValidator,
@@ -29,6 +33,11 @@ import {
     resolveFixErrorMessage,
     resolveUrls
 } from './private';
+import {
+    updateDirtyFlag,
+    updateStagedSpecData,
+    updateStagedConfigData
+} from '../../store/visualReducer';
 
 export const createFromTemplate = (
     provider: TSpecProvider,
@@ -119,6 +128,14 @@ export const getParsedConfigFromSettings = (): Config => {
     } catch (e) {
         return JSON.parse(propertyDefaults.jsonConfig);
     }
+};
+
+export const hasLiveSpecChanged = () => {
+    const liveSpec = getCleanEditorJson('spec'),
+        persistedSpec = getState().visual.settings.vega.jsonSpec,
+        liveConfig = getCleanEditorJson('config'),
+        persistedConfig = getState().visual.settings.vega.jsonConfig;
+    return liveSpec != persistedSpec || liveConfig != persistedConfig;
 };
 
 export const indentJson = (json: object) =>
@@ -218,22 +235,31 @@ export const parseActiveSpec = () => {
     }
 };
 
-export const persist = () => {
-    const jsonSpec = cleanJsonInputForPersistence(
-            'spec',
-            specEditorService.getText()
-        ),
-        jsonConfig = cleanJsonInputForPersistence(
-            'config',
-            configEditorService.getText()
-        );
+export const persist = (stage = true) => {
+    stage && stageEditorData('spec');
+    stage && stageEditorData('config');
+    getStore().dispatch(updateDirtyFlag(false));
     updateObjectProperties(
         resolveObjectProperties('vega', [
-            { name: 'jsonSpec', value: jsonSpec },
-            { name: 'jsonConfig', value: jsonConfig }
+            { name: 'jsonSpec', value: getState().visual.stagedSpec },
+            { name: 'jsonConfig', value: getState().visual.stagedConfig }
         ])
     );
-    // EditorService.resolveDirtyStatus();
+};
+
+export const stageEditorData = (role: TEditorRole) => {
+    switch (role) {
+        case 'spec':
+            getStore().dispatch(
+                updateStagedSpecData(getCleanEditorJson('spec'))
+            );
+            return;
+        case 'config':
+            getStore().dispatch(
+                updateStagedConfigData(getCleanEditorJson('config'))
+            );
+            return;
+    }
 };
 
 export const resolveLoaderLogic = () => Vega.loader();

@@ -113,6 +113,7 @@ export interface IVisualSliceState {
     isInFocus: boolean;
     isNewDialogVisible: boolean;
     isExportDialogVisible: boolean;
+    isDirty: boolean;
     launchUrl: (url: string) => void;
     loader: Loader;
     locale: string;
@@ -125,6 +126,8 @@ export interface IVisualSliceState {
     selectionIdBuilder: () => ISelectionIdBuilder;
     selectionManager: ISelectionManager;
     spec: ICompiledSpec;
+    stagedConfig: string;
+    stagedSpec: string;
     themeColors: string[];
     tooltipService: ITooltipService;
     updates: number;

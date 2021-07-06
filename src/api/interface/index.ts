@@ -4,6 +4,7 @@ export {
     getResizablePaneMaxSize,
     getResizablePaneMinSize,
     getResizablePaneSize,
+    isApplyDialogHidden,
     isDialogOpen,
     resolveInterfaceType,
     TEditorPosition,

@@ -12,11 +12,7 @@ const ImportTemplateStatus: React.FC = () => {
     const root = useSelector(state),
         { visual, templates } = root,
         { i18n } = visual,
-        {
-            templateImportState,
-            templateImportErrorMessage,
-            templateSchemaErrors
-        } = templates,
+        { templateImportState, templateImportErrorMessage } = templates,
         standardMessage = (message: string) => (
             <MessageBar messageBarType={MessageBarType.info}>
                 {message}

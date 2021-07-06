@@ -4,12 +4,13 @@ import {
     toggleAutoApply,
     toggleEditorPane,
     fourd3d3d,
+    updateDirtyFlag,
     updateExportDialog,
     updateSelectedOperation
 } from '../../store/visualReducer';
 import { updateSelectedTemplate } from '../../store/templateReducer';
 
-import { getConfig } from '../config/public';
+import { getConfig } from '../config';
 import { TEditorRole } from '../editor/public';
 import {
     resolveObjectProperties,
@@ -28,6 +29,10 @@ export const dispatchAutoApply = () => {
 
 export const dispatchDefaultTemplate = () => {
     getStore().dispatch(updateSelectedTemplate(0));
+};
+
+export const dispatchDiscardChanges = () => {
+    getStore().dispatch(updateDirtyFlag(false));
 };
 
 export const dispatchEditorPivotItem = (operation: TEditorRole) => {

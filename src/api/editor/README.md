@@ -60,7 +60,7 @@ For the given role, retrieve its value from the visual properties (via Redux sto
 
 #### `handleTextEntry`()
 
-Logic used to handle changes in the editor (such as auto-apply, if enabled).
+Logic used to handle changes in the editor (such as auto-apply, if enabled). Will also request `specification` API checks/handles the `isDirty` state.
 
 #### `resolveCompleterMeta`(_field_)
 

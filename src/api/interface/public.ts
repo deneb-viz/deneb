@@ -3,7 +3,7 @@ import IViewport = powerbi.IViewport;
 import ViewMode = powerbi.ViewMode;
 import EditMode = powerbi.EditMode;
 
-import { getConfig } from '../config/public';
+import { getConfig } from '../config';
 import { getState } from '../store/public';
 import { IDataViewFlags } from '../../types';
 
@@ -81,6 +81,11 @@ export const getResizablePaneSize = (
                 getResizablePaneDefaultWidth(viewport, position)) ||
             collapsedSize;
     return resolvedWidth;
+};
+
+export const isApplyDialogHidden = () => {
+    const { interfaceType, isDirty } = getState().visual;
+    return !(isDirty && interfaceType === 'View');
 };
 
 export const isDialogOpen = () => {
