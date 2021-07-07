@@ -3,8 +3,7 @@
 API for managing selection and interactivity within the visual.
 
 -   [Constants](#constants)
--   [Public Methods](#public-methods)
--   [Private Methods](#private-methods)
+-   [Methods](#methods)
 -   [Interfaces](#interfaces)
 -   [Types](#types)
 
@@ -24,7 +23,7 @@ Convenience constant that confirms whether the `selectionDataPoint` feature swit
 
 Array of reserved keywords used to handle selection IDs from the visual's default data view.
 
-## Public Methods
+## Methods
 
 #### `createSelectionId`(_metadata_, _categories_, _rowIndex_)
 
@@ -51,8 +50,6 @@ For a given (subset of) _metadata_ and _datum_, create an `IVisualValueRow` that
 #### `resolveDatumValueForMetadataColumn`(_column_, _value_)
 
 Because Vega's tooltip channel supplies datum field values as strings, for a supplied metadata _column_ and _datum_, attempt to resolve it to a pure type, so that we can try to use its value to reconcile against the visual's dataset in order to resolve selection IDs.
-
-## Private Methods
 
 ## Interfaces
 

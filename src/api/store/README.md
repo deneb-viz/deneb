@@ -3,8 +3,7 @@
 API for working with the visual's Redux store.
 
 -   [Constants](#constants)
--   [Public Methods](#public-methods)
--   [Private Methods](#private-methods)
+-   [Methods](#public-methods)
 -   [Interfaces](#interfaces)
 -   [Types](#types)
 
@@ -12,17 +11,19 @@ API for working with the visual's Redux store.
 
 ## Constants
 
-## Public Methods
+#### `store`
+
+Visual Redux store.
+
+## Methods
+
+#### 🔒 `getNewStore`()
+
+Creates a new Redux store.
 
 #### `getState`()
 
 Returns the current state from Deneb's Redux store.
-
-#### `getStore`()
-
-Returns the Redux store.
-
-## Private Methods
 
 ## Interfaces
 

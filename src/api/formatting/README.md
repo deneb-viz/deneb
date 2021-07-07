@@ -3,8 +3,7 @@
 Handles formatting of numbers and dates.
 
 -   [Constants](#constants)
--   [Public Methods](#public-methods)
--   [Private Methods](#private-methods)
+-   [Methods](#public-methods)
 -   [Interfaces](#interfaces)
 -   [Types](#types)
 
@@ -12,7 +11,7 @@ Handles formatting of numbers and dates.
 
 ## Constants
 
-## Public Methods
+## Methods
 
 #### `createFormatterFromString`(_format_)
 

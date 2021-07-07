@@ -6,7 +6,7 @@ import { IStyleSet } from '@fluentui/react/lib/Styling';
 import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { updateSelectedDialogProvider } from '../../store/templateReducer';
-import { TTemplateProvider } from '../../types';
+import { TTemplateProvider } from '../../api/template';
 
 const pivotStyles: Partial<IStyleSet<IPivotStyles>> = {
     itemContainer: {

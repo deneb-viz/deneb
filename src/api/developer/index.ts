@@ -1,1 +1,5 @@
-export { isDeveloperModeEnabled } from './public';
+export { isDeveloperModeEnabled };
+
+import { isFeatureEnabled } from '../features';
+
+const isDeveloperModeEnabled = isFeatureEnabled('developerMode');

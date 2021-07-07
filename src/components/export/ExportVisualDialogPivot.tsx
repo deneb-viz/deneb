@@ -5,7 +5,7 @@ import { Pivot, PivotItem } from '@fluentui/react';
 import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { updateSelectedExportOperation } from '../../store/templateReducer';
-import { TExportOperation } from '../../types';
+import { TExportOperation } from '../../api/template';
 import { exportPivotStyles } from '../../config/styles';
 
 const ExportVisualDialogPivot = () => {

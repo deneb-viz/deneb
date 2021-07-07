@@ -3,8 +3,7 @@
 Handles operations around specification parsing and persistence.
 
 -   [Constants](#constants)
--   [Public Methods](#public-methods)
--   [Private Methods](#private-methods)
+-   [Methods](#methods)
 -   [Interfaces](#interfaces)
 -   [Types](#types)
 
@@ -16,7 +15,7 @@ Handles operations around specification parsing and persistence.
 
 Convenience constant that gets the `vega` property defaults from the `config` API.
 
-## Public Methods
+## Methods
 
 #### `createFromTemplate`(_provider_, _template_)
 
@@ -66,37 +65,35 @@ Create a custom Vega loader for the visual. The intention was to ensure that we 
 
 Add the specified editor's current text to the staging area in the Redux store. This can then be used for persistence, or application of changes if the creator exits the advanced editor and there are unapplied changes.
 
-## Private Methods
-
-#### `cleanJsonInputForPersistence`(_operation_, _input_)
+#### 🔒 `cleanJsonInputForPersistence`(_operation_, _input_)
 
 For a given operation and string input, ensure that it's trimmed and replaced with suitable defaults if empty.
 
-#### `dispatchFixStatus`(_result_)
+#### 🔒 `dispatchFixStatus`(_result_)
 
 Dispatch the results of a fix and repair operation to the Redux store.
 
-#### `dispatchSpec`(_compiledSpec_)
+#### 🔒 `dispatchSpec`(_compiledSpec_)
 
 Dispatch a compiled specification to the Redux store.
 
-#### `getCleanEditorJson`(_role_)
+#### 🔒 `getCleanEditorJson`(_role_)
 
 Further abstracts the `cleanJsonInputForPersistence` workflow so that calling functions are easier to follow.
 
-#### `getExistingSelectors`()
+#### 🔒 `getExistingSelectors`()
 
 Get any existing selections (e.g. through bookmarks) to ensure that they are restored into the visual's current selection correctly and able to be passed into the specification's `init` property for our selection.
 
-#### `getSchemaValidator`(_schema_)
+#### 🔒 `getSchemaValidator`(_schema_)
 
 Apply the supplied JSON schema to a `getBaseValidator` and attempt to compile it.
 
-#### `resolveFixErrorMessage`(_success_, _fixedRawSpec_, _fixedRawConfig_)
+#### 🔒 `resolveFixErrorMessage`(_success_, _fixedRawSpec_, _fixedRawConfig_)
 
 For the results of a fix and repair operation, resolve the error message for the end-user (if applicable).
 
-#### `resolveURls`(_content_)
+#### 🔒 `resolveURls`(_content_)
 
 For a given body of text, replace anything that looks like a remote URI with blank text. If the URI has a `data:` prefix then we'll allow it, so that the user can specify base64 content.
 

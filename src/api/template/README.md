@@ -138,6 +138,10 @@ Payload for suppliying import templte details to the Redux store.
 
 ## Types
 
+#### `TExportOperation`
+
+Used to indicate which part of the export dialog has focus.
+
 #### `TTemplateExportState`
 
 Stages we go through when exporting a template so that the interface can respond accordingly.
@@ -145,3 +149,7 @@ Stages we go through when exporting a template so that the interface can respond
 #### `TTemplateImportState`
 
 Stages we go through when importing a template so that the interface can respond accordingly.
+
+#### `TTemplateProvider`
+
+Extension of [`TSpecProvider`](../specification/README.md#tspecprovider), providing an `import` value in addition to `vega` and `vegaLite`.

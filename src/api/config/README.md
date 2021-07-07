@@ -3,8 +3,7 @@
 Intended to provide methods for working with visual configuration (stored in `/deneb-config.json`). The schema/documentation for the config is in `/schema/deneb-config.json`.
 
 -   [Constants](#constants)
--   [Public Methods](#public-methods)
--   [Private Methods](#private-methods)
+-   [Methods](#methods)
 -   [Interfaces](#interfaces)
 -   [Types](#types)
 
@@ -16,7 +15,7 @@ Intended to provide methods for working with visual configuration (stored in `/d
 
 Object containing packaged versions for Vega and Vega-Lite, as derived from `package.json`.
 
-## Public Methods
+## Methods
 
 #### `getConfig`()
 
@@ -25,8 +24,6 @@ Get object representation of visual configuration.
 #### `getVisualMetadata`()
 
 Get object representation of visual metadata (from pbiviz.json).
-
-## Private Methods
 
 ## Interfaces
 

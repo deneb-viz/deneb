@@ -3,8 +3,7 @@
 For working with enabled visual features.
 
 -   [Constants](#constants)
--   [Public Methods](#public-methods)
--   [Private Methods](#private-methods)
+-   [Methods](#methods)
 -   [Interfaces](#interfaces)
 -   [Types](#types)
 
@@ -12,13 +11,11 @@ For working with enabled visual features.
 
 ## Constants
 
-## Public Methods
+## Methods
 
 #### `isFeatureEnabled`(_feature_)
 
 Check config for named feature flag and verify that it's enabled. Also returns `false` if flag does not exist.
-
-## Private Methods
 
 ## Interfaces
 

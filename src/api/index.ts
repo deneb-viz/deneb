@@ -15,7 +15,7 @@ import * as specification from './specification';
 import * as store from './store';
 import * as template from './template';
 import * as tooltip from './tooltip';
-import * as ui from './interface';
+import * as ui from './ui';
 
 export {
     commands,

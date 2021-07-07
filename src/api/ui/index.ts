@@ -1,13 +1,26 @@
+export {
+    calculateVegaViewport,
+    getResizablePaneDefaultWidth,
+    getResizablePaneMaxSize,
+    getResizablePaneMinSize,
+    getResizablePaneSize,
+    isApplyDialogHidden,
+    isDialogOpen,
+    resolveInterfaceType,
+    TEditorPosition,
+    TVisualInterface
+};
+
 import powerbi from 'powerbi-visuals-api';
 import IViewport = powerbi.IViewport;
 import ViewMode = powerbi.ViewMode;
 import EditMode = powerbi.EditMode;
 
 import { getConfig } from '../config';
-import { getState } from '../store/public';
+import { getState } from '../store';
 import { IDataViewFlags } from '../../types';
 
-export const calculateVegaViewport = (
+const calculateVegaViewport = (
     viewport: IViewport,
     paneWidth: number,
     interfaceType: TVisualInterface,
@@ -25,7 +38,7 @@ export const calculateVegaViewport = (
     return { width, height };
 };
 
-export const getResizablePaneDefaultWidth = (
+const getResizablePaneDefaultWidth = (
     viewport: IViewport,
     position: TEditorPosition
 ) => {
@@ -35,7 +48,7 @@ export const getResizablePaneDefaultWidth = (
     return viewport.width * splitPaneDefaults.defaultSizePercent;
 };
 
-export const getResizablePaneMaxSize = () => {
+const getResizablePaneMaxSize = () => {
     const { editorPaneIsExpanded, settings, viewport } = getState().visual,
         { editor } = settings,
         { maxSizePercent, minSize, collapsedSize } = splitPaneDefaults,
@@ -48,7 +61,7 @@ export const getResizablePaneMaxSize = () => {
     return resolvedSize;
 };
 
-export const getResizablePaneMinSize = () => {
+const getResizablePaneMinSize = () => {
     const { editorPaneIsExpanded, settings, viewport } = getState().visual,
         { editor } = settings,
         { minSize, maxSizePercent, collapsedSize } = splitPaneDefaults;
@@ -65,7 +78,7 @@ export const getResizablePaneMinSize = () => {
     return resolvedSize;
 };
 
-export const getResizablePaneSize = (
+const getResizablePaneSize = (
     paneExpandedWidth: number,
     editorPaneIsExpanded: boolean,
     viewport: IViewport,
@@ -83,17 +96,17 @@ export const getResizablePaneSize = (
     return resolvedWidth;
 };
 
-export const isApplyDialogHidden = () => {
+const isApplyDialogHidden = () => {
     const { interfaceType, isDirty } = getState().visual;
     return !(isDirty && interfaceType === 'View');
 };
 
-export const isDialogOpen = () => {
+const isDialogOpen = () => {
     const { isNewDialogVisible, isExportDialogVisible } = getState().visual;
     return isNewDialogVisible || isExportDialogVisible;
 };
 
-export const resolveInterfaceType = (
+const resolveInterfaceType = (
     dataViewFlags: IDataViewFlags,
     editMode: EditMode,
     isInFocus: boolean,
@@ -115,8 +128,8 @@ export const resolveInterfaceType = (
     }
 };
 
-export const splitPaneDefaults = getConfig().splitPaneDefaults;
-export const visualViewportAdjust = getConfig().visualViewPortAdjust;
+const splitPaneDefaults = getConfig().splitPaneDefaults;
+const visualViewportAdjust = getConfig().visualViewPortAdjust;
 
-export type TEditorPosition = 'left' | 'right';
-export type TVisualInterface = 'Landing' | 'View' | 'Edit';
+type TEditorPosition = 'left' | 'right';
+type TVisualInterface = 'Landing' | 'View' | 'Edit';

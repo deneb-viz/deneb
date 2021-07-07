@@ -7,7 +7,7 @@ import { FontWeights } from '@fluentui/react/lib/Styling';
 
 import { theme } from '../../config/theme';
 
-import { getHostLM } from '../i18n/public';
+import { getHostLM } from '../i18n';
 
 const buttonStyles: IButtonStyles = {
     root: {

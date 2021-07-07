@@ -3,8 +3,7 @@
 API for managing events within the visual.
 
 -   [Constants](#constants)
--   [Public Methods](#public-methods)
--   [Private Methods](#private-methods)
+-   [Methods](#methods)
 -   [Interfaces](#interfaces)
 -   [Types](#types)
 
@@ -12,7 +11,7 @@ API for managing events within the visual.
 
 ## Constants
 
-## Public Methods
+## Methods
 
 #### `resolveCoordinates`(_event_)
 

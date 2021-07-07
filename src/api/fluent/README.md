@@ -3,8 +3,7 @@
 HAndles abstraction of common Fluent UI props, styling and other operations.
 
 -   [Constants](#constants)
--   [Public Methods](#public-methods)
--   [Private Methods](#private-methods)
+-   [Methods](#methods)
 -   [Interfaces](#interfaces)
 -   [Types](#types)
 
@@ -20,13 +19,11 @@ General styling for buttons within the UI.
 
 General properties for pop-up dialogs within the UI.
 
-## Public Methods
+## Methods
 
 #### `getDialogContentProps`(_titleKey_, _subTextKey_)
 
 Populate suitable `IDialogContentProps` based on supplied i18n keys.
-
-## Private Methods
 
 ## Interfaces
 

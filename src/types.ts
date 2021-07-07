@@ -12,22 +12,16 @@ import VisualObjectInstancesToPersist = powerbi.VisualObjectInstancesToPersist;
 import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 
 import JSONEditor from 'jsoneditor';
-import { TopLevelSpec } from 'vega-lite';
-import { Spec, Loader } from 'vega';
+import { Loader } from 'vega';
 
 import VisualSettings from './properties/VisualSettings';
 import DataLimitSettings from './properties/DataLimitSettings';
-import {
-    ITemplateDatasetField,
-    IDenebTemplateMetadata
-} from './schema/template-v1';
-import { ErrorObject } from 'ajv';
+import { ITemplateDatasetField } from './schema/template-v1';
 import { IVisualDataset } from './api/dataset';
 import { TDataProcessingStage } from './api/dataView';
 import { TEditorRole } from './api/editor';
-import { TVisualInterface } from './api/interface';
-import { ICompiledSpec, IFixResult, TSpecProvider } from './api/specification';
-import { TTemplateExportState, TTemplateImportState } from './api/template';
+import { TVisualInterface } from './api/ui';
+import { ICompiledSpec, IFixResult } from './api/specification';
 
 /**
  * =====
@@ -35,10 +29,6 @@ import { TTemplateExportState, TTemplateImportState } from './api/template';
  * =====
  */
 
-// Used for creating a new specification - can either be from existing templates, or imported
-export type TTemplateProvider = TSpecProvider | 'import';
-// USed to handle which export operation we currently have open
-export type TExportOperation = 'information' | 'dataset' | 'template';
 // Specify the start or end of a console group for the `Debugger`.
 export type TDebugMethodMarkerExtent = 'start' | 'end';
 // Modal dialog type (used for specific ops handling)
@@ -134,29 +124,6 @@ export interface IVisualSliceState {
     vegaViewport: IViewport;
     viewMode: ViewMode;
     viewport: IViewport;
-}
-
-/**
- * Template reducer state
- */
-export interface ITemplateSliceState {
-    selectedTemplateIndex: number;
-    templateFile: File;
-    templateImportState: TTemplateImportState;
-    templateExportState: TTemplateExportState;
-    templateImportErrorMessage: string;
-    templateExportErrorMessage: string;
-    templateSchemaErrors: ErrorObject[];
-    templateFileRawContent: string;
-    templateToApply: Spec | TopLevelSpec;
-    templateExportMetadata: IDenebTemplateMetadata;
-    allImportCriteriaApplied: boolean;
-    allExportCriteriaApplied: boolean;
-    templateProvider: TTemplateProvider;
-    specProvider: TSpecProvider;
-    selectedExportOperation: TExportOperation;
-    vegaLite: TopLevelSpec[];
-    vega: Spec[];
 }
 
 // Action Payloads...

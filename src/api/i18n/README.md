@@ -3,8 +3,7 @@
 Management of any internationalization (18n) or locale-specific operations.
 
 -   [Constants](#constants)
--   [Public Methods](#public-methods)
--   [Private Methods](#private-methods)
+-   [Methods](#methods)
 -   [Interfaces](#interfaces)
 -   [Types](#types)
 
@@ -12,7 +11,7 @@ Management of any internationalization (18n) or locale-specific operations.
 
 ## Constants
 
-## Public Methods
+## Methods
 
 #### `getHostLM`()
 
@@ -21,8 +20,6 @@ Convenience function that returns the visual host's `powerbi.extensibility.ILoca
 #### `getLocale`()
 
 Convenience function that returns the visual's locale (or overridden locale is using developer mode) from Deneb's Redux store.
-
-## Private Methods
 
 ## Interfaces
 

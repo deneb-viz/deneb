@@ -3,8 +3,7 @@
 Functions and helpers for developer mode.
 
 -   [Constants](#constants)
--   [Public Methods](#public-methods)
--   [Private Methods](#private-methods)
+-   [Methods](#private-methods)
 -   [Interfaces](#interfaces)
 -   [Types](#types)
 
@@ -16,9 +15,7 @@ Functions and helpers for developer mode.
 
 Convenience constant that confirms whether the `developerMode` feature switch is enabled (via [features](../features/README.md) API).
 
-## Public Methods
-
-## Private Methods
+## Methods
 
 ## Interfaces
 

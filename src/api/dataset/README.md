@@ -3,14 +3,13 @@
 Functions and helpers for working with the visual dataset.
 
 -   [Constants](#constants)
--   [Public Methods](#public-methods)
--   [Private Methods](#private-methods)
+-   [Methods](#methods)
 -   [Interfaces](#interfaces)
 -   [Types](#types)
 
 [< index](../README.md)
 
-## Public Methods
+## Methods
 
 #### `getDataset`()
 
@@ -35,8 +34,6 @@ Get all values (excluding metadata) for current processed dataset from Deneb's R
 #### `getValueForDatum`(_metadata_, _datum_)
 
 For the supplied (subset of) _metadata_ and _datum_ attempt to find the first matching row in the visual's processed dataset for this combination.
-
-## Private Methods
 
 ## Interfaces
 

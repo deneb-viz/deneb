@@ -1,10 +1,9 @@
-# Deneb - Interface API
+# Deneb - User Interface API
 
 Manages interface-specific operations.
 
 -   [Constants](#constants)
--   [Public Methods](#public-methods)
--   [Private Methods](#private-methods)
+-   [Methods](#methods)
 -   [Interfaces](#interfaces)
 -   [Types](#types)
 
@@ -12,7 +11,7 @@ Manages interface-specific operations.
 
 ## Constants
 
-## Public Methods
+## Methods
 
 #### `calculateVegaViewport`(_viewport_, _paneWidth_, _interfaceType_, _position_)
 

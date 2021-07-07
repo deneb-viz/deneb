@@ -3,8 +3,7 @@
 Handles menu and keyboard commands within the visual.
 
 -   [Constants](#constants)
--   [Public Methods](#public-methods)
--   [Private Methods](#private-methods)
+-   [Methods](#methods)
 -   [Interfaces](#interfaces)
 -   [Types](#types)
 
@@ -16,7 +15,7 @@ Handles menu and keyboard commands within the visual.
 
 Constant specifying `react-hotkeys-hook` bindings for particular HTML elements.
 
-## Public Methods
+## Methods
 
 #### `applyChanges`()
 
@@ -82,33 +81,31 @@ Handle the change in provider from one to the other and update necessary store d
 
 Handle the change in render mode from one to the other and update necessary store dependencies and properties.
 
-## Private Methods
-
-#### `dispatchAutoApply`()
+#### 🔒 `dispatchAutoApply`()
 
 Manages dispatch of the auto apply command state to the Redux store.
 
-#### `dispatchDefaultTemplate`()
+#### 🔒 `dispatchDefaultTemplate`()
 
 Manages dispatch of the default template select method to the Redux store.
 
-#### `dispatchEditorPivotItem`(_operation_)
+#### 🔒 `dispatchEditorPivotItem`(_operation_)
 
 Manages dispatch of the a pivot item selection method to the Redux store.
 
-#### `dispatchEditorPaneToggle`()
+#### 🔒 `dispatchEditorPaneToggle`()
 
 Manages dispatch of the editor pane command method to the Redux store.
 
-#### `dispatchExportDialog`(_show_)
+#### 🔒 `dispatchExportDialog`(_show_)
 
 Manages dispatch of the export dialog command method to the Redux store.
 
-#### `getCommandKeyBinding`(_command_)
+#### 🔒 `getCommandKeyBinding`(_command_)
 
 Convenience method to get key binding details from configuration for the specified command.
 
-#### `handlePersist`(_property_)
+#### 🔒 `handlePersist`(_property_)
 
 Manages persistence of a properties object to the Redux store from an operation.
 

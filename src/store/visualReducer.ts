@@ -21,7 +21,7 @@ import {
     getResizablePaneSize,
     resolveInterfaceType,
     TVisualInterface
-} from '../api/interface';
+} from '../api/ui';
 import { ICompiledSpec, IFixResult } from '../api/specification';
 
 const visualSlice = createSlice({

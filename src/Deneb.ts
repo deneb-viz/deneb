@@ -36,7 +36,10 @@ import {
     recordInvalidDataView,
     updateDataset
 } from './store/visualReducer';
-import { syncExportTemplateDataset } from './store/templateReducer';
+import {
+    initializeImportExport,
+    syncExportTemplateDataset
+} from './store/templateReducer';
 import {
     canFetchMore,
     getMappedDataset,
@@ -68,6 +71,7 @@ export class Deneb implements IVisual {
             Debugger.log('Initialising icons...');
             initializeIcons();
             store.dispatch(visualConstructor(options.host));
+            store.dispatch(initializeImportExport());
             Debugger.log('Setting container element...');
             this.container = options.element;
             Debugger.log('Setting host services...');

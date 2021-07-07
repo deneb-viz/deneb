@@ -1,13 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import * as _ from 'lodash';
 
-import Debugger from '../Debugger';
-import {
-    IPlaceholderValuePayload,
-    TExportOperation,
-    TTemplateProvider
-} from '../types';
+import { IPlaceholderValuePayload } from '../types';
 import { templateReducer as initialState } from '../config/templateReducer';
+import templates from '../templates';
 import {
     IDenebTemplateMetadata,
     ITemplateDatasetField
@@ -21,13 +17,21 @@ import {
     ITemplateImportErrorPayload,
     ITemplateImportPayload,
     TTemplateExportState,
-    TTemplateImportState
+    TTemplateImportState,
+    TTemplateProvider,
+    TExportOperation
 } from '../api/template';
 
 const templateSlice = createSlice({
     name: 'templates',
     initialState,
     reducers: {
+        initializeImportExport: (state) => {
+            state.allImportCriteriaApplied = getPlaceholderResolutionStatus(
+                templates.vegaLite[0]
+            );
+            state.templateExportMetadata = getNewExportTemplateMetadata();
+        },
         updateSelectedDialogProvider: (
             state,
             action: PayloadAction<TTemplateProvider>
@@ -149,7 +153,6 @@ const templateSlice = createSlice({
             state,
             action: PayloadAction<IPlaceholderValuePayload>
         ) => {
-            Debugger.log('Updating template placeholder.', action.payload);
             const pl = action.payload,
                 phIdx = (<IDenebTemplateMetadata>(
                     state.templateToApply?.usermeta
@@ -166,7 +169,7 @@ const templateSlice = createSlice({
     }
 });
 
-const templateReducer = templateSlice.reducer;
+const templateReducer = () => templateSlice.reducer;
 
 export const {
     newExportTemplateMetadata,
@@ -180,7 +183,8 @@ export const {
     updateSelectedTemplate,
     updateTemplateExportState,
     updateTemplateImportState,
-    updateExportTemplatePropertyBySelector
+    updateExportTemplatePropertyBySelector,
+    initializeImportExport
 } = templateSlice.actions;
 
 export default templateReducer;

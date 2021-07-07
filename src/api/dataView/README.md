@@ -3,8 +3,7 @@
 Functions and helpers for working with the visual data view.
 
 -   [Constants](#constants)
--   [Public Methods](#public-methods)
--   [Private Methods](#private-methods)
+-   [Methods](#methods)
 -   [Interfaces](#interfaces)
 -   [Types](#types)
 
@@ -42,68 +41,66 @@ Validates the data view, to confirm that we can get past the splash screen.
 
 Validates the data view, to confirm that we can get past the splash screen.
 
-## Private Methods
-
-#### `castPrimitiveValue`(_field_, _value_)
+#### 🔒 `castPrimitiveValue`(_field_, _value_)
 
 For a Power BI primitive, apply any data type-specific logic before returning a value that can work with the visual dataset.
 
-#### `dispatchResetLoadingCounters`()
+#### 🔒 `dispatchResetLoadingCounters`()
 
 Ensure that the Redux store counters are reset, ready for a new data load.
 
-#### `dispatchLoadingComplete`()
+#### 🔒 `dispatchLoadingComplete`()
 
 Ensures that the Redux store state is correct for a loaded dataset.
 
-#### `dispatchWindowLoad`(_rowsLoaded_)
+#### 🔒 `dispatchWindowLoad`(_rowsLoaded_)
 
 Updates the Redux store for each window of the dataset loaded from the visual host.
 
-#### `encodeFieldForSpec`(_displayName_)
+#### 🔒 `encodeFieldForSpec`(_displayName_)
 
 If a Power BI column or measure contains characters that create problems in JSON or Vega/Vega-Lite expressions and encodings, we will replace them with an underscore, which is much easier to educate people on than having to learn all the specifics of escaping in the right context, in the right way.
 
 -   Vega: https://vega.github.io/vega/docs/types/#Field
 -   Vega-Lite: https://vega.github.io/vega-lite/docs/field.html
 
-#### `getConsolidatedFields`(_categories_, _values_)
+#### 🔒 `getConsolidatedFields`(_categories_, _values_)
 
 For supplied data view metadata (columns & measures), enumerate them and produce a unified list of all fields for the dataset.
 
-#### `getConsolidatedMetadata`(fields)
+#### 🔒 `getConsolidatedMetadata`(fields)
 
 For all dataset fields, get a consolidated array of all entires, plus additional metadata to assist with template and selection ID generation when the data view is mapped.
 
-#### `getConsolidatedValues`(_categories_, _values_)
+#### 🔒 `getConsolidatedValues`(_categories_, _values_)
 
 For supplied data view metadata (columns & measures), enumerate them and produce a unified list of all values for the dataset.
 
-#### `getDataRoleIndex`(_fields_, _role_)
+#### 🔒 `getDataRoleIndex`(_fields_, _role_)
 
 Checks the supplied columns for the correct index of the content column, so that we can map it correctly later.
 
-#### `getDataRow`(_fields_, _values_, _index_)
+#### 🔒 `getDataRow`(_fields_, _values_, _index_)
 
 For supplied data view consolidated metadata (all columns + measures), produce a suitable object representation of the row that corresponds with the dataset metadata.
 
-#### `getRowCount`(_categorical_)
+#### 🔒 `getRowCount`(_categorical_)
 
 Checks for valid `categorical` dataview and provides count of values.
 
-#### `handleAdditionalWindows`(_segment_)
+#### 🔒 `handleAdditionalWindows`(_segment_)
 
 Determine whether additional data can/should be loaded from the visual host, and manage this operation along with the Redux store state.
 
-#### `handleCounterReset`(_operationKind_)
+#### 🔒 `handleCounterReset`(_operationKind_)
 
 Ensure that the Redux store loading counters are updated for the correct event in the visual workflow.
 
-#### `handleDataLoad`(_options_)
+#### 🔒 `handleDataLoad`(_options_)
 
 For the supplied visual update options, ensure that all workflow steps are managed.
 
-#### shouldFetchMore(_segment_)
+#### 🔒 shouldFetchMore(_segment_)
 
 Based on the supplied segment from the data view, plus Redux store state and settings, determine if the visual host should be instructed to request more data.
 

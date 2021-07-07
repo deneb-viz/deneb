@@ -6,7 +6,7 @@ import { PrimaryButton, DefaultButton } from '@fluentui/react/lib/Button';
 import { applyChanges, discardChanges } from '../../api/commands';
 import { fluent } from '../../api/';
 import { getHostLM } from '../../api/i18n';
-import { isApplyDialogHidden } from '../../api/interface';
+import { isApplyDialogHidden } from '../../api/ui';
 
 export const ApplyDialog: React.FunctionComponent = () => {
     const hidden = isApplyDialogHidden(),
