@@ -159,6 +159,17 @@
                             }
                         ]
                     }
+                },
+                "fontSize": {
+                    "displayNameKey": "Objects_Editor_FontSize",
+                    "descriptionKey": "Objects_Editor_FontSize_Description",
+                    "displayName": "Font Size",
+                    "description": "Font Size description",
+                    "type": {
+                        "formatting": {
+                            "fontSize": true
+                        }
+                    }
                 }
             }
         },

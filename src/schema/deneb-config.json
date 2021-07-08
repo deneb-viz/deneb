@@ -59,6 +59,10 @@
                 "position": {
                     "description": "Position in the pane",
                     "enum": ["left", "right"]
+                },
+                "fontSize": {
+                    "description": "Size of editor font (in pt)",
+                    "type": "integer"
                 }
             }
         },
@@ -153,6 +157,10 @@
                     "type": "boolean"
                 }
             }
+        },
+        "fluentUiTheme": {
+            "description": "Fluent UI theme configuration.",
+            "type": "object"
         },
         "keyBindings": {
             "description": "Shortcut key combinations for visual commands and operations.",
@@ -304,6 +312,7 @@
     },
     "required": [
         "features",
+        "fluentUiTheme",
         "templates",
         "propertyDefaults",
         "splitPaneDefaults",

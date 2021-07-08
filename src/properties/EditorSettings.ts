@@ -10,4 +10,5 @@ export default class EditorSettings extends SettingsBase {
     public position: TEditorPosition = <TEditorPosition>(
         getConfig().propertyDefaults.editor.position
     );
+    public fontSize: number = getConfig().propertyDefaults.editor.fontSize;
 }

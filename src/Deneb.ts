@@ -20,12 +20,9 @@ import * as ReactDOM from 'react-dom';
 import { initializeIcons } from '@fluentui/react';
 import { loadTheme } from '@fluentui/react/lib/Styling';
 
-import { theme } from './config';
 import Debugger, { standardLog } from './Debugger';
 import App from './components/App';
 import VisualSettings from './properties/VisualSettings';
-
-// import { dataLoadingService } from './services';
 
 import store from './store';
 import {
@@ -47,6 +44,7 @@ import {
     validateDataViewMapping,
     validateDataViewRoles
 } from './api/dataView';
+import { theme } from './api/fluent';
 import { parseActiveSpec } from './api/specification';
 
 const owner = 'Visual';

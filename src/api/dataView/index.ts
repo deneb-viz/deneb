@@ -39,14 +39,11 @@ import { resolveVisualMetaToDatasetField } from '../template';
 
 const isFetchMoreEnabled = isFeatureEnabled('fetchMoreData');
 
-const canFetchMore = () =>
-    isFetchMoreEnabled && getState().visual.canFetchMore;
+const canFetchMore = () => isFetchMoreEnabled && getState().visual.canFetchMore;
 
 const getCategoryColumns = () => getState()?.visual?.categories || [];
 
-const getMappedDataset = (
-    categorical: DataViewCategorical
-): IVisualDataset => {
+const getMappedDataset = (categorical: DataViewCategorical): IVisualDataset => {
     const categories = categorical?.categories,
         values = categorical?.values,
         columns = getConsolidatedFields(categories, values),
@@ -119,13 +116,9 @@ interface IDataProcessingPayload {
     canFetchMore: boolean;
 }
 
-type TDataProcessingStage =
-    | 'Initial'
-    | 'Fetching'
-    | 'Processing'
-    | 'Processed';
+type TDataProcessingStage = 'Initial' | 'Fetching' | 'Processing' | 'Processed';
 
-    export const castPrimitiveValue = (
+export const castPrimitiveValue = (
     field: IAugmentedMetadataField,
     value: powerbi.PrimitiveValue
 ) => (field?.column.type.dateTime ? new Date(value.toString()) : value);

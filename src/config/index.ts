@@ -1,10 +1,7 @@
-import { locales } from './locales';
-import { theme } from './theme';
-
 /**
  * Core configuration that should be referenced by other files
  */
-export { exportFieldConstraints, locales, theme, visualFeatures };
+export { exportFieldConstraints, visualFeatures };
 
 /**
  * =======================

@@ -1,13 +1,15 @@
-export { dialogPropsStyles, buttonStyles, getDialogContentProps };
+export { dialogPropsStyles, buttonStyles, getDialogContentProps, theme };
 
 import { IButtonStyles } from '@fluentui/react/lib/Button';
 import { DialogType, IDialogContentProps } from '@fluentui/react/lib/Dialog';
 import { IModalProps } from '@fluentui/react/lib/Modal';
 import { FontWeights } from '@fluentui/react/lib/Styling';
+import { IPartialTheme } from '@fluentui/react/lib/Theme';
 
-import { theme } from '../../config/theme';
-
+import { getConfig } from '../config';
 import { getHostLM } from '../i18n';
+
+const theme = <IPartialTheme>getConfig()?.fluentUiTheme || {};
 
 const buttonStyles: IButtonStyles = {
     root: {

@@ -45,6 +45,10 @@ Gets the Ace editor instance from the supplied `jsonEditor`.
 
 For an editor, we need to populate the completers for the end-user. This traverses the metadata for all columns and measures added to the Values data role and returns them as a valid Ace `Completer`.
 
+#### 🔒 `getEditorPropFromStore`(_prop_)
+
+Retrieve the specific property from the Redux store.
+
 #### 🔒 `getNewJsonEditor`(_container_)
 
 Creates a new JSONEditor object in the supplied DOM element and binds configuration and behavior.

@@ -17,6 +17,14 @@ Manages interface-specific operations.
 
 Calculate the dimensions of the Vega/Vega-Lite visual viewport (height/width) based on the interface state and a number of other factors (including any config defaults).
 
+#### `getCommandBarEditCommands`()
+
+Gets the command bar items for the left side of the bar, which is concerned with persistence.
+
+#### `getCommandBarFarCommands`()
+
+Gets the command bar items for the far side of the bar, which is concerned with templating and support operations.
+
 #### `getResizablePaneDefaultWidth`(_viewport_, _position_)
 
 Calculate the default size of the resizable pane (in px) based on current viewport size and config defaults.
@@ -45,7 +53,23 @@ Determine whether Deneb is currently showing a dialog, based on the Redux store.
 
 Calculated during Redux store update, and based on this state, determine what interface should be displayed to the end-user.
 
-## Private Methods
+#### 🔒 `getApplyCommandItem`()
+
+#### 🔒 `getAutoApplyCommandItem`(_enabled_, _canAutoApply_)
+
+#### 🔒 `getRepairFormatCommandItem`()
+
+#### 🔒 `getNewSpecCommandItem`()
+
+#### 🔒 `getExportSpecCommandItem`()
+
+#### 🔒 `getHelpCommandItem`()
+
+#### 🔒 `resolveAutoApplyAriaLabel`(_enabled_)
+
+#### 🔒 `resolveAutoApplyIcon`(_enabled_)
+
+#### 🔒 `resolveAutoApplyText`(_enabled_)
 
 ## Interfaces
 

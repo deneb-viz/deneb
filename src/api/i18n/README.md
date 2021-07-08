@@ -1,6 +1,6 @@
-# Deneb - I18N API
+# Deneb - i18N API
 
-Management of any internationalization (18n) or locale-specific operations.
+Management of any internationalization (i18n) or locale-specific operations.
 
 -   [Constants](#constants)
 -   [Methods](#methods)
@@ -10,6 +10,10 @@ Management of any internationalization (18n) or locale-specific operations.
 [< index](../README.md)
 
 ## Constants
+
+#### `locales`
+
+i18 locale data for D3-based formatting.
 
 ## Methods
 
@@ -22,6 +26,14 @@ Convenience function that returns the visual host's `powerbi.extensibility.ILoca
 Convenience function that returns the visual's locale (or overridden locale is using developer mode) from Deneb's Redux store.
 
 ## Interfaces
+
+#### `ILocaleConfiguration`
+
+Represents all i18n date and time formats available for D3 that we can add to the visual.
+
+#### `ILocaleFormatConfiguration`
+
+#### `ILocaleTimeConfiguration`
 
 ## Types
 

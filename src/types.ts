@@ -217,17 +217,3 @@ export interface ICappedTextFieldProps {
     inline?: boolean;
     description?: string;
 }
-
-export interface ILocaleConfiguration {
-    default: string;
-    format: ILocaleFormatConfiguration;
-    timeFormat: ILocaleTimeConfiguration;
-}
-
-export interface ILocaleFormatConfiguration {
-    [key: string]: Record<string, unknown>;
-}
-
-export interface ILocaleTimeConfiguration {
-    [key: string]: Record<string, unknown>;
-}

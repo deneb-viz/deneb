@@ -26,7 +26,7 @@ import {
     ITextStyles
 } from '@fluentui/react';
 
-import { theme } from './theme';
+import { theme } from '../api/fluent';
 
 export {
     actionButtonStyles,

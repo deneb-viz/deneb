@@ -5,12 +5,13 @@ import * as Vega from 'vega';
 import * as _ from 'lodash';
 
 import Debugger from '../Debugger';
-import { locales } from '../config';
 import { state } from '../store';
 import SpecificationError from './status/SpecificationError';
 import FourD3D3D3 from '../components/editor/FourD3D3D3';
 import NewVisualPlaceholder from './create/NewVisualPlaceholder';
 import { selectionHandlerService } from '../services';
+
+import { locales } from '../api/i18n';
 import {
     getInitialConfig,
     registerCustomExpressions

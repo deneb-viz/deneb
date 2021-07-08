@@ -263,9 +263,7 @@ const persist = (stage = true) => {
 const stageEditorData = (role: TEditorRole) => {
     switch (role) {
         case 'spec':
-            store.dispatch(
-                updateStagedSpecData(getCleanEditorJson('spec'))
-            );
+            store.dispatch(updateStagedSpecData(getCleanEditorJson('spec')));
             return;
         case 'config':
             store.dispatch(

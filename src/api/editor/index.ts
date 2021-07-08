@@ -51,6 +51,9 @@ const getAssignedEditor = (role: TEditorRole) => {
 const handleComponentUpdate = (jsonEditor: JSONEditor, role: TEditorRole) => {
     setProviderSchema(jsonEditor, role);
     getAceEditor(jsonEditor)?.resize(true);
+    setAceOptions(jsonEditor, {
+        fontSize: `${getEditorPropFromStore('fontSize')}pt`
+    });
     if (!isDialogOpen()) {
         jsonEditor.focus();
         updateCompleters(jsonEditor, role);
@@ -100,6 +103,9 @@ const getCompleters = (): Completer => {
         }
     };
 };
+
+const getEditorPropFromStore = (prop: string) =>
+    getState()?.visual?.settings?.editor?.[prop];
 
 const getNewJsonEditor = (container: HTMLDivElement) =>
     new JSONEditor(container, {

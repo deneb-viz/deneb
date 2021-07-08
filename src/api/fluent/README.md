@@ -1,6 +1,6 @@
 # Deneb - Fluent UI API
 
-HAndles abstraction of common Fluent UI props, styling and other operations.
+Handles abstraction of common Fluent UI props, styling and other operations.
 
 -   [Constants](#constants)
 -   [Methods](#methods)
@@ -18,6 +18,10 @@ General styling for buttons within the UI.
 #### `dialogPropsStyles`
 
 General properties for pop-up dialogs within the UI.
+
+#### `theme`
+
+The Fluent UI theme, as from the visual configuration.
 
 ## Methods
 

@@ -1,5 +1,7 @@
 export {
     calculateVegaViewport,
+    getCommandBarEditCommands,
+    getCommandBarFarCommands,
     getResizablePaneDefaultWidth,
     getResizablePaneMaxSize,
     getResizablePaneMinSize,
@@ -15,8 +17,21 @@ import powerbi from 'powerbi-visuals-api';
 import IViewport = powerbi.IViewport;
 import ViewMode = powerbi.ViewMode;
 import EditMode = powerbi.EditMode;
+import { ICommandBarItemProps } from '@fluentui/react/lib/CommandBar';
 
+import { commandBarButtonStyles } from '../../config/styles';
+
+import {
+    isApplyButtonEnabled,
+    applyChanges,
+    createExportableTemplate,
+    createNewSpec,
+    openHelpSite,
+    repairFormatJson,
+    toggleAutoApply
+} from '../commands';
 import { getConfig } from '../config';
+import { getHostLM } from '../i18n';
 import { getState } from '../store';
 import { IDataViewFlags } from '../../types';
 
@@ -37,6 +52,21 @@ const calculateVegaViewport = (
     width -= visualViewportAdjust.left;
     return { width, height };
 };
+
+const getCommandBarEditCommands = (): ICommandBarItemProps[] => {
+    const { autoApply, canAutoApply } = getState().visual;
+    return [
+        getApplyCommandItem(),
+        getAutoApplyCommandItem(autoApply, canAutoApply),
+        getRepairFormatCommandItem()
+    ];
+};
+
+const getCommandBarFarCommands = (): ICommandBarItemProps[] => [
+    getNewSpecCommandItem(),
+    getExportSpecCommandItem(),
+    getHelpCommandItem()
+];
 
 const getResizablePaneDefaultWidth = (
     viewport: IViewport,
@@ -133,3 +163,91 @@ const visualViewportAdjust = getConfig().visualViewPortAdjust;
 
 type TEditorPosition = 'left' | 'right';
 type TVisualInterface = 'Landing' | 'View' | 'Edit';
+
+const getApplyCommandItem = (): ICommandBarItemProps => ({
+    key: 'applyChanges',
+    text: getHostLM().getDisplayName('Button_Apply'),
+    ariaLabel: getHostLM().getDisplayName('Button_Apply'),
+    iconOnly: true,
+    iconProps: {
+        iconName: 'Play'
+    },
+    buttonStyles: commandBarButtonStyles,
+    disabled: isApplyButtonEnabled(),
+    onClick: applyChanges
+});
+
+const getAutoApplyCommandItem = (
+    enabled: boolean,
+    canAutoApply: boolean
+): ICommandBarItemProps => ({
+    key: 'autoApply',
+    text: resolveAutoApplyText(enabled),
+    ariaLabel: resolveAutoApplyAriaLabel(enabled),
+    iconOnly: true,
+    iconProps: {
+        iconName: resolveAutoApplyIcon(enabled)
+    },
+    toggle: true,
+    checked: enabled,
+    buttonStyles: commandBarButtonStyles,
+    disabled: !canAutoApply,
+    onClick: toggleAutoApply
+});
+
+const getRepairFormatCommandItem = (): ICommandBarItemProps => ({
+    key: 'formatJson',
+    text: getHostLM().getDisplayName('Button_Format_Json'),
+    ariaLabel: getHostLM().getDisplayName('Button_Format_Json'),
+    iconOnly: true,
+    iconProps: { iconName: 'Repair' },
+    buttonStyles: commandBarButtonStyles,
+    onClick: repairFormatJson
+});
+
+const getNewSpecCommandItem = (): ICommandBarItemProps => ({
+    key: 'reset',
+    text: getHostLM().getDisplayName('Button_New'),
+    iconOnly: true,
+    ariaLabel: getHostLM().getDisplayName('Button_New'),
+    iconProps: { iconName: 'Page' },
+    buttonStyles: commandBarButtonStyles,
+    onClick: createNewSpec
+});
+
+const getExportSpecCommandItem = (): ICommandBarItemProps => {
+    const { spec } = getState().visual;
+    return {
+        key: 'export',
+        text: getHostLM().getDisplayName('Button_Export'),
+        iconOnly: true,
+        ariaLabel: getHostLM().getDisplayName('Button_Export'),
+        iconProps: { iconName: 'Share' },
+        buttonStyles: commandBarButtonStyles,
+        disabled: !(spec?.status === 'valid'),
+        onClick: createExportableTemplate
+    };
+};
+
+const getHelpCommandItem = (): ICommandBarItemProps => ({
+    key: 'help',
+    text: getHostLM().getDisplayName('Button_Help'),
+    ariaLabel: getHostLM().getDisplayName('Button_Reset'),
+    iconOnly: true,
+    iconProps: { iconName: 'Help' },
+    buttonStyles: commandBarButtonStyles,
+    onClick: openHelpSite
+});
+
+const resolveAutoApplyAriaLabel = (enabled: boolean) =>
+    enabled
+        ? getHostLM().getDisplayName('Button_Auto_Apply_Off')
+        : getHostLM().getDisplayName('Button_Auto_Apply_On');
+
+const resolveAutoApplyText = (enabled: boolean) =>
+    enabled
+        ? getHostLM().getDisplayName('Button_Auto_Apply_Off')
+        : getHostLM().getDisplayName('Button_Auto_Apply_On');
+
+const resolveAutoApplyIcon = (enabled: boolean) =>
+    enabled ? 'CircleStopSolid' : 'PlaybackRate1x';

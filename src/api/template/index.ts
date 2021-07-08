@@ -372,9 +372,7 @@ const resolveExportUserMeta = (): IDenebTemplateMetadata => {
 };
 
 const updateExportError = (i18nKey: string) => {
-    store.dispatch(
-        templateExportError(getHostLM().getDisplayName(i18nKey))
-    );
+    store.dispatch(templateExportError(getHostLM().getDisplayName(i18nKey)));
 };
 
 const updateImportError = (i18nKey: string, errors: ErrorObject[] = []) => {
