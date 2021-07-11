@@ -7,7 +7,6 @@ import {
     IChoiceGroupStyles,
     IChoiceGroupOptionStyles,
     IDropdownStyles,
-    ILinkStyles,
     IStackItemStyles,
     IStackStyles,
     IStackTokens,
@@ -22,7 +21,6 @@ import {
     IPivotStyles,
     IButtonStyles,
     ICommandBarStyles,
-    ISeparatorStyles,
     ITextStyles
 } from '@fluentui/react';
 
@@ -41,23 +39,10 @@ export {
     editorPaneExpandedStackItemStyles,
     editorPaneExpandedOuterStackTokens,
     editorPaneExpandedInnerStackTokens,
-    errorVerticalStackStyles,
     exportPivotAssistiveTextStyles,
     exportPivotAssistiveToastTextStyles,
     exportPivotStyles,
     iconButtonStyles,
-    landingHorizontalSeparatorStyles,
-    landingResourceInnerStackTokens,
-    landingVerticalOuterStackTokens,
-    landingVerticalInnerStackTokens,
-    landingVerticalStackOuterStyles,
-    landingVerticalStackItemStyles,
-    landingVerticalStackStyles,
-    landingVisualNameStyles,
-    landingVisualDescriptionStyles,
-    landingVisualVersionStyles,
-    landingSectionHeadingStyles,
-    linkStyles,
     modalDialogCloseIconStyles,
     modalDialogContentStyles,
     modalDialogStackStyles,
@@ -81,88 +66,6 @@ export {
 
 const defaultTheme: ITheme = getTheme();
 
-// Landing page
-const landingVisualNameStyles: ITextStyles = {
-        root: {
-            fontWeight: FontWeights.semibold,
-            fontSize: FontSizes.xLargePlus,
-            color: theme.palette.neutralPrimary
-        }
-    },
-    landingVisualDescriptionStyles: ITextStyles = {
-        root: {
-            fontSize: FontSizes.medium,
-            color: theme.palette.neutralPrimary
-        }
-    },
-    landingVisualVersionStyles: ITextStyles = {
-        root: {
-            fontSize: FontSizes.smallPlus,
-            color: theme.palette.neutralSecondary
-        }
-    },
-    landingSectionHeadingStyles: ITextStyles = {
-        root: {
-            fontWeight: FontWeights.semibold,
-            fontSize: FontSizes.mediumPlus,
-            color: theme.palette.neutralPrimary
-        }
-    },
-    landingVerticalInnerStackTokens: IStackTokens = {
-        childrenGap: 5,
-        padding: 10
-    },
-    landingVerticalOuterStackTokens: IStackTokens = {
-        padding: 5
-    },
-    landingResourceInnerStackTokens: IStackTokens = {
-        childrenGap: 25,
-        padding: 10
-    },
-    landingVerticalStackOuterStyles: IStackStyles = {
-        root: {
-            height: '100vh'
-        }
-    },
-    landingVerticalStackStyles: IStackStyles = {
-        root: {
-            height: '100%',
-            width: '100%',
-            background: theme.palette.neutralLighterAlt,
-            borderColor: theme.palette.neutralLight,
-            borderWidth: 1,
-            borderStyle: 'solid',
-            borderRadius: 5
-        }
-    },
-    errorVerticalStackStyles: IStackStyles = {
-        root: {
-            height: '100%',
-            width: '100%',
-            background: theme.palette.neutralLighterAlt,
-            borderColor: theme.palette.redDark,
-            borderWidth: 1,
-            borderStyle: 'solid',
-            borderRadius: 5
-        }
-    },
-    landingVerticalStackItemStyles: IStackItemStyles = {
-        root: {
-            display: 'block'
-        }
-    },
-    landingHorizontalSeparatorStyles: ISeparatorStyles = {
-        root: {
-            width: '100%',
-            selectors: {
-                '::before': {
-                    backgroundColor: theme.palette.neutralLight
-                }
-            }
-        },
-        content: {}
-    };
-
 // Buttons
 const buttonIconClass = mergeStyles({
         fontSize: 12,
@@ -170,15 +73,6 @@ const buttonIconClass = mergeStyles({
         width: 20,
         cursor: 'pointer'
     }),
-    primaryButtonStyles: IButtonStyles = {
-        root: {
-            borderRadius: 0
-        },
-        label: {
-            color: theme.palette.black,
-            fontWeight: FontWeights.regular
-        }
-    },
     iconButtonStyles: IButtonStyles = {
         root: {
             boxSizing: 'border-box',
@@ -229,13 +123,6 @@ const buttonIconClass = mergeStyles({
             cursor: 'pointer'
         }
     };
-
-// Hyperlinks
-const linkStyles: ILinkStyles = {
-    root: {
-        color: theme.palette.themeDark
-    }
-};
 
 // Editor pane (expanded) layout
 const editorPaneExpandedStackStyles: IStackStyles = {

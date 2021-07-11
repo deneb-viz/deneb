@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import * as _ from 'lodash';
+import _ from 'lodash';
 
 import { ITextFieldProps, TextField } from '@fluentui/react/lib/TextField';
 import { IStackTokens, Stack } from '@fluentui/react/lib/Stack';
@@ -9,13 +9,23 @@ import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { updateExportTemplatePropertyBySelector } from '../../store/templateReducer';
 import { getConfig } from '../../api/config';
-import { ICappedTextFieldProps } from '../../types';
 import FieldInfoIcon from './FieldInfoIcon';
 import { IRenderFunction } from '@fluentui/react/lib/Utilities';
 
 const stackTokens: IStackTokens = {
     childrenGap: 4
 };
+
+interface ICappedTextFieldProps {
+    id: string;
+    i18nLabel: string;
+    i18nPlaceholder: string;
+    i18nAssistiveText?: string;
+    maxLength: number;
+    multiline?: boolean;
+    inline?: boolean;
+    description?: string;
+}
 
 const CappedTextField: React.FC<ICappedTextFieldProps> = (props) => {
     Debugger.log('Rendering Component: [CappedTextField]...');

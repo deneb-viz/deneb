@@ -6,11 +6,12 @@ export {
     getResizablePaneMaxSize,
     getResizablePaneMinSize,
     getResizablePaneSize,
+    getVersionInfo,
     isApplyDialogHidden,
     isDialogOpen,
-    resolveInterfaceType,
+    resolveVisualMode,
     TEditorPosition,
-    TVisualInterface
+    TVisualMode
 };
 
 import powerbi from 'powerbi-visuals-api';
@@ -30,20 +31,21 @@ import {
     repairFormatJson,
     toggleAutoApply
 } from '../commands';
-import { getConfig } from '../config';
+import { getConfig, getVisualMetadata, providerVersions } from '../config';
 import { getHostLM } from '../i18n';
 import { getState } from '../store';
 import { IDataViewFlags } from '../../types';
+import { ICompiledSpec } from '../specification';
 
 const calculateVegaViewport = (
     viewport: IViewport,
     paneWidth: number,
-    interfaceType: TVisualInterface,
+    visualMode: TVisualMode,
     position: TEditorPosition
 ) => {
     let { height } = viewport,
         width =
-            (interfaceType === 'Edit' &&
+            (visualMode === 'Editor' &&
                 (position === 'right'
                     ? paneWidth
                     : viewport.width - paneWidth)) ||
@@ -126,9 +128,19 @@ const getResizablePaneSize = (
     return resolvedWidth;
 };
 
+const getVersionInfo = () => {
+    const i18n = getHostLM(),
+        visualMetadata = getVisualMetadata();
+    return `${visualMetadata.version} | ${i18n.getDisplayName(
+        'Provider_Vega'
+    )}: ${providerVersions.vega} | ${i18n.getDisplayName(
+        'Provider_VegaLite'
+    )}: ${providerVersions.vegaLite}`;
+};
+
 const isApplyDialogHidden = () => {
-    const { interfaceType, isDirty } = getState().visual;
-    return !(isDirty && interfaceType === 'View');
+    const { visualMode, isDirty } = getState().visual;
+    return !(isDirty && visualMode === 'Standard');
 };
 
 const isDialogOpen = () => {
@@ -136,33 +148,53 @@ const isDialogOpen = () => {
     return isNewDialogVisible || isExportDialogVisible;
 };
 
-const resolveInterfaceType = (
+const resolveVisualMode = (
     dataViewFlags: IDataViewFlags,
     editMode: EditMode,
     isInFocus: boolean,
-    viewMode: ViewMode
-) => {
+    viewMode: ViewMode,
+    spec: ICompiledSpec
+): TVisualMode => {
+    const { hasValidDataViewMapping } = dataViewFlags;
     switch (true) {
-        case dataViewFlags.hasValidDataViewMapping &&
-            viewMode === ViewMode.Edit &&
-            editMode === EditMode.Advanced &&
-            isInFocus: {
-            return 'Edit';
-        }
-        case !dataViewFlags.hasValidDataViewMapping: {
-            return 'Landing';
-        }
-        default: {
-            return 'View';
-        }
+        case hasValidDataViewMapping &&
+            isReadWriteAdvanced(viewMode, editMode) &&
+            isInFocus:
+            return 'Editor';
+        case isReadOnly(viewMode) && hasNoSpec(spec):
+            return 'SplashReadOnly';
+        case isReadWriteDefault(viewMode, editMode) &&
+            hasValidDataViewMapping &&
+            hasNoSpec(spec):
+            return 'DataNoSpec';
+        case isReadWriteDefault(viewMode, editMode) && hasNoSpec(spec):
+            return 'SplashReadWrite';
+        case !hasNoSpec:
+            return 'SplashInitial';
+        default:
+            return 'Standard';
     }
 };
+
+const hasNoSpec = (spec: ICompiledSpec) =>
+    !spec || !spec.status || spec.status === 'new';
+const isReadOnly = (viewMode: ViewMode) => viewMode === ViewMode.View;
+const isReadWriteDefault = (viewMode: ViewMode, editMode: EditMode) =>
+    viewMode === ViewMode.Edit;
+const isReadWriteAdvanced = (viewMode: ViewMode, editMode: EditMode) =>
+    viewMode === ViewMode.Edit && editMode === EditMode.Advanced;
 
 const splitPaneDefaults = getConfig().splitPaneDefaults;
 const visualViewportAdjust = getConfig().visualViewPortAdjust;
 
 type TEditorPosition = 'left' | 'right';
-type TVisualInterface = 'Landing' | 'View' | 'Edit';
+type TVisualMode =
+    | 'Standard'
+    | 'Editor'
+    | 'SplashReadOnly'
+    | 'SplashReadWrite'
+    | 'SplashInitial'
+    | 'DataNoSpec';
 
 const getApplyCommandItem = (): ICommandBarItemProps => ({
     key: 'applyChanges',

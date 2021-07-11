@@ -2,13 +2,13 @@ import * as React from 'react';
 import { useSelector } from 'react-redux';
 import { createClassFromSpec, VegaLite, SignalListeners } from 'react-vega';
 import * as Vega from 'vega';
-import * as _ from 'lodash';
+import _ from 'lodash';
 
 import Debugger from '../Debugger';
 import { state } from '../store';
 import SpecificationError from './status/SpecificationError';
 import FourD3D3D3 from '../components/editor/FourD3D3D3';
-import NewVisualPlaceholder from './create/NewVisualPlaceholder';
+import SplashNospec from './status/SplashNoSpec';
 import { selectionHandlerService } from '../services';
 
 import { locales } from '../api/i18n';
@@ -24,7 +24,6 @@ const VisualRender = () => {
     const {
             dataset,
             fourd3d3d,
-            i18n,
             loader,
             locale,
             settings,
@@ -55,7 +54,7 @@ const VisualRender = () => {
 
     switch (spec?.status) {
         case 'error': {
-            return <SpecificationError i18n={i18n} error={spec.message} />;
+            return <SpecificationError />;
         }
         case 'valid': {
             switch (vega.provider) {
@@ -107,7 +106,7 @@ const VisualRender = () => {
             }
         }
         default: {
-            return <NewVisualPlaceholder />;
+            return <SplashNospec />;
         }
     }
 };

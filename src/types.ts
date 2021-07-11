@@ -15,12 +15,11 @@ import JSONEditor from 'jsoneditor';
 import { Loader } from 'vega';
 
 import VisualSettings from './properties/VisualSettings';
-import DataLimitSettings from './properties/DataLimitSettings';
 import { ITemplateDatasetField } from './schema/template-v1';
 import { IVisualDataset } from './api/dataset';
 import { TDataProcessingStage } from './api/dataView';
 import { TEditorRole } from './api/editor';
-import { TVisualInterface } from './api/ui';
+import { TVisualMode } from './api/ui';
 import { ICompiledSpec, IFixResult } from './api/specification';
 
 /**
@@ -99,7 +98,6 @@ export interface IVisualSliceState {
     fourd3d3d: boolean;
     fixResult: IFixResult;
     i18n: ILocalizationManager;
-    interfaceType: TVisualInterface;
     isInFocus: boolean;
     isNewDialogVisible: boolean;
     isExportDialogVisible: boolean;
@@ -122,6 +120,7 @@ export interface IVisualSliceState {
     tooltipService: ITooltipService;
     updates: number;
     vegaViewport: IViewport;
+    visualMode: TVisualMode;
     viewMode: ViewMode;
     viewport: IViewport;
 }
@@ -174,19 +173,6 @@ export interface IDebugProfileDetail {
     duration: number;
 }
 
-export interface IUiBaseProps {
-    i18n: ILocalizationManager;
-}
-
-export interface ISpecificationErrorProps extends IUiBaseProps {
-    error: string;
-}
-
-export interface IDataFetchingProps extends IUiBaseProps {
-    dataRowsLoaded: number;
-    dataLimit: DataLimitSettings;
-}
-
 export interface IModalDialogProps {
     type: TModalDialogType;
     visible: boolean;
@@ -196,7 +182,7 @@ export interface IModalHeaderProps {
     type: TModalDialogType;
 }
 export interface IProgressProps {
-    description: string;
+    description?: string;
 }
 
 export interface IDataFieldLabelProps {
@@ -205,15 +191,4 @@ export interface IDataFieldLabelProps {
 
 export interface IFieldInfoIconProps {
     description: string;
-}
-
-export interface ICappedTextFieldProps {
-    id: string;
-    i18nLabel: string;
-    i18nPlaceholder: string;
-    i18nAssistiveText?: string;
-    maxLength: number;
-    multiline?: boolean;
-    inline?: boolean;
-    description?: string;
 }

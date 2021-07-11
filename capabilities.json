@@ -227,7 +227,7 @@
         }
     ],
     "supportsLandingPage": true,
-    "supportsEmptyDataView": true,
+    "supportsEmptyDataView": false,
     "suppressDefaultTitle": true,
     "tooltips": {
         "supportedTypes": {

@@ -1,35 +1,30 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
 
-import Debugger from '../Debugger';
 import { state } from '../store';
 import DataFetching from './status/DataFetching';
 import VisualRender from './VisualRender';
-import LandingPage from './status/LandingPage';
 import ApplyDialog from './modal/ApplyDialog';
+import SplashInitial from './status/SplashInitial';
+import { getHostLM } from '../api/i18n';
 
 const DataProcessingRouter = () => {
-    Debugger.log('Rendering component: [DataProcessingRouter]');
-    const { dataProcessingStage, dataRowsLoaded, i18n, settings } = useSelector(
-            state
-        ).visual,
-        { dataLimit } = settings;
+    const { dataProcessingStage } = useSelector(state).visual,
+        i18n = getHostLM();
 
     switch (dataProcessingStage) {
         case 'Initial': {
-            return <LandingPage />;
+            return <SplashInitial />;
         }
         case 'Fetching': {
-            return (
-                <DataFetching
-                    i18n={i18n}
-                    dataRowsLoaded={dataRowsLoaded}
-                    dataLimit={dataLimit}
-                />
-            );
+            return <DataFetching />;
         }
         case 'Processing': {
-            return <div>All rows retrieved. Processing visual...</div>;
+            return (
+                <div>
+                    {i18n.getDisplayName('Fetching_Data_Assistive_Processed')}
+                </div>
+            );
         }
         case 'Processed': {
             return (

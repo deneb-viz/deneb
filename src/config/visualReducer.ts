@@ -34,7 +34,6 @@ const visualReducer: IVisualSliceState = {
     },
     fourd3d3d: false,
     i18n: null,
-    interfaceType: 'Landing',
     isInFocus: false,
     isDirty: false,
     isExportDialogVisible: false,
@@ -63,7 +62,8 @@ const visualReducer: IVisualSliceState = {
     settings: <VisualSettings>VisualSettings.getDefault(),
     vegaViewport: { width: 0, height: 0 },
     viewMode: ViewMode.View,
-    viewport: { width: 0, height: 0 }
+    viewport: { width: 0, height: 0 },
+    visualMode: 'SplashInitial'
 };
 
 export { visualReducer };

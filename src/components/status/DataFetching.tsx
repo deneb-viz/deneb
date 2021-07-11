@@ -1,89 +1,54 @@
-import powerbi from 'powerbi-visuals-api';
-import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
-
 import * as React from 'react';
-import { Stack } from '@fluentui/react/lib/Stack';
-import { Separator } from '@fluentui/react/lib/Separator';
-import { Text } from '@fluentui/react/lib/Text';
+import { useSelector } from 'react-redux';
 
-import Debugger from '../../Debugger';
-import {
-    landingVisualNameStyles,
-    landingVerticalStackItemStyles,
-    landingHorizontalSeparatorStyles,
-    landingVerticalInnerStackTokens,
-    landingVerticalOuterStackTokens,
-    landingVerticalStackOuterStyles,
-    landingVerticalStackStyles,
-    landingSectionHeadingStyles
-} from '../../config/styles';
-import { IDataFetchingProps } from '../../types';
-import DataLimitSettings from '../../properties/DataLimitSettings';
+import { state } from '../../store';
+
 import Progress from './Progress';
+import { BodyHeading, Heading } from '../elements/Text';
+import StatusHeaderSection from './StatusHeaderSection';
+import StatusLayoutStack from './StatusLayoutStack';
+import StatusLayoutStackItem from './StatusLayoutStackItem';
+import { getHostLM } from '../../api/i18n';
+import { getState } from '../../api/store';
 
-const DataFetching = (props: IDataFetchingProps) => {
-    const { i18n, dataRowsLoaded, dataLimit } = props;
-    Debugger.log('Rendering Component: [DataFetching]...');
+const DataFetching = () => {
+    const root = useSelector(state),
+        { dataRowsLoaded } = root.visual,
+        i18n = getHostLM();
 
     return (
         <>
-            <Stack
-                styles={landingVerticalStackOuterStyles}
-                tokens={landingVerticalOuterStackTokens}
-            >
-                <Stack
-                    styles={landingVerticalStackStyles}
-                    tokens={landingVerticalInnerStackTokens}
-                >
-                    <Stack.Item shrink styles={landingVerticalStackItemStyles}>
-                        <Stack horizontal>
-                            <Stack.Item grow>
-                                <div>
-                                    <Text styles={landingVisualNameStyles}>
-                                        {i18n.getDisplayName('Fetching_Data')}
-                                    </Text>
-                                </div>
-                                <Progress
-                                    description={`${dataRowsLoaded} ${i18n.getDisplayName(
-                                        'Fetching_Data_Progress_Suffix'
-                                    )}`}
-                                />
-                            </Stack.Item>
-                            <Stack.Item>
-                                <div className='visual-header-image cog' />
-                            </Stack.Item>
-                        </Stack>
-                    </Stack.Item>
-                    <Stack.Item shrink styles={landingVerticalStackItemStyles}>
-                        <Separator styles={landingHorizontalSeparatorStyles} />
-                    </Stack.Item>
-                    <Stack.Item
-                        verticalFill
-                        styles={landingVerticalStackItemStyles}
-                    >
-                        {customVisualNotes(dataLimit, i18n)}
-                    </Stack.Item>
-                </Stack>
-            </Stack>
+            <StatusLayoutStack>
+                <StatusHeaderSection icon='cog'>
+                    <Heading>{i18n.getDisplayName('Fetching_Data')}</Heading>
+                    <Progress
+                        description={`${dataRowsLoaded} ${i18n.getDisplayName(
+                            'Fetching_Data_Progress_Suffix'
+                        )}`}
+                    />
+                </StatusHeaderSection>
+                <StatusLayoutStackItem verticalFill>
+                    {customVisualNotes()}
+                </StatusLayoutStackItem>
+            </StatusLayoutStack>
         </>
     );
 };
 
-const customVisualNotes = (
-    dataLimit: DataLimitSettings,
-    i18n: ILocalizationManager
-) => {
+const customVisualNotes = () => {
+    const { dataLimit } = getState().visual.settings,
+        i18n = getHostLM();
     return (
         (dataLimit.enabled &&
             dataLimit.override &&
             dataLimit.showCustomVisualNotes && (
                 <>
                     <div>
-                        <Text styles={landingSectionHeadingStyles}>
+                        <BodyHeading>
                             {i18n.getDisplayName(
                                 'Fetching_Data_Developer_Notes'
                             )}
-                        </Text>
+                        </BodyHeading>
                     </div>
                     <div className='ms-Grid-row ms-fontSize-12'>
                         <div className='ms-Grid-col ms-sm12'>

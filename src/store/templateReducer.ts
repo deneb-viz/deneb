@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import * as _ from 'lodash';
+import _ from 'lodash';
 
 import { IPlaceholderValuePayload } from '../types';
 import { templateReducer as initialState } from '../config/templateReducer';
