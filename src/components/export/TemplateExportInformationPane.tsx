@@ -1,10 +1,8 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 
 import { Stack } from '@fluentui/react/lib/Stack';
 import { Text } from '@fluentui/react/lib/Text';
 
-import { state } from '../../store';
 import {
     exportPivotAssistiveTextStyles,
     templateExportInfoStackTokens,
@@ -13,11 +11,10 @@ import {
 } from '../../config/styles';
 import { exportFieldConstraints } from '../../config';
 import CappedTextField from '../elements/CappedTextField';
+import { getHostLM } from '../../api/i18n';
 
 const TemplateExportInformationPane: React.FC = () => {
-    const root = useSelector(state),
-        { visual } = root,
-        { i18n } = visual;
+    const i18n = getHostLM();
 
     return (
         <Stack

@@ -1,16 +1,17 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
+
 import { CommandBar } from '@fluentui/react/lib/CommandBar';
 
-import { state } from '../../store';
 import { commandBarStyles } from '../../config/styles';
 import {
     getCommandBarEditCommands,
     getCommandBarFarCommands
 } from '../../api/ui';
+import { getHostLM } from '../../api/i18n';
+import _ from 'lodash';
 
 const EditorCommandBar: React.FC = () => {
-    const { i18n } = useSelector(state).visual,
+    const i18n = getHostLM(),
         _items = getCommandBarEditCommands(),
         _farItems = getCommandBarFarCommands();
 

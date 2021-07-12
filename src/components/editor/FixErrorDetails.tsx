@@ -2,13 +2,13 @@ import * as React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { MessageBar, MessageBarType } from '@fluentui/react/lib/MessageBar';
 
-import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { dismissFixError } from '../../store/visualReducer';
+import { getHostLM } from '../../api/i18n';
 
 const FixErrorDetails: React.FC = () => {
-    Debugger.log('Rendering Component: [FixErrorDetails]...');
-    const { fixResult: fixStatus, i18n } = useSelector(state).visual,
+    const { fixResult: fixStatus } = useSelector(state).visual,
+        i18n = getHostLM(),
         dispatch = useDispatch(),
         handleDismiss = () => {
             dispatch(dismissFixError());

@@ -46,6 +46,7 @@ import {
 } from './api/dataView';
 import { initializeIcons, theme } from './api/fluent';
 import { parseActiveSpec } from './api/specification';
+import { hostServices } from './core/host';
 
 const owner = 'Visual';
 
@@ -67,6 +68,7 @@ export class Deneb implements IVisual {
             Debugger.log('Loading theming...');
             loadTheme(theme);
             initializeIcons();
+            hostServices.bindHostServices(options.host);
             store.dispatch(visualConstructor(options.host));
             store.dispatch(initializeImportExport());
             Debugger.log('Setting container element...');
@@ -214,7 +216,7 @@ export class Deneb implements IVisual {
             }
         }
 
-        const { selectionManager } = store.getState().visual;
+        const { selectionManager } = hostServices;
         Debugger.log('Has selections', selectionManager.hasSelection());
         Debugger.log('Existing selections', selectionManager.getSelectionIds());
 

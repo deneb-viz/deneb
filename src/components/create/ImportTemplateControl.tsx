@@ -1,22 +1,18 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 import { useId } from '@fluentui/react-hooks';
+
 import { IIconProps } from '@fluentui/react/lib/Icon';
 import { ActionButton } from '@fluentui/react/lib/Button';
 import { v4 as uuidv4 } from 'uuid';
 
-import Debugger from '../../Debugger';
-import { state } from '../../store';
 import { actionButtonStyles } from '../../config/styles';
 import { onTemplateFileSelect } from '../../api/template';
+import { getHostLM } from '../../api/i18n';
 
 const importIcon: IIconProps = { iconName: 'OpenFile' };
 
 const ImportTemplateControl: React.FC = () => {
-    Debugger.log('Rendering Component: [ImportTemplateControl]...');
-    const root = useSelector(state),
-        { visual } = root,
-        { i18n } = visual,
+    const i18n = getHostLM(),
         inputRef = React.useRef<HTMLInputElement>(null),
         [fileKey, setFileKey] = React.useState(uuidv4()),
         handleActionClick = () => inputRef.current.click(),

@@ -1,5 +1,7 @@
 export { locales, getHostLM, getLocale, ILocaleConfiguration, TLocale };
 
+import { hostServices } from '../../core/host';
+
 import { getState } from '../store';
 
 const locales: ILocaleConfiguration = {
@@ -55,7 +57,7 @@ const locales: ILocaleConfiguration = {
     }
 };
 
-const getHostLM = () => getState().visual.i18n;
+const getHostLM = () => hostServices.i18n;
 
 const getLocale = () => getState().visual.locale;
 

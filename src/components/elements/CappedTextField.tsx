@@ -13,6 +13,7 @@ import { updateExportTemplatePropertyBySelector } from '../../store/templateRedu
 import { getConfig } from '../../api/config';
 import FieldInfoIcon from './FieldInfoIcon';
 import { IRenderFunction } from '@fluentui/react/lib/Utilities';
+import { getHostLM } from '../../api/i18n';
 
 const stackTokens: IStackTokens = {
     childrenGap: 4
@@ -33,7 +34,7 @@ const CappedTextField: React.FC<ICappedTextFieldProps> = (props) => {
     Debugger.log('Rendering Component: [CappedTextField]...');
     const root = useSelector(state),
         dispatch = useDispatch(),
-        { i18n } = root.visual,
+        i18n = getHostLM(),
         { templateExportMetadata: templateToGenerate } = root.templates,
         [textFieldValue, setTextFieldValue] = React.useState(
             get(templateToGenerate, props.id, '')

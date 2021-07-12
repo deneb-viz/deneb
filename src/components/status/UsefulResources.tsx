@@ -1,15 +1,14 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 
 import { Link, ILinkStyles } from '@fluentui/react/lib/Link';
 import { IStackTokens, Stack } from '@fluentui/react/lib/Stack';
 
-import { state } from '../../store';
 import { getConfig, getVisualMetadata } from '../../api/config';
 import { theme } from '../../api/fluent';
 import { getHostLM } from '../../api/i18n';
 
 import { BodyHeading } from '../elements/Text';
+import { hostServices } from '../../core/host';
 
 const resourceStackTokens: IStackTokens = {
     childrenGap: 25,
@@ -23,19 +22,17 @@ const linkStyles: ILinkStyles = {
 };
 
 const UsefulResources = () => {
-    const root = useSelector(state),
-        i18n = getHostLM(),
-        { launchUrl } = root.visual,
+    const i18n = getHostLM(),
         visualMetadata = getVisualMetadata(),
         { providerResources } = getConfig(),
         openSupportLink = () => {
-            launchUrl(visualMetadata.supportUrl);
+            hostServices.launchUrl(visualMetadata.supportUrl);
         },
         openVegaDocLink = () => {
-            launchUrl(providerResources.vega.documentationUrl);
+            hostServices.launchUrl(providerResources.vega.documentationUrl);
         },
         openVegaLiteDocLink = () => {
-            launchUrl(providerResources.vegaLite.documentationUrl);
+            hostServices.launchUrl(providerResources.vegaLite.documentationUrl);
         };
     return (
         <>

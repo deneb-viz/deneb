@@ -8,14 +8,15 @@ import { state } from '../../store';
 import ImportTemplateStatus from './ImportTemplateStatus';
 import SpecDataPlaceHolderDropdown from './SpecDataPlaceHolderDropdown';
 import { IDenebTemplateMetadata } from '../../schema/template-v1';
+import { getHostLM } from '../../api/i18n';
 
 const ImportTemplateHandler: React.FC = () => {
     Debugger.log('Rendering Component: [ImportTemplateHandler]...');
     const root = useSelector(state),
-        { visual, templates } = root,
-        { i18n } = visual,
+        { templates } = root,
         { templateProvider, templateImportState, templateToApply } = templates,
         denebTemplate = templateToApply?.usermeta as IDenebTemplateMetadata,
+        i18n = getHostLM(),
         enumeratePlaceholders = () => {
             Debugger.log('Enumerating template placeholders...');
             switch (true) {

@@ -51,6 +51,7 @@ import {
     updateStagedSpecData,
     updateStagedConfigData
 } from '../../store/visualReducer';
+import { hostServices } from '../../core/host';
 
 const createFromTemplate = (
     provider: TSpecProvider,
@@ -333,7 +334,8 @@ const dispatchSpec = (compiledSpec: ICompiledSpec) => {
 };
 
 const getExistingSelectors = () => {
-    const { dataset, selectionManager } = getState().visual;
+    const { dataset } = getState().visual,
+        { selectionManager } = hostServices;
     return (
         (selectionManager.hasSelection() &&
             selectionManager

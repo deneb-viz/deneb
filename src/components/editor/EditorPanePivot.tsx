@@ -2,14 +2,14 @@ import * as React from 'react';
 import { useSelector } from 'react-redux';
 import { Pivot, PivotItem } from '@fluentui/react/lib/Pivot';
 
-import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { openEditorPivotItem } from '../../api/commands';
 import { TEditorRole } from '../../api/editor';
+import { getHostLM } from '../../api/i18n';
 
 const EditorPanePivot = () => {
-    Debugger.log('Rendering Component: [EditorPanePivot]...');
-    const { i18n, selectedOperation } = useSelector(state).visual,
+    const { selectedOperation } = useSelector(state).visual,
+        i18n = getHostLM(),
         getTabId = (itemKey: string) => {
             return `editor-pivot-${itemKey}`;
         },

@@ -3,10 +3,10 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Pivot, PivotItem, IPivotStyles } from '@fluentui/react/lib/Pivot';
 import { IStyleSet } from '@fluentui/react/lib/Styling';
 
-import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { updateSelectedDialogProvider } from '../../store/templateReducer';
 import { TTemplateProvider } from '../../api/template';
+import { getHostLM } from '../../api/i18n';
 
 const pivotStyles: Partial<IStyleSet<IPivotStyles>> = {
     itemContainer: {
@@ -16,15 +16,13 @@ const pivotStyles: Partial<IStyleSet<IPivotStyles>> = {
 };
 
 const NewVisualDialogPivot = () => {
-    Debugger.log('Rendering Component: [NewVisualDialogPivot]...');
-    const { i18n } = useSelector(state).visual,
+    const i18n = getHostLM(),
         { templateProvider: selectedProvider } = useSelector(state).templates,
         dispatch = useDispatch(),
         getTabId = (itemKey: string) => {
             return `new-spec-pivot-${itemKey}`;
         },
         handlePivotClick = (item: PivotItem) => {
-            Debugger.log(`${item.props.itemKey} selected. Dispatching...`);
             dispatch(
                 updateSelectedDialogProvider(
                     item.props.itemKey as TTemplateProvider

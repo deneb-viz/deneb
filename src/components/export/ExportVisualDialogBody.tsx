@@ -4,7 +4,6 @@ import { useSelector } from 'react-redux';
 import { Text } from '@fluentui/react/lib/Text';
 import { Stack } from '@fluentui/react/lib/Stack';
 
-import Debugger from '../../Debugger';
 import {
     modalDialogStackStyles,
     modalDialogStackItemStyles,
@@ -18,11 +17,11 @@ import TemplateExportDatasetPane from './TemplateExportDatasetPane';
 import TemplateExportInformationPane from './TemplateExportInformationPane';
 import TemplateExportJsonPane from './TemplateExportJsonPane';
 import { validateSpecificationForExport } from '../../api/template';
+import { getHostLM } from '../../api/i18n';
 
 export const ExportVisualDialogBody = () => {
-    Debugger.log('Rendering Component: [ExportVisualDialogBody]...');
     const root = useSelector(state),
-        { i18n } = root.visual,
+        i18n = getHostLM(),
         {
             selectedExportOperation,
             templateExportState,

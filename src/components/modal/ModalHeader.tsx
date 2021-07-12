@@ -12,6 +12,7 @@ import {
 import { state } from '../../store';
 import { closeModalDialog } from '../../api/commands';
 import { TModalDialogType } from '../../api/ui';
+import { getHostLM } from '../../api/i18n';
 
 interface IModalHeaderProps {
     type: TModalDialogType;
@@ -21,7 +22,8 @@ const cancelIcon: IIconProps = { iconName: 'Cancel' };
 
 export const ModalHeader: React.FC<IModalHeaderProps> = (props) => {
     const root = useSelector(state),
-        { i18n, viewport } = root.visual,
+        i18n = getHostLM(),
+        { viewport } = root.visual,
         modalStyles = modalDialogContentStyles(viewport),
         handleClose = () => {
             closeModalDialog(props.type);

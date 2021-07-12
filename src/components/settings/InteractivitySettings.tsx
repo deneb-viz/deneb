@@ -1,19 +1,17 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
+
 import { Label } from '@fluentui/react/lib/Label';
 import { Stack } from '@fluentui/react/lib/Stack';
 import { Text } from '@fluentui/react/lib/Text';
 
-import Debugger from '../../Debugger';
 import { choiceStackTokens } from '../../config/styles';
-import { state } from '../../store';
 import TooltipCheckbox from './TooltipCheckbox';
 import SelectionCheckbox from './SelectionCheckbox';
 import ContextMenuCheckbox from './ContextMenuCheckbox';
+import { getHostLM } from '../../api/i18n';
 
 const InteractivitySettings = () => {
-    Debugger.log('Rendering Component: [InteractivitySettings]...');
-    const { i18n } = useSelector(state).visual;
+    const i18n = getHostLM();
     return (
         <>
             <Label>{i18n.getDisplayName('Objects_Vega_Interactivity')}</Label>

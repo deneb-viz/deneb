@@ -4,15 +4,15 @@ import { FontIcon } from '@fluentui/react/lib/Icon';
 import { Text } from '@fluentui/react/lib/Text';
 import { TooltipHost } from '@fluentui/react/lib/Tooltip';
 
-import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { buttonIconClass } from '../../config/styles';
 import { toggleEditorPane } from '../../api/commands';
+import { getHostLM } from '../../api/i18n';
 
 const EditorHeadingExpanded = () => {
-    Debugger.log('Rendering Component: [EditorHeadingExpanded]...');
-    const { i18n, settings } = useSelector(state).visual,
+    const { settings } = useSelector(state).visual,
         { position } = settings.editor,
+        i18n = getHostLM(),
         togglePane = () => {
             toggleEditorPane();
         },

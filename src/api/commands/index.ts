@@ -45,6 +45,7 @@ import {
 import { getState, store } from '../store';
 import { updateExportState } from '../template';
 import { TModalDialogType } from '../ui';
+import { hostServices } from '../../core/host';
 
 const hotkeyOptions: Options = {
     enableOnTags: ['INPUT', 'SELECT', 'TEXTAREA']
@@ -147,9 +148,8 @@ const openEditorPivotItem = (operation: TEditorRole) =>
     dispatchEditorPivotItem(operation);
 
 const openHelpSite = () => {
-    const visualMetadata = getVisualMetadata(),
-        { launchUrl } = getState().visual;
-    launchUrl(visualMetadata.supportUrl);
+    const visualMetadata = getVisualMetadata();
+    hostServices.launchUrl(visualMetadata.supportUrl);
 };
 
 const repairFormatJson = () => fixAndFormat();

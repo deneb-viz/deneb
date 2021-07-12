@@ -5,7 +5,6 @@ import { Stack } from '@fluentui/react/lib/Stack';
 import { Text } from '@fluentui/react/lib/Text';
 import { PrimaryButton } from '@fluentui/react/lib/Button';
 
-import Debugger from '../../Debugger';
 import {
     modalDialogStackStyles,
     modalDialogStackItemStyles,
@@ -17,18 +16,17 @@ import NewVisualDialogPivot from './NewVisualDialogPivot';
 import TemplateManagementPane from './TemplateManagementPane';
 import { createFromTemplate } from '../../api/specification';
 import { fluent } from '../../api';
+import { getHostLM } from '../../api/i18n';
 
 export const NewVisualDialogBody = () => {
-    Debugger.log('Rendering Component: [NewVisualDialogBody]...');
     const root = useSelector(state),
-        { i18n } = root.visual,
+        i18n = getHostLM(),
         {
             allImportCriteriaApplied,
             specProvider,
             templateToApply
         } = root.templates,
         handleCreate = () => {
-            Debugger.log('Create button clicked. Here goes...');
             createFromTemplate(specProvider, templateToApply);
         },
         createDisabled = !allImportCriteriaApplied;

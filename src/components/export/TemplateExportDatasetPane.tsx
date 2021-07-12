@@ -1,11 +1,8 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 
 import { Text } from '@fluentui/react/lib/Text';
 import { Stack } from '@fluentui/react/lib/Stack';
 
-import Debugger from '../../Debugger';
-import { state } from '../../store';
 import {
     exportPivotAssistiveTextStyles,
     templateExportInfoStackTokens,
@@ -13,11 +10,10 @@ import {
     templatePickerNonShrinkingStackItemStyles
 } from '../../config/styles';
 import ExportDataFields from './ExportDataFields';
+import { getHostLM } from '../../api/i18n';
 
 const TemplateExportDatasetPane: React.FC = () => {
-    Debugger.log('Rendering Component: [TemplateExportDatasetPane]...');
-    const root = useSelector(state),
-        { i18n } = root.visual;
+    const i18n = getHostLM();
     return (
         <Stack
             styles={templatePickerStackStyles}

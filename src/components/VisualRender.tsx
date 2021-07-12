@@ -17,6 +17,7 @@ import {
     registerCustomExpressions
 } from '../api/specification';
 import { getTooltipHandler } from '../api/tooltip';
+import { hostServices } from '../core/host';
 
 const VisualRender = () => {
     Debugger.log('Rendering Component: [VisualRender]...');
@@ -28,7 +29,6 @@ const VisualRender = () => {
             locale,
             settings,
             spec,
-            tooltipService,
             vegaViewport
         } = useSelector(state).visual,
         { vega } = settings,
@@ -38,7 +38,7 @@ const VisualRender = () => {
         config = getInitialConfig(),
         tooltipHandler = getTooltipHandler(
             settings.vega.enableTooltips,
-            tooltipService
+            hostServices.tooltipService
         ),
         renderMode = vega.renderMode as Vega.Renderers,
         signalListeners: SignalListeners = {

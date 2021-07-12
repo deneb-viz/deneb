@@ -11,10 +11,12 @@ import StatusLayoutStack from './StatusLayoutStack';
 import StatusLayoutStackItem from './StatusLayoutStackItem';
 import { BodyHeading, Heading, Paragraph, SubHeading } from '../elements/Text';
 import UsefulResources from './UsefulResources';
+import { getHostLM } from '../../api/i18n';
 
 const SplashNospec = () => {
     const root = useSelector(state),
-        { editMode, i18n } = root.visual,
+        { editMode } = root.visual,
+        i18n = getHostLM(),
         resolveDataInstruction = () => {
             switch (true) {
                 case editMode === EditMode.Advanced: {

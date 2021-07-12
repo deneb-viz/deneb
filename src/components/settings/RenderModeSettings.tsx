@@ -6,22 +6,21 @@ import {
     IChoiceGroupOption
 } from '@fluentui/react/lib/ChoiceGroup';
 
-import Debugger from '../../Debugger';
 import { choiceGroupStyles, choiceItemStyles } from '../../config/styles';
 import { state } from '../../store';
 import { updateRenderMode } from '../../api/commands';
 import { TSpecRenderMode } from '../../api/specification';
+import { getHostLM } from '../../api/i18n';
 
 const RenderModeSettings = () => {
-    Debugger.log('Rendering Component: [RenderModeSettings]...');
-    const { i18n, settings } = useSelector(state).visual,
+    const { settings } = useSelector(state).visual,
         { vega } = settings,
+        i18n = getHostLM(),
         handleRenderMode = React.useCallback(
             (
                 ev: React.SyntheticEvent<HTMLElement>,
                 option: IChoiceGroupOption
             ) => {
-                Debugger.log(`Updating render mode to ${option.key}...`);
                 updateRenderMode(option.key as TSpecRenderMode);
             },
             []

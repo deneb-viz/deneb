@@ -2,19 +2,18 @@ import * as React from 'react';
 import { useSelector } from 'react-redux';
 import { Checkbox } from '@fluentui/react/lib/Checkbox';
 
-import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { updateBooleanProperty } from '../../api/commands';
 import { isContextMenuEnabled } from '../../api/selection';
+import { getHostLM } from '../../api/i18n';
 
 const ContextMenuCheckbox = () => {
-    Debugger.log('Rendering Component: [ContextMenuCheckbox]...');
-    const { i18n, settings } = useSelector(state).visual,
+    const { settings } = useSelector(state).visual,
         { vega } = settings,
+        i18n = getHostLM(),
         handleContextMenu = React.useCallback(
             (ev: React.FormEvent<HTMLElement>, checked: boolean): void => {
                 const value = !!checked;
-                Debugger.log(`Updating context menu to ${checked}...`);
                 updateBooleanProperty('enableContextMenu', value);
             },
             []

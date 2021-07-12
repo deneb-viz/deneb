@@ -13,6 +13,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import VisualSettings from '../../properties/VisualSettings';
 
 import { getState } from '../store';
+import { hostServices } from '../../core/host';
 
 const resolveObjectProperties = (
     objectName: string,
@@ -53,4 +54,4 @@ const getNewObjectInstance = (
     };
 };
 
-const persistProperties = () => getState().visual.persistProperties;
+const persistProperties = () => hostServices.persistProperties;

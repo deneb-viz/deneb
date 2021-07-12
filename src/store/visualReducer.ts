@@ -41,23 +41,10 @@ const visualSlice = createSlice({
     reducers: {
         visualConstructor: (state, action: PayloadAction<IVisualHost>) => {
             const pl = action.payload;
-            state.i18n = pl.createLocalizationManager();
-            state.fetchMoreData = pl.fetchMoreData;
-            state.launchUrl = pl.launchUrl;
-            state.persistProperties = pl.persistProperties;
             state.locale = pl.locale;
             state.themeColors = pl.colorPalette['colors']?.map(
                 (c: any) => c.value
             );
-            let selectionManager = pl.createSelectionManager();
-            selectionManager.registerOnSelectCallback(
-                (ids: powerbi.extensibility.ISelectionId[]) => {
-                    Debugger.log('Select callback executed from visual host.');
-                }
-            );
-            state.selectionIdBuilder = pl.createSelectionIdBuilder;
-            state.selectionManager = selectionManager;
-            state.tooltipService = pl.tooltipService;
             state.allowInteractions = pl.allowInteractions;
         },
         visualUpdate: (state, action: PayloadAction<IVisualUpdatePayload>) => {

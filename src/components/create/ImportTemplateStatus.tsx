@@ -3,16 +3,15 @@ import { useSelector } from 'react-redux';
 
 import { MessageBar, MessageBarType } from '@fluentui/react/lib/MessageBar';
 
-import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { Progress } from '../status/Progress';
+import { getHostLM } from '../../api/i18n';
 
 const ImportTemplateStatus: React.FC = () => {
-    Debugger.log('Rendering Component: [ImportTemplateStatus]...');
     const root = useSelector(state),
         { visual, templates } = root,
-        { i18n } = visual,
         { templateImportState, templateImportErrorMessage } = templates,
+        i18n = getHostLM(),
         standardMessage = (message: string) => (
             <MessageBar messageBarType={MessageBarType.info}>
                 {message}

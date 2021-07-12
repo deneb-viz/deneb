@@ -17,14 +17,16 @@ import DataTypeIcon from '../elements/DataTypeIcon';
 import CappedTextField from '../elements/CappedTextField';
 import { exportFieldConstraints } from '../../config';
 import { detailListStyles } from '../../config/styles';
+import { getHostLM } from '../../api/i18n';
 
 const ExportDataFields: React.FC = () => {
     Debugger.log('Rendering Component: [ExportDataFields]...');
     const root = useSelector(state),
         { visual, templates } = root,
-        { i18n, dataset } = visual,
+        { dataset } = visual,
         { metadata } = dataset,
         { templateExportMetadata: templateToGenerate } = templates,
+        i18n = getHostLM(),
         columns: IColumn[] = [
             {
                 key: 'type',

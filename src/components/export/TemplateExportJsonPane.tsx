@@ -7,8 +7,6 @@ import { ITextFieldStyles, TextField } from '@fluentui/react/lib/TextField';
 import { IconButton } from '@fluentui/react/lib/Button';
 import { IIconProps } from '@fluentui/react/lib/Icon';
 
-import Debugger from '../../Debugger';
-import { state } from '../../store';
 import {
     exportPivotAssistiveTextStyles,
     exportPivotAssistiveToastTextStyles,
@@ -18,6 +16,7 @@ import {
 } from '../../config/styles';
 import { iconButtonStyles } from '../../config/styles';
 import { getExportTemplate } from '../../api/template';
+import { getHostLM } from '../../api/i18n';
 
 const textStyles: Partial<ITextFieldStyles> = {
     root: {
@@ -39,10 +38,7 @@ const textStyles: Partial<ITextFieldStyles> = {
 const copyIcon: IIconProps = { iconName: 'Copy' };
 
 const TemplateExportJsonPane: React.FC = () => {
-    Debugger.log('Rendering Component: [TemplateExportJsonPane]...');
-    const root = useSelector(state),
-        { visual } = root,
-        { i18n } = visual,
+    const i18n = getHostLM(),
         [copySuccess, setCopySuccess] = React.useState(false),
         textAreaRef = React.useRef(null),
         copyRef = React.useRef(null),

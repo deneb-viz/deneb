@@ -2,22 +2,20 @@ import * as React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Pivot, PivotItem } from '@fluentui/react';
 
-import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { updateSelectedExportOperation } from '../../store/templateReducer';
 import { TExportOperation } from '../../api/template';
 import { exportPivotStyles } from '../../config/styles';
+import { getHostLM } from '../../api/i18n';
 
 const ExportVisualDialogPivot = () => {
-    Debugger.log('Rendering Component: [ExportVisualDialogPivot]...');
-    const { i18n } = useSelector(state).visual,
+    const i18n = getHostLM(),
         { selectedExportOperation } = useSelector(state).templates,
         dispatch = useDispatch(),
         getTabId = (itemKey: string) => {
             return `export-spec-pivot-${itemKey}`;
         },
         handlePivotClick = (item: PivotItem) => {
-            Debugger.log(`${item.props.itemKey} selected. Dispatching...`);
             dispatch(
                 updateSelectedExportOperation(
                     item.props.itemKey as TExportOperation

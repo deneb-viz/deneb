@@ -26,7 +26,7 @@ import {
     IVisualValueRow
 } from '../dataset';
 import { isFeatureEnabled } from '../features';
-import { getState } from '../store';
+import { hostServices } from '../../core/host';
 
 const createSelectionId = (
     metadata: IVisualValueMetadata,
@@ -48,7 +48,7 @@ const createSelectionId = (
     return identity.createSelectionId();
 };
 
-const getSelectionIdBuilder = () => getState().visual.selectionIdBuilder();
+const getSelectionIdBuilder = () => hostServices.selectionIdBuilder();
 
 const getSidString = (id: ISelectionId) => JSON.stringify(id.getSelector());
 

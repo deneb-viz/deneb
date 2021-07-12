@@ -7,6 +7,7 @@ import Debugger, { standardLog } from '../Debugger';
 import store from '../store';
 import { ISelectionHandlerService } from '../types';
 import { isContextMenuEnabled, isDataPointEnabled } from '../api/selection';
+import { hostServices } from '../core/host';
 
 const owner = 'SelectionHandlerService';
 
@@ -21,10 +22,10 @@ export class SelectionHandlerService implements ISelectionHandlerService {
         const {
                 allowInteractions,
                 dataset,
-                selectionManager,
                 settings
             } = store.getState().visual,
             { vega } = settings,
+            { selectionManager } = hostServices,
             isSelectionEnabled =
                 isDataPointEnabled &&
                 vega.enableSelection &&
@@ -99,10 +100,10 @@ export class SelectionHandlerService implements ISelectionHandlerService {
         Debugger.log('Context menu click', selection);
         const {
                 allowInteractions,
-                selectionManager,
                 settings
             } = store.getState().visual,
             { vega } = settings,
+            { selectionManager } = hostServices,
             mouseEvent: MouseEvent =
                 <MouseEvent>getEvent() || <MouseEvent>window.event,
             selectionId =

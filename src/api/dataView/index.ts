@@ -7,7 +7,8 @@ export {
     validateDataViewMapping,
     validateDataViewRoles,
     IAugmentedMetadataField,
-    IDataProcessingPayload,IDataViewFlags,
+    IDataProcessingPayload,
+    IDataViewFlags,
     TDataProcessingStage
 };
 
@@ -37,6 +38,7 @@ import { isFeatureEnabled } from '../features';
 import { getState, store } from '../store';
 import { createSelectionId, getSidString } from '../selection';
 import { resolveVisualMetaToDatasetField } from '../template';
+import { hostServices } from '../../core/host';
 
 const isFetchMoreEnabled = isFeatureEnabled('fetchMoreData');
 
@@ -221,12 +223,11 @@ export const getRowCount = (categorical: DataViewCategorical) =>
     0;
 
 export const handleAdditionalWindows = (segment: DataViewSegmentMetadata) => {
-    const { fetchMoreData } = getState().visual;
     (shouldFetchMore(segment) &&
         store.dispatch(
             updateDataProcessingStage({
                 dataProcessingStage: 'Fetching',
-                canFetchMore: fetchMoreData(true)
+                canFetchMore: hostServices.fetchMoreData(true)
             })
         )) ||
         dispatchLoadingComplete();

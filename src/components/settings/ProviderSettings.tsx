@@ -6,22 +6,21 @@ import {
     IChoiceGroupOption
 } from '@fluentui/react/lib/ChoiceGroup';
 
-import Debugger from '../../Debugger';
 import { updateProvider } from '../../api/commands';
 import { TSpecProvider } from '../../api/specification';
 import { choiceGroupStyles, choiceItemStyles } from '../../config/styles';
 import { state } from '../../store';
+import { getHostLM } from '../../api/i18n';
 
 const ProviderSettings = () => {
-    Debugger.log('Rendering Component: [ProviderSettings]...');
-    const { i18n, settings } = useSelector(state).visual,
+    const { settings } = useSelector(state).visual,
         { vega } = settings,
+        i18n = getHostLM(),
         handleProvider = React.useCallback(
             (
                 ev: React.SyntheticEvent<HTMLElement>,
                 option: IChoiceGroupOption
             ) => {
-                Debugger.log(`Updating provider to ${option.key}...`);
                 updateProvider(option.key as TSpecProvider);
             },
             []
