@@ -5,19 +5,21 @@ import { useId } from '@fluentui/react-hooks';
 import { IconButton } from '@fluentui/react/lib/Button';
 import { IIconProps } from '@fluentui/react/lib/Icon';
 
-import Debugger from '../../Debugger';
 import {
     modalDialogCloseIconStyles,
     modalDialogContentStyles
 } from '../../config/styles';
 import { state } from '../../store';
-import { IModalHeaderProps } from '../../types';
 import { closeModalDialog } from '../../api/commands';
+import { TModalDialogType } from '../../api/ui';
+
+interface IModalHeaderProps {
+    type: TModalDialogType;
+}
 
 const cancelIcon: IIconProps = { iconName: 'Cancel' };
 
-export const ModalHeader = (props: IModalHeaderProps) => {
-    Debugger.log('Rendering Component: [ModalHeader]...');
+export const ModalHeader: React.FC<IModalHeaderProps> = (props) => {
     const root = useSelector(state),
         { i18n, viewport } = root.visual,
         modalStyles = modalDialogContentStyles(viewport),

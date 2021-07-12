@@ -14,7 +14,9 @@ export {
 import powerbi from 'powerbi-visuals-api';
 import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import ISelectionId = powerbi.visuals.ISelectionId;
-import _ from 'lodash';
+
+import pick from 'lodash/pick';
+import matches from 'lodash/matches';
 
 import { ITemplateDatasetField } from '../../schema/template-v1';
 
@@ -30,7 +32,7 @@ const getEmptyDataset = (): IVisualDataset => ({
 
 const getMetadata = () => getDataset().metadata;
 
-const getMetadataByKeys = (keys: string[] = []) => _.pick(getMetadata(), keys);
+const getMetadataByKeys = (keys: string[] = []) => pick(getMetadata(), keys);
 
 const getValues = () => getDataset().values;
 
@@ -38,8 +40,7 @@ const getValueForDatum = (
     metadata: IVisualValueMetadata,
     datum: IVegaViewDatum
 ): IVisualValueRow =>
-    _(getValues()).find(_.matches(resolveDatumForMetadata(metadata, datum))) ||
-    null;
+    getValues().find(matches(resolveDatumForMetadata(metadata, datum))) || null;
 
 interface IVisualDataset {
     // All column information that we need to know about (including generated raw values)

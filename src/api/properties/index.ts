@@ -8,7 +8,7 @@ import powerbi from 'powerbi-visuals-api';
 import VisualObjectInstancesToPersist = powerbi.VisualObjectInstancesToPersist;
 import DataViewPropertyValue = powerbi.DataViewPropertyValue;
 
-import _ from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 
 import VisualSettings from '../../properties/VisualSettings';
 
@@ -47,7 +47,7 @@ const getNewObjectInstance = (
             {
                 objectName: objectName,
                 selector: null,
-                properties: _.cloneDeep(dataViewObjects[objectName]) || {}
+                properties: cloneDeep(dataViewObjects[objectName]) || {}
             }
         ]
     };

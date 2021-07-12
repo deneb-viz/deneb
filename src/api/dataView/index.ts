@@ -7,7 +7,7 @@ export {
     validateDataViewMapping,
     validateDataViewRoles,
     IAugmentedMetadataField,
-    IDataProcessingPayload,
+    IDataProcessingPayload,IDataViewFlags,
     TDataProcessingStage
 };
 
@@ -21,7 +21,8 @@ import DataViewValueColumns = powerbi.DataViewValueColumns;
 import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
 import DataViewSegmentMetadata = powerbi.DataViewSegmentMetadata;
 
-import _ from 'lodash';
+import range from 'lodash/range';
+import reduce from 'lodash/reduce';
 
 import {
     dataLoadingComplete,
@@ -55,7 +56,7 @@ const getMappedDataset = (categorical: DataViewCategorical): IVisualDataset => {
     } else {
         try {
             const metadata = getConsolidatedMetadata(columns),
-                dataValues = _.range(rowCount).map((r, ri) => {
+                dataValues = range(rowCount).map((r, ri) => {
                     const md = getDataRow(columns, fieldValues, ri),
                         identity = createSelectionId(metadata, categories, r);
                     return {
@@ -116,6 +117,12 @@ interface IDataProcessingPayload {
     canFetchMore: boolean;
 }
 
+interface IDataViewFlags {
+    hasValidDataViewMapping: boolean;
+    hasValidDataRoles: boolean;
+    hasValidDataView: boolean;
+}
+
 type TDataProcessingStage = 'Initial' | 'Fetching' | 'Processing' | 'Processed';
 
 export const castPrimitiveValue = (
@@ -155,21 +162,25 @@ export const getConsolidatedFields = (
 ];
 
 export const getConsolidatedMetadata = (fields: IAugmentedMetadataField[]) => {
-    return _(fields).reduce((result, c) => {
-        const encodedName = encodeFieldForSpec(c.column.displayName);
-        result[encodedName] = {
-            ...c.column,
-            ...{
-                isColumn: !c.column.isMeasure,
-                sourceIndex: c.sourceIndex,
-                templateMetadata: resolveVisualMetaToDatasetField(
-                    c.column,
-                    encodedName
-                )
-            }
-        };
-        return result;
-    }, <IVisualValueMetadata>{});
+    return reduce(
+        fields,
+        (result, c) => {
+            const encodedName = encodeFieldForSpec(c.column.displayName);
+            result[encodedName] = {
+                ...c.column,
+                ...{
+                    isColumn: !c.column.isMeasure,
+                    sourceIndex: c.sourceIndex,
+                    templateMetadata: resolveVisualMetaToDatasetField(
+                        c.column,
+                        encodedName
+                    )
+                }
+            };
+            return result;
+        },
+        <IVisualValueMetadata>{}
+    );
 };
 
 export const getConsolidatedValues = (
@@ -190,15 +201,19 @@ export const getDataRow = (
     values: powerbi.PrimitiveValue[][],
     index: number
 ) =>
-    _(fields).reduce((accumulator, f, fi) => {
-        const rawValue = values[fi][index];
-        if (f?.column.roles?.dataset) {
-            accumulator[
-                encodeFieldForSpec(f.column.displayName)
-            ] = castPrimitiveValue(f, rawValue);
-        }
-        return accumulator;
-    }, <IVisualValueRow>{});
+    reduce(
+        fields,
+        (accumulator, f, fi) => {
+            const rawValue = values[fi][index];
+            if (f?.column.roles?.dataset) {
+                accumulator[
+                    encodeFieldForSpec(f.column.displayName)
+                ] = castPrimitiveValue(f, rawValue);
+            }
+            return accumulator;
+        },
+        <IVisualValueRow>{}
+    );
 
 export const getRowCount = (categorical: DataViewCategorical) =>
     categorical?.categories?.[0]?.values?.length ||

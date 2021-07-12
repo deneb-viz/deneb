@@ -5,7 +5,10 @@ import ITooltipService = powerbi.extensibility.ITooltipService;
 import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
 import ISelectionId = powerbi.extensibility.ISelectionId;
 
-import _ from 'lodash';
+import indexOf from 'lodash/indexOf';
+import keys from 'lodash/keys';
+import pickBy from 'lodash/pickBy';
+import toNumber from 'lodash/toNumber';
 
 import { getMetadataByKeys, getValueForDatum } from '../dataset';
 import { getCategoryColumns } from '../dataView';
@@ -33,13 +36,13 @@ const extractTooltipDataItemsFromObject = (
     tooltip: Object,
     autoFormatFields: IVegaViewDatum
 ): VisualTooltipDataItem[] => {
-    const autoFormatMetadata = getMetadataByKeys(_.keys(autoFormatFields));
+    const autoFormatMetadata = getMetadataByKeys(keys(autoFormatFields));
     return resolveDatumForKeywords(tooltip).map(([k, v]) => ({
         displayName: `${k}`,
         value: `${
             (autoFormatMetadata[k] &&
                 createFormatterFromString(autoFormatMetadata[k].format).format(
-                    (autoFormatMetadata[k].type.numeric && _.toNumber(v)) ||
+                    (autoFormatMetadata[k].type.numeric && toNumber(v)) ||
                         (autoFormatMetadata[k].type.dateTime && v)
                 )) ||
             v
@@ -48,13 +51,13 @@ const extractTooltipDataItemsFromObject = (
 };
 
 const getFieldsEligibleForAutoFormat = (tooltip: Object) =>
-    _.pickBy(tooltip, (v, k) => {
-        const ttKeys = _.keys(tooltip),
-            mdKeys = _.keys(getMetadataByKeys(ttKeys));
+    pickBy(tooltip, (v, k) => {
+        const ttKeys = keys(tooltip),
+            mdKeys = keys(getMetadataByKeys(ttKeys));
         return (
-            _(mdKeys).indexOf(k) > -1 &&
+            indexOf(mdKeys, k) > -1 &&
             isResolveNumberFormatEnabled() &&
-            _.toNumber(tooltip[k])
+            toNumber(tooltip[k])
         );
     });
 
@@ -62,7 +65,7 @@ const getTooltipIdentity = (datum: IVegaViewDatum): [ISelectionId] => {
     const datumId = datum?.__identity__;
     if (datumId) return [<ISelectionId>datumId];
     // Try and create a selection ID from fields/values that can be resolved from datum
-    const metadata = getMetadataByKeys(_.keys(datum)),
+    const metadata = getMetadataByKeys(keys(datum)),
         value = getValueForDatum(metadata, datum),
         categories = getCategoryColumns(),
         selectionId =
@@ -92,6 +95,7 @@ const resolveTooltipContent = (tooltipService: ITooltipService) => (
 ) => {
     const coordinates = resolveCoordinates(event);
     if (item) {
+        console.clear();
         const datum = { ...item.datum },
             tooltip = { ...item.tooltip },
             autoFormatFields = getFieldsEligibleForAutoFormat(tooltip),
@@ -100,6 +104,11 @@ const resolveTooltipContent = (tooltipService: ITooltipService) => (
                 autoFormatFields
             ),
             identities = getTooltipIdentity(datum);
+        console.log('DATUM', datum);
+        console.log('TT', tooltip);
+        console.log('FORMAT', autoFormatFields);
+        console.log('ITEMS', dataItems);
+        console.log('IDs', identities);
         switch (event.type) {
             case 'mouseover':
             case 'mousemove': {

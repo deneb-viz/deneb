@@ -1,9 +1,18 @@
 import { visualFeatures } from './config';
-import {
-    TDebugMethodMarkerExtent,
-    IDebugLogOptions,
-    IDebugProfileDetail
-} from './types';
+
+interface IDebugLogOptions {
+    owner?: string;
+    profile?: boolean;
+    report?: boolean;
+}
+
+interface IDebugProfileDetail {
+    owner: string;
+    methodName: string;
+    duration: number;
+}
+
+type TDebugMethodMarkerExtent = 'start' | 'end';
 
 /**
  * Used to handle debugging, if enabled within the visual settings

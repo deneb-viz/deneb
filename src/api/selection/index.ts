@@ -15,7 +15,10 @@ import powerbi from 'powerbi-visuals-api';
 import ISelectionId = powerbi.visuals.ISelectionId;
 import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 
-import _ from 'lodash';
+import forEach from 'lodash/foreach';
+import keys from 'lodash/keys';
+import pick from 'lodash/pick';
+import reduce from 'lodash/reduce';
 
 import {
     ITableColumnMetadata,
@@ -31,7 +34,7 @@ const createSelectionId = (
     rowIndex: number
 ) => {
     const identity = getSelectionIdBuilder();
-    _(metadata).forEach((v) => {
+    forEach(metadata, (v) => {
         switch (true) {
             case v?.isMeasure: {
                 identity.withMeasure(v.queryName);
@@ -62,12 +65,18 @@ const resolveDatumForMetadata = (
     metadata: IVisualValueMetadata,
     datum: IVegaViewDatum
 ) => {
-    const reducedDatum =
-        <IVisualValueRow>_.pick(datum, _.keys(metadata)) || null;
-    return _(reducedDatum).reduce((result, value, key) => {
-        result[key] = resolveDatumValueForMetadataColumn(metadata[key], value);
-        return result;
-    }, <IVisualValueRow>{});
+    const reducedDatum = <IVisualValueRow>pick(datum, keys(metadata)) || null;
+    return reduce(
+        reducedDatum,
+        (result, value, key) => {
+            result[key] = resolveDatumValueForMetadataColumn(
+                metadata[key],
+                value
+            );
+            return result;
+        },
+        <IVisualValueRow>{}
+    );
 };
 
 const resolveDatumValueForMetadataColumn = (

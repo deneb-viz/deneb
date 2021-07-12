@@ -29,7 +29,7 @@ import ErrorObject = Ajv.ErrorObject;
 import { Spec } from 'vega';
 import { TopLevelSpec } from 'vega-lite';
 import { v4 as uuidv4 } from 'uuid';
-import _ from 'lodash';
+import merge from 'lodash/merge';
 
 import {
     IDenebTemplateMetadata,
@@ -79,7 +79,7 @@ const getExportTemplate = () => {
         );
         delete ph.namePlaceholder;
     });
-    const outSpec = _.merge(
+    const outSpec = merge(
         baseObj,
         { usermeta },
         { config: getParsedConfigFromSettings() },

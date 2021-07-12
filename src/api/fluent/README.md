@@ -19,6 +19,10 @@ General styling for buttons within the UI.
 
 General properties for pop-up dialogs within the UI.
 
+#### `initializeIcons`(_baseUrl_, _options_)
+
+Initialise packaged Fluent UI icons rather than loading from CDN (default behaviour).
+
 #### `theme`
 
 The Fluent UI theme, as from the visual configuration.

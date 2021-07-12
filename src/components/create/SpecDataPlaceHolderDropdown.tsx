@@ -9,7 +9,6 @@ import {
 import { Icon } from '@fluentui/react/lib/Icon';
 
 import Debugger from '../../Debugger';
-import { ISpecDataPlaceHolderDropdownProps } from '../../types';
 import {
     templatePickerDropdownStyles,
     templateTypeIconOptionStyles
@@ -22,6 +21,11 @@ import {
     resolveTypeIcon,
     resolveValueDescriptor
 } from '../../api/template';
+import { ITemplateDatasetField } from '../../schema/template-v1';
+
+interface ISpecDataPlaceHolderDropdownProps {
+    datasetField: ITemplateDatasetField;
+}
 
 const SpecDataPlaceHolderDropdown: React.FC<ISpecDataPlaceHolderDropdownProps> = (
     props

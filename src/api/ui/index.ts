@@ -11,6 +11,7 @@ export {
     isDialogOpen,
     resolveVisualMode,
     TEditorPosition,
+    TModalDialogType,
     TVisualMode
 };
 
@@ -32,9 +33,9 @@ import {
     toggleAutoApply
 } from '../commands';
 import { getConfig, getVisualMetadata, providerVersions } from '../config';
+import { IDataViewFlags } from '../dataView';
 import { getHostLM } from '../i18n';
 import { getState } from '../store';
-import { IDataViewFlags } from '../../types';
 import { ICompiledSpec } from '../specification';
 
 const calculateVegaViewport = (
@@ -188,6 +189,7 @@ const splitPaneDefaults = getConfig().splitPaneDefaults;
 const visualViewportAdjust = getConfig().visualViewPortAdjust;
 
 type TEditorPosition = 'left' | 'right';
+type TModalDialogType = 'new' | 'export';
 type TVisualMode =
     | 'Standard'
     | 'Editor'

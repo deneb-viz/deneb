@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import _ from 'lodash';
+import set from 'lodash/set';
 
-import { IPlaceholderValuePayload } from '../types';
 import { templateReducer as initialState } from '../config/templateReducer';
 import templates from '../templates';
 import {
@@ -21,6 +20,11 @@ import {
     TTemplateProvider,
     TExportOperation
 } from '../api/template';
+
+interface IPlaceholderValuePayload {
+    key: string;
+    objectName: string;
+}
 
 const templateSlice = createSlice({
     name: 'templates',
@@ -122,7 +126,7 @@ const templateSlice = createSlice({
             action: PayloadAction<ITemplateExportFieldUpdatePayload>
         ) => {
             let newState = { ...state.templateExportMetadata };
-            _.set(newState, action.payload.selector, action.payload.value);
+            set(newState, action.payload.selector, action.payload.value);
             state.templateExportMetadata = { ...newState };
         },
         newExportTemplateMetadata: (state, action) => {

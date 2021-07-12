@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useSelector } from 'react-redux';
 import { createClassFromSpec, VegaLite, SignalListeners } from 'react-vega';
 import * as Vega from 'vega';
-import _ from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 
 import Debugger from '../Debugger';
 import { state } from '../store';
@@ -33,8 +33,8 @@ const VisualRender = () => {
         } = useSelector(state).visual,
         { vega } = settings,
         { height, width } = vegaViewport,
-        data = { dataset: _.cloneDeep(dataset.values) },
-        specification = _.cloneDeep(spec.spec),
+        data = { dataset: cloneDeep(dataset.values) },
+        specification = cloneDeep(spec.spec),
         config = getInitialConfig(),
         tooltipHandler = getTooltipHandler(
             settings.vega.enableTooltips,

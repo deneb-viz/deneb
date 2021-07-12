@@ -1,18 +1,14 @@
 import powerbi from 'powerbi-visuals-api';
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
+import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
+import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import {
-    IVisualUpdatePayload,
-    IDataViewFlags,
-    IEditorPaneUpdatePayload,
-    IVisualDatasetUpdatePayload
-} from '../types';
 import Debugger from '../Debugger';
 import { visualReducer as initialState } from '../config/visualReducer';
-import { getEmptyDataset } from '../api/dataset';
-import { IDataProcessingPayload } from '../api/dataView';
+import { getEmptyDataset, IVisualDataset } from '../api/dataset';
+import { IDataProcessingPayload, IDataViewFlags } from '../api/dataView';
 import { isDeveloperModeEnabled } from '../api/developer';
 import { TEditorRole } from '../api/editor';
 import {
@@ -22,6 +18,22 @@ import {
     resolveVisualMode
 } from '../api/ui';
 import { ICompiledSpec, IFixResult } from '../api/specification';
+import VisualSettings from '../properties/VisualSettings';
+
+interface IVisualDatasetUpdatePayload {
+    categories: DataViewCategoryColumn[];
+    dataset: IVisualDataset;
+}
+
+interface IVisualUpdatePayload {
+    settings: VisualSettings;
+    options: VisualUpdateOptions;
+}
+
+interface IEditorPaneUpdatePayload {
+    editorPaneWidth: number;
+    editorPaneExpandedWidth: number;
+}
 
 const visualSlice = createSlice({
     name: 'visual',

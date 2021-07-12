@@ -1,6 +1,5 @@
 import powerbi from 'powerbi-visuals-api';
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
-import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import ISelectionIdBuilder = powerbi.visuals.ISelectionIdBuilder;
 import ITooltipService = powerbi.extensibility.ITooltipService;
 import IViewport = powerbi.IViewport;
@@ -11,36 +10,14 @@ import ISelectionManager = powerbi.extensibility.ISelectionManager;
 import VisualObjectInstancesToPersist = powerbi.VisualObjectInstancesToPersist;
 import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 
-import JSONEditor from 'jsoneditor';
 import { Loader } from 'vega';
 
 import VisualSettings from './properties/VisualSettings';
-import { ITemplateDatasetField } from './schema/template-v1';
 import { IVisualDataset } from './api/dataset';
-import { TDataProcessingStage } from './api/dataView';
+import { IDataViewFlags, TDataProcessingStage } from './api/dataView';
 import { TEditorRole } from './api/editor';
 import { TVisualMode } from './api/ui';
 import { ICompiledSpec, IFixResult } from './api/specification';
-
-/**
- * =====
- * Types
- * =====
- */
-
-// Specify the start or end of a console group for the `Debugger`.
-export type TDebugMethodMarkerExtent = 'start' | 'end';
-// Modal dialog type (used for specific ops handling)
-export type TModalDialogType = 'new' | 'export';
-// Template type constraints for placeholders (currently not used).
-export type TSupportedValueTypeDescriptor =
-    | 'text'
-    | 'numeric'
-    | 'integer'
-    | 'bool'
-    | 'dateTime'
-    | 'duration'
-    | 'binary';
 
 /**
  * ========
@@ -123,72 +100,4 @@ export interface IVisualSliceState {
     visualMode: TVisualMode;
     viewMode: ViewMode;
     viewport: IViewport;
-}
-
-// Action Payloads...
-export interface IVisualDatasetUpdatePayload {
-    categories: DataViewCategoryColumn[];
-    dataset: IVisualDataset;
-}
-
-export interface ISpecDataPlaceHolderDropdownProps {
-    datasetField: ITemplateDatasetField;
-}
-
-export interface IPlaceholderValuePayload {
-    key: string;
-    objectName: string;
-}
-
-export interface IDataViewFlags {
-    hasValidDataViewMapping: boolean;
-    hasValidDataRoles: boolean;
-    hasValidDataView: boolean;
-}
-
-export interface IVisualUpdatePayload {
-    settings: VisualSettings;
-    options: VisualUpdateOptions;
-}
-
-export interface IEditorPaneUpdatePayload {
-    editorPaneWidth: number;
-    editorPaneExpandedWidth: number;
-}
-
-export interface IEditorReferencePayload {
-    role: TEditorRole;
-    editor: JSONEditor;
-}
-
-export interface IDebugLogOptions {
-    owner?: string;
-    profile?: boolean;
-    report?: boolean;
-}
-
-export interface IDebugProfileDetail {
-    owner: string;
-    methodName: string;
-    duration: number;
-}
-
-export interface IModalDialogProps {
-    type: TModalDialogType;
-    visible: boolean;
-}
-
-export interface IModalHeaderProps {
-    type: TModalDialogType;
-}
-export interface IProgressProps {
-    description?: string;
-}
-
-export interface IDataFieldLabelProps {
-    datasetField: ITemplateDatasetField;
-}
-
-export interface IFieldInfoIconProps {
-    description: string;
 }

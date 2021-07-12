@@ -95,7 +95,11 @@ Logic to determine if the visual is currently in the Advanced Editor.
 
 #### `TEditorPosition`
 
-Type to allow structure of the value for position of editor within the
+Type to allow structure of the value for position of editor within the advanced editor view.
+
+#### `TModalDialogType`
+
+Modal dialog type (used for specific ops handling).
 
 #### `TVisualMode`
 

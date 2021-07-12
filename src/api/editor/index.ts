@@ -17,7 +17,7 @@ import Ace = ace.Ace;
 import Completer = Ace.Completer;
 import Editor = Ace.Editor;
 import JSONEditor from 'jsoneditor/dist/jsoneditor-minimalist';
-import _ from 'lodash';
+import debounce from 'lodash/debounce';
 import * as vegaSchema from 'vega/build/vega-schema.json';
 import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
 
@@ -75,7 +75,7 @@ interface IVisualEditorProps {
 type TEditorRole = 'spec' | 'config' | 'settings';
 
 const debounceInput = () =>
-    _.debounce(
+    debounce(
         handleTextEntry,
         getConfig().propertyDefaults.editor.debounceInterval
     );

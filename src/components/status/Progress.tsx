@@ -2,9 +2,11 @@ import * as React from 'react';
 
 import { ProgressIndicator } from '@fluentui/react/lib/ProgressIndicator';
 
-import { IProgressProps } from '../../types';
+interface IProgressProps {
+    description?: string;
+}
 
-export const Progress = (props: IProgressProps) => {
+export const Progress: React.FC<IProgressProps> = (props) => {
     return <ProgressIndicator description={props.description} />;
 };
 

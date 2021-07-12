@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import _ from 'lodash';
+
+import debounce from 'lodash/debounce';
+import get from 'lodash/get';
 
 import { ITextFieldProps, TextField } from '@fluentui/react/lib/TextField';
 import { IStackTokens, Stack } from '@fluentui/react/lib/Stack';
@@ -34,10 +36,10 @@ const CappedTextField: React.FC<ICappedTextFieldProps> = (props) => {
         { i18n } = root.visual,
         { templateExportMetadata: templateToGenerate } = root.templates,
         [textFieldValue, setTextFieldValue] = React.useState(
-            _.get(templateToGenerate, props.id, '')
+            get(templateToGenerate, props.id, '')
         ),
         delayedInput = React.useCallback(
-            _.debounce((value: string) => {
+            debounce((value: string) => {
                 dispatch(
                     updateExportTemplatePropertyBySelector({
                         selector: props.id,

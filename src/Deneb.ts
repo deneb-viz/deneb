@@ -1,6 +1,7 @@
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
-import './../style/visual.less';
+import '../style/visual.less';
+import '../style/fabric-icons.css';
 import 'jsoneditor/dist/jsoneditor.css';
 import powerbi from 'powerbi-visuals-api';
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
@@ -17,7 +18,6 @@ import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { initializeIcons } from '@fluentui/react';
 import { loadTheme } from '@fluentui/react/lib/Styling';
 
 import Debugger, { standardLog } from './Debugger';
@@ -44,7 +44,7 @@ import {
     validateDataViewMapping,
     validateDataViewRoles
 } from './api/dataView';
-import { theme } from './api/fluent';
+import { initializeIcons, theme } from './api/fluent';
 import { parseActiveSpec } from './api/specification';
 
 const owner = 'Visual';
@@ -66,7 +66,6 @@ export class Deneb implements IVisual {
             Debugger.heading('Visual Constructor');
             Debugger.log('Loading theming...');
             loadTheme(theme);
-            Debugger.log('Initialising icons...');
             initializeIcons();
             store.dispatch(visualConstructor(options.host));
             store.dispatch(initializeImportExport());

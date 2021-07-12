@@ -2,14 +2,17 @@ import * as React from 'react';
 
 import { IconButton } from '@fluentui/react/lib/Button';
 
-import Debugger from '../../Debugger';
-import { IDataFieldLabelProps } from '../../types';
 import { templateTypeIconStyles } from '../../config/styles';
 import { resolveTypeIcon, resolveTypeIconTitle } from '../../api/template';
 
-const DataTypeIcon: React.FC<IDataFieldLabelProps> = (props) => {
+import { ITemplateDatasetField } from '../../schema/template-v1';
+
+interface IDataTypeIconProps {
+    datasetField: ITemplateDatasetField;
+}
+
+const DataTypeIcon: React.FC<IDataTypeIconProps> = (props) => {
     const { datasetField } = props;
-    Debugger.log('Rendering component: [DataTypeIcon]...');
     return (
         <IconButton
             iconProps={{

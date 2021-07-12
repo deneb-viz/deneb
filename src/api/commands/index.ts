@@ -18,7 +18,6 @@ export {
     IKeyboardShortcut
 };
 
-import { TModalDialogType } from '../../types';
 import { Options } from 'react-hotkeys-hook';
 import {
     toggleAutoApply as rdxToggleAutoApply,
@@ -45,6 +44,7 @@ import {
 } from '../specification';
 import { getState, store } from '../store';
 import { updateExportState } from '../template';
+import { TModalDialogType } from '../ui';
 
 const hotkeyOptions: Options = {
     enableOnTags: ['INPUT', 'SELECT', 'TEXTAREA']
