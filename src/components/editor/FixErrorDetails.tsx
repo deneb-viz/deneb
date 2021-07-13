@@ -4,11 +4,10 @@ import { MessageBar, MessageBarType } from '@fluentui/react/lib/MessageBar';
 
 import { state } from '../../store';
 import { dismissFixError } from '../../store/visualReducer';
-import { getHostLM } from '../../api/i18n';
+import { i18nValue } from '../../core/ui/i18n';
 
 const FixErrorDetails: React.FC = () => {
     const { fixResult: fixStatus } = useSelector(state).visual,
-        i18n = getHostLM(),
         dispatch = useDispatch(),
         handleDismiss = () => {
             dispatch(dismissFixError());
@@ -19,9 +18,7 @@ const FixErrorDetails: React.FC = () => {
             <MessageBar
                 messageBarType={MessageBarType.error}
                 onDismiss={handleDismiss}
-                dismissButtonAriaLabel={i18n.getDisplayName(
-                    'Button_Dismiss_MessageBar'
-                )}
+                dismissButtonAriaLabel={i18nValue('Button_Dismiss_MessageBar')}
             >
                 {fixStatus.error}
             </MessageBar>

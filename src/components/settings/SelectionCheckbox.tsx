@@ -5,13 +5,12 @@ import { Checkbox } from '@fluentui/react/lib/Checkbox';
 import { state } from '../../store';
 import { updateBooleanProperty } from '../../api/commands';
 import { isDataPointEnabled } from '../../api/selection';
-import { getHostLM } from '../../api/i18n';
-import { hostServices } from '../../core/host';
+import { hostServices } from '../../core/services';
+import { i18nValue } from '../../core/ui/i18n';
 
 const SelectionCheckbox = () => {
     const { settings } = useSelector(state).visual,
         { vega } = settings,
-        i18n = getHostLM(),
         { selectionManager } = hostServices,
         handleSelection = React.useCallback(
             (ev: React.FormEvent<HTMLElement>, checked: boolean): void => {
@@ -27,7 +26,7 @@ const SelectionCheckbox = () => {
     return (
         isDataPointEnabled && (
             <Checkbox
-                label={i18n.getDisplayName('Objects_Vega_EnableSelection')}
+                label={i18nValue('Objects_Vega_EnableSelection')}
                 checked={vega.enableSelection}
                 onChange={handleSelection}
                 disabled={disabled}

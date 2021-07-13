@@ -5,8 +5,8 @@ import { PrimaryButton, DefaultButton } from '@fluentui/react/lib/Button';
 
 import { applyChanges, discardChanges } from '../../api/commands';
 import { fluent } from '../../api/';
-import { getHostLM } from '../../api/i18n';
 import { isApplyDialogHidden } from '../../api/ui';
+import { i18nValue } from '../../core/ui/i18n';
 
 export const ApplyDialog: React.FunctionComponent = () => {
     const hidden = isApplyDialogHidden(),
@@ -16,9 +16,8 @@ export const ApplyDialog: React.FunctionComponent = () => {
             'Dialog_Unapplied_Changes_Title',
             'Dialog_Unapplied_Changes_Subtext'
         ),
-        lm = getHostLM(),
-        applyText = lm.getDisplayName('Dialog_Unapplied_Changes_Apply'),
-        discardText = lm.getDisplayName('Dialog_Unapplied_Changes_Discard');
+        applyText = i18nValue('Dialog_Unapplied_Changes_Apply'),
+        discardText = i18nValue('Dialog_Unapplied_Changes_Discard');
 
     return (
         <>

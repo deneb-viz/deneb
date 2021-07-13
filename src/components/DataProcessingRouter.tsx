@@ -6,11 +6,10 @@ import DataFetching from './status/DataFetching';
 import VisualRender from './VisualRender';
 import ApplyDialog from './modal/ApplyDialog';
 import SplashInitial from './status/SplashInitial';
-import { getHostLM } from '../api/i18n';
+import { i18nValue } from '../core/ui/i18n';
 
 const DataProcessingRouter = () => {
-    const { dataProcessingStage } = useSelector(state).visual,
-        i18n = getHostLM();
+    const { dataProcessingStage } = useSelector(state).visual;
 
     switch (dataProcessingStage) {
         case 'Initial': {
@@ -20,11 +19,7 @@ const DataProcessingRouter = () => {
             return <DataFetching />;
         }
         case 'Processing': {
-            return (
-                <div>
-                    {i18n.getDisplayName('Fetching_Data_Assistive_Processed')}
-                </div>
-            );
+            return <div>{i18nValue('Fetching_Data_Assistive_Processed')}</div>;
         }
         case 'Processed': {
             return (

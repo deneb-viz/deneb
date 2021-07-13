@@ -5,13 +5,11 @@ import { MessageBar, MessageBarType } from '@fluentui/react/lib/MessageBar';
 
 import { state } from '../../store';
 import { Progress } from '../status/Progress';
-import { getHostLM } from '../../api/i18n';
+import { i18nValue } from '../../core/ui/i18n';
 
 const ImportTemplateStatus: React.FC = () => {
     const root = useSelector(state),
-        { visual, templates } = root,
-        { templateImportState, templateImportErrorMessage } = templates,
-        i18n = getHostLM(),
+        { templateImportState, templateImportErrorMessage } = root.templates,
         standardMessage = (message: string) => (
             <MessageBar messageBarType={MessageBarType.info}>
                 {message}
@@ -31,7 +29,7 @@ const ImportTemplateStatus: React.FC = () => {
                 case 'Validating': {
                     return (
                         <Progress
-                            description={i18n.getDisplayName(
+                            description={i18nValue(
                                 `Template_Import_${templateImportState}`
                             )}
                         />
@@ -39,9 +37,7 @@ const ImportTemplateStatus: React.FC = () => {
                 }
                 default: {
                     return standardMessage(
-                        i18n.getDisplayName(
-                            `Template_Import_${templateImportState}`
-                        )
+                        i18nValue(`Template_Import_${templateImportState}`)
                     );
                 }
             }

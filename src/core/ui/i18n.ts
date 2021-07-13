@@ -1,9 +1,11 @@
-export { locales, getHostLM, getLocale, ILocaleConfiguration, TLocale };
+import { hostServices } from '../services';
 
-import { hostServices } from '../../core/host';
+export { i18nValue, locales, TLocale};
 
-import { getState } from '../store';
+// Convenience function allows i18n value lookup by key using host services.
+const i18nValue = (key: string) => hostServices.i18n.getDisplayName(key);
 
+// i18 locale data for D3-based formatting.
 const locales: ILocaleConfiguration = {
     default: 'en-US',
     format: {
@@ -57,10 +59,7 @@ const locales: ILocaleConfiguration = {
     }
 };
 
-const getHostLM = () => hostServices.i18n;
-
-const getLocale = () => getState().visual.locale;
-
+// Represents all i18n date and time formats available for D3 that we can add to the visual.
 interface ILocaleConfiguration {
     default: string;
     format: ILocaleFormatConfiguration;
@@ -75,6 +74,7 @@ interface ILocaleTimeConfiguration {
     [key: string]: Record<string, unknown>;
 }
 
+// List of supported locales used for developer mode locale/formatting testing, without having to reconfigure the Power BI Service.
 type TLocale = 'en-US' | 'de-DE' | 'fr-FR';
 
 /**

@@ -7,7 +7,7 @@ import Debugger, { standardLog } from '../Debugger';
 import store from '../store';
 import { ISelectionHandlerService } from '../types';
 import { isContextMenuEnabled, isDataPointEnabled } from '../api/selection';
-import { hostServices } from '../core/host';
+import { hostServices } from '../core/services';
 
 const owner = 'SelectionHandlerService';
 
@@ -98,10 +98,7 @@ export class SelectionHandlerService implements ISelectionHandlerService {
     @standardLog()
     handleContextMenu(name: string, selection: any) {
         Debugger.log('Context menu click', selection);
-        const {
-                allowInteractions,
-                settings
-            } = store.getState().visual,
+        const { allowInteractions, settings } = store.getState().visual,
             { vega } = settings,
             { selectionManager } = hostServices,
             mouseEvent: MouseEvent =

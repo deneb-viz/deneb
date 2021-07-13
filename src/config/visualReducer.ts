@@ -37,7 +37,6 @@ const visualReducer: IVisualSliceState = {
     isExportDialogVisible: false,
     isNewDialogVisible: true,
     loader: resolveLoaderLogic(),
-    locale: '',
     resizablePaneDefaultWidth: null,
     resizablePaneExpandedWidth: null,
     resizablePaneWidth: null,

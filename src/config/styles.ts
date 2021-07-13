@@ -35,10 +35,6 @@ export {
     commandBarStyles,
     commandBarButtonStyles,
     detailListStyles,
-    editorPaneExpandedStackStyles,
-    editorPaneExpandedStackItemStyles,
-    editorPaneExpandedOuterStackTokens,
-    editorPaneExpandedInnerStackTokens,
     exportPivotAssistiveTextStyles,
     exportPivotAssistiveToastTextStyles,
     exportPivotStyles,
@@ -122,25 +118,6 @@ const buttonIconClass = mergeStyles({
         root: {
             cursor: 'pointer'
         }
-    };
-
-// Editor pane (expanded) layout
-const editorPaneExpandedStackStyles: IStackStyles = {
-        root: {
-            height: '100vh',
-            backgroundColor: theme.palette.neutralLighterAlt,
-            border: `1px solid ${theme.palette.neutralLight}`
-        }
-    },
-    editorPaneExpandedStackItemStyles: IStackItemStyles = {
-        root: {
-            display: 'flex'
-        }
-    },
-    editorPaneExpandedOuterStackTokens: IStackTokens = { childrenGap: 5 },
-    editorPaneExpandedInnerStackTokens: IStackTokens = {
-        childrenGap: 5,
-        padding: 10
     };
 
 // Command bar

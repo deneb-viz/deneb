@@ -39,7 +39,6 @@ import { getConfig } from '../config';
 import { configEditorService, specEditorService, TEditorRole } from '../editor';
 import { isFeatureEnabled } from '../features';
 import { createFormatterFromString } from '../formatting';
-import { getHostLM } from '../i18n';
 import { resolveObjectProperties, updateObjectProperties } from '../properties';
 import { getSidString } from '../selection';
 import { getState, store } from '../store';
@@ -51,7 +50,8 @@ import {
     updateStagedSpecData,
     updateStagedConfigData
 } from '../../store/visualReducer';
-import { hostServices } from '../../core/host';
+import { hostServices } from '../../core/services';
+import { i18nValue } from '../../core/ui/i18n';
 
 const createFromTemplate = (
     provider: TSpecProvider,
@@ -372,15 +372,12 @@ const resolveFixErrorMessage = (
     fixedRawSpec: IFixStatus,
     fixedRawConfig: IFixStatus
 ): string => {
-    const i18n = getHostLM();
     return (
         (!success &&
-            `${i18n.getDisplayName('Fix_Failed_Prefix')} ${
-                fixedRawSpec.error || ''
-            }${
+            `${i18nValue('Fix_Failed_Prefix')} ${fixedRawSpec.error || ''}${
                 (!fixedRawSpec.success && !fixedRawConfig.success && ' & ') ||
                 ''
-            }${fixedRawConfig.error || ''}. ${i18n.getDisplayName(
+            }${fixedRawConfig.error || ''}. ${i18nValue(
                 'Fix_Failed_Suffix'
             )}`) ||
         undefined
@@ -396,7 +393,6 @@ const resolveUrls = (content: string) =>
     content;
 
 const tryFixAndFormat = (operation: TEditorRole, input: string): IFixStatus => {
-    const lm = getHostLM();
     try {
         return {
             success: true,
@@ -406,9 +402,9 @@ const tryFixAndFormat = (operation: TEditorRole, input: string): IFixStatus => {
         return {
             success: false,
             text: input,
-            error: `${lm.getDisplayName(
+            error: `${i18nValue(
                 operation === 'spec' ? 'Editor_Role_Spec' : 'Editor_Role_Config'
-            )} ${lm.getDisplayName('Fix_Failed_Item')}`
+            )} ${i18nValue('Fix_Failed_Item')}`
         };
     }
 };

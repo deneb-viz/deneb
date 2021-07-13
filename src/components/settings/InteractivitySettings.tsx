@@ -8,23 +8,20 @@ import { choiceStackTokens } from '../../config/styles';
 import TooltipCheckbox from './TooltipCheckbox';
 import SelectionCheckbox from './SelectionCheckbox';
 import ContextMenuCheckbox from './ContextMenuCheckbox';
-import { getHostLM } from '../../api/i18n';
+import { i18nValue } from '../../core/ui/i18n';
 
-const InteractivitySettings = () => {
-    const i18n = getHostLM();
-    return (
-        <>
-            <Label>{i18n.getDisplayName('Objects_Vega_Interactivity')}</Label>
-            <Stack tokens={choiceStackTokens}>
-                <TooltipCheckbox />
-                <ContextMenuCheckbox />
-                <SelectionCheckbox />
-            </Stack>
-            <Text variant='smallPlus'>
-                {i18n.getDisplayName('Assistive_Text_Interactivity')}
-            </Text>
-        </>
-    );
-};
+const InteractivitySettings = () => (
+    <>
+        <Label>{i18nValue('Objects_Vega_Interactivity')}</Label>
+        <Stack tokens={choiceStackTokens}>
+            <TooltipCheckbox />
+            <ContextMenuCheckbox />
+            <SelectionCheckbox />
+        </Stack>
+        <Text variant='smallPlus'>
+            {i18nValue('Assistive_Text_Interactivity')}
+        </Text>
+    </>
+);
 
 export default InteractivitySettings;

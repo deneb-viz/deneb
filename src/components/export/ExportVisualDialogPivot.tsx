@@ -6,11 +6,10 @@ import { state } from '../../store';
 import { updateSelectedExportOperation } from '../../store/templateReducer';
 import { TExportOperation } from '../../api/template';
 import { exportPivotStyles } from '../../config/styles';
-import { getHostLM } from '../../api/i18n';
+import { i18nValue } from '../../core/ui/i18n';
 
 const ExportVisualDialogPivot = () => {
-    const i18n = getHostLM(),
-        { selectedExportOperation } = useSelector(state).templates,
+    const { selectedExportOperation } = useSelector(state).templates,
         dispatch = useDispatch(),
         getTabId = (itemKey: string) => {
             return `export-spec-pivot-${itemKey}`;
@@ -34,17 +33,15 @@ const ExportVisualDialogPivot = () => {
                 headersOnly={true}
             >
                 <PivotItem
-                    headerText={i18n.getDisplayName(
-                        'Template_Export_Information'
-                    )}
+                    headerText={i18nValue('Template_Export_Information')}
                     itemKey='information'
                 />
                 <PivotItem
-                    headerText={i18n.getDisplayName('Template_Export_Dataset')}
+                    headerText={i18nValue('Template_Export_Dataset')}
                     itemKey='dataset'
                 />
                 <PivotItem
-                    headerText={i18n.getDisplayName('Template_Export_Json')}
+                    headerText={i18nValue('Template_Export_Json')}
                     itemKey='template'
                 />
             </Pivot>

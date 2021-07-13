@@ -46,7 +46,6 @@ import {
 } from '../../store/templateReducer';
 
 import { getConfig, getVisualMetadata } from '../config';
-import { getHostLM } from '../i18n';
 import {
     determineProviderFromSpec,
     getParsedConfigFromSettings,
@@ -54,6 +53,7 @@ import {
     TSpecProvider
 } from '../specification';
 import { getState, store } from '../store';
+import { i18nValue } from '../../core/ui/i18n';
 
 const getExportTemplate = () => {
     const { visual } = getState(),
@@ -109,14 +109,13 @@ const getNewExportTemplateMetadata = (): IDenebTemplateMetadata => {
 };
 
 const getPlaceholderDropdownText = (datasetField: ITemplateDatasetField) => {
-    const i18n = getHostLM();
     switch (datasetField.kind) {
         case 'column':
-            return i18n.getDisplayName('Dropdown_Placeholder_Column');
+            return i18nValue('Dropdown_Placeholder_Column');
         case 'measure':
-            return i18n.getDisplayName('Dropdown_Placeholder_Measure');
+            return i18nValue('Dropdown_Placeholder_Measure');
         default:
-            return i18n.getDisplayName('Dropdown_Placeholder_Both');
+            return i18nValue('Dropdown_Placeholder_Both');
     }
 };
 
@@ -173,18 +172,17 @@ const resolveTypeIcon = (type: TDatasetFieldType) => {
 };
 
 const resolveTypeIconTitle = (type: TDatasetFieldType) => {
-    const i18n = getHostLM();
     switch (type) {
         case 'bool':
-            return i18n.getDisplayName('Template_Type_Descriptor_Bool');
+            return i18nValue('Template_Type_Descriptor_Bool');
         case 'text':
-            return i18n.getDisplayName('Template_Type_Descriptor_Text');
+            return i18nValue('Template_Type_Descriptor_Text');
         case 'numeric':
-            return i18n.getDisplayName('Template_Type_Descriptor_Numeric');
+            return i18nValue('Template_Type_Descriptor_Numeric');
         case 'dateTime':
-            return i18n.getDisplayName('Template_Type_Descriptor_DateTime');
+            return i18nValue('Template_Type_Descriptor_DateTime');
         default:
-            return i18n.getDisplayName('Template_Import_Not_Deneb');
+            return i18nValue('Template_Import_Not_Deneb');
     }
 };
 
@@ -332,8 +330,7 @@ const replaceTemplateFieldWithToken = (
 ) => template.replace(new RegExp(pattern, 'g'), `$1${token}$3`);
 
 const resolveExportUserMeta = (): IDenebTemplateMetadata => {
-    const i18n = getHostLM(),
-        { visual, templates } = getState(),
+    const { visual, templates } = getState(),
         visualMetadata = getVisualMetadata(),
         { metadataVersion } = getConfig().templates,
         { templateExportMetadata } = templates;
@@ -346,15 +343,13 @@ const resolveExportUserMeta = (): IDenebTemplateMetadata => {
         information: {
             name:
                 templateExportMetadata.information?.name ||
-                i18n.getDisplayName('Template_Export_Information_Name_Empty'),
+                i18nValue('Template_Export_Information_Name_Empty'),
             description:
                 templateExportMetadata.information?.description ||
-                i18n.getDisplayName(
-                    'Template_Export_Information_Description_Empty'
-                ),
+                i18nValue('Template_Export_Information_Description_Empty'),
             author:
                 templateExportMetadata.information?.author ||
-                i18n.getDisplayName('Template_Export_Author_Name_Empty'),
+                i18nValue('Template_Export_Author_Name_Empty'),
             uuid: templateExportMetadata.information?.uuid || uuidv4(),
             generated: new Date().toISOString()
         },
@@ -372,13 +367,13 @@ const resolveExportUserMeta = (): IDenebTemplateMetadata => {
 };
 
 const updateExportError = (i18nKey: string) => {
-    store.dispatch(templateExportError(getHostLM().getDisplayName(i18nKey)));
+    store.dispatch(templateExportError(i18nValue(i18nKey)));
 };
 
 const updateImportError = (i18nKey: string, errors: ErrorObject[] = []) => {
     store.dispatch(
         templateImportError({
-            templateImportErrorMessage: getHostLM().getDisplayName(i18nKey),
+            templateImportErrorMessage: i18nValue(i18nKey),
             templateSchemaErrors: errors
         })
     );

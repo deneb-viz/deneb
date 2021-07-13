@@ -6,7 +6,7 @@ import { IStyleSet } from '@fluentui/react/lib/Styling';
 import { state } from '../../store';
 import { updateSelectedDialogProvider } from '../../store/templateReducer';
 import { TTemplateProvider } from '../../api/template';
-import { getHostLM } from '../../api/i18n';
+import { i18nValue } from '../../core/ui/i18n';
 
 const pivotStyles: Partial<IStyleSet<IPivotStyles>> = {
     itemContainer: {
@@ -16,8 +16,7 @@ const pivotStyles: Partial<IStyleSet<IPivotStyles>> = {
 };
 
 const NewVisualDialogPivot = () => {
-    const i18n = getHostLM(),
-        { templateProvider: selectedProvider } = useSelector(state).templates,
+    const { templateProvider: selectedProvider } = useSelector(state).templates,
         dispatch = useDispatch(),
         getTabId = (itemKey: string) => {
             return `new-spec-pivot-${itemKey}`;
@@ -41,15 +40,15 @@ const NewVisualDialogPivot = () => {
                 headersOnly={true}
             >
                 <PivotItem
-                    headerText={i18n.getDisplayName('Provider_VegaLite')}
+                    headerText={i18nValue('Provider_VegaLite')}
                     itemKey='vegaLite'
                 />
                 <PivotItem
-                    headerText={i18n.getDisplayName('Provider_Vega')}
+                    headerText={i18nValue('Provider_Vega')}
                     itemKey='vega'
                 />
                 <PivotItem
-                    headerText={i18n.getDisplayName('Provider_Import')}
+                    headerText={i18nValue('Provider_Import')}
                     itemKey='import'
                 />
             </Pivot>

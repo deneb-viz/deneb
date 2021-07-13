@@ -7,25 +7,22 @@ import { TooltipHost } from '@fluentui/react/lib/Tooltip';
 import { state } from '../../store';
 import { buttonIconClass } from '../../config/styles';
 import { toggleEditorPane } from '../../api/commands';
-import { getHostLM } from '../../api/i18n';
+import { getEditorHeadingIcon } from '../../core/ui/icons';
+import { i18nValue } from '../../core/ui/i18n';
 
 const EditorPaneCollapsed = () => {
-    const { settings } = useSelector(state).visual,
+    const { editorPaneIsExpanded, settings } = useSelector(state).visual,
         { position } = settings.editor,
-        i18n = getHostLM(),
-        togglePane = () => {
-            toggleEditorPane();
-        },
-        tooltip_i18_key = 'Tooltip_Expand_Editor_Pane',
-        iconName = position === 'left' ? 'ChevronRight' : 'ChevronLeft';
+        iconName = getEditorHeadingIcon(position, editorPaneIsExpanded),
+        tooltip_i18_key = 'Tooltip_Expand_Editor_Pane';
 
     return (
         <div id='editorPane' className='collapsed'>
             <TooltipHost
-                content={i18n.getDisplayName(tooltip_i18_key)}
+                content={i18nValue(tooltip_i18_key)}
                 id={tooltip_i18_key}
             >
-                <div onClick={togglePane} role='button'>
+                <div onClick={toggleEditorPane} role='button'>
                     <div role='button' className='editor-expand'>
                         <FontIcon
                             iconName={iconName}
@@ -37,7 +34,7 @@ const EditorPaneCollapsed = () => {
                             className='ms-fontWeight-semibold'
                             variant='mediumPlus'
                         >
-                            {i18n.getDisplayName('Editor_Heading')}
+                            {i18nValue('Editor_Heading')}
                         </Text>
                     </div>
                 </div>

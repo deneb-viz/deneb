@@ -8,16 +8,16 @@ import Debugger from '../Debugger';
 import { state } from '../store';
 import SpecificationError from './status/SpecificationError';
 import FourD3D3D3 from '../components/editor/FourD3D3D3';
-import SplashNospec from './status/SplashNoSpec';
+import SplashNoSpec from './status/SplashNoSpec';
 import { selectionHandlerService } from '../services';
 
-import { locales } from '../api/i18n';
 import {
     getInitialConfig,
     registerCustomExpressions
 } from '../api/specification';
 import { getTooltipHandler } from '../api/tooltip';
-import { hostServices } from '../core/host';
+import { hostServices } from '../core/services';
+import { locales } from '../core/ui/i18n';
 
 const VisualRender = () => {
     Debugger.log('Rendering Component: [VisualRender]...');
@@ -26,13 +26,13 @@ const VisualRender = () => {
             dataset,
             fourd3d3d,
             loader,
-            locale,
             settings,
             spec,
             vegaViewport
         } = useSelector(state).visual,
         { vega } = settings,
         { height, width } = vegaViewport,
+        { locale } =  hostServices,
         data = { dataset: cloneDeep(dataset.values) },
         specification = cloneDeep(spec.spec),
         config = getInitialConfig(),
@@ -106,7 +106,7 @@ const VisualRender = () => {
             }
         }
         default: {
-            return <SplashNospec />;
+            return <SplashNoSpec />;
         }
     }
 };

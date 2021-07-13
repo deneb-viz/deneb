@@ -7,13 +7,12 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { actionButtonStyles } from '../../config/styles';
 import { onTemplateFileSelect } from '../../api/template';
-import { getHostLM } from '../../api/i18n';
+import { i18nValue } from '../../core/ui/i18n';
 
 const importIcon: IIconProps = { iconName: 'OpenFile' };
 
 const ImportTemplateControl: React.FC = () => {
-    const i18n = getHostLM(),
-        inputRef = React.useRef<HTMLInputElement>(null),
+    const inputRef = React.useRef<HTMLInputElement>(null),
         [fileKey, setFileKey] = React.useState(uuidv4()),
         handleActionClick = () => inputRef.current.click(),
         handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,7 +29,7 @@ const ImportTemplateControl: React.FC = () => {
                     iconProps={importIcon}
                     styles={actionButtonStyles}
                 >
-                    {i18n.getDisplayName('Button_Import')}
+                    {i18nValue('Button_Import')}
                 </ActionButton>
                 <input
                     id={inputId}

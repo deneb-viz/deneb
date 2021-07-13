@@ -17,7 +17,7 @@ import DataTypeIcon from '../elements/DataTypeIcon';
 import CappedTextField from '../elements/CappedTextField';
 import { exportFieldConstraints } from '../../config';
 import { detailListStyles } from '../../config/styles';
-import { getHostLM } from '../../api/i18n';
+import { i18nValue } from '../../core/ui/i18n';
 
 const ExportDataFields: React.FC = () => {
     Debugger.log('Rendering Component: [ExportDataFields]...');
@@ -26,7 +26,6 @@ const ExportDataFields: React.FC = () => {
         { dataset } = visual,
         { metadata } = dataset,
         { templateExportMetadata: templateToGenerate } = templates,
-        i18n = getHostLM(),
         columns: IColumn[] = [
             {
                 key: 'type',
@@ -37,15 +36,13 @@ const ExportDataFields: React.FC = () => {
             },
             {
                 key: 'name',
-                name: i18n.getDisplayName('Template_Export_Dataset_Field_Name'),
+                name: i18nValue('Template_Export_Dataset_Field_Name'),
                 fieldName: 'name',
                 minWidth: 250
             },
             {
                 key: 'description',
-                name: i18n.getDisplayName(
-                    'Template_Export_Dataset_Field_Description'
-                ),
+                name: i18nValue('Template_Export_Dataset_Field_Description'),
                 fieldName: 'description',
                 minWidth: 450
             }
@@ -82,7 +79,7 @@ const ExportDataFields: React.FC = () => {
                                 exportFieldConstraints.dataset.name.maxLength
                             }
                             inline
-                            description={`${i18n.getDisplayName(
+                            description={`${i18nValue(
                                 `Template_Export_Kind_${item.kind}`
                             )} ${item.namePlaceholder}`}
                         />

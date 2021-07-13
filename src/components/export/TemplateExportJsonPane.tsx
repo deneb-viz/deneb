@@ -16,7 +16,7 @@ import {
 } from '../../config/styles';
 import { iconButtonStyles } from '../../config/styles';
 import { getExportTemplate } from '../../api/template';
-import { getHostLM } from '../../api/i18n';
+import { i18nValue } from '../../core/ui/i18n';
 
 const textStyles: Partial<ITextFieldStyles> = {
     root: {
@@ -38,8 +38,7 @@ const textStyles: Partial<ITextFieldStyles> = {
 const copyIcon: IIconProps = { iconName: 'Copy' };
 
 const TemplateExportJsonPane: React.FC = () => {
-    const i18n = getHostLM(),
-        [copySuccess, setCopySuccess] = React.useState(false),
+    const [copySuccess, setCopySuccess] = React.useState(false),
         textAreaRef = React.useRef(null),
         copyRef = React.useRef(null),
         handleCopy = () => {
@@ -64,9 +63,7 @@ const TemplateExportJsonPane: React.FC = () => {
                             variant='small'
                             styles={exportPivotAssistiveTextStyles}
                         >
-                            {i18n.getDisplayName(
-                                'Template_Export_Json_Assistive'
-                            )}
+                            {i18nValue('Template_Export_Json_Assistive')}
                         </Text>
                     </Stack.Item>
                     <Stack.Item>
@@ -75,9 +72,7 @@ const TemplateExportJsonPane: React.FC = () => {
                                 variant='small'
                                 styles={exportPivotAssistiveToastTextStyles}
                             >
-                                {i18n.getDisplayName(
-                                    'Template_Export_Json_Copied'
-                                )}
+                                {i18nValue('Template_Export_Json_Copied')}
                             </Text>
                         )}
                     </Stack.Item>

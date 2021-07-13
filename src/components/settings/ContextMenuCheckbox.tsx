@@ -5,12 +5,11 @@ import { Checkbox } from '@fluentui/react/lib/Checkbox';
 import { state } from '../../store';
 import { updateBooleanProperty } from '../../api/commands';
 import { isContextMenuEnabled } from '../../api/selection';
-import { getHostLM } from '../../api/i18n';
+import { i18nValue } from '../../core/ui/i18n';
 
 const ContextMenuCheckbox = () => {
     const { settings } = useSelector(state).visual,
         { vega } = settings,
-        i18n = getHostLM(),
         handleContextMenu = React.useCallback(
             (ev: React.FormEvent<HTMLElement>, checked: boolean): void => {
                 const value = !!checked;
@@ -21,7 +20,7 @@ const ContextMenuCheckbox = () => {
     return (
         isContextMenuEnabled && (
             <Checkbox
-                label={i18n.getDisplayName('Objects_Vega_EnableContextMenu')}
+                label={i18nValue('Objects_Vega_EnableContextMenu')}
                 checked={vega.enableContextMenu}
                 onChange={handleContextMenu}
             />

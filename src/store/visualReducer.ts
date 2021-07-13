@@ -5,11 +5,9 @@ import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import Debugger from '../Debugger';
 import { visualReducer as initialState } from '../config/visualReducer';
 import { getEmptyDataset, IVisualDataset } from '../api/dataset';
 import { IDataProcessingPayload, IDataViewFlags } from '../api/dataView';
-import { isDeveloperModeEnabled } from '../api/developer';
 import { TEditorRole } from '../api/editor';
 import {
     calculateVegaViewport,
@@ -41,7 +39,6 @@ const visualSlice = createSlice({
     reducers: {
         visualConstructor: (state, action: PayloadAction<IVisualHost>) => {
             const pl = action.payload;
-            state.locale = pl.locale;
             state.themeColors = pl.colorPalette['colors']?.map(
                 (c: any) => c.value
             );
@@ -62,9 +59,6 @@ const visualSlice = createSlice({
             state.dataViewObjects =
                 pl.options.dataViews[0]?.metadata.objects || {};
 
-            if (isDeveloperModeEnabled) {
-                state.locale = pl.settings?.developer?.locale || state.locale;
-            }
             // If editing report and focus mode, then we're in the editor
             const visualMode = resolveVisualMode(
                 state.dataViewFlags,

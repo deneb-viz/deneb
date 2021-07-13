@@ -45,7 +45,7 @@ import {
 import { getState, store } from '../store';
 import { updateExportState } from '../template';
 import { TModalDialogType } from '../ui';
-import { hostServices } from '../../core/host';
+import { hostServices } from '../../core/services';
 
 const hotkeyOptions: Options = {
     enableOnTags: ['INPUT', 'SELECT', 'TEXTAREA']

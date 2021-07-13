@@ -17,11 +17,10 @@ import TemplateExportDatasetPane from './TemplateExportDatasetPane';
 import TemplateExportInformationPane from './TemplateExportInformationPane';
 import TemplateExportJsonPane from './TemplateExportJsonPane';
 import { validateSpecificationForExport } from '../../api/template';
-import { getHostLM } from '../../api/i18n';
+import { i18nValue } from '../../core/ui/i18n';
 
 export const ExportVisualDialogBody = () => {
     const root = useSelector(state),
-        i18n = getHostLM(),
         {
             selectedExportOperation,
             templateExportState,
@@ -70,7 +69,7 @@ export const ExportVisualDialogBody = () => {
         >
             <Stack.Item shrink styles={modalDialogStackItemStyles}>
                 <Text variant='small'>
-                    {i18n.getDisplayName('Export_Spec_Assistive')}
+                    {i18nValue('Export_Spec_Assistive')}
                 </Text>
             </Stack.Item>
             <Stack.Item shrink styles={modalDialogStackItemStyles}>

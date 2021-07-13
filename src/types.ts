@@ -73,7 +73,6 @@ export interface IVisualSliceState {
     isExportDialogVisible: boolean;
     isDirty: boolean;
     loader: Loader;
-    locale: string;
     resizablePaneDefaultWidth: number;
     resizablePaneExpandedWidth: number;
     resizablePaneWidth: number;

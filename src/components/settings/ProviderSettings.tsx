@@ -10,12 +10,11 @@ import { updateProvider } from '../../api/commands';
 import { TSpecProvider } from '../../api/specification';
 import { choiceGroupStyles, choiceItemStyles } from '../../config/styles';
 import { state } from '../../store';
-import { getHostLM } from '../../api/i18n';
+import { i18nValue } from '../../core/ui/i18n';
 
 const ProviderSettings = () => {
     const { settings } = useSelector(state).visual,
         { vega } = settings,
-        i18n = getHostLM(),
         handleProvider = React.useCallback(
             (
                 ev: React.SyntheticEvent<HTMLElement>,
@@ -28,12 +27,12 @@ const ProviderSettings = () => {
         providerOptions: IChoiceGroupOption[] = [
             {
                 key: 'vegaLite',
-                text: i18n.getDisplayName('Provider_VegaLite'),
+                text: i18nValue('Provider_VegaLite'),
                 styles: choiceItemStyles
             },
             {
                 key: 'vega',
-                text: i18n.getDisplayName('Provider_Vega'),
+                text: i18nValue('Provider_Vega'),
                 styles: choiceItemStyles
             }
         ];
@@ -44,10 +43,10 @@ const ProviderSettings = () => {
                 styles={choiceGroupStyles}
                 onChange={handleProvider}
                 selectedKey={vega.provider}
-                label={i18n.getDisplayName('Objects_Vega_Provider')}
+                label={i18nValue('Objects_Vega_Provider')}
             />
             <Text variant='smallPlus'>
-                {i18n.getDisplayName('Assistive_Text_Provider')}
+                {i18nValue('Assistive_Text_Provider')}
             </Text>
         </>
     );

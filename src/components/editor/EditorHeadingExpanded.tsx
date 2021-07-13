@@ -7,24 +7,21 @@ import { TooltipHost } from '@fluentui/react/lib/Tooltip';
 import { state } from '../../store';
 import { buttonIconClass } from '../../config/styles';
 import { toggleEditorPane } from '../../api/commands';
-import { getHostLM } from '../../api/i18n';
+import { getEditorHeadingIcon } from '../../core/ui/icons';
+import { i18nValue } from '../../core/ui/i18n';
 
 const EditorHeadingExpanded = () => {
-    const { settings } = useSelector(state).visual,
+    const { editorPaneIsExpanded, settings } = useSelector(state).visual,
         { position } = settings.editor,
-        i18n = getHostLM(),
-        togglePane = () => {
-            toggleEditorPane();
-        },
         tooltip_i18_key = 'Tooltip_Collapse_Editor_Pane',
-        iconName = position === 'left' ? 'ChevronLeft' : 'ChevronRight';
+        iconName = getEditorHeadingIcon(position, editorPaneIsExpanded);
 
     return (
         <>
             <div
                 className='editor-heading'
                 aria-describedby={tooltip_i18_key}
-                onClick={togglePane}
+                onClick={toggleEditorPane}
                 role='button'
             >
                 <Text
@@ -32,17 +29,17 @@ const EditorHeadingExpanded = () => {
                     variant='mediumPlus'
                     className='ms-fontWeight-semibold'
                 >
-                    {i18n.getDisplayName('Editor_Heading')}
+                    {i18nValue('Editor_Heading')}
                 </Text>
             </div>
             <TooltipHost
-                content={i18n.getDisplayName(tooltip_i18_key)}
+                content={i18nValue(tooltip_i18_key)}
                 id={tooltip_i18_key}
             >
                 <div
                     role='button'
                     className='editor-collapse'
-                    onClick={togglePane}
+                    onClick={toggleEditorPane}
                 >
                     <FontIcon iconName={iconName} className={buttonIconClass} />
                 </div>

@@ -46,7 +46,7 @@ import {
 } from './api/dataView';
 import { initializeIcons, theme } from './api/fluent';
 import { parseActiveSpec } from './api/specification';
-import { hostServices } from './core/host';
+import { hostServices } from './core/services';
 
 const owner = 'Visual';
 
@@ -126,6 +126,7 @@ export class Deneb implements IVisual {
     private resolveUpdateOptions(options: VisualUpdateOptions) {
         Debugger.log('Resolving visual update options for API operations...');
         const settings = this.settings;
+        hostServices.resolveLocaleFromSettings(settings.developer.locale);
 
         // Provide intial update options to store
         store.dispatch(

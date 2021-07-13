@@ -8,7 +8,7 @@ import { state } from '../../store';
 import ImportTemplateStatus from './ImportTemplateStatus';
 import SpecDataPlaceHolderDropdown from './SpecDataPlaceHolderDropdown';
 import { IDenebTemplateMetadata } from '../../schema/template-v1';
-import { getHostLM } from '../../api/i18n';
+import { i18nValue } from '../../core/ui/i18n';
 
 const ImportTemplateHandler: React.FC = () => {
     Debugger.log('Rendering Component: [ImportTemplateHandler]...');
@@ -16,7 +16,6 @@ const ImportTemplateHandler: React.FC = () => {
         { templates } = root,
         { templateProvider, templateImportState, templateToApply } = templates,
         denebTemplate = templateToApply?.usermeta as IDenebTemplateMetadata,
-        i18n = getHostLM(),
         enumeratePlaceholders = () => {
             Debugger.log('Enumerating template placeholders...');
             switch (true) {
@@ -25,7 +24,7 @@ const ImportTemplateHandler: React.FC = () => {
                         <>
                             <p>
                                 <Text variant='small'>
-                                    {i18n.getDisplayName(
+                                    {i18nValue(
                                         'Data_Placeholder_Assistive_No_PH'
                                     )}
                                 </Text>
@@ -38,9 +37,7 @@ const ImportTemplateHandler: React.FC = () => {
                         <>
                             <p>
                                 <Text variant='small'>
-                                    {i18n.getDisplayName(
-                                        'Data_Placeholder_Assistive_PH'
-                                    )}
+                                    {i18nValue('Data_Placeholder_Assistive_PH')}
                                 </Text>
                             </p>
                             {denebTemplate?.dataset?.map((ph) => (
@@ -71,7 +68,7 @@ const ImportTemplateHandler: React.FC = () => {
                     </p>
                     <p>
                         {denebTemplate?.information?.description ||
-                            i18n.getDisplayName('Template_No_Description')}
+                            i18nValue('Template_No_Description')}
                     </p>
                     {enumeratePlaceholders()}
                 </div>

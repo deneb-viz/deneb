@@ -1,13 +1,13 @@
-import * as React from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import SplitPane from 'react-split-pane';
-import { Options, useHotkeys } from 'react-hotkeys-hook';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { updateEditorPaneSize } from '../../store/visualReducer';
 import DataProcessingRouter from '../DataProcessingRouter';
-import EditorPaneContent from './EditorPaneContent';
+import EditorPane from './EditorPane';
 import NewVisualDialog from '../create/NewVisualDialog';
 import ExportVisualDialog from '../export/ExportVisualDialog';
 import { getVisualHotkeys } from '../../api/commands';
@@ -19,7 +19,6 @@ const EditorInterface: React.FC = () => {
             resizablePaneDefaultWidth,
             resizablePaneWidth,
             editorPaneIsExpanded,
-            isNewDialogVisible,
             settings
         } = useSelector(state).visual,
         { editor } = settings,
@@ -43,13 +42,7 @@ const EditorInterface: React.FC = () => {
                 handleResize(resizablePaneDefaultWidth);
             }
         },
-        editorPane = (
-            <section>
-                <EditorPaneContent
-                    editorPaneIsExpanded={editorPaneIsExpanded}
-                />
-            </section>
-        ),
+        editorPane = <EditorPane isExpanded={editorPaneIsExpanded} />,
         editorPreview = (
             <div id='editorPreview'>
                 <DataProcessingRouter />

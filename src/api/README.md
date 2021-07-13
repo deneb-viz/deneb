@@ -1,6 +1,6 @@
 # Deneb API Reference
 
-Internal API methods for Deneb.
+Internal API methods for Deneb. This is an intermediate stage of development, where legacy code is being broken apart to make it more modular - it's very likely that it will be dispersed further as we work towards 1.0.
 
 -   [commands](./commands/README.md)
 -   [config](./config/README.md)

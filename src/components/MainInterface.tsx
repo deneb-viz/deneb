@@ -7,7 +7,7 @@ import DataProcessingRouter from './DataProcessingRouter';
 import SplashInitial from './status/SplashInitial';
 import SplashReadOnly from './status/SplashReadOnly';
 import SplashReadWrite from './status/SplashReadWrite';
-import SplashNospec from './status/SplashNoSpec';
+import SplashNoSpec from './status/SplashNoSpec';
 
 const MainInterface = () => {
     const { visualMode } = useSelector(state).visual;
@@ -19,7 +19,7 @@ const MainInterface = () => {
         case 'SplashReadWrite':
             return <SplashReadWrite />;
         case 'DataNoSpec':
-            return <SplashNospec />;
+            return <SplashNoSpec />;
         case 'Editor':
             return <EditorInterface />;
         case 'Standard':

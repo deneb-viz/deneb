@@ -5,11 +5,10 @@ import { Pivot, PivotItem } from '@fluentui/react/lib/Pivot';
 import { state } from '../../store';
 import { openEditorPivotItem } from '../../api/commands';
 import { TEditorRole } from '../../api/editor';
-import { getHostLM } from '../../api/i18n';
+import { i18nValue } from '../../core/ui/i18n';
 
 const EditorPanePivot = () => {
     const { selectedOperation } = useSelector(state).visual,
-        i18n = getHostLM(),
         getTabId = (itemKey: string) => {
             return `editor-pivot-${itemKey}`;
         },
@@ -29,17 +28,17 @@ const EditorPanePivot = () => {
                 overflowBehavior='menu'
             >
                 <PivotItem
-                    headerText={i18n.getDisplayName('Editor_Role_Spec')}
+                    headerText={i18nValue('Editor_Role_Spec')}
                     itemKey='spec'
                     itemIcon='BarChartVertical'
                 />
                 <PivotItem
-                    headerText={i18n.getDisplayName('Editor_Role_Config')}
+                    headerText={i18nValue('Editor_Role_Config')}
                     itemKey='config'
                     itemIcon='EditStyle'
                 />
                 <PivotItem
-                    headerText={i18n.getDisplayName('Editor_Role_Settings')}
+                    headerText={i18nValue('Editor_Role_Settings')}
                     itemKey='settings'
                     itemIcon='Settings'
                 />

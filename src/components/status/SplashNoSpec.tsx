@@ -11,29 +11,24 @@ import StatusLayoutStack from './StatusLayoutStack';
 import StatusLayoutStackItem from './StatusLayoutStackItem';
 import { BodyHeading, Heading, Paragraph, SubHeading } from '../elements/Text';
 import UsefulResources from './UsefulResources';
-import { getHostLM } from '../../api/i18n';
+import { i18nValue } from '../../core/ui/i18n';
 
 const SplashNospec = () => {
     const root = useSelector(state),
         { editMode } = root.visual,
-        i18n = getHostLM(),
         resolveDataInstruction = () => {
             switch (true) {
                 case editMode === EditMode.Advanced: {
                     return (
                         <Paragraph>
-                            {i18n.getDisplayName(
-                                'New_Visual_Placeholder_Editor'
-                            )}
+                            {i18nValue('New_Visual_Placeholder_Editor')}
                         </Paragraph>
                     );
                 }
                 default: {
                     return (
                         <Paragraph>
-                            {i18n.getDisplayName(
-                                'New_Visual_Placeholder_Open_Edit'
-                            )}
+                            {i18nValue('New_Visual_Placeholder_Open_Edit')}
                         </Paragraph>
                     );
                 }
@@ -44,15 +39,15 @@ const SplashNospec = () => {
             <StatusLayoutStack>
                 <StatusHeaderSection icon='edit'>
                     <Heading>
-                        {i18n.getDisplayName('New_Visual_Placeholder_Title')}
+                        {i18nValue('New_Visual_Placeholder_Title')}
                     </Heading>
                     <SubHeading>
-                        {i18n.getDisplayName('New_Visual_Placeholder_Subtitle')}
+                        {i18nValue('New_Visual_Placeholder_Subtitle')}
                     </SubHeading>
                 </StatusHeaderSection>
                 <StatusLayoutStackItem verticalFill>
                     <BodyHeading>
-                        {i18n.getDisplayName('Landing_Data_Heading')}
+                        {i18nValue('Landing_Data_Heading')}
                     </BodyHeading>
                     <div>{resolveDataInstruction()}</div>
                     <UsefulResources />

@@ -34,9 +34,9 @@ import {
 } from '../commands';
 import { getConfig, getVisualMetadata, providerVersions } from '../config';
 import { IDataViewFlags } from '../dataView';
-import { getHostLM } from '../i18n';
 import { getState } from '../store';
 import { ICompiledSpec } from '../specification';
+import { i18nValue } from '../../core/ui/i18n';
 
 const calculateVegaViewport = (
     viewport: IViewport,
@@ -130,13 +130,10 @@ const getResizablePaneSize = (
 };
 
 const getVersionInfo = () => {
-    const i18n = getHostLM(),
-        visualMetadata = getVisualMetadata();
-    return `${visualMetadata.version} | ${i18n.getDisplayName(
-        'Provider_Vega'
-    )}: ${providerVersions.vega} | ${i18n.getDisplayName(
-        'Provider_VegaLite'
-    )}: ${providerVersions.vegaLite}`;
+    const visualMetadata = getVisualMetadata();
+    return `${visualMetadata.version} | ${i18nValue('Provider_Vega')}: ${
+        providerVersions.vega
+    } | ${i18nValue('Provider_VegaLite')}: ${providerVersions.vegaLite}`;
 };
 
 const isApplyDialogHidden = () => {
@@ -200,8 +197,8 @@ type TVisualMode =
 
 const getApplyCommandItem = (): ICommandBarItemProps => ({
     key: 'applyChanges',
-    text: getHostLM().getDisplayName('Button_Apply'),
-    ariaLabel: getHostLM().getDisplayName('Button_Apply'),
+    text: i18nValue('Button_Apply'),
+    ariaLabel: i18nValue('Button_Apply'),
     iconOnly: true,
     iconProps: {
         iconName: 'Play'
@@ -231,8 +228,8 @@ const getAutoApplyCommandItem = (
 
 const getRepairFormatCommandItem = (): ICommandBarItemProps => ({
     key: 'formatJson',
-    text: getHostLM().getDisplayName('Button_Format_Json'),
-    ariaLabel: getHostLM().getDisplayName('Button_Format_Json'),
+    text: i18nValue('Button_Format_Json'),
+    ariaLabel: i18nValue('Button_Format_Json'),
     iconOnly: true,
     iconProps: { iconName: 'Repair' },
     buttonStyles: commandBarButtonStyles,
@@ -241,9 +238,9 @@ const getRepairFormatCommandItem = (): ICommandBarItemProps => ({
 
 const getNewSpecCommandItem = (): ICommandBarItemProps => ({
     key: 'reset',
-    text: getHostLM().getDisplayName('Button_New'),
+    text: i18nValue('Button_New'),
     iconOnly: true,
-    ariaLabel: getHostLM().getDisplayName('Button_New'),
+    ariaLabel: i18nValue('Button_New'),
     iconProps: { iconName: 'Page' },
     buttonStyles: commandBarButtonStyles,
     onClick: createNewSpec
@@ -253,9 +250,9 @@ const getExportSpecCommandItem = (): ICommandBarItemProps => {
     const { spec } = getState().visual;
     return {
         key: 'export',
-        text: getHostLM().getDisplayName('Button_Export'),
+        text: i18nValue('Button_Export'),
         iconOnly: true,
-        ariaLabel: getHostLM().getDisplayName('Button_Export'),
+        ariaLabel: i18nValue('Button_Export'),
         iconProps: { iconName: 'Share' },
         buttonStyles: commandBarButtonStyles,
         disabled: !(spec?.status === 'valid'),
@@ -265,8 +262,8 @@ const getExportSpecCommandItem = (): ICommandBarItemProps => {
 
 const getHelpCommandItem = (): ICommandBarItemProps => ({
     key: 'help',
-    text: getHostLM().getDisplayName('Button_Help'),
-    ariaLabel: getHostLM().getDisplayName('Button_Reset'),
+    text: i18nValue('Button_Help'),
+    ariaLabel: i18nValue('Button_Reset'),
     iconOnly: true,
     iconProps: { iconName: 'Help' },
     buttonStyles: commandBarButtonStyles,
@@ -275,13 +272,13 @@ const getHelpCommandItem = (): ICommandBarItemProps => ({
 
 const resolveAutoApplyAriaLabel = (enabled: boolean) =>
     enabled
-        ? getHostLM().getDisplayName('Button_Auto_Apply_Off')
-        : getHostLM().getDisplayName('Button_Auto_Apply_On');
+        ? i18nValue('Button_Auto_Apply_Off')
+        : i18nValue('Button_Auto_Apply_On');
 
 const resolveAutoApplyText = (enabled: boolean) =>
     enabled
-        ? getHostLM().getDisplayName('Button_Auto_Apply_Off')
-        : getHostLM().getDisplayName('Button_Auto_Apply_On');
+        ? i18nValue('Button_Auto_Apply_Off')
+        : i18nValue('Button_Auto_Apply_On');
 
 const resolveAutoApplyIcon = (enabled: boolean) =>
     enabled ? 'CircleStopSolid' : 'PlaybackRate1x';

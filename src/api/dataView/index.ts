@@ -38,7 +38,7 @@ import { isFeatureEnabled } from '../features';
 import { getState, store } from '../store';
 import { createSelectionId, getSidString } from '../selection';
 import { resolveVisualMetaToDatasetField } from '../template';
-import { hostServices } from '../../core/host';
+import { hostServices } from '../../core/services';
 
 const isFetchMoreEnabled = isFeatureEnabled('fetchMoreData');
 

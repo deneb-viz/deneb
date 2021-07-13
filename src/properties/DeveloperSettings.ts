@@ -3,9 +3,9 @@ import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnume
 
 import SettingsBase from './SettingsBase';
 import Debugger from '../Debugger';
-import { TLocale } from '../api/i18n';
 import { getConfig } from '../api/config';
 import { isDeveloperModeEnabled } from '../api/developer';
+import { TLocale } from '../core/ui/i18n';
 
 /**
  * Manages data limit override preferences for the visual.

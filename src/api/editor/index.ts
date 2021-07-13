@@ -24,7 +24,6 @@ import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
 import { updateDirtyFlag } from '../../store/visualReducer';
 import { getConfig } from '../config';
 import { ITableColumnMetadata } from '../dataset';
-import { getHostLM } from '../i18n';
 import {
     getBaseValidator,
     hasLiveSpecChanged,
@@ -32,6 +31,7 @@ import {
 } from '../specification';
 import { getState, store } from '../store';
 import { isDialogOpen } from '../ui';
+import { i18nValue } from '../../core/ui/i18n';
 
 // TODO: These are global instances. There is still an opportunity to potentially manage them better.
 const specEditorService: IVisualEditor = new VisualEditor('spec');
@@ -134,13 +134,12 @@ const handleTextEntry = () => {
 };
 
 const resolveCompleterMeta = (field: ITableColumnMetadata) => {
-    const i18n = getHostLM();
     switch (true) {
         case field.isMeasure: {
-            return i18n.getDisplayName('Completer_Cap_Measure');
+            return i18nValue('Completer_Cap_Measure');
         }
         default: {
-            return i18n.getDisplayName('Completer_Cap_Column');
+            return i18nValue('Completer_Cap_Column');
         }
     }
 };

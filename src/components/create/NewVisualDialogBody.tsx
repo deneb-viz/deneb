@@ -16,11 +16,10 @@ import NewVisualDialogPivot from './NewVisualDialogPivot';
 import TemplateManagementPane from './TemplateManagementPane';
 import { createFromTemplate } from '../../api/specification';
 import { fluent } from '../../api';
-import { getHostLM } from '../../api/i18n';
+import { i18nValue } from '../../core/ui/i18n';
 
 export const NewVisualDialogBody = () => {
     const root = useSelector(state),
-        i18n = getHostLM(),
         {
             allImportCriteriaApplied,
             specProvider,
@@ -37,9 +36,7 @@ export const NewVisualDialogBody = () => {
             tokens={modalDialogInnerStackTokens}
         >
             <Stack.Item shrink styles={modalDialogStackItemStyles}>
-                <Text variant='small'>
-                    {i18n.getDisplayName('New_Spec_Assistive')}
-                </Text>
+                <Text variant='small'>{i18nValue('New_Spec_Assistive')}</Text>
             </Stack.Item>
             <Stack.Item shrink styles={modalDialogStackItemStyles}>
                 <div className='editor-pane-pivot'>
@@ -55,7 +52,7 @@ export const NewVisualDialogBody = () => {
                 <PrimaryButton
                     styles={fluent.buttonStyles}
                     onClick={handleCreate}
-                    text={i18n.getDisplayName('Button_Create')}
+                    text={i18nValue('Button_Create')}
                     disabled={createDisabled}
                 />
             </Stack.Item>

@@ -10,12 +10,11 @@ import { choiceGroupStyles, choiceItemStyles } from '../../config/styles';
 import { state } from '../../store';
 import { updateRenderMode } from '../../api/commands';
 import { TSpecRenderMode } from '../../api/specification';
-import { getHostLM } from '../../api/i18n';
+import { i18nValue } from '../../core/ui/i18n';
 
 const RenderModeSettings = () => {
     const { settings } = useSelector(state).visual,
         { vega } = settings,
-        i18n = getHostLM(),
         handleRenderMode = React.useCallback(
             (
                 ev: React.SyntheticEvent<HTMLElement>,
@@ -28,12 +27,12 @@ const RenderModeSettings = () => {
         rendererOptions: IChoiceGroupOption[] = [
             {
                 key: 'canvas',
-                text: i18n.getDisplayName('Enum_Grammar_RenderMode_Canvas'),
+                text: i18nValue('Enum_Grammar_RenderMode_Canvas'),
                 styles: choiceItemStyles
             },
             {
                 key: 'svg',
-                text: i18n.getDisplayName('Enum_Grammar_RenderMode_Svg'),
+                text: i18nValue('Enum_Grammar_RenderMode_Svg'),
                 styles: choiceItemStyles
             }
         ];
@@ -44,10 +43,10 @@ const RenderModeSettings = () => {
                 styles={choiceGroupStyles}
                 onChange={handleRenderMode}
                 selectedKey={vega.renderMode}
-                label={i18n.getDisplayName('Objects_Vega_RenderMode')}
+                label={i18nValue('Objects_Vega_RenderMode')}
             />
             <Text variant='smallPlus'>
-                {i18n.getDisplayName('Assistive_Text_RenderMode')}
+                {i18nValue('Assistive_Text_RenderMode')}
             </Text>
         </>
     );

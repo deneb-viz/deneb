@@ -16,9 +16,9 @@ import {
     registerIcons
 } from '@fluentui/react/lib/Styling';
 import { IPartialTheme } from '@fluentui/react/lib/Theme';
+import { i18nValue } from '../../core/ui/i18n';
 
 import { getConfig } from '../config';
-import { getHostLM } from '../i18n';
 
 const theme = <IPartialTheme>getConfig()?.fluentUiTheme || {};
 
@@ -90,11 +90,10 @@ const getDialogContentProps = (
     titleKey: string,
     subTextKey: string
 ): IDialogContentProps => {
-    const lm = getHostLM();
     return {
         type: DialogType.normal,
-        title: lm.getDisplayName(titleKey),
-        subText: lm.getDisplayName(subTextKey),
+        title: i18nValue(titleKey),
+        subText: i18nValue(subTextKey),
         showCloseButton: false
     };
 };

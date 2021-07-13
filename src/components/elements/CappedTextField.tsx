@@ -13,7 +13,7 @@ import { updateExportTemplatePropertyBySelector } from '../../store/templateRedu
 import { getConfig } from '../../api/config';
 import FieldInfoIcon from './FieldInfoIcon';
 import { IRenderFunction } from '@fluentui/react/lib/Utilities';
-import { getHostLM } from '../../api/i18n';
+import { i18nValue } from '../../core/ui/i18n';
 
 const stackTokens: IStackTokens = {
     childrenGap: 4
@@ -34,7 +34,6 @@ const CappedTextField: React.FC<ICappedTextFieldProps> = (props) => {
     Debugger.log('Rendering Component: [CappedTextField]...');
     const root = useSelector(state),
         dispatch = useDispatch(),
-        i18n = getHostLM(),
         { templateExportMetadata: templateToGenerate } = root.templates,
         [textFieldValue, setTextFieldValue] = React.useState(
             get(templateToGenerate, props.id, '')
@@ -67,7 +66,7 @@ const CappedTextField: React.FC<ICappedTextFieldProps> = (props) => {
             if (!props.inline) {
                 const description =
                     (props.i18nAssistiveText &&
-                        i18n.getDisplayName(props.i18nAssistiveText)) ||
+                        i18nValue(props.i18nAssistiveText)) ||
                     '';
                 return (
                     <Stack
@@ -86,10 +85,10 @@ const CappedTextField: React.FC<ICappedTextFieldProps> = (props) => {
             id={props.id}
             key={props.id}
             value={textFieldValue}
-            label={`${i18n.getDisplayName(props.i18nLabel)} (${
+            label={`${i18nValue(props.i18nLabel)} (${
                 textFieldValue?.length || 0
             }/${props.maxLength})`}
-            placeholder={i18n.getDisplayName(props.i18nPlaceholder)}
+            placeholder={i18nValue(props.i18nPlaceholder)}
             onChange={onChangeField}
             onRenderLabel={onRenderLabel}
             multiline={props.multiline}

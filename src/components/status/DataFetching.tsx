@@ -8,21 +8,20 @@ import { BodyHeading, Heading } from '../elements/Text';
 import StatusHeaderSection from './StatusHeaderSection';
 import StatusLayoutStack from './StatusLayoutStack';
 import StatusLayoutStackItem from './StatusLayoutStackItem';
-import { getHostLM } from '../../api/i18n';
 import { getState } from '../../api/store';
+import { i18nValue } from '../../core/ui/i18n';
 
 const DataFetching = () => {
     const root = useSelector(state),
-        { dataRowsLoaded } = root.visual,
-        i18n = getHostLM();
+        { dataRowsLoaded } = root.visual;
 
     return (
         <>
             <StatusLayoutStack>
                 <StatusHeaderSection icon='cog'>
-                    <Heading>{i18n.getDisplayName('Fetching_Data')}</Heading>
+                    <Heading>{i18nValue('Fetching_Data')}</Heading>
                     <Progress
-                        description={`${dataRowsLoaded} ${i18n.getDisplayName(
+                        description={`${dataRowsLoaded} ${i18nValue(
                             'Fetching_Data_Progress_Suffix'
                         )}`}
                     />
@@ -36,8 +35,7 @@ const DataFetching = () => {
 };
 
 const customVisualNotes = () => {
-    const { dataLimit } = getState().visual.settings,
-        i18n = getHostLM();
+    const { dataLimit } = getState().visual.settings;
     return (
         (dataLimit.enabled &&
             dataLimit.override &&
@@ -45,57 +43,41 @@ const customVisualNotes = () => {
                 <>
                     <div>
                         <BodyHeading>
-                            {i18n.getDisplayName(
-                                'Fetching_Data_Developer_Notes'
-                            )}
+                            {i18nValue('Fetching_Data_Developer_Notes')}
                         </BodyHeading>
                     </div>
                     <div className='ms-Grid-row ms-fontSize-12'>
                         <div className='ms-Grid-col ms-sm12'>
                             <p>
-                                {i18n.getDisplayName(
-                                    'Fetching_Data_Assitive_01_Prefix'
-                                )}
-                                <b>
-                                    {i18n.getDisplayName(
-                                        'Objects_DataLimit_Override'
-                                    )}
-                                </b>
-                                {i18n.getDisplayName(
-                                    'Fetching_Data_Assitive_01_Suffix'
-                                )}
+                                {i18nValue('Fetching_Data_Assitive_01_Prefix')}
+                                <b>{i18nValue('Objects_DataLimit_Override')}</b>
+                                {i18nValue('Fetching_Data_Assitive_01_Suffix')}
                             </p>
                             <p>
                                 <ul>
                                     <li>
-                                        {i18n.getDisplayName(
+                                        {i18nValue(
                                             'Fetching_Data_Assitive_02_Point_01'
                                         )}
                                     </li>
                                     <li>
-                                        {i18n.getDisplayName(
+                                        {i18nValue(
                                             'Fetching_Data_Assitive_02_Point_02'
                                         )}
                                     </li>
                                 </ul>
                             </p>
                             <p>
-                                {i18n.getDisplayName(
-                                    'Fetching_Data_Assitive_02_Suffix'
-                                )}
+                                {i18nValue('Fetching_Data_Assitive_02_Suffix')}
                             </p>
                             <p>
-                                {i18n.getDisplayName(
-                                    'Fetching_Data_Assitive_03_Prefix'
-                                )}
+                                {i18nValue('Fetching_Data_Assitive_03_Prefix')}
                                 <b>
-                                    {i18n.getDisplayName(
+                                    {i18nValue(
                                         'Objects_DataLimit_ShowCustomVisualNotes'
                                     )}
                                 </b>
-                                {i18n.getDisplayName(
-                                    'Fetching_Data_Assitive_03_Suffix'
-                                )}
+                                {i18nValue('Fetching_Data_Assitive_03_Suffix')}
                             </p>
                         </div>
                     </div>

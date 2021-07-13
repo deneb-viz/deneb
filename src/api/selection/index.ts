@@ -26,7 +26,7 @@ import {
     IVisualValueRow
 } from '../dataset';
 import { isFeatureEnabled } from '../features';
-import { hostServices } from '../../core/host';
+import { hostServices } from '../../core/services';
 
 const createSelectionId = (
     metadata: IVisualValueMetadata,
