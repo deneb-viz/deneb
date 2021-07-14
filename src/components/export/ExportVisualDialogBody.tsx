@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
 
-import { Stack, Text } from 'office-ui-fabric-react';
+import { Text } from '@fluentui/react/lib/Text';
+import { Stack } from '@fluentui/react/lib/Stack';
 
-import Debugger from '../../Debugger';
 import {
     modalDialogStackStyles,
     modalDialogStackItemStyles,
@@ -16,12 +16,11 @@ import ExportVisualDialogPivot from './ExportVisualDialogPivot';
 import TemplateExportDatasetPane from './TemplateExportDatasetPane';
 import TemplateExportInformationPane from './TemplateExportInformationPane';
 import TemplateExportJsonPane from './TemplateExportJsonPane';
-import { templateService } from '../../services';
+import { validateSpecificationForExport } from '../../api/template';
+import { i18nValue } from '../../core/ui/i18n';
 
 export const ExportVisualDialogBody = () => {
-    Debugger.log('Rendering Component: [ExportVisualDialogBody]...');
     const root = useSelector(state),
-        { i18n } = root.visual,
         {
             selectedExportOperation,
             templateExportState,
@@ -39,7 +38,7 @@ export const ExportVisualDialogBody = () => {
         resolveExportBodyContent = () => {
             switch (templateExportState) {
                 case 'None': {
-                    templateService.validateSpecificationForExport();
+                    validateSpecificationForExport();
                     return '';
                 }
                 case 'Validating':
@@ -70,7 +69,7 @@ export const ExportVisualDialogBody = () => {
         >
             <Stack.Item shrink styles={modalDialogStackItemStyles}>
                 <Text variant='small'>
-                    {i18n.getDisplayName('Export_Spec_Assistive')}
+                    {i18nValue('Export_Spec_Assistive')}
                 </Text>
             </Stack.Item>
             <Stack.Item shrink styles={modalDialogStackItemStyles}>

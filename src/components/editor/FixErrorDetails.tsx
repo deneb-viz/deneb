@@ -1,14 +1,13 @@
 import * as React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { MessageBar, MessageBarType } from 'office-ui-fabric-react';
+import { MessageBar, MessageBarType } from '@fluentui/react/lib/MessageBar';
 
-import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { dismissFixError } from '../../store/visualReducer';
+import { i18nValue } from '../../core/ui/i18n';
 
 const FixErrorDetails: React.FC = () => {
-    Debugger.log('Rendering Component: [FixErrorDetails]...');
-    const { fixResult: fixStatus, i18n } = useSelector(state).visual,
+    const { fixResult: fixStatus } = useSelector(state).visual,
         dispatch = useDispatch(),
         handleDismiss = () => {
             dispatch(dismissFixError());
@@ -19,9 +18,7 @@ const FixErrorDetails: React.FC = () => {
             <MessageBar
                 messageBarType={MessageBarType.error}
                 onDismiss={handleDismiss}
-                dismissButtonAriaLabel={i18n.getDisplayName(
-                    'Button_Dismiss_MessageBar'
-                )}
+                dismissButtonAriaLabel={i18nValue('Button_Dismiss_MessageBar')}
             >
                 {fixStatus.error}
             </MessageBar>

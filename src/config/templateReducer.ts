@@ -1,14 +1,9 @@
-import { ITemplateSliceState } from '../types';
-import { TemplateService } from '../services/TemplateService';
+import { ITemplateSliceState } from '../api/store';
 import templates from '../templates';
-
-const templateService = new TemplateService();
 
 const templateReducer: ITemplateSliceState = {
     ...{
-        allImportCriteriaApplied: templateService.getPlaceholderResolutionStatus(
-            templates.vegaLite[0]
-        ),
+        allImportCriteriaApplied: false,
         allExportCriteriaApplied: false,
         templateFile: null,
         templateImportState: 'None',
@@ -18,7 +13,7 @@ const templateReducer: ITemplateSliceState = {
         templateSchemaErrors: [],
         templateFileRawContent: null,
         templateToApply: templates.vegaLite[0],
-        templateExportMetadata: templateService.newExportTemplateMetadata(),
+        templateExportMetadata: null,
         selectedTemplateIndex: 0,
         selectedExportOperation: 'information',
         specProvider: 'vegaLite',

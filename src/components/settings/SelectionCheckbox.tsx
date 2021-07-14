@@ -1,35 +1,32 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
-import { Checkbox } from 'office-ui-fabric-react';
+import { Checkbox } from '@fluentui/react/lib/Checkbox';
 
-import Debugger from '../../Debugger';
-import { visualFeatures } from '../../config';
 import { state } from '../../store';
-import { commandService } from '../../services';
+import { updateBooleanProperty } from '../../api/commands';
+import { isDataPointEnabled } from '../../api/selection';
+import { hostServices } from '../../core/services';
+import { i18nValue } from '../../core/ui/i18n';
 
 const SelectionCheckbox = () => {
-    Debugger.log('Rendering Component: [SelectionCheckbox]...');
-    const { i18n, selectionManager, settings } = useSelector(state).visual,
+    const { settings } = useSelector(state).visual,
         { vega } = settings,
+        { selectionManager } = hostServices,
         handleSelection = React.useCallback(
             (ev: React.FormEvent<HTMLElement>, checked: boolean): void => {
                 const value = !!checked;
-                Debugger.log(`Updating selection to ${checked}...`);
                 if (!value && selectionManager.hasSelection()) {
-                    Debugger.log(
-                        'Selections are active. We need to clear down...'
-                    );
                     selectionManager.clear();
                 }
-                commandService.updateBooleanProperty('enableSelection', value);
+                updateBooleanProperty('enableSelection', value);
             },
             []
         ),
         disabled = vega.provider !== 'vegaLite';
     return (
-        visualFeatures.selectionDataPoint && (
+        isDataPointEnabled && (
             <Checkbox
-                label={i18n.getDisplayName('Objects_Vega_EnableSelection')}
+                label={i18nValue('Objects_Vega_EnableSelection')}
                 checked={vega.enableSelection}
                 onChange={handleSelection}
                 disabled={disabled}

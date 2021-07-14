@@ -1,30 +1,41 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import * as _ from 'lodash';
+import set from 'lodash/set';
 
-import Debugger from '../Debugger';
-import { templateService } from '../services';
-import {
-    IPlaceholderValuePayload,
-    ITemplateExportFieldUpdatePayload,
-    ITemplateImportErrorPayload,
-    ITemplateImportPayload,
-    TExportOperation,
-    TTemplateExportState,
-    TTemplateImportState,
-    TTemplateProvider
-} from '../types';
 import { templateReducer as initialState } from '../config/templateReducer';
+import templates from '../templates';
 import {
     IDenebTemplateMetadata,
     ITemplateDatasetField
 } from '../schema/template-v1';
 import { TopLevelSpec } from 'vega-lite';
 import { Spec } from 'vega';
+import {
+    getPlaceholderResolutionStatus,
+    getNewExportTemplateMetadata,
+    ITemplateExportFieldUpdatePayload,
+    ITemplateImportErrorPayload,
+    ITemplateImportPayload,
+    TTemplateExportState,
+    TTemplateImportState,
+    TTemplateProvider,
+    TExportOperation
+} from '../api/template';
+
+interface IPlaceholderValuePayload {
+    key: string;
+    objectName: string;
+}
 
 const templateSlice = createSlice({
     name: 'templates',
     initialState,
     reducers: {
+        initializeImportExport: (state) => {
+            state.allImportCriteriaApplied = getPlaceholderResolutionStatus(
+                templates.vegaLite[0]
+            );
+            state.templateExportMetadata = getNewExportTemplateMetadata();
+        },
         updateSelectedDialogProvider: (
             state,
             action: PayloadAction<TTemplateProvider>
@@ -49,7 +60,7 @@ const templateSlice = createSlice({
                     state.selectedTemplateIndex = templateIdx;
                     state.templateToApply =
                         state[state.templateProvider][templateIdx];
-                    state.allImportCriteriaApplied = templateService.getPlaceholderResolutionStatus(
+                    state.allImportCriteriaApplied = getPlaceholderResolutionStatus(
                         <Spec | TopLevelSpec>state.templateToApply
                     );
                 }
@@ -100,7 +111,7 @@ const templateSlice = createSlice({
             state.selectedTemplateIndex = action.payload;
             state.templateToApply =
                 state[state.templateProvider][action.payload];
-            state.allImportCriteriaApplied = templateService.getPlaceholderResolutionStatus(
+            state.allImportCriteriaApplied = getPlaceholderResolutionStatus(
                 <Spec | TopLevelSpec>state.templateToApply
             );
         },
@@ -115,11 +126,11 @@ const templateSlice = createSlice({
             action: PayloadAction<ITemplateExportFieldUpdatePayload>
         ) => {
             let newState = { ...state.templateExportMetadata };
-            _.set(newState, action.payload.selector, action.payload.value);
+            set(newState, action.payload.selector, action.payload.value);
             state.templateExportMetadata = { ...newState };
         },
         newExportTemplateMetadata: (state, action) => {
-            state.templateExportMetadata = templateService.newExportTemplateMetadata();
+            state.templateExportMetadata = getNewExportTemplateMetadata();
         },
         syncExportTemplateDataset: (
             state,
@@ -146,7 +157,6 @@ const templateSlice = createSlice({
             state,
             action: PayloadAction<IPlaceholderValuePayload>
         ) => {
-            Debugger.log('Updating template placeholder.', action.payload);
             const pl = action.payload,
                 phIdx = (<IDenebTemplateMetadata>(
                     state.templateToApply?.usermeta
@@ -156,14 +166,14 @@ const templateSlice = createSlice({
                     state.templateToApply?.usermeta
                 )).dataset[phIdx].suppliedObjectName = pl.objectName;
             }
-            state.allImportCriteriaApplied = templateService.getPlaceholderResolutionStatus(
+            state.allImportCriteriaApplied = getPlaceholderResolutionStatus(
                 <Spec | TopLevelSpec>state.templateToApply
             );
         }
     }
 });
 
-const templateReducer = templateSlice.reducer;
+const templateReducer = () => templateSlice.reducer;
 
 export const {
     newExportTemplateMetadata,
@@ -177,7 +187,8 @@ export const {
     updateSelectedTemplate,
     updateTemplateExportState,
     updateTemplateImportState,
-    updateExportTemplatePropertyBySelector
+    updateExportTemplatePropertyBySelector,
+    initializeImportExport
 } = templateSlice.actions;
 
 export default templateReducer;

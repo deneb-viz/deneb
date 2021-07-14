@@ -1,134 +1,83 @@
-import powerbi from 'powerbi-visuals-api';
-import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
-
 import * as React from 'react';
-import { Stack, Text, Separator } from 'office-ui-fabric-react';
+import { useSelector } from 'react-redux';
 
-import Debugger from '../../Debugger';
-import {
-    landingVisualNameStyles,
-    landingVerticalStackItemStyles,
-    landingHorizontalSeparatorStyles,
-    landingVerticalInnerStackTokens,
-    landingVerticalOuterStackTokens,
-    landingVerticalStackOuterStyles,
-    landingVerticalStackStyles,
-    landingSectionHeadingStyles
-} from '../../config/styles';
-import { IDataFetchingProps } from '../../types';
-import DataLimitSettings from '../../properties/DataLimitSettings';
+import { state } from '../../store';
+
 import Progress from './Progress';
+import { BodyHeading, Heading } from '../elements/Typography';
+import StatusHeaderSection from './StatusHeaderSection';
+import StatusLayoutStack from './StatusLayoutStack';
+import StatusLayoutStackItem from './StatusLayoutStackItem';
+import { getState } from '../../api/store';
+import { i18nValue } from '../../core/ui/i18n';
 
-const DataFetching = (props: IDataFetchingProps) => {
-    const { i18n, dataRowsLoaded, dataLimit } = props;
-    Debugger.log('Rendering Component: [DataFetching]...');
+const DataFetching = () => {
+    const root = useSelector(state),
+        { dataRowsLoaded } = root.visual;
 
     return (
         <>
-            <Stack
-                styles={landingVerticalStackOuterStyles}
-                tokens={landingVerticalOuterStackTokens}
-            >
-                <Stack
-                    styles={landingVerticalStackStyles}
-                    tokens={landingVerticalInnerStackTokens}
-                >
-                    <Stack.Item shrink styles={landingVerticalStackItemStyles}>
-                        <Stack horizontal>
-                            <Stack.Item grow>
-                                <div>
-                                    <Text styles={landingVisualNameStyles}>
-                                        {i18n.getDisplayName('Fetching_Data')}
-                                    </Text>
-                                </div>
-                                <Progress
-                                    description={`${dataRowsLoaded} ${i18n.getDisplayName(
-                                        'Fetching_Data_Progress_Suffix'
-                                    )}`}
-                                />
-                            </Stack.Item>
-                            <Stack.Item>
-                                <div className='visual-header-image cog' />
-                            </Stack.Item>
-                        </Stack>
-                    </Stack.Item>
-                    <Stack.Item shrink styles={landingVerticalStackItemStyles}>
-                        <Separator styles={landingHorizontalSeparatorStyles} />
-                    </Stack.Item>
-                    <Stack.Item
-                        verticalFill
-                        styles={landingVerticalStackItemStyles}
-                    >
-                        {customVisualNotes(dataLimit, i18n)}
-                    </Stack.Item>
-                </Stack>
-            </Stack>
+            <StatusLayoutStack>
+                <StatusHeaderSection icon='cog'>
+                    <Heading>{i18nValue('Fetching_Data')}</Heading>
+                    <Progress
+                        description={`${dataRowsLoaded} ${i18nValue(
+                            'Fetching_Data_Progress_Suffix'
+                        )}`}
+                    />
+                </StatusHeaderSection>
+                <StatusLayoutStackItem verticalFill>
+                    {customVisualNotes()}
+                </StatusLayoutStackItem>
+            </StatusLayoutStack>
         </>
     );
 };
 
-const customVisualNotes = (
-    dataLimit: DataLimitSettings,
-    i18n: ILocalizationManager
-) => {
+const customVisualNotes = () => {
+    const { dataLimit } = getState().visual.settings;
     return (
         (dataLimit.enabled &&
             dataLimit.override &&
             dataLimit.showCustomVisualNotes && (
                 <>
                     <div>
-                        <Text styles={landingSectionHeadingStyles}>
-                            {i18n.getDisplayName(
-                                'Fetching_Data_Developer_Notes'
-                            )}
-                        </Text>
+                        <BodyHeading>
+                            {i18nValue('Fetching_Data_Developer_Notes')}
+                        </BodyHeading>
                     </div>
                     <div className='ms-Grid-row ms-fontSize-12'>
                         <div className='ms-Grid-col ms-sm12'>
                             <p>
-                                {i18n.getDisplayName(
-                                    'Fetching_Data_Assitive_01_Prefix'
-                                )}
-                                <b>
-                                    {i18n.getDisplayName(
-                                        'Objects_DataLimit_Override'
-                                    )}
-                                </b>
-                                {i18n.getDisplayName(
-                                    'Fetching_Data_Assitive_01_Suffix'
-                                )}
+                                {i18nValue('Fetching_Data_Assitive_01_Prefix')}
+                                <b>{i18nValue('Objects_DataLimit_Override')}</b>
+                                {i18nValue('Fetching_Data_Assitive_01_Suffix')}
                             </p>
                             <p>
                                 <ul>
                                     <li>
-                                        {i18n.getDisplayName(
+                                        {i18nValue(
                                             'Fetching_Data_Assitive_02_Point_01'
                                         )}
                                     </li>
                                     <li>
-                                        {i18n.getDisplayName(
+                                        {i18nValue(
                                             'Fetching_Data_Assitive_02_Point_02'
                                         )}
                                     </li>
                                 </ul>
                             </p>
                             <p>
-                                {i18n.getDisplayName(
-                                    'Fetching_Data_Assitive_02_Suffix'
-                                )}
+                                {i18nValue('Fetching_Data_Assitive_02_Suffix')}
                             </p>
                             <p>
-                                {i18n.getDisplayName(
-                                    'Fetching_Data_Assitive_03_Prefix'
-                                )}
+                                {i18nValue('Fetching_Data_Assitive_03_Prefix')}
                                 <b>
-                                    {i18n.getDisplayName(
+                                    {i18nValue(
                                         'Objects_DataLimit_ShowCustomVisualNotes'
                                     )}
                                 </b>
-                                {i18n.getDisplayName(
-                                    'Fetching_Data_Assitive_03_Suffix'
-                                )}
+                                {i18nValue('Fetching_Data_Assitive_03_Suffix')}
                             </p>
                         </div>
                     </div>

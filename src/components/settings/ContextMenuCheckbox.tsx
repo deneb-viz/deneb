@@ -1,31 +1,26 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
-import { Checkbox } from 'office-ui-fabric-react';
+import { Checkbox } from '@fluentui/react/lib/Checkbox';
 
-import Debugger from '../../Debugger';
-import { visualFeatures } from '../../config';
 import { state } from '../../store';
-import { commandService } from '../../services';
+import { updateBooleanProperty } from '../../api/commands';
+import { isContextMenuEnabled } from '../../api/selection';
+import { i18nValue } from '../../core/ui/i18n';
 
 const ContextMenuCheckbox = () => {
-    Debugger.log('Rendering Component: [ContextMenuCheckbox]...');
-    const { i18n, settings } = useSelector(state).visual,
+    const { settings } = useSelector(state).visual,
         { vega } = settings,
         handleContextMenu = React.useCallback(
             (ev: React.FormEvent<HTMLElement>, checked: boolean): void => {
                 const value = !!checked;
-                Debugger.log(`Updating context menu to ${checked}...`);
-                commandService.updateBooleanProperty(
-                    'enableContextMenu',
-                    value
-                );
+                updateBooleanProperty('enableContextMenu', value);
             },
             []
         );
     return (
-        visualFeatures.selectionContextMenu && (
+        isContextMenuEnabled && (
             <Checkbox
-                label={i18n.getDisplayName('Objects_Vega_EnableContextMenu')}
+                label={i18nValue('Objects_Vega_EnableContextMenu')}
                 checked={vega.enableContextMenu}
                 onChange={handleContextMenu}
             />

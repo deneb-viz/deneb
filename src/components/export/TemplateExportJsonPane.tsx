@@ -1,17 +1,12 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
-import * as _ from 'lodash';
 
-import { Stack } from 'office-ui-fabric-react/lib/Stack';
-import { Text } from 'office-ui-fabric-react/lib/Text';
-import {
-    ITextFieldStyles,
-    TextField
-} from 'office-ui-fabric-react/lib/TextField';
-import { IconButton, IIconProps } from 'office-ui-fabric-react';
+import { Stack } from '@fluentui/react/lib/Stack';
+import { Text } from '@fluentui/react/lib/Text';
+import { ITextFieldStyles, TextField } from '@fluentui/react/lib/TextField';
+import { IconButton } from '@fluentui/react/lib/Button';
+import { IIconProps } from '@fluentui/react/lib/Icon';
 
-import Debugger from '../../Debugger';
-import { state } from '../../store';
 import {
     exportPivotAssistiveTextStyles,
     exportPivotAssistiveToastTextStyles,
@@ -19,8 +14,9 @@ import {
     templatePickerStackStyles,
     templatePickerNonShrinkingStackItemStyles
 } from '../../config/styles';
-import { templateService } from '../../services';
 import { iconButtonStyles } from '../../config/styles';
+import { getExportTemplate } from '../../api/template';
+import { i18nValue } from '../../core/ui/i18n';
 
 const textStyles: Partial<ITextFieldStyles> = {
     root: {
@@ -42,11 +38,7 @@ const textStyles: Partial<ITextFieldStyles> = {
 const copyIcon: IIconProps = { iconName: 'Copy' };
 
 const TemplateExportJsonPane: React.FC = () => {
-    Debugger.log('Rendering Component: [TemplateExportJsonPane]...');
-    const root = useSelector(state),
-        { visual } = root,
-        { i18n } = visual,
-        [copySuccess, setCopySuccess] = React.useState(false),
+    const [copySuccess, setCopySuccess] = React.useState(false),
         textAreaRef = React.useRef(null),
         copyRef = React.useRef(null),
         handleCopy = () => {
@@ -71,9 +63,7 @@ const TemplateExportJsonPane: React.FC = () => {
                             variant='small'
                             styles={exportPivotAssistiveTextStyles}
                         >
-                            {i18n.getDisplayName(
-                                'Template_Export_Json_Assistive'
-                            )}
+                            {i18nValue('Template_Export_Json_Assistive')}
                         </Text>
                     </Stack.Item>
                     <Stack.Item>
@@ -82,9 +72,7 @@ const TemplateExportJsonPane: React.FC = () => {
                                 variant='small'
                                 styles={exportPivotAssistiveToastTextStyles}
                             >
-                                {i18n.getDisplayName(
-                                    'Template_Export_Json_Copied'
-                                )}
+                                {i18nValue('Template_Export_Json_Copied')}
                             </Text>
                         )}
                     </Stack.Item>
@@ -105,7 +93,7 @@ const TemplateExportJsonPane: React.FC = () => {
                     componentRef={textAreaRef}
                     multiline
                     readOnly
-                    value={templateService.getExportTemplate()}
+                    value={getExportTemplate()}
                     styles={textStyles}
                     resizable={false}
                 />

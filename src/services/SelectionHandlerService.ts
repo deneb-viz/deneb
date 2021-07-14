@@ -4,9 +4,10 @@ import { interactivityUtils } from 'powerbi-visuals-utils-interactivityutils';
 import getEvent = interactivityUtils.getEvent;
 
 import Debugger, { standardLog } from '../Debugger';
-import { visualFeatures } from '../config';
 import store from '../store';
 import { ISelectionHandlerService } from '../types';
+import { isContextMenuEnabled, isDataPointEnabled } from '../api/selection';
+import { hostServices } from '../core/services';
 
 const owner = 'SelectionHandlerService';
 
@@ -21,12 +22,12 @@ export class SelectionHandlerService implements ISelectionHandlerService {
         const {
                 allowInteractions,
                 dataset,
-                selectionManager,
                 settings
             } = store.getState().visual,
             { vega } = settings,
+            { selectionManager } = hostServices,
             isSelectionEnabled =
-                visualFeatures.selectionDataPoint &&
+                isDataPointEnabled &&
                 vega.enableSelection &&
                 allowInteractions &&
                 vega.provider === 'vegaLite';
@@ -97,12 +98,9 @@ export class SelectionHandlerService implements ISelectionHandlerService {
     @standardLog()
     handleContextMenu(name: string, selection: any) {
         Debugger.log('Context menu click', selection);
-        const {
-                allowInteractions,
-                selectionManager,
-                settings
-            } = store.getState().visual,
+        const { allowInteractions, settings } = store.getState().visual,
             { vega } = settings,
+            { selectionManager } = hostServices,
             mouseEvent: MouseEvent =
                 <MouseEvent>getEvent() || <MouseEvent>window.event,
             selectionId =
@@ -112,7 +110,7 @@ export class SelectionHandlerService implements ISelectionHandlerService {
         Debugger.log('Selection ID', selectionId);
         mouseEvent && mouseEvent.preventDefault();
         mouseEvent &&
-            visualFeatures.selectionContextMenu &&
+            isContextMenuEnabled &&
             vega.enableContextMenu &&
             allowInteractions &&
             selectionManager.showContextMenu(selectionId, {
@@ -120,9 +118,5 @@ export class SelectionHandlerService implements ISelectionHandlerService {
                 y: mouseEvent.clientY
             });
         Debugger.log('Context menu should now be visible..?');
-    }
-
-    getSidString(id: ISelectionId) {
-        return JSON.stringify(id.getSelector());
     }
 }

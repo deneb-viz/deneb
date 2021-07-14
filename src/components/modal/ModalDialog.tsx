@@ -1,25 +1,26 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
 
-import { useId } from '@uifabric/react-hooks';
-import { Modal } from 'office-ui-fabric-react';
+import { useId } from '@fluentui/react-hooks';
+import { Modal } from '@fluentui/react/lib/Modal';
 
-import Debugger from '../../Debugger';
 import { modalDialogContentStyles } from '../../config/styles';
 import { state } from '../../store';
 import ModalHeader from '../modal/ModalHeader';
-import { commandService } from '../../services';
-import { IModalDialogProps } from '../../types';
+import { closeModalDialog } from '../../api/commands';
+import { TModalDialogType } from '../../api/ui';
 
-export const ModalDialog: React.FunctionComponent<IModalDialogProps> = (
-    props: React.PropsWithChildren<IModalDialogProps>
-) => {
-    Debugger.log('Rendering Component: [ModalDialog]...');
+interface IModalDialogProps {
+    type: TModalDialogType;
+    visible: boolean;
+}
+
+const ModalDialog: React.FC<IModalDialogProps> = (props) => {
     const root = useSelector(state),
         { viewport } = root.visual,
         modalStyles = modalDialogContentStyles(viewport),
         handleClose = () => {
-            commandService.closeModalDialog(props.type);
+            closeModalDialog(props.type);
         };
     const titleId = useId('modal-dialog');
 

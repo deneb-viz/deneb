@@ -4,13 +4,16 @@ import EditMode = powerbi.EditMode;
 
 import { IVisualSliceState } from '../types';
 import VisualSettings from '../properties/VisualSettings';
-import { dataViewService, specificationService } from '../services';
+import { getEmptyDataset } from '../api/dataset';
+import { resolveLoaderLogic } from '../api/specification';
 
 const visualReducer: IVisualSliceState = {
     allowInteractions: false,
     autoApply: false,
     canAutoApply: true,
-    dataset: dataViewService.getEmptyDataset(),
+    canFetchMore: false,
+    categories: [],
+    dataset: getEmptyDataset(),
     dataProcessingStage: 'Initial',
     dataRowsLoaded: 0,
     dataViewFlags: {
@@ -29,32 +32,30 @@ const visualReducer: IVisualSliceState = {
         config: null
     },
     fourd3d3d: false,
-    i18n: null,
-    interfaceType: 'Landing',
     isInFocus: false,
+    isDirty: false,
     isExportDialogVisible: false,
     isNewDialogVisible: true,
-    launchUrl: null,
-    loader: specificationService.resolveLoaderLogic(),
-    locale: '',
+    loader: resolveLoaderLogic(),
     resizablePaneDefaultWidth: null,
     resizablePaneExpandedWidth: null,
     resizablePaneWidth: null,
     selectedOperation: 'spec',
-    selectionManager: null,
     spec: {
         status: 'new',
         spec: null,
         rawSpec: null,
         message: 'Spec has not yet been parsed'
     },
+    stagedConfig: null,
+    stagedSpec: null,
     themeColors: [],
-    tooltipService: null,
     updates: 0,
     settings: <VisualSettings>VisualSettings.getDefault(),
     vegaViewport: { width: 0, height: 0 },
     viewMode: ViewMode.View,
-    viewport: { width: 0, height: 0 }
+    viewport: { width: 0, height: 0 },
+    visualMode: 'SplashInitial'
 };
 
 export { visualReducer };

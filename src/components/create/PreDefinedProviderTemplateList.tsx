@@ -1,13 +1,10 @@
 import * as React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
-import {
-    FocusZone,
-    FocusZoneDirection
-} from 'office-ui-fabric-react/lib/FocusZone';
-import { getRTL } from 'office-ui-fabric-react/lib/Utilities';
-import { Icon } from 'office-ui-fabric-react/lib/Icon';
-import { List } from 'office-ui-fabric-react/lib/List';
+import { FocusZone, FocusZoneDirection } from '@fluentui/react/lib/FocusZone';
+import { getRTL } from '@fluentui/react/lib/Utilities';
+import { Icon } from '@fluentui/react/lib/Icon';
+import { List } from '@fluentui/react/lib/List';
 
 import Debugger from '../../Debugger';
 import { templatePickerItemListStyles } from '../../config/styles';

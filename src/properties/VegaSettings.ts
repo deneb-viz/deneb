@@ -3,7 +3,12 @@ import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnume
 
 import SettingsBase from './SettingsBase';
 import Debugger from '../Debugger';
-import { vegaSettingsDefaults as defaults, visualFeatures } from '../config';
+import { getConfig } from '../api/config';
+import { isHandlerEnabled } from '../api/tooltip';
+import { isContextMenuEnabled, isDataPointEnabled } from '../api/selection';
+import { isDeveloperModeEnabled } from '../api/developer';
+
+const defaults = getConfig().propertyDefaults.vega;
 
 /**
  * Manages the specification grammar and the user-provided source
@@ -22,12 +27,10 @@ export default class VegaSettings extends SettingsBase {
     public jsonConfig = defaults.jsonConfig;
     public provider = defaults.provider;
     public renderMode = defaults.renderMode;
-    public enableTooltips =
-        visualFeatures.tooltipHandler && defaults.enableTooltips;
+    public enableTooltips = isHandlerEnabled && defaults.enableTooltips;
     public enableContextMenu =
-        visualFeatures.selectionContextMenu && defaults.enableContextMenu;
-    public enableSelection =
-        visualFeatures.selectionDataPoint && defaults.enableSelection;
+        isContextMenuEnabled && defaults.enableContextMenu;
+    public enableSelection = isDataPointEnabled && defaults.enableSelection;
     public isNewDialogOpen = defaults.isNewDialogOpen;
 
     /**
@@ -43,22 +46,22 @@ export default class VegaSettings extends SettingsBase {
     ): VisualObjectInstanceEnumerationObject {
         Debugger.log('Processing enumeration...');
         enumerationObject.instances.map((i) => {
-            if (!visualFeatures.developerMode) {
+            if (!isDeveloperModeEnabled) {
                 Debugger.log("Removing 'debug only' properties...");
                 enumerationObject.instances = [];
             } else {
                 Debugger.log('Handling feature switches...');
-                if (!visualFeatures.tooltipHandler) {
+                if (!isHandlerEnabled) {
                     delete enumerationObject.instances[0].properties[
                         'enableTooltips'
                     ];
                 }
-                if (!visualFeatures.selectionContextMenu) {
+                if (!isContextMenuEnabled) {
                     delete enumerationObject.instances[0].properties[
                         'enableContextMenu'
                     ];
                 }
-                if (!visualFeatures.selectionDataPoint) {
+                if (!isDataPointEnabled) {
                     delete enumerationObject.instances[0].properties[
                         'enableSelection'
                     ];

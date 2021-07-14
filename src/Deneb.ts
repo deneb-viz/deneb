@@ -1,8 +1,9 @@
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
-import './../style/visual.less';
+import '../style/visual.less';
+import '../style/fabric-icons.css';
+import 'jsoneditor/dist/jsoneditor.css';
 import powerbi from 'powerbi-visuals-api';
-import 'office-ui-fabric-core/dist/css/fabric.min.css';
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import IVisual = powerbi.extensibility.visual.IVisual;
@@ -17,19 +18,11 @@ import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { loadTheme, initializeIcons } from 'office-ui-fabric-react';
+import { loadTheme } from '@fluentui/react/lib/Styling';
 
-import { theme } from './config';
 import Debugger, { standardLog } from './Debugger';
 import App from './components/App';
 import VisualSettings from './properties/VisualSettings';
-
-import {
-    dataLoadingService,
-    dataViewService,
-    propertyService,
-    specificationService
-} from './services';
 
 import store from './store';
 import {
@@ -40,7 +33,20 @@ import {
     recordInvalidDataView,
     updateDataset
 } from './store/visualReducer';
-import { syncExportTemplateDataset } from './store/templateReducer';
+import {
+    initializeImportExport,
+    syncExportTemplateDataset
+} from './store/templateReducer';
+import {
+    canFetchMore,
+    getMappedDataset,
+    handleDataFetch,
+    validateDataViewMapping,
+    validateDataViewRoles
+} from './api/dataView';
+import { initializeIcons, theme } from './api/fluent';
+import { parseActiveSpec } from './api/specification';
+import { hostServices } from './core/services';
 
 const owner = 'Visual';
 
@@ -61,15 +67,14 @@ export class Deneb implements IVisual {
             Debugger.heading('Visual Constructor');
             Debugger.log('Loading theming...');
             loadTheme(theme);
-            Debugger.log('Initialising icons...');
             initializeIcons();
+            hostServices.bindHostServices(options.host);
             store.dispatch(visualConstructor(options.host));
+            store.dispatch(initializeImportExport());
             Debugger.log('Setting container element...');
             this.container = options.element;
             Debugger.log('Setting host services...');
             this.host = options.host;
-            Debugger.log('Binding property service...');
-            propertyService.persistProperties = this.host.persistProperties;
             Debugger.log('Getting events service...');
             this.events = this.host.eventService;
             Debugger.log('Creating main React component...');
@@ -101,7 +106,6 @@ export class Deneb implements IVisual {
             Debugger.log('Parsed settings', this.settings);
 
             // Handle the update options and dispatch to store as needed
-            // VisualHelper.resolveUpdateOptions(options, settings);
             this.resolveUpdateOptions(options);
 
             // Signal that we've finished rendering
@@ -122,6 +126,7 @@ export class Deneb implements IVisual {
     private resolveUpdateOptions(options: VisualUpdateOptions) {
         Debugger.log('Resolving visual update options for API operations...');
         const settings = this.settings;
+        hostServices.resolveLocaleFromSettings(settings.developer.locale);
 
         // Provide intial update options to store
         store.dispatch(
@@ -143,19 +148,23 @@ export class Deneb implements IVisual {
                     Debugger.log(
                         'First data segment. Doing initial state checks...'
                     );
-                    store.dispatch(updateDataProcessingStage('Fetching'));
+                    store.dispatch(
+                        updateDataProcessingStage({
+                            dataProcessingStage: 'Fetching',
+                            canFetchMore: canFetchMore()
+                        })
+                    );
                     Debugger.log(
                         'First data segment. Doing initial state checks...'
                     );
-                    const hasValidDataViewMapping = dataViewService.validateDataViewMapping(
+                    const hasValidDataViewMapping = validateDataViewMapping(
                             options.dataViews
                         ),
                         hasValidDataRoles =
                             hasValidDataViewMapping &&
-                            dataViewService.validateDataViewRoles(
-                                options.dataViews,
-                                ['dataset']
-                            ),
+                            validateDataViewRoles(options.dataViews, [
+                                'dataset'
+                            ]),
                         hasValidDataView =
                             hasValidDataViewMapping && hasValidDataRoles;
                     Debugger.log('Dispatching ');
@@ -181,19 +190,16 @@ export class Deneb implements IVisual {
                 }
 
                 Debugger.log('Delegating additional data fetch...');
-                dataLoadingService.handleDataFetch(
-                    options,
-                    this.settings.dataLimit,
-                    this.host
-                );
-                if (!dataLoadingService.canFetchMore) {
+                handleDataFetch(options);
+                if (!canFetchMore()) {
                     store.dispatch(
-                        updateDataset(
-                            dataViewService.getMappedDataset(
-                                options.dataViews[0]?.categorical,
-                                this.host.createSelectionIdBuilder
+                        updateDataset({
+                            categories:
+                                options.dataViews[0]?.categorical?.categories,
+                            dataset: getMappedDataset(
+                                options.dataViews[0]?.categorical
                             )
-                        )
+                        })
                     );
                     store.dispatch(
                         syncExportTemplateDataset(
@@ -211,12 +217,12 @@ export class Deneb implements IVisual {
             }
         }
 
-        const { selectionManager } = store.getState().visual;
+        const { selectionManager } = hostServices;
         Debugger.log('Has selections', selectionManager.hasSelection());
         Debugger.log('Existing selections', selectionManager.getSelectionIds());
 
         if (store.getState().visual.dataProcessingStage === 'Processed') {
-            specificationService.parseActiveSpec();
+            parseActiveSpec();
         }
     }
 

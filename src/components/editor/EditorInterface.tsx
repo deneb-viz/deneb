@@ -1,72 +1,17 @@
-import * as React from 'react';
+import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import SplitPane from 'react-split-pane';
-import { Options, useHotkeys } from 'react-hotkeys-hook';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { updateEditorPaneSize } from '../../store/visualReducer';
-import { commandService, renderingService } from '../../services';
-import DataProcessingRouter from '../DataProcessingRouter';
-import EditorPaneContent from './EditorPaneContent';
+import EditorPane from './EditorPane';
+import EditorPreview from './EditorPreview';
 import NewVisualDialog from '../create/NewVisualDialog';
 import ExportVisualDialog from '../export/ExportVisualDialog';
-import { IKeyboardShortcut } from '../../types';
-
-// Hotkey assignment for editor UI
-const options: Options = { enableOnTags: ['INPUT', 'SELECT', 'TEXTAREA'] },
-    hotkeys: IKeyboardShortcut[] = [
-        {
-            keys: 'ctrl+enter',
-            command: () => commandService.applyChanges(),
-            options
-        },
-        {
-            keys: 'ctrl+shift+enter',
-            command: () => commandService.toggleAutoApply(),
-            options
-        },
-        {
-            keys: 'ctrl+alt+r',
-            command: () => commandService.repairFormatJson(),
-            options
-        },
-        {
-            keys: 'ctrl+alt+e',
-            command: () => commandService.createExportableTemplate(),
-            options
-        },
-        {
-            keys: 'ctrl+alt+n',
-            command: () => commandService.createNewSpec(),
-            options
-        },
-        {
-            keys: 'ctrl+alt+h',
-            command: () => commandService.openHelpSite(),
-            options
-        },
-        {
-            keys: 'ctrl+alt+1',
-            command: () => commandService.openEditorPivotItem('spec'),
-            options
-        },
-        {
-            keys: 'ctrl+alt+2',
-            command: () => commandService.openEditorPivotItem('config'),
-            options
-        },
-        {
-            keys: 'ctrl+alt+3',
-            command: () => commandService.openEditorPivotItem('settings'),
-            options
-        },
-        {
-            keys: 'ctrl+alt+space',
-            command: () => commandService.toggleEditorPane(),
-            options
-        }
-    ];
+import { getVisualHotkeys } from '../../api/commands';
+import { getResizablePaneMaxSize, getResizablePaneMinSize } from '../../api/ui';
 
 const EditorInterface: React.FC = () => {
     Debugger.log('Rendering Component: [EditorInterface]...');
@@ -74,7 +19,6 @@ const EditorInterface: React.FC = () => {
             resizablePaneDefaultWidth,
             resizablePaneWidth,
             editorPaneIsExpanded,
-            isNewDialogVisible,
             settings
         } = useSelector(state).visual,
         { editor } = settings,
@@ -98,34 +42,23 @@ const EditorInterface: React.FC = () => {
                 handleResize(resizablePaneDefaultWidth);
             }
         },
-        editorPane = (
-            <section>
-                <EditorPaneContent
-                    editorPaneIsExpanded={editorPaneIsExpanded}
-                />
-            </section>
-        ),
-        editorPreview = (
-            <div id='editorPreview'>
-                <DataProcessingRouter />
-            </div>
-        );
-    hotkeys.forEach((hk) => {
+        editorPane = <EditorPane isExpanded={editorPaneIsExpanded} />;
+    getVisualHotkeys().forEach((hk) => {
         useHotkeys(hk.keys, hk.command, hk.options);
     });
     return (
         <div id='visualEditor'>
             <SplitPane
                 split='vertical'
-                minSize={renderingService.getResizablePaneMinSize()}
-                maxSize={renderingService.getResizablePaneMaxSize()}
+                minSize={getResizablePaneMinSize()}
+                maxSize={getResizablePaneMaxSize()}
                 size={resizablePaneWidth}
                 onChange={handleResize}
                 onResizerDoubleClick={resolveDoubleClick}
                 allowResize={editorPaneIsExpanded}
             >
-                {editor.position === 'left' ? editorPane : editorPreview}
-                {editor.position === 'left' ? editorPreview : editorPane}
+                {editor.position === 'left' ? editorPane : <EditorPreview />}
+                {editor.position === 'left' ? <EditorPreview /> : editorPane}
             </SplitPane>
             <NewVisualDialog />
             <ExportVisualDialog />

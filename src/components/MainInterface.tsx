@@ -1,30 +1,29 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
 
-import Debugger from '../Debugger';
 import EditorInterface from './editor/EditorInterface';
 import { state } from '../store';
-import LandingPage from './status/LandingPage';
 import DataProcessingRouter from './DataProcessingRouter';
+import SplashInitial from './status/SplashInitial';
+import SplashReadOnly from './status/SplashReadOnly';
+import SplashReadWrite from './status/SplashReadWrite';
+import SplashNoSpec from './status/SplashNoSpec';
 
 const MainInterface = () => {
-    Debugger.log('Rendering component: [MainInterface]');
-    const { interfaceType } = useSelector(state).visual;
-    switch (interfaceType) {
-        case 'Landing': {
-            Debugger.log('Landing page will be displayed.');
-            return <LandingPage />;
-        }
-        case 'Edit': {
-            Debugger.log('Advanced Editor will be displayed.');
+    const { visualMode } = useSelector(state).visual;
+    switch (visualMode) {
+        case 'SplashInitial':
+            return <SplashInitial />;
+        case 'SplashReadOnly':
+            return <SplashReadOnly />;
+        case 'SplashReadWrite':
+            return <SplashReadWrite />;
+        case 'DataNoSpec':
+            return <SplashNoSpec />;
+        case 'Editor':
             return <EditorInterface />;
-        }
-        default: {
-            Debugger.log(
-                'Delegating to DataProcessingRouter for main visual...'
-            );
+        case 'Standard':
             return <DataProcessingRouter />;
-        }
     }
 };
 

@@ -1,37 +1,38 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
-import { Text } from 'office-ui-fabric-react';
-import { ChoiceGroup, IChoiceGroupOption } from 'office-ui-fabric-react';
+import { Text } from '@fluentui/react/lib/Text';
+import {
+    ChoiceGroup,
+    IChoiceGroupOption
+} from '@fluentui/react/lib/ChoiceGroup';
 
-import Debugger from '../../Debugger';
-import { commandService } from '../../services';
-import { TSpecProvider } from '../../types';
+import { updateProvider } from '../../api/commands';
+import { TSpecProvider } from '../../api/specification';
 import { choiceGroupStyles, choiceItemStyles } from '../../config/styles';
 import { state } from '../../store';
+import { i18nValue } from '../../core/ui/i18n';
 
 const ProviderSettings = () => {
-    Debugger.log('Rendering Component: [ProviderSettings]...');
-    const { i18n, settings } = useSelector(state).visual,
+    const { settings } = useSelector(state).visual,
         { vega } = settings,
         handleProvider = React.useCallback(
             (
                 ev: React.SyntheticEvent<HTMLElement>,
                 option: IChoiceGroupOption
             ) => {
-                Debugger.log(`Updating provider to ${option.key}...`);
-                commandService.updateProvider(option.key as TSpecProvider);
+                updateProvider(option.key as TSpecProvider);
             },
             []
         ),
         providerOptions: IChoiceGroupOption[] = [
             {
                 key: 'vegaLite',
-                text: i18n.getDisplayName('Provider_VegaLite'),
+                text: i18nValue('Provider_VegaLite'),
                 styles: choiceItemStyles
             },
             {
                 key: 'vega',
-                text: i18n.getDisplayName('Provider_Vega'),
+                text: i18nValue('Provider_Vega'),
                 styles: choiceItemStyles
             }
         ];
@@ -42,10 +43,10 @@ const ProviderSettings = () => {
                 styles={choiceGroupStyles}
                 onChange={handleProvider}
                 selectedKey={vega.provider}
-                label={i18n.getDisplayName('Objects_Vega_Provider')}
+                label={i18nValue('Objects_Vega_Provider')}
             />
             <Text variant='smallPlus'>
-                {i18n.getDisplayName('Assistive_Text_Provider')}
+                {i18nValue('Assistive_Text_Provider')}
             </Text>
         </>
     );
