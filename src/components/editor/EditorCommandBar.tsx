@@ -7,7 +7,7 @@ import {
     getCommandBarEditCommands,
     getCommandBarFarCommands
 } from '../../api/ui';
-import _ from 'lodash';
+
 import { i18nValue } from '../../core/ui/i18n';
 
 const EditorCommandBar: React.FC = () => (

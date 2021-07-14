@@ -32,7 +32,7 @@ const VisualRender = () => {
         } = useSelector(state).visual,
         { vega } = settings,
         { height, width } = vegaViewport,
-        { locale } =  hostServices,
+        { locale } = hostServices,
         data = { dataset: cloneDeep(dataset.values) },
         specification = cloneDeep(spec.spec),
         config = getInitialConfig(),

@@ -4,7 +4,7 @@
         "displayName": "Deneb",
         "guid": "deneb7E15AEF80B9E4D4F8E12924291ECE89A",
         "visualClassName": "Deneb",
-        "version": "0.4.0.108-beta",
+        "version": "0.4.0.109",
         "description": "Declarative visualization in Power BI, using the Vega language.",
         "supportUrl": "https://deneb-viz.github.io/",
         "gitHubUrl": "https://github.com/deneb-viz/deneb"

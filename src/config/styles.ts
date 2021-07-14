@@ -11,7 +11,6 @@ import {
     IStackStyles,
     IStackTokens,
     ITheme,
-    mergeStyles,
     mergeStyleSets,
     FontSizes,
     FontWeights,
@@ -28,7 +27,6 @@ import { theme } from '../api/fluent';
 
 export {
     actionButtonStyles,
-    buttonIconClass,
     choiceGroupStyles,
     choiceItemStyles,
     choiceStackTokens,
@@ -63,13 +61,7 @@ export {
 const defaultTheme: ITheme = getTheme();
 
 // Buttons
-const buttonIconClass = mergeStyles({
-        fontSize: 12,
-        height: 20,
-        width: 20,
-        cursor: 'pointer'
-    }),
-    iconButtonStyles: IButtonStyles = {
+const iconButtonStyles: IButtonStyles = {
         root: {
             boxSizing: 'border-box',
             display: 'flex',

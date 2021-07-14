@@ -4,7 +4,7 @@ import StatusLayoutStack from './StatusLayoutStack';
 import StatusLayoutStackItem from './StatusLayoutStackItem';
 import StandardHeaderContent from './StandardHeaderContent';
 import UsefulResources from './UsefulResources';
-import { Paragraph } from '../elements/Text';
+import { Paragraph } from '../elements/Typography';
 import { i18nValue } from '../../core/ui/i18n';
 
 const SplashReadOnly = () => (

@@ -9,7 +9,12 @@ import { state } from '../../store';
 import StatusHeaderSection from './StatusHeaderSection';
 import StatusLayoutStack from './StatusLayoutStack';
 import StatusLayoutStackItem from './StatusLayoutStackItem';
-import { BodyHeading, Heading, Paragraph, SubHeading } from '../elements/Text';
+import {
+    BodyHeading,
+    Heading,
+    Paragraph,
+    SubHeading
+} from '../elements/Typography';
 import UsefulResources from './UsefulResources';
 import { i18nValue } from '../../core/ui/i18n';
 

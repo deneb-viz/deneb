@@ -30,9 +30,8 @@ export class HostServicesWrapper {
     };
 
     resolveLocaleFromSettings = (settingsLocale: TLocale) => {
-        this.locale = isDeveloperModeEnabled && settingsLocale || this.locale;
-    }
-
+        this.locale = (isDeveloperModeEnabled && settingsLocale) || this.locale;
+    };
 }
 
 const getNewSelectionManager = (host: IVisualHost) => {

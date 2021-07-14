@@ -6,7 +6,7 @@ import { IStackTokens, Stack } from '@fluentui/react/lib/Stack';
 import { getConfig, getVisualMetadata } from '../../api/config';
 import { theme } from '../../api/fluent';
 
-import { BodyHeading } from '../elements/Text';
+import { BodyHeading } from '../elements/Typography';
 import { hostServices } from '../../core/services';
 import { i18nValue } from '../../core/ui/i18n';
 

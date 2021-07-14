@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { state } from '../../store';
 
 import Progress from './Progress';
-import { BodyHeading, Heading } from '../elements/Text';
+import { BodyHeading, Heading } from '../elements/Typography';
 import StatusHeaderSection from './StatusHeaderSection';
 import StatusLayoutStack from './StatusLayoutStack';
 import StatusLayoutStackItem from './StatusLayoutStackItem';

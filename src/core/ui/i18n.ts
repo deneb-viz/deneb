@@ -1,6 +1,6 @@
 import { hostServices } from '../services';
 
-export { i18nValue, locales, TLocale};
+export { i18nValue, locales, TLocale };
 
 // Convenience function allows i18n value lookup by key using host services.
 const i18nValue = (key: string) => hostServices.i18n.getDisplayName(key);

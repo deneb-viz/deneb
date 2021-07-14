@@ -6,7 +6,7 @@ import { state } from '../../store';
 import StatusLayoutStack from './StatusLayoutStack';
 import StatusLayoutStackItem from './StatusLayoutStackItem';
 import StatusHeaderSection from './StatusHeaderSection';
-import { Heading, SubHeading } from '../elements/Text';
+import { Heading, SubHeading } from '../elements/Typography';
 import { i18nValue } from '../../core/ui/i18n';
 
 const SpecificationError = () => {

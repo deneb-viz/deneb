@@ -3,7 +3,11 @@ import * as React from 'react';
 import { getVisualMetadata } from '../../api/config';
 import { getVersionInfo } from '../../api/ui';
 
-import { Heading, SubHeading, SubHeadingSecondary } from '../elements/Text';
+import {
+    Heading,
+    SubHeading,
+    SubHeadingSecondary
+} from '../elements/Typography';
 import StatusHeaderSection from './StatusHeaderSection';
 
 const StandardHeaderContent = () => {

@@ -10,7 +10,7 @@ import {
 import EditorHeadingExpanded from './EditorHeadingExpanded';
 import EditorPanePivot from './EditorPanePivot';
 import EditorCommandBar from './EditorCommandBar';
-import EditorOperationContainer from './EditorOperationContainer';
+import EditorOperationContent from './EditorOperationContent';
 import FixErrorDetails from './FixErrorDetails';
 
 import { theme } from '../../api/fluent';
@@ -57,7 +57,7 @@ const EditorPaneExpanded = () => {
                     <FixErrorDetails />
                 </StackItem>
                 <StackItem verticalFill styles={stackItemStyles}>
-                    <EditorOperationContainer />
+                    <EditorOperationContent />
                 </StackItem>
             </Stack>
         </Stack>

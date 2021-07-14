@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import SplitPane from 'react-split-pane';
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -6,8 +6,8 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { updateEditorPaneSize } from '../../store/visualReducer';
-import DataProcessingRouter from '../DataProcessingRouter';
 import EditorPane from './EditorPane';
+import EditorPreview from './EditorPreview';
 import NewVisualDialog from '../create/NewVisualDialog';
 import ExportVisualDialog from '../export/ExportVisualDialog';
 import { getVisualHotkeys } from '../../api/commands';
@@ -42,12 +42,7 @@ const EditorInterface: React.FC = () => {
                 handleResize(resizablePaneDefaultWidth);
             }
         },
-        editorPane = <EditorPane isExpanded={editorPaneIsExpanded} />,
-        editorPreview = (
-            <div id='editorPreview'>
-                <DataProcessingRouter />
-            </div>
-        );
+        editorPane = <EditorPane isExpanded={editorPaneIsExpanded} />;
     getVisualHotkeys().forEach((hk) => {
         useHotkeys(hk.keys, hk.command, hk.options);
     });
@@ -62,8 +57,8 @@ const EditorInterface: React.FC = () => {
                 onResizerDoubleClick={resolveDoubleClick}
                 allowResize={editorPaneIsExpanded}
             >
-                {editor.position === 'left' ? editorPane : editorPreview}
-                {editor.position === 'left' ? editorPreview : editorPane}
+                {editor.position === 'left' ? editorPane : <EditorPreview />}
+                {editor.position === 'left' ? <EditorPreview /> : editorPane}
             </SplitPane>
             <NewVisualDialog />
             <ExportVisualDialog />
