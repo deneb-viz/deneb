@@ -162,5 +162,6 @@
     "Dialog_Unapplied_Changes_Title": "Unapplied Changes",
     "Dialog_Unapplied_Changes_Subtext": "Would you like to apply them now?",
     "Dialog_Unapplied_Changes_Apply": "Apply",
-    "Dialog_Unapplied_Changes_Discard": "Discard"
+    "Dialog_Unapplied_Changes_Discard": "Discard",
+    "Selection_KW_Present": "[Available]"
 }

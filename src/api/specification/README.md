@@ -45,10 +45,6 @@ Gets the `config` from our visual objects and parses it to JSON.
 
 Looks at the active specification and config in the visual editors and compares with persisted values in the visual properties. Used to set the `isDirty` flag in the Redux store.
 
-#### `indentJson`(_json_)
-
-For the supplied object, convert to string and indent according to specified tab size.
-
 #### `persist`()
 
 Resolve the spec/config and use the `properties` API for persistence. Also resets the `isDirty` flag in the Redux store.

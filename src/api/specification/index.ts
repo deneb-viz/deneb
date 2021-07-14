@@ -6,7 +6,6 @@ export {
     getInitialConfig,
     getParsedConfigFromSettings,
     hasLiveSpecChanged,
-    indentJson,
     parseActiveSpec,
     persist,
     registerCustomExpressions,
@@ -52,13 +51,14 @@ import {
 } from '../../store/visualReducer';
 import { hostServices } from '../../core/services';
 import { i18nValue } from '../../core/ui/i18n';
+import { getJsonAsIndentedString } from '../../core/utils/json';
 
 const createFromTemplate = (
     provider: TSpecProvider,
     template: Spec | TopLevelSpec
 ) => {
     const jsonSpec = getReplacedTemplate(template),
-        jsonConfig = indentJson(template.config);
+        jsonConfig = getJsonAsIndentedString(template.config);
     updateObjectProperties(
         resolveObjectProperties('vega', [
             { name: 'provider', value: provider },
@@ -151,9 +151,6 @@ const hasLiveSpecChanged = () => {
         persistedConfig = getState().visual.settings.vega.jsonConfig;
     return liveSpec != persistedSpec || liveConfig != persistedConfig;
 };
-
-const indentJson = (json: object) =>
-    JSON.stringify(json, null, getConfig().propertyDefaults.editor.tabSize);
 
 const registerCustomExpressions = () =>
     expressionFunction('pbiFormat', (datum: any, params: string) =>
@@ -396,7 +393,7 @@ const tryFixAndFormat = (operation: TEditorRole, input: string): IFixStatus => {
     try {
         return {
             success: true,
-            text: indentJson(JSON.parse(jsonrepair(input)))
+            text: getJsonAsIndentedString(JSON.parse(jsonrepair(input)))
         };
     } catch (e) {
         return {

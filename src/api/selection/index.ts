@@ -4,11 +4,8 @@ export {
     getSidString,
     isContextMenuEnabled,
     isDataPointEnabled,
-    resolveDatumForKeywords,
     resolveDatumValueForMetadataColumn,
-    resolveDatumForMetadata,
-    selectionKeywords,
-    IVegaViewDatum
+    resolveDatumForMetadata
 };
 
 import powerbi from 'powerbi-visuals-api';
@@ -27,6 +24,7 @@ import {
 } from '../dataset';
 import { isFeatureEnabled } from '../features';
 import { hostServices } from '../../core/services';
+import { IVegaViewDatum } from '../../core/vega';
 
 const createSelectionId = (
     metadata: IVisualValueMetadata,
@@ -55,11 +53,6 @@ const getSidString = (id: ISelectionId) => JSON.stringify(id.getSelector());
 const isContextMenuEnabled = isFeatureEnabled('selectionContextMenu');
 
 const isDataPointEnabled = isFeatureEnabled('selectionDataPoint');
-
-const resolveDatumForKeywords = (obj: IVegaViewDatum) =>
-    Object.entries({ ...obj }).filter(
-        ([k, v]) => selectionKeywords.indexOf(k) === -1
-    );
 
 const resolveDatumForMetadata = (
     metadata: IVisualValueMetadata,
@@ -95,9 +88,3 @@ const resolveDatumValueForMetadataColumn = (
             return value;
     }
 };
-
-const selectionKeywords = ['__identity__', '__key__'];
-
-interface IVegaViewDatum {
-    [key: string]: any;
-}

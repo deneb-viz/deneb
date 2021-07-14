@@ -49,11 +49,11 @@ import { getConfig, getVisualMetadata } from '../config';
 import {
     determineProviderFromSpec,
     getParsedConfigFromSettings,
-    indentJson,
     TSpecProvider
 } from '../specification';
 import { getState, store } from '../store';
 import { i18nValue } from '../../core/ui/i18n';
+import { getJsonAsIndentedString } from '../../core/utils/json';
 
 const getExportTemplate = () => {
     const { visual } = getState(),
@@ -85,7 +85,7 @@ const getExportTemplate = () => {
         { config: getParsedConfigFromSettings() },
         JSON.parse(baseSpec)
     );
-    return indentJson(outSpec);
+    return getJsonAsIndentedString(outSpec);
 };
 
 const getNewExportTemplateMetadata = (): IDenebTemplateMetadata => {
@@ -134,7 +134,7 @@ const getReplacedTemplate = (template: Spec | TopLevelSpec) => {
     delete templateToApply.$schema;
     delete templateToApply.config;
     delete templateToApply.usermeta;
-    let jsonSpec = indentJson(templateToApply);
+    let jsonSpec = getJsonAsIndentedString(templateToApply);
     (<IDenebTemplateMetadata>template?.usermeta)?.dataset?.forEach((ph) => {
         const pattern = new RegExp(getEscapedReplacerPattern(ph.key), 'g');
         jsonSpec = jsonSpec.replace(pattern, ph.suppliedObjectName);

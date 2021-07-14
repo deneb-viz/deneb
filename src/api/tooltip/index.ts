@@ -15,11 +15,10 @@ import { getCategoryColumns } from '../dataView';
 import { resolveCoordinates } from '../event';
 import { isFeatureEnabled } from '../features';
 import { createFormatterFromString } from '../formatting';
-import {
-    createSelectionId,
-    resolveDatumForKeywords,
-    IVegaViewDatum
-} from '../selection';
+import { createSelectionId } from '../selection';
+import { resolveDatumForKeywords } from '../../core/interactivity';
+import { IVegaViewDatum } from '../../core/vega';
+import { getSanitisedTooltipValue } from '../../core/interactivity/tooltip';
 
 const getTooltipHandler = (
     isSettingEnabled: boolean,
@@ -45,7 +44,7 @@ const extractTooltipDataItemsFromObject = (
                     (autoFormatMetadata[k].type.numeric && toNumber(v)) ||
                         (autoFormatMetadata[k].type.dateTime && v)
                 )) ||
-            v
+            getSanitisedTooltipValue(v)
         }`
     }));
 };

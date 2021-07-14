@@ -21,7 +21,8 @@ import matches from 'lodash/matches';
 import { ITemplateDatasetField } from '../../schema/template-v1';
 
 import { getState } from '../store';
-import { resolveDatumForMetadata, IVegaViewDatum } from '../selection';
+import { resolveDatumForMetadata } from '../selection';
+import { IVegaViewDatum } from '../../core/vega';
 
 const getDataset = () => getState().visual?.dataset;
 
