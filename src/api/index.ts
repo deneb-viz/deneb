@@ -1,5 +1,4 @@
 import * as commands from './commands';
-import * as config from './config';
 import * as dataset from './dataset';
 import * as dataView from './dataView';
 import * as developer from './developer';
@@ -18,7 +17,6 @@ import * as ui from './ui';
 
 export {
     commands,
-    config,
     dataset,
     dataView,
     developer,

@@ -34,7 +34,7 @@ import Ajv from 'ajv';
 import * as draft06 from 'ajv/lib/refs/json-schema-draft-06.json';
 import jsonrepair from 'jsonrepair';
 
-import { getConfig } from '../config';
+import { getConfig } from '../../core/utils/config';
 import { configEditorService, specEditorService, TEditorRole } from '../editor';
 import { isFeatureEnabled } from '../features';
 import { createFormatterFromString } from '../formatting';
@@ -52,6 +52,8 @@ import {
 import { hostServices } from '../../core/services';
 import { i18nValue } from '../../core/ui/i18n';
 import { getJsonAsIndentedString } from '../../core/utils/json';
+import { getPatchedVegaSpec } from '../../core/vega/vegaUtils';
+import { getPatchedVegaLiteSpec } from '../../core/vega/vegaLiteUtils';
 
 const createFromTemplate = (
     provider: TSpecProvider,
@@ -152,10 +154,11 @@ const hasLiveSpecChanged = () => {
     return liveSpec != persistedSpec || liveConfig != persistedConfig;
 };
 
-const registerCustomExpressions = () =>
+const registerCustomExpressions = () => {
     expressionFunction('pbiFormat', (datum: any, params: string) =>
         createFormatterFromString(`${params}`).format(datum)
     );
+};
 
 const parseActiveSpec = () => {
     const { allowInteractions, settings } = getState().visual,
@@ -175,6 +178,7 @@ const parseActiveSpec = () => {
             });
             return;
         }
+
         const parsedSpec = JSON.parse(resolveUrls(jsonSpec));
 
         /** TODO: Previous attempt at patching interactivity. Kept for posterity but should be managed a different way.
@@ -212,10 +216,19 @@ const parseActiveSpec = () => {
                         });
                     }
                     */
-                VegaLite.compile(<TopLevelSpec>parsedSpec);
+                const patchedSpec = getPatchedVegaLiteSpec(parsedSpec);
+                const result = VegaLite.compile(<TopLevelSpec>{
+                    ...patchedSpec
+                });
+                dispatchSpec({
+                    status: 'valid',
+                    spec: patchedSpec,
+                    rawSpec: jsonSpec
+                });
                 break;
             }
             case 'vega': {
+                const patchedSpec = getPatchedVegaSpec(parsedSpec);
                 /**
                     Debugger.log(
                         'Patching data point and context menu selections...'
@@ -227,15 +240,15 @@ const parseActiveSpec = () => {
                         name: '__context__',
                         on: [{ events: 'contextmenu', update: 'datum' }]
                     });*/
-                Vega.parse(<Spec>parsedSpec);
+                const result = Vega.parse(<Spec>{ ...patchedSpec });
+                dispatchSpec({
+                    status: 'valid',
+                    spec: patchedSpec,
+                    rawSpec: jsonSpec
+                });
                 break;
             }
         }
-        dispatchSpec({
-            status: 'valid',
-            spec: parsedSpec,
-            rawSpec: jsonSpec
-        });
     } catch (e) {
         dispatchSpec({
             status: 'error',

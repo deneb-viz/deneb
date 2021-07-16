@@ -56,7 +56,19 @@
     "providerResources": {
         "vega": {
             "documentationUrl": "https://vega.github.io/vega/docs/",
-            "schemaUrl": "https://vega.github.io/schema/vega/v5.json"
+            "schemaUrl": "https://vega.github.io/schema/vega/v5.json",
+            "patch": {
+                "signals": [
+                    {
+                        "name": "pbiContainerHeight",
+                        "update": "containerSize()[1]"
+                    },
+                    {
+                        "name": "pbiContainerWidth",
+                        "update": "containerSize()[0]"
+                    }
+                ]
+            }
         },
         "vegaLite": {
             "documentationUrl": "https://vega.github.io/vega-lite/docs/",

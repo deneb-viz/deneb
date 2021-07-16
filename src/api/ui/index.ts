@@ -32,7 +32,11 @@ import {
     repairFormatJson,
     toggleAutoApply
 } from '../commands';
-import { getConfig, getVisualMetadata, providerVersions } from '../config';
+import {
+    getConfig,
+    getVisualMetadata,
+    providerVersions
+} from '../../core/utils/config';
 import { IDataViewFlags } from '../dataView';
 import { getState } from '../store';
 import { ICompiledSpec } from '../specification';

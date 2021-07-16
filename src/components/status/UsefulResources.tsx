@@ -3,7 +3,7 @@ import * as React from 'react';
 import { Link, ILinkStyles } from '@fluentui/react/lib/Link';
 import { IStackTokens, Stack } from '@fluentui/react/lib/Stack';
 
-import { getConfig, getVisualMetadata } from '../../api/config';
+import { getConfig, getVisualMetadata } from '../../core/utils/config';
 import { theme } from '../../api/fluent';
 
 import { BodyHeading } from '../elements/Typography';

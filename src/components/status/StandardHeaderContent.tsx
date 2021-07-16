@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { getVisualMetadata } from '../../api/config';
+import { getVisualMetadata } from '../../core/utils/config';
 import { getVersionInfo } from '../../api/ui';
 
 import {

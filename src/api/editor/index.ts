@@ -22,7 +22,7 @@ import * as vegaSchema from 'vega/build/vega-schema.json';
 import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
 
 import { updateDirtyFlag } from '../../store/visualReducer';
-import { getConfig } from '../config';
+import { getConfig } from '../../core/utils/config';
 import { ITableColumnMetadata } from '../dataset';
 import {
     getBaseValidator,

@@ -1,4 +1,4 @@
-import { getConfig } from '../../api/config';
+import { getConfig } from '../../core/utils/config';
 
 type TIndentContext = 'editor' | 'tooltip';
 

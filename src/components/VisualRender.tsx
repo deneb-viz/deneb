@@ -71,8 +71,6 @@ const VisualRender = () => {
                             data={data}
                             renderer={renderMode}
                             actions={false}
-                            width={width}
-                            height={height}
                             tooltip={tooltipHandler}
                             config={config}
                             signalListeners={signalListeners}
@@ -92,8 +90,6 @@ const VisualRender = () => {
                             data={data}
                             renderer={renderMode}
                             actions={false}
-                            width={width}
-                            height={height}
                             tooltip={tooltipHandler}
                             config={config}
                             signalListeners={signalListeners}

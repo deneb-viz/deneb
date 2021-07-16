@@ -13,6 +13,10 @@
                 "schemaUrl": {
                     "description": "Location of applicable provider JSON schema.",
                     "type": "string"
+                },
+                "patch": {
+                    "description": "Power BI & provider-specific patches for specifications.",
+                    "type": "object"
                 }
             }
         },

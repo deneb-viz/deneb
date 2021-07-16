@@ -1,5 +1,5 @@
 import SettingsBase from './SettingsBase';
-import { getConfig } from '../api/config';
+import { getConfig } from '../core/utils/config';
 import { TEditorPosition } from '../api/ui';
 
 /**

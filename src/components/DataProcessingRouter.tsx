@@ -7,6 +7,7 @@ import VisualRender from './VisualRender';
 import ApplyDialog from './modal/ApplyDialog';
 import SplashInitial from './status/SplashInitial';
 import { i18nValue } from '../core/ui/i18n';
+import { getRenderedVisualCanvasStyle } from '../core/ui/dom';
 
 const DataProcessingRouter = () => {
     const { dataProcessingStage } = useSelector(state).visual;
@@ -23,7 +24,7 @@ const DataProcessingRouter = () => {
         }
         case 'Processed': {
             return (
-                <div id='renderedVisual'>
+                <div id='renderedVisual' style={getRenderedVisualCanvasStyle()}>
                     <VisualRender />
                     <ApplyDialog />
                 </div>

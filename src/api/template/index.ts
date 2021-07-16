@@ -45,7 +45,7 @@ import {
     updateTemplateImportState
 } from '../../store/templateReducer';
 
-import { getConfig, getVisualMetadata } from '../config';
+import { getConfig, getVisualMetadata } from '../../core/utils/config';
 import {
     determineProviderFromSpec,
     getParsedConfigFromSettings,

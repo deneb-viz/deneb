@@ -29,7 +29,7 @@ import {
 } from '../../store/visualReducer';
 import { updateSelectedTemplate } from '../../store/templateReducer';
 
-import { getConfig, getVisualMetadata } from '../config';
+import { getConfig, getVisualMetadata } from '../../core/utils/config';
 import { TEditorRole } from '../editor';
 import {
     resolveObjectProperties,

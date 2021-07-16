@@ -18,7 +18,7 @@ import {
 import { IPartialTheme } from '@fluentui/react/lib/Theme';
 import { i18nValue } from '../../core/ui/i18n';
 
-import { getConfig } from '../config';
+import { getConfig } from '../../core/utils/config';
 
 const theme = <IPartialTheme>getConfig()?.fluentUiTheme || {};
 
