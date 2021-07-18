@@ -85,7 +85,8 @@
             "debounceInterval": 200,
             "tabSize": 2,
             "position": "left",
-            "fontSize": 10
+            "fontSize": 10,
+            "showViewportMarker": true
         },
         "vega": {
             "jsonSpec": null,

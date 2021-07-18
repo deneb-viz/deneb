@@ -7,10 +7,10 @@ import VisualRender from './VisualRender';
 import ApplyDialog from './modal/ApplyDialog';
 import SplashInitial from './status/SplashInitial';
 import { i18nValue } from '../core/ui/i18n';
-import { getRenderedVisualCanvasStyle } from '../core/ui/dom';
+import { getViewModeViewportStyles } from '../core/ui/dom';
 
 const DataProcessingRouter = () => {
-    const { dataProcessingStage } = useSelector(state).visual;
+    const { dataProcessingStage, viewModeViewport, visualMode } = useSelector(state).visual;
 
     switch (dataProcessingStage) {
         case 'Initial': {
@@ -24,7 +24,10 @@ const DataProcessingRouter = () => {
         }
         case 'Processed': {
             return (
-                <div id='renderedVisual' style={getRenderedVisualCanvasStyle()}>
+                <div
+                    id='renderedVisual'
+                    style={getViewModeViewportStyles(viewModeViewport, visualMode === 'Editor')}
+                >
                     <VisualRender />
                     <ApplyDialog />
                 </div>

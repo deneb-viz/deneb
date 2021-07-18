@@ -170,6 +170,15 @@
                             "fontSize": true
                         }
                     }
+                },
+                "showViewportMarker": {
+                    "displayNameKey": "Objects_Editor_ShowViewportMarker",
+                    "descriptionKey": "Objects_Editor_ShowViewportMarker_Description",
+                    "displayName": "Viewport Marker",
+                    "description": "Viewport Marker description",
+                    "type": {
+                        "bool": true
+                    }
                 }
             }
         },

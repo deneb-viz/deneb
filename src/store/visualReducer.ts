@@ -54,7 +54,6 @@ const visualSlice = createSlice({
             state.isInFocus = pl.options.isInFocus;
             state.settings = pl.settings;
             state.isNewDialogVisible = pl.settings.vega.isNewDialogOpen;
-            state.viewport = pl.options.viewport;
             state.viewMode = pl.options.viewMode;
             state.dataViewObjects =
                 pl.options.dataViews[0]?.metadata.objects || {};
@@ -67,6 +66,12 @@ const visualSlice = createSlice({
                 state.viewMode,
                 state.spec
             );
+
+            state.viewport = pl.options.viewport;
+            if (visualMode !== 'Editor') {
+                state.viewModeViewport = { ...pl.options.viewport };
+            }
+
             state.resizablePaneDefaultWidth = getResizablePaneDefaultWidth(
                 pl.options.viewport,
                 state.settings.editor.position

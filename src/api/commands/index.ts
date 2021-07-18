@@ -10,7 +10,6 @@ export {
     openEditorPivotItem,
     openHelpSite,
     repairFormatJson,
-    toggleAutoApply,
     toggleEditorPane,
     updateBooleanProperty,
     updateProvider,
@@ -46,6 +45,7 @@ import { getState, store } from '../store';
 import { updateExportState } from '../template';
 import { TModalDialogType } from '../ui';
 import { hostServices } from '../../core/services';
+import { toggleAutoApplyState } from '../../core/ui/commands';
 
 const hotkeyOptions: Options = {
     enableOnTags: ['INPUT', 'SELECT', 'TEXTAREA']
@@ -89,7 +89,7 @@ const getVisualHotkeys = (): IKeyboardShortcut[] => [
     },
     {
         keys: getCommandKeyBinding('autoApplyToggle'),
-        command: () => toggleAutoApply(),
+        command: () => toggleAutoApplyState(),
         options: hotkeyOptions
     },
     {
@@ -97,6 +97,7 @@ const getVisualHotkeys = (): IKeyboardShortcut[] => [
         command: () => repairFormatJson(),
         options: hotkeyOptions
     },
+    // TODO: viewport indicator toggle
     {
         keys: getCommandKeyBinding('newTemplate'),
         command: () => createExportableTemplate(),
@@ -154,11 +155,6 @@ const openHelpSite = () => {
 
 const repairFormatJson = () => fixAndFormat();
 
-const toggleAutoApply = () => {
-    applyChanges();
-    dispatchAutoApply();
-};
-
 const toggleEditorPane = () => {
     applyChanges();
     dispatchEditorPaneToggle();
@@ -178,10 +174,6 @@ interface IKeyboardShortcut {
     command: () => void;
     options: Options;
 }
-
-const dispatchAutoApply = () => {
-    store.dispatch(rdxToggleAutoApply());
-};
 
 const dispatchDefaultTemplate = () => {
     store.dispatch(updateSelectedTemplate(0));

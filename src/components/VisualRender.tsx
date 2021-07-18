@@ -22,16 +22,10 @@ import { locales } from '../core/ui/i18n';
 const VisualRender = () => {
     Debugger.log('Rendering Component: [VisualRender]...');
 
-    const {
-            dataset,
-            fourd3d3d,
-            loader,
-            settings,
-            spec,
-            vegaViewport
-        } = useSelector(state).visual,
+    const { dataset, fourd3d3d, loader, settings, spec } = useSelector(
+            state
+        ).visual,
         { vega } = settings,
-        { height, width } = vegaViewport,
         { locale } = hostServices,
         data = { dataset: cloneDeep(dataset.values) },
         specification = cloneDeep(spec.spec),

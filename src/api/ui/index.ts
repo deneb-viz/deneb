@@ -29,8 +29,7 @@ import {
     createExportableTemplate,
     createNewSpec,
     openHelpSite,
-    repairFormatJson,
-    toggleAutoApply
+    repairFormatJson
 } from '../commands';
 import {
     getConfig,
@@ -41,6 +40,7 @@ import { IDataViewFlags } from '../dataView';
 import { getState } from '../store';
 import { ICompiledSpec } from '../specification';
 import { i18nValue } from '../../core/ui/i18n';
+import { getAutoApplyToggle } from '../../core/ui/commandBar';
 
 const calculateVegaViewport = (
     viewport: IViewport,
@@ -64,7 +64,7 @@ const getCommandBarEditCommands = (): ICommandBarItemProps[] => {
     const { autoApply, canAutoApply } = getState().visual;
     return [
         getApplyCommandItem(),
-        getAutoApplyCommandItem(autoApply, canAutoApply),
+        getAutoApplyToggle(autoApply, canAutoApply),
         getRepairFormatCommandItem()
     ];
 };
@@ -212,24 +212,6 @@ const getApplyCommandItem = (): ICommandBarItemProps => ({
     onClick: applyChanges
 });
 
-const getAutoApplyCommandItem = (
-    enabled: boolean,
-    canAutoApply: boolean
-): ICommandBarItemProps => ({
-    key: 'autoApply',
-    text: resolveAutoApplyText(enabled),
-    ariaLabel: resolveAutoApplyAriaLabel(enabled),
-    iconOnly: true,
-    iconProps: {
-        iconName: resolveAutoApplyIcon(enabled)
-    },
-    toggle: true,
-    checked: enabled,
-    buttonStyles: commandBarButtonStyles,
-    disabled: !canAutoApply,
-    onClick: toggleAutoApply
-});
-
 const getRepairFormatCommandItem = (): ICommandBarItemProps => ({
     key: 'formatJson',
     text: i18nValue('Button_Format_Json'),
@@ -273,16 +255,3 @@ const getHelpCommandItem = (): ICommandBarItemProps => ({
     buttonStyles: commandBarButtonStyles,
     onClick: openHelpSite
 });
-
-const resolveAutoApplyAriaLabel = (enabled: boolean) =>
-    enabled
-        ? i18nValue('Button_Auto_Apply_Off')
-        : i18nValue('Button_Auto_Apply_On');
-
-const resolveAutoApplyText = (enabled: boolean) =>
-    enabled
-        ? i18nValue('Button_Auto_Apply_Off')
-        : i18nValue('Button_Auto_Apply_On');
-
-const resolveAutoApplyIcon = (enabled: boolean) =>
-    enabled ? 'CircleStopSolid' : 'PlaybackRate1x';

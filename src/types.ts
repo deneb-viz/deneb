@@ -83,6 +83,7 @@ export interface IVisualSliceState {
     stagedSpec: string;
     themeColors: string[];
     updates: number;
+    viewModeViewport: IViewport;
     vegaViewport: IViewport;
     visualMode: TVisualMode;
     viewMode: ViewMode;

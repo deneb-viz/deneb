@@ -54,6 +54,7 @@ const visualReducer: IVisualSliceState = {
     settings: <VisualSettings>VisualSettings.getDefault(),
     vegaViewport: { width: 0, height: 0 },
     viewMode: ViewMode.View,
+    viewModeViewport: { width: 0, height: 0 },
     viewport: { width: 0, height: 0 },
     visualMode: 'SplashInitial'
 };

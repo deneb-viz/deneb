@@ -50,7 +50,13 @@
             "description": "For the Ace editor used with `jsoneditor`, this object tracks any configuration values that aren't covered in any logic or properties elsewhere.",
             "type": "object",
             "additionalProperties": false,
-            "required": ["debounceInterval", "tabSize", "position"],
+            "required": [
+                "debounceInterval",
+                "tabSize",
+                "position",
+                "fontSize",
+                "showViewportMarker"
+            ],
             "properties": {
                 "debounceInterval": {
                     "description": "Time (in ms) before debouncing user input to Redux, the longer the interval, the less chatty things are, but the longer the perceived lag for things to happen after the user finishes typing in the editor.",
@@ -67,6 +73,10 @@
                 "fontSize": {
                     "description": "Size of editor font (in pt)",
                     "type": "integer"
+                },
+                "showViewportMarker": {
+                    "description": "Whether to show viewport marker for actual size of visual prior to opening editor.",
+                    "type": "boolean"
                 }
             }
         },
