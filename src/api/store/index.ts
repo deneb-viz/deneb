@@ -7,6 +7,7 @@ import { ErrorObject } from 'ajv';
 
 import visualReducer from '../../store/visualReducer';
 import templateReducer from '../../store/templateReducer';
+import zoomReducer from '../../store/zoomReducer';
 
 import { IDenebTemplateMetadata } from '../../schema/template-v1';
 
@@ -21,7 +22,8 @@ import {
 const getNewStore = () => {
     const reducer = combineReducers({
         visual: visualReducer,
-        templates: templateReducer()
+        templates: templateReducer(),
+        zoom: zoomReducer
     });
     return configureStore({
         reducer

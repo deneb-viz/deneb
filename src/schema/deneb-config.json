@@ -322,14 +322,40 @@
                     "type": "integer"
                 }
             }
+        },
+        "zoomLevel": {
+            "description": "Settings for managing zoom level configuration when working with rendered visual output in the visual editor",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["min", "max", "step", "default"],
+            "properties": {
+                "min": {
+                    "description": "Minimum zoom level.",
+                    "type": "integer"
+                },
+                "max": {
+                    "description": "Maximum zoom level.",
+                    "type": "integer"
+                },
+                "step": {
+                    "description": "Amount to step by when clicking or dragging the zoom slider.",
+                    "type": "integer"
+                },
+                "default": {
+                    "description": "Default zoom level.",
+                    "type": "integer"
+                }
+            }
         }
     },
     "required": [
         "features",
         "fluentUiTheme",
         "templates",
+        "providerResources",
         "propertyDefaults",
         "splitPaneDefaults",
+        "zoomLevel",
         "visualViewPortAdjust"
     ]
 }

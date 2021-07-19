@@ -4,7 +4,7 @@ import { Stack, IStackTokens, IStackStyles } from '@fluentui/react/lib/Stack';
 
 const verticalStackOuterStyles: IStackStyles = {
     root: {
-        height: '100vh'
+        height: '100%'
     }
 };
 

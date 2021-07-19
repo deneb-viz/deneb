@@ -8,6 +8,7 @@ import SplashInitial from './status/SplashInitial';
 import SplashReadOnly from './status/SplashReadOnly';
 import SplashReadWrite from './status/SplashReadWrite';
 import SplashNoSpec from './status/SplashNoSpec';
+import SpecificationError from './status/SpecificationError';
 
 const MainInterface = () => {
     const { visualMode } = useSelector(state).visual;

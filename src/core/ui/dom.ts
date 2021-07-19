@@ -7,25 +7,17 @@ export const getEditorHeadingIconClassName = (expanded: boolean) =>
 
 export const getViewModeViewportStyles = (
     viewport: IViewport,
-    isEditor: boolean
+    isEditor: boolean,
+    zoomLevel: number,
+    showViewportMarker: boolean
 ): React.CSSProperties => {
     const adjust = 4,
         resolved = `calc(100% - ${adjust}px)`;
     return {
         height: isEditor ? viewport.height : resolved,
-        width: isEditor ? viewport.width : resolved
-    };
-};
-
-export const getViewportIndicatorStyles = (
-    viewport: IViewport,
-    enabled: boolean,
-    isEditor: boolean
-): React.CSSProperties => {
-    return {
-        ...getViewModeViewportStyles(viewport, isEditor),
-        ...{
-            visibility: enabled ? 'visible' : 'hidden'
-        }
+        width: isEditor ? viewport.width : resolved,
+        transform: `scale(${zoomLevel / 100})`, // TODO: better logic
+        transformOrigin: '0% 0% 0px',
+        border: showViewportMarker ? '1px dashed #b3b3b3' : null
     };
 };
