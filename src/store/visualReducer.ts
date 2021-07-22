@@ -9,14 +9,16 @@ import { visualReducer as initialState } from '../config/visualReducer';
 import { getEmptyDataset, IVisualDataset } from '../api/dataset';
 import { IDataProcessingPayload, IDataViewFlags } from '../api/dataView';
 import { TEditorRole } from '../api/editor';
+import { resolveVisualMode } from '../api/ui';
+import { ICompiledSpec, IFixResult } from '../api/specification';
 import {
     calculateVegaViewport,
+    getEditorPreviewAreaWidth,
     getResizablePaneDefaultWidth,
-    getResizablePaneSize,
-    resolveVisualMode
-} from '../api/ui';
-import { ICompiledSpec, IFixResult } from '../api/specification';
+    getResizablePaneSize
+} from '../core/ui/advancedEditor';
 import VisualSettings from '../properties/VisualSettings';
+import { IVisualSliceState } from '../types';
 
 interface IVisualDatasetUpdatePayload {
     categories: DataViewCategoryColumn[];
@@ -98,6 +100,7 @@ const visualSlice = createSlice({
                 state.viewport,
                 state.settings.editor.position
             );
+            state.editorPreviewAreaWidth = updateEditorPreviewAreaWidth(state);
 
             // Resolve visual viewport
             state.vegaViewport = calculateVegaViewport(
@@ -144,6 +147,7 @@ const visualSlice = createSlice({
                 state.viewport,
                 state.settings.editor.position
             );
+            state.editorPreviewAreaWidth = updateEditorPreviewAreaWidth(state);
         },
         resetLoadingCounters: (state, action?: PayloadAction<boolean>) => {
             state.dataWindowsLoaded = 0;
@@ -194,6 +198,7 @@ const visualSlice = createSlice({
             );
             state.resizablePaneWidth = editorPaneWidth;
             state.resizablePaneExpandedWidth = editorPaneExpandedWidth;
+            state.editorPreviewAreaWidth = updateEditorPreviewAreaWidth(state);
         },
         toggleEditorPane: (state) => {
             const newExpansionState = !state.editorPaneIsExpanded,
@@ -205,6 +210,7 @@ const visualSlice = createSlice({
                 );
             state.editorPaneIsExpanded = newExpansionState;
             state.resizablePaneWidth = newWidth;
+            state.editorPreviewAreaWidth = updateEditorPreviewAreaWidth(state);
             state.vegaViewport = calculateVegaViewport(
                 state.viewport,
                 newWidth,
@@ -245,6 +251,13 @@ const visualSlice = createSlice({
         }
     }
 });
+
+const updateEditorPreviewAreaWidth = (state) =>
+    getEditorPreviewAreaWidth(
+        state.viewport.width,
+        state.resizablePaneWidth,
+        state.settings.editor.position
+    );
 
 const visualReducer = visualSlice.reducer;
 

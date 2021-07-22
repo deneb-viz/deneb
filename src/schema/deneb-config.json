@@ -191,7 +191,11 @@
                 "navigateConfig",
                 "navigateSettings",
                 "toggleEditorPane",
-                "editorFocusOut"
+                "editorFocusOut",
+                "zoomIn",
+                "zoomOut",
+                "zoomReset",
+                "zoomFit"
             ],
             "properties": {
                 "applyChanges": {
@@ -236,6 +240,22 @@
                 },
                 "editorFocusOut": {
                     "description": "Command to focus out of editor and back to main pane.",
+                    "type": "string"
+                },
+                "zoomIn": {
+                    "description": "Zoom in by step value.",
+                    "type": "string"
+                },
+                "zoomOut": {
+                    "description": "Zoom out by step value.",
+                    "type": "string"
+                },
+                "zoomReset": {
+                    "description": "Reset zoom level to default.",
+                    "type": "string"
+                },
+                "zoomFit": {
+                    "description": "Set zoom level to fit visual.",
                     "type": "string"
                 }
             }

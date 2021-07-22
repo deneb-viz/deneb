@@ -1,11 +1,6 @@
 export {
-    calculateVegaViewport,
     getCommandBarEditCommands,
     getCommandBarFarCommands,
-    getResizablePaneDefaultWidth,
-    getResizablePaneMaxSize,
-    getResizablePaneMinSize,
-    getResizablePaneSize,
     getVersionInfo,
     isApplyDialogHidden,
     isDialogOpen,
@@ -16,12 +11,11 @@ export {
 };
 
 import powerbi from 'powerbi-visuals-api';
-import IViewport = powerbi.IViewport;
 import ViewMode = powerbi.ViewMode;
 import EditMode = powerbi.EditMode;
 import { ICommandBarItemProps } from '@fluentui/react/lib/CommandBar';
 
-import { commandBarButtonStyles } from '../../config/styles';
+import { commandBarButtonStyles } from '../../core/ui/commandBar';
 
 import {
     isApplyButtonEnabled,
@@ -31,34 +25,12 @@ import {
     openHelpSite,
     repairFormatJson
 } from '../commands';
-import {
-    getConfig,
-    getVisualMetadata,
-    providerVersions
-} from '../../core/utils/config';
+import { getVisualMetadata, providerVersions } from '../../core/utils/config';
 import { IDataViewFlags } from '../dataView';
 import { getState } from '../store';
 import { ICompiledSpec } from '../specification';
 import { i18nValue } from '../../core/ui/i18n';
 import { getAutoApplyToggle } from '../../core/ui/commandBar';
-
-const calculateVegaViewport = (
-    viewport: IViewport,
-    paneWidth: number,
-    visualMode: TVisualMode,
-    position: TEditorPosition
-) => {
-    let { height } = viewport,
-        width =
-            (visualMode === 'Editor' &&
-                (position === 'right'
-                    ? paneWidth
-                    : viewport.width - paneWidth)) ||
-            viewport.width;
-    height -= visualViewportAdjust.top;
-    width -= visualViewportAdjust.left;
-    return { width, height };
-};
 
 const getCommandBarEditCommands = (): ICommandBarItemProps[] => {
     const { autoApply, canAutoApply } = getState().visual;
@@ -74,64 +46,6 @@ const getCommandBarFarCommands = (): ICommandBarItemProps[] => [
     getExportSpecCommandItem(),
     getHelpCommandItem()
 ];
-
-const getResizablePaneDefaultWidth = (
-    viewport: IViewport,
-    position: TEditorPosition
-) => {
-    if (position === 'right') {
-        return viewport.width * (1 - splitPaneDefaults.defaultSizePercent);
-    }
-    return viewport.width * splitPaneDefaults.defaultSizePercent;
-};
-
-const getResizablePaneMaxSize = () => {
-    const { editorPaneIsExpanded, settings, viewport } = getState().visual,
-        { editor } = settings,
-        { maxSizePercent, minSize, collapsedSize } = splitPaneDefaults,
-        resolvedSize =
-            (editorPaneIsExpanded &&
-                (editor.position === 'right'
-                    ? viewport.width - minSize
-                    : viewport.width * maxSizePercent)) ||
-            collapsedSize;
-    return resolvedSize;
-};
-
-const getResizablePaneMinSize = () => {
-    const { editorPaneIsExpanded, settings, viewport } = getState().visual,
-        { editor } = settings,
-        { minSize, maxSizePercent, collapsedSize } = splitPaneDefaults;
-    let resolvedCollapsedSize =
-            editor.position === 'right'
-                ? viewport.width - collapsedSize
-                : collapsedSize,
-        resolvedMinSize =
-            editor.position === 'right'
-                ? viewport.width * (1 - maxSizePercent)
-                : minSize,
-        resolvedSize =
-            (editorPaneIsExpanded && resolvedMinSize) || resolvedCollapsedSize;
-    return resolvedSize;
-};
-
-const getResizablePaneSize = (
-    paneExpandedWidth: number,
-    editorPaneIsExpanded: boolean,
-    viewport: IViewport,
-    position: TEditorPosition
-) => {
-    const collapsedSize =
-            position === 'right'
-                ? viewport.width - splitPaneDefaults.collapsedSize
-                : splitPaneDefaults.collapsedSize,
-        resolvedWidth =
-            (editorPaneIsExpanded && paneExpandedWidth) ||
-            (editorPaneIsExpanded &&
-                getResizablePaneDefaultWidth(viewport, position)) ||
-            collapsedSize;
-    return resolvedWidth;
-};
 
 const getVersionInfo = () => {
     const visualMetadata = getVisualMetadata();
@@ -185,9 +99,6 @@ const isReadWriteDefault = (viewMode: ViewMode, editMode: EditMode) =>
     viewMode === ViewMode.Edit;
 const isReadWriteAdvanced = (viewMode: ViewMode, editMode: EditMode) =>
     viewMode === ViewMode.Edit && editMode === EditMode.Advanced;
-
-const splitPaneDefaults = getConfig().splitPaneDefaults;
-const visualViewportAdjust = getConfig().visualViewPortAdjust;
 
 type TEditorPosition = 'left' | 'right';
 type TModalDialogType = 'new' | 'export';

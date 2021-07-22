@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { CommandBar } from '@fluentui/react/lib/CommandBar';
 
-import { commandBarStyles } from '../../config/styles';
+import { commandBarStyles } from '../../core/ui/commandBar';
 import {
     getCommandBarEditCommands,
     getCommandBarFarCommands

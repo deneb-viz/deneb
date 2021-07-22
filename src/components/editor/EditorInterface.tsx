@@ -11,7 +11,10 @@ import EditorPreview from './EditorPreview';
 import NewVisualDialog from '../create/NewVisualDialog';
 import ExportVisualDialog from '../export/ExportVisualDialog';
 import { getVisualHotkeys } from '../../api/commands';
-import { getResizablePaneMaxSize, getResizablePaneMinSize } from '../../api/ui';
+import {
+    getResizablePaneMaxSize,
+    getResizablePaneMinSize
+} from '../../core/ui/advancedEditor';
 
 const EditorInterface: React.FC = () => {
     Debugger.log('Rendering Component: [EditorInterface]...');

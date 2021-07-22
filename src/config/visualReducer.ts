@@ -25,6 +25,7 @@ const visualReducer: IVisualSliceState = {
     dataWindowsLoaded: 0,
     editMode: EditMode.Default,
     editorPaneIsExpanded: true,
+    editorPreviewAreaWidth: null,
     fixResult: {
         success: true,
         dismissed: false,

@@ -13,10 +13,6 @@ Manages interface-specific operations.
 
 ## Methods
 
-#### `calculateVegaViewport`(_viewport_, _paneWidth_, _interfaceType_, _position_)
-
-Calculate the dimensions of the Vega/Vega-Lite visual viewport (height/width) based on the interface state and a number of other factors (including any config defaults).
-
 #### `getCommandBarEditCommands`()
 
 Gets the command bar items for the left side of the bar, which is concerned with persistence.
@@ -24,22 +20,6 @@ Gets the command bar items for the left side of the bar, which is concerned with
 #### `getCommandBarFarCommands`()
 
 Gets the command bar items for the far side of the bar, which is concerned with templating and support operations.
-
-#### `getResizablePaneDefaultWidth`(_viewport_, _position_)
-
-Calculate the default size of the resizable pane (in px) based on current viewport size and config defaults.
-
-#### `getResizablePaneMaxSiz`e()
-
-Work out what the maximum size of the resizable pane should be (in px), based on the persisted visual (store) state.
-
-#### `getResizablePaneMinSize`()
-
-Work out what the minimum size of the resizable pane should be (in px), based on the persisted visual (store) state.
-
-#### `getResizablePaneSize`(_paneExpandedWidth_, _editorPaneIsExpanded_, _viewport_, _position_)
-
-Based on the current state of the resizable pane, resolve its actual width on the screen.
 
 #### `getVersionInfo`()
 

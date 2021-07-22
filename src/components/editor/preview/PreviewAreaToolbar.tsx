@@ -10,6 +10,10 @@ import {
 import ZoomControls from './ZoomControls';
 
 import { theme } from '../../../api/fluent';
+import {
+    previewToolbarHeight,
+    previewToolbarPadding
+} from '../../../core/ui/advancedEditor';
 
 const previewToolbarStackStyles = {
         root: {
@@ -21,13 +25,13 @@ const previewToolbarStackStyles = {
             width: '100%',
             borderTop: `1px solid ${theme.palette.neutralLight}`,
             backgroundColor: theme.palette.neutralLighterAlt,
-            height: 30,
+            height: previewToolbarHeight,
             justifyContent: 'flex-end'
         }
     },
     horiztontalStackTokens: IStackTokens = {
-        childrenGap: 5,
-        padding: 3
+        childrenGap: 0,
+        padding: previewToolbarPadding
     };
 
 const PreviewAreaToolbar: React.FC = () => {

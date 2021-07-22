@@ -38,17 +38,21 @@
         }
     },
     "keyBindings": {
-        "applyChanges": "ctrl+enter",
-        "autoApplyToggle": "ctrl+shift+enter",
-        "repairFormatJson": "ctrl+alt+r",
-        "newTemplate": "ctrl+alt+e",
-        "newSpecification": "ctrl+alt+n",
-        "openHelpUrl": "ctrl+alt+h",
-        "navigateSpecification": "ctrl+alt+1",
-        "navigateConfig": "ctrl+alt+2",
-        "navigateSettings": "ctrl+alt+3",
-        "toggleEditorPane": "ctrl+alt+space",
-        "editorFocusOut": "esc"
+        "applyChanges": "ctrl|enter",
+        "autoApplyToggle": "ctrl|shift|enter",
+        "repairFormatJson": "ctrl|alt|r",
+        "newTemplate": "ctrl|alt|e",
+        "newSpecification": "ctrl|alt|n",
+        "openHelpUrl": "ctrl|alt|h",
+        "navigateSpecification": "ctrl|alt|1",
+        "navigateConfig": "ctrl|alt|2",
+        "navigateSettings": "ctrl|alt|3",
+        "toggleEditorPane": "ctrl|alt|space",
+        "editorFocusOut": "esc",
+        "zoomIn": "ctrl|alt|num_add,ctrl|alt|=",
+        "zoomOut": "ctrl|alt|num_subtract,ctrl|alt|-",
+        "zoomReset": "ctrl|alt|0,ctrl|alt|num_0",
+        "zoomFit": "ctrl|alt|num_multiply"
     },
     "templates": {
         "metadataVersion": 1

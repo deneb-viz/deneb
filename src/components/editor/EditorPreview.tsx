@@ -15,6 +15,10 @@ import { theme } from '../../api/fluent';
 import DataProcessingRouter from '../DataProcessingRouter';
 import SpecificationError from '../status/SpecificationError';
 import PreviewAreaToolbar from './preview/PreviewAreaToolbar';
+import {
+    getPreviewAreaHeight,
+    previewAreaPadding
+} from '../../core/ui/advancedEditor';
 
 const verticalStackTokens: IStackTokens = {
         childrenGap: 0
@@ -24,19 +28,20 @@ const verticalStackTokens: IStackTokens = {
             height: '100vh',
             border: `1px solid ${theme.palette.neutralLight}`
         }
-    },
-    editorPreviewStyles: IStackItemStyles = {
-        root: {
-            display: 'flex',
-            boxSizing: 'border-box',
-            overflow: 'auto',
-            padding: 5
-        }
     };
 
 const EditorPreview: React.FC = () => {
     const { visual, zoom } = useSelector(state),
-        { spec } = visual,
+        { editorPreviewAreaWidth, spec } = visual,
+        editorPreviewStyles: IStackItemStyles = {
+            root: {
+                display: 'flex',
+                boxSizing: 'border-box',
+                overflow: 'auto',
+                padding: previewAreaPadding,
+                height: getPreviewAreaHeight()
+            }
+        },
         resolveContent = () => {
             switch (spec.status) {
                 case 'error':
@@ -57,6 +62,7 @@ const EditorPreview: React.FC = () => {
             id='editorPreviewStack'
             tokens={verticalStackTokens}
             styles={verticalStackStyles}
+            style={{ width: editorPreviewAreaWidth }}
         >
             <StackItem verticalFill styles={editorPreviewStyles}>
                 {resolveContent()}

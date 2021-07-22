@@ -19,7 +19,6 @@ import {
     IStyleSet,
     IPivotStyles,
     IButtonStyles,
-    ICommandBarStyles,
     ITextStyles
 } from '@fluentui/react';
 
@@ -30,13 +29,10 @@ export {
     choiceGroupStyles,
     choiceItemStyles,
     choiceStackTokens,
-    commandBarStyles,
-    commandBarButtonStyles,
     detailListStyles,
     exportPivotAssistiveTextStyles,
     exportPivotAssistiveToastTextStyles,
     exportPivotStyles,
-    iconButtonStyles,
     modalDialogCloseIconStyles,
     modalDialogContentStyles,
     modalDialogStackStyles,
@@ -61,22 +57,7 @@ export {
 const defaultTheme: ITheme = getTheme();
 
 // Buttons
-const iconButtonStyles: IButtonStyles = {
-        root: {
-            boxSizing: 'border-box',
-            display: 'flex',
-            selectors: {
-                '&:hover': { background: theme.palette.neutralLight },
-                '&:focus': { background: theme.palette.neutralLighterAlt }
-            }
-        },
-        icon: { color: theme.palette.neutralPrimary },
-        iconHovered: { color: theme.palette.neutralDark },
-        iconPressed: { color: theme.palette.neutralDark },
-        label: { color: theme.palette.neutralPrimary },
-        labelHovered: { color: theme.palette.neutralDark }
-    },
-    actionButtonStyles: IButtonStyles = {
+const actionButtonStyles: IButtonStyles = {
         root: {
             boxSizing: 'border-box',
             display: 'flex',
@@ -110,26 +91,6 @@ const iconButtonStyles: IButtonStyles = {
         root: {
             cursor: 'pointer'
         }
-    };
-
-// Command bar
-const commandBarStyles: ICommandBarStyles = {
-        root: {
-            backgroundColor: theme.palette.neutralLighterAlt,
-            padding: 0
-        }
-    },
-    commandBarButtonStyles: IButtonStyles = {
-        root: {
-            backgroundColor: theme.palette.neutralLighterAlt
-        },
-        rootDisabled: {
-            backgroundColor: theme.palette.neutralLighterAlt
-        },
-        icon: { color: theme.palette.neutralPrimary },
-        iconHovered: { color: theme.palette.neutralDark },
-        iconPressed: { color: theme.palette.neutralDark },
-        iconChecked: { color: theme.palette.neutralDark }
     };
 
 // Horizontal choice group (settings pivot)

@@ -19,7 +19,6 @@ export {
 
 import { Options } from 'react-hotkeys-hook';
 import {
-    toggleAutoApply as rdxToggleAutoApply,
     toggleEditorPane as rdxToggleEditorPane,
     fourd3d3d as rdxFourd3d3d,
     updateDirtyFlag,
@@ -45,10 +44,18 @@ import { getState, store } from '../store';
 import { updateExportState } from '../template';
 import { TModalDialogType } from '../ui';
 import { hostServices } from '../../core/services';
-import { toggleAutoApplyState } from '../../core/ui/commands';
+import {
+    handleResetZoomLevel,
+    handleSetZoomToFit,
+    handleZoomIn,
+    handleZoomOut,
+    toggleAutoApplyState
+} from '../../core/ui/commands';
+import { KeyHandler } from 'hotkeys-js';
 
 const hotkeyOptions: Options = {
-    enableOnTags: ['INPUT', 'SELECT', 'TEXTAREA']
+    enableOnTags: ['INPUT', 'SELECT', 'TEXTAREA'],
+    splitKey: '|'
 };
 
 const applyChanges = () => persist();
@@ -84,7 +91,7 @@ const fourd3d3d = () => dispatchFourd3d3d();
 const getVisualHotkeys = (): IKeyboardShortcut[] => [
     {
         keys: getCommandKeyBinding('applyChanges'),
-        command: () => applyChanges(),
+        command: applyChanges,
         options: hotkeyOptions
     },
     {
@@ -137,6 +144,26 @@ const getVisualHotkeys = (): IKeyboardShortcut[] => [
         keys: getCommandKeyBinding('editorFocusOut'),
         command: () => focusFirstPivot(),
         options: hotkeyOptions
+    },
+    {
+        keys: getCommandKeyBinding('zoomIn'),
+        command: handleZoomIn,
+        options: hotkeyOptions
+    },
+    {
+        keys: getCommandKeyBinding('zoomOut'),
+        command: handleZoomOut,
+        options: hotkeyOptions
+    },
+    {
+        keys: getCommandKeyBinding('zoomReset'),
+        command: handleResetZoomLevel,
+        options: hotkeyOptions
+    },
+    {
+        keys: getCommandKeyBinding('zoomFit'),
+        command: handleSetZoomToFit,
+        options: hotkeyOptions
     }
 ];
 
@@ -171,7 +198,7 @@ const updateRenderMode = (renderMode: TSpecRenderMode) =>
 
 interface IKeyboardShortcut {
     keys: string;
-    command: () => void;
+    command: KeyHandler;
     options: Options;
 }
 

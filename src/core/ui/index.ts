@@ -1,3 +1,9 @@
+export * as advancedEditor from './advancedEditor';
+export * as aria from './aria';
+export * as commandBar from './commandBar';
+export * as commands from './commands';
 export * as dom from './dom';
+export * as fill from './fill';
 export * as i18n from './i18n';
 export * as icons from './icons';
+export * as labels from './labels';

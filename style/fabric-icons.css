@@ -19,6 +19,12 @@
 .ms-Icon--BarChartVertical:before {
     content: '\E9EC';
 }
+.ms-Icon--CalculatorAddition:before {
+    content: '\E948';
+}
+.ms-Icon--CalculatorSubtract:before {
+    content: '\E949';
+}
 .ms-Icon--Calendar:before {
     content: '\E787';
 }
@@ -27,9 +33,6 @@
 }
 .ms-Icon--CheckMark:before {
     content: '\E73E';
-}
-.ms-Icon--ChevronDown:before {
-    content: '\E70D';
 }
 .ms-Icon--ChevronLeft:before {
     content: '\E76B';
@@ -70,6 +73,9 @@
 .ms-Icon--PlaybackRate1x:before {
     content: '\EC57';
 }
+.ms-Icon--Refresh:before {
+    content: '\E72C';
+}
 .ms-Icon--Repair:before {
     content: '\E90F';
 }
@@ -84,4 +90,16 @@
 }
 .ms-Icon--Unknown:before {
     content: '\E9CE';
+}
+.ms-Icon--Zoom:before {
+    content: '\E71E';
+}
+.ms-Icon--ZoomIn:before {
+    content: '\E8A3';
+}
+.ms-Icon--ZoomOut:before {
+    content: '\E71F';
+}
+.ms-Icon--ZoomToFit:before {
+    content: '\F649';
 }

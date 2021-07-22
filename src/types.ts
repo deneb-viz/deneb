@@ -66,6 +66,7 @@ export interface IVisualSliceState {
     dataWindowsLoaded: number;
     editMode: EditMode;
     editorPaneIsExpanded: boolean;
+    editorPreviewAreaWidth: number;
     fourd3d3d: boolean;
     fixResult: IFixResult;
     isInFocus: boolean;

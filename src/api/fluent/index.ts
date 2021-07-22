@@ -39,10 +39,11 @@ const initializeIcons = (
         },
         icons: {
             BarChartVertical: '\uE9EC',
+            CalculatorAddition: '\uE948',
+            CalculatorSubtract: '\uE949',
             Calendar: '\uE787',
             Cancel: '\uE711',
             CheckMark: '\uE73E',
-            ChevronDown: '\uE70D',
             ChevronLeft: '\uE76B',
             ChevronRight: '\uE76C',
             CircleStopSolid: '\uF2DB',
@@ -56,11 +57,16 @@ const initializeIcons = (
             Page: '\uE7C3',
             Play: '\uE768',
             PlaybackRate1x: '\uEC57',
+            Refresh: '\uE72C',
             Repair: '\uE90F',
             Settings: '\uE713',
             Share: '\uE72D',
             ToggleRight: '\uF19F',
-            Unknown: '\uE9CE'
+            Unknown: '\uE9CE',
+            Zoom: '\uE71E',
+            ZoomIn: '\uE8A3',
+            ZoomOut: '\uE71F',
+            ZoomToFit: '\uF649'
         }
     };
 
