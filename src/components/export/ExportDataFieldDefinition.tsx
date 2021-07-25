@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import { TextField } from 'office-ui-fabric-react/lib/TextField';
-import { Stack } from 'office-ui-fabric-react';
+import { TextField } from '@fluentui/react/lib/TextField';
+import { Stack } from '@fluentui/react/lib/Stack';
 
 import Debugger from '../../Debugger';
 import { IDataFieldLabelProps } from '../../types';

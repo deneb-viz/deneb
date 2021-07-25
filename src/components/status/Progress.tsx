@@ -1,12 +1,12 @@
 import * as React from 'react';
 
-import { ProgressIndicator } from 'office-ui-fabric-react';
+import { ProgressIndicator } from '@fluentui/react/lib/ProgressIndicator';
 
-import Debugger from '../../Debugger';
-import { IProgressProps } from '../../types';
+interface IProgressProps {
+    description?: string;
+}
 
-export const Progress = (props: IProgressProps) => {
-    Debugger.log('Rendering Component: [Progress]...');
+export const Progress: React.FC<IProgressProps> = (props) => {
     return <ProgressIndicator description={props.description} />;
 };
 

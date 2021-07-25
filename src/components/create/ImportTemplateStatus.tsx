@@ -1,22 +1,15 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
 
-import { MessageBar, MessageBarType } from 'office-ui-fabric-react';
+import { MessageBar, MessageBarType } from '@fluentui/react/lib/MessageBar';
 
-import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { Progress } from '../status/Progress';
+import { i18nValue } from '../../core/ui/i18n';
 
 const ImportTemplateStatus: React.FC = () => {
-    Debugger.log('Rendering Component: [ImportTemplateStatus]...');
     const root = useSelector(state),
-        { visual, templates } = root,
-        { i18n } = visual,
-        {
-            templateImportState,
-            templateImportErrorMessage,
-            templateSchemaErrors
-        } = templates,
+        { templateImportState, templateImportErrorMessage } = root.templates,
         standardMessage = (message: string) => (
             <MessageBar messageBarType={MessageBarType.info}>
                 {message}
@@ -36,7 +29,7 @@ const ImportTemplateStatus: React.FC = () => {
                 case 'Validating': {
                     return (
                         <Progress
-                            description={i18n.getDisplayName(
+                            description={i18nValue(
                                 `Template_Import_${templateImportState}`
                             )}
                         />
@@ -44,9 +37,7 @@ const ImportTemplateStatus: React.FC = () => {
                 }
                 default: {
                     return standardMessage(
-                        i18n.getDisplayName(
-                            `Template_Import_${templateImportState}`
-                        )
+                        i18nValue(`Template_Import_${templateImportState}`)
                     );
                 }
             }

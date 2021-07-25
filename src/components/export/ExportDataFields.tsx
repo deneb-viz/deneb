@@ -1,41 +1,29 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
 
-import { Text } from 'office-ui-fabric-react/lib/Text';
-import {
-    Stack,
-    IStackProps,
-    IStackStyles
-} from 'office-ui-fabric-react/lib/Stack';
-
 import {
     DetailsList,
     DetailsListLayoutMode,
-    Selection,
     IColumn,
     SelectionMode,
     IDetailsHeaderProps
-} from 'office-ui-fabric-react/lib/DetailsList';
-import {
-    ITextFieldStyles,
-    TextField
-} from 'office-ui-fabric-react/lib/TextField';
+} from '@fluentui/react/lib/DetailsList';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';
-import ExportDataFieldDefinition from './ExportDataFieldDefinition';
 import { ITemplateDatasetField } from '../../schema/template-v1';
 
 import DataTypeIcon from '../elements/DataTypeIcon';
 import CappedTextField from '../elements/CappedTextField';
 import { exportFieldConstraints } from '../../config';
 import { detailListStyles } from '../../config/styles';
+import { i18nValue } from '../../core/ui/i18n';
 
 const ExportDataFields: React.FC = () => {
     Debugger.log('Rendering Component: [ExportDataFields]...');
     const root = useSelector(state),
         { visual, templates } = root,
-        { i18n, dataset } = visual,
+        { dataset } = visual,
         { metadata } = dataset,
         { templateExportMetadata: templateToGenerate } = templates,
         columns: IColumn[] = [
@@ -48,15 +36,13 @@ const ExportDataFields: React.FC = () => {
             },
             {
                 key: 'name',
-                name: i18n.getDisplayName('Template_Export_Dataset_Field_Name'),
+                name: i18nValue('Template_Export_Dataset_Field_Name'),
                 fieldName: 'name',
                 minWidth: 250
             },
             {
                 key: 'description',
-                name: i18n.getDisplayName(
-                    'Template_Export_Dataset_Field_Description'
-                ),
+                name: i18nValue('Template_Export_Dataset_Field_Description'),
                 fieldName: 'description',
                 minWidth: 450
             }
@@ -93,7 +79,7 @@ const ExportDataFields: React.FC = () => {
                                 exportFieldConstraints.dataset.name.maxLength
                             }
                             inline
-                            description={`${i18n.getDisplayName(
+                            description={`${i18nValue(
                                 `Template_Export_Kind_${item.kind}`
                             )} ${item.namePlaceholder}`}
                         />

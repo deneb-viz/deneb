@@ -1,13 +1,14 @@
 import * as React from 'react';
 
-import { IconButton } from 'office-ui-fabric-react';
+import { IconButton } from '@fluentui/react/lib/Button';
 
-import Debugger from '../../Debugger';
-import { IFieldInfoIconProps } from '../../types';
 import { templateTypeInfoIconStyles } from '../../config/styles';
 
+interface IFieldInfoIconProps {
+    description: string;
+}
+
 const FieldInfoIcon: React.FC<IFieldInfoIconProps> = (props) => {
-    Debugger.log('Rendering component: [FieldInfoIcon]...');
     return (
         props.description &&
         ((

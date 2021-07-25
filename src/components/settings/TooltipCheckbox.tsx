@@ -1,28 +1,26 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
-import { Checkbox } from 'office-ui-fabric-react';
+import { Checkbox } from '@fluentui/react/lib/Checkbox';
 
-import Debugger from '../../Debugger';
-import { visualFeatures } from '../../config';
 import { state } from '../../store';
-import { commandService } from '../../services';
+import { updateBooleanProperty } from '../../api/commands';
+import { isHandlerEnabled } from '../../api/tooltip';
+import { i18nValue } from '../../core/ui/i18n';
 
 const TooltipCheckbox = () => {
-    Debugger.log('Rendering Component: [TooltipCheckbox]...');
-    const { i18n, settings } = useSelector(state).visual,
+    const { settings } = useSelector(state).visual,
         { vega } = settings,
         handleTooltips = React.useCallback(
             (ev: React.FormEvent<HTMLElement>, checked: boolean): void => {
                 const value = !!checked;
-                Debugger.log(`Updating tooltips to ${checked}...`);
-                commandService.updateBooleanProperty('enableTooltips', value);
+                updateBooleanProperty('enableTooltips', value);
             },
             []
         );
     return (
-        visualFeatures.tooltipHandler && (
+        isHandlerEnabled && (
             <Checkbox
-                label={i18n.getDisplayName('Objects_Vega_EnableTooltips')}
+                label={i18nValue('Objects_Vega_EnableTooltips')}
                 checked={vega.enableTooltips}
                 onChange={handleTooltips}
             />

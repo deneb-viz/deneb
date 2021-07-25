@@ -1,22 +1,19 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
-import { Pivot, PivotItem } from '@fluentui/react-tabs';
+import { Pivot, PivotItem } from '@fluentui/react/lib/Pivot';
 
-import Debugger from '../../Debugger';
 import { state } from '../../store';
-import { TEditorOperation } from '../../types';
-import { commandService } from '../../services';
+import { openEditorPivotItem } from '../../api/commands';
+import { TEditorRole } from '../../api/editor';
+import { i18nValue } from '../../core/ui/i18n';
 
 const EditorPanePivot = () => {
-    Debugger.log('Rendering Component: [EditorPanePivot]...');
-    const { i18n, selectedOperation } = useSelector(state).visual,
+    const { selectedOperation } = useSelector(state).visual,
         getTabId = (itemKey: string) => {
             return `editor-pivot-${itemKey}`;
         },
         handlePivotClick = (item: PivotItem) => {
-            commandService.openEditorPivotItem(
-                item.props.itemKey as TEditorOperation
-            );
+            openEditorPivotItem(item.props.itemKey as TEditorRole);
         };
 
     return (
@@ -31,17 +28,17 @@ const EditorPanePivot = () => {
                 overflowBehavior='menu'
             >
                 <PivotItem
-                    headerText={i18n.getDisplayName('Editor_Role_Spec')}
+                    headerText={i18nValue('Editor_Role_Spec')}
                     itemKey='spec'
                     itemIcon='BarChartVertical'
                 />
                 <PivotItem
-                    headerText={i18n.getDisplayName('Editor_Role_Config')}
+                    headerText={i18nValue('Editor_Role_Config')}
                     itemKey='config'
                     itemIcon='EditStyle'
                 />
                 <PivotItem
-                    headerText={i18n.getDisplayName('Editor_Role_Settings')}
+                    headerText={i18nValue('Editor_Role_Settings')}
                     itemKey='settings'
                     itemIcon='Settings'
                 />

@@ -1,15 +1,18 @@
 import * as React from 'react';
 
-import { Label, Stack } from 'office-ui-fabric-react';
+import { Label } from '@fluentui/react/lib/Label';
+import { Stack } from '@fluentui/react/lib/Stack';
 
-import Debugger from '../../Debugger';
-import { IDataFieldLabelProps } from '../../types';
 import DataTypeIcon from './DataTypeIcon';
 import FieldInfoIcon from './FieldInfoIcon';
+import { ITemplateDatasetField } from '../../schema/template-v1';
+
+interface IDataFieldLabelProps {
+    datasetField: ITemplateDatasetField;
+}
 
 const DataFieldLabel: React.FC<IDataFieldLabelProps> = (props) => {
     const { datasetField } = props;
-    Debugger.log('Rendering component: [DataFieldLabel]...');
     return (
         <Stack horizontal verticalAlign='center'>
             <DataTypeIcon datasetField={datasetField} />

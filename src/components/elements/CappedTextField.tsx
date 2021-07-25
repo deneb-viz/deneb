@@ -1,43 +1,52 @@
 import * as React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import * as _ from 'lodash';
 
-import {
-    ITextFieldProps,
-    TextField
-} from 'office-ui-fabric-react/lib/TextField';
-import { IStackTokens, Stack } from 'office-ui-fabric-react/lib/Stack';
+import debounce from 'lodash/debounce';
+import get from 'lodash/get';
+
+import { ITextFieldProps, TextField } from '@fluentui/react/lib/TextField';
+import { IStackTokens, Stack } from '@fluentui/react/lib/Stack';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';
 import { updateExportTemplatePropertyBySelector } from '../../store/templateReducer';
-import { editorDefaults } from '../../config';
-import { ICappedTextFieldProps } from '../../types';
+import { getConfig } from '../../api/config';
 import FieldInfoIcon from './FieldInfoIcon';
-import { IRenderFunction } from '@uifabric/utilities';
+import { IRenderFunction } from '@fluentui/react/lib/Utilities';
+import { i18nValue } from '../../core/ui/i18n';
 
 const stackTokens: IStackTokens = {
     childrenGap: 4
 };
 
+interface ICappedTextFieldProps {
+    id: string;
+    i18nLabel: string;
+    i18nPlaceholder: string;
+    i18nAssistiveText?: string;
+    maxLength: number;
+    multiline?: boolean;
+    inline?: boolean;
+    description?: string;
+}
+
 const CappedTextField: React.FC<ICappedTextFieldProps> = (props) => {
     Debugger.log('Rendering Component: [CappedTextField]...');
     const root = useSelector(state),
         dispatch = useDispatch(),
-        { i18n } = root.visual,
         { templateExportMetadata: templateToGenerate } = root.templates,
         [textFieldValue, setTextFieldValue] = React.useState(
-            _.get(templateToGenerate, props.id, '')
+            get(templateToGenerate, props.id, '')
         ),
         delayedInput = React.useCallback(
-            _.debounce((value: string) => {
+            debounce((value: string) => {
                 dispatch(
                     updateExportTemplatePropertyBySelector({
                         selector: props.id,
                         value
                     })
                 );
-            }, editorDefaults.debounceInterval),
+            }, getConfig().propertyDefaults.editor.debounceInterval),
             []
         ),
         onChangeField = (
@@ -57,7 +66,7 @@ const CappedTextField: React.FC<ICappedTextFieldProps> = (props) => {
             if (!props.inline) {
                 const description =
                     (props.i18nAssistiveText &&
-                        i18n.getDisplayName(props.i18nAssistiveText)) ||
+                        i18nValue(props.i18nAssistiveText)) ||
                     '';
                 return (
                     <Stack
@@ -76,10 +85,10 @@ const CappedTextField: React.FC<ICappedTextFieldProps> = (props) => {
             id={props.id}
             key={props.id}
             value={textFieldValue}
-            label={`${i18n.getDisplayName(props.i18nLabel)} (${
+            label={`${i18nValue(props.i18nLabel)} (${
                 textFieldValue?.length || 0
             }/${props.maxLength})`}
-            placeholder={i18n.getDisplayName(props.i18nPlaceholder)}
+            placeholder={i18nValue(props.i18nPlaceholder)}
             onChange={onChangeField}
             onRenderLabel={onRenderLabel}
             multiline={props.multiline}

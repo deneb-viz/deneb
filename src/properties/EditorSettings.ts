@@ -1,11 +1,14 @@
 import SettingsBase from './SettingsBase';
-import { editorDefaults as defaults } from '../config';
-import { TEditorPosition } from '../types';
+import { getConfig } from '../api/config';
+import { TEditorPosition } from '../api/ui';
 
 /**
  * Manages editor preferences for the visual.
  */
 export default class EditorSettings extends SettingsBase {
     // Preferred editor position within interface
-    public position: TEditorPosition = defaults.position;
+    public position: TEditorPosition = <TEditorPosition>(
+        getConfig().propertyDefaults.editor.position
+    );
+    public fontSize: number = getConfig().propertyDefaults.editor.fontSize;
 }

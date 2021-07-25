@@ -1,22 +1,25 @@
 import * as React from 'react';
 
-import { IconButton, Label, Stack } from 'office-ui-fabric-react';
+import { IconButton } from '@fluentui/react/lib/Button';
 
-import Debugger from '../../Debugger';
-import { templateService } from '../../services';
-import { IDataFieldLabelProps } from '../../types';
 import { templateTypeIconStyles } from '../../config/styles';
+import { resolveTypeIcon, resolveTypeIconTitle } from '../../api/template';
 
-const DataTypeIcon: React.FC<IDataFieldLabelProps> = (props) => {
+import { ITemplateDatasetField } from '../../schema/template-v1';
+
+interface IDataTypeIconProps {
+    datasetField: ITemplateDatasetField;
+}
+
+const DataTypeIcon: React.FC<IDataTypeIconProps> = (props) => {
     const { datasetField } = props;
-    Debugger.log('Rendering component: [DataTypeIcon]...');
     return (
         <IconButton
             iconProps={{
-                iconName: templateService.resolveTypeIcon(datasetField.type)
+                iconName: resolveTypeIcon(datasetField.type)
             }}
-            title={templateService.resolveTypeIconTitle(datasetField.type)}
-            ariaLabel={templateService.resolveTypeIconTitle(datasetField.type)}
+            title={resolveTypeIconTitle(datasetField.type)}
+            ariaLabel={resolveTypeIconTitle(datasetField.type)}
             styles={templateTypeIconStyles}
         />
     );

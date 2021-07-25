@@ -1,49 +1,64 @@
 import * as React from 'react';
-import { Stack } from 'office-ui-fabric-react';
-
-import Debugger from '../../Debugger';
 import {
-    editorPaneExpandedStackStyles,
-    editorPaneExpandedStackItemStyles,
-    editorPaneExpandedOuterStackTokens,
-    editorPaneExpandedInnerStackTokens
-} from '../../config/styles';
+    Stack,
+    StackItem,
+    IStackTokens,
+    IStackStyles,
+    IStackItemStyles
+} from '@fluentui/react/lib/Stack';
+
 import EditorHeadingExpanded from './EditorHeadingExpanded';
 import EditorPanePivot from './EditorPanePivot';
 import EditorCommandBar from './EditorCommandBar';
-import EditorOperationContainer from './EditorOperationContainer';
+import EditorOperationContent from './EditorOperationContent';
 import FixErrorDetails from './FixErrorDetails';
 
+import { theme } from '../../api/fluent';
+
+const verticalStackOuterTokens: IStackTokens = { childrenGap: 5 },
+    verticalStackInnerTokens: IStackTokens = {
+        childrenGap: 5,
+        padding: 10
+    },
+    verticalStackInnerStyles: IStackStyles = {
+        root: {
+            height: '100vh',
+            backgroundColor: theme.palette.neutralLighterAlt,
+            border: `1px solid ${theme.palette.neutralLight}`
+        }
+    },
+    stackItemStyles: IStackItemStyles = {
+        root: {
+            display: 'flex'
+        }
+    };
+
 const EditorPaneExpanded = () => {
-    Debugger.log('Rendering Component: [EditorPaneExpanded]...');
     return (
         <Stack
             id='editorPane'
-            tokens={editorPaneExpandedOuterStackTokens}
+            tokens={verticalStackOuterTokens}
             className='expanded'
         >
             <Stack
-                styles={editorPaneExpandedStackStyles}
-                tokens={editorPaneExpandedInnerStackTokens}
+                styles={verticalStackInnerStyles}
+                tokens={verticalStackInnerTokens}
             >
-                <Stack.Item shrink styles={editorPaneExpandedStackItemStyles}>
+                <StackItem shrink styles={stackItemStyles}>
                     <EditorHeadingExpanded />
-                </Stack.Item>
-                <Stack.Item shrink styles={editorPaneExpandedStackItemStyles}>
+                </StackItem>
+                <StackItem shrink styles={stackItemStyles}>
                     <EditorCommandBar />
-                </Stack.Item>
-                <Stack.Item shrink styles={editorPaneExpandedStackItemStyles}>
+                </StackItem>
+                <StackItem shrink styles={stackItemStyles}>
                     <EditorPanePivot />
-                </Stack.Item>
-                <Stack.Item shrink styles={editorPaneExpandedStackItemStyles}>
+                </StackItem>
+                <StackItem shrink styles={stackItemStyles}>
                     <FixErrorDetails />
-                </Stack.Item>
-                <Stack.Item
-                    verticalFill
-                    styles={editorPaneExpandedStackItemStyles}
-                >
-                    <EditorOperationContainer />
-                </Stack.Item>
+                </StackItem>
+                <StackItem verticalFill styles={stackItemStyles}>
+                    <EditorOperationContent />
+                </StackItem>
             </Stack>
         </Stack>
     );

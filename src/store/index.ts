@@ -1,16 +1,4 @@
-import { configureStore, combineReducers } from '@reduxjs/toolkit';
-
-import visualReducer from './visualReducer';
-import templateReducer from './templateReducer';
-
-const reducer = combineReducers({
-    visual: visualReducer,
-    templates: templateReducer
-});
-
-const store = configureStore({
-    reducer
-});
+import { store } from '../api/store';
 
 const state = (state: RootState) => state;
 
