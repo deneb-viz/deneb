@@ -19,6 +19,7 @@ import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { loadTheme } from '@fluentui/react/lib/Styling';
+import { Selection } from 'd3-selection';
 
 import Debugger, { standardLog } from './Debugger';
 import App from './components/App';
@@ -46,7 +47,7 @@ import {
 } from './api/dataView';
 import { initializeIcons, theme } from './api/fluent';
 import { parseActiveSpec } from './api/specification';
-import { hostServices } from './core/services';
+import { fillPatternServices, hostServices } from './core/services';
 
 const owner = 'Visual';
 
@@ -84,6 +85,7 @@ export class Deneb implements IVisual {
             this.container.oncontextmenu = (ev) => {
                 ev.preventDefault();
             };
+            fillPatternServices.setPatternContainer(this.container);
         } catch (e) {
             Debugger.log('Error', e);
         }

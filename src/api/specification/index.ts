@@ -49,7 +49,7 @@ import {
     updateStagedSpecData,
     updateStagedConfigData
 } from '../../store/visualReducer';
-import { hostServices } from '../../core/services';
+import { fillPatternServices, hostServices } from '../../core/services';
 import { i18nValue } from '../../core/ui/i18n';
 import { getJsonAsIndentedString } from '../../core/utils/json';
 import { getPatchedVegaSpec } from '../../core/vega/vegaUtils';
@@ -157,6 +157,16 @@ const hasLiveSpecChanged = () => {
 const registerCustomExpressions = () => {
     expressionFunction('pbiFormat', (datum: any, params: string) =>
         createFormatterFromString(`${params}`).format(datum)
+    );
+    expressionFunction(
+        'pbiPatternSVG',
+        (id: string, fgColor: string, bgColor: string) => {
+            return fillPatternServices.generateDynamicPattern(
+                id,
+                fgColor,
+                bgColor
+            );
+        }
     );
 };
 

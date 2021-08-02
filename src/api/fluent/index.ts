@@ -44,6 +44,7 @@ const initializeIcons = (
             Calendar: '\uE787',
             Cancel: '\uE711',
             CheckMark: '\uE73E',
+            ChevronDown: '\uE70D',
             ChevronLeft: '\uE76B',
             ChevronRight: '\uE76C',
             CircleStopSolid: '\uF2DB',

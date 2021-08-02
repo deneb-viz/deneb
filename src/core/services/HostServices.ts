@@ -8,7 +8,10 @@ import ISelectionManager = powerbi.extensibility.ISelectionManager;
 import ISelectionIdBuilder = powerbi.visuals.ISelectionIdBuilder;
 import ITooltipService = powerbi.extensibility.ITooltipService;
 
-export class HostServicesWrapper {
+/**
+ * Proxy service for Power BI host services, plus any additional logic we wish to encapsulate.
+ */
+export class HostServices {
     fetchMoreData: (aggregateSegments?: boolean) => boolean;
     i18n: ILocalizationManager;
     launchUrl: (url: string) => void;

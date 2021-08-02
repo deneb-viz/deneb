@@ -37,7 +37,8 @@ export const zoomIconButtonStyles: IButtonStyles = mergeStyleSets(
             margin: '0px 2px',
             color: theme.palette.neutralPrimary
         },
-        rootHovered: { backgroundColor: theme.palette.neutralLighterAlt }
+        rootHovered: { backgroundColor: theme.palette.neutralLighterAlt },
+        rootDisabled: { backgroundColor: theme.palette.neutralLighterAlt }
     }
 );
 
@@ -53,10 +54,14 @@ export const getEditorHeadingIcon = (
         : 'ChevronRight';
 
 export const isZoomInIconDisabled = () =>
-    getState().zoom.value === getState().zoom.min;
+    getState().zoom.value === getState().zoom.max || isZoomControlDisabled();
 
 export const isZoomOutIconDisabled = () =>
-    getState().zoom.value === getState().zoom.min;
+    getState().zoom.value === getState().zoom.min || isZoomControlDisabled();
 
 export const isZoomResetIconDisabled = () =>
-    getState().zoom.value === getState().zoom.default;
+    getState().zoom.value === getState().zoom.default ||
+    isZoomControlDisabled();
+
+export const isZoomControlDisabled = () =>
+    getState()?.visual?.spec?.status !== 'valid';

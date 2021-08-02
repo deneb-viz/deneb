@@ -1,5 +1,7 @@
-export { hostServices };
+export { fillPatternServices, hostServices };
 
-import { HostServicesWrapper } from './host';
+import { FillPatternServices } from './FillPatternServices';
+import { HostServices } from './HostServices';
 
-const hostServices = new HostServicesWrapper();
+const fillPatternServices = new FillPatternServices();
+const hostServices = new HostServices();

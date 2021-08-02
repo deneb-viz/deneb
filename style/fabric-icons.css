@@ -34,6 +34,9 @@
 .ms-Icon--CheckMark:before {
     content: '\E73E';
 }
+.ms-Icon--ChevronDown:before {
+    content: '\E70D';
+}
 .ms-Icon--ChevronLeft:before {
     content: '\E76B';
 }
