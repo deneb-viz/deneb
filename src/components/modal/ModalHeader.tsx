@@ -5,14 +5,14 @@ import { useId } from '@fluentui/react-hooks';
 import { IconButton } from '@fluentui/react/lib/Button';
 import { IIconProps } from '@fluentui/react/lib/Icon';
 
-import {
-    modalDialogCloseIconStyles,
-    modalDialogContentStyles
-} from '../../config/styles';
 import { state } from '../../store';
 import { closeModalDialog } from '../../api/commands';
 import { TModalDialogType } from '../../api/ui';
 import { i18nValue } from '../../core/ui/i18n';
+import {
+    modalDialogContentStyles,
+    modalDialogCloseIconStyles
+} from '../../core/ui/modal';
 
 interface IModalHeaderProps {
     type: TModalDialogType;

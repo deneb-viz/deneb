@@ -7,9 +7,10 @@
         "package": "npm run template-schemagen && jest && pbiviz package",
         "lint": "tslint -c tslint.json -p tsconfig.json",
         "test": "jest",
-        "prettier-format": "prettier --config .prettierrc {src,spec}/**/*.ts* --write",
+        "prettier-format": "prettier --config .prettierrc {src,spec,style}/**/{*.ts*,*.css,*.less} --write",
         "template-schemagen": "typescript-json-schema ./src/schema/template-v1.ts IDenebTemplateMetadata -o ./src/schema/deneb-template-usermeta-v1.json --required --topRef",
-        "precommit-msg": "echo 'Pre-commit checks...' && jest && exit 0"
+        "precommit-msg": "echo 'Pre-commit checks...' && jest && exit 0",
+        "update-fabric-icons": "node bin/update-fabric-icons.js && npm run prettier-format"
     },
     "pre-commit": [
         "precommit-msg"
@@ -33,7 +34,9 @@
         "@types/react-split-pane": "^0.1.67",
         "@types/vega": "^3.2.0",
         "ace-builds": "^1.4.12",
+        "adm-zip": "^0.5.5",
         "ajv": "^6.12.6",
+        "axios": "^0.21.1",
         "core-js": "3.6.0",
         "d3-format": "^2.0.0",
         "d3-selection": "^3.0.0",

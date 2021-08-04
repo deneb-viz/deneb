@@ -366,16 +366,37 @@
                     "type": "integer"
                 }
             }
+        },
+        "modalDialog": {
+            "description": "Settings for modal dialog display within the visual editor.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["heightPercent", "widthPercent"],
+            "properties": {
+                "heightPercent": {
+                    "description": "Percentage of viewport to use for dialog height.",
+                    "type": "number",
+                    "maximum": 1,
+                    "minimum": 0.5
+                },
+                "widthPercent": {
+                    "description": "Percentage of viewport to use for dialog height.",
+                    "type": "number",
+                    "maximum": 1,
+                    "minimum": 0.5
+                }
+            }
         }
     },
     "required": [
         "features",
         "fluentUiTheme",
-        "templates",
+        "modalDialog",
         "providerResources",
         "propertyDefaults",
         "splitPaneDefaults",
-        "zoomLevel",
-        "visualViewPortAdjust"
+        "visualViewPortAdjust",
+        "templates",
+        "zoomLevel"
     ]
 }

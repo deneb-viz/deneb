@@ -4,11 +4,11 @@ import { useSelector } from 'react-redux';
 import { useId } from '@fluentui/react-hooks';
 import { Modal } from '@fluentui/react/lib/Modal';
 
-import { modalDialogContentStyles } from '../../config/styles';
 import { state } from '../../store';
 import ModalHeader from '../modal/ModalHeader';
 import { closeModalDialog } from '../../api/commands';
 import { TModalDialogType } from '../../api/ui';
+import { modalDialogContentStyles } from '../../core/ui/modal';
 
 interface IModalDialogProps {
     type: TModalDialogType;

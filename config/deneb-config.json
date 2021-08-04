@@ -1,10 +1,10 @@
 {
-    "$schema": "./src/schema/deneb-config.json",
+    "$schema": "../src/schema/deneb-config.json",
     "features": {
         "developerMode": false,
         "enableExternalUri": false,
         "fetchMoreData": true,
-        "selectionContextMenu": false,
+        "selectionContextMenu": true,
         "selectionDataPoint": false,
         "tooltipHandler": true,
         "tooltipResolveNumberFieldFormat": true,
@@ -54,8 +54,9 @@
         "zoomReset": "ctrl|alt|0,ctrl|alt|num_0",
         "zoomFit": "ctrl|alt|num_multiply"
     },
-    "templates": {
-        "metadataVersion": 1
+    "modalDialog": {
+        "heightPercent": 0.95,
+        "widthPercent": 0.95
     },
     "providerResources": {
         "vega": {
@@ -108,6 +109,9 @@
         "defaultSizePercent": 0.4,
         "maxSizePercent": 0.6,
         "collapsedSize": 36
+    },
+    "templates": {
+        "metadataVersion": 1
     },
     "visualViewPortAdjust": {
         "top": 5,

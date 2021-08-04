@@ -1,7 +1,7 @@
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import '../style/visual.less';
-import '../style/fabric-icons.css';
+import '../style/fabric-icons-inline.css';
 import 'jsoneditor/dist/jsoneditor.css';
 import powerbi from 'powerbi-visuals-api';
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
@@ -19,7 +19,6 @@ import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { loadTheme } from '@fluentui/react/lib/Styling';
-import { Selection } from 'd3-selection';
 
 import Debugger, { standardLog } from './Debugger';
 import App from './components/App';
@@ -45,9 +44,10 @@ import {
     validateDataViewMapping,
     validateDataViewRoles
 } from './api/dataView';
-import { initializeIcons, theme } from './api/fluent';
+import { theme } from './api/fluent';
 import { parseActiveSpec } from './api/specification';
 import { fillPatternServices, hostServices } from './core/services';
+import { initializeIcons } from './core/ui/fluent';
 
 const owner = 'Visual';
 

@@ -9,7 +9,7 @@ import {
     modalDialogStackItemStyles,
     modalDialogStackItemWrapperStyles,
     modalDialogInnerStackTokens
-} from '../../config/styles';
+} from '../../core/ui/modal';
 import { state } from '../../store';
 import ExportValidation from './ExportValidation';
 import ExportVisualDialogPivot from './ExportVisualDialogPivot';

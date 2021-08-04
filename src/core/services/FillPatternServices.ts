@@ -86,7 +86,6 @@ type TFillPatternGroup =
     | 'other'
     | 'dynamic';
 
-
 // Everything required to generate and bind a fill pattern to the DOM
 interface IFillPatternDefinition {
     id: string;
