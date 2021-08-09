@@ -4,7 +4,7 @@ import { Checkbox } from '@fluentui/react/lib/Checkbox';
 
 import { state } from '../../store';
 import { updateBooleanProperty } from '../../api/commands';
-import { isHandlerEnabled } from '../../api/tooltip';
+import { isHandlerEnabled } from '../../core/interactivity/tooltip';
 import { i18nValue } from '../../core/ui/i18n';
 
 const TooltipCheckbox = () => {

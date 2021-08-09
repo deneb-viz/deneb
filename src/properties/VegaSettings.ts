@@ -4,7 +4,7 @@ import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnume
 import SettingsBase from './SettingsBase';
 import Debugger from '../Debugger';
 import { getConfig } from '../core/utils/config';
-import { isHandlerEnabled } from '../api/tooltip';
+import { isHandlerEnabled } from '../core/interactivity/tooltip';
 import { isContextMenuEnabled, isDataPointEnabled } from '../api/selection';
 import { isDeveloperModeEnabled } from '../api/developer';
 

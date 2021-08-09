@@ -15,7 +15,7 @@ import {
     getInitialConfig,
     registerCustomExpressions
 } from '../api/specification';
-import { getTooltipHandler } from '../api/tooltip';
+import { getTooltipHandler } from '../core/interactivity/tooltip';
 import { hostServices } from '../core/services';
 import { locales } from '../core/ui/i18n';
 

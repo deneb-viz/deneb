@@ -44,7 +44,7 @@ const visualSlice = createSlice({
             state.themeColors = pl.colorPalette['colors']?.map(
                 (c: any) => c.value
             );
-            state.allowInteractions = pl.allowInteractions;
+            state.allowInteractions = pl.hostCapabilities.allowInteractions;
         },
         visualUpdate: (state, action: PayloadAction<IVisualUpdatePayload>) => {
             const pl = action.payload,
