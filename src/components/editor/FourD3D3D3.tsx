@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';
-import { fourd3d3d } from '../../store/visualReducer';
+import { fourd3d3d } from '../../store/visual';
 
 const FourD3D3D3: React.FC = () => {
     Debugger.log('Rendering Component: [FixErrorDetails]...');

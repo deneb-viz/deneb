@@ -12,7 +12,7 @@ import cloneDeep from 'lodash/cloneDeep';
 
 import VisualSettings from '../../properties/VisualSettings';
 
-import { getState } from '../store';
+import { getState } from '../../store';
 import { hostServices } from '../../core/services';
 
 const resolveObjectProperties = (

@@ -8,7 +8,7 @@
         "lint": "tslint -c tslint.json -p tsconfig.json",
         "test": "jest",
         "prettier-format": "prettier --config .prettierrc {src,spec,style}/**/{*.ts*,*.css,*.less} --write",
-        "template-schemagen": "typescript-json-schema ./src/schema/template-v1.ts IDenebTemplateMetadata -o ./src/schema/deneb-template-usermeta-v1.json --required --topRef",
+        "template-schemagen": "typescript-json-schema ./src/core/template/schema.ts IDenebTemplateMetadata -o ./schema/deneb-template-usermeta-v1.json --required --topRef",
         "precommit-msg": "echo 'Pre-commit checks...' && jest && exit 0",
         "update-fabric-icons": "node bin/update-fabric-icons.js && npm run prettier-format"
     },

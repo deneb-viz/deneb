@@ -4,8 +4,8 @@ import { Pivot, PivotItem, IPivotStyles } from '@fluentui/react/lib/Pivot';
 import { IStyleSet } from '@fluentui/react/lib/Styling';
 
 import { state } from '../../store';
-import { updateSelectedDialogProvider } from '../../store/templateReducer';
-import { TTemplateProvider } from '../../api/template';
+import { updateSelectedDialogProvider } from '../../store/templates';
+import { TTemplateProvider } from '../../core/template';
 import { i18nValue } from '../../core/ui/i18n';
 
 const pivotStyles: Partial<IStyleSet<IPivotStyles>> = {

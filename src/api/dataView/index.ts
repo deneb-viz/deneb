@@ -30,14 +30,14 @@ import {
     recordDataWindowLoad,
     resetLoadingCounters,
     updateDataProcessingStage
-} from '../../store/visualReducer';
+} from '../../store/visual';
 
 import { getEmptyDataset, IVisualDataset } from '../dataset';
 import { IVisualValueMetadata, IVisualValueRow } from '../dataset';
 import { isFeatureEnabled } from '../features';
-import { getState, store } from '../store';
+import { getState, store } from '../../store';
 import { createSelectionId, getSidString } from '../selection';
-import { resolveVisualMetaToDatasetField } from '../template';
+import { resolveVisualMetaToDatasetField } from '../../core/template';
 import { hostServices } from '../../core/services';
 
 const isFetchMoreEnabled = isFeatureEnabled('fetchMoreData');
@@ -208,9 +208,8 @@ export const getDataRow = (
         (accumulator, f, fi) => {
             const rawValue = values[fi][index];
             if (f?.column.roles?.dataset) {
-                accumulator[
-                    encodeFieldForSpec(f.column.displayName)
-                ] = castPrimitiveValue(f, rawValue);
+                accumulator[encodeFieldForSpec(f.column.displayName)] =
+                    castPrimitiveValue(f, rawValue);
             }
             return accumulator;
         },

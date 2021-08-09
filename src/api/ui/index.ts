@@ -27,7 +27,7 @@ import {
 } from '../commands';
 import { getVisualMetadata, providerVersions } from '../../core/utils/config';
 import { IDataViewFlags } from '../dataView';
-import { getState } from '../store';
+import { getState } from '../../store';
 import { ICompiledSpec } from '../specification';
 import { i18nValue } from '../../core/ui/i18n';
 import { getAutoApplyToggle } from '../../core/ui/commandBar';

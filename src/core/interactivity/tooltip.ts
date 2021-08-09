@@ -13,23 +13,36 @@ import reduce from 'lodash/reduce';
 import toNumber from 'lodash/toNumber';
 import toString from 'lodash/toString';
 
-import { isInteractivityReservedWord, resolveDatumForKeywords } from '.';
+import {
+    isInteractivityReservedWord,
+    resolveCoordinates,
+    resolveDatumForKeywords
+} from '.';
 import { i18nValue } from '../ui/i18n';
 import { getJsonAsIndentedString } from '../utils/json';
 import { IVegaViewDatum } from '../vega';
 
 import { isFeatureEnabled } from '../../api/features';
 import { createSelectionId } from '../../api/selection';
-import { resolveCoordinates } from '../../api/event';
 import { getMetadataByKeys, getValueForDatum } from '../../api/dataset';
 import { createFormatterFromString } from '../../api/formatting';
 import { getCategoryColumns } from '../../api/dataView';
 
-const isTouchEvent = true, // Convenience constant for tooltip events, as it's required by Power BI.
-    isHandlerEnabled = isFeatureEnabled('tooltipHandler'), // Convenience constant that confirms whether the `tooltipHandler` feature switch is enabled via features
-    isResolveNumberFormatEnabled = () =>
-        // Confirms whether the `tooltipResolveNumberFieldFormat` feature switch is enabled via features
-        isHandlerEnabled && isFeatureEnabled('tooltipResolveNumberFieldFormat');
+/**
+ * Convenience constant for tooltip events, as it's required by Power BI.
+ */
+const isTouchEvent = true;
+
+/**
+ * Convenience constant that confirms whether the `tooltipHandler` feature switch is enabled via features.
+ */
+const isHandlerEnabled = isFeatureEnabled('tooltipHandler');
+
+/**
+ *  Confirms whether the `tooltipResolveNumberFieldFormat` feature switch is enabled via features.
+ */
+const isResolveNumberFormatEnabled = () =>
+    isHandlerEnabled && isFeatureEnabled('tooltipResolveNumberFieldFormat');
 
 /**
  * For a given Vega `tooltip` object (key-value pairs), extract any non-reserved keys, and structure suitably as an array of standard Power BI tooltip items (`VisualTooltipDataItem[]`).

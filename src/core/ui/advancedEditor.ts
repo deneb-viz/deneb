@@ -1,10 +1,9 @@
 import powerbi from 'powerbi-visuals-api';
 import IViewport = powerbi.IViewport;
 
-import { getState } from '../../api/store';
+import { getState } from '../../store';
 import { getConfig } from '../utils/config';
 import { TEditorPosition, TVisualMode } from '../../api/ui';
-import { numberFormat } from 'powerbi-visuals-utils-formattingutils/lib/src/formattingService/formattingService';
 
 const splitPaneDefaults = getConfig().splitPaneDefaults;
 const visualViewportAdjust = getConfig().visualViewPortAdjust;

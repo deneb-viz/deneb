@@ -1,10 +1,10 @@
 {
-    "$schema": "../src/schema/deneb-config.json",
+    "$schema": "../schema/deneb-config.json",
     "features": {
         "developerMode": false,
         "enableExternalUri": false,
         "fetchMoreData": true,
-        "selectionContextMenu": true,
+        "selectionContextMenu": false,
         "selectionDataPoint": false,
         "tooltipHandler": true,
         "tooltipResolveNumberFieldFormat": true,

@@ -5,7 +5,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';
-import { updateEditorPaneSize } from '../../store/visualReducer';
+import { updateEditorPaneSize } from '../../store/visual';
 import EditorPane from './EditorPane';
 import EditorPreview from './EditorPreview';
 import NewVisualDialog from '../create/NewVisualDialog';

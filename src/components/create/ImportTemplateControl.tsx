@@ -6,7 +6,7 @@ import { ActionButton } from '@fluentui/react/lib/Button';
 import { v4 as uuidv4 } from 'uuid';
 
 import { actionButtonStyles } from '../../config/styles';
-import { onTemplateFileSelect } from '../../api/template';
+import { onTemplateFileSelect } from '../../core/template';
 import { i18nValue } from '../../core/ui/i18n';
 
 const importIcon: IIconProps = { iconName: 'OpenFile' };

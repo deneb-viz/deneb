@@ -24,8 +24,8 @@ import {
     updateDirtyFlag,
     updateExportDialog,
     updateSelectedOperation
-} from '../../store/visualReducer';
-import { updateSelectedTemplate } from '../../store/templateReducer';
+} from '../../store/visual';
+import { updateSelectedTemplate } from '../../store/templates';
 
 import { getConfig, getVisualMetadata } from '../../core/utils/config';
 import { TEditorRole } from '../editor';
@@ -40,8 +40,8 @@ import {
     TSpecProvider,
     TSpecRenderMode
 } from '../specification';
-import { getState, store } from '../store';
-import { updateExportState } from '../template';
+import { getState, store } from '../../store';
+import { updateExportState } from '../../core/template';
 import { TModalDialogType } from '../ui';
 import { hostServices } from '../../core/services';
 import {

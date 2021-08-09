@@ -14,7 +14,7 @@ import {
     templatePickerStackStyles,
     templatePickerNonShrinkingStackItemStyles
 } from '../../config/styles';
-import { getExportTemplate } from '../../api/template';
+import { getExportTemplate } from '../../core/template';
 import { i18nValue } from '../../core/ui/i18n';
 import { iconButtonStyles } from '../../core/ui/icons';
 

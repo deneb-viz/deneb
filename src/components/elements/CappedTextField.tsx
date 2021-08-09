@@ -9,7 +9,7 @@ import { IStackTokens, Stack } from '@fluentui/react/lib/Stack';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';
-import { updateExportTemplatePropertyBySelector } from '../../store/templateReducer';
+import { updateExportTemplatePropertyBySelector } from '../../store/templates';
 import { getConfig } from '../../core/utils/config';
 import FieldInfoIcon from './FieldInfoIcon';
 import { IRenderFunction } from '@fluentui/react/lib/Utilities';

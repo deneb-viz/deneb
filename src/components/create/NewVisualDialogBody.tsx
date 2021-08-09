@@ -20,11 +20,8 @@ import { i18nValue } from '../../core/ui/i18n';
 
 export const NewVisualDialogBody = () => {
     const root = useSelector(state),
-        {
-            allImportCriteriaApplied,
-            specProvider,
-            templateToApply
-        } = root.templates,
+        { allImportCriteriaApplied, specProvider, templateToApply } =
+            root.templates,
         handleCreate = () => {
             createFromTemplate(specProvider, templateToApply);
         },

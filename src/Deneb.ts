@@ -32,11 +32,11 @@ import {
     updateDataViewFlags,
     recordInvalidDataView,
     updateDataset
-} from './store/visualReducer';
+} from './store/visual';
 import {
     initializeImportExport,
     syncExportTemplateDataset
-} from './store/templateReducer';
+} from './store/templates';
 import {
     canFetchMore,
     getMappedDataset,
@@ -266,9 +266,10 @@ export class Deneb implements IVisual {
                         Debugger.log(
                             'processEnumerationObject found. Executing...'
                         );
-                        enumerationObject = this.settings[
-                            `${objectName}`
-                        ].processEnumerationObject(enumerationObject);
+                        enumerationObject =
+                            this.settings[
+                                `${objectName}`
+                            ].processEnumerationObject(enumerationObject);
                     } else {
                         Debugger.log(
                             "Couldn't find class processEnumerationObject function."

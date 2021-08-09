@@ -1,5 +1,4 @@
 import React from 'react';
-
 import { editor, specification } from '../../api';
 import getAssignedEditor = editor.getAssignedEditor;
 import handleComponentUpdate = editor.handleComponentUpdate;
@@ -10,7 +9,6 @@ import stageEditorData = specification.stageEditorData;
 class Editor extends React.Component<IVisualEditorProps> {
     private container: HTMLDivElement;
     private editor: IVisualEditor;
-
     constructor(props: IVisualEditorProps) {
         super(props);
         this.bindEditorElement = this.bindEditorElement.bind(this);

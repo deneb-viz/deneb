@@ -21,7 +21,7 @@ import debounce from 'lodash/debounce';
 import * as vegaSchema from 'vega/build/vega-schema.json';
 import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
 
-import { updateDirtyFlag } from '../../store/visualReducer';
+import { updateDirtyFlag } from '../../store/visual';
 import { getConfig } from '../../core/utils/config';
 import { ITableColumnMetadata } from '../dataset';
 import {
@@ -29,7 +29,7 @@ import {
     hasLiveSpecChanged,
     persist
 } from '../specification';
-import { getState, store } from '../store';
+import { getState, store } from '../../store';
 import { isDialogOpen } from '../ui';
 import { i18nValue } from '../../core/ui/i18n';
 

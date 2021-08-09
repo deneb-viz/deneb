@@ -1,8 +1,7 @@
 import { applyChanges } from '../../api/commands';
-import { getState } from '../../api/store';
-import store from '../../store';
-import { toggleAutoApply } from '../../store/visualReducer';
-import { setZoomLevel } from '../../store/zoomReducer';
+import store, { getState } from '../../store';
+import { toggleAutoApply } from '../../store/visual';
+import { setZoomLevel } from '../../store/zoom';
 import { getConfig } from '../utils/config';
 import { getZoomToFitScale } from './advancedEditor';
 

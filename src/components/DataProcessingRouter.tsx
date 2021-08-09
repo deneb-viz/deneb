@@ -16,12 +16,8 @@ interface IDataProcessingRouterProps {
 const DataProcessingRouter: React.FC<IDataProcessingRouterProps> = ({
     zoomLevel
 }) => {
-    const {
-            dataProcessingStage,
-            viewModeViewport,
-            visualMode,
-            settings
-        } = useSelector(state).visual,
+    const { dataProcessingStage, viewModeViewport, visualMode, settings } =
+            useSelector(state).visual,
         { showViewportMarker } = settings?.editor;
 
     switch (dataProcessingStage) {

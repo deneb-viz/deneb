@@ -16,7 +16,7 @@ import ExportVisualDialogPivot from './ExportVisualDialogPivot';
 import TemplateExportDatasetPane from './TemplateExportDatasetPane';
 import TemplateExportInformationPane from './TemplateExportInformationPane';
 import TemplateExportJsonPane from './TemplateExportJsonPane';
-import { validateSpecificationForExport } from '../../api/template';
+import { validateSpecificationForExport } from '../../core/template';
 import { i18nValue } from '../../core/ui/i18n';
 
 export const ExportVisualDialogBody = () => {

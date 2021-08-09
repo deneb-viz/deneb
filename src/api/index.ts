@@ -9,8 +9,6 @@ import * as formatting from './formatting';
 import * as properties from './properties';
 import * as selection from './selection';
 import * as specification from './specification';
-import * as store from './store';
-import * as template from './template';
 import * as ui from './ui';
 
 export {
@@ -25,7 +23,5 @@ export {
     properties,
     selection,
     specification,
-    store,
-    template,
     ui
 };

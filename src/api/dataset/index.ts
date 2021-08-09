@@ -18,9 +18,9 @@ import ISelectionId = powerbi.visuals.ISelectionId;
 import pick from 'lodash/pick';
 import matches from 'lodash/matches';
 
-import { ITemplateDatasetField } from '../../schema/template-v1';
+import { ITemplateDatasetField } from '../../core/template/schema';
 
-import { getState } from '../store';
+import { getState } from '../../store';
 import { resolveDatumForMetadata } from '../selection';
 import { IVegaViewDatum } from '../../core/vega';
 

@@ -3,8 +3,9 @@ import { IButtonStyles } from '@fluentui/react/lib/Button';
 import { theme } from '../../api/fluent';
 import { TEditorPosition } from '../../api/ui';
 import { mergeStyleSets } from '@fluentui/react';
-import { getState } from '../../api/store';
+import { getState } from '../../store';
 import { commandBarButtonStyles } from './commandBar';
+import { TDatasetFieldType } from '../template/schema';
 
 const previewCommandBarHeight = 26;
 
@@ -44,6 +45,24 @@ export const zoomIconButtonStyles: IButtonStyles = mergeStyleSets(
 
 export const getAutoApplyIcon = (enabled: boolean) =>
     enabled ? 'CircleStopSolid' : 'PlaybackRate1x';
+
+/**
+ * For a given column or measure (or template placeholder), resolve the UI icon for its data type.
+ */
+export const getDataTypeIcon = (type: TDatasetFieldType) => {
+    switch (type) {
+        case 'bool':
+            return 'ToggleRight';
+        case 'text':
+            return 'HalfAlpha';
+        case 'numeric':
+            return 'NumberSymbol';
+        case 'dateTime':
+            return 'Calendar';
+        default:
+            return 'Unknown';
+    }
+};
 
 export const getEditorHeadingIcon = (
     position: TEditorPosition,

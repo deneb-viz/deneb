@@ -40,15 +40,15 @@ import { isFeatureEnabled } from '../features';
 import { createFormatterFromString } from '../formatting';
 import { resolveObjectProperties, updateObjectProperties } from '../properties';
 import { getSidString } from '../selection';
-import { getState, store } from '../store';
-import { getReplacedTemplate } from '../template';
+import { getState, store } from '../../store';
+import { getReplacedTemplate } from '../../core/template';
 import {
     updateDirtyFlag,
     updateFixStatus,
     updateSpec,
     updateStagedSpecData,
     updateStagedConfigData
-} from '../../store/visualReducer';
+} from '../../store/visual';
 import { fillPatternServices, hostServices } from '../../core/services';
 import { i18nValue } from '../../core/ui/i18n';
 import { getJsonAsIndentedString } from '../../core/utils/json';
@@ -172,12 +172,8 @@ const registerCustomExpressions = () => {
 
 const parseActiveSpec = () => {
     const { allowInteractions, settings } = getState().visual,
-        {
-            provider,
-            jsonSpec,
-            enableContextMenu,
-            enableSelection
-        } = settings.vega;
+        { provider, jsonSpec, enableContextMenu, enableSelection } =
+            settings.vega;
     try {
         if (!jsonSpec) {
             // Spec hasn't been edited yet

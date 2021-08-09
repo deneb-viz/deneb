@@ -8,7 +8,7 @@ import { BodyHeading, Heading } from '../elements/Typography';
 import StatusHeaderSection from './StatusHeaderSection';
 import StatusLayoutStack from './StatusLayoutStack';
 import StatusLayoutStackItem from './StatusLayoutStackItem';
-import { getState } from '../../api/store';
+import { getState } from '../../store';
 import { i18nValue } from '../../core/ui/i18n';
 
 const DataFetching = () => {
