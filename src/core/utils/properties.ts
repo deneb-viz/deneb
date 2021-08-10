@@ -13,8 +13,12 @@ import cloneDeep from 'lodash/cloneDeep';
 import VisualSettings from '../../properties/VisualSettings';
 
 import { getState } from '../../store';
-import { hostServices } from '../../core/services';
+import { hostServices } from '../services';
 
+/**
+ * Handles resolution of object properties from the data view, either for persistence.
+ * If a value is not supplied in the array of _properties_, the default value will be retrieved from the `VisualSettings` for the supplied name.
+ */
 const resolveObjectProperties = (
     objectName: string,
     properties: IPersistenceProperty[]
@@ -31,14 +35,23 @@ const resolveObjectProperties = (
     } catch (e) {}
 };
 
+/**
+ * Manage persistence of content to the visual's data view `objects`.
+ */
 const updateObjectProperties = (changes: VisualObjectInstancesToPersist) =>
     persistProperties()(changes);
 
+/**
+ * Property name and optional value for persistence operations.
+ */
 interface IPersistenceProperty {
     name: string;
     value?: DataViewPropertyValue;
 }
 
+/**
+ * Gets an empty metadata object so that we can populate it with a value from the text box, or reset it.
+ */
 const getNewObjectInstance = (
     objectName: string
 ): VisualObjectInstancesToPersist => {
@@ -54,4 +67,7 @@ const getNewObjectInstance = (
     };
 };
 
+/**
+ * Convenience function that returns the visual host's `persistProperties` instance from Deneb's Redux store.
+ */
 const persistProperties = () => hostServices.persistProperties;

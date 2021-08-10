@@ -1,22 +1,15 @@
 export {
     createFromTemplate,
-    determineProviderFromSpec,
     fixAndFormat,
-    getBaseValidator,
     getInitialConfig,
     getParsedConfigFromSettings,
     hasLiveSpecChanged,
     parseActiveSpec,
     persist,
-    registerCustomExpressions,
-    resolveLoaderLogic,
     stageEditorData,
     ICompiledSpec,
-    IFixPayload,
     IFixResult,
-    IFixStatus,
-    TSpecProvider,
-    TSpecRenderMode
+    IFixStatus
 };
 
 import powerbi from 'powerbi-visuals-api';
@@ -25,23 +18,20 @@ import ISelectionId = powerbi.visuals.ISelectionId;
 import * as Vega from 'vega';
 import Config = Vega.Config;
 import Spec = Vega.Spec;
-import expressionFunction = Vega.expressionFunction;
-import * as vegaSchema from 'vega/build/vega-schema.json';
 import * as VegaLite from 'vega-lite';
 import { TopLevelSpec } from 'vega-lite';
-import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
-import Ajv from 'ajv';
-import * as draft06 from 'ajv/lib/refs/json-schema-draft-06.json';
 import jsonrepair from 'jsonrepair';
 
-import { getConfig } from '../../core/utils/config';
-import { configEditorService, specEditorService, TEditorRole } from '../editor';
-import { isFeatureEnabled } from '../features';
-import { createFormatterFromString } from '../formatting';
-import { resolveObjectProperties, updateObjectProperties } from '../properties';
-import { getSidString } from '../selection';
+import { getConfig } from './config';
+import {
+    configEditorService,
+    specEditorService,
+    TEditorRole
+} from '../services/JsonEditorServices';
+import { resolveObjectProperties, updateObjectProperties } from './properties';
+import { getSidString } from '../interactivity/selection';
 import { getState, store } from '../../store';
-import { getReplacedTemplate } from '../../core/template';
+import { getReplacedTemplate } from '../template';
 import {
     updateDirtyFlag,
     updateFixStatus,
@@ -49,12 +39,17 @@ import {
     updateStagedSpecData,
     updateStagedConfigData
 } from '../../store/visual';
-import { fillPatternServices, hostServices } from '../../core/services';
-import { i18nValue } from '../../core/ui/i18n';
-import { getJsonAsIndentedString } from '../../core/utils/json';
-import { getPatchedVegaSpec } from '../../core/vega/vegaUtils';
-import { getPatchedVegaLiteSpec } from '../../core/vega/vegaLiteUtils';
+import { hostServices } from '../services';
+import { i18nValue } from '../ui/i18n';
+import { cleanParse, getJsonAsIndentedString } from './json';
+import { getPatchedVegaSpec } from '../vega/vegaUtils';
+import { getPatchedVegaLiteSpec } from '../vega/vegaLiteUtils';
+import { TSpecProvider } from '../vega';
 
+/**
+ * For the supplied provider and specification template, add this to the visual and persist to properties, ready for
+ * subsequent editing.
+ */
 const createFromTemplate = (
     provider: TSpecProvider,
     template: Spec | TopLevelSpec
@@ -74,22 +69,11 @@ const createFromTemplate = (
     configEditorService.setText(jsonConfig);
 };
 
-const determineProviderFromSpec = (
-    spec: Spec | TopLevelSpec
-): TSpecProvider => {
-    const vegaLiteValidator = getSchemaValidator(vegaLiteSchema),
-        vlValid = vegaLiteValidator(spec);
-    if (vlValid) {
-        return 'vegaLite';
-    }
-    const vegaValidator = getSchemaValidator(vegaSchema),
-        vValid = vegaValidator(spec);
-    if (vValid) {
-        return 'vega';
-    }
-    return null;
-};
-
+/**
+ * For the specification and configuration in each editor, attempt to fix any simple issues that might prevent it from being valid
+ * JSON. We'll also indent it if valid. If it doesn't work, we'll update the store with the error details so that we can inform the
+ * user to take action.
+ */
 const fixAndFormat = () => {
     try {
         const fixedRawSpec = tryFixAndFormat(
@@ -120,9 +104,10 @@ const fixAndFormat = () => {
     } catch (e) {}
 };
 
-const getBaseValidator = () =>
-    new Ajv({}).addFormat('color-hex', () => true).addMetaSchema(draft06);
-
+/**
+ * Retrieves the config from our visual properties, and enriches it with anything we want to abstract out from the end-user to make things as
+ * "at home" in Power BI as possible.
+ */
 const getInitialConfig = () => {
     const { themeColors } = getState().visual;
     return {
@@ -137,37 +122,24 @@ const getInitialConfig = () => {
     };
 };
 
+/**
+ * Gets the `config` from our visual objects and parses it to JSON.
+ */
 const getParsedConfigFromSettings = (): Config => {
     const { vega } = getState().visual.settings;
-    try {
-        return JSON.parse(resolveUrls(vega.jsonConfig));
-    } catch (e) {
-        return JSON.parse(propertyDefaults.jsonConfig);
-    }
+    return cleanParse(vega.jsonConfig, propertyDefaults.jsonConfig);
 };
 
+/**
+ * Looks at the active specification and config in the visual editors and compares with persisted values in the visual properties. Used to set
+ * the `isDirty` flag in the Redux store.
+ */
 const hasLiveSpecChanged = () => {
     const liveSpec = getCleanEditorJson('spec'),
         persistedSpec = getState().visual.settings.vega.jsonSpec,
         liveConfig = getCleanEditorJson('config'),
         persistedConfig = getState().visual.settings.vega.jsonConfig;
     return liveSpec != persistedSpec || liveConfig != persistedConfig;
-};
-
-const registerCustomExpressions = () => {
-    expressionFunction('pbiFormat', (datum: any, params: string) =>
-        createFormatterFromString(`${params}`).format(datum)
-    );
-    expressionFunction(
-        'pbiPatternSVG',
-        (id: string, fgColor: string, bgColor: string) => {
-            return fillPatternServices.generateDynamicPattern(
-                id,
-                fgColor,
-                bgColor
-            );
-        }
-    );
 };
 
 const parseActiveSpec = () => {
@@ -185,7 +157,7 @@ const parseActiveSpec = () => {
             return;
         }
 
-        const parsedSpec = JSON.parse(resolveUrls(jsonSpec));
+        const parsedSpec = cleanParse(jsonSpec);
 
         /** TODO: Previous attempt at patching interactivity. Kept for posterity but should be managed a different way.
          * Will likely re-attempt in v0.5/0.6 */
@@ -265,6 +237,9 @@ const parseActiveSpec = () => {
     }
 };
 
+/**
+ * Resolve the spec/config and use the `properties` API for persistence. Also resets the `isDirty` flag in the Redux store.
+ */
 const persist = (stage = true) => {
     stage && stageEditorData('spec');
     stage && stageEditorData('config');
@@ -277,6 +252,10 @@ const persist = (stage = true) => {
     );
 };
 
+/**
+ * Add the specified editor's current text to the staging area in the Redux store. This can then be used for persistence, or
+ * application of changes if the creator exits the advanced editor and there are unapplied changes.
+ */
 const stageEditorData = (role: TEditorRole) => {
     switch (role) {
         case 'spec':
@@ -290,8 +269,9 @@ const stageEditorData = (role: TEditorRole) => {
     }
 };
 
-const resolveLoaderLogic = () => Vega.loader();
-
+/**
+ * Represents a compiled specification, including any additional metadata needed to manage it downstream in the UI.
+ */
 interface ICompiledSpec {
     status: 'valid' | 'error' | 'new';
     spec: object;
@@ -299,12 +279,9 @@ interface ICompiledSpec {
     message?: string;
 }
 
-interface IFixPayload {
-    status: IFixStatus;
-    rawSpec: string;
-    rawConfig: string;
-}
-
+/**
+ * Represents the results of a fix and repair operation.
+ */
 interface IFixResult {
     spec: IFixStatus;
     config: IFixStatus;
@@ -313,18 +290,20 @@ interface IFixResult {
     error?: string;
 }
 
+/**
+ * Represents the status and additional metadata of a fix and repair against an individual specification or config component.
+ */
 interface IFixStatus {
     success: boolean;
     text: string;
     error?: string;
 }
 
-type TSpecProvider = 'vega' | 'vegaLite';
-
-type TSpecRenderMode = 'svg' | 'canvas';
-
 const propertyDefaults = getConfig().propertyDefaults.vega;
 
+/**
+ * For a given operation and string input, ensure that it's trimmed and replaced with suitable defaults if empty.
+ */
 const cleanJsonInputForPersistence = (
     operation: TEditorRole,
     input: string
@@ -341,14 +320,25 @@ const cleanJsonInputForPersistence = (
     return clean;
 };
 
+/**
+ * Dispatch the results of a fix and repair operation to the Redux store.
+ */
 const dispatchFixStatus = (result: IFixResult) => {
     store.dispatch(updateFixStatus(result));
 };
 
+/**
+ * Dispatch a compiled specification to the Redux store.
+ */
 const dispatchSpec = (compiledSpec: ICompiledSpec) => {
     store.dispatch(updateSpec(compiledSpec));
 };
 
+/**
+ * Get any existing selections (e.g. through bookmarks) to ensure that they are restored into the visual's current selection
+ * correctly and able to be passed into the specification's `init` property for our selection.
+ * TODO: this needs review when we revisit interactivity in a later build.
+ */
 const getExistingSelectors = () => {
     const { dataset } = getState().visual,
         { selectionManager } = hostServices;
@@ -372,6 +362,9 @@ const getExistingSelectors = () => {
     );
 };
 
+/**
+ * Further abstracts the `cleanJsonInputForPersistence` workflow so that calling functions are easier to follow.
+ */
 const getCleanEditorJson = (role: TEditorRole) =>
     cleanJsonInputForPersistence(
         role,
@@ -380,9 +373,9 @@ const getCleanEditorJson = (role: TEditorRole) =>
             : configEditorService.getText()
     );
 
-const getSchemaValidator = (schema: Object) =>
-    getBaseValidator().compile(schema);
-
+/**
+ * For the results of a fix and repair operation, resolve the error message for the end-user (if applicable).
+ */
 const resolveFixErrorMessage = (
     success: boolean,
     fixedRawSpec: IFixStatus,
@@ -399,14 +392,6 @@ const resolveFixErrorMessage = (
         undefined
     );
 };
-
-const resolveUrls = (content: string) =>
-    (!isFeatureEnabled('enableExternalUri') &&
-        content.replace(
-            /\b(?!data:)((?:[a-z][\w-]+:(?:\/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/g,
-            ''
-        )) ||
-    content;
 
 const tryFixAndFormat = (operation: TEditorRole, input: string): IFixStatus => {
     try {

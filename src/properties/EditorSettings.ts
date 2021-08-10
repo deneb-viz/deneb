@@ -1,6 +1,6 @@
 import SettingsBase from './SettingsBase';
 import { getConfig } from '../core/utils/config';
-import { TEditorPosition } from '../api/ui';
+import { TEditorPosition } from '../core/ui';
 
 /**
  * Manages editor preferences for the visual.

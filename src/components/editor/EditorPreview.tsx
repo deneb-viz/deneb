@@ -10,7 +10,7 @@ import {
 } from '@fluentui/react/lib/Stack';
 
 import { state } from '../../store';
-import { theme } from '../../api/fluent';
+import { theme } from '../../core/ui/fluent';
 
 import DataProcessingRouter from '../DataProcessingRouter';
 import SpecificationError from '../status/SpecificationError';

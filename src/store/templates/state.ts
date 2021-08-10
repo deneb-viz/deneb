@@ -13,7 +13,6 @@ import { ErrorObject } from 'ajv';
 
 import { IDenebTemplateMetadata } from '../../core/template/schema';
 
-import { TSpecProvider } from '../../api/specification';
 import {
     TExportOperation,
     TTemplateExportState,
@@ -21,6 +20,7 @@ import {
     TTemplateProvider
 } from '../../core/template';
 import templates from '../../templates';
+import { TSpecProvider } from '../../core/vega';
 
 interface ITemplateSliceState {
     selectedTemplateIndex: number;

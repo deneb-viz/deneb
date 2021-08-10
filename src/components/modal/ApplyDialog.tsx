@@ -3,16 +3,20 @@ import * as React from 'react';
 import { Dialog, DialogFooter } from '@fluentui/react/lib/Dialog';
 import { PrimaryButton, DefaultButton } from '@fluentui/react/lib/Button';
 
-import { applyChanges, discardChanges } from '../../api/commands';
-import { fluent } from '../../api/';
-import { isApplyDialogHidden } from '../../api/ui';
+import { applyChanges, discardChanges } from '../../core/ui/commands';
+import {
+    getDialogContentProps,
+    isApplyDialogHidden,
+    modalDialogPropsStyles
+} from '../../core/ui/modal';
 import { i18nValue } from '../../core/ui/i18n';
+import { buttonStyles } from '../../core/ui/fluent';
 
 export const ApplyDialog: React.FunctionComponent = () => {
     const hidden = isApplyDialogHidden(),
         handleApply = () => applyChanges(),
         handleDiscard = () => discardChanges(),
-        dialogContentProps = fluent.getDialogContentProps(
+        dialogContentProps = getDialogContentProps(
             'Dialog_Unapplied_Changes_Title',
             'Dialog_Unapplied_Changes_Subtext'
         ),
@@ -25,18 +29,18 @@ export const ApplyDialog: React.FunctionComponent = () => {
                 hidden={hidden}
                 onDismiss={handleDiscard}
                 dialogContentProps={dialogContentProps}
-                modalProps={fluent.dialogPropsStyles}
+                modalProps={modalDialogPropsStyles}
             >
                 <DialogFooter>
                     <PrimaryButton
                         onClick={handleApply}
                         text={applyText}
-                        styles={fluent.buttonStyles}
+                        styles={buttonStyles}
                     />
                     <DefaultButton
                         onClick={handleDiscard}
                         text={discardText}
-                        styles={fluent.buttonStyles}
+                        styles={buttonStyles}
                     />
                 </DialogFooter>
             </Dialog>

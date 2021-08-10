@@ -1,5 +1,5 @@
 import powerbi from 'powerbi-visuals-api';
-import { isDeveloperModeEnabled } from '../../api/developer';
+import { isDeveloperModeEnabled } from '../../core/utils/developer';
 import { TLocale } from '../ui/i18n';
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;

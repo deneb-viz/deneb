@@ -1,5 +1,6 @@
 import { IVegaViewDatum } from '../vega';
 
+export * as selection from './selection';
 export * as tooltip from './tooltip';
 export {
     interactivityReservedWords,

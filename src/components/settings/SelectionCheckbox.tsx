@@ -3,8 +3,8 @@ import { useSelector } from 'react-redux';
 import { Checkbox } from '@fluentui/react/lib/Checkbox';
 
 import { state } from '../../store';
-import { updateBooleanProperty } from '../../api/commands';
-import { isDataPointEnabled } from '../../api/selection';
+import { updateBooleanProperty } from '../../core/ui/commands';
+import { isDataPointEnabled } from '../../core/interactivity/selection';
 import { hostServices } from '../../core/services';
 import { i18nValue } from '../../core/ui/i18n';
 

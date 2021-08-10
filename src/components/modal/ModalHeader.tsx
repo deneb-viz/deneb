@@ -6,8 +6,8 @@ import { IconButton } from '@fluentui/react/lib/Button';
 import { IIconProps } from '@fluentui/react/lib/Icon';
 
 import { state } from '../../store';
-import { closeModalDialog } from '../../api/commands';
-import { TModalDialogType } from '../../api/ui';
+import { closeModalDialog } from '../../core/ui/commands';
+import { TModalDialogType } from '../../core/ui/modal';
 import { i18nValue } from '../../core/ui/i18n';
 import {
     modalDialogContentStyles,

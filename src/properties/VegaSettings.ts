@@ -5,8 +5,11 @@ import SettingsBase from './SettingsBase';
 import Debugger from '../Debugger';
 import { getConfig } from '../core/utils/config';
 import { isHandlerEnabled } from '../core/interactivity/tooltip';
-import { isContextMenuEnabled, isDataPointEnabled } from '../api/selection';
-import { isDeveloperModeEnabled } from '../api/developer';
+import {
+    isContextMenuEnabled,
+    isDataPointEnabled
+} from '../core/interactivity/selection';
+import { isDeveloperModeEnabled } from '../core/utils/developer';
 
 const defaults = getConfig().propertyDefaults.vega;
 

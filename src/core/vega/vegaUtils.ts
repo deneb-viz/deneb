@@ -1,8 +1,10 @@
+export { getPatchedVegaSpec };
+
 import { Signal } from 'vega';
 import { getConfig } from '../utils/config';
 
 // Apply specific patching operations to a supplied spec
-export const getPatchedVegaSpec = (spec: Object) => ({
+const getPatchedVegaSpec = (spec: Object) => ({
     ...spec,
     ...getPatchedTopLevelDimensions(spec),
     ...getPatchedSignals(spec)

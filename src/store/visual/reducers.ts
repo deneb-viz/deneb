@@ -10,11 +10,14 @@ import {
 import powerbi from 'powerbi-visuals-api';
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 
-import { getEmptyDataset } from '../../api/dataset';
-import { IDataProcessingPayload, IDataViewFlags } from '../../api/dataView';
-import { TEditorRole } from '../../api/editor';
-import { resolveVisualMode } from '../../api/ui';
-import { ICompiledSpec, IFixResult } from '../../api/specification';
+import { getEmptyDataset } from '../../core/data/dataset';
+import {
+    IDataProcessingPayload,
+    IDataViewFlags
+} from '../../core/data/dataView';
+import { TEditorRole } from '../../core/services/JsonEditorServices';
+import { resolveVisualMode } from '../../core/ui';
+import { ICompiledSpec, IFixResult } from '../../core/utils/specification';
 import {
     calculateVegaViewport,
     getEditorPreviewAreaWidth,

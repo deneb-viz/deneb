@@ -8,9 +8,9 @@ import {
 
 import { choiceGroupStyles, choiceItemStyles } from '../../config/styles';
 import { state } from '../../store';
-import { updateRenderMode } from '../../api/commands';
-import { TSpecRenderMode } from '../../api/specification';
+import { updateRenderMode } from '../../core/ui/commands';
 import { i18nValue } from '../../core/ui/i18n';
+import { TSpecRenderMode } from '../../core/vega';
 
 const RenderModeSettings = () => {
     const { settings } = useSelector(state).visual,

@@ -9,7 +9,7 @@ import {
 
 import ZoomControls from './ZoomControls';
 
-import { theme } from '../../../api/fluent';
+import { theme } from '../../../core/ui/fluent';
 import {
     previewToolbarHeight,
     previewToolbarPadding

@@ -14,9 +14,9 @@ import {
 import { state } from '../../store';
 import NewVisualDialogPivot from './NewVisualDialogPivot';
 import TemplateManagementPane from './TemplateManagementPane';
-import { createFromTemplate } from '../../api/specification';
-import { fluent } from '../../api';
+import { createFromTemplate } from '../../core/utils/specification';
 import { i18nValue } from '../../core/ui/i18n';
+import { buttonStyles } from '../../core/ui/fluent';
 
 export const NewVisualDialogBody = () => {
     const root = useSelector(state),
@@ -47,7 +47,7 @@ export const NewVisualDialogBody = () => {
             </Stack.Item>
             <Stack.Item shrink styles={modalDialogStackItemStyles} align='end'>
                 <PrimaryButton
-                    styles={fluent.buttonStyles}
+                    styles={buttonStyles}
                     onClick={handleCreate}
                     text={i18nValue('Button_Create')}
                     disabled={createDisabled}

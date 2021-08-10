@@ -1,7 +1,7 @@
 import { IButtonStyles } from '@fluentui/react/lib/Button';
 
-import { theme } from '../../api/fluent';
-import { TEditorPosition } from '../../api/ui';
+import { theme } from './fluent';
+import { TEditorPosition } from '.';
 import { mergeStyleSets } from '@fluentui/react';
 import { getState } from '../../store';
 import { commandBarButtonStyles } from './commandBar';

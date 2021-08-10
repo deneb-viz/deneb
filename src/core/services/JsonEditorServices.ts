@@ -3,6 +3,7 @@ export {
     configEditorService,
     getAssignedEditor,
     handleComponentUpdate,
+    JsonEditorServices,
     IVisualEditorProps,
     IVisualEditor,
     TEditorRole
@@ -22,21 +23,54 @@ import * as vegaSchema from 'vega/build/vega-schema.json';
 import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
 
 import { updateDirtyFlag } from '../../store/visual';
-import { getConfig } from '../../core/utils/config';
-import { ITableColumnMetadata } from '../dataset';
-import {
-    getBaseValidator,
-    hasLiveSpecChanged,
-    persist
-} from '../specification';
+import { getConfig } from '../utils/config';
+import { ITableColumnMetadata } from '../data/dataset';
+import { hasLiveSpecChanged, persist } from '../utils/specification';
 import { getState, store } from '../../store';
-import { isDialogOpen } from '../ui';
-import { i18nValue } from '../../core/ui/i18n';
+import { isDialogOpen } from '../ui/modal';
+import { i18nValue } from '../ui/i18n';
+import { getBaseValidator } from '../utils/json';
 
-// TODO: These are global instances. There is still an opportunity to potentially manage them better.
-const specEditorService: IVisualEditor = new VisualEditor('spec');
-const configEditorService: IVisualEditor = new VisualEditor('config');
+class JsonEditorServices implements IVisualEditor {
+    role: TEditorRole;
+    jsonEditor: JSONEditor = null;
 
+    constructor(role: TEditorRole) {
+        this.role = role;
+    }
+
+    createEditor = (container: HTMLDivElement) => {
+        this.jsonEditor = getNewJsonEditor(container);
+        setAceOptions(this.jsonEditor, {
+            useWorker: false,
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: true
+        });
+        setInitialText(this.jsonEditor, this.role);
+    };
+
+    getText = () => this.jsonEditor?.getText() || '';
+
+    setText = (text: string) => {
+        const editor = getAceEditor(this.jsonEditor);
+        editor.setValue(text);
+        editor.clearSelection();
+    };
+}
+
+/**
+ * Instance of `JsonEditorServices` that is used to track and manage specification in the visual.
+ */
+const specEditorService = new JsonEditorServices('spec');
+
+/**
+ * Instance of `VisualEditor` that is used to track and manage config in the visual.
+ */
+const configEditorService = new JsonEditorServices('config');
+
+/**
+ * For the supplied role, get the correct instance of `VisualEditor`.
+ */
 const getAssignedEditor = (role: TEditorRole) => {
     switch (role) {
         case 'spec': {
@@ -48,6 +82,9 @@ const getAssignedEditor = (role: TEditorRole) => {
     }
 };
 
+/**
+ * Logic to manage updates in the main React component.
+ */
 const handleComponentUpdate = (jsonEditor: JSONEditor, role: TEditorRole) => {
     setProviderSchema(jsonEditor, role);
     getAceEditor(jsonEditor)?.resize(true);
@@ -60,6 +97,16 @@ const handleComponentUpdate = (jsonEditor: JSONEditor, role: TEditorRole) => {
     }
 };
 
+/**
+ * Specifies the structure of each `VisualEditor` instance.
+ *
+ *  - `role`: assigned `TEditorRole`.
+ *  - `jsonEditor`: attached instance of `JSONEditor`, used for maintaining either specification or config object.
+ *  - `createEditor`: creates a new `JSONEditor` in the visual DOM and assignes it back to the `jsonEditor` property for subsequent operations
+ *      within the UI.
+ *  - `getText`: retrieve the current JSON content from the editor instance.
+ *  - `setText`: set the current JSON content in the editor instance.
+ */
 interface IVisualEditor {
     role: TEditorRole;
     jsonEditor: JSONEditor;
@@ -68,21 +115,40 @@ interface IVisualEditor {
     setText: (text: string) => void;
 }
 
+/**
+ * Properties for the `Editor` React component.
+ *
+ *  - `role`: assigned `TEditorRole`.
+ */
 interface IVisualEditorProps {
     role: TEditorRole;
 }
 
+/**
+ * Used to specify the types of operatons we should have within the pivot control in the editor pane.
+ */
 type TEditorRole = 'spec' | 'config' | 'settings';
 
+/**
+ * Ensures that when auto-apply is enabled, the Redux store is updated at a sensible interval after input has finished, rather than applying
+ * changes for every keystroke.
+ */
 const debounceInput = () =>
     debounce(
         handleTextEntry,
         getConfig().propertyDefaults.editor.debounceInterval
     );
 
+/**
+ * Gets the Ace editor instance from the supplied `jsonEditor`.
+ */
 const getAceEditor = (jsonEditor: JSONEditor): Editor =>
     (<any>jsonEditor)?.aceEditor;
 
+/**
+ * For an editor, we need to populate the completers for the end-user. This traverses the metadata for all columns and measures added to the
+ * Values data role and returns them as a valid Ace `Completer`.
+ */
 const getCompleters = (): Completer => {
     const { dataset } = getState().visual,
         { metadata } = dataset;
@@ -104,9 +170,15 @@ const getCompleters = (): Completer => {
     };
 };
 
+/**
+ * Retrieve the specific property from the Redux store.
+ */
 const getEditorPropFromStore = (prop: string) =>
     getState()?.visual?.settings?.editor?.[prop];
 
+/**
+ * Creates a new JSONEditor object in the supplied DOM element and binds configuration and behavior.
+ */
 const getNewJsonEditor = (container: HTMLDivElement) =>
     new JSONEditor(container, {
         modes: [],
@@ -118,12 +190,19 @@ const getNewJsonEditor = (container: HTMLDivElement) =>
         onChange: debounceInput()
     });
 
+/**
+ * For the given role, retrieve its value from the visual properties (via Redux store).
+ */
 const getInitialText = (role: TEditorRole) => {
     const { settings } = getState().visual,
         { jsonConfig, jsonSpec } = settings.vega;
     return role === 'spec' ? jsonSpec || '' : jsonConfig;
 };
 
+/**
+ * Logic used to handle changes in the editor (such as auto-apply, if enabled). Will also request `specification` API
+ * checks/handles the `isDirty` state.
+ */
 const handleTextEntry = () => {
     const { autoApply } = getState().visual;
     if (autoApply) {
@@ -133,6 +212,9 @@ const handleTextEntry = () => {
     }
 };
 
+/**
+ * For any data-based completers in the editor, provide a qualifier denoting whether it's a column, measure or something else.
+ */
 const resolveCompleterMeta = (field: ITableColumnMetadata) => {
     switch (true) {
         case field.isMeasure: {
@@ -144,6 +226,9 @@ const resolveCompleterMeta = (field: ITableColumnMetadata) => {
     }
 };
 
+/**
+ * Applies an order of precedence for an object in the editor's auto-completion.
+ */
 const resolveCompleterScore = (field: ITableColumnMetadata, index: number) => {
     switch (true) {
         case field.isMeasure:
@@ -153,6 +238,9 @@ const resolveCompleterScore = (field: ITableColumnMetadata, index: number) => {
     }
 };
 
+/**
+ * Applies options to the JSON editor.
+ */
 const setAceOptions = (
     jsonEditor: JSONEditor,
     options: { [key: string]: any }
@@ -166,6 +254,9 @@ const setInitialText = (
     setText(jsonEditor, getInitialText(role));
 };
 
+/**
+ * Ensures that the correct JSON schema is applied to the JSON editor for validation, based on the specificed role.
+ */
 const setProviderSchema = (jsonEditor: JSONEditor, role: TEditorRole) => {
     const { settings } = getState().visual,
         { provider } = settings.vega;
@@ -184,13 +275,19 @@ const setProviderSchema = (jsonEditor: JSONEditor, role: TEditorRole) => {
     }
 };
 
+/**
+ * Sets the embedded Ace editor text within JSONEditor (using the JSONEditor method removes undo from the embedded editor, so we want to ensure
+ * we have sensible encapsulation to prevent this as much as possible).
+ */
 const setText = (jsonEditor: JSONEditor, text: string) => {
     const editor = getAceEditor(jsonEditor);
     editor.setValue(text);
     editor.clearSelection();
 };
 
-// TODO: Possible side-effecting code
+/**
+ * Ensure that editor completers are updated/synced to match anything the user has added to (or removed from) the Values data role.
+ */
 const updateCompleters = (jsonEditor: JSONEditor, role: TEditorRole) => {
     const editor = getAceEditor(jsonEditor);
     switch (role) {
@@ -209,26 +306,4 @@ const updateCompleters = (jsonEditor: JSONEditor, role: TEditorRole) => {
         default: {
         }
     }
-};
-
-function VisualEditor(role: TEditorRole) {
-    this.role = role;
-    this.jsonEditor = <JSONEditor>null;
-}
-VisualEditor.prototype.createEditor = function (container: HTMLDivElement) {
-    this.jsonEditor = getNewJsonEditor(container);
-    setAceOptions(this.jsonEditor, {
-        useWorker: false,
-        enableBasicAutocompletion: true,
-        enableLiveAutocompletion: true
-    });
-    setInitialText(this.jsonEditor, this.role);
-};
-VisualEditor.prototype.getText = function () {
-    return this.jsonEditor.getText();
-};
-VisualEditor.prototype.setText = function (text: string) {
-    const editor = getAceEditor(this.jsonEditor);
-    editor.setValue(text);
-    editor.clearSelection();
 };

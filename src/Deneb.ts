@@ -43,9 +43,9 @@ import {
     handleDataFetch,
     validateDataViewMapping,
     validateDataViewRoles
-} from './api/dataView';
-import { theme } from './api/fluent';
-import { parseActiveSpec } from './api/specification';
+} from './core/data/dataView';
+import { theme } from './core/ui/fluent';
+import { parseActiveSpec } from './core/utils/specification';
 import { fillPatternServices, hostServices } from './core/services';
 import { initializeIcons } from './core/ui/fluent';
 

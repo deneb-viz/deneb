@@ -3,7 +3,7 @@ import IViewport = powerbi.IViewport;
 
 import { getState } from '../../store';
 import { getConfig } from '../utils/config';
-import { TEditorPosition, TVisualMode } from '../../api/ui';
+import { TEditorPosition, TVisualMode } from '.';
 
 const splitPaneDefaults = getConfig().splitPaneDefaults;
 const visualViewportAdjust = getConfig().visualViewPortAdjust;

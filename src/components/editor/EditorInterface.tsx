@@ -10,7 +10,7 @@ import EditorPane from './EditorPane';
 import EditorPreview from './EditorPreview';
 import NewVisualDialog from '../create/NewVisualDialog';
 import ExportVisualDialog from '../export/ExportVisualDialog';
-import { getVisualHotkeys } from '../../api/commands';
+import { getVisualHotkeys } from '../../core/ui/commands';
 import {
     getResizablePaneMaxSize,
     getResizablePaneMinSize

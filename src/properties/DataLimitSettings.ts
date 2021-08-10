@@ -4,7 +4,7 @@ import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnume
 import SettingsBase from './SettingsBase';
 import Debugger from '../Debugger';
 import { getConfig } from '../core/utils/config';
-import { isFetchMoreEnabled } from '../api/dataView';
+import { isFetchMoreEnabled } from '../core/data/dataView';
 
 const defaults = getConfig().propertyDefaults.dataLimit;
 

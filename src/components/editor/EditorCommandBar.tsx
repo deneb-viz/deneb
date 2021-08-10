@@ -2,19 +2,19 @@ import * as React from 'react';
 
 import { CommandBar } from '@fluentui/react/lib/CommandBar';
 
-import { commandBarStyles } from '../../core/ui/commandBar';
 import {
-    getCommandBarEditCommands,
-    getCommandBarFarCommands
-} from '../../api/ui';
+    getCommandBarItems,
+    getCommandBarFarItems,
+    commandBarStyles
+} from '../../core/ui/commandBar';
 
 import { i18nValue } from '../../core/ui/i18n';
 
 const EditorCommandBar: React.FC = () => (
     <div style={{ width: '100%' }}>
         <CommandBar
-            items={getCommandBarEditCommands()}
-            farItems={getCommandBarFarCommands()}
+            items={getCommandBarItems()}
+            farItems={getCommandBarFarItems()}
             ariaLabel={i18nValue('CommandBar_Aria_Label')}
             styles={commandBarStyles}
         />

@@ -22,11 +22,11 @@ import { i18nValue } from '../ui/i18n';
 import { getJsonAsIndentedString } from '../utils/json';
 import { IVegaViewDatum } from '../vega';
 
-import { isFeatureEnabled } from '../../api/features';
-import { createSelectionId } from '../../api/selection';
-import { getMetadataByKeys, getValueForDatum } from '../../api/dataset';
-import { createFormatterFromString } from '../../api/formatting';
-import { getCategoryColumns } from '../../api/dataView';
+import { isFeatureEnabled } from '../utils/features';
+import { createSelectionId } from './selection';
+import { getMetadataByKeys, getValueForDatum } from '../data/dataset';
+import { createFormatterFromString } from '../utils/formatting';
+import { getCategoryColumns } from '../data/dataView';
 
 /**
  * Convenience constant for tooltip events, as it's required by Power BI.

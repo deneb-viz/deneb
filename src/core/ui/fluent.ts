@@ -1,13 +1,20 @@
-export { initializeIcons };
+export { buttonStyles, initializeIcons, theme };
 
+import { IButtonStyles } from '@fluentui/react/lib/Button';
 import {
+    FontWeights,
     IIconOptions,
     IIconSubset,
     registerIcons
 } from '@fluentui/react/lib/Styling';
+import { IPartialTheme } from '@fluentui/react/lib/Theme';
 
-import { getIcons } from '../utils/config';
+import { getConfig, getIcons } from '../utils/config';
 
+/**
+ * Initialise packaged Fluent UI icons rather than loading from CDN (default behaviour).
+ * Icons are updated via the `update-fabric-icons` NPM script and driven via the IDs in `/config/fabric-icons.json`
+ */
 const initializeIcons = (
     baseUrl: string = '',
     options?: IIconOptions
@@ -26,4 +33,22 @@ const initializeIcons = (
         icons: getIcons()
     };
     registerIcons(subset, options);
+};
+
+/**
+ * The Fluent UI theme, as from the visual configuration.
+ */
+const theme = <IPartialTheme>getConfig()?.fluentUiTheme || {};
+
+/**
+ * General styling for buttons within the UI.
+ */
+const buttonStyles: IButtonStyles = {
+    root: {
+        borderRadius: 0
+    },
+    label: {
+        color: theme.palette.black,
+        fontWeight: FontWeights.regular
+    }
 };

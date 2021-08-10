@@ -25,11 +25,7 @@ import Ajv from 'ajv';
 import ErrorObject = Ajv.ErrorObject;
 import merge from 'lodash/merge';
 
-import {
-    determineProviderFromSpec,
-    getParsedConfigFromSettings,
-    TSpecProvider
-} from '../../api/specification';
+import { getParsedConfigFromSettings } from '../utils/specification';
 import {
     IDenebTemplateMetadata,
     ITemplateDatasetField,
@@ -48,6 +44,7 @@ import {
 import { ITemplateImportPayload } from '../../store/templates/state';
 import * as schema_v1 from '../../../schema/deneb-template-usermeta-v1.json';
 import { i18nValue } from '../ui/i18n';
+import { determineProviderFromSpec, TSpecProvider } from '../vega';
 
 /**
  * Used to indicate which part of the export dialog has focus.

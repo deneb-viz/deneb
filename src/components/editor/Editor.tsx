@@ -1,10 +1,10 @@
 import React from 'react';
-import { editor, specification } from '../../api';
+import { editor } from '../../core/services';
+import { stageEditorData } from '../../core/utils/specification';
 import getAssignedEditor = editor.getAssignedEditor;
 import handleComponentUpdate = editor.handleComponentUpdate;
 import IVisualEditor = editor.IVisualEditor;
 import IVisualEditorProps = editor.IVisualEditorProps;
-import stageEditorData = specification.stageEditorData;
 
 class Editor extends React.Component<IVisualEditorProps> {
     private container: HTMLDivElement;

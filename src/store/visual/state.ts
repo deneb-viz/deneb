@@ -16,16 +16,13 @@ import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 
 import { Loader } from 'vega';
 
-import { getEmptyDataset, IVisualDataset } from '../../api/dataset';
-import { IDataViewFlags, TDataProcessingStage } from '../../api/dataView';
-import { TEditorRole } from '../../api/editor';
-import { TVisualMode } from '../../api/ui';
-import {
-    ICompiledSpec,
-    IFixResult,
-    resolveLoaderLogic
-} from '../../api/specification';
+import { getEmptyDataset, IVisualDataset } from '../../core/data/dataset';
+import { IDataViewFlags, TDataProcessingStage } from '../../core/data/dataView';
+import { TEditorRole } from '../../core/services/JsonEditorServices';
+import { TVisualMode } from '../../core/ui';
+import { ICompiledSpec, IFixResult } from '../../core/utils/specification';
 import VisualSettings from '../../properties/VisualSettings';
+import { resolveLoaderLogic } from '../../core/vega';
 
 interface IVisualSliceState {
     allowInteractions: boolean;

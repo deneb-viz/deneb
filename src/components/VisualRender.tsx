@@ -11,20 +11,18 @@ import FourD3D3D3 from '../components/editor/FourD3D3D3';
 import SplashNoSpec from './status/SplashNoSpec';
 import { selectionHandlerService } from '../services';
 
-import {
-    getInitialConfig,
-    registerCustomExpressions
-} from '../api/specification';
+import { getInitialConfig } from '../core/utils/specification';
 import { getTooltipHandler } from '../core/interactivity/tooltip';
 import { hostServices } from '../core/services';
 import { locales } from '../core/ui/i18n';
+import { View } from 'vega';
+import { registerCustomExpressions } from '../core/vega';
 
 const VisualRender = () => {
     Debugger.log('Rendering Component: [VisualRender]...');
 
-    const { dataset, fourd3d3d, loader, settings, spec } = useSelector(
-            state
-        ).visual,
+    const { dataset, fourd3d3d, loader, settings, spec } =
+            useSelector(state).visual,
         { vega } = settings,
         { locale } = hostServices,
         data = { dataset: cloneDeep(dataset.values) },

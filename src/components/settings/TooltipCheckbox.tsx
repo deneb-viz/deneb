@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { Checkbox } from '@fluentui/react/lib/Checkbox';
 
 import { state } from '../../store';
-import { updateBooleanProperty } from '../../api/commands';
+import { updateBooleanProperty } from '../../core/ui/commands';
 import { isHandlerEnabled } from '../../core/interactivity/tooltip';
 import { i18nValue } from '../../core/ui/i18n';
 

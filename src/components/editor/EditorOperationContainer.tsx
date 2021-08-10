@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { state } from '../../store';
 import Editor from './Editor';
 import EditorPaneSettings from '../settings/EditorPaneSettings';
-import { TEditorRole } from '../../api/editor';
+import { TEditorRole } from '../../core/services/JsonEditorServices';
 
 interface IEditorOperationContainerProps {
     operation: TEditorRole;

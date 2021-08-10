@@ -6,8 +6,8 @@ import { Modal } from '@fluentui/react/lib/Modal';
 
 import { state } from '../../store';
 import ModalHeader from '../modal/ModalHeader';
-import { closeModalDialog } from '../../api/commands';
-import { TModalDialogType } from '../../api/ui';
+import { closeModalDialog } from '../../core/ui/commands';
+import { TModalDialogType } from '../../core/ui/modal';
 import { modalDialogContentStyles } from '../../core/ui/modal';
 
 interface IModalDialogProps {
