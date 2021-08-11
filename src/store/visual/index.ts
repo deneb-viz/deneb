@@ -27,6 +27,7 @@ export const {
     updateFixStatus,
     dismissFixError,
     fourd3d3d,
+    hotkeysRegistered,
     updateExportDialog,
     updateDirtyFlag,
     updateStagedSpecData,

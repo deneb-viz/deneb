@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import SplitPane from 'react-split-pane';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';
-import { updateEditorPaneSize } from '../../store/visual';
+import { updateEditorPaneSize, hotkeysRegistered } from '../../store/visual';
 import EditorPane from './EditorPane';
 import EditorPreview from './EditorPreview';
 import NewVisualDialog from '../create/NewVisualDialog';
@@ -22,7 +22,8 @@ const EditorInterface: React.FC = () => {
             resizablePaneDefaultWidth,
             resizablePaneWidth,
             editorPaneIsExpanded,
-            settings
+            settings,
+            hotkeysBound
         } = useSelector(state).visual,
         { editor } = settings,
         dispatch = useDispatch(),
@@ -46,9 +47,18 @@ const EditorInterface: React.FC = () => {
             }
         },
         editorPane = <EditorPane isExpanded={editorPaneIsExpanded} />;
-    getVisualHotkeys().forEach((hk) => {
-        useHotkeys(hk.keys, hk.command, hk.options);
-    });
+    if (!hotkeysBound) {
+        Debugger.log('*** HOTKEY STUFF ***');
+        getVisualHotkeys().forEach((hk) => {
+            useHotkeys(hk.keys, hk.command, hk.options);
+        });
+    }
+    useEffect(() => {
+        return () => {
+            Debugger.log('*** HOTKEY CLEANUP ***');
+            dispatch(hotkeysRegistered());
+        };
+    }, []);
     return (
         <div id='visualEditor'>
             <SplitPane

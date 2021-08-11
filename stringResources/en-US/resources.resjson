@@ -169,5 +169,6 @@
     "Dialog_Unapplied_Changes_Subtext": "Would you like to apply them now?",
     "Dialog_Unapplied_Changes_Apply": "Apply",
     "Dialog_Unapplied_Changes_Discard": "Discard",
-    "Selection_KW_Present": "[Available]"
+    "Selection_KW_Present": "[Available]",
+    "Zoom_Level_Tooltip": "Current zoom level in the editor - use the controls to the left to adjust this as necessary"
 }

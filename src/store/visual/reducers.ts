@@ -297,3 +297,7 @@ export const updateStagedConfigData = (
 ) => {
     state.stagedConfig = action.payload;
 };
+
+export const hotkeysRegistered = (state: WritableDraft<IVisualSliceState>) => {
+    state.hotkeysBound = true;
+};

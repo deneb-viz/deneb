@@ -265,7 +265,7 @@ const handleSetZoomToFit = () => {
  */
 const handleZoomIn = () => {
     const { value, step, max } = getState().zoom,
-        level = Math.min(max, value + step);
+        level = Math.min(max, Math.floor((value + step) / 10) * 10);
     value < max && handleSetZoomLevel(level);
 };
 
@@ -274,7 +274,7 @@ const handleZoomIn = () => {
  */
 const handleZoomOut = () => {
     const { value, step, min } = getState().zoom,
-        level = Math.max(min, value - step);
+        level = Math.max(min, Math.ceil((value - step) / 10) * 10);
     value > min && handleSetZoomLevel(level);
 };
 

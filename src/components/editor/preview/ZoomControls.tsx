@@ -3,6 +3,8 @@ import { useSelector } from 'react-redux';
 
 import { ISliderStyles, Slider } from '@fluentui/react/lib/Slider';
 import { StackItem, IStackItemStyles } from '@fluentui/react/lib/Stack';
+import { Text } from '@fluentui/react/lib/Text';
+import { TooltipHost } from '@fluentui/react/lib/Tooltip';
 
 import { state } from '../../../store';
 import {
@@ -19,6 +21,7 @@ import {
     isZoomResetIconDisabled
 } from '../../../core/ui/icons';
 import ZoomButton from './ZoomButton';
+import { i18nValue } from '../../../core/ui/i18n';
 
 const sliderStackItemStyles: IStackItemStyles = {
         root: {
@@ -28,7 +31,14 @@ const sliderStackItemStyles: IStackItemStyles = {
     },
     sliderStyles: Partial<ISliderStyles> = {
         root: {
-            width: 150
+            width: 100
+        }
+    },
+    valueStackItemStyles: IStackItemStyles = {
+        root: {
+            padding: 4,
+            cursor: 'default',
+            userSelect: 'none'
         }
     };
 
@@ -51,8 +61,7 @@ const ZoomControls: React.FC = () => {
                     step={zoom.step}
                     value={zoom.value}
                     defaultValue={zoom.default}
-                    valueFormat={valueFormat}
-                    showValue
+                    showValue={false}
                     onChange={handleSetZoomLevel}
                     disabled={isZoomControlDisabled()}
                 />
@@ -75,6 +84,11 @@ const ZoomControls: React.FC = () => {
                 onClick={handleSetZoomToFit}
                 disabled={isZoomControlDisabled()}
             />
+            <StackItem styles={valueStackItemStyles}>
+                <TooltipHost content={i18nValue('Zoom_Level_Tooltip')}>
+                    <Text>{valueFormat(zoom.value)}</Text>
+                </TooltipHost>
+            </StackItem>
         </>
     );
 };

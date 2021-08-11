@@ -42,9 +42,12 @@ class JsonEditorServices implements IVisualEditor {
     createEditor = (container: HTMLDivElement) => {
         this.jsonEditor = getNewJsonEditor(container);
         setAceOptions(this.jsonEditor, {
-            useWorker: false,
-            enableBasicAutocompletion: true,
-            enableLiveAutocompletion: true
+            ...{
+                useWorker: false,
+                enableBasicAutocompletion: true,
+                enableLiveAutocompletion: true
+            },
+            ...getDynamicAceEditorOptions()
         });
         setInitialText(this.jsonEditor, this.role);
     };
@@ -83,14 +86,21 @@ const getAssignedEditor = (role: TEditorRole) => {
 };
 
 /**
+ * Consolidates any options that should be set/updated on editor create/update
+ */
+const getDynamicAceEditorOptions = (): {
+    [key: string]: any;
+} => ({
+    fontSize: `${getEditorPropFromStore('fontSize')}pt`
+});
+
+/**
  * Logic to manage updates in the main React component.
  */
 const handleComponentUpdate = (jsonEditor: JSONEditor, role: TEditorRole) => {
     setProviderSchema(jsonEditor, role);
     getAceEditor(jsonEditor)?.resize(true);
-    setAceOptions(jsonEditor, {
-        fontSize: `${getEditorPropFromStore('fontSize')}pt`
-    });
+    setAceOptions(jsonEditor, getDynamicAceEditorOptions());
     if (!isDialogOpen()) {
         jsonEditor.focus();
         updateCompleters(jsonEditor, role);

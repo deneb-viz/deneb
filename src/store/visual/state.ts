@@ -41,6 +41,7 @@ interface IVisualSliceState {
     editorPreviewAreaWidth: number;
     fourd3d3d: boolean;
     fixResult: IFixResult;
+    hotkeysBound: boolean;
     isInFocus: boolean;
     isNewDialogVisible: boolean;
     isExportDialogVisible: boolean;
@@ -104,6 +105,7 @@ const initialState: IVisualSliceState = {
         config: null
     },
     fourd3d3d: false,
+    hotkeysBound: false,
     isInFocus: false,
     isDirty: false,
     isExportDialogVisible: false,
