@@ -18,6 +18,6 @@ export const getViewModeViewportStyles = (
         width: isEditor ? viewport.width : resolved,
         transform: `scale(${zoomLevel / 100})`, // TODO: better logic
         transformOrigin: '0% 0% 0px',
-        border: showViewportMarker ? '1px dashed #b3b3b3' : null
+        border: showViewportMarker ? '2px dashed #b3b3b3' : null
     };
 };

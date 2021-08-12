@@ -19,8 +19,6 @@ import Completer = Ace.Completer;
 import Editor = Ace.Editor;
 import JSONEditor from 'jsoneditor/dist/jsoneditor-minimalist';
 import debounce from 'lodash/debounce';
-import * as vegaSchema from 'vega/build/vega-schema.json';
-import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
 
 import { updateDirtyFlag } from '../../store/visual';
 import { getConfig } from '../utils/config';
@@ -30,6 +28,7 @@ import { getState, store } from '../../store';
 import { isDialogOpen } from '../ui/modal';
 import { i18nValue } from '../ui/i18n';
 import { getBaseValidator } from '../utils/json';
+import { getEditorSchema, TSpecProvider } from '../vega';
 
 class JsonEditorServices implements IVisualEditor {
     role: TEditorRole;
@@ -270,19 +269,7 @@ const setInitialText = (
 const setProviderSchema = (jsonEditor: JSONEditor, role: TEditorRole) => {
     const { settings } = getState().visual,
         { provider } = settings.vega;
-    switch (true) {
-        case role === 'spec' && provider == 'vegaLite': {
-            jsonEditor?.setSchema(vegaLiteSchema);
-            break;
-        }
-        case role === 'spec' && provider == 'vega': {
-            jsonEditor?.setSchema(vegaSchema);
-            break;
-        }
-        default: {
-            jsonEditor?.setSchema(null);
-        }
-    }
+    jsonEditor?.setSchema(getEditorSchema(<TSpecProvider>provider, role));
 };
 
 /**

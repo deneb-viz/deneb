@@ -25,7 +25,7 @@ import Ajv from 'ajv';
 import ErrorObject = Ajv.ErrorObject;
 import merge from 'lodash/merge';
 
-import { getParsedConfigFromSettings } from '../utils/specification';
+import { getParsedConfigFromSettings } from '../vega';
 import {
     IDenebTemplateMetadata,
     ITemplateDatasetField,

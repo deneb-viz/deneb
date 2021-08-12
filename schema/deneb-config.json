@@ -55,7 +55,8 @@
                 "tabSize",
                 "position",
                 "fontSize",
-                "showViewportMarker"
+                "showViewportMarker",
+                "maxLineLength"
             ],
             "properties": {
                 "debounceInterval": {
@@ -77,6 +78,9 @@
                 "showViewportMarker": {
                     "description": "Whether to show viewport marker for actual size of visual prior to opening editor.",
                     "type": "boolean"
+                },
+                "maxLineLength": {
+                    "description": "Number of characters to try to cap lines at when prettifying JSON."
                 }
             }
         },

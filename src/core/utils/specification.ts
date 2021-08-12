@@ -1,8 +1,6 @@
 export {
     createFromTemplate,
     fixAndFormat,
-    getInitialConfig,
-    getParsedConfigFromSettings,
     hasLiveSpecChanged,
     parseActiveSpec,
     persist,
@@ -16,7 +14,6 @@ import powerbi from 'powerbi-visuals-api';
 import ISelectionId = powerbi.visuals.ISelectionId;
 
 import * as Vega from 'vega';
-import Config = Vega.Config;
 import Spec = Vega.Spec;
 import * as VegaLite from 'vega-lite';
 import { TopLevelSpec } from 'vega-lite';
@@ -105,32 +102,6 @@ const fixAndFormat = () => {
 };
 
 /**
- * Retrieves the config from our visual properties, and enriches it with anything we want to abstract out from the end-user to make things as
- * "at home" in Power BI as possible.
- */
-const getInitialConfig = () => {
-    const { themeColors } = getState().visual;
-    return {
-        ...{
-            background: null, // so we can defer to the Power BI background, if applied
-            customFormatTypes: true,
-            range: {
-                category: themeColors
-            }
-        },
-        ...getParsedConfigFromSettings()
-    };
-};
-
-/**
- * Gets the `config` from our visual objects and parses it to JSON.
- */
-const getParsedConfigFromSettings = (): Config => {
-    const { vega } = getState().visual.settings;
-    return cleanParse(vega.jsonConfig, propertyDefaults.jsonConfig);
-};
-
-/**
  * Looks at the active specification and config in the visual editors and compares with persisted values in the visual properties. Used to set
  * the `isDirty` flag in the Redux store.
  */
@@ -194,19 +165,17 @@ const parseActiveSpec = () => {
                         });
                     }
                     */
-                const patchedSpec = getPatchedVegaLiteSpec(parsedSpec);
                 const result = VegaLite.compile(<TopLevelSpec>{
-                    ...patchedSpec
+                    ...getPatchedVegaLiteSpec(parsedSpec)
                 });
                 dispatchSpec({
                     status: 'valid',
-                    spec: patchedSpec,
+                    spec: parsedSpec,
                     rawSpec: jsonSpec
                 });
                 break;
             }
             case 'vega': {
-                const patchedSpec = getPatchedVegaSpec(parsedSpec);
                 /**
                     Debugger.log(
                         'Patching data point and context menu selections...'
@@ -218,10 +187,12 @@ const parseActiveSpec = () => {
                         name: '__context__',
                         on: [{ events: 'contextmenu', update: 'datum' }]
                     });*/
-                const result = Vega.parse(<Spec>{ ...patchedSpec });
+                const result = Vega.parse(<Spec>{
+                    ...getPatchedVegaSpec(parsedSpec)
+                });
                 dispatchSpec({
                     status: 'valid',
-                    spec: patchedSpec,
+                    spec: parsedSpec,
                     rawSpec: jsonSpec
                 });
                 break;

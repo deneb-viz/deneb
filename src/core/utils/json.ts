@@ -7,6 +7,7 @@ export {
 
 import Ajv from 'ajv';
 import * as draft06 from 'ajv/lib/refs/json-schema-draft-06.json';
+import stringify from 'json-stringify-pretty-compact';
 
 import { getConfig } from '../../core/utils/config';
 import { isFeatureEnabled } from './features';
@@ -36,12 +37,13 @@ const getJsonAsIndentedString = (
     json: object,
     context: TIndentContext = 'editor'
 ) =>
-    JSON.stringify(
-        json,
-        null,
-        (context === 'editor' && getConfig().propertyDefaults.editor.tabSize) ||
+    stringify(json, {
+        maxLength: getConfig().propertyDefaults.editor.maxLineLength,
+        indent:
+            (context === 'editor' &&
+                getConfig().propertyDefaults.editor.tabSize) ||
             '\u2800'
-    );
+    });
 
 /**
  * Apply the supplied JSON schema to a `getBaseValidator` and attempt to compile it.
