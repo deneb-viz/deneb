@@ -6,6 +6,7 @@
     "Objects_Developer_Locale": "Locale",
     "Objects_Developer_Locale_Description": "Provide a manual locale for the visual (to facilitate testing of i18n and formatting)",
     "Enum_Locale_en-US": "English",
+    "Enum_Locale_en-GB": "English (British)",
     "Enum_Locale_de-DE": "Deutsch",
     "Enum_Locale_fr-FR": "français",
     "Objects_Vega": "Vega",

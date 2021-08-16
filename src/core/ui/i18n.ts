@@ -14,6 +14,7 @@ const locales: ILocaleConfiguration = {
         'cs-CZ': f_cs_CZ,
         'de-DE': f_de_DE,
         'en-NZ': f_en_US,
+        'en-GB': f_en_GB,
         'en-US': f_en_US,
         'es-ES': f_es_ES,
         'fi-FI': f_fi_FI,
@@ -37,6 +38,7 @@ const locales: ILocaleConfiguration = {
         'da-DK': t_da_DK,
         'de-DE': t_de_DE,
         'en-NZ': t_en_US,
+        'en-GB': t_en_GB,
         'en-US': t_en_US,
         'es-ES': t_es_ES,
         'fi-FI': t_fi_FI,
@@ -112,6 +114,7 @@ import * as f_ca_ES from 'd3-format/locale/ca-ES.json';
 import * as f_cs_CZ from 'd3-format/locale/cs-CZ.json';
 import * as f_de_DE from 'd3-format/locale/de-DE.json';
 import * as f_es_ES from 'd3-format/locale/es-ES.json';
+import * as f_en_GB from 'd3-format/locale/en-GB.json';
 import * as f_en_US from 'd3-format/locale/en-US.json';
 import * as f_fi_FI from 'd3-format/locale/fi-FI.json';
 import * as f_fr_FR from 'd3-format/locale/fr-FR.json';
@@ -160,6 +163,7 @@ import * as t_ca_ES from 'd3-time-format/locale/ca-ES.json';
 import * as t_cs_CZ from 'd3-time-format/locale/cs-CZ.json';
 import * as t_de_DE from 'd3-time-format/locale/de-DE.json';
 import * as t_es_ES from 'd3-time-format/locale/es-ES.json';
+import * as t_en_GB from 'd3-time-format/locale/en-GB.json';
 import * as t_en_US from 'd3-time-format/locale/en-US.json';
 import * as t_fi_FI from 'd3-time-format/locale/fi-FI.json';
 import * as t_fr_FR from 'd3-time-format/locale/fr-FR.json';

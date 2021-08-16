@@ -40,7 +40,7 @@ export const visualConstructor = (
 ) => {
     const pl = action.payload;
     state.themeColors = pl.colorPalette['colors']?.map((c: any) => c.value);
-    state.allowInteractions = pl.hostCapabilities.allowInteractions;
+    state.allowInteractions = pl.allowInteractions;
 };
 
 export const visualUpdate = (

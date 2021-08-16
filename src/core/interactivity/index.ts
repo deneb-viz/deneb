@@ -6,7 +6,7 @@ export {
     interactivityReservedWords,
     isInteractivityReservedWord,
     resolveCoordinates,
-    resolveDatumForKeywords
+    resolveDatumToArray
 };
 
 /**
@@ -29,9 +29,10 @@ const resolveCoordinates = (event: MouseEvent): [number, number] => [
 ];
 
 /**
- * For a given datum, ensure that the `interactivityReservedWords` are stripped out so that we can get actual fields and values assigned to a datum.
+ * For a given datum, resolve it to an array of keys and values. Addiitonally, we can (optionally) ensure that the
+ * `interactivityReservedWords` are stripped out so that we can get actual fields and values assigned to a datum.
  */
-const resolveDatumForKeywords = (obj: IVegaViewDatum) =>
+const resolveDatumToArray = (obj: IVegaViewDatum, filterReserved = true) =>
     Object.entries({ ...obj }).filter(
-        ([k, v]) => !isInteractivityReservedWord(k)
+        ([k, v]) => (filterReserved && !isInteractivityReservedWord(k)) || k
     );

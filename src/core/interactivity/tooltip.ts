@@ -6,6 +6,7 @@ import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
 import ISelectionId = powerbi.extensibility.ISelectionId;
 
 import indexOf from 'lodash/indexOf';
+import isDate from 'lodash/isDate';
 import isObject from 'lodash/isObject';
 import keys from 'lodash/keys';
 import pickBy from 'lodash/pickBy';
@@ -16,7 +17,7 @@ import toString from 'lodash/toString';
 import {
     isInteractivityReservedWord,
     resolveCoordinates,
-    resolveDatumForKeywords
+    resolveDatumToArray
 } from '.';
 import { i18nValue } from '../ui/i18n';
 import { getJsonAsIndentedString } from '../utils/json';
@@ -52,7 +53,7 @@ const extractTooltipDataItemsFromObject = (
     autoFormatFields: IVegaViewDatum
 ): VisualTooltipDataItem[] => {
     const autoFormatMetadata = getMetadataByKeys(keys(autoFormatFields));
-    return resolveDatumForKeywords(tooltip).map(([k, v]) => ({
+    return resolveDatumToArray(tooltip, false).map(([k, v]) => ({
         displayName: `${k}`,
         value: `${
             (autoFormatMetadata[k] &&
@@ -60,7 +61,7 @@ const extractTooltipDataItemsFromObject = (
                     (autoFormatMetadata[k].type.numeric && toNumber(v)) ||
                         (autoFormatMetadata[k].type.dateTime && v)
                 )) ||
-            getSanitisedTooltipValue(v)
+            getCuratedTooltipItem(k, getSanitisedTooltipValue(v))
         }`
     }));
 };
@@ -91,19 +92,25 @@ const getRedactedTooltipObject = (object: Object) =>
     reduce(
         object,
         (result, value, key) => {
-            result[key] = isInteractivityReservedWord(key)
-                ? i18nValue('Selection_KW_Present')
-                : value;
+            result[key] = getCuratedTooltipItem(key, value);
             return result;
         },
         {}
     );
 
 /**
+ * For a given tooltip item, if it's a reserved workd, return something more sensible to the end user than a complex object.
+ */
+const getCuratedTooltipItem = (key: string, value: any) =>
+    isInteractivityReservedWord(key)
+        ? i18nValue('Selection_KW_Present')
+        : value;
+
+/**
  * Ensure that tooltip values are correctly sanitised for output into a default tooltip.
  */
 const getSanitisedTooltipValue = (value: any) =>
-    isObject(value)
+    isObject(value) && !isDate(value)
         ? getJsonAsIndentedString(getRedactedTooltipObject(value), 'tooltip')
         : toString(value);
 

@@ -29,6 +29,11 @@
                                 "value": "en-US"
                             },
                             {
+                                "displayNameKey": "Enum_Locale_en-GB",
+                                "displayName": "en-GB",
+                                "value": "en-GB"
+                            },
+                            {
                                 "displayNameKey": "Enum_Locale_de-DE",
                                 "displayName": "de-DE",
                                 "value": "de-DE"
