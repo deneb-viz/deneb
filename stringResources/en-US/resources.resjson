@@ -6,6 +6,7 @@
     "Objects_Developer_Locale": "Locale",
     "Objects_Developer_Locale_Description": "Provide a manual locale for the visual (to facilitate testing of i18n and formatting)",
     "Enum_Locale_en-US": "English",
+    "Enum_Locale_en-GB": "English (British)",
     "Enum_Locale_de-DE": "Deutsch",
     "Enum_Locale_fr-FR": "français",
     "Objects_Vega": "Vega",
@@ -31,6 +32,8 @@
     "Objects_Editor_Position_Description": "Specify which side of the interface to place the editor.",
     "Objects_Editor_FontSize": "JSON Editor Font Size",
     "Objects_Editor_FontSize_Description": "Sets the JSON editor font size (in pt).",
+    "Objects_Editor_ShowViewportMarker": "Show Boundary Marker",
+    "Objects_Editor_ShowViewportMarker_Description": "When enabled, this will show the boundary (viewport) of your visual prior to opening the editor. You can use this to determine if your design will fit within the boundary\n\n𝗡𝗢𝗧𝗘: is not possible to programmatically resize the viewport, so if you wish to change the size, you'll need to return to report view, modify and then re-open the Advanced Editor.",
     "Objects_DataLimit": "Data Limit Options",
     "Objects_DataLimit_Description": "By default, custom visuals can display a maximum of 30,000 rows. If you have more than this in the data you want to visualise, then these options allow you to override the default limit 𝗮𝘁 𝘁𝗵𝗲 𝗰𝗼𝘀𝘁 𝗼𝗳 𝗽𝗲𝗿𝗳𝗼𝗿𝗺𝗮𝗻𝗰𝗲.\n\n𝗡𝗢𝗧𝗘: anything that updates the visual (data, properties) can be costly. If you are making interim changes to your visual, it is recommended that you turn these options off while doing that, and re-enable them when you're finished.",
     "Objects_DataLimit_Override": "Override Row Limit",
@@ -62,6 +65,10 @@
     "Button_Dismiss_MessageBar": "Dismiss message",
     "Button_Create": "Create",
     "Button_Import": "Select JSON Template",
+    "Button_ZoomOut": "Zoom Preview Out by 10% [ Ctrl + Alt + - ]",
+    "Button_ZoomIn": "Zoom Preview In by 10% [ Ctrl + Alt + + ]",
+    "Button_ZoomReset": "Zoom Preview to Actual Size (100%) [ Ctrl + Alt + 0 ]",
+    "Button_ZoomFit": "Zoom Preview to Fit Available Space [ Ctrl + Alt + * ]",
     "Tooltip_Button_Edit": "Edit this visual.",
     "Editor_Heading": "Visual Editor",
     "Editor_Assistive": "Use the editor and tools below to edit your visual's specification.",
@@ -162,5 +169,7 @@
     "Dialog_Unapplied_Changes_Title": "Unapplied Changes",
     "Dialog_Unapplied_Changes_Subtext": "Would you like to apply them now?",
     "Dialog_Unapplied_Changes_Apply": "Apply",
-    "Dialog_Unapplied_Changes_Discard": "Discard"
+    "Dialog_Unapplied_Changes_Discard": "Discard",
+    "Selection_KW_Present": "[Available]",
+    "Zoom_Level_Tooltip": "Current zoom level in the editor - use the controls to the left to adjust this as necessary"
 }

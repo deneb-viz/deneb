@@ -3,10 +3,13 @@ import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnume
 
 import SettingsBase from './SettingsBase';
 import Debugger from '../Debugger';
-import { getConfig } from '../api/config';
-import { isHandlerEnabled } from '../api/tooltip';
-import { isContextMenuEnabled, isDataPointEnabled } from '../api/selection';
-import { isDeveloperModeEnabled } from '../api/developer';
+import { getConfig } from '../core/utils/config';
+import { isHandlerEnabled } from '../core/interactivity/tooltip';
+import {
+    isContextMenuEnabled,
+    isDataPointEnabled
+} from '../core/interactivity/selection';
+import { isDeveloperModeEnabled } from '../core/utils/developer';
 
 const defaults = getConfig().propertyDefaults.vega;
 
@@ -23,8 +26,8 @@ const defaults = getConfig().propertyDefaults.vega;
  * @property {boolean}              isNewDialogOpen
  */
 export default class VegaSettings extends SettingsBase {
-    public jsonSpec = defaults.jsonSpec;
-    public jsonConfig = defaults.jsonConfig;
+    public jsonSpec: string = defaults.jsonSpec;
+    public jsonConfig: string = defaults.jsonConfig;
     public provider = defaults.provider;
     public renderMode = defaults.renderMode;
     public enableTooltips = isHandlerEnabled && defaults.enableTooltips;

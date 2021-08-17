@@ -5,7 +5,7 @@ import * as React from 'react';
 import { Text, ITextStyles, ITextProps } from '@fluentui/react/lib/Text';
 import { FontSizes, FontWeights } from '@fluentui/react/lib/Styling';
 
-import { theme } from '../../api/fluent';
+import { theme } from '../../core/ui/fluent';
 
 const headingStyles: ITextStyles = {
     root: {

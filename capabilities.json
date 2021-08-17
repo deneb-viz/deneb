@@ -29,6 +29,11 @@
                                 "value": "en-US"
                             },
                             {
+                                "displayNameKey": "Enum_Locale_en-GB",
+                                "displayName": "en-GB",
+                                "value": "en-GB"
+                            },
+                            {
                                 "displayNameKey": "Enum_Locale_de-DE",
                                 "displayName": "de-DE",
                                 "value": "de-DE"
@@ -169,6 +174,15 @@
                         "formatting": {
                             "fontSize": true
                         }
+                    }
+                },
+                "showViewportMarker": {
+                    "displayNameKey": "Objects_Editor_ShowViewportMarker",
+                    "descriptionKey": "Objects_Editor_ShowViewportMarker_Description",
+                    "displayName": "Viewport Marker",
+                    "description": "Viewport Marker description",
+                    "type": {
+                        "bool": true
                     }
                 }
             }

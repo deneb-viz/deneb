@@ -3,8 +3,8 @@ import { useSelector } from 'react-redux';
 import { Checkbox } from '@fluentui/react/lib/Checkbox';
 
 import { state } from '../../store';
-import { updateBooleanProperty } from '../../api/commands';
-import { isContextMenuEnabled } from '../../api/selection';
+import { updateBooleanProperty } from '../../core/ui/commands';
+import { isContextMenuEnabled } from '../../core/interactivity/selection';
 import { i18nValue } from '../../core/ui/i18n';
 
 const ContextMenuCheckbox = () => {

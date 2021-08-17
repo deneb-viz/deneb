@@ -3,7 +3,7 @@ import * as React from 'react';
 import { Separator, ISeparatorStyles } from '@fluentui/react/lib/Separator';
 import { StackItem, Stack } from '@fluentui/react/lib/Stack';
 
-import { theme } from '../../api/fluent';
+import { theme } from '../../core/ui/fluent';
 
 import StatusLayoutStackItem from './StatusLayoutStackItem';
 

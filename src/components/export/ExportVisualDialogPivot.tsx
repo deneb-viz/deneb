@@ -3,8 +3,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Pivot, PivotItem } from '@fluentui/react';
 
 import { state } from '../../store';
-import { updateSelectedExportOperation } from '../../store/templateReducer';
-import { TExportOperation } from '../../api/template';
+import { updateSelectedExportOperation } from '../../store/templates';
+import { TExportOperation } from '../../core/template';
 import { exportPivotStyles } from '../../config/styles';
 import { i18nValue } from '../../core/ui/i18n';
 

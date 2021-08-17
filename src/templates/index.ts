@@ -8,7 +8,7 @@
  */
 import { Spec, BaseData, AutoSize } from 'vega';
 import { TopLevelSpec } from 'vega-lite';
-import { getConfig } from '../api/config';
+import { getConfig } from '../core/utils/config';
 
 import { dataRoles } from '../../capabilities.json';
 

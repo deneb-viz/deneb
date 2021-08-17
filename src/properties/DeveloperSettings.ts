@@ -3,8 +3,8 @@ import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnume
 
 import SettingsBase from './SettingsBase';
 import Debugger from '../Debugger';
-import { getConfig } from '../api/config';
-import { isDeveloperModeEnabled } from '../api/developer';
+import { getConfig } from '../core/utils/config';
+import { isDeveloperModeEnabled } from '../core/utils/developer';
 import { TLocale } from '../core/ui/i18n';
 
 /**

@@ -9,8 +9,8 @@ import { List } from '@fluentui/react/lib/List';
 import Debugger from '../../Debugger';
 import { templatePickerItemListStyles } from '../../config/styles';
 import { state } from '../../store';
-import { updateSelectedTemplate } from '../../store/templateReducer';
-import { IDenebTemplateMetadata } from '../../schema/template-v1';
+import { updateSelectedTemplate } from '../../store/templates';
+import { IDenebTemplateMetadata } from '../../core/template/schema';
 import { TopLevelSpec } from 'vega-lite';
 import { Spec } from 'vega';
 

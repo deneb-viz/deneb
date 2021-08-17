@@ -7,7 +7,7 @@ import Debugger from '../../Debugger';
 import { state } from '../../store';
 import ImportTemplateStatus from './ImportTemplateStatus';
 import SpecDataPlaceHolderDropdown from './SpecDataPlaceHolderDropdown';
-import { IDenebTemplateMetadata } from '../../schema/template-v1';
+import { IDenebTemplateMetadata } from '../../core/template/schema';
 import { i18nValue } from '../../core/ui/i18n';
 
 const ImportTemplateHandler: React.FC = () => {

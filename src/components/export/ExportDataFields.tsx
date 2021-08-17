@@ -11,7 +11,7 @@ import {
 
 import Debugger from '../../Debugger';
 import { state } from '../../store';
-import { ITemplateDatasetField } from '../../schema/template-v1';
+import { ITemplateDatasetField } from '../../core/template/schema';
 
 import DataTypeIcon from '../elements/DataTypeIcon';
 import CappedTextField from '../elements/CappedTextField';

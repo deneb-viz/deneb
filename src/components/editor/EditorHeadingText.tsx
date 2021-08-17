@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { toggleEditorPane } from '../../api/commands';
+import { toggleEditorPane } from '../../core/ui/commands';
 import { i18nValue } from '../../core/ui/i18n';
 
 import { BodyHeading } from '../elements/Typography';

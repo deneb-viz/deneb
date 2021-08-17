@@ -13,7 +13,7 @@ import EditorCommandBar from './EditorCommandBar';
 import EditorOperationContent from './EditorOperationContent';
 import FixErrorDetails from './FixErrorDetails';
 
-import { theme } from '../../api/fluent';
+import { theme } from '../../core/ui/fluent';
 
 const verticalStackOuterTokens: IStackTokens = { childrenGap: 5 },
     verticalStackInnerTokens: IStackTokens = {

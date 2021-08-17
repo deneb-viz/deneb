@@ -1,7 +1,7 @@
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import '../style/visual.less';
-import '../style/fabric-icons.css';
+import '../style/fabric-icons-inline.css';
 import 'jsoneditor/dist/jsoneditor.css';
 import powerbi from 'powerbi-visuals-api';
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
@@ -32,21 +32,22 @@ import {
     updateDataViewFlags,
     recordInvalidDataView,
     updateDataset
-} from './store/visualReducer';
+} from './store/visual';
 import {
     initializeImportExport,
     syncExportTemplateDataset
-} from './store/templateReducer';
+} from './store/templates';
 import {
     canFetchMore,
     getMappedDataset,
     handleDataFetch,
     validateDataViewMapping,
     validateDataViewRoles
-} from './api/dataView';
-import { initializeIcons, theme } from './api/fluent';
-import { parseActiveSpec } from './api/specification';
-import { hostServices } from './core/services';
+} from './core/data/dataView';
+import { theme } from './core/ui/fluent';
+import { parseActiveSpec } from './core/utils/specification';
+import { fillPatternServices, hostServices } from './core/services';
+import { initializeIcons } from './core/ui/fluent';
 
 const owner = 'Visual';
 
@@ -84,6 +85,7 @@ export class Deneb implements IVisual {
             this.container.oncontextmenu = (ev) => {
                 ev.preventDefault();
             };
+            fillPatternServices.setPatternContainer(this.container);
         } catch (e) {
             Debugger.log('Error', e);
         }
@@ -264,9 +266,10 @@ export class Deneb implements IVisual {
                         Debugger.log(
                             'processEnumerationObject found. Executing...'
                         );
-                        enumerationObject = this.settings[
-                            `${objectName}`
-                        ].processEnumerationObject(enumerationObject);
+                        enumerationObject =
+                            this.settings[
+                                `${objectName}`
+                            ].processEnumerationObject(enumerationObject);
                     } else {
                         Debugger.log(
                             "Couldn't find class processEnumerationObject function."
