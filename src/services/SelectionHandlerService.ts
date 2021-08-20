@@ -1,7 +1,5 @@
 import powerbi from 'powerbi-visuals-api';
 import ISelectionId = powerbi.visuals.ISelectionId;
-import { interactivityUtils } from 'powerbi-visuals-utils-interactivityutils';
-import getEvent = interactivityUtils.getEvent;
 
 import Debugger, { standardLog } from '../Debugger';
 import store from '../store';
@@ -22,11 +20,8 @@ export class SelectionHandlerService implements ISelectionHandlerService {
     @standardLog({ owner, profile: true, report: true })
     handleDataPoint(name: string, selection: any) {
         Debugger.log('Data point click', name, selection);
-        const {
-                allowInteractions,
-                dataset,
-                settings
-            } = store.getState().visual,
+        const { allowInteractions, dataset, settings } =
+                store.getState().visual,
             { vega } = settings,
             { selectionManager } = hostServices,
             isSelectionEnabled =
@@ -96,30 +91,5 @@ export class SelectionHandlerService implements ISelectionHandlerService {
         } else {
             Debugger.log('Selection is disabled. Skipping over...');
         }
-    }
-
-    @standardLog()
-    handleContextMenu(name: string, selection: any) {
-        Debugger.log('Context menu click', selection);
-        const { allowInteractions, settings } = store.getState().visual,
-            { vega } = settings,
-            { selectionManager } = hostServices,
-            mouseEvent: MouseEvent =
-                <MouseEvent>getEvent() || <MouseEvent>window.event,
-            selectionId =
-                vega.provider === 'vega'
-                    ? <ISelectionId>selection?.__identity__
-                    : <ISelectionId>selection?.__identity__[0]; // array for VL
-        Debugger.log('Selection ID', selectionId);
-        mouseEvent && mouseEvent.preventDefault();
-        mouseEvent &&
-            isContextMenuEnabled &&
-            vega.enableContextMenu &&
-            allowInteractions &&
-            selectionManager.showContextMenu(selectionId, {
-                x: mouseEvent.clientX,
-                y: mouseEvent.clientY
-            });
-        Debugger.log('Context menu should now be visible..?');
     }
 }

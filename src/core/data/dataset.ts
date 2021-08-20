@@ -1,10 +1,15 @@
 export {
+    allDataHaveIdentitites,
     getDataset,
     getEmptyDataset,
+    getIdentityIndices,
     getMetadata,
     getMetadataByKeys,
     getValues,
-    getValueForDatum,
+    getValuesByIndices,
+    getValuesForDatum,
+    resolveDataFromItem,
+    resolveDatumToArray,
     IVisualDataset,
     ITableColumnMetadata,
     IVisualValueMetadata,
@@ -15,14 +20,24 @@ import powerbi from 'powerbi-visuals-api';
 import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import ISelectionId = powerbi.visuals.ISelectionId;
 
+import keys from 'lodash/keys';
 import pick from 'lodash/pick';
+import pickBy from 'lodash/pickBy';
 import matches from 'lodash/matches';
+import reduce from 'lodash/reduce';
 
 import { ITemplateDatasetField } from '../template/schema';
 
 import { getState } from '../../store';
-import { resolveDatumForMetadata } from '../interactivity/selection';
 import { IVegaViewDatum } from '../vega';
+import { isInteractivityReservedWord } from '../interactivity';
+
+/**
+ * Confirm that each dataum in a datset contains a reconcilable identifier for selection purposes.
+ */
+const allDataHaveIdentitites = (data: IVegaViewDatum[]) =>
+    data?.filter((d) => d?.hasOwnProperty('identityIndex'))?.length ===
+    data?.length;
 
 /**
  * Get current processed dataset (metadata and values) from Deneb's Redux store.
@@ -36,6 +51,12 @@ const getEmptyDataset = (): IVisualDataset => ({
     metadata: {},
     values: []
 });
+
+/**
+ * Get array of all data row indices for a supplied dataset.
+ */
+const getIdentityIndices = (data: IVegaViewDatum[]): number[] =>
+    data?.map((d) => d?.identityIndex);
 
 /**
  * Get all metadata for current processed dataset from Deneb's Redux store.
@@ -53,13 +74,108 @@ const getMetadataByKeys = (keys: string[] = []) => pick(getMetadata(), keys);
 const getValues = () => getDataset().values;
 
 /**
- * For the supplied (subset of) `metadata` and `datum`, attempt to find the first matching row in the visual's processed dataset for this combination.
+ * Returns `getValues()`, but filtered for a supplied list `identityIndex` values.
  */
-const getValueForDatum = (
+const getValuesByIndices = (indices: number[]) =>
+    getValues().filter((v) => indices.indexOf(v.identityIndex) > -1);
+
+/**
+ * For the supplied (subset of) `metadata` and `datum`, attempt to find the first matching row in the visual's processed dataset for this combination.
+ * Note that if Vega/Vega-Lite applies a prefixed aggregate in the datum, we can't reconcile this wihtout further processing. We could consider
+ * processing for agg prefix, e.g. and seeing if we can match like this: (?:max|min|sum|argMax|argMin[etc...]_){1}(.*), but this may open up a whole
+ * other can of worms, like having to match on an aggregated value and doing this ourselves. I'll leave this here as a reminder to think about it.
+ */
+const getValuesForDatum = (
+    metadata: IVisualValueMetadata,
+    data: IVegaViewDatum[]
+): IVisualValueRow[] => {
+    const matches = getMatchedValues(metadata, data);
+    if (matches?.length > 0) {
+        return matches;
+    }
+    return getMatchedValues(
+        pickBy(metadata, (md) => !md.isMeasure),
+        data
+    );
+};
+
+/**
+ * For the supplied (subset of) `metadata` and `data`, attempt to find any matching rows in the visual's processed dataset for this combination.
+ */
+const getMatchedValues = (
+    metadata: IVisualValueMetadata,
+    data: IVegaViewDatum[]
+): IVisualValueRow[] => {
+    const resolvedMd = resolveDatumForMetadata(metadata, data?.[0]),
+        matchedRows = getValues().filter(matches(resolvedMd));
+    if (matchedRows.length > 0) {
+        return matchedRows;
+    }
+    return (matchedRows.length > 0 && matchedRows) || null;
+};
+
+/**
+ * For a given (subset of) `metadata` and `datum`, create an `IVisualValueRow` that can be used to search for matching values in the visual's dataset.
+ */
+const resolveDatumForMetadata = (
     metadata: IVisualValueMetadata,
     datum: IVegaViewDatum
-): IVisualValueRow =>
-    getValues().find(matches(resolveDatumForMetadata(metadata, datum))) || null;
+) => {
+    const reducedDatum = <IVisualValueRow>pick(datum, keys(metadata)) || null;
+    return reduce(
+        reducedDatum,
+        (result, value, key) => {
+            result[key] = resolveDatumValueForMetadataColumn(
+                metadata[key],
+                value
+            );
+            return result;
+        },
+        <IVisualValueRow>{}
+    );
+};
+
+/**
+ * Because Vega's tooltip channel supplies datum field values as strings, for a supplied metadata `column` and `datum`, attempt to resolve it to a pure type,
+ * so that we can try to use its value to reconcile against the visual's dataset in order to resolve selection IDs.
+ */
+const resolveDatumValueForMetadataColumn = (
+    column: ITableColumnMetadata,
+    value: any
+) => {
+    switch (true) {
+        case column.type.dateTime: {
+            return new Date(value);
+        }
+        case column.type.numeric:
+        case column.type.integer: {
+            return Number.parseFloat(value);
+        }
+        default:
+            return value;
+    }
+};
+
+/**
+ * For a given datum, resolve it to an array of keys and values. Addiitonally, we can (optionally) ensure that the
+ * `interactivityReservedWords` are stripped out so that we can get actual fields and values assigned to a datum.
+ */
+const resolveDatumToArray = (obj: IVegaViewDatum, filterReserved = true) =>
+    Object.entries({ ...obj }).filter(
+        ([k, v]) => (filterReserved && !isInteractivityReservedWord(k)) || k
+    );
+
+/**
+ * Take an item from a Vega event and attempt to resolve .
+ */
+const resolveDataFromItem = (item: any): IVegaViewDatum[] => {
+    return (
+        item?.context?.data?.facet?.values?.value?.slice() || [
+            { ...item?.datum }
+        ] ||
+        null
+    );
+};
 
 /**
  * Processed visual data and column metadata for rendering.

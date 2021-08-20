@@ -114,9 +114,8 @@ const hasLiveSpecChanged = () => {
 };
 
 const parseActiveSpec = () => {
-    const { allowInteractions, settings } = getState().visual,
-        { provider, jsonSpec, enableContextMenu, enableSelection } =
-            settings.vega;
+    const { settings } = getState().visual,
+        { provider, jsonSpec } = settings.vega;
     try {
         if (!jsonSpec) {
             // Spec hasn't been edited yet
@@ -135,25 +134,7 @@ const parseActiveSpec = () => {
         switch (provider) {
             case 'vegaLite': {
                 /**TODO: This should be done somewhere else, probably
-                    Debugger.log(
-                        'Patching data point and context menu selections...'
-                    );
                     parsedSpec.params = [...(parsedSpec.params || [])];
-                    if (
-                        visualFeatures.selectionContextMenu &&
-                        enableContextMenu
-                    ) {
-                        parsedSpec.params.push({
-                            name: '__context__',
-                            select: {
-                                type: 'point',
-                                fields:
-                                    (allowInteractions && ['__identity__']) ||
-                                    [],
-                                on: 'contextmenu'
-                            }
-                        });
-                    }
                     if (visualFeatures.selectionDataPoint && enableSelection) {
                         parsedSpec.params.push({
                             name: '__select__',
@@ -176,17 +157,6 @@ const parseActiveSpec = () => {
                 break;
             }
             case 'vega': {
-                /**
-                    Debugger.log(
-                        'Patching data point and context menu selections...'
-                    );
-                    if (!parsedSpec.signals) {
-                        parsedSpec.signals = [];
-                    }
-                    parsedSpec.signals.push({
-                        name: '__context__',
-                        on: [{ events: 'contextmenu', update: 'datum' }]
-                    });*/
                 const result = Vega.parse(<Spec>{
                     ...getPatchedVegaSpec(parsedSpec)
                 });

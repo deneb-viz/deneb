@@ -9,6 +9,7 @@ export {
     getViewConfig,
     getViewDataset,
     getViewSpec,
+    handleNewView,
     registerCustomExpressions,
     resolveLoaderLogic
 };
@@ -19,6 +20,7 @@ import * as vegaSchema from 'vega/build/vega-schema.json';
 import expressionFunction = Vega.expressionFunction;
 import Config = Vega.Config;
 import Spec = Vega.Spec;
+import View = Vega.View;
 import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
 import { TopLevelSpec } from 'vega-lite';
 
@@ -30,6 +32,7 @@ import { getState } from '../../store';
 import { getConfig } from '../utils/config';
 import { getPatchedVegaSpec } from './vegaUtils';
 import { getPatchedVegaLiteSpec } from './vegaLiteUtils';
+import { bindContextMenuEvents } from '../interactivity/selection';
 
 /**
  * Defines a JSON schema by provider and role, so we can dynamically apply based on
@@ -152,6 +155,13 @@ const getViewSpec = () => {
 const getParsedConfigFromSettings = (): Config => {
     const { vega } = getState().visual.settings;
     return cleanParse(vega.jsonConfig, propertyDefaults.jsonConfig);
+};
+
+/**
+ * Any logic that we need to apply to a new Vega view.
+ */
+const handleNewView = (newView: View) => {
+    bindContextMenuEvents(newView);
 };
 
 /**

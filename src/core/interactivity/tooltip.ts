@@ -3,7 +3,6 @@ export { getTooltipHandler, isHandlerEnabled };
 import powerbi from 'powerbi-visuals-api';
 import ITooltipService = powerbi.extensibility.ITooltipService;
 import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
-import ISelectionId = powerbi.extensibility.ISelectionId;
 
 import indexOf from 'lodash/indexOf';
 import isDate from 'lodash/isDate';
@@ -14,20 +13,19 @@ import reduce from 'lodash/reduce';
 import toNumber from 'lodash/toNumber';
 import toString from 'lodash/toString';
 
-import {
-    isInteractivityReservedWord,
-    resolveCoordinates,
-    resolveDatumToArray
-} from '.';
+import { isInteractivityReservedWord, resolveCoordinates } from '.';
 import { i18nValue } from '../ui/i18n';
 import { getJsonAsIndentedString } from '../utils/json';
 import { IVegaViewDatum } from '../vega';
 
 import { isFeatureEnabled } from '../utils/features';
-import { createSelectionId } from './selection';
-import { getMetadataByKeys, getValueForDatum } from '../data/dataset';
+import { getSelectionIdentitiesFromData } from './selection';
+import {
+    getMetadataByKeys,
+    resolveDataFromItem,
+    resolveDatumToArray
+} from '../data/dataset';
 import { createFormatterFromString } from '../utils/formatting';
-import { getCategoryColumns } from '../data/dataView';
 
 /**
  * Convenience constant for tooltip events, as it's required by Power BI.
@@ -127,26 +125,6 @@ const getTooltipHandler = (
     undefined;
 
 /**
- * For a supplied `datum` object from a Vega tooltip handler, attempt to identify a valid Power BI selection ID that can be added to the tooltip call for any report pages
- * that Power BI may have for the selector. If there is no explicit identity discoverable in the datum, then it will attempt to create a selection ID from the dataset and
- * data view based on known values.
- *
- * Returns single item array containing valid `ISelectionId` (or `null` if a selection ID cannot be resolved).
- */
-const getTooltipIdentity = (datum: IVegaViewDatum): [ISelectionId] => {
-    const datumId = datum?.__identity__;
-    if (datumId) return [<ISelectionId>datumId];
-    // Try and create a selection ID from fields/values that can be resolved from datum
-    const metadata = getMetadataByKeys(keys(datum)),
-        value = getValueForDatum(metadata, datum),
-        categories = getCategoryColumns(),
-        selectionId =
-            value &&
-            createSelectionId(metadata, categories, value.identityIndex);
-    return selectionId ? [selectionId] : null;
-};
-
-/**
  * Request Power BI hides the tooltip.
  */
 const hideTooltip = (tooltipService: ITooltipService) => {
@@ -166,20 +144,14 @@ const resolveTooltipContent =
     (handler: any, event: MouseEvent, item: any, value: any) => {
         const coordinates = resolveCoordinates(event);
         if (item) {
-            // console.clear();
-            const datum = { ...item.datum },
+            const datum = resolveDataFromItem(item),
                 tooltip = { ...item.tooltip },
                 autoFormatFields = getFieldsEligibleForAutoFormat(tooltip),
                 dataItems = extractTooltipDataItemsFromObject(
                     tooltip,
                     autoFormatFields
                 ),
-                identities = getTooltipIdentity(datum);
-            // console.log('DATUM', datum);
-            // console.log('TT', tooltip);
-            // console.log('FORMAT', autoFormatFields);
-            // console.log('ITEMS', dataItems);
-            // console.log('IDs', identities);
+                identity = getSelectionIdentitiesFromData(datum);
             switch (event.type) {
                 case 'mouseover':
                 case 'mousemove': {
@@ -187,7 +159,7 @@ const resolveTooltipContent =
                         coordinates,
                         dataItems,
                         isTouchEvent,
-                        identities
+                        identities: identity
                     });
                     break;
                 }

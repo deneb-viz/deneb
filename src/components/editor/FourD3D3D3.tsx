@@ -7,8 +7,8 @@ import { fourd3d3d } from '../../store/visual';
 
 const FourD3D3D3: React.FC = () => {
     Debugger.log('Rendering Component: [FixErrorDetails]...');
-    const { vegaViewport } = useSelector(state).visual,
-        { width, height } = vegaViewport,
+    const { viewModeViewport } = useSelector(state).visual,
+        { width, height } = viewModeViewport,
         dispatch = useDispatch(),
         handleDismiss = () => {
             dispatch(fourd3d3d(false));

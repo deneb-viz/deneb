@@ -4,7 +4,7 @@
         "developerMode": false,
         "enableExternalUri": false,
         "fetchMoreData": true,
-        "selectionContextMenu": false,
+        "selectionContextMenu": true,
         "selectionDataPoint": false,
         "tooltipHandler": true,
         "tooltipResolveNumberFieldFormat": true,

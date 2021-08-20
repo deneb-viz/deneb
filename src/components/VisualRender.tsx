@@ -17,8 +17,10 @@ import {
     getViewConfig,
     getViewDataset,
     getViewSpec,
+    handleNewView,
     registerCustomExpressions
 } from '../core/vega';
+import { View } from 'vega';
 
 const VisualRender = () => {
     Debugger.log('Rendering Component: [VisualRender]...');
@@ -35,8 +37,7 @@ const VisualRender = () => {
         ),
         renderMode = vega.renderMode as Vega.Renderers,
         signalListeners: SignalListeners = {
-            __select__: selectionHandlerService.handleDataPoint,
-            __context__: selectionHandlerService.handleContextMenu
+            __select__: selectionHandlerService.handleDataPoint
         },
         formatLocale =
             locales.format[locale] || locales.format[locales.default],
@@ -44,7 +45,9 @@ const VisualRender = () => {
             locales.timeFormat[locale] || locales.timeFormat[locales.default];
     if (fourd3d3d) return <FourD3D3D3 />;
     registerCustomExpressions();
-
+    const newView = (view: View) => {
+        handleNewView(view);
+    };
     switch (spec?.status) {
         case 'error': {
             return <SpecificationError />;
@@ -64,12 +67,7 @@ const VisualRender = () => {
                             formatLocale={formatLocale}
                             timeFormatLocale={timeFormatLocale}
                             loader={loader}
-                            onError={(error) =>
-                                console.log(
-                                    'Error w/Vega render:',
-                                    error.message
-                                )
-                            }
+                            onNewView={newView}
                         />
                     );
                 }
@@ -88,6 +86,7 @@ const VisualRender = () => {
                             formatLocale={formatLocale}
                             timeFormatLocale={timeFormatLocale}
                             loader={loader}
+                            onNewView={newView}
                         />
                     );
                 }
