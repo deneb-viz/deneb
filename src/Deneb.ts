@@ -118,9 +118,6 @@ export class Deneb implements IVisual {
             // Signal that we've encountered an error
             Debugger.log('Error during update!', e);
             this.events.renderingFailed(options, e);
-        } finally {
-            // Debugger.log('API', this.visualApi);
-            // Debugger.log('Store', store.getState());
         }
     }
 

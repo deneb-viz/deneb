@@ -10,9 +10,6 @@ export {
     IFixStatus
 };
 
-import powerbi from 'powerbi-visuals-api';
-import ISelectionId = powerbi.visuals.ISelectionId;
-
 import * as Vega from 'vega';
 import Spec = Vega.Spec;
 import * as VegaLite from 'vega-lite';
@@ -26,7 +23,6 @@ import {
     TEditorRole
 } from '../services/JsonEditorServices';
 import { resolveObjectProperties, updateObjectProperties } from './properties';
-import { getSidString } from '../interactivity/selection';
 import { getState, store } from '../../store';
 import { getReplacedTemplate } from '../template';
 import {
@@ -36,7 +32,6 @@ import {
     updateStagedSpecData,
     updateStagedConfigData
 } from '../../store/visual';
-import { hostServices } from '../services';
 import { i18nValue } from '../ui/i18n';
 import { cleanParse, getJsonAsIndentedString } from './json';
 import { getPatchedVegaSpec } from '../vega/vegaUtils';
@@ -126,26 +121,10 @@ const parseActiveSpec = () => {
             });
             return;
         }
-
         const parsedSpec = cleanParse(jsonSpec);
-
-        /** TODO: Previous attempt at patching interactivity. Kept for posterity but should be managed a different way.
-         * Will likely re-attempt in v0.5/0.6 */
+        /** Ensure that our spec (patched for any additional signals etc.) parses successfully and dispatch to store */
         switch (provider) {
             case 'vegaLite': {
-                /**TODO: This should be done somewhere else, probably
-                    parsedSpec.params = [...(parsedSpec.params || [])];
-                    if (visualFeatures.selectionDataPoint && enableSelection) {
-                        parsedSpec.params.push({
-                            name: '__select__',
-                            select: {
-                                type: 'point',
-                                fields: (allowInteractions && ['__key__']) || []
-                            },
-                            value: this.getExistingSelectors()
-                        });
-                    }
-                    */
                 const result = VegaLite.compile(<TopLevelSpec>{
                     ...getPatchedVegaLiteSpec(parsedSpec)
                 });
@@ -273,34 +252,6 @@ const dispatchFixStatus = (result: IFixResult) => {
  */
 const dispatchSpec = (compiledSpec: ICompiledSpec) => {
     store.dispatch(updateSpec(compiledSpec));
-};
-
-/**
- * Get any existing selections (e.g. through bookmarks) to ensure that they are restored into the visual's current selection
- * correctly and able to be passed into the specification's `init` property for our selection.
- * TODO: this needs review when we revisit interactivity in a later build.
- */
-const getExistingSelectors = () => {
-    const { dataset } = getState().visual,
-        { selectionManager } = hostServices;
-    return (
-        (selectionManager.hasSelection() &&
-            selectionManager
-                .getSelectionIds()
-                .map(
-                    (id: ISelectionId) =>
-                        dataset.values.find(
-                            (v) =>
-                                getSidString(v.__identity__) ===
-                                getSidString(id)
-                        )?.__key__
-                )
-                .filter((k) => k !== undefined)
-                .map((k) => ({
-                    __key__: k
-                }))) ||
-        undefined
-    );
 };
 
 /**

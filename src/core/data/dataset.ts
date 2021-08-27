@@ -30,7 +30,10 @@ import { ITemplateDatasetField } from '../template/schema';
 
 import { getState } from '../../store';
 import { IVegaViewDatum } from '../vega';
-import { isInteractivityReservedWord } from '../interactivity';
+import {
+    isInteractivityReservedWord,
+    TDataPointStatus
+} from '../interactivity';
 
 /**
  * Confirm that each dataum in a datset contains a reconcilable identifier for selection purposes.
@@ -169,12 +172,14 @@ const resolveDatumToArray = (obj: IVegaViewDatum, filterReserved = true) =>
  * Take an item from a Vega event and attempt to resolve .
  */
 const resolveDataFromItem = (item: any): IVegaViewDatum[] => {
-    return (
-        item?.context?.data?.facet?.values?.value?.slice() || [
-            { ...item?.datum }
-        ] ||
-        null
-    );
+    switch (true) {
+        case item === undefined:
+            return null;
+        case item?.context?.data?.facet?.values?.value:
+            return item?.context?.data?.facet?.values?.value?.slice();
+        default:
+            return [{ ...item?.datum }];
+    }
 };
 
 /**
@@ -215,6 +220,8 @@ interface IVisualValueRow {
     [key: string]: any;
     // Identity index (from dataView; for dynamic selectors)
     identityIndex: number;
+    // Selection status (for selection manager)
+    __status__: TDataPointStatus;
     // Selection ID for row
     __identity__: ISelectionId;
     // String representation of Selection ID

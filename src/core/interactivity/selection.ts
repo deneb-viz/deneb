@@ -1,11 +1,13 @@
 export {
-    bindContextMenuEvents,
+    bindInteractivityEvents,
+    clearSelection,
     createSelectionIds,
     getSelectionIdBuilder,
     getSelectionIdentitiesFromData,
     getSidString,
     isContextMenuEnabled,
-    isDataPointEnabled
+    isDataPointEnabled,
+    getDataPointStatus
 };
 
 import powerbi from 'powerbi-visuals-api';
@@ -14,6 +16,7 @@ import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 
 import { View, ScenegraphEvent, Item } from 'vega';
 import forEach from 'lodash/foreach';
+import isEqual from 'lodash/isEqual';
 import keys from 'lodash/keys';
 
 import {
@@ -29,11 +32,21 @@ import {
 import { isFeatureEnabled } from '../utils/features';
 import { hostServices } from '../services';
 import { IVegaViewDatum } from '../vega';
-import { getState } from '../../store';
+import store, { getState } from '../../store';
 import { getCategoryColumns } from '../data/dataView';
+import { updateSelectors } from '../../store/visual';
+import { TDataPointStatus } from '.';
 
 /**
- * For the supplied View, check conditions for contezxt menu binding, and apply/remove as necessary.
+ * Bind the interactivity events to the Vega view, based on feature switches and properties.
+ */
+const bindInteractivityEvents = (view: View) => {
+    bindContextMenuEvents(view);
+    bindDataPointEvents(view);
+};
+
+/**
+ * For the supplied View, check conditions for context menu binding, and apply/remove as necessary.
  */
 const bindContextMenuEvents = (view: View) => {
     if (isContextMenuPropSet()) {
@@ -41,6 +54,24 @@ const bindContextMenuEvents = (view: View) => {
     } else {
         view.removeEventListener('contextmenu', handleContextMenuEvent);
     }
+};
+
+/**
+ * For the supplied View, check conditions for data point selection binding, and apply/remove as necessary.
+ */
+const bindDataPointEvents = (view: View) => {
+    if (isDataPointPropSet()) {
+        view.addEventListener('click', handleDataPointEvent);
+    } else {
+        view.removeEventListener('click', handleDataPointEvent);
+    }
+};
+
+/**
+ * Handles clearing of visual data point selection state.
+ */
+const clearSelection = () => {
+    hostServices.selectionManager.clear();
 };
 
 /**
@@ -72,6 +103,18 @@ const createSelectionIds = (
 };
 
 /**
+ * For the given `ISelectionId`, confirm whether it is present in the supplied `ISelectionId[]`. Typically used to confirm
+ * against the visual's selection manager
+ */
+const getDataPointStatus = (
+    id: ISelectionId,
+    selection: ISelectionId[]
+): TDataPointStatus =>
+    (selection.find((sid) => sid.equals(id)) && 'selected') ||
+    (selection.length === 0 && 'standard') ||
+    'off';
+
+/**
  * Get a new instance of a `powerbi.visuals.ISelectionIdBuilder` from Deneb's Redux store, so that we can use to to create selection IDs for data points.
  */
 const getSelectionIdBuilder = () => hostServices.selectionIdBuilder();
@@ -86,16 +129,28 @@ const getSelectionIdBuilder = () => hostServices.selectionIdBuilder();
 const getSelectionIdentitiesFromData = (
     data: IVegaViewDatum[]
 ): ISelectionId[] => {
+    const { dataset } = getState().visual;
     switch (true) {
+        case !data: {
+            // Selection can/should be cleared
+            return null;
+        }
         case data?.length === 1 && data[0].hasOwnProperty('__identity__'): {
+            // Single, identifiable datum
             return [<ISelectionId>data[0].__identity__];
         }
         case data?.length > 1 && allDataHaveIdentitites(data): {
+            // Multiple data, and all can resolve to selectors
             return getSelectorsFromData(data);
         }
         default: {
             const metadata = getMetadataByKeys(keys(data?.[0] || [])),
                 values = getValuesForDatum(metadata, data);
+            if (values?.length === dataset.values.length) {
+                // All rows selected, ergo we don't actually need to highlight; as per `!data` case above
+                return null;
+            }
+            // Fall-through; return all selection IDs, or the ones we try to resolve.
             return (
                 (values && getSelectorsFromData(values)) ||
                 createSelectionIds(metadata, getCategoryColumns(), null)
@@ -138,6 +193,29 @@ const handleContextMenuEvent = (event: ScenegraphEvent, item: Item) => {
 };
 
 /**
+ * If a click event is fired over the visual, attempt to retrieve any datum and associated identity, before applying selection/cross-filtering.
+ */
+const handleDataPointEvent = (event: ScenegraphEvent, item: Item) => {
+    const { selectionManager } = hostServices,
+        data = resolveDataFromItem(item),
+        identities = getSelectionIdentitiesFromData(data),
+        selection = resolveSelectedIdentities(identities);
+    if (selection.length > 0) {
+        selectionManager.select(selection);
+        store.dispatch(
+            updateSelectors(<ISelectionId[]>selectionManager.getSelectionIds())
+        );
+        return;
+    } else {
+        clearSelection();
+        store.dispatch(
+            updateSelectors(<ISelectionId[]>selectionManager.getSelectionIds())
+        );
+        return;
+    }
+};
+
+/**
  * Convenience constant that confirms whether the `selectionContextMenu` feature switch is enabled via features.
  */
 const isContextMenuEnabled = isFeatureEnabled('selectionContextMenu');
@@ -158,3 +236,44 @@ const isContextMenuPropSet = () => {
  * Convenience constant that confirms whether the `selectionDataPoint` feature switch is enabled via features.
  */
 const isDataPointEnabled = isFeatureEnabled('selectionDataPoint');
+
+/**
+ * Allows us to validate for all key pre-requisites before we can bind a context menu event to the visual.
+ */
+const isDataPointPropSet = () => {
+    const { allowInteractions, settings } = getState().visual,
+        { enableSelection } = settings?.vega;
+    return (
+        (isDataPointEnabled && enableSelection && allowInteractions) || false
+    );
+};
+
+/**
+ * Resolve which identities should be passed to the selection manager, based on whether the user is holding the
+ * `ctrl` key (multi-select), and whether existing selectors should be toggled on or off base don their presence
+ * in the existing selection and the selection currently clicked on.
+ */
+const resolveSelectedIdentities = (identities: ISelectionId[]) => {
+    if (!identities) {
+        return [];
+    }
+    const mouseEvent: MouseEvent = <MouseEvent>window.event,
+        current = <ISelectionId[]>(
+            hostServices.selectionManager.getSelectionIds()
+        ),
+        merged =
+            (mouseEvent.ctrlKey && [
+                ...resolveIdentityIntersection(identities, current),
+                ...resolveIdentityIntersection(current, identities)
+            ]) ||
+            identities;
+    return (isEqual(identities, current) && []) || merged;
+};
+
+/**
+ * For a given array of `ISelectionId`s, remove any that exist in a comparator (effectively toggling their state).
+ */
+const resolveIdentityIntersection = (
+    source: ISelectionId[],
+    comparator: ISelectionId[]
+) => source.slice().filter((id) => !comparator.find((sid) => sid.equals(id)));

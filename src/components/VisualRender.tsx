@@ -8,7 +8,6 @@ import { state } from '../store';
 import SpecificationError from './status/SpecificationError';
 import FourD3D3D3 from '../components/editor/FourD3D3D3';
 import SplashNoSpec from './status/SplashNoSpec';
-import { selectionHandlerService } from '../services';
 
 import { getTooltipHandler } from '../core/interactivity/tooltip';
 import { hostServices } from '../core/services';
@@ -36,9 +35,7 @@ const VisualRender = () => {
             hostServices.tooltipService
         ),
         renderMode = vega.renderMode as Vega.Renderers,
-        signalListeners: SignalListeners = {
-            __select__: selectionHandlerService.handleDataPoint
-        },
+        signalListeners: SignalListeners = {},
         formatLocale =
             locales.format[locale] || locales.format[locales.default],
         timeFormatLocale =

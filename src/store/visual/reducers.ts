@@ -9,6 +9,7 @@ import {
 
 import powerbi from 'powerbi-visuals-api';
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
+import ISelectionId = powerbi.visuals.ISelectionId;
 
 import { getEmptyDataset } from '../../core/data/dataset';
 import {
@@ -24,6 +25,7 @@ import {
     getResizablePaneDefaultWidth,
     getResizablePaneSize
 } from '../../core/ui/advancedEditor';
+import { getDataPointStatus } from '../../core/interactivity/selection';
 
 const updateEditorPreviewAreaWidth = (
     state: WritableDraft<IVisualSliceState>
@@ -300,4 +302,17 @@ export const updateStagedConfigData = (
 
 export const hotkeysRegistered = (state: WritableDraft<IVisualSliceState>) => {
     state.hotkeysBound = true;
+};
+
+/**
+ * Ensure that current visual selection state is applied to the dataset.
+ */
+export const updateSelectors = (
+    state: WritableDraft<IVisualSliceState>,
+    action: PayloadAction<ISelectionId[]>
+) => {
+    state.dataset.values = state.dataset.values.slice().map((v) => ({
+        ...v,
+        __status__: getDataPointStatus(v.__identity__, action.payload)
+    }));
 };

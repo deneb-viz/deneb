@@ -21,6 +21,7 @@ import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 import DataViewValueColumns = powerbi.DataViewValueColumns;
 import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
 import DataViewSegmentMetadata = powerbi.DataViewSegmentMetadata;
+import ISelectionId = powerbi.visuals.ISelectionId;
 
 import range from 'lodash/range';
 import reduce from 'lodash/reduce';
@@ -36,7 +37,11 @@ import { getEmptyDataset, IVisualDataset } from './dataset';
 import { IVisualValueMetadata, IVisualValueRow } from './dataset';
 import { isFeatureEnabled } from '../utils/features';
 import { getState, store } from '../../store';
-import { createSelectionIds, getSidString } from '../interactivity/selection';
+import {
+    createSelectionIds,
+    getSidString,
+    getDataPointStatus
+} from '../interactivity/selection';
 import { resolveVisualMetaToDatasetField } from '../template';
 import { hostServices } from '../services';
 
@@ -65,13 +70,16 @@ const getMappedDataset = (categorical: DataViewCategorical): IVisualDataset => {
         columns = getConsolidatedFields(categories, values),
         fieldValues = getConsolidatedValues(categories, values),
         rowCount = getRowCount(categorical),
-        empty = getEmptyDataset();
+        empty = getEmptyDataset(),
+        selections: ISelectionId[] = <ISelectionId[]>(
+            hostServices.selectionManager.getSelectionIds()
+        );
     if (rowCount === 0) {
         return empty;
     } else {
         try {
             const metadata = getConsolidatedMetadata(columns),
-                dataValues = range(rowCount).map((r, ri) => {
+                dataValues: IVisualValueRow[] = range(rowCount).map((r, ri) => {
                     const md = getDataRow(columns, fieldValues, ri),
                         identity = createSelectionIds(metadata, categories, [
                             r
@@ -80,7 +88,8 @@ const getMappedDataset = (categorical: DataViewCategorical): IVisualDataset => {
                         ...{
                             __identity__: identity,
                             __key__: getSidString(identity),
-                            identityIndex: r
+                            identityIndex: r,
+                            __status__: getDataPointStatus(identity, selections)
                         },
                         ...md
                     };

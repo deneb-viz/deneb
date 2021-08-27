@@ -8,6 +8,7 @@ import ApplyDialog from './modal/ApplyDialog';
 import SplashInitial from './status/SplashInitial';
 import { i18nValue } from '../core/ui/i18n';
 import { getViewModeViewportStyles } from '../core/ui/dom';
+import { clearSelection } from '../core/interactivity/selection';
 
 interface IDataProcessingRouterProps {
     zoomLevel?: number;
@@ -40,6 +41,7 @@ const DataProcessingRouter: React.FC<IDataProcessingRouterProps> = ({
                         zoomLevel || 100,
                         visualMode === 'Editor' && showViewportMarker
                     )}
+                    onClick={clearSelection}
                 >
                     <VisualRender />
                     <ApplyDialog />

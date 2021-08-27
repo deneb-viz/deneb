@@ -31,7 +31,8 @@ export const {
     updateExportDialog,
     updateDirtyFlag,
     updateStagedSpecData,
-    updateStagedConfigData
+    updateStagedConfigData,
+    updateSelectors
 } = slice.actions;
 
 export default visualReducer;

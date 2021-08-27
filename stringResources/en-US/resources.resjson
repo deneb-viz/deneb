@@ -21,7 +21,7 @@
     "Objects_Vega_EditorMode_Description": "The preferred mode to open the editor in, by default.",
     "Objects_Vega_EnableTooltips": "Tooltip Handler",
     "Objects_Vega_EnableTooltips_Description": "",
-    "Objects_Vega_EnableContextMenu": "Context Menu (Vega or Vega-Lite single view only ",
+    "Objects_Vega_EnableContextMenu": "Context Menu",
     "Objects_Vega_EnableContextMenu_Description": "",
     "Objects_Vega_EnableSelection": "Selection (Vega-Lite single view only)",
     "Objects_Vega_EnableSelection_Description": "",

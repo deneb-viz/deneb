@@ -32,10 +32,10 @@ import { getState } from '../../store';
 import { getConfig } from '../utils/config';
 import { getPatchedVegaSpec } from './vegaUtils';
 import { getPatchedVegaLiteSpec } from './vegaLiteUtils';
-import { bindContextMenuEvents } from '../interactivity/selection';
+import { bindInteractivityEvents } from '../interactivity/selection';
 
 /**
- * Defines a JSON schema by provider and role, so we can dynamically apply based on
+ * Defines a JSON schema by provider and role, so we can dynamically apply based on provider.
  */
 interface IJSonSchema {
     provider: TSpecProvider;
@@ -161,7 +161,7 @@ const getParsedConfigFromSettings = (): Config => {
  * Any logic that we need to apply to a new Vega view.
  */
 const handleNewView = (newView: View) => {
-    bindContextMenuEvents(newView);
+    bindInteractivityEvents(newView);
 };
 
 /**
