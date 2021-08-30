@@ -9,8 +9,7 @@ export const vScatterColored: Spec = {
             transform: [
                 {
                     type: 'filter',
-                    expr:
-                        'isValid(datum["__xAxis__"]) && isFinite(+datum["__xAxis__"]) && isValid(datum["__yAxis__"]) && isFinite(+datum["__yAxis__"])'
+                    expr: 'isValid(datum["__xAxis__"]) && isFinite(+datum["__xAxis__"]) && isValid(datum["__yAxis__"]) && isFinite(+datum["__yAxis__"])'
                 }
             ]
         }

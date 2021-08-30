@@ -1,4 +1,4 @@
-import { isFeatureEnabled } from '../../src/api/features';
+import { isFeatureEnabled } from '../../src/core/utils/features';
 
 describe('API: Features', () => {
     describe('isSelectedFeatureEnabled', () => {

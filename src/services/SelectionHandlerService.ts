@@ -6,7 +6,10 @@ import getEvent = interactivityUtils.getEvent;
 import Debugger, { standardLog } from '../Debugger';
 import store from '../store';
 import { ISelectionHandlerService } from '../types';
-import { isContextMenuEnabled, isDataPointEnabled } from '../api/selection';
+import {
+    isContextMenuEnabled,
+    isDataPointEnabled
+} from '../core/interactivity/selection';
 import { hostServices } from '../core/services';
 
 const owner = 'SelectionHandlerService';

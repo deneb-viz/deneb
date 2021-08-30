@@ -7,9 +7,18 @@ import VisualRender from './VisualRender';
 import ApplyDialog from './modal/ApplyDialog';
 import SplashInitial from './status/SplashInitial';
 import { i18nValue } from '../core/ui/i18n';
+import { getViewModeViewportStyles } from '../core/ui/dom';
 
-const DataProcessingRouter = () => {
-    const { dataProcessingStage } = useSelector(state).visual;
+interface IDataProcessingRouterProps {
+    zoomLevel?: number;
+}
+
+const DataProcessingRouter: React.FC<IDataProcessingRouterProps> = ({
+    zoomLevel
+}) => {
+    const { dataProcessingStage, viewModeViewport, visualMode, settings } =
+            useSelector(state).visual,
+        { showViewportMarker } = settings?.editor;
 
     switch (dataProcessingStage) {
         case 'Initial': {
@@ -23,7 +32,15 @@ const DataProcessingRouter = () => {
         }
         case 'Processed': {
             return (
-                <div id='renderedVisual'>
+                <div
+                    id='renderedVisual'
+                    style={getViewModeViewportStyles(
+                        viewModeViewport,
+                        visualMode === 'Editor',
+                        zoomLevel || 100,
+                        visualMode === 'Editor' && showViewportMarker
+                    )}
+                >
                     <VisualRender />
                     <ApplyDialog />
                 </div>

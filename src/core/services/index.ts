@@ -1,5 +1,8 @@
-export { hostServices };
+export { fillPatternServices, hostServices };
+export * as editor from './JsonEditorServices';
 
-import { HostServicesWrapper } from './host';
+import { FillPatternServices } from './FillPatternServices';
+import { HostServices } from './HostServices';
 
-const hostServices = new HostServicesWrapper();
+const fillPatternServices = new FillPatternServices();
+const hostServices = new HostServices();

@@ -6,7 +6,7 @@ import Debugger from '../../Debugger';
 import ProviderSettings from './ProviderSettings';
 import RenderModeSettings from './RenderModeSettings';
 import InteractivitySettings from './InteractivitySettings';
-import { fourd3d3d } from '../../api/commands';
+import { fourd3d3d } from '../../core/ui/commands';
 
 const EditorPaneSettings: React.FC = () => {
     Debugger.log('Rendering Component: [EditorPaneSettings]...');

@@ -14,9 +14,9 @@ import {
     templatePickerStackStyles,
     templatePickerNonShrinkingStackItemStyles
 } from '../../config/styles';
-import { iconButtonStyles } from '../../config/styles';
-import { getExportTemplate } from '../../api/template';
+import { getExportTemplate } from '../../core/template';
 import { i18nValue } from '../../core/ui/i18n';
+import { iconButtonStyles } from '../../core/ui/icons';
 
 const textStyles: Partial<ITextFieldStyles> = {
     root: {

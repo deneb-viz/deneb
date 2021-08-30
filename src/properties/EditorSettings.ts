@@ -1,14 +1,16 @@
 import SettingsBase from './SettingsBase';
-import { getConfig } from '../api/config';
-import { TEditorPosition } from '../api/ui';
+import { getConfig } from '../core/utils/config';
+import { TEditorPosition } from '../core/ui';
 
 /**
  * Manages editor preferences for the visual.
  */
+
+const defaults = getConfig().propertyDefaults.editor;
+
 export default class EditorSettings extends SettingsBase {
     // Preferred editor position within interface
-    public position: TEditorPosition = <TEditorPosition>(
-        getConfig().propertyDefaults.editor.position
-    );
-    public fontSize: number = getConfig().propertyDefaults.editor.fontSize;
+    public position: TEditorPosition = <TEditorPosition>defaults.position;
+    public fontSize: number = defaults.fontSize;
+    public showViewportMarker: boolean = defaults.showViewportMarker;
 }

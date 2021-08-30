@@ -3,8 +3,8 @@ import { useSelector } from 'react-redux';
 import { Pivot, PivotItem } from '@fluentui/react/lib/Pivot';
 
 import { state } from '../../store';
-import { openEditorPivotItem } from '../../api/commands';
-import { TEditorRole } from '../../api/editor';
+import { openEditorPivotItem } from '../../core/ui/commands';
+import { TEditorRole } from '../../core/services/JsonEditorServices';
 import { i18nValue } from '../../core/ui/i18n';
 
 const EditorPanePivot = () => {

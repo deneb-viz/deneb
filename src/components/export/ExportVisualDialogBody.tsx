@@ -9,14 +9,14 @@ import {
     modalDialogStackItemStyles,
     modalDialogStackItemWrapperStyles,
     modalDialogInnerStackTokens
-} from '../../config/styles';
+} from '../../core/ui/modal';
 import { state } from '../../store';
 import ExportValidation from './ExportValidation';
 import ExportVisualDialogPivot from './ExportVisualDialogPivot';
 import TemplateExportDatasetPane from './TemplateExportDatasetPane';
 import TemplateExportInformationPane from './TemplateExportInformationPane';
 import TemplateExportJsonPane from './TemplateExportJsonPane';
-import { validateSpecificationForExport } from '../../api/template';
+import { validateSpecificationForExport } from '../../core/template';
 import { i18nValue } from '../../core/ui/i18n';
 
 export const ExportVisualDialogBody = () => {

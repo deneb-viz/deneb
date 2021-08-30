@@ -9,7 +9,7 @@ import StandardHeaderContent from './StandardHeaderContent';
 import UsefulResources from './UsefulResources';
 
 import { BodyHeading, Paragraph } from '../elements/Typography';
-import { getState } from '../../api/store';
+import { getState } from '../../store';
 import { i18nValue } from '../../core/ui/i18n';
 
 const SplashReadWrite = () => (

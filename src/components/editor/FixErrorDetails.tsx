@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { MessageBar, MessageBarType } from '@fluentui/react/lib/MessageBar';
 
 import { state } from '../../store';
-import { dismissFixError } from '../../store/visualReducer';
+import { dismissFixError } from '../../store/visual';
 import { i18nValue } from '../../core/ui/i18n';
 
 const FixErrorDetails: React.FC = () => {

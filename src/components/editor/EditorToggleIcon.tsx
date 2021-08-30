@@ -3,10 +3,10 @@ import React from 'react';
 import { mergeStyles } from '@fluentui/react/lib/Styling';
 import { FontIcon } from '@fluentui/react/lib/Icon';
 
-import { toggleEditorPane } from '../../api/commands';
+import { toggleEditorPane } from '../../core/ui/commands';
 import { getEditorHeadingIcon } from '../../core/ui/icons';
 import { getEditorHeadingIconClassName } from '../../core/ui/dom';
-import { TEditorPosition } from '../../api/ui';
+import { TEditorPosition } from '../../core/ui';
 
 const buttonIconClass = mergeStyles({
     fontSize: 12,
