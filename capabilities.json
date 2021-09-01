@@ -133,6 +133,13 @@
                     "description": "Selections description.",
                     "type": { "bool": true }
                 },
+                "tooltipDelay": {
+                    "displayNameKey": "Objects_Vega_TooltipDelay",
+                    "descriptionKey": "Objects_Vega_TooltipDelay_Description",
+                    "displayName": "Tooltip Delay",
+                    "description": "Tooltip Delay description.",
+                    "type": { "numeric": true }
+                },
                 "isNewDialogOpen": {
                     "displayName": "Show New Dialog?",
                     "type": { "bool": true }

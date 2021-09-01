@@ -184,7 +184,7 @@ const handleContextMenuEvent = (event: ScenegraphEvent, item: Item) => {
         mouseEvent: MouseEvent = <MouseEvent>window.event,
         data = resolveDataFromItem(item),
         identities = getSelectionIdentitiesFromData(data),
-        identity = (identities.length === 1 && identities[0]) || null;
+        identity = (identities?.length === 1 && identities[0]) || null;
     mouseEvent && mouseEvent.preventDefault();
     selectionManager.showContextMenu(identity, {
         x: mouseEvent.clientX,

@@ -96,6 +96,7 @@
                 "enableContextMenu",
                 "enableTooltips",
                 "enableSelection",
+                "tooltipDelay",
                 "isNewDialogOpen"
             ],
             "properties": {
@@ -126,6 +127,10 @@
                 "enableSelection": {
                     "description": "Enable data point selection.",
                     "type": "boolean"
+                },
+                "tooltipDelay": {
+                    "description": "When the ctrl key is held, this will delay the display of the tooltip by the specified number of milliseconds.",
+                    "type": "number"
                 },
                 "isNewDialogOpen": {
                     "description": "Indicates that the new specification should show when advanced editor is opened.",

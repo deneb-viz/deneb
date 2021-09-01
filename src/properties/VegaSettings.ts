@@ -15,15 +15,6 @@ const defaults = getConfig().propertyDefaults.vega;
 
 /**
  * Manages the specification grammar and the user-provided source
- *
- * @property {string}               jsonSpec                - Visual spec
- * @property {GrammarProvider}      provider                - Grammar provider to use to render visualisation
- * @property {GrammarRenderMode}    renderMode              - How to render the visual in the DOM
- * @property {boolean}              autoSave                - Specifies whether spec is saved automatically or requires manual intervention
- * @property {boolean}              enableTooltips
- * @property {boolean}              enableContextMenu
- * @property {boolean}              enableSelection
- * @property {boolean}              isNewDialogOpen
  */
 export default class VegaSettings extends SettingsBase {
     public jsonSpec: string = defaults.jsonSpec;
@@ -34,6 +25,7 @@ export default class VegaSettings extends SettingsBase {
     public enableContextMenu =
         isContextMenuEnabled && defaults.enableContextMenu;
     public enableSelection = isDataPointEnabled && defaults.enableSelection;
+    public tooltipDelay = isHandlerEnabled && defaults.tooltipDelay;
     public isNewDialogOpen = defaults.isNewDialogOpen;
 
     /**

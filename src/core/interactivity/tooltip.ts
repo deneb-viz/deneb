@@ -4,6 +4,7 @@ import powerbi from 'powerbi-visuals-api';
 import ITooltipService = powerbi.extensibility.ITooltipService;
 import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
 
+import delay from 'lodash/delay';
 import indexOf from 'lodash/indexOf';
 import isDate from 'lodash/isDate';
 import isObject from 'lodash/isObject';
@@ -26,6 +27,7 @@ import {
     resolveDatumToArray
 } from '../data/dataset';
 import { createFormatterFromString } from '../utils/formatting';
+import { getState } from '../../store';
 
 /**
  * Convenience constant for tooltip events, as it's required by Power BI.
@@ -151,16 +153,19 @@ const resolveTooltipContent =
                     tooltip,
                     autoFormatFields
                 ),
-                identity = getSelectionIdentitiesFromData(datum);
+                identities = getSelectionIdentitiesFromData(datum),
+                { tooltipDelay } = getState()?.visual?.settings?.vega,
+                waitFor = (event.ctrlKey && tooltipDelay) || 0,
+                options = {
+                    coordinates,
+                    dataItems,
+                    isTouchEvent,
+                    identities
+                };
             switch (event.type) {
                 case 'mouseover':
                 case 'mousemove': {
-                    tooltipService.show({
-                        coordinates,
-                        dataItems,
-                        isTouchEvent,
-                        identities: identity
-                    });
+                    delay(() => tooltipService.show(options), waitFor);
                     break;
                 }
                 default: {

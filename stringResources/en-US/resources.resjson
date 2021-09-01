@@ -25,6 +25,8 @@
     "Objects_Vega_EnableContextMenu_Description": "",
     "Objects_Vega_EnableSelection": "Selection (Vega-Lite single view only)",
     "Objects_Vega_EnableSelection_Description": "",
+    "Objects_Vega_TooltipDelay": "Tooltip Delay (multi-select, ms)",
+    "Objects_Vega_TooltipDelay_Description": "How long to defer display of tooltip for, if the user is holding the ctrl key when hovering.",
     "Objects_Vega_Interactivity": "Vega > Power BI Interactivity",
     "Objects_Editor": "Editor",
     "Objects_Editor_Description": "Customise aspects of the visual editor",
