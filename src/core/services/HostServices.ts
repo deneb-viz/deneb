@@ -5,6 +5,7 @@ import { updateSelectors } from '../../store/visual';
 import { TLocale } from '../ui/i18n';
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
+import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 import VisualObjectInstancesToPersist = powerbi.VisualObjectInstancesToPersist;
 import ISelectionManager = powerbi.extensibility.ISelectionManager;
 import ISelectionIdBuilder = powerbi.visuals.ISelectionIdBuilder;
@@ -15,6 +16,7 @@ import ISelectionId = powerbi.visuals.ISelectionId;
  * Proxy service for Power BI host services, plus any additional logic we wish to encapsulate.
  */
 export class HostServices {
+    element: HTMLElement;
     fetchMoreData: (aggregateSegments?: boolean) => boolean;
     i18n: ILocalizationManager;
     launchUrl: (url: string) => void;
@@ -24,7 +26,9 @@ export class HostServices {
     selectionManager: ISelectionManager;
     tooltipService: ITooltipService;
 
-    bindHostServices = (host: IVisualHost) => {
+    bindHostServices = (options: VisualConstructorOptions) => {
+        const { element, host } = options;
+        this.element = element;
         this.fetchMoreData = host.fetchMoreData;
         this.i18n = host.createLocalizationManager();
         this.launchUrl = host.launchUrl;

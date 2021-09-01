@@ -69,7 +69,7 @@ export class Deneb implements IVisual {
             Debugger.log('Loading theming...');
             loadTheme(theme);
             initializeIcons();
-            hostServices.bindHostServices(options.host);
+            hostServices.bindHostServices(options);
             store.dispatch(visualConstructor(options.host));
             store.dispatch(initializeImportExport());
             Debugger.log('Setting container element...');

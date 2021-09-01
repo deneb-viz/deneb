@@ -10,7 +10,6 @@ import isDate from 'lodash/isDate';
 import isObject from 'lodash/isObject';
 import keys from 'lodash/keys';
 import pickBy from 'lodash/pickBy';
-import reduce from 'lodash/reduce';
 import toNumber from 'lodash/toNumber';
 import toString from 'lodash/toString';
 
@@ -46,7 +45,8 @@ const isResolveNumberFormatEnabled = () =>
     isHandlerEnabled && isFeatureEnabled('tooltipResolveNumberFieldFormat');
 
 /**
- * For a given Vega `tooltip` object (key-value pairs), extract any non-reserved keys, and structure suitably as an array of standard Power BI tooltip items (`VisualTooltipDataItem[]`).
+ * For a given Vega `tooltip` object (key-value pairs), extract any non-reserved keys, and structure suitably as an array of standard
+ * Power BI tooltip items (`VisualTooltipDataItem[]`).
  */
 const extractTooltipDataItemsFromObject = (
     tooltip: Object,
@@ -67,7 +67,33 @@ const extractTooltipDataItemsFromObject = (
 };
 
 /**
- * For given Vega `tooltip` object (key-value pairs), return an object of fields from the visual dataset's metadata that are in the tooltip, and eligible for automatic formatting. Eligibility criteria is as follows:
+ * For a given tooltip item, if it's a reserved workd, return something more sensible to the end user than a complex object.
+ */
+const getCuratedTooltipItem = (key: string, value: any) =>
+    isInteractivityReservedWord(key)
+        ? i18nValue('Selection_KW_Present')
+        : getDeepRedactedTooltipItem(value);
+
+/**
+ * Sometimes, we can fudge the aggregates or other operations to create deeply nested objects in our dataset. This will apply a deeper,
+ * recursive search and replace of keys matching out interactivity reserved words and 'redact' them with indicators for tooltips.
+ */
+const getDeepRedactedTooltipItem = (object: Object) => {
+    return Array.isArray(object)
+        ? object.map(getDeepRedactedTooltipItem)
+        : object && typeof object === 'object'
+        ? Object.fromEntries(
+              Object.entries(object).map(([k, v]) => [
+                  k,
+                  getCuratedTooltipItem(k, v)
+              ])
+          )
+        : object;
+};
+
+/**
+ * For given Vega `tooltip` object (key-value pairs), return an object of fields from the visual dataset's metadata that are in the tooltip,
+ * and eligible for automatic formatting. Eligibility criteria is as follows:
  *
  *  - The `tooltipResolveNumberFieldFormat` feature is enabled, and:
  *  - The field display name has a corresponding entry in the visual datset's metadata, and:
@@ -86,36 +112,16 @@ const getFieldsEligibleForAutoFormat = (tooltip: Object) =>
     });
 
 /**
- * 'Redact' any interactivity values to flag that they are present rather than exposing them completely.
- */
-const getRedactedTooltipObject = (object: Object) =>
-    reduce(
-        object,
-        (result, value, key) => {
-            result[key] = getCuratedTooltipItem(key, value);
-            return result;
-        },
-        {}
-    );
-
-/**
- * For a given tooltip item, if it's a reserved workd, return something more sensible to the end user than a complex object.
- */
-const getCuratedTooltipItem = (key: string, value: any) =>
-    isInteractivityReservedWord(key)
-        ? i18nValue('Selection_KW_Present')
-        : value;
-
-/**
  * Ensure that tooltip values are correctly sanitised for output into a default tooltip.
  */
 const getSanitisedTooltipValue = (value: any) =>
     isObject(value) && !isDate(value)
-        ? getJsonAsIndentedString(getRedactedTooltipObject(value), 'tooltip')
+        ? getJsonAsIndentedString(getDeepRedactedTooltipItem(value), 'tooltip')
         : toString(value);
 
 /**
- * Get a new custom Vega tooltip handler for Power BI. If the supplied setting is enabled, will return a `resolveTooltipContent` handler for the supplied `tooltipService`.
+ * Get a new custom Vega tooltip handler for Power BI. If the supplied setting is enabled, will return a `resolveTooltipContent` handler
+ * for the supplied `tooltipService`.
  */
 const getTooltipHandler = (
     isSettingEnabled: boolean,
@@ -138,8 +144,9 @@ const hideTooltip = (tooltipService: ITooltipService) => {
 };
 
 /**
- * For the supplied Power BI `ITooltipService` service instance from the visual host, apply the `vegaTooltip` object (https://github.com/vega/vega-tooltip/blob/master/docs/APIs.md)
- * supplied by the Vega view and attempt to show or hide a Power BI tooltip based on its contents.
+ * For the supplied Power BI `ITooltipService` service instance from the visual host, apply the `vegaTooltip` object
+ * (https://github.com/vega/vega-tooltip/blob/master/docs/APIs.md) supplied by the Vega view and attempt to show or hide a Power BI tooltip
+ * based on its contents.
  */
 const resolveTooltipContent =
     (tooltipService: ITooltipService) =>
