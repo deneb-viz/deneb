@@ -60,7 +60,7 @@
         "react-hotkeys-hook": "^3.3.2",
         "react-redux": "^7.2.2",
         "react-split-pane": "^0.1.92",
-        "react-vega": "7.4.2",
+        "react-vega": "^7.4.4",
         "redux": "^4.0.5",
         "regenerator-runtime": "^0.13.7",
         "ts-jest": "^26.5.6",
