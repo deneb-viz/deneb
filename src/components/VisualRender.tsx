@@ -17,14 +17,15 @@ import {
     getViewDataset,
     getViewSpec,
     handleNewView,
-    registerCustomExpressions
+    registerCustomExpressions,
+    resolveLoaderLogic
 } from '../core/vega';
 import { View } from 'vega';
 
 const VisualRender = () => {
     Debugger.log('Rendering Component: [VisualRender]...');
 
-    const { fourd3d3d, loader, settings, spec } = useSelector(state).visual,
+    const { fourd3d3d, settings, spec } = useSelector(state).visual,
         { vega } = settings,
         { locale } = hostServices,
         data = getViewDataset(),
@@ -35,7 +36,7 @@ const VisualRender = () => {
             hostServices.tooltipService
         ),
         renderMode = vega.renderMode as Vega.Renderers,
-        signalListeners: SignalListeners = {},
+        loader = resolveLoaderLogic(),
         formatLocale =
             locales.format[locale] || locales.format[locales.default],
         timeFormatLocale =
@@ -60,7 +61,6 @@ const VisualRender = () => {
                             actions={false}
                             tooltip={tooltipHandler}
                             config={config}
-                            signalListeners={signalListeners}
                             formatLocale={formatLocale}
                             timeFormatLocale={timeFormatLocale}
                             loader={loader}
@@ -79,7 +79,6 @@ const VisualRender = () => {
                             actions={false}
                             tooltip={tooltipHandler}
                             config={config}
-                            signalListeners={signalListeners}
                             formatLocale={formatLocale}
                             timeFormatLocale={timeFormatLocale}
                             loader={loader}

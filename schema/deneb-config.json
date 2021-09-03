@@ -156,7 +156,7 @@
                     "type": "boolean"
                 },
                 "enableExternalUri": {
-                    "description": "Enable external URIs in specifications for data and images - if enabled, we'll preserve any URI/URL-based content in specifications and config, although these will be subject to the standard CORS limitations that custom visuals are subject to. If disabled, then we process text for any occurrences of a URI and strip it out (except for `data:` URIs). I had attempted this by creating a custom loader for Vega but it seems to work for data and ignore images, so whilst this approach is crude, it works for our purposes.",
+                    "description": "Enable external URIs in specifications for data and images - if enabled, we'll preserve any URI/URL-based content in specifications and config, although these will be subject to the standard CORS limitations that custom visuals are subject to. If disabled, then we process text for any occurrences of a URI and strip it out (except for `data:` URIs).",
                     "type": "boolean"
                 },
                 "fetchMoreData": {

@@ -21,7 +21,7 @@ type TIndentContext = 'editor' | 'tooltip';
  */
 const cleanParse = (content: string, fallback?: string) => {
     try {
-        return JSON.parse(resolveUrls(content));
+        return JSON.parse(content);
     } catch {
         return JSON.parse(fallback || '{}');
     }
@@ -50,15 +50,3 @@ const getJsonAsIndentedString = (
  */
 const getSchemaValidator = (schema: Object) =>
     getBaseValidator().compile(schema);
-
-/**
- * For a given body of text, replace anything that looks like a remote URI with blank text. If the URI has a `data:`
- * prefix then we'll allow it, so that the user can specify base64 content.
- */
-const resolveUrls = (content: string) =>
-    (!isFeatureEnabled('enableExternalUri') &&
-        content.replace(
-            /\b(?!data:)((?:[a-z][\w-]+:(?:\/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/g,
-            ''
-        )) ||
-    content;
