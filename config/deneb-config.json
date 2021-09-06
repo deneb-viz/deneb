@@ -102,6 +102,7 @@
             "enableContextMenu": true,
             "enableTooltips": true,
             "enableSelection": false,
+            "selectionMaxDataPoints": 250,
             "tooltipDelay": 300,
             "isNewDialogOpen": true
         }

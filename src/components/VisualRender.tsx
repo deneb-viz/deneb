@@ -37,15 +37,15 @@ const VisualRender = () => {
         ),
         renderMode = vega.renderMode as Vega.Renderers,
         loader = resolveLoaderLogic(),
+        newView = (view: View) => {
+            handleNewView(view);
+        },
         formatLocale =
             locales.format[locale] || locales.format[locales.default],
         timeFormatLocale =
             locales.timeFormat[locale] || locales.timeFormat[locales.default];
     if (fourd3d3d) return <FourD3D3D3 />;
     registerCustomExpressions();
-    const newView = (view: View) => {
-        handleNewView(view);
-    };
     switch (spec?.status) {
         case 'error': {
             return <SpecificationError />;

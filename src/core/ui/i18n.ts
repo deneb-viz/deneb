@@ -1,9 +1,20 @@
+import reduce from 'lodash/reduce';
+
 import { hostServices } from '../services';
 
 export { i18nValue, locales, TLocale };
 
-// Convenience function allows i18n value lookup by key using host services.
-const i18nValue = (key: string) => hostServices.i18n.getDisplayName(key);
+/**
+ * Convenience function allows i18n value lookup by key using host services. Will tokenise the optional array of values matching {i} pattern.
+ */
+const i18nValue = (key: string, tokens: (string | number)[] = []) =>
+    reduce(
+        tokens,
+        (prev, value, idx) => {
+            return prev.replace(`{${idx}}`, `${value}`);
+        },
+        hostServices.i18n.getDisplayName(key)
+    );
 
 // i18 locale data for D3-based formatting.
 const locales: ILocaleConfiguration = {

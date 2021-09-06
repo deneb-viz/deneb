@@ -23,8 +23,10 @@
     "Objects_Vega_EnableTooltips_Description": "",
     "Objects_Vega_EnableContextMenu": "Context Menu",
     "Objects_Vega_EnableContextMenu_Description": "",
-    "Objects_Vega_EnableSelection": "Selection (Vega-Lite single view only)",
+    "Objects_Vega_EnableSelection": "Selection",
     "Objects_Vega_EnableSelection_Description": "",
+    "Objects_Vega_SelectionMaxDataPoints": "Maximum Underlying Data Points",
+    "Objects_Vega_SelectionMaxDataPoints_Description": "It is possible for a single mark to be layered many times if many underlying values exist for it. If selection is enabled and such a mark is clicked, it can potentially request that Power BI attempt to cross-filter more data points than is sensible and can have negative performance impacts on your report. This allows you to set a sensible cap on how many underlying values should be attempted. If this value is exceeded, then Deneb will display a warning message to your readers.",
     "Objects_Vega_TooltipDelay": "Tooltip Delay (multi-select, ms)",
     "Objects_Vega_TooltipDelay_Description": "How long to defer display of tooltip for, if the user is holding the ctrl key when hovering.",
     "Objects_Vega_Interactivity": "Vega > Power BI Interactivity",
@@ -64,7 +66,8 @@
     "Button_Auto_Apply_On": "Auto-apply changes as you type [ Ctrl + Shift + Enter ]",
     "Button_Auto_Apply_Off": "Apply changes manually [ Ctrl + Shift + Enter ]",
     "Button_Format_Json": "Repair and Format JSON [ Ctrl + Alt + R ]",
-    "Button_Dismiss_MessageBar": "Dismiss message",
+    "Button_Dismiss_MessageBar": "Dismiss",
+    "Button_See_More_MessageBar": "Read more",
     "Button_Create": "Create",
     "Button_Import": "Select JSON Template",
     "Button_ZoomOut": "Zoom Preview Out by 10% [ Ctrl + Alt + - ]",
@@ -173,5 +176,6 @@
     "Dialog_Unapplied_Changes_Apply": "Apply",
     "Dialog_Unapplied_Changes_Discard": "Discard",
     "Selection_KW_Present": "[Available]",
-    "Zoom_Level_Tooltip": "Current zoom level in the editor - use the controls to the left to adjust this as necessary"
+    "Zoom_Level_Tooltip": "Current zoom level in the editor - use the controls to the left to adjust this as necessary",
+    "Selection_Aborted_Message": "You clicked a data point that is trying to cross-filter more than {0} underlying values. This has been blocked for performance reasons."
 }

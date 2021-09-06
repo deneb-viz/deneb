@@ -43,6 +43,7 @@ interface IVisualSliceState {
     isNewDialogVisible: boolean;
     isExportDialogVisible: boolean;
     isDirty: boolean;
+    isSelectionAborted: boolean;
     resizablePaneDefaultWidth: number;
     resizablePaneExpandedWidth: number;
     resizablePaneWidth: number;
@@ -106,6 +107,7 @@ const initialState: IVisualSliceState = {
     isDirty: false,
     isExportDialogVisible: false,
     isNewDialogVisible: true,
+    isSelectionAborted: false,
     resizablePaneDefaultWidth: null,
     resizablePaneExpandedWidth: null,
     resizablePaneWidth: null,

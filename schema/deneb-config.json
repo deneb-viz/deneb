@@ -96,6 +96,7 @@
                 "enableContextMenu",
                 "enableTooltips",
                 "enableSelection",
+                "selectionMaxDataPoints",
                 "tooltipDelay",
                 "isNewDialogOpen"
             ],
@@ -127,6 +128,10 @@
                 "enableSelection": {
                     "description": "Enable data point selection.",
                     "type": "boolean"
+                },
+                "selectionMaxDataPoints": {
+                    "description": "The maximum number of underlying data points that can be supplied to Power BI's selection manager. Too many can cause performance issues, so this will block the visual from grabbing more than it should.",
+                    "type": "integer"
                 },
                 "tooltipDelay": {
                     "description": "When the ctrl key is held, this will delay the display of the tooltip by the specified number of milliseconds.",

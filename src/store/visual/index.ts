@@ -32,7 +32,8 @@ export const {
     updateDirtyFlag,
     updateStagedSpecData,
     updateStagedConfigData,
-    updateSelectors
+    updateSelectors,
+    setSelectionAborted
 } = slice.actions;
 
 export default visualReducer;

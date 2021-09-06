@@ -2,6 +2,7 @@ export {
     bindInteractivityEvents,
     clearSelection,
     createSelectionIds,
+    dispatchSelectionAborted,
     getSelectionIdBuilder,
     getSelectionIdentitiesFromData,
     getSidString,
@@ -34,8 +35,9 @@ import { hostServices } from '../services';
 import { IVegaViewDatum } from '../vega';
 import store, { getState } from '../../store';
 import { getCategoryColumns } from '../data/dataView';
-import { updateSelectors } from '../../store/visual';
+import { setSelectionAborted, updateSelectors } from '../../store/visual';
 import { TDataPointStatus } from '.';
+import Debugger from '../../Debugger';
 
 /**
  * Bind the interactivity events to the Vega view, based on feature switches and properties.
@@ -72,6 +74,13 @@ const bindDataPointEvents = (view: View) => {
  */
 const clearSelection = () => {
     hostServices.selectionManager.clear();
+};
+
+/**
+ * Handle dispatch event for the 'selection blocked' message bar status to the Redux store.
+ */
+const dispatchSelectionAborted = (state = false) => {
+    store.dispatch(setSelectionAborted(state));
 };
 
 /**
@@ -201,17 +210,29 @@ const handleDataPointEvent = (event: ScenegraphEvent, item: Item) => {
         identities = getSelectionIdentitiesFromData(data),
         selection = resolveSelectedIdentities(identities);
     if (selection.length > 0) {
-        selectionManager.select(selection);
-        store.dispatch(
-            updateSelectors(<ISelectionId[]>selectionManager.getSelectionIds())
-        );
-        return;
-    } else {
-        clearSelection();
-        store.dispatch(
-            updateSelectors(<ISelectionId[]>selectionManager.getSelectionIds())
-        );
-        return;
+    switch (true) {
+        case isSelectionLimitExceeded(selection): {
+            dispatchSelectionAborted(true);
+            return;
+        }
+        case selection.length > 0: {
+            selectionManager.select(selection);
+            store.dispatch(
+                updateSelectors(
+                    <ISelectionId[]>selectionManager.getSelectionIds()
+                )
+            );
+            return;
+        }
+        default: {
+            clearSelection();
+            store.dispatch(
+                updateSelectors(
+                    <ISelectionId[]>selectionManager.getSelectionIds()
+                )
+            );
+            return;
+        }
     }
 };
 
@@ -246,6 +267,14 @@ const isDataPointPropSet = () => {
     return (
         (isDataPointEnabled && enableSelection && allowInteractions) || false
     );
+};
+
+/**
+ * Tests whether the current array of data points for selection exceeds the limit we've imposed in our configuration.
+ */
+const isSelectionLimitExceeded = (identities: ISelectionId[]) => {
+    const { selectionMaxDataPoints } = getState().visual.settings.vega;
+    return identities?.length > selectionMaxDataPoints || false;
 };
 
 /**

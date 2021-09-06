@@ -304,6 +304,13 @@ export const hotkeysRegistered = (state: WritableDraft<IVisualSliceState>) => {
     state.hotkeysBound = true;
 };
 
+export const setSelectionAborted = (
+    state: WritableDraft<IVisualSliceState>,
+    action: PayloadAction<boolean>
+) => {
+    state.isSelectionAborted = action.payload;
+};
+
 /**
  * Ensure that current visual selection state is applied to the dataset.
  */
@@ -311,6 +318,7 @@ export const updateSelectors = (
     state: WritableDraft<IVisualSliceState>,
     action: PayloadAction<ISelectionId[]>
 ) => {
+    state.isSelectionAborted = false;
     state.dataset.values = state.dataset.values.slice().map((v) => ({
         ...v,
         __status__: getDataPointStatus(v.__identity__, action.payload)

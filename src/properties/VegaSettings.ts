@@ -25,6 +25,7 @@ export default class VegaSettings extends SettingsBase {
     public enableContextMenu =
         isContextMenuEnabled && defaults.enableContextMenu;
     public enableSelection = isDataPointEnabled && defaults.enableSelection;
+    public selectionMaxDataPoints = defaults.selectionMaxDataPoints;
     public tooltipDelay = isHandlerEnabled && defaults.tooltipDelay;
     public isNewDialogOpen = defaults.isNewDialogOpen;
 
