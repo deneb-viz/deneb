@@ -19,7 +19,9 @@ const EditorOperationContainer: React.FC<IEditorOperationContainerProps> = ({
     return (
         <>
             <div
-                className='editor-pane-container'
+                className={`editor-pane-container ${
+                    (!editorPane && 'settings') || ''
+                }`}
                 style={{
                     display: visible ? 'inherit' : 'none'
                 }}
