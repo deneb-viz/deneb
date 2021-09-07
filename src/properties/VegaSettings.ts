@@ -11,7 +11,8 @@ import {
 } from '../core/interactivity/selection';
 import { isDeveloperModeEnabled } from '../core/utils/developer';
 
-const defaults = getConfig().propertyDefaults.vega;
+const defaults = getConfig().propertyDefaults.vega,
+    config = getConfig().selection;
 
 /**
  * Manages the specification grammar and the user-provided source
@@ -62,6 +63,14 @@ export default class VegaSettings extends SettingsBase {
                         'enableSelection'
                     ];
                 }
+                enumerationObject.instances[0].validValues = {
+                    selectionMaxDataPoints: {
+                        numberRange: {
+                            min: config.minDataPointsValue,
+                            max: config.maxDataPointsValue
+                        }
+                    }
+                };
             }
         });
         return enumerationObject;

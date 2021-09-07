@@ -314,6 +314,30 @@
                 "vega": { "$ref": "#/definitions/IVegaDefaults" }
             }
         },
+        "selection": {
+            "description": "Settings for managing zoom level configuration when working with rendered visual output in the visual editor",
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "minDataPointsValue",
+                "maxDataPointsValue",
+                "dataPointsStepValue"
+            ],
+            "properties": {
+                "minDataPointsValue": {
+                    "description": "Minimum zoom level.",
+                    "type": "integer"
+                },
+                "maxDataPointsValue": {
+                    "description": "Maximum zoom level.",
+                    "type": "integer"
+                },
+                "dataPointsStepValue": {
+                    "description": "Amount to step by when using the spin control for max data points.",
+                    "type": "integer"
+                }
+            }
+        },
         "splitPaneDefaults": {
             "description": "For the Editor pane, we're using `react-split-pane` to allow the author to resize it. This object specifies the sizes we should allow for this pane within the visual viewport.",
             "type": "object",
@@ -408,6 +432,7 @@
         "modalDialog",
         "providerResources",
         "propertyDefaults",
+        "selection",
         "splitPaneDefaults",
         "visualViewPortAdjust",
         "templates",

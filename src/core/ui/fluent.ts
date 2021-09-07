@@ -1,6 +1,7 @@
-export { buttonStyles, initializeIcons, theme };
+export { buttonStyles, initializeIcons, spinButtonStyles, theme };
 
 import { IButtonStyles } from '@fluentui/react/lib/Button';
+import { ISpinButtonStyles } from '@fluentui/react/lib/SpinButton';
 import {
     FontWeights,
     IIconOptions,
@@ -51,4 +52,8 @@ const buttonStyles: IButtonStyles = {
         color: theme.palette.black,
         fontWeight: FontWeights.regular
     }
+};
+
+const spinButtonStyles: Partial<ISpinButtonStyles> = {
+    spinButtonWrapper: { width: 75 }
 };

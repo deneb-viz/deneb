@@ -19,6 +19,7 @@ export {
     toggleEditorPane,
     updateBooleanProperty,
     updateProvider,
+    updateSelectionMaxDataPoints,
     updateRenderMode,
     IKeyboardShortcut
 };
@@ -340,6 +341,12 @@ const updateBooleanProperty = (name: string, value: boolean) =>
  */
 const updateProvider = (provider: TSpecProvider) =>
     handlePersist({ name: 'provider', value: provider });
+
+/**
+ * Handle the change in maximm permitted underlying data points for selection.
+ */
+const updateSelectionMaxDataPoints = (value: string) =>
+    handlePersist({ name: 'selectionMaxDataPoints', value });
 
 /**
  * Handle the change in render mode from one to the other and update necessary store dependencies and properties.

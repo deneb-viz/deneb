@@ -102,10 +102,15 @@
             "enableContextMenu": true,
             "enableTooltips": true,
             "enableSelection": false,
-            "selectionMaxDataPoints": 250,
+            "selectionMaxDataPoints": 50,
             "tooltipDelay": 300,
             "isNewDialogOpen": true
         }
+    },
+    "selection": {
+        "minDataPointsValue": 1,
+        "maxDataPointsValue": 250,
+        "dataPointsStepValue": 1
     },
     "splitPaneDefaults": {
         "minSize": 350,
