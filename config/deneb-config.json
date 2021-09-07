@@ -1,11 +1,11 @@
 {
     "$schema": "../schema/deneb-config.json",
     "features": {
-        "developerMode": false,
+        "developerMode": true,
         "enableExternalUri": false,
         "fetchMoreData": true,
         "selectionContextMenu": true,
-        "selectionDataPoint": false,
+        "selectionDataPoint": true,
         "tooltipHandler": true,
         "tooltipResolveNumberFieldFormat": true,
         "unitTestCanary": false
@@ -59,6 +59,9 @@
         "widthPercent": 0.95
     },
     "providerResources": {
+        "deneb": {
+            "interactivityDocumentationUrl": "https://deneb-viz.github.io/interactivity-features-overview"
+        },
         "vega": {
             "documentationUrl": "https://vega.github.io/vega/docs/",
             "schemaUrl": "https://vega.github.io/schema/vega/v5.json",

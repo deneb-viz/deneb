@@ -1,6 +1,7 @@
-export { buttonStyles, initializeIcons, spinButtonStyles, theme };
+export { buttonStyles, initializeIcons, linkStyles, spinButtonStyles, theme };
 
 import { IButtonStyles } from '@fluentui/react/lib/Button';
+import { ILinkStyles } from '@fluentui/react/lib/Link';
 import { ISpinButtonStyles } from '@fluentui/react/lib/SpinButton';
 import {
     FontWeights,
@@ -51,6 +52,12 @@ const buttonStyles: IButtonStyles = {
     label: {
         color: theme.palette.black,
         fontWeight: FontWeights.regular
+    }
+};
+
+const linkStyles: ILinkStyles = {
+    root: {
+        color: theme.palette.themeDark
     }
 };
 

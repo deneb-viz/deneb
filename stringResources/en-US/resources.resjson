@@ -123,6 +123,7 @@
     "Link_Homepage": "Visual Documentation",
     "Link_Vega_Doc": "Vega Documentation",
     "Link_VegaLite_Doc": "Vega-Lite Documentation",
+    "Link_Interactivity_Doc": "Learn more",
     "New_Visual_Placeholder_Title": "Now We Need A Specification...",
     "New_Visual_Placeholder_Subtitle": "A specification defines a Vega or Vega-Lite visualization.",
     "New_Visual_Placeholder_Editor": "If you're not presented with the 'Create New Specification' dialog, please click the 'New Specification' icon on the command bar to get started. From here, you can create a specification, or import an existing template.",

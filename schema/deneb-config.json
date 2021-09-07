@@ -290,8 +290,15 @@
             "description": "Embedded versions - used to help automate the packaged Vega and Vega-Lite versions on the visual's landing page, plus URLs or resources that we might want to expose to the user within the visual.",
             "type": "object",
             "additionalProperties": false,
-            "required": ["vega", "vegaLite"],
+            "required": ["vega", "vegaLite", "deneb"],
             "properties": {
+                "deneb": {
+                    "required": ["interactivityDocumentationUrl"],
+                    "interactivityDocumentationUrl": {
+                        "description": "URL for interactivity documentation.",
+                        "type": "string"
+                    }
+                },
                 "vega": {
                     "$ref": "#/definitions/IProviderSettings",
                     "description": "Resource details for Vega."
