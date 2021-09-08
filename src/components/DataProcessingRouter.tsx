@@ -9,6 +9,7 @@ import SplashInitial from './status/SplashInitial';
 import { i18nValue } from '../core/ui/i18n';
 import { getViewModeViewportStyles } from '../core/ui/dom';
 import { clearSelection } from '../core/interactivity/selection';
+import { hideTooltip } from '../core/interactivity/tooltip';
 
 interface IDataProcessingRouterProps {
     zoomLevel?: number;
@@ -19,8 +20,10 @@ const DataProcessingRouter: React.FC<IDataProcessingRouterProps> = ({
 }) => {
     const { dataProcessingStage, viewModeViewport, visualMode, settings } =
             useSelector(state).visual,
-        { showViewportMarker } = settings?.editor;
-
+        { showViewportMarker } = settings?.editor,
+        handleMouseLeave = () => {
+            hideTooltip();
+        };
     switch (dataProcessingStage) {
         case 'Initial': {
             return <SplashInitial />;
@@ -42,6 +45,7 @@ const DataProcessingRouter: React.FC<IDataProcessingRouterProps> = ({
                         visualMode === 'Editor' && showViewportMarker
                     )}
                     onClick={clearSelection}
+                    onMouseLeave={handleMouseLeave}
                 >
                     <VisualRender />
                     <ApplyDialog />

@@ -27,6 +27,7 @@ import {
 } from '../data/dataset';
 import { createFormatterFromString } from '../utils/formatting';
 import { getState } from '../../store';
+import { hostServices } from '../services';
 
 /**
  * Convenience constant for tooltip events, as it's required by Power BI.
@@ -135,9 +136,9 @@ const getTooltipHandler = (
 /**
  * Request Power BI hides the tooltip.
  */
-const hideTooltip = (tooltipService: ITooltipService) => {
+const hideTooltip = () => {
     const immediately = true;
-    tooltipService.hide({
+    hostServices.tooltipService.hide({
         immediately,
         isTouchEvent
     });
@@ -176,10 +177,10 @@ const resolveTooltipContent =
                     break;
                 }
                 default: {
-                    hideTooltip(tooltipService);
+                    hideTooltip();
                 }
             }
         } else {
-            hideTooltip(tooltipService);
+            hideTooltip();
         }
     };

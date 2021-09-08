@@ -218,6 +218,7 @@ const handleDataPointEvent = (event: ScenegraphEvent, item: Item) => {
         }
         case selection.length > 0: {
             hideTooltip(hostServices.tooltipService);
+            hideTooltip();
             selectionManager.select(selection);
             store.dispatch(
                 updateSelectors(
