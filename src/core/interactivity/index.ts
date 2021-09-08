@@ -4,13 +4,13 @@ export {
     interactivityReservedWords,
     isInteractivityReservedWord,
     resolveCoordinates,
-    TDataPointStatus
+    TDataPointSelectionStatus
 };
 
 /**
  * Ternary flag for data points, in order to allow us to format them in specific ways.
  */
-type TDataPointStatus = 'off' | 'standard' | 'selected';
+type TDataPointSelectionStatus = 'off' | 'neutral' | 'on';
 
 /**
  * Array of reserved keywords used to handle selection IDs from the visual's default data view.

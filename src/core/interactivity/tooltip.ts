@@ -1,4 +1,4 @@
-export { getTooltipHandler, isHandlerEnabled };
+export { getTooltipHandler, hideTooltip, isHandlerEnabled };
 
 import powerbi from 'powerbi-visuals-api';
 import ITooltipService = powerbi.extensibility.ITooltipService;

@@ -89,7 +89,10 @@ const getMappedDataset = (categorical: DataViewCategorical): IVisualDataset => {
                             __identity__: identity,
                             __key__: getSidString(identity),
                             identityIndex: r,
-                            __status__: getDataPointStatus(identity, selections)
+                            __selected__: getDataPointStatus(
+                                identity,
+                                selections
+                            )
                         },
                         ...md
                     };

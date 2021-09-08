@@ -32,7 +32,7 @@ import { getState } from '../../store';
 import { IVegaViewDatum } from '../vega';
 import {
     isInteractivityReservedWord,
-    TDataPointStatus
+    TDataPointSelectionStatus
 } from '../interactivity';
 
 /**
@@ -221,7 +221,7 @@ interface IVisualValueRow {
     // Identity index (from dataView; for dynamic selectors)
     identityIndex: number;
     // Selection status (for selection manager)
-    __status__: TDataPointStatus;
+    __selected__: TDataPointSelectionStatus;
     // Selection ID for row
     __identity__: ISelectionId;
     // String representation of Selection ID

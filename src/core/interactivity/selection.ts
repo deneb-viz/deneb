@@ -36,8 +36,9 @@ import { IVegaViewDatum } from '../vega';
 import store, { getState } from '../../store';
 import { getCategoryColumns } from '../data/dataView';
 import { setSelectionAborted, updateSelectors } from '../../store/visual';
-import { TDataPointStatus } from '.';
+import { TDataPointSelectionStatus } from '.';
 import Debugger from '../../Debugger';
+import { hideTooltip } from './tooltip';
 
 /**
  * Bind the interactivity events to the Vega view, based on feature switches and properties.
@@ -118,9 +119,9 @@ const createSelectionIds = (
 const getDataPointStatus = (
     id: ISelectionId,
     selection: ISelectionId[]
-): TDataPointStatus =>
-    (selection.find((sid) => sid.equals(id)) && 'selected') ||
-    (selection.length === 0 && 'standard') ||
+): TDataPointSelectionStatus =>
+    (selection.find((sid) => sid.equals(id)) && 'on') ||
+    (selection.length === 0 && 'neutral') ||
     'off';
 
 /**
@@ -216,6 +217,7 @@ const handleDataPointEvent = (event: ScenegraphEvent, item: Item) => {
             return;
         }
         case selection.length > 0: {
+            hideTooltip(hostServices.tooltipService);
             selectionManager.select(selection);
             store.dispatch(
                 updateSelectors(
