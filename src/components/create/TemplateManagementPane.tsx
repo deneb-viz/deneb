@@ -10,7 +10,7 @@ import {
     templatePickerNonShrinkingStackItemStyles,
     templatePickerStackTokens
 } from '../../config/styles';
-import PreDefinedProviderTemplateList from './PreDefinedProviderTemplateList';
+import ProviderTemplateList from './ProviderTemplateList';
 import ImportTemplateControl from './ImportTemplateControl';
 import ImportTemplateHandler from './ImportTemplateHandler';
 
@@ -24,7 +24,7 @@ const TemplateManagementPane: React.FC = () => {
                 case 'import':
                     return <ImportTemplateControl />;
                 default:
-                    return <PreDefinedProviderTemplateList />;
+                    return <ProviderTemplateList />;
             }
         };
     return (
