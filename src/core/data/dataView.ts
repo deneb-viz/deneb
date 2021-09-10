@@ -173,7 +173,7 @@ type TDataProcessingStage = 'Initial' | 'Fetching' | 'Processing' | 'Processed';
 const castPrimitiveValue = (
     field: IAugmentedMetadataField,
     value: powerbi.PrimitiveValue
-) => (field?.column.type.dateTime ? new Date(value.toString()) : value);
+) => (field?.column.type.dateTime ? new Date(value?.toString()) : value);
 
 /**
  * Ensure that the Redux store counters are reset, ready for a new data load.
