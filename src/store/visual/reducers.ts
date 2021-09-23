@@ -321,6 +321,6 @@ export const updateSelectors = (
     state.isSelectionAborted = false;
     state.dataset.values = state.dataset.values.slice().map((v) => ({
         ...v,
-        __status__: getDataPointStatus(v.__identity__, action.payload)
+        __selected__: getDataPointStatus(v.__identity__, action.payload)
     }));
 };
