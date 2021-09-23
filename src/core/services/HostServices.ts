@@ -1,8 +1,8 @@
 import powerbi from 'powerbi-visuals-api';
-import { isDeveloperModeEnabled } from '../../core/utils/developer';
 import store from '../../store';
 import { updateSelectors } from '../../store/visual';
 import { TLocale } from '../ui/i18n';
+import { isFeatureEnabled } from '../utils/features';
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
@@ -40,7 +40,9 @@ export class HostServices {
     };
 
     resolveLocaleFromSettings = (settingsLocale: TLocale) => {
-        this.locale = (isDeveloperModeEnabled && settingsLocale) || this.locale;
+        this.locale =
+            (isFeatureEnabled('developerMode') && settingsLocale) ||
+            this.locale;
     };
 }
 

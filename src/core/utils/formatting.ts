@@ -1,4 +1,4 @@
-export { createFormatterFromString };
+export { createFormatterFromString, formatting };
 
 import { valueFormatter } from 'powerbi-visuals-utils-formattingutils';
 import { hostServices } from '../services';
@@ -11,3 +11,6 @@ const createFormatterFromString = (format: string) =>
         format,
         cultureSelector: hostServices.locale
     });
+
+// Avoids linting issues (can't seem to disable w/eslint-disable). Can be removed if/when we extend Formatting API
+const formatting = null;

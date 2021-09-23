@@ -44,6 +44,7 @@ const DataProcessingRouter: React.FC<IDataProcessingRouterProps> = ({
                         zoomLevel || 100,
                         visualMode === 'Editor' && showViewportMarker
                     )}
+                    role='region'
                     onClick={clearSelection}
                     onMouseLeave={handleMouseLeave}
                 >

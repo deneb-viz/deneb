@@ -212,17 +212,14 @@ export class Deneb implements IVisual {
                 break;
             }
             default: {
-                // Resize
             }
         }
 
         const { selectionManager } = hostServices;
         Debugger.log('Has selections', selectionManager.hasSelection());
         Debugger.log('Existing selections', selectionManager.getSelectionIds());
-
-        if (store.getState().visual.dataProcessingStage === 'Processed') {
+        store.getState().visual.dataProcessingStage === 'Processed' &&
             parseActiveSpec();
-        }
     }
 
     private static parseSettings(dataView: DataView): VisualSettings {

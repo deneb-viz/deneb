@@ -1,5 +1,7 @@
+export { getPatchedVegaLiteSpec, vegaLiteUtils };
+
 // Apply specific patching operations to a supplied spec
-export const getPatchedVegaLiteSpec = (spec: Object) => ({
+const getPatchedVegaLiteSpec = (spec: Object) => ({
     ...spec,
     ...getPatchedTopLevelDimensions(spec)
 });
@@ -9,3 +11,6 @@ const getPatchedTopLevelDimensions = (spec: Object) => ({
     height: spec['height'] || 'container',
     width: spec['width'] || 'container'
 });
+
+// Avoids linting issues (can't seem to disable w/eslint-disable). Can be removed if/when we extend Vega-Lite API
+const vegaLiteUtils = null;

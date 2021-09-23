@@ -6,6 +6,7 @@ import { state } from '../../store';
 import { openEditorPivotItem } from '../../core/ui/commands';
 import { TEditorRole } from '../../core/services/JsonEditorServices';
 import { i18nValue } from '../../core/ui/i18n';
+import { resolveEditorPanePivotAria } from '../../core/ui/aria';
 
 const EditorPanePivot = () => {
     const { selectedOperation } = useSelector(state).visual,
@@ -19,7 +20,7 @@ const EditorPanePivot = () => {
     return (
         <div className='editor-pane-pivot'>
             <Pivot
-                aria-label='Separately Rendered Content Pivot Example'
+                aria-label={resolveEditorPanePivotAria()}
                 selectedKey={selectedOperation}
                 // eslint-disable-next-line react/jsx-no-bind
                 onLinkClick={handlePivotClick}

@@ -7,7 +7,7 @@ import { TEditorPosition, TVisualMode } from '.';
 
 const splitPaneDefaults = getConfig().splitPaneDefaults;
 const visualViewportAdjust = getConfig().visualViewPortAdjust;
-const resizerWidth = 3; // TODO: Magic number
+const resizerWidth = 3;
 export const previewAreaPadding = 5;
 export const previewToolbarHeight = 38;
 export const previewToolbarPadding = 5;

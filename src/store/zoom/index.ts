@@ -1,14 +1,20 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { initialState } from './state';
-import * as reducers from './reducers';
+import { WritableDraft } from 'immer/dist/internal';
+import { PayloadAction } from '@reduxjs/toolkit';
+import { initialState, IZoomSliceState } from './state';
 
 const slice = createSlice({
-        name: 'zoom',
-        initialState,
-        reducers
-    }),
-    zoomReducer = slice.reducer;
+    name: 'zoom',
+    initialState,
+    reducers: {
+        setZoomLevel: (
+            state: WritableDraft<IZoomSliceState>,
+            action: PayloadAction<number>
+        ) => {
+            state.value = action.payload;
+        }
+    }
+});
 
-export const { setZoomLevel } = slice.actions;
-
-export default zoomReducer;
+export const zoom = slice.reducer,
+    { setZoomLevel } = slice.actions;

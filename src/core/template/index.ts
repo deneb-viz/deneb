@@ -197,7 +197,6 @@ const getReplacedTemplate = (template: Spec | TopLevelSpec) => {
  * action as required.
  */
 const onReaderLoad = (event: ProgressEvent<FileReader>, templateFile: File) => {
-    // TODO: reduce side-effecting code
     updateImportState('Validating');
     let templateFileRawContent = event.target.result.toString(),
         templateToApply: Spec | TopLevelSpec;

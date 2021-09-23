@@ -56,7 +56,6 @@ const createFromTemplate = (
             { name: 'isNewDialogOpen', value: false }
         ])
     );
-    // TODO: Side-effecting code?
     specEditorService.setText(jsonSpec);
     configEditorService.setText(jsonConfig);
 };
@@ -84,7 +83,6 @@ const fixAndFormat = () => {
             dismissed: false,
             error: resolveFixErrorMessage(success, fixedRawSpec, fixedRawConfig)
         };
-        // TODO: Side-effecting code?
         if (fixedRawSpec.success) {
             specEditorService.setText(fixedRawSpec.text);
         }
@@ -122,7 +120,7 @@ const parseActiveSpec = () => {
             return;
         }
         const parsedSpec = cleanParse(jsonSpec);
-        /** Ensure that our spec (patched for any additional signals etc.) parses successfully and dispatch to store */
+        // Ensure that our spec (patched for any additional signals etc.) parses successfully and dispatch to store
         switch (provider) {
             case 'vegaLite': {
                 const result = VegaLite.compile(<TopLevelSpec>{

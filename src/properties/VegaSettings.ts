@@ -9,7 +9,7 @@ import {
     isContextMenuEnabled,
     isDataPointEnabled
 } from '../core/interactivity/selection';
-import { isDeveloperModeEnabled } from '../core/utils/developer';
+import { isFeatureEnabled } from '../core/utils/features';
 
 const defaults = getConfig().propertyDefaults.vega,
     config = getConfig().selection;
@@ -43,7 +43,7 @@ export default class VegaSettings extends SettingsBase {
     ): VisualObjectInstanceEnumerationObject {
         Debugger.log('Processing enumeration...');
         enumerationObject.instances.map((i) => {
-            if (!isDeveloperModeEnabled) {
+            if (!isFeatureEnabled('developerMode')) {
                 Debugger.log("Removing 'debug only' properties...");
                 enumerationObject.instances = [];
             } else {
