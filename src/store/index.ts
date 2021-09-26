@@ -2,13 +2,11 @@ import { configureStore, combineReducers } from '@reduxjs/toolkit';
 
 import { visual } from './visual';
 import { templates } from './templates';
-import { zoom } from './zoom';
 
 const getNewStore = () => {
     const reducer = combineReducers({
         visual,
-        templates,
-        zoom
+        templates
     });
     return configureStore({
         reducer

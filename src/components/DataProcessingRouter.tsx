@@ -10,20 +10,18 @@ import { i18nValue } from '../core/ui/i18n';
 import { getViewModeViewportStyles } from '../core/ui/dom';
 import { clearSelection } from '../core/interactivity/selection';
 import { hideTooltip } from '../core/interactivity/tooltip';
+import { useZoomLevel, zoomConfig } from '../context/zoomLevel';
 
-interface IDataProcessingRouterProps {
-    zoomLevel?: number;
-}
-
-const DataProcessingRouter: React.FC<IDataProcessingRouterProps> = ({
-    zoomLevel
-}) => {
+const DataProcessingRouter: React.FC = () => {
     const { dataProcessingStage, viewModeViewport, visualMode, settings } =
             useSelector(state).visual,
         { showViewportMarker } = settings?.editor,
         handleMouseLeave = () => {
             hideTooltip();
-        };
+        },
+        isEditor = visualMode === 'Editor',
+        { level: value } = useZoomLevel(),
+        zoomLevel = (isEditor && value) || zoomConfig.default;
     switch (dataProcessingStage) {
         case 'Initial': {
             return <SplashInitial />;
@@ -35,14 +33,15 @@ const DataProcessingRouter: React.FC<IDataProcessingRouterProps> = ({
             return <div>{i18nValue('Fetching_Data_Assistive_Processed')}</div>;
         }
         case 'Processed': {
+            console.log(`Rending DPR. Zoom level=${value}`);
             return (
                 <div
                     id='renderedVisual'
                     style={getViewModeViewportStyles(
                         viewModeViewport,
-                        visualMode === 'Editor',
-                        zoomLevel || 100,
-                        visualMode === 'Editor' && showViewportMarker
+                        isEditor,
+                        zoomLevel,
+                        isEditor && showViewportMarker
                     )}
                     role='region'
                     onClick={clearSelection}

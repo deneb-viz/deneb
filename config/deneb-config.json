@@ -38,21 +38,66 @@
         }
     },
     "keyBindings": {
-        "applyChanges": "ctrl|enter",
-        "autoApplyToggle": "ctrl|shift|enter",
-        "repairFormatJson": "ctrl|alt|r",
-        "newTemplate": "ctrl|alt|e",
-        "newSpecification": "ctrl|alt|n",
-        "openHelpUrl": "ctrl|alt|h",
-        "navigateSpecification": "ctrl|alt|1",
-        "navigateConfig": "ctrl|alt|2",
-        "navigateSettings": "ctrl|alt|3",
-        "toggleEditorPane": "ctrl|alt|space",
-        "editorFocusOut": "esc",
-        "zoomIn": "ctrl|alt|num_add,ctrl|alt|=",
-        "zoomOut": "ctrl|alt|num_subtract,ctrl|alt|-",
-        "zoomReset": "ctrl|alt|0,ctrl|alt|num_0",
-        "zoomFit": "ctrl|alt|num_multiply"
+        "applyChanges": {
+            "combination": "ctrl|enter",
+            "functionalArea": "other"
+        },
+        "autoApplyToggle": {
+            "combination": "ctrl|shift|enter",
+            "functionalArea": "other"
+        },
+        "repairFormatJson": {
+            "combination": "ctrl|alt|r",
+            "functionalArea": "other"
+        },
+        "newTemplate": {
+            "combination": "ctrl|alt|e",
+            "functionalArea": "other"
+        },
+        "newSpecification": {
+            "combination": "ctrl|alt|n",
+            "functionalArea": "other"
+        },
+        "openHelpUrl": {
+            "combination": "ctrl|alt|h",
+            "functionalArea": "other"
+        },
+        "navigateSpecification": {
+            "combination": "ctrl|alt|1",
+            "functionalArea": "other"
+        },
+        "navigateConfig": {
+            "combination": "ctrl|alt|2",
+            "functionalArea": "other"
+        },
+        "navigateSettings": {
+            "combination": "ctrl|alt|3",
+            "functionalArea": "other"
+        },
+        "toggleEditorPane": {
+            "combination": "ctrl|alt|space",
+            "functionalArea": "other"
+        },
+        "editorFocusOut": {
+            "combination": "esc",
+            "functionalArea": "other"
+        },
+        "zoomIn": {
+            "combination": "ctrl|alt|num_add,ctrl|alt|=",
+            "functionalArea": "other"
+        },
+        "zoomOut": {
+            "combination": "ctrl|alt|num_subtract,ctrl|alt|-",
+            "functionalArea": "other"
+        },
+        "zoomReset": {
+            "combination": "ctrl|alt|0,ctrl|alt|num_0",
+            "functionalArea": "other"
+        },
+        "zoomFit": {
+            "combination": "ctrl|alt|num_multiply",
+            "functionalArea": "other"
+        }
     },
     "modalDialog": {
         "heightPercent": 0.95,

@@ -5,12 +5,9 @@ export {
     createNewSpec,
     discardChanges,
     fourd3d3d,
+    getCommandKeyBinding,
     getVisualHotkeys,
-    handleResetZoomLevel,
-    handleSetZoomLevel,
-    handleSetZoomToFit,
-    handleZoomIn,
-    handleZoomOut,
+    hotkeyOptions,
     isApplyButtonEnabled,
     openEditorPivotItem,
     openHelpSite,
@@ -43,9 +40,7 @@ import {
     updateSelectedOperation
 } from '../../store/visual';
 import { updateSelectedTemplate } from '../../store/templates';
-import { setZoomLevel } from '../../store/zoom';
 import { getConfig, getVisualMetadata } from '../utils/config';
-import { getZoomToFitScale } from './advancedEditor';
 import { TEditorRole } from '../services/JsonEditorServices';
 import { hostServices } from '../services';
 import { TModalDialogType } from './modal';
@@ -151,7 +146,7 @@ const fourd3d3d = () => dispatchFourd3d3d();
  * Convenience method to get key binding details from configuration for the specified command.
  */
 const getCommandKeyBinding = (command: string): string =>
-    getConfig()?.keyBindings?.[command?.trim()] || '';
+    getConfig()?.keyBindings?.[command?.trim()]?.combination || '';
 
 /**
  * Get an object array of visual hotkeys and their bindings from configuration, suitable for use in `react-hotkeys-hook`.
@@ -211,26 +206,6 @@ const getVisualHotkeys = (): IKeyboardShortcut[] => [
         keys: getCommandKeyBinding('editorFocusOut'),
         command: () => focusFirstPivot(),
         options: hotkeyOptions
-    },
-    {
-        keys: getCommandKeyBinding('zoomIn'),
-        command: handleZoomIn,
-        options: hotkeyOptions
-    },
-    {
-        keys: getCommandKeyBinding('zoomOut'),
-        command: handleZoomOut,
-        options: hotkeyOptions
-    },
-    {
-        keys: getCommandKeyBinding('zoomReset'),
-        command: handleResetZoomLevel,
-        options: hotkeyOptions
-    },
-    {
-        keys: getCommandKeyBinding('zoomFit'),
-        command: handleSetZoomToFit,
-        options: hotkeyOptions
     }
 ];
 
@@ -239,45 +214,6 @@ const getVisualHotkeys = (): IKeyboardShortcut[] => [
  */
 const handlePersist = (property: IPersistenceProperty) =>
     updateObjectProperties(resolveObjectProperties('vega', [property]));
-
-/**
- * Manages the reset of the zoom level in the visual editor.
- */
-const handleResetZoomLevel = () => {
-    handleSetZoomLevel(getConfig().zoomLevel.default);
-};
-
-/**
- * Manages the setting of the zoom level in the advanced editor to specified value.
- */
-const handleSetZoomLevel = (value: number) => {
-    store.dispatch(setZoomLevel(value));
-};
-
-/**
- * Manages the calculation of zoom level in the visual editor that will fit the visual viewport from the report.
- */
-const handleSetZoomToFit = () => {
-    handleSetZoomLevel(getZoomToFitScale());
-};
-
-/**
- * Manages the increase of zoom level in the visual editor by increasing it by step value.
- */
-const handleZoomIn = () => {
-    const { value, step, max } = getState().zoom,
-        level = Math.min(max, Math.floor((value + step) / 10) * 10);
-    value < max && handleSetZoomLevel(level);
-};
-
-/**
- * Manages the decrease of zoom level in the visual editor by decreasing it by step value.
- */
-const handleZoomOut = () => {
-    const { value, step, min } = getState().zoom,
-        level = Math.max(min, Math.ceil((value - step) / 10) * 10);
-    value > min && handleSetZoomLevel(level);
-};
 
 /**
  * Constant specifying `react-hotkeys-hook` bindings for particular HTML elements.
