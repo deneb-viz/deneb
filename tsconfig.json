@@ -9,6 +9,7 @@
         ],
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
+        "forceConsistentCasingInFileNames": true,
         "module": "es6",
         "target": "es6",
         "sourceMap": true,

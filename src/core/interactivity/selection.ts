@@ -16,7 +16,7 @@ import ISelectionId = powerbi.visuals.ISelectionId;
 import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 
 import { View, ScenegraphEvent, Item } from 'vega';
-import forEach from 'lodash/foreach';
+import forEach from 'lodash/forEach';
 import isEqual from 'lodash/isEqual';
 import keys from 'lodash/keys';
 
