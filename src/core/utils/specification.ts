@@ -22,9 +22,16 @@ import {
     specEditorService,
     TEditorRole
 } from '../services/JsonEditorServices';
-import { resolveObjectProperties, updateObjectProperties } from './properties';
+import {
+    IPersistenceProperty,
+    resolveObjectProperties,
+    updateObjectProperties
+} from './properties';
 import { getState, store } from '../../store';
-import { getReplacedTemplate } from '../template';
+import {
+    getInteractivityPropsFromTemplate,
+    getReplacedTemplate
+} from '../template';
 import {
     updateDirtyFlag,
     updateFixStatus,
@@ -37,6 +44,7 @@ import { cleanParse, getJsonAsIndentedString } from './json';
 import { getPatchedVegaSpec } from '../vega/vegaUtils';
 import { getPatchedVegaLiteSpec } from '../vega/vegaLiteUtils';
 import { TSpecProvider } from '../vega';
+import { ITemplateInteractivityOptions } from '../template/schema';
 
 /**
  * For the supplied provider and specification template, add this to the visual and persist to properties, ready for
@@ -47,13 +55,17 @@ const createFromTemplate = (
     template: Spec | TopLevelSpec
 ) => {
     const jsonSpec = getReplacedTemplate(template),
-        jsonConfig = getJsonAsIndentedString(template.config);
+        jsonConfig = getJsonAsIndentedString(template.config),
+        interactivity = getInteractivityPropsFromTemplate(template);
     updateObjectProperties(
         resolveObjectProperties('vega', [
-            { name: 'provider', value: provider },
-            { name: 'jsonSpec', value: jsonSpec },
-            { name: 'jsonConfig', value: jsonConfig },
-            { name: 'isNewDialogOpen', value: false }
+            ...[
+                { name: 'provider', value: provider },
+                { name: 'jsonSpec', value: jsonSpec },
+                { name: 'jsonConfig', value: jsonConfig },
+                { name: 'isNewDialogOpen', value: false }
+            ],
+            ...resolveInteractivityProps(interactivity)
         ])
     );
     specEditorService.setText(jsonSpec);
@@ -169,6 +181,20 @@ const persist = (stage = true) => {
         ])
     );
 };
+
+/**
+ * If we have resolved interactivity props from the template, create appropriate persistence properties
+ */
+const resolveInteractivityProps = (
+    interactivity: ITemplateInteractivityOptions
+): IPersistenceProperty[] =>
+    (interactivity && [
+        { name: 'enableTooltips', value: interactivity.tooltip },
+        { name: 'enableContextMenu', value: interactivity.contextMenu },
+        { name: 'enableSelection', value: interactivity.selection },
+        { name: 'selectionMaxDataPoints', value: interactivity.dataPointLimit }
+    ]) ||
+    [];
 
 /**
  * Add the specified editor's current text to the staging area in the Redux store. This can then be used for persistence, or

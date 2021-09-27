@@ -20,6 +20,10 @@
                 "information": {
                     "$ref": "#/definitions/ITemplateInformation",
                     "description": "High-level information or metadata about the template."
+                },
+                "interactivity": {
+                    "$ref": "#/definitions/ITemplateInteractivityOptions",
+                    "description": "Any interactivity settings that we want to explicitly set."
                 }
             },
             "required": [
@@ -138,6 +142,37 @@
                 "generated",
                 "name",
                 "uuid"
+            ],
+            "type": "object"
+        },
+        "ITemplateInteractivityOptions": {
+            "additionalProperties": false,
+            "description": "Interactivity properties for specification.",
+            "properties": {
+                "contextMenu": {
+                    "description": "Enable context menu for data points.",
+                    "type": "boolean"
+                },
+                "dataPointLimit": {
+                    "description": "Maximum number of data points to allow when selecting.",
+                    "maximum": 250,
+                    "minimum": 1,
+                    "type": "number"
+                },
+                "selection": {
+                    "description": "Enable cross-filtering from data point click events.",
+                    "type": "boolean"
+                },
+                "tooltip": {
+                    "description": "Enable tooltip handler.",
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "contextMenu",
+                "dataPointLimit",
+                "selection",
+                "tooltip"
             ],
             "type": "object"
         },

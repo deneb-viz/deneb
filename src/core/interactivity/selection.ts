@@ -37,7 +37,6 @@ import store, { getState } from '../../store';
 import { getCategoryColumns } from '../data/dataView';
 import { setSelectionAborted, updateSelectors } from '../../store/visual';
 import { TDataPointSelectionStatus } from '.';
-import Debugger from '../../Debugger';
 import { hideTooltip } from './tooltip';
 
 /**
@@ -210,14 +209,12 @@ const handleDataPointEvent = (event: ScenegraphEvent, item: Item) => {
         data = resolveDataFromItem(item),
         identities = getSelectionIdentitiesFromData(data),
         selection = resolveSelectedIdentities(identities);
-    if (selection.length > 0) {
     switch (true) {
         case isSelectionLimitExceeded(selection): {
             dispatchSelectionAborted(true);
             return;
         }
         case selection.length > 0: {
-            hideTooltip(hostServices.tooltipService);
             hideTooltip();
             selectionManager.select(selection);
             store.dispatch(
