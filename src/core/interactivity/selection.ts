@@ -210,31 +210,29 @@ const handleDataPointEvent = (event: ScenegraphEvent, item: Item) => {
         data = resolveDataFromItem(item),
         identities = getSelectionIdentitiesFromData(data),
         selection = resolveSelectedIdentities(identities);
-    if (selection.length > 0) {
-        switch (true) {
-            case isSelectionLimitExceeded(selection): {
-                dispatchSelectionAborted(true);
-                return;
-            }
-            case selection.length > 0: {
-                hideTooltip();
-                selectionManager.select(selection);
-                store.dispatch(
-                    updateSelectors(
-                        <ISelectionId[]>selectionManager.getSelectionIds()
-                    )
-                );
-                return;
-            }
-            default: {
-                clearSelection();
-                store.dispatch(
-                    updateSelectors(
-                        <ISelectionId[]>selectionManager.getSelectionIds()
-                    )
-                );
-                return;
-            }
+    switch (true) {
+        case isSelectionLimitExceeded(selection): {
+            dispatchSelectionAborted(true);
+            return;
+        }
+        case selection.length > 0: {
+            hideTooltip();
+            selectionManager.select(selection);
+            store.dispatch(
+                updateSelectors(
+                    <ISelectionId[]>selectionManager.getSelectionIds()
+                )
+            );
+            return;
+        }
+        default: {
+            clearSelection();
+            store.dispatch(
+                updateSelectors(
+                    <ISelectionId[]>selectionManager.getSelectionIds()
+                )
+            );
+            return;
         }
     }
 };
