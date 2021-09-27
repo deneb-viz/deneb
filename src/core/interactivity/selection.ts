@@ -16,7 +16,7 @@ import ISelectionId = powerbi.visuals.ISelectionId;
 import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 
 import { View, ScenegraphEvent, Item } from 'vega';
-import forEach from 'lodash/foreach';
+import forEach from 'lodash/forEach';
 import isEqual from 'lodash/isEqual';
 import keys from 'lodash/keys';
 
@@ -176,7 +176,7 @@ const getSelectorsFromData = (data: IVegaViewDatum[] | IVisualValueRow[]) =>
 
 /**
  * We have some compatibility issues between `powerbi.extensibility.ISelectionId` and `powerbi.visuals.ISelectionId`, as well as needing to coerce Selection
- * IDs to strings so that we can set intial selections for Vega-Lite (as objects aren't supported). This consolidates the logic we're using to resolve a
+ * IDs to strings so that we can set initial selections for Vega-Lite (as objects aren't supported). This consolidates the logic we're using to resolve a
  * Selection ID to a string representation suitable for use across the visual.
  */
 const getSidString = (id: ISelectionId) => JSON.stringify(id.getSelector());
@@ -185,7 +185,7 @@ const getSidString = (id: ISelectionId) => JSON.stringify(id.getSelector());
  * If a context menu event is fired over the visual, attempt to retrieve any datum and associated identity, before displaying the context menu.
  *
  * Note that the context menu can only work with a single selector, so we will only return a selector if it resolves to a single entry, otherwise
- * drillthrough doesn't actually result in the correct data being displayed in the D/T page. This is currently observed in Charticulator and it looks
+ * drill through doesn't actually result in the correct data being displayed in the D/T page. This is currently observed in Charticulator and it looks
  * like the core visuals avoid this situation, so we'll try to do the same for now.
  */
 const handleContextMenuEvent = (event: ScenegraphEvent, item: Item) => {
