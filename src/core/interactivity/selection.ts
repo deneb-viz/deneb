@@ -51,11 +51,7 @@ const bindInteractivityEvents = (view: View) => {
  * For the supplied View, check conditions for context menu binding, and apply/remove as necessary.
  */
 const bindContextMenuEvents = (view: View) => {
-    if (isContextMenuPropSet()) {
-        view.addEventListener('contextmenu', handleContextMenuEvent);
-    } else {
-        view.removeEventListener('contextmenu', handleContextMenuEvent);
-    }
+    view.addEventListener('contextmenu', handleContextMenuEvent);
 };
 
 /**
@@ -193,7 +189,11 @@ const handleContextMenuEvent = (event: ScenegraphEvent, item: Item) => {
         mouseEvent: MouseEvent = <MouseEvent>window.event,
         data = resolveDataFromItem(item),
         identities = getSelectionIdentitiesFromData(data),
-        identity = (identities?.length === 1 && identities[0]) || null;
+        identity =
+            (isContextMenuPropSet() &&
+                identities?.length === 1 &&
+                identities[0]) ||
+            null;
     mouseEvent && mouseEvent.preventDefault();
     selectionManager.showContextMenu(identity, {
         x: mouseEvent.clientX,
