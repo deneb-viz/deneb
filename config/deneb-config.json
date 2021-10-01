@@ -5,7 +5,7 @@
         "enableExternalUri": true,
         "fetchMoreData": true,
         "selectionContextMenu": true,
-        "selectionDataPoint": false,
+        "selectionDataPoint": true,
         "tooltipHandler": true,
         "tooltipResolveNumberFieldFormat": true,
         "unitTestCanary": false
@@ -151,7 +151,7 @@
             "enableTooltips": true,
             "enableSelection": false,
             "selectionMaxDataPoints": 50,
-            "tooltipDelay": 300,
+            "tooltipDelay": 0,
             "isNewDialogOpen": true
         }
     },
