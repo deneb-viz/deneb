@@ -20,7 +20,6 @@ jobs:
             ${{ runner.OS }}-node-
             ${{ runner.OS }}-
       - run: npm ci
-      - run: npm install -g powerbi-visuals-tools
       - run: npm run lint
       - run: npm run prettier-check
       - run: npm test
