@@ -4,6 +4,7 @@ export {
     TTemplateImportState,
     TTemplateProvider,
     getExportTemplate,
+    getInteractivityPropsFromTemplate,
     getNewExportTemplateMetadata,
     getPlaceholderResolutionStatus,
     getReplacedTemplate,
@@ -140,6 +141,12 @@ const getExportTemplate = () => {
 };
 
 /**
+ * For supplied template, ensure that we can obtain interactivity properties from it.
+ */
+const getInteractivityPropsFromTemplate = (template: Spec | TopLevelSpec) =>
+    (<IDenebTemplateMetadata>template?.usermeta)?.interactivity || null;
+
+/**
  * Instantiates a new object for export template metadata, ready for population.
  */
 const getNewExportTemplateMetadata = (): IDenebTemplateMetadata => {
@@ -197,7 +204,6 @@ const getReplacedTemplate = (template: Spec | TopLevelSpec) => {
  * action as required.
  */
 const onReaderLoad = (event: ProgressEvent<FileReader>, templateFile: File) => {
-    // TODO: reduce side-effecting code
     updateImportState('Validating');
     let templateFileRawContent = event.target.result.toString(),
         templateToApply: Spec | TopLevelSpec;
@@ -274,12 +280,19 @@ const resolveExportUserMeta = (): IDenebTemplateMetadata => {
     const { visual, templates } = getState(),
         visualMetadata = getVisualMetadata(),
         { metadataVersion } = getConfig().templates,
-        { templateExportMetadata } = templates;
+        { templateExportMetadata } = templates,
+        { vega } = visual.settings;
     return {
         deneb: {
             build: visualMetadata.version,
             metaVersion: metadataVersion,
-            provider: <TSpecProvider>visual.settings.vega.provider
+            provider: <TSpecProvider>vega.provider
+        },
+        interactivity: {
+            tooltip: vega.enableTooltips,
+            contextMenu: vega.enableContextMenu,
+            selection: vega.enableSelection,
+            dataPointLimit: vega.selectionMaxDataPoints
         },
         information: {
             name:

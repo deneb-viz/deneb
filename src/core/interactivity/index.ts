@@ -1,13 +1,16 @@
-import { IVegaViewDatum } from '../vega';
-
 export * as selection from './selection';
 export * as tooltip from './tooltip';
 export {
     interactivityReservedWords,
     isInteractivityReservedWord,
     resolveCoordinates,
-    resolveDatumToArray
+    TDataPointSelectionStatus
 };
+
+/**
+ * Ternary flag for data points, in order to allow us to format them in specific ways.
+ */
+type TDataPointSelectionStatus = 'off' | 'neutral' | 'on';
 
 /**
  * Array of reserved keywords used to handle selection IDs from the visual's default data view.
@@ -27,12 +30,3 @@ const resolveCoordinates = (event: MouseEvent): [number, number] => [
     event.clientX,
     event.clientY
 ];
-
-/**
- * For a given datum, resolve it to an array of keys and values. Addiitonally, we can (optionally) ensure that the
- * `interactivityReservedWords` are stripped out so that we can get actual fields and values assigned to a datum.
- */
-const resolveDatumToArray = (obj: IVegaViewDatum, filterReserved = true) =>
-    Object.entries({ ...obj }).filter(
-        ([k, v]) => (filterReserved && !isInteractivityReservedWord(k)) || k
-    );

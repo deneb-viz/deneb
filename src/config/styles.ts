@@ -24,7 +24,6 @@ export {
     actionButtonStyles,
     choiceGroupStyles,
     choiceItemStyles,
-    choiceStackTokens,
     detailListStyles,
     exportPivotAssistiveTextStyles,
     exportPivotAssistiveToastTextStyles,
@@ -94,8 +93,7 @@ const choiceGroupStyles: IChoiceGroupStyles = {
         root: {
             paddingRight: '16px'
         }
-    },
-    choiceStackTokens: IStackTokens = { childrenGap: 10 };
+    };
 
 // Template picker items
 const templatePickerItemListStyles = mergeStyleSets({

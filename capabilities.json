@@ -133,6 +133,20 @@
                     "description": "Selections description.",
                     "type": { "bool": true }
                 },
+                "selectionMaxDataPoints": {
+                    "displayNameKey": "Objects_Vega_SelectionMaxDataPoints",
+                    "descriptionKey": "Objects_Vega_SelectionMaxDataPoints_Description",
+                    "displayName": "Max Points",
+                    "description": "Max Points description.",
+                    "type": { "numeric": true }
+                },
+                "tooltipDelay": {
+                    "displayNameKey": "Objects_Vega_TooltipDelay",
+                    "descriptionKey": "Objects_Vega_TooltipDelay_Description",
+                    "displayName": "Tooltip Delay",
+                    "description": "Tooltip Delay description.",
+                    "type": { "numeric": true }
+                },
                 "isNewDialogOpen": {
                     "displayName": "Show New Dialog?",
                     "type": { "bool": true }
@@ -244,6 +258,7 @@
     "supportsEmptyDataView": false,
     "suppressDefaultTitle": true,
     "tooltips": {
+        "supportEnhancedTooltips": true,
         "supportedTypes": {
             "default": true,
             "canvas": true

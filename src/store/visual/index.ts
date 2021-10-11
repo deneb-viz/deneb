@@ -3,35 +3,35 @@ import { initialState } from './state';
 import * as reducers from './reducers';
 
 const slice = createSlice({
-        name: 'visual',
-        initialState,
-        reducers
-    }),
-    visualReducer = slice.reducer;
+    name: 'visual',
+    initialState,
+    reducers
+});
 
-export const {
-    visualConstructor,
-    visualUpdate,
-    updateDataProcessingStage,
-    updateDataViewFlags,
-    updateDataset,
-    resetLoadingCounters,
-    recordDataWindowLoad,
-    recordInvalidDataView,
-    dataLoadingComplete,
-    updateSpec,
-    updateEditorPaneSize,
-    toggleEditorPane,
-    toggleAutoApply,
-    updateSelectedOperation,
-    updateFixStatus,
-    dismissFixError,
-    fourd3d3d,
-    hotkeysRegistered,
-    updateExportDialog,
-    updateDirtyFlag,
-    updateStagedSpecData,
-    updateStagedConfigData
-} = slice.actions;
-
-export default visualReducer;
+export const visual = slice.reducer,
+    {
+        visualConstructor,
+        visualUpdate,
+        updateDataProcessingStage,
+        updateDataViewFlags,
+        updateDataset,
+        resetLoadingCounters,
+        recordDataWindowLoad,
+        recordInvalidDataView,
+        dataLoadingComplete,
+        updateSpec,
+        updateEditorPaneSize,
+        toggleEditorPane,
+        toggleAutoApply,
+        updateSelectedOperation,
+        updateFixStatus,
+        dismissFixError,
+        fourd3d3d,
+        hotkeysRegistered,
+        updateExportDialog,
+        updateDirtyFlag,
+        updateStagedSpecData,
+        updateStagedConfigData,
+        updateSelectors,
+        setSelectionAborted
+    } = slice.actions;

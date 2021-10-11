@@ -255,11 +255,7 @@ const setAceOptions = (
     options: { [key: string]: any }
 ) => getAceEditor(jsonEditor)?.setOptions(options);
 
-const setInitialText = (
-    //TODO: needs more thought
-    jsonEditor: JSONEditor,
-    role: TEditorRole
-) => {
+const setInitialText = (jsonEditor: JSONEditor, role: TEditorRole) => {
     setText(jsonEditor, getInitialText(role));
 };
 

@@ -7,6 +7,7 @@ import { state } from '../../store';
 import { updateSelectedDialogProvider } from '../../store/templates';
 import { TTemplateProvider } from '../../core/template';
 import { i18nValue } from '../../core/ui/i18n';
+import { resolveTemplateProviderPivotAria } from '../../core/ui/aria';
 
 const pivotStyles: Partial<IStyleSet<IPivotStyles>> = {
     itemContainer: {
@@ -32,7 +33,7 @@ const NewVisualDialogPivot = () => {
     return (
         <div className='new-spec-dialog-pivot'>
             <Pivot
-                aria-label='Template Provider Selection'
+                aria-label={resolveTemplateProviderPivotAria()}
                 selectedKey={selectedProvider}
                 getTabId={getTabId}
                 styles={pivotStyles}

@@ -8,7 +8,6 @@ import { state } from '../store';
 import SpecificationError from './status/SpecificationError';
 import FourD3D3D3 from '../components/editor/FourD3D3D3';
 import SplashNoSpec from './status/SplashNoSpec';
-import { selectionHandlerService } from '../services';
 
 import { getTooltipHandler } from '../core/interactivity/tooltip';
 import { hostServices } from '../core/services';
@@ -17,13 +16,16 @@ import {
     getViewConfig,
     getViewDataset,
     getViewSpec,
-    registerCustomExpressions
+    handleNewView,
+    registerCustomExpressions,
+    resolveLoaderLogic
 } from '../core/vega';
+import { View } from 'vega';
 
 const VisualRender = () => {
     Debugger.log('Rendering Component: [VisualRender]...');
 
-    const { fourd3d3d, loader, settings, spec } = useSelector(state).visual,
+    const { fourd3d3d, settings, spec } = useSelector(state).visual,
         { vega } = settings,
         { locale } = hostServices,
         data = getViewDataset(),
@@ -34,9 +36,9 @@ const VisualRender = () => {
             hostServices.tooltipService
         ),
         renderMode = vega.renderMode as Vega.Renderers,
-        signalListeners: SignalListeners = {
-            __select__: selectionHandlerService.handleDataPoint,
-            __context__: selectionHandlerService.handleContextMenu
+        loader = resolveLoaderLogic(),
+        newView = (view: View) => {
+            handleNewView(view);
         },
         formatLocale =
             locales.format[locale] || locales.format[locales.default],
@@ -44,7 +46,6 @@ const VisualRender = () => {
             locales.timeFormat[locale] || locales.timeFormat[locales.default];
     if (fourd3d3d) return <FourD3D3D3 />;
     registerCustomExpressions();
-
     switch (spec?.status) {
         case 'error': {
             return <SpecificationError />;
@@ -60,16 +61,10 @@ const VisualRender = () => {
                             actions={false}
                             tooltip={tooltipHandler}
                             config={config}
-                            signalListeners={signalListeners}
                             formatLocale={formatLocale}
                             timeFormatLocale={timeFormatLocale}
                             loader={loader}
-                            onError={(error) =>
-                                console.log(
-                                    'Error w/Vega render:',
-                                    error.message
-                                )
-                            }
+                            onNewView={newView}
                         />
                     );
                 }
@@ -84,10 +79,10 @@ const VisualRender = () => {
                             actions={false}
                             tooltip={tooltipHandler}
                             config={config}
-                            signalListeners={signalListeners}
                             formatLocale={formatLocale}
                             timeFormatLocale={timeFormatLocale}
                             loader={loader}
+                            onNewView={newView}
                         />
                     );
                 }

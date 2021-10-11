@@ -2,6 +2,10 @@ import powerbi from 'powerbi-visuals-api';
 import IViewport = powerbi.IViewport;
 import React from 'react';
 
+const viewportAdjust = 4;
+
+const calculateZoomLevelPercent = (zoomLevel: number) => zoomLevel / 100;
+
 export const getEditorHeadingIconClassName = (expanded: boolean) =>
     `editor-${expanded ? 'collapse' : 'expand'}`;
 
@@ -11,12 +15,12 @@ export const getViewModeViewportStyles = (
     zoomLevel: number,
     showViewportMarker: boolean
 ): React.CSSProperties => {
-    const adjust = 4,
-        resolved = `calc(100% - ${adjust}px)`;
+    const resolved = `calc(100% - ${viewportAdjust}px)`,
+        scale = calculateZoomLevelPercent(zoomLevel);
     return {
         height: isEditor ? viewport.height : resolved,
         width: isEditor ? viewport.width : resolved,
-        transform: `scale(${zoomLevel / 100})`, // TODO: better logic
+        transform: `scale(${scale})`,
         transformOrigin: '0% 0% 0px',
         border: showViewportMarker ? '2px dashed #b3b3b3' : null
     };

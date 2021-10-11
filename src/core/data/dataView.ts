@@ -21,6 +21,7 @@ import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 import DataViewValueColumns = powerbi.DataViewValueColumns;
 import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
 import DataViewSegmentMetadata = powerbi.DataViewSegmentMetadata;
+import ISelectionId = powerbi.visuals.ISelectionId;
 
 import range from 'lodash/range';
 import reduce from 'lodash/reduce';
@@ -36,7 +37,11 @@ import { getEmptyDataset, IVisualDataset } from './dataset';
 import { IVisualValueMetadata, IVisualValueRow } from './dataset';
 import { isFeatureEnabled } from '../utils/features';
 import { getState, store } from '../../store';
-import { createSelectionId, getSidString } from '../interactivity/selection';
+import {
+    createSelectionIds,
+    getSidString,
+    getDataPointStatus
+} from '../interactivity/selection';
 import { resolveVisualMetaToDatasetField } from '../template';
 import { hostServices } from '../services';
 
@@ -65,20 +70,29 @@ const getMappedDataset = (categorical: DataViewCategorical): IVisualDataset => {
         columns = getConsolidatedFields(categories, values),
         fieldValues = getConsolidatedValues(categories, values),
         rowCount = getRowCount(categorical),
-        empty = getEmptyDataset();
+        empty = getEmptyDataset(),
+        selections: ISelectionId[] = <ISelectionId[]>(
+            hostServices.selectionManager.getSelectionIds()
+        );
     if (rowCount === 0) {
         return empty;
     } else {
         try {
             const metadata = getConsolidatedMetadata(columns),
-                dataValues = range(rowCount).map((r, ri) => {
+                dataValues: IVisualValueRow[] = range(rowCount).map((r, ri) => {
                     const md = getDataRow(columns, fieldValues, ri),
-                        identity = createSelectionId(metadata, categories, r);
+                        identity = createSelectionIds(metadata, categories, [
+                            r
+                        ])[0];
                     return {
                         ...{
                             __identity__: identity,
                             __key__: getSidString(identity),
-                            identityIndex: r
+                            identityIndex: r,
+                            __selected__: getDataPointStatus(
+                                identity,
+                                selections
+                            )
                         },
                         ...md
                     };
@@ -156,10 +170,10 @@ type TDataProcessingStage = 'Initial' | 'Fetching' | 'Processing' | 'Processed';
 /**
  * For a Power BI primitive, apply any data type-specific logic before returning a value that can work with the visual dataset.
  */
-export const castPrimitiveValue = (
+const castPrimitiveValue = (
     field: IAugmentedMetadataField,
     value: powerbi.PrimitiveValue
-) => (field?.column.type.dateTime ? new Date(value.toString()) : value);
+) => (field?.column.type.dateTime ? new Date(value?.toString()) : value);
 
 /**
  * Ensure that the Redux store counters are reset, ready for a new data load.
@@ -171,7 +185,7 @@ const dispatchResetLoadingCounters = () => {
 /**
  * Ensures that the Redux store state is correct for a loaded dataset.
  */
-export const dispatchLoadingComplete = () => {
+const dispatchLoadingComplete = () => {
     store.dispatch(dataLoadingComplete());
 };
 
@@ -190,13 +204,13 @@ const dispatchWindowLoad = (rowsLoaded: number) => {
  *  - Vega: https://vega.github.io/vega/docs/types/#Field
  *  - Vega-Lite: https://vega.github.io/vega-lite/docs/field.html
  */
-export const encodeFieldForSpec = (displayName: string) =>
+const encodeFieldForSpec = (displayName: string) =>
     displayName?.replace(/([\\".\[\]])/g, '_') || '';
 
 /**
  * For supplied data view metadata (columns & measures), enumerate them and produce a unified list of all fields for the dataset.
  */
-export const getConsolidatedFields = (
+const getConsolidatedFields = (
     categories: DataViewCategoryColumn[],
     values: DataViewValueColumns
 ) => [
@@ -216,7 +230,7 @@ export const getConsolidatedFields = (
  * For all dataset fields, get a consolidated array of all entries, plus additional metadata to assist with template and selection
  * ID generation when the data view is mapped.
  */
-export const getConsolidatedMetadata = (fields: IAugmentedMetadataField[]) => {
+const getConsolidatedMetadata = (fields: IAugmentedMetadataField[]) => {
     return reduce(
         fields,
         (result, c) => {
@@ -241,7 +255,7 @@ export const getConsolidatedMetadata = (fields: IAugmentedMetadataField[]) => {
 /**
  * For supplied data view metadata (columns & measures), enumerate them and produce a unified list of all values for the dataset.
  */
-export const getConsolidatedValues = (
+const getConsolidatedValues = (
     categories: DataViewCategoryColumn[],
     values: DataViewValueColumns
 ) => [
@@ -252,16 +266,14 @@ export const getConsolidatedValues = (
 /**
  * Checks the supplied columns for the correct index of the content column, so that we can map it correctly later.
  */
-export const getDataRoleIndex = (
-    fields: DataViewMetadataColumn[],
-    role: string
-) => fields?.findIndex((f) => f.roles[`${role}`]) || -1;
+const getDataRoleIndex = (fields: DataViewMetadataColumn[], role: string) =>
+    fields?.findIndex((f) => f.roles[`${role}`]) || -1;
 
 /**
  * For supplied data view consolidated metadata (all columns + measures), produce a suitable object representation of the row
  * that corresponds with the dataset metadata.
  */
-export const getDataRow = (
+const getDataRow = (
     fields: IAugmentedMetadataField[],
     values: powerbi.PrimitiveValue[][],
     index: number
@@ -282,7 +294,7 @@ export const getDataRow = (
 /**
  * Checks for valid `categorical` dataview and provides count of values.
  */
-export const getRowCount = (categorical: DataViewCategorical) =>
+const getRowCount = (categorical: DataViewCategorical) =>
     categorical?.categories?.[0]?.values?.length ||
     categorical?.values?.[0]?.values?.length ||
     0;
@@ -291,7 +303,7 @@ export const getRowCount = (categorical: DataViewCategorical) =>
  * Determine whether additional data can/should be loaded from the visual host, and manage this operation along with the Redux
  * store state.
  */
-export const handleAdditionalWindows = (segment: DataViewSegmentMetadata) => {
+const handleAdditionalWindows = (segment: DataViewSegmentMetadata) => {
     (shouldFetchMore(segment) &&
         store.dispatch(
             updateDataProcessingStage({
@@ -305,9 +317,7 @@ export const handleAdditionalWindows = (segment: DataViewSegmentMetadata) => {
 /**
  * Ensure that the Redux store loading counters are updated for the correct event in the visual workflow.
  */
-export const handleCounterReset = (
-    operationKind: VisualDataChangeOperationKind
-) => {
+const handleCounterReset = (operationKind: VisualDataChangeOperationKind) => {
     operationKind === VisualDataChangeOperationKind.Create &&
         dispatchResetLoadingCounters();
 };
@@ -315,7 +325,7 @@ export const handleCounterReset = (
 /**
  * For the supplied visual update options, ensure that all workflow steps are managed.
  */
-export const handleDataLoad = (options: VisualUpdateOptions) => {
+const handleDataLoad = (options: VisualUpdateOptions) => {
     const dataView = options.dataViews[0],
         rowsLoaded = getRowCount(dataView?.categorical);
     handleCounterReset(options.operationKind);
@@ -327,7 +337,7 @@ export const handleDataLoad = (options: VisualUpdateOptions) => {
  * Based on the supplied segment from the data view, plus Redux store state and settings, determine if the visual host should be
  * instructed to request more data.
  */
-export const shouldFetchMore = (segment: DataViewSegmentMetadata): boolean =>
+const shouldFetchMore = (segment: DataViewSegmentMetadata): boolean =>
     segment &&
     getState().visual.settings.dataLimit.override &&
     getState().visual.canFetchMore;

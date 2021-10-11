@@ -24,6 +24,35 @@ export interface IDenebTemplateMetadata {
      * @uniqueItems true
      */
     dataset: ITemplateDatasetField[];
+    /**
+     * Any interactivity settings that we want to explicitly set.
+     */
+    interactivity?: ITemplateInteractivityOptions;
+}
+
+/**
+ * Interactivity properties for specification.
+ * @additionalProperties false
+ */
+export interface ITemplateInteractivityOptions {
+    /**
+     * Enable tooltip handler.
+     */
+    tooltip: boolean;
+    /**
+     * Enable context menu for data points.
+     */
+    contextMenu: boolean;
+    /**
+     * Enable cross-filtering from data point click events.
+     */
+    selection: boolean;
+    /**
+     * Maximum number of data points to allow when selecting.
+     * @minimum 1
+     * @maximum 250
+     */
+    dataPointLimit: number;
 }
 
 /**

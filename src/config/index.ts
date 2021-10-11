@@ -10,14 +10,13 @@ export { exportFieldConstraints, visualFeatures };
  */
 const visualFeatures = {
     /**
-     * Enables debugger, which is basically a ton of logging. TODO: Remove this as we migrate across
-     * to a more functional programming-based approach.
+     * Enables debugger, which is basically a ton of logging. Issue #27 raised to track removal/migration.
      */
     debug: false
 };
 
 /**
- * TODO: doc and figure out if we can token this into the schema somewhere
+ * Issue #128 raised to track figuring out if we can token this into the schema somewhere
  */
 const exportFieldConstraints = {
     dataset: {

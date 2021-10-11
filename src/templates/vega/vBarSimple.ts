@@ -5,6 +5,7 @@ import {
     vegaDataModelRef,
     vegaProviderInfo
 } from '..';
+import { getConfig } from '../../core/utils/config';
 
 export const vBarSimple: Spec = {
     $schema: vegaProviderInfo,
@@ -18,7 +19,7 @@ export const vBarSimple: Spec = {
             type: 'band',
             domain: {
                 data: 'dataset',
-                field: '__yAxis__'
+                field: '__1__'
             },
             range: 'height',
             padding: 0.1,
@@ -28,7 +29,7 @@ export const vBarSimple: Spec = {
             name: 'xscale',
             domain: {
                 data: 'dataset',
-                field: '__xAxis__'
+                field: '__0__'
             },
             nice: true,
             range: 'width'
@@ -38,12 +39,12 @@ export const vBarSimple: Spec = {
         {
             scale: 'xscale',
             orient: 'bottom',
-            title: '__xAxis__'
+            title: '__0__'
         },
         {
             orient: 'left',
             scale: 'yscale',
-            title: '__yAxis__'
+            title: '__1__'
         }
     ],
     marks: [
@@ -59,7 +60,7 @@ export const vBarSimple: Spec = {
                     },
                     x: {
                         scale: 'xscale',
-                        field: '__xAxis__'
+                        field: '__0__'
                     },
                     x2: {
                         scale: 'xscale',
@@ -67,12 +68,18 @@ export const vBarSimple: Spec = {
                     },
                     y: {
                         scale: 'yscale',
-                        field: '__yAxis__'
+                        field: '__1__'
                     },
                     height: {
                         scale: 'yscale',
                         band: 1
-                    }
+                    },
+                    opacity: [
+                        {
+                            test: "datum.__selected__ == 'off'",
+                            value: 0.3
+                        }
+                    ]
                 }
             }
         }
@@ -81,16 +88,15 @@ export const vBarSimple: Spec = {
         information: {
             name: 'Simple Bar Chart',
             description:
-                'A simple, single-view bar chart, with a column on the Y-Axis and a measure on the X-Axis.',
+                'A simple, single-view bar chart, with a column on the Y-Axis and a measure on the X-Axis. Also enabled for tooltips and cross-filtering.',
             author: authorInfo,
             uuid: '47577168-2e0c-42de-8e27-cb33071fae43',
             generated: '2021-03-26T00:00:00.000Z'
         },
         provider: 'vega',
-
         dataset: [
             {
-                key: '__yAxis__',
+                key: '__1__',
                 name: 'Category',
                 description:
                     "Select a column that will be displayed on the chart's Y-Axis",
@@ -98,13 +104,20 @@ export const vBarSimple: Spec = {
                 kind: 'column'
             },
             {
-                key: '__xAxis__',
+                key: '__0__',
                 name: 'Measure',
                 description:
                     "Select a measure that will be displayed on the chart's X-Axis",
                 type: 'numeric',
                 kind: 'measure'
             }
-        ]
+        ],
+        interactivity: {
+            tooltip: true,
+            contextMenu: true,
+            selection: true,
+            dataPointLimit:
+                getConfig().propertyDefaults.vega.selectionMaxDataPoints
+        }
     }
 };

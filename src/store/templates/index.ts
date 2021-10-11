@@ -3,26 +3,24 @@ import { initialState } from './state';
 import * as reducers from './reducers';
 
 const slice = createSlice({
-        name: 'templates',
-        initialState,
-        reducers
-    }),
-    zoomReducer = slice.reducer;
+    name: 'templates',
+    initialState,
+    reducers
+});
 
-export const {
-    newExportTemplateMetadata,
-    syncExportTemplateDataset,
-    patchTemplatePlaceholder,
-    templateExportError,
-    templateImportError,
-    templateImportSuccess,
-    updateSelectedDialogProvider,
-    updateSelectedExportOperation,
-    updateSelectedTemplate,
-    updateTemplateExportState,
-    updateTemplateImportState,
-    updateExportTemplatePropertyBySelector,
-    initializeImportExport
-} = slice.actions;
-
-export default zoomReducer;
+export const templates = slice.reducer,
+    {
+        newExportTemplateMetadata,
+        syncExportTemplateDataset,
+        patchTemplatePlaceholder,
+        templateExportError,
+        templateImportError,
+        templateImportSuccess,
+        updateSelectedDialogProvider,
+        updateSelectedExportOperation,
+        updateSelectedTemplate,
+        updateTemplateExportState,
+        updateTemplateImportState,
+        updateExportTemplatePropertyBySelector,
+        initializeImportExport
+    } = slice.actions;

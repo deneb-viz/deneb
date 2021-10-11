@@ -9,21 +9,13 @@ import {
     isContextMenuEnabled,
     isDataPointEnabled
 } from '../core/interactivity/selection';
-import { isDeveloperModeEnabled } from '../core/utils/developer';
+import { isFeatureEnabled } from '../core/utils/features';
 
-const defaults = getConfig().propertyDefaults.vega;
+const defaults = getConfig().propertyDefaults.vega,
+    config = getConfig().selection;
 
 /**
  * Manages the specification grammar and the user-provided source
- *
- * @property {string}               jsonSpec                - Visual spec
- * @property {GrammarProvider}      provider                - Grammar provider to use to render visualisation
- * @property {GrammarRenderMode}    renderMode              - How to render the visual in the DOM
- * @property {boolean}              autoSave                - Specifies whether spec is saved automatically or requires manual intervention
- * @property {boolean}              enableTooltips
- * @property {boolean}              enableContextMenu
- * @property {boolean}              enableSelection
- * @property {boolean}              isNewDialogOpen
  */
 export default class VegaSettings extends SettingsBase {
     public jsonSpec: string = defaults.jsonSpec;
@@ -34,6 +26,8 @@ export default class VegaSettings extends SettingsBase {
     public enableContextMenu =
         isContextMenuEnabled && defaults.enableContextMenu;
     public enableSelection = isDataPointEnabled && defaults.enableSelection;
+    public selectionMaxDataPoints = defaults.selectionMaxDataPoints;
+    public tooltipDelay = isHandlerEnabled && defaults.tooltipDelay;
     public isNewDialogOpen = defaults.isNewDialogOpen;
 
     /**
@@ -49,7 +43,7 @@ export default class VegaSettings extends SettingsBase {
     ): VisualObjectInstanceEnumerationObject {
         Debugger.log('Processing enumeration...');
         enumerationObject.instances.map((i) => {
-            if (!isDeveloperModeEnabled) {
+            if (!isFeatureEnabled('developerMode')) {
                 Debugger.log("Removing 'debug only' properties...");
                 enumerationObject.instances = [];
             } else {
@@ -69,6 +63,14 @@ export default class VegaSettings extends SettingsBase {
                         'enableSelection'
                     ];
                 }
+                enumerationObject.instances[0].validValues = {
+                    selectionMaxDataPoints: {
+                        numberRange: {
+                            min: config.minDataPointsValue,
+                            max: config.maxDataPointsValue
+                        }
+                    }
+                };
             }
         });
         return enumerationObject;

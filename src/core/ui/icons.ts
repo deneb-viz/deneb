@@ -6,6 +6,7 @@ import { mergeStyleSets } from '@fluentui/react';
 import { getState } from '../../store';
 import { commandBarButtonStyles } from './commandBar';
 import { TDatasetFieldType } from '../template/schema';
+import { zoomConfig } from '../../context/zoomLevel';
 
 const previewCommandBarHeight = 26;
 
@@ -72,15 +73,14 @@ export const getEditorHeadingIcon = (
         ? 'ChevronLeft'
         : 'ChevronRight';
 
-export const isZoomInIconDisabled = () =>
-    getState().zoom.value === getState().zoom.max || isZoomControlDisabled();
+export const isZoomInIconDisabled = (value: number) =>
+    value === zoomConfig.max || isZoomControlDisabled();
 
-export const isZoomOutIconDisabled = () =>
-    getState().zoom.value === getState().zoom.min || isZoomControlDisabled();
+export const isZoomOutIconDisabled = (value: number) =>
+    value === zoomConfig.min || isZoomControlDisabled();
 
-export const isZoomResetIconDisabled = () =>
-    getState().zoom.value === getState().zoom.default ||
-    isZoomControlDisabled();
+export const isZoomResetIconDisabled = (value: number) =>
+    value === zoomConfig.default || isZoomControlDisabled();
 
 export const isZoomControlDisabled = () =>
     getState()?.visual?.spec?.status !== 'valid';

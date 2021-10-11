@@ -1,6 +1,15 @@
-export { buttonStyles, initializeIcons, theme };
+export {
+    buttonStyles,
+    initializeIcons,
+    linkStyles,
+    settingsButtonStyles,
+    spinButtonStyles,
+    theme
+};
 
 import { IButtonStyles } from '@fluentui/react/lib/Button';
+import { ILinkStyles } from '@fluentui/react/lib/Link';
+import { ISpinButtonStyles } from '@fluentui/react/lib/SpinButton';
 import {
     FontWeights,
     IIconOptions,
@@ -51,4 +60,27 @@ const buttonStyles: IButtonStyles = {
         color: theme.palette.black,
         fontWeight: FontWeights.regular
     }
+};
+
+const settingsButtonStyles: IButtonStyles = {
+    root: {
+        backgroundColor: theme.palette.neutralLighterAlt
+    },
+    rootDisabled: {
+        backgroundColor: theme.palette.neutralLighterAlt
+    },
+    icon: { color: theme.palette.neutralPrimary },
+    iconHovered: { color: theme.palette.neutralDark },
+    iconPressed: { color: theme.palette.neutralDark },
+    iconChecked: { color: theme.palette.neutralDark }
+};
+
+const linkStyles: ILinkStyles = {
+    root: {
+        color: theme.palette.themeDark
+    }
+};
+
+const spinButtonStyles: Partial<ISpinButtonStyles> = {
+    spinButtonWrapper: { width: 50 }
 };

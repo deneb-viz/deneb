@@ -23,10 +23,10 @@ function vegaDataModelRef(): BaseData {
         name: dataRoles[0].name
     };
 }
-const providerInfo = getConfig().providerResources;
-const vegaProviderInfo = providerInfo.vega.schemaUrl;
-const vegaLiteProviderInfo = providerInfo.vegaLite.schemaUrl;
-const authorInfo = 'Deneb';
+const providerInfo = getConfig().providerResources,
+    vegaProviderInfo = providerInfo.vega.schemaUrl,
+    vegaLiteProviderInfo = providerInfo.vegaLite.schemaUrl,
+    authorInfo = 'Deneb';
 
 export {
     authorInfo,

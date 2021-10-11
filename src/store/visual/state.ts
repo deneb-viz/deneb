@@ -14,15 +14,12 @@ import DataViewObjects = powerbi.DataViewObjects;
 import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 
-import { Loader } from 'vega';
-
 import { getEmptyDataset, IVisualDataset } from '../../core/data/dataset';
 import { IDataViewFlags, TDataProcessingStage } from '../../core/data/dataView';
 import { TEditorRole } from '../../core/services/JsonEditorServices';
 import { TVisualMode } from '../../core/ui';
 import { ICompiledSpec, IFixResult } from '../../core/utils/specification';
 import VisualSettings from '../../properties/VisualSettings';
-import { resolveLoaderLogic } from '../../core/vega';
 
 interface IVisualSliceState {
     allowInteractions: boolean;
@@ -46,7 +43,7 @@ interface IVisualSliceState {
     isNewDialogVisible: boolean;
     isExportDialogVisible: boolean;
     isDirty: boolean;
-    loader: Loader;
+    isSelectionAborted: boolean;
     resizablePaneDefaultWidth: number;
     resizablePaneExpandedWidth: number;
     resizablePaneWidth: number;
@@ -110,7 +107,7 @@ const initialState: IVisualSliceState = {
     isDirty: false,
     isExportDialogVisible: false,
     isNewDialogVisible: true,
-    loader: resolveLoaderLogic(),
+    isSelectionAborted: false,
     resizablePaneDefaultWidth: null,
     resizablePaneExpandedWidth: null,
     resizablePaneWidth: null,

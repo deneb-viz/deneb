@@ -31,7 +31,7 @@ const verticalStackTokens: IStackTokens = {
     };
 
 const EditorPreview: React.FC = () => {
-    const { visual, zoom } = useSelector(state),
+    const { visual } = useSelector(state),
         { editorPreviewAreaWidth, spec } = visual,
         editorPreviewStyles: IStackItemStyles = {
             root: {
@@ -50,7 +50,7 @@ const EditorPreview: React.FC = () => {
                     return (
                         <>
                             <div id='editorPreview'>
-                                <DataProcessingRouter zoomLevel={zoom.value} />
+                                <DataProcessingRouter />
                             </div>
                         </>
                     );

@@ -2,10 +2,10 @@
     "$schema": "../schema/deneb-config.json",
     "features": {
         "developerMode": false,
-        "enableExternalUri": false,
+        "enableExternalUri": true,
         "fetchMoreData": true,
-        "selectionContextMenu": false,
-        "selectionDataPoint": false,
+        "selectionContextMenu": true,
+        "selectionDataPoint": true,
         "tooltipHandler": true,
         "tooltipResolveNumberFieldFormat": true,
         "unitTestCanary": false
@@ -38,27 +38,75 @@
         }
     },
     "keyBindings": {
-        "applyChanges": "ctrl|enter",
-        "autoApplyToggle": "ctrl|shift|enter",
-        "repairFormatJson": "ctrl|alt|r",
-        "newTemplate": "ctrl|alt|e",
-        "newSpecification": "ctrl|alt|n",
-        "openHelpUrl": "ctrl|alt|h",
-        "navigateSpecification": "ctrl|alt|1",
-        "navigateConfig": "ctrl|alt|2",
-        "navigateSettings": "ctrl|alt|3",
-        "toggleEditorPane": "ctrl|alt|space",
-        "editorFocusOut": "esc",
-        "zoomIn": "ctrl|alt|num_add,ctrl|alt|=",
-        "zoomOut": "ctrl|alt|num_subtract,ctrl|alt|-",
-        "zoomReset": "ctrl|alt|0,ctrl|alt|num_0",
-        "zoomFit": "ctrl|alt|num_multiply"
+        "applyChanges": {
+            "combination": "ctrl|enter",
+            "functionalArea": "other"
+        },
+        "autoApplyToggle": {
+            "combination": "ctrl|shift|enter",
+            "functionalArea": "other"
+        },
+        "repairFormatJson": {
+            "combination": "ctrl|alt|r",
+            "functionalArea": "other"
+        },
+        "newTemplate": {
+            "combination": "ctrl|alt|e",
+            "functionalArea": "other"
+        },
+        "newSpecification": {
+            "combination": "ctrl|alt|n",
+            "functionalArea": "other"
+        },
+        "openHelpUrl": {
+            "combination": "ctrl|alt|h",
+            "functionalArea": "other"
+        },
+        "navigateSpecification": {
+            "combination": "ctrl|alt|1",
+            "functionalArea": "other"
+        },
+        "navigateConfig": {
+            "combination": "ctrl|alt|2",
+            "functionalArea": "other"
+        },
+        "navigateSettings": {
+            "combination": "ctrl|alt|3",
+            "functionalArea": "other"
+        },
+        "toggleEditorPane": {
+            "combination": "ctrl|alt|space",
+            "functionalArea": "other"
+        },
+        "editorFocusOut": {
+            "combination": "esc",
+            "functionalArea": "other"
+        },
+        "zoomIn": {
+            "combination": "ctrl|alt|num_add,ctrl|alt|=",
+            "functionalArea": "other"
+        },
+        "zoomOut": {
+            "combination": "ctrl|alt|num_subtract,ctrl|alt|-",
+            "functionalArea": "other"
+        },
+        "zoomReset": {
+            "combination": "ctrl|alt|0,ctrl|alt|num_0",
+            "functionalArea": "other"
+        },
+        "zoomFit": {
+            "combination": "ctrl|alt|num_multiply",
+            "functionalArea": "other"
+        }
     },
     "modalDialog": {
         "heightPercent": 0.95,
         "widthPercent": 0.95
     },
     "providerResources": {
+        "deneb": {
+            "interactivityDocumentationUrl": "https://deneb-viz.github.io/interactivity-features-overview"
+        },
         "vega": {
             "documentationUrl": "https://vega.github.io/vega/docs/",
             "schemaUrl": "https://vega.github.io/schema/vega/v5.json",
@@ -102,8 +150,15 @@
             "enableContextMenu": true,
             "enableTooltips": true,
             "enableSelection": false,
+            "selectionMaxDataPoints": 50,
+            "tooltipDelay": 0,
             "isNewDialogOpen": true
         }
+    },
+    "selection": {
+        "minDataPointsValue": 1,
+        "maxDataPointsValue": 250,
+        "dataPointsStepValue": 1
     },
     "splitPaneDefaults": {
         "minSize": 350,

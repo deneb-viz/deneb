@@ -7,10 +7,10 @@ import { TEditorPosition, TVisualMode } from '.';
 
 const splitPaneDefaults = getConfig().splitPaneDefaults;
 const visualViewportAdjust = getConfig().visualViewPortAdjust;
-const resizerWidth = 3; // TODO: Magic number
+const resizerWidth = 3;
 export const previewAreaPadding = 5;
-export const previewToolbarHeight = 30;
-export const previewToolbarPadding = 3;
+export const previewToolbarHeight = 38;
+export const previewToolbarPadding = 5;
 
 /**
  * Work out the explicit width of the preview area, relative to the settings and editor pane.

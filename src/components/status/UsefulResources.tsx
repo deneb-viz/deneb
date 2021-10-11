@@ -1,10 +1,10 @@
 import * as React from 'react';
 
-import { Link, ILinkStyles } from '@fluentui/react/lib/Link';
+import { Link } from '@fluentui/react/lib/Link';
 import { IStackTokens, Stack } from '@fluentui/react/lib/Stack';
 
 import { getConfig, getVisualMetadata } from '../../core/utils/config';
-import { theme } from '../../core/ui/fluent';
+import { linkStyles } from '../../core/ui/fluent';
 
 import { BodyHeading } from '../elements/Typography';
 import { hostServices } from '../../core/services';
@@ -13,12 +13,6 @@ import { i18nValue } from '../../core/ui/i18n';
 const resourceStackTokens: IStackTokens = {
     childrenGap: 25,
     padding: 10
-};
-
-const linkStyles: ILinkStyles = {
-    root: {
-        color: theme.palette.themeDark
-    }
 };
 
 const UsefulResources = () => {

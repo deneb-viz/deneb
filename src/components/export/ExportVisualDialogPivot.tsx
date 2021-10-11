@@ -7,6 +7,7 @@ import { updateSelectedExportOperation } from '../../store/templates';
 import { TExportOperation } from '../../core/template';
 import { exportPivotStyles } from '../../config/styles';
 import { i18nValue } from '../../core/ui/i18n';
+import { resolveTemplateExportPivotAria } from '../../core/ui/aria';
 
 const ExportVisualDialogPivot = () => {
     const { selectedExportOperation } = useSelector(state).templates,
@@ -25,7 +26,7 @@ const ExportVisualDialogPivot = () => {
     return (
         <div className='export-spec-dialog-pivot'>
             <Pivot
-                aria-label='Template Specific Details'
+                aria-label={resolveTemplateExportPivotAria()}
                 selectedKey={selectedExportOperation}
                 getTabId={getTabId}
                 styles={exportPivotStyles}

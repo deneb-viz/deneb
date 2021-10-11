@@ -2,6 +2,20 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
     "definitions": {
+        "IKeyboardShortcut": {
+            "type": "object",
+            "required": ["combination", "functionalArea"],
+            "properties": {
+                "combination": {
+                    "description": "Valid combination of keystrokes to trigger command.",
+                    "type": "string"
+                },
+                "functionalArea": {
+                    "description": "Functional ares that keystrokes are assigned to.",
+                    "enum": ["zoomLevel", "other"]
+                }
+            }
+        },
         "IProviderSettings": {
             "type": "object",
             "required": ["documentationUrl", "schemaUrl"],
@@ -96,6 +110,8 @@
                 "enableContextMenu",
                 "enableTooltips",
                 "enableSelection",
+                "selectionMaxDataPoints",
+                "tooltipDelay",
                 "isNewDialogOpen"
             ],
             "properties": {
@@ -127,6 +143,14 @@
                     "description": "Enable data point selection.",
                     "type": "boolean"
                 },
+                "selectionMaxDataPoints": {
+                    "description": "The maximum number of underlying data points that can be supplied to Power BI's selection manager. Too many can cause performance issues, so this will block the visual from grabbing more than it should.",
+                    "type": "integer"
+                },
+                "tooltipDelay": {
+                    "description": "When the ctrl key is held, this will delay the display of the tooltip by the specified number of milliseconds.",
+                    "type": "number"
+                },
                 "isNewDialogOpen": {
                     "description": "Indicates that the new specification should show when advanced editor is opened.",
                     "type": "boolean"
@@ -151,7 +175,7 @@
                     "type": "boolean"
                 },
                 "enableExternalUri": {
-                    "description": "Enable external URIs in specifications for data and images - if enabled, we'll preserve any URI/URL-based content in specifications and config, although these will be subject to the standard CORS limitations that custom visuals are subject to. If disabled, then we process text for any occurrences of a URI and strip it out (except for `data:` URIs). I had attempted this by creating a custom loader for Vega but it seems to work for data and ignore images, so whilst this approach is crude, it works for our purposes.",
+                    "description": "Enable external URIs in specifications for data and images - if enabled, we'll preserve any URI/URL-based content in specifications and config, although these will be subject to the standard CORS limitations that custom visuals are subject to. If disabled, then we process text for any occurrences of a URI and strip it out (except for `data:` URIs).",
                     "type": "boolean"
                 },
                 "fetchMoreData": {
@@ -204,63 +228,63 @@
             "properties": {
                 "applyChanges": {
                     "description": "Command to apply editor changes to visual properties.",
-                    "type": "string"
+                    "$ref": "#/definitions/IKeyboardShortcut"
                 },
                 "autoApplyToggle": {
                     "description": "Command to enable auto-apply of changes in the editor.",
-                    "type": "string"
+                    "$ref": "#/definitions/IKeyboardShortcut"
                 },
                 "repairFormatJson": {
                     "description": "Command to repair and format JSON in the editors.",
-                    "type": "string"
+                    "$ref": "#/definitions/IKeyboardShortcut"
                 },
                 "newTemplate": {
                     "description": "Command to open the exportable template dialog.",
-                    "type": "string"
+                    "$ref": "#/definitions/IKeyboardShortcut"
                 },
                 "newSpecification": {
                     "description": "Command to open the new specification dialog.",
-                    "type": "string"
+                    "$ref": "#/definitions/IKeyboardShortcut"
                 },
                 "openHelpUrl": {
                     "description": "Command to navigate to the documentation site.",
-                    "type": "string"
+                    "$ref": "#/definitions/IKeyboardShortcut"
                 },
                 "navigateSpecification": {
                     "description": "Command to set focus to the Specification editor.",
-                    "type": "string"
+                    "$ref": "#/definitions/IKeyboardShortcut"
                 },
                 "navigateConfig": {
                     "description": "Command to set focus to the Config editor.",
-                    "type": "string"
+                    "$ref": "#/definitions/IKeyboardShortcut"
                 },
                 "navigateSettings": {
                     "description": "Command to set focus to the Settings pane.",
-                    "type": "string"
+                    "$ref": "#/definitions/IKeyboardShortcut"
                 },
                 "toggleEditorPane": {
                     "description": "Command to toggle display of the Editor pane.",
-                    "type": "string"
+                    "$ref": "#/definitions/IKeyboardShortcut"
                 },
                 "editorFocusOut": {
                     "description": "Command to focus out of editor and back to main pane.",
-                    "type": "string"
+                    "$ref": "#/definitions/IKeyboardShortcut"
                 },
                 "zoomIn": {
                     "description": "Zoom in by step value.",
-                    "type": "string"
+                    "$ref": "#/definitions/IKeyboardShortcut"
                 },
                 "zoomOut": {
                     "description": "Zoom out by step value.",
-                    "type": "string"
+                    "$ref": "#/definitions/IKeyboardShortcut"
                 },
                 "zoomReset": {
                     "description": "Reset zoom level to default.",
-                    "type": "string"
+                    "$ref": "#/definitions/IKeyboardShortcut"
                 },
                 "zoomFit": {
                     "description": "Set zoom level to fit visual.",
-                    "type": "string"
+                    "$ref": "#/definitions/IKeyboardShortcut"
                 }
             }
         },
@@ -280,8 +304,15 @@
             "description": "Embedded versions - used to help automate the packaged Vega and Vega-Lite versions on the visual's landing page, plus URLs or resources that we might want to expose to the user within the visual.",
             "type": "object",
             "additionalProperties": false,
-            "required": ["vega", "vegaLite"],
+            "required": ["vega", "vegaLite", "deneb"],
             "properties": {
+                "deneb": {
+                    "required": ["interactivityDocumentationUrl"],
+                    "interactivityDocumentationUrl": {
+                        "description": "URL for interactivity documentation.",
+                        "type": "string"
+                    }
+                },
                 "vega": {
                     "$ref": "#/definitions/IProviderSettings",
                     "description": "Resource details for Vega."
@@ -302,6 +333,30 @@
                 "developer": { "$ref": "#/definitions/IDeveloperDefaults" },
                 "editor": { "$ref": "#/definitions/IEditorDefaults" },
                 "vega": { "$ref": "#/definitions/IVegaDefaults" }
+            }
+        },
+        "selection": {
+            "description": "Settings for managing zoom level configuration when working with rendered visual output in the visual editor",
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "minDataPointsValue",
+                "maxDataPointsValue",
+                "dataPointsStepValue"
+            ],
+            "properties": {
+                "minDataPointsValue": {
+                    "description": "Minimum zoom level.",
+                    "type": "integer"
+                },
+                "maxDataPointsValue": {
+                    "description": "Maximum zoom level.",
+                    "type": "integer"
+                },
+                "dataPointsStepValue": {
+                    "description": "Amount to step by when using the spin control for max data points.",
+                    "type": "integer"
+                }
             }
         },
         "splitPaneDefaults": {
@@ -398,6 +453,7 @@
         "modalDialog",
         "providerResources",
         "propertyDefaults",
+        "selection",
         "splitPaneDefaults",
         "visualViewPortAdjust",
         "templates",

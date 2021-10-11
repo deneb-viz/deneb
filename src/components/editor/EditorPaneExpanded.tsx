@@ -31,6 +31,12 @@ const verticalStackOuterTokens: IStackTokens = { childrenGap: 5 },
         root: {
             display: 'flex'
         }
+    },
+    finalStackItemStyles: IStackItemStyles = {
+        root: {
+            display: 'flex',
+            overflowY: 'auto'
+        }
     };
 
 const EditorPaneExpanded = () => {
@@ -56,7 +62,7 @@ const EditorPaneExpanded = () => {
                 <StackItem shrink styles={stackItemStyles}>
                     <FixErrorDetails />
                 </StackItem>
-                <StackItem verticalFill styles={stackItemStyles}>
+                <StackItem verticalFill styles={finalStackItemStyles}>
                     <EditorOperationContent />
                 </StackItem>
             </Stack>

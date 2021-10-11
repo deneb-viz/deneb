@@ -1,4 +1,4 @@
-export { getPatchedVegaSpec };
+export { getPatchedVegaSpec, vegaUtils };
 
 import { Signal } from 'vega';
 import { getConfig } from '../utils/config';
@@ -24,3 +24,6 @@ const getPatchedSignals = (spec: Object) => ({
 // Custom signals that we wish to expose for Power BI vs. core Vega
 const customSignals: Signal[] =
     getConfig()?.providerResources?.vega?.patch?.signals || [];
+
+// Avoids linting issues (can't seem to disable w/eslint-disable). Can be removed if/when we extend Vega API
+const vegaUtils = null;

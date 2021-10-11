@@ -10,9 +10,6 @@ export {
     IFixStatus
 };
 
-import powerbi from 'powerbi-visuals-api';
-import ISelectionId = powerbi.visuals.ISelectionId;
-
 import * as Vega from 'vega';
 import Spec = Vega.Spec;
 import * as VegaLite from 'vega-lite';
@@ -25,10 +22,16 @@ import {
     specEditorService,
     TEditorRole
 } from '../services/JsonEditorServices';
-import { resolveObjectProperties, updateObjectProperties } from './properties';
-import { getSidString } from '../interactivity/selection';
+import {
+    IPersistenceProperty,
+    resolveObjectProperties,
+    updateObjectProperties
+} from './properties';
 import { getState, store } from '../../store';
-import { getReplacedTemplate } from '../template';
+import {
+    getInteractivityPropsFromTemplate,
+    getReplacedTemplate
+} from '../template';
 import {
     updateDirtyFlag,
     updateFixStatus,
@@ -36,12 +39,12 @@ import {
     updateStagedSpecData,
     updateStagedConfigData
 } from '../../store/visual';
-import { hostServices } from '../services';
 import { i18nValue } from '../ui/i18n';
 import { cleanParse, getJsonAsIndentedString } from './json';
 import { getPatchedVegaSpec } from '../vega/vegaUtils';
 import { getPatchedVegaLiteSpec } from '../vega/vegaLiteUtils';
 import { TSpecProvider } from '../vega';
+import { ITemplateInteractivityOptions } from '../template/schema';
 
 /**
  * For the supplied provider and specification template, add this to the visual and persist to properties, ready for
@@ -52,16 +55,19 @@ const createFromTemplate = (
     template: Spec | TopLevelSpec
 ) => {
     const jsonSpec = getReplacedTemplate(template),
-        jsonConfig = getJsonAsIndentedString(template.config);
+        jsonConfig = getJsonAsIndentedString(template.config),
+        interactivity = getInteractivityPropsFromTemplate(template);
     updateObjectProperties(
         resolveObjectProperties('vega', [
-            { name: 'provider', value: provider },
-            { name: 'jsonSpec', value: jsonSpec },
-            { name: 'jsonConfig', value: jsonConfig },
-            { name: 'isNewDialogOpen', value: false }
+            ...[
+                { name: 'provider', value: provider },
+                { name: 'jsonSpec', value: jsonSpec },
+                { name: 'jsonConfig', value: jsonConfig },
+                { name: 'isNewDialogOpen', value: false }
+            ],
+            ...resolveInteractivityProps(interactivity)
         ])
     );
-    // TODO: Side-effecting code?
     specEditorService.setText(jsonSpec);
     configEditorService.setText(jsonConfig);
 };
@@ -89,7 +95,6 @@ const fixAndFormat = () => {
             dismissed: false,
             error: resolveFixErrorMessage(success, fixedRawSpec, fixedRawConfig)
         };
-        // TODO: Side-effecting code?
         if (fixedRawSpec.success) {
             specEditorService.setText(fixedRawSpec.text);
         }
@@ -114,9 +119,8 @@ const hasLiveSpecChanged = () => {
 };
 
 const parseActiveSpec = () => {
-    const { allowInteractions, settings } = getState().visual,
-        { provider, jsonSpec, enableContextMenu, enableSelection } =
-            settings.vega;
+    const { settings } = getState().visual,
+        { provider, jsonSpec } = settings.vega;
     try {
         if (!jsonSpec) {
             // Spec hasn't been edited yet
@@ -127,44 +131,10 @@ const parseActiveSpec = () => {
             });
             return;
         }
-
         const parsedSpec = cleanParse(jsonSpec);
-
-        /** TODO: Previous attempt at patching interactivity. Kept for posterity but should be managed a different way.
-         * Will likely re-attempt in v0.5/0.6 */
+        // Ensure that our spec (patched for any additional signals etc.) parses successfully and dispatch to store
         switch (provider) {
             case 'vegaLite': {
-                /**TODO: This should be done somewhere else, probably
-                    Debugger.log(
-                        'Patching data point and context menu selections...'
-                    );
-                    parsedSpec.params = [...(parsedSpec.params || [])];
-                    if (
-                        visualFeatures.selectionContextMenu &&
-                        enableContextMenu
-                    ) {
-                        parsedSpec.params.push({
-                            name: '__context__',
-                            select: {
-                                type: 'point',
-                                fields:
-                                    (allowInteractions && ['__identity__']) ||
-                                    [],
-                                on: 'contextmenu'
-                            }
-                        });
-                    }
-                    if (visualFeatures.selectionDataPoint && enableSelection) {
-                        parsedSpec.params.push({
-                            name: '__select__',
-                            select: {
-                                type: 'point',
-                                fields: (allowInteractions && ['__key__']) || []
-                            },
-                            value: this.getExistingSelectors()
-                        });
-                    }
-                    */
                 const result = VegaLite.compile(<TopLevelSpec>{
                     ...getPatchedVegaLiteSpec(parsedSpec)
                 });
@@ -176,17 +146,6 @@ const parseActiveSpec = () => {
                 break;
             }
             case 'vega': {
-                /**
-                    Debugger.log(
-                        'Patching data point and context menu selections...'
-                    );
-                    if (!parsedSpec.signals) {
-                        parsedSpec.signals = [];
-                    }
-                    parsedSpec.signals.push({
-                        name: '__context__',
-                        on: [{ events: 'contextmenu', update: 'datum' }]
-                    });*/
                 const result = Vega.parse(<Spec>{
                     ...getPatchedVegaSpec(parsedSpec)
                 });
@@ -222,6 +181,20 @@ const persist = (stage = true) => {
         ])
     );
 };
+
+/**
+ * If we have resolved interactivity props from the template, create appropriate persistence properties
+ */
+const resolveInteractivityProps = (
+    interactivity: ITemplateInteractivityOptions
+): IPersistenceProperty[] =>
+    (interactivity && [
+        { name: 'enableTooltips', value: interactivity.tooltip },
+        { name: 'enableContextMenu', value: interactivity.contextMenu },
+        { name: 'enableSelection', value: interactivity.selection },
+        { name: 'selectionMaxDataPoints', value: interactivity.dataPointLimit }
+    ]) ||
+    [];
 
 /**
  * Add the specified editor's current text to the staging area in the Redux store. This can then be used for persistence, or
@@ -303,34 +276,6 @@ const dispatchFixStatus = (result: IFixResult) => {
  */
 const dispatchSpec = (compiledSpec: ICompiledSpec) => {
     store.dispatch(updateSpec(compiledSpec));
-};
-
-/**
- * Get any existing selections (e.g. through bookmarks) to ensure that they are restored into the visual's current selection
- * correctly and able to be passed into the specification's `init` property for our selection.
- * TODO: this needs review when we revisit interactivity in a later build.
- */
-const getExistingSelectors = () => {
-    const { dataset } = getState().visual,
-        { selectionManager } = hostServices;
-    return (
-        (selectionManager.hasSelection() &&
-            selectionManager
-                .getSelectionIds()
-                .map(
-                    (id: ISelectionId) =>
-                        dataset.values.find(
-                            (v) =>
-                                getSidString(v.__identity__) ===
-                                getSidString(id)
-                        )?.__key__
-                )
-                .filter((k) => k !== undefined)
-                .map((k) => ({
-                    __key__: k
-                }))) ||
-        undefined
-    );
 };
 
 /**

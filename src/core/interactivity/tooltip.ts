@@ -1,33 +1,33 @@
-export { getTooltipHandler, isHandlerEnabled };
+export { getTooltipHandler, hideTooltip, isHandlerEnabled };
 
 import powerbi from 'powerbi-visuals-api';
 import ITooltipService = powerbi.extensibility.ITooltipService;
 import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
-import ISelectionId = powerbi.extensibility.ISelectionId;
 
+import delay from 'lodash/delay';
 import indexOf from 'lodash/indexOf';
 import isDate from 'lodash/isDate';
 import isObject from 'lodash/isObject';
 import keys from 'lodash/keys';
 import pickBy from 'lodash/pickBy';
-import reduce from 'lodash/reduce';
 import toNumber from 'lodash/toNumber';
 import toString from 'lodash/toString';
 
-import {
-    isInteractivityReservedWord,
-    resolveCoordinates,
-    resolveDatumToArray
-} from '.';
+import { isInteractivityReservedWord, resolveCoordinates } from '.';
 import { i18nValue } from '../ui/i18n';
 import { getJsonAsIndentedString } from '../utils/json';
 import { IVegaViewDatum } from '../vega';
 
 import { isFeatureEnabled } from '../utils/features';
-import { createSelectionId } from './selection';
-import { getMetadataByKeys, getValueForDatum } from '../data/dataset';
+import { getSelectionIdentitiesFromData } from './selection';
+import {
+    getMetadataByKeys,
+    resolveDataFromItem,
+    resolveDatumToArray
+} from '../data/dataset';
 import { createFormatterFromString } from '../utils/formatting';
-import { getCategoryColumns } from '../data/dataView';
+import { getState } from '../../store';
+import { hostServices } from '../services';
 
 /**
  * Convenience constant for tooltip events, as it's required by Power BI.
@@ -46,7 +46,8 @@ const isResolveNumberFormatEnabled = () =>
     isHandlerEnabled && isFeatureEnabled('tooltipResolveNumberFieldFormat');
 
 /**
- * For a given Vega `tooltip` object (key-value pairs), extract any non-reserved keys, and structure suitably as an array of standard Power BI tooltip items (`VisualTooltipDataItem[]`).
+ * For a given Vega `tooltip` object (key-value pairs), extract any non-reserved keys, and structure suitably as an array of standard
+ * Power BI tooltip items (`VisualTooltipDataItem[]`).
  */
 const extractTooltipDataItemsFromObject = (
     tooltip: Object,
@@ -67,7 +68,33 @@ const extractTooltipDataItemsFromObject = (
 };
 
 /**
- * For given Vega `tooltip` object (key-value pairs), return an object of fields from the visual dataset's metadata that are in the tooltip, and eligible for automatic formatting. Eligibility criteria is as follows:
+ * For a given tooltip item, if it's a reserved workd, return something more sensible to the end user than a complex object.
+ */
+const getCuratedTooltipItem = (key: string, value: any) =>
+    isInteractivityReservedWord(key)
+        ? i18nValue('Selection_KW_Present')
+        : getDeepRedactedTooltipItem(value);
+
+/**
+ * Sometimes, we can fudge the aggregates or other operations to create deeply nested objects in our dataset. This will apply a deeper,
+ * recursive search and replace of keys matching out interactivity reserved words and 'redact' them with indicators for tooltips.
+ */
+const getDeepRedactedTooltipItem = (object: Object) => {
+    return Array.isArray(object)
+        ? object.map(getDeepRedactedTooltipItem)
+        : object && typeof object === 'object'
+        ? Object.fromEntries(
+              Object.entries(object).map(([k, v]) => [
+                  k,
+                  getCuratedTooltipItem(k, v)
+              ])
+          )
+        : object;
+};
+
+/**
+ * For given Vega `tooltip` object (key-value pairs), return an object of fields from the visual dataset's metadata that are in the tooltip,
+ * and eligible for automatic formatting. Eligibility criteria is as follows:
  *
  *  - The `tooltipResolveNumberFieldFormat` feature is enabled, and:
  *  - The field display name has a corresponding entry in the visual datset's metadata, and:
@@ -86,36 +113,16 @@ const getFieldsEligibleForAutoFormat = (tooltip: Object) =>
     });
 
 /**
- * 'Redact' any interactivity values to flag that they are present rather than exposing them completely.
- */
-const getRedactedTooltipObject = (object: Object) =>
-    reduce(
-        object,
-        (result, value, key) => {
-            result[key] = getCuratedTooltipItem(key, value);
-            return result;
-        },
-        {}
-    );
-
-/**
- * For a given tooltip item, if it's a reserved workd, return something more sensible to the end user than a complex object.
- */
-const getCuratedTooltipItem = (key: string, value: any) =>
-    isInteractivityReservedWord(key)
-        ? i18nValue('Selection_KW_Present')
-        : value;
-
-/**
  * Ensure that tooltip values are correctly sanitised for output into a default tooltip.
  */
 const getSanitisedTooltipValue = (value: any) =>
     isObject(value) && !isDate(value)
-        ? getJsonAsIndentedString(getRedactedTooltipObject(value), 'tooltip')
+        ? getJsonAsIndentedString(getDeepRedactedTooltipItem(value), 'tooltip')
         : toString(value);
 
 /**
- * Get a new custom Vega tooltip handler for Power BI. If the supplied setting is enabled, will return a `resolveTooltipContent` handler for the supplied `tooltipService`.
+ * Get a new custom Vega tooltip handler for Power BI. If the supplied setting is enabled, will return a `resolveTooltipContent` handler
+ * for the supplied `tooltipService`.
  */
 const getTooltipHandler = (
     isSettingEnabled: boolean,
@@ -127,75 +134,53 @@ const getTooltipHandler = (
     undefined;
 
 /**
- * For a supplied `datum` object from a Vega tooltip handler, attempt to identify a valid Power BI selection ID that can be added to the tooltip call for any report pages
- * that Power BI may have for the selector. If there is no explicit identity discoverable in the datum, then it will attempt to create a selection ID from the dataset and
- * data view based on known values.
- *
- * Returns single item array containing valid `ISelectionId` (or `null` if a selection ID cannot be resolved).
- */
-const getTooltipIdentity = (datum: IVegaViewDatum): [ISelectionId] => {
-    const datumId = datum?.__identity__;
-    if (datumId) return [<ISelectionId>datumId];
-    // Try and create a selection ID from fields/values that can be resolved from datum
-    const metadata = getMetadataByKeys(keys(datum)),
-        value = getValueForDatum(metadata, datum),
-        categories = getCategoryColumns(),
-        selectionId =
-            value &&
-            createSelectionId(metadata, categories, value.identityIndex);
-    return selectionId ? [selectionId] : null;
-};
-
-/**
  * Request Power BI hides the tooltip.
  */
-const hideTooltip = (tooltipService: ITooltipService) => {
+const hideTooltip = () => {
     const immediately = true;
-    tooltipService.hide({
+    hostServices.tooltipService.hide({
         immediately,
         isTouchEvent
     });
 };
 
 /**
- * For the supplied Power BI `ITooltipService` service instance from the visual host, apply the `vegaTooltip` object (https://github.com/vega/vega-tooltip/blob/master/docs/APIs.md)
- * supplied by the Vega view and attempt to show or hide a Power BI tooltip based on its contents.
+ * For the supplied Power BI `ITooltipService` service instance from the visual host, apply the `vegaTooltip` object
+ * (https://github.com/vega/vega-tooltip/blob/master/docs/APIs.md) supplied by the Vega view and attempt to show or hide a Power BI tooltip
+ * based on its contents.
  */
 const resolveTooltipContent =
     (tooltipService: ITooltipService) =>
     (handler: any, event: MouseEvent, item: any, value: any) => {
         const coordinates = resolveCoordinates(event);
         if (item) {
-            // console.clear();
-            const datum = { ...item.datum },
+            const datum = resolveDataFromItem(item),
                 tooltip = { ...item.tooltip },
                 autoFormatFields = getFieldsEligibleForAutoFormat(tooltip),
                 dataItems = extractTooltipDataItemsFromObject(
                     tooltip,
                     autoFormatFields
                 ),
-                identities = getTooltipIdentity(datum);
-            // console.log('DATUM', datum);
-            // console.log('TT', tooltip);
-            // console.log('FORMAT', autoFormatFields);
-            // console.log('ITEMS', dataItems);
-            // console.log('IDs', identities);
+                identities = getSelectionIdentitiesFromData(datum),
+                { tooltipDelay } = getState()?.visual?.settings?.vega,
+                waitFor = (event.ctrlKey && tooltipDelay) || 0,
+                options = {
+                    coordinates,
+                    dataItems,
+                    isTouchEvent,
+                    identities
+                };
             switch (event.type) {
                 case 'mouseover':
                 case 'mousemove': {
-                    tooltipService.show({
-                        coordinates,
-                        dataItems,
-                        isTouchEvent,
-                        identities
-                    });
+                    delay(() => tooltipService.show(options), waitFor);
                     break;
                 }
                 default: {
-                    hideTooltip(tooltipService);
+                    hideTooltip();
                 }
             }
         } else {
-            hideTooltip(tooltipService);
+            hideTooltip();
         }
     };

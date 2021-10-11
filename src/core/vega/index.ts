@@ -9,6 +9,7 @@ export {
     getViewConfig,
     getViewDataset,
     getViewSpec,
+    handleNewView,
     registerCustomExpressions,
     resolveLoaderLogic
 };
@@ -19,6 +20,7 @@ import * as vegaSchema from 'vega/build/vega-schema.json';
 import expressionFunction = Vega.expressionFunction;
 import Config = Vega.Config;
 import Spec = Vega.Spec;
+import View = Vega.View;
 import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
 import { TopLevelSpec } from 'vega-lite';
 
@@ -30,9 +32,11 @@ import { getState } from '../../store';
 import { getConfig } from '../utils/config';
 import { getPatchedVegaSpec } from './vegaUtils';
 import { getPatchedVegaLiteSpec } from './vegaLiteUtils';
+import { bindInteractivityEvents } from '../interactivity/selection';
+import { isFeatureEnabled } from '../utils/features';
 
 /**
- * Defines a JSON schema by provider and role, so we can dynamically apply based on
+ * Defines a JSON schema by provider and role, so we can dynamically apply based on provider.
  */
 interface IJSonSchema {
     provider: TSpecProvider;
@@ -155,6 +159,13 @@ const getParsedConfigFromSettings = (): Config => {
 };
 
 /**
+ * Any logic that we need to apply to a new Vega view.
+ */
+const handleNewView = (newView: View) => {
+    bindInteractivityEvents(newView);
+};
+
+/**
  * Apply any custom expressions that we have written (e.g. formatting) to the specification prior to rendering.
  */
 const registerCustomExpressions = () => {
@@ -174,10 +185,38 @@ const registerCustomExpressions = () => {
 };
 
 /**
- * Create a custom Vega loader for the visual. The intention was to ensure that we could use this to disable loading of external
- * content. However, it worked for data but not for images. This is essentially a stub, but it's left here in case we can make it
- * work the correct way in future.
+ * Create a custom Vega loader for the visual. We do a replace on URIs in the spec to prevent, but this doubly-ensures that nothing
+ * can be loaded.
  */
-const resolveLoaderLogic = () => Vega.loader();
+const resolveLoaderLogic = () => {
+    const loader = Vega.loader();
+    if (!isFeatureEnabled('enableExternalUri')) {
+        loader.load = (uri, options) => {
+            const href = (isDataUri(uri) && uri) || '';
+            return Promise.resolve(href);
+        };
+        loader.sanitize = (uri, options) => {
+            const href = (isDataUri(uri) && uri) || blankImageBase64;
+            return Promise.resolve({
+                href
+            });
+        };
+    }
+    return loader;
+};
+
+/**
+ * Test that supplied URI matches the data: protocol and should be whitelisted by the loader.
+ */
+const isDataUri = (uri: string) =>
+    !!uri.match(
+        /^\s*data:([a-z]+\/[a-z]+(;[a-z\-]+\=[a-z\-]+)?)?(;base64)?,[a-z0-9\!\$\&\'\,\(\)\*\+\,\;\=\-\.\_\~\:\@\/\?\%\s]*\s*$/i
+    );
+
+/**
+ * Blank image data URI; used to return placeholder images when remote URIs are supplied
+ */
+const blankImageBase64 =
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
 const propertyDefaults = getConfig().propertyDefaults.vega;

@@ -3,12 +3,15 @@ import { Provider } from 'react-redux';
 
 import MainInterface from './MainInterface';
 import store from '../store';
+import { ZoomLevelProvider } from '../context/zoomLevel';
 
 const App = () => {
     return (
-        <Provider store={store}>
-            <MainInterface />
-        </Provider>
+        <ZoomLevelProvider>
+            <Provider store={store}>
+                <MainInterface />
+            </Provider>
+        </ZoomLevelProvider>
     );
 };
 

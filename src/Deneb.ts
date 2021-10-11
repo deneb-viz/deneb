@@ -1,3 +1,4 @@
+//import 'react-devtools';
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import '../style/visual.less';
@@ -69,7 +70,7 @@ export class Deneb implements IVisual {
             Debugger.log('Loading theming...');
             loadTheme(theme);
             initializeIcons();
-            hostServices.bindHostServices(options.host);
+            hostServices.bindHostServices(options);
             store.dispatch(visualConstructor(options.host));
             store.dispatch(initializeImportExport());
             Debugger.log('Setting container element...');
@@ -118,9 +119,6 @@ export class Deneb implements IVisual {
             // Signal that we've encountered an error
             Debugger.log('Error during update!', e);
             this.events.renderingFailed(options, e);
-        } finally {
-            // Debugger.log('API', this.visualApi);
-            // Debugger.log('Store', store.getState());
         }
     }
 
@@ -215,17 +213,14 @@ export class Deneb implements IVisual {
                 break;
             }
             default: {
-                // Resize
             }
         }
 
         const { selectionManager } = hostServices;
         Debugger.log('Has selections', selectionManager.hasSelection());
         Debugger.log('Existing selections', selectionManager.getSelectionIds());
-
-        if (store.getState().visual.dataProcessingStage === 'Processed') {
+        store.getState().visual.dataProcessingStage === 'Processed' &&
             parseActiveSpec();
-        }
     }
 
     private static parseSettings(dataView: DataView): VisualSettings {
