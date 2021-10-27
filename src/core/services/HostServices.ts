@@ -11,12 +11,15 @@ import ISelectionManager = powerbi.extensibility.ISelectionManager;
 import ISelectionIdBuilder = powerbi.visuals.ISelectionIdBuilder;
 import ITooltipService = powerbi.extensibility.ITooltipService;
 import ISelectionId = powerbi.visuals.ISelectionId;
+import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
+import IVisualEventService = powerbi.extensibility.IVisualEventService;
 
 /**
  * Proxy service for Power BI host services, plus any additional logic we wish to encapsulate.
  */
 export class HostServices {
     element: HTMLElement;
+    events: IVisualEventService;
     fetchMoreData: (aggregateSegments?: boolean) => boolean;
     i18n: ILocalizationManager;
     launchUrl: (url: string) => void;
@@ -25,10 +28,12 @@ export class HostServices {
     selectionIdBuilder: () => ISelectionIdBuilder;
     selectionManager: ISelectionManager;
     tooltipService: ITooltipService;
+    visualUpdateOptions: VisualUpdateOptions;
 
     bindHostServices = (options: VisualConstructorOptions) => {
         const { element, host } = options;
         this.element = element;
+        this.events = options.host.eventService;
         this.fetchMoreData = host.fetchMoreData;
         this.i18n = host.createLocalizationManager();
         this.launchUrl = host.launchUrl;
@@ -37,6 +42,14 @@ export class HostServices {
         this.selectionIdBuilder = host.createSelectionIdBuilder;
         this.selectionManager = getNewSelectionManager(host);
         this.tooltipService = host.tooltipService;
+    };
+
+    renderingFinished = () => {
+        this.events.renderingFinished(this.visualUpdateOptions);
+    };
+
+    renderingFailed = (reason?: string) => {
+        this.events.renderingFailed(this.visualUpdateOptions, reason);
     };
 
     resolveLocaleFromSettings = (settingsLocale: TLocale) => {
