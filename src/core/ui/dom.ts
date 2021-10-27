@@ -30,9 +30,7 @@ export const resolveClearCatcher = () => {
         .append('div')
         .attr('id', 'vegaView')
         .classed(cssClass, true);
-    oldView.each(function () {
-        newView.append(() => this);
-    });
+    oldView.each((d, i, e) => newView.append(() => e[i]));
 };
 
 export const getEditorHeadingIconClassName = (expanded: boolean) =>
