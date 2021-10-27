@@ -16,6 +16,7 @@ import ISelectionId = powerbi.visuals.ISelectionId;
 import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 
 import { View, ScenegraphEvent, Item } from 'vega';
+import { select } from 'd3-selection';
 import forEach from 'lodash/forEach';
 import isEqual from 'lodash/isEqual';
 import keys from 'lodash/keys';
@@ -38,6 +39,7 @@ import { getCategoryColumns } from '../data/dataView';
 import { setSelectionAborted, updateSelectors } from '../../store/visual';
 import { TDataPointSelectionStatus } from '.';
 import { hideTooltip } from './tooltip';
+import { clearCatcherSelector } from '../ui/dom';
 
 /**
  * Bind the interactivity events to the Vega view, based on feature switches and properties.
@@ -52,6 +54,10 @@ const bindInteractivityEvents = (view: View) => {
  */
 const bindContextMenuEvents = (view: View) => {
     view.addEventListener('contextmenu', handleContextMenuEvent);
+    select(clearCatcherSelector(true)).on(
+        'contextmenu',
+        handleContextMenuEvent
+    );
 };
 
 /**
@@ -60,8 +66,10 @@ const bindContextMenuEvents = (view: View) => {
 const bindDataPointEvents = (view: View) => {
     if (isDataPointPropSet()) {
         view.addEventListener('click', handleDataPointEvent);
+        select(clearCatcherSelector(true)).on('click', handleDataPointEvent);
     } else {
         view.removeEventListener('click', handleDataPointEvent);
+        select(clearCatcherSelector(true)).on('click', null);
     }
 };
 
@@ -206,16 +214,18 @@ const handleContextMenuEvent = (event: ScenegraphEvent, item: Item) => {
  */
 const handleDataPointEvent = (event: ScenegraphEvent, item: Item) => {
     const { selectionManager } = hostServices,
+        mouseEvent: MouseEvent = <MouseEvent>window.event,
         data = resolveDataFromItem(item),
         identities = getSelectionIdentitiesFromData(data),
         selection = resolveSelectedIdentities(identities);
+    mouseEvent && mouseEvent.preventDefault();
+    hideTooltip();
     switch (true) {
         case isSelectionLimitExceeded(selection): {
             dispatchSelectionAborted(true);
             return;
         }
         case selection.length > 0: {
-            hideTooltip();
             selectionManager.select(selection);
             store.dispatch(
                 updateSelectors(
