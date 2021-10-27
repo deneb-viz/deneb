@@ -1,7 +1,7 @@
 import powerbi from 'powerbi-visuals-api';
 import EditMode = powerbi.EditMode;
 
-import * as React from 'react';
+import React, { useEffect } from 'react';
 
 import StatusLayoutStack from './StatusLayoutStack';
 import StatusLayoutStackItem from './StatusLayoutStackItem';
@@ -11,6 +11,7 @@ import UsefulResources from './UsefulResources';
 import { BodyHeading, Paragraph } from '../elements/Typography';
 import { getState } from '../../store';
 import { i18nValue } from '../../core/ui/i18n';
+import { hostServices } from '../../core/services';
 
 const SplashReadWrite = () => (
     <>
@@ -27,6 +28,7 @@ const SplashReadWrite = () => (
 
 const resolveInstructions = () => {
     const { editMode } = getState().visual;
+    useEffect(() => hostServices.renderingFinished());
     switch (editMode) {
         case EditMode.Advanced:
             return (

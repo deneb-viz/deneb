@@ -110,15 +110,11 @@ export class Deneb implements IVisual {
 
             // Handle the update options and dispatch to store as needed
             this.resolveUpdateOptions(options);
-
-            // Signal that we've finished rendering
-            Debugger.log('Visual updated successfully!');
-            this.events.renderingFinished(options);
             return;
         } catch (e) {
             // Signal that we've encountered an error
             Debugger.log('Error during update!', e);
-            this.events.renderingFailed(options, e);
+            hostServices.renderingFailed(e.message);
         }
     }
 
@@ -126,6 +122,7 @@ export class Deneb implements IVisual {
     private resolveUpdateOptions(options: VisualUpdateOptions) {
         Debugger.log('Resolving visual update options for API operations...');
         const settings = this.settings;
+        hostServices.visualUpdateOptions = options;
         hostServices.resolveLocaleFromSettings(settings.developer.locale);
 
         // Provide intial update options to store

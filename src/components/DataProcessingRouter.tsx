@@ -33,7 +33,6 @@ const DataProcessingRouter: React.FC = () => {
             return <div>{i18nValue('Fetching_Data_Assistive_Processed')}</div>;
         }
         case 'Processed': {
-            console.log(`Rending DPR. Zoom level=${value}`);
             return (
                 <div
                     id='renderedVisual'

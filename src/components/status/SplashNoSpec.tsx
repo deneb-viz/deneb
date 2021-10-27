@@ -1,7 +1,7 @@
 import powerbi from 'powerbi-visuals-api';
 import EditMode = powerbi.EditMode;
 
-import * as React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
 import { state } from '../../store';
@@ -17,6 +17,7 @@ import {
 } from '../elements/Typography';
 import UsefulResources from './UsefulResources';
 import { i18nValue } from '../../core/ui/i18n';
+import { hostServices } from '../../core/services';
 
 const SplashNospec = () => {
     const root = useSelector(state),
@@ -39,6 +40,7 @@ const SplashNospec = () => {
                 }
             }
         };
+    useEffect(() => hostServices.renderingFinished());
     return (
         <>
             <StatusLayoutStack>
