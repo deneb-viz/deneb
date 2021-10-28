@@ -197,6 +197,10 @@
                 "tooltipResolveNumberFieldFormat": {
                     "description": "If a field in a Vega tooltip's `datum` object is present in the `tooltip` object, attempt to find a corresponding field name in the visual dataset metadata, and get its format string (if not already formatted in the spec).",
                     "type": "boolean"
+                },
+                "useDownloadApi": {
+                    "description": "Use the Power BI download API to offer downloading of template files.",
+                    "type": "boolean"
                 }
             }
         },

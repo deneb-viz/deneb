@@ -8,6 +8,7 @@
         "selectionDataPoint": true,
         "tooltipHandler": true,
         "tooltipResolveNumberFieldFormat": true,
+        "useDownloadApi": false,
         "unitTestCanary": false
     },
     "fluentUiTheme": {
