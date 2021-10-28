@@ -77,12 +77,12 @@ const ZoomControls: React.FC = () => {
             }
         ];
     !hotkeysBound &&
-        getZoomHotKeys().forEach((hk) =>
+        getZoomHotKeys()?.forEach((hk) =>
             useHotkeys(hk.keys, hk.command, hk.options)
         );
     useEffect(() => {
         return () => {
-            setHotkeysBound(true);
+            hotkeysBound && setHotkeysBound(true);
         };
     }, []);
     return (
