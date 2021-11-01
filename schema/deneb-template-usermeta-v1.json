@@ -26,15 +26,18 @@
                     "description": "Any interactivity settings that we want to explicitly set."
                 }
             },
-            "required": ["dataset", "deneb", "information"],
+            "required": [
+                "dataset",
+                "deneb",
+                "information"
+            ],
             "type": "object"
         },
         "IDenebUserMeta": {
             "additionalProperties": false,
             "properties": {
                 "build": {
-                    "description": "Which version the visual was built with. Uses semantic versioning. Can be spoofed but might be handy at some point.",
-                    "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+                    "description": "Which version the visual was built with. Uses semantic versioning internally, but we don't want to enforce this when validating as it's for information only. Can be spoofed but might be handy at some point.",
                     "type": "string"
                 },
                 "metaVersion": {
@@ -48,7 +51,11 @@
                     "description": "Provider details for the template."
                 }
             },
-            "required": ["build", "metaVersion", "provider"],
+            "required": [
+                "build",
+                "metaVersion",
+                "provider"
+            ],
             "type": "object"
         },
         "ITemplateDatasetField": {
@@ -78,7 +85,12 @@
                     "description": "The list of data types that can be used for this placeholder, for any columns or measures in the data model."
                 }
             },
-            "required": ["key", "kind", "name", "type"],
+            "required": [
+                "key",
+                "kind",
+                "name",
+                "type"
+            ],
             "type": "object"
         },
         "ITemplateInformation": {
@@ -124,7 +136,12 @@
                     "type": "string"
                 }
             },
-            "required": ["author", "generated", "name", "uuid"],
+            "required": [
+                "author",
+                "generated",
+                "name",
+                "uuid"
+            ],
             "type": "object"
         },
         "ITemplateInteractivityOptions": {
@@ -159,16 +176,30 @@
             "type": "object"
         },
         "TDatasetFieldKind": {
-            "enum": ["any", "column", "measure"],
+            "enum": [
+                "any",
+                "column",
+                "measure"
+            ],
             "type": "string"
         },
         "TDatasetFieldType": {
-            "enum": ["bool", "dateTime", "numeric", "other", "text"],
+            "enum": [
+                "bool",
+                "dateTime",
+                "numeric",
+                "other",
+                "text"
+            ],
             "type": "string"
         },
         "TProvider": {
-            "enum": ["vega", "vegaLite"],
+            "enum": [
+                "vega",
+                "vegaLite"
+            ],
             "type": "string"
         }
     }
 }
+

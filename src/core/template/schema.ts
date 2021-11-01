@@ -60,8 +60,7 @@ export interface ITemplateInteractivityOptions {
  */
 export interface IDenebUserMeta {
     /**
-     * Which version the visual was built with. Uses semantic versioning. Can be spoofed but might be handy at some point.
-     * @pattern ^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+     * Which version the visual was built with. Uses semantic versioning internally, but we don't want to enforce this when validating as it's for information only. Can be spoofed but might be handy at some point.
      */
     build: string;
     /**
