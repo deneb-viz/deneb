@@ -20,12 +20,14 @@ const ExportDownloadButton: React.FC = () => {
         resolvedName =
             name || i18nValue('Template_Export_Information_Name_Placeholder'),
         handleDownload = () => {
+            /*
             hostServices.download.exportVisualsContent(
                 getExportTemplate(),
                 `${resolvedName}.json`,
                 'json',
                 i18nValue('Template_Export_Json_File_Description')
             );
+            */
         };
 
     return (

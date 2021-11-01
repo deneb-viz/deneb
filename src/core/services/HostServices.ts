@@ -13,13 +13,13 @@ import ITooltipService = powerbi.extensibility.ITooltipService;
 import ISelectionId = powerbi.visuals.ISelectionId;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import IVisualEventService = powerbi.extensibility.IVisualEventService;
-import IDownloadService = powerbi.extensibility.IDownloadService;
+/*import IDownloadService = powerbi.extensibility.IDownloadService;*/
 
 /**
  * Proxy service for Power BI host services, plus any additional logic we wish to encapsulate.
  */
 export class HostServices {
-    download: IDownloadService;
+    /*download: IDownloadService;*/
     element: HTMLElement;
     events: IVisualEventService;
     fetchMoreData: (aggregateSegments?: boolean) => boolean;
@@ -34,7 +34,7 @@ export class HostServices {
 
     bindHostServices = (options: VisualConstructorOptions) => {
         const { element, host } = options;
-        this.download = options.host.downloadService;
+        /*this.download = options.host.downloadService;*/
         this.element = element;
         this.events = options.host.eventService;
         this.fetchMoreData = host.fetchMoreData;
