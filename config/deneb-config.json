@@ -2,12 +2,13 @@
     "$schema": "../schema/deneb-config.json",
     "features": {
         "developerMode": false,
-        "enableExternalUri": true,
+        "enableExternalUri": false,
         "fetchMoreData": true,
         "selectionContextMenu": true,
         "selectionDataPoint": true,
         "tooltipHandler": true,
         "tooltipResolveNumberFieldFormat": true,
+        "useDownloadApi": false,
         "unitTestCanary": false
     },
     "fluentUiTheme": {

@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 
 import { Stack } from '@fluentui/react/lib/Stack';
 import { Text } from '@fluentui/react/lib/Text';
@@ -17,6 +16,7 @@ import {
 import { getExportTemplate } from '../../core/template';
 import { i18nValue } from '../../core/ui/i18n';
 import { iconButtonStyles } from '../../core/ui/icons';
+import ExportDownloadButton from './ExportDownloadButton';
 
 const textStyles: Partial<ITextFieldStyles> = {
     root: {
@@ -76,13 +76,16 @@ const TemplateExportJsonPane: React.FC = () => {
                             </Text>
                         )}
                     </Stack.Item>
+                    <ExportDownloadButton />
                     <Stack.Item>
                         <IconButton
                             componentRef={copyRef}
                             iconProps={copyIcon}
                             styles={iconButtonStyles}
-                            ariaLabel='Copy JSON to clipboard'
-                            ariaDescription='Copy JSON to clipboard'
+                            ariaLabel={i18nValue('Template_Export_Json_Copy')}
+                            ariaDescription={i18nValue(
+                                'Template_Export_Json_Copy'
+                            )}
                             onClick={handleCopy}
                         />
                     </Stack.Item>

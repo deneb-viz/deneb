@@ -172,6 +172,9 @@
     "Template_Export_Kind_any": "COLUMN/MEASURE:",
     "Template_Export_Json_Assistive": "Your generated template is shown below. You can go back and refine details and re-generate, or copy it to your clipboard.",
     "Template_Export_Json_Copied": "Copied to Clipboard!",
+    "Template_Export_Json_Copy": "Copy template JSON to clipboard",
+    "Template_Export_Json_Download": "Download template as JSON file",
+    "Template_Export_Json_File_Description": "Deneb JSON template",
     "Modal_Close": "Close without making changes.",
     "Dialog_Unapplied_Changes_Title": "Unapplied Changes",
     "Dialog_Unapplied_Changes_Subtext": "Would you like to apply them now?",
@@ -179,5 +182,6 @@
     "Dialog_Unapplied_Changes_Discard": "Discard",
     "Selection_KW_Present": "[Available]",
     "Zoom_Level_Tooltip": "Current zoom level in the editor - use the controls to the left to adjust this as necessary",
-    "Selection_Aborted_Message": "You clicked a data point that is trying to cross-filter more than {0} underlying values. This has been blocked for performance reasons."
+    "Selection_Aborted_Message": "You clicked a data point that is trying to cross-filter more than {0} underlying values. This has been blocked for performance reasons.",
+    "_Selection_Aborted_Message.comment": "Number of values attempted to cross-filter by"
 }
