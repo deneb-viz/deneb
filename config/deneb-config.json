@@ -1,7 +1,7 @@
 {
     "$schema": "../schema/deneb-config.json",
     "features": {
-        "developerMode": false,
+        "developerMode": true,
         "enableExternalUri": false,
         "fetchMoreData": true,
         "selectionContextMenu": true,
@@ -52,7 +52,7 @@
             "functionalArea": "other"
         },
         "newTemplate": {
-            "combination": "ctrl|alt|e",
+            "combination": "ctrl|alt|t",
             "functionalArea": "other"
         },
         "newSpecification": {
