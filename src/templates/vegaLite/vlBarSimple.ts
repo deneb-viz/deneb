@@ -33,7 +33,8 @@ export const vlBarSimple: TopLevelSpec = {
                     equal: 'off'
                 },
                 value: 0.3
-            }
+            },
+            value: 1
         }
     },
     usermeta: {
