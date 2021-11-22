@@ -3,10 +3,10 @@ import React from 'react';
 import { mergeStyles } from '@fluentui/react/lib/Styling';
 import { FontIcon } from '@fluentui/react/lib/Icon';
 
-import { toggleEditorPane } from '../../core/ui/commands';
-import { getEditorHeadingIcon } from '../../core/ui/icons';
-import { getEditorHeadingIconClassName } from '../../core/ui/dom';
-import { TEditorPosition } from '../../core/ui';
+import { handleEditorPane } from '../../../core/ui/commands';
+import { getEditorHeadingIcon } from '../../../core/ui/icons';
+import { getEditorHeadingIconClassName } from '../../../core/ui/dom';
+import { TEditorPosition } from '../../../core/ui';
 
 const buttonIconClass = mergeStyles({
     fontSize: 12,
@@ -28,7 +28,7 @@ const EditorToggleIcon: React.FC<IEditorToggleIconProps> = ({
         <div
             role='button'
             className={getEditorHeadingIconClassName(editorPaneIsExpanded)}
-            onClick={toggleEditorPane}
+            onClick={handleEditorPane}
         >
             <FontIcon
                 iconName={getEditorHeadingIcon(position, editorPaneIsExpanded)}

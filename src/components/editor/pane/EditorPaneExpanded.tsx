@@ -13,7 +13,8 @@ import EditorCommandBar from './EditorCommandBar';
 import EditorOperationContent from './EditorOperationContent';
 import FixErrorDetails from './FixErrorDetails';
 
-import { theme } from '../../core/ui/fluent';
+import { theme } from '../../../core/ui/fluent';
+import { calculateEditorPaneMaxWidth } from '../../../core/ui/advancedEditor';
 
 const verticalStackOuterTokens: IStackTokens = { childrenGap: 5 },
     verticalStackInnerTokens: IStackTokens = {
@@ -45,6 +46,7 @@ const EditorPaneExpanded = () => {
             id='editorPane'
             tokens={verticalStackOuterTokens}
             className='expanded'
+            style={{ maxWidth: calculateEditorPaneMaxWidth() }}
         >
             <Stack
                 styles={verticalStackInnerStyles}

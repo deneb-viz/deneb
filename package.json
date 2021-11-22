@@ -23,7 +23,6 @@
         "@babel/runtime": "^7.14.8",
         "@babel/runtime-corejs3": "^7.14.9",
         "@fluentui/react": "^8.14.12",
-        "@reduxjs/toolkit": "^1.5.0",
         "@types/ace": "^0.0.44",
         "@types/d3-format": "^2.0.0",
         "@types/d3-selection": "^3.0.0",
@@ -34,7 +33,6 @@
         "@types/node": "^16.4.12",
         "@types/react": "^17.0.0",
         "@types/react-dom": "^17.0.0",
-        "@types/react-redux": "^7.1.15",
         "ace-builds": "^1.4.12",
         "adm-zip": "^0.5.5",
         "ajv": "^6.12.6",
@@ -61,11 +59,8 @@
         "react-devtools": "^4.18.0",
         "react-dom": "^17.0.1",
         "react-hotkeys-hook": "^3.4.0",
-        "react-redux": "^7.2.2",
         "react-split-pane": "^0.1.92",
         "react-vega": "^7.4.4",
-        "redux": "^4.0.5",
-        "regenerator-runtime": "^0.13.7",
         "ts-jest": "^27.0.7",
         "ts-loader": "^9.2.5",
         "tslint": "^5.20.1",
@@ -74,6 +69,7 @@
         "typescript-json-schema": "^0.50.0",
         "uuid": "^8.3.2",
         "vega": "5.21.0",
-        "vega-lite": "5.1.1"
+        "vega-lite": "5.1.1",
+        "zustand": "^3.6.5"
     }
 }

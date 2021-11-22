@@ -74,7 +74,7 @@
             ],
             "properties": {
                 "debounceInterval": {
-                    "description": "Time (in ms) before debouncing user input to Redux, the longer the interval, the less chatty things are, but the longer the perceived lag for things to happen after the user finishes typing in the editor.",
+                    "description": "Time (in ms) before debouncing user input to store. The longer the interval, the less chatty things are, but the longer the perceived lag for things to happen after the user finishes typing in the editor.",
                     "type": "integer"
                 },
                 "tabSize": {

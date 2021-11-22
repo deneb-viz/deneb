@@ -1,16 +1,12 @@
-import React, { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import React from 'react';
 import SplitPane from 'react-split-pane';
-import { useHotkeys } from 'react-hotkeys-hook';
 
 import Debugger from '../../Debugger';
-import { state } from '../../store';
-import { updateEditorPaneSize, hotkeysRegistered } from '../../store/visual';
-import EditorPane from './EditorPane';
-import EditorPreview from './EditorPreview';
+import store from '../../store';
+import EditorPane from './pane/EditorPane';
+import EditorPreview from './preview//EditorPreview';
 import NewVisualDialog from '../create/NewVisualDialog';
 import ExportVisualDialog from '../export/ExportVisualDialog';
-import { getVisualHotkeys } from '../../core/ui/commands';
 import {
     getResizablePaneMaxSize,
     getResizablePaneMinSize
@@ -19,53 +15,38 @@ import {
 const EditorInterface: React.FC = () => {
     Debugger.log('Rendering Component: [EditorInterface]...');
     const {
-            resizablePaneDefaultWidth,
-            resizablePaneWidth,
             editorPaneIsExpanded,
-            settings,
-            hotkeysBound
-        } = useSelector(state).visual,
-        { editor } = settings,
-        dispatch = useDispatch(),
+            editorPaneDefaultWidth,
+            editorPaneWidth,
+            visualSettings,
+            updateEditorPaneWidth
+        } = store((state) => state),
+        { editor } = visualSettings,
         handleResize = (width: number) => {
             Debugger.log(`Setting pane width to ${width}px...`);
-            dispatch(
-                updateEditorPaneSize({
-                    editorPaneWidth: width,
-                    editorPaneExpandedWidth: width
-                })
-            );
+            updateEditorPaneWidth({
+                editorPaneWidth: width,
+                editorPaneExpandedWidth: width
+            });
         },
         resolveDoubleClick = (event: MouseEvent) => {
             Debugger.log('Resizer double-clicked!');
             event.preventDefault();
             if (editorPaneIsExpanded) {
                 Debugger.log(
-                    `Resetting pane to default - ${resizablePaneDefaultWidth}px...`
+                    `Resetting pane to default - ${editorPaneDefaultWidth}px...`
                 );
-                handleResize(resizablePaneDefaultWidth);
+                handleResize(editorPaneDefaultWidth);
             }
         },
         editorPane = <EditorPane isExpanded={editorPaneIsExpanded} />;
-    if (!hotkeysBound) {
-        Debugger.log('*** HOTKEY STUFF ***');
-        getVisualHotkeys().forEach((hk) => {
-            useHotkeys(hk.keys, hk.command, hk.options);
-        });
-    }
-    useEffect(() => {
-        return () => {
-            Debugger.log('*** HOTKEY CLEANUP ***');
-            dispatch(hotkeysRegistered());
-        };
-    }, []);
     return (
         <div id='visualEditor'>
             <SplitPane
                 split='vertical'
                 minSize={getResizablePaneMinSize()}
                 maxSize={getResizablePaneMaxSize()}
-                size={resizablePaneWidth}
+                size={editorPaneWidth}
                 onChange={handleResize}
                 onResizerDoubleClick={resolveDoubleClick}
                 allowResize={editorPaneIsExpanded}

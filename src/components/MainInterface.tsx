@@ -1,8 +1,7 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 
 import EditorInterface from './editor/EditorInterface';
-import { state } from '../store';
+import store from '../store';
 import DataProcessingRouter from './DataProcessingRouter';
 import SplashInitial from './status/SplashInitial';
 import SplashReadOnly from './status/SplashReadOnly';
@@ -11,7 +10,7 @@ import SplashNoSpec from './status/SplashNoSpec';
 import VisualMessageBar from './status/VisualMessageBar';
 
 const MainInterface = () => {
-    const { visualMode } = useSelector(state).visual,
+    const { visualMode } = store((state) => state),
         mainComponent = () => {
             switch (visualMode) {
                 case 'SplashInitial':

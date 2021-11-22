@@ -1,6 +1,5 @@
 import powerbi from 'powerbi-visuals-api';
-import store from '../../store';
-import { updateSelectors } from '../../store/visual';
+import { getState } from '../../store';
 import { TLocale } from '../ui/i18n';
 import { isFeatureEnabled } from '../utils/features';
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
@@ -21,6 +20,7 @@ import IVisualEventService = powerbi.extensibility.IVisualEventService;
  * Proxy service for Power BI host services, plus any additional logic we wish to encapsulate.
  */
 export class HostServices {
+    allowInteractions: boolean;
     /*  Pending API 4.0.0
         download: IDownloadService;
     */
@@ -33,6 +33,7 @@ export class HostServices {
     persistProperties: (changes: VisualObjectInstancesToPersist) => void;
     selectionIdBuilder: () => ISelectionIdBuilder;
     selectionManager: ISelectionManager;
+    themeColors: string[];
     tooltipService: ITooltipService;
     visualUpdateOptions: VisualUpdateOptions;
 
@@ -41,6 +42,7 @@ export class HostServices {
         /*  Pending API 4.0.0
             this.download = options.host.downloadService;
         */
+        this.allowInteractions = host.hostCapabilities.allowInteractions;
         this.element = element;
         this.events = options.host.eventService;
         this.fetchMoreData = host.fetchMoreData;
@@ -50,6 +52,9 @@ export class HostServices {
         this.persistProperties = host.persistProperties;
         this.selectionIdBuilder = host.createSelectionIdBuilder;
         this.selectionManager = getNewSelectionManager(host);
+        this.themeColors = host.colorPalette['colors']?.map(
+            (c: any) => c.value
+        );
         this.tooltipService = host.tooltipService;
     };
 
@@ -75,7 +80,7 @@ export class HostServices {
 const getNewSelectionManager = (host: IVisualHost) => {
     const selectionManager = host.createSelectionManager();
     selectionManager.registerOnSelectCallback((ids: ISelectionId[]) => {
-        store.dispatch(updateSelectors(ids));
+        getState().updateDatasetSelectors(ids);
     });
     return selectionManager;
 };

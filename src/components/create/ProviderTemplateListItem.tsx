@@ -1,12 +1,10 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 
 import { getRTL } from '@fluentui/react/lib/Utilities';
 import { Icon } from '@fluentui/react/lib/Icon';
 
 import { templatePickerItemListStyles } from '../../config/styles';
-import { state } from '../../store';
-import { updateSelectedTemplate } from '../../store/templates';
+import store from '../../store';
 import { IDenebTemplateMetadata } from '../../core/template/schema';
 import { TopLevelSpec } from 'vega-lite';
 import { Spec } from 'vega';
@@ -20,10 +18,9 @@ const ProviderTemplateListItem: React.FC<IProviderTemplateListItemProps> = ({
     item,
     index
 }) => {
-    const root = useSelector(state),
-        dispatch = useDispatch(),
+    const { updateSelectedTemplate } = store(),
         handleSelect = (item: Spec | TopLevelSpec, index: number) => {
-            dispatch(updateSelectedTemplate(index));
+            updateSelectedTemplate(index);
         },
         iconName = getRTL() ? 'ChevronLeft' : 'ChevronRight',
         handleSelectWithIndex = () => {

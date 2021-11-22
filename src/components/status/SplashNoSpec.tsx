@@ -2,9 +2,8 @@ import powerbi from 'powerbi-visuals-api';
 import EditMode = powerbi.EditMode;
 
 import React, { useEffect } from 'react';
-import { useSelector } from 'react-redux';
 
-import { state } from '../../store';
+import store from '../../store';
 
 import StatusHeaderSection from './StatusHeaderSection';
 import StatusLayoutStack from './StatusLayoutStack';
@@ -20,11 +19,10 @@ import { i18nValue } from '../../core/ui/i18n';
 import { hostServices } from '../../core/services';
 
 const SplashNospec = () => {
-    const root = useSelector(state),
-        { editMode } = root.visual,
+    const { visualEditMode } = store((state) => state),
         resolveDataInstruction = () => {
             switch (true) {
-                case editMode === EditMode.Advanced: {
+                case visualEditMode === EditMode.Advanced: {
                     return (
                         <Paragraph>
                             {i18nValue('New_Visual_Placeholder_Editor')}

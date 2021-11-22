@@ -1,11 +1,10 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 
 import { useId } from '@fluentui/react-hooks';
 import { IconButton } from '@fluentui/react/lib/Button';
 import { IIconProps } from '@fluentui/react/lib/Icon';
 
-import { state } from '../../store';
+import store from '../../store';
 import { closeModalDialog } from '../../core/ui/commands';
 import { TModalDialogType } from '../../core/ui/modal';
 import { i18nValue } from '../../core/ui/i18n';
@@ -21,9 +20,8 @@ interface IModalHeaderProps {
 const cancelIcon: IIconProps = { iconName: 'Cancel' };
 
 export const ModalHeader: React.FC<IModalHeaderProps> = (props) => {
-    const root = useSelector(state),
-        { viewport } = root.visual,
-        modalStyles = modalDialogContentStyles(viewport),
+    const { visualViewportCurrent } = store((state) => state),
+        modalStyles = modalDialogContentStyles(visualViewportCurrent),
         handleClose = () => {
             closeModalDialog(props.type);
         },

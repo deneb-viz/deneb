@@ -1,15 +1,15 @@
 import React from 'react';
 
-import { toggleEditorPane } from '../../core/ui/commands';
-import { i18nValue } from '../../core/ui/i18n';
+import { handleEditorPane } from '../../../core/ui/commands';
+import { i18nValue } from '../../../core/ui/i18n';
 
-import { BodyHeading } from '../elements/Typography';
+import { BodyHeading } from '../../elements/Typography';
 
 const EditorHeadingText: React.FC = () => (
     <>
         <div
             className='editor-heading'
-            onClick={toggleEditorPane}
+            onClick={handleEditorPane}
             role='button'
         >
             <BodyHeading>{i18nValue('Editor_Heading')}</BodyHeading>

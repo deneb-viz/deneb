@@ -2,10 +2,38 @@ import powerbi from 'powerbi-visuals-api';
 import IViewport = powerbi.IViewport;
 import React from 'react';
 import { select } from 'd3-selection';
+import { getConfig } from '../utils/config';
 
 const viewportAdjust = 4;
 
+export const getReportViewport = (viewport: IViewport) => ({
+    height: viewport.height - viewportAdjust,
+    width: viewport.width - viewportAdjust
+});
+
+export const zoomConfig = getConfig().zoomLevel;
+
 const calculateZoomLevelPercent = (zoomLevel: number) => zoomLevel / 100;
+
+export const getDefaultZoomLevel = () => zoomConfig.default;
+
+/**
+ * Manages the increase of zoom level in the visual editor by increasing it by step value.
+ */
+export const getZoomInLevel = (value: number) => {
+    const { step, max } = zoomConfig,
+        level = Math.min(max, Math.floor((value + step) / 10) * 10);
+    return (value < max && level) || level;
+};
+
+/**
+ * Manages the decrease of zoom level in the visual editor by decreasing it by step value.
+ */
+export const getZoomOutLevel = (value: number) => {
+    const { step, min } = zoomConfig,
+        level = Math.max(min, Math.ceil((value - step) / 10) * 10);
+    return (value > min && level) || level;
+};
 
 export const clearCatcherSelector = (prefix = false) =>
     `${(prefix && '#') || ''}clearCatcher`;

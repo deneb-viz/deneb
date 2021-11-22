@@ -4,9 +4,10 @@ import { TextField } from '@fluentui/react/lib/TextField';
 import { Stack } from '@fluentui/react/lib/Stack';
 
 import Debugger from '../../Debugger';
-import { IDataFieldLabelProps } from '../../types';
 import { textFieldStyles } from '../../config/styles';
-import DataFieldLabel from '../elements/DataFieldLabel';
+import DataFieldLabel, {
+    IDataFieldLabelProps
+} from '../elements/DataFieldLabel';
 
 const ExportDataFieldDefinition: React.FC<IDataFieldLabelProps> = (props) => {
     Debugger.log('Rendering component: [ExportDataFieldDefinition]...');

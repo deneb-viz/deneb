@@ -1,15 +1,13 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 import { Checkbox } from '@fluentui/react/lib/Checkbox';
 
-import { state } from '../../store';
+import store from '../../store';
 import { updateBooleanProperty } from '../../core/ui/commands';
 import { isHandlerEnabled } from '../../core/interactivity/tooltip';
 import { i18nValue } from '../../core/ui/i18n';
 
 const TooltipCheckbox = () => {
-    const { settings } = useSelector(state).visual,
-        { vega } = settings,
+    const { vega } = store((state) => state.visualSettings),
         handleTooltips = React.useCallback(
             (ev: React.FormEvent<HTMLElement>, checked: boolean): void => {
                 const value = !!checked;

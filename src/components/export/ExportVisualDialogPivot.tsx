@@ -1,25 +1,21 @@
 import * as React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 import { Pivot, PivotItem } from '@fluentui/react';
 
-import { state } from '../../store';
-import { updateSelectedExportOperation } from '../../store/templates';
+import store from '../../store';
 import { TExportOperation } from '../../core/template';
 import { exportPivotStyles } from '../../config/styles';
 import { i18nValue } from '../../core/ui/i18n';
 import { resolveTemplateExportPivotAria } from '../../core/ui/aria';
 
 const ExportVisualDialogPivot = () => {
-    const { selectedExportOperation } = useSelector(state).templates,
-        dispatch = useDispatch(),
+    const { templateSelectedExportOperation, updateSelectedExportOperation } =
+            store(),
         getTabId = (itemKey: string) => {
             return `export-spec-pivot-${itemKey}`;
         },
         handlePivotClick = (item: PivotItem) => {
-            dispatch(
-                updateSelectedExportOperation(
-                    item.props.itemKey as TExportOperation
-                )
+            updateSelectedExportOperation(
+                item.props.itemKey as TExportOperation
             );
         };
 
@@ -27,7 +23,7 @@ const ExportVisualDialogPivot = () => {
         <div className='export-spec-dialog-pivot'>
             <Pivot
                 aria-label={resolveTemplateExportPivotAria()}
-                selectedKey={selectedExportOperation}
+                selectedKey={templateSelectedExportOperation}
                 getTabId={getTabId}
                 styles={exportPivotStyles}
                 onLinkClick={handlePivotClick}

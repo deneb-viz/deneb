@@ -1,11 +1,10 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 
 import { Stack } from '@fluentui/react/lib/Stack';
 import { IconButton } from '@fluentui/react/lib/Button';
 import { IIconProps } from '@fluentui/react/lib/Icon';
 
-import { state } from '../../store';
+import store from '../../store';
 import { getExportTemplate } from '../../core/template';
 import { i18nValue } from '../../core/ui/i18n';
 import { iconButtonStyles } from '../../core/ui/icons';
@@ -15,8 +14,9 @@ import { isFeatureEnabled } from '../../core/utils/features';
 const downloadIcon: IIconProps = { iconName: 'Download' };
 
 const ExportDownloadButton: React.FC = () => {
-    const { name } =
-            useSelector(state).templates.templateExportMetadata.information,
+    const name = store(
+            (state) => state.templateExportMetadata?.information?.name
+        ),
         resolvedName =
             name || i18nValue('Template_Export_Information_Name_Placeholder'),
         handleDownload = () => {

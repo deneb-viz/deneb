@@ -1,5 +1,4 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 
 import {
     Stack,
@@ -9,16 +8,16 @@ import {
     IStackItemStyles
 } from '@fluentui/react/lib/Stack';
 
-import { state } from '../../store';
-import { theme } from '../../core/ui/fluent';
+import store from '../../../store';
+import { theme } from '../../../core/ui/fluent';
 
-import DataProcessingRouter from '../DataProcessingRouter';
-import SpecificationError from '../status/SpecificationError';
-import PreviewAreaToolbar from './preview/PreviewAreaToolbar';
+import DataProcessingRouter from '../../DataProcessingRouter';
+import SpecificationError from '../../status/SpecificationError';
+import PreviewAreaToolbar from './PreviewAreaToolbar';
 import {
     getPreviewAreaHeight,
     previewAreaPadding
-} from '../../core/ui/advancedEditor';
+} from '../../../core/ui/advancedEditor';
 
 const verticalStackTokens: IStackTokens = {
         childrenGap: 0
@@ -31,8 +30,7 @@ const verticalStackTokens: IStackTokens = {
     };
 
 const EditorPreview: React.FC = () => {
-    const { visual } = useSelector(state),
-        { editorPreviewAreaWidth, spec } = visual,
+    const { editorPreviewAreaWidth, editorSpec } = store((state) => state),
         editorPreviewStyles: IStackItemStyles = {
             root: {
                 display: 'flex',
@@ -43,7 +41,7 @@ const EditorPreview: React.FC = () => {
             }
         },
         resolveContent = () => {
-            switch (spec.status) {
+            switch (editorSpec.status) {
                 case 'error':
                     return <SpecificationError />;
                 default:

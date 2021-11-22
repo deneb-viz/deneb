@@ -1,10 +1,9 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 
 import { useId } from '@fluentui/react-hooks';
 import { Modal } from '@fluentui/react/lib/Modal';
 
-import { state } from '../../store';
+import store from '../../store';
 import ModalHeader from '../modal/ModalHeader';
 import { closeModalDialog } from '../../core/ui/commands';
 import { TModalDialogType } from '../../core/ui/modal';
@@ -16,9 +15,8 @@ interface IModalDialogProps {
 }
 
 const ModalDialog: React.FC<IModalDialogProps> = (props) => {
-    const root = useSelector(state),
-        { viewport } = root.visual,
-        modalStyles = modalDialogContentStyles(viewport),
+    const { visualViewportCurrent } = store((state) => state),
+        modalStyles = modalDialogContentStyles(visualViewportCurrent),
         handleClose = () => {
             closeModalDialog(props.type);
         };

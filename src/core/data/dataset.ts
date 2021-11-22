@@ -43,9 +43,9 @@ const allDataHaveIdentitites = (data: IVegaViewDatum[]) =>
     data?.length;
 
 /**
- * Get current processed dataset (metadata and values) from Deneb's Redux store.
+ * Get current processed dataset (metadata and values) from Deneb's store.
  */
-const getDataset = () => getState().visual?.dataset;
+const getDataset = (): IVisualDataset => getState().dataset;
 
 /**
  * Ensures an empty dataset is made available.
@@ -62,17 +62,17 @@ const getIdentityIndices = (data: IVegaViewDatum[]): number[] =>
     data?.map((d) => d?.identityIndex);
 
 /**
- * Get all metadata for current processed dataset from Deneb's Redux store.
+ * Get all metadata for current processed dataset from Deneb's store.
  */
 const getMetadata = () => getDataset().metadata;
 
 /**
- * Get a reduced set of metadata based on an array of key names from Deneb's Redux store.
+ * Get a reduced set of metadata based on an array of key names from Deneb's store.
  */
 const getMetadataByKeys = (keys: string[] = []) => pick(getMetadata(), keys);
 
 /**
- * Get all values (excluding metadata) for current processed dataset from Deneb's Redux store.
+ * Get all values (excluding metadata) for current processed dataset from Deneb's store.
  */
 const getValues = () => getDataset().values;
 

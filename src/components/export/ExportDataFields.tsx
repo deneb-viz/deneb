@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 
 import {
     DetailsList,
@@ -10,7 +9,7 @@ import {
 } from '@fluentui/react/lib/DetailsList';
 
 import Debugger from '../../Debugger';
-import { state } from '../../store';
+import store from '../../store';
 import { ITemplateDatasetField } from '../../core/template/schema';
 
 import DataTypeIcon from '../elements/DataTypeIcon';
@@ -21,11 +20,9 @@ import { i18nValue } from '../../core/ui/i18n';
 
 const ExportDataFields: React.FC = () => {
     Debugger.log('Rendering Component: [ExportDataFields]...');
-    const root = useSelector(state),
-        { visual, templates } = root,
-        { dataset } = visual,
+    const { dataset, templateExportMetadata } = store((state) => state),
         { metadata } = dataset,
-        { templateExportMetadata: templateToGenerate } = templates,
+        key = templateExportMetadata?.dataset?.length || 0,
         columns: IColumn[] = [
             {
                 key: 'type',
@@ -48,7 +45,9 @@ const ExportDataFields: React.FC = () => {
             }
         ],
         lookupMetadataColumn = (key: string) =>
-            Object.entries(metadata).find(([k, v]) => v.queryName === key)?.[1],
+            Object.entries(metadata)?.find(
+                ([k, v]) => v.queryName === key
+            )?.[1],
         renderHeader = (headerProps: IDetailsHeaderProps, defaultRender) => {
             return defaultRender({
                 ...headerProps,
@@ -74,14 +73,14 @@ const ExportDataFields: React.FC = () => {
                         <CappedTextField
                             id={`dataset[${index}].name`}
                             i18nLabel={`${item.name}`}
-                            i18nPlaceholder={`${item.namePlaceholder}`}
+                            i18nPlaceholder={`${item?.namePlaceholder}`}
                             maxLength={
-                                exportFieldConstraints.dataset.name.maxLength
+                                exportFieldConstraints?.dataset?.name?.maxLength
                             }
                             inline
                             description={`${i18nValue(
-                                `Template_Export_Kind_${item.kind}`
-                            )} ${item.namePlaceholder}`}
+                                `Template_Export_Kind_${item?.kind || 'None'}`
+                            )} ${item?.namePlaceholder}`}
                         />
                     );
                 case 'description':
@@ -91,8 +90,8 @@ const ExportDataFields: React.FC = () => {
                             i18nLabel='Field Description'
                             i18nPlaceholder='Template_Description_Optional_Placeholder'
                             maxLength={
-                                exportFieldConstraints.dataset.description
-                                    .maxLength
+                                exportFieldConstraints?.dataset?.description
+                                    ?.maxLength
                             }
                             multiline
                             inline
@@ -102,12 +101,11 @@ const ExportDataFields: React.FC = () => {
                     return <span>{displayName}</span>;
             }
         };
-
     return (
         <DetailsList
-            key={templateToGenerate.dataset.length}
+            key={key}
             columns={columns}
-            items={templateToGenerate.dataset}
+            items={templateExportMetadata?.dataset}
             layoutMode={DetailsListLayoutMode.fixedColumns}
             selectionMode={SelectionMode.none}
             onRenderItemColumn={renderItem}

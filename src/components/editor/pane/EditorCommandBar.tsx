@@ -6,9 +6,9 @@ import {
     getCommandBarItems,
     getCommandBarFarItems,
     commandBarStyles
-} from '../../core/ui/commandBar';
+} from '../../../core/ui/commandBar';
 
-import { i18nValue } from '../../core/ui/i18n';
+import { i18nValue } from '../../../core/ui/i18n';
 
 const EditorCommandBar: React.FC = () => (
     <div style={{ width: '100%' }}>

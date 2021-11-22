@@ -1,24 +1,35 @@
-import { configureStore, combineReducers } from '@reduxjs/toolkit';
+import create, { GetState, SetState, StateCreator } from 'zustand';
+import { devtools } from 'zustand/middleware';
+import { IDatasetSlice, createDatasetSlice } from './dataset';
+import { IEditorSlice, createEditorSlice } from './editor';
+import { ITemplateSlice, createTemplateSlice } from './template';
+import { IVisualSlice, createVisualSlice } from './visual';
+import { isFeatureEnabled } from '../core/utils/features';
 
-import { visual } from './visual';
-import { templates } from './templates';
+export type TStoreState = IDatasetSlice &
+    IEditorSlice &
+    ITemplateSlice &
+    IVisualSlice;
 
-const getNewStore = () => {
-    const reducer = combineReducers({
-        visual,
-        templates
-    });
-    return configureStore({
-        reducer
-    });
-};
+const combinedSlices: StateCreator<
+    TStoreState,
+    SetState<TStoreState>,
+    GetState<TStoreState>,
+    any
+> = (set, get) => ({
+    ...createDatasetSlice(set, get),
+    ...createEditorSlice(set, get),
+    ...createTemplateSlice(set, get),
+    ...createVisualSlice(set, get)
+});
+const store = create<TStoreState>(
+    isFeatureEnabled('developerMode')
+        ? devtools(combinedSlices)
+        : combinedSlices
+);
 
-const store = getNewStore();
-
-const state = (state: RootState) => state;
+export default store;
 
 const getState = () => store.getState();
 
-export type RootState = ReturnType<typeof store.getState>;
-export { state, store, getState };
-export default store;
+export { getState };

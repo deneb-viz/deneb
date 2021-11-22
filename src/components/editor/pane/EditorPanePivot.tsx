@@ -1,15 +1,14 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 import { Pivot, PivotItem } from '@fluentui/react/lib/Pivot';
 
-import { state } from '../../store';
-import { openEditorPivotItem } from '../../core/ui/commands';
-import { TEditorRole } from '../../core/services/JsonEditorServices';
-import { i18nValue } from '../../core/ui/i18n';
-import { resolveEditorPanePivotAria } from '../../core/ui/aria';
+import store from '../../../store';
+import { openEditorPivotItem } from '../../../core/ui/commands';
+import { TEditorRole } from '../../../core/services/JsonEditorServices';
+import { i18nValue } from '../../../core/ui/i18n';
+import { resolveEditorPanePivotAria } from '../../../core/ui/aria';
 
 const EditorPanePivot = () => {
-    const { selectedOperation } = useSelector(state).visual,
+    const { editorSelectedOperation } = store((state) => state),
         getTabId = (itemKey: string) => {
             return `editor-pivot-${itemKey}`;
         },
@@ -21,7 +20,7 @@ const EditorPanePivot = () => {
         <div className='editor-pane-pivot'>
             <Pivot
                 aria-label={resolveEditorPanePivotAria()}
-                selectedKey={selectedOperation}
+                selectedKey={editorSelectedOperation}
                 // eslint-disable-next-line react/jsx-no-bind
                 onLinkClick={handlePivotClick}
                 headersOnly={true}

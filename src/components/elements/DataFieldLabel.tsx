@@ -7,7 +7,7 @@ import DataTypeIcon from './DataTypeIcon';
 import FieldInfoIcon from './FieldInfoIcon';
 import { ITemplateDatasetField } from '../../core/template/schema';
 
-interface IDataFieldLabelProps {
+export interface IDataFieldLabelProps {
     datasetField: ITemplateDatasetField;
 }
 

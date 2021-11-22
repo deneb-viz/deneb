@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 
 import debounce from 'lodash/debounce';
 import get from 'lodash/get';
@@ -8,8 +7,7 @@ import { ITextFieldProps, TextField } from '@fluentui/react/lib/TextField';
 import { IStackTokens, Stack } from '@fluentui/react/lib/Stack';
 
 import Debugger from '../../Debugger';
-import { state } from '../../store';
-import { updateExportTemplatePropertyBySelector } from '../../store/templates';
+import store from '../../store';
 import { getConfig } from '../../core/utils/config';
 import FieldInfoIcon from './FieldInfoIcon';
 import { IRenderFunction } from '@fluentui/react/lib/Utilities';
@@ -32,20 +30,17 @@ interface ICappedTextFieldProps {
 
 const CappedTextField: React.FC<ICappedTextFieldProps> = (props) => {
     Debugger.log('Rendering Component: [CappedTextField]...');
-    const root = useSelector(state),
-        dispatch = useDispatch(),
-        { templateExportMetadata: templateToGenerate } = root.templates,
+    const { templateExportMetadata, updateTemplateExportPropertyBySelector } =
+            store(),
         [textFieldValue, setTextFieldValue] = React.useState(
-            get(templateToGenerate, props.id, '')
+            get(templateExportMetadata, props.id, '')
         ),
         delayedInput = React.useCallback(
             debounce((value: string) => {
-                dispatch(
-                    updateExportTemplatePropertyBySelector({
-                        selector: props.id,
-                        value
-                    })
-                );
+                updateTemplateExportPropertyBySelector({
+                    selector: props.id,
+                    value
+                });
             }, getConfig().propertyDefaults.editor.debounceInterval),
             []
         ),

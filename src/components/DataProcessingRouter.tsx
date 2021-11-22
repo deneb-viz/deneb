@@ -1,28 +1,27 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 
-import { state } from '../store';
+import store from '../store';
 import DataFetching from './status/DataFetching';
 import VisualRender from './VisualRender';
 import ApplyDialog from './modal/ApplyDialog';
 import SplashInitial from './status/SplashInitial';
 import { i18nValue } from '../core/ui/i18n';
-import { getViewModeViewportStyles } from '../core/ui/dom';
+import { getViewModeViewportStyles, zoomConfig } from '../core/ui/dom';
 import { clearSelection } from '../core/interactivity/selection';
 import { hideTooltip } from '../core/interactivity/tooltip';
-import { useZoomLevel, zoomConfig } from '../context/zoomLevel';
 
 const DataProcessingRouter: React.FC = () => {
-    const { dataProcessingStage, viewModeViewport, visualMode, settings } =
-            useSelector(state).visual,
-        { showViewportMarker } = settings?.editor,
+    const { datasetProcessingStage, visualViewportReport, visualMode } = store(
+            (state) => state
+        ),
         handleMouseLeave = () => {
             hideTooltip();
         },
         isEditor = visualMode === 'Editor',
-        { level: value } = useZoomLevel(),
-        zoomLevel = (isEditor && value) || zoomConfig.default;
-    switch (dataProcessingStage) {
+        { editorZoomLevel, visualSettings } = store((state) => state),
+        { showViewportMarker } = visualSettings?.editor,
+        zoomLevel = (isEditor && editorZoomLevel) || zoomConfig.default;
+    switch (datasetProcessingStage) {
         case 'Initial': {
             return <SplashInitial />;
         }
@@ -37,7 +36,7 @@ const DataProcessingRouter: React.FC = () => {
                 <div
                     id='renderedVisual'
                     style={getViewModeViewportStyles(
-                        viewModeViewport,
+                        visualViewportReport,
                         isEditor,
                         zoomLevel,
                         isEditor && showViewportMarker

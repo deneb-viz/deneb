@@ -1,10 +1,8 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
-
 import { Text } from '@fluentui/react/lib/Text';
 
 import Debugger from '../../Debugger';
-import { state } from '../../store';
+import store from '../../store';
 import ImportTemplateStatus from './ImportTemplateStatus';
 import SpecDataPlaceHolderDropdown from './SpecDataPlaceHolderDropdown';
 import { IDenebTemplateMetadata } from '../../core/template/schema';
@@ -12,9 +10,7 @@ import { i18nValue } from '../../core/ui/i18n';
 
 const ImportTemplateHandler: React.FC = () => {
     Debugger.log('Rendering Component: [ImportTemplateHandler]...');
-    const root = useSelector(state),
-        { templates } = root,
-        { templateProvider, templateImportState, templateToApply } = templates,
+    const { templateProvider, templateImportState, templateToApply } = store(),
         denebTemplate = templateToApply?.usermeta as IDenebTemplateMetadata,
         enumeratePlaceholders = () => {
             Debugger.log('Enumerating template placeholders...');

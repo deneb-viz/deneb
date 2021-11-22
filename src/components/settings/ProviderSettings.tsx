@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 import { Text } from '@fluentui/react/lib/Text';
 import {
     ChoiceGroup,
@@ -8,13 +7,12 @@ import {
 
 import { updateProvider } from '../../core/ui/commands';
 import { choiceGroupStyles, choiceItemStyles } from '../../config/styles';
-import { state } from '../../store';
+import store from '../../store';
 import { i18nValue } from '../../core/ui/i18n';
 import { TSpecProvider } from '../../core/vega';
 
 const ProviderSettings = () => {
-    const { settings } = useSelector(state).visual,
-        { vega } = settings,
+    const { vega } = store((state) => state.visualSettings),
         handleProvider = React.useCallback(
             (
                 ev: React.SyntheticEvent<HTMLElement>,

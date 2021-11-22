@@ -1,17 +1,14 @@
 import * as React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 
-import Debugger from '../../Debugger';
-import { state } from '../../store';
-import { fourd3d3d } from '../../store/visual';
+import Debugger from '../../../Debugger';
+import store from '../../../store';
 
 const FourD3D3D3: React.FC = () => {
     Debugger.log('Rendering Component: [FixErrorDetails]...');
-    const { viewModeViewport } = useSelector(state).visual,
-        { width, height } = viewModeViewport,
-        dispatch = useDispatch(),
+    const { visualViewportReport, setVisual4d3d3d } = store((state) => state),
+        { width, height } = visualViewportReport,
         handleDismiss = () => {
-            dispatch(fourd3d3d(false));
+            setVisual4d3d3d(false);
         };
 
     return (

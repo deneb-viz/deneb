@@ -6,7 +6,7 @@ import { mergeStyleSets } from '@fluentui/react';
 import { getState } from '../../store';
 import { commandBarButtonStyles } from './commandBar';
 import { TDatasetFieldType } from '../template/schema';
-import { zoomConfig } from '../../context/zoomLevel';
+import { zoomConfig } from './dom';
 
 const previewCommandBarHeight = 26;
 
@@ -83,4 +83,4 @@ export const isZoomResetIconDisabled = (value: number) =>
     value === zoomConfig.default || isZoomControlDisabled();
 
 export const isZoomControlDisabled = () =>
-    getState()?.visual?.spec?.status !== 'valid';
+    getState().editorSpec?.status !== 'valid';

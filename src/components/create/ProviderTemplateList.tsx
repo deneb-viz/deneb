@@ -1,5 +1,4 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 
 import { FocusZone, FocusZoneDirection } from '@fluentui/react/lib/FocusZone';
 import { List } from '@fluentui/react/lib/List';
@@ -7,16 +6,15 @@ import { List } from '@fluentui/react/lib/List';
 import ProviderTemplateListItem from './ProviderTemplateListItem';
 
 import Debugger from '../../Debugger';
-import { state } from '../../store';
+import store from '../../store';
 import { TopLevelSpec } from 'vega-lite';
 import { Spec } from 'vega';
+import { resolveTemplatesForProvider } from '../../core/template';
 
 const ProviderTemplateList: React.FC = () => {
     Debugger.log('Rendering Component: [PreDefinedProviderTemplateList]...');
-    const root = useSelector(state),
-        { templates } = root,
-        { templateProvider } = templates,
-        localTemplates = templates[templateProvider],
+    const { templateProvider } = store(),
+        localTemplates = resolveTemplatesForProvider(),
         onRenderCell = (
             item: Spec | TopLevelSpec,
             index: number | undefined,

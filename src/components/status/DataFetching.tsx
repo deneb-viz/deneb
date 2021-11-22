@@ -1,27 +1,23 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 
-import { state } from '../../store';
+import store from '../../store';
 
 import Progress from './Progress';
 import { BodyHeading, Heading } from '../elements/Typography';
 import StatusHeaderSection from './StatusHeaderSection';
 import StatusLayoutStack from './StatusLayoutStack';
 import StatusLayoutStackItem from './StatusLayoutStackItem';
-import { getState } from '../../store';
 import { i18nValue } from '../../core/ui/i18n';
 
 const DataFetching = () => {
-    const root = useSelector(state),
-        { dataRowsLoaded } = root.visual;
-
+    const { datasetRowsLoaded } = store((state) => state);
     return (
         <>
             <StatusLayoutStack>
                 <StatusHeaderSection icon='cog'>
                     <Heading>{i18nValue('Fetching_Data')}</Heading>
                     <Progress
-                        description={`${dataRowsLoaded} ${i18nValue(
+                        description={`${datasetRowsLoaded} ${i18nValue(
                             'Fetching_Data_Progress_Suffix'
                         )}`}
                     />
@@ -35,7 +31,7 @@ const DataFetching = () => {
 };
 
 const customVisualNotes = () => {
-    const { dataLimit } = getState().visual.settings;
+    const { dataLimit } = store((state) => state.visualSettings);
     return (
         (dataLimit.enabled &&
             dataLimit.override &&

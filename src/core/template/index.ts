@@ -9,6 +9,7 @@ export {
     getPlaceholderResolutionStatus,
     getReplacedTemplate,
     onTemplateFileSelect,
+    resolveTemplatesForProvider,
     resolveValueDescriptor,
     resolveVisualMetaToDatasetField,
     updateExportState,
@@ -34,18 +35,12 @@ import {
 } from './schema';
 import { getJsonAsIndentedString } from '../utils/json';
 import { getConfig, getVisualMetadata } from '../utils/config';
-import store, { getState } from '../../store';
-import {
-    templateExportError,
-    templateImportError,
-    templateImportSuccess,
-    updateTemplateExportState,
-    updateTemplateImportState
-} from '../../store/templates';
-import { ITemplateImportPayload } from '../../store/templates/state';
+import { getState } from '../../store';
+
 import * as schema_v1 from '../../../schema/deneb-template-usermeta-v1.json';
 import { i18nValue } from '../ui/i18n';
 import { determineProviderFromSpec, TSpecProvider } from '../vega';
+import { ITemplateImportPayload } from '../../store/template';
 
 /**
  * Used to indicate which part of the export dialog has focus.
@@ -108,9 +103,8 @@ const getExportFieldTokenPatterns = (name: string) => {
  * Combines spec, config and specified metadata to produce a valid JSON template for export.
  */
 const getExportTemplate = () => {
-    const { visual } = getState(),
-        { settings, spec } = visual,
-        { vega } = settings,
+    const { editorSpec, visualSettings } = getState(),
+        { vega } = visualSettings,
         { providerResources } = getConfig(),
         vSchema = (
             (vega.provider === 'vega' && providerResources.vega) ||
@@ -122,8 +116,8 @@ const getExportTemplate = () => {
             config: {}
         };
     let usermeta = resolveExportUserMeta(),
-        baseSpec = JSON.stringify(spec.spec);
-    usermeta.dataset.forEach((ph) => {
+        baseSpec = JSON.stringify(editorSpec.spec);
+    usermeta?.dataset?.forEach((ph) => {
         baseSpec = replaceExportTemplatePlaceholders(
             baseSpec,
             ph.namePlaceholder,
@@ -277,11 +271,10 @@ const replaceExportTemplatePlaceholders = (
  * export templates make sense (as much as possible).
  */
 const resolveExportUserMeta = (): IDenebTemplateMetadata => {
-    const { visual, templates } = getState(),
-        visualMetadata = getVisualMetadata(),
+    const visualMetadata = getVisualMetadata(),
         { metadataVersion } = getConfig().templates,
-        { templateExportMetadata } = templates,
-        { vega } = visual.settings;
+        { templateExportMetadata } = getState(),
+        { vega } = getState().visualSettings;
     return {
         deneb: {
             build: visualMetadata.version,
@@ -296,18 +289,18 @@ const resolveExportUserMeta = (): IDenebTemplateMetadata => {
         },
         information: {
             name:
-                templateExportMetadata.information?.name ||
+                templateExportMetadata?.information?.name ||
                 i18nValue('Template_Export_Information_Name_Empty'),
             description:
-                templateExportMetadata.information?.description ||
+                templateExportMetadata?.information?.description ||
                 i18nValue('Template_Export_Information_Description_Empty'),
             author:
-                templateExportMetadata.information?.author ||
+                templateExportMetadata?.information?.author ||
                 i18nValue('Template_Export_Author_Name_Empty'),
-            uuid: templateExportMetadata.information?.uuid || uuidv4(),
+            uuid: templateExportMetadata?.information?.uuid || uuidv4(),
             generated: new Date().toISOString()
         },
-        dataset: templateExportMetadata.dataset.map((d, di) => {
+        dataset: templateExportMetadata?.dataset.map((d, di) => {
             return {
                 key: `__${di}__`,
                 name: d.name || d.namePlaceholder,
@@ -318,6 +311,11 @@ const resolveExportUserMeta = (): IDenebTemplateMetadata => {
             };
         })
     };
+};
+
+const resolveTemplatesForProvider = () => {
+    const { templateProvider, vega, vegaLite } = getState();
+    return (templateProvider === 'vegaLite' && vegaLite) || vega;
 };
 
 /**
@@ -374,52 +372,50 @@ const resolveVisualMetaToDatasetField = (
 };
 
 /**
- * Persist the supplied export error information to the Redux store.
+ * Persist the supplied export error information to the store.
  */
 const updateExportError = (i18nKey: string) => {
-    store.dispatch(templateExportError(i18nValue(i18nKey)));
+    getState().updateTemplateExportError(i18nValue(i18nKey));
 };
 
 /**
- * Persist the supplied `TTemplateExportState` to Deneb's Redux store.
+ * Persist the supplied `TTemplateExportState` to Deneb's store.
  */
 const updateExportState = (state: TTemplateExportState) => {
-    store.dispatch(updateTemplateExportState(state));
+    getState().updateTemplateExportState(state);
 };
 
 /**
- * Persist the supplied import error information to the Redux store.
+ * Persist the supplied import error information to the store.
  */
 const updateImportError = (i18nKey: string, errors: ErrorObject[] = []) => {
-    store.dispatch(
-        templateImportError({
-            templateImportErrorMessage: i18nValue(i18nKey),
-            templateSchemaErrors: errors
-        })
-    );
+    getState().updateTemplateImportError({
+        templateImportErrorMessage: i18nValue(i18nKey),
+        templateSchemaErrors: errors
+    });
 };
 
 /**
- * Persist the supplied `TTemplateImportState` to Deneb's Redux store.
+ * Persist the supplied `TTemplateImportState` to Deneb's store.
  */
 const updateImportState = (state: TTemplateImportState) => {
-    store.dispatch(updateTemplateImportState(state));
+    getState().updateTemplateImportState(state);
 };
 
 /**
- * Persist the resolved template payload to the Redux store.
+ * Persist the resolved template payload to the store.
  */
 const updateImportSuccess = (payload: ITemplateImportPayload) => {
-    store.dispatch(templateImportSuccess(payload));
+    getState().updateTemplateImportSuccess(payload);
 };
 
 /**
  * Checks to see if current spec is valid and updates store state for UI accordingly.
  */
 const validateSpecificationForExport = () => {
-    const { spec } = getState().visual;
+    const { editorSpec } = getState();
     updateExportState('Validating');
-    if (spec.status === 'valid') {
+    if (editorSpec.status === 'valid') {
         updateExportState('Editing');
     } else {
         updateExportError('Template_Export_Bad_Spec');

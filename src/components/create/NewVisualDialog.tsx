@@ -1,15 +1,13 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 
-import { state } from '../../store';
+import store from '../../store';
 import NewVisualDialogBody from './NewVisualDialogBody';
 import ModalDialog from '../modal/ModalDialog';
 
 export const NewVisualDialog = () => {
-    const root = useSelector(state),
-        { isNewDialogVisible } = root.visual;
+    const { editorIsNewDialogVisible } = store((state) => state);
     return (
-        <ModalDialog type='new' visible={isNewDialogVisible}>
+        <ModalDialog type='new' visible={editorIsNewDialogVisible}>
             <NewVisualDialogBody />
         </ModalDialog>
     );

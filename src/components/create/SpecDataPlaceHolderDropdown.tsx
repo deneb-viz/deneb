@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 
 import {
     Dropdown,
@@ -13,8 +12,7 @@ import {
     templatePickerDropdownStyles,
     templateTypeIconOptionStyles
 } from '../../config/styles';
-import { state } from '../../store';
-import { patchTemplatePlaceholder } from '../../store/templates';
+import store from '../../store';
 import DataFieldLabel from '../elements/DataFieldLabel';
 import { resolveValueDescriptor } from '../../core/template';
 import { ITemplateDatasetField } from '../../core/template/schema';
@@ -30,21 +28,18 @@ const SpecDataPlaceHolderDropdown: React.FC<ISpecDataPlaceHolderDropdownProps> =
         Debugger.log('Rendering component: [SpecDataPlaceHolderDropdown]...');
         const [selectedItem, setSelectedItem] =
                 React.useState<IDropdownOption>(),
-            root = useSelector(state),
-            { metadata } = root.visual.dataset,
-            dispatch = useDispatch(),
+            { dataset, updateTemplatePlaceholder } = store((state) => state),
+            { metadata } = dataset,
             { datasetField } = props,
             onChange = (
                 event: React.FormEvent<HTMLDivElement>,
                 item: IDropdownOption
             ): void => {
                 setSelectedItem(item);
-                dispatch(
-                    patchTemplatePlaceholder({
-                        key: item.data.placeholder.key,
-                        objectName: item.text
-                    })
-                );
+                updateTemplatePlaceholder({
+                    key: item.data.placeholder.key,
+                    objectName: item.text
+                });
             },
             options = (): IDropdownOption[] => {
                 return Object.entries(metadata).map(([k, v]) => {

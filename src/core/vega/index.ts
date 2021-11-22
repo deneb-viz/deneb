@@ -35,6 +35,7 @@ import { getPatchedVegaLiteSpec } from './vegaLiteUtils';
 import { bindInteractivityEvents } from '../interactivity/selection';
 import { isFeatureEnabled } from '../utils/features';
 import { resolveClearCatcher } from '../ui/dom';
+import { getDataset } from '../data/dataset';
 
 /**
  * Defines a JSON schema by provider and role, so we can dynamically apply based on provider.
@@ -108,25 +109,21 @@ const getEditorSchema = (provider: TSpecProvider, role: TEditorRole) =>
 /**
  * Create the `data` object for the Vega view specification. Ensures that the dataset applied to the visual is a cloned, mutable copy of the store version.
  */
-const getViewDataset = () => {
-    const { dataset } = getState().visual;
-    return {
-        dataset: cloneDeep(dataset.values)
-    };
-};
+const getViewDataset = () => ({
+    dataset: cloneDeep(getDataset().values)
+});
 
 /**
  * Form the config that is applied to the Vega view. This will retrieve the config from our visual properties, and enrich it with anything we want
  * to abstract out from the end-user to make things as "at home" in Power BI as possible, without explicitly adding it to the editor or exported template.
  */
 const getViewConfig = () => {
-    const { themeColors } = getState().visual;
     return {
         ...{
             background: null, // so we can defer to the Power BI background, if applied
             customFormatTypes: true,
             range: {
-                category: themeColors
+                category: hostServices.themeColors
             }
         },
         ...getParsedConfigFromSettings()
@@ -138,9 +135,9 @@ const getViewConfig = () => {
  * to abstract out from the end-user to make things as "at home" in Power BI as possible, without explicitly adding it to the editor or exported template.
  */
 const getViewSpec = () => {
-    const { spec, settings } = getState().visual,
-        { provider } = settings.vega,
-        vSpec = cloneDeep(spec?.spec) || {};
+    const { editorSpec, visualSettings } = getState(),
+        { provider } = visualSettings.vega,
+        vSpec = cloneDeep(editorSpec?.spec) || {};
     switch (<TSpecProvider>provider) {
         case 'vega':
             return getPatchedVegaSpec(vSpec);
@@ -155,7 +152,7 @@ const getViewSpec = () => {
  * Gets the `config` from our visual objects and parses it to JSON.
  */
 const getParsedConfigFromSettings = (): Config => {
-    const { vega } = getState().visual.settings;
+    const { vega } = getState().visualSettings;
     return cleanParse(vega.jsonConfig, propertyDefaults.jsonConfig);
 };
 

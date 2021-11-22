@@ -7,8 +7,6 @@ export {
     validateDataViewMapping,
     validateDataViewRoles,
     IAugmentedMetadataField,
-    IDataProcessingPayload,
-    IDataViewFlags,
     TDataProcessingStage
 };
 
@@ -26,17 +24,10 @@ import ISelectionId = powerbi.visuals.ISelectionId;
 import range from 'lodash/range';
 import reduce from 'lodash/reduce';
 
-import {
-    dataLoadingComplete,
-    recordDataWindowLoad,
-    resetLoadingCounters,
-    updateDataProcessingStage
-} from '../../store/visual';
-
 import { getEmptyDataset, IVisualDataset } from './dataset';
 import { IVisualValueMetadata, IVisualValueRow } from './dataset';
 import { isFeatureEnabled } from '../utils/features';
-import { getState, store } from '../../store';
+import { getState } from '../../store';
 import {
     createSelectionIds,
     getSidString,
@@ -51,15 +42,15 @@ import { hostServices } from '../services';
 const isFetchMoreEnabled = isFeatureEnabled('fetchMoreData');
 
 /**
- * Determines whether the visual can fetch more data, based on the feature switch and the corresponding flag in the Redux store
+ * Determines whether the visual can fetch more data, based on the feature switch and the corresponding flag in the store
  * (set by data processing methods).
  */
-const canFetchMore = () => isFetchMoreEnabled && getState().visual.canFetchMore;
+const canFetchMore = () => isFetchMoreEnabled && getState().datasetCanFetchMore;
 
 /**
- * Retrieve all `powerbi.DataViewCategoryColumn[]` entries from the visual's data view, which are available from Deneb's Redux store.
+ * Retrieve all `powerbi.DataViewCategoryColumn[]` entries from the visual's data view, which are available from Deneb's store.
  */
-const getCategoryColumns = () => getState()?.visual?.categories || [];
+const getCategoryColumns = () => getState().datasetCategories || [];
 
 /**
  * Processes the data in the visual's data view into an object suitable for the visual's API.
@@ -151,16 +142,16 @@ interface IAugmentedMetadataField {
     sourceIndex: number;
 }
 
-interface IDataProcessingPayload {
-    dataProcessingStage: TDataProcessingStage;
-    canFetchMore: boolean;
-}
+// interface IDataProcessingPayload {
+//     dataProcessingStage: TDataProcessingStage;
+//     canFetchMore: boolean;
+// }
 
-interface IDataViewFlags {
-    hasValidDataViewMapping: boolean;
-    hasValidDataRoles: boolean;
-    hasValidDataView: boolean;
-}
+// interface IDataViewFlags {
+//     hasValidDataViewMapping: boolean;
+//     hasValidDataRoles: boolean;
+//     hasValidDataView: boolean;
+// }
 
 /**
  * Stages to within the store when processing data, and therefore give us some UI hooks for the end-user.
@@ -176,24 +167,24 @@ const castPrimitiveValue = (
 ) => (field?.column.type.dateTime ? new Date(value?.toString()) : value);
 
 /**
- * Ensure that the Redux store counters are reset, ready for a new data load.
+ * Ensure that the store counters are reset, ready for a new data load.
  */
 const dispatchResetLoadingCounters = () => {
-    store.dispatch(resetLoadingCounters(true));
+    getState().resetDatasetLoadInformation(true);
 };
 
 /**
- * Ensures that the Redux store state is correct for a loaded dataset.
+ * Ensures that the store state is correct for a loaded dataset.
  */
 const dispatchLoadingComplete = () => {
-    store.dispatch(dataLoadingComplete());
+    getState().confirmDatasetLoadComplete();
 };
 
 /**
- * Updates the Redux store for each window of the dataset loaded from the visual host.
+ * Updates the store for each window of the dataset loaded from the visual host.
  */
 const dispatchWindowLoad = (rowsLoaded: number) => {
-    store.dispatch(recordDataWindowLoad(rowsLoaded));
+    getState().updateDatasetLoadInformation(rowsLoaded);
 };
 
 /**
@@ -300,22 +291,20 @@ const getRowCount = (categorical: DataViewCategorical) =>
     0;
 
 /**
- * Determine whether additional data can/should be loaded from the visual host, and manage this operation along with the Redux
+ * Determine whether additional data can/should be loaded from the visual host, and manage this operation along with the
  * store state.
  */
 const handleAdditionalWindows = (segment: DataViewSegmentMetadata) => {
-    (shouldFetchMore(segment) &&
-        store.dispatch(
-            updateDataProcessingStage({
-                dataProcessingStage: 'Fetching',
-                canFetchMore: hostServices.fetchMoreData(true)
-            })
-        )) ||
-        dispatchLoadingComplete();
+    shouldFetchMore(segment)
+        ? getState().updateDatasetProcessingStage({
+              dataProcessingStage: 'Fetching',
+              canFetchMore: hostServices.fetchMoreData(true)
+          })
+        : dispatchLoadingComplete();
 };
 
 /**
- * Ensure that the Redux store loading counters are updated for the correct event in the visual workflow.
+ * Ensure that the store loading counters are updated for the correct event in the visual workflow.
  */
 const handleCounterReset = (operationKind: VisualDataChangeOperationKind) => {
     operationKind === VisualDataChangeOperationKind.Create &&
@@ -334,10 +323,10 @@ const handleDataLoad = (options: VisualUpdateOptions) => {
 };
 
 /**
- * Based on the supplied segment from the data view, plus Redux store state and settings, determine if the visual host should be
+ * Based on the supplied segment from the data view, plus store state and settings, determine if the visual host should be
  * instructed to request more data.
  */
 const shouldFetchMore = (segment: DataViewSegmentMetadata): boolean =>
     segment &&
-    getState().visual.settings.dataLimit.override &&
-    getState().visual.canFetchMore;
+    getState().visualSettings.dataLimit.override &&
+    getState().datasetCanFetchMore;

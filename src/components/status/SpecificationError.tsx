@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
-import { useSelector } from 'react-redux';
 
-import { state } from '../../store';
+import store from '../../store';
 
 import StatusLayoutStack from './StatusLayoutStack';
 import StatusLayoutStackItem from './StatusLayoutStackItem';
@@ -11,8 +10,8 @@ import { i18nValue } from '../../core/ui/i18n';
 import { hostServices } from '../../core/services';
 
 const SpecificationError = () => {
-    const root = useSelector(state),
-        { message } = root.visual.spec;
+    const { editorSpec } = store((state) => state),
+        { message } = editorSpec;
     useEffect(() => hostServices.renderingFailed(message));
     return (
         <>

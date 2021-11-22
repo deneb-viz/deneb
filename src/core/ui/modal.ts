@@ -30,7 +30,7 @@ import {
 
 import { theme } from './fluent';
 import { getConfig } from '../utils/config';
-import { getState } from '../../store';
+import store, { getState } from '../../store';
 import { i18nValue } from './i18n';
 
 /**
@@ -58,16 +58,17 @@ const getDialogContentProps = (
  * their changes if they leave the editor and the editors are dirty.
  */
 const isApplyDialogHidden = () => {
-    const { visualMode, isDirty } = getState().visual;
-    return !(isDirty && visualMode === 'Standard');
+    const { editorIsDirty, visualMode } = store((state) => state);
+    return !(editorIsDirty && visualMode === 'Standard');
 };
 
 /**
- * Determine whether Deneb is currently showing a dialog, based on the Redux store.
+ * Determine whether Deneb is currently showing a dialog, based on the store.
  */
 const isDialogOpen = () => {
-    const { isNewDialogVisible, isExportDialogVisible } = getState().visual;
-    return isNewDialogVisible || isExportDialogVisible;
+    const { editorIsExportDialogVisible, editorIsNewDialogVisible } =
+        getState();
+    return editorIsNewDialogVisible || editorIsExportDialogVisible;
 };
 
 /**

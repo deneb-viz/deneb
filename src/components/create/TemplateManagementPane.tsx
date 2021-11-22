@@ -1,9 +1,8 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 import { Stack } from '@fluentui/react/lib/Stack';
 
 import Debugger from '../../Debugger';
-import { state } from '../../store';
+import store from '../../store';
 import {
     templatePickerStackStyles,
     templatePickerStackItemListStyles,
@@ -16,11 +15,9 @@ import ImportTemplateHandler from './ImportTemplateHandler';
 
 const TemplateManagementPane: React.FC = () => {
     Debugger.log('Rendering Component: [TemplateManagementPane]...');
-    const root = useSelector(state),
-        { templates } = root,
-        { templateProvider: selectedProvider } = templates,
+    const { templateProvider } = store(),
         resolveTemplateInput = () => {
-            switch (selectedProvider) {
+            switch (templateProvider) {
                 case 'import':
                     return <ImportTemplateControl />;
                 default:

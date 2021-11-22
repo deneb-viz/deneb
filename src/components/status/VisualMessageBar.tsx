@@ -1,12 +1,11 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import {
     MessageBar,
     MessageBarType,
     IMessageBarStyles
 } from '@fluentui/react/lib/MessageBar';
 
-import { state } from '../../store';
+import store from '../../store';
 import { dispatchSelectionAborted } from '../../core/interactivity/selection';
 import { i18nValue } from '../../core/ui/i18n';
 
@@ -18,8 +17,10 @@ const messageBarStyles: IMessageBarStyles = {
 };
 
 const VisualMessageBar: React.FC = () => {
-    const { isSelectionAborted, settings } = useSelector(state).visual,
-        { selectionMaxDataPoints } = settings.vega,
+    const { datasetHasSelectionAborted, visualSettings } = store(
+            (state) => state
+        ),
+        { selectionMaxDataPoints } = visualSettings.vega,
         handleDismiss = () => dispatchSelectionAborted(),
         notification = () => (
             <>
@@ -42,7 +43,7 @@ const VisualMessageBar: React.FC = () => {
                 </MessageBar>
             </>
         );
-    return (isSelectionAborted && notification()) || <></>;
+    return (datasetHasSelectionAborted && notification()) || <></>;
 };
 
 export default VisualMessageBar;

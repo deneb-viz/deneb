@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 
 import { Stack } from '@fluentui/react/lib/Stack';
 import { Text } from '@fluentui/react/lib/Text';
@@ -11,7 +10,7 @@ import {
     modalDialogStackItemWrapperStyles,
     modalDialogInnerStackTokens
 } from '../../core/ui/modal';
-import { state } from '../../store';
+import store from '../../store';
 import NewVisualDialogPivot from './NewVisualDialogPivot';
 import TemplateManagementPane from './TemplateManagementPane';
 import { createFromTemplate } from '../../core/utils/specification';
@@ -19,13 +18,15 @@ import { i18nValue } from '../../core/ui/i18n';
 import { buttonStyles } from '../../core/ui/fluent';
 
 export const NewVisualDialogBody = () => {
-    const root = useSelector(state),
-        { allImportCriteriaApplied, specProvider, templateToApply } =
-            root.templates,
+    const {
+            templateAllImportCriteriaApplied,
+            templateSpecProvider,
+            templateToApply
+        } = store(),
         handleCreate = () => {
-            createFromTemplate(specProvider, templateToApply);
+            createFromTemplate(templateSpecProvider, templateToApply);
         },
-        createDisabled = !allImportCriteriaApplied;
+        createDisabled = !templateAllImportCriteriaApplied;
 
     return (
         <Stack

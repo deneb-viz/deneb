@@ -1,10 +1,9 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 
-import { state } from '../../store';
+import store from '../../../store';
 import Editor from './Editor';
-import EditorPaneSettings from '../settings/EditorPaneSettings';
-import { TEditorRole } from '../../core/services/JsonEditorServices';
+import EditorPaneSettings from '../../settings/EditorPaneSettings';
+import { TEditorRole } from '../../../core/services/JsonEditorServices';
 
 interface IEditorOperationContainerProps {
     operation: TEditorRole;
@@ -13,8 +12,8 @@ interface IEditorOperationContainerProps {
 const EditorOperationContainer: React.FC<IEditorOperationContainerProps> = ({
     operation
 }) => {
-    const { selectedOperation } = useSelector(state).visual,
-        visible = selectedOperation === operation,
+    const { editorSelectedOperation } = store((state) => state),
+        visible = editorSelectedOperation === operation,
         editorPane = operation !== 'settings';
     return (
         <>

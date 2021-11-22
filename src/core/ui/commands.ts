@@ -1,19 +1,15 @@
 export {
-    applyChanges,
     closeModalDialog,
     createExportableTemplate,
     createNewSpec,
     discardChanges,
     fourd3d3d,
-    getCommandKeyBinding,
-    getVisualHotkeys,
+    getCommandKey,
     hotkeyOptions,
-    isApplyButtonEnabled,
+    isApplyButtonDisabled,
     openEditorPivotItem,
     openHelpSite,
     repairFormatJson,
-    toggleAutoApplyState,
-    toggleEditorPane,
     updateBooleanProperty,
     updateProvider,
     updateSelectionMaxDataPoints,
@@ -31,21 +27,14 @@ import {
     updateObjectProperties
 } from '../utils/properties';
 import store, { getState } from '../../store';
-import {
-    toggleAutoApply,
-    fourd3d3d as rdxFourd3d3d,
-    toggleEditorPane as rdxToggleEditorPane,
-    updateDirtyFlag,
-    updateExportDialog,
-    updateSelectedOperation
-} from '../../store/visual';
-import { updateSelectedTemplate } from '../../store/templates';
 import { getConfig, getVisualMetadata } from '../utils/config';
 import { TEditorRole } from '../services/JsonEditorServices';
 import { hostServices } from '../services';
 import { TModalDialogType } from './modal';
 import { updateExportState } from '../template';
 import { TSpecProvider, TSpecRenderMode } from '../vega';
+import { getZoomInLevel, getZoomOutLevel, zoomConfig } from './dom';
+import { getZoomToFitScale } from './advancedEditor';
 
 interface IKeyboardShortcut {
     keys: string;
@@ -54,9 +43,66 @@ interface IKeyboardShortcut {
 }
 
 /**
- * Handle the Apply Changes command.
+ * Constant specifying `react-hotkeys-hook` bindings for particular HTML elements.
  */
-const applyChanges = () => persist();
+const hotkeyOptions: Options = {
+    enableOnTags: ['INPUT', 'SELECT', 'TEXTAREA'],
+    splitKey: '|'
+};
+
+const executeEditorCommand = (command: () => void) => {
+    const { visualMode } = getState();
+    visualMode === 'Editor' && command();
+};
+
+/**
+ * Convenience method to get key binding details from configuration for the specified command.
+ */
+const getCommandKey = (command: string): string =>
+    getConfig()?.keyBindings?.[command?.trim()]?.combination || '';
+
+/**
+ * Wrappers for event handling
+ */
+export const handleApply = () => executeEditorCommand(persist);
+export const handleAutoApply = () => {
+    const { toggleEditorAutoApplyStatus } = getState();
+    handleApply();
+    executeEditorCommand(toggleEditorAutoApplyStatus);
+};
+export const handleFormat = () => executeEditorCommand(fixAndFormat);
+export const handleNewSpecification = () => executeEditorCommand(createNewSpec);
+export const handleExportTemplate = () =>
+    executeEditorCommand(createExportableTemplate);
+export const handleZoomIn = () => executeEditorCommand(zoomIn);
+export const handleZoomOut = () => executeEditorCommand(zoomOut);
+export const handleZoomReset = () => executeEditorCommand(zoomReset);
+export const handleZoomFit = () => executeEditorCommand(zoomFit);
+export const handleHelp = () => executeEditorCommand(openHelpSite);
+export const handleNavSpec = () => executeEditorCommand(navSpec);
+export const handleNavConfig = () => executeEditorCommand(navConfig);
+export const handleNavSettings = () => executeEditorCommand(navSettings);
+export const handleEditorPane = () =>
+    executeEditorCommand(getState().toggleEditorPane);
+
+export const handleFocusFirstPivot = () =>
+    executeEditorCommand(focusFirstPivot);
+
+/**
+ * Actual event handling logic for wrappers
+ */
+const focusFirstPivot = () =>
+    document.getElementById('editor-pivot-spec').focus();
+const zoomReset = () => getState().updateEditorZoomLevel(zoomConfig.default);
+const zoomIn = () =>
+    getState().updateEditorZoomLevel(
+        getZoomInLevel(getState().editorZoomLevel)
+    );
+const zoomOut = () =>
+    getState().updateEditorZoomLevel(
+        getZoomOutLevel(getState().editorZoomLevel)
+    );
+const zoomFit = () => getState().updateEditorZoomLevel(getZoomToFitScale());
 
 /**
  * Handle the necessary logic required to close down a modal dialog.
@@ -94,141 +140,53 @@ const createNewSpec = () => {
 const discardChanges = () => dispatchDiscardChanges();
 
 /**
- * Manages dispatch of the default template select method to the Redux store.
+ * Manages dispatch of the default template select method to the store.
  */
 const dispatchDefaultTemplate = () => {
-    store.dispatch(updateSelectedTemplate(0));
+    getState().updateSelectedTemplate(0);
 };
 
 /**
- * Manages dispatch of the discard changes command method to the Redux store.
+ * Manages dispatch of the discard changes command method to the store.
  */
 const dispatchDiscardChanges = () => {
-    store.dispatch(updateDirtyFlag(false));
+    getState().updateEditorDirtyStatus(false);
 };
 
 /**
- * Manages dispatch of the editor pane command method to the Redux store.
- */
-const dispatchEditorPaneToggle = () => {
-    store.dispatch(rdxToggleEditorPane());
-};
-
-/**
- * Manages dispatch of the a pivot item selection method to the Redux store.
+ * Manages dispatch of the a pivot item selection method to the store.
  */
 const dispatchEditorPivotItem = (operation: TEditorRole) => {
-    store.dispatch(updateSelectedOperation(operation));
+    getState().updateEditorSelectedOperation(operation);
 };
 
 /**
- * Manages dispatch of the export dialog command method to the Redux store.
+ * Manages dispatch of the export dialog command method to the store.
  */
 const dispatchExportDialog = (show = true) => {
-    store.dispatch(updateExportDialog(show));
+    getState().updateEditorExportDialogVisible(show);
 };
 
 const dispatchFourd3d3d = () => {
-    store.dispatch(rdxFourd3d3d(true));
+    getState().setVisual4d3d3d(true);
 };
-
-/**
- * 'Escape hatch' method to set current window focus to the first pivot element (Specification). This is ideal for situations
- * where the user might be inside an editor, where the tab key is bound to indent/outdent.
- */
-
-const focusFirstPivot = () =>
-    document.getElementById('editor-pivot-spec').focus();
 
 const fourd3d3d = () => dispatchFourd3d3d();
 
 /**
- * Convenience method to get key binding details from configuration for the specified command.
- */
-const getCommandKeyBinding = (command: string): string =>
-    getConfig()?.keyBindings?.[command?.trim()]?.combination || '';
-
-/**
- * Get an object array of visual hotkeys and their bindings from configuration, suitable for use in `react-hotkeys-hook`.
- */
-const getVisualHotkeys = (): IKeyboardShortcut[] => [
-    {
-        keys: getCommandKeyBinding('applyChanges'),
-        command: applyChanges,
-        options: hotkeyOptions
-    },
-    {
-        keys: getCommandKeyBinding('autoApplyToggle'),
-        command: () => toggleAutoApplyState(),
-        options: hotkeyOptions
-    },
-    {
-        keys: getCommandKeyBinding('repairFormatJson'),
-        command: () => repairFormatJson(),
-        options: hotkeyOptions
-    },
-    {
-        keys: getCommandKeyBinding('newTemplate'),
-        command: () => createExportableTemplate(),
-        options: hotkeyOptions
-    },
-    {
-        keys: getCommandKeyBinding('newSpecification'),
-        command: () => createNewSpec(),
-        options: hotkeyOptions
-    },
-    {
-        keys: getCommandKeyBinding('openHelpUrl'),
-        command: () => openHelpSite(),
-        options: hotkeyOptions
-    },
-    {
-        keys: getCommandKeyBinding('navigateSpecification'),
-        command: () => openEditorPivotItem('spec'),
-        options: hotkeyOptions
-    },
-    {
-        keys: getCommandKeyBinding('navigateConfig'),
-        command: () => openEditorPivotItem('config'),
-        options: hotkeyOptions
-    },
-    {
-        keys: getCommandKeyBinding('navigateSettings'),
-        command: () => openEditorPivotItem('settings'),
-        options: hotkeyOptions
-    },
-    {
-        keys: getCommandKeyBinding('toggleEditorPane'),
-        command: () => toggleEditorPane(),
-        options: hotkeyOptions
-    },
-    {
-        keys: getCommandKeyBinding('editorFocusOut'),
-        command: () => focusFirstPivot(),
-        options: hotkeyOptions
-    }
-];
-
-/**
- * Manages persistence of a properties object to the Redux store from an operation.
+ * Manages persistence of a properties object to the store from an operation.
  */
 const handlePersist = (property: IPersistenceProperty) =>
     updateObjectProperties(resolveObjectProperties('vega', [property]));
 
 /**
- * Constant specifying `react-hotkeys-hook` bindings for particular HTML elements.
- */
-const hotkeyOptions: Options = {
-    enableOnTags: ['INPUT', 'SELECT', 'TEXTAREA'],
-    splitKey: '|'
-};
-
-/**
  * Check auto-apply and dirty status to determine whether the Apply button should be enabled or not.
  */
-const isApplyButtonEnabled = () => {
-    const { autoApply, canAutoApply, isDirty } = getState().visual;
-    return (canAutoApply && autoApply) || !isDirty;
+const isApplyButtonDisabled = () => {
+    const { editorAutoApply, editorCanAutoApply, editorIsDirty } = store(
+        (state) => state
+    );
+    return (editorAutoApply && !editorCanAutoApply) || !editorIsDirty;
 };
 
 /**
@@ -250,21 +208,11 @@ const openHelpSite = () => {
  */
 const repairFormatJson = () => fixAndFormat();
 
-/**
- * Handle the Toggle Auto Apply command.
- */
-const toggleAutoApplyState = () => {
-    applyChanges();
-    store.dispatch(toggleAutoApply());
-};
+const navSpec = () => openEditorPivotItem('spec');
 
-/**
- * Handle the show/hide of the editor pane.
- */
-const toggleEditorPane = () => {
-    applyChanges();
-    dispatchEditorPaneToggle();
-};
+const navConfig = () => openEditorPivotItem('config');
+
+const navSettings = () => openEditorPivotItem('settings');
 
 /**
  * Generic handler for a boolean (checkbox) property in the settings pane.

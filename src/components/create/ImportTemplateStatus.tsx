@@ -1,15 +1,13 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 
 import { MessageBar, MessageBarType } from '@fluentui/react/lib/MessageBar';
 
-import { state } from '../../store';
+import store from '../../store';
 import { Progress } from '../status/Progress';
 import { i18nValue } from '../../core/ui/i18n';
 
 const ImportTemplateStatus: React.FC = () => {
-    const root = useSelector(state),
-        { templateImportState, templateImportErrorMessage } = root.templates,
+    const { templateImportState, templateImportErrorMessage } = store(),
         standardMessage = (message: string) => (
             <MessageBar messageBarType={MessageBarType.info}>
                 {message}

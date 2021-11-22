@@ -162,7 +162,7 @@ const resolveTooltipContent =
                     autoFormatFields
                 ),
                 identities = getSelectionIdentitiesFromData(datum),
-                { tooltipDelay } = getState()?.visual?.settings?.vega,
+                { tooltipDelay } = getState().visualSettings.vega,
                 waitFor = (event.ctrlKey && tooltipDelay) || 0,
                 options = {
                     coordinates,

@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 import { Text } from '@fluentui/react/lib/Text';
 import {
     ChoiceGroup,
@@ -7,14 +6,13 @@ import {
 } from '@fluentui/react/lib/ChoiceGroup';
 
 import { choiceGroupStyles, choiceItemStyles } from '../../config/styles';
-import { state } from '../../store';
+import store from '../../store';
 import { updateRenderMode } from '../../core/ui/commands';
 import { i18nValue } from '../../core/ui/i18n';
 import { TSpecRenderMode } from '../../core/vega';
 
 const RenderModeSettings = () => {
-    const { settings } = useSelector(state).visual,
-        { vega } = settings,
+    const { vega } = store((state) => state.visualSettings),
         handleRenderMode = React.useCallback(
             (
                 ev: React.SyntheticEvent<HTMLElement>,

@@ -27,18 +27,11 @@ import {
     resolveObjectProperties,
     updateObjectProperties
 } from './properties';
-import { getState, store } from '../../store';
+import { getState } from '../../store';
 import {
     getInteractivityPropsFromTemplate,
     getReplacedTemplate
 } from '../template';
-import {
-    updateDirtyFlag,
-    updateFixStatus,
-    updateSpec,
-    updateStagedSpecData,
-    updateStagedConfigData
-} from '../../store/visual';
 import { i18nValue } from '../ui/i18n';
 import { cleanParse, getJsonAsIndentedString } from './json';
 import { getPatchedVegaSpec } from '../vega/vegaUtils';
@@ -108,19 +101,17 @@ const fixAndFormat = () => {
 
 /**
  * Looks at the active specification and config in the visual editors and compares with persisted values in the visual properties. Used to set
- * the `isDirty` flag in the Redux store.
+ * the `isDirty` flag in the store.
  */
 const hasLiveSpecChanged = () => {
-    const liveSpec = getCleanEditorJson('spec'),
-        persistedSpec = getState().visual.settings.vega.jsonSpec,
-        liveConfig = getCleanEditorJson('config'),
-        persistedConfig = getState().visual.settings.vega.jsonConfig;
-    return liveSpec != persistedSpec || liveConfig != persistedConfig;
+    const { jsonSpec, jsonConfig } = getState().visualSettings.vega,
+        liveSpec = getCleanEditorJson('spec'),
+        liveConfig = getCleanEditorJson('config');
+    return liveSpec != jsonSpec || liveConfig != jsonConfig;
 };
 
 const parseActiveSpec = () => {
-    const { settings } = getState().visual,
-        { provider, jsonSpec } = settings.vega;
+    const { provider, jsonSpec } = getState().visualSettings.vega;
     try {
         if (!jsonSpec) {
             // Spec hasn't been edited yet
@@ -168,16 +159,18 @@ const parseActiveSpec = () => {
 };
 
 /**
- * Resolve the spec/config and use the `properties` API for persistence. Also resets the `isDirty` flag in the Redux store.
+ * Resolve the spec/config and use the `properties` API for persistence. Also resets the `isDirty` flag in the store.
  */
 const persist = (stage = true) => {
     stage && stageEditorData('spec');
     stage && stageEditorData('config');
-    store.dispatch(updateDirtyFlag(false));
+    const { editorStagedConfig, editorStagedSpec, updateEditorDirtyStatus } =
+        getState();
+    updateEditorDirtyStatus(false);
     updateObjectProperties(
         resolveObjectProperties('vega', [
-            { name: 'jsonSpec', value: getState().visual.stagedSpec },
-            { name: 'jsonConfig', value: getState().visual.stagedConfig }
+            { name: 'jsonSpec', value: editorStagedSpec },
+            { name: 'jsonConfig', value: editorStagedConfig }
         ])
     );
 };
@@ -197,18 +190,16 @@ const resolveInteractivityProps = (
     [];
 
 /**
- * Add the specified editor's current text to the staging area in the Redux store. This can then be used for persistence, or
+ * Add the specified editor's current text to the staging area in the store. This can then be used for persistence, or
  * application of changes if the creator exits the advanced editor and there are unapplied changes.
  */
 const stageEditorData = (role: TEditorRole) => {
     switch (role) {
         case 'spec':
-            store.dispatch(updateStagedSpecData(getCleanEditorJson('spec')));
+            getState().updateEditorStagedSpec(getCleanEditorJson('spec'));
             return;
         case 'config':
-            store.dispatch(
-                updateStagedConfigData(getCleanEditorJson('config'))
-            );
+            getState().updateEditorStagedConfig(getCleanEditorJson('config'));
             return;
     }
 };
@@ -265,17 +256,17 @@ const cleanJsonInputForPersistence = (
 };
 
 /**
- * Dispatch the results of a fix and repair operation to the Redux store.
+ * Dispatch the results of a fix and repair operation to the store.
  */
 const dispatchFixStatus = (result: IFixResult) => {
-    store.dispatch(updateFixStatus(result));
+    getState().updateEditorFixStatus(result);
 };
 
 /**
- * Dispatch a compiled specification to the Redux store.
+ * Dispatch a compiled specification to the store.
  */
 const dispatchSpec = (compiledSpec: ICompiledSpec) => {
-    store.dispatch(updateSpec(compiledSpec));
+    getState().updateEditorSpec(compiledSpec);
 };
 
 /**

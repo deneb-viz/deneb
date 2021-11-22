@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 
 import { Label } from '@fluentui/react/lib/Label';
 import { Link } from '@fluentui/react/lib/Link';
@@ -11,7 +10,7 @@ import SelectionCheckbox from './SelectionCheckbox';
 import ContextMenuCheckbox from './ContextMenuCheckbox';
 import SelectionMaxDataPoints from './SelectionMaxDataPoints';
 import { i18nValue } from '../../core/ui/i18n';
-import { state } from '../../store';
+import store from '../../store';
 import { linkStyles } from '../../core/ui/fluent';
 import { hostServices } from '../../core/services';
 import { getConfig } from '../../core/utils/config';
@@ -19,7 +18,7 @@ import { getConfig } from '../../core/utils/config';
 const stackTokens: IStackTokens = { childrenGap: 10, padding: 10 };
 
 const InteractivitySettings = () => {
-    const { enableSelection } = useSelector(state).visual.settings.vega,
+    const { enableSelection } = store((state) => state.visualSettings.vega),
         { providerResources } = getConfig(),
         openInteractivityLink = () => {
             hostServices.launchUrl(
