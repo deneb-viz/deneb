@@ -69,6 +69,9 @@
                 "tabSize",
                 "position",
                 "fontSize",
+                "wordWrap",
+                "showGutter",
+                "showLineNumbers",
                 "showViewportMarker",
                 "maxLineLength"
             ],
@@ -88,6 +91,18 @@
                 "fontSize": {
                     "description": "Size of editor font (in pt)",
                     "type": "integer"
+                },
+                "wordWrap": {
+                    "description": "Whether to wrap text in the editor onto new lines, or not.",
+                    "type": "boolean"
+                },
+                "showGutter": {
+                    "description": "Whether to show the gutter in the editor (used for displaying line numbers and expand/collapse markers for nested objects).",
+                    "type": "boolean"
+                },
+                "showLineNumbers": {
+                    "description": "Display line numbers in the gutter.",
+                    "type": "boolean"
                 },
                 "showViewportMarker": {
                     "description": "Whether to show viewport marker for actual size of visual prior to opening editor.",

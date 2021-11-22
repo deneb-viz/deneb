@@ -140,6 +140,9 @@
             "tabSize": 2,
             "position": "left",
             "fontSize": 10,
+            "wordWrap": true,
+            "showGutter": true,
+            "showLineNumbers": true,
             "showViewportMarker": true,
             "maxLineLength": 40
         },

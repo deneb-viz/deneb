@@ -89,7 +89,10 @@ const getAssignedEditor = (role: TEditorRole) => {
 const getDynamicAceEditorOptions = (): {
     [key: string]: any;
 } => ({
-    fontSize: `${getEditorPropFromStore('fontSize')}pt`
+    fontSize: `${getEditorPropFromStore('fontSize')}pt`,
+    wrap: <boolean>getEditorPropFromStore('wordWrap'),
+    showGutter: <boolean>getEditorPropFromStore('showGutter'),
+    showLineNumbers: <boolean>getEditorPropFromStore('showLineNumbers')
 });
 
 /**
