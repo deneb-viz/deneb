@@ -138,7 +138,7 @@
     "Dropdown_Placeholder_Column": "Select a column",
     "Dropdown_Placeholder_Measure": "Select a measure",
     "Dropdown_Placeholder_Both": "Select a column or measure",
-    "Data_Placeholder_Assistive_No_PH": "There are no placeholders for this visual. Click the Create button to begin editing the resulting specification.",
+    "Data_Placeholder_Assistive_No_PH": "There are no placeholders for this visual. Click the {0} button to begin editing the resulting specification.",
     "Data_Placeholder_Assistive_PH": "Please assign suitable columns or measures from the Values field. It's recommended that you match the data type to the one shown for the template for optimal results. When all items are allocated, click the Create button to begin editing the resulting specification.",
     "Template_No_Description": "No description supplied.",
     "Template_Import_Incorrect_Type": "The supplied file is not of type JSON. Please select a valid JSON file and try again.",
@@ -188,6 +188,5 @@
     "Dialog_Unapplied_Changes_Discard": "Discard",
     "Selection_KW_Present": "[Available]",
     "Zoom_Level_Tooltip": "Current zoom level in the editor - use the controls to the left to adjust this as necessary",
-    "Selection_Aborted_Message": "You clicked a data point that is trying to cross-filter more than {0} underlying values. This has been blocked for performance reasons.",
-    "_Selection_Aborted_Message.comment": "Number of values attempted to cross-filter by"
+    "Selection_Aborted_Message": "You clicked a data point that is trying to cross-filter more than {0} underlying values. This has been blocked for performance reasons."
 }

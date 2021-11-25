@@ -11,18 +11,18 @@ import {
     modalDialogInnerStackTokens
 } from '../../core/ui/modal';
 import store from '../../store';
-import NewVisualDialogPivot from './NewVisualDialogPivot';
-import TemplateManagementPane from './TemplateManagementPane';
+import CreateVisualDialogPivot from './CreateVisualDialogPivot';
+import CreateVisualPaneContent from './CreateVisualPaneContent';
 import { createFromTemplate } from '../../core/utils/specification';
 import { i18nValue } from '../../core/ui/i18n';
 import { buttonStyles } from '../../core/ui/fluent';
 
-export const NewVisualDialogBody = () => {
+export const CreateVisualDialogBody = () => {
     const {
             templateAllImportCriteriaApplied,
             templateSpecProvider,
             templateToApply
-        } = store(),
+        } = store((state) => state),
         handleCreate = () => {
             createFromTemplate(templateSpecProvider, templateToApply);
         },
@@ -38,12 +38,12 @@ export const NewVisualDialogBody = () => {
             </Stack.Item>
             <Stack.Item shrink styles={modalDialogStackItemStyles}>
                 <div className='editor-pane-pivot'>
-                    <NewVisualDialogPivot />
+                    <CreateVisualDialogPivot />
                 </div>
             </Stack.Item>
             <Stack.Item verticalFill styles={modalDialogStackItemWrapperStyles}>
                 <div className='new-spec-container'>
-                    <TemplateManagementPane />
+                    <CreateVisualPaneContent />
                 </div>
             </Stack.Item>
             <Stack.Item shrink styles={modalDialogStackItemStyles} align='end'>
@@ -58,4 +58,4 @@ export const NewVisualDialogBody = () => {
     );
 };
 
-export default NewVisualDialogBody;
+export default CreateVisualDialogBody;

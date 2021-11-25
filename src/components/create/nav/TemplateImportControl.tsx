@@ -5,13 +5,13 @@ import { IIconProps } from '@fluentui/react/lib/Icon';
 import { ActionButton } from '@fluentui/react/lib/Button';
 import { v4 as uuidv4 } from 'uuid';
 
-import { actionButtonStyles } from '../../config/styles';
-import { onTemplateFileSelect } from '../../core/template';
-import { i18nValue } from '../../core/ui/i18n';
+import { actionButtonStyles } from '../../../config/styles';
+import { onTemplateFileSelect } from '../../../core/template';
+import { i18nValue } from '../../../core/ui/i18n';
 
 const importIcon: IIconProps = { iconName: 'OpenFile' };
 
-const ImportTemplateControl: React.FC = () => {
+const TemplateImportControl: React.FC = () => {
     const inputRef = React.useRef<HTMLInputElement>(null),
         [fileKey, setFileKey] = React.useState(uuidv4()),
         handleActionClick = () => inputRef.current.click(),
@@ -45,4 +45,4 @@ const ImportTemplateControl: React.FC = () => {
     );
 };
 
-export default ImportTemplateControl;
+export default TemplateImportControl;

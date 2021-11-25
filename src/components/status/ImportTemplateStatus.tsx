@@ -3,7 +3,7 @@ import * as React from 'react';
 import { MessageBar, MessageBarType } from '@fluentui/react/lib/MessageBar';
 
 import store from '../../store';
-import { Progress } from '../status/Progress';
+import { Progress } from './Progress';
 import { i18nValue } from '../../core/ui/i18n';
 
 const ImportTemplateStatus: React.FC = () => {

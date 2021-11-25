@@ -5,7 +5,7 @@ import Debugger from '../../Debugger';
 import store from '../../store';
 import EditorPane from './pane/EditorPane';
 import EditorPreview from './preview//EditorPreview';
-import NewVisualDialog from '../create/NewVisualDialog';
+import CreateVisualDialog from '../create/CreateVisualDialog';
 import ExportVisualDialog from '../export/ExportVisualDialog';
 import {
     getResizablePaneMaxSize,
@@ -54,7 +54,7 @@ const EditorInterface: React.FC = () => {
                 {editor.position === 'left' ? editorPane : <EditorPreview />}
                 {editor.position === 'left' ? <EditorPreview /> : editorPane}
             </SplitPane>
-            <NewVisualDialog />
+            <CreateVisualDialog />
             <ExportVisualDialog />
         </div>
     );

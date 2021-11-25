@@ -7,25 +7,23 @@ import {
 } from '@fluentui/react/lib/Dropdown';
 import { Icon } from '@fluentui/react/lib/Icon';
 
-import Debugger from '../../Debugger';
 import {
     templatePickerDropdownStyles,
     templateTypeIconOptionStyles
-} from '../../config/styles';
-import store from '../../store';
-import DataFieldLabel from '../elements/DataFieldLabel';
-import { resolveValueDescriptor } from '../../core/template';
-import { ITemplateDatasetField } from '../../core/template/schema';
-import { getDataTypeIcon } from '../../core/ui/icons';
-import { getPlaceholderDropdownText } from '../../core/ui/labels';
+} from '../../../config/styles';
+import store from '../../../store';
+import DataFieldLabel from '../../elements/DataFieldLabel';
+import { resolveValueDescriptor } from '../../../core/template';
+import { ITemplateDatasetField } from '../../../core/template/schema';
+import { getDataTypeIcon } from '../../../core/ui/icons';
+import { getPlaceholderDropdownText } from '../../../core/ui/labels';
 
 interface ISpecDataPlaceHolderDropdownProps {
     datasetField: ITemplateDatasetField;
 }
 
-const SpecDataPlaceHolderDropdown: React.FC<ISpecDataPlaceHolderDropdownProps> =
+const TemplateDatasetFieldPlaceholderDropdown: React.FC<ISpecDataPlaceHolderDropdownProps> =
     (props) => {
-        Debugger.log('Rendering component: [SpecDataPlaceHolderDropdown]...');
         const [selectedItem, setSelectedItem] =
                 React.useState<IDropdownOption>(),
             { dataset, updateTemplatePlaceholder } = store((state) => state),
@@ -93,4 +91,4 @@ const SpecDataPlaceHolderDropdown: React.FC<ISpecDataPlaceHolderDropdownProps> =
         );
     };
 
-export default SpecDataPlaceHolderDropdown;
+export default TemplateDatasetFieldPlaceholderDropdown;

@@ -4,16 +4,13 @@ import { FocusZone, FocusZoneDirection } from '@fluentui/react/lib/FocusZone';
 import { List } from '@fluentui/react/lib/List';
 
 import ProviderTemplateListItem from './ProviderTemplateListItem';
-
-import Debugger from '../../Debugger';
-import store from '../../store';
+import store from '../../../store';
 import { TopLevelSpec } from 'vega-lite';
 import { Spec } from 'vega';
-import { resolveTemplatesForProvider } from '../../core/template';
+import { resolveTemplatesForProvider } from '../../../core/template';
 
 const ProviderTemplateList: React.FC = () => {
-    Debugger.log('Rendering Component: [PreDefinedProviderTemplateList]...');
-    const { templateProvider } = store(),
+    const { templateProvider } = store((state) => state),
         localTemplates = resolveTemplatesForProvider(),
         onRenderCell = (
             item: Spec | TopLevelSpec,

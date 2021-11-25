@@ -33,7 +33,8 @@ const bodyHeadingStyles: ITextStyles = {
     root: {
         fontWeight: FontWeights.semibold,
         fontSize: FontSizes.mediumPlus,
-        color: theme.palette.neutralPrimary
+        color: theme.palette.neutralPrimary,
+        lineHeight: '2.5em'
     }
 };
 

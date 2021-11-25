@@ -1,16 +1,16 @@
 import * as React from 'react';
 
 import store from '../../store';
-import NewVisualDialogBody from './NewVisualDialogBody';
+import CreateVisualDialogBody from './CreateVisualDialogBody';
 import ModalDialog from '../modal/ModalDialog';
 
-export const NewVisualDialog = () => {
+export const CreateVisualDialog = () => {
     const { editorIsNewDialogVisible } = store((state) => state);
     return (
         <ModalDialog type='new' visible={editorIsNewDialogVisible}>
-            <NewVisualDialogBody />
+            <CreateVisualDialogBody />
         </ModalDialog>
     );
 };
 
-export default NewVisualDialog;
+export default CreateVisualDialog;

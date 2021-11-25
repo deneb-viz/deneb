@@ -14,8 +14,10 @@ const pivotStyles: Partial<IStyleSet<IPivotStyles>> = {
     }
 };
 
-const NewVisualDialogPivot = () => {
-    const { templateProvider, updateSelectedTemplateProvider } = store(),
+const CreateVisualDialogPivot = () => {
+    const { templateProvider, updateSelectedTemplateProvider } = store(
+            (state) => state
+        ),
         getTabId = (itemKey: string) => {
             return `new-spec-pivot-${itemKey}`;
         },
@@ -52,4 +54,4 @@ const NewVisualDialogPivot = () => {
     );
 };
 
-export default NewVisualDialogPivot;
+export default CreateVisualDialogPivot;

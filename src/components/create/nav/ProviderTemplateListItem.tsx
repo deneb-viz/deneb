@@ -3,9 +3,9 @@ import React from 'react';
 import { getRTL } from '@fluentui/react/lib/Utilities';
 import { Icon } from '@fluentui/react/lib/Icon';
 
-import { templatePickerItemListStyles } from '../../config/styles';
-import store from '../../store';
-import { IDenebTemplateMetadata } from '../../core/template/schema';
+import { templatePickerItemListStyles } from '../../../config/styles';
+import store from '../../../store';
+import { IDenebTemplateMetadata } from '../../../core/template/schema';
 import { TopLevelSpec } from 'vega-lite';
 import { Spec } from 'vega';
 
@@ -18,7 +18,7 @@ const ProviderTemplateListItem: React.FC<IProviderTemplateListItemProps> = ({
     item,
     index
 }) => {
-    const { updateSelectedTemplate } = store(),
+    const { updateSelectedTemplate } = store((state) => state),
         handleSelect = (item: Spec | TopLevelSpec, index: number) => {
             updateSelectedTemplate(index);
         },
