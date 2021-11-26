@@ -1,26 +1,36 @@
 name: CI
 
 on:
-  push:
+    push:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 14
-      - name: Cache Node.js modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm # npm cache files are stored in `~/.npm` on Linux/macOS
-          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-
-            ${{ runner.OS }}-
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run prettier-check
-      - run: npm test
-      - run: npm run package
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v2
+              with:
+                  node-version: 14
+            - name: Cache Node.js modules
+              uses: actions/cache@v2
+              with:
+                  path: ~/.npm # npm cache files are stored in `~/.npm` on Linux/macOS
+                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.OS }}-node-
+                      ${{ runner.OS }}-
+            - name: Get visual configuration
+              id: denebVisualConfig
+              run: |
+                  content=`cat ./config/deneb-config.json
+                  echo "::set-output name=denebVisualConfig::$content"
+            - name: Check developerMode flag
+              if: ${{fromJson(steps.denebVisualConfig.outputs.denebVisualConfig).features.developerMode}}
+              uses: actions/github-script@v3
+              with:
+                  script: core.setFailed('developerMode flag is set')
+            - run: npm ci
+            - run: npm run lint
+            - run: npm run prettier-check
+            - run: npm test
+            - run: npm run package
