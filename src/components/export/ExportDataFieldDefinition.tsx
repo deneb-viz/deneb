@@ -1,13 +1,19 @@
 import * as React from 'react';
 
-import { TextField } from '@fluentui/react/lib/TextField';
+import { TextField, ITextFieldStyles } from '@fluentui/react/lib/TextField';
 import { Stack } from '@fluentui/react/lib/Stack';
 
 import Debugger from '../../Debugger';
-import { textFieldStyles } from '../../config/styles';
 import DataFieldLabel, {
     IDataFieldLabelProps
 } from '../elements/DataFieldLabel';
+
+const textFieldStyles: Partial<ITextFieldStyles> = {
+    root: {
+        marginLeft: 35,
+        width: 300
+    }
+};
 
 const ExportDataFieldDefinition: React.FC<IDataFieldLabelProps> = (props) => {
     Debugger.log('Rendering component: [ExportDataFieldDefinition]...');

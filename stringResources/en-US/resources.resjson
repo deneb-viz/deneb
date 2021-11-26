@@ -141,6 +141,8 @@
     "Data_Placeholder_Assistive_No_PH": "There are no placeholders for this visual. Click the {0} button to begin editing the resulting specification.",
     "Data_Placeholder_Assistive_PH": "Please assign suitable columns or measures from the Values field. It's recommended that you match the data type to the one shown for the template for optimal results. When all items are allocated, click the Create button to begin editing the resulting specification.",
     "Template_No_Description": "No description supplied.",
+    "Template_Dataset_Field_Name": "Field",
+    "Template_Dataset_Field_Assignment": "Assigned Column/Measure",
     "Template_Import_Incorrect_Type": "The supplied file is not of type JSON. Please select a valid JSON file and try again.",
     "Template_Import_Invalid_Json": "The supplied file's content did not validate as JSON. Please correct this file, or choose another valid JSON file and try again.",
     "Template_Import_Not_Deneb": "The supplied file's content is not a valid Deneb template. Please correct this file, or choose another valid JSON file and try again.",

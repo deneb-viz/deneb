@@ -4,6 +4,8 @@ export {
     linkStyles,
     settingsButtonStyles,
     spinButtonStyles,
+    templateTypeIconStyles,
+    templateTypeIconOptionStyles,
     theme
 };
 
@@ -83,4 +85,20 @@ const linkStyles: ILinkStyles = {
 
 const spinButtonStyles: Partial<ISpinButtonStyles> = {
     spinButtonWrapper: { width: 50 }
+};
+
+const templateTypeIconStyles: IButtonStyles = {
+    icon: { color: theme.palette.neutralPrimary },
+    iconHovered: { color: theme.palette.neutralDark },
+    iconPressed: { color: theme.palette.neutralDark }
+};
+
+const templateTypeIconOptionStyles: IButtonStyles = {
+    ...templateTypeIconStyles,
+    ...{
+        root: {
+            marginRight: '8px',
+            cursor: 'pointer'
+        }
+    }
 };

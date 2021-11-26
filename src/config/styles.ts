@@ -3,15 +3,12 @@ import {
     getTheme,
     IChoiceGroupStyles,
     IChoiceGroupOptionStyles,
-    IDropdownStyles,
     IStackItemStyles,
     IStackStyles,
     IStackTokens,
     ITheme,
     mergeStyleSets,
     FontSizes,
-    ITextFieldStyles,
-    IDetailsListStyles,
     IStyleSet,
     IPivotStyles,
     IButtonStyles,
@@ -24,64 +21,38 @@ export {
     actionButtonStyles,
     choiceGroupStyles,
     choiceItemStyles,
-    detailListStyles,
     exportPivotAssistiveTextStyles,
     exportPivotAssistiveToastTextStyles,
     exportPivotStyles,
     templateExportInfoStackTokens,
-    templatePickerDropdownStyles,
     templatePickerItemListStyles,
     templatePickerStackStyles,
     templatePickerStackItemStyles,
     templatePickerStackSeparatorStyles,
     templatePickerStackItemListStyles,
     templatePickerNonShrinkingStackItemStyles,
-    templatePickerStackTokens,
-    templateTypeIconStyles,
-    templateTypeIconOptionStyles,
-    templateTypeInfoIconStyles,
-    textFieldStyles
+    templatePickerStackTokens
 };
 
 const defaultTheme: ITheme = getTheme();
 
 // Buttons
 const actionButtonStyles: IButtonStyles = {
-        root: {
-            boxSizing: 'border-box',
-            display: 'flex',
-            padding: 10,
-            selectors: {
-                '&:hover': { background: theme.palette.neutralLight },
-                '&:focus': { background: theme.palette.neutralLighterAlt }
-            }
-        },
-        icon: { color: theme.palette.neutralPrimary },
-        iconHovered: { color: theme.palette.neutralDark },
-        iconPressed: { color: theme.palette.neutralDark },
-        label: { color: theme.palette.neutralPrimary },
-        labelHovered: { color: theme.palette.neutralDark }
-    },
-    templateTypeIconStyles: IButtonStyles = {
-        icon: { color: theme.palette.neutralPrimary },
-        iconHovered: { color: theme.palette.neutralDark },
-        iconPressed: { color: theme.palette.neutralDark }
-    },
-    templateTypeIconOptionStyles: IButtonStyles = {
-        ...templateTypeIconStyles,
-        ...{
-            root: {
-                marginRight: '8px',
-                cursor: 'pointer'
-            }
+    root: {
+        boxSizing: 'border-box',
+        display: 'flex',
+        padding: 10,
+        selectors: {
+            '&:hover': { background: theme.palette.neutralLight },
+            '&:focus': { background: theme.palette.neutralLighterAlt }
         }
     },
-    templateTypeInfoIconStyles: IButtonStyles = {
-        root: {
-            cursor: 'pointer'
-        }
-    };
-
+    icon: { color: theme.palette.neutralPrimary },
+    iconHovered: { color: theme.palette.neutralDark },
+    iconPressed: { color: theme.palette.neutralDark },
+    label: { color: theme.palette.neutralPrimary },
+    labelHovered: { color: theme.palette.neutralDark }
+};
 // Horizontal choice group (settings pivot)
 const choiceGroupStyles: IChoiceGroupStyles = {
         flexContainer: {
@@ -182,9 +153,6 @@ const templatePickerItemListStyles = mergeStyleSets({
     },
     templateExportInfoStackTokens: IStackTokens = {
         childrenGap: 5
-    },
-    templatePickerDropdownStyles: Partial<IDropdownStyles> = {
-        dropdown: { width: 300 }
     };
 
 // Export dialog - pivot-level assistive text
@@ -206,21 +174,4 @@ const exportPivotAssistiveTextStyles: ITextStyles = {
             marginTop: '10px',
             height: '100%'
         }
-    };
-
-// Form fields
-const textFieldStyles: Partial<ITextFieldStyles> = {
-        root: { marginLeft: 35, width: 300 }
-    },
-    detailListStyles: IDetailsListStyles = {
-        root: {},
-        headerWrapper: {
-            root: {
-                borderBottom: null
-            }
-        },
-        focusZone: {
-            borderBottom: null
-        },
-        contentWrapper: {}
     };

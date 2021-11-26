@@ -3,26 +3,26 @@ import * as React from 'react';
 import {
     Dropdown,
     IDropdownOption,
-    IDropdownProps
+    IDropdownStyles
 } from '@fluentui/react/lib/Dropdown';
 import { Icon } from '@fluentui/react/lib/Icon';
 
-import {
-    templatePickerDropdownStyles,
-    templateTypeIconOptionStyles
-} from '../../../config/styles';
-import store from '../../../store';
-import DataFieldLabel from '../../elements/DataFieldLabel';
-import { resolveValueDescriptor } from '../../../core/template';
-import { ITemplateDatasetField } from '../../../core/template/schema';
-import { getDataTypeIcon } from '../../../core/ui/icons';
-import { getPlaceholderDropdownText } from '../../../core/ui/labels';
+import store from '../../store';
+import { resolveValueDescriptor } from '../../core/template';
+import { ITemplateDatasetField } from '../../core/template/schema';
+import { getDataTypeIcon } from '../../core/ui/icons';
+import { getPlaceholderDropdownText } from '../../core/ui/labels';
+import { templateTypeIconOptionStyles } from '../../core/ui/fluent';
 
-interface ISpecDataPlaceHolderDropdownProps {
+interface IDatasetFieldAssignmentDropdownProps {
     datasetField: ITemplateDatasetField;
 }
 
-const TemplateDatasetFieldPlaceholderDropdown: React.FC<ISpecDataPlaceHolderDropdownProps> =
+const templatePickerDropdownStyles: Partial<IDropdownStyles> = {
+    dropdown: { width: 300 }
+};
+
+const DatasetFieldAssignmentDropdown: React.FC<IDatasetFieldAssignmentDropdownProps> =
     (props) => {
         const [selectedItem, setSelectedItem] =
                 React.useState<IDropdownOption>(),
@@ -57,9 +57,6 @@ const TemplateDatasetFieldPlaceholderDropdown: React.FC<ISpecDataPlaceHolderDrop
                     };
                 });
             },
-            onRenderLabel = (props: IDropdownProps) => {
-                return <DataFieldLabel datasetField={datasetField} />;
-            },
             onRenderOption = (option: IDropdownOption) => {
                 return (
                     <div>
@@ -79,16 +76,15 @@ const TemplateDatasetFieldPlaceholderDropdown: React.FC<ISpecDataPlaceHolderDrop
             selectedKey = selectedItem ? selectedItem.key : undefined;
         return (
             <Dropdown
-                label={datasetField.name}
+                ariaLabel={datasetField.name}
                 selectedKey={selectedKey}
                 onChange={onChange}
                 placeholder={placeholderText}
                 options={options()}
                 styles={templatePickerDropdownStyles}
-                onRenderLabel={onRenderLabel}
                 onRenderOption={onRenderOption}
             />
         );
     };
 
-export default TemplateDatasetFieldPlaceholderDropdown;
+export default DatasetFieldAssignmentDropdown;

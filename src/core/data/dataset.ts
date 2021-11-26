@@ -118,6 +118,14 @@ const getMatchedValues = (
 };
 
 /**
+ * Do a simple lookup against the store dataset for a given key
+ */
+export const lookupMetadataColumn = (key: string) =>
+    Object.entries(getState().dataset)?.find(
+        ([k, v]) => v.queryName === key
+    )?.[1];
+
+/**
  * For a given (subset of) `metadata` and `datum`, create an `IVisualValueRow` that can be used to search for matching values in the visual's dataset.
  */
 const resolveDatumForMetadata = (

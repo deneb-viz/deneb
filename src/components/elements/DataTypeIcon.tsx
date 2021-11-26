@@ -2,11 +2,10 @@ import * as React from 'react';
 
 import { IconButton } from '@fluentui/react/lib/Button';
 
-import { templateTypeIconStyles } from '../../config/styles';
-
 import { ITemplateDatasetField } from '../../core/template/schema';
 import { getDataTypeIcon } from '../../core/ui/icons';
 import { getDataTypeIconTitle } from '../../core/ui/labels';
+import { templateTypeIconStyles } from '../../core/ui/fluent';
 
 interface IDataTypeIconProps {
     datasetField: ITemplateDatasetField;
