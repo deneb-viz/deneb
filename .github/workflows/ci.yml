@@ -19,17 +19,8 @@ jobs:
                   restore-keys: |
                       ${{ runner.OS }}-node-
                       ${{ runner.OS }}-
-            - name: Get visual configuration
-              id: denebVisualConfig
-              run: |
-                  content=`cat ./config/deneb-config.json`
-                  echo "::set-output name=denebVisualConfig::$content"
-            - name: Check developerMode flag
-              if: ${{fromJson(steps.denebVisualConfig.outputs.denebVisualConfig).features.developerMode}}
-              uses: actions/github-script@v3
-              with:
-                  script: core.setFailed('developerMode flag is set')
             - run: npm ci
+            - run: npm run validate-config-for-commit
             - run: npm run lint
             - run: npm run prettier-check
             - run: npm test
