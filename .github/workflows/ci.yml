@@ -22,7 +22,7 @@ jobs:
             - name: Get visual configuration
               id: denebVisualConfig
               run: |
-                  content=`cat ./config/deneb-config.json
+                  content=`cat ./config/deneb-config.json`
                   echo "::set-output name=denebVisualConfig::$content"
             - name: Check developerMode flag
               if: ${{fromJson(steps.denebVisualConfig.outputs.denebVisualConfig).features.developerMode}}
