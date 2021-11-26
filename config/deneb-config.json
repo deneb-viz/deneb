@@ -1,7 +1,7 @@
 {
     "$schema": "../schema/deneb-config.json",
     "features": {
-        "developerMode": true,
+        "developerMode": false,
         "enableExternalUri": false,
         "fetchMoreData": true,
         "selectionContextMenu": true,
