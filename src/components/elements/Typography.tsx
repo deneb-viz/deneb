@@ -1,4 +1,11 @@
-export { BodyHeading, Paragraph, Heading, SubHeading, SubHeadingSecondary };
+export {
+    BodyHeading,
+    EditorHeading,
+    Paragraph,
+    Heading,
+    SubHeading,
+    SubHeadingSecondary
+};
 
 import * as React from 'react';
 
@@ -35,6 +42,14 @@ const bodyHeadingStyles: ITextStyles = {
         fontSize: FontSizes.mediumPlus,
         color: theme.palette.neutralPrimary,
         lineHeight: '2.5em'
+    }
+};
+
+const editorHeadingStyles: ITextStyles = {
+    root: {
+        fontWeight: FontWeights.semibold,
+        fontSize: FontSizes.mediumPlus,
+        color: theme.palette.neutralPrimary
     }
 };
 
@@ -79,6 +94,16 @@ const BodyHeading: React.FC<ITextProps> = (props) => (
     <>
         <div>
             <Text {...props} styles={bodyHeadingStyles}>
+                {props.children}
+            </Text>
+        </div>
+    </>
+);
+
+const EditorHeading: React.FC<ITextProps> = (props) => (
+    <>
+        <div>
+            <Text {...props} styles={editorHeadingStyles}>
                 {props.children}
             </Text>
         </div>
