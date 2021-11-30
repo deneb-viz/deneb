@@ -21,7 +21,6 @@ export {
     actionButtonStyles,
     choiceGroupStyles,
     choiceItemStyles,
-    exportPivotAssistiveTextStyles,
     exportPivotAssistiveToastTextStyles,
     exportPivotStyles,
     templateExportInfoStackTokens,
@@ -156,13 +155,7 @@ const templatePickerItemListStyles = mergeStyleSets({
     };
 
 // Export dialog - pivot-level assistive text
-const exportPivotAssistiveTextStyles: ITextStyles = {
-        root: {
-            display: 'inline-block',
-            paddingTop: '8px'
-        }
-    },
-    exportPivotAssistiveToastTextStyles: ITextStyles = {
+const exportPivotAssistiveToastTextStyles: ITextStyles = {
         root: {
             display: 'inline-block',
             paddingTop: '8px',

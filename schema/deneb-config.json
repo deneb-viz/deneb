@@ -216,6 +216,10 @@
                 "useDownloadApi": {
                     "description": "Use the Power BI download API to offer downloading of template files.",
                     "type": "boolean"
+                },
+                "templateExportPreviewImages": {
+                    "description": "Allow the option to include a preview image when generating export templates.",
+                    "type": "boolean"
                 }
             }
         },
@@ -311,10 +315,14 @@
             "description": "Used to manage handling of template functionality.",
             "type": "object",
             "additionalProperties": false,
-            "required": ["metadataVersion"],
+            "required": ["metadataVersion", "previewImageSize"],
             "properties": {
                 "metadataVersion": {
                     "description": "Template metadata version",
+                    "type": "integer"
+                },
+                "previewImageSize": {
+                    "description": "Numbe rof pixels to use for generating preview images",
                     "type": "integer"
                 }
             }

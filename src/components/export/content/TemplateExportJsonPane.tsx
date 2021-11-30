@@ -7,16 +7,16 @@ import { IconButton } from '@fluentui/react/lib/Button';
 import { IIconProps } from '@fluentui/react/lib/Icon';
 
 import {
-    exportPivotAssistiveTextStyles,
     exportPivotAssistiveToastTextStyles,
     templateExportInfoStackTokens,
     templatePickerStackStyles,
     templatePickerNonShrinkingStackItemStyles
-} from '../../config/styles';
-import { getExportTemplate } from '../../core/template';
-import { i18nValue } from '../../core/ui/i18n';
-import { iconButtonStyles } from '../../core/ui/icons';
+} from '../../../config/styles';
+import { getExportTemplate } from '../../../core/template';
+import { i18nValue } from '../../../core/ui/i18n';
+import { iconButtonStyles } from '../../../core/ui/icons';
 import ExportDownloadButton from './ExportDownloadButton';
+import { Assistive } from '../../elements/Typography';
 
 const textStyles: Partial<ITextFieldStyles> = {
     root: {
@@ -59,12 +59,9 @@ const TemplateExportJsonPane: React.FC = () => {
             <Stack.Item>
                 <Stack horizontal>
                     <Stack.Item grow>
-                        <Text
-                            variant='small'
-                            styles={exportPivotAssistiveTextStyles}
-                        >
+                        <Assistive>
                             {i18nValue('Template_Export_Json_Assistive')}
-                        </Text>
+                        </Assistive>
                     </Stack.Item>
                     <Stack.Item>
                         {copySuccess && (

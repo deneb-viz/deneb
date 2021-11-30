@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { Text } from '@fluentui/react/lib/Text';
 import {
     ChoiceGroup,
     IChoiceGroupOption
@@ -10,6 +9,7 @@ import store from '../../store';
 import { updateRenderMode } from '../../core/ui/commands';
 import { i18nValue } from '../../core/ui/i18n';
 import { TSpecRenderMode } from '../../core/vega';
+import { Paragraph } from '../elements/Typography';
 
 const RenderModeSettings = () => {
     const { vega } = store((state) => state.visualSettings),
@@ -43,9 +43,7 @@ const RenderModeSettings = () => {
                 selectedKey={vega.renderMode}
                 label={i18nValue('Objects_Vega_RenderMode')}
             />
-            <Text variant='smallPlus'>
-                {i18nValue('Assistive_Text_RenderMode')}
-            </Text>
+            <Paragraph>{i18nValue('Assistive_Text_RenderMode')}</Paragraph>
         </>
     );
 };

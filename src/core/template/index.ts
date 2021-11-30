@@ -41,6 +41,7 @@ import * as schema_v1 from '../../../schema/deneb-template-usermeta-v1.json';
 import { i18nValue } from '../ui/i18n';
 import { determineProviderFromSpec, TSpecProvider } from '../vega';
 import { ITemplateImportPayload } from '../../store/template';
+import { isFeatureEnabled } from '../utils/features';
 
 /**
  * Used to indicate which part of the export dialog has focus.
@@ -273,7 +274,11 @@ const replaceExportTemplatePlaceholders = (
 const resolveExportUserMeta = (): IDenebTemplateMetadata => {
     const visualMetadata = getVisualMetadata(),
         { metadataVersion } = getConfig().templates,
-        { templateExportMetadata } = getState(),
+        {
+            templateExportMetadata,
+            templatePreviewImageDataUri,
+            templateIncludePreviewImage
+        } = getState(),
         { vega } = getState().visualSettings;
     return {
         deneb: {
@@ -298,7 +303,12 @@ const resolveExportUserMeta = (): IDenebTemplateMetadata => {
                 templateExportMetadata?.information?.author ||
                 i18nValue('Template_Export_Author_Name_Empty'),
             uuid: templateExportMetadata?.information?.uuid || uuidv4(),
-            generated: new Date().toISOString()
+            generated: new Date().toISOString(),
+            previewImageBase64PNG:
+                isFeatureEnabled('templateExportPreviewImages') &&
+                templateIncludePreviewImage
+                    ? templatePreviewImageDataUri
+                    : undefined
         },
         dataset: templateExportMetadata?.dataset.map((d, di) => {
             return {

@@ -9,6 +9,7 @@
         "tooltipHandler": true,
         "tooltipResolveNumberFieldFormat": true,
         "useDownloadApi": false,
+        "templateExportPreviewImages": false,
         "unitTestCanary": false
     },
     "fluentUiTheme": {
@@ -171,7 +172,8 @@
         "collapsedSize": 36
     },
     "templates": {
-        "metadataVersion": 1
+        "metadataVersion": 1,
+        "previewImageSize": 150
     },
     "visualViewPortAdjust": {
         "top": 5,

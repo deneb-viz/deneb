@@ -5,6 +5,7 @@ import {
     vegaDataModelRef,
     vegaLiteProviderInfo
 } from '..';
+import thumbnail from '../thumbnail';
 
 export const vlScatterColored: TopLevelSpec = {
     $schema: vegaLiteProviderInfo,
@@ -36,7 +37,8 @@ export const vlScatterColored: TopLevelSpec = {
                 "A scatterplot, using numeric columns for X and Y axis values, and another column to categorize into color. If you're using a measure for an axis, ensure that you've added a column to produce a suitable row context.",
             author: authorInfo,
             uuid: 'a3392ab4-6cb4-4dae-81ed-62de931cf9b7',
-            generated: '2021-03-26T00:00:00.000Z'
+            generated: '2021-03-26T00:00:00.000Z',
+            previewImageBase64PNG: thumbnail.scatterColored
         },
         provider: 'vegaLite',
         dataset: [

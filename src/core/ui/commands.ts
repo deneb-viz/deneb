@@ -29,7 +29,7 @@ import {
 import store, { getState } from '../../store';
 import { getConfig, getVisualMetadata } from '../utils/config';
 import { TEditorRole } from '../services/JsonEditorServices';
-import { hostServices } from '../services';
+import { hostServices, viewServices } from '../services';
 import { TModalDialogType } from './modal';
 import { updateExportState } from '../template';
 import { TSpecProvider, TSpecRenderMode } from '../vega';
@@ -164,7 +164,10 @@ const dispatchEditorPivotItem = (operation: TEditorRole) => {
  * Manages dispatch of the export dialog command method to the store.
  */
 const dispatchExportDialog = (show = true) => {
-    getState().updateEditorExportDialogVisible(show);
+    const { updateEditorExportDialogVisible, updateTemplatePreviewImage } =
+        getState();
+    viewServices.setPreviewImage(false);
+    updateEditorExportDialogVisible(show);
 };
 
 const dispatchFourd3d3d = () => {

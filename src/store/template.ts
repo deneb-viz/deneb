@@ -32,6 +32,8 @@ export interface ITemplateSlice {
     templateExportErrorMessage: string;
     templateSchemaErrors: ErrorObject[];
     templateFileRawContent: string;
+    templateIncludePreviewImage: boolean;
+    templatePreviewImageDataUri: string;
     templateToApply: Spec | TopLevelSpec;
     templateExportMetadata: IDenebTemplateMetadata;
     templateAllImportCriteriaApplied: boolean;
@@ -43,6 +45,9 @@ export interface ITemplateSlice {
     vega: Spec[];
     initializeImportExport: () => void;
     syncTemplateExportDataset: (payload: ITemplateDatasetField[]) => void;
+    updateTemplatePreviewImage: (
+        payload: ITemplatePlaceholderImagePayload
+    ) => void;
     updateTemplatePlaceholder: (payload: IPlaceholderValuePayload) => void;
     updateTemplateExportPropertyBySelector: (
         payload: ITemplateExportFieldUpdatePayload
@@ -76,6 +81,8 @@ export const createTemplateSlice = (
             templateExportErrorMessage: null,
             templateSchemaErrors: [],
             templateFileRawContent: null,
+            templateIncludePreviewImage: false,
+            templatePreviewImageDataUri: null,
             templateToApply: templates.vegaLite[0],
             templateExportMetadata: null,
             templateSelectedIndex: 0,
@@ -86,6 +93,10 @@ export const createTemplateSlice = (
                 set((state) => handleInitializeImportExport(state)),
             syncTemplateExportDataset: (payload) =>
                 set((state) => handleSyncTemplateExportDataset(state, payload)),
+            updateTemplatePreviewImage: (payload) =>
+                set((state) =>
+                    handleUpdateTemplatePreviewImage(state, payload)
+                ),
             updateTemplatePlaceholder: (payload) =>
                 set((state) => handleUpdateTemplatePlaceholder(state, payload)),
             updateTemplateExportPropertyBySelector: (payload) =>
@@ -144,6 +155,11 @@ interface IPlaceholderValuePayload {
     objectName: string;
 }
 
+interface ITemplatePlaceholderImagePayload {
+    include: boolean;
+    dataUri: string;
+}
+
 const handleInitializeImportExport = (
     state: TStoreState
 ): PartialState<TStoreState, never, never, never, never> => ({
@@ -177,6 +193,14 @@ const handleSyncTemplateExportDataset = (
             })
         }
     }
+});
+
+const handleUpdateTemplatePreviewImage = (
+    state: TStoreState,
+    payload: ITemplatePlaceholderImagePayload
+): PartialState<TStoreState, never, never, never, never> => ({
+    templateIncludePreviewImage: payload.include,
+    templatePreviewImageDataUri: payload.dataUri
 });
 
 const handleUpdateTemplateExportPropertyBySelector = (

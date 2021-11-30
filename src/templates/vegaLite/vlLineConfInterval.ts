@@ -5,6 +5,7 @@ import {
     vegaDataModelRef,
     vegaLiteProviderInfo
 } from '..';
+import thumbnail from '../thumbnail';
 
 export const vlLineConfInterval: TopLevelSpec = {
     $schema: vegaLiteProviderInfo,
@@ -52,7 +53,8 @@ export const vlLineConfInterval: TopLevelSpec = {
                 'A multiple layer visual that displays a line, along with a band spanning two additional measures.',
             author: authorInfo,
             uuid: '5ddfa070-0806-478a-8cd3-c906fbc654a1',
-            generated: '2021-03-26T00:00:00.000Z'
+            generated: '2021-03-26T00:00:00.000Z',
+            previewImageBase64PNG: thumbnail.lineConfInterval
         },
         provider: 'vegaLite',
         dataset: [

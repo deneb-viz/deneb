@@ -3,10 +3,10 @@ import * as React from 'react';
 import { TextField, ITextFieldStyles } from '@fluentui/react/lib/TextField';
 import { Stack } from '@fluentui/react/lib/Stack';
 
-import Debugger from '../../Debugger';
+import Debugger from '../../../Debugger';
 import DataFieldLabel, {
     IDataFieldLabelProps
-} from '../elements/DataFieldLabel';
+} from '../../elements/DataFieldLabel';
 
 const textFieldStyles: Partial<ITextFieldStyles> = {
     root: {

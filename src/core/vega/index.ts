@@ -24,7 +24,7 @@ import View = Vega.View;
 import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
 import { TopLevelSpec } from 'vega-lite';
 
-import { fillPatternServices, hostServices } from '../services';
+import { fillPatternServices, hostServices, viewServices } from '../services';
 import { createFormatterFromString } from '../utils/formatting';
 import { cleanParse, getSchemaValidator } from '../utils/json';
 import { TEditorRole } from '../services/JsonEditorServices';
@@ -161,6 +161,7 @@ const getParsedConfigFromSettings = (): Config => {
  */
 const handleNewView = (newView: View) => {
     newView.runAsync().then(() => {
+        viewServices.bindView(newView);
         resolveClearCatcher();
         bindInteractivityEvents(newView);
         hostServices.renderingFinished();

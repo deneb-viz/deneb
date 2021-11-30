@@ -6,6 +6,7 @@ import {
     vegaLiteProviderInfo
 } from '..';
 import { getConfig } from '../../core/utils/config';
+import thumbnail from '../thumbnail';
 
 export const vlBarGrouped: TopLevelSpec = {
     $schema: vegaLiteProviderInfo,
@@ -46,7 +47,8 @@ export const vlBarGrouped: TopLevelSpec = {
                 'A simple, single-view bar chart, with a column on the Y-Axis, a measure on the X-Axis, and grouped by another categorical value (typically a column). Also enabled for tooltips and cross-filtering.',
             author: authorInfo,
             uuid: 'ca5fe45d-6b40-4638-baf8-e6c33fdf1d59',
-            generated: '2021-03-26T00:00:00.000Z'
+            generated: '2021-03-26T00:00:00.000Z',
+            previewImageBase64PNG: thumbnail.barGrouped
         },
         provider: 'vegaLite',
         dataset: [

@@ -3,7 +3,6 @@ import * as React from 'react';
 import { Label } from '@fluentui/react/lib/Label';
 import { Link } from '@fluentui/react/lib/Link';
 import { Stack, IStackTokens } from '@fluentui/react/lib/Stack';
-import { Text } from '@fluentui/react/lib/Text';
 
 import TooltipCheckbox from './TooltipCheckbox';
 import SelectionCheckbox from './SelectionCheckbox';
@@ -14,6 +13,7 @@ import store from '../../store';
 import { linkStyles } from '../../core/ui/fluent';
 import { hostServices } from '../../core/services';
 import { getConfig } from '../../core/utils/config';
+import { Paragraph } from '../elements/Typography';
 
 const stackTokens: IStackTokens = { childrenGap: 10, padding: 10 };
 
@@ -33,22 +33,22 @@ const InteractivitySettings = () => {
                 <ContextMenuCheckbox />
                 <SelectionCheckbox />
             </Stack>
-            <Text variant='smallPlus'>
+            <Paragraph>
                 {i18nValue('Assistive_Text_Interactivity')}{' '}
                 <Link styles={linkStyles} onClick={openInteractivityLink}>
                     {i18nValue('Link_Interactivity_Doc')}
                 </Link>
-            </Text>
+            </Paragraph>
             {(enableSelection && (
                 <>
                     <Stack tokens={stackTokens}>
                         <SelectionMaxDataPoints />
                     </Stack>
-                    <Text variant='smallPlus'>
+                    <Paragraph>
                         {i18nValue(
                             'Objects_Vega_SelectionMaxDataPoints_Description'
                         )}
-                    </Text>
+                    </Paragraph>
                 </>
             )) || <></>}
         </>

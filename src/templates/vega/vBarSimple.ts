@@ -5,6 +5,7 @@ import {
     vegaDataModelRef,
     vegaProviderInfo
 } from '..';
+import thumbnail from '../thumbnail';
 import { getConfig } from '../../core/utils/config';
 
 export const vBarSimple: Spec = {
@@ -91,7 +92,8 @@ export const vBarSimple: Spec = {
                 'A simple, single-view bar chart, with a column on the Y-Axis and a measure on the X-Axis. Also enabled for tooltips and cross-filtering.',
             author: authorInfo,
             uuid: '47577168-2e0c-42de-8e27-cb33071fae43',
-            generated: '2021-03-26T00:00:00.000Z'
+            generated: '2021-03-26T00:00:00.000Z',
+            previewImageBase64PNG: thumbnail.barSimple
         },
         provider: 'vega',
         dataset: [

@@ -1,16 +1,15 @@
 import * as React from 'react';
 
-import { Text } from '@fluentui/react/lib/Text';
 import { Stack } from '@fluentui/react/lib/Stack';
 
 import {
-    exportPivotAssistiveTextStyles,
     templateExportInfoStackTokens,
     templatePickerStackStyles,
     templatePickerNonShrinkingStackItemStyles
-} from '../../config/styles';
+} from '../../../config/styles';
 import ExportDataFields from './ExportDataFields';
-import { i18nValue } from '../../core/ui/i18n';
+import { i18nValue } from '../../../core/ui/i18n';
+import { Assistive } from '../../elements/Typography';
 
 const TemplateExportDatasetPane: React.FC = () => (
     <Stack
@@ -18,9 +17,9 @@ const TemplateExportDatasetPane: React.FC = () => (
         tokens={templateExportInfoStackTokens}
     >
         <Stack.Item>
-            <Text variant='small' styles={exportPivotAssistiveTextStyles}>
+            <Assistive>
                 {i18nValue('Template_Export_Dataset_Assistive')}
-            </Text>
+            </Assistive>
         </Stack.Item>
         <Stack.Item grow={3} styles={templatePickerNonShrinkingStackItemStyles}>
             <ExportDataFields />

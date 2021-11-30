@@ -14,14 +14,16 @@ interface IDataTypeIconProps {
 const DataTypeIcon: React.FC<IDataTypeIconProps> = (props) => {
     const { datasetField } = props;
     return (
-        <IconButton
-            iconProps={{
-                iconName: getDataTypeIcon(datasetField.type)
-            }}
-            title={getDataTypeIconTitle(datasetField.type)}
-            ariaLabel={getDataTypeIconTitle(datasetField.type)}
-            styles={templateTypeIconStyles}
-        />
+        datasetField && (
+            <IconButton
+                iconProps={{
+                    iconName: getDataTypeIcon(datasetField.type)
+                }}
+                title={getDataTypeIconTitle(datasetField.type)}
+                ariaLabel={getDataTypeIconTitle(datasetField.type)}
+                styles={templateTypeIconStyles}
+            />
+        )
     );
 };
 

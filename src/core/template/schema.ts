@@ -156,6 +156,7 @@ interface ITemplateInformation {
     supportUri?: string;
     /**
      * Base64-encoded image/png string, representing a preview image for the template in external tools.
+     * Should be a maximum of 150 x 150 pixels.
      */
     previewImageBase64PNG?: string;
 }

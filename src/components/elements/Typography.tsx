@@ -1,4 +1,5 @@
 export {
+    Assistive,
     BodyHeading,
     EditorHeading,
     Paragraph,
@@ -13,6 +14,13 @@ import { Text, ITextStyles, ITextProps } from '@fluentui/react/lib/Text';
 import { FontSizes, FontWeights } from '@fluentui/react/lib/Styling';
 
 import { theme } from '../../core/ui/fluent';
+
+const assistiveStyles: ITextStyles = {
+    root: {
+        fontSize: FontSizes.small,
+        color: theme.palette.neutralPrimary
+    }
+};
 
 const headingStyles: ITextStyles = {
     root: {
@@ -112,10 +120,18 @@ const EditorHeading: React.FC<ITextProps> = (props) => (
 
 const Paragraph: React.FC<ITextProps> = (props) => (
     <>
-        <p className='splash-body-paragraph'>
+        <p>
             <Text {...props} styles={paragraphStyles}>
                 {props.children}
             </Text>
         </p>
+    </>
+);
+
+const Assistive: React.FC<ITextProps> = (props) => (
+    <>
+        <Text {...props} styles={assistiveStyles}>
+            {props.children}
+        </Text>
     </>
 );

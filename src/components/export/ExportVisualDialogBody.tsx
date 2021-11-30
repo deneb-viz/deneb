@@ -10,11 +10,11 @@ import {
     modalDialogInnerStackTokens
 } from '../../core/ui/modal';
 import store from '../../store';
-import ExportValidation from './ExportValidation';
+import ExportValidation from './content/ExportValidation';
 import ExportVisualDialogPivot from './ExportVisualDialogPivot';
-import TemplateExportDatasetPane from './TemplateExportDatasetPane';
-import TemplateExportInformationPane from './TemplateExportInformationPane';
-import TemplateExportJsonPane from './TemplateExportJsonPane';
+import TemplateExportDatasetPane from './content/TemplateExportDatasetPane';
+import TemplateExportInformationPane from './content/TemplateExportInformationPane';
+import TemplateExportJsonPane from './content/TemplateExportJsonPane';
 import { validateSpecificationForExport } from '../../core/template';
 import { i18nValue } from '../../core/ui/i18n';
 

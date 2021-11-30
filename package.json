@@ -3,8 +3,8 @@
     "license": "MIT",
     "scripts": {
         "pbiviz": "pbiviz",
-        "start": "npm run template-schemagen && jest && pbiviz start",
-        "package": "npm run template-schemagen && jest && pbiviz package",
+        "start": "npm run template-schemagen && pbiviz start",
+        "package": "npm run validate-config-for-commit && npm run template-schemagen && pbiviz package",
         "lint": "tslint -c tslint.json -p tsconfig.json",
         "test": "jest",
         "prettier-check": "prettier --config .prettierrc {src,spec,style}/**/{*.ts*,*.css,*.less} --check",

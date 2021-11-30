@@ -1,5 +1,6 @@
 import { Spec } from 'vega';
 import { authorInfo, autoSizeConfigSimple, vegaProviderInfo } from '..';
+import thumbnail from '../thumbnail';
 
 export const vScatterColored: Spec = {
     $schema: vegaProviderInfo,
@@ -106,7 +107,8 @@ export const vScatterColored: Spec = {
                 "A scatterplot, using numeric columns for X and Y axis values, and another column to categorize into color. If you're using a measure for an axis, ensure that you've added a column to produce a suitable row context.",
             author: authorInfo,
             uuid: 'ee329042-a7b4-43c0-9d7d-0494d8965a21',
-            generated: '2021-03-26T00:00:00.000Z'
+            generated: '2021-03-26T00:00:00.000Z',
+            previewImageBase64PNG: thumbnail.scatterColored
         },
         provider: 'vega',
         dataset: [

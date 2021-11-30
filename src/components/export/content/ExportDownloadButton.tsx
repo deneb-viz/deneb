@@ -4,12 +4,12 @@ import { Stack } from '@fluentui/react/lib/Stack';
 import { IconButton } from '@fluentui/react/lib/Button';
 import { IIconProps } from '@fluentui/react/lib/Icon';
 
-import store from '../../store';
-import { getExportTemplate } from '../../core/template';
-import { i18nValue } from '../../core/ui/i18n';
-import { iconButtonStyles } from '../../core/ui/icons';
-import { hostServices } from '../../core/services';
-import { isFeatureEnabled } from '../../core/utils/features';
+import store from '../../../store';
+import { getExportTemplate } from '../../../core/template';
+import { i18nValue } from '../../../core/ui/i18n';
+import { iconButtonStyles } from '../../../core/ui/icons';
+import { hostServices } from '../../../core/services';
+import { isFeatureEnabled } from '../../../core/utils/features';
 
 const downloadIcon: IIconProps = { iconName: 'Download' };
 
