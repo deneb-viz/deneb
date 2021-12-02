@@ -1,5 +1,11 @@
 import { GetState, PartialState, SetState } from 'zustand';
+import reduce from 'lodash/reduce';
+
 import { TStoreState } from '.';
+import {
+    doesEditorHaveUnallocatedFields,
+    IVisualValueMetadata
+} from '../core/data/dataset';
 import { TEditorRole } from '../core/services/JsonEditorServices';
 import { resolveVisualMode } from '../core/ui';
 import {
@@ -8,14 +14,21 @@ import {
     getResizablePaneSize
 } from '../core/ui/advancedEditor';
 import { getConfig } from '../core/utils/config';
-import { ICompiledSpec, IFixResult } from '../core/utils/specification';
+import {
+    getSpecFieldsInUse,
+    ICompiledSpec,
+    IFixResult
+} from '../core/utils/specification';
 
 export interface IEditorSlice {
     editorAutoApply: boolean;
     editorCanAutoApply: boolean;
+    editorFieldDatasetMismatch: boolean;
+    editorFieldsInUse: IVisualValueMetadata;
     editorFixResult: IFixResult;
     editorIsDirty: boolean;
     editorIsExportDialogVisible: boolean;
+    editorIsMapDialogVisible: boolean;
     editorIsNewDialogVisible: boolean;
     editorPaneIsExpanded: boolean;
     editorPreviewAreaWidth: number;
@@ -30,8 +43,13 @@ export interface IEditorSlice {
     setEditorFixErrorDismissed: () => void;
     toggleEditorAutoApplyStatus: () => void;
     toggleEditorPane: () => void;
+    renewEditorFieldsInUse: () => void;
     updateEditorDirtyStatus: (dirty: boolean) => void;
     updateEditorExportDialogVisible: (visible: boolean) => void;
+    updateEditorFieldMapping: (
+        payload: IEditorFieldMappingUpdatePayload
+    ) => void;
+    updateEditorMapDialogVisible: (visible: boolean) => void;
     updateEditorFixStatus: (payload: IFixResult) => void;
     updateEditorPaneWidth: (payload: IEditorPaneUpdatePayload) => void;
     updateEditorPreviewAreaWidth: () => void;
@@ -49,6 +67,8 @@ export const createEditorSlice = (
     <IEditorSlice>{
         editorAutoApply: false,
         editorCanAutoApply: true,
+        editorFieldDatasetMismatch: false,
+        editorFieldsInUse: {},
         editorFixResult: {
             success: true,
             dismissed: false,
@@ -57,6 +77,7 @@ export const createEditorSlice = (
         },
         editorIsDirty: false,
         editorIsExportDialogVisible: false,
+        editorIsMapDialogVisible: false,
         editorIsNewDialogVisible: true,
         editorPaneIsExpanded: true,
         editorPreviewAreaWidth: null,
@@ -73,6 +94,8 @@ export const createEditorSlice = (
         editorStagedConfig: null,
         editorStagedSpec: null,
         editorZoomLevel: getConfig().zoomLevel.default,
+        renewEditorFieldsInUse: () =>
+            set((state) => handleRenewEditorFieldsInUse(state)),
         setEditorFixErrorDismissed: () =>
             set((state) => handleSetEditorFixErrorDismissed(state)),
         toggleEditorAutoApplyStatus: () =>
@@ -80,10 +103,14 @@ export const createEditorSlice = (
         toggleEditorPane: () => set((state) => handleToggleEditorPane(state)),
         updateEditorDirtyStatus: (dirty) =>
             set((state) => handleUpdateEditorDirtyStatus(state, dirty)),
+        updateEditorFieldMapping: (payload) =>
+            set((state) => handleUpdateEditorFieldMappings(state, payload)),
         updateEditorExportDialogVisible: (visible) =>
             set((state) =>
                 handleUpdateEditorExportDialogVisible(state, visible)
             ),
+        updateEditorMapDialogVisible: (visible) =>
+            set((state) => handleUpdateEditorMapDialogVisible(state, visible)),
         updateEditorFixStatus: (payload) =>
             set((state) => handleUpdateEditorFixStatus(state, payload)),
         updateEditorPaneWidth: (payload) =>
@@ -106,6 +133,31 @@ interface IEditorPaneUpdatePayload {
     editorPaneWidth: number;
     editorPaneExpandedWidth: number;
 }
+
+interface IEditorFieldMappingUpdatePayload {
+    key: string;
+    objectName: string;
+}
+
+const handleRenewEditorFieldsInUse = (
+    state: TStoreState
+): PartialState<TStoreState, never, never, never, never> => {
+    const { metadata } = state.dataset;
+    const editorFieldsInUse = getSpecFieldsInUse(
+        metadata,
+        state.editorFieldsInUse,
+        true
+    );
+    const editorFieldDatasetMismatch = doesEditorHaveUnallocatedFields(
+        metadata,
+        editorFieldsInUse,
+        false
+    );
+    return {
+        editorFieldsInUse,
+        editorFieldDatasetMismatch
+    };
+};
 
 const handleSetEditorFixErrorDismissed = (
     state: TStoreState
@@ -159,11 +211,35 @@ const handleUpdateEditorDirtyStatus = (
     editorIsDirty: dirty
 });
 
+const handleUpdateEditorFieldMappings = (
+    state: TStoreState,
+    payload: IEditorFieldMappingUpdatePayload
+): PartialState<TStoreState, never, never, never, never> => ({
+    getEditorFieldsInUse: reduce(
+        state.editorFieldsInUse,
+        (result, value, key) => {
+            if (key === payload.key) {
+                value.templateMetadata.suppliedObjectName = payload.objectName;
+                result[key] = value;
+            }
+            return result;
+        },
+        <IVisualValueMetadata>{}
+    )
+});
+
 const handleUpdateEditorExportDialogVisible = (
     state: TStoreState,
     visible: boolean
 ): PartialState<TStoreState, never, never, never, never> => ({
     editorIsExportDialogVisible: visible
+});
+
+const handleUpdateEditorMapDialogVisible = (
+    state: TStoreState,
+    visible: boolean
+): PartialState<TStoreState, never, never, never, never> => ({
+    editorIsMapDialogVisible: visible
 });
 
 const handleUpdateEditorFixStatus = (

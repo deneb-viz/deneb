@@ -37,7 +37,7 @@ import { theme } from './core/ui/fluent';
 import { parseActiveSpec } from './core/utils/specification';
 import { fillPatternServices, hostServices } from './core/services';
 import { initializeIcons } from './core/ui/fluent';
-import { getDataset } from './core/data/dataset';
+import { getDataset, getTemplateFieldsFromMetadata } from './core/data/dataset';
 
 const owner = 'Visual';
 
@@ -185,11 +185,8 @@ export class Deneb implements IVisual {
                             options.dataViews[0]?.categorical
                         )
                     });
-
                     syncTemplateExportDataset(
-                        Object.entries(getDataset().metadata).map(
-                            ([k, v]) => v.templateMetadata
-                        )
+                        getTemplateFieldsFromMetadata(getDataset().metadata)
                     );
                     Debugger.log('Finished processing dataView.');
                 }

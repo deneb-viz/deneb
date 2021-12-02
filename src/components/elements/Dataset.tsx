@@ -6,7 +6,6 @@ import {
     DetailsListLayoutMode,
     IColumn,
     SelectionMode,
-    IDetailsHeaderProps,
     IDetailsListProps,
     IDetailsRowStyles
 } from '@fluentui/react/lib/DetailsList';
@@ -14,11 +13,17 @@ import {
 import { ITemplateDatasetField } from '../../core/template/schema';
 import DataTypeIcon from './DataTypeIcon';
 import CappedTextField from './CappedTextField';
-import { lookupMetadataColumn } from '../../core/data/dataset';
+import {
+    getDataset,
+    getTemplateFieldsFromMetadata,
+    lookupMetadataColumn
+} from '../../core/data/dataset';
 import { exportFieldConstraints } from '../../config';
 import { i18nValue } from '../../core/ui/i18n';
 import DataFieldLabel from './DataFieldLabel';
 import DatasetFieldAssignmentDropdown from './DatasetFieldAssignmentDropdown';
+import { TModalDialogType } from '../../core/ui/modal';
+import { getState } from '../../store';
 
 export const getExportColumns = (): IColumn[] => [
     getTypeColumn(),
@@ -30,6 +35,12 @@ export const getImportColumns = (): IColumn[] => [
     getTypeColumn(),
     getNameColumn(),
     getFieldAssignmentColumn()
+];
+
+export const getMapColumns = (): IColumn[] => [
+    getTypeColumn(),
+    getMapNameOriginalColumn(),
+    getMapFieldAssignmentColumn()
 ];
 
 const getTypeColumn = (): IColumn => ({
@@ -48,8 +59,23 @@ const getNameColumn = (): IColumn => ({
     maxWidth: 250
 });
 
+const getMapNameOriginalColumn = (): IColumn => ({
+    key: 'name',
+    name: i18nValue('Map_Fields_Dataset_Original_Name'),
+    fieldName: 'name',
+    minWidth: 150,
+    maxWidth: 250
+});
+
 const getFieldAssignmentColumn = (): IColumn => ({
     key: 'field_assignment',
+    name: i18nValue('Template_Dataset_Field_Assignment'),
+    fieldName: 'assignment',
+    minWidth: 300
+});
+
+const getMapFieldAssignmentColumn = (): IColumn => ({
+    key: 'map_field_assignment',
     name: i18nValue('Template_Dataset_Field_Assignment'),
     fieldName: 'assignment',
     minWidth: 300
@@ -79,8 +105,16 @@ const getNameField = (item: ITemplateDatasetField) => (
     <DataFieldLabel datasetField={item} />
 );
 
-const getAssignmentField = (item: ITemplateDatasetField) => (
-    <DatasetFieldAssignmentDropdown datasetField={item} />
+const getAssignmentField = (
+    item: ITemplateDatasetField,
+    type: TModalDialogType,
+    dataset: ITemplateDatasetField[]
+) => (
+    <DatasetFieldAssignmentDropdown
+        datasetField={item}
+        dialogType={type}
+        dataset={dataset}
+    />
 );
 
 const getExportNameField = (item: ITemplateDatasetField, index: number) => (
@@ -107,24 +141,30 @@ const getExportDescriptionField = (index: number) => (
     />
 );
 
-const renderDatasetHeader = (headerProps: IDetailsHeaderProps, defaultRender) =>
-    defaultRender({
-        ...headerProps
-    });
-
 const renderDatasetItem = (
     item: ITemplateDatasetField,
     index: number,
     column: IColumn
 ) => {
     const displayName = lookupMetadataColumn(item.key)?.displayName || '';
+    const { editorFieldsInUse } = getState();
     switch (column.key) {
         case 'type':
             return getDataTypeIcon(item);
         case 'name':
             return getNameField(item);
         case 'field_assignment':
-            return getAssignmentField(item);
+            return getAssignmentField(
+                item,
+                'new',
+                getTemplateFieldsFromMetadata(getDataset().metadata)
+            );
+        case 'map_field_assignment':
+            return getAssignmentField(
+                item,
+                'mapping',
+                getTemplateFieldsFromMetadata(editorFieldsInUse)
+            );
         case 'export_name':
             return getExportNameField(item, index);
         case 'export_description':

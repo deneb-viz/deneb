@@ -1,10 +1,12 @@
 export {
     allDataHaveIdentitites,
+    doesEditorHaveUnallocatedFields,
     getDataset,
     getEmptyDataset,
     getIdentityIndices,
     getMetadata,
     getMetadataByKeys,
+    getTemplateFieldsFromMetadata,
     getValues,
     getValuesByIndices,
     getValuesForDatum,
@@ -43,6 +45,21 @@ const allDataHaveIdentitites = (data: IVegaViewDatum[]) =>
     data?.length;
 
 /**
+ * Compare two sets of dataset metadata, as well as the current state of the comparison (if supplied)
+ * to ensure that any discrepancies can still be flagged to Deneb for addressing by the creator.
+ */
+const doesEditorHaveUnallocatedFields = (
+    datasetMetadata: IVisualValueMetadata,
+    editorFieldsInUseMetadata: IVisualValueMetadata,
+    currentState = false
+) =>
+    reduce(
+        editorFieldsInUseMetadata,
+        (result, value, key) => !(key in datasetMetadata) || result,
+        false
+    ) || currentState;
+
+/**
  * Get current processed dataset (metadata and values) from Deneb's store.
  */
 const getDataset = (): IVisualDataset => getState().dataset;
@@ -70,6 +87,18 @@ const getMetadata = () => getDataset().metadata;
  * Get a reduced set of metadata based on an array of key names from Deneb's store.
  */
 const getMetadataByKeys = (keys: string[] = []) => pick(getMetadata(), keys);
+
+/**
+ * Get the template columns from a supplied set of metadata.
+ */
+const getTemplateFieldsFromMetadata = (
+    metadata: IVisualValueMetadata
+): ITemplateDatasetField[] =>
+    reduce(
+        metadata,
+        (result, value, key) => result.concat(value.templateMetadata),
+        <ITemplateDatasetField[]>[]
+    );
 
 /**
  * Get all values (excluding metadata) for current processed dataset from Deneb's store.

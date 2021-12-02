@@ -36,7 +36,7 @@ import { i18nValue } from './i18n';
 /**
  * Modal dialog type (used for specific ops handling).
  */
-type TModalDialogType = 'new' | 'export';
+type TModalDialogType = 'new' | 'export' | 'mapping';
 
 /**
  * Populate suitable `IDialogContentProps` based on supplied i18n keys.
@@ -66,9 +66,16 @@ const isApplyDialogHidden = () => {
  * Determine whether Deneb is currently showing a dialog, based on the store.
  */
 const isDialogOpen = () => {
-    const { editorIsExportDialogVisible, editorIsNewDialogVisible } =
-        getState();
-    return editorIsNewDialogVisible || editorIsExportDialogVisible;
+    const {
+        editorIsExportDialogVisible,
+        editorIsMapDialogVisible,
+        editorIsNewDialogVisible
+    } = getState();
+    return (
+        editorIsNewDialogVisible ||
+        editorIsMapDialogVisible ||
+        editorIsExportDialogVisible
+    );
 };
 
 /**
@@ -146,7 +153,8 @@ const modalDialogContentStyles = (viewport: IViewport) => {
         root: {
             display: 'flex',
             minHeight: 0,
-            paddingTop: '10px'
+            paddingTop: '10px',
+            width: '100%'
         }
     },
     modalDialogInnerStackTokens: IStackTokens = {

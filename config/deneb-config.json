@@ -60,6 +60,10 @@
             "combination": "ctrl|alt|n",
             "functionalArea": "other"
         },
+        "mapFields": {
+            "combination": "ctrl|alt|f",
+            "functionalArea": "other"
+        },
         "openHelpUrl": {
             "combination": "ctrl|alt|h",
             "functionalArea": "other"

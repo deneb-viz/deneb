@@ -20,7 +20,8 @@ import {
     handleExportTemplate,
     handleNavSpec,
     handleNavConfig,
-    handleNavSettings
+    handleNavSettings,
+    handleMapFields
 } from '../core/ui/commands';
 
 const App = () => {
@@ -41,6 +42,7 @@ const App = () => {
         handleExportTemplate,
         hotkeyOptions
     );
+    useHotkeys(getCommandKey('mapFields'), handleMapFields, hotkeyOptions);
     useHotkeys(getCommandKey('openHelpUrl'), handleHelp, hotkeyOptions);
     useHotkeys(
         getCommandKey('navigateSpecification'),

@@ -9,6 +9,7 @@ export {
     isApplyButtonDisabled,
     openEditorPivotItem,
     openHelpSite,
+    openMapFieldsDialog,
     repairFormatJson,
     updateBooleanProperty,
     updateProvider,
@@ -74,6 +75,7 @@ export const handleFormat = () => executeEditorCommand(fixAndFormat);
 export const handleNewSpecification = () => executeEditorCommand(createNewSpec);
 export const handleExportTemplate = () =>
     executeEditorCommand(createExportableTemplate);
+export const handleMapFields = () => executeEditorCommand(openMapFieldsDialog);
 export const handleZoomIn = () => executeEditorCommand(zoomIn);
 export const handleZoomOut = () => executeEditorCommand(zoomOut);
 export const handleZoomReset = () => executeEditorCommand(zoomReset);
@@ -118,6 +120,10 @@ const closeModalDialog = (type: TModalDialogType) => {
             updateExportState('None');
             break;
         }
+        case 'mapping': {
+            dispatchMapFieldsDialog(false);
+            break;
+        }
     }
 };
 
@@ -125,6 +131,8 @@ const closeModalDialog = (type: TModalDialogType) => {
  * Handle the Generate JSON Template command.
  */
 const createExportableTemplate = () => dispatchExportDialog();
+
+const openMapFieldsDialog = () => dispatchMapFieldsDialog();
 
 /**
  * Handle the Create New Spec command.
@@ -168,6 +176,10 @@ const dispatchExportDialog = (show = true) => {
         getState();
     viewServices.setPreviewImage(false);
     updateEditorExportDialogVisible(show);
+};
+
+const dispatchMapFieldsDialog = (show = true) => {
+    getState().updateEditorMapDialogVisible(show);
 };
 
 const dispatchFourd3d3d = () => {

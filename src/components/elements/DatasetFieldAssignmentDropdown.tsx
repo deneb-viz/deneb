@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useEffect } from 'react';
 
 import {
     Dropdown,
@@ -6,6 +6,7 @@ import {
     IDropdownStyles
 } from '@fluentui/react/lib/Dropdown';
 import { Icon } from '@fluentui/react/lib/Icon';
+import reduce from 'lodash/reduce';
 
 import store from '../../store';
 import { resolveValueDescriptor } from '../../core/template';
@@ -13,50 +14,71 @@ import { ITemplateDatasetField } from '../../core/template/schema';
 import { getDataTypeIcon } from '../../core/ui/icons';
 import { getPlaceholderDropdownText } from '../../core/ui/labels';
 import { templateTypeIconOptionStyles } from '../../core/ui/fluent';
+import { TModalDialogType } from '../../core/ui/modal';
+import { IVisualValueMetadata } from '../../core/data/dataset';
 
 interface IDatasetFieldAssignmentDropdownProps {
     datasetField: ITemplateDatasetField;
+    dialogType: TModalDialogType;
+    dataset: ITemplateDatasetField[];
 }
 
 const templatePickerDropdownStyles: Partial<IDropdownStyles> = {
     dropdown: { width: 300 }
 };
 
+const getDropDownOptions = (
+    datasetField: ITemplateDatasetField,
+    metadata: IVisualValueMetadata
+): IDropdownOption[] =>
+    reduce(
+        metadata,
+        (result, value, key) => {
+            const disabled =
+                (value.isMeasure && datasetField.kind === 'column') ||
+                (value.isColumn && datasetField.kind === 'measure');
+            return result.concat({
+                key: value.queryName,
+                text: key,
+                disabled,
+                data: {
+                    placeholder: datasetField,
+                    icon: getDataTypeIcon(resolveValueDescriptor(value.type))
+                }
+            });
+        },
+        [] as IDropdownOption[]
+    );
+
 const DatasetFieldAssignmentDropdown: React.FC<IDatasetFieldAssignmentDropdownProps> =
-    (props) => {
+    ({ datasetField, dialogType }) => {
         const [selectedItem, setSelectedItem] =
-                React.useState<IDropdownOption>(),
-            { dataset, updateTemplatePlaceholder } = store((state) => state),
+                React.useState<IDropdownOption>(null),
+            { dataset, updateTemplatePlaceholder, updateEditorFieldMapping } =
+                store((state) => state),
             { metadata } = dataset,
-            { datasetField } = props,
             onChange = (
                 event: React.FormEvent<HTMLDivElement>,
                 item: IDropdownOption
             ): void => {
                 setSelectedItem(item);
-                updateTemplatePlaceholder({
-                    key: item.data.placeholder.key,
-                    objectName: item.text
-                });
+                const objectName = item.text;
+                switch (dialogType) {
+                    case 'new':
+                        return updateTemplatePlaceholder({
+                            key: item.data.placeholder.key,
+                            objectName
+                        });
+                    case 'mapping':
+                        return updateEditorFieldMapping({
+                            key: datasetField.name,
+                            objectName
+                        });
+                    default:
+                        return null;
+                }
             },
-            options = (): IDropdownOption[] => {
-                return Object.entries(metadata).map(([k, v]) => {
-                    let disabled =
-                        (v.isMeasure && datasetField.kind === 'column') ||
-                        (v.isColumn && datasetField.kind === 'measure');
-                    return {
-                        key: v.queryName,
-                        text: k,
-                        disabled: disabled,
-                        data: {
-                            placeholder: datasetField,
-                            icon: getDataTypeIcon(
-                                resolveValueDescriptor(v.type)
-                            )
-                        }
-                    };
-                });
-            },
+            options = () => getDropDownOptions(datasetField, metadata),
             onRenderOption = (option: IDropdownOption) => {
                 return (
                     <div>
@@ -73,7 +95,9 @@ const DatasetFieldAssignmentDropdown: React.FC<IDatasetFieldAssignmentDropdownPr
                 );
             },
             placeholderText = getPlaceholderDropdownText(datasetField),
-            selectedKey = selectedItem ? selectedItem.key : undefined;
+            selectedKey = selectedItem
+                ? selectedItem.key
+                : dataset.metadata[datasetField.name]?.queryName || null;
         return (
             <Dropdown
                 ariaLabel={datasetField.name}

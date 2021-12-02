@@ -31,6 +31,8 @@ export const ModalHeader: React.FC<IModalHeaderProps> = (props) => {
                     return 'New_Spec_Heading';
                 case 'export':
                     return 'Export_Spec_Heading';
+                case 'mapping':
+                    return 'Map_Fields_Heading';
             }
         };
     const titleId = useId('modal-dialog-heading');

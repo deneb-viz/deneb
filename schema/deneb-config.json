@@ -237,6 +237,7 @@
                 "repairFormatJson",
                 "newTemplate",
                 "newSpecification",
+                "mapFields",
                 "openHelpUrl",
                 "navigateSpecification",
                 "navigateConfig",
@@ -267,6 +268,10 @@
                 },
                 "newSpecification": {
                     "description": "Command to open the new specification dialog.",
+                    "$ref": "#/definitions/IKeyboardShortcut"
+                },
+                "mapFields": {
+                    "description": "Command to open field mapping dialog.",
                     "$ref": "#/definitions/IKeyboardShortcut"
                 },
                 "openHelpUrl": {

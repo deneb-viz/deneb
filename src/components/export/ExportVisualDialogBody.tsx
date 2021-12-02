@@ -23,7 +23,7 @@ export const ExportVisualDialogBody = () => {
             templateSelectedExportOperation,
             templateExportState,
             templateExportErrorMessage
-        } = store(),
+        } = store((state) => state),
         resolveExportPivot = () => {
             switch (templateExportState) {
                 case 'Editing': {

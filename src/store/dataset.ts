@@ -5,13 +5,16 @@ import ISelectionId = powerbi.visuals.ISelectionId;
 
 import { GetState, PartialState, SetState } from 'zustand';
 import { TStoreState } from '.';
-import { getEmptyDataset, IVisualDataset } from '../core/data/dataset';
+import {
+    doesEditorHaveUnallocatedFields,
+    getEmptyDataset,
+    IVisualDataset
+} from '../core/data/dataset';
 import { TDataProcessingStage } from '../core/data/dataView';
 import { resolveVisualMode } from '../core/ui';
 import { getResizablePaneSize } from '../core/ui/advancedEditor';
 import { getDataPointStatus } from '../core/interactivity/selection';
-
-const defaultViewport = { width: 0, height: 0 };
+import { getSpecFieldsInUse } from '../core/utils/specification';
 
 export interface IDatasetSlice {
     dataset: IVisualDataset;
@@ -104,16 +107,32 @@ const handleUpdateDataset = (
     payload: IVisualDatasetUpdatePayload
 ): PartialState<TStoreState, never, never, never, never> => {
     const datasetCategories = payload.categories || [];
+    const { dataset } = payload;
+    const editorFieldsInUse = getSpecFieldsInUse(
+        dataset.metadata,
+        state.editorFieldsInUse
+    );
+    const editorFieldDatasetMismatch = doesEditorHaveUnallocatedFields(
+        dataset.metadata,
+        editorFieldsInUse,
+        state.editorFieldDatasetMismatch
+    );
     return {
         dataset: payload.dataset,
         datasetCategories,
         datasetProcessingStage: 'Processed',
+        editorFieldDatasetMismatch,
+        editorFieldsInUse,
         editorPaneWidth: getResizablePaneSize(
             state.editorPaneExpandedWidth,
             state.editorPaneIsExpanded,
             state.visualViewportCurrent,
             state.visualSettings.editor.position
         ),
+        editorIsMapDialogVisible:
+            !state.editorIsNewDialogVisible &&
+            !state.editorIsExportDialogVisible &&
+            editorFieldDatasetMismatch,
         visualMode: resolveVisualMode(
             state.datasetViewHasValidMapping,
             state.visualEditMode,

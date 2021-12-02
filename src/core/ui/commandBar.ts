@@ -20,7 +20,8 @@ import {
     openHelpSite,
     repairFormatJson,
     handleApply,
-    handleAutoApply
+    handleAutoApply,
+    openMapFieldsDialog
 } from './commands';
 import { getAutoApplyIcon } from './icons';
 import { resolveAutoApplyLabel } from './labels';
@@ -87,7 +88,8 @@ const getCommandBarItems = (): ICommandBarItemProps[] => {
     return [
         getApplyCommandItem(),
         getAutoApplyToggle(editorAutoApply, editorCanAutoApply),
-        getRepairFormatCommandItem()
+        getRepairFormatCommandItem(),
+        getMapFieldsCommandItem()
     ];
 };
 
@@ -142,4 +144,14 @@ const getRepairFormatCommandItem = (): ICommandBarItemProps => ({
     iconProps: { iconName: 'Repair' },
     buttonStyles: commandBarButtonStyles,
     onClick: repairFormatJson
+});
+
+const getMapFieldsCommandItem = (): ICommandBarItemProps => ({
+    key: 'mapFields',
+    text: i18nValue('Button_Map_Fields'),
+    ariaLabel: i18nValue('Button_Map_Fields'),
+    iconOnly: true,
+    iconProps: { iconName: 'Switch' },
+    buttonStyles: commandBarButtonStyles,
+    onClick: openMapFieldsDialog
 });
