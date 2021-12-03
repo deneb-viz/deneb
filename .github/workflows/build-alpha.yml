@@ -37,11 +37,12 @@ jobs:
               run: npm ci
             - name: 'Alpha Channel Build'
               run: npm run package-alpha
-
-            - uses: 'marvinpinto/action-automatic-releases@latest'
+            - name: 'Publish/Update Pre-Release'
+              uses: 'marvinpinto/action-automatic-releases@latest'
               with:
-                  automatic_release_tag: 'alpha-channel'
+                  repo_token: '${{ secrets.GITHUB_TOKEN }}'
+                  automatic_release_tag: 'alpha'
                   prerelease: true
-                  title: 'Alpha Channel Build'
+                  title: 'Alpha Channel: Latest Build'
                   files: |
                       dist/*.pbiviz
