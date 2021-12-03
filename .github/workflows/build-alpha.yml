@@ -15,7 +15,8 @@ jobs:
               uses: lewagon/wait-on-check-action@v1.0.0
               with:
                   ref: ${{ github.ref }}
-                  check-name: 'CI'
+                  running-workflow-name: pre-release
+                  check-name: 'build'
                   repo-token: ${{ secrets.GITHUB_TOKEN }}
                   wait-interval: 10
             - name: 'Alpha Channel Build'
