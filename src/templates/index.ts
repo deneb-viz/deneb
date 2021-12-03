@@ -45,11 +45,13 @@ export {
 // Vega-Lite
 import { vlEmpty } from './vegaLite/vlEmpty';
 import { vlBarSimple } from './vegaLite/vlBarSimple';
+import { vlBarGrouped } from './vegaLite/vlBarGrouped';
 import { vlScatterColored } from './vegaLite/vlScatterColored';
 import { vlLineConfInterval } from './vegaLite/vlLineConfInterval';
 const vegaLiteTemplates: TopLevelSpec[] = [
     vlEmpty,
     vlBarSimple,
+    vlBarGrouped,
     vlScatterColored,
     vlLineConfInterval
 ];

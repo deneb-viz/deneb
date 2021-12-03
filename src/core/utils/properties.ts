@@ -55,19 +55,19 @@ interface IPersistenceProperty {
 const getNewObjectInstance = (
     objectName: string
 ): VisualObjectInstancesToPersist => {
-    const { dataViewObjects } = getState().visual;
+    const { datasetViewObjects } = getState();
     return {
         replace: [
             {
                 objectName: objectName,
                 selector: null,
-                properties: cloneDeep(dataViewObjects[objectName]) || {}
+                properties: cloneDeep(datasetViewObjects[objectName]) || {}
             }
         ]
     };
 };
 
 /**
- * Convenience function that returns the visual host's `persistProperties` instance from Deneb's Redux store.
+ * Convenience function that returns the visual host's `persistProperties` instance from Deneb's store.
  */
 const persistProperties = () => hostServices.persistProperties;

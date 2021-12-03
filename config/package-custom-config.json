@@ -1,0 +1,37 @@
+{
+    "alpha": {
+        "pbiviz": {
+            "visual": {
+                "displayName": "Deneb (Alpha Channel Build)",
+                "description": "NOT FOR PRODUCTION USE",
+                "guid": "ALPHA{0}"
+            },
+            "assets": {
+                "icon": "assets/icon_alpha.png"
+            }
+        }
+    },
+    "beta": {
+        "pbiviz": {
+            "visual": {
+                "displayName": "Deneb (Beta Channel Build)",
+                "description": "NOT FOR PRODUCTION USE",
+                "guid": "BETA{0}"
+            },
+            "assets": {
+                "icon": "assets/icon_beta.png"
+            }
+        }
+    },
+    "standalone": {
+        "pbiviz": {
+            "visual": {
+                "displayName": "Deneb (Standalone Version)",
+                "guid": "STANDALONE{0}"
+            },
+            "assets": {
+                "icon": "assets/icon_standalone.png"
+            }
+        }
+    }
+}

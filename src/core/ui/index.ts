@@ -16,7 +16,6 @@ import ViewMode = powerbi.ViewMode;
 import EditMode = powerbi.EditMode;
 
 import { getVisualMetadata, providerVersions } from '../../core/utils/config';
-import { IDataViewFlags } from '../../core/data/dataView';
 import { ICompiledSpec } from '../utils/specification';
 import { i18nValue } from '../../core/ui/i18n';
 
@@ -31,25 +30,24 @@ const getVersionInfo = () => {
 };
 
 /**
- * Calculated during Redux store update, and based on this state, determine what interface should be displayed to the end-user.
+ * Calculated during store update, and based on this state, determine what interface should be displayed to the end-user.
  */
 const resolveVisualMode = (
-    dataViewFlags: IDataViewFlags,
+    datasetViewHasValidMapping: boolean,
     editMode: EditMode,
     isInFocus: boolean,
     viewMode: ViewMode,
     spec: ICompiledSpec
 ): TVisualMode => {
-    const { hasValidDataViewMapping } = dataViewFlags;
     switch (true) {
-        case hasValidDataViewMapping &&
+        case datasetViewHasValidMapping &&
             isReadWriteAdvanced(viewMode, editMode) &&
             isInFocus:
             return 'Editor';
         case isReadOnly(viewMode) && hasNoSpec(spec):
             return 'SplashReadOnly';
         case isReadWriteDefault(viewMode, editMode) &&
-            hasValidDataViewMapping &&
+            datasetViewHasValidMapping &&
             hasNoSpec(spec):
             return 'DataNoSpec';
         case isReadWriteDefault(viewMode, editMode) && hasNoSpec(spec):

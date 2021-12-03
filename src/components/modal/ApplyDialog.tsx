@@ -3,7 +3,7 @@ import * as React from 'react';
 import { Dialog, DialogFooter } from '@fluentui/react/lib/Dialog';
 import { PrimaryButton, DefaultButton } from '@fluentui/react/lib/Button';
 
-import { applyChanges, discardChanges } from '../../core/ui/commands';
+import { discardChanges } from '../../core/ui/commands';
 import {
     getDialogContentProps,
     isApplyDialogHidden,
@@ -11,10 +11,11 @@ import {
 } from '../../core/ui/modal';
 import { i18nValue } from '../../core/ui/i18n';
 import { buttonStyles } from '../../core/ui/fluent';
+import { persist } from '../../core/utils/specification';
 
 export const ApplyDialog: React.FunctionComponent = () => {
     const hidden = isApplyDialogHidden(),
-        handleApply = () => applyChanges(),
+        handleApply = () => persist(false),
         handleDiscard = () => discardChanges(),
         dialogContentProps = getDialogContentProps(
             'Dialog_Unapplied_Changes_Title',

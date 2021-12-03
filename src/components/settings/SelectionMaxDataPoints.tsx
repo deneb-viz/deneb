@@ -1,7 +1,6 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 
-import { state } from '../../store';
+import store from '../../store';
 import { isDataPointEnabled } from '../../core/interactivity/selection';
 
 import { IconButton } from '@fluentui/react/lib/Button';
@@ -15,7 +14,9 @@ import { getConfig } from '../../core/utils/config';
 import { updateSelectionMaxDataPoints } from '../../core/ui/commands';
 
 const SelectionMaxDataPoints: React.FC = () => {
-    const { selectionMaxDataPoints } = useSelector(state).visual.settings.vega,
+    const { selectionMaxDataPoints } = store(
+            (state) => state.visualSettings.vega
+        ),
         { minDataPointsValue, maxDataPointsValue, dataPointsStepValue } =
             getConfig().selection,
         handleChange = React.useCallback(

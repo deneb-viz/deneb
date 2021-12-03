@@ -1,9 +1,11 @@
 export {
     createFromTemplate,
     fixAndFormat,
+    getSpecFieldsInUse,
     hasLiveSpecChanged,
     parseActiveSpec,
     persist,
+    remapSpecificationFields,
     stageEditorData,
     ICompiledSpec,
     IFixResult,
@@ -16,6 +18,9 @@ import * as VegaLite from 'vega-lite';
 import { TopLevelSpec } from 'vega-lite';
 import jsonrepair from 'jsonrepair';
 
+import forIn from 'lodash/forIn';
+import reduce from 'lodash/reduce';
+
 import { getConfig } from './config';
 import {
     configEditorService,
@@ -27,24 +32,31 @@ import {
     resolveObjectProperties,
     updateObjectProperties
 } from './properties';
-import { getState, store } from '../../store';
+import { getState } from '../../store';
 import {
+    getEscapedReplacerPattern,
+    getExportFieldTokenPatterns,
+    getFieldExpression,
     getInteractivityPropsFromTemplate,
-    getReplacedTemplate
+    getReducedPlaceholdersForMetadata,
+    getReplacedTemplate,
+    getResequencedMetadata,
+    getSpecWithFieldPlaceholders,
+    getTemplatePlaceholderKey
 } from '../template';
-import {
-    updateDirtyFlag,
-    updateFixStatus,
-    updateSpec,
-    updateStagedSpecData,
-    updateStagedConfigData
-} from '../../store/visual';
 import { i18nValue } from '../ui/i18n';
 import { cleanParse, getJsonAsIndentedString } from './json';
 import { getPatchedVegaSpec } from '../vega/vegaUtils';
 import { getPatchedVegaLiteSpec } from '../vega/vegaLiteUtils';
 import { TSpecProvider } from '../vega';
-import { ITemplateInteractivityOptions } from '../template/schema';
+import {
+    ITemplateDatasetField,
+    ITemplateInteractivityOptions
+} from '../template/schema';
+import {
+    getTemplateFieldsFromMetadata,
+    IVisualValueMetadata
+} from '../data/dataset';
 
 /**
  * For the supplied provider and specification template, add this to the visual and persist to properties, ready for
@@ -54,9 +66,10 @@ const createFromTemplate = (
     provider: TSpecProvider,
     template: Spec | TopLevelSpec
 ) => {
-    const jsonSpec = getReplacedTemplate(template),
-        jsonConfig = getJsonAsIndentedString(template.config),
-        interactivity = getInteractivityPropsFromTemplate(template);
+    const jsonSpec = getReplacedTemplate(template);
+    const jsonConfig = getJsonAsIndentedString(template.config);
+    const interactivity = getInteractivityPropsFromTemplate(template);
+    const { renewEditorFieldsInUse } = getState();
     updateObjectProperties(
         resolveObjectProperties('vega', [
             ...[
@@ -68,6 +81,7 @@ const createFromTemplate = (
             ...resolveInteractivityProps(interactivity)
         ])
     );
+    renewEditorFieldsInUse();
     specEditorService.setText(jsonSpec);
     configEditorService.setText(jsonConfig);
 };
@@ -108,19 +122,17 @@ const fixAndFormat = () => {
 
 /**
  * Looks at the active specification and config in the visual editors and compares with persisted values in the visual properties. Used to set
- * the `isDirty` flag in the Redux store.
+ * the `isDirty` flag in the store.
  */
 const hasLiveSpecChanged = () => {
-    const liveSpec = getCleanEditorJson('spec'),
-        persistedSpec = getState().visual.settings.vega.jsonSpec,
-        liveConfig = getCleanEditorJson('config'),
-        persistedConfig = getState().visual.settings.vega.jsonConfig;
-    return liveSpec != persistedSpec || liveConfig != persistedConfig;
+    const { jsonSpec, jsonConfig } = getState().visualSettings.vega,
+        liveSpec = getCleanEditorJson('spec'),
+        liveConfig = getCleanEditorJson('config');
+    return liveSpec != jsonSpec || liveConfig != jsonConfig;
 };
 
 const parseActiveSpec = () => {
-    const { settings } = getState().visual,
-        { provider, jsonSpec } = settings.vega;
+    const { provider, jsonSpec } = getState().visualSettings.vega;
     try {
         if (!jsonSpec) {
             // Spec hasn't been edited yet
@@ -168,16 +180,23 @@ const parseActiveSpec = () => {
 };
 
 /**
- * Resolve the spec/config and use the `properties` API for persistence. Also resets the `isDirty` flag in the Redux store.
+ * Resolve the spec/config and use the `properties` API for persistence. Also resets the `isDirty` flag in the store.
  */
 const persist = (stage = true) => {
     stage && stageEditorData('spec');
     stage && stageEditorData('config');
-    store.dispatch(updateDirtyFlag(false));
+    const {
+        editorStagedConfig,
+        editorStagedSpec,
+        renewEditorFieldsInUse,
+        updateEditorDirtyStatus
+    } = getState();
+    updateEditorDirtyStatus(false);
+    renewEditorFieldsInUse();
     updateObjectProperties(
         resolveObjectProperties('vega', [
-            { name: 'jsonSpec', value: getState().visual.stagedSpec },
-            { name: 'jsonConfig', value: getState().visual.stagedConfig }
+            { name: 'jsonSpec', value: editorStagedSpec },
+            { name: 'jsonConfig', value: editorStagedConfig }
         ])
     );
 };
@@ -197,18 +216,16 @@ const resolveInteractivityProps = (
     [];
 
 /**
- * Add the specified editor's current text to the staging area in the Redux store. This can then be used for persistence, or
+ * Add the specified editor's current text to the staging area in the store. This can then be used for persistence, or
  * application of changes if the creator exits the advanced editor and there are unapplied changes.
  */
 const stageEditorData = (role: TEditorRole) => {
     switch (role) {
         case 'spec':
-            store.dispatch(updateStagedSpecData(getCleanEditorJson('spec')));
+            getState().updateEditorStagedSpec(getCleanEditorJson('spec'));
             return;
         case 'config':
-            store.dispatch(
-                updateStagedConfigData(getCleanEditorJson('config'))
-            );
+            getState().updateEditorStagedConfig(getCleanEditorJson('config'));
             return;
     }
 };
@@ -265,17 +282,17 @@ const cleanJsonInputForPersistence = (
 };
 
 /**
- * Dispatch the results of a fix and repair operation to the Redux store.
+ * Dispatch the results of a fix and repair operation to the store.
  */
 const dispatchFixStatus = (result: IFixResult) => {
-    store.dispatch(updateFixStatus(result));
+    getState().updateEditorFixStatus(result);
 };
 
 /**
- * Dispatch a compiled specification to the Redux store.
+ * Dispatch a compiled specification to the store.
  */
 const dispatchSpec = (compiledSpec: ICompiledSpec) => {
-    store.dispatch(updateSpec(compiledSpec));
+    getState().updateEditorSpec(compiledSpec);
 };
 
 /**
@@ -288,6 +305,86 @@ const getCleanEditorJson = (role: TEditorRole) =>
             ? specEditorService.getText()
             : configEditorService.getText()
     );
+
+/**
+ * Process the editor "fields in use" metadata to ensure that we either preserve fields that might have been removed
+ * from our datase (and clear out their supplied object name for another attempt), or whether to start again.
+ */
+const getExistingSpecFieldsInUse = (
+    metadata: IVisualValueMetadata,
+    renew = false
+): IVisualValueMetadata =>
+    renew
+        ? {}
+        : reduce(
+              metadata,
+              (result, value, key) => {
+                  delete value.templateMetadata.suppliedObjectName;
+                  result[key] = value;
+                  return result;
+              },
+              <IVisualValueMetadata>{}
+          );
+
+/**
+ * Interrogate the current spec against the dataset metadata and existing list of fields in use from the store for
+ * known field patterns and get an `IVisualValueMetadata` representation of any that have been identified since the
+ * last execution. We can use this to compare to the current dataset to see if there are gaps.
+ */
+const getSpecFieldsInUse = (
+    metadata: IVisualValueMetadata,
+    editorFieldsInUse: IVisualValueMetadata,
+    renew = false
+): IVisualValueMetadata => {
+    const { jsonSpec } = getState().visualSettings.vega;
+    const spec = getCleanEditorJson('spec') || jsonSpec;
+    let newFieldsInUse = getExistingSpecFieldsInUse(editorFieldsInUse, renew);
+    forIn(metadata, (value, key) => {
+        const found = doesSpecContainKeyForMetadata(key, spec, metadata);
+        if (found) {
+            value.templateMetadata.suppliedObjectName = key;
+            newFieldsInUse[key] = value;
+        } else {
+            delete newFieldsInUse[key];
+        }
+    });
+    return getResequencedMetadata(newFieldsInUse);
+};
+
+/**
+ * For the given field key, check the spec for its occurrence using all established RegEx patterns.
+ */
+const doesSpecContainKeyForMetadata = (
+    key: string,
+    spec: string,
+    metadata: IVisualValueMetadata
+) =>
+    reduce(
+        getExportFieldTokenPatterns(key),
+        (result, expr) => {
+            return (
+                (getFieldExpression(expr).test(spec) && key in metadata) ||
+                result
+            );
+        },
+        false
+    );
+
+/**
+ * For a supplied template, substitute placeholder values and return a stringified representation of the object.
+ */
+const remapSpecificationFields = () => {
+    const { updateEditorMapDialogVisible } = getState();
+    const dataset = getTemplateFieldsFromMetadata(getState().editorFieldsInUse);
+    const spec = getSpecWithFieldPlaceholders(
+        specEditorService.getText(),
+        dataset
+    );
+    const replaced = getReducedPlaceholdersForMetadata(dataset, spec);
+    specEditorService.setText(replaced);
+    updateEditorMapDialogVisible(false);
+    persist();
+};
 
 /**
  * For the results of a fix and repair operation, resolve the error message for the end-user (if applicable).

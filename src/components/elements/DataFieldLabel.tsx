@@ -1,22 +1,26 @@
 import * as React from 'react';
 
-import { Label } from '@fluentui/react/lib/Label';
-import { Stack } from '@fluentui/react/lib/Stack';
+import { Text } from '@fluentui/react/lib/Text';
+import { Stack, IStackStyles } from '@fluentui/react/lib/Stack';
 
-import DataTypeIcon from './DataTypeIcon';
 import FieldInfoIcon from './FieldInfoIcon';
 import { ITemplateDatasetField } from '../../core/template/schema';
 
-interface IDataFieldLabelProps {
+export interface IDataFieldLabelProps {
     datasetField: ITemplateDatasetField;
 }
+
+const stackStyles: IStackStyles = {
+    root: {
+        minHeight: 32
+    }
+};
 
 const DataFieldLabel: React.FC<IDataFieldLabelProps> = (props) => {
     const { datasetField } = props;
     return (
-        <Stack horizontal verticalAlign='center'>
-            <DataTypeIcon datasetField={datasetField} />
-            <Label>{datasetField.name}</Label>{' '}
+        <Stack horizontal verticalAlign='center' styles={stackStyles}>
+            <Text>{datasetField.name}</Text>{' '}
             <FieldInfoIcon description={datasetField.description} />
         </Stack>
     );

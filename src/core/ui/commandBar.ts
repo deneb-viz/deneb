@@ -14,20 +14,21 @@ import {
 
 import { resolveAutoApplyToggleAria } from './aria';
 import {
-    isApplyButtonEnabled,
-    applyChanges,
+    isApplyButtonDisabled,
     createExportableTemplate,
     createNewSpec,
     openHelpSite,
     repairFormatJson,
-    toggleAutoApplyState
+    handleApply,
+    handleAutoApply,
+    openMapFieldsDialog
 } from './commands';
 import { getAutoApplyIcon } from './icons';
 import { resolveAutoApplyLabel } from './labels';
 
 import { theme } from './fluent';
 import { i18nValue } from './i18n';
-import { getState } from '../../store';
+import store, { getState } from '../../store';
 
 const commandBarStyles: ICommandBarStyles = {
         root: {
@@ -57,8 +58,8 @@ const getApplyCommandItem = (): ICommandBarItemProps => ({
         iconName: 'Play'
     },
     buttonStyles: commandBarButtonStyles,
-    disabled: isApplyButtonEnabled(),
-    onClick: applyChanges
+    disabled: isApplyButtonDisabled(),
+    onClick: handleApply
 });
 
 const getAutoApplyToggle = (
@@ -76,18 +77,19 @@ const getAutoApplyToggle = (
     checked: enabled,
     buttonStyles: commandBarButtonStyles,
     disabled: !canAutoApply,
-    onClick: toggleAutoApplyState
+    onClick: handleAutoApply
 });
 
 /**
  * Gets the command bar items for the left side of the bar, which is concerned with persistence.
  */
 const getCommandBarItems = (): ICommandBarItemProps[] => {
-    const { autoApply, canAutoApply } = getState().visual;
+    const { editorAutoApply, editorCanAutoApply } = store((state) => state);
     return [
         getApplyCommandItem(),
-        getAutoApplyToggle(autoApply, canAutoApply),
-        getRepairFormatCommandItem()
+        getAutoApplyToggle(editorAutoApply, editorCanAutoApply),
+        getRepairFormatCommandItem(),
+        getMapFieldsCommandItem()
     ];
 };
 
@@ -101,7 +103,7 @@ const getCommandBarFarItems = (): ICommandBarItemProps[] => [
 ];
 
 const getExportSpecCommandItem = (): ICommandBarItemProps => {
-    const { spec } = getState().visual;
+    const { editorSpec } = getState();
     return {
         key: 'export',
         text: i18nValue('Button_Export'),
@@ -109,7 +111,7 @@ const getExportSpecCommandItem = (): ICommandBarItemProps => {
         ariaLabel: i18nValue('Button_Export'),
         iconProps: { iconName: 'Share' },
         buttonStyles: commandBarButtonStyles,
-        disabled: !(spec?.status === 'valid'),
+        disabled: !(editorSpec?.status === 'valid'),
         onClick: createExportableTemplate
     };
 };
@@ -142,4 +144,14 @@ const getRepairFormatCommandItem = (): ICommandBarItemProps => ({
     iconProps: { iconName: 'Repair' },
     buttonStyles: commandBarButtonStyles,
     onClick: repairFormatJson
+});
+
+const getMapFieldsCommandItem = (): ICommandBarItemProps => ({
+    key: 'mapFields',
+    text: i18nValue('Button_Map_Fields'),
+    ariaLabel: i18nValue('Button_Map_Fields'),
+    iconOnly: true,
+    iconProps: { iconName: 'Switch' },
+    buttonStyles: commandBarButtonStyles,
+    onClick: openMapFieldsDialog
 });

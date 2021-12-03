@@ -1,6 +1,4 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
-import { Text } from '@fluentui/react/lib/Text';
 import {
     ChoiceGroup,
     IChoiceGroupOption
@@ -8,13 +6,13 @@ import {
 
 import { updateProvider } from '../../core/ui/commands';
 import { choiceGroupStyles, choiceItemStyles } from '../../config/styles';
-import { state } from '../../store';
+import store from '../../store';
 import { i18nValue } from '../../core/ui/i18n';
 import { TSpecProvider } from '../../core/vega';
+import { Paragraph } from '../elements/Typography';
 
 const ProviderSettings = () => {
-    const { settings } = useSelector(state).visual,
-        { vega } = settings,
+    const { vega } = store((state) => state.visualSettings),
         handleProvider = React.useCallback(
             (
                 ev: React.SyntheticEvent<HTMLElement>,
@@ -45,9 +43,7 @@ const ProviderSettings = () => {
                 selectedKey={vega.provider}
                 label={i18nValue('Objects_Vega_Provider')}
             />
-            <Text variant='smallPlus'>
-                {i18nValue('Assistive_Text_Provider')}
-            </Text>
+            <Paragraph>{i18nValue('Assistive_Text_Provider')}</Paragraph>
         </>
     );
 };

@@ -117,7 +117,7 @@
                     "type": "string"
                 },
                 "previewImageBase64PNG": {
-                    "description": "Base64-encoded image/png string, representing a preview image for the template in external tools.",
+                    "description": "Base64-encoded image/png string, representing a preview image for the template in external tools.\nShould be a maximum of 150 x 150 pixels.",
                     "type": "string"
                 },
                 "supportUri": {

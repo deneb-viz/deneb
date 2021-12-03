@@ -1,10 +1,12 @@
 export {
     allDataHaveIdentitites,
+    doesEditorHaveUnallocatedFields,
     getDataset,
     getEmptyDataset,
     getIdentityIndices,
     getMetadata,
     getMetadataByKeys,
+    getTemplateFieldsFromMetadata,
     getValues,
     getValuesByIndices,
     getValuesForDatum,
@@ -43,9 +45,24 @@ const allDataHaveIdentitites = (data: IVegaViewDatum[]) =>
     data?.length;
 
 /**
- * Get current processed dataset (metadata and values) from Deneb's Redux store.
+ * Compare two sets of dataset metadata, as well as the current state of the comparison (if supplied)
+ * to ensure that any discrepancies can still be flagged to Deneb for addressing by the creator.
  */
-const getDataset = () => getState().visual?.dataset;
+const doesEditorHaveUnallocatedFields = (
+    datasetMetadata: IVisualValueMetadata,
+    editorFieldsInUseMetadata: IVisualValueMetadata,
+    currentState = false
+) =>
+    reduce(
+        editorFieldsInUseMetadata,
+        (result, value, key) => !(key in datasetMetadata) || result,
+        false
+    ) || currentState;
+
+/**
+ * Get current processed dataset (metadata and values) from Deneb's store.
+ */
+const getDataset = (): IVisualDataset => getState().dataset;
 
 /**
  * Ensures an empty dataset is made available.
@@ -62,17 +79,29 @@ const getIdentityIndices = (data: IVegaViewDatum[]): number[] =>
     data?.map((d) => d?.identityIndex);
 
 /**
- * Get all metadata for current processed dataset from Deneb's Redux store.
+ * Get all metadata for current processed dataset from Deneb's store.
  */
 const getMetadata = () => getDataset().metadata;
 
 /**
- * Get a reduced set of metadata based on an array of key names from Deneb's Redux store.
+ * Get a reduced set of metadata based on an array of key names from Deneb's store.
  */
 const getMetadataByKeys = (keys: string[] = []) => pick(getMetadata(), keys);
 
 /**
- * Get all values (excluding metadata) for current processed dataset from Deneb's Redux store.
+ * Get the template columns from a supplied set of metadata.
+ */
+const getTemplateFieldsFromMetadata = (
+    metadata: IVisualValueMetadata
+): ITemplateDatasetField[] =>
+    reduce(
+        metadata,
+        (result, value, key) => result.concat(value.templateMetadata),
+        <ITemplateDatasetField[]>[]
+    );
+
+/**
+ * Get all values (excluding metadata) for current processed dataset from Deneb's store.
  */
 const getValues = () => getDataset().values;
 
@@ -116,6 +145,14 @@ const getMatchedValues = (
     }
     return (matchedRows.length > 0 && matchedRows) || null;
 };
+
+/**
+ * Do a simple lookup against the store dataset for a given key
+ */
+export const lookupMetadataColumn = (key: string) =>
+    Object.entries(getState().dataset)?.find(
+        ([k, v]) => v.queryName === key
+    )?.[1];
 
 /**
  * For a given (subset of) `metadata` and `datum`, create an `IVisualValueRow` that can be used to search for matching values in the visual's dataset.

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import { ISliderStyles, Slider } from '@fluentui/react/lib/Slider';
 import { StackItem, IStackItemStyles } from '@fluentui/react/lib/Stack';
@@ -13,19 +13,14 @@ import {
 } from '../../../core/ui/icons';
 import ZoomButton from './ZoomButton';
 import { i18nValue } from '../../../core/ui/i18n';
+import { zoomConfig } from '../../../core/ui/dom';
 import {
-    getZoomInLevel,
-    getZoomOutLevel,
-    useZoomLevel,
-    zoomConfig
-} from '../../../context/zoomLevel';
-import { getZoomToFitScale } from '../../../core/ui/advancedEditor';
-import {
-    getCommandKeyBinding,
-    hotkeyOptions,
-    IKeyboardShortcut
+    handleZoomFit,
+    handleZoomIn,
+    handleZoomOut,
+    handleZoomReset
 } from '../../../core/ui/commands';
-import { useHotkeys } from 'react-hotkeys-hook';
+import store from '../../../store';
 
 const sliderStackItemStyles: IStackItemStyles = {
         root: {
@@ -47,51 +42,16 @@ const sliderStackItemStyles: IStackItemStyles = {
     };
 
 const ZoomControls: React.FC = () => {
-    const { level, setLevel, hotkeysBound, setHotkeysBound } = useZoomLevel()!,
+    const { editorZoomLevel, updateEditorZoomLevel } = store((state) => state),
         valueFormat = (value: number) => `${value}%`,
-        zoomReset = () => setLevel(zoomConfig.default),
-        zoomToLevel = (value: number) => setLevel(value),
-        zoomIn = () => setLevel((level) => getZoomInLevel(level)),
-        zoomOut = () => setLevel((level) => getZoomOutLevel(level)),
-        zoomFit = () => setLevel(getZoomToFitScale()),
-        getZoomHotKeys = (): IKeyboardShortcut[] => [
-            {
-                keys: getCommandKeyBinding('zoomIn'),
-                command: zoomIn,
-                options: hotkeyOptions
-            },
-            {
-                keys: getCommandKeyBinding('zoomOut'),
-                command: zoomOut,
-                options: hotkeyOptions
-            },
-            {
-                keys: getCommandKeyBinding('zoomReset'),
-                command: zoomReset,
-                options: hotkeyOptions
-            },
-            {
-                keys: getCommandKeyBinding('zoomFit'),
-                command: zoomFit,
-                options: hotkeyOptions
-            }
-        ];
-    !hotkeysBound &&
-        getZoomHotKeys()?.forEach((hk) =>
-            useHotkeys(hk.keys, hk.command, hk.options)
-        );
-    useEffect(() => {
-        return () => {
-            hotkeysBound && setHotkeysBound(true);
-        };
-    }, []);
+        zoomToLevel = (value: number) => updateEditorZoomLevel(value);
     return (
         <>
             <ZoomButton
                 i18nKey='Button_ZoomOut'
                 iconName='CalculatorSubtract'
-                onClick={zoomOut}
-                disabled={isZoomOutIconDisabled(level)}
+                onClick={handleZoomOut}
+                disabled={isZoomOutIconDisabled(editorZoomLevel)}
             />
             <StackItem styles={sliderStackItemStyles}>
                 <Slider
@@ -99,7 +59,7 @@ const ZoomControls: React.FC = () => {
                     min={zoomConfig.min}
                     max={zoomConfig.max}
                     step={zoomConfig.step}
-                    value={level}
+                    value={editorZoomLevel}
                     defaultValue={zoomConfig.default}
                     showValue={false}
                     onChange={zoomToLevel}
@@ -109,24 +69,24 @@ const ZoomControls: React.FC = () => {
             <ZoomButton
                 i18nKey='Button_ZoomIn'
                 iconName='CalculatorAddition'
-                onClick={zoomIn}
-                disabled={isZoomInIconDisabled(level)}
+                onClick={handleZoomIn}
+                disabled={isZoomInIconDisabled(editorZoomLevel)}
             />
             <ZoomButton
                 i18nKey='Button_ZoomReset'
                 iconName='Refresh'
-                onClick={zoomReset}
-                disabled={isZoomResetIconDisabled(level)}
+                onClick={handleZoomReset}
+                disabled={isZoomResetIconDisabled(editorZoomLevel)}
             />
             <ZoomButton
                 i18nKey='Button_ZoomFit'
                 iconName='ZoomToFit'
-                onClick={zoomFit}
+                onClick={handleZoomFit}
                 disabled={isZoomControlDisabled()}
             />
             <StackItem styles={valueStackItemStyles}>
                 <TooltipHost content={i18nValue('Zoom_Level_Tooltip')}>
-                    <Text>{valueFormat(level)}</Text>
+                    <Text>{valueFormat(editorZoomLevel)}</Text>
                 </TooltipHost>
             </StackItem>
         </>

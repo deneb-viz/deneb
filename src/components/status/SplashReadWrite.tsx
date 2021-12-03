@@ -9,7 +9,7 @@ import StandardHeaderContent from './StandardHeaderContent';
 import UsefulResources from './UsefulResources';
 
 import { BodyHeading, Paragraph } from '../elements/Typography';
-import { getState } from '../../store';
+import store from '../../store';
 import { i18nValue } from '../../core/ui/i18n';
 import { hostServices } from '../../core/services';
 
@@ -27,9 +27,9 @@ const SplashReadWrite = () => (
 );
 
 const resolveInstructions = () => {
-    const { editMode } = getState().visual;
+    const { visualEditMode } = store((state) => state);
     useEffect(() => hostServices.renderingFinished());
-    switch (editMode) {
+    switch (visualEditMode) {
         case EditMode.Advanced:
             return (
                 <Paragraph>

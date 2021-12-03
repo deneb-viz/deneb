@@ -1,12 +1,11 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 import { createClassFromSpec, VegaLite, SignalListeners } from 'react-vega';
 import * as Vega from 'vega';
 
 import Debugger from '../Debugger';
-import { state } from '../store';
+import store from '../store';
 import SpecificationError from './status/SpecificationError';
-import FourD3D3D3 from '../components/editor/FourD3D3D3';
+import FourD3D3D3 from '../components/editor/preview/FourD3D3D3';
 import SplashNoSpec from './status/SplashNoSpec';
 
 import { getTooltipHandler } from '../core/interactivity/tooltip';
@@ -25,14 +24,16 @@ import { View } from 'vega';
 const VisualRender = () => {
     Debugger.log('Rendering Component: [VisualRender]...');
 
-    const { fourd3d3d, settings, spec } = useSelector(state).visual,
-        { vega } = settings,
+    const { editorSpec, visual4d3d3d, visualSettings } = store(
+            (state) => state
+        ),
+        { vega } = visualSettings,
         { locale } = hostServices,
         data = getViewDataset(),
         specification = getViewSpec(),
         config = getViewConfig(),
         tooltipHandler = getTooltipHandler(
-            settings.vega.enableTooltips,
+            vega.enableTooltips,
             hostServices.tooltipService
         ),
         renderMode = vega.renderMode as Vega.Renderers,
@@ -44,9 +45,9 @@ const VisualRender = () => {
             locales.format[locale] || locales.format[locales.default],
         timeFormatLocale =
             locales.timeFormat[locale] || locales.timeFormat[locales.default];
-    if (fourd3d3d) return <FourD3D3D3 />;
+    if (visual4d3d3d) return <FourD3D3D3 />;
     registerCustomExpressions();
-    switch (spec?.status) {
+    switch (editorSpec?.status) {
         case 'error': {
             return <SpecificationError />;
         }

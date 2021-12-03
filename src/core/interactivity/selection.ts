@@ -34,9 +34,8 @@ import {
 import { isFeatureEnabled } from '../utils/features';
 import { hostServices } from '../services';
 import { IVegaViewDatum } from '../vega';
-import store, { getState } from '../../store';
+import { getState } from '../../store';
 import { getCategoryColumns } from '../data/dataView';
-import { setSelectionAborted, updateSelectors } from '../../store/visual';
 import { TDataPointSelectionStatus } from '.';
 import { hideTooltip } from './tooltip';
 import { clearCatcherSelector } from '../ui/dom';
@@ -81,10 +80,10 @@ const clearSelection = () => {
 };
 
 /**
- * Handle dispatch event for the 'selection blocked' message bar status to the Redux store.
+ * Handle dispatch event for the 'selection blocked' message bar status to the store.
  */
 const dispatchSelectionAborted = (state = false) => {
-    store.dispatch(setSelectionAborted(state));
+    getState().updateDatasetSelectionAbortStatus(state);
 };
 
 /**
@@ -128,7 +127,7 @@ const getDataPointStatus = (
     'off';
 
 /**
- * Get a new instance of a `powerbi.visuals.ISelectionIdBuilder` from Deneb's Redux store, so that we can use to to create selection IDs for data points.
+ * Get a new instance of a `powerbi.visuals.ISelectionIdBuilder` from Deneb's store, so that we can use to to create selection IDs for data points.
  */
 const getSelectionIdBuilder = () => hostServices.selectionIdBuilder();
 
@@ -142,7 +141,7 @@ const getSelectionIdBuilder = () => hostServices.selectionIdBuilder();
 const getSelectionIdentitiesFromData = (
     data: IVegaViewDatum[]
 ): ISelectionId[] => {
-    const { dataset } = getState().visual;
+    const { dataset } = getState();
     switch (true) {
         case !data: {
             // Selection can/should be cleared
@@ -218,6 +217,7 @@ const handleDataPointEvent = (event: ScenegraphEvent, item: Item) => {
         data = resolveDataFromItem(item),
         identities = getSelectionIdentitiesFromData(data),
         selection = resolveSelectedIdentities(identities);
+    const { updateDatasetSelectors } = getState();
     mouseEvent && mouseEvent.preventDefault();
     hideTooltip();
     switch (true) {
@@ -227,19 +227,15 @@ const handleDataPointEvent = (event: ScenegraphEvent, item: Item) => {
         }
         case selection.length > 0: {
             selectionManager.select(selection);
-            store.dispatch(
-                updateSelectors(
-                    <ISelectionId[]>selectionManager.getSelectionIds()
-                )
+            updateDatasetSelectors(
+                <ISelectionId[]>selectionManager.getSelectionIds()
             );
             return;
         }
         default: {
             clearSelection();
-            store.dispatch(
-                updateSelectors(
-                    <ISelectionId[]>selectionManager.getSelectionIds()
-                )
+            updateDatasetSelectors(
+                <ISelectionId[]>selectionManager.getSelectionIds()
             );
             return;
         }
@@ -255,10 +251,11 @@ const isContextMenuEnabled = isFeatureEnabled('selectionContextMenu');
  * Allows us to validate for all key pre-requisites before we can bind a context menu event to the visual.
  */
 const isContextMenuPropSet = () => {
-    const { allowInteractions, settings } = getState().visual,
-        { enableContextMenu } = settings?.vega;
+    const { enableContextMenu } = getState().visualSettings.vega;
     return (
-        (isContextMenuEnabled && enableContextMenu && allowInteractions) ||
+        (isContextMenuEnabled &&
+            enableContextMenu &&
+            hostServices.allowInteractions) ||
         false
     );
 };
@@ -272,10 +269,12 @@ const isDataPointEnabled = isFeatureEnabled('selectionDataPoint');
  * Allows us to validate for all key pre-requisites before we can bind a context menu event to the visual.
  */
 const isDataPointPropSet = () => {
-    const { allowInteractions, settings } = getState().visual,
-        { enableSelection } = settings?.vega;
+    const { enableSelection } = getState().visualSettings.vega;
     return (
-        (isDataPointEnabled && enableSelection && allowInteractions) || false
+        (isDataPointEnabled &&
+            enableSelection &&
+            hostServices.allowInteractions) ||
+        false
     );
 };
 
@@ -283,7 +282,7 @@ const isDataPointPropSet = () => {
  * Tests whether the current array of data points for selection exceeds the limit we've imposed in our configuration.
  */
 const isSelectionLimitExceeded = (identities: ISelectionId[]) => {
-    const { selectionMaxDataPoints } = getState().visual.settings.vega;
+    const { selectionMaxDataPoints } = getState().visualSettings.vega;
     return identities?.length > selectionMaxDataPoints || false;
 };
 

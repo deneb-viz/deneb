@@ -190,6 +190,33 @@
                         }
                     }
                 },
+                "wordWrap": {
+                    "displayNameKey": "Objects_Editor_WordWrap",
+                    "descriptionKey": "Objects_Editor_WordWrap_Description",
+                    "displayName": "Word Wrap",
+                    "description": "Word Wrap description",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "showGutter": {
+                    "displayNameKey": "Objects_Editor_ShowGutter",
+                    "descriptionKey": "Objects_Editor_ShowGutter_Description",
+                    "displayName": "Show Gutter",
+                    "description": "Show Gutter description description",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "showLineNumbers": {
+                    "displayNameKey": "Objects_Editor_ShowLineNumbers",
+                    "descriptionKey": "Objects_Editor_ShowLineNumbers_Description",
+                    "displayName": "Line Numbers",
+                    "description": "Line Numbers description",
+                    "type": {
+                        "bool": true
+                    }
+                },
                 "showViewportMarker": {
                     "displayNameKey": "Objects_Editor_ShowViewportMarker",
                     "descriptionKey": "Objects_Editor_ShowViewportMarker_Description",

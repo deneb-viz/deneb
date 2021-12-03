@@ -5,6 +5,7 @@ import {
     vegaDataModelRef,
     vegaProviderInfo
 } from '..';
+import thumbnail from '../thumbnail';
 
 export const vLineConfInterval: Spec = {
     $schema: vegaProviderInfo,
@@ -119,7 +120,8 @@ export const vLineConfInterval: Spec = {
                 'A multiple layer visual that displays a line, along with a band spanning two additional measures.',
             author: authorInfo,
             uuid: '5b8845ad-1bcd-4066-b1ff-c844903c02e1',
-            generated: '2021-03-26T00:00:00.000Z'
+            generated: '2021-03-26T00:00:00.000Z',
+            previewImageBase64PNG: thumbnail.lineConfInterval
         },
         provider: 'vega',
         dataset: [

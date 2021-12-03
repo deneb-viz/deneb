@@ -9,6 +9,7 @@
         "tooltipHandler": true,
         "tooltipResolveNumberFieldFormat": true,
         "useDownloadApi": false,
+        "templateExportPreviewImages": false,
         "unitTestCanary": false
     },
     "fluentUiTheme": {
@@ -52,11 +53,15 @@
             "functionalArea": "other"
         },
         "newTemplate": {
-            "combination": "ctrl|alt|e",
+            "combination": "ctrl|alt|t",
             "functionalArea": "other"
         },
         "newSpecification": {
             "combination": "ctrl|alt|n",
+            "functionalArea": "other"
+        },
+        "mapFields": {
+            "combination": "ctrl|alt|f",
             "functionalArea": "other"
         },
         "openHelpUrl": {
@@ -140,6 +145,9 @@
             "tabSize": 2,
             "position": "left",
             "fontSize": 10,
+            "wordWrap": true,
+            "showGutter": true,
+            "showLineNumbers": true,
             "showViewportMarker": true,
             "maxLineLength": 40
         },
@@ -168,7 +176,8 @@
         "collapsedSize": 36
     },
     "templates": {
-        "metadataVersion": 1
+        "metadataVersion": 1,
+        "previewImageSize": 150
     },
     "visualViewPortAdjust": {
         "top": 5,

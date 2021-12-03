@@ -13,6 +13,21 @@ export const previewToolbarHeight = 38;
 export const previewToolbarPadding = 5;
 
 /**
+ * Calculate a width that ensures the editor pane caps and makes the pivot overflow as needed
+ */
+export const calculateEditorPaneMaxWidth = () => {
+    const {
+        visualSettings,
+        editorPaneWidth,
+        visualViewportCurrent,
+        editorPreviewAreaWidth
+    } = getState();
+    return visualSettings.editor.position === 'left'
+        ? editorPaneWidth
+        : visualViewportCurrent.width - editorPreviewAreaWidth;
+};
+
+/**
  * Work out the explicit width of the preview area, relative to the settings and editor pane.
  */
 export const getEditorPreviewAreaWidth = (
@@ -27,14 +42,15 @@ export const getEditorPreviewAreaWidth = (
  * Work out what the maximum size of the resizable pane should be (in px), based on the persisted visual (store) state.
  */
 export const getResizablePaneMaxSize = () => {
-    const { editorPaneIsExpanded, settings, viewport } = getState().visual,
-        { editor } = settings,
+    const { editorPaneIsExpanded, visualSettings, visualViewportCurrent } =
+            getState(),
+        { editor } = visualSettings,
         { maxSizePercent, minSize, collapsedSize } = splitPaneDefaults,
         resolvedSize =
             (editorPaneIsExpanded &&
                 (editor.position === 'right'
-                    ? viewport.width - minSize
-                    : viewport.width * maxSizePercent)) ||
+                    ? visualViewportCurrent.width - minSize
+                    : visualViewportCurrent.width * maxSizePercent)) ||
             collapsedSize;
     return resolvedSize;
 };
@@ -43,16 +59,17 @@ export const getResizablePaneMaxSize = () => {
  * Work out what the minimum size of the resizable pane should be (in px), based on the persisted visual (store) state
  */
 export const getResizablePaneMinSize = () => {
-    const { editorPaneIsExpanded, settings, viewport } = getState().visual,
-        { editor } = settings,
+    const { editorPaneIsExpanded, visualSettings, visualViewportCurrent } =
+            getState(),
+        { editor } = visualSettings,
         { minSize, maxSizePercent, collapsedSize } = splitPaneDefaults;
     let resolvedCollapsedSize =
             editor.position === 'right'
-                ? viewport.width - collapsedSize
+                ? visualViewportCurrent.width - collapsedSize
                 : collapsedSize,
         resolvedMinSize =
             editor.position === 'right'
-                ? viewport.width * (1 - maxSizePercent)
+                ? visualViewportCurrent.width * (1 - maxSizePercent)
                 : minSize,
         resolvedSize =
             (editorPaneIsExpanded && resolvedMinSize) || resolvedCollapsedSize;
@@ -117,16 +134,16 @@ export const calculateVegaViewport = (
  * Calculate a width for the preview area height, so that we can use this to work out fit zoom functions.
  */
 export const getPreviewAreaHeight = () => {
-    const { viewport } = getState().visual;
-    return viewport.height - previewToolbarHeight;
+    const { visualViewportCurrent: visualViewport } = getState();
+    return visualViewport.height - previewToolbarHeight;
 };
 
 /**
  * Derive suitable scale to apply to visual preview if wishing to fit to preview area.
  */
 export const getZoomToFitScale = () => {
-    const { editorPreviewAreaWidth, viewModeViewport } = getState().visual,
-        { height, width } = viewModeViewport,
+    const { editorPreviewAreaWidth, visualViewportReport } = getState(),
+        { height, width } = visualViewportReport,
         previewWidth = getAdjustedPreviewAreaWidthForPadding(
             editorPreviewAreaWidth
         ),

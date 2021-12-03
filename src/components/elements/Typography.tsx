@@ -1,4 +1,12 @@
-export { BodyHeading, Paragraph, Heading, SubHeading, SubHeadingSecondary };
+export {
+    Assistive,
+    BodyHeading,
+    EditorHeading,
+    Paragraph,
+    Heading,
+    SubHeading,
+    SubHeadingSecondary
+};
 
 import * as React from 'react';
 
@@ -6,6 +14,13 @@ import { Text, ITextStyles, ITextProps } from '@fluentui/react/lib/Text';
 import { FontSizes, FontWeights } from '@fluentui/react/lib/Styling';
 
 import { theme } from '../../core/ui/fluent';
+
+const assistiveStyles: ITextStyles = {
+    root: {
+        fontSize: FontSizes.small,
+        color: theme.palette.neutralPrimary
+    }
+};
 
 const headingStyles: ITextStyles = {
     root: {
@@ -30,6 +45,15 @@ const subHeadingSecondaryStyles: ITextStyles = {
 };
 
 const bodyHeadingStyles: ITextStyles = {
+    root: {
+        fontWeight: FontWeights.semibold,
+        fontSize: FontSizes.mediumPlus,
+        color: theme.palette.neutralPrimary,
+        lineHeight: '2.5em'
+    }
+};
+
+const editorHeadingStyles: ITextStyles = {
     root: {
         fontWeight: FontWeights.semibold,
         fontSize: FontSizes.mediumPlus,
@@ -84,12 +108,30 @@ const BodyHeading: React.FC<ITextProps> = (props) => (
     </>
 );
 
+const EditorHeading: React.FC<ITextProps> = (props) => (
+    <>
+        <div>
+            <Text {...props} styles={editorHeadingStyles}>
+                {props.children}
+            </Text>
+        </div>
+    </>
+);
+
 const Paragraph: React.FC<ITextProps> = (props) => (
     <>
-        <p className='splash-body-paragraph'>
+        <p>
             <Text {...props} styles={paragraphStyles}>
                 {props.children}
             </Text>
         </p>
+    </>
+);
+
+const Assistive: React.FC<ITextProps> = (props) => (
+    <>
+        <Text {...props} styles={assistiveStyles}>
+            {props.children}
+        </Text>
     </>
 );

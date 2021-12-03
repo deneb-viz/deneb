@@ -1,0 +1,30 @@
+name: 'Alpha Channel Build'
+
+on:
+    push:
+        branches:
+            - 'master'
+
+jobs:
+    pre-release:
+        name: 'Pre Release'
+        runs-on: 'ubuntu-latest'
+
+        steps:
+            - name: 'Wait for CI To Complete'
+              uses: lewagon/wait-on-check-action@v1.0.0
+              with:
+                  ref: ${{ github.ref }}
+                  check-name: 'CI'
+                  repo-token: ${{ secrets.GITHUB_TOKEN }}
+                  wait-interval: 10
+            - name: 'Alpha Channel Build'
+              run: npm run package-alpha
+
+            - uses: 'marvinpinto/action-automatic-releases@latest'
+              with:
+                  automatic_release_tag: 'alpha-channel'
+                  prerelease: true
+                  title: 'Alpha Channel Build'
+                  files: |
+                      dist/*.pbiviz

@@ -25,19 +25,7 @@ import Debugger, { standardLog } from './Debugger';
 import App from './components/App';
 import VisualSettings from './properties/VisualSettings';
 
-import store from './store';
-import {
-    visualConstructor,
-    visualUpdate,
-    updateDataProcessingStage,
-    updateDataViewFlags,
-    recordInvalidDataView,
-    updateDataset
-} from './store/visual';
-import {
-    initializeImportExport,
-    syncExportTemplateDataset
-} from './store/templates';
+import { getState } from './store';
 import {
     canFetchMore,
     getMappedDataset,
@@ -49,6 +37,7 @@ import { theme } from './core/ui/fluent';
 import { parseActiveSpec } from './core/utils/specification';
 import { fillPatternServices, hostServices } from './core/services';
 import { initializeIcons } from './core/ui/fluent';
+import { getDataset, getTemplateFieldsFromMetadata } from './core/data/dataset';
 
 const owner = 'Visual';
 
@@ -71,8 +60,7 @@ export class Deneb implements IVisual {
             loadTheme(theme);
             initializeIcons();
             hostServices.bindHostServices(options);
-            store.dispatch(visualConstructor(options.host));
-            store.dispatch(initializeImportExport());
+            getState().initializeImportExport();
             Debugger.log('Setting container element...');
             this.container = options.element;
             Debugger.log('Setting host services...');
@@ -125,13 +113,20 @@ export class Deneb implements IVisual {
         hostServices.visualUpdateOptions = options;
         hostServices.resolveLocaleFromSettings(settings.developer.locale);
 
+        const {
+            setVisualUpdate,
+            syncTemplateExportDataset,
+            updateDataset,
+            updateDatasetProcessingStage,
+            updateDatasetViewFlags,
+            updateDatasetViewInvalid
+        } = getState();
+
         // Provide intial update options to store
-        store.dispatch(
-            visualUpdate({
-                options,
-                settings
-            })
-        );
+        setVisualUpdate({
+            options,
+            settings
+        });
 
         // Data change or re-processing required?
         switch (options.type) {
@@ -145,65 +140,53 @@ export class Deneb implements IVisual {
                     Debugger.log(
                         'First data segment. Doing initial state checks...'
                     );
-                    store.dispatch(
-                        updateDataProcessingStage({
-                            dataProcessingStage: 'Fetching',
-                            canFetchMore: canFetchMore()
-                        })
-                    );
+                    updateDatasetProcessingStage({
+                        dataProcessingStage: 'Fetching',
+                        canFetchMore: canFetchMore()
+                    });
                     Debugger.log(
                         'First data segment. Doing initial state checks...'
                     );
-                    const hasValidDataViewMapping = validateDataViewMapping(
+                    const datasetViewHasValidMapping = validateDataViewMapping(
                             options.dataViews
                         ),
-                        hasValidDataRoles =
-                            hasValidDataViewMapping &&
+                        datasetViewHasValidRoles =
+                            datasetViewHasValidMapping &&
                             validateDataViewRoles(options.dataViews, [
                                 'dataset'
                             ]),
-                        hasValidDataView =
-                            hasValidDataViewMapping && hasValidDataRoles;
+                        datasetViewIsValid =
+                            datasetViewHasValidMapping &&
+                            datasetViewHasValidRoles;
                     Debugger.log('Dispatching ');
-                    store.dispatch(
-                        updateDataViewFlags({
-                            hasValidDataViewMapping,
-                            hasValidDataRoles,
-                            hasValidDataView
-                        })
-                    );
+                    updateDatasetViewFlags({
+                        datasetViewHasValidMapping,
+                        datasetViewHasValidRoles,
+                        datasetViewIsValid
+                    });
                 }
 
                 // If the DV didn't validate then we shouldn't expend effort mapping it and just display landing page
-                if (
-                    !store.getState().visual.dataViewFlags
-                        .hasValidDataViewMapping
-                ) {
+                if (!getState().datasetViewHasValidMapping) {
                     Debugger.log(
                         "Data view isn't valid, so need to show Landing page."
                     );
-                    store.dispatch(recordInvalidDataView());
+                    updateDatasetViewInvalid();
                     break;
                 }
 
                 Debugger.log('Delegating additional data fetch...');
                 handleDataFetch(options);
                 if (!canFetchMore()) {
-                    store.dispatch(
-                        updateDataset({
-                            categories:
-                                options.dataViews[0]?.categorical?.categories,
-                            dataset: getMappedDataset(
-                                options.dataViews[0]?.categorical
-                            )
-                        })
-                    );
-                    store.dispatch(
-                        syncExportTemplateDataset(
-                            Object.entries(
-                                store.getState().visual.dataset.metadata
-                            ).map(([k, v]) => v.templateMetadata)
+                    updateDataset({
+                        categories:
+                            options.dataViews[0]?.categorical?.categories,
+                        dataset: getMappedDataset(
+                            options.dataViews[0]?.categorical
                         )
+                    });
+                    syncTemplateExportDataset(
+                        getTemplateFieldsFromMetadata(getDataset().metadata)
                     );
                     Debugger.log('Finished processing dataView.');
                 }
@@ -216,8 +199,7 @@ export class Deneb implements IVisual {
         const { selectionManager } = hostServices;
         Debugger.log('Has selections', selectionManager.hasSelection());
         Debugger.log('Existing selections', selectionManager.getSelectionIds());
-        store.getState().visual.dataProcessingStage === 'Processed' &&
-            parseActiveSpec();
+        getState().datasetProcessingStage === 'Processed' && parseActiveSpec();
     }
 
     private static parseSettings(dataView: DataView): VisualSettings {

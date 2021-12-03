@@ -1,0 +1,31 @@
+const { exit } = require('process');
+const config = require('../config/deneb-config.json');
+
+console.log('Checking visual configuration is correct...\n');
+const errors = [];
+
+// Developer mode: Should not be set in committed code
+if (config.features.developerMode) {
+    errors.push('features.developerMode flag is true; this should be false.');
+}
+// External URIs: Not permitted in certified visual, so needs to be disabled in committed code.
+if (config.features.enableExternalUri) {
+    errors.push('features.enableExternalUri is true; this should be false.');
+}
+// Include preview image on export. Still figuring out if this is more trouble than it's worth,
+// so should be disabled in committed code.
+if (config.features.templateExportPreviewImages) {
+    errors.push(
+        'features.templateExportPreviewImages is true; this should be false'
+    );
+}
+
+if (errors.length > 0) {
+    console.error(
+        '===\nIssues found with configuration. Please resolve the following:\n===\n'
+    );
+    errors.forEach((e, i) => console.error(` ${i + 1}. ${e}`));
+    exit(1);
+}
+console.log('No configuration issues found :)');
+exit(0);

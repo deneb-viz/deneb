@@ -69,12 +69,15 @@
                 "tabSize",
                 "position",
                 "fontSize",
+                "wordWrap",
+                "showGutter",
+                "showLineNumbers",
                 "showViewportMarker",
                 "maxLineLength"
             ],
             "properties": {
                 "debounceInterval": {
-                    "description": "Time (in ms) before debouncing user input to Redux, the longer the interval, the less chatty things are, but the longer the perceived lag for things to happen after the user finishes typing in the editor.",
+                    "description": "Time (in ms) before debouncing user input to store. The longer the interval, the less chatty things are, but the longer the perceived lag for things to happen after the user finishes typing in the editor.",
                     "type": "integer"
                 },
                 "tabSize": {
@@ -88,6 +91,18 @@
                 "fontSize": {
                     "description": "Size of editor font (in pt)",
                     "type": "integer"
+                },
+                "wordWrap": {
+                    "description": "Whether to wrap text in the editor onto new lines, or not.",
+                    "type": "boolean"
+                },
+                "showGutter": {
+                    "description": "Whether to show the gutter in the editor (used for displaying line numbers and expand/collapse markers for nested objects).",
+                    "type": "boolean"
+                },
+                "showLineNumbers": {
+                    "description": "Display line numbers in the gutter.",
+                    "type": "boolean"
                 },
                 "showViewportMarker": {
                     "description": "Whether to show viewport marker for actual size of visual prior to opening editor.",
@@ -201,6 +216,10 @@
                 "useDownloadApi": {
                     "description": "Use the Power BI download API to offer downloading of template files.",
                     "type": "boolean"
+                },
+                "templateExportPreviewImages": {
+                    "description": "Allow the option to include a preview image when generating export templates.",
+                    "type": "boolean"
                 }
             }
         },
@@ -218,6 +237,7 @@
                 "repairFormatJson",
                 "newTemplate",
                 "newSpecification",
+                "mapFields",
                 "openHelpUrl",
                 "navigateSpecification",
                 "navigateConfig",
@@ -248,6 +268,10 @@
                 },
                 "newSpecification": {
                     "description": "Command to open the new specification dialog.",
+                    "$ref": "#/definitions/IKeyboardShortcut"
+                },
+                "mapFields": {
+                    "description": "Command to open field mapping dialog.",
                     "$ref": "#/definitions/IKeyboardShortcut"
                 },
                 "openHelpUrl": {
@@ -296,10 +320,14 @@
             "description": "Used to manage handling of template functionality.",
             "type": "object",
             "additionalProperties": false,
-            "required": ["metadataVersion"],
+            "required": ["metadataVersion", "previewImageSize"],
             "properties": {
                 "metadataVersion": {
                     "description": "Template metadata version",
+                    "type": "integer"
+                },
+                "previewImageSize": {
+                    "description": "Numbe rof pixels to use for generating preview images",
                     "type": "integer"
                 }
             }

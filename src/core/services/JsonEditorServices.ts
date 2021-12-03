@@ -20,11 +20,10 @@ import Editor = Ace.Editor;
 import JSONEditor from 'jsoneditor/dist/jsoneditor-minimalist';
 import debounce from 'lodash/debounce';
 
-import { updateDirtyFlag } from '../../store/visual';
 import { getConfig } from '../utils/config';
-import { ITableColumnMetadata } from '../data/dataset';
+import { getDataset, ITableColumnMetadata } from '../data/dataset';
 import { hasLiveSpecChanged, persist } from '../utils/specification';
-import { getState, store } from '../../store';
+import { getState } from '../../store';
 import { isDialogOpen } from '../ui/modal';
 import { i18nValue } from '../ui/i18n';
 import { getBaseValidator } from '../utils/json';
@@ -90,7 +89,10 @@ const getAssignedEditor = (role: TEditorRole) => {
 const getDynamicAceEditorOptions = (): {
     [key: string]: any;
 } => ({
-    fontSize: `${getEditorPropFromStore('fontSize')}pt`
+    fontSize: `${getEditorPropFromStore('fontSize')}pt`,
+    wrap: <boolean>getEditorPropFromStore('wordWrap'),
+    showGutter: <boolean>getEditorPropFromStore('showGutter'),
+    showLineNumbers: <boolean>getEditorPropFromStore('showLineNumbers')
 });
 
 /**
@@ -139,7 +141,7 @@ interface IVisualEditorProps {
 type TEditorRole = 'spec' | 'config' | 'settings';
 
 /**
- * Ensures that when auto-apply is enabled, the Redux store is updated at a sensible interval after input has finished, rather than applying
+ * Ensures that when auto-apply is enabled, the store is updated at a sensible interval after input has finished, rather than applying
  * changes for every keystroke.
  */
 const debounceInput = () =>
@@ -159,8 +161,7 @@ const getAceEditor = (jsonEditor: JSONEditor): Editor =>
  * Values data role and returns them as a valid Ace `Completer`.
  */
 const getCompleters = (): Completer => {
-    const { dataset } = getState().visual,
-        { metadata } = dataset;
+    const { metadata } = getDataset();
     let tokens = [];
     // Tokens for columns and measures
     Object.entries(metadata).forEach(([key, value], i) => {
@@ -180,10 +181,10 @@ const getCompleters = (): Completer => {
 };
 
 /**
- * Retrieve the specific property from the Redux store.
+ * Retrieve the specific property from the store.
  */
 const getEditorPropFromStore = (prop: string) =>
-    getState()?.visual?.settings?.editor?.[prop];
+    getState().visualSettings?.editor?.[prop];
 
 /**
  * Creates a new JSONEditor object in the supplied DOM element and binds configuration and behavior.
@@ -200,11 +201,11 @@ const getNewJsonEditor = (container: HTMLDivElement) =>
     });
 
 /**
- * For the given role, retrieve its value from the visual properties (via Redux store).
+ * For the given role, retrieve its value from the visual properties (via store).
  */
 const getInitialText = (role: TEditorRole) => {
-    const { settings } = getState().visual,
-        { jsonConfig, jsonSpec } = settings.vega;
+    const { visualSettings } = getState(),
+        { jsonConfig, jsonSpec } = visualSettings.vega;
     return role === 'spec' ? jsonSpec || '' : jsonConfig;
 };
 
@@ -213,11 +214,11 @@ const getInitialText = (role: TEditorRole) => {
  * checks/handles the `isDirty` state.
  */
 const handleTextEntry = () => {
-    const { autoApply } = getState().visual;
-    if (autoApply) {
+    const { editorAutoApply, updateEditorDirtyStatus } = getState();
+    if (editorAutoApply) {
         persist();
     } else {
-        store.dispatch(updateDirtyFlag(hasLiveSpecChanged()));
+        updateEditorDirtyStatus(hasLiveSpecChanged());
     }
 };
 
@@ -263,8 +264,8 @@ const setInitialText = (jsonEditor: JSONEditor, role: TEditorRole) => {
  * Ensures that the correct JSON schema is applied to the JSON editor for validation, based on the specificed role.
  */
 const setProviderSchema = (jsonEditor: JSONEditor, role: TEditorRole) => {
-    const { settings } = getState().visual,
-        { provider } = settings.vega;
+    const { visualSettings } = getState(),
+        { provider } = visualSettings.vega;
     jsonEditor?.setSchema(getEditorSchema(<TSpecProvider>provider, role));
 };
 

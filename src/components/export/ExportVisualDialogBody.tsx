@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 
 import { Text } from '@fluentui/react/lib/Text';
 import { Stack } from '@fluentui/react/lib/Stack';
@@ -10,22 +9,21 @@ import {
     modalDialogStackItemWrapperStyles,
     modalDialogInnerStackTokens
 } from '../../core/ui/modal';
-import { state } from '../../store';
-import ExportValidation from './ExportValidation';
+import store from '../../store';
+import ExportValidation from './content/ExportValidation';
 import ExportVisualDialogPivot from './ExportVisualDialogPivot';
-import TemplateExportDatasetPane from './TemplateExportDatasetPane';
-import TemplateExportInformationPane from './TemplateExportInformationPane';
-import TemplateExportJsonPane from './TemplateExportJsonPane';
+import TemplateExportDatasetPane from './content/TemplateExportDatasetPane';
+import TemplateExportInformationPane from './content/TemplateExportInformationPane';
+import TemplateExportJsonPane from './content/TemplateExportJsonPane';
 import { validateSpecificationForExport } from '../../core/template';
 import { i18nValue } from '../../core/ui/i18n';
 
 export const ExportVisualDialogBody = () => {
-    const root = useSelector(state),
-        {
-            selectedExportOperation,
+    const {
+            templateSelectedExportOperation,
             templateExportState,
             templateExportErrorMessage
-        } = root.templates,
+        } = store((state) => state),
         resolveExportPivot = () => {
             switch (templateExportState) {
                 case 'Editing': {
@@ -44,7 +42,7 @@ export const ExportVisualDialogBody = () => {
                 case 'Validating':
                     return <ExportValidation />;
                 case 'Editing':
-                    switch (selectedExportOperation) {
+                    switch (templateSelectedExportOperation) {
                         case 'information':
                             return <TemplateExportInformationPane />;
                         case 'dataset':
