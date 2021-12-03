@@ -7,8 +7,10 @@ jobs:
     build:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v2
-            - uses: actions/setup-node@v2
+            - name: Checkout Project
+              uses: actions/checkout@v2
+            - name: Setup Node
+              uses: actions/setup-node@v2
               with:
                   node-version: 14
             - name: Cache Node.js modules
@@ -19,9 +21,28 @@ jobs:
                   restore-keys: |
                       ${{ runner.OS }}-node-
                       ${{ runner.OS }}-
-            - run: npm ci
-            - run: npm run validate-config-for-commit
-            - run: npm run lint
-            - run: npm run prettier-check
-            - run: npm test
-            - run: npm run package
+            - name: Install Packages
+              run: npm ci
+            - name: Validate Current Configuraation (deneb-config.json)
+              run: npm run validate-config-for-commit
+            - name: Linting Checks
+              run: npm run lint
+            - name: Prettier Checks
+              run: npm run prettier-check
+            - name: Unit Tests
+              run: npm test
+            - name: Confirm pbiviz package (AppSource Version)
+              run: npm run package
+            - name: 'Alpha Channel Build'
+              if: github.ref == 'refs/heads/main'
+              run: npm run package-alpha
+            - name: 'Publish/Update Alpha Channel Pre-Release'
+              if: github.ref == 'refs/heads/main'
+              uses: 'marvinpinto/action-automatic-releases@latest'
+              with:
+                  repo_token: '${{ secrets.GITHUB_TOKEN }}'
+                  automatic_release_tag: 'alpha'
+                  prerelease: true
+                  title: 'Alpha Channel: Latest Build'
+                  files: |
+                      dist/ALPHA*.pbiviz
