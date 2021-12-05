@@ -74,7 +74,9 @@ export const getViewModeViewportStyles = (
         scale = calculateZoomLevelPercent(zoomLevel);
     return {
         height: isEditor ? viewport.height : resolved,
+        minHeight: isEditor ? viewport.height : resolved,
         width: isEditor ? viewport.width : resolved,
+        minWidth: isEditor ? viewport.width : resolved,
         transform: `scale(${scale})`,
         transformOrigin: '0% 0% 0px',
         border: showViewportMarker ? '2px dashed #b3b3b3' : null

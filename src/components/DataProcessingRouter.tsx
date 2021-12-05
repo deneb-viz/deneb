@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Scrollbars } from 'react-custom-scrollbars-2';
 
 import store from '../store';
 import DataFetching from './status/DataFetching';
@@ -33,21 +34,23 @@ const DataProcessingRouter: React.FC = () => {
         }
         case 'Processed': {
             return (
-                <div
-                    id='renderedVisual'
-                    style={getViewModeViewportStyles(
-                        visualViewportReport,
-                        isEditor,
-                        zoomLevel,
-                        isEditor && showViewportMarker
-                    )}
-                    role='region'
-                    onClick={clearSelection}
-                    onMouseLeave={handleMouseLeave}
-                >
-                    <VisualRender />
-                    <ApplyDialog />
-                </div>
+                <Scrollbars>
+                    <div
+                        id='renderedVisual'
+                        style={getViewModeViewportStyles(
+                            visualViewportReport,
+                            isEditor,
+                            zoomLevel,
+                            isEditor && showViewportMarker
+                        )}
+                        role='region'
+                        onClick={clearSelection}
+                        onMouseLeave={handleMouseLeave}
+                    >
+                        <VisualRender />
+                        <ApplyDialog />
+                    </div>
+                </Scrollbars>
             );
         }
     }

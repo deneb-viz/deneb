@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Scrollbars } from 'react-custom-scrollbars-2';
 
 import StatusLayoutStack from './StatusLayoutStack';
 import StatusLayoutStackItem from './StatusLayoutStackItem';
@@ -11,7 +12,7 @@ import { hostServices } from '../../core/services';
 const SplashReadOnly = () => {
     useEffect(() => hostServices.renderingFinished());
     return (
-        <>
+        <Scrollbars>
             <StatusLayoutStack>
                 <StandardHeaderContent />
                 <StatusLayoutStackItem verticalFill>
@@ -26,7 +27,7 @@ const SplashReadOnly = () => {
                     <UsefulResources />
                 </StatusLayoutStackItem>
             </StatusLayoutStack>
-        </>
+        </Scrollbars>
     );
 };
 

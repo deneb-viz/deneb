@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import { Stack } from '@fluentui/react/lib/Stack';
+import { Scrollbars } from 'react-custom-scrollbars-2';
 
 import {
     templateExportInfoStackTokens,
@@ -22,7 +23,9 @@ const TemplateExportDatasetPane: React.FC = () => (
             </Assistive>
         </Stack.Item>
         <Stack.Item grow={3} styles={templatePickerNonShrinkingStackItemStyles}>
-            <ExportDataFields />
+            <Scrollbars>
+                <ExportDataFields />
+            </Scrollbars>
         </Stack.Item>
     </Stack>
 );

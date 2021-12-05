@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Scrollbars } from 'react-custom-scrollbars-2';
 
 import store from '../../../store';
 import Editor from './Editor';
@@ -16,22 +17,22 @@ const EditorOperationContainer: React.FC<IEditorOperationContainerProps> = ({
         visible = editorSelectedOperation === operation,
         editorPane = operation !== 'settings';
     return (
-        <>
-            <div
-                className={`editor-pane-container ${
-                    (!editorPane && 'settings') || ''
-                }`}
-                style={{
-                    display: visible ? 'inherit' : 'none'
-                }}
-            >
-                {editorPane ? (
-                    <Editor role={operation} />
-                ) : (
+        <div
+            className={`editor-pane-container ${
+                (!editorPane && 'settings') || ''
+            }`}
+            style={{
+                display: visible ? 'inherit' : 'none'
+            }}
+        >
+            {editorPane ? (
+                <Editor role={operation} />
+            ) : (
+                <Scrollbars>
                     <EditorPaneSettings />
-                )}
-            </div>
-        </>
+                </Scrollbars>
+            )}
+        </div>
     );
 };
 
