@@ -33,6 +33,7 @@ import { v4 as uuidv4 } from 'uuid';
 import Ajv from 'ajv';
 import ErrorObject = Ajv.ErrorObject;
 import merge from 'lodash/merge';
+import reduce from 'lodash/reduce';
 
 import { getParsedConfigFromSettings } from '../vega';
 import {
@@ -47,10 +48,9 @@ import { getState } from '../../store';
 import * as schema_v1 from '../../../schema/deneb-template-usermeta-v1.json';
 import { i18nValue } from '../ui/i18n';
 import { determineProviderFromSpec, TSpecProvider } from '../vega';
-import { ITemplateImportPayload } from '../../store/template';
 import { isFeatureEnabled } from '../utils/features';
-import { reduce } from 'lodash';
 import { IVisualValueMetadata } from '../data/dataset';
+import { ITemplateImportPayload } from '../../store/template';
 
 /**
  * Used to indicate which part of the export dialog has focus.

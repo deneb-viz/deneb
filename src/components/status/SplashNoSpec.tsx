@@ -2,6 +2,7 @@ import powerbi from 'powerbi-visuals-api';
 import EditMode = powerbi.EditMode;
 
 import React, { useEffect } from 'react';
+import { Scrollbars } from 'react-custom-scrollbars-2';
 
 import store from '../../store';
 
@@ -40,7 +41,7 @@ const SplashNospec = () => {
         };
     useEffect(() => hostServices.renderingFinished());
     return (
-        <>
+        <Scrollbars>
             <StatusLayoutStack>
                 <StatusHeaderSection icon='edit'>
                     <Heading>
@@ -58,7 +59,7 @@ const SplashNospec = () => {
                     <UsefulResources />
                 </StatusLayoutStackItem>
             </StatusLayoutStack>
-        </>
+        </Scrollbars>
     );
 };
 

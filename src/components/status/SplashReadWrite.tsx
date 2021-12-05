@@ -2,6 +2,7 @@ import powerbi from 'powerbi-visuals-api';
 import EditMode = powerbi.EditMode;
 
 import React, { useEffect } from 'react';
+import { Scrollbars } from 'react-custom-scrollbars-2';
 
 import StatusLayoutStack from './StatusLayoutStack';
 import StatusLayoutStackItem from './StatusLayoutStackItem';
@@ -14,7 +15,7 @@ import { i18nValue } from '../../core/ui/i18n';
 import { hostServices } from '../../core/services';
 
 const SplashReadWrite = () => (
-    <>
+    <Scrollbars>
         <StatusLayoutStack>
             <StandardHeaderContent />
             <StatusLayoutStackItem verticalFill>
@@ -23,7 +24,7 @@ const SplashReadWrite = () => (
                 <UsefulResources />
             </StatusLayoutStackItem>
         </StatusLayoutStack>
-    </>
+    </Scrollbars>
 );
 
 const resolveInstructions = () => {

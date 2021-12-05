@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Stack, IStackItemStyles } from '@fluentui/react/lib/Stack';
 import { PrimaryButton } from '@fluentui/react/lib/Button';
 import filter from 'lodash/filter';
+import { Scrollbars } from 'react-custom-scrollbars-2';
 
 import {
     modalDialogStackStyles,
@@ -52,7 +53,9 @@ export const MapFieldsDialogBody = () => {
                 </Paragraph>
             </Stack.Item>
             <Stack.Item verticalFill styles={datasetItemStyles}>
-                <Dataset dataset={dataset} columns={getMapColumns} />
+                <Scrollbars>
+                    <Dataset dataset={dataset} columns={getMapColumns} />
+                </Scrollbars>
             </Stack.Item>
             <Stack.Item shrink styles={modalDialogStackItemStyles} align='end'>
                 <PrimaryButton
