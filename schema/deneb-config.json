@@ -220,6 +220,10 @@
                 "templateExportPreviewImages": {
                     "description": "Allow the option to include a preview image when generating export templates.",
                     "type": "boolean"
+                },
+                "themeColorSync": {
+                    "description": "Allow the option to update color theme info from the theme to ranges in config.",
+                    "type": "boolean"
                 }
             }
         },

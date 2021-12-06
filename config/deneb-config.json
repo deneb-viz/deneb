@@ -10,6 +10,7 @@
         "tooltipResolveNumberFieldFormat": true,
         "useDownloadApi": false,
         "templateExportPreviewImages": false,
+        "themeColorSync": false,
         "unitTestCanary": false
     },
     "fluentUiTheme": {
