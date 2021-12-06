@@ -123,7 +123,7 @@ const getViewConfig = () => {
             background: null, // so we can defer to the Power BI background, if applied
             customFormatTypes: true,
             range: {
-                category: hostServices.themeColors
+                category: hostServices.getThemeColors()
             }
         },
         ...getParsedConfigFromSettings()
