@@ -1,21 +1,14 @@
 import { TopLevelSpec } from 'vega-lite';
-import {
-    authorInfo,
-    autoSizeConfigSimple,
-    vegaDataModelRef,
-    vegaLiteProviderInfo
-} from '..';
+import { authorInfo, vegaDataModelRef, vegaLiteProviderInfo } from '..';
 import thumbnail from '../thumbnail';
 
 export const vlLineConfInterval: TopLevelSpec = {
     $schema: vegaLiteProviderInfo,
     data: vegaDataModelRef(),
-    config: {
-        autosize: autoSizeConfigSimple()
-    },
+    config: {},
     encoding: {
         x: {
-            field: '__xAxis__',
+            field: '__0__',
             type: 'quantitative'
         }
     },
@@ -26,11 +19,11 @@ export const vlLineConfInterval: TopLevelSpec = {
             },
             encoding: {
                 y: {
-                    field: '__maxValue__',
+                    field: '__3__',
                     type: 'quantitative'
                 },
                 y2: {
-                    field: '__minValue__'
+                    field: '__1__'
                 }
             }
         },
@@ -40,7 +33,7 @@ export const vlLineConfInterval: TopLevelSpec = {
             },
             encoding: {
                 y: {
-                    field: '__refValue__',
+                    field: '__2__',
                     type: 'quantitative'
                 }
             }
@@ -59,7 +52,7 @@ export const vlLineConfInterval: TopLevelSpec = {
         provider: 'vegaLite',
         dataset: [
             {
-                key: '__xAxis__',
+                key: '__0__',
                 name: 'X-Axis',
                 description:
                     "Select a measure that will be displayed on the chart's X-Axis",
@@ -67,7 +60,7 @@ export const vlLineConfInterval: TopLevelSpec = {
                 kind: 'column'
             },
             {
-                key: '__minValue__',
+                key: '__1__',
                 name: 'Minimum Value',
                 description:
                     'Select a measure that will represent the minimum value of the band.',
@@ -75,7 +68,7 @@ export const vlLineConfInterval: TopLevelSpec = {
                 kind: 'measure'
             },
             {
-                key: '__refValue__',
+                key: '__2__',
                 name: 'Reference Value',
                 description:
                     'Select a measure that will represent the reference value, or main line on the chart.',
@@ -83,7 +76,7 @@ export const vlLineConfInterval: TopLevelSpec = {
                 kind: 'measure'
             },
             {
-                key: '__maxValue__',
+                key: '__3__',
                 name: 'Maximum Value',
                 description:
                     'Select a measure that will represent the maximum value of the band.',

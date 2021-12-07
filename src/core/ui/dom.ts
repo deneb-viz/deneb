@@ -82,3 +82,8 @@ export const getViewModeViewportStyles = (
         border: showViewportMarker ? '2px dashed #b3b3b3' : null
     };
 };
+
+/**
+ * Convert a value intended for pt to a px equivalent.
+ */
+export const ptToPx = (value: number) => value * (1 / 3 + 1);

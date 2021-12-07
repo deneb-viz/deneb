@@ -1,19 +1,12 @@
 import { TopLevelSpec } from 'vega-lite';
-import {
-    authorInfo,
-    autoSizeConfigSimple,
-    vegaDataModelRef,
-    vegaLiteProviderInfo
-} from '..';
+import { authorInfo, vegaDataModelRef, vegaLiteProviderInfo } from '..';
 import { getConfig } from '../../core/utils/config';
 import thumbnail from '../thumbnail';
 
 export const vlBarSimple: TopLevelSpec = {
     $schema: vegaLiteProviderInfo,
     data: vegaDataModelRef(),
-    config: {
-        autosize: autoSizeConfigSimple()
-    },
+    config: {},
     mark: {
         type: 'bar',
         tooltip: true

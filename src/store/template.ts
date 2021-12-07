@@ -20,6 +20,7 @@ import {
     TTemplateImportState,
     TTemplateProvider
 } from '../core/template';
+import { getTemplateWithBaseTheme } from '../core/vega/theme';
 import templates from '../templates';
 import { TSpecProvider } from '../core/vega';
 
@@ -250,7 +251,9 @@ const handleUpdateSelectedTemplate = (
     state: TStoreState,
     index: number
 ): PartialState<TStoreState, never, never, never, never> => {
-    const templateToApply = resolveTemplatesForProvider()[index];
+    const templateToApply = getTemplateWithBaseTheme(
+        resolveTemplatesForProvider()[index]
+    );
     return {
         templateSelectedIndex: index,
         templateToApply,

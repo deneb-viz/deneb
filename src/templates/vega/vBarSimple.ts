@@ -1,26 +1,19 @@
 import { Spec } from 'vega';
-import {
-    authorInfo,
-    autoSizeConfigSimple,
-    vegaDataModelRef,
-    vegaProviderInfo
-} from '..';
+import { authorInfo, vegaDataModelRef, vegaProviderInfo } from '..';
 import thumbnail from '../thumbnail';
 import { getConfig } from '../../core/utils/config';
 
 export const vBarSimple: Spec = {
     $schema: vegaProviderInfo,
     data: [vegaDataModelRef()],
-    config: {
-        autosize: autoSizeConfigSimple()
-    },
+    config: {},
     scales: [
         {
             name: 'yscale',
             type: 'band',
             domain: {
                 data: 'dataset',
-                field: '__1__'
+                field: '__0__'
             },
             range: 'height',
             padding: 0.1,
@@ -30,7 +23,7 @@ export const vBarSimple: Spec = {
             name: 'xscale',
             domain: {
                 data: 'dataset',
-                field: '__0__'
+                field: '__1__'
             },
             nice: true,
             range: 'width'
@@ -40,12 +33,12 @@ export const vBarSimple: Spec = {
         {
             scale: 'xscale',
             orient: 'bottom',
-            title: '__0__'
+            title: '__1__'
         },
         {
             orient: 'left',
             scale: 'yscale',
-            title: '__1__'
+            title: '__0__'
         }
     ],
     marks: [
@@ -61,7 +54,7 @@ export const vBarSimple: Spec = {
                     },
                     x: {
                         scale: 'xscale',
-                        field: '__0__'
+                        field: '__1__'
                     },
                     x2: {
                         scale: 'xscale',
@@ -69,7 +62,7 @@ export const vBarSimple: Spec = {
                     },
                     y: {
                         scale: 'yscale',
-                        field: '__1__'
+                        field: '__0__'
                     },
                     height: {
                         scale: 'yscale',
@@ -98,7 +91,7 @@ export const vBarSimple: Spec = {
         provider: 'vega',
         dataset: [
             {
-                key: '__1__',
+                key: '__0__',
                 name: 'Category',
                 description:
                     "Select a column that will be displayed on the chart's Y-Axis",
@@ -106,7 +99,7 @@ export const vBarSimple: Spec = {
                 kind: 'column'
             },
             {
-                key: '__0__',
+                key: '__1__',
                 name: 'Measure',
                 description:
                     "Select a measure that will be displayed on the chart's X-Axis",
