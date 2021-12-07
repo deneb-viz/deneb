@@ -19,11 +19,6 @@ if (config.features.templateExportPreviewImages) {
         'features.templateExportPreviewImages is true; this should be false'
     );
 }
-// Color sync from report theme to ranges should be off for now, while it's still undergoing
-// development.
-if (config.features.themeColorSync) {
-    errors.push('features.themeColorSync is true; this should be false');
-}
 
 if (errors.length > 0) {
     console.error(
