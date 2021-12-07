@@ -17,6 +17,7 @@ import {
     getViewSpec,
     handleNewView,
     registerCustomExpressions,
+    registerCustomSchemes,
     resolveLoaderLogic
 } from '../core/vega';
 import { View } from 'vega';
@@ -47,6 +48,7 @@ const VisualRender = () => {
             locales.timeFormat[locale] || locales.timeFormat[locales.default];
     if (visual4d3d3d) return <FourD3D3D3 />;
     registerCustomExpressions();
+    registerCustomSchemes();
     switch (editorSpec?.status) {
         case 'error': {
             return <SpecificationError />;
