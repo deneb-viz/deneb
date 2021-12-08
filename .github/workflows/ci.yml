@@ -54,6 +54,10 @@ jobs:
         needs: build
         runs-on: ubuntu-latest
         steps:
+            - name: Checkout Project
+              uses: actions/checkout@v2
+              with:
+                  fetch-depth: 0
             - name: 'Check for Beta Channel Tag'
               uses: rickstaa/action-contains-tag@v1
               id: contains_beta_tag
@@ -65,9 +69,6 @@ jobs:
               if: github.ref == 'refs/heads/main' && steps.contains_beta_tag.outputs.retval == 'true'
               run: |
                   echo "beta_build=true" >> $GITHUB_ENV
-            - name: Checkout Project
-              if: env.beta_build == 'true'
-              uses: actions/checkout@v2
             - name: Setup Node
               if: env.beta_build == 'true'
               uses: actions/setup-node@v2
