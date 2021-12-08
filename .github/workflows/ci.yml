@@ -39,7 +39,7 @@ jobs:
               env:
                   ALPHA: true
             - name: 'Alpha Channel Build'
-              if: env.ALPHA == 'true'
+              if: env.ALPHA
               run: npm run package-alpha
             - name: 'Publish/Update Alpha Channel Pre-Release'
               if: env.ALPHA == 'true'
