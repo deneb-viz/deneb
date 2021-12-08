@@ -6,7 +6,11 @@ const parseArgs = require('minimist');
 const { exit } = require('process');
 const config = require('../config/package-custom-config.json');
 const pbivizFile = 'pbiviz.json';
+const pbivizFilePath = '.';
+const configFile = 'deneb-config.json';
+const configFilePath = './config';
 const pbivizOriginal = require(`../${pbivizFile}`);
+const configOriginal = require(`../config/${configFile}`);
 
 const runNpmScript = (script, callback) => {
     // keep track of whether callback has been invoked to prevent multiple invocations
@@ -30,15 +34,17 @@ const runNpmScript = (script, callback) => {
 // Revert the pbiviz back to its original state
 const cleanup = () => {
     console.log('Performing cleanup...');
-    writePbiviz(pbivizOriginal);
-    console.log('pbiviz.json reverted');
+    writeFile(pbivizFile, pbivizFilePath, pbivizOriginal);
+    console.log(`${pbivizFile} reverted`);
+    writeFile(configFile, configFilePath, configOriginal);
+    console.log(`${configFile} reverted`);
 };
 
 // Write a pbiviz.json to the project file system
-const writePbiviz = (content) => {
-    console.log(`Writing ${pbivizFile}...`);
-    fs.writeFileSync(`./${pbivizFile}`, JSON.stringify(content, null, 4));
-    console.log(`${pbivizFile}.updated`);
+const writeFile = (name, path, content) => {
+    console.log(`Writing ${name}...`);
+    fs.writeFileSync(`${path}/${name}`, JSON.stringify(content, null, 4));
+    console.log(`${name}.updated`);
 };
 
 // Perform necessary patching of pbiviz.json for supplied mode
@@ -72,9 +78,15 @@ try {
             packageConfig.pbiviz,
             getPatchedPbiviz(packageConfig, commit)
         );
-        writePbiviz(pbivizNew);
+        writeFile(pbivizFile, pbivizFilePath, pbivizNew);
+        console.log(`Updating ${configFile} with configuration...`);
+        const configFileNew = _.merge(
+            _.cloneDeep(configOriginal),
+            packageConfig['deneb-config']
+        );
+        writeFile(configFile, configFilePath, configFileNew);
         console.log('Running pbiviz package with new options...');
-        runNpmScript('npm run package', (err) => {
+        runNpmScript('pbiviz package', (err) => {
             if (err) throw err;
             console.log('Completed package process.');
             cleanup();

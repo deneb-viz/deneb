@@ -33,6 +33,10 @@ jobs:
               run: npm test
             - name: Confirm pbiviz package (AppSource Version)
               run: npm run package
+    alpha:
+        needs: build
+        runs-on: ubuntu-latest
+        steps:
             - name: 'Alpha Channel Build'
               if: github.ref == 'refs/heads/main'
               run: npm run package-alpha
