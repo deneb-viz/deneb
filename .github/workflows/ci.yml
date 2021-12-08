@@ -33,16 +33,15 @@ jobs:
               run: npm test
             - name: Confirm pbiviz package (AppSource Version)
               run: npm run package
-            - name: Alpha Channel Check
+            - name: Alpha Channel Build Check
               if: github.ref == 'refs/heads/main'
-              run: echo "Alpha Channel Build flag set to true"
-              env:
-                  ALPHA: true
+              run: |
+                  echo "alpha_build=true" >> $GITHUB_ENV
             - name: 'Alpha Channel Build'
-              if: env.ALPHA
+              if: env.alpha_build == 'true'
               run: npm run package-alpha
             - name: 'Publish/Update Alpha Channel Pre-Release'
-              if: env.ALPHA == 'true'
+              if: env.alpha_build == 'true'
               uses: 'marvinpinto/action-automatic-releases@latest'
               with:
                   repo_token: '${{ secrets.GITHUB_TOKEN }}'
