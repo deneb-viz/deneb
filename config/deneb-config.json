@@ -139,7 +139,9 @@
             "override": false,
             "showCustomVisualNotes": true
         },
-        "developer": { "locale": "en-US" },
+        "developer": {
+            "locale": "en-US"
+        },
         "editor": {
             "debounceInterval": 200,
             "tabSize": 2,

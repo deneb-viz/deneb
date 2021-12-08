@@ -9,7 +9,8 @@
             "assets": {
                 "icon": "assets/icon_alpha.png"
             }
-        }
+        },
+        "deneb-config": {}
     },
     "beta": {
         "pbiviz": {
@@ -21,7 +22,8 @@
             "assets": {
                 "icon": "assets/icon_beta.png"
             }
-        }
+        },
+        "deneb-config": {}
     },
     "standalone": {
         "pbiviz": {
@@ -31,6 +33,11 @@
             },
             "assets": {
                 "icon": "assets/icon_standalone.png"
+            }
+        },
+        "deneb-config": {
+            "features": {
+                "enableExternalUri": true
             }
         }
     }
