@@ -23,7 +23,7 @@ jobs:
                       ${{ runner.OS }}-
             - name: Install Packages
               run: npm ci
-            - name: Validate Current Configuraation (deneb-config.json)
+            - name: Validate Current Configuration (deneb-config.json)
               run: npm run validate-config-for-commit
             - name: Linting Checks
               run: npm run lint
@@ -33,15 +33,15 @@ jobs:
               run: npm test
             - name: Confirm pbiviz package (AppSource Version)
               run: npm run package
-    alpha:
-        needs: build
-        runs-on: ubuntu-latest
-        steps:
-            - name: 'Alpha Channel Build'
+            - name: Alpha Channel Build Check
               if: github.ref == 'refs/heads/main'
+              run: |
+                  echo "alpha_build=true" >> $GITHUB_ENV
+            - name: 'Alpha Channel Build'
+              if: env.alpha_build == 'true'
               run: npm run package-alpha
             - name: 'Publish/Update Alpha Channel Pre-Release'
-              if: github.ref == 'refs/heads/main'
+              if: env.alpha_build == 'true'
               uses: 'marvinpinto/action-automatic-releases@latest'
               with:
                   repo_token: '${{ secrets.GITHUB_TOKEN }}'
