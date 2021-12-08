@@ -35,6 +35,7 @@ jobs:
               run: npm run package
             - name: Alpha Channel Check
               if: github.ref == 'refs/heads/main'
+              run: echo "Alpha Channel Build flag set to true"
               env:
                   ALPHA: true
             - name: 'Alpha Channel Build'
