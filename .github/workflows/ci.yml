@@ -61,7 +61,7 @@ jobs:
                   reference: 'main'
                   tag: 'beta'
             - name: Beta Channel Build Check
-              if: github.ref == 'refs/heads/main' && TODO
+              if: github.ref == 'refs/heads/main' && steps.contains_beta_tag.outputs.retval == 'true'
               run: |
                   echo "beta_build=true" >> $GITHUB_ENV
             - name: Checkout Project
