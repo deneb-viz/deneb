@@ -1,17 +1,10 @@
 import { TopLevelSpec } from 'vega-lite';
-import {
-    authorInfo,
-    autoSizeConfigSimple,
-    vegaDataModelRef,
-    vegaLiteProviderInfo
-} from '..';
+import { authorInfo, vegaDataModelRef, vegaLiteProviderInfo } from '..';
 
 export const vlEmpty: TopLevelSpec = {
     $schema: vegaLiteProviderInfo,
     data: vegaDataModelRef(),
-    config: {
-        autosize: autoSizeConfigSimple()
-    },
+    config: {},
     mark: null,
     usermeta: {
         information: {

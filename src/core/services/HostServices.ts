@@ -12,6 +12,7 @@ import ITooltipService = powerbi.extensibility.ITooltipService;
 import ISelectionId = powerbi.visuals.ISelectionId;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import IVisualEventService = powerbi.extensibility.IVisualEventService;
+import ISandboxExtendedColorPalette = powerbi.extensibility.ISandboxExtendedColorPalette;
 /*  Pending API 4.0.0
     import IDownloadService = powerbi.extensibility.IDownloadService;
 */
@@ -24,6 +25,7 @@ export class HostServices {
     /*  Pending API 4.0.0
         download: IDownloadService;
     */
+    colorPalette: ISandboxExtendedColorPalette;
     element: HTMLElement;
     events: IVisualEventService;
     fetchMoreData: (aggregateSegments?: boolean) => boolean;
@@ -33,7 +35,6 @@ export class HostServices {
     persistProperties: (changes: VisualObjectInstancesToPersist) => void;
     selectionIdBuilder: () => ISelectionIdBuilder;
     selectionManager: ISelectionManager;
-    themeColors: string[];
     tooltipService: ITooltipService;
     visualUpdateOptions: VisualUpdateOptions;
 
@@ -43,6 +44,7 @@ export class HostServices {
             this.download = options.host.downloadService;
         */
         this.allowInteractions = host.hostCapabilities.allowInteractions;
+        this.colorPalette = host.colorPalette;
         this.element = element;
         this.events = options.host.eventService;
         this.fetchMoreData = host.fetchMoreData;
@@ -52,11 +54,11 @@ export class HostServices {
         this.persistProperties = host.persistProperties;
         this.selectionIdBuilder = host.createSelectionIdBuilder;
         this.selectionManager = getNewSelectionManager(host);
-        this.themeColors = host.colorPalette['colors']?.map(
-            (c: any) => c.value
-        );
         this.tooltipService = host.tooltipService;
     };
+
+    getThemeColors = (): string[] =>
+        this.colorPalette?.['colors']?.map((c: any) => c.value) || [];
 
     renderingFinished = () => {
         this.events.renderingFinished(this.visualUpdateOptions);

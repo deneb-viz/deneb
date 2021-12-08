@@ -1,17 +1,10 @@
 import { Spec } from 'vega';
-import {
-    authorInfo,
-    autoSizeConfigSimple,
-    vegaDataModelRef,
-    vegaProviderInfo
-} from '..';
+import { authorInfo, vegaDataModelRef, vegaProviderInfo } from '..';
 
 export const vEmpty: Spec = {
     $schema: vegaProviderInfo,
     data: [vegaDataModelRef()],
-    config: {
-        autosize: autoSizeConfigSimple()
-    },
+    config: {},
     marks: [],
     usermeta: {
         information: {

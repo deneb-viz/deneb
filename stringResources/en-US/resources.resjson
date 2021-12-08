@@ -82,6 +82,7 @@
     "Button_ZoomReset": "Zoom Preview to Actual Size (100%) [ Ctrl + Alt + 0 ]",
     "Button_ZoomFit": "Zoom Preview to Fit Available Space [ Ctrl + Alt + * ]",
     "Button_Remap": "Apply Mapping",
+    "Button_More_Commands": "More commands",
     "Tooltip_Button_Edit": "Edit this visual.",
     "Editor_Heading": "Visual Editor",
     "Editor_Assistive": "Use the editor and tools below to edit your visual's specification.",

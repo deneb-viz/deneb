@@ -1,16 +1,19 @@
 export {
     commandBarStyles,
     commandBarButtonStyles,
+    commandBarOverflowProps,
     getAutoApplyToggle,
     getCommandBarItems,
-    getCommandBarFarItems
+    getCommandBarFarItems,
+    getCommandBarOverflowItems
 };
 
-import { IButtonStyles } from '@fluentui/react/lib/Button';
+import { IButtonStyles, IButtonProps } from '@fluentui/react/lib/Button';
 import {
     ICommandBarItemProps,
     ICommandBarStyles
 } from '@fluentui/react/lib/CommandBar';
+import { IContextualMenuStyles } from '@fluentui/react/lib/ContextualMenu';
 
 import { resolveAutoApplyToggleAria } from './aria';
 import {
@@ -31,23 +34,45 @@ import { i18nValue } from './i18n';
 import store, { getState } from '../../store';
 
 const commandBarStyles: ICommandBarStyles = {
-        root: {
-            backgroundColor: theme.palette.neutralLighterAlt,
-            padding: 0
-        }
+    root: {
+        backgroundColor: theme.palette.neutralLighterAlt,
+        padding: 0
+    }
+};
+const commandBarButtonStyles: IButtonStyles = {
+    root: {
+        backgroundColor: theme.palette.neutralLighterAlt
     },
-    commandBarButtonStyles: IButtonStyles = {
-        root: {
-            backgroundColor: theme.palette.neutralLighterAlt
+    rootDisabled: {
+        backgroundColor: theme.palette.neutralLighterAlt
+    },
+    icon: { color: theme.palette.neutralPrimary },
+    iconHovered: { color: theme.palette.neutralDark },
+    iconPressed: { color: theme.palette.neutralDark },
+    iconChecked: { color: theme.palette.neutralDark }
+};
+const menuStyles: Partial<IContextualMenuStyles> = {
+    subComponentStyles: {
+        menuItem: {
+            root: {
+                backgroundColor: theme.palette.white
+            },
+            icon: { color: theme.palette.neutralPrimary },
+            iconHovered: { color: theme.palette.neutralDark },
+            iconPressed: { color: theme.palette.neutralDark },
+            iconChecked: { color: theme.palette.neutralDark }
         },
-        rootDisabled: {
-            backgroundColor: theme.palette.neutralLighterAlt
-        },
-        icon: { color: theme.palette.neutralPrimary },
-        iconHovered: { color: theme.palette.neutralDark },
-        iconPressed: { color: theme.palette.neutralDark },
-        iconChecked: { color: theme.palette.neutralDark }
-    };
+        callout: {}
+    }
+};
+const commandBarOverflowProps = (): IButtonProps => ({
+    styles: commandBarButtonStyles,
+    ariaLabel: i18nValue('Button_More_Commands'),
+    menuProps: {
+        styles: menuStyles,
+        items: []
+    }
+});
 
 const getApplyCommandItem = (): ICommandBarItemProps => ({
     key: 'applyChanges',
@@ -92,6 +117,11 @@ const getCommandBarItems = (): ICommandBarItemProps[] => {
         getMapFieldsCommandItem()
     ];
 };
+
+/**
+ * Get any items we've prescribed as needing to be inthe overflow area.
+ */
+const getCommandBarOverflowItems = (): ICommandBarItemProps[] => [];
 
 /**
  * Gets the command bar items for the far side of the bar, which is concerned with templating and support operations.

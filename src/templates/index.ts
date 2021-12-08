@@ -6,18 +6,12 @@
  * Templates re-use a lot of common stuff, so this section declares and exports
  * common objects that we can import as needed.
  */
-import { Spec, BaseData, AutoSize } from 'vega';
+import { Spec, BaseData } from 'vega';
 import { TopLevelSpec } from 'vega-lite';
 import { getConfig } from '../core/utils/config';
 
 import { dataRoles } from '../../capabilities.json';
 
-function autoSizeConfigSimple(): AutoSize {
-    return {
-        type: 'fit',
-        contains: 'padding'
-    };
-}
 function vegaDataModelRef(): BaseData {
     return {
         name: dataRoles[0].name
@@ -28,13 +22,7 @@ const providerInfo = getConfig().providerResources,
     vegaLiteProviderInfo = providerInfo.vegaLite.schemaUrl,
     authorInfo = 'Deneb';
 
-export {
-    authorInfo,
-    autoSizeConfigSimple,
-    vegaDataModelRef,
-    vegaProviderInfo,
-    vegaLiteProviderInfo
-};
+export { authorInfo, vegaDataModelRef, vegaProviderInfo, vegaLiteProviderInfo };
 
 /**
  * ==================

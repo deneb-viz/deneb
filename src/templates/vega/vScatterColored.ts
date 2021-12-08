@@ -1,5 +1,5 @@
 import { Spec } from 'vega';
-import { authorInfo, autoSizeConfigSimple, vegaProviderInfo } from '..';
+import { authorInfo, vegaProviderInfo } from '..';
 import thumbnail from '../thumbnail';
 
 export const vScatterColored: Spec = {
@@ -10,20 +10,18 @@ export const vScatterColored: Spec = {
             transform: [
                 {
                     type: 'filter',
-                    expr: 'isValid(datum["__xAxis__"]) && isFinite(+datum["__xAxis__"]) && isValid(datum["__yAxis__"]) && isFinite(+datum["__yAxis__"])'
+                    expr: 'isValid(datum["__0__"]) && isFinite(+datum["__0__"]) && isValid(datum["__1__"]) && isFinite(+datum["__1__"])'
                 }
             ]
         }
     ],
-    config: {
-        autosize: autoSizeConfigSimple()
-    },
+    config: {},
     scales: [
         {
             name: 'xscale',
             domain: {
                 data: 'dataset',
-                field: '__xAxis__'
+                field: '__0__'
             },
             range: 'width',
             nice: true
@@ -32,7 +30,7 @@ export const vScatterColored: Spec = {
             name: 'yscale',
             domain: {
                 data: 'dataset',
-                field: '__yAxis__'
+                field: '__1__'
             },
             range: 'height',
             nice: true
@@ -42,7 +40,7 @@ export const vScatterColored: Spec = {
             type: 'ordinal',
             domain: {
                 data: 'dataset',
-                field: '__series__',
+                field: '__2__',
                 sort: true
             },
             range: 'category'
@@ -52,12 +50,12 @@ export const vScatterColored: Spec = {
         {
             scale: 'xscale',
             orient: 'bottom',
-            title: '__xAxis__'
+            title: '__0__'
         },
         {
             scale: 'yscale',
             orient: 'left',
-            title: '__yAxis__'
+            title: '__1__'
         }
     ],
     marks: [
@@ -75,18 +73,18 @@ export const vScatterColored: Spec = {
                     },
                     stroke: {
                         scale: 'color',
-                        field: '__series__'
+                        field: '__2__'
                     },
                     x: [
                         {
                             scale: 'xscale',
-                            field: '__xAxis__'
+                            field: '__0__'
                         }
                     ],
                     y: [
                         {
                             scale: 'yscale',
-                            field: '__yAxis__'
+                            field: '__1__'
                         }
                     ]
                 }
@@ -97,7 +95,7 @@ export const vScatterColored: Spec = {
         {
             stroke: 'color',
             symbolType: 'circle',
-            title: '__series__'
+            title: '__2__'
         }
     ],
     usermeta: {
@@ -113,7 +111,7 @@ export const vScatterColored: Spec = {
         provider: 'vega',
         dataset: [
             {
-                key: '__xAxis__',
+                key: '__0__',
                 name: 'X-Axis',
                 description:
                     "Select a column or measure that will be used to position points along chart's X-Axis.",
@@ -121,7 +119,7 @@ export const vScatterColored: Spec = {
                 kind: 'any'
             },
             {
-                key: '__yAxis__',
+                key: '__1__',
                 name: 'Y-Axis',
                 description:
                     "Select a column or measure that will be used to position points along chart's Y-Axis.",
@@ -129,7 +127,7 @@ export const vScatterColored: Spec = {
                 kind: 'any'
             },
             {
-                key: '__series__',
+                key: '__2__',
                 name: 'Series',
                 description:
                     'Select a column that will be used to specify color for the points on the chart.',

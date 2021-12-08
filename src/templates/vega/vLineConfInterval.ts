@@ -1,24 +1,17 @@
 import { Spec } from 'vega';
-import {
-    authorInfo,
-    autoSizeConfigSimple,
-    vegaDataModelRef,
-    vegaProviderInfo
-} from '..';
+import { authorInfo, vegaDataModelRef, vegaProviderInfo } from '..';
 import thumbnail from '../thumbnail';
 
 export const vLineConfInterval: Spec = {
     $schema: vegaProviderInfo,
     data: [vegaDataModelRef()],
-    config: {
-        autosize: autoSizeConfigSimple()
-    },
+    config: {},
     scales: [
         {
             name: 'xscale',
             domain: {
                 data: 'dataset',
-                field: '__xAxis__'
+                field: '__0__'
             },
             range: 'width',
             nice: true
@@ -27,7 +20,7 @@ export const vLineConfInterval: Spec = {
             name: 'yscale',
             domain: {
                 data: 'dataset',
-                field: '__maxValue__'
+                field: '__3__'
             },
             range: 'height',
             nice: true
@@ -37,12 +30,12 @@ export const vLineConfInterval: Spec = {
         {
             scale: 'xscale',
             orient: 'bottom',
-            title: '__xAxis__'
+            title: '__0__'
         },
         {
             scale: 'yscale',
             orient: 'left',
-            title: '__refValue__'
+            title: '__2__'
         }
     ],
     marks: [
@@ -51,7 +44,7 @@ export const vLineConfInterval: Spec = {
             type: 'area',
             style: ['area', 'errorband-band'],
             sort: {
-                field: 'datum["__xAxis__"]'
+                field: 'datum["__0__"]'
             },
             from: {
                 data: 'dataset'
@@ -69,15 +62,15 @@ export const vLineConfInterval: Spec = {
                     },
                     x: {
                         scale: 'xscale',
-                        field: '__xAxis__'
+                        field: '__0__'
                     },
                     y: {
                         scale: 'yscale',
-                        field: '__minValue__'
+                        field: '__1__'
                     },
                     y2: {
                         scale: 'yscale',
-                        field: '__maxValue__'
+                        field: '__3__'
                     }
                 }
             }
@@ -87,7 +80,7 @@ export const vLineConfInterval: Spec = {
             type: 'line',
             style: ['line'],
             sort: {
-                field: 'datum["__xAxis__"]'
+                field: 'datum["__0__"]'
             },
             from: {
                 data: 'dataset'
@@ -102,11 +95,11 @@ export const vLineConfInterval: Spec = {
                     },
                     x: {
                         scale: 'xscale',
-                        field: '__xAxis__'
+                        field: '__0__'
                     },
                     y: {
                         scale: 'yscale',
-                        field: '__refValue__'
+                        field: '__2__'
                     }
                 }
             }
@@ -126,7 +119,7 @@ export const vLineConfInterval: Spec = {
         provider: 'vega',
         dataset: [
             {
-                key: '__xAxis__',
+                key: '__0__',
                 name: 'X-Axis',
                 description:
                     "Select a measure that will be displayed on the chart's X-Axis",
@@ -134,7 +127,7 @@ export const vLineConfInterval: Spec = {
                 kind: 'column'
             },
             {
-                key: '__minValue__',
+                key: '__1__',
                 name: 'Minimum Value',
                 description:
                     'Select a measure that will represent the minimum value of the band.',
@@ -142,7 +135,7 @@ export const vLineConfInterval: Spec = {
                 kind: 'measure'
             },
             {
-                key: '__refValue__',
+                key: '__2__',
                 name: 'Reference Value',
                 description:
                     'Select a measure that will represent the reference value, or main line on the chart.',
@@ -150,7 +143,7 @@ export const vLineConfInterval: Spec = {
                 kind: 'measure'
             },
             {
-                key: '__maxValue__',
+                key: '__3__',
                 name: 'Maximum Value',
                 description:
                     'Select a measure that will represent the maximum value of the band.',

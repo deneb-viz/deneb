@@ -1,32 +1,25 @@
 import { TopLevelSpec } from 'vega-lite';
-import {
-    authorInfo,
-    autoSizeConfigSimple,
-    vegaDataModelRef,
-    vegaLiteProviderInfo
-} from '..';
+import { authorInfo, vegaDataModelRef, vegaLiteProviderInfo } from '..';
 import thumbnail from '../thumbnail';
 
 export const vlScatterColored: TopLevelSpec = {
     $schema: vegaLiteProviderInfo,
     data: vegaDataModelRef(),
-    config: {
-        autosize: autoSizeConfigSimple()
-    },
+    config: {},
     mark: {
         type: 'point'
     },
     encoding: {
         x: {
-            field: '__xAxis__',
+            field: '__0__',
             type: 'quantitative'
         },
         y: {
-            field: '__yAxis__',
+            field: '__1__',
             type: 'quantitative'
         },
         color: {
-            field: '__series__',
+            field: '__2__',
             type: 'nominal'
         }
     },
@@ -43,7 +36,7 @@ export const vlScatterColored: TopLevelSpec = {
         provider: 'vegaLite',
         dataset: [
             {
-                key: '__xAxis__',
+                key: '__0__',
                 name: 'X-Axis',
                 description:
                     "Select a column or measure that will be used to position points along chart's X-Axis.",
@@ -51,7 +44,7 @@ export const vlScatterColored: TopLevelSpec = {
                 kind: 'any'
             },
             {
-                key: '__yAxis__',
+                key: '__1__',
                 name: 'Y-Axis',
                 description:
                     "Select a column or measure that will be used to position points along chart's Y-Axis.",
@@ -59,7 +52,7 @@ export const vlScatterColored: TopLevelSpec = {
                 kind: 'any'
             },
             {
-                key: '__series__',
+                key: '__2__',
                 name: 'Series',
                 description:
                     'Select a column that will be used to specify color for the points on the chart.',

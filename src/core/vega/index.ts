@@ -11,6 +11,7 @@ export {
     getViewSpec,
     handleNewView,
     registerCustomExpressions,
+    registerCustomSchemes,
     resolveLoaderLogic
 };
 
@@ -18,6 +19,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import * as Vega from 'vega';
 import * as vegaSchema from 'vega/build/vega-schema.json';
 import expressionFunction = Vega.expressionFunction;
+import scheme = Vega.scheme;
 import Config = Vega.Config;
 import Spec = Vega.Spec;
 import View = Vega.View;
@@ -36,6 +38,7 @@ import { bindInteractivityEvents } from '../interactivity/selection';
 import { isFeatureEnabled } from '../utils/features';
 import { resolveClearCatcher } from '../ui/dom';
 import { getDataset } from '../data/dataset';
+import { divergentPalette, divergentPaletteMed, ordinalPalette } from './theme';
 
 /**
  * Defines a JSON schema by provider and role, so we can dynamically apply based on provider.
@@ -121,10 +124,7 @@ const getViewConfig = () => {
     return {
         ...{
             background: null, // so we can defer to the Power BI background, if applied
-            customFormatTypes: true,
-            range: {
-                category: hostServices.themeColors
-            }
+            customFormatTypes: true
         },
         ...getParsedConfigFromSettings()
     };
@@ -185,6 +185,16 @@ const registerCustomExpressions = () => {
             );
         }
     );
+};
+
+/**
+ * Bind custom schemes to the view that sync to the report theme.
+ */
+const registerCustomSchemes = () => {
+    scheme('pbiColorNominal', hostServices.getThemeColors());
+    scheme('pbiColorOrdinal', ordinalPalette());
+    scheme('pbiColorLinear', divergentPalette());
+    scheme('pbiColorDivergent', divergentPaletteMed());
 };
 
 /**
