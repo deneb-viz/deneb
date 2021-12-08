@@ -23,7 +23,7 @@ jobs:
                       ${{ runner.OS }}-
             - name: Install Packages
               run: npm ci
-            - name: Validate Current Configuraation (deneb-config.json)
+            - name: Validate Current Configuration (deneb-config.json)
               run: npm run validate-config-for-commit
             - name: Linting Checks
               run: npm run lint
@@ -50,3 +50,50 @@ jobs:
                   title: 'Alpha Channel: Latest Build'
                   files: |
                       dist/ALPHA*.pbiviz
+    milestone-build:
+        needs: build
+        runs-on: ubuntu-latest
+        steps:
+            - name: 'Check for Beta Channel Tag'
+              uses: rickstaa/action-contains-tag@v1
+              id: contains_beta_tag
+              with:
+                  reference: 'main'
+                  tag: 'beta'
+            - name: Beta Channel Build Check
+              if: github.ref == 'refs/heads/main' && TODO
+              run: |
+                  echo "beta_build=true" >> $GITHUB_ENV
+            - name: Checkout Project
+              if: env.beta_build == 'true'
+              uses: actions/checkout@v2
+            - name: Setup Node
+              if: env.beta_build == 'true'
+              uses: actions/setup-node@v2
+              with:
+                  node-version: 14
+            - name: Cache Node.js modules
+              if: env.beta_build == 'true'
+              uses: actions/cache@v2
+              with:
+                  path: ~/.npm # npm cache files are stored in `~/.npm` on Linux/macOS
+                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.OS }}-node-
+                      ${{ runner.OS }}-
+            - name: Install Packages
+              if: env.beta_build == 'true'
+              run: npm ci
+            - name: 'Beta Channel Build'
+              if: env.beta_build == 'true'
+              run: npm run package-beta
+            - name: 'Publish/Update Beta Channel Pre-Release'
+              if: env.beta_build == 'true'
+              uses: 'marvinpinto/action-automatic-releases@latest'
+              with:
+                  repo_token: '${{ secrets.GITHUB_TOKEN }}'
+                  automatic_release_tag: 'beta'
+                  prerelease: true
+                  title: 'Beta Channel: Latest Build'
+                  files: |
+                      dist/BETA*.pbiviz
