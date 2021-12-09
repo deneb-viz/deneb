@@ -6,7 +6,9 @@ import { Paragraph } from '../../elements/Typography';
 const TemplateDatasetPlaceholdersEmpty: React.FC = () => {
     return (
         <Paragraph>
-            {i18nValue('Data_Placeholder_Assistive_No_PH', ['Button_Create'])}
+            {i18nValue('Data_Placeholder_Assistive_No_PH', [
+                i18nValue('Button_Create')
+            ])}
         </Paragraph>
     );
 };
