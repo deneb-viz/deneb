@@ -79,6 +79,14 @@ type TTemplateImportState =
     | 'Error';
 
 /**
+ * Used to manage regex match/replace for portions of a template that represent fields from the dataset.
+ */
+interface ITemplatePattern {
+    match: string;
+    replacer: string;
+}
+
+/**
  * Extension of `TSpecProvider`, providing an `import` value in addition to `vega` and `vegaLite`.
  */
 type TTemplateProvider = TSpecProvider | 'import';
@@ -98,14 +106,15 @@ const getEscapedReplacerPattern = (value: string) =>
  *  - `$2`: The resolved field placeholder
  *  - `$3`: Trailing pattern used to identify placeholder
  *
- * Returns string array of RegEx patterns that should match all occurrences of specified placeholder name within a spec.
+ * Returns ITemplatePattern array of RegEx patterns that should match all occurrences of specified placeholder name within a spec, and the replacement string
+ * that references these capture groups, as well as any necessary adjustments.
  */
-const getExportFieldTokenPatterns = (name: string) => {
+const getExportFieldTokenPatterns = (name: string): ITemplatePattern[] => {
     const namePattern = getEscapedReplacerPattern(name);
     return [
-        `(")(${namePattern})(")`,
-        `(\\\.)(${namePattern})()`,
-        `(')(${namePattern})(')`
+        { match: `(")(${namePattern})(")`, replacer: '$1$2$3' },
+        { match: `(\\\.)(${namePattern})()`, replacer: `['$2']$3` },
+        { match: `(')(${namePattern})(')`, replacer: '$1$2$3' }
     ];
 };
 
@@ -398,7 +407,7 @@ const resolveTemplatesForProvider = () => {
 /**
  * For a supplied (stringified) _template_, RegEx _pattern_ and replacement _token_, perform a global replace on all occurrences and return it.
  *
- * `pattern` is a valid RegEx pattern to search template for.
+ * `pattern` is a valid RegEx pattern to search template for and replace on (with capture group $2 representing the field).
  *
  * As per notes in `getExportFieldTokenPatterns`, this pattern requires three capture groups in its definition in order to ensure that preceding
  * and trailing patterns used to identify a placeholder are preserved.
@@ -407,9 +416,13 @@ const resolveTemplatesForProvider = () => {
  */
 const replaceTemplateFieldWithToken = (
     template: string,
-    pattern: string,
+    pattern: ITemplatePattern,
     token: string
-) => template.replace(getFieldExpression(pattern), `$1${token}$3`);
+) =>
+    template.replace(
+        getFieldExpression(pattern.match),
+        pattern.replacer.replace('$2', token)
+    );
 
 /**
  * For a given column or measure (or template placeholder), resolve its type against the corresponding Power BI value descriptor.

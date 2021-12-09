@@ -34,25 +34,20 @@ import {
 } from './properties';
 import { getState } from '../../store';
 import {
-    getEscapedReplacerPattern,
     getExportFieldTokenPatterns,
     getFieldExpression,
     getInteractivityPropsFromTemplate,
     getReducedPlaceholdersForMetadata,
     getReplacedTemplate,
     getResequencedMetadata,
-    getSpecWithFieldPlaceholders,
-    getTemplatePlaceholderKey
+    getSpecWithFieldPlaceholders
 } from '../template';
 import { i18nValue } from '../ui/i18n';
 import { cleanParse, getJsonAsIndentedString } from './json';
 import { getPatchedVegaSpec } from '../vega/vegaUtils';
 import { getPatchedVegaLiteSpec } from '../vega/vegaLiteUtils';
 import { TSpecProvider } from '../vega';
-import {
-    ITemplateDatasetField,
-    ITemplateInteractivityOptions
-} from '../template/schema';
+import { ITemplateInteractivityOptions } from '../template/schema';
 import {
     getTemplateFieldsFromMetadata,
     IVisualValueMetadata
@@ -363,7 +358,8 @@ const doesSpecContainKeyForMetadata = (
         getExportFieldTokenPatterns(key),
         (result, expr) => {
             return (
-                (getFieldExpression(expr).test(spec) && key in metadata) ||
+                (getFieldExpression(expr.match).test(spec) &&
+                    key in metadata) ||
                 result
             );
         },
