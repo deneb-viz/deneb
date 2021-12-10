@@ -36,7 +36,7 @@ import { getPatchedVegaSpec } from './vegaUtils';
 import { getPatchedVegaLiteSpec } from './vegaLiteUtils';
 import { bindInteractivityEvents } from '../interactivity/selection';
 import { isFeatureEnabled } from '../utils/features';
-import { resolveClearCatcher } from '../ui/dom';
+import { blankImageBase64, resolveClearCatcher } from '../ui/dom';
 import { getDataset } from '../data/dataset';
 import { divergentPalette, divergentPaletteMed, ordinalPalette } from './theme';
 
@@ -225,11 +225,5 @@ const isDataUri = (uri: string) =>
     !!uri.match(
         /^\s*data:([a-z]+\/[a-z]+(;[a-z\-]+\=[a-z\-]+)?)?(;base64)?,[a-z0-9\!\$\&\'\,\(\)\*\+\,\;\=\-\.\_\~\:\@\/\?\%\s]*\s*$/i
     );
-
-/**
- * Blank image data URI; used to return placeholder images when remote URIs are supplied
- */
-const blankImageBase64 =
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
 const propertyDefaults = getConfig().propertyDefaults.vega;

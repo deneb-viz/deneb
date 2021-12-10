@@ -28,6 +28,7 @@ export const powerbiTheme = (): Config => ({
     font: fontStandard,
     arc: {},
     area: { line: true, opacity: 0.6 },
+    bar: {},
     line: {
         strokeWidth: 3,
         strokeCap: 'round',

@@ -12,6 +12,7 @@ import { BodyHeading, SubHeading } from '../../elements/Typography';
 import Dataset, { getImportColumns } from '../../elements/Dataset';
 import PreviewImage from '../../elements/PreviewImage';
 import { getConfig } from '../../../core/utils/config';
+import { isBase64 } from '../../../core/ui/dom';
 
 const stackTokens: IStackTokens = {
     childrenGap: 25
@@ -25,7 +26,7 @@ const TemplateInfo: React.FC = () => {
     const usermeta = store((state) => state).templateToApply
         .usermeta as IDenebTemplateMetadata;
     const previewImage = usermeta?.information?.previewImageBase64PNG;
-    const hasPreviewImage = previewImage || false;
+    const hasPreviewImage = (previewImage && isBase64(previewImage)) || false;
     const hasPlaceholders = usermeta?.dataset?.length > 0;
     return (
         <>

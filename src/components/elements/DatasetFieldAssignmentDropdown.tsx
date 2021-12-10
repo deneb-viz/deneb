@@ -34,13 +34,9 @@ const getDropDownOptions = (
     reduce(
         metadata,
         (result, value, key) => {
-            const disabled =
-                (value.isMeasure && datasetField.kind === 'column') ||
-                (value.isColumn && datasetField.kind === 'measure');
             return result.concat({
                 key: value.queryName,
                 text: key,
-                disabled,
                 data: {
                     placeholder: datasetField,
                     icon: getDataTypeIcon(resolveValueDescriptor(value.type))
