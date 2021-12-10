@@ -43,7 +43,7 @@ export const vScatterColored: Spec = {
                 field: '__2__',
                 sort: true
             },
-            range: 'category'
+            range: { scheme: 'pbiColorNominal' }
         }
     ],
     axes: [

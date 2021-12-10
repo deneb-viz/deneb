@@ -20,7 +20,8 @@ export const vlScatterColored: TopLevelSpec = {
         },
         color: {
             field: '__2__',
-            type: 'nominal'
+            type: 'nominal',
+            scale: { scheme: 'pbiColorNominal' }
         }
     },
     usermeta: {
