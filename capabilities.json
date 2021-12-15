@@ -228,6 +228,23 @@
                 }
             }
         },
+        "theme": {
+            "displayNameKey": "Objects_Theme",
+            "descriptionKey": "Objects_Theme_Description",
+            "displayName": "Theme Options",
+            "description": "Theme Options description",
+            "properties": {
+                "ordinalColorCount": {
+                    "displayNameKey": "Objects_Theme_OrdinalColorCount",
+                    "descriptionKey": "Objects_Theme_OrdinalColorCount_Description",
+                    "displayName": "Ordinal Color Count",
+                    "description": "Ordinal Color Count description",
+                    "type": {
+                        "integer": true
+                    }
+                }
+            }
+        },
         "dataLimit": {
             "displayNameKey": "Objects_DataLimit",
             "descriptionKey": "Objects_DataLimit_Description",
