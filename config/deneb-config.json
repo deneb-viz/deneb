@@ -164,6 +164,11 @@
             "selectionMaxDataPoints": 50,
             "tooltipDelay": 0,
             "isNewDialogOpen": true
+        },
+        "theme": {
+            "ordinalColorCount": 10,
+            "ordinalColorCountMin": 1,
+            "ordinalColorCountMax": 100
         }
     },
     "selection": {

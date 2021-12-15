@@ -113,6 +113,30 @@
                 }
             }
         },
+        "IThemeDefaults": {
+            "description": "Property defaults for any theme integration with the Vega view.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "ordinalColorCount",
+                "ordinalColorCountMin",
+                "ordinalColorCountMax"
+            ],
+            "properties": {
+                "ordinalColorCount": {
+                    "description": "The number of discrete colors to use when computing the pbiColorOrdinal scheme.",
+                    "type": "number"
+                },
+                "ordinalColorCountMin": {
+                    "description": "Minimum allowed number of colors to assign to ordinal scheme (if specifying manually).",
+                    "type": "number"
+                },
+                "ordinalColorCountMax": {
+                    "description": "Maximum allowed number of colors to assign to ordinal scheme (if specifying manually).",
+                    "type": "number"
+                }
+            }
+        },
         "IVegaDefaults": {
             "description": "Default values for Vega-based properties.",
             "type": "object",
@@ -359,12 +383,13 @@
             "description": "Default values for visual properties",
             "type": "object",
             "additionalProperties": false,
-            "required": ["dataLimit", "developer", "editor", "vega"],
+            "required": ["dataLimit", "developer", "editor", "vega", "theme"],
             "properties": {
                 "dataLimit": { "$ref": "#/definitions/IDataLimitDefaults" },
                 "developer": { "$ref": "#/definitions/IDeveloperDefaults" },
                 "editor": { "$ref": "#/definitions/IEditorDefaults" },
-                "vega": { "$ref": "#/definitions/IVegaDefaults" }
+                "vega": { "$ref": "#/definitions/IVegaDefaults" },
+                "theme": { "$ref": "#/definitions/IThemeDefaults" }
             }
         },
         "selection": {

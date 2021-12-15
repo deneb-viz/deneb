@@ -1,10 +1,11 @@
 import { Config as VgConfig, Spec } from 'vega';
 import { Config as VlConfig, TopLevelSpec } from 'vega-lite';
 import merge from 'lodash/merge';
-import range from 'lodash/range';
+import { interpolateHcl, interpolateRgbBasis, quantize } from 'd3';
 
 import { hostServices } from '../services';
 import { ptToPx } from '../ui/dom';
+import { getState } from '../../store';
 
 type Config = VgConfig | VlConfig;
 
@@ -13,7 +14,6 @@ const legendFontPx = ptToPx(10);
 const fontLargePx = ptToPx(12);
 const fontStandard = 'Segoe UI';
 const fontTitle = 'wf_standard-font, helvetica, arial, sans-serif';
-const ordinalRangeQty = 10;
 
 /**
  * Pre-defined theme that can work with Power BI, based on our work to add this to vega-themes.
@@ -95,23 +95,23 @@ export const getTemplateWithBaseTheme = (
 /**
  * Helper functions to generate color ranges based on theme color palette
  */
-export const divergentPalette = () => [
-    themeDivergentMin(),
-    themeDivergentMax()
-];
-export const divergentPaletteMed = () => [
-    themeDivergentMin(),
-    themeDivergentMed(),
-    themeDivergentMax()
-];
-export const ordinalPalette = () =>
-    range(ordinalRangeQty).map((i) =>
-        getInterpolatedColor(
-            themeDivergentMin(),
-            themeDivergentMax(),
-            (1 / (ordinalRangeQty - 1)) * i
-        )
+export const divergentPalette = () =>
+    interpolateRgbBasis([themeDivergentMin(), themeDivergentMax()]);
+export const divergentPaletteMed = () =>
+    interpolateRgbBasis([
+        themeDivergentMin(),
+        themeDivergentMed(),
+        themeDivergentMax()
+    ]);
+export const ordinalPalette = () => {
+    const { ordinalColorCount } = getState().visualSettings.theme;
+    if (ordinalColorCount === 1) return [themeDivergentMax()];
+    return quantize(
+        interpolateHcl(themeDivergentMin(), themeDivergentMax()),
+        ordinalColorCount
     );
+};
+
 const themeBackgroundNeutral = () =>
     hostServices.colorPalette.backgroundNeutral.value;
 const themeFirstLevelElement = () => hostServices.colorPalette.foreground.value;
