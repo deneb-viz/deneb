@@ -123,33 +123,3 @@ const themeDivergentMed = () =>
     <string>hostServices.colorPalette?.['neutral']?.value;
 const themeDivergentMax = () =>
     <string>hostServices.colorPalette?.['maximium' || 'maximum']?.value; // There's a typo in the palette, so this covers us in case they ever fix it
-
-/**
- * For a given start, and color and percentage between them, work out what the intervening hex code will be.
- */
-const getInterpolatedColor = (
-    color1: string,
-    color2: string,
-    ratio: number
-) => {
-    const cMin = color1.replace('#', '');
-    const cMax = color2.replace('#', '');
-    const cRatio = Math.round(ratio * 1000) / 1000;
-    const hex = (color: number) => {
-        const colorString = color.toString(16);
-        return colorString.length === 1 ? `0${colorString}` : colorString;
-    };
-    const r = Math.ceil(
-        parseInt(cMax.substring(0, 2), 16) * cRatio +
-            parseInt(cMin.substring(0, 2), 16) * (1 - cRatio)
-    );
-    const g = Math.ceil(
-        parseInt(cMax.substring(2, 4), 16) * cRatio +
-            parseInt(cMin.substring(2, 4), 16) * (1 - cRatio)
-    );
-    const b = Math.ceil(
-        parseInt(cMax.substring(4, 6), 16) * cRatio +
-            parseInt(cMin.substring(4, 6), 16) * (1 - cRatio)
-    );
-    return `#${hex(r)}${hex(g)}${hex(b)}`;
-};
