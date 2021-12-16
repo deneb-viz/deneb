@@ -2,7 +2,6 @@ import powerbi from 'powerbi-visuals-api';
 import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnumerationObject;
 
 import SettingsBase from './SettingsBase';
-import Debugger from '../Debugger';
 import { getConfig } from '../core/utils/config';
 import { TLocale } from '../core/ui/i18n';
 import { isFeatureEnabled } from '../core/utils/features';
@@ -27,10 +26,8 @@ export default class DeveloperSettings extends SettingsBase {
             [propertyName: string]: any;
         } = {}
     ): VisualObjectInstanceEnumerationObject {
-        Debugger.log('Processing enumeration...');
         enumerationObject.instances.map((i) => {
             if (!isFeatureEnabled('developerMode')) {
-                Debugger.log('Removing object & properties...');
                 enumerationObject.instances = [];
             }
         });

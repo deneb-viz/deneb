@@ -6,7 +6,6 @@ import get from 'lodash/get';
 import { ITextFieldProps, TextField } from '@fluentui/react/lib/TextField';
 import { IStackTokens, Stack } from '@fluentui/react/lib/Stack';
 
-import Debugger from '../../Debugger';
 import store from '../../store';
 import { getConfig } from '../../core/utils/config';
 import FieldInfoIcon from './FieldInfoIcon';
@@ -29,7 +28,6 @@ interface ICappedTextFieldProps {
 }
 
 const CappedTextField: React.FC<ICappedTextFieldProps> = (props) => {
-    Debugger.log('Rendering Component: [CappedTextField]...');
     const { templateExportMetadata, updateTemplateExportPropertyBySelector } =
             store(),
         [textFieldValue, setTextFieldValue] = React.useState(

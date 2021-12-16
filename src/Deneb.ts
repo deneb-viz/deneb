@@ -21,7 +21,6 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { loadTheme } from '@fluentui/react/lib/Styling';
 
-import Debugger, { standardLog } from './Debugger';
 import App from './components/App';
 import VisualSettings from './properties/VisualSettings';
 
@@ -54,61 +53,45 @@ export class Deneb implements IVisual {
 
     constructor(options: VisualConstructorOptions) {
         try {
-            Debugger.clear();
-            Debugger.heading('Visual Constructor');
-            Debugger.log('Loading theming...');
             loadTheme(theme);
             initializeIcons();
             hostServices.bindHostServices(options);
             getState().initializeImportExport();
-            Debugger.log('Setting container element...');
             this.container = options.element;
-            Debugger.log('Setting host services...');
             this.host = options.host;
-            Debugger.log('Getting events service...');
             this.events = this.host.eventService;
-            Debugger.log('Creating main React component...');
             this.reactRoot = React.createElement(App);
             ReactDOM.render(this.reactRoot, this.container);
-            Debugger.log('Preventing context menu on host...');
             this.container.oncontextmenu = (ev) => {
                 ev.preventDefault();
             };
             fillPatternServices.setPatternContainer(this.container);
         } catch (e) {
-            Debugger.log('Error', e);
+            console?.error('Error', e);
         }
     }
 
-    @standardLog({ profile: true, report: true, owner })
     public update(options: VisualUpdateOptions) {
-        Debugger.log('Options', options);
         // Handle main update flow
         try {
             // Signal we've begun rendering
-            Debugger.log('Rendering started.');
             this.events.renderingStarted(options);
 
             // Parse the settings for use in the visual
-            Debugger.log('Parsing visual settings...');
             this.settings = Deneb.parseSettings(
                 options && options.dataViews && options.dataViews[0]
             );
-            Debugger.log('Parsed settings', this.settings);
 
             // Handle the update options and dispatch to store as needed
             this.resolveUpdateOptions(options);
             return;
         } catch (e) {
             // Signal that we've encountered an error
-            Debugger.log('Error during update!', e);
             hostServices.renderingFailed(e.message);
         }
     }
 
-    @standardLog({ owner })
     private resolveUpdateOptions(options: VisualUpdateOptions) {
-        Debugger.log('Resolving visual update options for API operations...');
         const settings = this.settings;
         hostServices.visualUpdateOptions = options;
         hostServices.resolveLocaleFromSettings(settings.developer.locale);
@@ -137,16 +120,10 @@ export class Deneb implements IVisual {
                     options.operationKind ===
                     VisualDataChangeOperationKind.Create
                 ) {
-                    Debugger.log(
-                        'First data segment. Doing initial state checks...'
-                    );
                     updateDatasetProcessingStage({
                         dataProcessingStage: 'Fetching',
                         canFetchMore: canFetchMore()
                     });
-                    Debugger.log(
-                        'First data segment. Doing initial state checks...'
-                    );
                     const datasetViewHasValidMapping = validateDataViewMapping(
                             options.dataViews
                         ),
@@ -158,7 +135,6 @@ export class Deneb implements IVisual {
                         datasetViewIsValid =
                             datasetViewHasValidMapping &&
                             datasetViewHasValidRoles;
-                    Debugger.log('Dispatching ');
                     updateDatasetViewFlags({
                         datasetViewHasValidMapping,
                         datasetViewHasValidRoles,
@@ -168,14 +144,9 @@ export class Deneb implements IVisual {
 
                 // If the DV didn't validate then we shouldn't expend effort mapping it and just display landing page
                 if (!getState().datasetViewHasValidMapping) {
-                    Debugger.log(
-                        "Data view isn't valid, so need to show Landing page."
-                    );
                     updateDatasetViewInvalid();
                     break;
                 }
-
-                Debugger.log('Delegating additional data fetch...');
                 handleDataFetch(options);
                 if (!canFetchMore()) {
                     updateDataset({
@@ -188,7 +159,6 @@ export class Deneb implements IVisual {
                     syncTemplateExportDataset(
                         getTemplateFieldsFromMetadata(getDataset().metadata)
                     );
-                    Debugger.log('Finished processing dataView.');
                 }
                 break;
             }
@@ -197,8 +167,6 @@ export class Deneb implements IVisual {
         }
 
         const { selectionManager } = hostServices;
-        Debugger.log('Has selections', selectionManager.hasSelection());
-        Debugger.log('Existing selections', selectionManager.getSelectionIds());
         getState().datasetProcessingStage === 'Processed' && parseActiveSpec();
     }
 
@@ -211,7 +179,6 @@ export class Deneb implements IVisual {
      * objects and properties you want to expose to the users in the property pane.
      *
      */
-    @standardLog()
     public enumerateObjectInstances(
         options: EnumerateVisualObjectInstancesOptions
     ): VisualObjectInstance[] | VisualObjectInstanceEnumerationObject {
@@ -226,7 +193,6 @@ export class Deneb implements IVisual {
                 containers: [],
                 instances: instances
             };
-        Debugger.log(`Object Enumeration: ${objectName}`);
 
         try {
             // We try where possible to use the standard method signature to process the instance, but there are some exceptions...
@@ -237,24 +203,16 @@ export class Deneb implements IVisual {
                         typeof this.settings[`${objectName}`]
                             .processEnumerationObject === 'function'
                     ) {
-                        Debugger.log(
-                            'processEnumerationObject found. Executing...'
-                        );
                         enumerationObject =
                             this.settings[
                                 `${objectName}`
                             ].processEnumerationObject(enumerationObject);
-                    } else {
-                        Debugger.log(
-                            "Couldn't find class processEnumerationObject function."
-                        );
                     }
                 }
             }
         } catch (e) {
-            Debugger.log('Error', e);
+            console.error('Error', e);
         } finally {
-            Debugger.log('Enumeration Object', enumerationObject);
             return enumerationObject;
         }
     }

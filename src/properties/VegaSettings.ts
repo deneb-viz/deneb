@@ -2,7 +2,6 @@ import powerbi from 'powerbi-visuals-api';
 import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnumerationObject;
 
 import SettingsBase from './SettingsBase';
-import Debugger from '../Debugger';
 import { getConfig } from '../core/utils/config';
 import { isHandlerEnabled } from '../core/interactivity/tooltip';
 import {
@@ -41,13 +40,10 @@ export default class VegaSettings extends SettingsBase {
             [propertyName: string]: any;
         } = {}
     ): VisualObjectInstanceEnumerationObject {
-        Debugger.log('Processing enumeration...');
         enumerationObject.instances.map((i) => {
             if (!isFeatureEnabled('developerMode')) {
-                Debugger.log("Removing 'debug only' properties...");
                 enumerationObject.instances = [];
             } else {
-                Debugger.log('Handling feature switches...');
                 if (!isHandlerEnabled) {
                     delete enumerationObject.instances[0].properties[
                         'enableTooltips'
