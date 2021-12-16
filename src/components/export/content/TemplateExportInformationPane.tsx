@@ -8,10 +8,10 @@ import {
     templatePickerStackStyles,
     templatePickerNonShrinkingStackItemStyles
 } from '../../../config/styles';
-import { exportFieldConstraints } from '../../../config';
 import CappedTextField from '../../elements/CappedTextField';
 import TemplateExportPreviewImage from './TemplateExportPreviewImage';
 import { i18nValue } from '../../../core/ui/i18n';
+import { informationProps } from '../../../core/template';
 
 import { Assistive } from '../../elements/Typography';
 
@@ -37,10 +37,7 @@ const TemplateExportInformationPane: React.FC = () => {
                                 id='information.name'
                                 i18nLabel='Template_Export_Information_Name'
                                 i18nPlaceholder='Template_Export_Information_Name_Placeholder'
-                                maxLength={
-                                    exportFieldConstraints.information.name
-                                        .maxLength
-                                }
+                                maxLength={informationProps.name.maxLength}
                             />
                         </Stack.Item>
                         <Stack.Item>
@@ -49,8 +46,7 @@ const TemplateExportInformationPane: React.FC = () => {
                                 i18nLabel='Template_Export_Information_Description'
                                 i18nPlaceholder='Template_Description_Optional_Placeholder'
                                 maxLength={
-                                    exportFieldConstraints.information
-                                        .description.maxLength
+                                    informationProps.description.maxLength
                                 }
                                 multiline
                             />
@@ -61,10 +57,7 @@ const TemplateExportInformationPane: React.FC = () => {
                                 i18nLabel='Template_Export_Author_Name'
                                 i18nPlaceholder='Template_Export_Author_Name_Placeholder'
                                 i18nAssistiveText='Template_Export_Author_Name_Assistive'
-                                maxLength={
-                                    exportFieldConstraints.information.author
-                                        .maxLength
-                                }
+                                maxLength={informationProps.author.maxLength}
                             />
                         </Stack.Item>
                         <Stack.Item>

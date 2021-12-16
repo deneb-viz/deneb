@@ -18,12 +18,12 @@ import {
     getTemplateFieldsFromMetadata,
     lookupMetadataColumn
 } from '../../core/data/dataset';
-import { exportFieldConstraints } from '../../config';
 import { i18nValue } from '../../core/ui/i18n';
 import DataFieldLabel from './DataFieldLabel';
 import DatasetFieldAssignmentDropdown from './DatasetFieldAssignmentDropdown';
 import { TModalDialogType } from '../../core/ui/modal';
 import { getState } from '../../store';
+import { datasetFieldProps } from '../../core/template';
 
 export const getExportColumns = (): IColumn[] => [
     getTypeColumn(),
@@ -122,7 +122,7 @@ const getExportNameField = (item: ITemplateDatasetField, index: number) => (
         id={`dataset[${index}].name`}
         i18nLabel={`${item.name}`}
         i18nPlaceholder={`${item?.namePlaceholder}`}
-        maxLength={exportFieldConstraints?.dataset?.name?.maxLength}
+        maxLength={datasetFieldProps.name.maxLength}
         inline
         description={`${i18nValue(
             `Template_Export_Kind_${item?.kind || 'None'}`
@@ -135,7 +135,7 @@ const getExportDescriptionField = (index: number) => (
         id={`dataset[${index}].description`}
         i18nLabel='Field Description'
         i18nPlaceholder='Template_Description_Optional_Placeholder'
-        maxLength={exportFieldConstraints?.dataset?.description?.maxLength}
+        maxLength={datasetFieldProps.description.maxLength}
         multiline
         inline
     />
