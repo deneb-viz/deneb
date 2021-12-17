@@ -7,7 +7,7 @@ import {
     templatePickerStackItemListStyles,
     templatePickerNonShrinkingStackItemStyles,
     templatePickerStackTokens
-} from '../../config/styles';
+} from '../elements';
 import TemplateStateHandler from './content/TemplateStateHandler';
 import CreateVisualTemplateNav from './nav/CreateVisualTemplateNav';
 

@@ -3,7 +3,7 @@ import React from 'react';
 import { getRTL } from '@fluentui/react/lib/Utilities';
 import { Icon } from '@fluentui/react/lib/Icon';
 
-import { templatePickerItemListStyles } from '../../../config/styles';
+import { templatePickerItemListStyles } from '../../elements';
 import store from '../../../store';
 import { IDenebTemplateMetadata } from '../../../core/template/schema';
 import { TopLevelSpec } from 'vega-lite';

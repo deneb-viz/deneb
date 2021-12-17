@@ -7,7 +7,7 @@ import {
     templateExportInfoStackTokens,
     templatePickerStackStyles,
     templatePickerNonShrinkingStackItemStyles
-} from '../../../config/styles';
+} from '../../elements';
 import CappedTextField from '../../elements/CappedTextField';
 import TemplateExportPreviewImage from './TemplateExportPreviewImage';
 import { i18nValue } from '../../../core/ui/i18n';

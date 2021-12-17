@@ -5,19 +5,26 @@ import { Text } from '@fluentui/react/lib/Text';
 import { ITextFieldStyles, TextField } from '@fluentui/react/lib/TextField';
 import { IconButton } from '@fluentui/react/lib/Button';
 import { IIconProps } from '@fluentui/react/lib/Icon';
+import { ITextStyles } from '@fluentui/react/lib/Text';
 
 import {
-    exportPivotAssistiveToastTextStyles,
     templateExportInfoStackTokens,
     templatePickerStackStyles,
     templatePickerNonShrinkingStackItemStyles
-} from '../../../config/styles';
+} from '../../elements';
 import { getExportTemplate } from '../../../core/template';
 import { i18nValue } from '../../../core/ui/i18n';
 import { iconButtonStyles } from '../../../core/ui/icons';
 import ExportDownloadButton from './ExportDownloadButton';
 import { Assistive } from '../../elements/Typography';
 
+const exportPivotAssistiveToastTextStyles: ITextStyles = {
+    root: {
+        display: 'inline-block',
+        paddingTop: '8px',
+        paddingRight: '8px'
+    }
+};
 const textStyles: Partial<ITextFieldStyles> = {
     root: {
         width: '100%',
