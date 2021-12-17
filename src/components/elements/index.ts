@@ -8,21 +8,14 @@ import {
     IStackTokens,
     ITheme,
     mergeStyleSets,
-    FontSizes,
-    IStyleSet,
-    IPivotStyles,
-    IButtonStyles,
-    ITextStyles
+    FontSizes
 } from '@fluentui/react';
 
-import { theme } from '../core/ui/fluent';
+import { theme } from '../../core/ui/fluent';
 
 export {
-    actionButtonStyles,
     choiceGroupStyles,
     choiceItemStyles,
-    exportPivotAssistiveToastTextStyles,
-    exportPivotStyles,
     templateExportInfoStackTokens,
     templatePickerItemListStyles,
     templatePickerStackStyles,
@@ -35,23 +28,6 @@ export {
 
 const defaultTheme: ITheme = getTheme();
 
-// Buttons
-const actionButtonStyles: IButtonStyles = {
-    root: {
-        boxSizing: 'border-box',
-        display: 'flex',
-        padding: 10,
-        selectors: {
-            '&:hover': { background: theme.palette.neutralLight },
-            '&:focus': { background: theme.palette.neutralLighterAlt }
-        }
-    },
-    icon: { color: theme.palette.neutralPrimary },
-    iconHovered: { color: theme.palette.neutralDark },
-    iconPressed: { color: theme.palette.neutralDark },
-    label: { color: theme.palette.neutralPrimary },
-    labelHovered: { color: theme.palette.neutralDark }
-};
 // Horizontal choice group (settings pivot)
 const choiceGroupStyles: IChoiceGroupStyles = {
         flexContainer: {
@@ -152,19 +128,4 @@ const templatePickerItemListStyles = mergeStyleSets({
     },
     templateExportInfoStackTokens: IStackTokens = {
         childrenGap: 5
-    };
-
-// Export dialog - pivot-level assistive text
-const exportPivotAssistiveToastTextStyles: ITextStyles = {
-        root: {
-            display: 'inline-block',
-            paddingTop: '8px',
-            paddingRight: '8px'
-        }
-    },
-    exportPivotStyles: Partial<IStyleSet<IPivotStyles>> = {
-        itemContainer: {
-            marginTop: '10px',
-            height: '100%'
-        }
     };

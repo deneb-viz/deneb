@@ -3,6 +3,7 @@ export {
     TTemplateExportState,
     TTemplateImportState,
     TTemplateProvider,
+    datasetFieldProps,
     getEscapedReplacerPattern,
     getExportTemplate,
     getExportFieldTokenPatterns,
@@ -15,6 +16,7 @@ export {
     getResequencedMetadata,
     getSpecWithFieldPlaceholders,
     getTemplatePlaceholderKey,
+    informationProps,
     onTemplateFileSelect,
     resolveTemplatesForProvider,
     resolveValueDescriptor,
@@ -90,6 +92,13 @@ interface ITemplatePattern {
  * Extension of `TSpecProvider`, providing an `import` value in addition to `vega` and `vegaLite`.
  */
 type TTemplateProvider = TSpecProvider | 'import';
+
+/**
+ * Used for validation of text field lengths vs. generated schema.
+ */
+const datasetFieldProps =
+    schema_v1.definitions.ITemplateDatasetField.properties;
+const informationProps = schema_v1.definitions.ITemplateInformation.properties;
 
 /**
  * When performing placeholder replacements, we need to ensure that special characters used in regex qualifiers are suitably escaped so that we don't

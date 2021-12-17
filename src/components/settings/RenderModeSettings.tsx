@@ -4,7 +4,7 @@ import {
     IChoiceGroupOption
 } from '@fluentui/react/lib/ChoiceGroup';
 
-import { choiceGroupStyles, choiceItemStyles } from '../../config/styles';
+import { choiceGroupStyles, choiceItemStyles } from '../elements';
 import store from '../../store';
 import { updateRenderMode } from '../../core/ui/commands';
 import { i18nValue } from '../../core/ui/i18n';

@@ -1,7 +1,17 @@
-import { isFeatureEnabled } from '../../src/core/utils/features';
+import {
+    getFeatureSettings,
+    isFeatureEnabled
+} from '../../../src/core/utils/features';
 
-describe('API: Features', () => {
-    describe('isSelectedFeatureEnabled', () => {
+describe('core/utils/features', () => {
+    describe('getFeatureSettings', () => {
+        it('Feature canary', () => {
+            const features = getFeatureSettings();
+            expect(features).toHaveProperty('unitTestCanary');
+            expect(features.unitTestCanary).toEqual(false);
+        });
+    });
+    describe('isFeatureEnabled', () => {
         it('Unknown Key', () => {
             const feature = 'Invalid Feature';
             expect(isFeatureEnabled(feature)).toEqual(false);

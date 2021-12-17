@@ -5,7 +5,7 @@ import {
 } from '@fluentui/react/lib/ChoiceGroup';
 
 import { updateProvider } from '../../core/ui/commands';
-import { choiceGroupStyles, choiceItemStyles } from '../../config/styles';
+import { choiceItemStyles, choiceGroupStyles } from '../elements';
 import store from '../../store';
 import { i18nValue } from '../../core/ui/i18n';
 import { TSpecProvider } from '../../core/vega';

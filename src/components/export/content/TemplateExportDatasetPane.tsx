@@ -7,7 +7,7 @@ import {
     templateExportInfoStackTokens,
     templatePickerStackStyles,
     templatePickerNonShrinkingStackItemStyles
-} from '../../../config/styles';
+} from '../../elements';
 import ExportDataFields from './ExportDataFields';
 import { i18nValue } from '../../../core/ui/i18n';
 import { Assistive } from '../../elements/Typography';

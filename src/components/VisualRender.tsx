@@ -2,7 +2,6 @@ import * as React from 'react';
 import { createClassFromSpec, VegaLite, SignalListeners } from 'react-vega';
 import * as Vega from 'vega';
 
-import Debugger from '../Debugger';
 import store from '../store';
 import SpecificationError from './status/SpecificationError';
 import FourD3D3D3 from '../components/editor/preview/FourD3D3D3';
@@ -23,8 +22,6 @@ import {
 import { View } from 'vega';
 
 const VisualRender = () => {
-    Debugger.log('Rendering Component: [VisualRender]...');
-
     const { editorSpec, visual4d3d3d, visualSettings } = store(
             (state) => state
         ),
