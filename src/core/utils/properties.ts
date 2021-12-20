@@ -1,4 +1,5 @@
 export {
+    getProviderVersionProperty,
     resolveObjectProperties,
     updateObjectProperties,
     IPersistenceProperty
@@ -14,6 +15,8 @@ import VisualSettings from '../../properties/VisualSettings';
 
 import { getState } from '../../store';
 import { hostServices } from '../services';
+import { TSpecProvider } from '../vega';
+import { providerVersions } from './config';
 
 /**
  * Handles resolution of object properties from the data view, either for persistence.
@@ -71,3 +74,13 @@ const getNewObjectInstance = (
  * Convenience function that returns the visual host's `persistProperties` instance from Deneb's store.
  */
 const persistProperties = () => hostServices.persistProperties;
+
+/**
+ * Return the version number for the supplied provider as a persistable property.
+ */
+const getProviderVersionProperty = (
+    provider: TSpecProvider
+): IPersistenceProperty => ({
+    name: 'version',
+    value: providerVersions[provider]
+});

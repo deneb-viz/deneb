@@ -23,6 +23,7 @@ import { Options } from 'react-hotkeys-hook';
 
 import { fixAndFormat, persist } from '../utils/specification';
 import {
+    getProviderVersionProperty,
     IPersistenceProperty,
     resolveObjectProperties,
     updateObjectProperties
@@ -242,7 +243,8 @@ const updateBooleanProperty = (name: string, value: boolean) =>
  */
 const updateProvider = (provider: TSpecProvider) =>
     handlePersist([
-        { name: 'provider', value: provider }
+        { name: 'provider', value: provider },
+        getProviderVersionProperty(provider)
     ]);
 
 /**

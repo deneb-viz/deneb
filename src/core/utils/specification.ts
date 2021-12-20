@@ -28,6 +28,7 @@ import {
     TEditorRole
 } from '../services/JsonEditorServices';
 import {
+    getProviderVersionProperty,
     IPersistenceProperty,
     resolveObjectProperties,
     updateObjectProperties
@@ -71,7 +72,8 @@ const createFromTemplate = (
                 { name: 'provider', value: provider },
                 { name: 'jsonSpec', value: jsonSpec },
                 { name: 'jsonConfig', value: jsonConfig },
-                { name: 'isNewDialogOpen', value: false }
+                { name: 'isNewDialogOpen', value: false },
+                getProviderVersionProperty(provider)
             ],
             ...resolveInteractivityProps(interactivity)
         ])
@@ -184,14 +186,17 @@ const persist = (stage = true) => {
         editorStagedConfig,
         editorStagedSpec,
         renewEditorFieldsInUse,
+        visualSettings,
         updateEditorDirtyStatus
     } = getState();
+    const { provider } = visualSettings.vega;
     updateEditorDirtyStatus(false);
     renewEditorFieldsInUse();
     updateObjectProperties(
         resolveObjectProperties('vega', [
             { name: 'jsonSpec', value: editorStagedSpec },
-            { name: 'jsonConfig', value: editorStagedConfig }
+            { name: 'jsonConfig', value: editorStagedConfig },
+            getProviderVersionProperty(<TSpecProvider>provider)
         ])
     );
 };
