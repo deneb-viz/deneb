@@ -20,6 +20,7 @@ export default class VegaSettings extends SettingsBase {
     public jsonSpec: string = defaults.jsonSpec;
     public jsonConfig: string = defaults.jsonConfig;
     public provider = defaults.provider;
+    public version: string = null;
     public renderMode = defaults.renderMode;
     public enableTooltips = isHandlerEnabled && defaults.enableTooltips;
     public enableContextMenu =

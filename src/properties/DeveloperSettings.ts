@@ -10,6 +10,8 @@ import { isFeatureEnabled } from '../core/utils/features';
  * Manages data limit override preferences for the visual.
  */
 export default class DeveloperSettings extends SettingsBase {
+    // Last used version - will be manually provided upon spec persistence
+    public version: string = null;
     // Locale override for testing formatting and i18n
     public locale: TLocale = <TLocale>(
         getConfig().propertyDefaults.developer.locale
