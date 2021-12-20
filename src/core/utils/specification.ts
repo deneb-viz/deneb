@@ -28,6 +28,7 @@ import {
     TEditorRole
 } from '../services/JsonEditorServices';
 import {
+    getDenebVersionProperty,
     getProviderVersionProperty,
     IPersistenceProperty,
     resolveObjectProperties,
@@ -67,15 +68,21 @@ const createFromTemplate = (
     const interactivity = getInteractivityPropsFromTemplate(template);
     const { renewEditorFieldsInUse } = getState();
     updateObjectProperties(
-        resolveObjectProperties('vega', [
-            ...[
-                { name: 'provider', value: provider },
-                { name: 'jsonSpec', value: jsonSpec },
-                { name: 'jsonConfig', value: jsonConfig },
-                { name: 'isNewDialogOpen', value: false },
-                getProviderVersionProperty(provider)
-            ],
-            ...resolveInteractivityProps(interactivity)
+        resolveObjectProperties([
+            getDenebVersionProperty(),
+            {
+                objectName: 'vega',
+                properties: [
+                    ...[
+                        { name: 'provider', value: provider },
+                        { name: 'jsonSpec', value: jsonSpec },
+                        { name: 'jsonConfig', value: jsonConfig },
+                        { name: 'isNewDialogOpen', value: false },
+                        getProviderVersionProperty(provider)
+                    ],
+                    ...resolveInteractivityProps(interactivity)
+                ]
+            }
         ])
     );
     renewEditorFieldsInUse();
@@ -193,10 +200,16 @@ const persist = (stage = true) => {
     updateEditorDirtyStatus(false);
     renewEditorFieldsInUse();
     updateObjectProperties(
-        resolveObjectProperties('vega', [
-            { name: 'jsonSpec', value: editorStagedSpec },
-            { name: 'jsonConfig', value: editorStagedConfig },
-            getProviderVersionProperty(<TSpecProvider>provider)
+        resolveObjectProperties([
+            getDenebVersionProperty(),
+            {
+                objectName: 'vega',
+                properties: [
+                    { name: 'jsonSpec', value: editorStagedSpec },
+                    { name: 'jsonConfig', value: editorStagedConfig },
+                    getProviderVersionProperty(<TSpecProvider>provider)
+                ]
+            }
         ])
     );
 };

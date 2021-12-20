@@ -195,7 +195,10 @@ const fourd3d3d = () => dispatchFourd3d3d();
 const handlePersist = (
     properties: IPersistenceProperty[],
     objectName = 'vega'
-) => updateObjectProperties(resolveObjectProperties(objectName, properties));
+) =>
+    updateObjectProperties(
+        resolveObjectProperties([{ objectName, properties }])
+    );
 
 /**
  * Check auto-apply and dirty status to determine whether the Apply button should be enabled or not.
