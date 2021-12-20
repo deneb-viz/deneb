@@ -116,6 +116,7 @@
         "vega": {
             "documentationUrl": "https://vega.github.io/vega/docs/",
             "schemaUrl": "https://vega.github.io/schema/vega/v5.json",
+            "legacyVersion": "5.21.0",
             "patch": {
                 "signals": [
                     {
@@ -131,7 +132,8 @@
         },
         "vegaLite": {
             "documentationUrl": "https://vega.github.io/vega-lite/docs/",
-            "schemaUrl": "https://vega.github.io/schema/vega-lite/v5.json"
+            "schemaUrl": "https://vega.github.io/schema/vega-lite/v5.json",
+            "legacyVersion": "5.1.1"
         }
     },
     "propertyDefaults": {

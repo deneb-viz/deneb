@@ -73,6 +73,10 @@ export interface IDenebUserMeta {
      * Provider details for the template.
      */
     provider: TProvider;
+    /**
+     * Which version of the provider library was used to create the specification.
+     */
+    providerVersion: string;
 }
 
 /**

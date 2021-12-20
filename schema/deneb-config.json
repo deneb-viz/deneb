@@ -18,7 +18,7 @@
         },
         "IProviderSettings": {
             "type": "object",
-            "required": ["documentationUrl", "schemaUrl"],
+            "required": ["documentationUrl", "schemaUrl", "legacyVersion"],
             "properties": {
                 "documentationUrl": {
                     "description": "Location of applicable provider documentation",
@@ -26,6 +26,10 @@
                 },
                 "schemaUrl": {
                     "description": "Location of applicable provider JSON schema.",
+                    "type": "string"
+                },
+                "legacyVersion": {
+                    "description": "The version number used in Deneb 1.0, prior to doing comparisons. From 1.1. onwards, this is persisted to the visual properties, so we can determine compatibility.",
                     "type": "string"
                 },
                 "patch": {
