@@ -111,7 +111,9 @@
     },
     "providerResources": {
         "deneb": {
-            "interactivityDocumentationUrl": "https://deneb-viz.github.io/interactivity-features-overview"
+            "interactivityDocumentationUrl": "https://deneb-viz.github.io/interactivity-overview",
+            "changelogDocumentationUrl": "https://deneb-viz.github.io/changelog",
+            "legacyVersion": "1.0.0.57"
         },
         "vega": {
             "documentationUrl": "https://vega.github.io/vega/docs/",
@@ -142,7 +144,8 @@
             "showCustomVisualNotes": true
         },
         "developer": {
-            "locale": "en-US"
+            "locale": "en-US",
+            "showVersionNotification": false
         },
         "editor": {
             "debounceInterval": 200,

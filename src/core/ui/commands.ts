@@ -15,6 +15,7 @@ export {
     updateProvider,
     updateSelectionMaxDataPoints,
     updateRenderMode,
+    dismissVersionNotification,
     IKeyboardShortcut
 };
 
@@ -261,3 +262,8 @@ const updateSelectionMaxDataPoints = (value: string) =>
  */
 const updateRenderMode = (renderMode: TSpecRenderMode) =>
     handlePersist([{ name: 'renderMode', value: renderMode }]);
+
+/**
+ * Handle the dynamic setting of the version notification property.
+ */
+const dismissVersionNotification = () => handleApply();

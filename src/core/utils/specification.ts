@@ -3,6 +3,7 @@ export {
     fixAndFormat,
     getSpecFieldsInUse,
     hasLiveSpecChanged,
+    isLegacySpec,
     parseActiveSpec,
     persist,
     remapSpecificationFields,
@@ -28,7 +29,7 @@ import {
     TEditorRole
 } from '../services/JsonEditorServices';
 import {
-    getDenebVersionProperty,
+    getDenebVersionObject,
     getProviderVersionProperty,
     IPersistenceProperty,
     resolveObjectProperties,
@@ -48,12 +49,13 @@ import { i18nValue } from '../ui/i18n';
 import { cleanParse, getJsonAsIndentedString } from './json';
 import { getPatchedVegaSpec } from '../vega/vegaUtils';
 import { getPatchedVegaLiteSpec } from '../vega/vegaLiteUtils';
-import { TSpecProvider } from '../vega';
+import { getVegaSettings, TSpecProvider } from '../vega';
 import { ITemplateInteractivityOptions } from '../template/schema';
 import {
     getTemplateFieldsFromMetadata,
     IVisualValueMetadata
 } from '../data/dataset';
+import { getLastVersionInfo } from './versioning';
 
 /**
  * For the supplied provider and specification template, add this to the visual and persist to properties, ready for
@@ -69,7 +71,7 @@ const createFromTemplate = (
     const { renewEditorFieldsInUse } = getState();
     updateObjectProperties(
         resolveObjectProperties([
-            getDenebVersionProperty(),
+            getDenebVersionObject(),
             {
                 objectName: 'vega',
                 properties: [
@@ -129,14 +131,36 @@ const fixAndFormat = () => {
  * the `isDirty` flag in the store.
  */
 const hasLiveSpecChanged = () => {
-    const { jsonSpec, jsonConfig } = getState().visualSettings.vega,
+    const { jsonSpec, jsonConfig } = getVegaSettings(),
         liveSpec = getCleanEditorJson('spec'),
         liveConfig = getCleanEditorJson('config');
     return liveSpec != jsonSpec || liveConfig != jsonConfig;
 };
 
+/**
+ * In order to determine if our current spec/config is the same as the default properties, indicating that
+ */
+const isNewSpec = () => {
+    const defaults = getConfig().propertyDefaults.vega;
+    const { jsonSpec, jsonConfig } = getVegaSettings();
+    return jsonSpec === defaults.jsonSpec && jsonConfig === defaults.jsonConfig;
+};
+
+/**
+ * Determine if a visual is 'versioned' based on persisted properties.
+ */
+const isVersionedSpec = () => {
+    const { denebVersion, providerVersion } = getLastVersionInfo();
+    return (denebVersion && providerVersion) || false;
+};
+
+/**
+ * Determine if a visual's persisted spec pre-dates version 1.1.0.0 (when we started writing versions to properties).
+ */
+const isLegacySpec = () => !isNewSpec() && !isVersionedSpec();
+
 const parseActiveSpec = () => {
-    const { provider, jsonSpec } = getState().visualSettings.vega;
+    const { provider, jsonSpec } = getVegaSettings();
     try {
         if (!jsonSpec) {
             // Spec hasn't been edited yet
@@ -193,15 +217,14 @@ const persist = (stage = true) => {
         editorStagedConfig,
         editorStagedSpec,
         renewEditorFieldsInUse,
-        visualSettings,
         updateEditorDirtyStatus
     } = getState();
-    const { provider } = visualSettings.vega;
+    const { provider } = getVegaSettings();
     updateEditorDirtyStatus(false);
     renewEditorFieldsInUse();
     updateObjectProperties(
         resolveObjectProperties([
-            getDenebVersionProperty(),
+            getDenebVersionObject(),
             {
                 objectName: 'vega',
                 properties: [
@@ -349,7 +372,7 @@ const getSpecFieldsInUse = (
     editorFieldsInUse: IVisualValueMetadata,
     renew = false
 ): IVisualValueMetadata => {
-    const { jsonSpec } = getState().visualSettings.vega;
+    const { jsonSpec } = getVegaSettings();
     const spec = getCleanEditorJson('spec') || jsonSpec;
     let newFieldsInUse = getExistingSpecFieldsInUse(editorFieldsInUse, renew);
     forIn(metadata, (value, key) => {

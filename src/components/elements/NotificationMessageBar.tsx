@@ -8,7 +8,7 @@ import {
 import { i18nValue } from '../../core/ui/i18n';
 
 interface INotificationMessageBarProps {
-    dismissAction: () => void;
+    dismissAction: () => any;
     messageBarType: MessageBarType;
     visible: boolean;
     truncated?: boolean;
@@ -32,7 +32,6 @@ const NotificationMessageBar: React.FC<INotificationMessageBarProps> = ({
     top,
     children
 }) => {
-    const handleDismiss = () => dismissAction();
     const styles = top && messageBarTopStyles;
     const notification = () => (
         <>
@@ -41,7 +40,7 @@ const NotificationMessageBar: React.FC<INotificationMessageBarProps> = ({
                 styles={styles}
                 isMultiline={isMultiline}
                 truncated={truncated}
-                onDismiss={handleDismiss}
+                onDismiss={dismissAction}
                 dismissButtonAriaLabel={i18nValue('Button_Dismiss_MessageBar')}
                 overflowButtonAriaLabel={i18nValue(
                     'Button_See_More_MessageBar'

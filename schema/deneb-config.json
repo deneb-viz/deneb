@@ -61,6 +61,10 @@
                 "locale": {
                     "description": "Default locale used for format debugging.",
                     "enum": ["en-US", "de-DE", "fr-FR"]
+                },
+                "showVersionNotification": {
+                    "description": "Show the \"New Version\" notification in the editor.",
+                    "type": "boolean"
                 }
             }
         },
@@ -367,9 +371,22 @@
             "required": ["vega", "vegaLite", "deneb"],
             "properties": {
                 "deneb": {
-                    "required": ["interactivityDocumentationUrl"],
+                    "description": "Supporting resources for Deneb as a whole.",
+                    "required": [
+                        "interactivityDocumentationUrl",
+                        "changelogDocumentationUrl",
+                        "legacyVersion"
+                    ],
                     "interactivityDocumentationUrl": {
                         "description": "URL for interactivity documentation.",
+                        "type": "string"
+                    },
+                    "changelogDocumentationUrl": {
+                        "description": "URL for change log.",
+                        "type": "string"
+                    },
+                    "legacyVersion": {
+                        "description": "The version number used in Deneb 1.0, prior to doing comparisons. From 1.1. onwards, this is persisted to the visual properties, so we can determine compatibility.",
                         "type": "string"
                     }
                 },

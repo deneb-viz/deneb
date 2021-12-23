@@ -1,6 +1,7 @@
 export {
-    getDenebVersionProperty,
+    getDenebVersionObject,
     getProviderVersionProperty,
+    getDenebVersionProperty,
     resolveObjectProperties,
     updateObjectProperties,
     IPersistenceProperty
@@ -112,7 +113,15 @@ const getProviderVersionProperty = (
 /**
  * Return the persistence objects and properties for updating the Deneb version.
  */
-const getDenebVersionProperty = (): IPersistenceObject => ({
+const getDenebVersionObject = (): IPersistenceObject => ({
     objectName: 'developer',
-    properties: [{ name: 'version', value: getVisualMetadata().version }]
+    properties: [
+        getDenebVersionProperty(),
+        { name: 'showVersionNotification', value: false }
+    ]
+});
+
+const getDenebVersionProperty = (): IPersistenceProperty => ({
+    name: 'version',
+    value: getVisualMetadata().version
 });

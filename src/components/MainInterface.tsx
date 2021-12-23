@@ -7,7 +7,7 @@ import SplashInitial from './status/SplashInitial';
 import SplashReadOnly from './status/SplashReadOnly';
 import SplashReadWrite from './status/SplashReadWrite';
 import SplashNoSpec from './status/SplashNoSpec';
-import VisualMessageBar from './status/VisualMessageBar';
+import SelectionLimitMessageBar from './status/SelectionLimitMessageBar';
 
 const MainInterface = () => {
     const { visualMode } = store((state) => state),
@@ -30,7 +30,7 @@ const MainInterface = () => {
     return (
         <>
             {mainComponent()}
-            <VisualMessageBar />
+            <SelectionLimitMessageBar />
         </>
     );
 };

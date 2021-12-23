@@ -5,6 +5,8 @@
     "Objects_Developer_Description": "Options used for development of the visual.",
     "Objects_Developer_Version": "Deneb Version",
     "Objects_Developer_Version_Description": "Last version of Deneb used when editing this specification. Can be used to track when a new version alert might be needed.",
+    "Objects_Developer_ShowVersionNotification": "Show \"New Version\" Notification?",
+    "Objects_Developer_ShowVersionNotification_Description": "Determines whether to show the \"New Version\" prompt in the editor.",
     "Objects_Developer_Locale": "Locale",
     "Objects_Developer_Locale_Description": "Provide a manual locale for the visual (to facilitate testing of i18n and formatting)",
     "Enum_Locale_en-US": "English",
@@ -147,6 +149,7 @@
     "Link_Vega_Doc": "Vega Documentation",
     "Link_VegaLite_Doc": "Vega-Lite Documentation",
     "Link_Interactivity_Doc": "Learn more",
+    "Link_Changelog": "View change log on website",
     "New_Visual_Placeholder_Title": "Now We Need A Specification...",
     "New_Visual_Placeholder_Subtitle": "A specification defines a Vega or Vega-Lite visualization.",
     "New_Visual_Placeholder_Editor": "If you're not presented with the 'Create New Specification' dialog, please click the 'New Specification' icon on the command bar to get started. From here, you can create a specification, or import an existing template.",
@@ -212,5 +215,7 @@
     "Dialog_Unapplied_Changes_Discard": "Discard",
     "Selection_KW_Present": "[Available]",
     "Zoom_Level_Tooltip": "Current zoom level in the editor - use the controls to the left to adjust this as necessary",
-    "Selection_Aborted_Message": "You clicked a data point that is trying to cross-filter more than {0} underlying values. This has been blocked for performance reasons."
+    "Selection_Aborted_Message": "You clicked a data point that is trying to cross-filter more than {0} underlying values. This has been blocked for performance reasons.",
+    "Notification_Update_Increase": "Deneb has been updated from {0} to {1} since you last edited your visual.",
+    "Notification_Update_Decrease": "You're using a newer version of Deneb ({0} than this specification was authored in ({1}). Some language features may not be available."
 }

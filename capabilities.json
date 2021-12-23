@@ -25,6 +25,15 @@
                         "text": true
                     }
                 },
+                "showVersionNotification": {
+                    "displayNameKey": "Objects_Developer_ShowVersionNotification",
+                    "descriptionKey": "Objects_Developer_ShowVersionNotification_Description",
+                    "displayName": "Version Notification",
+                    "description": "Version Notification description.",
+                    "type": {
+                        "bool": true
+                    }
+                },
                 "locale": {
                     "displayNameKey": "Objects_Developer_Locale",
                     "descriptionKey": "Objects_Developer_Locale_Description",

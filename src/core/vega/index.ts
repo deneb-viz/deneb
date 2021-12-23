@@ -6,6 +6,7 @@ export {
     determineProviderFromSpec,
     getEditorSchema,
     getParsedConfigFromSettings,
+    getVegaSettings,
     getViewConfig,
     getViewDataset,
     getViewSpec,
@@ -110,6 +111,11 @@ const getEditorSchema = (provider: TSpecProvider, role: TEditorRole) =>
         ?.schema || null;
 
 /**
+ * Convenience function to get current Vega/Spec settings from the visual objects (as we use this a lot).
+ */
+const getVegaSettings = () => getState().visualSettings.vega;
+
+/**
  * Create the `data` object for the Vega view specification. Ensures that the dataset applied to the visual is a cloned, mutable copy of the store version.
  */
 const getViewDataset = () => ({
@@ -135,8 +141,8 @@ const getViewConfig = () => {
  * to abstract out from the end-user to make things as "at home" in Power BI as possible, without explicitly adding it to the editor or exported template.
  */
 const getViewSpec = () => {
-    const { editorSpec, visualSettings } = getState(),
-        { provider } = visualSettings.vega,
+    const { editorSpec } = getState(),
+        { provider } = getVegaSettings(),
         vSpec = cloneDeep(editorSpec?.spec) || {};
     switch (<TSpecProvider>provider) {
         case 'vega':
