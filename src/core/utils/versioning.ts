@@ -43,8 +43,10 @@ const getCurrentVersionInfo = (): IVersionInformation => {
  */
 export const getLastVersionInfo = (): IVersionInformation => {
     const { developer } = getState().visualSettings;
-    const denebVersion = developer.version;
-    const { provider, version: providerVersion } = getVegaSettings();
+    const fallback = getCurrentVersionInfo();
+    const denebVersion = developer.version || fallback.denebVersion;
+    const { provider, version } = getVegaSettings();
+    const providerVersion = version || fallback.providerVersion;
     return {
         denebVersion,
         provider,
@@ -65,15 +67,19 @@ export const getVersionComparatorInfo = (): IVersionComparator => ({
  */
 export const getVersionChangeDetail = (): TVersionChange => {
     const { current, last } = getVersionComparatorInfo();
-    switch (true) {
-        case isNewerVersion(last.denebVersion, current.denebVersion) ||
-            isNewerVersion(last.providerVersion, current.providerVersion):
-            return 'increase';
-        case isNewerVersion(current.denebVersion, last.denebVersion) ||
-            isNewerVersion(current.providerVersion, last.providerVersion):
-            return 'decrease';
-        default:
-            return 'equal';
+    try {
+        switch (true) {
+            case isNewerVersion(last.denebVersion, current.denebVersion) ||
+                isNewerVersion(last.providerVersion, current.providerVersion):
+                return 'increase';
+            case isNewerVersion(current.denebVersion, last.denebVersion) ||
+                isNewerVersion(current.providerVersion, last.providerVersion):
+                return 'decrease';
+            default:
+                return 'equal';
+        }
+    } catch (e) {
+        return 'equal';
     }
 };
 
@@ -101,13 +107,13 @@ export const handlePropertyMigration = () => {
 
 /**
  * Allows comparison of versions, so that we can determine if there are any actions that need to be taken in the event
- * of a change in Deneb version or the Vega versions. We'd nomrally use semver for this, but AppSource version numbering
+ * of a change in Deneb version or the Vega versions. We'd norally use semver for this, but AppSource version numbering
  * isn't 100% compatible with semver, so we're managing this with a good enough function here.
  * Credit: https://stackoverflow.com/a/52059759
  */
 export const isNewerVersion = (oldVer: string, newVer: string) => {
-    const oldParts = oldVer.split('.');
-    const newParts = newVer.split('.');
+    const oldParts = oldVer?.split('.');
+    const newParts = newVer?.split('.');
     for (var i = 0; i < newParts.length; i++) {
         const a = ~~newParts[i];
         const b = ~~oldParts[i];
