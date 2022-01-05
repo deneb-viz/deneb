@@ -192,6 +192,7 @@ const getSidString = (id: ISelectionId) => JSON.stringify(id.getSelector());
  * like the core visuals avoid this situation, so we'll try to do the same for now.
  */
 const handleContextMenuEvent = (event: ScenegraphEvent, item: Item) => {
+    event.stopPropagation();
     const { selectionManager } = hostServices,
         mouseEvent: MouseEvent = <MouseEvent>window.event,
         data = resolveDataFromItem(item),
@@ -212,6 +213,7 @@ const handleContextMenuEvent = (event: ScenegraphEvent, item: Item) => {
  * If a click event is fired over the visual, attempt to retrieve any datum and associated identity, before applying selection/cross-filtering.
  */
 const handleDataPointEvent = (event: ScenegraphEvent, item: Item) => {
+    event.stopPropagation();
     const { selectionManager } = hostServices,
         mouseEvent: MouseEvent = <MouseEvent>window.event,
         data = resolveDataFromItem(item),

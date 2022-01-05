@@ -36,30 +36,7 @@ export const getZoomOutLevel = (value: number) => {
 };
 
 export const clearCatcherSelector = (prefix = false) =>
-    `${(prefix && '#') || ''}clearCatcher`;
-
-/**
- * Because we want the Vega View to be constrained to our visual container, this can sometimes
- * run short (e.g. if using step sizing). In these cases, the remaining whitespace between the
- * view container and the svg/canvas element is technically non-interactive, so we append a div
- * with a lower z-index to trap these events, and wrap the existing view in another. We also do
- * some explicit positioning of the view elements to accommodate this in visual.less
- */
-export const resolveClearCatcher = () => {
-    const cssClass = '.deneb-overload',
-        embed = select('.vega-embed'),
-        oldView = embed.selectChildren(`*:not(${cssClass})`);
-    embed.selectChildren(cssClass).remove();
-    embed
-        .append('div')
-        .attr('id', clearCatcherSelector())
-        .classed(cssClass, true);
-    const newView = embed
-        .append('div')
-        .attr('id', 'vegaView')
-        .classed(cssClass, true);
-    oldView.each((d, i, e) => newView.append(() => e[i]));
-};
+    `${(prefix && '.') || ''}vega-embed`;
 
 export const getEditorHeadingIconClassName = (expanded: boolean) =>
     `editor-${expanded ? 'collapse' : 'expand'}`;

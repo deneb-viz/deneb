@@ -37,10 +37,7 @@ import { parseActiveSpec } from './core/utils/specification';
 import { fillPatternServices, hostServices } from './core/services';
 import { initializeIcons } from './core/ui/fluent';
 import { getDataset, getTemplateFieldsFromMetadata } from './core/data/dataset';
-import {
-    handlePropertyMigration,
-    getVersionChangeDetail
-} from './core/utils/versioning';
+import { handlePropertyMigration } from './core/utils/versioning';
 
 const owner = 'Visual';
 

@@ -37,7 +37,7 @@ import { getPatchedVegaSpec } from './vegaUtils';
 import { getPatchedVegaLiteSpec } from './vegaLiteUtils';
 import { bindInteractivityEvents } from '../interactivity/selection';
 import { isFeatureEnabled } from '../utils/features';
-import { blankImageBase64, resolveClearCatcher } from '../ui/dom';
+import { blankImageBase64 } from '../ui/dom';
 import { getDataset } from '../data/dataset';
 import { divergentPalette, divergentPaletteMed, ordinalPalette } from './theme';
 
@@ -168,7 +168,6 @@ const getParsedConfigFromSettings = (): Config => {
 const handleNewView = (newView: View) => {
     newView.runAsync().then(() => {
         viewServices.bindView(newView);
-        resolveClearCatcher();
         bindInteractivityEvents(newView);
         hostServices.renderingFinished();
     });
