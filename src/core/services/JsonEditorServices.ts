@@ -27,7 +27,7 @@ import { getState } from '../../store';
 import { isDialogOpen } from '../ui/modal';
 import { i18nValue } from '../ui/i18n';
 import { getBaseValidator } from '../utils/json';
-import { getEditorSchema, TSpecProvider } from '../vega';
+import { getEditorSchema, getVegaSettings, TSpecProvider } from '../vega';
 
 class JsonEditorServices implements IVisualEditor {
     role: TEditorRole;
@@ -204,8 +204,7 @@ const getNewJsonEditor = (container: HTMLDivElement) =>
  * For the given role, retrieve its value from the visual properties (via store).
  */
 const getInitialText = (role: TEditorRole) => {
-    const { visualSettings } = getState(),
-        { jsonConfig, jsonSpec } = visualSettings.vega;
+    const { jsonConfig, jsonSpec } = getVegaSettings();
     return role === 'spec' ? jsonSpec || '' : jsonConfig;
 };
 
@@ -261,11 +260,10 @@ const setInitialText = (jsonEditor: JSONEditor, role: TEditorRole) => {
 };
 
 /**
- * Ensures that the correct JSON schema is applied to the JSON editor for validation, based on the specificed role.
+ * Ensures that the correct JSON schema is applied to the JSON editor for validation, based on the specified role.
  */
 const setProviderSchema = (jsonEditor: JSONEditor, role: TEditorRole) => {
-    const { visualSettings } = getState(),
-        { provider } = visualSettings.vega;
+    const { provider } = getVegaSettings();
     jsonEditor?.setSchema(getEditorSchema(<TSpecProvider>provider, role));
 };
 

@@ -33,7 +33,7 @@ import {
 } from '../data/dataset';
 import { isFeatureEnabled } from '../utils/features';
 import { hostServices } from '../services';
-import { IVegaViewDatum } from '../vega';
+import { getVegaSettings, IVegaViewDatum } from '../vega';
 import { getState } from '../../store';
 import { getCategoryColumns } from '../data/dataView';
 import { TDataPointSelectionStatus } from '.';
@@ -192,6 +192,7 @@ const getSidString = (id: ISelectionId) => JSON.stringify(id.getSelector());
  * like the core visuals avoid this situation, so we'll try to do the same for now.
  */
 const handleContextMenuEvent = (event: ScenegraphEvent, item: Item) => {
+    event.stopPropagation();
     const { selectionManager } = hostServices,
         mouseEvent: MouseEvent = <MouseEvent>window.event,
         data = resolveDataFromItem(item),
@@ -212,6 +213,7 @@ const handleContextMenuEvent = (event: ScenegraphEvent, item: Item) => {
  * If a click event is fired over the visual, attempt to retrieve any datum and associated identity, before applying selection/cross-filtering.
  */
 const handleDataPointEvent = (event: ScenegraphEvent, item: Item) => {
+    event.stopPropagation();
     const { selectionManager } = hostServices,
         mouseEvent: MouseEvent = <MouseEvent>window.event,
         data = resolveDataFromItem(item),
@@ -251,7 +253,7 @@ const isContextMenuEnabled = isFeatureEnabled('selectionContextMenu');
  * Allows us to validate for all key pre-requisites before we can bind a context menu event to the visual.
  */
 const isContextMenuPropSet = () => {
-    const { enableContextMenu } = getState().visualSettings.vega;
+    const { enableContextMenu } = getVegaSettings();
     return (
         (isContextMenuEnabled &&
             enableContextMenu &&
@@ -269,7 +271,7 @@ const isDataPointEnabled = isFeatureEnabled('selectionDataPoint');
  * Allows us to validate for all key pre-requisites before we can bind a context menu event to the visual.
  */
 const isDataPointPropSet = () => {
-    const { enableSelection } = getState().visualSettings.vega;
+    const { enableSelection } = getVegaSettings();
     return (
         (isDataPointEnabled &&
             enableSelection &&
@@ -282,7 +284,7 @@ const isDataPointPropSet = () => {
  * Tests whether the current array of data points for selection exceeds the limit we've imposed in our configuration.
  */
 const isSelectionLimitExceeded = (identities: ISelectionId[]) => {
-    const { selectionMaxDataPoints } = getState().visualSettings.vega;
+    const { selectionMaxDataPoints } = getVegaSettings();
     return identities?.length > selectionMaxDataPoints || false;
 };
 

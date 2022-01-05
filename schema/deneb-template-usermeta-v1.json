@@ -49,12 +49,17 @@
                 "provider": {
                     "$ref": "#/definitions/TProvider",
                     "description": "Provider details for the template."
+                },
+                "providerVersion": {
+                    "description": "Which version of the provider library was used to create the specification.",
+                    "type": "string"
                 }
             },
             "required": [
                 "build",
                 "metaVersion",
-                "provider"
+                "provider",
+                "providerVersion"
             ],
             "type": "object"
         },

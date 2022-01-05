@@ -1,4 +1,7 @@
 export {
+    getDenebVersionObject,
+    getProviderVersionProperty,
+    getDenebVersionProperty,
     resolveObjectProperties,
     updateObjectProperties,
     IPersistenceProperty
@@ -9,30 +12,36 @@ import VisualObjectInstancesToPersist = powerbi.VisualObjectInstancesToPersist;
 import DataViewPropertyValue = powerbi.DataViewPropertyValue;
 
 import cloneDeep from 'lodash/cloneDeep';
+import reduce from 'lodash/reduce';
 
 import VisualSettings from '../../properties/VisualSettings';
 
 import { getState } from '../../store';
 import { hostServices } from '../services';
+import { TSpecProvider } from '../vega';
+import { getVisualMetadata, providerVersions } from './config';
 
 /**
  * Handles resolution of object properties from the data view, either for persistence.
  * If a value is not supplied in the array of _properties_, the default value will be retrieved from the `VisualSettings` for the supplied name.
  */
-const resolveObjectProperties = (
-    objectName: string,
-    properties: IPersistenceProperty[]
-) => {
-    try {
-        let changes = getNewObjectInstance(objectName);
-        properties.forEach((p) => {
-            const defaultValue = <string>(
-                VisualSettings.getDefault()[objectName][p.name]
-            );
-            changes.replace[0].properties[p.name] = p.value ?? defaultValue;
-        });
-        return changes;
-    } catch (e) {}
+const resolveObjectProperties = (objects: IPersistenceObject[]) => {
+    const names = objects.map((o) => o.objectName);
+    let changes = getNewObjectInstance(names);
+    return reduce(
+        objects,
+        (result, value, index) => {
+            value.properties.forEach((p) => {
+                const defaultValue = <string>(
+                    VisualSettings.getDefault()[value.objectName][p.name]
+                );
+                result.replace[index].properties[p.name] =
+                    p.value ?? defaultValue;
+            });
+            return result;
+        },
+        changes
+    );
 };
 
 /**
@@ -40,6 +49,14 @@ const resolveObjectProperties = (
  */
 const updateObjectProperties = (changes: VisualObjectInstancesToPersist) =>
     persistProperties()(changes);
+
+/**
+ * An object for persisting to the data view.
+ */
+interface IPersistenceObject {
+    objectName: string;
+    properties: IPersistenceProperty[];
+}
 
 /**
  * Property name and optional value for persistence operations.
@@ -50,24 +67,61 @@ interface IPersistenceProperty {
 }
 
 /**
- * Gets an empty metadata object so that we can populate it with a value from the text box, or reset it.
+ * For the specific object names, get an object suitable for merging into the data view for persistence,
+ * including property defaults.
  */
 const getNewObjectInstance = (
-    objectName: string
+    objectName: string[]
 ): VisualObjectInstancesToPersist => {
     const { datasetViewObjects } = getState();
-    return {
-        replace: [
-            {
-                objectName: objectName,
+    return reduce(
+        objectName,
+        (result, value) => {
+            result.replace.push({
+                objectName: value,
                 selector: null,
-                properties: cloneDeep(datasetViewObjects[objectName]) || {}
-            }
-        ]
-    };
+                properties: cloneDeep(datasetViewObjects[value]) || {}
+            });
+            return result;
+        },
+        getNewObjectInstanceToPersist()
+    );
 };
+
+/**
+ * For any attempt to persist to the data view, this gives us the empty object to start with.
+ */
+const getNewObjectInstanceToPersist = (): VisualObjectInstancesToPersist => ({
+    replace: []
+});
 
 /**
  * Convenience function that returns the visual host's `persistProperties` instance from Deneb's store.
  */
 const persistProperties = () => hostServices.persistProperties;
+
+/**
+ * Return the version number for the supplied provider as a persistable property.
+ */
+const getProviderVersionProperty = (
+    provider: TSpecProvider
+): IPersistenceProperty => ({
+    name: 'version',
+    value: providerVersions[provider]
+});
+
+/**
+ * Return the persistence objects and properties for updating the Deneb version.
+ */
+const getDenebVersionObject = (): IPersistenceObject => ({
+    objectName: 'developer',
+    properties: [
+        getDenebVersionProperty(),
+        { name: 'showVersionNotification', value: false }
+    ]
+});
+
+const getDenebVersionProperty = (): IPersistenceProperty => ({
+    name: 'version',
+    value: getVisualMetadata().version
+});

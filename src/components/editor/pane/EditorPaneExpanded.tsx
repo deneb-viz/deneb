@@ -11,7 +11,8 @@ import EditorHeadingExpanded from './EditorHeadingExpanded';
 import EditorPanePivot from './EditorPanePivot';
 import EditorCommandBar from './EditorCommandBar';
 import EditorOperationContent from './EditorOperationContent';
-import FixErrorDetails from './FixErrorDetails';
+import FixErrorMessageBar from '../../status/FixErrorMessageBar';
+import VisualUpdateMessageBar from '../../status/VisualUpdateMessageBar';
 
 import { theme } from '../../../core/ui/fluent';
 import { calculateEditorPaneMaxWidth } from '../../../core/ui/advancedEditor';
@@ -62,7 +63,8 @@ const EditorPaneExpanded = () => {
                     <EditorPanePivot />
                 </StackItem>
                 <StackItem shrink styles={stackItemStyles}>
-                    <FixErrorDetails />
+                    <FixErrorMessageBar />
+                    <VisualUpdateMessageBar />
                 </StackItem>
                 <StackItem verticalFill styles={finalStackItemStyles}>
                     <EditorOperationContent />

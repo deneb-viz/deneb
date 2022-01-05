@@ -16,7 +16,7 @@ import toString from 'lodash/toString';
 import { isInteractivityReservedWord, resolveCoordinates } from '.';
 import { i18nValue } from '../ui/i18n';
 import { getJsonAsIndentedString } from '../utils/json';
-import { IVegaViewDatum } from '../vega';
+import { getVegaSettings, IVegaViewDatum } from '../vega';
 
 import { isFeatureEnabled } from '../utils/features';
 import { getSelectionIdentitiesFromData } from './selection';
@@ -162,7 +162,7 @@ const resolveTooltipContent =
                     autoFormatFields
                 ),
                 identities = getSelectionIdentitiesFromData(datum),
-                { tooltipDelay } = getState().visualSettings.vega,
+                { tooltipDelay } = getVegaSettings(),
                 waitFor = (event.ctrlKey && tooltipDelay) || 0,
                 options = {
                     coordinates,

@@ -34,8 +34,10 @@ import { TopLevelSpec } from 'vega-lite';
 import { v4 as uuidv4 } from 'uuid';
 import Ajv from 'ajv';
 import ErrorObject = Ajv.ErrorObject;
+import has from 'lodash/has';
 import merge from 'lodash/merge';
 import reduce from 'lodash/reduce';
+import set from 'lodash/set';
 
 import { getParsedConfigFromSettings } from '../vega';
 import {
@@ -44,7 +46,11 @@ import {
     TDatasetFieldType
 } from './schema';
 import { getJsonAsIndentedString } from '../utils/json';
-import { getConfig, getVisualMetadata } from '../utils/config';
+import {
+    getConfig,
+    getVisualMetadata,
+    providerVersions
+} from '../utils/config';
 import { getState } from '../../store';
 
 import * as schema_v1 from '../../../schema/deneb-template-usermeta-v1.json';
@@ -198,7 +204,8 @@ const getNewExportTemplateMetadata = (): IDenebTemplateMetadata => {
         deneb: {
             build: visualMetadata.version,
             metaVersion: metadataVersion,
-            provider: null
+            provider: null,
+            providerVersion: null
         },
         information: {
             name: null,
@@ -281,9 +288,9 @@ const getResequencedMetadata = (metadata: IVisualValueMetadata) => {
 const onReaderLoad = (event: ProgressEvent<FileReader>, templateFile: File) => {
     updateImportState('Validating');
     let templateFileRawContent = event.target.result.toString(),
-        templateToApply: Spec | TopLevelSpec;
+        template: Spec | TopLevelSpec;
     try {
-        templateToApply = JSON.parse(templateFileRawContent);
+        template = JSON.parse(templateFileRawContent);
     } catch (e) {
         updateImportError('Template_Import_Invalid_Json');
         return;
@@ -291,7 +298,11 @@ const onReaderLoad = (event: ProgressEvent<FileReader>, templateFile: File) => {
     const ajv = new Ajv({
         format: 'full'
     });
-    let provider = determineProviderFromSpec(templateToApply);
+    const provider = determineProviderFromSpec(template);
+    const templateToApply = getTemplateResolvedForLegacyVersions(
+        provider,
+        template
+    );
     if (ajv.validate(schema_v1, templateToApply?.usermeta)) {
         updateImportSuccess({
             templateFile,
@@ -302,6 +313,25 @@ const onReaderLoad = (event: ProgressEvent<FileReader>, templateFile: File) => {
     } else {
         updateImportError('Template_Import_Not_Deneb', ajv.errors);
     }
+};
+
+/**
+ * We (unwisely) didn't populate the template metadata with the Vega/Vega-Lite version for initial builds of Deneb,
+ * so here we check the template for a suitable `providerVersion` and patch it with a legacy version as appropriate.
+ */
+const getTemplateResolvedForLegacyVersions = (
+    provider: TSpecProvider,
+    template: Spec | TopLevelSpec
+) => {
+    const deneb = (<IDenebTemplateMetadata>template?.usermeta)?.deneb;
+    const legacyVersion =
+        (provider === 'vega' &&
+            getConfig().providerResources.vega.legacyVersion) ||
+        getConfig().providerResources.vegaLite.legacyVersion;
+    const providerVersion = has(deneb, 'providerVersion')
+        ? deneb.providerVersion
+        : legacyVersion;
+    return set(template, 'usermeta.deneb.providerVersion', providerVersion);
 };
 
 /**
@@ -364,7 +394,8 @@ const resolveExportUserMeta = (): IDenebTemplateMetadata => {
         deneb: {
             build: visualMetadata.version,
             metaVersion: metadataVersion,
-            provider: <TSpecProvider>vega.provider
+            provider: <TSpecProvider>vega.provider,
+            providerVersion: providerVersions[vega.provider]
         },
         interactivity: {
             tooltip: vega.enableTooltips,

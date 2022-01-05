@@ -37,6 +37,7 @@ import { parseActiveSpec } from './core/utils/specification';
 import { fillPatternServices, hostServices } from './core/services';
 import { initializeIcons } from './core/ui/fluent';
 import { getDataset, getTemplateFieldsFromMetadata } from './core/data/dataset';
+import { handlePropertyMigration } from './core/utils/versioning';
 
 const owner = 'Visual';
 
@@ -111,6 +112,9 @@ export class Deneb implements IVisual {
             settings
         });
 
+        // Perform any necessary property migrations
+        handlePropertyMigration();
+
         // Data change or re-processing required?
         switch (options.type) {
             case VisualUpdateType.All:
@@ -165,8 +169,6 @@ export class Deneb implements IVisual {
             default: {
             }
         }
-
-        const { selectionManager } = hostServices;
         getState().datasetProcessingStage === 'Processed' && parseActiveSpec();
     }
 

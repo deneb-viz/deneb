@@ -15,6 +15,7 @@ export {
     updateProvider,
     updateSelectionMaxDataPoints,
     updateRenderMode,
+    dismissVersionNotification,
     IKeyboardShortcut
 };
 
@@ -23,6 +24,7 @@ import { Options } from 'react-hotkeys-hook';
 
 import { fixAndFormat, persist } from '../utils/specification';
 import {
+    getProviderVersionProperty,
     IPersistenceProperty,
     resolveObjectProperties,
     updateObjectProperties
@@ -112,7 +114,7 @@ const zoomFit = () => getState().updateEditorZoomLevel(getZoomToFitScale());
 const closeModalDialog = (type: TModalDialogType) => {
     switch (type) {
         case 'new': {
-            handlePersist({ name: 'isNewDialogOpen', value: false });
+            handlePersist([{ name: 'isNewDialogOpen', value: false }]);
             break;
         }
         case 'export': {
@@ -138,7 +140,7 @@ const openMapFieldsDialog = () => dispatchMapFieldsDialog();
  * Handle the Create New Spec command.
  */
 const createNewSpec = () => {
-    handlePersist({ name: 'isNewDialogOpen', value: true });
+    handlePersist([{ name: 'isNewDialogOpen', value: true }]);
     dispatchDefaultTemplate();
 };
 
@@ -191,8 +193,13 @@ const fourd3d3d = () => dispatchFourd3d3d();
 /**
  * Manages persistence of a properties object to the store from an operation.
  */
-const handlePersist = (property: IPersistenceProperty) =>
-    updateObjectProperties(resolveObjectProperties('vega', [property]));
+const handlePersist = (
+    properties: IPersistenceProperty[],
+    objectName = 'vega'
+) =>
+    updateObjectProperties(
+        resolveObjectProperties([{ objectName, properties }])
+    );
 
 /**
  * Check auto-apply and dirty status to determine whether the Apply button should be enabled or not.
@@ -233,22 +240,30 @@ const navSettings = () => openEditorPivotItem('settings');
  * Generic handler for a boolean (checkbox) property in the settings pane.
  */
 const updateBooleanProperty = (name: string, value: boolean) =>
-    handlePersist({ name: name, value: value });
+    handlePersist([{ name, value: value }]);
 
 /**
  * Handle the change in provider from one to the other and update necessary store dependencies and properties.
  */
 const updateProvider = (provider: TSpecProvider) =>
-    handlePersist({ name: 'provider', value: provider });
+    handlePersist([
+        { name: 'provider', value: provider },
+        getProviderVersionProperty(provider)
+    ]);
 
 /**
  * Handle the change in maximm permitted underlying data points for selection.
  */
 const updateSelectionMaxDataPoints = (value: string) =>
-    handlePersist({ name: 'selectionMaxDataPoints', value });
+    handlePersist([{ name: 'selectionMaxDataPoints', value }]);
 
 /**
  * Handle the change in render mode from one to the other and update necessary store dependencies and properties.
  */
 const updateRenderMode = (renderMode: TSpecRenderMode) =>
-    handlePersist({ name: 'renderMode', value: renderMode });
+    handlePersist([{ name: 'renderMode', value: renderMode }]);
+
+/**
+ * Handle the dynamic setting of the version notification property.
+ */
+const dismissVersionNotification = () => handleApply();
