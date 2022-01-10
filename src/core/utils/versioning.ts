@@ -43,10 +43,9 @@ const getCurrentVersionInfo = (): IVersionInformation => {
  */
 export const getLastVersionInfo = (): IVersionInformation => {
     const { developer } = getState().visualSettings;
-    const fallback = getCurrentVersionInfo();
-    const denebVersion = developer.version || fallback.denebVersion;
+    const denebVersion = developer?.version;
     const { provider, version } = getVegaSettings();
-    const providerVersion = version || fallback.providerVersion;
+    const providerVersion = version;
     return {
         denebVersion,
         provider,
