@@ -66,6 +66,28 @@
                 }
             }
         },
+        "display": {
+            "displayNameKey": "Objects_Display",
+            "descriptionKey": "Objects_Display_Description",
+            "displayName": "Display",
+            "description": "Display description.",
+            "properties": {
+                "viewportHeight": {
+                    "displayNameKey": "Objects_Display_ViewportHeight",
+                    "descriptionKey": "Objects_Display_ViewportHeight_Description",
+                    "displayName": "Viewport Height",
+                    "description": "Viewport Height description.",
+                    "type": { "numeric": true }
+                },
+                "viewportWidth": {
+                    "displayNameKey": "Objects_Display_ViewportWidth",
+                    "descriptionKey": "Objects_Display_ViewportWidth_Description",
+                    "displayName": "Viewport Width",
+                    "description": "Viewport Width description.",
+                    "type": { "numeric": true }
+                }
+            }
+        },
         "vega": {
             "displayNameKey": "Objects_Vega",
             "descriptionKey": "Objects_Vega_Description",

@@ -1,14 +1,24 @@
 import powerbi from 'powerbi-visuals-api';
 import IViewport = powerbi.IViewport;
+import EditMode = powerbi.EditMode;
+import ViewMode = powerbi.ViewMode;
 import React from 'react';
-import { select } from 'd3-selection';
 import { getConfig } from '../utils/config';
+import DisplaySettings from '../../properties/DisplaySettings';
+import {
+    resolveObjectProperties,
+    updateObjectProperties
+} from '../utils/properties';
 
 const viewportAdjust = 4;
 
-export const getReportViewport = (viewport: IViewport) => ({
-    height: viewport.height - viewportAdjust,
-    width: viewport.width - viewportAdjust
+export const getReportViewport = (
+    viewport: IViewport,
+    displaySettings: DisplaySettings
+) => ({
+    height:
+        (displaySettings.viewportHeight || viewport.height) - viewportAdjust,
+    width: (displaySettings.viewportWidth || viewport.width) - viewportAdjust
 });
 
 export const zoomConfig = getConfig().zoomLevel;
@@ -79,5 +89,41 @@ export const isBase64 = (str: string) => {
         return btoa(atob(str)) == str;
     } catch (err) {
         return false;
+    }
+};
+
+/**
+ * For suitable events, ensure that the visual viewport is correctly resolved and persisted. This will allow us to keep the
+ * viewport upon re-initialisation (e.g. if swapping visuals out or reloading the dev visual).
+ */
+export const resolveReportViewport = (
+    viewport: IViewport,
+    viewMode: ViewMode,
+    editMode: EditMode,
+    displaySettings: DisplaySettings
+) => {
+    if (
+        editMode === EditMode.Default &&
+        viewMode === ViewMode.Edit &&
+        (displaySettings.viewportHeight !== viewport.height ||
+            displaySettings.viewportWidth !== viewport.width)
+    ) {
+        updateObjectProperties(
+            resolveObjectProperties([
+                {
+                    objectName: 'display',
+                    properties: [
+                        {
+                            name: 'viewportHeight',
+                            value: viewport.height
+                        },
+                        {
+                            name: 'viewportWidth',
+                            value: viewport.width
+                        }
+                    ]
+                }
+            ])
+        );
     }
 };

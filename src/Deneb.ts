@@ -38,6 +38,7 @@ import { fillPatternServices, hostServices } from './core/services';
 import { initializeIcons } from './core/ui/fluent';
 import { getDataset, getTemplateFieldsFromMetadata } from './core/data/dataset';
 import { handlePropertyMigration } from './core/utils/versioning';
+import { resolveReportViewport } from './core/ui/dom';
 
 export class Deneb implements IVisual {
     private settings: VisualSettings;
@@ -108,6 +109,14 @@ export class Deneb implements IVisual {
             updateDatasetViewFlags,
             updateDatasetViewInvalid
         } = getState();
+
+        // Manage persistent viewport sizing for view vs. editor
+        resolveReportViewport(
+            options.viewport,
+            options.viewMode,
+            options.editMode,
+            settings.display
+        );
 
         // Provide intial update options to store
         setVisualUpdate({
