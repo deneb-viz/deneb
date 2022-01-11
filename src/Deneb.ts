@@ -39,8 +39,6 @@ import { initializeIcons } from './core/ui/fluent';
 import { getDataset, getTemplateFieldsFromMetadata } from './core/data/dataset';
 import { handlePropertyMigration } from './core/utils/versioning';
 
-const owner = 'Visual';
-
 export class Deneb implements IVisual {
     private settings: VisualSettings;
     // The root element for the entire visual
@@ -73,6 +71,11 @@ export class Deneb implements IVisual {
     }
 
     public update(options: VisualUpdateOptions) {
+        // No volatile operations occur during a resize event, and the DOM/Vega view takes care of handling any
+        // responsiveness for anything that will change. No additional computations are needed, so we can save a few
+        // cycles.
+        if (options.type === VisualUpdateType.Resize) return;
+
         // Handle main update flow
         try {
             // Signal we've begun rendering
