@@ -63,13 +63,8 @@ const bindContextMenuEvents = (view: View) => {
  * For the supplied View, check conditions for data point selection binding, and apply/remove as necessary.
  */
 const bindDataPointEvents = (view: View) => {
-    if (isDataPointPropSet()) {
-        view.addEventListener('click', handleDataPointEvent);
-        select(clearCatcherSelector(true)).on('click', handleDataPointEvent);
-    } else {
-        view.removeEventListener('click', handleDataPointEvent);
-        select(clearCatcherSelector(true)).on('click', null);
-    }
+    view.addEventListener('click', handleDataPointEvent);
+    select(clearCatcherSelector(true)).on('click', handleDataPointEvent);
 };
 
 /**
@@ -214,32 +209,34 @@ const handleContextMenuEvent = (event: ScenegraphEvent, item: Item) => {
  */
 const handleDataPointEvent = (event: ScenegraphEvent, item: Item) => {
     event.stopPropagation();
-    const { selectionManager } = hostServices,
-        mouseEvent: MouseEvent = <MouseEvent>window.event,
-        data = resolveDataFromItem(item),
-        identities = getSelectionIdentitiesFromData(data),
-        selection = resolveSelectedIdentities(identities);
-    const { updateDatasetSelectors } = getState();
-    mouseEvent && mouseEvent.preventDefault();
-    hideTooltip();
-    switch (true) {
-        case isSelectionLimitExceeded(selection): {
-            dispatchSelectionAborted(true);
-            return;
-        }
-        case selection.length > 0: {
-            selectionManager.select(selection);
-            updateDatasetSelectors(
-                <ISelectionId[]>selectionManager.getSelectionIds()
-            );
-            return;
-        }
-        default: {
-            clearSelection();
-            updateDatasetSelectors(
-                <ISelectionId[]>selectionManager.getSelectionIds()
-            );
-            return;
+    if (isDataPointPropSet()) {
+        const { selectionManager } = hostServices,
+            mouseEvent: MouseEvent = <MouseEvent>window.event,
+            data = resolveDataFromItem(item),
+            identities = getSelectionIdentitiesFromData(data),
+            selection = resolveSelectedIdentities(identities);
+        const { updateDatasetSelectors } = getState();
+        mouseEvent && mouseEvent.preventDefault();
+        hideTooltip();
+        switch (true) {
+            case isSelectionLimitExceeded(selection): {
+                dispatchSelectionAborted(true);
+                return;
+            }
+            case selection.length > 0: {
+                selectionManager.select(selection);
+                updateDatasetSelectors(
+                    <ISelectionId[]>selectionManager.getSelectionIds()
+                );
+                return;
+            }
+            default: {
+                clearSelection();
+                updateDatasetSelectors(
+                    <ISelectionId[]>selectionManager.getSelectionIds()
+                );
+                return;
+            }
         }
     }
 };
