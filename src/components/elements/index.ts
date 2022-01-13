@@ -112,7 +112,7 @@ const templatePickerItemListStyles = mergeStyleSets({
     templatePickerStackItemListStyles: IStackItemStyles = {
         ...templatePickerStackItemStyles,
         ...{
-            root: { overflowY: 'auto', width: 300, maxWidth: 300 }
+            root: { overflowY: 'auto', width: 250, maxWidth: 250 }
         }
     },
     templatePickerNonShrinkingStackItemStyles: IStackItemStyles = {
@@ -124,7 +124,7 @@ const templatePickerItemListStyles = mergeStyleSets({
         }
     },
     templatePickerStackTokens: IStackTokens = {
-        childrenGap: 50
+        childrenGap: 25
     },
     templateExportInfoStackTokens: IStackTokens = {
         childrenGap: 5
