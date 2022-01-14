@@ -23,9 +23,9 @@ const TemplateExportDatasetPane: React.FC = () => (
             </Assistive>
         </Stack.Item>
         <Stack.Item grow={3} styles={templatePickerNonShrinkingStackItemStyles}>
-            <Scrollbars>
+            <>
                 <ExportDataFields />
-            </Scrollbars>
+            </>
         </Stack.Item>
     </Stack>
 );

@@ -30,7 +30,7 @@ const TemplateExportInformationPane: React.FC = () => {
                 grow={3}
                 styles={templatePickerNonShrinkingStackItemStyles}
             >
-                <Scrollbars>
+                <>
                     <Stack tokens={templateExportInfoStackTokens}>
                         <Stack.Item>
                             <CappedTextField
@@ -64,7 +64,7 @@ const TemplateExportInformationPane: React.FC = () => {
                             <TemplateExportPreviewImage />
                         </Stack.Item>
                     </Stack>
-                </Scrollbars>
+                </>
             </Stack.Item>
         </Stack>
     );

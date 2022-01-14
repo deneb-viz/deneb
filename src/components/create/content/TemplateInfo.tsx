@@ -1,8 +1,8 @@
 import * as React from 'react';
-
 import { Stack, StackItem, IStackTokens } from '@fluentui/react/lib/Stack';
 import { Separator } from '@fluentui/react/lib/Separator';
 import { mergeStyles } from '@fluentui/react/lib/Styling';
+import { Scrollbars } from 'react-custom-scrollbars-2';
 
 import store from '../../../store';
 import { IDenebTemplateMetadata } from '../../../core/template/schema';
