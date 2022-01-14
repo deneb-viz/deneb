@@ -53,9 +53,9 @@ export const MapFieldsDialogBody = () => {
                 </Paragraph>
             </Stack.Item>
             <Stack.Item verticalFill styles={datasetItemStyles}>
-                <Scrollbars>
+                <>
                     <Dataset dataset={dataset} columns={getMapColumns} />
-                </Scrollbars>
+                </>
             </Stack.Item>
             <Stack.Item shrink styles={modalDialogStackItemStyles} align='end'>
                 <PrimaryButton

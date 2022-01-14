@@ -23,17 +23,15 @@ const CreateVisualPaneContent: React.FC = () => {
                 disableShrink
                 styles={templatePickerStackItemListStyles}
             >
-                <Scrollbars>
+                <>
                     <CreateVisualTemplateNav />
-                </Scrollbars>
+                </>
             </Stack.Item>
             <Stack.Item
                 grow={3}
                 styles={templatePickerNonShrinkingStackItemStyles}
             >
-                <Scrollbars>
-                    <TemplateStateHandler />
-                </Scrollbars>
+                <TemplateStateHandler />
             </Stack.Item>
         </Stack>
     );
