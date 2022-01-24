@@ -40,6 +40,7 @@ import { isFeatureEnabled } from '../utils/features';
 import { blankImageBase64 } from '../ui/dom';
 import { getDataset } from '../data/dataset';
 import { divergentPalette, divergentPaletteMed, ordinalPalette } from './theme';
+import { resolveSvgFilter } from '../ui/svgFilter';
 
 /**
  * Defines a JSON schema by provider and role, so we can dynamically apply based on provider.
@@ -168,6 +169,7 @@ const getParsedConfigFromSettings = (): Config => {
 const handleNewView = (newView: View) => {
     newView.runAsync().then(() => {
         viewServices.bindView(newView);
+        resolveSvgFilter();
         bindInteractivityEvents(newView);
         hostServices.renderingFinished();
     });

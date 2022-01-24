@@ -85,6 +85,18 @@
                     "displayName": "Viewport Width",
                     "description": "Viewport Width description.",
                     "type": { "numeric": true }
+                },
+                "svgFilter": {
+                    "displayNameKey": "Objects_Display_SVGFilter",
+                    "descriptionKey": "Objects_Display_SVGFilter_Description",
+                    "displayName": "SVG Filter",
+                    "description": "SVG Filter description.",
+                    "type": {
+                        "enumeration": [
+                            { "displayName": "None", "value": "none" },
+                            { "displayName": "Deneb.XKCD", "value": "xkcd" }
+                        ]
+                    }
                 }
             }
         },

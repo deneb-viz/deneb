@@ -44,7 +44,7 @@
         "jsonrepair": "^2.2.1",
         "lodash": "^4.17.21",
         "minimist": "^1.2.5",
-        "powerbi-visuals-api": "^3.8.4",
+        "powerbi-visuals-api": "~3.8.4",
         "powerbi-visuals-tools": "^3.4.1",
         "powerbi-visuals-utils-dataviewutils": "^2.4.1",
         "powerbi-visuals-utils-formattingutils": "^4.7.1",
