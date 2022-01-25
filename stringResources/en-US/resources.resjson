@@ -223,6 +223,7 @@
     "Dialog_Unapplied_Changes_Discard": "Discard",
     "Selection_KW_Present": "[Available]",
     "Zoom_Level_Tooltip": "Current zoom level in the editor - use the controls to the left to adjust this as necessary",
+    "Current_Provider_Tooltip": "This is the provider you are currently using for your specification. The runtime version is also shown here, so that you can ensure that any features of the provider documentation are compatible with the version available in Deneb.",
     "Selection_Aborted_Message": "You clicked a data point that is trying to cross-filter more than {0} underlying values. This has been blocked for performance reasons.",
     "Notification_Update_Increase": "Deneb has been updated from {0} to {1} since you last edited your visual.",
     "Notification_Update_Decrease": "You're using a newer version of Deneb ({0} than this specification was authored in ({1}). Some language features may not be available."

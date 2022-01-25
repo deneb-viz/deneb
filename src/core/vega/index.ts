@@ -6,7 +6,10 @@ export {
     determineProviderFromSpec,
     getEditorSchema,
     getParsedConfigFromSettings,
+    getVegaProvider,
+    getVegaProvideri18n,
     getVegaSettings,
+    getVegaVersion,
     getViewConfig,
     getViewDataset,
     getViewSpec,
@@ -32,7 +35,7 @@ import { createFormatterFromString } from '../utils/formatting';
 import { cleanParse, getSchemaValidator } from '../utils/json';
 import { TEditorRole } from '../services/JsonEditorServices';
 import { getState } from '../../store';
-import { getConfig } from '../utils/config';
+import { getConfig, providerVersions } from '../utils/config';
 import { getPatchedVegaSpec } from './vegaUtils';
 import { getPatchedVegaLiteSpec } from './vegaLiteUtils';
 import { bindInteractivityEvents } from '../interactivity/selection';
@@ -41,6 +44,7 @@ import { blankImageBase64 } from '../ui/dom';
 import { getDataset } from '../data/dataset';
 import { divergentPalette, divergentPaletteMed, ordinalPalette } from './theme';
 import { resolveSvgFilter } from '../ui/svgFilter';
+import { i18nValue } from '../ui/i18n';
 
 /**
  * Defines a JSON schema by provider and role, so we can dynamically apply based on provider.
@@ -110,6 +114,24 @@ const determineProviderFromSpec = (
 const getEditorSchema = (provider: TSpecProvider, role: TEditorRole) =>
     editorSchemas.find((s) => s.provider === provider && s.role === role)
         ?.schema || null;
+
+/**
+ * Convenience function to get current Vega provider from persisted properties.
+ */
+const getVegaProvider = () => <TSpecProvider>getVegaSettings().provider;
+
+/**
+ * Get the Vega provider, resolved for i18n.
+ */
+const getVegaProvideri18n = () =>
+    i18nValue(
+        getVegaProvider() === 'vegaLite' ? 'Provider_VegaLite' : 'Provider_Vega'
+    );
+
+/**
+ * For the current provider, get the version from our package configuration.
+ */
+const getVegaVersion = () => providerVersions[getVegaProvider()];
 
 /**
  * Convenience function to get current Vega/Spec settings from the visual objects (as we use this a lot).
