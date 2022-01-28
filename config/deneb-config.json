@@ -175,6 +175,9 @@
             "ordinalColorCount": 10,
             "ordinalColorCountMin": 1,
             "ordinalColorCountMax": 100
+        },
+        "performance": {
+            "enableResizeRecalc": true
         }
     },
     "selection": {

@@ -145,6 +145,18 @@
                 }
             }
         },
+        "IPerformanceDefaults": {
+            "description": "Property defaults for any performance tuning settings.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["enableResizeRecalc"],
+            "properties": {
+                "enableResizeRecalc": {
+                    "description": "If disabled, Deneb will delay recalculation of visual logic until a resize operation has been completed.",
+                    "type": "boolean"
+                }
+            }
+        },
         "IVegaDefaults": {
             "description": "Default values for Vega-based properties.",
             "type": "object",
@@ -408,13 +420,21 @@
             "description": "Default values for visual properties",
             "type": "object",
             "additionalProperties": false,
-            "required": ["dataLimit", "developer", "editor", "vega", "theme"],
+            "required": [
+                "dataLimit",
+                "developer",
+                "editor",
+                "vega",
+                "theme",
+                "performance"
+            ],
             "properties": {
                 "dataLimit": { "$ref": "#/definitions/IDataLimitDefaults" },
                 "developer": { "$ref": "#/definitions/IDeveloperDefaults" },
                 "editor": { "$ref": "#/definitions/IEditorDefaults" },
                 "vega": { "$ref": "#/definitions/IVegaDefaults" },
-                "theme": { "$ref": "#/definitions/IThemeDefaults" }
+                "theme": { "$ref": "#/definitions/IThemeDefaults" },
+                "performance": { "$ref": "#/definitions/IPerformanceDefaults" }
             }
         },
         "selection": {

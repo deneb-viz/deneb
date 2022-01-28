@@ -306,6 +306,23 @@
                 }
             }
         },
+        "performance": {
+            "displayNameKey": "Objects_Performance",
+            "descriptionKey": "Objects_Performance_Description",
+            "displayName": "Performance Options",
+            "description": "Performance Options description",
+            "properties": {
+                "enableResizeRecalc": {
+                    "displayNameKey": "Objects_Performance_EnableResizeRecalc",
+                    "descriptionKey": "Objects_Performance_EnableResizeRecalc_Description",
+                    "displayName": "Recalculate on Resize",
+                    "description": "Recalculate on Resize description",
+                    "type": {
+                        "bool": true
+                    }
+                }
+            }
+        },
         "dataLimit": {
             "displayNameKey": "Objects_DataLimit",
             "descriptionKey": "Objects_DataLimit_Description",
