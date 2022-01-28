@@ -127,7 +127,7 @@ const getEscapedReplacerPattern = (value: string) =>
 const getExportFieldTokenPatterns = (name: string): ITemplatePattern[] => {
     const namePattern = getEscapedReplacerPattern(name);
     return [
-        { match: `(")(${namePattern})(")`, replacer: '$1$2$3' },
+        { match: `(")(${namePattern})("(?!\\s*:))`, replacer: '$1$2$3' },
         { match: `(\\\.)(${namePattern})()`, replacer: `['$2']$3` },
         { match: `(')(${namePattern})(')`, replacer: '$1$2$3' }
     ];
