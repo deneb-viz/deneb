@@ -153,7 +153,7 @@ const resolveTooltipContent =
     (tooltipService: ITooltipService) =>
     (handler: any, event: MouseEvent, item: any, value: any) => {
         const coordinates = resolveCoordinates(event);
-        if (item) {
+        if (item && item.tooltip) {
             const datum = resolveDataFromItem(item),
                 tooltip = { ...item.tooltip },
                 autoFormatFields = getFieldsEligibleForAutoFormat(tooltip),
