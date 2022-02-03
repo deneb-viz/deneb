@@ -37,6 +37,7 @@ import ErrorObject = Ajv.ErrorObject;
 import has from 'lodash/has';
 import merge from 'lodash/merge';
 import reduce from 'lodash/reduce';
+import omit from 'lodash/omit';
 import set from 'lodash/set';
 
 import { getParsedConfigFromSettings } from '../vega';
@@ -161,11 +162,24 @@ const getExportTemplate = () => {
     );
     const outSpec = merge(
         baseObj,
-        { usermeta },
+        { usermeta: getPublishableUsermeta(usermeta) },
         { config: getParsedConfigFromSettings() },
         JSON.parse(processedSpec)
     );
     return getJsonAsIndentedString(outSpec);
+};
+
+/**
+ * Ensure that usermeta is in its final, publishable state after all
+ * necessary substitutions and processing have been done.
+ */
+const getPublishableUsermeta = (usermeta: IDenebTemplateMetadata) => {
+    return {
+        ...usermeta,
+        ...{
+            dataset: usermeta.dataset.map((d) => omit(d, ['namePlaceholder']))
+        }
+    };
 };
 
 /**
