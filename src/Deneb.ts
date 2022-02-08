@@ -115,12 +115,24 @@ export class Deneb implements IVisual {
         } = getState();
 
         // Manage persistent viewport sizing for view vs. editor
-        resolveReportViewport(
-            options.viewport,
-            options.viewMode,
-            options.editMode,
-            settings.display
-        );
+        switch (true) {
+            case options.type === VisualUpdateType.All:
+            case options.type === VisualUpdateType.Data:
+            /**
+             * This cooercion is needed due to a bug in the API w/ `VisualUpdateType.ResizeEnd`.
+             * I've submitted a PR for a fix: https://github.com/microsoft/powerbi-visuals-api/pull/38
+             */
+            case options.type.toString() === '36': {
+                resolveReportViewport(
+                    options.viewport,
+                    options.viewMode,
+                    options.editMode,
+                    settings.display
+                );
+            }
+            default: {
+            }
+        }
 
         // Provide intial update options to store
         setVisualUpdate({
