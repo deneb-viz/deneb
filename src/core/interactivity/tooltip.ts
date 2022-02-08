@@ -1,5 +1,3 @@
-export { getTooltipHandler, hideTooltip, isHandlerEnabled };
-
 import powerbi from 'powerbi-visuals-api';
 import ITooltipService = powerbi.extensibility.ITooltipService;
 import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
@@ -16,18 +14,13 @@ import toString from 'lodash/toString';
 import { isInteractivityReservedWord, resolveCoordinates } from '.';
 import { i18nValue } from '../ui/i18n';
 import { getJsonAsIndentedString } from '../utils/json';
-import { getVegaSettings, IVegaViewDatum } from '../vega';
+import { getVegaSettings, IVegaViewDatum, resolveDataFromItem } from '../vega';
 
 import { isFeatureEnabled } from '../utils/features';
 import { getSelectionIdentitiesFromData } from './selection';
-import {
-    getMetadataByKeys,
-    resolveDataFromItem,
-    resolveDatumToArray
-} from '../data/dataset';
 import { createFormatterFromString } from '../utils/formatting';
-import { getState } from '../../store';
 import { hostServices } from '../services';
+import { getDatasetFieldsBySelectionKeys } from '../data/fields';
 
 /**
  * Convenience constant for tooltip events, as it's required by Power BI.
@@ -37,7 +30,7 @@ const isTouchEvent = true;
 /**
  * Convenience constant that confirms whether the `tooltipHandler` feature switch is enabled via features.
  */
-const isHandlerEnabled = isFeatureEnabled('tooltipHandler');
+export const isHandlerEnabled = isFeatureEnabled('tooltipHandler');
 
 /**
  *  Confirms whether the `tooltipResolveNumberFieldFormat` feature switch is enabled via features.
@@ -53,7 +46,9 @@ const extractTooltipDataItemsFromObject = (
     tooltip: Object,
     autoFormatFields: IVegaViewDatum
 ): VisualTooltipDataItem[] => {
-    const autoFormatMetadata = getMetadataByKeys(keys(autoFormatFields));
+    const autoFormatMetadata = getDatasetFieldsBySelectionKeys(
+        keys(autoFormatFields)
+    );
     return resolveDatumToArray(tooltip, false).map(([k, v]) => ({
         displayName: `${k}`,
         value: `${
@@ -104,7 +99,7 @@ const getDeepRedactedTooltipItem = (object: Object) => {
 const getFieldsEligibleForAutoFormat = (tooltip: Object) =>
     pickBy(tooltip, (v, k) => {
         const ttKeys = keys(tooltip),
-            mdKeys = keys(getMetadataByKeys(ttKeys));
+            mdKeys = keys(getDatasetFieldsBySelectionKeys(ttKeys));
         return (
             indexOf(mdKeys, k) > -1 &&
             isResolveNumberFormatEnabled() &&
@@ -124,7 +119,7 @@ const getSanitisedTooltipValue = (value: any) =>
  * Get a new custom Vega tooltip handler for Power BI. If the supplied setting is enabled, will return a `resolveTooltipContent` handler
  * for the supplied `tooltipService`.
  */
-const getTooltipHandler = (
+export const getTooltipHandler = (
     isSettingEnabled: boolean,
     tooltipService: ITooltipService
 ) =>
@@ -136,13 +131,22 @@ const getTooltipHandler = (
 /**
  * Request Power BI hides the tooltip.
  */
-const hideTooltip = () => {
+export const hideTooltip = () => {
     const immediately = true;
     hostServices.tooltipService.hide({
         immediately,
         isTouchEvent
     });
 };
+
+/**
+ * For a given datum, resolve it to an array of keys and values. Addiitonally, we can (optionally) ensure that the
+ * `interactivityReservedWords` are stripped out so that we can get actual fields and values assigned to a datum.
+ */
+const resolveDatumToArray = (obj: IVegaViewDatum, filterReserved = true) =>
+    Object.entries({ ...obj }).filter(
+        ([k, v]) => (filterReserved && !isInteractivityReservedWord(k)) || k
+    );
 
 /**
  * For the supplied Power BI `ITooltipService` service instance from the visual host, apply the `vegaTooltip` object

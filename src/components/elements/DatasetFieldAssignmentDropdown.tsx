@@ -15,7 +15,8 @@ import { getDataTypeIcon } from '../../core/ui/icons';
 import { getPlaceholderDropdownText } from '../../core/ui/labels';
 import { templateTypeIconOptionStyles } from '../../core/ui/fluent';
 import { TModalDialogType } from '../../core/ui/modal';
-import { IVisualValueMetadata } from '../../core/data/dataset';
+import { IVisualDatasetFields } from '../../core/data';
+import { getDatasetFieldsInclusive } from '../../core/data/fields';
 
 interface IDatasetFieldAssignmentDropdownProps {
     datasetField: ITemplateDatasetField;
@@ -29,10 +30,10 @@ const templatePickerDropdownStyles: Partial<IDropdownStyles> = {
 
 const getDropDownOptions = (
     datasetField: ITemplateDatasetField,
-    metadata: IVisualValueMetadata
+    fields: IVisualDatasetFields
 ): IDropdownOption[] =>
     reduce(
-        metadata,
+        fields,
         (result, value, key) => {
             return result.concat({
                 key: value.queryName,
@@ -49,51 +50,52 @@ const getDropDownOptions = (
 const DatasetFieldAssignmentDropdown: React.FC<IDatasetFieldAssignmentDropdownProps> =
     ({ datasetField, dialogType }) => {
         const [selectedItem, setSelectedItem] =
-                React.useState<IDropdownOption>(null),
-            { dataset, updateTemplatePlaceholder, updateEditorFieldMapping } =
-                store((state) => state),
-            { metadata } = dataset,
-            onChange = (
-                event: React.FormEvent<HTMLDivElement>,
-                item: IDropdownOption
-            ): void => {
-                setSelectedItem(item);
-                const objectName = item.text;
-                switch (dialogType) {
-                    case 'new':
-                        return updateTemplatePlaceholder({
-                            key: item.data.placeholder.key,
-                            objectName
-                        });
-                    case 'mapping':
-                        return updateEditorFieldMapping({
-                            key: datasetField.name,
-                            objectName
-                        });
-                    default:
-                        return null;
-                }
-            },
-            options = () => getDropDownOptions(datasetField, metadata),
-            onRenderOption = (option: IDropdownOption) => {
-                return (
-                    <div>
-                        {option.data && option.data.icon && (
-                            <Icon
-                                styles={templateTypeIconOptionStyles}
-                                iconName={option.data.icon}
-                                aria-hidden='true'
-                                title={option.data.placeholder.description}
-                            />
-                        )}
-                        <span>{option.text}</span>
-                    </div>
-                );
-            },
-            placeholderText = getPlaceholderDropdownText(datasetField),
-            selectedKey = selectedItem
-                ? selectedItem.key
-                : dataset.metadata[datasetField.name]?.queryName || null;
+            React.useState<IDropdownOption>(null);
+        const { dataset, updateTemplatePlaceholder, updateEditorFieldMapping } =
+            store((state) => state);
+        const { fields } = dataset;
+        const onChange = (
+            event: React.FormEvent<HTMLDivElement>,
+            item: IDropdownOption
+        ): void => {
+            setSelectedItem(item);
+            const objectName = item.text;
+            switch (dialogType) {
+                case 'new':
+                    return updateTemplatePlaceholder({
+                        key: item.data.placeholder.key,
+                        objectName
+                    });
+                case 'mapping':
+                    return updateEditorFieldMapping({
+                        key: datasetField.name,
+                        objectName
+                    });
+                default:
+                    return null;
+            }
+        };
+        const options = () =>
+            getDropDownOptions(datasetField, getDatasetFieldsInclusive(fields));
+        const onRenderOption = (option: IDropdownOption) => {
+            return (
+                <div>
+                    {option.data && option.data.icon && (
+                        <Icon
+                            styles={templateTypeIconOptionStyles}
+                            iconName={option.data.icon}
+                            aria-hidden='true'
+                            title={option.data.placeholder.description}
+                        />
+                    )}
+                    <span>{option.text}</span>
+                </div>
+            );
+        };
+        const placeholderText = getPlaceholderDropdownText(datasetField);
+        const selectedKey = selectedItem
+            ? selectedItem.key
+            : dataset.fields[datasetField.name]?.queryName || null;
         return (
             <Dropdown
                 ariaLabel={datasetField.name}

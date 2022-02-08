@@ -51,11 +51,12 @@ import { getPatchedVegaSpec } from '../vega/vegaUtils';
 import { getPatchedVegaLiteSpec } from '../vega/vegaLiteUtils';
 import { getVegaSettings, TSpecProvider } from '../vega';
 import { ITemplateInteractivityOptions } from '../template/schema';
-import {
-    getTemplateFieldsFromMetadata,
-    IVisualValueMetadata
-} from '../data/dataset';
 import { getLastVersionInfo } from './versioning';
+import { IVisualDatasetFields } from '../data';
+import {
+    getDatasetFieldsInclusive,
+    getDatasetTemplateFields
+} from '../data/fields';
 
 /**
  * For the supplied provider and specification template, add this to the visual and persist to properties, ready for
@@ -347,9 +348,9 @@ const getCleanEditorJson = (role: TEditorRole) =>
  * from our datase (and clear out their supplied object name for another attempt), or whether to start again.
  */
 const getExistingSpecFieldsInUse = (
-    metadata: IVisualValueMetadata,
+    metadata: IVisualDatasetFields,
     renew = false
-): IVisualValueMetadata =>
+): IVisualDatasetFields =>
     renew
         ? {}
         : reduce(
@@ -359,7 +360,7 @@ const getExistingSpecFieldsInUse = (
                   result[key] = value;
                   return result;
               },
-              <IVisualValueMetadata>{}
+              <IVisualDatasetFields>{}
           );
 
 /**
@@ -368,14 +369,14 @@ const getExistingSpecFieldsInUse = (
  * last execution. We can use this to compare to the current dataset to see if there are gaps.
  */
 const getSpecFieldsInUse = (
-    metadata: IVisualValueMetadata,
-    editorFieldsInUse: IVisualValueMetadata,
+    metadata: IVisualDatasetFields,
+    editorFieldsInUse: IVisualDatasetFields,
     renew = false
-): IVisualValueMetadata => {
+): IVisualDatasetFields => {
     const { jsonSpec } = getVegaSettings();
     const spec = getCleanEditorJson('spec') || jsonSpec;
     let newFieldsInUse = getExistingSpecFieldsInUse(editorFieldsInUse, renew);
-    forIn(metadata, (value, key) => {
+    forIn(getDatasetFieldsInclusive(metadata), (value, key) => {
         const found = doesSpecContainKeyForMetadata(key, spec, metadata);
         if (found) {
             value.templateMetadata.suppliedObjectName = key;
@@ -393,7 +394,7 @@ const getSpecFieldsInUse = (
 const doesSpecContainKeyForMetadata = (
     key: string,
     spec: string,
-    metadata: IVisualValueMetadata
+    metadata: IVisualDatasetFields
 ) =>
     reduce(
         getExportFieldTokenPatterns(key),
@@ -412,7 +413,7 @@ const doesSpecContainKeyForMetadata = (
  */
 const remapSpecificationFields = () => {
     const { updateEditorMapDialogVisible } = getState();
-    const dataset = getTemplateFieldsFromMetadata(getState().editorFieldsInUse);
+    const dataset = getDatasetTemplateFields(getState().editorFieldsInUse);
     const spec = getSpecWithFieldPlaceholders(
         specEditorService.getText(),
         dataset

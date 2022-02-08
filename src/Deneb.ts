@@ -27,7 +27,6 @@ import VisualSettings from './properties/VisualSettings';
 import { getState } from './store';
 import {
     canFetchMore,
-    getMappedDataset,
     handleDataFetch,
     validateDataViewMapping,
     validateDataViewRoles
@@ -36,9 +35,10 @@ import { theme } from './core/ui/fluent';
 import { parseActiveSpec } from './core/utils/specification';
 import { fillPatternServices, hostServices } from './core/services';
 import { initializeIcons } from './core/ui/fluent';
-import { getDataset, getTemplateFieldsFromMetadata } from './core/data/dataset';
+import { getDataset, getMappedDataset } from './core/data/dataset';
 import { handlePropertyMigration } from './core/utils/versioning';
 import { resolveReportViewport } from './core/ui/dom';
+import { getDatasetTemplateFields } from './core/data/fields';
 
 export class Deneb implements IVisual {
     private settings: VisualSettings;
@@ -177,7 +177,7 @@ export class Deneb implements IVisual {
                         )
                     });
                     syncTemplateExportDataset(
-                        getTemplateFieldsFromMetadata(getDataset().metadata)
+                        getDatasetTemplateFields(getDataset().fields)
                     );
                 }
                 break;

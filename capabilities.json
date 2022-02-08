@@ -378,6 +378,7 @@
     ],
     "supportsLandingPage": true,
     "supportsEmptyDataView": false,
+    "supportsHighlight": false,
     "suppressDefaultTitle": true,
     "tooltips": {
         "supportEnhancedTooltips": true,

@@ -30,6 +30,14 @@ import View = Vega.View;
 import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
 import { TopLevelSpec } from 'vega-lite';
 
+import forEach from 'lodash/forEach';
+import isEqual from 'lodash/isEqual';
+import keys from 'lodash/keys';
+import matches from 'lodash/matches';
+import pick from 'lodash/pick';
+import pickBy from 'lodash/pickBy';
+import reduce from 'lodash/reduce';
+
 import { fillPatternServices, hostServices, viewServices } from '../services';
 import { createFormatterFromString } from '../utils/formatting';
 import { cleanParse, getSchemaValidator } from '../utils/json';
@@ -45,6 +53,11 @@ import { getDataset } from '../data/dataset';
 import { divergentPalette, divergentPaletteMed, ordinalPalette } from './theme';
 import { resolveSvgFilter } from '../ui/svgFilter';
 import { i18nValue } from '../ui/i18n';
+import {
+    IVisualDatasetField,
+    IVisualDatasetFields,
+    IVisualDatasetValueRow
+} from '../data';
 
 /**
  * Defines a JSON schema by provider and role, so we can dynamically apply based on provider.
@@ -227,8 +240,62 @@ const registerCustomSchemes = () => {
 };
 
 /**
- * Create a custom Vega loader for the visual. We do a replace on URIs in the spec to prevent, but this doubly-ensures that nothing
- * can be loaded.
+ * For a given (subset of) `fields` and `datum`, create an `IVisualDatasetValueRow`
+ * that can be used to search for matching values in the visual's dataset.
+ */
+export const resolveDatumForFields = (
+    fields: IVisualDatasetFields,
+    datum: IVegaViewDatum
+) => {
+    const reducedDatum =
+        <IVisualDatasetValueRow>pick(datum, keys(fields)) || null;
+    return reduce(
+        reducedDatum,
+        (result, value, key) => {
+            result[key] = resolveValueForField(fields[key], value);
+            return result;
+        },
+        <IVisualDatasetValueRow>{}
+    );
+};
+
+/**
+ * Because Vega's tooltip channel supplies datum field values as strings, for a
+ * supplied metadata `field` and `datum`, attempt to resolve it to a pure type,
+ * so that we can try to use its value to reconcile against the visual's dataset
+ * in order to resolve selection IDs.
+ */
+const resolveValueForField = (field: IVisualDatasetField, value: any) => {
+    switch (true) {
+        case field.type.dateTime: {
+            return new Date(value);
+        }
+        case field.type.numeric:
+        case field.type.integer: {
+            return Number.parseFloat(value);
+        }
+        default:
+            return value;
+    }
+};
+
+/**
+ * Take an item from a Vega event and attempt to resolve .
+ */
+export const resolveDataFromItem = (item: any): IVegaViewDatum[] => {
+    switch (true) {
+        case item === undefined:
+            return null;
+        case item?.context?.data?.facet?.values?.value:
+            return item?.context?.data?.facet?.values?.value?.slice();
+        default:
+            return [{ ...item?.datum }];
+    }
+};
+
+/**
+ * Create a custom Vega loader for the visual. We do a replace on URIs in the
+ * spec to prevent, but this doubly-ensures that nothing can be loaded.
  */
 const resolveLoaderLogic = () => {
     const loader = Vega.loader();
@@ -248,7 +315,8 @@ const resolveLoaderLogic = () => {
 };
 
 /**
- * Test that supplied URI matches the data: protocol and should be whitelisted by the loader.
+ * Test that supplied URI matches the data: protocol and should be whitelisted
+ * by the loader.
  */
 const isDataUri = (uri: string) =>
     !!uri.match(

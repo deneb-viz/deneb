@@ -6,6 +6,7 @@
         "fetchMoreData": true,
         "selectionContextMenu": true,
         "selectionDataPoint": true,
+        "selectionCrossHighlight": false,
         "tooltipHandler": true,
         "tooltipResolveNumberFieldFormat": true,
         "useDownloadApi": false,

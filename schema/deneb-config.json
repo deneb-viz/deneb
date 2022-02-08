@@ -249,6 +249,10 @@
                     "description": "Enables the Power BI selection manager to accept signals from Vega-Lite selections and (if they resolve to the `dataView`) cross-highlight other visuals. Visual authors will need to apply their own visual encoding of selections to indicate which points are currently selected.",
                     "type": "boolean"
                 },
+                "selectionCrossHighlight": {
+                    "description": "Enables functionality for cross-highlight binding to dataset (provided that `supportsHighlight` is also enabled in visual capabilities).",
+                    "type": "boolean"
+                },
                 "tooltipHandler": {
                     "description": "Allows custom `TooltipHandler` to be enabled via Visual Editor settings. This will resolve tooltips for data points using the Power BI tooltip APIs based on signals from Vega/Vega-Lite.",
                     "type": "boolean"
