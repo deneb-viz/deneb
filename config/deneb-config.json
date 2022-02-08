@@ -178,7 +178,7 @@
             "ordinalColorCountMax": 100
         },
         "performance": {
-            "enableResizeRecalc": true
+            "enableResizeRecalc": false
         }
     },
     "selection": {
