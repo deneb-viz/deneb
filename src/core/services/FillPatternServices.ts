@@ -1,5 +1,6 @@
 import { BaseType, select, Selection } from 'd3-selection';
 import reduce from 'lodash/reduce';
+import { getUrlRefById } from '../ui/selectors';
 
 const svgPatternContainerId = 'customFillPatterns',
     defaultPatternStrokeColor = '#000000',
@@ -72,7 +73,7 @@ export class FillPatternServices {
                 })
             );
         }
-        return `url(#${modId})`;
+        return getUrlRefById(modId);
     };
 }
 

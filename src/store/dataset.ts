@@ -6,11 +6,10 @@ import ISelectionId = powerbi.visuals.ISelectionId;
 import { GetState, PartialState, SetState } from 'zustand';
 import { TStoreState } from '.';
 import {
-    doesEditorHaveUnallocatedFields,
-    getEmptyDataset,
-    IVisualDataset
+    doUnallocatedFieldsExist,
+    getEmptyDataset
 } from '../core/data/dataset';
-import { TDataProcessingStage } from '../core/data/dataView';
+import { IVisualDataset, TDataProcessingStage } from '../core/data';
 import { resolveVisualMode } from '../core/ui';
 import { getResizablePaneSize } from '../core/ui/advancedEditor';
 import { getDataPointStatus } from '../core/interactivity/selection';
@@ -20,6 +19,7 @@ export interface IDatasetSlice {
     dataset: IVisualDataset;
     datasetCanFetchMore: boolean;
     datasetCategories: DataViewCategoryColumn[];
+    datasetHasHighlights: boolean;
     datasetHasSelectionAborted: boolean;
     datasetProcessingStage: TDataProcessingStage;
     datasetRowsLoaded: number;
@@ -47,6 +47,7 @@ export const createDatasetSlice = (
         dataset: getEmptyDataset(),
         datasetCanFetchMore: false,
         datasetCategories: [],
+        datasetHasHighlights: false,
         datasetHasSelectionAborted: false,
         datasetProcessingStage: 'Initial',
         datasetRowsLoaded: 0,
@@ -109,11 +110,11 @@ const handleUpdateDataset = (
     const datasetCategories = payload.categories || [];
     const { dataset } = payload;
     const editorFieldsInUse = getSpecFieldsInUse(
-        dataset.metadata,
+        dataset.fields,
         state.editorFieldsInUse
     );
-    const editorFieldDatasetMismatch = doesEditorHaveUnallocatedFields(
-        dataset.metadata,
+    const editorFieldDatasetMismatch = doUnallocatedFieldsExist(
+        dataset.fields,
         editorFieldsInUse,
         state.editorFieldDatasetMismatch
     );

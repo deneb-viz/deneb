@@ -8,6 +8,8 @@ export * as i18n from './i18n';
 export * as icons from './icons';
 export * as labels from './labels';
 export * as modal from './modal';
+export * as selectors from './selectors';
+export * as svgFilter from './svgFilter';
 
 export { getVersionInfo, resolveVisualMode, TEditorPosition, TVisualMode };
 

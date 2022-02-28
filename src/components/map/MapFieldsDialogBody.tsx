@@ -15,9 +15,9 @@ import store from '../../store';
 import { i18nValue } from '../../core/ui/i18n';
 import { Paragraph } from '../elements/Typography';
 import Dataset, { getMapColumns } from '../elements/Dataset';
-import { getTemplateFieldsFromMetadata } from '../../core/data/dataset';
 import { buttonStyles } from '../../core/ui/fluent';
 import { remapSpecificationFields } from '../../core/utils/specification';
+import { getDatasetTemplateFields } from '../../core/data/fields';
 
 const datasetItemStyles: IStackItemStyles = {
     root: {
@@ -27,7 +27,7 @@ const datasetItemStyles: IStackItemStyles = {
 
 export const MapFieldsDialogBody = () => {
     const { editorFieldsInUse } = store((state) => state);
-    const dataset = getTemplateFieldsFromMetadata(editorFieldsInUse);
+    const dataset = getDatasetTemplateFields(editorFieldsInUse);
     const remapDisabled =
         filter(
             editorFieldsInUse,

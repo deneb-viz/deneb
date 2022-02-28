@@ -7,6 +7,7 @@ import {
     IStackStyles
 } from '@fluentui/react/lib/Stack';
 
+import ProviderInfo from './ProviderInfo';
 import ZoomControls from './ZoomControls';
 
 import { theme } from '../../../core/ui/fluent';
@@ -42,6 +43,8 @@ const PreviewAreaToolbar: React.FC = () => {
                 styles={horizontalStackStyles}
                 tokens={horiztontalStackTokens}
             >
+                <ProviderInfo />
+                <StackItem grow>&nbsp;</StackItem>
                 <ZoomControls />
             </Stack>
         </StackItem>

@@ -2,10 +2,7 @@ import { GetState, PartialState, SetState } from 'zustand';
 import reduce from 'lodash/reduce';
 
 import { TStoreState } from '.';
-import {
-    doesEditorHaveUnallocatedFields,
-    IVisualValueMetadata
-} from '../core/data/dataset';
+import { doUnallocatedFieldsExist } from '../core/data/dataset';
 import { TEditorRole } from '../core/services/JsonEditorServices';
 import { resolveVisualMode } from '../core/ui';
 import {
@@ -19,12 +16,13 @@ import {
     ICompiledSpec,
     IFixResult
 } from '../core/utils/specification';
+import { IVisualDatasetFields } from '../core/data';
 
 export interface IEditorSlice {
     editorAutoApply: boolean;
     editorCanAutoApply: boolean;
     editorFieldDatasetMismatch: boolean;
-    editorFieldsInUse: IVisualValueMetadata;
+    editorFieldsInUse: IVisualDatasetFields;
     editorFixResult: IFixResult;
     editorIsDirty: boolean;
     editorIsExportDialogVisible: boolean;
@@ -142,14 +140,14 @@ interface IEditorFieldMappingUpdatePayload {
 const handleRenewEditorFieldsInUse = (
     state: TStoreState
 ): PartialState<TStoreState, never, never, never, never> => {
-    const { metadata } = state.dataset;
+    const { fields } = state.dataset;
     const editorFieldsInUse = getSpecFieldsInUse(
-        metadata,
+        fields,
         state.editorFieldsInUse,
         true
     );
-    const editorFieldDatasetMismatch = doesEditorHaveUnallocatedFields(
-        metadata,
+    const editorFieldDatasetMismatch = doUnallocatedFieldsExist(
+        fields,
         editorFieldsInUse,
         false
     );
@@ -224,7 +222,7 @@ const handleUpdateEditorFieldMappings = (
             }
             return result;
         },
-        <IVisualValueMetadata>{}
+        <IVisualDatasetFields>{}
     )
 });
 

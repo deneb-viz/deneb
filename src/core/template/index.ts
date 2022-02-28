@@ -37,6 +37,7 @@ import ErrorObject = Ajv.ErrorObject;
 import has from 'lodash/has';
 import merge from 'lodash/merge';
 import reduce from 'lodash/reduce';
+import omit from 'lodash/omit';
 import set from 'lodash/set';
 
 import { getParsedConfigFromSettings } from '../vega';
@@ -57,8 +58,9 @@ import * as schema_v1 from '../../../schema/deneb-template-usermeta-v1.json';
 import { i18nValue } from '../ui/i18n';
 import { determineProviderFromSpec, TSpecProvider } from '../vega';
 import { isFeatureEnabled } from '../utils/features';
-import { IVisualValueMetadata } from '../data/dataset';
+import { IVisualDatasetFields } from '../data';
 import { ITemplateImportPayload } from '../../store/template';
+import { highlightFieldSuffix } from '../interactivity/highlight';
 
 /**
  * Used to indicate which part of the export dialog has focus.
@@ -66,7 +68,8 @@ import { ITemplateImportPayload } from '../../store/template';
 type TExportOperation = 'information' | 'dataset' | 'template';
 
 /**
- * Stages we go through when exporting a template so that the interface can respond accordingly.
+ * Stages we go through when exporting a template so that the interface can
+ * respond accordingly.
  */
 type TTemplateExportState =
     | 'None'
@@ -76,7 +79,8 @@ type TTemplateExportState =
     | 'Error';
 
 /**
- * Stages we go through when importing a template so that the interface can respond accordingly.
+ * Stages we go through when importing a template so that the interface can
+ * respond accordingly.
  */
 type TTemplateImportState =
     | 'None'
@@ -87,7 +91,8 @@ type TTemplateImportState =
     | 'Error';
 
 /**
- * Used to manage regex match/replace for portions of a template that represent fields from the dataset.
+ * Used to manage regex match/replace for portions of a template that represent
+ * fields from the dataset.
  */
 interface ITemplatePattern {
     match: string;
@@ -95,7 +100,8 @@ interface ITemplatePattern {
 }
 
 /**
- * Extension of `TSpecProvider`, providing an `import` value in addition to `vega` and `vegaLite`.
+ * Extension of `TSpecProvider`, providing an `import` value in addition to
+ * `vega` and `vegaLite`.
  */
 type TTemplateProvider = TSpecProvider | 'import';
 
@@ -107,39 +113,64 @@ const datasetFieldProps =
 const informationProps = schema_v1.definitions.ITemplateInformation.properties;
 
 /**
- * When performing placeholder replacements, we need to ensure that special characters used in regex qualifiers are suitably escaped so that we don't
- * inadvertently mangle them. Returns escaped string, suitable for pattern matching if any special characters are used.
+ * When performing placeholder replacements, we need to ensure that special
+ * characters used in regex qualifiers are suitably escaped so that we don't
+ * inadvertently mangle them. Returns escaped string, suitable for pattern
+ * matching if any special characters are used.
  */
 const getEscapedReplacerPattern = (value: string) =>
     value.replace(/[-\/\\^$*+?.()&|[\]{}]/g, '\\$&');
 
 /**
- * As fields can be used in a variety of places in a Vega specification, this generates an array of regex patterns we should use to match eligible placeholders
- * in export templates. All patterns should contain three capture groups:
+ * As fields can be used in a variety of places in a Vega specification, this
+ * generates an array of regex patterns we should use to match eligible
+ * placeholders in export templates. All patterns should contain three capture
+ * groups:
  *
  *  - `$1`: Preceding pattern used to identify placeholder
  *  - `$2`: The resolved field placeholder
  *  - `$3`: Trailing pattern used to identify placeholder
  *
- * Returns ITemplatePattern array of RegEx patterns that should match all occurrences of specified placeholder name within a spec, and the replacement string
- * that references these capture groups, as well as any necessary adjustments.
+ * Returns `ITemplatePattern` array of RegEx patterns that should match all
+ * occurrences of specified placeholder name within a spec, and the replacement
+ * string that references these capture groups, as well as any necessary
+ * adjustments.
+ *
+ * Examples of how each entry would get templated for a given field name
+ * (in this case `Mean Temperature`):
+ *
+ * "()(Mean Temperature)(_highlight)?"(?!\s*:)
+ * \.()(Mean Temperature)(_highlight)?
+ * '()(Mean Temperature)(_highlight)?'
+ *
  */
 const getExportFieldTokenPatterns = (name: string): ITemplatePattern[] => {
     const namePattern = getEscapedReplacerPattern(name);
     return [
-        { match: `(")(${namePattern})(")`, replacer: '$1$2$3' },
-        { match: `(\\\.)(${namePattern})()`, replacer: `['$2']$3` },
-        { match: `(')(${namePattern})(')`, replacer: '$1$2$3' }
+        {
+            match: `"()(${namePattern})(${highlightFieldSuffix})?"(?!\\s*:)`,
+            replacer: '"$1$2$3"'
+        },
+        {
+            match: `\\.()(${namePattern})(${highlightFieldSuffix})?`,
+            replacer: `['$1$2$3']`
+        },
+        {
+            match: `(')(${namePattern})((?=${highlightFieldSuffix}')?)`,
+            replacer: '$1$2$3'
+        }
     ];
 };
 
 /**
- * Logic to create a global matching RegEx for a supplied string-based expression.
+ * Logic to create a global matching RegEx for a supplied string-based
+ * expression.
  */
 const getFieldExpression = (exp: string) => new RegExp(exp, 'g');
 
 /**
- * Combines spec, config and specified metadata to produce a valid JSON template for export.
+ * Combines spec, config and specified metadata to produce a valid JSON
+ * template for export.
  */
 const getExportTemplate = () => {
     const { editorSpec, visualSettings } = getState();
@@ -161,7 +192,7 @@ const getExportTemplate = () => {
     );
     const outSpec = merge(
         baseObj,
-        { usermeta },
+        { usermeta: getPublishableUsermeta(usermeta) },
         { config: getParsedConfigFromSettings() },
         JSON.parse(processedSpec)
     );
@@ -169,8 +200,21 @@ const getExportTemplate = () => {
 };
 
 /**
- * For a given spec and template metadata, create the necessary placeholders for all fields used
- * to that they can be safely replaced.
+ * Ensure that usermeta is in its final, publishable state after all
+ * necessary substitutions and processing have been done.
+ */
+const getPublishableUsermeta = (usermeta: IDenebTemplateMetadata) => {
+    return {
+        ...usermeta,
+        ...{
+            dataset: usermeta.dataset.map((d) => omit(d, ['namePlaceholder']))
+        }
+    };
+};
+
+/**
+ * For a given spec and template metadata, create the necessary placeholders
+ * for all fields used to that they can be safely replaced.
  */
 const getSpecWithFieldPlaceholders = (
     spec: string,
@@ -189,7 +233,8 @@ const getSpecWithFieldPlaceholders = (
 };
 
 /**
- * For supplied template, ensure that we can obtain interactivity properties from it.
+ * For supplied template, ensure that we can obtain interactivity properties
+ * from it.
  */
 const getInteractivityPropsFromTemplate = (template: Spec | TopLevelSpec) =>
     (<IDenebTemplateMetadata>template?.usermeta)?.interactivity || null;
@@ -219,8 +264,9 @@ const getNewExportTemplateMetadata = (): IDenebTemplateMetadata => {
 };
 
 /**
- * Enumerate a template's placeholders and confirm they all have values supplied by the user. If a template doesn't have any placeholders then this will
- * also be regarded as fulfilled.
+ * Enumerate a template's placeholders and confirm they all have values
+ * supplied by the user. If a template doesn't have any placeholders then this
+ * will also be regarded as fulfilled.
  */
 const getPlaceholderResolutionStatus = (template: Spec | TopLevelSpec) => {
     const usermeta = <IDenebTemplateMetadata>template?.usermeta;
@@ -232,7 +278,8 @@ const getPlaceholderResolutionStatus = (template: Spec | TopLevelSpec) => {
 };
 
 /**
- * For a supplied template, substitute placeholder values and return a stringified representation of the object.
+ * For a supplied template, substitute placeholder values and return a
+ * stringified representation of the object.
  */
 const getReplacedTemplate = (template: Spec | TopLevelSpec) => {
     let templateToApply = { ...template };
@@ -245,7 +292,8 @@ const getReplacedTemplate = (template: Spec | TopLevelSpec) => {
 };
 
 /**
- * For all supplied template fields, perform a replace on all tokens and return the new spec.
+ * For all supplied template fields, perform a replace on all tokens and return
+ * the new spec.
  */
 const getReducedPlaceholdersForMetadata = (
     dataset: ITemplateDatasetField[],
@@ -263,10 +311,10 @@ const getReducedPlaceholdersForMetadata = (
     );
 
 /**
- * Assign numeric keys - suitable for templating - to an `IVisualValueMetadata` object, based on the order in which it
- * is reduced.
+ * Assign numeric keys - suitable for templating - to an `IVisualValueMetadata`
+ * object, based on the order in which it is reduced.
  */
-const getResequencedMetadata = (metadata: IVisualValueMetadata) => {
+const getResequencedMetadata = (metadata: IVisualDatasetFields) => {
     let keyCount = 0;
     return reduce(
         metadata,
@@ -281,9 +329,11 @@ const getResequencedMetadata = (metadata: IVisualValueMetadata) => {
 };
 
 /**
- * When a template JSON file is selected for import, this defines the logic for reading the file and parsing it to ensure that it is both valid JSON, and
- * also contains the necessary metadata to provide data role substitution to the end-user. This will dispatch the necessary state to the store for further
- * action as required.
+ * When a template JSON file is selected for import, this defines the logic for
+ * reading the file and parsing it to ensure that it is both valid JSON, and
+ * also contains the necessary metadata to provide data role substitution to
+ * the end-user. This will dispatch the necessary state to the store for
+ * further action as required.
  */
 const onReaderLoad = (event: ProgressEvent<FileReader>, templateFile: File) => {
     updateImportState('Validating');
@@ -316,8 +366,9 @@ const onReaderLoad = (event: ProgressEvent<FileReader>, templateFile: File) => {
 };
 
 /**
- * We (unwisely) didn't populate the template metadata with the Vega/Vega-Lite version for initial builds of Deneb,
- * so here we check the template for a suitable `providerVersion` and patch it with a legacy version as appropriate.
+ * We (unwisely) didn't populate the template metadata with the Vega/Vega-Lite
+ *  version for initial builds of Deneb, so here we check the template for a
+ * suitable `providerVersion` and patch it with a legacy version as appropriate.
  */
 const getTemplateResolvedForLegacyVersions = (
     provider: TSpecProvider,
@@ -351,11 +402,13 @@ const onTemplateFileSelect = (files: FileList) => {
 };
 
 /**
- * When exporting a template, any occurrences of columns or measures need to be replaced in the spec. This takes a given stringified `template`, and will:
+ * When exporting a template, any occurrences of columns or measures need to be
+ * replaced in the spec. This takes a given stringified `template`, and will:
  *
  *  1. Encode the supplied _name_ for safe encapsulation.
- *  2. Iterate through known patterns where the supplied placeholder _name_ could be referred to for encodings and expressions and replace them with the
- *      supplied `token` in the supplied `template`.
+ *  2. Iterate through known patterns where the supplied placeholder _name_
+ *      could be referred to for encodings and expressions and replace them
+ *      with the supplied `token` in the supplied `template`.
  *  3. Return the modified _template_.
  *
  * Returns `template` with all `name` occurrences replaced with `token`.
@@ -378,7 +431,8 @@ const replaceExportTemplatePlaceholders = (
 };
 
 /**
- * Generates a suitable `usermeta` object for the current `templateReducer` state and provides suitable defaults if they are missing, so that generated
+ * Generates a suitable `usermeta` object for the current `templateReducer`
+ * state and provides suitable defaults if they are missing, so that generated
  * export templates make sense (as much as possible).
  */
 const resolveExportUserMeta = (): IDenebTemplateMetadata => {
@@ -445,14 +499,18 @@ const resolveTemplatesForProvider = () => {
 };
 
 /**
- * For a supplied (stringified) _template_, RegEx _pattern_ and replacement _token_, perform a global replace on all occurrences and return it.
+ * For a supplied (stringified) _template_, RegEx _pattern_ and replacement
+ * _token_, perform a global replace on all occurrences and return it.
  *
- * `pattern` is a valid RegEx pattern to search template for and replace on (with capture group $2 representing the field).
+ * `pattern` is a valid RegEx pattern to search template for and replace on
+ * (with capture group $2 representing the field).
  *
- * As per notes in `getExportFieldTokenPatterns`, this pattern requires three capture groups in its definition in order to ensure that preceding
- * and trailing patterns used to identify a placeholder are preserved.
+ * As per notes in `getExportFieldTokenPatterns`, this pattern requires three
+ * capture groups in its definition in order to ensure that preceding and
+ * trailing patterns used to identify a placeholder are preserved.
  *
- * Returns processed _template_, with _token_(s) in-place of all valid _pattern_ occurrences.
+ * Returns processed _template_, with _token_(s) in-place of all valid _pattern_
+ * occurrences.
  */
 const replaceTemplateFieldWithToken = (
     template: string,
@@ -465,7 +523,8 @@ const replaceTemplateFieldWithToken = (
     );
 
 /**
- * For a given column or measure (or template placeholder), resolve its type against the corresponding Power BI value descriptor.
+ * For a given column or measure (or template placeholder), resolve its type
+ * against the corresponding Power BI value descriptor.
  */
 const resolveValueDescriptor = (
     type: ValueTypeDescriptor
@@ -485,11 +544,13 @@ const resolveValueDescriptor = (
 };
 
 /**
- * For a given `DataViewMetadataColumn`, and its encoded name produces a new `ITemplateDatasetField` object that can be used for templating purposes.
+ * For a given `DataViewMetadataColumn`, and its encoded name produces a new
+ * `ITemplateDatasetField` object that can be used for templating purposes.
  */
 const resolveVisualMetaToDatasetField = (
     metadata: DataViewMetadataColumn,
-    encodedName: string
+    encodedName: string,
+    isDerived = false
 ): ITemplateDatasetField => {
     return {
         key: metadata.queryName,

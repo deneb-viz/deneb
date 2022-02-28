@@ -66,6 +66,40 @@
                 }
             }
         },
+        "display": {
+            "displayNameKey": "Objects_Display",
+            "descriptionKey": "Objects_Display_Description",
+            "displayName": "Display",
+            "description": "Display description.",
+            "properties": {
+                "viewportHeight": {
+                    "displayNameKey": "Objects_Display_ViewportHeight",
+                    "descriptionKey": "Objects_Display_ViewportHeight_Description",
+                    "displayName": "Viewport Height",
+                    "description": "Viewport Height description.",
+                    "type": { "numeric": true }
+                },
+                "viewportWidth": {
+                    "displayNameKey": "Objects_Display_ViewportWidth",
+                    "descriptionKey": "Objects_Display_ViewportWidth_Description",
+                    "displayName": "Viewport Width",
+                    "description": "Viewport Width description.",
+                    "type": { "numeric": true }
+                },
+                "svgFilter": {
+                    "displayNameKey": "Objects_Display_SVGFilter",
+                    "descriptionKey": "Objects_Display_SVGFilter_Description",
+                    "displayName": "SVG Filter",
+                    "description": "SVG Filter description.",
+                    "type": {
+                        "enumeration": [
+                            { "displayName": "None", "value": "none" },
+                            { "displayName": "Deneb.XKCD", "value": "xkcd" }
+                        ]
+                    }
+                }
+            }
+        },
         "vega": {
             "displayNameKey": "Objects_Vega",
             "descriptionKey": "Objects_Vega_Description",
@@ -151,6 +185,13 @@
                     "descriptionKey": "Objects_Vega_EnableContextMenu_Description",
                     "displayName": "Context Menu",
                     "description": "Context Menu description.",
+                    "type": { "bool": true }
+                },
+                "enableHighlight": {
+                    "displayNameKey": "Objects_Vega_EnableHighlight",
+                    "descriptionKey": "Objects_Vega_EnableHighlight_Description",
+                    "displayName": "Highlight",
+                    "description": "Highlight description.",
                     "type": { "bool": true }
                 },
                 "enableSelection": {
@@ -272,6 +313,23 @@
                 }
             }
         },
+        "performance": {
+            "displayNameKey": "Objects_Performance",
+            "descriptionKey": "Objects_Performance_Description",
+            "displayName": "Performance Options",
+            "description": "Performance Options description",
+            "properties": {
+                "enableResizeRecalc": {
+                    "displayNameKey": "Objects_Performance_EnableResizeRecalc",
+                    "descriptionKey": "Objects_Performance_EnableResizeRecalc_Description",
+                    "displayName": "Recalculate on Resize",
+                    "description": "Recalculate on Resize description",
+                    "type": {
+                        "bool": true
+                    }
+                }
+            }
+        },
         "dataLimit": {
             "displayNameKey": "Objects_DataLimit",
             "descriptionKey": "Objects_DataLimit_Description",
@@ -327,6 +385,7 @@
     ],
     "supportsLandingPage": true,
     "supportsEmptyDataView": false,
+    "supportsHighlight": true,
     "suppressDefaultTitle": true,
     "tooltips": {
         "supportEnhancedTooltips": true,

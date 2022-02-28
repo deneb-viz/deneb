@@ -85,9 +85,10 @@ const handleSetVisualUpdate = (
         state.editorSpec
     );
     const visualViewportCurrent = payload.options.viewport;
-    const visualViewportReport =
-        (visualMode !== 'Editor' && getReportViewport(visualViewportCurrent)) ||
-        state.visualViewportReport;
+    const visualViewportReport = getReportViewport(
+        visualViewportCurrent,
+        payload.settings.display
+    );
     const editorPaneDefaultWidth = getResizablePaneDefaultWidth(
         visualViewportCurrent,
         positionNew

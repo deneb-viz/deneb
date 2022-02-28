@@ -6,10 +6,12 @@
         "fetchMoreData": true,
         "selectionContextMenu": true,
         "selectionDataPoint": true,
+        "selectionCrossHighlight": true,
         "tooltipHandler": true,
         "tooltipResolveNumberFieldFormat": true,
         "useDownloadApi": false,
         "templateExportPreviewImages": false,
+        "fx": false,
         "unitTestCanary": false
     },
     "fluentUiTheme": {
@@ -166,6 +168,7 @@
             "enableContextMenu": true,
             "enableTooltips": true,
             "enableSelection": false,
+            "enableHighlight": false,
             "selectionMaxDataPoints": 50,
             "tooltipDelay": 0,
             "isNewDialogOpen": true
@@ -174,6 +177,9 @@
             "ordinalColorCount": 10,
             "ordinalColorCountMin": 1,
             "ordinalColorCountMax": 100
+        },
+        "performance": {
+            "enableResizeRecalc": false
         }
     },
     "selection": {
@@ -186,6 +192,83 @@
         "defaultSizePercent": 0.4,
         "maxSizePercent": 0.6,
         "collapsedSize": 36
+    },
+    "svgFilters": {
+        "none": {
+            "displayName": "None",
+            "attributes": [],
+            "effects": []
+        },
+        "xkcd": {
+            "displayName": "Deneb.XKCD",
+            "ignoreText": true,
+            "attributes": [
+                {
+                    "name": "filterUnits",
+                    "value": "userSpaceOnUse"
+                },
+                {
+                    "name": "x",
+                    "value": "-5"
+                },
+                {
+                    "name": "y",
+                    "value": "-5"
+                },
+                {
+                    "name": "width",
+                    "value": "100%"
+                },
+                {
+                    "name": "height",
+                    "value": "100%"
+                }
+            ],
+            "effects": [
+                {
+                    "primitive": "feTurbulence",
+                    "attributes": [
+                        {
+                            "name": "type",
+                            "value": "fractalNoise"
+                        },
+                        {
+                            "name": "baseFrequency",
+                            "value": "0.05"
+                        },
+                        {
+                            "name": "result",
+                            "value": "noise"
+                        }
+                    ]
+                },
+                {
+                    "primitive": "feDisplacementMap",
+                    "attributes": [
+                        {
+                            "name": "scale",
+                            "value": "5"
+                        },
+                        {
+                            "name": "xChannelSelector",
+                            "value": "R"
+                        },
+                        {
+                            "name": "yChannelSelector",
+                            "value": "G"
+                        },
+                        {
+                            "name": "in",
+                            "value": "SourceGraphic"
+                        },
+                        {
+                            "name": "in2",
+                            "value": "noise"
+                        }
+                    ]
+                }
+            ]
+        }
     },
     "templates": {
         "metadataVersion": 1,
