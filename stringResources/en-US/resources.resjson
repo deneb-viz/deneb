@@ -37,6 +37,8 @@
     "Objects_Vega_EnableTooltips_Description": "",
     "Objects_Vega_EnableContextMenu": "Resolve Data Points in Context Menu",
     "Objects_Vega_EnableContextMenu_Description": "",
+    "Objects_Vega_EnableHighlight": "Expose Cross-Highlight Values for Measures",
+    "Objects_Vega_EnableHighlight_Description": "",
     "Objects_Vega_EnableSelection": "Cross-Filtering (Selection) of Data Points",
     "Objects_Vega_EnableSelection_Description": "",
     "Objects_Vega_SelectionMaxDataPoints": "Data Point Limit",

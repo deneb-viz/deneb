@@ -9,6 +9,7 @@ import {
     isDataPointEnabled
 } from '../core/interactivity/selection';
 import { isFeatureEnabled } from '../core/utils/features';
+import { isHighlightEnabled } from '../core/interactivity/highlight';
 
 const defaults = getConfig().propertyDefaults.vega,
     config = getConfig().selection;
@@ -26,6 +27,7 @@ export default class VegaSettings extends SettingsBase {
     public enableContextMenu =
         isContextMenuEnabled && defaults.enableContextMenu;
     public enableSelection = isDataPointEnabled && defaults.enableSelection;
+    public enableHighlight = isHighlightEnabled && defaults.enableHighlight;
     public selectionMaxDataPoints = defaults.selectionMaxDataPoints;
     public tooltipDelay = isHandlerEnabled && defaults.tooltipDelay;
     public isNewDialogOpen = defaults.isNewDialogOpen;

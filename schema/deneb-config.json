@@ -169,6 +169,7 @@
                 "enableContextMenu",
                 "enableTooltips",
                 "enableSelection",
+                "enableHighlight",
                 "selectionMaxDataPoints",
                 "tooltipDelay",
                 "isNewDialogOpen"
@@ -200,6 +201,10 @@
                 },
                 "enableSelection": {
                     "description": "Enable data point selection.",
+                    "type": "boolean"
+                },
+                "enableHighlight": {
+                    "description": "Enable data point cross highlight.",
                     "type": "boolean"
                 },
                 "selectionMaxDataPoints": {

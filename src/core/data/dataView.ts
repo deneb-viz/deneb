@@ -10,7 +10,10 @@ import PrimitiveValue = powerbi.PrimitiveValue;
 
 import { isFeatureEnabled } from '../utils/features';
 import { getState } from '../../store';
-import { TDataPointSelectionStatus } from '../interactivity';
+import {
+    TDataPointHighlightComparator,
+    TDataPointSelectionStatus
+} from '../interactivity';
 import { hostServices } from '../services';
 import { IAugmentedMetadataField } from '.';
 
@@ -139,6 +142,25 @@ export const resolveHighlightStatus = (
             return 'off';
         default:
             return 'on';
+    }
+};
+
+/**
+ * For a field, determine its comparator value for highlight purposes.
+ */
+export const resolveHighlightComparator = (
+    fieldValue: PrimitiveValue,
+    comparatorValue: PrimitiveValue
+): TDataPointHighlightComparator => {
+    switch (true) {
+        case fieldValue == comparatorValue:
+            return 'eq';
+        case comparatorValue < fieldValue:
+            return 'lt';
+        case comparatorValue > fieldValue:
+            return 'gt';
+        default:
+            return 'neq';
     }
 };
 

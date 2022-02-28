@@ -6,12 +6,12 @@
         "fetchMoreData": true,
         "selectionContextMenu": true,
         "selectionDataPoint": true,
-        "selectionCrossHighlight": false,
+        "selectionCrossHighlight": true,
         "tooltipHandler": true,
         "tooltipResolveNumberFieldFormat": true,
         "useDownloadApi": false,
         "templateExportPreviewImages": false,
-        "fx": "2022-03-31",
+        "fx": false,
         "unitTestCanary": false
     },
     "fluentUiTheme": {
@@ -168,6 +168,7 @@
             "enableContextMenu": true,
             "enableTooltips": true,
             "enableSelection": false,
+            "enableHighlight": false,
             "selectionMaxDataPoints": 50,
             "tooltipDelay": 0,
             "isNewDialogOpen": true

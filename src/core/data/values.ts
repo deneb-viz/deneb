@@ -1,5 +1,6 @@
 import powerbi from 'powerbi-visuals-api';
 import { isHighlightPropSet } from '../interactivity/highlight';
+import { getVegaSettings } from '../vega';
 import { getHighlightStatus } from './dataView';
 import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 import DataViewValueColumns = powerbi.DataViewValueColumns;
@@ -12,11 +13,14 @@ import PrimitiveValue = powerbi.PrimitiveValue;
 export const getDatasetValueEntries = (
     categories: DataViewCategoryColumn[],
     values: DataViewValueColumns
-) => [
-    ...getCategoryEntries(categories),
-    ...getHighlightEntries(values),
-    ...getValueEntries(values)
-];
+) => {
+    const { enableHighlight } = getVegaSettings();
+    return [
+        ...getCategoryEntries(categories),
+        ...((enableHighlight && getHighlightEntries(values)) || []),
+        ...getValueEntries(values)
+    ];
+};
 
 /**
  * Extract all categorical field value arrays from the data view.
@@ -33,17 +37,26 @@ const getCategoryEntries = (
 const getHighlightEntries = (
     values: DataViewValueColumns
 ): PrimitiveValue[][] =>
-    values?.map((v) =>
+    (values || [])?.map((v) =>
         isHighlightPropSet() && getHighlightStatus(values)
             ? v.highlights
             : v.values
     ) || [];
 
 /**
- * Extract all measure field value arrays from the data view.
+ * Extract all measure field value arrays from the data view. We try to assist
+ * the creator if they haven't explicitly enabled cross-highlighting and aren't
+ * using the cross-filter interaction on the visual by substituting the
+ * highlight values passed in by Power BI
  */
 const getValueEntries = (values: DataViewValueColumns): PrimitiveValue[][] =>
-    values?.map((v) => v.values) || [];
+    (values || [])?.map((v) => {
+        const useHighlights =
+            getHighlightStatus(values) && !isHighlightPropSet();
+        return useHighlights ? v.highlights : v.values;
+    });
 
-// Avoids linting issues (can't seem to disable w/eslint-disable). Can be removed if/when we extend this module
+/** Avoids linting issues (can't seem to disable w/eslint-disable). Can be
+ *  removed if/when we extend this module.
+ */
 export const values = null;

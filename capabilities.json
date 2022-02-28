@@ -187,6 +187,13 @@
                     "description": "Context Menu description.",
                     "type": { "bool": true }
                 },
+                "enableHighlight": {
+                    "displayNameKey": "Objects_Vega_EnableHighlight",
+                    "descriptionKey": "Objects_Vega_EnableHighlight_Description",
+                    "displayName": "Highlight",
+                    "description": "Highlight description.",
+                    "type": { "bool": true }
+                },
                 "enableSelection": {
                     "displayNameKey": "Objects_Vega_EnableSelection",
                     "descriptionKey": "Objects_Vega_EnableSelection_Description",
@@ -378,7 +385,7 @@
     ],
     "supportsLandingPage": true,
     "supportsEmptyDataView": false,
-    "supportsHighlight": false,
+    "supportsHighlight": true,
     "suppressDefaultTitle": true,
     "tooltips": {
         "supportEnhancedTooltips": true,

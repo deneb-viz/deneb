@@ -4,9 +4,8 @@ import { Label } from '@fluentui/react/lib/Label';
 import { Link } from '@fluentui/react/lib/Link';
 import { Stack, IStackTokens } from '@fluentui/react/lib/Stack';
 
-import TooltipCheckbox from './TooltipCheckbox';
 import SelectionCheckbox from './SelectionCheckbox';
-import ContextMenuCheckbox from './ContextMenuCheckbox';
+import InteractivityCheckbox from './InteractivityCheckbox';
 import SelectionMaxDataPoints from './SelectionMaxDataPoints';
 import { i18nValue } from '../../core/ui/i18n';
 import store from '../../store';
@@ -29,8 +28,18 @@ const InteractivitySettings = () => {
         <>
             <Label>{i18nValue('Objects_Vega_Interactivity')}</Label>
             <Stack tokens={stackTokens}>
-                <TooltipCheckbox />
-                <ContextMenuCheckbox />
+                <InteractivityCheckbox
+                    propertyName='enableTooltips'
+                    i18nLabelKey='Objects_Vega_EnableTooltips'
+                />
+                <InteractivityCheckbox
+                    propertyName='enableContextMenu'
+                    i18nLabelKey='Objects_Vega_EnableContextMenu'
+                />
+                <InteractivityCheckbox
+                    propertyName='enableHighlight'
+                    i18nLabelKey='Objects_Vega_EnableHighlight'
+                />
                 <SelectionCheckbox />
             </Stack>
             <Paragraph>

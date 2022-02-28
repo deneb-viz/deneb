@@ -16,6 +16,7 @@ import {
     castPrimitiveValue,
     getHighlightStatus,
     getRowCount,
+    resolveHighlightComparator,
     resolveHighlightStatus
 } from './dataView';
 import {
@@ -26,11 +27,9 @@ import {
 } from './fields';
 import { getDatasetValueEntries } from './values';
 import {
-    TDataPointSelectionStatus,
-    TDataPointHighlightComparator
-} from '../interactivity';
-import {
+    highlightComparatorSuffix,
     highlightFieldSuffix,
+    highlightStatusSuffix,
     isHighlightPropSet
 } from '../interactivity/highlight';
 import {
@@ -73,21 +72,23 @@ const getDataRow = (
             if (f?.column.roles?.dataset) {
                 const rawValue = castPrimitiveValue(f, values[fi][rowIndex]);
                 const fieldName = getEncodedFieldName(f.column.displayName);
-                const fieldNameHighlight = `${fieldName}${highlightFieldSuffix}`;
-                const rawValueOriginal: PrimitiveValue =
-                    row[fieldNameHighlight];
+                const fieldHighlight = `${fieldName}${highlightFieldSuffix}`;
+                const fieldHighlightStatus = `${fieldName}${highlightStatusSuffix}`;
+                const fieldHighlightComparator = `${fieldName}${highlightComparatorSuffix}`;
+                const rawValueOriginal: PrimitiveValue = row[fieldHighlight];
                 const shouldHighlight =
                     isHighlightPropSet() && f.source === 'values';
                 row[fieldName] = rawValue;
                 if (shouldHighlight) {
-                    const highlightStatus: TDataPointSelectionStatus =
-                        resolveHighlightStatus(
-                            hasHighlights,
-                            rawValue,
-                            rawValueOriginal
-                        );
-                    // This still needs to be formalised
-                    row[`${fieldNameHighlight}_status`] = highlightStatus;
+                    row[fieldHighlightStatus] = resolveHighlightStatus(
+                        hasHighlights,
+                        rawValue,
+                        rawValueOriginal
+                    );
+                    row[fieldHighlightComparator] = resolveHighlightComparator(
+                        rawValue,
+                        rawValueOriginal
+                    );
                 }
             }
             return row;
