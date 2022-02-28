@@ -69,6 +69,8 @@ const createFromTemplate = (
     const jsonSpec = getReplacedTemplate(template);
     const jsonConfig = getJsonAsIndentedString(template.config);
     const interactivity = getInteractivityPropsFromTemplate(template);
+    const specProvider: TSpecProvider =
+        provider || template?.usermeta?.['deneb']?.['provider'];
     const { renewEditorFieldsInUse } = getState();
     updateObjectProperties(
         resolveObjectProperties([
@@ -81,7 +83,7 @@ const createFromTemplate = (
                         { name: 'jsonSpec', value: jsonSpec },
                         { name: 'jsonConfig', value: jsonConfig },
                         { name: 'isNewDialogOpen', value: false },
-                        getProviderVersionProperty(provider)
+                        getProviderVersionProperty(specProvider)
                     ],
                     ...resolveInteractivityProps(interactivity)
                 ]
