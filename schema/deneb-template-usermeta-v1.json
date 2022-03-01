@@ -64,7 +64,7 @@
             "type": "object"
         },
         "ITemplateDatasetField": {
-            "additionalProperties": false,
+            "description": "Definitions for individual fields within the dataset.",
             "properties": {
                 "description": {
                     "description": "Optional assistive text to display to the end-user when adding fields to the template.",

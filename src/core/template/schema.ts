@@ -80,7 +80,7 @@ export interface IDenebUserMeta {
 }
 
 /**
- * @additionalProperties false
+ * Definitions for individual fields within the dataset.
  */
 export interface ITemplateDatasetField {
     /**
