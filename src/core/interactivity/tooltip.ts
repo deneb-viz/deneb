@@ -158,22 +158,22 @@ const resolveTooltipContent =
     (handler: any, event: MouseEvent, item: any, value: any) => {
         const coordinates = resolveCoordinates(event);
         if (item && item.tooltip) {
-            const datum = resolveDataFromItem(item),
-                tooltip = { ...item.tooltip },
-                autoFormatFields = getFieldsEligibleForAutoFormat(tooltip),
-                dataItems = extractTooltipDataItemsFromObject(
-                    tooltip,
-                    autoFormatFields
-                ),
-                identities = getSelectionIdentitiesFromData(datum),
-                { tooltipDelay } = getVegaSettings(),
-                waitFor = (event.ctrlKey && tooltipDelay) || 0,
-                options = {
-                    coordinates,
-                    dataItems,
-                    isTouchEvent,
-                    identities
-                };
+            const datum = resolveDataFromItem(item);
+            const tooltip = resolveTooltipItem(item.tooltip);
+            const autoFormatFields = getFieldsEligibleForAutoFormat(tooltip);
+            const dataItems = extractTooltipDataItemsFromObject(
+                tooltip,
+                autoFormatFields
+            );
+            const identities = getSelectionIdentitiesFromData(datum);
+            const { tooltipDelay } = getVegaSettings();
+            const waitFor = (event.ctrlKey && tooltipDelay) || 0;
+            const options = {
+                coordinates,
+                dataItems,
+                isTouchEvent,
+                identities
+            };
             switch (event.type) {
                 case 'mouseover':
                 case 'mousemove': {
@@ -188,3 +188,16 @@ const resolveTooltipContent =
             hideTooltip();
         }
     };
+
+/**
+ * Because Power BI tooltips require key/value pairs, this processes scalar
+ * values we receive from Vega signals into something that can work.
+ */
+const resolveTooltipItem = (tooltip: any) => {
+    switch (true) {
+        case typeof tooltip !== 'object':
+            return { ' ': `${tooltip}` };
+        default:
+            return { ...tooltip };
+    }
+};
