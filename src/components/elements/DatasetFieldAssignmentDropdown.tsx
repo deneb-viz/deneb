@@ -24,6 +24,11 @@ interface IDatasetFieldAssignmentDropdownProps {
     dataset: ITemplateDatasetField[];
 }
 
+interface IDropdownOptionDatum {
+    placeholder: ITemplateDatasetField;
+    icon: string;
+}
+
 const templatePickerDropdownStyles: Partial<IDropdownStyles> = {
     dropdown: { width: 300 }
 };
@@ -31,7 +36,7 @@ const templatePickerDropdownStyles: Partial<IDropdownStyles> = {
 const getDropDownOptions = (
     datasetField: ITemplateDatasetField,
     fields: IVisualDatasetFields
-): IDropdownOption[] =>
+): IDropdownOption<IDropdownOptionDatum>[] =>
     reduce(
         fields,
         (result, value, key) => {
@@ -47,59 +52,68 @@ const getDropDownOptions = (
         [] as IDropdownOption[]
     );
 
+const onRenderOption = (option: IDropdownOption) => {
+    return (
+        <div>
+            {option.data && option.data.icon && (
+                <Icon
+                    styles={templateTypeIconOptionStyles}
+                    iconName={option.data.icon}
+                    aria-hidden='true'
+                    title={option.data.placeholder.description}
+                />
+            )}
+            <span>{option.text}</span>
+        </div>
+    );
+};
+
 const DatasetFieldAssignmentDropdown: React.FC<IDatasetFieldAssignmentDropdownProps> =
     ({ datasetField, dialogType }) => {
-        const [selectedItem, setSelectedItem] =
-            React.useState<IDropdownOption>(null);
+        const [selectedItem, setSelectedItem] = React.useState<string>(null);
         const { dataset, updateTemplatePlaceholder, updateEditorFieldMapping } =
             store((state) => state);
-        const { fields } = dataset;
+        const options = () =>
+            getDropDownOptions(
+                datasetField,
+                getDatasetFieldsInclusive(dataset.fields)
+            );
+        const placeholderText = getPlaceholderDropdownText(datasetField);
+        const resolveSelectedItem = () => {
+            const intendedItem = selectedItem
+                ? selectedItem
+                : dataset.fields[datasetField.name]?.queryName || null;
+            intendedItem !== selectedItem && setSelectedItem(intendedItem);
+        };
         const onChange = (
             event: React.FormEvent<HTMLDivElement>,
             item: IDropdownOption
         ): void => {
-            setSelectedItem(item);
-            const objectName = item.text;
+            setSelectedItem(item.key.toString());
+        };
+        resolveSelectedItem();
+        useEffect(() => {
+            const option = options().find((o) => o.key === selectedItem);
             switch (dialogType) {
                 case 'new':
                     return updateTemplatePlaceholder({
-                        key: item.data.placeholder.key,
-                        objectName
+                        key: option?.data?.placeholder?.key,
+                        objectName: option?.text
                     });
                 case 'mapping':
                     return updateEditorFieldMapping({
                         key: datasetField.name,
-                        objectName
+                        objectName: option?.text
                     });
                 default:
                     return null;
             }
-        };
-        const options = () =>
-            getDropDownOptions(datasetField, getDatasetFieldsInclusive(fields));
-        const onRenderOption = (option: IDropdownOption) => {
-            return (
-                <div>
-                    {option.data && option.data.icon && (
-                        <Icon
-                            styles={templateTypeIconOptionStyles}
-                            iconName={option.data.icon}
-                            aria-hidden='true'
-                            title={option.data.placeholder.description}
-                        />
-                    )}
-                    <span>{option.text}</span>
-                </div>
-            );
-        };
-        const placeholderText = getPlaceholderDropdownText(datasetField);
-        const selectedKey = selectedItem
-            ? selectedItem.key
-            : dataset.fields[datasetField.name]?.queryName || null;
+        }, [selectedItem]);
+
         return (
             <Dropdown
                 ariaLabel={datasetField.name}
-                selectedKey={selectedKey}
+                selectedKey={selectedItem}
                 onChange={onChange}
                 placeholder={placeholderText}
                 options={options()}
