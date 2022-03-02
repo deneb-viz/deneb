@@ -549,8 +549,7 @@ const resolveValueDescriptor = (
  */
 const resolveVisualMetaToDatasetField = (
     metadata: DataViewMetadataColumn,
-    encodedName: string,
-    isDerived = false
+    encodedName: string
 ): ITemplateDatasetField => {
     return {
         key: metadata.queryName,

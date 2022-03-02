@@ -55,9 +55,10 @@ export const getDatasetFieldEntries = (
 export const getDatasetFields = (
     categories: DataViewCategoryColumn[],
     values: DataViewValueColumns
-): IVisualDatasetFields =>
-    reduce(
-        getDatasetFieldEntries(categories, values),
+): IVisualDatasetFields => {
+    const fields = getDatasetFieldEntries(categories, values);
+    return reduce(
+        fields,
         (result, c) => {
             const encodedName = getEncodedFieldName(c.column.displayName);
             const isExcludedFromTemplate = c.source === 'highlights';
@@ -70,17 +71,14 @@ export const getDatasetFields = (
                     source: <TDatasetValueSource>c.source,
                     templateMetadata: isExcludedFromTemplate
                         ? undefined
-                        : resolveVisualMetaToDatasetField(
-                              c.column,
-                              encodedName,
-                              isExcludedFromTemplate
-                          )
+                        : resolveVisualMetaToDatasetField(c.column, encodedName)
                 }
             };
             return result;
         },
         <IVisualDatasetFields>{}
     );
+};
 
 /**
  * Get a reduced set of fields based on an array of key names from Deneb's
