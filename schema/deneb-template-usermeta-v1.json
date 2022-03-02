@@ -163,6 +163,10 @@
                     "minimum": 1,
                     "type": "number"
                 },
+                "highlight": {
+                    "description": "Enable highlighting of measure values from other visuals.",
+                    "type": "boolean"
+                },
                 "selection": {
                     "description": "Enable cross-filtering from data point click events.",
                     "type": "boolean"

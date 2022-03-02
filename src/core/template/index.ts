@@ -60,7 +60,11 @@ import { determineProviderFromSpec, TSpecProvider } from '../vega';
 import { isFeatureEnabled } from '../utils/features';
 import { IVisualDatasetFields } from '../data';
 import { ITemplateImportPayload } from '../../store/template';
-import { highlightFieldSuffix } from '../interactivity/highlight';
+import {
+    highlightComparatorSuffix,
+    highlightFieldSuffix,
+    highlightStatusSuffix
+} from '../interactivity/highlight';
 
 /**
  * Used to indicate which part of the export dialog has focus.
@@ -139,24 +143,24 @@ const getEscapedReplacerPattern = (value: string) =>
  * Examples of how each entry would get templated for a given field name
  * (in this case `Mean Temperature`):
  *
- * "()(Mean Temperature)(_highlight)?"(?!\s*:)
- * \.()(Mean Temperature)(_highlight)?
- * '()(Mean Temperature)(_highlight)?'
+ * "()(Mean Temperature)(__highlight)?"(?!\s*:)
+ * \.()(Mean Temperature)(__highlight)?
+ * '()(Mean Temperature)(__highlight)?'
  *
  */
 const getExportFieldTokenPatterns = (name: string): ITemplatePattern[] => {
     const namePattern = getEscapedReplacerPattern(name);
     return [
         {
-            match: `"()(${namePattern})(${highlightFieldSuffix})?"(?!\\s*:)`,
+            match: `"()(${namePattern})(${getHighlightRegexAlternation()})?"(?!\\s*:)`,
             replacer: '"$1$2$3"'
         },
         {
-            match: `\\.()(${namePattern})(${highlightFieldSuffix})?`,
+            match: `\\.()(${namePattern})(${getHighlightRegexAlternation()})?`,
             replacer: `['$1$2$3']`
         },
         {
-            match: `(')(${namePattern})((?=${highlightFieldSuffix}')?)`,
+            match: `(')(${namePattern})((?=${getHighlightRegexAlternation()}')?)`,
             replacer: '$1$2$3'
         }
     ];
@@ -198,6 +202,9 @@ const getExportTemplate = () => {
     );
     return getJsonAsIndentedString(outSpec);
 };
+
+const getHighlightRegexAlternation = () =>
+    `${highlightFieldSuffix}|${highlightStatusSuffix}|${highlightComparatorSuffix}`;
 
 /**
  * Ensure that usermeta is in its final, publishable state after all
@@ -455,6 +462,7 @@ const resolveExportUserMeta = (): IDenebTemplateMetadata => {
             tooltip: vega.enableTooltips,
             contextMenu: vega.enableContextMenu,
             selection: vega.enableSelection,
+            highlight: vega.enableHighlight,
             dataPointLimit: vega.selectionMaxDataPoints
         },
         information: {
