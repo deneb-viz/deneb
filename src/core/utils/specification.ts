@@ -249,6 +249,7 @@ const resolveInteractivityProps = (
     (interactivity && [
         { name: 'enableTooltips', value: interactivity.tooltip },
         { name: 'enableContextMenu', value: interactivity.contextMenu },
+        { name: 'enableHighlight', value: interactivity.highlight || false },
         { name: 'enableSelection', value: interactivity.selection },
         { name: 'selectionMaxDataPoints', value: interactivity.dataPointLimit }
     ]) ||

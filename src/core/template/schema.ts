@@ -48,6 +48,10 @@ export interface ITemplateInteractivityOptions {
      */
     selection: boolean;
     /**
+     * Enable highlighting of measure values from other visuals.
+     */
+    highlight?: boolean;
+    /**
      * Maximum number of data points to allow when selecting.
      * @minimum 1
      * @maximum 250
