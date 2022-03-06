@@ -22,7 +22,7 @@
         "@babel/preset-env": "^7.15.0",
         "@babel/runtime": "^7.14.8",
         "@babel/runtime-corejs3": "^7.14.9",
-        "@fluentui/react": "^8.14.12",
+        "@fluentui/react": "^8.57.1",
         "@types/ace": "^0.0.44",
         "@types/d3": "^7.1.0",
         "@types/jest": "^27.0.2",
