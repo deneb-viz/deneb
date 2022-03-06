@@ -68,10 +68,40 @@ export const vBarSimple: Spec = {
                         scale: 'yscale',
                         band: 1
                     },
+                    opacity: { value: 0.3 }
+                }
+            }
+        },
+        {
+            type: 'rect',
+            from: {
+                data: 'dataset'
+            },
+            encode: {
+                enter: {
+                    tooltip: {
+                        signal: 'datum'
+                    },
+                    x: {
+                        scale: 'xscale',
+                        field: '__1____highlight'
+                    },
+                    x2: {
+                        scale: 'xscale',
+                        value: 0
+                    },
+                    y: {
+                        scale: 'yscale',
+                        field: '__0__'
+                    },
+                    height: {
+                        scale: 'yscale',
+                        band: 1
+                    },
                     opacity: [
                         {
                             test: "datum.__selected__ == 'off'",
-                            value: 0.3
+                            value: 0
                         }
                     ]
                 }
@@ -82,7 +112,7 @@ export const vBarSimple: Spec = {
         information: {
             name: 'Simple Bar Chart',
             description:
-                'A simple, single-view bar chart, with a column on the Y-Axis and a measure on the X-Axis. Also enabled for tooltips and cross-filtering.',
+                'A simple, single-view bar chart, with a column on the Y-Axis and a measure on the X-Axis. Also enabled for tooltips, cross-filtering and cross-highlight.',
             author: authorInfo,
             uuid: '47577168-2e0c-42de-8e27-cb33071fae43',
             generated: '2021-03-26T00:00:00.000Z',
@@ -110,6 +140,7 @@ export const vBarSimple: Spec = {
         interactivity: {
             tooltip: true,
             contextMenu: true,
+            highlight: true,
             selection: true,
             dataPointLimit:
                 getConfig().propertyDefaults.vega.selectionMaxDataPoints

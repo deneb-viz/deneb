@@ -7,35 +7,56 @@ export const vlBarSimple: TopLevelSpec = {
     $schema: vegaLiteProviderInfo,
     data: vegaDataModelRef(),
     config: {},
-    mark: {
-        type: 'bar',
-        tooltip: true
-    },
+    layer: [
+        {
+            mark: {
+                type: 'bar',
+                opacity: 0.3,
+                tooltip: true
+            },
+            encoding: {
+                x: {
+                    field: '__1__'
+                }
+            }
+        },
+        {
+            mark: {
+                type: 'bar',
+                tooltip: true
+            },
+            encoding: {
+                x: {
+                    field: '__1____highlight'
+                },
+                opacity: {
+                    condition: {
+                        test: {
+                            field: '__selected__',
+                            equal: 'off'
+                        },
+                        value: 0
+                    },
+                    value: 1
+                }
+            }
+        }
+    ],
     encoding: {
         y: {
             field: '__0__',
             type: 'nominal'
         },
         x: {
-            field: '__1__',
-            type: 'quantitative'
-        },
-        opacity: {
-            condition: {
-                test: {
-                    field: '__selected__',
-                    equal: 'off'
-                },
-                value: 0.3
-            },
-            value: 1
+            type: 'quantitative',
+            axis: { title: '__1__' }
         }
     },
     usermeta: {
         information: {
             name: 'Simple Bar Chart',
             description:
-                'A simple, single-view bar chart, with a column on the Y-Axis and a measure on the X-Axis. Also enabled for tooltips and cross-filtering.',
+                'A simple, single-view bar chart, with a column on the Y-Axis and a measure on the X-Axis. Also enabled for tooltips, cross-filtering and cross-highlight.',
             author: authorInfo,
             uuid: 'ca5fe45d-6b40-4638-baf8-e6c33fdf1d59',
             generated: '2021-03-26T00:00:00.000Z',
@@ -63,6 +84,7 @@ export const vlBarSimple: TopLevelSpec = {
         interactivity: {
             tooltip: true,
             contextMenu: true,
+            highlight: true,
             selection: true,
             dataPointLimit:
                 getConfig().propertyDefaults.vega.selectionMaxDataPoints
