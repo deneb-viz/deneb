@@ -25,6 +25,6 @@ export const isInteractivityReservedWord = (word: string) =>
  *For the supplied event, returns an [x, y] array of mouse coordinates.
  */
 export const resolveCoordinates = (event: MouseEvent): [number, number] => [
-    event.clientX,
-    event.clientY
+    event?.clientX,
+    event?.clientY
 ];
