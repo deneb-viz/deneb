@@ -312,12 +312,9 @@ const handleContextMenuEvent = (event: ScenegraphEvent, item: Item) => {
 const handleDataPointEvent = (event: ScenegraphEvent, item: Item) => {
     event.stopPropagation();
     if (isDataPointPropSet()) {
-        const { selectionManager } = hostServices;
         const mouseEvent: MouseEvent = <MouseEvent>window.event;
         const data = resolveDataFromItem(item);
         const identities = getSelectionIdentitiesFromData(data);
-        const { updateDatasetSelectors } = getState();
-
         mouseEvent && mouseEvent.preventDefault();
         hideTooltip();
         switch (true) {
