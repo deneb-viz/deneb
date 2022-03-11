@@ -1,5 +1,6 @@
 import powerbi from 'powerbi-visuals-api';
 import { getState } from '../../store';
+import { applySelection } from '../interactivity/selection';
 import { TLocale } from '../ui/i18n';
 import { isFeatureEnabled } from '../utils/features';
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
@@ -82,7 +83,7 @@ export class HostServices {
 const getNewSelectionManager = (host: IVisualHost) => {
     const selectionManager = host.createSelectionManager();
     selectionManager.registerOnSelectCallback((ids: ISelectionId[]) => {
-        getState().updateDatasetSelectors(ids);
+        applySelection(ids);
     });
     return selectionManager;
 };

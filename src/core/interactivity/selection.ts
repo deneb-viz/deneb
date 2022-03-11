@@ -1,4 +1,5 @@
 export {
+    applySelection,
     bindInteractivityEvents,
     clearSelection,
     createSelectionIds,
@@ -37,11 +38,7 @@ import { getCategoryColumns } from '../data/dataView';
 import { TDataPointSelectionStatus } from '.';
 import { hideTooltip } from './tooltip';
 import { clearCatcherSelector } from '../ui/dom';
-import {
-    IVisualDatasetField,
-    IVisualDatasetFields,
-    IVisualDatasetValueRow
-} from '../data';
+import { IVisualDatasetFields, IVisualDatasetValueRow } from '../data';
 import { getDatasetFieldsBySelectionKeys } from '../data/fields';
 
 /**
@@ -51,6 +48,20 @@ import { getDatasetFieldsBySelectionKeys } from '../data/fields';
 const allDataHasIdentities = (data: IVegaViewDatum[]) =>
     data?.filter((d) => d?.hasOwnProperty('identityIndex'))?.length ===
     data?.length;
+
+/**
+ * For the supplied list of identities, ensure that the selection manager is
+ * invoked, before synchronising the dataset for correct selection status.
+ */
+const applySelection = (identities: ISelectionId[]) => {
+    const { selectionManager } = hostServices;
+    const { updateDatasetSelectors } = getState();
+    selectionManager.select(identities, isMultiSelect()).then(() => {
+        updateDatasetSelectors(
+            <ISelectionId[]>selectionManager.getSelectionIds()
+        );
+    });
+};
 
 /**
  * Bind the interactivity events to the Vega view, based on feature switches
@@ -86,7 +97,10 @@ const bindDataPointEvents = (view: View) => {
  * Handles clearing of visual data point selection state.
  */
 const clearSelection = () => {
-    hostServices.selectionManager.clear();
+    const { updateDatasetSelectors } = getState();
+    hostServices.selectionManager
+        .clear()
+        .then(() => updateDatasetSelectors([]));
 };
 
 /**
@@ -298,31 +312,25 @@ const handleContextMenuEvent = (event: ScenegraphEvent, item: Item) => {
 const handleDataPointEvent = (event: ScenegraphEvent, item: Item) => {
     event.stopPropagation();
     if (isDataPointPropSet()) {
-        const { selectionManager } = hostServices,
-            mouseEvent: MouseEvent = <MouseEvent>window.event,
-            data = resolveDataFromItem(item),
-            identities = getSelectionIdentitiesFromData(data),
-            selection = resolveSelectedIdentities(identities);
+        const { selectionManager } = hostServices;
+        const mouseEvent: MouseEvent = <MouseEvent>window.event;
+        const data = resolveDataFromItem(item);
+        const identities = getSelectionIdentitiesFromData(data);
         const { updateDatasetSelectors } = getState();
+
         mouseEvent && mouseEvent.preventDefault();
         hideTooltip();
         switch (true) {
-            case isSelectionLimitExceeded(selection): {
+            case isSelectionLimitExceeded(identities): {
                 dispatchSelectionAborted(true);
                 return;
             }
-            case selection.length > 0: {
-                selectionManager.select(selection);
-                updateDatasetSelectors(
-                    <ISelectionId[]>selectionManager.getSelectionIds()
-                );
+            case identities?.length > 0: {
+                applySelection(identities);
                 return;
             }
             default: {
                 clearSelection();
-                updateDatasetSelectors(
-                    <ISelectionId[]>selectionManager.getSelectionIds()
-                );
                 return;
             }
         }
@@ -378,34 +386,7 @@ const isSelectionLimitExceeded = (identities: ISelectionId[]) => {
     return identities?.length > selectionMaxDataPoints || false;
 };
 
-/**
- * For a given array of `ISelectionId`s, remove any that exist in a comparator
- * (effectively toggling their state).
- */
-const resolveIdentityIntersection = (
-    source: ISelectionId[],
-    comparator: ISelectionId[]
-) => source.slice().filter((id) => !comparator.find((sid) => sid.equals(id)));
-
-/**
- * Resolve which identities should be passed to the selection manager, based on
- * whether the user is holding the `ctrl` key (multi-select), and whether
- * existing selectors should be toggled on or off base don their presence in the
- * existing selection and the selection currently clicked on.
- */
-const resolveSelectedIdentities = (identities: ISelectionId[]) => {
-    if (!identities) {
-        return [];
-    }
-    const mouseEvent: MouseEvent = <MouseEvent>window.event,
-        current = <ISelectionId[]>(
-            hostServices.selectionManager.getSelectionIds()
-        ),
-        merged =
-            (mouseEvent.ctrlKey && [
-                ...resolveIdentityIntersection(identities, current),
-                ...resolveIdentityIntersection(current, identities)
-            ]) ||
-            identities;
-    return (isEqual(identities, current) && []) || merged;
+const isMultiSelect = () => {
+    const mouseEvent: MouseEvent = <MouseEvent>window.event;
+    return (mouseEvent.ctrlKey && true) || false;
 };
