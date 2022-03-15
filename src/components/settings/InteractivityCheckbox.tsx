@@ -6,24 +6,32 @@ import { updateBooleanProperty } from '../../core/ui/commands';
 import { isHandlerEnabled } from '../../core/interactivity/tooltip';
 import { i18nValue } from '../../core/ui/i18n';
 
-const TooltipCheckbox = () => {
+interface IInteractivityCheckboxProps {
+    propertyName: string;
+    i18nLabelKey: string;
+}
+
+const InteractivityCheckbox: React.FC<IInteractivityCheckboxProps> = ({
+    propertyName,
+    i18nLabelKey
+}) => {
     const { vega } = store((state) => state.visualSettings),
-        handleTooltips = React.useCallback(
+        handleToggle = React.useCallback(
             (ev: React.FormEvent<HTMLElement>, checked: boolean): void => {
                 const value = !!checked;
-                updateBooleanProperty('enableTooltips', value);
+                updateBooleanProperty(propertyName, value);
             },
             []
         );
     return (
         isHandlerEnabled && (
             <Checkbox
-                label={i18nValue('Objects_Vega_EnableTooltips')}
-                checked={vega.enableTooltips}
-                onChange={handleTooltips}
+                label={i18nValue(i18nLabelKey)}
+                checked={vega[propertyName]}
+                onChange={handleToggle}
             />
         )
     );
 };
 
-export default TooltipCheckbox;
+export default InteractivityCheckbox;

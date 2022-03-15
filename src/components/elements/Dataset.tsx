@@ -13,11 +13,11 @@ import {
 import { ITemplateDatasetField } from '../../core/template/schema';
 import DataTypeIcon from './DataTypeIcon';
 import CappedTextField from './CappedTextField';
+import { getDataset } from '../../core/data/dataset';
 import {
-    getDataset,
-    getTemplateFieldsFromMetadata,
-    lookupMetadataColumn
-} from '../../core/data/dataset';
+    getDatasetFieldByTemplateKey,
+    getDatasetTemplateFields
+} from '../../core/data/fields';
 import { i18nValue } from '../../core/ui/i18n';
 import DataFieldLabel from './DataFieldLabel';
 import DatasetFieldAssignmentDropdown from './DatasetFieldAssignmentDropdown';
@@ -146,7 +146,8 @@ const renderDatasetItem = (
     index: number,
     column: IColumn
 ) => {
-    const displayName = lookupMetadataColumn(item.key)?.displayName || '';
+    const displayName =
+        getDatasetFieldByTemplateKey(item.key)?.displayName || '';
     const { editorFieldsInUse } = getState();
     switch (column.key) {
         case 'type':
@@ -157,13 +158,13 @@ const renderDatasetItem = (
             return getAssignmentField(
                 item,
                 'new',
-                getTemplateFieldsFromMetadata(getDataset().metadata)
+                getDatasetTemplateFields(getDataset().fields)
             );
         case 'map_field_assignment':
             return getAssignmentField(
                 item,
                 'mapping',
-                getTemplateFieldsFromMetadata(editorFieldsInUse)
+                getDatasetTemplateFields(editorFieldsInUse)
             );
         case 'export_name':
             return getExportNameField(item, index);

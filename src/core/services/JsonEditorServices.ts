@@ -21,13 +21,14 @@ import JSONEditor from 'jsoneditor/dist/jsoneditor-minimalist';
 import debounce from 'lodash/debounce';
 
 import { getConfig } from '../utils/config';
-import { getDataset, ITableColumnMetadata } from '../data/dataset';
+import { getDataset } from '../data/dataset';
 import { hasLiveSpecChanged, persist } from '../utils/specification';
 import { getState } from '../../store';
 import { isDialogOpen } from '../ui/modal';
 import { i18nValue } from '../ui/i18n';
 import { getBaseValidator } from '../utils/json';
 import { getEditorSchema, getVegaSettings, TSpecProvider } from '../vega';
+import { IVisualDatasetField } from '../data';
 
 class JsonEditorServices implements IVisualEditor {
     role: TEditorRole;
@@ -161,16 +162,16 @@ const getAceEditor = (jsonEditor: JSONEditor): Editor =>
  * Values data role and returns them as a valid Ace `Completer`.
  */
 const getCompleters = (): Completer => {
-    const { metadata } = getDataset();
+    const { fields } = getDataset();
     let tokens = [];
     // Tokens for columns and measures
-    Object.entries(metadata).forEach(([key, value], i) => {
+    Object.entries(fields).forEach(([key, value], i) => {
         tokens.push({
             name: `${key}`,
             value: `${key}`,
             caption: `${key}`,
-            meta: resolveCompleterMeta(metadata[`${key}`]),
-            score: resolveCompleterScore(metadata[`${key}`], i)
+            meta: resolveCompleterMeta(fields[`${key}`]),
+            score: resolveCompleterScore(fields[`${key}`], i)
         });
     });
     return {
@@ -224,7 +225,7 @@ const handleTextEntry = () => {
 /**
  * For any data-based completers in the editor, provide a qualifier denoting whether it's a column, measure or something else.
  */
-const resolveCompleterMeta = (field: ITableColumnMetadata) => {
+const resolveCompleterMeta = (field: IVisualDatasetField) => {
     switch (true) {
         case field.isMeasure: {
             return i18nValue('Completer_Cap_Measure');
@@ -238,7 +239,7 @@ const resolveCompleterMeta = (field: ITableColumnMetadata) => {
 /**
  * Applies an order of precedence for an object in the editor's auto-completion.
  */
-const resolveCompleterScore = (field: ITableColumnMetadata, index: number) => {
+const resolveCompleterScore = (field: IVisualDatasetField, index: number) => {
     switch (true) {
         case field.isMeasure:
         case field.isColumn: {

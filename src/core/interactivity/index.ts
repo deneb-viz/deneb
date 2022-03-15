@@ -1,32 +1,30 @@
 export * as selection from './selection';
 export * as tooltip from './tooltip';
-export {
-    interactivityReservedWords,
-    isInteractivityReservedWord,
-    resolveCoordinates,
-    TDataPointSelectionStatus
-};
 
 /**
- * Ternary flag for data points, in order to allow us to format them in specific ways.
+ * Interactivity flags for data points, in order to allow us to format them in
+ * specific ways.
  */
-type TDataPointSelectionStatus = 'off' | 'neutral' | 'on';
+export type TDataPointSelectionStatus = 'off' | 'neutral' | 'on';
+export type TDataPointHighlightComparator = 'lt' | 'eq' | 'gt' | 'neq';
 
 /**
- * Array of reserved keywords used to handle selection IDs from the visual's default data view.
+ * Array of reserved keywords used to handle selection IDs from the visual's
+ * default data view.
  */
-const interactivityReservedWords = ['__identity__', '__key__'];
+export const interactivityReservedWords = ['__identity__', '__key__'];
 
 /**
- * Help method to determine if a supplied key (string) is reserved for interactivity purposes.
+ * Helper method to determine if a supplied key (string) is reserved for
+ * interactivity purposes.
  */
-const isInteractivityReservedWord = (word: string) =>
+export const isInteractivityReservedWord = (word: string) =>
     interactivityReservedWords.indexOf(word) > -1;
 
 /**
  *For the supplied event, returns an [x, y] array of mouse coordinates.
  */
-const resolveCoordinates = (event: MouseEvent): [number, number] => [
-    event.clientX,
-    event.clientY
+export const resolveCoordinates = (event: MouseEvent): [number, number] => [
+    event?.clientX,
+    event?.clientY
 ];

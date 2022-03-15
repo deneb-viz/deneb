@@ -1,5 +1,5 @@
 import { getState } from '../../store';
-import { getVegaSettings, TSpecProvider } from '../vega';
+import { getVegaProvider, getVegaSettings, TSpecProvider } from '../vega';
 import { getConfig, getVisualMetadata, providerVersions } from './config';
 import { resolveObjectProperties, updateObjectProperties } from './properties';
 import { isLegacySpec } from './specification';
@@ -90,8 +90,7 @@ export const handlePropertyMigration = () => {
     switch (true) {
         // 1.0 > greater
         case isLegacySpec(): {
-            const provider = <TSpecProvider>getVegaSettings().provider;
-            migrateV1_0toV1_1(provider);
+            migrateV1_0toV1_1(getVegaProvider());
             break;
         }
         // general change

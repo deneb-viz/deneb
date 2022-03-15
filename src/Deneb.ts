@@ -27,7 +27,6 @@ import VisualSettings from './properties/VisualSettings';
 import { getState } from './store';
 import {
     canFetchMore,
-    getMappedDataset,
     handleDataFetch,
     validateDataViewMapping,
     validateDataViewRoles
@@ -36,10 +35,10 @@ import { theme } from './core/ui/fluent';
 import { parseActiveSpec } from './core/utils/specification';
 import { fillPatternServices, hostServices } from './core/services';
 import { initializeIcons } from './core/ui/fluent';
-import { getDataset, getTemplateFieldsFromMetadata } from './core/data/dataset';
+import { getDataset, getMappedDataset } from './core/data/dataset';
 import { handlePropertyMigration } from './core/utils/versioning';
-
-const owner = 'Visual';
+import { resolveReportViewport } from './core/ui/dom';
+import { getDatasetTemplateFields } from './core/data/fields';
 
 export class Deneb implements IVisual {
     private settings: VisualSettings;
@@ -83,6 +82,15 @@ export class Deneb implements IVisual {
                 options && options.dataViews && options.dataViews[0]
             );
 
+            // No volatile operations occur during a resize event, and the DOM/Vega view takes care of handling any
+            // responsiveness for anything that will change. No additional computations are needed, so we can save a few
+            // cycles.
+            if (
+                options.type === VisualUpdateType.Resize &&
+                !this.settings.performance.enableResizeRecalc
+            )
+                return;
+
             // Handle the update options and dispatch to store as needed
             this.resolveUpdateOptions(options);
             return;
@@ -105,6 +113,26 @@ export class Deneb implements IVisual {
             updateDatasetViewFlags,
             updateDatasetViewInvalid
         } = getState();
+
+        // Manage persistent viewport sizing for view vs. editor
+        switch (true) {
+            case options.type === VisualUpdateType.All:
+            case options.type === VisualUpdateType.Data:
+            /**
+             * This cooercion is needed due to a bug in the API w/ `VisualUpdateType.ResizeEnd`.
+             * I've submitted a PR for a fix: https://github.com/microsoft/powerbi-visuals-api/pull/38
+             */
+            case options.type.toString() === '36': {
+                resolveReportViewport(
+                    options.viewport,
+                    options.viewMode,
+                    options.editMode,
+                    settings.display
+                );
+            }
+            default: {
+            }
+        }
 
         // Provide intial update options to store
         setVisualUpdate({
@@ -161,7 +189,7 @@ export class Deneb implements IVisual {
                         )
                     });
                     syncTemplateExportDataset(
-                        getTemplateFieldsFromMetadata(getDataset().metadata)
+                        getDatasetTemplateFields(getDataset().fields)
                     );
                 }
                 break;
