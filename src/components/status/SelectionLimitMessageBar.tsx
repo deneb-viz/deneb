@@ -1,16 +1,17 @@
 import React from 'react';
 import { MessageBarType } from '@fluentui/react/lib/MessageBar';
 
-import store from '../../store';
+import { useStoreProp, useStoreVisualSettings } from '../../store';
 import { dispatchSelectionAborted } from '../../core/interactivity/selection';
 import { i18nValue } from '../../core/ui/i18n';
 import NotificationMessageBar from '../elements/NotificationMessageBar';
 
 const SelectionLimitMessageBar: React.FC = () => {
-    const { datasetHasSelectionAborted, visualSettings } = store(
-        (state) => state
+    const datasetHasSelectionAborted: boolean = useStoreProp(
+        'datasetHasSelectionAborted'
     );
-    const { selectionMaxDataPoints } = visualSettings.vega;
+    const selectionMaxDataPoints =
+        useStoreVisualSettings()?.vega?.selectionMaxDataPoints;
     return (
         <NotificationMessageBar
             dismissAction={dispatchSelectionAborted}

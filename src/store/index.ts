@@ -6,6 +6,7 @@ import { IEditorSlice, createEditorSlice } from './editor';
 import { ITemplateSlice, createTemplateSlice } from './template';
 import { IVisualSlice, createVisualSlice } from './visual';
 import { isFeatureEnabled } from '../core/utils/features';
+import VisualSettings from '../properties/VisualSettings';
 
 export type TStoreState = IDatasetSlice &
     IEditorSlice &
@@ -38,4 +39,12 @@ const useStoreProp = (propname: string) => {
     return store(selector);
 };
 
-export { getState, useStoreProp };
+const useStoreVisualSettings = (): VisualSettings => {
+    const selector = useCallback(
+        (state) => state['visualSettings'],
+        ['visualSettings']
+    );
+    return store(selector);
+};
+
+export { getState, useStoreProp, useStoreVisualSettings };
