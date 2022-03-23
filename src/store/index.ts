@@ -1,4 +1,5 @@
 import create, { GetState, SetState, StateCreator } from 'zustand';
+import { useCallback } from 'react';
 import { devtools } from 'zustand/middleware';
 import { IDatasetSlice, createDatasetSlice } from './dataset';
 import { IEditorSlice, createEditorSlice } from './editor';
@@ -32,4 +33,9 @@ export default store;
 
 const getState = () => store.getState();
 
-export { getState };
+const useStoreProp = (propname: string) => {
+    const selector = useCallback((state) => state[propname], [propname]);
+    return store(selector);
+};
+
+export { getState, useStoreProp };
