@@ -4,7 +4,7 @@ import EditMode = powerbi.EditMode;
 import React, { useEffect } from 'react';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 
-import store from '../../store';
+import { useStoreProp } from '../../store';
 
 import StatusHeaderSection from './StatusHeaderSection';
 import StatusLayoutStack from './StatusLayoutStack';
@@ -20,26 +20,26 @@ import { i18nValue } from '../../core/ui/i18n';
 import { hostServices } from '../../core/services';
 
 const SplashNospec = () => {
-    const { visualEditMode } = store((state) => state),
-        resolveDataInstruction = () => {
-            switch (true) {
-                case visualEditMode === EditMode.Advanced: {
-                    return (
-                        <Paragraph>
-                            {i18nValue('New_Visual_Placeholder_Editor')}
-                        </Paragraph>
-                    );
-                }
-                default: {
-                    return (
-                        <Paragraph>
-                            {i18nValue('New_Visual_Placeholder_Open_Edit')}
-                        </Paragraph>
-                    );
-                }
+    const visualEditMode: EditMode = useStoreProp('visualEditMode');
+    const resolveDataInstruction = () => {
+        switch (true) {
+            case visualEditMode === EditMode.Advanced: {
+                return (
+                    <Paragraph>
+                        {i18nValue('New_Visual_Placeholder_Editor')}
+                    </Paragraph>
+                );
             }
-        };
-    useEffect(() => hostServices.renderingFinished());
+            default: {
+                return (
+                    <Paragraph>
+                        {i18nValue('New_Visual_Placeholder_Open_Edit')}
+                    </Paragraph>
+                );
+            }
+        }
+    };
+    useEffect(() => hostServices.renderingFinished(), []);
     return (
         <Scrollbars>
             <StatusLayoutStack>
