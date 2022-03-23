@@ -127,7 +127,7 @@ export const createEditorSlice = (
             set((state) => handleupdateEditorZoomLevel(state, zoomLevel))
     };
 
-interface IEditorPaneUpdatePayload {
+export interface IEditorPaneUpdatePayload {
     editorPaneWidth: number;
     editorPaneExpandedWidth: number;
 }
