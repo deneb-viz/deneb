@@ -1,7 +1,10 @@
-import * as React from 'react';
+import powerbi from 'powerbi-visuals-api';
+import IViewport = powerbi.IViewport;
+
+import React from 'react';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 
-import store from '../store';
+import { useStoreProp, useStoreVisualSettings } from '../store';
 import DataFetching from './status/DataFetching';
 import VisualRender from './VisualRender';
 import ApplyDialog from './modal/ApplyDialog';
@@ -10,16 +13,36 @@ import { i18nValue } from '../core/ui/i18n';
 import { getViewModeViewportStyles, zoomConfig } from '../core/ui/dom';
 import { clearSelection } from '../core/interactivity/selection';
 import { hideTooltip } from '../core/interactivity/tooltip';
+import { TDataProcessingStage } from '../core/data';
+import { TVisualMode } from '../core/ui';
+import {
+    getViewConfig,
+    getViewDataset,
+    getViewSpec,
+    TSpecProvider,
+    TSpecRenderMode
+} from '../core/vega';
 
 const DataProcessingRouter: React.FC = () => {
-    const { datasetProcessingStage, visualViewportReport, visualMode } = store(
-            (state) => state
-        ),
-        handleMouseLeave = () => {
-            hideTooltip();
-        },
-        isEditor = visualMode === 'Editor',
-        { editorZoomLevel, visualSettings } = store((state) => state),
+    const datasetProcessingStage = useStoreProp<TDataProcessingStage>(
+        'datasetProcessingStage'
+    );
+    const visualViewportReport = useStoreProp<IViewport>(
+        'visualViewportReport'
+    );
+    const { enableTooltips, renderMode, provider } =
+        useStoreVisualSettings()?.vega;
+    const visualMode = useStoreProp<TVisualMode>('visualMode');
+    const editorZoomLevel = useStoreProp<number>('editorZoomLevel');
+    const { showViewportMarker } = useStoreVisualSettings()?.editor;
+    const data = getViewDataset();
+    const specification = getViewSpec();
+    const config = getViewConfig();
+    const handleMouseLeave = () => {
+        hideTooltip();
+    };
+    const isEditor = visualMode === 'Editor';
+    const zoomLevel = (isEditor && editorZoomLevel) || zoomConfig.default;
         { showViewportMarker } = visualSettings?.editor,
         zoomLevel = (isEditor && editorZoomLevel) || zoomConfig.default;
     switch (datasetProcessingStage) {
@@ -47,7 +70,14 @@ const DataProcessingRouter: React.FC = () => {
                         onClick={clearSelection}
                         onMouseLeave={handleMouseLeave}
                     >
-                        <VisualRender />
+                        <VisualRender
+                            specification={specification}
+                            config={config}
+                            provider={provider as TSpecProvider}
+                            enableTooltips={enableTooltips}
+                            renderMode={renderMode as TSpecRenderMode}
+                            data={data}
+                        />
                         <ApplyDialog />
                     </div>
                 </Scrollbars>

@@ -1,8 +1,8 @@
-import * as React from 'react';
+import React from 'react';
 import { Pivot, PivotItem, IPivotStyles } from '@fluentui/react/lib/Pivot';
 import { IStyleSet } from '@fluentui/react/lib/Styling';
 
-import store from '../../store';
+import { useStoreProp } from '../../store';
 import { TTemplateProvider } from '../../core/template';
 import { i18nValue } from '../../core/ui/i18n';
 import { resolveTemplateProviderPivotAria } from '../../core/ui/aria';
@@ -15,18 +15,17 @@ const pivotStyles: Partial<IStyleSet<IPivotStyles>> = {
 };
 
 const CreateVisualDialogPivot = () => {
-    const { templateProvider, updateSelectedTemplateProvider } = store(
-            (state) => state
-        ),
-        getTabId = (itemKey: string) => {
-            return `new-spec-pivot-${itemKey}`;
-        },
-        handlePivotClick = (item: PivotItem) => {
-            updateSelectedTemplateProvider(
-                item.props.itemKey as TTemplateProvider
-            );
-        };
-
+    const templateProvider: TTemplateProvider =
+        useStoreProp('templateProvider');
+    const updateSelectedTemplateProvider: (
+        templateProvider: TTemplateProvider
+    ) => void = useStoreProp('updateSelectedTemplateProvider');
+    const getTabId = (itemKey: string) => {
+        return `new-spec-pivot-${itemKey}`;
+    };
+    const handlePivotClick = (item: PivotItem) => {
+        updateSelectedTemplateProvider(item.props.itemKey as TTemplateProvider);
+    };
     return (
         <div className='new-spec-dialog-pivot'>
             <Pivot

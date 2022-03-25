@@ -1,11 +1,13 @@
-import * as React from 'react';
+import React from 'react';
 
-import store from '../../store';
+import { useStoreProp } from '../../store';
 import ModalDialog from '../modal/ModalDialog';
 import MapFieldsDialogBody from './MapFieldsDialogBody';
 
 export const MapFieldsDialog = () => {
-    const { editorIsMapDialogVisible } = store((state) => state);
+    const editorIsMapDialogVisible: boolean = useStoreProp(
+        'editorIsMapDialogVisible'
+    );
     return (
         <ModalDialog type='mapping' visible={editorIsMapDialogVisible}>
             <MapFieldsDialogBody />

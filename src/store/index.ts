@@ -1,12 +1,15 @@
 import create, { GetState, SetState, StateCreator } from 'zustand';
 import { useCallback } from 'react';
 import { devtools } from 'zustand/middleware';
+import get from 'lodash/get';
 import { IDatasetSlice, createDatasetSlice } from './dataset';
 import { IEditorSlice, createEditorSlice } from './editor';
 import { ITemplateSlice, createTemplateSlice } from './template';
 import { IVisualSlice, createVisualSlice } from './visual';
 import { isFeatureEnabled } from '../core/utils/features';
 import VisualSettings from '../properties/VisualSettings';
+import { IVisualDataset } from '../core/data';
+import { ICompiledSpec } from '../core/utils/specification';
 
 export type TStoreState = IDatasetSlice &
     IEditorSlice &
@@ -32,19 +35,19 @@ const store = create<TStoreState>(
 
 export default store;
 
-const getState = () => store.getState();
+export const getState = () => store.getState();
 
-const useStoreProp = (propname: string) => {
-    const selector = useCallback((state) => state[propname], [propname]);
-    return store(selector);
-};
-
-const useStoreVisualSettings = (): VisualSettings => {
+export const useStoreProp = <T>(propname: string, path = ''): T => {
+    const resolved = `${(path && `${path}.`) || ''}${propname}`;
     const selector = useCallback(
-        (state) => state['visualSettings'],
-        ['visualSettings']
+        (state) => get(state, `${resolved}`),
+        [propname]
     );
     return store(selector);
 };
 
-export { getState, useStoreProp, useStoreVisualSettings };
+export const useStoreDataset = (): IVisualDataset => useStoreProp('dataset');
+export const useStoreEditorSpec = (): ICompiledSpec =>
+    useStoreProp('editorSpec');
+export const useStoreVisualSettings = (): VisualSettings =>
+    useStoreProp('visualSettings');

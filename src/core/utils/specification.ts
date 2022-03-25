@@ -271,10 +271,15 @@ const stageEditorData = (role: TEditorRole) => {
 };
 
 /**
+ * Values for a spec's parse status.
+ */
+export type TSpecStatus = 'valid' | 'error' | 'new';
+
+/**
  * Represents a compiled specification, including any additional metadata needed to manage it downstream in the UI.
  */
 interface ICompiledSpec {
-    status: 'valid' | 'error' | 'new';
+    status: TSpecStatus;
     spec: object;
     rawSpec: string;
     message?: string;
@@ -331,7 +336,7 @@ const dispatchFixStatus = (result: IFixResult) => {
 /**
  * Dispatch a compiled specification to the store.
  */
-const dispatchSpec = (compiledSpec: ICompiledSpec) => {
+export const dispatchSpec = (compiledSpec: ICompiledSpec) => {
     getState().updateEditorSpec(compiledSpec);
 };
 

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 
 import { Stack, IStackItemStyles } from '@fluentui/react/lib/Stack';
 import { PrimaryButton } from '@fluentui/react/lib/Button';
@@ -10,7 +10,7 @@ import {
     modalDialogStackItemStyles,
     modalDialogInnerStackTokens
 } from '../../core/ui/modal';
-import store from '../../store';
+import { useStoreProp } from '../../store';
 
 import { i18nValue } from '../../core/ui/i18n';
 import { Paragraph } from '../elements/Typography';
@@ -18,6 +18,7 @@ import Dataset, { getMapColumns } from '../elements/Dataset';
 import { buttonStyles } from '../../core/ui/fluent';
 import { remapSpecificationFields } from '../../core/utils/specification';
 import { getDatasetTemplateFields } from '../../core/data/fields';
+import { IVisualDatasetFields } from '../../core/data';
 
 const datasetItemStyles: IStackItemStyles = {
     root: {
@@ -26,7 +27,8 @@ const datasetItemStyles: IStackItemStyles = {
 };
 
 export const MapFieldsDialogBody = () => {
-    const { editorFieldsInUse } = store((state) => state);
+    const editorFieldsInUse: IVisualDatasetFields =
+        useStoreProp('editorFieldsInUse');
     const dataset = getDatasetTemplateFields(editorFieldsInUse);
     const remapDisabled =
         filter(

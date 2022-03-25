@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 
 import { Stack } from '@fluentui/react/lib/Stack';
 import { Text } from '@fluentui/react/lib/Text';
@@ -10,20 +10,26 @@ import {
     modalDialogStackItemWrapperStyles,
     modalDialogInnerStackTokens
 } from '../../core/ui/modal';
-import store from '../../store';
+import { useStoreProp } from '../../store';
 import CreateVisualDialogPivot from './CreateVisualDialogPivot';
 import CreateVisualPaneContent from './CreateVisualPaneContent';
 import { createFromTemplate } from '../../core/utils/specification';
 import { i18nValue } from '../../core/ui/i18n';
 import { buttonStyles } from '../../core/ui/fluent';
+import { Spec } from 'vega';
+import { TopLevelSpec } from 'vega-lite';
+import { TSpecProvider } from '../../core/vega';
 
 export const CreateVisualDialogBody = () => {
-    const {
-            templateAllImportCriteriaApplied,
-            templateSpecProvider,
-            templateToApply
-        } = store((state) => state),
-        handleCreate = () => {
+    const templateAllImportCriteriaApplied: boolean = useStoreProp(
+        'templateAllImportCriteriaApplied'
+    );
+    const templateSpecProvider: TSpecProvider = useStoreProp(
+        'templateSpecProvider'
+    );
+    const templateToApply: Spec | TopLevelSpec =
+        useStoreProp('templateToApply');
+    const handleCreate = () => {
             createFromTemplate(templateSpecProvider, templateToApply);
         },
         createDisabled = !templateAllImportCriteriaApplied;

@@ -10,7 +10,7 @@ import { i18nValue } from '../../core/ui/i18n';
 import { hostServices } from '../../core/services';
 
 const SplashReadOnly = () => {
-    useEffect(() => hostServices.renderingFinished());
+    useEffect(() => hostServices.renderingFinished(), []);
     return (
         <Scrollbars>
             <StatusLayoutStack>

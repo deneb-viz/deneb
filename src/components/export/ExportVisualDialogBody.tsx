@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 
 import { Text } from '@fluentui/react/lib/Text';
 import { Stack } from '@fluentui/react/lib/Stack';
@@ -9,56 +9,64 @@ import {
     modalDialogStackItemWrapperStyles,
     modalDialogInnerStackTokens
 } from '../../core/ui/modal';
-import store from '../../store';
+import { useStoreProp } from '../../store';
 import ExportValidation from './content/ExportValidation';
 import ExportVisualDialogPivot from './ExportVisualDialogPivot';
 import TemplateExportDatasetPane from './content/TemplateExportDatasetPane';
 import TemplateExportInformationPane from './content/TemplateExportInformationPane';
 import TemplateExportJsonPane from './content/TemplateExportJsonPane';
-import { validateSpecificationForExport } from '../../core/template';
+import {
+    TExportOperation,
+    TTemplateExportState,
+    validateSpecificationForExport
+} from '../../core/template';
 import { i18nValue } from '../../core/ui/i18n';
 
 export const ExportVisualDialogBody = () => {
-    const {
-            templateSelectedExportOperation,
-            templateExportState,
-            templateExportErrorMessage
-        } = store((state) => state),
-        resolveExportPivot = () => {
-            switch (templateExportState) {
-                case 'Editing': {
-                    return <ExportVisualDialogPivot />;
-                }
-                default:
-                    return null;
+    const templateSelectedExportOperation: TExportOperation = useStoreProp(
+        'templateSelectedExportOperation'
+    );
+    const templateExportState: TTemplateExportState = useStoreProp(
+        'templateExportState'
+    );
+    const templateExportErrorMessage: string = useStoreProp(
+        'templateExportErrorMessage'
+    );
+    const resolveExportPivot = () => {
+        switch (templateExportState) {
+            case 'Editing': {
+                return <ExportVisualDialogPivot />;
             }
-        },
-        resolveExportBodyContent = () => {
-            switch (templateExportState) {
-                case 'None': {
-                    validateSpecificationForExport();
-                    return '';
+            default:
+                return null;
+        }
+    };
+    const resolveExportBodyContent = () => {
+        switch (templateExportState) {
+            case 'None': {
+                validateSpecificationForExport();
+                return '';
+            }
+            case 'Validating':
+                return <ExportValidation />;
+            case 'Editing':
+                switch (templateSelectedExportOperation) {
+                    case 'information':
+                        return <TemplateExportInformationPane />;
+                    case 'dataset':
+                        return <TemplateExportDatasetPane />;
+                    case 'template':
+                        return <TemplateExportJsonPane />;
+                    default:
+                        return null;
                 }
-                case 'Validating':
-                    return <ExportValidation />;
-                case 'Editing':
-                    switch (templateSelectedExportOperation) {
-                        case 'information':
-                            return <TemplateExportInformationPane />;
-                        case 'dataset':
-                            return <TemplateExportDatasetPane />;
-                        case 'template':
-                            return <TemplateExportJsonPane />;
-                        default:
-                            return null;
-                    }
 
-                case 'Error':
-                    return <p>Error: {templateExportErrorMessage}</p>;
-                default:
-                    return <p>{templateExportState}</p>;
-            }
-        };
+            case 'Error':
+                return <p>Error: {templateExportErrorMessage}</p>;
+            default:
+                return <p>{templateExportState}</p>;
+        }
+    };
 
     return (
         <Stack

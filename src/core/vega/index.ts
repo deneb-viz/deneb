@@ -42,7 +42,12 @@ import { fillPatternServices, hostServices, viewServices } from '../services';
 import { createFormatterFromString } from '../utils/formatting';
 import { cleanParse, getSchemaValidator } from '../utils/json';
 import { TEditorRole } from '../services/JsonEditorServices';
-import { getState } from '../../store';
+import {
+    getState,
+    useStoreDataset,
+    useStoreEditorSpec,
+    useStoreVisualSettings
+} from '../../store';
 import { getConfig, providerVersions } from '../utils/config';
 import { getPatchedVegaSpec } from './vegaUtils';
 import { getPatchedVegaLiteSpec } from './vegaLiteUtils';
@@ -155,7 +160,7 @@ const getVegaSettings = () => getState().visualSettings.vega;
  * Create the `data` object for the Vega view specification. Ensures that the dataset applied to the visual is a cloned, mutable copy of the store version.
  */
 const getViewDataset = () => ({
-    dataset: cloneDeep(getDataset().values)
+    dataset: cloneDeep(useStoreDataset()?.values)
 });
 
 /**
@@ -177,9 +182,9 @@ const getViewConfig = () => {
  * to abstract out from the end-user to make things as "at home" in Power BI as possible, without explicitly adding it to the editor or exported template.
  */
 const getViewSpec = () => {
-    const { editorSpec } = getState(),
-        { provider } = getVegaSettings(),
-        vSpec = cloneDeep(editorSpec?.spec) || {};
+    const editorSpec = useStoreEditorSpec();
+    const provider = useStoreVisualSettings()?.vega?.provider;
+    const vSpec = cloneDeep(editorSpec?.spec) || {};
     switch (<TSpecProvider>provider) {
         case 'vega':
             return getPatchedVegaSpec(vSpec);
@@ -194,8 +199,8 @@ const getViewSpec = () => {
  * Gets the `config` from our visual objects and parses it to JSON.
  */
 const getParsedConfigFromSettings = (): Config => {
-    const { vega } = getState().visualSettings;
-    return cleanParse(vega.jsonConfig, propertyDefaults.jsonConfig);
+    const jsonConfig = useStoreVisualSettings()?.vega?.jsonConfig;
+    return cleanParse(jsonConfig, propertyDefaults.jsonConfig);
 };
 
 /**

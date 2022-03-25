@@ -1,7 +1,6 @@
 export {
     TModalDialogType,
     getDialogContentProps,
-    isApplyDialogHidden,
     isDialogOpen,
     modalDialogContentStyles,
     modalDialogCloseIconStyles,
@@ -30,8 +29,9 @@ import {
 
 import { theme } from './fluent';
 import { getConfig } from '../utils/config';
-import store, { getState } from '../../store';
+import { getState, useStoreProp } from '../../store';
 import { i18nValue } from './i18n';
+import { TVisualMode } from '.';
 
 /**
  * Modal dialog type (used for specific ops handling).
@@ -51,15 +51,6 @@ const getDialogContentProps = (
         subText: i18nValue(subTextKey),
         showCloseButton: false
     };
-};
-
-/**
- * Determine whether the apply changes dialog should be hidden or not. This dialog is used to prompt the user to save
- * their changes if they leave the editor and the editors are dirty.
- */
-const isApplyDialogHidden = () => {
-    const { editorIsDirty, visualMode } = store((state) => state);
-    return !(editorIsDirty && visualMode === 'Standard');
 };
 
 /**

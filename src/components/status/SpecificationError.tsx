@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-import store from '../../store';
+import { useStoreProp } from '../../store';
 
 import StatusLayoutStack from './StatusLayoutStack';
 import StatusLayoutStackItem from './StatusLayoutStackItem';
@@ -10,9 +10,9 @@ import { i18nValue } from '../../core/ui/i18n';
 import { hostServices } from '../../core/services';
 
 const SpecificationError = () => {
-    const { editorSpec } = store((state) => state),
+    const message = useStoreProp<string>('message', 'editorSpec');
         { message } = editorSpec;
-    useEffect(() => hostServices.renderingFailed(message));
+    useEffect(() => hostServices.renderingFailed(message), []);
     return (
         <>
             <StatusLayoutStack>

@@ -11,7 +11,7 @@ import SelectionLimitMessageBar from './status/SelectionLimitMessageBar';
 import { TVisualMode } from '../core/ui';
 
 const MainInterface = () => {
-    const visualMode: TVisualMode = useStoreProp('visualMode');
+    const visualMode = useStoreProp<TVisualMode>('visualMode');
     const mainComponent = () => {
         switch (visualMode) {
             case 'SplashInitial':

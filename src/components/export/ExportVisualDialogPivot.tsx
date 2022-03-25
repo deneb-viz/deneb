@@ -1,8 +1,8 @@
-import * as React from 'react';
+import React from 'react';
 import { Pivot, PivotItem, IPivotStyles } from '@fluentui/react/lib/Pivot';
 import { IStyleSet } from '@fluentui/merge-styles';
 
-import store from '../../store';
+import { useStoreProp } from '../../store';
 import { TExportOperation } from '../../core/template';
 import { i18nValue } from '../../core/ui/i18n';
 import { resolveTemplateExportPivotAria } from '../../core/ui/aria';
@@ -15,17 +15,19 @@ const exportPivotStyles: Partial<IStyleSet<IPivotStyles>> = {
 };
 
 const ExportVisualDialogPivot = () => {
-    const { templateSelectedExportOperation, updateSelectedExportOperation } =
-            store(),
-        getTabId = (itemKey: string) => {
-            return `export-spec-pivot-${itemKey}`;
-        },
-        handlePivotClick = (item: PivotItem) => {
-            updateSelectedExportOperation(
-                item.props.itemKey as TExportOperation
-            );
-        };
+    const templateSelectedExportOperation: TExportOperation = useStoreProp(
+        'templateSelectedExportOperation'
+    );
+    const updateSelectedExportOperation: (
+        templateSelectedExportOperation: TExportOperation
+    ) => void = useStoreProp('updateSelectedExportOperation');
 
+    const getTabId = (itemKey: string) => {
+        return `export-spec-pivot-${itemKey}`;
+    };
+    const handlePivotClick = (item: PivotItem) => {
+        updateSelectedExportOperation(item.props.itemKey as TExportOperation);
+    };
     return (
         <div className='export-spec-dialog-pivot'>
             <Pivot
