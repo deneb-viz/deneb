@@ -19,6 +19,7 @@ import { buttonStyles } from '../../core/ui/fluent';
 import { Spec } from 'vega';
 import { TopLevelSpec } from 'vega-lite';
 import { TSpecProvider } from '../../core/vega';
+import { reactLog } from '../../core/utils/logger';
 
 export const CreateVisualDialogBody = () => {
     const templateAllImportCriteriaApplied: boolean = useStoreProp(
@@ -33,7 +34,7 @@ export const CreateVisualDialogBody = () => {
             createFromTemplate(templateSpecProvider, templateToApply);
         },
         createDisabled = !templateAllImportCriteriaApplied;
-
+    reactLog('Rendering [CreateVisualDialogBody]');
     return (
         <Stack
             styles={modalDialogStackStyles}

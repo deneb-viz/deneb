@@ -8,6 +8,7 @@ import ModalHeader from '../modal/ModalHeader';
 import { closeModalDialog } from '../../core/ui/commands';
 import { TModalDialogType } from '../../core/ui/modal';
 import { modalDialogContentStyles } from '../../core/ui/modal';
+import { reactLog } from '../../core/utils/logger';
 
 interface IModalDialogProps {
     type: TModalDialogType;
@@ -22,7 +23,7 @@ const ModalDialog: React.FC<IModalDialogProps> = (props) => {
         closeModalDialog(props.type);
     };
     const titleId = useId('modal-dialog');
-    console.log('Rendering [ModalDialog]');
+    reactLog('Rendering [ModalDialog]');
     return (
         <Modal
             titleAriaId={titleId}

@@ -22,6 +22,7 @@ import {
 import { View } from 'vega';
 import { dispatchSpec, TSpecStatus } from '../core/utils/specification';
 import { IVisualDatasetValueRow } from '../core/data';
+import { reactLog } from '../core/utils/logger';
 
 interface IVisualRenderProps {
     specification: object;
@@ -40,13 +41,18 @@ interface IVisualRenderProps {
 const areEqual = (
     prevProps: IVisualRenderProps,
     nextProps: IVisualRenderProps
-) =>
-    deepEqual(prevProps.specification, nextProps.specification) &&
-    deepEqual(prevProps.config, nextProps.config) &&
-    deepEqual(prevProps.data, nextProps.data) &&
-    prevProps.provider === nextProps.provider &&
-    prevProps.enableTooltips === nextProps.enableTooltips &&
-    prevProps.renderMode === nextProps.renderMode;
+) => {
+    reactLog('[VisualRender]', 'prevProps', prevProps, 'nextProps', nextProps);
+    const result =
+        deepEqual(prevProps.specification, nextProps.specification) &&
+        deepEqual(prevProps.config, nextProps.config) &&
+        deepEqual(prevProps.data, nextProps.data) &&
+        prevProps.provider === nextProps.provider &&
+        prevProps.enableTooltips === nextProps.enableTooltips &&
+        prevProps.renderMode === nextProps.renderMode;
+    reactLog('[VisualRender] Vega Re-render', !result);
+    return result;
+};
 
 const VisualRender: React.FC<IVisualRenderProps> = memo(
     ({ specification, config, data, provider, enableTooltips, renderMode }) => {
@@ -70,6 +76,7 @@ const VisualRender: React.FC<IVisualRenderProps> = memo(
             locales.format[locale] || locales.format[locales.default];
         const timeFormatLocale =
             locales.timeFormat[locale] || locales.timeFormat[locales.default];
+        reactLog('Rendering [VisualRender]');
         if (visual4d3d3d) return <FourD3D3D3 />;
         registerCustomExpressions();
         registerCustomSchemes();

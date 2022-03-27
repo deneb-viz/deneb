@@ -6,6 +6,7 @@ import { useStoreProp } from '../../store';
 import { TExportOperation } from '../../core/template';
 import { i18nValue } from '../../core/ui/i18n';
 import { resolveTemplateExportPivotAria } from '../../core/ui/aria';
+import { reactLog } from '../../core/utils/logger';
 
 const exportPivotStyles: Partial<IStyleSet<IPivotStyles>> = {
     itemContainer: {
@@ -28,6 +29,7 @@ const ExportVisualDialogPivot = () => {
     const handlePivotClick = (item: PivotItem) => {
         updateSelectedExportOperation(item.props.itemKey as TExportOperation);
     };
+    reactLog('Rendering [ExportVisualDialogPivot]');
     return (
         <div className='export-spec-dialog-pivot'>
             <Pivot

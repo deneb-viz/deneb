@@ -22,6 +22,7 @@ import {
     TSpecProvider,
     TSpecRenderMode
 } from '../core/vega';
+import { reactLog } from '../core/utils/logger';
 
 const DataProcessingRouter: React.FC = () => {
     const datasetProcessingStage = useStoreProp<TDataProcessingStage>(
@@ -43,8 +44,11 @@ const DataProcessingRouter: React.FC = () => {
     };
     const isEditor = visualMode === 'Editor';
     const zoomLevel = (isEditor && editorZoomLevel) || zoomConfig.default;
-        { showViewportMarker } = visualSettings?.editor,
-        zoomLevel = (isEditor && editorZoomLevel) || zoomConfig.default;
+    reactLog(
+        'Rendering [DataProcessingRouter]',
+        datasetProcessingStage,
+        visualMode
+    );
     switch (datasetProcessingStage) {
         case 'Initial': {
             return <SplashInitial />;

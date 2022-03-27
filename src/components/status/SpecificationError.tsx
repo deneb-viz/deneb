@@ -8,11 +8,12 @@ import StatusHeaderSection from './StatusHeaderSection';
 import { Heading, SubHeading } from '../elements/Typography';
 import { i18nValue } from '../../core/ui/i18n';
 import { hostServices } from '../../core/services';
+import { reactLog } from '../../core/utils/logger';
 
 const SpecificationError = () => {
     const message = useStoreProp<string>('message', 'editorSpec');
-        { message } = editorSpec;
     useEffect(() => hostServices.renderingFailed(message), []);
+    reactLog('Rendering [SpecificationError]');
     return (
         <>
             <StatusLayoutStack>

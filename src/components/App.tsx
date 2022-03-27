@@ -23,6 +23,7 @@ import {
     handleNavSettings,
     handleMapFields
 } from '../core/ui/commands';
+import { reactLog } from '../core/utils/logger';
 
 const App = () => {
     useHotkeys(getCommandKey('applyChanges'), handleApply, hotkeyOptions);
@@ -69,6 +70,7 @@ const App = () => {
         handleFocusFirstPivot,
         hotkeyOptions
     );
+    reactLog('Rendering [App]');
     return <MainInterface />;
 };
 

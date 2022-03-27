@@ -13,6 +13,7 @@ import { buttonStyles } from '../../core/ui/fluent';
 import { persist } from '../../core/utils/specification';
 import { useStoreProp } from '../../store';
 import { TVisualMode } from '../../core/ui';
+import { reactLog } from '../../core/utils/logger';
 
 export const ApplyDialog: React.FunctionComponent = () => {
     const editorIsDirty: boolean = useStoreProp('editorIsDirty');
@@ -26,7 +27,7 @@ export const ApplyDialog: React.FunctionComponent = () => {
     );
     const applyText = i18nValue('Dialog_Unapplied_Changes_Apply');
     const discardText = i18nValue('Dialog_Unapplied_Changes_Discard');
-
+    reactLog('Rendering [ApplyDialog]');
     return (
         <>
             <Dialog

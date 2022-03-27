@@ -21,6 +21,7 @@ import {
     validateSpecificationForExport
 } from '../../core/template';
 import { i18nValue } from '../../core/ui/i18n';
+import { reactLog } from '../../core/utils/logger';
 
 export const ExportVisualDialogBody = () => {
     const templateSelectedExportOperation: TExportOperation = useStoreProp(
@@ -67,7 +68,7 @@ export const ExportVisualDialogBody = () => {
                 return <p>{templateExportState}</p>;
         }
     };
-
+    reactLog('Rendering [ExportVisualDialogBody]');
     return (
         <Stack
             styles={modalDialogStackStyles}

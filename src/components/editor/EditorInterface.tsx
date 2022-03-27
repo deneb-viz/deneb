@@ -14,6 +14,7 @@ import {
     resizerVerticalStyles
 } from '../../core/ui/advancedEditor';
 import { IEditorPaneUpdatePayload } from '../../store/editor';
+import { reactLog } from '../../core/utils/logger';
 
 const EditorInterface: React.FC = () => {
     const editorPaneIsExpanded: boolean = useStoreProp('editorPaneIsExpanded');
@@ -37,6 +38,7 @@ const EditorInterface: React.FC = () => {
         }
     };
     const editorPane = <EditorPane isExpanded={editorPaneIsExpanded} />;
+    reactLog('Rendering [EditorInterface]');
     return (
         <div id='visualEditor'>
             <SplitPane

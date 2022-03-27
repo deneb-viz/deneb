@@ -6,6 +6,7 @@ import { useStoreProp } from '../../store';
 import { TTemplateProvider } from '../../core/template';
 import { i18nValue } from '../../core/ui/i18n';
 import { resolveTemplateProviderPivotAria } from '../../core/ui/aria';
+import { reactLog } from '../../core/utils/logger';
 
 const pivotStyles: Partial<IStyleSet<IPivotStyles>> = {
     itemContainer: {
@@ -26,6 +27,7 @@ const CreateVisualDialogPivot = () => {
     const handlePivotClick = (item: PivotItem) => {
         updateSelectedTemplateProvider(item.props.itemKey as TTemplateProvider);
     };
+    reactLog('Rendering [CreateVisualDialogPivot]');
     return (
         <div className='new-spec-dialog-pivot'>
             <Pivot
