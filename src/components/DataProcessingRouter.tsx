@@ -4,7 +4,7 @@ import IViewport = powerbi.IViewport;
 import React from 'react';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 
-import { useStoreProp, useStoreVisualSettings } from '../store';
+import { useStoreProp, useStoreVegaProp } from '../store';
 import DataFetching from './status/DataFetching';
 import VisualRender from './VisualRender';
 import ApplyDialog from './modal/ApplyDialog';
@@ -31,11 +31,15 @@ const DataProcessingRouter: React.FC = () => {
     const visualViewportReport = useStoreProp<IViewport>(
         'visualViewportReport'
     );
-    const { enableTooltips, renderMode, provider } =
-        useStoreVisualSettings()?.vega;
+    const enableTooltips = useStoreVegaProp<boolean>('enableTooltips');
+    const renderMode = useStoreVegaProp<TSpecRenderMode>('renderMode');
+    const provider = useStoreVegaProp<TSpecProvider>('provider');
     const visualMode = useStoreProp<TVisualMode>('visualMode');
     const editorZoomLevel = useStoreProp<number>('editorZoomLevel');
-    const { showViewportMarker } = useStoreVisualSettings()?.editor;
+    const showViewportMarker = useStoreProp<boolean>(
+        'showViewportMarker',
+        'visualSettings.editor'
+    );
     const data = getViewDataset();
     const specification = getViewSpec();
     const config = getViewConfig();
@@ -77,9 +81,9 @@ const DataProcessingRouter: React.FC = () => {
                         <VisualRender
                             specification={specification}
                             config={config}
-                            provider={provider as TSpecProvider}
+                            provider={provider}
                             enableTooltips={enableTooltips}
-                            renderMode={renderMode as TSpecRenderMode}
+                            renderMode={renderMode}
                             data={data}
                         />
                         <ApplyDialog />

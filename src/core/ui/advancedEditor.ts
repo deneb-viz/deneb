@@ -16,15 +16,18 @@ export const previewToolbarPadding = 5;
  * Calculate a width that ensures the editor pane caps and makes the pivot overflow as needed
  */
 export const calculateEditorPaneMaxWidth = () => {
-    const {
-        visualSettings,
-        editorPaneWidth,
-        visualViewportCurrent,
-        editorPreviewAreaWidth
-    } = getState();
-    return visualSettings.editor.position === 'left'
+    const position = useStoreProp<TEditorPosition>(
+        'position',
+        'visualSettings.editor'
+    );
+    const editorPaneWidth = useStoreProp<number>('editorPaneWidth');
+    const width = useStoreProp<number>('width', 'visualViewportCurrent');
+    const editorPreviewAreaWidth = useStoreProp<number>(
+        'editorPreviewAreaWidth'
+    );
+    return position === 'left'
         ? editorPaneWidth
-        : visualViewportCurrent.width - editorPreviewAreaWidth;
+        : width - editorPreviewAreaWidth;
 };
 
 /**

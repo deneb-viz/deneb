@@ -1,21 +1,24 @@
-import * as React from 'react';
+import React from 'react';
 import { Pivot, PivotItem } from '@fluentui/react/lib/Pivot';
 
-import store from '../../../store';
+import { useStoreProp } from '../../../store';
 import { openEditorPivotItem } from '../../../core/ui/commands';
 import { TEditorRole } from '../../../core/services/JsonEditorServices';
 import { i18nValue } from '../../../core/ui/i18n';
 import { resolveEditorPanePivotAria } from '../../../core/ui/aria';
+import { reactLog } from '../../../core/utils/logger';
 
 const EditorPanePivot = () => {
-    const { editorSelectedOperation } = store((state) => state),
-        getTabId = (itemKey: string) => {
-            return `editor-pivot-${itemKey}`;
-        },
-        handlePivotClick = (item: PivotItem) => {
-            openEditorPivotItem(item.props.itemKey as TEditorRole);
-        };
-
+    const editorSelectedOperation = useStoreProp<TEditorRole>(
+        'editorSelectedOperation'
+    );
+    const getTabId = (itemKey: string) => {
+        return `editor-pivot-${itemKey}`;
+    };
+    const handlePivotClick = (item: PivotItem) => {
+        openEditorPivotItem(item.props.itemKey as TEditorRole);
+    };
+    reactLog('Rendering [EditorPanePivot]');
     return (
         <div className='editor-pane-pivot'>
             <Pivot

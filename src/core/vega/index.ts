@@ -45,8 +45,8 @@ import { TEditorRole } from '../services/JsonEditorServices';
 import {
     getState,
     useStoreDataset,
-    useStoreEditorSpec,
-    useStoreVisualSettings
+    useStoreProp,
+    useStoreVegaProp
 } from '../../store';
 import { getConfig, providerVersions } from '../utils/config';
 import { getPatchedVegaSpec } from './vegaUtils';
@@ -182,10 +182,10 @@ const getViewConfig = () => {
  * to abstract out from the end-user to make things as "at home" in Power BI as possible, without explicitly adding it to the editor or exported template.
  */
 const getViewSpec = () => {
-    const editorSpec = useStoreEditorSpec();
-    const provider = useStoreVisualSettings()?.vega?.provider;
-    const vSpec = cloneDeep(editorSpec?.spec) || {};
-    switch (<TSpecProvider>provider) {
+    const eSpec = useStoreProp<object>('spec', 'editorSpec');
+    const provider = useStoreVegaProp<TSpecProvider>('provider');
+    const vSpec = cloneDeep(eSpec) || {};
+    switch (provider) {
         case 'vega':
             return getPatchedVegaSpec(vSpec);
         case 'vegaLite':
@@ -199,7 +199,7 @@ const getViewSpec = () => {
  * Gets the `config` from our visual objects and parses it to JSON.
  */
 const getParsedConfigFromSettings = (): Config => {
-    const jsonConfig = useStoreVisualSettings()?.vega?.jsonConfig;
+    const jsonConfig = useStoreVegaProp<string>('jsonConfig');
     return cleanParse(jsonConfig, propertyDefaults.jsonConfig);
 };
 

@@ -1,10 +1,11 @@
-import * as React from 'react';
+import React from 'react';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 
-import store from '../../../store';
+import { useStoreProp } from '../../../store';
 import Editor from './Editor';
 import EditorPaneSettings from '../../settings/EditorPaneSettings';
 import { TEditorRole } from '../../../core/services/JsonEditorServices';
+import { reactLog } from '../../../core/utils/logger';
 
 interface IEditorOperationContainerProps {
     operation: TEditorRole;
@@ -13,9 +14,12 @@ interface IEditorOperationContainerProps {
 const EditorOperationContainer: React.FC<IEditorOperationContainerProps> = ({
     operation
 }) => {
-    const { editorSelectedOperation } = store((state) => state),
-        visible = editorSelectedOperation === operation,
-        editorPane = operation !== 'settings';
+    const editorSelectedOperation = useStoreProp<TEditorRole>(
+        'editorSelectedOperation'
+    );
+    const visible = editorSelectedOperation === operation;
+    const editorPane = operation !== 'settings';
+    reactLog('Rendering [EditorOperationContainer]', operation);
     return (
         <div
             className={`editor-pane-container ${

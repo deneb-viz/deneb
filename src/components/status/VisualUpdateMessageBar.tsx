@@ -12,11 +12,13 @@ import {
 import { hostServices } from '../../core/services';
 import { getConfig } from '../../core/utils/config';
 import { dismissVersionNotification } from '../../core/ui/commands';
-import store from '../../store';
+import { useStoreProp } from '../../store';
+import { reactLog } from '../../core/utils/logger';
 
 const VisualUpdateMessageBar: React.FC = () => {
-    const { showVersionNotification } = store(
-        (state) => state.visualSettings.developer
+    const showVersionNotification = useStoreProp<boolean>(
+        'showVersionNotification',
+        'visualSettings.developer'
     );
     const change = getVersionChangeDetail();
     const visible = showVersionNotification;
@@ -60,6 +62,7 @@ const VisualUpdateMessageBar: React.FC = () => {
                 return <></>;
         }
     };
+    reactLog('Rendering [VisualUpdateMesageBar]');
     return (
         <NotificationMessageBar
             dismissAction={dismissAction}

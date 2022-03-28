@@ -46,8 +46,7 @@ export const useStoreProp = <T>(propname: string, path = ''): T => {
     return store(selector);
 };
 
+export const useStoreVegaProp = <T>(propname: string): T =>
+    useStoreProp(propname, 'visualSettings.vega');
+
 export const useStoreDataset = (): IVisualDataset => useStoreProp('dataset');
-export const useStoreEditorSpec = (): ICompiledSpec =>
-    useStoreProp('editorSpec');
-export const useStoreVisualSettings = (): VisualSettings =>
-    useStoreProp('visualSettings');
