@@ -6,10 +6,10 @@ import { TooltipHost } from '@fluentui/react/lib/Tooltip';
 import { i18nValue } from '../../../core/ui/i18n';
 import { Assistive } from '../../elements/Typography';
 import { getVegaProvideri18n, getVegaVersion } from '../../../core/vega';
+import { reactLog } from '../../../core/utils/logger';
 
 const valueStackItemStyles: IStackItemStyles = {
     root: {
-        padding: 4,
         cursor: 'default',
         userSelect: 'none'
     }
@@ -18,6 +18,7 @@ const valueStackItemStyles: IStackItemStyles = {
 const ProviderInfo: React.FC = () => {
     const provider = getVegaProvideri18n();
     const version = getVegaVersion();
+    reactLog('Rendering [ProviderInfo]');
     return (
         <>
             <StackItem shrink styles={valueStackItemStyles}>

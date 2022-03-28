@@ -6,7 +6,7 @@ import { Text } from '@fluentui/react/lib/Text';
 import { TooltipHost } from '@fluentui/react/lib/Tooltip';
 
 import {
-    isZoomControlDisabled,
+    isZoomControlDisabledReact,
     isZoomInIconDisabled,
     isZoomOutIconDisabled,
     isZoomResetIconDisabled
@@ -20,7 +20,8 @@ import {
     handleZoomOut,
     handleZoomReset
 } from '../../../core/ui/commands';
-import store from '../../../store';
+import { useStoreProp } from '../../../store';
+import { reactLog } from '../../../core/utils/logger';
 
 const sliderStackItemStyles: IStackItemStyles = {
         root: {
@@ -42,9 +43,13 @@ const sliderStackItemStyles: IStackItemStyles = {
     };
 
 const ZoomControls: React.FC = () => {
-    const { editorZoomLevel, updateEditorZoomLevel } = store((state) => state),
-        valueFormat = (value: number) => `${value}%`,
-        zoomToLevel = (value: number) => updateEditorZoomLevel(value);
+    const editorZoomLevel = useStoreProp<number>('editorZoomLevel');
+    const updateEditorZoomLevel = useStoreProp<(zoomLevel: number) => void>(
+        'updateEditorZoomLevel'
+    );
+    const valueFormat = (value: number) => `${value}%`;
+    const zoomToLevel = (value: number) => updateEditorZoomLevel(value);
+    reactLog('Rendering [ZoomControls]');
     return (
         <>
             <ZoomButton
@@ -63,7 +68,7 @@ const ZoomControls: React.FC = () => {
                     defaultValue={zoomConfig.default}
                     showValue={false}
                     onChange={zoomToLevel}
-                    disabled={isZoomControlDisabled()}
+                    disabled={isZoomControlDisabledReact()}
                 />
             </StackItem>
             <ZoomButton
@@ -82,7 +87,7 @@ const ZoomControls: React.FC = () => {
                 i18nKey='Button_ZoomFit'
                 iconName='ZoomToFit'
                 onClick={handleZoomFit}
-                disabled={isZoomControlDisabled()}
+                disabled={isZoomControlDisabledReact()}
             />
             <StackItem styles={valueStackItemStyles}>
                 <TooltipHost content={i18nValue('Zoom_Level_Tooltip')}>
