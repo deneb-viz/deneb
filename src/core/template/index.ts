@@ -61,10 +61,11 @@ import { isFeatureEnabled } from '../utils/features';
 import { IVisualDatasetFields } from '../data';
 import { ITemplateImportPayload } from '../../store/template';
 import {
-    highlightComparatorSuffix,
-    highlightFieldSuffix,
-    highlightStatusSuffix
-} from '../interactivity/highlight';
+    DATASET_NAME,
+    HIGHLIGHT_COMPARATOR_SUFFIX,
+    HIGHLIGHT_FIELD_SUFFIX,
+    HIGHLIGHT_STATUS_SUFFIX
+} from '../constants';
 
 /**
  * Used to indicate which part of the export dialog has focus.
@@ -192,7 +193,7 @@ const getExportTemplate = () => {
     const usermeta = resolveExportUserMeta();
     const processedSpec = getSpecWithFieldPlaceholders(
         JSON.stringify(editorSpec.spec),
-        usermeta.dataset
+        usermeta?.[DATASET_NAME]
     );
     const outSpec = merge(
         baseObj,
@@ -204,7 +205,7 @@ const getExportTemplate = () => {
 };
 
 const getHighlightRegexAlternation = () =>
-    `${highlightFieldSuffix}|${highlightStatusSuffix}|${highlightComparatorSuffix}`;
+    `${HIGHLIGHT_FIELD_SUFFIX}|${HIGHLIGHT_STATUS_SUFFIX}|${HIGHLIGHT_COMPARATOR_SUFFIX}`;
 
 /**
  * Ensure that usermeta is in its final, publishable state after all
@@ -214,7 +215,9 @@ const getPublishableUsermeta = (usermeta: IDenebTemplateMetadata) => {
     return {
         ...usermeta,
         ...{
-            dataset: usermeta.dataset.map((d) => omit(d, ['namePlaceholder']))
+            dataset: usermeta?.[DATASET_NAME].map((d) =>
+                omit(d, ['namePlaceholder'])
+            )
         }
     };
 };
@@ -278,9 +281,10 @@ const getNewExportTemplateMetadata = (): IDenebTemplateMetadata => {
 const getPlaceholderResolutionStatus = (template: Spec | TopLevelSpec) => {
     const usermeta = <IDenebTemplateMetadata>template?.usermeta;
     return (
-        !usermeta.dataset ||
-        usermeta.dataset?.length === 0 ||
-        usermeta.dataset.filter((ph) => !ph.suppliedObjectName).length === 0
+        !usermeta?.[DATASET_NAME] ||
+        usermeta?.[DATASET_NAME]?.length === 0 ||
+        usermeta?.[DATASET_NAME].filter((ph) => !ph.suppliedObjectName)
+            .length === 0
     );
 };
 
@@ -483,7 +487,7 @@ const resolveExportUserMeta = (): IDenebTemplateMetadata => {
                     ? templatePreviewImageDataUri
                     : undefined
         },
-        dataset: templateExportMetadata?.dataset.map((d, di) => {
+        dataset: templateExportMetadata?.[DATASET_NAME].map((d, di) => {
             return {
                 key: getTemplatePlaceholderKey(di),
                 name: d.name || d.namePlaceholder,

@@ -23,6 +23,7 @@ import {
 import { getTemplateWithBaseTheme } from '../core/vega/theme';
 import templates from '../templates';
 import { TSpecProvider } from '../core/vega';
+import { DATASET_NAME } from '../core/constants';
 
 export interface ITemplateSlice {
     templateSelectedIndex: number;
@@ -313,7 +314,9 @@ const handleUpdateTemplatePlaceholder = (
     payload: IPlaceholderValuePayload
 ): PartialState<TStoreState, never, never, never, never> => {
     let dataset = [
-        ...(<IDenebTemplateMetadata>state.templateToApply?.usermeta)?.dataset
+        ...(<IDenebTemplateMetadata>state.templateToApply?.usermeta)?.[
+            DATASET_NAME
+        ]
     ];
     const match = dataset?.find((ph) => ph.key === payload.key);
     if (match) {

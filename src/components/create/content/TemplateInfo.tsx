@@ -13,6 +13,7 @@ import Dataset, { getImportColumns } from '../../elements/Dataset';
 import PreviewImage from '../../elements/PreviewImage';
 import { getConfig } from '../../../core/utils/config';
 import { isBase64 } from '../../../core/ui/dom';
+import { DATASET_NAME } from '../../../core/constants';
 
 const stackTokens: IStackTokens = {
     childrenGap: 25
@@ -27,7 +28,7 @@ const TemplateInfo: React.FC = () => {
         .usermeta as IDenebTemplateMetadata;
     const previewImage = usermeta?.information?.previewImageBase64PNG;
     const hasPreviewImage = (previewImage && isBase64(previewImage)) || false;
-    const hasPlaceholders = usermeta?.dataset?.length > 0;
+    const hasPlaceholders = usermeta?.[DATASET_NAME]?.length > 0;
     return (
         <>
             <Stack horizontal tokens={stackTokens}>
@@ -60,7 +61,7 @@ const TemplateInfo: React.FC = () => {
             </Stack>
             {hasPlaceholders ? (
                 <Dataset
-                    dataset={usermeta?.dataset}
+                    dataset={usermeta?.[DATASET_NAME]}
                     columns={getImportColumns}
                 />
             ) : (

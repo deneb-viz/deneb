@@ -9,6 +9,7 @@ export {
     getSidString,
     isContextMenuEnabled,
     isDataPointEnabled,
+    isDataPointPropSet,
     getDataPointStatus
 };
 
@@ -40,13 +41,14 @@ import { hideTooltip } from './tooltip';
 import { clearCatcherSelector } from '../ui/dom';
 import { IVisualDatasetFields, IVisualDatasetValueRow } from '../data';
 import { getDatasetFieldsBySelectionKeys } from '../data/fields';
+import { DATASET_IDENTITY_NAME, DATASET_ROW_NAME } from '../constants';
 
 /**
  * Confirm that each dataum in a datset contains a reconcilable identifier for
  * selection purposes.
  */
 const allDataHasIdentities = (data: IVegaViewDatum[]) =>
-    data?.filter((d) => d?.hasOwnProperty('identityIndex'))?.length ===
+    data?.filter((d) => d?.hasOwnProperty(DATASET_ROW_NAME))?.length ===
     data?.length;
 
 /**
@@ -157,7 +159,7 @@ const getDataPointStatus = (
  * Get array of all data row indices for a supplied dataset.
  */
 const getIdentityIndices = (data: IVegaViewDatum[]): number[] =>
-    data?.map((d) => d?.identityIndex);
+    data?.map((d) => d?.[DATASET_ROW_NAME]);
 
 /**
  * Get all values (excluding metadata) for current processed dataset from Deneb's store.
@@ -165,10 +167,10 @@ const getIdentityIndices = (data: IVegaViewDatum[]): number[] =>
 const getValues = () => getDataset().values;
 
 /**
- * Returns `getValues()`, but filtered for a supplied list `identityIndex` values.
+ * Returns `getValues()`, but filtered for a supplied list `__row__` values.
  */
 const getValuesByIndices = (indices: number[]) =>
-    getValues().filter((v) => indices.indexOf(v.identityIndex) > -1);
+    getValues().filter((v) => indices.indexOf(v?.[DATASET_ROW_NAME]) > -1);
 
 /**
  * For the supplied (subset of) `field` and `datum`, attempt to find the
@@ -235,9 +237,10 @@ const getSelectionIdentitiesFromData = (
             // Selection can/should be cleared
             return null;
         }
-        case data?.length === 1 && data[0].hasOwnProperty('__identity__'): {
+        case data?.length === 1 &&
+            data[0].hasOwnProperty(DATASET_IDENTITY_NAME): {
             // Single, identifiable datum
-            return [<ISelectionId>data[0].__identity__];
+            return [<ISelectionId>data[0]?.[DATASET_IDENTITY_NAME]];
         }
         case data?.length > 1 && allDataHasIdentities(data): {
             // Multiple data, and all can resolve to selectors
@@ -266,7 +269,10 @@ const getSelectionIdentitiesFromData = (
  */
 const getSelectorsFromData = (
     data: IVegaViewDatum[] | IVisualDatasetValueRow[]
-) => getValuesByIndices(getIdentityIndices(data)).map((v) => v.__identity__);
+) =>
+    getValuesByIndices(getIdentityIndices(data)).map(
+        (v) => v?.[DATASET_IDENTITY_NAME]
+    );
 
 /**
  * We have some compatibility issues between `powerbi.extensibility.ISelectionId`

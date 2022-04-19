@@ -38,6 +38,7 @@ import { getDataset, getMappedDataset } from './core/data/dataset';
 import { handlePropertyMigration } from './core/utils/versioning';
 import { resolveReportViewport } from './core/ui/dom';
 import { getDatasetTemplateFields } from './core/data/fields';
+import { DATASET_NAME } from './core/constants';
 
 export class Deneb implements IVisual {
     private settings: VisualSettings;
@@ -161,7 +162,7 @@ export class Deneb implements IVisual {
                         datasetViewHasValidRoles =
                             datasetViewHasValidMapping &&
                             validateDataViewRoles(options.dataViews, [
-                                'dataset'
+                                DATASET_NAME
                             ]),
                         datasetViewIsValid =
                             datasetViewHasValidMapping &&

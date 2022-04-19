@@ -24,6 +24,7 @@ import DatasetFieldAssignmentDropdown from './DatasetFieldAssignmentDropdown';
 import { TModalDialogType } from '../../core/ui/modal';
 import { getState } from '../../store';
 import { datasetFieldProps } from '../../core/template';
+import { DATASET_NAME } from '../../core/constants';
 
 export const getExportColumns = (): IColumn[] => [
     getTypeColumn(),
@@ -119,7 +120,7 @@ const getAssignmentField = (
 
 const getExportNameField = (item: ITemplateDatasetField, index: number) => (
     <CappedTextField
-        id={`dataset[${index}].name`}
+        id={`${DATASET_NAME}[${index}].name`}
         i18nLabel={`${item.name}`}
         i18nPlaceholder={`${item?.namePlaceholder}`}
         maxLength={datasetFieldProps.name.maxLength}
@@ -132,7 +133,7 @@ const getExportNameField = (item: ITemplateDatasetField, index: number) => (
 
 const getExportDescriptionField = (index: number) => (
     <CappedTextField
-        id={`dataset[${index}].description`}
+        id={`${DATASET_NAME}[${index}].description`}
         i18nLabel='Field Description'
         i18nPlaceholder='Template_Description_Optional_Placeholder'
         maxLength={datasetFieldProps.description.maxLength}

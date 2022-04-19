@@ -4,12 +4,13 @@ import store from '../../../store';
 import TemplateDatasetPlaceholdersEmpty from './TemplateDatasetPlaceholdersEmpty';
 import TemplateDatasetPlaceholdersList from './TemplateDatasetPlaceholdersList';
 import { IDenebTemplateMetadata } from '../../../core/template/schema';
+import { DATASET_NAME } from '../../../core/constants';
 
 const TemplateDatasetPlaceholders: React.FC = () => {
     const usermeta = store((state) => state).templateToApply
         .usermeta as IDenebTemplateMetadata;
     switch (true) {
-        case usermeta?.dataset?.length || 0 === 0:
+        case usermeta?.[DATASET_NAME]?.length || 0 === 0:
             return <TemplateDatasetPlaceholdersEmpty />;
         default:
             return <TemplateDatasetPlaceholdersList />;

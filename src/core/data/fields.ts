@@ -7,10 +7,7 @@ import pick from 'lodash/pick';
 import pickBy from 'lodash/pickBy';
 import reduce from 'lodash/reduce';
 
-import {
-    highlightFieldSuffix,
-    isHighlightPropSet
-} from '../interactivity/highlight';
+import { isHighlightPropSet } from '../interactivity/highlight';
 import {
     IAugmentedMetadataField,
     IVisualDatasetFields,
@@ -19,6 +16,7 @@ import {
 import { resolveVisualMetaToDatasetField } from '../template';
 import { getDataset } from './dataset';
 import { ITemplateDatasetField } from '../template/schema';
+import { HIGHLIGHT_FIELD_SUFFIX } from '../constants';
 
 /**
  * Extract all categorical fields from the data view as suitable metadata.
@@ -137,7 +135,7 @@ const getHighlightFieldEntries = (values: DataViewValueColumns) =>
                 column: {
                     ...v.source,
                     ...{
-                        displayName: `${v.source.displayName}${highlightFieldSuffix}`,
+                        displayName: `${v.source.displayName}${HIGHLIGHT_FIELD_SUFFIX}`,
                         index: -v.source.index
                     }
                 },

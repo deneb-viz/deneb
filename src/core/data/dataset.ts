@@ -26,19 +26,21 @@ import {
     getEncodedFieldName
 } from './fields';
 import { getDatasetValueEntries } from './values';
-import {
-    highlightComparatorSuffix,
-    highlightFieldSuffix,
-    highlightStatusSuffix,
-    isHighlightPropSet
-} from '../interactivity/highlight';
+import { isHighlightPropSet } from '../interactivity/highlight';
 import {
     createSelectionIds,
     getDataPointStatus,
-    getSidString
+    getSidString,
+    isDataPointPropSet
 } from '../interactivity/selection';
 import { hostServices } from '../services';
 import { getState } from '../../store';
+import {
+    DATASET_NAME,
+    HIGHLIGHT_COMPARATOR_SUFFIX,
+    HIGHLIGHT_FIELD_SUFFIX,
+    HIGHLIGHT_STATUS_SUFFIX
+} from '../constants';
 
 /**
  * Compare two sets of dataset metadata, as well as the current state of the
@@ -69,12 +71,12 @@ const getDataRow = (
     reduce(
         fields,
         (row, f, fi) => {
-            if (f?.column.roles?.dataset) {
+            if (f?.column.roles?.[DATASET_NAME]) {
                 const rawValue = castPrimitiveValue(f, values[fi][rowIndex]);
                 const fieldName = getEncodedFieldName(f.column.displayName);
-                const fieldHighlight = `${fieldName}${highlightFieldSuffix}`;
-                const fieldHighlightStatus = `${fieldName}${highlightStatusSuffix}`;
-                const fieldHighlightComparator = `${fieldName}${highlightComparatorSuffix}`;
+                const fieldHighlight = `${fieldName}${HIGHLIGHT_FIELD_SUFFIX}`;
+                const fieldHighlightStatus = `${fieldName}${HIGHLIGHT_STATUS_SUFFIX}`;
+                const fieldHighlightComparator = `${fieldName}${HIGHLIGHT_COMPARATOR_SUFFIX}`;
                 const rawValueOriginal: PrimitiveValue = row[fieldHighlight];
                 const shouldHighlight =
                     isHighlightPropSet() && f.source === 'values';
@@ -147,14 +149,16 @@ export const getMappedDataset = (
                     )[0];
                     return {
                         ...{
+                            __row__: r,
                             __identity__: identity,
-                            __key__: getSidString(identity),
-                            identityIndex: r,
+                            __key__: getSidString(identity)
+                        },
+                        ...(isDataPointPropSet() && {
                             __selected__: getDataPointStatus(
                                 identity,
                                 selections
                             )
-                        },
+                        }),
                         ...md
                     };
                 }

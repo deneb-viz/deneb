@@ -8,15 +8,6 @@ import { getVegaSettings } from '../vega';
 export const isHighlightEnabled = isFeatureEnabled('selectionCrossHighlight');
 
 /**
- * Denotes how we suffix fields in the dataset that contain highlight values.
- */
-export const highlightFieldSuffix = '__highlight';
-
-export const highlightStatusSuffix = `${highlightFieldSuffix}Status`;
-
-export const highlightComparatorSuffix = `${highlightFieldSuffix}Comparator`;
-
-/**
  * Determine if conditions are right to expose highlight functionality.
  */
 export const isHighlightPropSet = () => {
