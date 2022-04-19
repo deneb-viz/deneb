@@ -153,6 +153,41 @@
                         "text": true
                     }
                 },
+                "logLevel": {
+                    "displayNameKey": "Objects_Vega_LogLevel",
+                    "descriptionKey": "Objects_Vega_LogLevel_Description",
+                    "displayName": "Log Level",
+                    "description": "Log Level description.",
+                    "type": {
+                        "enumeration": [
+                            {
+                                "displayNameKey": "Enum_LogLevel_None",
+                                "displayName": "none",
+                                "value": "0"
+                            },
+                            {
+                                "displayNameKey": "Enum_LogLevel_Error",
+                                "displayName": "error",
+                                "value": "1"
+                            },
+                            {
+                                "displayNameKey": "Enum_LogLevel_Warn",
+                                "displayName": "warn",
+                                "value": "2"
+                            },
+                            {
+                                "displayNameKey": "Enum_LogLevel_Info",
+                                "displayName": "info",
+                                "value": "3"
+                            },
+                            {
+                                "displayNameKey": "Enum_LogLevel_Debug",
+                                "displayName": "debug",
+                                "value": "4"
+                            }
+                        ]
+                    }
+                },
                 "renderMode": {
                     "displayNameKey": "Objects_Vega_RenderMode",
                     "descriptionKey": "Objects_Vega_RenderMode_Description",
