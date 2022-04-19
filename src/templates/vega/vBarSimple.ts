@@ -2,6 +2,7 @@ import { Spec } from 'vega';
 import { authorInfo, vegaDataModelRef, vegaProviderInfo } from '..';
 import thumbnail from '../thumbnail';
 import { getConfig } from '../../core/utils/config';
+import { DATASET_NAME, DATASET_SELECTED_NAME } from '../../core/constants';
 
 export const vBarSimple: Spec = {
     $schema: vegaProviderInfo,
@@ -12,7 +13,7 @@ export const vBarSimple: Spec = {
             name: 'yscale',
             type: 'band',
             domain: {
-                data: 'dataset',
+                data: DATASET_NAME,
                 field: '__0__'
             },
             range: 'height',
@@ -22,7 +23,7 @@ export const vBarSimple: Spec = {
         {
             name: 'xscale',
             domain: {
-                data: 'dataset',
+                data: DATASET_NAME,
                 field: '__1__'
             },
             nice: true,
@@ -45,7 +46,7 @@ export const vBarSimple: Spec = {
         {
             type: 'rect',
             from: {
-                data: 'dataset'
+                data: DATASET_NAME
             },
             encode: {
                 enter: {
@@ -75,7 +76,7 @@ export const vBarSimple: Spec = {
         {
             type: 'rect',
             from: {
-                data: 'dataset'
+                data: DATASET_NAME
             },
             encode: {
                 enter: {
@@ -100,7 +101,7 @@ export const vBarSimple: Spec = {
                     },
                     opacity: [
                         {
-                            test: "datum.__selected__ == 'off'",
+                            test: `datum.${DATASET_SELECTED_NAME} == 'off'`,
                             value: 0
                         }
                     ]

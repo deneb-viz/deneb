@@ -1,5 +1,6 @@
 import { TopLevelSpec } from 'vega-lite';
 import { authorInfo, vegaDataModelRef, vegaLiteProviderInfo } from '..';
+import { DATASET_SELECTED_NAME } from '../../core/constants';
 import { getConfig } from '../../core/utils/config';
 import thumbnail from '../thumbnail';
 
@@ -32,7 +33,7 @@ export const vlBarSimple: TopLevelSpec = {
                 opacity: {
                     condition: {
                         test: {
-                            field: '__selected__',
+                            field: DATASET_SELECTED_NAME,
                             equal: 'off'
                         },
                         value: 0

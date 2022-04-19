@@ -1,5 +1,6 @@
 import { Spec } from 'vega';
 import { authorInfo, vegaDataModelRef, vegaProviderInfo } from '..';
+import { DATASET_NAME } from '../../core/constants';
 import thumbnail from '../thumbnail';
 
 export const vLineConfInterval: Spec = {
@@ -10,7 +11,7 @@ export const vLineConfInterval: Spec = {
         {
             name: 'xscale',
             domain: {
-                data: 'dataset',
+                data: DATASET_NAME,
                 field: '__0__'
             },
             range: 'width',
@@ -19,7 +20,7 @@ export const vLineConfInterval: Spec = {
         {
             name: 'yscale',
             domain: {
-                data: 'dataset',
+                data: DATASET_NAME,
                 field: '__3__'
             },
             range: 'height',
@@ -47,7 +48,7 @@ export const vLineConfInterval: Spec = {
                 field: 'datum["__0__"]'
             },
             from: {
-                data: 'dataset'
+                data: DATASET_NAME
             },
             encode: {
                 update: {
@@ -83,7 +84,7 @@ export const vLineConfInterval: Spec = {
                 field: 'datum["__0__"]'
             },
             from: {
-                data: 'dataset'
+                data: DATASET_NAME
             },
             encode: {
                 update: {
