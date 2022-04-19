@@ -86,7 +86,7 @@ li {
 section {
     display: flex;
     flex-flow: column;
-    height: 100vh;
+    height: 99.8vh;
 }
 #editorPane.expanded {
     .editor-heading {
@@ -97,9 +97,8 @@ section {
 #editorPane.collapsed {
     padding-top: 8px;
     padding-bottom: 16px;
-    height: 100vh;
+    height: 100%;
     background-color: @powerbi-bg-lighter;
-    border: 1px solid @powerbi-pane-border;
     overflow: hidden;
 
     .editor-expand {
@@ -141,36 +140,15 @@ section {
 }
 
 /* Split Pane overrides */
-.Resizer {
-    background: @powerbi-bg-light;
-    z-index: 1;
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-    -moz-background-clip: padding;
-    -webkit-background-clip: padding;
-    background-clip: padding-box;
-}
 .Resizer:hover {
     -webkit-transition: all 2s ease;
     transition: all 2s ease;
 }
-.Pane.vertical.Pane1 {
-    overflow: auto;
-}
-.Pane.vertical.Pane2 {
-    overflow: none;
-}
-.Resizer.vertical {
-    width: 3px;
-    border: 1px solid @powerbi-pane-border;
-    cursor: col-resize;
-}
 .Resizer.disabled {
-    cursor: not-allowed;
+    cursor: not-allowed !important;
 }
 .Resizer.disabled:hover {
-    border-color: transparent;
+    border-color: transparent !important;
 }
 
 /* JSON Editor overrides */
