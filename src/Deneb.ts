@@ -38,7 +38,7 @@ import { getDataset, getMappedDataset } from './core/data/dataset';
 import { handlePropertyMigration } from './core/utils/versioning';
 import { resolveReportViewport } from './core/ui/dom';
 import { getDatasetTemplateFields } from './core/data/fields';
-import { DATASET_NAME } from './core/constants';
+import { DATASET_NAME } from './constants';
 
 export class Deneb implements IVisual {
     private settings: VisualSettings;

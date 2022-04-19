@@ -24,7 +24,7 @@ import DatasetFieldAssignmentDropdown from './DatasetFieldAssignmentDropdown';
 import { TModalDialogType } from '../../core/ui/modal';
 import { getState } from '../../store';
 import { datasetFieldProps } from '../../core/template';
-import { DATASET_NAME } from '../../core/constants';
+import { DATASET_NAME } from '../../constants';
 
 export const getExportColumns = (): IColumn[] => [
     getTypeColumn(),

@@ -23,7 +23,7 @@ import {
 import { getTemplateWithBaseTheme } from '../core/vega/theme';
 import templates from '../templates';
 import { TSpecProvider } from '../core/vega';
-import { DATASET_NAME } from '../core/constants';
+import { DATASET_NAME } from '../constants';
 
 export interface ITemplateSlice {
     templateSelectedIndex: number;

@@ -13,7 +13,7 @@ import Dataset, { getImportColumns } from '../../elements/Dataset';
 import PreviewImage from '../../elements/PreviewImage';
 import { getConfig } from '../../../core/utils/config';
 import { isBase64 } from '../../../core/ui/dom';
-import { DATASET_NAME } from '../../../core/constants';
+import { DATASET_NAME } from '../../../constants';
 
 const stackTokens: IStackTokens = {
     childrenGap: 25

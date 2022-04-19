@@ -16,7 +16,7 @@ import {
 import { resolveVisualMetaToDatasetField } from '../template';
 import { getDataset } from './dataset';
 import { ITemplateDatasetField } from '../template/schema';
-import { HIGHLIGHT_FIELD_SUFFIX } from '../constants';
+import { HIGHLIGHT_FIELD_SUFFIX } from '../../constants';
 
 /**
  * Extract all categorical fields from the data view as suitable metadata.

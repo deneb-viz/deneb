@@ -17,7 +17,7 @@ import {
     isDataPointPropSet
 } from '../core/interactivity/selection';
 import { getSpecFieldsInUse } from '../core/utils/specification';
-import { DATASET_IDENTITY_NAME } from '../core/constants';
+import { DATASET_IDENTITY_NAME } from '../constants';
 
 export interface IDatasetSlice {
     dataset: IVisualDataset;

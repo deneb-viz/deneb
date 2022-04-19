@@ -65,7 +65,7 @@ import {
     HIGHLIGHT_COMPARATOR_SUFFIX,
     HIGHLIGHT_FIELD_SUFFIX,
     HIGHLIGHT_STATUS_SUFFIX
-} from '../constants';
+} from '../../constants';
 
 /**
  * Used to indicate which part of the export dialog has focus.

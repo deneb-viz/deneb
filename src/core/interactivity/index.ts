@@ -1,4 +1,4 @@
-import { DATASET_IDENTITY_NAME, DATASET_KEY_NAME } from '../constants';
+import { DATASET_IDENTITY_NAME, DATASET_KEY_NAME } from '../../constants';
 
 export * as selection from './selection';
 export * as tooltip from './tooltip';

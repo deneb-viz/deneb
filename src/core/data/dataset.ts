@@ -40,7 +40,7 @@ import {
     HIGHLIGHT_COMPARATOR_SUFFIX,
     HIGHLIGHT_FIELD_SUFFIX,
     HIGHLIGHT_STATUS_SUFFIX
-} from '../constants';
+} from '../../constants';
 
 /**
  * Compare two sets of dataset metadata, as well as the current state of the

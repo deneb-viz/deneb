@@ -41,7 +41,7 @@ import { hideTooltip } from './tooltip';
 import { clearCatcherSelector } from '../ui/dom';
 import { IVisualDatasetFields, IVisualDatasetValueRow } from '../data';
 import { getDatasetFieldsBySelectionKeys } from '../data/fields';
-import { DATASET_IDENTITY_NAME, DATASET_ROW_NAME } from '../constants';
+import { DATASET_IDENTITY_NAME, DATASET_ROW_NAME } from '../../constants';
 
 /**
  * Confirm that each dataum in a datset contains a reconcilable identifier for

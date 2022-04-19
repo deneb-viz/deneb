@@ -1,6 +1,6 @@
 import { TopLevelSpec } from 'vega-lite';
 import { authorInfo, vegaDataModelRef, vegaLiteProviderInfo } from '..';
-import { DATASET_SELECTED_NAME } from '../../core/constants';
+import { DATASET_SELECTED_NAME } from '../../constants';
 import { getConfig } from '../../core/utils/config';
 import thumbnail from '../thumbnail';
 

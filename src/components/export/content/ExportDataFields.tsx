@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { DATASET_NAME } from '../../../core/constants';
+import { DATASET_NAME } from '../../../constants';
 
 import store from '../../../store';
 import Dataset, { getExportColumns } from '../../elements/Dataset';

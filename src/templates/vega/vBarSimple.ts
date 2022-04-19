@@ -2,7 +2,7 @@ import { Spec } from 'vega';
 import { authorInfo, vegaDataModelRef, vegaProviderInfo } from '..';
 import thumbnail from '../thumbnail';
 import { getConfig } from '../../core/utils/config';
-import { DATASET_NAME, DATASET_SELECTED_NAME } from '../../core/constants';
+import { DATASET_NAME, DATASET_SELECTED_NAME } from '../../constants';
 
 export const vBarSimple: Spec = {
     $schema: vegaProviderInfo,

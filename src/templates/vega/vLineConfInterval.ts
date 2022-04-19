@@ -1,6 +1,6 @@
 import { Spec } from 'vega';
 import { authorInfo, vegaDataModelRef, vegaProviderInfo } from '..';
-import { DATASET_NAME } from '../../core/constants';
+import { DATASET_NAME } from '../../constants';
 import thumbnail from '../thumbnail';
 
 export const vLineConfInterval: Spec = {
