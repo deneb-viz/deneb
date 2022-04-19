@@ -11,6 +11,7 @@ export {
     openHelpSite,
     openMapFieldsDialog,
     repairFormatJson,
+    resetProviderPropertyValue,
     updateBooleanProperty,
     updateProvider,
     updateSelectionMaxDataPoints,
@@ -135,6 +136,9 @@ const closeModalDialog = (type: TModalDialogType) => {
  */
 const createExportableTemplate = () => dispatchExportDialog();
 
+/**
+ * Handle opening the map fields dialog.
+ */
 const openMapFieldsDialog = () => dispatchMapFieldsDialog();
 
 /**
@@ -231,17 +235,34 @@ const openHelpSite = () => {
  */
 const repairFormatJson = () => fixAndFormat();
 
+/**
+ * Navigate to the spec pane in the editor.
+ */
 const navSpec = () => openEditorPivotItem('spec');
 
+/**
+ * Navigate to the config pane in the editor.
+ */
 const navConfig = () => openEditorPivotItem('config');
 
+/**
+ * Navigate to the settings pane in the editor.
+ */
 const navSettings = () => openEditorPivotItem('settings');
+
+/**
+ * Reset the specified provider (Vega) visual property to its default value.
+ */
+const resetProviderPropertyValue = (propertyKey: string) => {
+    const value: string = getConfig().propertyDefaults.vega?.[propertyKey];
+    handlePersist([{ name: propertyKey, value }]);
+};
 
 /**
  * Generic handler for a boolean (checkbox) property in the settings pane.
  */
 const updateBooleanProperty = (name: string, value: boolean) =>
-    handlePersist([{ name, value: value }]);
+    handlePersist([{ name, value }]);
 
 /**
  * Handle the change in provider from one to the other and update necessary store dependencies and properties.
