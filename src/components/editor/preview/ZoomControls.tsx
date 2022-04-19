@@ -31,14 +31,16 @@ const sliderStackItemStyles: IStackItemStyles = {
     },
     sliderStyles: Partial<ISliderStyles> = {
         root: {
-            width: 100
+            width: 75
         }
     },
     valueStackItemStyles: IStackItemStyles = {
         root: {
             padding: 4,
             cursor: 'default',
-            userSelect: 'none'
+            userSelect: 'none',
+            width: 45,
+            minWidth: 45
         }
     };
 

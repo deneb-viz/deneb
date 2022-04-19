@@ -7,7 +7,7 @@ import { TooltipHost } from '@fluentui/react/lib/Tooltip';
 import { useId } from '@fluentui/react-hooks';
 
 import { i18nValue } from '../../../core/ui/i18n';
-import { zoomIconButtonStyles } from '../../../core/ui/icons';
+import { previewIconButtonStyles } from '../../../core/ui/icons';
 
 interface IZoomButtonProps {
     i18nKey: string;
@@ -33,7 +33,7 @@ const ZoomButton: React.FC<IZoomButtonProps> = ({
                 <TooltipHost id={tooltipId} content={text}>
                     <IconButton
                         iconProps={iconProps}
-                        styles={zoomIconButtonStyles}
+                        styles={previewIconButtonStyles}
                         onClick={onClick}
                         disabled={disabled || false}
                         text={text}

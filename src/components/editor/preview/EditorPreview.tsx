@@ -1,72 +1,36 @@
 import React from 'react';
-
-import {
-    Stack,
-    StackItem,
-    IStackTokens,
-    IStackStyles,
-    IStackItemStyles
-} from '@fluentui/react/lib/Stack';
+import SplitPane from 'react-split-pane';
 
 import store from '../../../store';
-import { theme } from '../../../core/ui/fluent';
 
-import DataProcessingRouter from '../../DataProcessingRouter';
-import SpecificationError from '../../status/SpecificationError';
 import PreviewAreaToolbar from './PreviewAreaToolbar';
+import EditorPreviewContent from './EditorPreviewContent';
 import {
-    getPreviewAreaHeight,
-    previewAreaPadding
+    areaMinSize,
+    getPreviewAreaHeightMaximumReact,
+    resizerHorizontalStyles
 } from '../../../core/ui/advancedEditor';
-
-const verticalStackTokens: IStackTokens = {
-        childrenGap: 0
-    },
-    verticalStackStyles: IStackStyles = {
-        root: {
-            height: '100vh',
-            border: `1px solid ${theme.palette.neutralLight}`
-        }
-    };
+import { reactLog } from '../../../core/utils/logger';
 
 const EditorPreview: React.FC = () => {
-    const { editorPreviewAreaWidth, editorSpec } = store((state) => state),
-        editorPreviewStyles: IStackItemStyles = {
-            root: {
-                display: 'flex',
-                boxSizing: 'border-box',
-                overflow: 'auto',
-                padding: previewAreaPadding,
-                height: getPreviewAreaHeight()
-            }
-        },
-        resolveContent = () => {
-            switch (editorSpec.status) {
-                case 'error':
-                    return <SpecificationError />;
-                default:
-                    return (
-                        <>
-                            <div id='editorPreview'>
-                                <DataProcessingRouter />
-                            </div>
-                        </>
-                    );
-            }
-        };
-
+    const { editorPreviewAreaHeight, updateEditorPreviewAreaHeight } = store(
+        (state) => state
+    );
+    const handleResize = (size: number) => updateEditorPreviewAreaHeight(size);
+    reactLog('Rendering [EditorPreview]');
     return (
-        <Stack
-            id='editorPreviewStack'
-            tokens={verticalStackTokens}
-            styles={verticalStackStyles}
-            style={{ width: editorPreviewAreaWidth }}
+        <SplitPane
+            split='horizontal'
+            minSize={areaMinSize}
+            maxSize={getPreviewAreaHeightMaximumReact()}
+            size={editorPreviewAreaHeight}
+            onChange={handleResize}
+            allowResize={true}
+            resizerStyle={resizerHorizontalStyles}
         >
-            <StackItem verticalFill styles={editorPreviewStyles}>
-                {resolveContent()}
-            </StackItem>
+            <EditorPreviewContent />
             <PreviewAreaToolbar />
-        </Stack>
+        </SplitPane>
     );
 };
 

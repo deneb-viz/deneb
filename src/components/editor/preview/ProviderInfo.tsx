@@ -23,7 +23,7 @@ const ProviderInfo: React.FC = () => {
         <>
             <StackItem shrink styles={valueStackItemStyles}>
                 <TooltipHost content={i18nValue('Current_Provider_Tooltip')}>
-                    <Assistive>
+                    <Assistive style={{ verticalAlign: 'middle' }}>
                         {provider} {version}
                     </Assistive>
                 </TooltipHost>

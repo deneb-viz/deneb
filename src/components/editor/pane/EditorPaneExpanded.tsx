@@ -18,29 +18,28 @@ import { theme } from '../../../core/ui/fluent';
 import { calculateEditorPaneMaxWidth } from '../../../core/ui/advancedEditor';
 import { reactLog } from '../../../core/utils/logger';
 
-const verticalStackOuterTokens: IStackTokens = { childrenGap: 5 },
-    verticalStackInnerTokens: IStackTokens = {
-        childrenGap: 5,
-        padding: 10
-    },
-    verticalStackInnerStyles: IStackStyles = {
-        root: {
-            height: '100vh',
-            backgroundColor: theme.palette.neutralLighterAlt,
-            border: `1px solid ${theme.palette.neutralLight}`
-        }
-    },
-    stackItemStyles: IStackItemStyles = {
-        root: {
-            display: 'flex'
-        }
-    },
-    finalStackItemStyles: IStackItemStyles = {
-        root: {
-            display: 'flex',
-            overflowY: 'auto'
-        }
-    };
+const verticalStackOuterTokens: IStackTokens = { childrenGap: 5 };
+const verticalStackInnerTokens: IStackTokens = {
+    childrenGap: 5,
+    padding: 10
+};
+const verticalStackInnerStyles: IStackStyles = {
+    root: {
+        height: '99.8vh',
+        backgroundColor: theme.palette.neutralLighterAlt
+    }
+};
+const stackItemStyles: IStackItemStyles = {
+    root: {
+        display: 'flex'
+    }
+};
+const finalStackItemStyles: IStackItemStyles = {
+    root: {
+        display: 'flex',
+        overflowY: 'auto'
+    }
+};
 
 const EditorPaneExpanded = () => {
     reactLog('Rendering [EditorPaneExpanded]');

@@ -27,7 +27,7 @@ export const iconButtonStyles: IButtonStyles = {
     labelHovered: { color: theme.palette.neutralDark }
 };
 
-export const zoomIconButtonStyles: IButtonStyles = mergeStyleSets(
+export const previewIconButtonStyles: IButtonStyles = mergeStyleSets(
     commandBarButtonStyles,
     {
         root: {
