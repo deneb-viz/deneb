@@ -1,7 +1,7 @@
 import React from 'react';
 import SplitPane from 'react-split-pane';
 
-import { useStoreProp, useStoreVisualSettings } from '../../store';
+import { useStoreProp } from '../../store';
 import EditorPane from './pane/EditorPane';
 import EditorPreview from './preview//EditorPreview';
 import CreateVisualDialog from '../create/CreateVisualDialog';
@@ -15,6 +15,7 @@ import {
 } from '../../core/ui/advancedEditor';
 import { IEditorPaneUpdatePayload } from '../../store/editor';
 import { reactLog } from '../../core/utils/logger';
+import { TEditorPosition } from '../../core/ui';
 
 const EditorInterface: React.FC = () => {
     const editorPaneIsExpanded: boolean = useStoreProp('editorPaneIsExpanded');
@@ -22,7 +23,10 @@ const EditorInterface: React.FC = () => {
         'editorPaneDefaultWidth'
     );
     const editorPaneWidth: number = useStoreProp('editorPaneWidth');
-    const position = useStoreVisualSettings()?.editor?.position;
+    const position = useStoreProp<TEditorPosition>(
+        'position',
+        'visualSettings.editor'
+    );
     const updateEditorPaneWidth: (payload: IEditorPaneUpdatePayload) => void =
         useStoreProp('updateEditorPaneWidth');
     const handleResize = (width: number) => {
