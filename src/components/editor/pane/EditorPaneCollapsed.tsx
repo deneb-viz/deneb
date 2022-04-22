@@ -7,7 +7,7 @@ import { i18nValue } from '../../../core/ui/i18n';
 
 import EditorToggleIcon from './EditorToggleIcon';
 import EditorHeadingText from './EditorHeadingText';
-import { reactLog } from '../../../core/utils/logger';
+import { reactLog } from '../../../core/utils/reactLog';
 import { TEditorPosition } from '../../../core/ui';
 
 const EditorPaneCollapsed = () => {

@@ -13,7 +13,7 @@ import { buttonStyles } from '../../core/ui/fluent';
 import { persist } from '../../core/utils/specification';
 import { useStoreProp } from '../../store';
 import { TVisualMode } from '../../core/ui';
-import { reactLog } from '../../core/utils/logger';
+import { reactLog } from '../../core/utils/reactLog';
 
 export const ApplyDialog: React.FunctionComponent = () => {
     const editorIsDirty: boolean = useStoreProp('editorIsDirty');

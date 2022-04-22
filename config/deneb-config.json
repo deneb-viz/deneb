@@ -2,6 +2,7 @@
     "$schema": "../schema/deneb-config.json",
     "features": {
         "developerMode": false,
+        "enableReactLogging": false,
         "enableExternalUri": false,
         "fetchMoreData": true,
         "selectionContextMenu": true,
@@ -85,6 +86,10 @@
         },
         "toggleEditorPane": {
             "combination": "ctrl|alt|space",
+            "functionalArea": "other"
+        },
+        "toggleDebugPane": {
+            "combination": "ctrl|`",
             "functionalArea": "other"
         },
         "editorFocusOut": {
@@ -306,7 +311,7 @@
         "metadataVersion": 1,
         "previewImageSize": 150
     },
-    "visualViewPortAdjust": {
+    "visualViewportAdjust": {
         "top": 5,
         "left": 5
     },

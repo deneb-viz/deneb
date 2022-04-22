@@ -3,7 +3,7 @@ import SplitPane from 'react-split-pane';
 
 import { useStoreProp } from '../../store';
 import EditorPane from './pane/EditorPane';
-import EditorPreview from './preview//EditorPreview';
+import { PreviewArea } from '../../features/preview-area';
 import CreateVisualDialog from '../create/CreateVisualDialog';
 import ExportVisualDialog from '../export/ExportVisualDialog';
 import MapFieldsDialog from '../map/MapFieldsDialog';
@@ -14,7 +14,7 @@ import {
     resizerVerticalStyles
 } from '../../core/ui/advancedEditor';
 import { IEditorPaneUpdatePayload } from '../../store/editor';
-import { reactLog } from '../../core/utils/logger';
+import { reactLog } from '../../core/utils/reactLog';
 import { TEditorPosition } from '../../core/ui';
 
 const EditorInterface: React.FC = () => {
@@ -56,8 +56,8 @@ const EditorInterface: React.FC = () => {
                 resizerStyle={resizerVerticalStyles}
                 paneStyle={resizerPaneVerticalStyles}
             >
-                {position === 'left' ? editorPane : <EditorPreview />}
-                {position === 'left' ? <EditorPreview /> : editorPane}
+                {position === 'left' ? editorPane : <PreviewArea />}
+                {position === 'left' ? <PreviewArea /> : editorPane}
             </SplitPane>
             <CreateVisualDialog />
             <ExportVisualDialog />

@@ -1,4 +1,5 @@
 export * as vegaUtils from './vegaUtils';
+export * as vegaLiteUtils from './vegaLiteUtils';
 export {
     IVegaViewDatum,
     TSpecProvider,
@@ -21,26 +22,26 @@ export {
 
 import cloneDeep from 'lodash/cloneDeep';
 import * as Vega from 'vega';
-import * as vegaSchema from 'vega/build/vega-schema.json';
 import expressionFunction = Vega.expressionFunction;
 import scheme = Vega.scheme;
 import Config = Vega.Config;
 import Spec = Vega.Spec;
 import View = Vega.View;
-import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
 import { TopLevelSpec } from 'vega-lite';
 
-import forEach from 'lodash/forEach';
-import isEqual from 'lodash/isEqual';
 import keys from 'lodash/keys';
-import matches from 'lodash/matches';
 import pick from 'lodash/pick';
-import pickBy from 'lodash/pickBy';
 import reduce from 'lodash/reduce';
 
-import { fillPatternServices, hostServices, viewServices } from '../services';
+import {
+    fillPatternServices,
+    hostServices,
+    loggerServices,
+    viewServices
+} from '../services';
 import { createFormatterFromString } from '../utils/formatting';
-import { cleanParse, getSchemaValidator } from '../utils/json';
+import { cleanParse } from '../utils/json';
+import { vegaLiteValidator, vegaValidator } from './validation';
 import { TEditorRole } from '../services/JsonEditorServices';
 import {
     getState,
@@ -54,7 +55,6 @@ import { getPatchedVegaLiteSpec } from './vegaLiteUtils';
 import { bindInteractivityEvents } from '../interactivity/selection';
 import { isFeatureEnabled } from '../utils/features';
 import { blankImageBase64 } from '../ui/dom';
-import { getDataset } from '../data/dataset';
 import { divergentPalette, divergentPaletteMed, ordinalPalette } from './theme';
 import { resolveSvgFilter } from '../ui/svgFilter';
 import { i18nValue } from '../ui/i18n';
@@ -97,14 +97,19 @@ const editorSchemas: IJSonSchema[] = [
     {
         provider: 'vega',
         role: 'spec',
-        schema: vegaSchema
+        schema: vegaValidator.schema
     },
     {
         provider: 'vegaLite',
         role: 'spec',
-        schema: vegaLiteSchema
+        schema: vegaLiteValidator.schema
     }
 ];
+
+export const editorConfigOverLoad = {
+    background: null, // so we can defer to the Power BI background, if applied
+    customFormatTypes: true
+};
 
 /**
  * For the supplied spec, parse it to determine which provider we should use when importing it (precedence is Vega-Lite), and will then
@@ -113,13 +118,11 @@ const editorSchemas: IJSonSchema[] = [
 const determineProviderFromSpec = (
     spec: Spec | TopLevelSpec
 ): TSpecProvider => {
-    const vegaLiteValidator = getSchemaValidator(vegaLiteSchema),
-        vlValid = vegaLiteValidator(spec);
+    const vlValid = vegaLiteValidator(spec);
     if (vlValid) {
         return 'vegaLite';
     }
-    const vegaValidator = getSchemaValidator(vegaSchema),
-        vValid = vegaValidator(spec);
+    const vValid = vegaValidator(spec);
     if (vValid) {
         return 'vega';
     }
@@ -167,13 +170,10 @@ const getViewDataset = () => ({
  * Form the config that is applied to the Vega view. This will retrieve the config from our visual properties, and enrich it with anything we want
  * to abstract out from the end-user to make things as "at home" in Power BI as possible, without explicitly adding it to the editor or exported template.
  */
-const getViewConfig = () => {
+const getViewConfig = (config = getParsedConfigFromSettings()): Config => {
     return {
-        ...{
-            background: null, // so we can defer to the Power BI background, if applied
-            customFormatTypes: true
-        },
-        ...getParsedConfigFromSettings()
+        ...editorConfigOverLoad,
+        ...config
     };
 };
 
@@ -207,12 +207,14 @@ const getParsedConfigFromSettings = (): Config => {
  * Any logic that we need to apply to a new Vega view.
  */
 const handleNewView = (newView: View) => {
-    newView.runAsync().then(() => {
-        viewServices.bindView(newView);
+    newView.logger(loggerServices);
+    newView.runAfter((view) => {
+        viewServices.bindView(view);
         resolveSvgFilter();
-        bindInteractivityEvents(newView);
+        bindInteractivityEvents(view);
+        getState().updateEditorView(view);
         hostServices.renderingFinished();
-    });
+    }, true);
 };
 
 /**

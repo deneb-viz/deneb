@@ -19,7 +19,7 @@ import { buttonStyles } from '../../core/ui/fluent';
 import { remapSpecificationFields } from '../../core/utils/specification';
 import { getDatasetTemplateFields } from '../../core/data/fields';
 import { IVisualDatasetFields } from '../../core/data';
-import { reactLog } from '../../core/utils/logger';
+import { reactLog } from '../../core/utils/reactLog';
 
 const datasetItemStyles: IStackItemStyles = {
     root: {

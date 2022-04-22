@@ -47,9 +47,7 @@ import {
 } from '../template';
 import { i18nValue } from '../ui/i18n';
 import { cleanParse, getJsonAsIndentedString } from './json';
-import { getPatchedVegaSpec } from '../vega/vegaUtils';
-import { getPatchedVegaLiteSpec } from '../vega/vegaLiteUtils';
-import { getVegaSettings, TSpecProvider } from '../vega';
+import { getVegaSettings, getViewConfig, TSpecProvider } from '../vega';
 import { ITemplateInteractivityOptions } from '../template/schema';
 import { getLastVersionInfo } from './versioning';
 import { IVisualDatasetFields } from '../data';
@@ -57,6 +55,9 @@ import {
     getDatasetFieldsInclusive,
     getDatasetTemplateFields
 } from '../data/fields';
+import { LocalVegaLoggerService } from '../services/VegaLoggerService';
+import { validateVega, validateVegaLite } from '../vega/validation';
+import { IEditorSpecUpdatePayload } from '../../store/editor';
 
 /**
  * For the supplied provider and specification template, add this to the visual and persist to properties, ready for
@@ -163,50 +164,89 @@ const isVersionedSpec = () => {
 const isLegacySpec = () => !isNewSpec() && !isVersionedSpec();
 
 const parseActiveSpec = () => {
-    const { provider, jsonSpec } = getVegaSettings();
-    try {
-        if (!jsonSpec) {
-            // Spec hasn't been edited yet
-            dispatchSpec({
+    const {
+        provider,
+        jsonSpec: rawSpec,
+        jsonConfig,
+        logLevel
+    } = getVegaSettings();
+    const logger = new LocalVegaLoggerService();
+    logger.level(logLevel);
+    let payload: IEditorSpecUpdatePayload;
+    // Spec hasn't been edited yet
+    if (!rawSpec) {
+        dispatchSpec({
+            spec: {
                 status: 'new',
                 spec: propertyDefaults.jsonSpec,
                 rawSpec: propertyDefaults.jsonConfig
-            });
-            return;
-        }
-        const parsedSpec = cleanParse(jsonSpec);
-        // Ensure that our spec (patched for any additional signals etc.) parses successfully and dispatch to store
-        switch (provider) {
-            case 'vegaLite': {
-                const result = VegaLite.compile(<TopLevelSpec>{
-                    ...getPatchedVegaLiteSpec(parsedSpec)
-                });
-                dispatchSpec({
-                    status: 'valid',
-                    spec: parsedSpec,
-                    rawSpec: jsonSpec
-                });
-                break;
-            }
-            case 'vega': {
-                const result = Vega.parse(<Spec>{
-                    ...getPatchedVegaSpec(parsedSpec)
-                });
-                dispatchSpec({
-                    status: 'valid',
-                    spec: parsedSpec,
-                    rawSpec: jsonSpec
-                });
-                break;
-            }
-        }
-    } catch (e) {
-        dispatchSpec({
-            status: 'error',
-            spec: null,
-            rawSpec: jsonSpec,
-            message: e.message
+            },
+            error: null,
+            warns: []
         });
+        return;
+    }
+    try {
+        const spec = cleanParse(rawSpec);
+        switch (provider) {
+            case 'vega': {
+                validateVega(spec, logger);
+                break;
+            }
+            case 'vegaLite': {
+                const config = <VegaLite.Config>(
+                    getViewConfig(cleanParse(jsonConfig))
+                );
+                const options = { config, logger };
+                validateVegaLite(spec, logger);
+                VegaLite.compile(<TopLevelSpec>spec, options);
+                break;
+            }
+        }
+        payload = {
+            spec: { status: 'valid', spec, rawSpec },
+            warns: logger.warns,
+            error: null
+        };
+    } catch (e) {
+        console.log('Validation failure', e);
+        const error = errorLine(rawSpec, e.message);
+        payload = {
+            spec: { status: 'error', spec: null, rawSpec },
+            warns: logger.warns,
+            error
+        };
+    }
+    dispatchSpec(payload);
+};
+
+/**
+ * Borrowed from vega-editor
+ */
+const errorLine = (code: string, error: string) => {
+    const pattern = /(position\s)(\d+)/;
+    let charPos: any = error.match(pattern);
+
+    if (charPos !== null) {
+        charPos = charPos[2];
+        if (!isNaN(charPos)) {
+            let line = 1;
+            let cursorPos = 0;
+
+            while (
+                cursorPos < charPos &&
+                code.indexOf('\n', cursorPos) < charPos &&
+                code.indexOf('\n', cursorPos) > -1
+            ) {
+                const newlinePos = code.indexOf('\n', cursorPos);
+                line = line + 1;
+                cursorPos = newlinePos + 1;
+            }
+
+            return `${error} and line ${line}`;
+        }
+    } else {
+        return error;
     }
 };
 
@@ -282,7 +322,6 @@ interface ICompiledSpec {
     status: TSpecStatus;
     spec: object;
     rawSpec: string;
-    message?: string;
 }
 
 /**
@@ -336,8 +375,8 @@ const dispatchFixStatus = (result: IFixResult) => {
 /**
  * Dispatch a compiled specification to the store.
  */
-export const dispatchSpec = (compiledSpec: ICompiledSpec) => {
-    getState().updateEditorSpec(compiledSpec);
+export const dispatchSpec = (payload: IEditorSpecUpdatePayload) => {
+    getState().updateEditorSpec(payload);
 };
 
 /**

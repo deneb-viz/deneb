@@ -11,7 +11,7 @@ import {
 } from '../../../core/ui/commandBar';
 
 import { i18nValue } from '../../../core/ui/i18n';
-import { reactLog } from '../../../core/utils/logger';
+import { reactLog } from '../../../core/utils/reactLog';
 
 const EditorCommandBar: React.FC = () => {
     const items = getCommandBarItems();

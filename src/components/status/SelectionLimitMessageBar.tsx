@@ -5,7 +5,7 @@ import { useStoreProp, useStoreVegaProp } from '../../store';
 import { dispatchSelectionAborted } from '../../core/interactivity/selection';
 import { i18nValue } from '../../core/ui/i18n';
 import NotificationMessageBar from '../elements/NotificationMessageBar';
-import { reactLog } from '../../core/utils/logger';
+import { reactLog } from '../../core/utils/reactLog';
 
 const SelectionLimitMessageBar: React.FC = () => {
     const datasetHasSelectionAborted: boolean = useStoreProp(

@@ -26,9 +26,9 @@ import { hasLiveSpecChanged, persist } from '../utils/specification';
 import { getState } from '../../store';
 import { isDialogOpen } from '../ui/modal';
 import { i18nValue } from '../ui/i18n';
-import { getBaseValidator } from '../utils/json';
 import { getEditorSchema, getVegaSettings, TSpecProvider } from '../vega';
 import { IVisualDatasetField } from '../data';
+import { baseValidator } from '../vega/validation';
 
 class JsonEditorServices implements IVisualEditor {
     role: TEditorRole;
@@ -194,7 +194,7 @@ const getNewJsonEditor = (container: HTMLDivElement) =>
     new JSONEditor(container, {
         modes: [],
         ace: ace,
-        ajv: getBaseValidator(),
+        ajv: baseValidator,
         mode: 'code',
         mainMenuBar: false,
         theme: 'ace/theme/chrome',

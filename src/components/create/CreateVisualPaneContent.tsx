@@ -10,7 +10,7 @@ import {
 } from '../elements';
 import TemplateStateHandler from './content/TemplateStateHandler';
 import CreateVisualTemplateNav from './nav/CreateVisualTemplateNav';
-import { reactLog } from '../../core/utils/logger';
+import { reactLog } from '../../core/utils/reactLog';
 
 const CreateVisualPaneContent: React.FC = () => {
     reactLog('Rendering [CreateVisualPaneContent]');

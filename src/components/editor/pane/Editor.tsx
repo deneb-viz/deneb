@@ -1,6 +1,6 @@
 import React from 'react';
 import { editor } from '../../../core/services';
-import { reactLog } from '../../../core/utils/logger';
+import { reactLog } from '../../../core/utils/reactLog';
 import { stageEditorData } from '../../../core/utils/specification';
 import getAssignedEditor = editor.getAssignedEditor;
 import handleComponentUpdate = editor.handleComponentUpdate;

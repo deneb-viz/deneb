@@ -4,9 +4,9 @@ import { StackItem, IStackItemStyles } from '@fluentui/react/lib/Stack';
 import { TooltipHost } from '@fluentui/react/lib/Tooltip';
 
 import { i18nValue } from '../../../core/ui/i18n';
-import { Assistive } from '../../elements/Typography';
+import { Assistive } from '../../../components/elements/Typography';
 import { getVegaProvideri18n, getVegaVersion } from '../../../core/vega';
-import { reactLog } from '../../../core/utils/logger';
+import { reactLog } from '../../../core/utils/reactLog';
 
 const valueStackItemStyles: IStackItemStyles = {
     root: {
@@ -15,7 +15,7 @@ const valueStackItemStyles: IStackItemStyles = {
     }
 };
 
-const ProviderInfo: React.FC = () => {
+export const ProviderDetail: React.FC = () => {
     const provider = getVegaProvideri18n();
     const version = getVegaVersion();
     reactLog('Rendering [ProviderInfo]');
@@ -31,5 +31,3 @@ const ProviderInfo: React.FC = () => {
         </>
     );
 };
-
-export default ProviderInfo;

@@ -2,7 +2,7 @@ import React from 'react';
 
 import { handleEditorPane } from '../../../core/ui/commands';
 import { i18nValue } from '../../../core/ui/i18n';
-import { reactLog } from '../../../core/utils/logger';
+import { reactLog } from '../../../core/utils/reactLog';
 
 import { EditorHeading } from '../../elements/Typography';
 

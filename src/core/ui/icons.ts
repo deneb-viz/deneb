@@ -74,6 +74,9 @@ export const getEditorHeadingIcon = (
         ? 'ChevronLeft'
         : 'ChevronRight';
 
+export const getDebugToggleIcon = (expanded: boolean) =>
+    expanded ? 'ChevronDown' : 'ChevronUp';
+
 export const isZoomInIconDisabled = (value: number) =>
     value === zoomConfig.max || isZoomControlDisabled();
 

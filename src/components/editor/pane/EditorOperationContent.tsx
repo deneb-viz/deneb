@@ -1,5 +1,5 @@
 import React from 'react';
-import { reactLog } from '../../../core/utils/logger';
+import { reactLog } from '../../../core/utils/reactLog';
 
 import EditorOperationContainer from './EditorOperationContainer';
 

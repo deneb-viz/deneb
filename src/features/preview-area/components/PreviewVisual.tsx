@@ -1,20 +1,17 @@
 import React from 'react';
 
-import store, { useStoreProp } from '../../../store';
+import store from '../../../store';
 
-import DataProcessingRouter from '../../DataProcessingRouter';
-import SpecificationError from '../../status/SpecificationError';
-import { previewAreaPadding } from '../../../core/ui/advancedEditor';
-import { logHasErrors, reactLog } from '../../../core/utils/logger';
+import DataProcessingRouter from '../../../components/DataProcessingRouter';
+import SpecificationError from '../../../components/status/SpecificationError';
+import { reactLog } from '../../../core/utils/reactLog';
+import { PREVIEW_PANE_AREA_PADDING } from '../../../constants';
+import { logHasErrors } from '../../debug-area';
 
-const EditorPreviewContent: React.FC = () => {
+export const PreviewVisual: React.FC = () => {
     const { editorPreviewAreaHeight, editorSpec } = store((state) => state);
     const { status } = editorSpec;
-    reactLog(
-        'Rendering [EditorPreviewContent]',
-        status,
-        editorPreviewAreaHeight
-    );
+    reactLog('Rendering [PreviewVisual]', status, editorPreviewAreaHeight);
     switch (true) {
         case logHasErrors():
             return <SpecificationError />;
@@ -24,7 +21,7 @@ const EditorPreviewContent: React.FC = () => {
                     id='editorPreview'
                     style={{
                         height: editorPreviewAreaHeight,
-                        padding: previewAreaPadding,
+                        padding: PREVIEW_PANE_AREA_PADDING,
                         boxSizing: 'border-box',
                         display: 'flex'
                     }}
@@ -34,5 +31,3 @@ const EditorPreviewContent: React.FC = () => {
             );
     }
 };
-
-export default EditorPreviewContent;

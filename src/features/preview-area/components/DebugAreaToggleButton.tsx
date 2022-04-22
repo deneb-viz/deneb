@@ -7,26 +7,28 @@ import { TooltipHost } from '@fluentui/react/lib/Tooltip';
 import { useId } from '@fluentui/react-hooks';
 
 import { i18nValue } from '../../../core/ui/i18n';
-import { previewIconButtonStyles } from '../../../core/ui/icons';
+import {
+    getDebugToggleIcon,
+    previewIconButtonStyles
+} from '../../../core/ui/icons';
+import store from '../../../store';
+import { updatePreviewDebugPaneState } from '../../../core/ui/commands';
+import { resolveEditorDebugPaneToggleAria } from '../../../core/ui/aria';
 
-interface IZoomButtonProps {
-    i18nKey: string;
-    iconName: string;
-    onClick: () => void;
-    disabled?: boolean;
-}
-
-const ZoomButton: React.FC<IZoomButtonProps> = ({
-    i18nKey,
-    iconName,
-    onClick,
-    disabled
-}) => {
+export const DebugAreaToggleButton: React.FC = () => {
+    const { editorPreviewDebugIsExpanded } = store((state) => state);
+    const i18nKey = resolveEditorDebugPaneToggleAria(
+        editorPreviewDebugIsExpanded
+    );
+    const iconName = getDebugToggleIcon(editorPreviewDebugIsExpanded);
     const tooltipId = useId(`tooltip_${i18nKey}`),
         text = i18nValue(i18nKey),
         iconProps: IIconProps = {
             iconName
         };
+    const handleClick = () => {
+        updatePreviewDebugPaneState();
+    };
     return (
         <>
             <StackItem>
@@ -34,8 +36,7 @@ const ZoomButton: React.FC<IZoomButtonProps> = ({
                     <IconButton
                         iconProps={iconProps}
                         styles={previewIconButtonStyles}
-                        onClick={onClick}
-                        disabled={disabled || false}
+                        onClick={handleClick}
                         text={text}
                         ariaLabel={text}
                     />
@@ -44,5 +45,3 @@ const ZoomButton: React.FC<IZoomButtonProps> = ({
         </>
     );
 };
-
-export default ZoomButton;

@@ -21,9 +21,10 @@ import {
     handleNavSpec,
     handleNavConfig,
     handleNavSettings,
-    handleMapFields
+    handleMapFields,
+    handleDebugPane
 } from '../core/ui/commands';
-import { reactLog } from '../core/utils/logger';
+import { reactLog } from '../core/utils/reactLog';
 
 const App = () => {
     useHotkeys(getCommandKey('applyChanges'), handleApply, hotkeyOptions);
@@ -63,6 +64,11 @@ const App = () => {
     useHotkeys(
         getCommandKey('toggleEditorPane'),
         handleEditorPane,
+        hotkeyOptions
+    );
+    useHotkeys(
+        getCommandKey('toggleDebugPane'),
+        handleDebugPane,
         hotkeyOptions
     );
     useHotkeys(

@@ -13,7 +13,7 @@ import { hostServices } from '../../core/services';
 import { getConfig } from '../../core/utils/config';
 import { dismissVersionNotification } from '../../core/ui/commands';
 import { useStoreProp } from '../../store';
-import { reactLog } from '../../core/utils/logger';
+import { reactLog } from '../../core/utils/reactLog';
 
 const VisualUpdateMessageBar: React.FC = () => {
     const showVersionNotification = useStoreProp<boolean>(

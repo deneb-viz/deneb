@@ -21,7 +21,7 @@ import {
     validateSpecificationForExport
 } from '../../core/template';
 import { i18nValue } from '../../core/ui/i18n';
-import { reactLog } from '../../core/utils/logger';
+import { reactLog } from '../../core/utils/reactLog';
 
 export const ExportVisualDialogBody = () => {
     const templateSelectedExportOperation: TExportOperation = useStoreProp(

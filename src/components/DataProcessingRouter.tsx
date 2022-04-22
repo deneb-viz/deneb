@@ -22,7 +22,7 @@ import {
     TSpecProvider,
     TSpecRenderMode
 } from '../core/vega';
-import { reactLog } from '../core/utils/logger';
+import { reactLog } from '../core/utils/reactLog';
 
 const DataProcessingRouter: React.FC = () => {
     const datasetProcessingStage = useStoreProp<TDataProcessingStage>(

@@ -269,6 +269,10 @@
                     "description": "Provides a means of enabling developer-specific functionality independent of debugging.",
                     "type": "boolean"
                 },
+                "enableReactLogging": {
+                    "description": "Enables verbose logging of React output via the console. Should not be enabled in a production visual.",
+                    "type": "boolean"
+                },
                 "enableExternalUri": {
                     "description": "Enable external URIs in specifications for data and images - if enabled, we'll preserve any URI/URL-based content in specifications and config, although these will be subject to the standard CORS limitations that custom visuals are subject to. If disabled, then we process text for any occurrences of a URI and strip it out (except for `data:` URIs).",
                     "type": "boolean"
@@ -331,6 +335,7 @@
                 "navigateConfig",
                 "navigateSettings",
                 "toggleEditorPane",
+                "toggleDebugPane",
                 "editorFocusOut",
                 "zoomIn",
                 "zoomOut",
@@ -380,6 +385,10 @@
                 },
                 "toggleEditorPane": {
                     "description": "Command to toggle display of the Editor pane.",
+                    "$ref": "#/definitions/IKeyboardShortcut"
+                },
+                "toggleDebugPane": {
+                    "description": "Command to toggle display of the Debug pane.",
                     "$ref": "#/definitions/IKeyboardShortcut"
                 },
                 "editorFocusOut": {
@@ -501,6 +510,35 @@
                 }
             }
         },
+        "previewPane": {
+            "description": "Defaults and values to configure the display of the preview pane in the editor.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "areaMinSize",
+                "toolbarMinSize",
+                "toolbarInitialPercent",
+                "logLevels"
+            ],
+            "properties": {
+                "areaMinSize": {
+                    "description": "Minimum possible size for the preview area, in pixels.",
+                    "type": "integer"
+                },
+                "toolbarMinSize": {
+                    "description": "Minimum possible size for the preview pane, in pixels.",
+                    "type": "integer"
+                },
+                "toolbarInitialPercent": {
+                    "description": "Size to open toolbar at, if currently minimized.",
+                    "type": "integer"
+                },
+                "logLevels": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/ILogLevel" }
+                }
+            }
+        },
         "splitPaneDefaults": {
             "description": "For the Editor pane, we're using `react-split-pane` to allow the author to resize it. This object specifies the sizes we should allow for this pane within the visual viewport.",
             "type": "object",
@@ -530,7 +568,7 @@
                 }
             }
         },
-        "visualViewPortAdjust": {
+        "visualViewportAdjust": {
             "description": "For the rendered Vega spec, how much spacing (in px) to apply to the visual, within its visible area.",
             "type": "object",
             "additionalProperties": false,
@@ -593,11 +631,12 @@
         "features",
         "fluentUiTheme",
         "modalDialog",
+        "previewPane",
         "providerResources",
         "propertyDefaults",
         "selection",
         "splitPaneDefaults",
-        "visualViewPortAdjust",
+        "visualViewportAdjust",
         "templates",
         "zoomLevel"
     ]

@@ -10,9 +10,12 @@ export {
     openEditorPivotItem,
     openHelpSite,
     openMapFieldsDialog,
+    openPreviewPivotItem,
     repairFormatJson,
     resetProviderPropertyValue,
     updateBooleanProperty,
+    updateLogLevel,
+    updatePreviewDebugPaneState,
     updateProvider,
     updateSelectionMaxDataPoints,
     updateRenderMode,
@@ -39,7 +42,7 @@ import { TModalDialogType } from './modal';
 import { updateExportState } from '../template';
 import { TSpecProvider, TSpecRenderMode } from '../vega';
 import { getZoomInLevel, getZoomOutLevel, zoomConfig } from './dom';
-import { getZoomToFitScale } from './advancedEditor';
+import { getZoomToFitScale, TPreviewPivotRole } from './advancedEditor';
 
 interface IKeyboardShortcut {
     keys: string;
@@ -90,7 +93,8 @@ export const handleNavConfig = () => executeEditorCommand(navConfig);
 export const handleNavSettings = () => executeEditorCommand(navSettings);
 export const handleEditorPane = () =>
     executeEditorCommand(getState().toggleEditorPane);
-
+export const handleDebugPane = () =>
+    executeEditorCommand(getState().togglePreviewDebugPane);
 export const handleFocusFirstPivot = () =>
     executeEditorCommand(focusFirstPivot);
 
@@ -189,6 +193,14 @@ const dispatchMapFieldsDialog = (show = true) => {
     getState().updateEditorMapDialogVisible(show);
 };
 
+const dispatchPreviewPivotItem = (role: TPreviewPivotRole) => {
+    getState().updateEditorSelectedPreviewRole(role);
+};
+
+const dispatchPreviewDebugToggle = () => {
+    getState().togglePreviewDebugPane();
+};
+
 const dispatchFourd3d3d = () => {
     getState().setVisual4d3d3d(true);
 };
@@ -221,6 +233,17 @@ const isApplyButtonDisabled = () => {
  */
 const openEditorPivotItem = (operation: TEditorRole) =>
     dispatchEditorPivotItem(operation);
+
+/**
+ * Open a specific pivot item in the preview pane.
+ */
+const openPreviewPivotItem = (role: TPreviewPivotRole) =>
+    dispatchPreviewPivotItem(role);
+
+/**
+ * Handles update of debug pane toggle state.
+ */
+const updatePreviewDebugPaneState = () => dispatchPreviewDebugToggle();
 
 /**
  * Handle the Get Help command.
@@ -263,6 +286,10 @@ const resetProviderPropertyValue = (propertyKey: string) => {
  */
 const updateBooleanProperty = (name: string, value: boolean) =>
     handlePersist([{ name, value }]);
+
+const updateLogLevel = (value: string) => {
+    handlePersist([{ name: 'logLevel', value }]);
+};
 
 /**
  * Handle the change in provider from one to the other and update necessary store dependencies and properties.

@@ -8,6 +8,12 @@ const errors = [];
 if (config.features.developerMode) {
     errors.push('features.developerMode flag is true; this should be false.');
 }
+// React logging: Should not be set in committed code
+if (config.features.enableReactLogging) {
+    errors.push(
+        'features.enableReactLogging flag is true; this should be false.'
+    );
+}
 // External URIs: Not permitted in certified visual, so needs to be disabled in committed code.
 if (config.features.enableExternalUri) {
     errors.push('features.enableExternalUri is true; this should be false.');

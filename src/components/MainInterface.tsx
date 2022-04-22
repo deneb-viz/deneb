@@ -9,7 +9,7 @@ import SplashReadWrite from './status/SplashReadWrite';
 import SplashNoSpec from './status/SplashNoSpec';
 import SelectionLimitMessageBar from './status/SelectionLimitMessageBar';
 import { TVisualMode } from '../core/ui';
-import { reactLog } from '../core/utils/logger';
+import { reactLog } from '../core/utils/reactLog';
 
 const MainInterface = () => {
     const visualMode = useStoreProp<TVisualMode>('visualMode');

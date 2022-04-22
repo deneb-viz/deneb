@@ -20,10 +20,6 @@ const fontTitle = 'wf_standard-font, helvetica, arial, sans-serif';
  * This version is dynamic, based on the underlying report theme (if feature enabled).
  */
 export const powerbiTheme = (): Config => ({
-    autosize: {
-        type: 'fit',
-        contains: 'padding'
-    },
     view: { stroke: 'transparent' },
     font: fontStandard,
     arc: {},
@@ -62,7 +58,6 @@ export const powerbiTheme = (): Config => ({
         gridDash: [1, 5],
         labelFlush: false
     },
-    axisBand: { tickExtra: true },
     axisX: { labelPadding: 5 },
     axisY: { labelPadding: 10 },
     header: {

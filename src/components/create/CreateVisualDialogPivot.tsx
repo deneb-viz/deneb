@@ -6,7 +6,7 @@ import { useStoreProp } from '../../store';
 import { TTemplateProvider } from '../../core/template';
 import { i18nValue } from '../../core/ui/i18n';
 import { resolveTemplateProviderPivotAria } from '../../core/ui/aria';
-import { reactLog } from '../../core/utils/logger';
+import { reactLog } from '../../core/utils/reactLog';
 
 const pivotStyles: Partial<IStyleSet<IPivotStyles>> = {
     itemContainer: {

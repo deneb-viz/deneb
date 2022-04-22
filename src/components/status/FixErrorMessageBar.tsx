@@ -3,7 +3,7 @@ import { MessageBarType } from '@fluentui/react/lib/MessageBar';
 
 import { useStoreProp } from '../../store';
 import NotificationMessageBar from '../elements/NotificationMessageBar';
-import { reactLog } from '../../core/utils/logger';
+import { reactLog } from '../../core/utils/reactLog';
 
 const FixErrorMessageBar: React.FC = () => {
     const success = useStoreProp<boolean>('success', 'editorFixResult');

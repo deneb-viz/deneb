@@ -8,7 +8,7 @@ import ModalHeader from '../modal/ModalHeader';
 import { closeModalDialog } from '../../core/ui/commands';
 import { TModalDialogType } from '../../core/ui/modal';
 import { modalDialogContentStyles } from '../../core/ui/modal';
-import { reactLog } from '../../core/utils/logger';
+import { reactLog } from '../../core/utils/reactLog';
 
 interface IModalDialogProps {
     type: TModalDialogType;

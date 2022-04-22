@@ -1,5 +1,5 @@
 import React from 'react';
-import { reactLog } from '../../core/utils/logger';
+import { reactLog } from '../../core/utils/reactLog';
 
 import { useStoreProp } from '../../store';
 import ModalDialog from '../modal/ModalDialog';

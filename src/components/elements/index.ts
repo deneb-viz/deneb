@@ -8,7 +8,8 @@ import {
     IStackTokens,
     ITheme,
     mergeStyleSets,
-    FontSizes
+    FontSizes,
+    IDropdownStyles
 } from '@fluentui/react';
 
 import { theme } from '../../core/ui/fluent';
@@ -40,6 +41,16 @@ const choiceGroupStyles: IChoiceGroupStyles = {
             paddingRight: '16px'
         }
     };
+
+export const horizontalDropdownStyles: Partial<IDropdownStyles> = {
+    root: {
+        display: 'flex',
+        flexWrap: 'wrap'
+    },
+    label: {
+        paddingRight: 16
+    }
+};
 
 // Template picker items
 const templatePickerItemListStyles = mergeStyleSets({

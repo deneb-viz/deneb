@@ -1,8 +1,8 @@
-import * as React from 'react';
+import React from 'react';
 
 import store from '../../../store';
 
-const FourD3D3D3: React.FC = () => {
+export const FourD3D3D3: React.FC = () => {
     const { visualViewportReport, setVisual4d3d3d } = store((state) => state),
         { width, height } = visualViewportReport,
         handleDismiss = () => {
@@ -18,5 +18,3 @@ const FourD3D3D3: React.FC = () => {
         />
     );
 };
-
-export default FourD3D3D3;

@@ -1,11 +1,11 @@
-import React, { useCallback, memo } from 'react';
+import React, { memo } from 'react';
 import { createClassFromSpec, VegaLite } from 'react-vega';
 import * as Vega from 'vega';
 import { deepEqual } from 'vega-lite';
 
-import { useStoreProp } from '../store';
+import { useStoreProp, useStoreVegaProp } from '../store';
 import SpecificationError from './status/SpecificationError';
-import FourD3D3D3 from '../components/editor/preview/FourD3D3D3';
+import { FourD3D3D3 } from '../features/preview-area';
 import SplashNoSpec from './status/SplashNoSpec';
 
 import { getTooltipHandler } from '../core/interactivity/tooltip';
@@ -20,9 +20,11 @@ import {
     TSpecRenderMode
 } from '../core/vega';
 import { View } from 'vega';
-import { dispatchSpec, TSpecStatus } from '../core/utils/specification';
+import { TSpecStatus } from '../core/utils/specification';
 import { IVisualDatasetValueRow } from '../core/data';
-import { reactLog } from '../core/utils/logger';
+import { reactLog } from '../core/utils/reactLog';
+import { DATASET_NAME } from '../constants';
+import { logHasErrors } from '../features/debug-area';
 
 interface IVisualRenderProps {
     specification: object;
@@ -47,18 +49,20 @@ const areEqual = (
         deepEqual(prevProps.specification, nextProps.specification) &&
         deepEqual(prevProps.config, nextProps.config) &&
         deepEqual(prevProps.data, nextProps.data) &&
-        prevProps.provider === nextProps.provider &&
-        prevProps.enableTooltips === nextProps.enableTooltips &&
-        prevProps.renderMode === nextProps.renderMode;
+        deepEqual(prevProps.provider, nextProps.provider) &&
+        deepEqual(prevProps.enableTooltips, nextProps.enableTooltips) &&
+        deepEqual(prevProps.renderMode, nextProps.renderMode);
     reactLog('[VisualRender] Vega Re-render', !result);
     return result;
 };
 
 const VisualRender: React.FC<IVisualRenderProps> = memo(
     ({ specification, config, data, provider, enableTooltips, renderMode }) => {
+        const logLevel = useStoreVegaProp<number>('logLevel');
         const status = useStoreProp<TSpecStatus>('status', 'editorSpec');
-        const rawSpec = useStoreProp<TSpecStatus>('status', 'rawSpec');
         const visual4d3d3d = useStoreProp<boolean>('visual4d3d3d');
+        const recordLogErrorMain =
+            useStoreProp<(message: string) => void>('recordLogErrorMain');
         const { locale } = hostServices;
         const tooltipHandler = getTooltipHandler(
             enableTooltips,
@@ -69,9 +73,16 @@ const VisualRender: React.FC<IVisualRenderProps> = memo(
             handleNewView(view);
         };
         const handleError = (error: Error) => {
-            loggerServices.reset();
-            loggerServices.error(error);
-            dispatchSpec({
+            switch (error.message) {
+                // This is crude, but still lets us use local values without using dataset
+                case `Unrecognized data set: ${DATASET_NAME}`:
+                    return;
+                default: {
+                    recordLogErrorMain(error.message);
+                    return;
+                }
+            }
+        };
         const formatLocale =
             locales.format[locale] || locales.format[locales.default];
         const timeFormatLocale =
@@ -80,11 +91,11 @@ const VisualRender: React.FC<IVisualRenderProps> = memo(
         if (visual4d3d3d) return <FourD3D3D3 />;
         registerCustomExpressions();
         registerCustomSchemes();
-        switch (status) {
-            case 'error': {
+        switch (true) {
+            case logHasErrors(): {
                 return <SpecificationError />;
             }
-            case 'valid': {
+            case status === 'valid': {
                 switch (provider) {
                     case 'vegaLite': {
                         return (
@@ -100,6 +111,7 @@ const VisualRender: React.FC<IVisualRenderProps> = memo(
                                 loader={loader}
                                 onNewView={newView}
                                 onError={handleError}
+                                logLevel={logLevel}
                             />
                         );
                     }
@@ -119,6 +131,7 @@ const VisualRender: React.FC<IVisualRenderProps> = memo(
                                 loader={loader}
                                 onNewView={newView}
                                 onError={handleError}
+                                logLevel={logLevel}
                             />
                         );
                     }

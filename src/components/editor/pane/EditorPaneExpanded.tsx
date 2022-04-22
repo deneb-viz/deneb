@@ -16,7 +16,7 @@ import VisualUpdateMessageBar from '../../status/VisualUpdateMessageBar';
 
 import { theme } from '../../../core/ui/fluent';
 import { calculateEditorPaneMaxWidth } from '../../../core/ui/advancedEditor';
-import { reactLog } from '../../../core/utils/logger';
+import { reactLog } from '../../../core/utils/reactLog';
 
 const verticalStackOuterTokens: IStackTokens = { childrenGap: 5 };
 const verticalStackInnerTokens: IStackTokens = {

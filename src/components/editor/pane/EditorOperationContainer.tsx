@@ -5,7 +5,7 @@ import store from '../../../store';
 import Editor from './Editor';
 import EditorPaneSettings from '../../settings/EditorPaneSettings';
 import { TEditorRole } from '../../../core/services/JsonEditorServices';
-import { reactLog } from '../../../core/utils/logger';
+import { reactLog } from '../../../core/utils/reactLog';
 
 interface IEditorOperationContainerProps {
     operation: TEditorRole;

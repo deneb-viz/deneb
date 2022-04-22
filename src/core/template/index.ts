@@ -32,8 +32,7 @@ import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import { Spec } from 'vega';
 import { TopLevelSpec } from 'vega-lite';
 import { v4 as uuidv4 } from 'uuid';
-import Ajv from 'ajv';
-import ErrorObject = Ajv.ErrorObject;
+import Ajv, { ErrorObject } from 'ajv';
 import has from 'lodash/has';
 import merge from 'lodash/merge';
 import reduce from 'lodash/reduce';
@@ -356,9 +355,7 @@ const onReaderLoad = (event: ProgressEvent<FileReader>, templateFile: File) => {
         updateImportError('Template_Import_Invalid_Json');
         return;
     }
-    const ajv = new Ajv({
-        format: 'full'
-    });
+    const ajv = new Ajv({ format: 'full' });
     const provider = determineProviderFromSpec(template);
     const templateToApply = getTemplateResolvedForLegacyVersions(
         provider,
