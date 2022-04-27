@@ -52,6 +52,7 @@ export const SignalViewer: React.FC = () => {
         <>
             <StackItem grow styles={dataTableStackItemStyles}>
                 <DataTable
+                    name='signals'
                     columns={getSignalTableColumns()}
                     data={getSignalTableValues(editorView)}
                     layout='fitColumns'

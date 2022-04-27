@@ -209,7 +209,6 @@ const parseActiveSpec = () => {
             error: null
         };
     } catch (e) {
-        console.log('Validation failure', e);
         const error = errorLine(rawSpec, e.message);
         payload = {
             spec: { status: 'error', spec: null, rawSpec },

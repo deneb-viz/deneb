@@ -5,8 +5,8 @@ import { Scrollbars } from 'react-custom-scrollbars-2';
 
 import store from '../../../store';
 import LogViewer from './LogViewer';
-import { DataViewer } from './DataViewer';
-import { SignalViewer } from './SignalViewer';
+import { DataViewerRouter } from './DataViewerRouter';
+import { SignalViewerRouter } from './SignalViewerRouter';
 import { reactLog } from '../../../core/utils/reactLog';
 import { Paragraph } from '../../../components/elements/Typography';
 import { i18nValue } from '../../../core/ui/i18n';
@@ -32,9 +32,9 @@ export const DebugAreaContent: React.FC = () => {
             case 'log':
                 return <LogViewer />;
             case 'data':
-                return <DataViewer />;
+                return <DataViewerRouter />;
             case 'signal':
-                return <SignalViewer />;
+                return <SignalViewerRouter />;
             default:
                 return <Paragraph>{i18nValue('Pivot_Mode_Unknown')}</Paragraph>;
         }

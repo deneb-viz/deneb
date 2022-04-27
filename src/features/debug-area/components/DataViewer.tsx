@@ -20,7 +20,19 @@ import {
     getColumnTooltip,
     getFormattedValueForTable
 } from '../data-table';
-import { DATASET_KEY_NAME, DATASET_NAME } from '../../../constants';
+import {
+    DATASET_IDENTITY_NAME,
+    DATASET_KEY_NAME,
+    DATASET_NAME
+} from '../../../constants';
+
+/**
+ * Represents content to be displayed in a data table.
+ */
+interface IDataTableContent {
+    columns: ColumnDefinition[];
+    data: any[];
+}
 
 /**
  * Override regular dropdown width styling to handle longer names.
@@ -39,12 +51,20 @@ const getDatasets = (view: View): IDropdownOption[] =>
         .map((key) => ({ key, text: key }));
 
 /**
+ * Retrieve a dataset from the view by name.
+ */
+const getNamedDataset = (view: View, name = DATASET_NAME) =>
+    getDatasets(view)?.find((d) => d.key === name);
+
+/**
  * For a dataset view, we need to dynamically get and assign columns from the
  * selected dataset from the view.
  */
 const getDataTableColumns = (dataset: string, view: View): ColumnDefinition[] =>
     keys(view.data(dataset)?.[0])
-        ?.filter((c) => c !== DATASET_KEY_NAME)
+        ?.filter(
+            (c) => [DATASET_KEY_NAME, DATASET_IDENTITY_NAME].indexOf(c) === -1
+        )
         ?.map((c) => ({
             title: c,
             field: c,
@@ -55,14 +75,30 @@ const getDataTableColumns = (dataset: string, view: View): ColumnDefinition[] =>
         })) || [];
 
 /**
+ * Obtain table content for display.
+ */
+const getDataTableContent = (view: View, name: string): IDataTableContent => ({
+    columns: getDataTableColumns(name, view),
+    data: view.data(name)
+});
+
+/**
  * Handles display of dataset info in the debug area.
  */
 export const DataViewer: React.FC = () => {
     const { editorView } = store((state) => state);
     const dropdownOptions = getDatasets(editorView);
     const [selectedItem, setSelectedItem] = useState<IDropdownOption>(
-        dropdownOptions?.find((d) => d.key === DATASET_NAME) || undefined
+        getNamedDataset(editorView)
     );
+    // Ensure that if a change to the spec removes selected dataset, that its
+    // contents are set to the default dataset
+    let dataTableContent: IDataTableContent = { columns: [], data: [] };
+    try {
+        dataTableContent = getDataTableContent(editorView, selectedItem?.text);
+    } catch {
+        setSelectedItem(getNamedDataset(editorView));
+    }
     const [key, setKey] = useState<number>(0);
     const debounceData = debounce(100, () => setKey((key) => key + 1));
     const addListener = (name: string) => {
@@ -98,11 +134,9 @@ export const DataViewer: React.FC = () => {
             <StackItem grow key={key} styles={dataTableStackItemStyles}>
                 {selectedItem ? (
                     <DataTable
-                        columns={getDataTableColumns(
-                            selectedItem.text,
-                            editorView
-                        )}
-                        data={editorView.data(selectedItem.text)}
+                        name={selectedItem.text}
+                        columns={dataTableContent.columns}
+                        data={dataTableContent.data}
                         layout='fitData'
                     />
                 ) : (

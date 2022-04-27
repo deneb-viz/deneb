@@ -26,4 +26,4 @@ export const TABLE_VALUE_MAX_DEPTH = 3;
  * The maximum permitted length of a value for a table cell before 'truncating'
  * it for display.
  */
-export const TABLE_VALUE_MAX_LENGTH = 250;
+export const TABLE_VALUE_MAX_LENGTH = 150;
