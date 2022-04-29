@@ -12,7 +12,7 @@ import SplashInitial from './status/SplashInitial';
 import { i18nValue } from '../core/ui/i18n';
 import { getViewModeViewportStyles, zoomConfig } from '../core/ui/dom';
 import { clearSelection } from '../core/interactivity/selection';
-import { hideTooltip } from '../core/interactivity/tooltip';
+import { hidePowerBiTooltip } from '../features/interactivity';
 import { TDataProcessingStage } from '../core/data';
 import { TVisualMode } from '../core/ui';
 import {
@@ -44,7 +44,7 @@ const DataProcessingRouter: React.FC = () => {
     const specification = getViewSpec();
     const config = getViewConfig();
     const handleMouseLeave = () => {
-        hideTooltip();
+        hidePowerBiTooltip();
     };
     const isEditor = visualMode === 'Editor';
     const zoomLevel = (isEditor && editorZoomLevel) || zoomConfig.default;

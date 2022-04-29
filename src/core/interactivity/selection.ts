@@ -36,12 +36,14 @@ import {
 } from '../vega';
 import { getState } from '../../store';
 import { getCategoryColumns } from '../data/dataView';
-import { hideTooltip } from './tooltip';
 import { clearCatcherSelector } from '../ui/dom';
 import { IVisualDatasetFields, IVisualDatasetValueRow } from '../data';
 import { getDatasetFieldsBySelectionKeys } from '../data/fields';
 import { DATASET_IDENTITY_NAME, DATASET_ROW_NAME } from '../../constants';
-import { TDataPointSelectionStatus } from '../../features/interactivity';
+import {
+    hidePowerBiTooltip,
+    TDataPointSelectionStatus
+} from '../../features/interactivity';
 
 /**
  * Confirm that each dataum in a datset contains a reconcilable identifier for
@@ -322,7 +324,7 @@ const handleDataPointEvent = (event: ScenegraphEvent, item: Item) => {
         const data = resolveDataFromItem(item);
         const identities = getSelectionIdentitiesFromData(data);
         mouseEvent && mouseEvent.preventDefault();
-        hideTooltip();
+        hidePowerBiTooltip();
         switch (true) {
             case isSelectionLimitExceeded(identities): {
                 dispatchSelectionAborted(true);

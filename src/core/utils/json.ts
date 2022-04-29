@@ -39,7 +39,7 @@ export const getJsonAsIndentedString = (
     });
 
 /**
- * Create a sringified representation of an object, pruned at a specified
+ * Create a stringified representation of an object, pruned at a specified
  * level of depth.
  */
 export const stringifyPruned = (

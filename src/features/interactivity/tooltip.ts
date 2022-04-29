@@ -11,16 +11,19 @@ import pickBy from 'lodash/pickBy';
 import toNumber from 'lodash/toNumber';
 import toString from 'lodash/toString';
 
-import { isInteractivityReservedWord, resolveCoordinates } from '.';
-import { i18nValue } from '../ui/i18n';
-import { getJsonAsIndentedString } from '../utils/json';
-import { getVegaSettings, IVegaViewDatum, resolveDataFromItem } from '../vega';
-
-import { isFeatureEnabled } from '../utils/features';
-import { getSelectionIdentitiesFromData } from './selection';
-import { createFormatterFromString } from '../utils/formatting';
-import { hostServices } from '../services';
-import { getDatasetFieldsBySelectionKeys } from '../data/fields';
+import { isInteractivityReservedWord } from '../../core/interactivity';
+import { i18nValue } from '../../core/ui/i18n';
+import { getJsonAsIndentedString } from '../../core/utils/json';
+import {
+    getVegaSettings,
+    IVegaViewDatum,
+    resolveDataFromItem
+} from '../../core/vega';
+import { createFormatterFromString } from '../../core/utils/formatting';
+import { getDatasetFieldsBySelectionKeys } from '../../core/data/fields';
+import { isFeatureEnabled } from '../../core/utils/features';
+import { getSelectionIdentitiesFromData } from '../../core/interactivity/selection';
+import { hostServices } from '../../core/services';
 
 /**
  * Convenience constant for tooltip events, as it's required by Power BI.
@@ -30,13 +33,7 @@ const isTouchEvent = true;
 /**
  * Convenience constant that confirms whether the `tooltipHandler` feature switch is enabled via features.
  */
-export const isHandlerEnabled = isFeatureEnabled('tooltipHandler');
-
-/**
- *  Confirms whether the `tooltipResolveNumberFieldFormat` feature switch is enabled via features.
- */
-const isResolveNumberFormatEnabled = () =>
-    isHandlerEnabled && isFeatureEnabled('tooltipResolveNumberFieldFormat');
+export const isTooltipHandlerEnabled = isFeatureEnabled('tooltipHandler');
 
 /**
  * For a given Vega `tooltip` object (key-value pairs), extract any non-reserved keys, and structure suitably as an array of standard
@@ -110,7 +107,7 @@ const getFieldsEligibleForAutoFormat = (tooltip: Object) =>
 /**
  * Ensure that tooltip values are correctly sanitised for output into a default tooltip.
  */
-const getSanitisedTooltipValue = (value: any) =>
+export const getSanitisedTooltipValue = (value: any) =>
     isObject(value) && !isDate(value)
         ? getJsonAsIndentedString(getDeepRedactedTooltipItem(value), 'tooltip')
         : toString(value);
@@ -119,11 +116,11 @@ const getSanitisedTooltipValue = (value: any) =>
  * Get a new custom Vega tooltip handler for Power BI. If the supplied setting is enabled, will return a `resolveTooltipContent` handler
  * for the supplied `tooltipService`.
  */
-export const getTooltipHandler = (
+export const getPowerBiTooltipHandler = (
     isSettingEnabled: boolean,
     tooltipService: ITooltipService
 ) =>
-    (isHandlerEnabled &&
+    (isTooltipHandlerEnabled &&
         isSettingEnabled &&
         resolveTooltipContent(tooltipService)) ||
     undefined;
@@ -131,13 +128,28 @@ export const getTooltipHandler = (
 /**
  * Request Power BI hides the tooltip.
  */
-export const hideTooltip = () => {
+export const hidePowerBiTooltip = () => {
     const immediately = true;
     hostServices.tooltipService.hide({
         immediately,
         isTouchEvent
     });
 };
+
+/**
+ *  Confirms whether the `tooltipResolveNumberFieldFormat` feature switch is enabled via features.
+ */
+const isResolveNumberFormatEnabled = () =>
+    isTooltipHandlerEnabled &&
+    isFeatureEnabled('tooltipResolveNumberFieldFormat');
+
+/**
+ *For the supplied event, returns an [x, y] array of mouse coordinates.
+ */
+export const resolveCoordinates = (event: MouseEvent): [number, number] => [
+    event?.clientX,
+    event?.clientY
+];
 
 /**
  * For a given datum, resolve it to an array of keys and values. Addiitonally, we can (optionally) ensure that the
@@ -181,11 +193,11 @@ const resolveTooltipContent =
                     break;
                 }
                 default: {
-                    hideTooltip();
+                    hidePowerBiTooltip();
                 }
             }
         } else {
-            hideTooltip();
+            hidePowerBiTooltip();
         }
     };
 

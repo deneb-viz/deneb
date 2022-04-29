@@ -8,7 +8,6 @@ import SpecificationError from './status/SpecificationError';
 import { FourD3D3D3 } from '../features/preview-area';
 import SplashNoSpec from './status/SplashNoSpec';
 
-import { getTooltipHandler } from '../core/interactivity/tooltip';
 import { hostServices } from '../core/services';
 import { locales } from '../core/ui/i18n';
 import {
@@ -25,6 +24,7 @@ import { IVisualDatasetValueRow } from '../core/data';
 import { reactLog } from '../core/utils/reactLog';
 import { DATASET_NAME } from '../constants';
 import { logHasErrors } from '../features/debug-area';
+import { getPowerBiTooltipHandler } from '../features/interactivity';
 
 interface IVisualRenderProps {
     specification: object;
@@ -64,7 +64,7 @@ const VisualRender: React.FC<IVisualRenderProps> = memo(
         const recordLogErrorMain =
             useStoreProp<(message: string) => void>('recordLogErrorMain');
         const { locale } = hostServices;
-        const tooltipHandler = getTooltipHandler(
+        const tooltipHandler = getPowerBiTooltipHandler(
             enableTooltips,
             hostServices.tooltipService
         );

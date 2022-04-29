@@ -16,6 +16,7 @@ import { i18nValue } from '../../core/ui/i18n';
 import { stringifyPruned } from '../../core/utils/json';
 import {
     getCrossHighlightFieldBaseMeasureName,
+    getSanitisedTooltipValue,
     isCrossHighlightComparatorField,
     isCrossHighlightField,
     isCrossHighlightStatusField,
@@ -49,7 +50,7 @@ export const getCellTooltip = (cell: CellComponent) => {
         case isValuePlaceholderComplex(value):
             return i18nValue('Table_Tooltip_TooLong');
         default:
-            return value;
+            return getFormattedValueForTable(cell, true);
     }
 };
 
@@ -141,7 +142,10 @@ export const getColumnHeaderTooltip = (column: ColumnComponent) => {
  * For a provided value, format it for display in a table in the preview
  * toolbar pane. Borrowed and adapted from vega-editor.
  */
-export const getFormattedValueForTable = (cell: CellComponent) => {
+export const getFormattedValueForTable = (
+    cell: CellComponent,
+    tooltip = false
+) => {
     const value = cell?.getValue();
     const column = cell?.getColumn().getField();
     let formattedValue: ITableFormattedValue = {
@@ -149,7 +153,7 @@ export const getFormattedValueForTable = (cell: CellComponent) => {
         tooLong: false
     };
     if (!isDate(value)) {
-        formattedValue = formatLongValueForTable(value);
+        formattedValue = formatLongValueForTable(value, tooltip);
     } else {
         formattedValue = {
             ...formattedValue,
@@ -192,20 +196,23 @@ const getReservedTableColumnTooltip = (field: string) => {
  * Handle the display and translation of number values for a table. Borrowed
  * and adapted from vega-editor.
  */
-const formatNumberValueForTable = (value: number) =>
+const formatNumberValueForTable = (value: number, tooltip = false) =>
     isNaN(value)
         ? i18nValue('Table_Placeholder_NaN')
         : value === Number.POSITIVE_INFINITY
         ? i18nValue('Table_Placeholder_Infinity')
         : value === Number.NEGATIVE_INFINITY
         ? `-${i18nValue('Table_Placeholder_Infinity')}`
-        : stringifyPruned(value);
+        : getStringifiedDisplayValue(value, tooltip);
 
 /**
  * Handle the display and/or truncation of a values for display in a table.
  * Borrowed and adapted from vega-editor.
  */
-const formatLongValueForTable = (value: any): ITableFormattedValue => {
+const formatLongValueForTable = (
+    value: any,
+    tooltip = false
+): ITableFormattedValue => {
     const formatted =
         value === undefined
             ? 'undefined'
@@ -213,11 +220,19 @@ const formatLongValueForTable = (value: any): ITableFormattedValue => {
             ? formatNumberValueForTable(value)
             : isFunction(value)
             ? value.toString()
-            : stringifyPruned(value);
-    if (formatted.length > TABLE_VALUE_MAX_LENGTH) {
+            : getStringifiedDisplayValue(value, tooltip);
+    if (formatted.length > TABLE_VALUE_MAX_LENGTH && !tooltip) {
         return { formatted: null, tooLong: true };
     }
     return { formatted, tooLong: false };
+};
+
+/**
+ * Handle the processing of a stringified value within a data table.
+ */
+const getStringifiedDisplayValue = (value: any, tooltip = false) => {
+    const pruned = stringifyPruned(value);
+    return tooltip ? getSanitisedTooltipValue(JSON.parse(pruned)) : pruned;
 };
 
 /**

@@ -29,7 +29,7 @@
     "Objects_Vega_Provider_Description": "Specify the provider to render your visual specification.",
     "Objects_Vega_Version": "Vega Version",
     "Objects_Vega_Version_Description": "Last version of Vega/Vega-Lite (depending on provider) used when editing this specification. Can be used to track when a new version alert might be needed or if there might be incompatibilities.",
-    "Objects_Vega_LogLevel": "Log Level",
+    "Objects_Vega_LogLevel": "Log level",
     "Objects_Vega_LogLevel_Description": "Level of logging to use when inspecting runtime issues.",
     "Objects_Vega_RenderMode": "Render Mode",
     "Objects_Vega_RenderMode_Description": "Specify how to render the generated visual in the page. Canvas is better for performance at the trade-off of interactivity.",

@@ -8,3 +8,9 @@ export {
     getCrossHighlightRegExpAlternation,
     isCrossHighlightStatusField
 } from './cross-highlight';
+export {
+    getPowerBiTooltipHandler,
+    getSanitisedTooltipValue,
+    hidePowerBiTooltip,
+    isTooltipHandlerEnabled
+} from './tooltip';

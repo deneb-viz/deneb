@@ -3,7 +3,7 @@ import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnume
 
 import SettingsBase from './SettingsBase';
 import { getConfig } from '../core/utils/config';
-import { isHandlerEnabled } from '../core/interactivity/tooltip';
+import { isTooltipHandlerEnabled } from '../features/interactivity';
 import {
     isContextMenuEnabled,
     isDataPointEnabled
@@ -24,13 +24,13 @@ export default class VegaSettings extends SettingsBase {
     public logLevel = defaults.logLevel;
     public version: string = null;
     public renderMode = defaults.renderMode;
-    public enableTooltips = isHandlerEnabled && defaults.enableTooltips;
+    public enableTooltips = isTooltipHandlerEnabled && defaults.enableTooltips;
     public enableContextMenu =
         isContextMenuEnabled && defaults.enableContextMenu;
     public enableSelection = isDataPointEnabled && defaults.enableSelection;
     public enableHighlight = isHighlightEnabled && defaults.enableHighlight;
     public selectionMaxDataPoints = defaults.selectionMaxDataPoints;
-    public tooltipDelay = isHandlerEnabled && defaults.tooltipDelay;
+    public tooltipDelay = isTooltipHandlerEnabled && defaults.tooltipDelay;
     public isNewDialogOpen = defaults.isNewDialogOpen;
 
     /**
@@ -48,7 +48,7 @@ export default class VegaSettings extends SettingsBase {
             if (!isFeatureEnabled('developerMode')) {
                 enumerationObject.instances = [];
             } else {
-                if (!isHandlerEnabled) {
+                if (!isTooltipHandlerEnabled) {
                     delete enumerationObject.instances[0].properties[
                         'enableTooltips'
                     ];

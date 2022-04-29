@@ -3,8 +3,8 @@ import { Checkbox } from '@fluentui/react/lib/Checkbox';
 
 import store from '../../store';
 import { updateBooleanProperty } from '../../core/ui/commands';
-import { isHandlerEnabled } from '../../core/interactivity/tooltip';
 import { i18nValue } from '../../core/ui/i18n';
+import { isTooltipHandlerEnabled } from '../../features/interactivity';
 
 interface IInteractivityCheckboxProps {
     propertyName: string;
@@ -24,7 +24,7 @@ const InteractivityCheckbox: React.FC<IInteractivityCheckboxProps> = ({
             []
         );
     return (
-        isHandlerEnabled && (
+        isTooltipHandlerEnabled && (
             <Checkbox
                 label={i18nValue(i18nLabelKey)}
                 checked={vega[propertyName]}
