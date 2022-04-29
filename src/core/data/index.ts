@@ -2,8 +2,8 @@ import powerbi from 'powerbi-visuals-api';
 import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import ISelectionId = powerbi.visuals.ISelectionId;
 
-import { TDataPointSelectionStatus } from '../interactivity';
 import { ITemplateDatasetField } from '../template/schema';
+import { TDataPointSelectionStatus } from '../../features/interactivity';
 
 export * as dataset from './dataset';
 export * as dataView from './dataView';

@@ -17,7 +17,7 @@ import { DataTable } from './DataTable';
 import {
     dataTableStackItemStyles,
     getColumnHeaderTooltip,
-    getColumnTooltip,
+    getCellTooltip,
     getFormattedValueForTable
 } from '../data-table';
 import {
@@ -68,7 +68,7 @@ const getDataTableColumns = (dataset: string, view: View): ColumnDefinition[] =>
         ?.map((c) => ({
             title: c,
             field: c,
-            tooltip: (cell) => getColumnTooltip(cell),
+            tooltip: (cell) => getCellTooltip(cell),
             headerTooltip: (column) => getColumnHeaderTooltip(column),
             formatter: (cell, params, onRendered) =>
                 getFormattedValueForTable(cell)

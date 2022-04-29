@@ -59,12 +59,8 @@ import { determineProviderFromSpec, TSpecProvider } from '../vega';
 import { isFeatureEnabled } from '../utils/features';
 import { IVisualDatasetFields } from '../data';
 import { ITemplateImportPayload } from '../../store/template';
-import {
-    DATASET_NAME,
-    HIGHLIGHT_COMPARATOR_SUFFIX,
-    HIGHLIGHT_FIELD_SUFFIX,
-    HIGHLIGHT_STATUS_SUFFIX
-} from '../../constants';
+import { DATASET_NAME } from '../../constants';
+import { getCrossHighlightRegExpAlternation } from '../../features/interactivity';
 
 /**
  * Used to indicate which part of the export dialog has focus.
@@ -152,15 +148,15 @@ const getExportFieldTokenPatterns = (name: string): ITemplatePattern[] => {
     const namePattern = getEscapedReplacerPattern(name);
     return [
         {
-            match: `"()(${namePattern})(${getHighlightRegexAlternation()})?"(?!\\s*:)`,
+            match: `"()(${namePattern})(${getCrossHighlightRegExpAlternation()})?"(?!\\s*:)`,
             replacer: '"$1$2$3"'
         },
         {
-            match: `\\.()(${namePattern})(${getHighlightRegexAlternation()})?`,
+            match: `\\.()(${namePattern})(${getCrossHighlightRegExpAlternation()})?`,
             replacer: `['$1$2$3']`
         },
         {
-            match: `(')(${namePattern})((?=${getHighlightRegexAlternation()}')?)`,
+            match: `(')(${namePattern})((?=${getCrossHighlightRegExpAlternation()}')?)`,
             replacer: '$1$2$3'
         }
     ];
@@ -202,9 +198,6 @@ const getExportTemplate = () => {
     );
     return getJsonAsIndentedString(outSpec);
 };
-
-const getHighlightRegexAlternation = () =>
-    `${HIGHLIGHT_FIELD_SUFFIX}|${HIGHLIGHT_STATUS_SUFFIX}|${HIGHLIGHT_COMPARATOR_SUFFIX}`;
 
 /**
  * Ensure that usermeta is in its final, publishable state after all

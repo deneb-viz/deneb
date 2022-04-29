@@ -14,6 +14,15 @@ import {
 import { ITableFormattedValue } from './types';
 import { i18nValue } from '../../core/ui/i18n';
 import { stringifyPruned } from '../../core/utils/json';
+import {
+    getCrossHighlightFieldBaseMeasureName,
+    isCrossHighlightComparatorField,
+    isCrossHighlightField,
+    isCrossHighlightStatusField,
+    TDataPointHighlightComparator,
+    TDataPointHighlightStatus,
+    TDataPointSelectionStatus
+} from '../interactivity';
 
 /**
  * This sets the StackItem for the table to the correct positioning for
@@ -25,6 +34,76 @@ export const dataTableStackItemStyles: Partial<IStackItemStyles> = {
 
 /**
  * For a given column, checks for any special conditions and returns a
+ * customized tooltip for the current cell.
+ */
+export const getCellTooltip = (cell: CellComponent) => {
+    const field = cell.getColumn().getField();
+    const value = cell.getValue();
+    switch (true) {
+        case field === DATASET_SELECTED_NAME:
+            return getCellSelectionTooltip(value);
+        case isCrossHighlightComparatorField(field):
+            return getCellHighlightComparatorTooltip(value);
+        case isCrossHighlightStatusField(field):
+            return getCellHighlightComparatorStatus(value);
+        case isValuePlaceholderComplex(value):
+            return i18nValue('Table_Tooltip_TooLong');
+        default:
+            return value;
+    }
+};
+
+/**
+ * If the column/cell relates to a cross-highlight status, return a tooltip
+ * value that is contextual for the displayed value.
+ */
+const getCellHighlightComparatorStatus = (value: TDataPointHighlightStatus) => {
+    switch (value) {
+        case 'neutral':
+            return i18nValue('Pivot_Debug_HighlightStatusNeutral');
+        case 'on':
+            return i18nValue('Pivot_Debug_HighlightStatusOn');
+        case 'off':
+            return i18nValue('Pivot_Debug_HighlightStatusOff');
+    }
+};
+
+/**
+ * If the column/cell relates to a cross-highlight comparator, return a tooltip
+ * value that is contextual for the displayed value.
+ */
+const getCellHighlightComparatorTooltip = (
+    value: TDataPointHighlightComparator
+) => {
+    switch (value) {
+        case 'eq':
+            return i18nValue('Pivot_Debug_HighlightComparatorEq');
+        case 'lt':
+            return i18nValue('Pivot_Debug_HighlightComparatorLt');
+        case 'gt':
+            return i18nValue('Pivot_Debug_HighlightComparatorGt');
+        case 'neq':
+            return i18nValue('Pivot_Debug_HighlightComparatorNeq');
+    }
+};
+
+/**
+ * If the column/cell relates to cross-filtering, return a tooltip value that
+ * is contextual for the displayed value.
+ */
+const getCellSelectionTooltip = (value: TDataPointSelectionStatus) => {
+    switch (value) {
+        case 'neutral':
+            return i18nValue('Pivot_Debug_SelectedNeutral');
+        case 'on':
+            return i18nValue('Pivot_Debug_SelectedOn');
+        case 'off':
+            return i18nValue('Pivot_Debug_SelectedOff');
+    }
+};
+
+/**
+ * For a given column, checks for any special conditions and returns a
  * customized tooltip for the column header.
  */
 export const getColumnHeaderTooltip = (column: ColumnComponent) => {
@@ -32,25 +111,29 @@ export const getColumnHeaderTooltip = (column: ColumnComponent) => {
     switch (true) {
         case isTableColumnNameReserved(field):
             return getReservedTableColumnTooltip(field);
+        case isCrossHighlightComparatorField(field):
+            return i18nValue('Pivot_Dataset_HighlightComparatorField', [
+                getCrossHighlightFieldBaseMeasureName(field),
+                i18nValue('Pivot_Debug_HighlightComparatorEq'),
+                i18nValue('Pivot_Debug_HighlightComparatorLt'),
+                i18nValue('Pivot_Debug_HighlightComparatorGt'),
+                i18nValue('Pivot_Debug_HighlightComparatorNeq'),
+                i18nValue('Pivot_Debug_Refer_Documentation')
+            ]);
+        case isCrossHighlightStatusField(field):
+            return i18nValue('Pivot_Dataset_HighlightStatusField', [
+                getCrossHighlightFieldBaseMeasureName(field),
+                i18nValue('Pivot_Debug_HighlightStatusNeutral'),
+                i18nValue('Pivot_Debug_HighlightStatusOn'),
+                i18nValue('Pivot_Debug_HighlightStatusOff'),
+                i18nValue('Pivot_Debug_Refer_Documentation')
+            ]);
+        case isCrossHighlightField(field):
+            return i18nValue('Pivot_Dataset_HighlightField', [
+                getCrossHighlightFieldBaseMeasureName(field)
+            ]);
         default:
             return field;
-    }
-};
-
-/**
- * For a given column, checks for any special conditions and returns a
- * customized tooltip for the current cell.
- */
-export const getColumnTooltip = (cell: CellComponent) => {
-    const field = cell.getColumn().getField();
-    const value = cell.getValue();
-    switch (true) {
-        case field === DATASET_SELECTED_NAME:
-            return 'bleh';
-        case isValuePlaceholderComplex(value):
-            return i18nValue('Table_Tooltip_TooLong');
-        default:
-            return value;
     }
 };
 
@@ -81,19 +164,29 @@ export const getFormattedValueForTable = (cell: CellComponent) => {
 /**
  * If a column name is a reserved word, then supply a suitable tooltip value.
  */
-const getReservedTableColumnTooltip = (field: string) =>
-    i18nValue(
-        `Pivot_Dataset_${
-            field === DATASET_ROW_NAME
-                ? 'RowIdentifier'
-                : field === DATASET_SELECTED_NAME
-                ? 'SelectedName'
-                : field === DATASET_IDENTITY_NAME
-                ? 'IdentityName'
-                : 'Unknown'
-        }`,
-        [field]
-    );
+const getReservedTableColumnTooltip = (field: string) => {
+    switch (true) {
+        case field === DATASET_SELECTED_NAME:
+            return i18nValue('Pivot_Dataset_SelectedName', [
+                field,
+                i18nValue('Pivot_Debug_SelectedNeutral'),
+                i18nValue('Pivot_Debug_SelectedOn'),
+                i18nValue('Pivot_Debug_SelectedOff'),
+                i18nValue('Pivot_Debug_Refer_Documentation')
+            ]);
+        default:
+            return i18nValue(
+                `Pivot_Dataset_${
+                    field === DATASET_ROW_NAME
+                        ? 'RowIdentifier'
+                        : field === DATASET_IDENTITY_NAME
+                        ? 'IdentityName'
+                        : 'Unknown'
+                }`,
+                [field]
+            );
+    }
+};
 
 /**
  * Handle the display and translation of number values for a table. Borrowed

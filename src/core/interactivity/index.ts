@@ -4,13 +4,6 @@ export * as selection from './selection';
 export * as tooltip from './tooltip';
 
 /**
- * Interactivity flags for data points, in order to allow us to format them in
- * specific ways.
- */
-export type TDataPointSelectionStatus = 'off' | 'neutral' | 'on';
-export type TDataPointHighlightComparator = 'lt' | 'eq' | 'gt' | 'neq';
-
-/**
  * Array of reserved keywords used to handle selection IDs from the visual's
  * default data view.
  */
