@@ -53,15 +53,19 @@ const getDatasets = (view: View): IDropdownOption[] =>
 /**
  * Retrieve a dataset from the view by name.
  */
-const getNamedDataset = (view: View, name = DATASET_NAME) =>
-    getDatasets(view)?.find((d) => d.key === name);
-
+const getNamedDataset = (view: View, name = DATASET_NAME) => {
+    const datasets = getDatasets(view);
+    return (
+        datasets?.find((d) => d.key === name) ||
+        datasets?.[0] || { key: null, text: 'none' }
+    );
+};
 /**
  * For a dataset view, we need to dynamically get and assign columns from the
  * selected dataset from the view.
  */
 const getDataTableColumns = (dataset: string, view: View): ColumnDefinition[] =>
-    keys(view.data(dataset)?.[0])
+    keys(view?.data(dataset)?.[0])
         ?.filter(
             (c) => [DATASET_KEY_NAME, DATASET_IDENTITY_NAME].indexOf(c) === -1
         )
@@ -79,7 +83,7 @@ const getDataTableColumns = (dataset: string, view: View): ColumnDefinition[] =>
  */
 const getDataTableContent = (view: View, name: string): IDataTableContent => ({
     columns: getDataTableColumns(name, view),
-    data: view.data(name)
+    data: view?.data(name) || []
 });
 
 /**
@@ -91,11 +95,12 @@ export const DataViewer: React.FC = () => {
     const [selectedItem, setSelectedItem] = useState<IDropdownOption>(
         getNamedDataset(editorView)
     );
+    const datasetName = selectedItem?.text;
     // Ensure that if a change to the spec removes selected dataset, that its
     // contents are set to the default dataset
     let dataTableContent: IDataTableContent = { columns: [], data: [] };
     try {
-        dataTableContent = getDataTableContent(editorView, selectedItem?.text);
+        dataTableContent = getDataTableContent(editorView, datasetName);
     } catch {
         setSelectedItem(getNamedDataset(editorView));
     }
@@ -109,13 +114,13 @@ export const DataViewer: React.FC = () => {
         item: IDropdownOption
     ): void => {
         if (selectedItem) {
-            editorView?.removeDataListener(selectedItem.text, debounceData);
+            editorView?.removeDataListener(datasetName, debounceData);
         }
         addListener(item.text);
         setSelectedItem(item);
     };
     useEffect(() => {
-        addListener(selectedItem?.text);
+        addListener(datasetName);
     }, []);
     reactLog('Rendering [DataViewer]');
     return (
@@ -134,7 +139,7 @@ export const DataViewer: React.FC = () => {
             <StackItem grow key={key} styles={dataTableStackItemStyles}>
                 {selectedItem ? (
                     <DataTable
-                        name={selectedItem.text}
+                        name={datasetName}
                         columns={dataTableContent.columns}
                         data={dataTableContent.data}
                         layout='fitData'

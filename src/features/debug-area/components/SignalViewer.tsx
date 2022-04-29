@@ -9,6 +9,7 @@ import { reactLog } from '../../../core/utils/reactLog';
 import store from '../../../store';
 import {
     dataTableStackItemStyles,
+    getCellTooltip,
     getColumnHeaderTooltip,
     getFormattedValueForTable
 } from '../data-table';
@@ -28,6 +29,7 @@ const getSignalTableColumns = (): ColumnDefinition[] => [
         title: i18nValue('Pivot_Signals_ValueColumn'),
         field: 'value',
         widthGrow: 5,
+        tooltip: (cell) => getCellTooltip(cell),
         headerTooltip: (column) => getColumnHeaderTooltip(column),
         formatter: (cell, params, onRendered) => getFormattedValueForTable(cell)
     }
@@ -39,7 +41,7 @@ const getSignalTableColumns = (): ColumnDefinition[] => [
  */
 const getSignalTableValues = (view: View) =>
     toPairs<any>(
-        view.getState({ data: truthy, signals: truthy, recurse: true }).signals
+        view?.getState({ data: truthy, signals: truthy, recurse: true }).signals
     ).map((s) => ({ key: s[0], value: s[1] }));
 
 /**

@@ -208,13 +208,13 @@ const getParsedConfigFromSettings = (): Config => {
  */
 const handleNewView = (newView: View) => {
     newView.logger(loggerServices);
-    newView.runAfter((view) => {
+    newView.runAsync().then((view) => {
         viewServices.bindView(view);
         resolveSvgFilter();
         bindInteractivityEvents(view);
         getState().updateEditorView(view);
         hostServices.renderingFinished();
-    }, true);
+    });
 };
 
 /**
