@@ -4,7 +4,9 @@
 @powerbi-border: #dadada;
 @powerbi-text: #252423;
 @pbiviz-dark: #333333;
+@pbiviz-primary: #f2c811;
 @powerbi-pane-border: #e1dfdd;
+@font-family-sans-serif: 'Segoe UI', wf_segoe-ui_normal, helvetica, arial;
 
 .tabulator {
     position: relative;
@@ -12,6 +14,7 @@
     background-color: @powerbi-white;
     color: @powerbi-text;
     font-size: 10pt;
+    font-family: @font-family-sans-serif;
     text-align: left;
     overflow: hidden;
     -webkit-transform: translatez(0);
@@ -19,6 +22,10 @@
     -ms-transform: translatez(0);
     -o-transform: translatez(0);
     transform: translatez(0);
+}
+
+button.tabulator-page {
+    font-family: @font-family-sans-serif;
 }
 
 .tabulator[tabulator-layout='fitDataFill']
@@ -475,7 +482,7 @@
 }
 
 .tabulator .tabulator-footer .tabulator-paginator {
-    color: #555;
+    color: @powerbi-text;
     font-family: inherit;
     font-weight: inherit;
     font-size: inherit;
@@ -497,13 +504,15 @@
     display: inline-block;
     margin: 0 2px;
     padding: 2px 5px;
-    border: 1px solid @powerbi-light;
-    border-radius: 3px;
+    border: none;
     background: rgba(255, 255, 255, 0.2);
 }
 
 .tabulator .tabulator-footer .tabulator-page.active {
-    color: #d00;
+    font-weight: bold;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-decoration-color: @pbiviz-primary;
 }
 
 .tabulator .tabulator-footer .tabulator-page:disabled {
@@ -512,8 +521,7 @@
 
 .tabulator .tabulator-footer .tabulator-page:not(.disabled):hover {
     cursor: pointer;
-    background: rgba(0, 0, 0, 0.2);
-    color: @powerbi-white;
+    background: @powerbi-light;
 }
 
 .tabulator .tabulator-col-resize-handle {
@@ -569,7 +577,7 @@
 .tabulator-row {
     position: relative;
     box-sizing: border-box;
-    min-height: 22px;
+    min-height: 18px;
     background-color: @powerbi-white;
 }
 
@@ -648,7 +656,7 @@
 }
 
 .tabulator-row .tabulator-responsive-collapse table {
-    font-size: 14px;
+    font-size: 10pt;
 }
 
 .tabulator-row .tabulator-responsive-collapse table tr td {
@@ -663,7 +671,7 @@
     display: inline-block;
     position: relative;
     box-sizing: border-box;
-    padding: 4px;
+    padding: 2px;
     border-right: 1px solid @powerbi-light;
     vertical-align: middle;
     white-space: nowrap;
@@ -1272,7 +1280,7 @@ body.tabulator-print-fullscreen-hide > *:not(.tabulator-print-fullscreen) {
 }
 
 .tabulator .tabulator-header .tabulator-col .tabulator-col-content {
-    padding: 8px;
+    padding: 6px;
 }
 
 .tabulator
@@ -1394,7 +1402,7 @@ body.tabulator-print-fullscreen-hide > *:not(.tabulator-print-fullscreen) {
 }
 
 .tabulator-row .tabulator-cell {
-    padding: 8px;
+    padding: 6px;
     // border-right: none;
 }
 

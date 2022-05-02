@@ -98,12 +98,6 @@ export const DebugModePivot = () => {
                 styles={pivotStyles}
             >
                 <PivotItem
-                    headerText={i18nValue('Pivot_Preview_Log')}
-                    itemKey='log'
-                    itemIcon='DietPlanNotebook'
-                    onRenderItemLink={renderLogTab}
-                />
-                <PivotItem
                     headerText={i18nValue('Pivot_Preview_Data')}
                     itemKey='data'
                     itemIcon='Table'
@@ -112,6 +106,12 @@ export const DebugModePivot = () => {
                     headerText={i18nValue('Pivot_Preview_Sig')}
                     itemKey='signal'
                     itemIcon='NetworkTower'
+                />
+                <PivotItem
+                    headerText={i18nValue('Pivot_Preview_Log')}
+                    itemKey='log'
+                    itemIcon='DietPlanNotebook'
+                    onRenderItemLink={renderLogTab}
                 />
             </Pivot>
         </div>

@@ -106,7 +106,7 @@ export const createEditorSlice = (
         editorPreviewAreaHeight: null,
         editorPreviewAreaHeightLatch: null,
         editorPreviewAreaHeightMax: null,
-        editorPreviewAreaSelectedPivot: 'log',
+        editorPreviewAreaSelectedPivot: 'data',
         editorPreviewAreaWidth: null,
         editorPreviewDebugIsExpanded: false,
         editorPaneDefaultWidth: null,

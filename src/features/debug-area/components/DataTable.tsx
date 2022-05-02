@@ -1,9 +1,15 @@
 import React, { CSSProperties, useEffect, useRef, useState } from 'react';
 import { ColumnDefinition, ReactTabulator } from 'react-tabulator';
+import { Tabulator } from 'react-tabulator/lib/types/TabulatorTypes';
+import Sorter = Tabulator.Sorter;
+
+import sortBy from 'lodash/sortBy';
+import { deepEqual } from 'vega-lite';
 
 import { reactLog } from '../../../core/utils/reactLog';
 
 const INITIAL_PAGE = 1;
+const INITIAL_SORT = [];
 
 /**
  * Generic tabulator options for all tables.
@@ -19,14 +25,7 @@ const defaultOptions = {
         tooltip: true
     },
     pagination: true,
-    paginationSize: 10,
-    paginationCounter: (
-        pageSize: number,
-        currentRow: number,
-        currentPage: number,
-        totalRows: number,
-        totalPages: number
-    ) => `Showing ${pageSize} rows of ${totalRows} total.`
+    paginationSize: 10
 };
 
 /**
@@ -66,6 +65,20 @@ const usePreviousNameProp = (name: string) => {
 };
 
 /**
+ * Check to ensure that column field names haven't changed. Note that the user
+ * may have re-ordered, so we sort them to verify (and preserve order if they
+ * are still within the same data stream).
+ */
+const haveColumnsChanged = (
+    prev: ColumnDefinition[],
+    current: ColumnDefinition[]
+) => {
+    const sortedPrev = sortBy(prev, (c) => c.field).map((c) => c.field);
+    const sortedCurrent = sortBy(current, (c) => c.field).map((c) => c.field);
+    return !deepEqual(sortedPrev, sortedCurrent);
+};
+
+/**
  * General component for viewing data within the debug area.
  */
 export const DataTable: React.FC<IDataTableProps> = ({
@@ -76,16 +89,25 @@ export const DataTable: React.FC<IDataTableProps> = ({
 }) => {
     reactLog('Rendering [DataTable]');
     const prevName = usePreviousNameProp(name);
-    const [pageNumber, setPageNumber] = useState(INITIAL_PAGE);
+    const [paginationInitialPage, setPaginationInitialPage] =
+        useState(INITIAL_PAGE);
+    const [initialSort, setInitialSort] = useState<Sorter[]>(INITIAL_SORT);
+    const [currentColumns, setCurrentColumns] =
+        useState<ColumnDefinition[]>(columns);
+    if (haveColumnsChanged(columns, currentColumns)) {
+        setCurrentColumns(columns);
+    }
+    const handleReset = () => {
+        setPaginationInitialPage(INITIAL_PAGE);
+        setInitialSort(INITIAL_SORT);
+    };
     const options = {
         ...defaultOptions,
-        ...{ layout },
         ...{
-            paginationInitialPage: pageNumber
+            layout,
+            paginationInitialPage,
+            initialSort
         }
-    };
-    const handleReset = () => {
-        setPageNumber(INITIAL_PAGE);
     };
     useEffect(() => {
         if (name !== prevName) {
@@ -97,10 +119,16 @@ export const DataTable: React.FC<IDataTableProps> = ({
             <ReactTabulator
                 data={data}
                 tooltips={true}
-                columns={columns}
+                columns={currentColumns}
                 options={options}
                 events={{
-                    pageLoaded: (num: number) => setPageNumber(num)
+                    columnMoved: (column: ColumnDefinition, columns: any[]) =>
+                        setCurrentColumns(
+                            columns.map((c) => c._column.definition)
+                        ),
+                    dataSorted: (sorters: Sorter[], rows: any[]) =>
+                        setInitialSort(sorters),
+                    pageLoaded: (num: number) => setPaginationInitialPage(num)
                 }}
             />
         </div>
