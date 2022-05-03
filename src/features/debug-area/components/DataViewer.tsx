@@ -106,22 +106,18 @@ export const DataViewer: React.FC = () => {
     }
     const [key, setKey] = useState<number>(0);
     const debounceData = debounce(100, () => setKey((key) => key + 1));
-    const addListener = (name: string) => {
-        editorView?.addDataListener(name, debounceData);
-    };
     const handleChange = (
         ev: React.FormEvent<HTMLDivElement>,
         item: IDropdownOption
     ): void => {
-        if (selectedItem) {
-            editorView?.removeDataListener(datasetName, debounceData);
-        }
-        addListener(item.text);
         setSelectedItem(item);
     };
     useEffect(() => {
-        addListener(datasetName);
-    }, []);
+        editorView?.addDataListener(datasetName, debounceData);
+        return () => {
+            editorView?.removeDataListener(datasetName, debounceData);
+        };
+    });
     reactLog('Rendering [DataViewer]');
     return (
         <>
@@ -136,7 +132,7 @@ export const DataViewer: React.FC = () => {
                     />
                 </Stack>
             </StackItem>
-            <StackItem grow key={key} styles={dataTableStackItemStyles}>
+            <StackItem grow styles={dataTableStackItemStyles}>
                 {selectedItem ? (
                     <DataTable
                         name={datasetName}

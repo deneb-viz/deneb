@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ColumnDefinition } from 'react-tabulator';
 import { StackItem } from '@fluentui/react/lib/Stack';
 import toPairs from 'lodash/toPairs';
-import { View, truthy } from 'vega';
+import { View, truthy, debounce } from 'vega';
 
 import { DataTable } from './DataTable';
 import { reactLog } from '../../../core/utils/reactLog';
@@ -50,6 +50,17 @@ const getSignalTableValues = (view: View) =>
 export const SignalViewer: React.FC = () => {
     const { editorView } = store((state) => state);
     reactLog('Rendering [SignalViewer]');
+    const [key, setKey] = useState<number>(0);
+    const debounceSignal = debounce(100, () => setKey((key) => key + 1));
+    useEffect(() => {
+        getSignalTableValues(editorView).forEach((s) => {
+            editorView.addSignalListener(s.key, debounceSignal);
+        });
+        return () =>
+            getSignalTableValues(editorView).forEach((s) => {
+                editorView.removeSignalListener(s.key, debounceSignal);
+            });
+    });
     return (
         <>
             <StackItem grow styles={dataTableStackItemStyles}>
