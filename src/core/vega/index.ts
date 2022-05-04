@@ -30,12 +30,7 @@ import Spec = Vega.Spec;
 import View = Vega.View;
 import { TopLevelSpec } from 'vega-lite';
 
-import {
-    fillPatternServices,
-    hostServices,
-    loggerServices,
-    viewServices
-} from '../services';
+import { fillPatternServices, hostServices, loggerServices } from '../services';
 import { createFormatterFromString } from '../utils/formatting';
 import { cleanParse } from '../utils/json';
 import { vegaLiteValidator, vegaValidator } from './validation';
@@ -51,7 +46,7 @@ import { getPatchedVegaSpec } from './vegaUtils';
 import { getPatchedVegaLiteSpec } from './vegaLiteUtils';
 
 import { isFeatureEnabled } from '../utils/features';
-import { blankImageBase64 } from '../ui/dom';
+
 import { divergentPalette, divergentPaletteMed, ordinalPalette } from './theme';
 import { resolveSvgFilter } from '../ui/svgFilter';
 import { i18nValue } from '../ui/i18n';
@@ -59,6 +54,7 @@ import {
     bindContextMenuEvents,
     bindCrossFilterEvents
 } from '../../features/interactivity';
+import { blankImageBase64 } from '../../features/template';
 
 /**
  * Defines a JSON schema by provider and role, so we can dynamically apply based on provider.
@@ -205,7 +201,6 @@ const getParsedConfigFromSettings = (): Config => {
 const handleNewView = (newView: View) => {
     newView.logger(loggerServices);
     newView.runAsync().then((view) => {
-        viewServices.bindView(view);
         resolveSvgFilter();
         bindContextMenuEvents(view);
         bindCrossFilterEvents(view);

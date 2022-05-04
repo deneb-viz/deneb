@@ -37,12 +37,13 @@ import {
 import store, { getState } from '../../store';
 import { getConfig, getVisualMetadata } from '../utils/config';
 import { TEditorRole } from '../services/JsonEditorServices';
-import { hostServices, viewServices } from '../services';
+import { hostServices } from '../services';
 import { TModalDialogType } from './modal';
 import { updateExportState } from '../template';
 import { TSpecProvider, TSpecRenderMode } from '../vega';
 import { getZoomInLevel, getZoomOutLevel, zoomConfig } from './dom';
 import { getZoomToFitScale, TPreviewPivotRole } from './advancedEditor';
+import { dispatchPreviewImage } from '../../features/template';
 
 interface IKeyboardShortcut {
     keys: string;
@@ -185,7 +186,7 @@ const dispatchEditorPivotItem = (operation: TEditorRole) => {
 const dispatchExportDialog = (show = true) => {
     const { updateEditorExportDialogVisible, updateTemplatePreviewImage } =
         getState();
-    viewServices.setPreviewImage(false);
+    dispatchPreviewImage(false);
     updateEditorExportDialogVisible(show);
 };
 

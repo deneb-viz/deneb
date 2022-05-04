@@ -6,10 +6,14 @@ import { Stack, StackItem, IStackTokens } from '@fluentui/react/lib/Stack';
 
 import { Paragraph } from '../../elements/Typography';
 import PreviewImage from '../../elements/PreviewImage';
-import { viewServices } from '../../../core/services';
 import store from '../../../store';
 import { i18nValue } from '../../../core/ui/i18n';
 import { isFeatureEnabled } from '../../../core/utils/features';
+import { reactLog } from '../../../core/utils/reactLog';
+import {
+    dispatchPreviewImage,
+    previewImageCapSize
+} from '../../../features/template';
 
 const stackTokens: IStackTokens = {
     childrenGap: 25
@@ -24,10 +28,11 @@ const TemplateExportPreviewImage: React.FC = () => {
             ev?: React.FormEvent<HTMLElement | HTMLInputElement>,
             checked?: boolean
         ): void => {
-            viewServices.setPreviewImage(!!checked);
+            dispatchPreviewImage(!!checked);
         },
         []
     );
+    reactLog('Rendering [TemplateExportPreviewImage]');
     return isFeatureEnabled('templateExportPreviewImages') ? (
         <>
             <Separator />
@@ -52,10 +57,7 @@ const TemplateExportPreviewImage: React.FC = () => {
                         <Paragraph>
                             {i18nValue(
                                 'Template_Export_IncludePreview_Image_Disclaimer_Para1',
-                                [
-                                    viewServices.previewImageSize,
-                                    viewServices.previewImageSize
-                                ]
+                                [previewImageCapSize, previewImageCapSize]
                             )}
                             <br />
                             <br />

@@ -11,7 +11,7 @@
         "tooltipHandler": true,
         "tooltipResolveNumberFieldFormat": true,
         "useDownloadApi": false,
-        "templateExportPreviewImages": false,
+        "templateExportPreviewImages": true,
         "fx": false,
         "unitTestCanary": false
     },

@@ -12,8 +12,9 @@ import { BodyHeading, SubHeading } from '../../elements/Typography';
 import Dataset, { getImportColumns } from '../../elements/Dataset';
 import PreviewImage from '../../elements/PreviewImage';
 import { getConfig } from '../../../core/utils/config';
-import { isBase64 } from '../../../core/ui/dom';
+
 import { DATASET_NAME } from '../../../constants';
+import { isBase64Image } from '../../../features/template';
 
 const stackTokens: IStackTokens = {
     childrenGap: 25
@@ -27,7 +28,8 @@ const TemplateInfo: React.FC = () => {
     const usermeta = store((state) => state).templateToApply
         .usermeta as IDenebTemplateMetadata;
     const previewImage = usermeta?.information?.previewImageBase64PNG;
-    const hasPreviewImage = (previewImage && isBase64(previewImage)) || false;
+    const hasPreviewImage =
+        (previewImage && isBase64Image(previewImage)) || false;
     const hasPlaceholders = usermeta?.[DATASET_NAME]?.length > 0;
     return (
         <>

@@ -2,8 +2,7 @@ import React from 'react';
 
 import { Image, IImageProps, ImageFit } from '@fluentui/react/lib/Image';
 
-import { viewServices } from '../../core/services';
-import { blankImageBase64, isBase64 } from '../../core/ui/dom';
+import { previewImageCapSize } from '../../features/template';
 
 interface IPreviewImageProps extends IImageProps {
     isValid: boolean;
@@ -11,13 +10,11 @@ interface IPreviewImageProps extends IImageProps {
 }
 
 const PreviewImage: React.FC<IPreviewImageProps> = (props) => {
-    const src =
-        (isBase64(props.dataUri) && `data:image/png;base64,${props.dataUri}`) ||
-        blankImageBase64;
+    const src = props.dataUri;
     return props.isValid ? (
         <Image
-            height={viewServices.previewImageSize}
-            width={viewServices.previewImageSize}
+            height={previewImageCapSize}
+            width={previewImageCapSize}
             imageFit={ImageFit.none}
             src={src}
             styles={{
