@@ -2,10 +2,10 @@ import React from 'react';
 import { MessageBarType } from '@fluentui/react/lib/MessageBar';
 
 import { useStoreProp, useStoreVegaProp } from '../../store';
-import { dispatchSelectionAborted } from '../../core/interactivity/selection';
 import { i18nValue } from '../../core/ui/i18n';
 import NotificationMessageBar from '../elements/NotificationMessageBar';
 import { reactLog } from '../../core/utils/reactLog';
+import { dispatchCrossFilterAbort } from '../../features/interactivity';
 
 const SelectionLimitMessageBar: React.FC = () => {
     const datasetHasSelectionAborted: boolean = useStoreProp(
@@ -18,7 +18,7 @@ const SelectionLimitMessageBar: React.FC = () => {
     reactLog('Rendering [SelectionLimitMessageBar]');
     return (
         <NotificationMessageBar
-            dismissAction={dispatchSelectionAborted}
+            dismissAction={dispatchCrossFilterAbort}
             messageBarType={MessageBarType.severeWarning}
             visible={datasetHasSelectionAborted}
             truncated={true}

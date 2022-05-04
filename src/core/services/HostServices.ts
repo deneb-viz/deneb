@@ -78,7 +78,4 @@ export class HostServices {
  * Create a new selection manager and add selection callback management, to that bookmarks and other
  * events that set selections from outside the visual are correctly delegated to the visual dataset.
  */
-const getNewSelectionManager = (host: IVisualHost) => {
-    const selectionManager = host.createSelectionManager();
-    return selectionManager;
-};
+const getNewSelectionManager = (host: IVisualHost) => host.createSelectionManager();

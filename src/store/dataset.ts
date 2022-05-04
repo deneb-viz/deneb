@@ -12,12 +12,12 @@ import {
 import { IVisualDataset, TDataProcessingStage } from '../core/data';
 import { resolveVisualMode } from '../core/ui';
 import { getResizablePaneSize } from '../core/ui/advancedEditor';
-import {
-    getDataPointStatus,
-    isDataPointPropSet
-} from '../core/interactivity/selection';
 import { getSpecFieldsInUse } from '../core/utils/specification';
 import { DATASET_IDENTITY_NAME } from '../constants';
+import {
+    getDataPointCrossFilterStatus,
+    isCrossFilterPropSet
+} from '../features/interactivity';
 
 export interface IDatasetSlice {
     dataset: IVisualDataset;
@@ -183,8 +183,8 @@ const handleUpdateDatasetSelectors = (
         ...{
             values: state.dataset.values.slice().map((v) => ({
                 ...v,
-                ...(isDataPointPropSet() && {
-                    __selected__: getDataPointStatus(
+                ...(isCrossFilterPropSet() && {
+                    __selected__: getDataPointCrossFilterStatus(
                         v?.[DATASET_IDENTITY_NAME],
                         selectors
                     )

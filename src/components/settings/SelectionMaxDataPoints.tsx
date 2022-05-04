@@ -1,16 +1,15 @@
 import React from 'react';
 
-import store from '../../store';
-import { isDataPointPropSet } from '../../core/interactivity/selection';
-
 import { Stack, StackItem } from '@fluentui/react/lib/Stack';
 import { SpinButton } from '@fluentui/react/lib/SpinButton';
 
+import store from '../../store';
 import { i18nValue } from '../../core/ui/i18n';
 import { spinButtonStyles } from '../../core/ui/fluent';
 import { getConfig } from '../../core/utils/config';
 import { updateSelectionMaxDataPoints } from '../../core/ui/commands';
 import ResetButton from '../elements/ResetButton';
+import { isCrossFilterPropSet } from '../../features/interactivity';
 
 const SelectionMaxDataPoints: React.FC = () => {
     const { selectionMaxDataPoints } = store(
@@ -25,7 +24,7 @@ const SelectionMaxDataPoints: React.FC = () => {
         []
     );
     return (
-        (isDataPointPropSet() && (
+        (isCrossFilterPropSet() && (
             <Stack horizontal>
                 <StackItem shrink>
                     <SpinButton

@@ -26,13 +26,12 @@ import {
     getEncodedFieldName
 } from './fields';
 import { getDatasetValueEntries } from './values';
-import { isHighlightPropSet } from '../interactivity/highlight';
 import {
     createSelectionIds,
-    getDataPointStatus,
-    getSidString,
-    isDataPointPropSet
-} from '../interactivity/selection';
+    getDataPointCrossFilterStatus,
+    isCrossFilterPropSet,
+    isCrossHighlightPropSet
+} from '../../features/interactivity';
 import { hostServices } from '../services';
 import { getState } from '../../store';
 import {
@@ -79,7 +78,7 @@ const getDataRow = (
                 const fieldHighlightComparator = `${fieldName}${HIGHLIGHT_COMPARATOR_SUFFIX}`;
                 const rawValueOriginal: PrimitiveValue = row[fieldHighlight];
                 const shouldHighlight =
-                    isHighlightPropSet() && f.source === 'values';
+                    isCrossHighlightPropSet() && f.source === 'values';
                 row[fieldName] = rawValue;
                 if (shouldHighlight) {
                     row[fieldHighlightStatus] = resolveHighlightStatus(
@@ -153,8 +152,8 @@ export const getMappedDataset = (
                             __identity__: identity,
                             __key__: getSidString(identity)
                         },
-                        ...(isDataPointPropSet() && {
-                            __selected__: getDataPointStatus(
+                        ...(isCrossFilterPropSet() && {
+                            __selected__: getDataPointCrossFilterStatus(
                                 identity,
                                 selections
                             )
@@ -173,3 +172,12 @@ export const getMappedDataset = (
         }
     }
 };
+
+/**
+ * We have some compatibility issues between `powerbi.extensibility.ISelectionId`
+ * and `powerbi.visuals.ISelectionId`, as well as needing to coerce Selection
+ * IDs to strings so that we can set initial selections for Vega-Lite (as objects
+ * aren't supported). This consolidates the logic we're using to resolve a
+ * Selection ID to a string representation suitable for use across the visual.
+ */
+const getSidString = (id: ISelectionId) => JSON.stringify(id.getSelector());

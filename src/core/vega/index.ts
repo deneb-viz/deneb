@@ -5,6 +5,7 @@ export {
     TSpecProvider,
     TSpecRenderMode,
     determineProviderFromSpec,
+    editorConfigOverLoad,
     getEditorSchema,
     getParsedConfigFromSettings,
     getVegaProvider,
@@ -29,10 +30,6 @@ import Spec = Vega.Spec;
 import View = Vega.View;
 import { TopLevelSpec } from 'vega-lite';
 
-import keys from 'lodash/keys';
-import pick from 'lodash/pick';
-import reduce from 'lodash/reduce';
-
 import {
     fillPatternServices,
     hostServices,
@@ -52,17 +49,16 @@ import {
 import { getConfig, providerVersions } from '../utils/config';
 import { getPatchedVegaSpec } from './vegaUtils';
 import { getPatchedVegaLiteSpec } from './vegaLiteUtils';
-import { bindInteractivityEvents } from '../interactivity/selection';
+
 import { isFeatureEnabled } from '../utils/features';
 import { blankImageBase64 } from '../ui/dom';
 import { divergentPalette, divergentPaletteMed, ordinalPalette } from './theme';
 import { resolveSvgFilter } from '../ui/svgFilter';
 import { i18nValue } from '../ui/i18n';
 import {
-    IVisualDatasetField,
-    IVisualDatasetFields,
-    IVisualDatasetValueRow
-} from '../data';
+    bindContextMenuEvents,
+    bindCrossFilterEvents
+} from '../../features/interactivity';
 
 /**
  * Defines a JSON schema by provider and role, so we can dynamically apply based on provider.
@@ -106,7 +102,7 @@ const editorSchemas: IJSonSchema[] = [
     }
 ];
 
-export const editorConfigOverLoad = {
+const editorConfigOverLoad = {
     background: null, // so we can defer to the Power BI background, if applied
     customFormatTypes: true
 };
@@ -211,7 +207,8 @@ const handleNewView = (newView: View) => {
     newView.runAsync().then((view) => {
         viewServices.bindView(view);
         resolveSvgFilter();
-        bindInteractivityEvents(view);
+        bindContextMenuEvents(view);
+        bindCrossFilterEvents(view);
         getState().updateEditorView(view);
         hostServices.renderingFinished();
     });
@@ -244,60 +241,6 @@ const registerCustomSchemes = () => {
     scheme('pbiColorOrdinal', ordinalPalette());
     scheme('pbiColorLinear', divergentPalette());
     scheme('pbiColorDivergent', divergentPaletteMed());
-};
-
-/**
- * For a given (subset of) `fields` and `datum`, create an `IVisualDatasetValueRow`
- * that can be used to search for matching values in the visual's dataset.
- */
-export const resolveDatumForFields = (
-    fields: IVisualDatasetFields,
-    datum: IVegaViewDatum
-) => {
-    const reducedDatum =
-        <IVisualDatasetValueRow>pick(datum, keys(fields)) || null;
-    return reduce(
-        reducedDatum,
-        (result, value, key) => {
-            result[key] = resolveValueForField(fields[key], value);
-            return result;
-        },
-        <IVisualDatasetValueRow>{}
-    );
-};
-
-/**
- * Because Vega's tooltip channel supplies datum field values as strings, for a
- * supplied metadata `field` and `datum`, attempt to resolve it to a pure type,
- * so that we can try to use its value to reconcile against the visual's dataset
- * in order to resolve selection IDs.
- */
-const resolveValueForField = (field: IVisualDatasetField, value: any) => {
-    switch (true) {
-        case field.type.dateTime: {
-            return new Date(value);
-        }
-        case field.type.numeric:
-        case field.type.integer: {
-            return Number.parseFloat(value);
-        }
-        default:
-            return value;
-    }
-};
-
-/**
- * Take an item from a Vega event and attempt to resolve .
- */
-export const resolveDataFromItem = (item: any): IVegaViewDatum[] => {
-    switch (true) {
-        case item === undefined:
-            return null;
-        case item?.context?.data?.facet?.values?.value:
-            return item?.context?.data?.facet?.values?.value?.slice();
-        default:
-            return [{ ...item?.datum }];
-    }
 };
 
 /**

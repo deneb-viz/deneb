@@ -11,8 +11,7 @@ import ApplyDialog from './modal/ApplyDialog';
 import SplashInitial from './status/SplashInitial';
 import { i18nValue } from '../core/ui/i18n';
 import { getViewModeViewportStyles, zoomConfig } from '../core/ui/dom';
-import { clearSelection } from '../core/interactivity/selection';
-import { hidePowerBiTooltip } from '../features/interactivity';
+import { clearSelection, hidePowerBiTooltip } from '../features/interactivity';
 import { TDataProcessingStage } from '../core/data';
 import { TVisualMode } from '../core/ui';
 import {

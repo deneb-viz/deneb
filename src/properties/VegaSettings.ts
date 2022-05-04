@@ -3,13 +3,13 @@ import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnume
 
 import SettingsBase from './SettingsBase';
 import { getConfig } from '../core/utils/config';
-import { isTooltipHandlerEnabled } from '../features/interactivity';
 import {
     isContextMenuEnabled,
-    isDataPointEnabled
-} from '../core/interactivity/selection';
+    isCrossFilterEnabled,
+    isCrossHighlightEnabled,
+    isTooltipHandlerEnabled
+} from '../features/interactivity';
 import { isFeatureEnabled } from '../core/utils/features';
-import { isHighlightEnabled } from '../core/interactivity/highlight';
 
 const defaults = getConfig().propertyDefaults.vega,
     config = getConfig().selection;
@@ -27,8 +27,9 @@ export default class VegaSettings extends SettingsBase {
     public enableTooltips = isTooltipHandlerEnabled && defaults.enableTooltips;
     public enableContextMenu =
         isContextMenuEnabled && defaults.enableContextMenu;
-    public enableSelection = isDataPointEnabled && defaults.enableSelection;
-    public enableHighlight = isHighlightEnabled && defaults.enableHighlight;
+    public enableSelection = isCrossFilterEnabled && defaults.enableSelection;
+    public enableHighlight =
+        isCrossHighlightEnabled && defaults.enableHighlight;
     public selectionMaxDataPoints = defaults.selectionMaxDataPoints;
     public tooltipDelay = isTooltipHandlerEnabled && defaults.tooltipDelay;
     public isNewDialogOpen = defaults.isNewDialogOpen;
@@ -58,7 +59,7 @@ export default class VegaSettings extends SettingsBase {
                         'enableContextMenu'
                     ];
                 }
-                if (!isDataPointEnabled) {
+                if (!isCrossFilterEnabled) {
                     delete enumerationObject.instances[0].properties[
                         'enableSelection'
                     ];

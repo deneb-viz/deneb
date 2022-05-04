@@ -11,19 +11,18 @@ import pickBy from 'lodash/pickBy';
 import toNumber from 'lodash/toNumber';
 import toString from 'lodash/toString';
 
-import { isInteractivityReservedWord } from '../../core/interactivity';
 import { i18nValue } from '../../core/ui/i18n';
 import { getJsonAsIndentedString } from '../../core/utils/json';
-import {
-    getVegaSettings,
-    IVegaViewDatum,
-    resolveDataFromItem
-} from '../../core/vega';
+import { getVegaSettings, IVegaViewDatum } from '../../core/vega';
 import { createFormatterFromString } from '../../core/utils/formatting';
-import { getDatasetFieldsBySelectionKeys } from '../../core/data/fields';
+import {
+    getDatasetFieldsBySelectionKeys,
+    getIdentitiesFromData,
+    resolveDataFromItem
+} from './data-point';
 import { isFeatureEnabled } from '../../core/utils/features';
-import { getSelectionIdentitiesFromData } from '../../core/interactivity/selection';
 import { hostServices } from '../../core/services';
+import { DATASET_IDENTITY_NAME, DATASET_KEY_NAME } from '../../constants';
 
 /**
  * Convenience constant for tooltip events, as it's required by Power BI.
@@ -34,6 +33,12 @@ const isTouchEvent = true;
  * Convenience constant that confirms whether the `tooltipHandler` feature switch is enabled via features.
  */
 export const isTooltipHandlerEnabled = isFeatureEnabled('tooltipHandler');
+
+/**
+ * Array of reserved keywords used to handle selection IDs from the visual's
+ * default data view.
+ */
+const tooltipReservedWords = [DATASET_IDENTITY_NAME, DATASET_KEY_NAME];
 
 /**
  * For a given Vega `tooltip` object (key-value pairs), extract any non-reserved keys, and structure suitably as an array of standard
@@ -63,7 +68,7 @@ const extractTooltipDataItemsFromObject = (
  * For a given tooltip item, if it's a reserved workd, return something more sensible to the end user than a complex object.
  */
 const getCuratedTooltipItem = (key: string, value: any) =>
-    isInteractivityReservedWord(key)
+    isTooltipReservedWord(key)
         ? i18nValue('Selection_KW_Present')
         : getDeepRedactedTooltipItem(value);
 
@@ -144,6 +149,13 @@ const isResolveNumberFormatEnabled = () =>
     isFeatureEnabled('tooltipResolveNumberFieldFormat');
 
 /**
+ * Helper method to determine if a supplied key (string) is reserved for
+ * interactivity purposes.
+ */
+const isTooltipReservedWord = (word: string) =>
+    tooltipReservedWords.indexOf(word) > -1;
+
+/**
  *For the supplied event, returns an [x, y] array of mouse coordinates.
  */
 export const resolveCoordinates = (event: MouseEvent): [number, number] => [
@@ -157,7 +169,7 @@ export const resolveCoordinates = (event: MouseEvent): [number, number] => [
  */
 const resolveDatumToArray = (obj: IVegaViewDatum, filterReserved = true) =>
     Object.entries({ ...obj }).filter(
-        ([k, v]) => (filterReserved && !isInteractivityReservedWord(k)) || k
+        ([k, v]) => (filterReserved && !isTooltipReservedWord(k)) || k
     );
 
 /**
@@ -177,7 +189,7 @@ const resolveTooltipContent =
                 tooltip,
                 autoFormatFields
             );
-            const identities = getSelectionIdentitiesFromData(datum);
+            const identities = getIdentitiesFromData(datum);
             const { tooltipDelay } = getVegaSettings();
             const waitFor = (event.ctrlKey && tooltipDelay) || 0;
             const options = {

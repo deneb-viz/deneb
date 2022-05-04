@@ -45,9 +45,6 @@ export const getZoomOutLevel = (value: number) => {
     return (value > min && level) || level;
 };
 
-export const clearCatcherSelector = (prefix = false) =>
-    `${(prefix && '.') || ''}vega-embed`;
-
 export const getEditorHeadingIconClassName = (expanded: boolean) =>
     `editor-${expanded ? 'collapse' : 'expand'}`;
 

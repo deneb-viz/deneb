@@ -3,6 +3,9 @@ import {
     HIGHLIGHT_STATUS_SUFFIX,
     HIGHLIGHT_FIELD_SUFFIX
 } from '../../constants';
+import { hostServices } from '../../core/services';
+import { isFeatureEnabled } from '../../core/utils/features';
+import { getVegaSettings } from '../../core/vega';
 import { TDataPointSelectionStatus } from './cross-filter';
 
 /**
@@ -19,11 +22,21 @@ export type TDataPointHighlightComparator = 'lt' | 'eq' | 'gt' | 'neq';
 export type TDataPointHighlightStatus = TDataPointSelectionStatus;
 
 /**
+ * Convenience constant that confirms whether the `selectionContextMenu` feature switch is enabled via features.
+ */
+export const isCrossHighlightEnabled = isFeatureEnabled(
+    'selectionCrossHighlight'
+);
+
+/**
  * Provides all highlight field suffixes, suitable for a RegExp expression.
  */
 export const getCrossHighlightRegExpAlternation = () =>
     `${HIGHLIGHT_COMPARATOR_SUFFIX}|${HIGHLIGHT_STATUS_SUFFIX}|${HIGHLIGHT_FIELD_SUFFIX}`;
 
+/**
+ * Produces a simple RegExp pattern for matching highlight fields.
+ */
 const getCrossHighlightFieldRegExp = (pattern: string) =>
     new RegExp(`(.*)(${pattern})`);
 
@@ -39,6 +52,12 @@ export const getCrossHighlightFieldBaseMeasureName = (field: string) => {
 };
 
 /**
+ * Confirms whether the supplied field name is a cross-highlight comparator.
+ */
+export const isCrossHighlightComparatorField = (field: string) =>
+    getCrossHighlightFieldRegExp(HIGHLIGHT_COMPARATOR_SUFFIX).test(field);
+
+/**
  * Confirms whether the supplied field name is used for cross-highlight
  * values.
  */
@@ -46,10 +65,17 @@ export const isCrossHighlightField = (field: string) =>
     getCrossHighlightFieldRegExp(HIGHLIGHT_FIELD_SUFFIX).test(field);
 
 /**
- * Confirms whether the supplied field name is a cross-highlight comparator.
+ * Determine if conditions are right to expose highlight functionality.
  */
-export const isCrossHighlightComparatorField = (field: string) =>
-    getCrossHighlightFieldRegExp(HIGHLIGHT_COMPARATOR_SUFFIX).test(field);
+export const isCrossHighlightPropSet = () => {
+    const { enableHighlight } = getVegaSettings();
+    return (
+        (hostServices.allowInteractions &&
+            isCrossHighlightEnabled &&
+            enableHighlight) ||
+        false
+    );
+};
 
 /**
  * Confirms whether the supplied field name is a cross-highlight status.
