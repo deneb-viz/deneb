@@ -75,6 +75,7 @@ const handleSetVisualUpdate = (
     state: TStoreState,
     payload: IVisualUpdatePayload
 ): PartialState<TStoreState, never, never, never, never> => {
+    const init = state.visualUpdates === 0;
     const positionNew = payload.settings.editor.position;
     const positionSwitch = positionNew !== state.visualSettings.editor.position;
     const datasetViewObjects =
@@ -119,31 +120,19 @@ const handleSetVisualUpdate = (
         edPaneWidth,
         positionNew
     );
-    const edPrevAreaHeight = shouldUpdateHeight(
-        visualMode,
-        editMode,
-        state.visualUpdates
-    )
+    const edPrevAreaHeight = shouldUpdateHeight(visualMode, editMode, init)
         ? getPreviewAreaHeightInitial(
               viewportCurrent.height,
               state.editorPreviewAreaHeight
           )
         : state.editorPreviewAreaHeight;
-    const edPrevAreaHeightMax = shouldUpdateHeight(
-        visualMode,
-        editMode,
-        state.visualUpdates
-    )
+    const edPrevAreaHeightMax = shouldUpdateHeight(visualMode, editMode, init)
         ? calculatePreviewMaximumHeight(viewportCurrent.height)
         : state.editorPreviewAreaHeightMax;
-    const isExpanded = shouldUpdateHeight(
-        visualMode,
-        editMode,
-        state.visualUpdates
-    )
+    const isExpanded = shouldUpdateHeight(visualMode, editMode, init)
         ? edPrevAreaHeight !== edPrevAreaHeightMax
         : state.editorPreviewDebugIsExpanded;
-    const latch = shouldUpdateHeight(visualMode, editMode, state.visualUpdates)
+    const latch = shouldUpdateHeight(visualMode, editMode, init)
         ? edPrevAreaHeight
         : state.editorPreviewAreaHeightLatch;
     const visualViewportVega = calculateVegaViewport(
@@ -179,7 +168,5 @@ const handleSetVisualUpdate = (
 const shouldUpdateHeight = (
     visualMode: TVisualMode,
     visualEditMode: EditMode,
-    updates: number
-) =>
-    visualMode === 'Editor' ||
-    (visualEditMode === EditMode.Advanced && updates === 0);
+    init: boolean
+) => visualMode === 'Editor' || (visualEditMode === EditMode.Advanced && init);
