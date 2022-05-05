@@ -12,7 +12,7 @@ import { isFeatureEnabled } from '../../../core/utils/features';
 import { reactLog } from '../../../core/utils/reactLog';
 import {
     dispatchPreviewImage,
-    previewImageCapSize
+    PREVIEW_IMAGE_CAP_SIZE
 } from '../../../features/template';
 
 const stackTokens: IStackTokens = {
@@ -57,7 +57,7 @@ const TemplateExportPreviewImage: React.FC = () => {
                         <Paragraph>
                             {i18nValue(
                                 'Template_Export_IncludePreview_Image_Disclaimer_Para1',
-                                [previewImageCapSize, previewImageCapSize]
+                                [PREVIEW_IMAGE_CAP_SIZE, PREVIEW_IMAGE_CAP_SIZE]
                             )}
                             <br />
                             <br />

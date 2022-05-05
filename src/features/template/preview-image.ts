@@ -25,6 +25,12 @@ const BASE64_DATA_URL_PREFIX = `data:${BASE64_MIME_TYPE};base64,`;
 export const BASE64_BLANK_IMAGE = `${BASE64_DATA_URL_PREFIX}iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=`;
 
 /**
+ * Convenience constant for our config, and represents the max cap for any
+ * preview images generated from the Vega View API.
+ */
+export const PREVIEW_IMAGE_CAP_SIZE = getConfig().templates.previewImageSize;
+
+/**
  * Based on template export configuration, prepare a preview image for export,
  * and dispatch it to the store.
  */
@@ -65,8 +71,8 @@ export const getCombinedBase64ImageWithMime = (base64: string) =>
 const getResizeScale = () => {
     const { width, height } = getState().visualViewportReport;
     return width >= height
-        ? previewImageCapSize / width
-        : previewImageCapSize / height;
+        ? PREVIEW_IMAGE_CAP_SIZE / width
+        : PREVIEW_IMAGE_CAP_SIZE / height;
 };
 
 /**
@@ -83,9 +89,3 @@ export const isBase64Image = (str: string) => {
         return false;
     }
 };
-
-/**
- * Convenience constant for our config, and represents the max cap for any
- * preview images generated from the Vega View API.
- */
-export const previewImageCapSize = getConfig().templates.previewImageSize;

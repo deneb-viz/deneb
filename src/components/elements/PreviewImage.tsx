@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Image, IImageProps, ImageFit } from '@fluentui/react/lib/Image';
 
-import { previewImageCapSize } from '../../features/template';
+import { PREVIEW_IMAGE_CAP_SIZE } from '../../features/template';
 
 interface IPreviewImageProps extends IImageProps {
     isValid: boolean;
@@ -13,8 +13,8 @@ const PreviewImage: React.FC<IPreviewImageProps> = (props) => {
     const src = props.dataUri;
     return props.isValid ? (
         <Image
-            height={previewImageCapSize}
-            width={previewImageCapSize}
+            height={PREVIEW_IMAGE_CAP_SIZE}
+            width={PREVIEW_IMAGE_CAP_SIZE}
             imageFit={ImageFit.none}
             src={src}
             styles={{
