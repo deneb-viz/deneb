@@ -18,13 +18,6 @@ if (config.features.enableReactLogging) {
 if (config.features.enableExternalUri) {
     errors.push('features.enableExternalUri is true; this should be false.');
 }
-// Include preview image on export. Still figuring out if this is more trouble than it's worth,
-// so should be disabled in committed code.
-if (config.features.templateExportPreviewImages) {
-    errors.push(
-        'features.templateExportPreviewImages is true; this should be false'
-    );
-}
 
 if (errors.length > 0) {
     console.error(

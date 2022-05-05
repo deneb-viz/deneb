@@ -1,6 +1,7 @@
 import { Spec } from 'vega';
 import { authorInfo, vegaProviderInfo } from '..';
 import { DATASET_NAME } from '../../constants';
+import { getCombinedBase64ImageWithMime } from '../../features/template';
 import thumbnail from '../thumbnail';
 
 export const vScatterColored: Spec = {
@@ -107,7 +108,9 @@ export const vScatterColored: Spec = {
             author: authorInfo,
             uuid: 'ee329042-a7b4-43c0-9d7d-0494d8965a21',
             generated: '2021-03-26T00:00:00.000Z',
-            previewImageBase64PNG: thumbnail.scatterColored
+            previewImageBase64PNG: getCombinedBase64ImageWithMime(
+                thumbnail.scatterColored
+            )
         },
         provider: 'vega',
         dataset: [

@@ -1,5 +1,6 @@
 import { TopLevelSpec } from 'vega-lite';
 import { authorInfo, vegaDataModelRef, vegaLiteProviderInfo } from '..';
+import { getCombinedBase64ImageWithMime } from '../../features/template';
 import thumbnail from '../thumbnail';
 
 export const vlLineConfInterval: TopLevelSpec = {
@@ -47,7 +48,9 @@ export const vlLineConfInterval: TopLevelSpec = {
             author: authorInfo,
             uuid: '5ddfa070-0806-478a-8cd3-c906fbc654a1',
             generated: '2021-03-26T00:00:00.000Z',
-            previewImageBase64PNG: thumbnail.lineConfInterval
+            previewImageBase64PNG: getCombinedBase64ImageWithMime(
+                thumbnail.lineConfInterval
+            )
         },
         provider: 'vegaLite',
         dataset: [

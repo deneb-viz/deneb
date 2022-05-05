@@ -3,6 +3,7 @@ import { authorInfo, vegaDataModelRef, vegaProviderInfo } from '..';
 import thumbnail from '../thumbnail';
 import { getConfig } from '../../core/utils/config';
 import { DATASET_NAME, DATASET_SELECTED_NAME } from '../../constants';
+import { getCombinedBase64ImageWithMime } from '../../features/template';
 
 export const vBarSimple: Spec = {
     $schema: vegaProviderInfo,
@@ -117,7 +118,9 @@ export const vBarSimple: Spec = {
             author: authorInfo,
             uuid: '47577168-2e0c-42de-8e27-cb33071fae43',
             generated: '2021-03-26T00:00:00.000Z',
-            previewImageBase64PNG: thumbnail.barSimple
+            previewImageBase64PNG: getCombinedBase64ImageWithMime(
+                thumbnail.barSimple
+            )
         },
         provider: 'vega',
         dataset: [

@@ -54,7 +54,7 @@ import {
     bindContextMenuEvents,
     bindCrossFilterEvents
 } from '../../features/interactivity';
-import { blankImageBase64 } from '../../features/template';
+import { BASE64_BLANK_IMAGE } from '../../features/template';
 
 /**
  * Defines a JSON schema by provider and role, so we can dynamically apply based on provider.
@@ -250,7 +250,7 @@ const resolveLoaderLogic = () => {
             return Promise.resolve(href);
         };
         loader.sanitize = (uri, options) => {
-            const href = (isDataUri(uri) && uri) || blankImageBase64;
+            const href = (isDataUri(uri) && uri) || BASE64_BLANK_IMAGE;
             return Promise.resolve({
                 href
             });
