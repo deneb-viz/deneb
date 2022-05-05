@@ -4,10 +4,10 @@ import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnume
 import SettingsBase from './SettingsBase';
 import { getConfig } from '../core/utils/config';
 import {
-    isContextMenuEnabled,
-    isCrossFilterEnabled,
-    isCrossHighlightEnabled,
-    isTooltipHandlerEnabled
+    IS_CONTEXT_MENU_ENABLED,
+    IS_CROSS_FILTER_ENABLED,
+    IS_CROSS_HIGHLIGHT_ENABLED,
+    IS_TOOLTIP_HANDLER_ENABLED
 } from '../features/interactivity';
 import { isFeatureEnabled } from '../core/utils/features';
 
@@ -24,14 +24,16 @@ export default class VegaSettings extends SettingsBase {
     public logLevel = defaults.logLevel;
     public version: string = null;
     public renderMode = defaults.renderMode;
-    public enableTooltips = isTooltipHandlerEnabled && defaults.enableTooltips;
+    public enableTooltips =
+        IS_TOOLTIP_HANDLER_ENABLED && defaults.enableTooltips;
     public enableContextMenu =
-        isContextMenuEnabled && defaults.enableContextMenu;
-    public enableSelection = isCrossFilterEnabled && defaults.enableSelection;
+        IS_CONTEXT_MENU_ENABLED && defaults.enableContextMenu;
+    public enableSelection =
+        IS_CROSS_FILTER_ENABLED && defaults.enableSelection;
     public enableHighlight =
-        isCrossHighlightEnabled && defaults.enableHighlight;
+        IS_CROSS_HIGHLIGHT_ENABLED && defaults.enableHighlight;
     public selectionMaxDataPoints = defaults.selectionMaxDataPoints;
-    public tooltipDelay = isTooltipHandlerEnabled && defaults.tooltipDelay;
+    public tooltipDelay = IS_TOOLTIP_HANDLER_ENABLED && defaults.tooltipDelay;
     public isNewDialogOpen = defaults.isNewDialogOpen;
 
     /**
@@ -49,17 +51,17 @@ export default class VegaSettings extends SettingsBase {
             if (!isFeatureEnabled('developerMode')) {
                 enumerationObject.instances = [];
             } else {
-                if (!isTooltipHandlerEnabled) {
+                if (!IS_TOOLTIP_HANDLER_ENABLED) {
                     delete enumerationObject.instances[0].properties[
                         'enableTooltips'
                     ];
                 }
-                if (!isContextMenuEnabled) {
+                if (!IS_CONTEXT_MENU_ENABLED) {
                     delete enumerationObject.instances[0].properties[
                         'enableContextMenu'
                     ];
                 }
-                if (!isCrossFilterEnabled) {
+                if (!IS_CROSS_FILTER_ENABLED) {
                     delete enumerationObject.instances[0].properties[
                         'enableSelection'
                     ];

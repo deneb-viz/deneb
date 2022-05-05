@@ -27,18 +27,18 @@ import { DATASET_IDENTITY_NAME, DATASET_KEY_NAME } from '../../constants';
 /**
  * Convenience constant for tooltip events, as it's required by Power BI.
  */
-const isTouchEvent = true;
+const IS_TOUCH_EVENT = true;
 
 /**
  * Convenience constant that confirms whether the `tooltipHandler` feature switch is enabled via features.
  */
-export const isTooltipHandlerEnabled = isFeatureEnabled('tooltipHandler');
+export const IS_TOOLTIP_HANDLER_ENABLED = isFeatureEnabled('tooltipHandler');
 
 /**
  * Array of reserved keywords used to handle selection IDs from the visual's
  * default data view.
  */
-const tooltipReservedWords = [DATASET_IDENTITY_NAME, DATASET_KEY_NAME];
+const TOOLTIP_RESERVED_WORDS = [DATASET_IDENTITY_NAME, DATASET_KEY_NAME];
 
 /**
  * For a given Vega `tooltip` object (key-value pairs), extract any non-reserved keys, and structure suitably as an array of standard
@@ -125,7 +125,7 @@ export const getPowerBiTooltipHandler = (
     isSettingEnabled: boolean,
     tooltipService: ITooltipService
 ) =>
-    (isTooltipHandlerEnabled &&
+    (IS_TOOLTIP_HANDLER_ENABLED &&
         isSettingEnabled &&
         resolveTooltipContent(tooltipService)) ||
     undefined;
@@ -137,7 +137,7 @@ export const hidePowerBiTooltip = () => {
     const immediately = true;
     hostServices.tooltipService.hide({
         immediately,
-        isTouchEvent
+        isTouchEvent: IS_TOUCH_EVENT
     });
 };
 
@@ -145,7 +145,7 @@ export const hidePowerBiTooltip = () => {
  *  Confirms whether the `tooltipResolveNumberFieldFormat` feature switch is enabled via features.
  */
 const isResolveNumberFormatEnabled = () =>
-    isTooltipHandlerEnabled &&
+    IS_TOOLTIP_HANDLER_ENABLED &&
     isFeatureEnabled('tooltipResolveNumberFieldFormat');
 
 /**
@@ -153,7 +153,7 @@ const isResolveNumberFormatEnabled = () =>
  * interactivity purposes.
  */
 const isTooltipReservedWord = (word: string) =>
-    tooltipReservedWords.indexOf(word) > -1;
+    TOOLTIP_RESERVED_WORDS.indexOf(word) > -1;
 
 /**
  *For the supplied event, returns an [x, y] array of mouse coordinates.
@@ -195,7 +195,7 @@ const resolveTooltipContent =
             const options = {
                 coordinates,
                 dataItems,
-                isTouchEvent,
+                isTouchEvent: IS_TOUCH_EVENT,
                 identities
             };
             switch (event.type) {

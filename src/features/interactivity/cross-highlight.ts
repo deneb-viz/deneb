@@ -6,25 +6,11 @@ import {
 import { hostServices } from '../../core/services';
 import { isFeatureEnabled } from '../../core/utils/features';
 import { getVegaSettings } from '../../core/vega';
-import { TDataPointSelectionStatus } from './cross-filter';
-
-/**
- * Indicates how a cross-highlight value compares with its original (base)
- * value.
- */
-export type TDataPointHighlightComparator = 'lt' | 'eq' | 'gt' | 'neq';
-
-/**
- * Indicates the internal highlight state of a data field. This currently just
- * mirrors `TDataPointSelectionStatus` but is declared here for future-proofing
- * purposes.
- */
-export type TDataPointHighlightStatus = TDataPointSelectionStatus;
 
 /**
  * Convenience constant that confirms whether the `selectionContextMenu` feature switch is enabled via features.
  */
-export const isCrossHighlightEnabled = isFeatureEnabled(
+export const IS_CROSS_HIGHLIGHT_ENABLED = isFeatureEnabled(
     'selectionCrossHighlight'
 );
 
@@ -71,7 +57,7 @@ export const isCrossHighlightPropSet = () => {
     const { enableHighlight } = getVegaSettings();
     return (
         (hostServices.allowInteractions &&
-            isCrossHighlightEnabled &&
+            IS_CROSS_HIGHLIGHT_ENABLED &&
             enableHighlight) ||
         false
     );
