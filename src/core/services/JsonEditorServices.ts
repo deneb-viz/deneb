@@ -24,7 +24,6 @@ import { getConfig } from '../utils/config';
 import { getDataset } from '../data/dataset';
 import { hasLiveSpecChanged, persist } from '../utils/specification';
 import { getState } from '../../store';
-import { isDialogOpen } from '../ui/modal';
 import { i18nValue } from '../ui/i18n';
 import { getEditorSchema, getVegaSettings, TSpecProvider } from '../vega';
 import { IVisualDatasetField } from '../data';
@@ -107,6 +106,22 @@ const handleComponentUpdate = (jsonEditor: JSONEditor, role: TEditorRole) => {
         jsonEditor.focus();
         updateCompleters(jsonEditor, role);
     }
+};
+
+/**
+ * Determine whether Deneb is currently showing a dialog, based on the store.
+ */
+const isDialogOpen = () => {
+    const {
+        editorIsExportDialogVisible,
+        editorIsMapDialogVisible,
+        editorIsNewDialogVisible
+    } = getState();
+    return (
+        editorIsNewDialogVisible ||
+        editorIsMapDialogVisible ||
+        editorIsExportDialogVisible
+    );
 };
 
 /**

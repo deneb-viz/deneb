@@ -21,7 +21,7 @@ import {
 import { i18nValue } from '../../core/ui/i18n';
 import DataFieldLabel from './DataFieldLabel';
 import DatasetFieldAssignmentDropdown from './DatasetFieldAssignmentDropdown';
-import { TModalDialogType } from '../../core/ui/modal';
+import { TModalDialogType } from '../../features/modal-dialog';
 import { getState } from '../../store';
 import { datasetFieldProps } from '../../core/template';
 import { DATASET_NAME } from '../../constants';

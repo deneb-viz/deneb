@@ -3,27 +3,27 @@ import React from 'react';
 import { Text } from '@fluentui/react/lib/Text';
 import { Stack } from '@fluentui/react/lib/Stack';
 
-import {
-    modalDialogStackStyles,
-    modalDialogStackItemStyles,
-    modalDialogStackItemWrapperStyles,
-    modalDialogInnerStackTokens
-} from '../../core/ui/modal';
-import { useStoreProp } from '../../store';
-import ExportValidation from './content/ExportValidation';
-import ExportVisualDialogPivot from './ExportVisualDialogPivot';
-import TemplateExportDatasetPane from './content/TemplateExportDatasetPane';
-import TemplateExportInformationPane from './content/TemplateExportInformationPane';
-import TemplateExportJsonPane from './content/TemplateExportJsonPane';
+import { useStoreProp } from '../../../store';
+import ExportValidation from '../../../components/export/content/ExportValidation';
+import ExportVisualDialogPivot from '../../../components/export/ExportVisualDialogPivot';
+import TemplateExportDatasetPane from '../../../components/export/content/TemplateExportDatasetPane';
+import TemplateExportInformationPane from '../../../components/export/content/TemplateExportInformationPane';
+import TemplateExportJsonPane from '../../../components/export/content/TemplateExportJsonPane';
 import {
     TExportOperation,
     TTemplateExportState,
     validateSpecificationForExport
-} from '../../core/template';
-import { i18nValue } from '../../core/ui/i18n';
-import { reactLog } from '../../core/utils/reactLog';
+} from '../../../core/template';
+import { i18nValue } from '../../../core/ui/i18n';
+import { reactLog } from '../../../core/utils/reactLog';
+import {
+    MODAL_DIALOG_STACK_INNER_TOKENS,
+    MODAL_DIALOG_STACK_ITEM_STYLES,
+    MODAL_DIALOG_STACK_ITEM_WRAPPER_STYLES,
+    MODAL_DIALOG_STACK_STYLES
+} from '../../modal-dialog';
 
-export const ExportVisualDialogBody = () => {
+export const ExportVisualDialogBody: React.FC = () => {
     const templateSelectedExportOperation: TExportOperation = useStoreProp(
         'templateSelectedExportOperation'
     );
@@ -71,18 +71,21 @@ export const ExportVisualDialogBody = () => {
     reactLog('Rendering [ExportVisualDialogBody]');
     return (
         <Stack
-            styles={modalDialogStackStyles}
-            tokens={modalDialogInnerStackTokens}
+            styles={MODAL_DIALOG_STACK_STYLES}
+            tokens={MODAL_DIALOG_STACK_INNER_TOKENS}
         >
-            <Stack.Item shrink styles={modalDialogStackItemStyles}>
+            <Stack.Item shrink styles={MODAL_DIALOG_STACK_ITEM_STYLES}>
                 <Text variant='small'>
                     {i18nValue('Export_Spec_Assistive')}
                 </Text>
             </Stack.Item>
-            <Stack.Item shrink styles={modalDialogStackItemStyles}>
+            <Stack.Item shrink styles={MODAL_DIALOG_STACK_ITEM_STYLES}>
                 <div className='editor-pane-pivot'>{resolveExportPivot()}</div>
             </Stack.Item>
-            <Stack.Item verticalFill styles={modalDialogStackItemWrapperStyles}>
+            <Stack.Item
+                verticalFill
+                styles={MODAL_DIALOG_STACK_ITEM_WRAPPER_STYLES}
+            >
                 <div className='export-spec-container'>
                     {resolveExportBodyContent()}
                 </div>
@@ -90,5 +93,3 @@ export const ExportVisualDialogBody = () => {
         </Stack>
     );
 };
-
-export default ExportVisualDialogBody;

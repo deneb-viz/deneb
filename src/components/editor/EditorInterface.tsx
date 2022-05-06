@@ -4,9 +4,6 @@ import SplitPane from 'react-split-pane';
 import { useStoreProp } from '../../store';
 import EditorPane from './pane/EditorPane';
 import { PreviewArea } from '../../features/preview-area';
-import CreateVisualDialog from '../create/CreateVisualDialog';
-import ExportVisualDialog from '../export/ExportVisualDialog';
-import MapFieldsDialog from '../map/MapFieldsDialog';
 import {
     getResizablePaneMaxSize,
     getResizablePaneMinSize,
@@ -16,6 +13,7 @@ import {
 import { IEditorPaneUpdatePayload } from '../../store/editor';
 import { reactLog } from '../../core/utils/reactLog';
 import { TEditorPosition } from '../../core/ui';
+import { ModalDialog } from '../../features/modal-dialog';
 
 const EditorInterface: React.FC = () => {
     const editorPaneIsExpanded: boolean = useStoreProp('editorPaneIsExpanded');
@@ -59,9 +57,9 @@ const EditorInterface: React.FC = () => {
                 {position === 'left' ? editorPane : <PreviewArea />}
                 {position === 'left' ? <PreviewArea /> : editorPane}
             </SplitPane>
-            <CreateVisualDialog />
-            <ExportVisualDialog />
-            <MapFieldsDialog />
+            <ModalDialog type='new' />
+            <ModalDialog type='export' />
+            <ModalDialog type='mapping' />
         </div>
     );
 };

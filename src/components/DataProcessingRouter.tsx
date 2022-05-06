@@ -7,7 +7,7 @@ import { Scrollbars } from 'react-custom-scrollbars-2';
 import { useStoreProp, useStoreVegaProp } from '../store';
 import DataFetching from './status/DataFetching';
 import VisualRender from './VisualRender';
-import ApplyDialog from './modal/ApplyDialog';
+import { ApplyChangesDialog } from '../features/modal-dialog';
 import SplashInitial from './status/SplashInitial';
 import { i18nValue } from '../core/ui/i18n';
 import { getViewModeViewportStyles, zoomConfig } from '../core/ui/dom';
@@ -85,7 +85,7 @@ const DataProcessingRouter: React.FC = () => {
                             renderMode={renderMode}
                             data={data}
                         />
-                        <ApplyDialog />
+                        <ApplyChangesDialog />
                     </div>
                 </Scrollbars>
             );

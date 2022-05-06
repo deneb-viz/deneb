@@ -2,20 +2,33 @@ import React from 'react';
 
 import { Dialog, DialogFooter } from '@fluentui/react/lib/Dialog';
 import { PrimaryButton, DefaultButton } from '@fluentui/react/lib/Button';
+import { DialogType, IDialogContentProps } from '@fluentui/react/lib/Dialog';
 
-import { discardChanges } from '../../core/ui/commands';
-import {
-    getDialogContentProps,
-    modalDialogPropsStyles
-} from '../../core/ui/modal';
-import { i18nValue } from '../../core/ui/i18n';
-import { buttonStyles } from '../../core/ui/fluent';
-import { persist } from '../../core/utils/specification';
-import { useStoreProp } from '../../store';
-import { TVisualMode } from '../../core/ui';
-import { reactLog } from '../../core/utils/reactLog';
+import { discardChanges } from '../../../core/ui/commands';
+import { i18nValue } from '../../../core/ui/i18n';
+import { buttonStyles } from '../../../core/ui/fluent';
+import { persist } from '../../../core/utils/specification';
+import { useStoreProp } from '../../../store';
+import { TVisualMode } from '../../../core/ui';
+import { reactLog } from '../../../core/utils/reactLog';
+import { MODAL_DIALOG_PROPS } from '../styles';
 
-export const ApplyDialog: React.FunctionComponent = () => {
+/**
+ * Populate suitable `IDialogContentProps` based on supplied i18n keys.
+ */
+const getDialogContentProps = (
+    titleKey: string,
+    subTextKey: string
+): IDialogContentProps => {
+    return {
+        type: DialogType.normal,
+        title: i18nValue(titleKey),
+        subText: i18nValue(subTextKey),
+        showCloseButton: false
+    };
+};
+
+export const ApplyChangesDialog: React.FC = () => {
     const editorIsDirty: boolean = useStoreProp('editorIsDirty');
     const visualMode: TVisualMode = useStoreProp('visualMode');
     const hidden = !(editorIsDirty && visualMode === 'Standard');
@@ -34,7 +47,7 @@ export const ApplyDialog: React.FunctionComponent = () => {
                 hidden={hidden}
                 onDismiss={handleDiscard}
                 dialogContentProps={dialogContentProps}
-                modalProps={modalDialogPropsStyles}
+                modalProps={MODAL_DIALOG_PROPS}
             >
                 <DialogFooter>
                     <PrimaryButton
@@ -52,5 +65,3 @@ export const ApplyDialog: React.FunctionComponent = () => {
         </>
     );
 };
-
-export default ApplyDialog;

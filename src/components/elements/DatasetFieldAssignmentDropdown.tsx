@@ -14,7 +14,7 @@ import { ITemplateDatasetField } from '../../core/template/schema';
 import { getDataTypeIcon } from '../../core/ui/icons';
 import { getPlaceholderDropdownText } from '../../core/ui/labels';
 import { templateTypeIconOptionStyles } from '../../core/ui/fluent';
-import { TModalDialogType } from '../../core/ui/modal';
+import { TModalDialogType } from '../../features/modal-dialog';
 import { IVisualDatasetFields } from '../../core/data';
 import { getDatasetFieldsInclusive } from '../../core/data/fields';
 

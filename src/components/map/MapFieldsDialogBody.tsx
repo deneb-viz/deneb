@@ -3,13 +3,7 @@ import React from 'react';
 import { Stack, IStackItemStyles } from '@fluentui/react/lib/Stack';
 import { PrimaryButton } from '@fluentui/react/lib/Button';
 import filter from 'lodash/filter';
-import { Scrollbars } from 'react-custom-scrollbars-2';
 
-import {
-    modalDialogStackStyles,
-    modalDialogStackItemStyles,
-    modalDialogInnerStackTokens
-} from '../../core/ui/modal';
 import { useStoreProp } from '../../store';
 
 import { i18nValue } from '../../core/ui/i18n';
@@ -20,6 +14,11 @@ import { remapSpecificationFields } from '../../core/utils/specification';
 import { getDatasetTemplateFields } from '../../core/data/fields';
 import { IVisualDatasetFields } from '../../core/data';
 import { reactLog } from '../../core/utils/reactLog';
+import {
+    MODAL_DIALOG_STACK_INNER_TOKENS,
+    MODAL_DIALOG_STACK_ITEM_STYLES,
+    MODAL_DIALOG_STACK_STYLES
+} from '../../features/modal-dialog';
 
 const datasetItemStyles: IStackItemStyles = {
     root: {
@@ -42,8 +41,8 @@ export const MapFieldsDialogBody = () => {
     reactLog('Rendering [MapFieldsDialogBody]');
     return (
         <Stack
-            styles={modalDialogStackStyles}
-            tokens={modalDialogInnerStackTokens}
+            styles={MODAL_DIALOG_STACK_STYLES}
+            tokens={MODAL_DIALOG_STACK_INNER_TOKENS}
         >
             <Stack.Item shrink>
                 <Paragraph>
@@ -61,7 +60,11 @@ export const MapFieldsDialogBody = () => {
                     <Dataset dataset={dataset} columns={getMapColumns} />
                 </>
             </Stack.Item>
-            <Stack.Item shrink styles={modalDialogStackItemStyles} align='end'>
+            <Stack.Item
+                shrink
+                styles={MODAL_DIALOG_STACK_ITEM_STYLES}
+                align='end'
+            >
                 <PrimaryButton
                     styles={buttonStyles}
                     onClick={handleRemap}

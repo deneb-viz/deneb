@@ -38,7 +38,7 @@ import store, { getState } from '../../store';
 import { getConfig, getVisualMetadata } from '../utils/config';
 import { TEditorRole } from '../services/JsonEditorServices';
 import { hostServices } from '../services';
-import { TModalDialogType } from './modal';
+import { TModalDialogType } from '../../features/modal-dialog';
 import { updateExportState } from '../template';
 import { TSpecProvider, TSpecRenderMode } from '../vega';
 import { getZoomInLevel, getZoomOutLevel, zoomConfig } from './dom';
