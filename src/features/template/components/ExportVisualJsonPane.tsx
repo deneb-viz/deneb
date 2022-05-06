@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 
 import { Stack } from '@fluentui/react/lib/Stack';
 import { Text } from '@fluentui/react/lib/Text';
@@ -7,16 +7,16 @@ import { IconButton } from '@fluentui/react/lib/Button';
 import { IIconProps } from '@fluentui/react/lib/Icon';
 import { ITextStyles } from '@fluentui/react/lib/Text';
 
-import {
-    templateExportInfoStackTokens,
-    templatePickerStackStyles,
-    templatePickerNonShrinkingStackItemStyles
-} from '../../elements';
 import { getExportTemplate } from '../../../core/template';
 import { i18nValue } from '../../../core/ui/i18n';
 import { iconButtonStyles } from '../../../core/ui/icons';
-import ExportDownloadButton from './ExportDownloadButton';
-import { Assistive } from '../../elements/Typography';
+import { ExportVisualDownloadButton } from './ExportVisualDownloadButton';
+import { Assistive } from '../../../components/elements/Typography';
+import {
+    TEMPLATE_EXPORT_INFO_STACK_TOKENS,
+    TEMPLATE_PICKER_NON_SHRINKING_STACK_ITEM_STYLES,
+    TEMPLATE_PICKER_STACK_STYLES
+} from '../styles';
 
 const exportPivotAssistiveToastTextStyles: ITextStyles = {
     root: {
@@ -44,7 +44,7 @@ const textStyles: Partial<ITextFieldStyles> = {
 };
 const copyIcon: IIconProps = { iconName: 'Copy' };
 
-const TemplateExportJsonPane: React.FC = () => {
+export const ExportVisualJsonPane: React.FC = () => {
     const [copySuccess, setCopySuccess] = React.useState(false),
         textAreaRef = React.useRef(null),
         copyRef = React.useRef(null),
@@ -60,8 +60,8 @@ const TemplateExportJsonPane: React.FC = () => {
 
     return (
         <Stack
-            styles={templatePickerStackStyles}
-            tokens={templateExportInfoStackTokens}
+            styles={TEMPLATE_PICKER_STACK_STYLES}
+            tokens={TEMPLATE_EXPORT_INFO_STACK_TOKENS}
         >
             <Stack.Item>
                 <Stack horizontal>
@@ -80,7 +80,7 @@ const TemplateExportJsonPane: React.FC = () => {
                             </Text>
                         )}
                     </Stack.Item>
-                    <ExportDownloadButton />
+                    <ExportVisualDownloadButton />
                     <Stack.Item>
                         <IconButton
                             componentRef={copyRef}
@@ -95,7 +95,10 @@ const TemplateExportJsonPane: React.FC = () => {
                     </Stack.Item>
                 </Stack>
             </Stack.Item>
-            <Stack.Item grow styles={templatePickerNonShrinkingStackItemStyles}>
+            <Stack.Item
+                grow
+                styles={TEMPLATE_PICKER_NON_SHRINKING_STACK_ITEM_STYLES}
+            >
                 <TextField
                     componentRef={textAreaRef}
                     multiline
@@ -108,5 +111,3 @@ const TemplateExportJsonPane: React.FC = () => {
         </Stack>
     );
 };
-
-export default TemplateExportJsonPane;

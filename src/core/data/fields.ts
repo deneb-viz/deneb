@@ -15,7 +15,7 @@ import {
 } from '.';
 import { resolveVisualMetaToDatasetField } from '../template';
 import { getDataset } from './dataset';
-import { ITemplateDatasetField } from '../template/schema';
+import { ITemplateDatasetField } from '../../features/template';
 import { HIGHLIGHT_FIELD_SUFFIX } from '../../constants';
 
 /**

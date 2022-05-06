@@ -1,4 +1,10 @@
 export {
+    TDatasetFieldType,
+    IDenebTemplateMetadata,
+    ITemplateDatasetField,
+    ITemplateInteractivityOptions
+} from './schema';
+export {
     TExportOperation,
     TTemplateExportState,
     TTemplateImportState,

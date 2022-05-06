@@ -5,7 +5,7 @@ import { Text } from '@fluentui/react/lib/Text';
 import { PrimaryButton } from '@fluentui/react/lib/Button';
 
 import { useStoreProp } from '../../../store';
-import CreateVisualPaneContent from '../../../components/create/CreateVisualPaneContent';
+import { CreateVisualDialogBodyDetail } from './CreateVisualDialogBodyDetail';
 import { createFromTemplate } from '../../../core/utils/specification';
 import { i18nValue } from '../../../core/ui/i18n';
 import { buttonStyles } from '../../../core/ui/fluent';
@@ -53,7 +53,7 @@ export const CreateVisualDialogBody: React.FC = () => {
                 styles={MODAL_DIALOG_STACK_ITEM_WRAPPER_STYLES}
             >
                 <div className='new-spec-container'>
-                    <CreateVisualPaneContent />
+                    <CreateVisualDialogBodyDetail />
                 </div>
             </Stack.Item>
             <Stack.Item

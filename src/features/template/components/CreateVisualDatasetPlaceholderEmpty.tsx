@@ -1,9 +1,9 @@
-import * as React from 'react';
+import React from 'react';
 
 import { i18nValue } from '../../../core/ui/i18n';
-import { Paragraph } from '../../elements/Typography';
+import { Paragraph } from '../../../components/elements/Typography';
 
-const TemplateDatasetPlaceholdersEmpty: React.FC = () => {
+export const CreateVisualDatasetPlaceholderEmpty: React.FC = () => {
     return (
         <Paragraph>
             {i18nValue('Data_Placeholder_Assistive_No_PH', [
@@ -12,5 +12,3 @@ const TemplateDatasetPlaceholdersEmpty: React.FC = () => {
         </Paragraph>
     );
 };
-
-export default TemplateDatasetPlaceholdersEmpty;

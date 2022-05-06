@@ -13,7 +13,7 @@ import { isFeatureEnabled } from '../../../core/utils/features';
 
 const downloadIcon: IIconProps = { iconName: 'Download' };
 
-const ExportDownloadButton: React.FC = () => {
+export const ExportVisualDownloadButton: React.FC = () => {
     const name = store(
             (state) => state.templateExportMetadata?.information?.name
         ),
@@ -44,5 +44,3 @@ const ExportDownloadButton: React.FC = () => {
         )) || <></>
     );
 };
-
-export default ExportDownloadButton;

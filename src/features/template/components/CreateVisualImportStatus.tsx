@@ -1,12 +1,12 @@
-import * as React from 'react';
+import React from 'react';
 
 import { MessageBar, MessageBarType } from '@fluentui/react/lib/MessageBar';
 
-import store from '../../store';
-import { Progress } from './Progress';
-import { i18nValue } from '../../core/ui/i18n';
+import store from '../../../store';
+import { Progress } from '../../../components/status/Progress';
+import { i18nValue } from '../../../core/ui/i18n';
 
-const ImportTemplateStatus: React.FC = () => {
+export const CreateVisualImportStatus: React.FC = () => {
     const { templateImportState, templateImportErrorMessage } = store(),
         standardMessage = (message: string) => (
             <MessageBar messageBarType={MessageBarType.info}>
@@ -42,5 +42,3 @@ const ImportTemplateStatus: React.FC = () => {
         };
     return <>{resolveProcessingContent()}</>;
 };
-
-export default ImportTemplateStatus;

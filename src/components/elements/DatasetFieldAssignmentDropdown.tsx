@@ -10,7 +10,7 @@ import reduce from 'lodash/reduce';
 
 import store from '../../store';
 import { resolveValueDescriptor } from '../../core/template';
-import { ITemplateDatasetField } from '../../core/template/schema';
+import { ITemplateDatasetField } from '../../features/template';
 import { getDataTypeIcon } from '../../core/ui/icons';
 import { getPlaceholderDropdownText } from '../../core/ui/labels';
 import { templateTypeIconOptionStyles } from '../../core/ui/fluent';

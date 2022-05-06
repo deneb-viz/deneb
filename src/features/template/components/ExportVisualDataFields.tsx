@@ -1,10 +1,12 @@
-import * as React from 'react';
+import React from 'react';
 import { DATASET_NAME } from '../../../constants';
 
 import store from '../../../store';
-import Dataset, { getExportColumns } from '../../elements/Dataset';
+import Dataset, {
+    getExportColumns
+} from '../../../components/elements/Dataset';
 
-const ExportDataFields: React.FC = () => {
+export const ExportVisualDataFields: React.FC = () => {
     const { templateExportMetadata } = store((state) => state);
     return (
         <Dataset
@@ -13,5 +15,3 @@ const ExportDataFields: React.FC = () => {
         />
     );
 };
-
-export default ExportDataFields;

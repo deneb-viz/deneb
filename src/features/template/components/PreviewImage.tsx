@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Image, IImageProps, ImageFit } from '@fluentui/react/lib/Image';
 
-import { PREVIEW_IMAGE_CAP_SIZE } from '../../features/template';
+import { PREVIEW_IMAGE_CAP_SIZE } from '..';
 
 interface IPreviewImageProps extends IImageProps {
     isValid: boolean;

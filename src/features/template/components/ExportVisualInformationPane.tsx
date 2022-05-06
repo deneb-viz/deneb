@@ -1,25 +1,24 @@
 import React from 'react';
 
 import { Stack } from '@fluentui/react/lib/Stack';
-import { Scrollbars } from 'react-custom-scrollbars-2';
 
-import {
-    templateExportInfoStackTokens,
-    templatePickerStackStyles,
-    templatePickerNonShrinkingStackItemStyles
-} from '../../elements';
-import CappedTextField from '../../elements/CappedTextField';
-import TemplateExportPreviewImage from './TemplateExportPreviewImage';
+import CappedTextField from '../../../components/elements/CappedTextField';
+import { ExportVisualPreviewImage } from './ExportVisualPreviewImage';
 import { i18nValue } from '../../../core/ui/i18n';
 import { informationProps } from '../../../core/template';
 
-import { Assistive } from '../../elements/Typography';
+import { Assistive } from '../../../components/elements/Typography';
+import {
+    TEMPLATE_EXPORT_INFO_STACK_TOKENS,
+    TEMPLATE_PICKER_NON_SHRINKING_STACK_ITEM_STYLES,
+    TEMPLATE_PICKER_STACK_STYLES
+} from '../styles';
 
-const TemplateExportInformationPane: React.FC = () => {
+export const ExportVisualInformationPane: React.FC = () => {
     return (
         <Stack
-            styles={templatePickerStackStyles}
-            tokens={templateExportInfoStackTokens}
+            styles={TEMPLATE_PICKER_STACK_STYLES}
+            tokens={TEMPLATE_EXPORT_INFO_STACK_TOKENS}
         >
             <Stack.Item>
                 <Assistive>
@@ -28,10 +27,10 @@ const TemplateExportInformationPane: React.FC = () => {
             </Stack.Item>
             <Stack.Item
                 grow={3}
-                styles={templatePickerNonShrinkingStackItemStyles}
+                styles={TEMPLATE_PICKER_NON_SHRINKING_STACK_ITEM_STYLES}
             >
                 <>
-                    <Stack tokens={templateExportInfoStackTokens}>
+                    <Stack tokens={TEMPLATE_EXPORT_INFO_STACK_TOKENS}>
                         <Stack.Item>
                             <CappedTextField
                                 id='information.name'
@@ -61,7 +60,7 @@ const TemplateExportInformationPane: React.FC = () => {
                             />
                         </Stack.Item>
                         <Stack.Item>
-                            <TemplateExportPreviewImage />
+                            <ExportVisualPreviewImage />
                         </Stack.Item>
                     </Stack>
                 </>
@@ -69,5 +68,3 @@ const TemplateExportInformationPane: React.FC = () => {
         </Stack>
     );
 };
-
-export default TemplateExportInformationPane;

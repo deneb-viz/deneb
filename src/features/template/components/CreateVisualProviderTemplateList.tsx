@@ -3,13 +3,13 @@ import React from 'react';
 import { FocusZone, FocusZoneDirection } from '@fluentui/react/lib/FocusZone';
 import { List } from '@fluentui/react/lib/List';
 
-import ProviderTemplateListItem from './ProviderTemplateListItem';
+import { CreateVisualProviderTemplateListItem } from './CreateVisualProviderTemplateListItem';
 import store from '../../../store';
 import { TopLevelSpec } from 'vega-lite';
 import { Spec } from 'vega';
 import { resolveTemplatesForProvider } from '../../../core/template';
 
-const ProviderTemplateList: React.FC = () => {
+export const CreateVisualProviderTemplateList: React.FC = () => {
     const { templateProvider } = store((state) => state),
         localTemplates = resolveTemplatesForProvider(),
         onRenderCell = (
@@ -17,7 +17,7 @@ const ProviderTemplateList: React.FC = () => {
             index: number | undefined,
             containsFocus: boolean
         ): JSX.Element => (
-            <ProviderTemplateListItem item={item} index={index} />
+            <CreateVisualProviderTemplateListItem item={item} index={index} />
         );
     return (
         <FocusZone
@@ -28,5 +28,3 @@ const ProviderTemplateList: React.FC = () => {
         </FocusZone>
     );
 };
-
-export default ProviderTemplateList;

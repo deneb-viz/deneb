@@ -94,7 +94,7 @@ export const TemplateDialogPivot: React.FC<ITemplateDialogPivotProps> = ({
         }
     };
     const ariaLabel = getPivotAria(type);
-    reactLog('Rendering [CreateVisualDialogPivot]');
+    reactLog('Rendering [TemplateDialogPivot]');
     return (
         <div className='new-spec-dialog-pivot'>
             <Pivot

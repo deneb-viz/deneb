@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { useId } from '@fluentui/react-hooks';
 
 import { IIconProps } from '@fluentui/react/lib/Icon';
@@ -28,7 +28,7 @@ const actionButtonStyles: IButtonStyles = {
     labelHovered: { color: theme.palette.neutralDark }
 };
 
-const TemplateImportControl: React.FC = () => {
+export const CreateVisualImportControl: React.FC = () => {
     const inputRef = React.useRef<HTMLInputElement>(null),
         [fileKey, setFileKey] = React.useState(uuidv4()),
         handleActionClick = () => inputRef.current.click(),
@@ -61,5 +61,3 @@ const TemplateImportControl: React.FC = () => {
         </>
     );
 };
-
-export default TemplateImportControl;

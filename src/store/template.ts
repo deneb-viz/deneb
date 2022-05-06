@@ -9,7 +9,7 @@ import { TStoreState } from '.';
 import {
     IDenebTemplateMetadata,
     ITemplateDatasetField
-} from '../core/template/schema';
+} from '../features/template';
 
 import {
     getNewExportTemplateMetadata,

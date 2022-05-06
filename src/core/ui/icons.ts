@@ -5,7 +5,7 @@ import { TEditorPosition } from '.';
 import { mergeStyleSets } from '@fluentui/react';
 import { getState, useStoreProp } from '../../store';
 import { commandBarButtonStyles } from './commandBar';
-import { TDatasetFieldType } from '../template/schema';
+import { TDatasetFieldType } from '../../features/template';
 import { zoomConfig } from './dom';
 import { TSpecStatus } from '../utils/specification';
 

@@ -10,7 +10,7 @@ import {
     IDetailsRowStyles
 } from '@fluentui/react/lib/DetailsList';
 
-import { ITemplateDatasetField } from '../../core/template/schema';
+import { ITemplateDatasetField } from '../../features/template';
 import DataTypeIcon from './DataTypeIcon';
 import CappedTextField from './CappedTextField';
 import { getDataset } from '../../core/data/dataset';

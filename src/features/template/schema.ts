@@ -1,10 +1,12 @@
-export type TDatasetFieldKind = 'column' | 'measure' | 'any';
+type TDatasetFieldKind = 'column' | 'measure' | 'any';
+
 export type TDatasetFieldType =
     | 'bool'
     | 'text'
     | 'numeric'
     | 'dateTime'
     | 'other';
+
 type TProvider = 'vega' | 'vegaLite';
 
 /**

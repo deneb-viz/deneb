@@ -48,7 +48,7 @@ import {
 import { i18nValue } from '../ui/i18n';
 import { cleanParse, getJsonAsIndentedString } from './json';
 import { getVegaSettings, getViewConfig, TSpecProvider } from '../vega';
-import { ITemplateInteractivityOptions } from '../template/schema';
+import { ITemplateInteractivityOptions } from '../../features/template';
 import { getLastVersionInfo } from './versioning';
 import { IVisualDatasetFields } from '../data';
 import {

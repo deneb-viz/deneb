@@ -40,7 +40,7 @@ import {
     IDenebTemplateMetadata,
     ITemplateDatasetField,
     TDatasetFieldType
-} from './schema';
+} from '../../features/template';
 import { getJsonAsIndentedString } from '../utils/json';
 import {
     getConfig,

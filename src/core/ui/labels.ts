@@ -1,4 +1,7 @@
-import { ITemplateDatasetField, TDatasetFieldType } from '../template/schema';
+import {
+    ITemplateDatasetField,
+    TDatasetFieldType
+} from '../../features/template';
 import { i18nValue } from './i18n';
 
 /**

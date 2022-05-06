@@ -4,22 +4,19 @@ import { Checkbox } from '@fluentui/react/lib/Checkbox';
 import { Separator } from '@fluentui/react/lib/Separator';
 import { Stack, StackItem, IStackTokens } from '@fluentui/react/lib/Stack';
 
-import { Paragraph } from '../../elements/Typography';
-import PreviewImage from '../../elements/PreviewImage';
+import { Paragraph } from '../../../components/elements/Typography';
+import PreviewImage from './PreviewImage';
 import store from '../../../store';
 import { i18nValue } from '../../../core/ui/i18n';
 import { isFeatureEnabled } from '../../../core/utils/features';
 import { reactLog } from '../../../core/utils/reactLog';
-import {
-    dispatchPreviewImage,
-    PREVIEW_IMAGE_CAP_SIZE
-} from '../../../features/template';
+import { dispatchPreviewImage, PREVIEW_IMAGE_CAP_SIZE } from '../preview-image';
 
 const stackTokens: IStackTokens = {
     childrenGap: 25
 };
 
-const TemplateExportPreviewImage: React.FC = () => {
+export const ExportVisualPreviewImage: React.FC = () => {
     const { templatePreviewImageDataUri, templateIncludePreviewImage } = store(
         (state) => state
     );
@@ -91,5 +88,3 @@ const TemplateExportPreviewImage: React.FC = () => {
         <></>
     );
 };
-
-export default TemplateExportPreviewImage;
