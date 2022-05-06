@@ -5,15 +5,10 @@ import { Stack } from '@fluentui/react/lib/Stack';
 
 import { useStoreProp } from '../../../store';
 import ExportValidation from '../../../components/export/content/ExportValidation';
-import ExportVisualDialogPivot from '../../../components/export/ExportVisualDialogPivot';
 import TemplateExportDatasetPane from '../../../components/export/content/TemplateExportDatasetPane';
 import TemplateExportInformationPane from '../../../components/export/content/TemplateExportInformationPane';
 import TemplateExportJsonPane from '../../../components/export/content/TemplateExportJsonPane';
-import {
-    TExportOperation,
-    TTemplateExportState,
-    validateSpecificationForExport
-} from '../../../core/template';
+import { validateSpecificationForExport } from '../../../core/template';
 import { i18nValue } from '../../../core/ui/i18n';
 import { reactLog } from '../../../core/utils/reactLog';
 import {
@@ -22,6 +17,8 @@ import {
     MODAL_DIALOG_STACK_ITEM_WRAPPER_STYLES,
     MODAL_DIALOG_STACK_STYLES
 } from '../../modal-dialog';
+import { TExportOperation, TTemplateExportState } from '../types';
+import { TemplateDialogPivot } from './TemplateDialogPivot';
 
 export const ExportVisualDialogBody: React.FC = () => {
     const templateSelectedExportOperation: TExportOperation = useStoreProp(
@@ -36,7 +33,7 @@ export const ExportVisualDialogBody: React.FC = () => {
     const resolveExportPivot = () => {
         switch (templateExportState) {
             case 'Editing': {
-                return <ExportVisualDialogPivot />;
+                return <TemplateDialogPivot type='export' />;
             }
             default:
                 return null;

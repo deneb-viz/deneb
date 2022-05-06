@@ -5,7 +5,6 @@ import { Text } from '@fluentui/react/lib/Text';
 import { PrimaryButton } from '@fluentui/react/lib/Button';
 
 import { useStoreProp } from '../../../store';
-import CreateVisualDialogPivot from '../../../components/create/CreateVisualDialogPivot';
 import CreateVisualPaneContent from '../../../components/create/CreateVisualPaneContent';
 import { createFromTemplate } from '../../../core/utils/specification';
 import { i18nValue } from '../../../core/ui/i18n';
@@ -20,6 +19,7 @@ import {
     MODAL_DIALOG_STACK_ITEM_WRAPPER_STYLES,
     MODAL_DIALOG_STACK_STYLES
 } from '../../modal-dialog';
+import { TemplateDialogPivot } from './TemplateDialogPivot';
 
 export const CreateVisualDialogBody: React.FC = () => {
     const templateAllImportCriteriaApplied: boolean = useStoreProp(
@@ -45,7 +45,7 @@ export const CreateVisualDialogBody: React.FC = () => {
             </Stack.Item>
             <Stack.Item shrink styles={MODAL_DIALOG_STACK_ITEM_STYLES}>
                 <div className='editor-pane-pivot'>
-                    <CreateVisualDialogPivot />
+                    <TemplateDialogPivot type='new' />
                 </div>
             </Stack.Item>
             <Stack.Item

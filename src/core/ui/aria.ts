@@ -9,9 +9,3 @@ export const resolveEditorPanePivotAria = () => i18nValue('Pivot_Editor_Pane');
 
 export const resolveEditorDebugPaneToggleAria = (expanded: boolean) =>
     expanded ? 'Tooltip_Collapse_Debug_Pane' : 'Tooltip_Expand_Debug_Pane';
-
-export const resolveTemplateExportPivotAria = () =>
-    i18nValue('Pivot_Editor_Export');
-
-export const resolveTemplateProviderPivotAria = () =>
-    i18nValue('Pivot_Editor_Create');

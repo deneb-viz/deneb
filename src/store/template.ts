@@ -14,16 +14,18 @@ import {
 import {
     getNewExportTemplateMetadata,
     getPlaceholderResolutionStatus,
-    resolveTemplatesForProvider,
-    TExportOperation,
-    TTemplateExportState,
-    TTemplateImportState,
-    TTemplateProvider
+    resolveTemplatesForProvider
 } from '../core/template';
 import { getTemplateWithBaseTheme } from '../core/vega/theme';
 import templates from '../templates';
 import { TSpecProvider } from '../core/vega';
 import { DATASET_NAME } from '../constants';
+import {
+    TExportOperation,
+    TTemplateExportState,
+    TTemplateImportState,
+    TTemplateProvider
+} from '../features/template';
 
 export interface ITemplateSlice {
     templateSelectedIndex: number;

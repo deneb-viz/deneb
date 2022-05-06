@@ -1,8 +1,4 @@
 export {
-    TExportOperation,
-    TTemplateExportState,
-    TTemplateImportState,
-    TTemplateProvider,
     datasetFieldProps,
     getEscapedReplacerPattern,
     getExportTemplate,
@@ -61,34 +57,10 @@ import { IVisualDatasetFields } from '../data';
 import { ITemplateImportPayload } from '../../store/template';
 import { DATASET_NAME } from '../../constants';
 import { getCrossHighlightRegExpAlternation } from '../../features/interactivity';
-
-/**
- * Used to indicate which part of the export dialog has focus.
- */
-type TExportOperation = 'information' | 'dataset' | 'template';
-
-/**
- * Stages we go through when exporting a template so that the interface can
- * respond accordingly.
- */
-type TTemplateExportState =
-    | 'None'
-    | 'Validating'
-    | 'Editing'
-    | 'Success'
-    | 'Error';
-
-/**
- * Stages we go through when importing a template so that the interface can
- * respond accordingly.
- */
-type TTemplateImportState =
-    | 'None'
-    | 'Supplied'
-    | 'Loading'
-    | 'Validating'
-    | 'Success'
-    | 'Error';
+import {
+    TTemplateExportState,
+    TTemplateImportState
+} from '../../features/template';
 
 /**
  * Used to manage regex match/replace for portions of a template that represent
@@ -98,12 +70,6 @@ interface ITemplatePattern {
     match: string;
     replacer: string;
 }
-
-/**
- * Extension of `TSpecProvider`, providing an `import` value in addition to
- * `vega` and `vegaLite`.
- */
-type TTemplateProvider = TSpecProvider | 'import';
 
 /**
  * Used for validation of text field lengths vs. generated schema.
