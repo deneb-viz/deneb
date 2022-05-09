@@ -6,9 +6,9 @@ import { Separator } from '@fluentui/react/lib/Separator';
 
 import store from '../../../store';
 import { getConfig } from '../../../core/utils/config';
-import { IDenebTemplateMetadata } from '../schema';
-import { isBase64Image } from '../preview-image';
-import PreviewImage from './PreviewImage';
+import { IDenebTemplateMetadata } from '../../template';
+import { isBase64Image } from '../../template/preview-image';
+import { PreviewImage } from '../../template';
 
 const verticalSeparatorStyles = mergeStyles({
     height: getConfig().templates.previewImageSize

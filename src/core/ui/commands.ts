@@ -27,7 +27,6 @@ export {
 import { KeyHandler } from 'hotkeys-js';
 import { Options } from 'react-hotkeys-hook';
 
-import { fixAndFormat, persist } from '../utils/specification';
 import {
     getProviderVersionProperty,
     IPersistenceProperty,
@@ -39,11 +38,15 @@ import { getConfig, getVisualMetadata } from '../utils/config';
 import { TEditorRole } from '../services/JsonEditorServices';
 import { hostServices } from '../services';
 import { TModalDialogType } from '../../features/modal-dialog';
-import { updateExportState } from '../template';
 import { TSpecProvider, TSpecRenderMode } from '../vega';
 import { getZoomInLevel, getZoomOutLevel, zoomConfig } from './dom';
 import { getZoomToFitScale, TPreviewPivotRole } from './advancedEditor';
 import { dispatchPreviewImage } from '../../features/template';
+import {
+    fixAndFormatSpecification,
+    persistSpecification
+} from '../../features/specification';
+import { updateTemplateExportState } from '../../features/visual-export';
 
 interface IKeyboardShortcut {
     keys: string;
@@ -73,13 +76,14 @@ const getCommandKey = (command: string): string =>
 /**
  * Wrappers for event handling
  */
-export const handleApply = () => executeEditorCommand(persist);
+export const handleApply = () => executeEditorCommand(persistSpecification);
 export const handleAutoApply = () => {
     const { toggleEditorAutoApplyStatus } = getState();
     handleApply();
     executeEditorCommand(toggleEditorAutoApplyStatus);
 };
-export const handleFormat = () => executeEditorCommand(fixAndFormat);
+export const handleFormat = () =>
+    executeEditorCommand(fixAndFormatSpecification);
 export const handleNewSpecification = () => executeEditorCommand(createNewSpec);
 export const handleExportTemplate = () =>
     executeEditorCommand(createExportableTemplate);
@@ -126,7 +130,7 @@ const closeModalDialog = (type: TModalDialogType) => {
         }
         case 'export': {
             dispatchExportDialog(false);
-            updateExportState('None');
+            updateTemplateExportState('None');
             break;
         }
         case 'mapping': {
@@ -257,7 +261,7 @@ const openHelpSite = () => {
 /**
  * Handle the Repair/Format JSON command.
  */
-const repairFormatJson = () => fixAndFormat();
+const repairFormatJson = () => fixAndFormatSpecification();
 
 /**
  * Navigate to the spec pane in the editor.

@@ -1,4 +1,3 @@
-import { View } from 'vega';
 import { getConfig } from '../../core/utils/config';
 
 import { getState } from '../../store';

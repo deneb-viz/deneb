@@ -19,12 +19,13 @@ import {
     TSpecRenderMode
 } from '../core/vega';
 import { View } from 'vega';
-import { TSpecStatus } from '../core/utils/specification';
+
 import { IVisualDatasetValueRow } from '../core/data';
 import { reactLog } from '../core/utils/reactLog';
 import { DATASET_NAME } from '../constants';
 import { logHasErrors } from '../features/debug-area';
 import { getPowerBiTooltipHandler } from '../features/interactivity';
+import { TSpecStatus } from '../features/specification';
 
 interface IVisualRenderProps {
     specification: object;

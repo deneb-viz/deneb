@@ -10,93 +10,21 @@ import {
     IDetailsRowStyles
 } from '@fluentui/react/lib/DetailsList';
 
-import { ITemplateDatasetField } from '../../features/template';
-import DataTypeIcon from './DataTypeIcon';
-import CappedTextField from './CappedTextField';
-import { getDataset } from '../../core/data/dataset';
+import { ITemplateDatasetField } from '..';
+import DataTypeIcon from '../../../components/elements/DataTypeIcon';
+import CappedTextField from '../../../components/elements/CappedTextField';
+import { getDataset } from '../../../core/data/dataset';
 import {
     getDatasetFieldByTemplateKey,
     getDatasetTemplateFields
-} from '../../core/data/fields';
-import { i18nValue } from '../../core/ui/i18n';
+} from '../../../core/data/fields';
+import { i18nValue } from '../../../core/ui/i18n';
 import DataFieldLabel from './DataFieldLabel';
 import DatasetFieldAssignmentDropdown from './DatasetFieldAssignmentDropdown';
-import { TModalDialogType } from '../../features/modal-dialog';
-import { getState } from '../../store';
-import { datasetFieldProps } from '../../core/template';
-import { DATASET_NAME } from '../../constants';
-
-export const getExportColumns = (): IColumn[] => [
-    getTypeColumn(),
-    getExportNameColumn(),
-    getExportDescriptionColumn()
-];
-
-export const getImportColumns = (): IColumn[] => [
-    getTypeColumn(),
-    getNameColumn(),
-    getFieldAssignmentColumn()
-];
-
-export const getMapColumns = (): IColumn[] => [
-    getTypeColumn(),
-    getMapNameOriginalColumn(),
-    getMapFieldAssignmentColumn()
-];
-
-const getTypeColumn = (): IColumn => ({
-    key: 'type',
-    name: '',
-    fieldName: 'type',
-    minWidth: 15,
-    maxWidth: 15
-});
-
-const getNameColumn = (): IColumn => ({
-    key: 'name',
-    name: i18nValue('Template_Dataset_Field_Name'),
-    fieldName: 'name',
-    minWidth: 150,
-    maxWidth: 250
-});
-
-const getMapNameOriginalColumn = (): IColumn => ({
-    key: 'name',
-    name: i18nValue('Map_Fields_Dataset_Original_Name'),
-    fieldName: 'name',
-    minWidth: 150,
-    maxWidth: 250
-});
-
-const getFieldAssignmentColumn = (): IColumn => ({
-    key: 'field_assignment',
-    name: i18nValue('Template_Dataset_Field_Assignment'),
-    fieldName: 'assignment',
-    minWidth: 300
-});
-
-const getMapFieldAssignmentColumn = (): IColumn => ({
-    key: 'map_field_assignment',
-    name: i18nValue('Template_Dataset_Field_Assignment'),
-    fieldName: 'assignment',
-    minWidth: 300
-});
-
-const getExportNameColumn = (): IColumn => ({
-    key: 'export_name',
-    name: i18nValue('Template_Export_Dataset_Field_Name'),
-    fieldName: 'name',
-    minWidth: 150,
-    maxWidth: 250
-});
-
-const getExportDescriptionColumn = (): IColumn => ({
-    key: 'export_description',
-    name: i18nValue('Template_Export_Dataset_Field_Description'),
-    fieldName: 'description',
-    minWidth: 350,
-    flexGrow: 1
-});
+import { TModalDialogType } from '../../modal-dialog';
+import { getState } from '../../../store';
+import { DATASET_NAME } from '../../../constants';
+import { TEMPLATE_DATASET_FIELD_PROPS } from '../fields';
 
 const getDataTypeIcon = (item: ITemplateDatasetField) => (
     <DataTypeIcon datasetField={item} />
@@ -123,7 +51,7 @@ const getExportNameField = (item: ITemplateDatasetField, index: number) => (
         id={`${DATASET_NAME}[${index}].name`}
         i18nLabel={`${item.name}`}
         i18nPlaceholder={`${item?.namePlaceholder}`}
-        maxLength={datasetFieldProps.name.maxLength}
+        maxLength={TEMPLATE_DATASET_FIELD_PROPS.name.maxLength}
         inline
         description={`${i18nValue(
             `Template_Export_Kind_${item?.kind || 'None'}`
@@ -136,7 +64,7 @@ const getExportDescriptionField = (index: number) => (
         id={`${DATASET_NAME}[${index}].description`}
         i18nLabel='Field Description'
         i18nPlaceholder='Template_Description_Optional_Placeholder'
-        maxLength={datasetFieldProps.description.maxLength}
+        maxLength={TEMPLATE_DATASET_FIELD_PROPS.description.maxLength}
         multiline
         inline
     />
@@ -202,5 +130,3 @@ export const Dataset: React.FC<IDatasetProps> = ({ dataset, columns }) => {
         />
     );
 };
-
-export default Dataset;

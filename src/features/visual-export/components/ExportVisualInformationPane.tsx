@@ -5,14 +5,15 @@ import { Stack } from '@fluentui/react/lib/Stack';
 import CappedTextField from '../../../components/elements/CappedTextField';
 import { ExportVisualPreviewImage } from './ExportVisualPreviewImage';
 import { i18nValue } from '../../../core/ui/i18n';
-import { informationProps } from '../../../core/template';
 
 import { Assistive } from '../../../components/elements/Typography';
+
 import {
+    TEMPLATE_INFORMATION_PROPS,
     TEMPLATE_EXPORT_INFO_STACK_TOKENS,
     TEMPLATE_PICKER_NON_SHRINKING_STACK_ITEM_STYLES,
     TEMPLATE_PICKER_STACK_STYLES
-} from '../styles';
+} from '../../template';
 
 export const ExportVisualInformationPane: React.FC = () => {
     return (
@@ -36,7 +37,9 @@ export const ExportVisualInformationPane: React.FC = () => {
                                 id='information.name'
                                 i18nLabel='Template_Export_Information_Name'
                                 i18nPlaceholder='Template_Export_Information_Name_Placeholder'
-                                maxLength={informationProps.name.maxLength}
+                                maxLength={
+                                    TEMPLATE_INFORMATION_PROPS.name.maxLength
+                                }
                             />
                         </Stack.Item>
                         <Stack.Item>
@@ -45,7 +48,8 @@ export const ExportVisualInformationPane: React.FC = () => {
                                 i18nLabel='Template_Export_Information_Description'
                                 i18nPlaceholder='Template_Description_Optional_Placeholder'
                                 maxLength={
-                                    informationProps.description.maxLength
+                                    TEMPLATE_INFORMATION_PROPS.description
+                                        .maxLength
                                 }
                                 multiline
                             />
@@ -56,7 +60,9 @@ export const ExportVisualInformationPane: React.FC = () => {
                                 i18nLabel='Template_Export_Author_Name'
                                 i18nPlaceholder='Template_Export_Author_Name_Placeholder'
                                 i18nAssistiveText='Template_Export_Author_Name_Assistive'
-                                maxLength={informationProps.author.maxLength}
+                                maxLength={
+                                    TEMPLATE_INFORMATION_PROPS.author.maxLength
+                                }
                             />
                         </Stack.Item>
                         <Stack.Item>

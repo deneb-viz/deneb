@@ -8,15 +8,15 @@ import {
 import { Icon } from '@fluentui/react/lib/Icon';
 import reduce from 'lodash/reduce';
 
-import store from '../../store';
-import { resolveValueDescriptor } from '../../core/template';
-import { ITemplateDatasetField } from '../../features/template';
-import { getDataTypeIcon } from '../../core/ui/icons';
-import { getPlaceholderDropdownText } from '../../core/ui/labels';
-import { templateTypeIconOptionStyles } from '../../core/ui/fluent';
-import { TModalDialogType } from '../../features/modal-dialog';
-import { IVisualDatasetFields } from '../../core/data';
-import { getDatasetFieldsInclusive } from '../../core/data/fields';
+import store from '../../../store';
+import { ITemplateDatasetField } from '..';
+import { getDataTypeIcon } from '../../../core/ui/icons';
+import { getPlaceholderDropdownText } from '../../../core/ui/labels';
+import { templateTypeIconOptionStyles } from '../../../core/ui/fluent';
+import { TModalDialogType } from '../../modal-dialog';
+import { IVisualDatasetFields } from '../../../core/data';
+import { getDatasetFieldsInclusive } from '../../../core/data/fields';
+import { resolveValueDescriptor } from '../fields';
 
 interface IDatasetFieldAssignmentDropdownProps {
     datasetField: ITemplateDatasetField;

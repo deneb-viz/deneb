@@ -9,7 +9,7 @@ import {
     TEMPLATE_PICKER_STACK_STYLES,
     TEMPLATE_PICKER_NON_SHRINKING_STACK_ITEM_STYLES,
     TEMPLATE_EXPORT_INFO_STACK_TOKENS
-} from '../styles';
+} from '../../template';
 
 export const ExportVisualDatasetPane: React.FC = () => (
     <Stack

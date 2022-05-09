@@ -16,12 +16,9 @@ import {
     TPreviewPivotRole
 } from '../core/ui/advancedEditor';
 import { getConfig } from '../core/utils/config';
-import {
-    getSpecFieldsInUse,
-    ICompiledSpec,
-    IFixResult
-} from '../core/utils/specification';
 import { IVisualDatasetFields } from '../core/data';
+import { getFieldsInUseFromSpec } from '../features/template';
+import { ICompiledSpec, IFixResult } from '../features/specification';
 
 export interface IEditorSlice {
     editorAutoApply: boolean;
@@ -195,7 +192,7 @@ const handleRenewEditorFieldsInUse = (
     state: TStoreState
 ): PartialState<TStoreState, never, never, never, never> => {
     const { fields } = state.dataset;
-    const editorFieldsInUse = getSpecFieldsInUse(
+    const editorFieldsInUse = getFieldsInUseFromSpec(
         fields,
         state.editorFieldsInUse,
         true

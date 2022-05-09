@@ -3,7 +3,7 @@ import React from 'react';
 import store from '../../../store';
 import { CreateVisualDatasetPlaceholderEmpty } from './CreateVisualDatasetPlaceholderEmpty';
 import { CreateVisualDatasetPlaceholderList } from './CreateVisualDatasetPlaceholderList';
-import { IDenebTemplateMetadata } from '../schema';
+import { IDenebTemplateMetadata } from '../../template';
 import { DATASET_NAME } from '../../../constants';
 
 export const CreateVisualDatasetPlaceholders: React.FC = () => {

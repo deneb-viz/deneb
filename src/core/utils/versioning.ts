@@ -1,8 +1,8 @@
+import { isLegacySpec } from '../../features/specification';
 import { getState } from '../../store';
 import { getVegaProvider, getVegaSettings, TSpecProvider } from '../vega';
 import { getConfig, getVisualMetadata, providerVersions } from './config';
 import { resolveObjectProperties, updateObjectProperties } from './properties';
-import { isLegacySpec } from './specification';
 
 /**
  * Structured version information that we can use for comparison or inspection purposes.

@@ -13,7 +13,7 @@ import {
     IVisualDatasetFields,
     TDatasetValueSource
 } from '.';
-import { resolveVisualMetaToDatasetField } from '../template';
+import { resolveVisualMetaToDatasetField } from '../../features/template';
 import { getDataset } from './dataset';
 import { ITemplateDatasetField } from '../../features/template';
 import { HIGHLIGHT_FIELD_SUFFIX } from '../../constants';

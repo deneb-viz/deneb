@@ -31,8 +31,8 @@ import { resolveAutoApplyLabel } from './labels';
 
 import { theme } from './fluent';
 import { i18nValue } from './i18n';
-import { getState, useStoreProp } from '../../store';
-import { TSpecStatus } from '../utils/specification';
+import { useStoreProp } from '../../store';
+import { TSpecStatus } from '../../features/specification';
 
 const commandBarStyles: ICommandBarStyles = {
     root: {

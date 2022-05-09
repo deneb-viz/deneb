@@ -12,7 +12,7 @@ import {
 import { IVisualDataset, TDataProcessingStage } from '../core/data';
 import { resolveVisualMode } from '../core/ui';
 import { getResizablePaneSize } from '../core/ui/advancedEditor';
-import { getSpecFieldsInUse } from '../core/utils/specification';
+import { getFieldsInUseFromSpec } from '../features/template';
 import { DATASET_IDENTITY_NAME } from '../constants';
 import {
     getDataPointCrossFilterStatus,
@@ -113,7 +113,7 @@ const handleUpdateDataset = (
 ): PartialState<TStoreState, never, never, never, never> => {
     const datasetCategories = payload.categories || [];
     const { dataset } = payload;
-    const editorFieldsInUse = getSpecFieldsInUse(
+    const editorFieldsInUse = getFieldsInUseFromSpec(
         dataset.fields,
         state.editorFieldsInUse
     );

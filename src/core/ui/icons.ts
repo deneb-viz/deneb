@@ -7,7 +7,7 @@ import { getState, useStoreProp } from '../../store';
 import { commandBarButtonStyles } from './commandBar';
 import { TDatasetFieldType } from '../../features/template';
 import { zoomConfig } from './dom';
-import { TSpecStatus } from '../utils/specification';
+import { TSpecStatus } from '../../features/specification';
 
 const previewCommandBarHeight = 26;
 

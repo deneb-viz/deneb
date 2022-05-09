@@ -4,10 +4,10 @@ import { FocusZone, FocusZoneDirection } from '@fluentui/react/lib/FocusZone';
 import { List } from '@fluentui/react/lib/List';
 
 import { CreateVisualProviderTemplateListItem } from './CreateVisualProviderTemplateListItem';
-import store from '../../../store';
+import store, { getState } from '../../../store';
 import { TopLevelSpec } from 'vega-lite';
 import { Spec } from 'vega';
-import { resolveTemplatesForProvider } from '../../../core/template';
+import { resolveTemplatesForProvider } from '../logic';
 
 export const CreateVisualProviderTemplateList: React.FC = () => {
     const { templateProvider } = store((state) => state),

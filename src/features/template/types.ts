@@ -33,3 +33,12 @@ export type TTemplateImportState =
  * `vega` and `vegaLite`.
  */
 export type TTemplateProvider = TSpecProvider | 'import';
+
+/**
+ * Used to manage regex match/replace for portions of a template that represent
+ * fields from the dataset.
+ */
+export interface ITemplatePattern {
+    match: string;
+    replacer: string;
+}

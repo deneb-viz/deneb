@@ -17,8 +17,8 @@ import ViewMode = powerbi.ViewMode;
 import EditMode = powerbi.EditMode;
 
 import { getVisualMetadata, providerVersions } from '../../core/utils/config';
-import { ICompiledSpec } from '../utils/specification';
 import { i18nValue } from '../../core/ui/i18n';
+import { ICompiledSpec } from '../../features/specification';
 
 /**
  * Returns visual + Vega + Vega-Lite version information as a single string.

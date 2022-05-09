@@ -5,7 +5,7 @@ import { IconButton } from '@fluentui/react/lib/Button';
 import { IIconProps } from '@fluentui/react/lib/Icon';
 
 import store from '../../../store';
-import { getExportTemplate } from '../../../core/template';
+import { getExportTemplate } from '../logic';
 import { i18nValue } from '../../../core/ui/i18n';
 import { iconButtonStyles } from '../../../core/ui/icons';
 import { hostServices } from '../../../core/services';

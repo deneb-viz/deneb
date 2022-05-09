@@ -3,8 +3,8 @@ import * as React from 'react';
 import { Text } from '@fluentui/react/lib/Text';
 import { Stack, IStackStyles } from '@fluentui/react/lib/Stack';
 
-import FieldInfoIcon from './FieldInfoIcon';
-import { ITemplateDatasetField } from '../../features/template';
+import FieldInfoIcon from '../../../components/elements/FieldInfoIcon';
+import { ITemplateDatasetField } from '..';
 
 export interface IDataFieldLabelProps {
     datasetField: ITemplateDatasetField;

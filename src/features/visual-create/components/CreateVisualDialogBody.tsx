@@ -6,7 +6,7 @@ import { PrimaryButton } from '@fluentui/react/lib/Button';
 
 import { useStoreProp } from '../../../store';
 import { CreateVisualDialogBodyDetail } from './CreateVisualDialogBodyDetail';
-import { createFromTemplate } from '../../../core/utils/specification';
+
 import { i18nValue } from '../../../core/ui/i18n';
 import { buttonStyles } from '../../../core/ui/fluent';
 import { Spec } from 'vega';
@@ -19,7 +19,8 @@ import {
     MODAL_DIALOG_STACK_ITEM_WRAPPER_STYLES,
     MODAL_DIALOG_STACK_STYLES
 } from '../../modal-dialog';
-import { TemplateDialogPivot } from './TemplateDialogPivot';
+import { TemplateDialogPivot } from '../../template/components/TemplateDialogPivot';
+import { createFromTemplate } from '../logic';
 
 export const CreateVisualDialogBody: React.FC = () => {
     const templateAllImportCriteriaApplied: boolean = useStoreProp(

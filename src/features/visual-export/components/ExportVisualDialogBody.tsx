@@ -8,7 +8,6 @@ import { ExportVisualValidation } from './ExportVisualValidation';
 import { ExportVisualDatasetPane } from './ExportVisualDatasetPane';
 import { ExportVisualInformationPane } from './ExportVisualInformationPane';
 import { ExportVisualJsonPane } from './ExportVisualJsonPane';
-import { validateSpecificationForExport } from '../../../core/template';
 import { i18nValue } from '../../../core/ui/i18n';
 import { reactLog } from '../../../core/utils/reactLog';
 import {
@@ -17,8 +16,9 @@ import {
     MODAL_DIALOG_STACK_ITEM_WRAPPER_STYLES,
     MODAL_DIALOG_STACK_STYLES
 } from '../../modal-dialog';
-import { TExportOperation, TTemplateExportState } from '../types';
-import { TemplateDialogPivot } from './TemplateDialogPivot';
+import { TExportOperation, TTemplateExportState } from '../../template/types';
+import { TemplateDialogPivot } from '../../template/components/TemplateDialogPivot';
+import { validateSpecificationForExport } from '../logic';
 
 /**
  * Ensure correct content is displayed in the body, based on store state.

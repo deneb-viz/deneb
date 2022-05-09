@@ -9,8 +9,9 @@ import { closeModalDialog } from '../../../core/ui/commands';
 import { TModalDialogType } from '../types';
 import { getModalDialogContentStyles } from '../styles';
 import { reactLog } from '../../../core/utils/reactLog';
-import { CreateVisualDialogBody, ExportVisualDialogBody } from '../../template';
-import MapFieldsDialogBody from '../../../components/map/MapFieldsDialogBody';
+import { CreateVisualDialogBody } from '../../visual-create';
+import { ExportVisualDialogBody } from '../../visual-export';
+import { MapFieldsDialogBody } from '../../remap-fields';
 
 interface IModalDialogProps {
     type: TModalDialogType;

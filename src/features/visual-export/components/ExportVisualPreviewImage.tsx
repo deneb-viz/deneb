@@ -5,12 +5,15 @@ import { Separator } from '@fluentui/react/lib/Separator';
 import { Stack, StackItem, IStackTokens } from '@fluentui/react/lib/Stack';
 
 import { Paragraph } from '../../../components/elements/Typography';
-import PreviewImage from './PreviewImage';
 import store from '../../../store';
 import { i18nValue } from '../../../core/ui/i18n';
 import { isFeatureEnabled } from '../../../core/utils/features';
 import { reactLog } from '../../../core/utils/reactLog';
-import { dispatchPreviewImage, PREVIEW_IMAGE_CAP_SIZE } from '../preview-image';
+import {
+    dispatchPreviewImage,
+    PreviewImage,
+    PREVIEW_IMAGE_CAP_SIZE
+} from '../../template';
 
 const stackTokens: IStackTokens = {
     childrenGap: 25

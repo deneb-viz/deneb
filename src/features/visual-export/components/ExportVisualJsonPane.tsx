@@ -7,7 +7,7 @@ import { IconButton } from '@fluentui/react/lib/Button';
 import { IIconProps } from '@fluentui/react/lib/Icon';
 import { ITextStyles } from '@fluentui/react/lib/Text';
 
-import { getExportTemplate } from '../../../core/template';
+import { getExportTemplate } from '../logic';
 import { i18nValue } from '../../../core/ui/i18n';
 import { iconButtonStyles } from '../../../core/ui/icons';
 import { ExportVisualDownloadButton } from './ExportVisualDownloadButton';
@@ -16,7 +16,7 @@ import {
     TEMPLATE_EXPORT_INFO_STACK_TOKENS,
     TEMPLATE_PICKER_NON_SHRINKING_STACK_ITEM_STYLES,
     TEMPLATE_PICKER_STACK_STYLES
-} from '../styles';
+} from '../../template';
 
 const exportPivotAssistiveToastTextStyles: ITextStyles = {
     root: {

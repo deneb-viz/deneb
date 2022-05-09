@@ -5,7 +5,7 @@ import { IIconProps } from '@fluentui/react/lib/Icon';
 import { ActionButton, IButtonStyles } from '@fluentui/react/lib/Button';
 import { v4 as uuidv4 } from 'uuid';
 
-import { onTemplateFileSelect } from '../../../core/template';
+import { onTemplateFileSelect } from '../logic';
 import { i18nValue } from '../../../core/ui/i18n';
 import { theme } from '../../../core/ui/fluent';
 

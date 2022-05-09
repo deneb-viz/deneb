@@ -11,11 +11,6 @@ import {
     ITemplateDatasetField
 } from '../features/template';
 
-import {
-    getNewExportTemplateMetadata,
-    getPlaceholderResolutionStatus,
-    resolveTemplatesForProvider
-} from '../core/template';
 import { getTemplateWithBaseTheme } from '../core/vega/theme';
 import templates from '../templates';
 import { TSpecProvider } from '../core/vega';
@@ -26,6 +21,11 @@ import {
     TTemplateImportState,
     TTemplateProvider
 } from '../features/template';
+import { getNewExportTemplateMetadata } from '../features/visual-export';
+import {
+    getImportPlaceholderResolutionStatus,
+    resolveTemplatesForProvider
+} from '../features/visual-create';
 
 export interface ITemplateSlice {
     templateSelectedIndex: number;
@@ -167,7 +167,7 @@ interface ITemplatePlaceholderImagePayload {
 const handleInitializeImportExport = (
     state: TStoreState
 ): PartialState<TStoreState, never, never, never, never> => ({
-    templateAllImportCriteriaApplied: getPlaceholderResolutionStatus(
+    templateAllImportCriteriaApplied: getImportPlaceholderResolutionStatus(
         templates.vegaLite[0]
     ),
     templateExportMetadata: getNewExportTemplateMetadata()
@@ -246,7 +246,7 @@ const handleUpdateSelectedTemplateProvider = (
         templateSpecProvider: isImport ? null : templateProvider,
         templateAllImportCriteriaApplied: isImport
             ? false
-            : getPlaceholderResolutionStatus(templateToApply)
+            : getImportPlaceholderResolutionStatus(templateToApply)
     };
 };
 
@@ -261,7 +261,7 @@ const handleUpdateSelectedTemplate = (
         templateSelectedIndex: index,
         templateToApply,
         templateAllImportCriteriaApplied:
-            getPlaceholderResolutionStatus(templateToApply)
+            getImportPlaceholderResolutionStatus(templateToApply)
     };
 };
 
@@ -341,7 +341,7 @@ const handleUpdateTemplatePlaceholder = (
     };
     return {
         templateAllImportCriteriaApplied:
-            getPlaceholderResolutionStatus(templateToApply),
+            getImportPlaceholderResolutionStatus(templateToApply),
         templateToApply
     };
 };

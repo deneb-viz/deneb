@@ -4,10 +4,10 @@ import { getRTL } from '@fluentui/react/lib/Utilities';
 import { Icon } from '@fluentui/react/lib/Icon';
 
 import store from '../../../store';
-import { IDenebTemplateMetadata } from '../schema';
+import { IDenebTemplateMetadata } from '../../template';
 import { TopLevelSpec } from 'vega-lite';
 import { Spec } from 'vega';
-import { TEMPLATE_PICKER_LIST_ITEM_STYLES } from '../styles';
+import { TEMPLATE_PICKER_LIST_ITEM_STYLES } from '../../template';
 
 interface IProviderTemplateListItemProps {
     item: Spec | TopLevelSpec;

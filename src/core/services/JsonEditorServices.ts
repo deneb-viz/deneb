@@ -22,12 +22,15 @@ import debounce from 'lodash/debounce';
 
 import { getConfig } from '../utils/config';
 import { getDataset } from '../data/dataset';
-import { hasLiveSpecChanged, persist } from '../utils/specification';
 import { getState } from '../../store';
 import { i18nValue } from '../ui/i18n';
 import { getEditorSchema, getVegaSettings, TSpecProvider } from '../vega';
 import { IVisualDatasetField } from '../data';
 import { baseValidator } from '../vega/validation';
+import {
+    hasLiveSpecChanged,
+    persistSpecification
+} from '../../features/specification';
 
 class JsonEditorServices implements IVisualEditor {
     role: TEditorRole;
@@ -231,7 +234,7 @@ const getInitialText = (role: TEditorRole) => {
 const handleTextEntry = () => {
     const { editorAutoApply, updateEditorDirtyStatus } = getState();
     if (editorAutoApply) {
-        persist();
+        persistSpecification();
     } else {
         updateEditorDirtyStatus(hasLiveSpecChanged());
     }

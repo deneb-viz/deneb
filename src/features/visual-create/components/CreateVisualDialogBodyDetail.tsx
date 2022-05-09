@@ -9,7 +9,7 @@ import {
     TEMPLATE_PICKER_STACK_ITEM_LIST_STYLES,
     TEMPLATE_PICKER_STACK_STYLES,
     TEMPLATE_PICKER_STACK_TOKENS
-} from '../styles';
+} from '../../template';
 
 export const CreateVisualDialogBodyDetail: React.FC = () => {
     reactLog('Rendering [CreateVisualDialogBodyDetail]');
