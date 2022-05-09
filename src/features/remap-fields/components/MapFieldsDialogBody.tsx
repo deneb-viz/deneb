@@ -6,11 +6,16 @@ import { IColumn } from '@fluentui/react/lib/DetailsList';
 
 import filter from 'lodash/filter';
 
-import { useStoreProp } from '../../../store';
+import { getState, useStoreProp } from '../../../store';
 
 import { i18nValue } from '../../../core/ui/i18n';
 import { Paragraph } from '../../../components/elements/Typography';
-import { Dataset, getTemplateDatasetTypeColumn } from '../../template';
+import {
+    Dataset,
+    getReducedPlaceholdersForMetadata,
+    getTemplateDatasetTypeColumn,
+    getTemplatedSpecification
+} from '../../template';
 import { buttonStyles } from '../../../core/ui/fluent';
 
 import { getDatasetTemplateFields } from '../../../core/data/fields';
@@ -21,7 +26,8 @@ import {
     MODAL_DIALOG_STACK_ITEM_STYLES,
     MODAL_DIALOG_STACK_STYLES
 } from '../../modal-dialog';
-import { remapSpecificationFields } from '../fields';
+import { specEditorService } from '../../../core/services/JsonEditorServices';
+import { persistSpecification } from '../../specification';
 
 const datasetItemStyles: IStackItemStyles = {
     root: {
@@ -48,6 +54,22 @@ const getMapColumns = (): IColumn[] => [
     getMapNameOriginalColumn(),
     getMapFieldAssignmentColumn()
 ];
+
+/**
+ * For a supplied template, substitute placeholder values and return a stringified representation of the object.
+ */
+export const remapSpecificationFields = () => {
+    const { updateEditorMapDialogVisible } = getState();
+    const dataset = getDatasetTemplateFields(getState().editorFieldsInUse);
+    const spec = getTemplatedSpecification(
+        specEditorService.getText(),
+        dataset
+    );
+    const replaced = getReducedPlaceholdersForMetadata(dataset, spec);
+    specEditorService.setText(replaced);
+    updateEditorMapDialogVisible(false);
+    persistSpecification();
+};
 
 export const MapFieldsDialogBody = () => {
     const editorFieldsInUse: IVisualDatasetFields =
