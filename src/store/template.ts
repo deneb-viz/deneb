@@ -11,7 +11,6 @@ import {
     ITemplateDatasetField
 } from '../features/template';
 
-import { getTemplateWithBaseTheme } from '../core/vega/theme';
 import templates from '../templates';
 import { TSpecProvider } from '../core/vega';
 import { DATASET_NAME } from '../constants';
@@ -26,6 +25,7 @@ import {
     getImportPlaceholderResolutionStatus,
     resolveTemplatesForProvider
 } from '../features/visual-create';
+import { getTemplateWithBasePowerBiTheme } from '../features/powerbi-vega-extensibility';
 
 export interface ITemplateSlice {
     templateSelectedIndex: number;
@@ -254,7 +254,7 @@ const handleUpdateSelectedTemplate = (
     state: TStoreState,
     index: number
 ): PartialState<TStoreState, never, never, never, never> => {
-    const templateToApply = getTemplateWithBaseTheme(
+    const templateToApply = getTemplateWithBasePowerBiTheme(
         resolveTemplatesForProvider()[index]
     );
     return {

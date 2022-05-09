@@ -3,8 +3,8 @@ import { Config as VlConfig, TopLevelSpec } from 'vega-lite';
 import merge from 'lodash/merge';
 import { interpolateHcl, interpolateRgbBasis, quantize } from 'd3';
 
-import { hostServices } from '../services';
-import { ptToPx } from '../ui/dom';
+import { hostServices } from '../../core/services';
+import { ptToPx } from '../../core/ui/dom';
 import { getState } from '../../store';
 
 type Config = VgConfig | VlConfig;
@@ -83,9 +83,36 @@ export const powerbiTheme = (): Config => ({
 /**
  * Merge supplied template with base theme config
  */
-export const getTemplateWithBaseTheme = (
+export const getTemplateWithBasePowerBiTheme = (
     template: Spec | TopLevelSpec
 ): Spec | TopLevelSpec => merge(template, { config: powerbiTheme() });
+
+/**
+ * Helper function to extract palette color by (zero-based) index.
+ */
+export const getThemeColorByIndex = (index: number) =>
+    hostServices.colorPalette?.['colors']?.[index]?.value;
+
+/**
+ * Adjust a specified hex color in a similar way that Power BI does it to its
+ * own themes.
+ */
+export const shadeColor = (color: string, percent: number) => {
+    const f = parseInt(color.slice(1), 16);
+    const t = percent < 0 ? 0 : 255;
+    const p = percent < 0 ? percent * -1 : percent;
+    const R = f >> 16;
+    const G = (f >> 8) & 0x00ff;
+    const B = f & 0x0000ff;
+    return `#${(
+        0x1000000 +
+        (Math.round((t - R) * p) + R) * 0x10000 +
+        (Math.round((t - G) * p) + G) * 0x100 +
+        (Math.round((t - B) * p) + B)
+    )
+        .toString(16)
+        .slice(1)}`;
+};
 
 /**
  * Helper functions to generate color ranges based on theme color palette

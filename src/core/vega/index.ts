@@ -16,22 +16,17 @@ export {
     getViewDataset,
     getViewSpec,
     handleNewView,
-    registerCustomExpressions,
-    registerCustomSchemes,
     resolveLoaderLogic
 };
 
 import cloneDeep from 'lodash/cloneDeep';
 import * as Vega from 'vega';
-import expressionFunction = Vega.expressionFunction;
-import scheme = Vega.scheme;
 import Config = Vega.Config;
 import Spec = Vega.Spec;
 import View = Vega.View;
 import { TopLevelSpec } from 'vega-lite';
 
-import { fillPatternServices, hostServices, loggerServices } from '../services';
-import { createFormatterFromString } from '../utils/formatting';
+import { hostServices, loggerServices } from '../services';
 import { cleanParse } from '../utils/json';
 import { vegaLiteValidator, vegaValidator } from './validation';
 import { TEditorRole } from '../services/JsonEditorServices';
@@ -47,7 +42,6 @@ import { getPatchedVegaLiteSpec } from './vegaLiteUtils';
 
 import { isFeatureEnabled } from '../utils/features';
 
-import { divergentPalette, divergentPaletteMed, ordinalPalette } from './theme';
 import { resolveSvgFilter } from '../ui/svgFilter';
 import { i18nValue } from '../ui/i18n';
 import {
@@ -207,35 +201,6 @@ const handleNewView = (newView: View) => {
         getState().updateEditorView(view);
         hostServices.renderingFinished();
     });
-};
-
-/**
- * Apply any custom expressions that we have written (e.g. formatting) to the specification prior to rendering.
- */
-const registerCustomExpressions = () => {
-    expressionFunction('pbiFormat', (datum: any, params: string) =>
-        createFormatterFromString(`${params}`).format(datum)
-    );
-    expressionFunction(
-        'pbiPatternSVG',
-        (id: string, fgColor: string, bgColor: string) => {
-            return fillPatternServices.generateDynamicPattern(
-                id,
-                fgColor,
-                bgColor
-            );
-        }
-    );
-};
-
-/**
- * Bind custom schemes to the view that sync to the report theme.
- */
-const registerCustomSchemes = () => {
-    scheme('pbiColorNominal', hostServices.getThemeColors());
-    scheme('pbiColorOrdinal', ordinalPalette());
-    scheme('pbiColorLinear', divergentPalette());
-    scheme('pbiColorDivergent', divergentPaletteMed());
 };
 
 /**

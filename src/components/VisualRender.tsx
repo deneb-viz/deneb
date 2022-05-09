@@ -12,8 +12,6 @@ import { hostServices } from '../core/services';
 import { locales } from '../core/ui/i18n';
 import {
     handleNewView,
-    registerCustomExpressions,
-    registerCustomSchemes,
     resolveLoaderLogic,
     TSpecProvider,
     TSpecRenderMode
@@ -26,6 +24,10 @@ import { DATASET_NAME } from '../constants';
 import { logHasErrors } from '../features/debug-area';
 import { getPowerBiTooltipHandler } from '../features/interactivity';
 import { TSpecStatus } from '../features/specification';
+import {
+    registerPowerBiCustomExpressions,
+    registerPowerBiCustomSchemes
+} from '../features/powerbi-vega-extensibility';
 
 interface IVisualRenderProps {
     specification: object;
@@ -90,8 +92,8 @@ const VisualRender: React.FC<IVisualRenderProps> = memo(
             locales.timeFormat[locale] || locales.timeFormat[locales.default];
         reactLog('Rendering [VisualRender]');
         if (visual4d3d3d) return <FourD3D3D3 />;
-        registerCustomExpressions();
-        registerCustomSchemes();
+        registerPowerBiCustomExpressions();
+        registerPowerBiCustomSchemes();
         switch (true) {
             case logHasErrors(): {
                 return <SpecificationError />;
