@@ -37,7 +37,7 @@ export const ExportVisualPreviewImage: React.FC = () => {
         <>
             <Separator />
             <Stack horizontal tokens={stackTokens}>
-                <StackItem shrink>
+                <StackItem disableShrink>
                     <Checkbox
                         label={i18nValue(
                             'Template_Export_Include_Preview_Image'
