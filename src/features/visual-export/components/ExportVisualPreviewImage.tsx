@@ -65,19 +65,8 @@ export const ExportVisualPreviewImage: React.FC = () => {
                                 {i18nValue(
                                     'Template_Export_IncludePreview_Image_Disclaimer_Para2'
                                 )}
-                                <ul>
-                                    <li>
-                                        {i18nValue(
-                                            'Template_Export_IncludePreview_Image_Disclaimer_Point1'
-                                        )}
-                                    </li>
-                                    <li>
-                                        {i18nValue(
-                                            'Template_Export_IncludePreview_Image_Disclaimer_Point2'
-                                        )}
-                                    </li>
-                                </ul>
-
+                                <br />
+                                <br />
                                 {i18nValue(
                                     'Template_Export_IncludePreview_Image_Disclaimer_Suffix'
                                 )}
