@@ -228,7 +228,7 @@
     "Template_Export_Json_File_Description": "Deneb JSON template",
     "Template_Export_Include_Preview_Image": "Include Preview Image",
     "Template_Export_IncludePreview_Image_Disclaimer_Para1": "This is the preview image that will get packaged with your template. The image is capped at, and resized to a maximum of {0} by {1} pixels.",
-    "Template_Export_IncludePreview_Image_Disclaimer_Para2": "By checking the box to include it, you acknowledge that you have reviewed the image and you are sure that it is suitable for inclusion into you template. You also acknowledge that if you share this template outside your Power BI tenant or organization, this image may be visible to others.",
+    "Template_Export_IncludePreview_Image_Disclaimer_Para2": "By checking the box to include it, you acknowledge that you have reviewed the image and you are sure that it is suitable for inclusion into your template. You also acknowledge that if you share this template outside your Power BI tenant or organization, this image may be visible to others.",
     "Template_Export_IncludePreview_Image_Disclaimer_Suffix": "IF YOU ARE UNSURE ABOUT ANY OF THIS, DON'T INCLUDE THE IMAGE IN YOUR TEMPLATE.",
     "Modal_Close": "Close without making changes.",
     "Dialog_Unapplied_Changes_Title": "Unapplied Changes",
