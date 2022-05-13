@@ -336,6 +336,9 @@
                 "navigateSettings",
                 "toggleEditorPane",
                 "toggleDebugPane",
+                "debugPaneShowData",
+                "debugPaneShowSignals",
+                "debugPaneShowLogs",
                 "editorFocusOut",
                 "zoomIn",
                 "zoomOut",
@@ -385,6 +388,18 @@
                 },
                 "toggleEditorPane": {
                     "description": "Command to toggle display of the Editor pane.",
+                    "$ref": "#/definitions/IKeyboardShortcut"
+                },
+                "debugPaneShowData": {
+                    "description": "Command to show the Data Pane in the Debug Pane.",
+                    "$ref": "#/definitions/IKeyboardShortcut"
+                },
+                "debugPaneShowSignals": {
+                    "description": "Command to show the Signals Pane in the Debug Pane.",
+                    "$ref": "#/definitions/IKeyboardShortcut"
+                },
+                "debugPaneShowLogs": {
+                    "description": "Command to show the Logs Pane in the Debug Pane.",
                     "$ref": "#/definitions/IKeyboardShortcut"
                 },
                 "toggleDebugPane": {
