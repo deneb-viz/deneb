@@ -11,7 +11,7 @@ import {
     ITemplateDatasetField
 } from '../features/template';
 
-import templates from '../templates';
+import { templates } from '../templates';
 import { TSpecProvider } from '../core/vega';
 import { DATASET_NAME } from '../constants';
 import {

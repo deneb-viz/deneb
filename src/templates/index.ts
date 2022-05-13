@@ -13,7 +13,7 @@ import { vlBarSimple } from './vegaLite/vlBarSimple';
 import { vlBarGrouped } from './vegaLite/vlBarGrouped';
 import { vlScatterColored } from './vegaLite/vlScatterColored';
 import { vlLineConfInterval } from './vegaLite/vlLineConfInterval';
-const vegaLiteTemplates: TopLevelSpec[] = [
+export const vegaLiteTemplates: TopLevelSpec[] = [
     vlEmpty,
     vlBarSimple,
     vlBarGrouped,
@@ -26,15 +26,14 @@ import { vEmpty } from './vega/vEmpty';
 import { vBarSimple } from './vega/vBarSimple';
 import { vScatterColored } from './vega/vScatterColored';
 import { vLineConfInterval } from './vega/vLineConfInterval';
-const vegaTemplates: Spec[] = [
+export const vegaTemplates: Spec[] = [
     vEmpty,
     vBarSimple,
     vScatterColored,
     vLineConfInterval
 ];
 
-const templates = {
+export const templates = {
     vega: vegaTemplates,
     vegaLite: vegaLiteTemplates
 };
-export default templates;
