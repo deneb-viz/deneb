@@ -73,15 +73,15 @@
             "functionalArea": "other"
         },
         "navigateSpecification": {
-            "combination": "ctrl|alt|1",
+            "combination": "ctrl|alt|1,ctrl|alt|num_1",
             "functionalArea": "other"
         },
         "navigateConfig": {
-            "combination": "ctrl|alt|2",
+            "combination": "ctrl|alt|2,ctrl|alt|num_2",
             "functionalArea": "other"
         },
         "navigateSettings": {
-            "combination": "ctrl|alt|3",
+            "combination": "ctrl|alt|3,ctrl|alt|num_3",
             "functionalArea": "other"
         },
         "toggleEditorPane": {
@@ -90,6 +90,18 @@
         },
         "toggleDebugPane": {
             "combination": "ctrl|`",
+            "functionalArea": "other"
+        },
+        "debugPaneShowData": {
+            "combination": "ctrl|alt|7,ctrl|alt|num_7",
+            "functionalArea": "other"
+        },
+        "debugPaneShowSignals": {
+            "combination": "ctrl|alt|8,ctrl|alt|num_8",
+            "functionalArea": "other"
+        },
+        "debugPaneShowLogs": {
+            "combination": "ctrl|alt|9,ctrl|alt|num_9",
             "functionalArea": "other"
         },
         "editorFocusOut": {
