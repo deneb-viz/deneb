@@ -2,8 +2,8 @@ import powerbi from 'powerbi-visuals-api';
 import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import ISelectionId = powerbi.visuals.ISelectionId;
 
-import { TDataPointSelectionStatus } from '../interactivity';
-import { ITemplateDatasetField } from '../template/schema';
+import { ITemplateDatasetField } from '../../features/template';
+import { TDataPointSelectionStatus } from '../../features/interactivity';
 
 export * as dataset from './dataset';
 export * as dataView from './dataView';
@@ -60,9 +60,9 @@ export interface IVisualDatasetField extends DataViewMetadataColumn {
 
 export interface IVisualDatasetValueRow {
     // Identity index (from dataView; for dynamic selectors).
-    identityIndex: number;
+    __row__: number;
     // Selection status (for selection manager).
-    __selected__: TDataPointSelectionStatus;
+    __selected__?: TDataPointSelectionStatus;
     // Selection ID for row
     __identity__: ISelectionId;
     // String representation of Selection ID.

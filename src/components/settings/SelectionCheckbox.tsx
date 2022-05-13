@@ -3,9 +3,10 @@ import { Checkbox } from '@fluentui/react/lib/Checkbox';
 
 import store from '../../store';
 import { updateBooleanProperty } from '../../core/ui/commands';
-import { isDataPointEnabled } from '../../core/interactivity/selection';
+
 import { hostServices } from '../../core/services';
 import { i18nValue } from '../../core/ui/i18n';
+import { IS_CROSS_FILTER_ENABLED } from '../../features/interactivity';
 
 const SelectionCheckbox = () => {
     const { vega } = store((state) => state.visualSettings),
@@ -22,7 +23,7 @@ const SelectionCheckbox = () => {
         ),
         disabled = vega.provider !== 'vegaLite';
     return (
-        isDataPointEnabled && (
+        IS_CROSS_FILTER_ENABLED && (
             <Checkbox
                 label={i18nValue('Objects_Vega_EnableSelection')}
                 checked={vega.enableSelection}

@@ -1,9 +1,11 @@
 export * as vegaUtils from './vegaUtils';
+export * as vegaLiteUtils from './vegaLiteUtils';
 export {
     IVegaViewDatum,
     TSpecProvider,
     TSpecRenderMode,
     determineProviderFromSpec,
+    editorConfigOverLoad,
     getEditorSchema,
     getParsedConfigFromSettings,
     getVegaProvider,
@@ -14,50 +16,39 @@ export {
     getViewDataset,
     getViewSpec,
     handleNewView,
-    registerCustomExpressions,
-    registerCustomSchemes,
     resolveLoaderLogic
 };
 
 import cloneDeep from 'lodash/cloneDeep';
 import * as Vega from 'vega';
-import * as vegaSchema from 'vega/build/vega-schema.json';
-import expressionFunction = Vega.expressionFunction;
-import scheme = Vega.scheme;
 import Config = Vega.Config;
 import Spec = Vega.Spec;
 import View = Vega.View;
-import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
 import { TopLevelSpec } from 'vega-lite';
 
-import forEach from 'lodash/forEach';
-import isEqual from 'lodash/isEqual';
-import keys from 'lodash/keys';
-import matches from 'lodash/matches';
-import pick from 'lodash/pick';
-import pickBy from 'lodash/pickBy';
-import reduce from 'lodash/reduce';
-
-import { fillPatternServices, hostServices, viewServices } from '../services';
-import { createFormatterFromString } from '../utils/formatting';
-import { cleanParse, getSchemaValidator } from '../utils/json';
+import { hostServices, loggerServices } from '../services';
+import { cleanParse } from '../utils/json';
+import { vegaLiteValidator, vegaValidator } from './validation';
 import { TEditorRole } from '../services/JsonEditorServices';
-import { getState } from '../../store';
+import {
+    getState,
+    useStoreDataset,
+    useStoreProp,
+    useStoreVegaProp
+} from '../../store';
 import { getConfig, providerVersions } from '../utils/config';
 import { getPatchedVegaSpec } from './vegaUtils';
 import { getPatchedVegaLiteSpec } from './vegaLiteUtils';
-import { bindInteractivityEvents } from '../interactivity/selection';
+
 import { isFeatureEnabled } from '../utils/features';
-import { blankImageBase64 } from '../ui/dom';
-import { getDataset } from '../data/dataset';
-import { divergentPalette, divergentPaletteMed, ordinalPalette } from './theme';
+
 import { resolveSvgFilter } from '../ui/svgFilter';
 import { i18nValue } from '../ui/i18n';
 import {
-    IVisualDatasetField,
-    IVisualDatasetFields,
-    IVisualDatasetValueRow
-} from '../data';
+    bindContextMenuEvents,
+    bindCrossFilterEvents
+} from '../../features/interactivity';
+import { BASE64_BLANK_IMAGE } from '../../features/template';
 
 /**
  * Defines a JSON schema by provider and role, so we can dynamically apply based on provider.
@@ -92,14 +83,19 @@ const editorSchemas: IJSonSchema[] = [
     {
         provider: 'vega',
         role: 'spec',
-        schema: vegaSchema
+        schema: vegaValidator.schema
     },
     {
         provider: 'vegaLite',
         role: 'spec',
-        schema: vegaLiteSchema
+        schema: vegaLiteValidator.schema
     }
 ];
+
+const editorConfigOverLoad = {
+    background: null, // so we can defer to the Power BI background, if applied
+    customFormatTypes: true
+};
 
 /**
  * For the supplied spec, parse it to determine which provider we should use when importing it (precedence is Vega-Lite), and will then
@@ -108,13 +104,11 @@ const editorSchemas: IJSonSchema[] = [
 const determineProviderFromSpec = (
     spec: Spec | TopLevelSpec
 ): TSpecProvider => {
-    const vegaLiteValidator = getSchemaValidator(vegaLiteSchema),
-        vlValid = vegaLiteValidator(spec);
+    const vlValid = vegaLiteValidator(spec);
     if (vlValid) {
         return 'vegaLite';
     }
-    const vegaValidator = getSchemaValidator(vegaSchema),
-        vValid = vegaValidator(spec);
+    const vValid = vegaValidator(spec);
     if (vValid) {
         return 'vega';
     }
@@ -155,20 +149,17 @@ const getVegaSettings = () => getState().visualSettings.vega;
  * Create the `data` object for the Vega view specification. Ensures that the dataset applied to the visual is a cloned, mutable copy of the store version.
  */
 const getViewDataset = () => ({
-    dataset: cloneDeep(getDataset().values)
+    dataset: cloneDeep(useStoreDataset()?.values)
 });
 
 /**
  * Form the config that is applied to the Vega view. This will retrieve the config from our visual properties, and enrich it with anything we want
  * to abstract out from the end-user to make things as "at home" in Power BI as possible, without explicitly adding it to the editor or exported template.
  */
-const getViewConfig = () => {
+const getViewConfig = (config = getParsedConfigFromSettings()): Config => {
     return {
-        ...{
-            background: null, // so we can defer to the Power BI background, if applied
-            customFormatTypes: true
-        },
-        ...getParsedConfigFromSettings()
+        ...editorConfigOverLoad,
+        ...config
     };
 };
 
@@ -177,10 +168,10 @@ const getViewConfig = () => {
  * to abstract out from the end-user to make things as "at home" in Power BI as possible, without explicitly adding it to the editor or exported template.
  */
 const getViewSpec = () => {
-    const { editorSpec } = getState(),
-        { provider } = getVegaSettings(),
-        vSpec = cloneDeep(editorSpec?.spec) || {};
-    switch (<TSpecProvider>provider) {
+    const eSpec = useStoreProp<object>('spec', 'editorSpec');
+    const provider = useStoreVegaProp<TSpecProvider>('provider');
+    const vSpec = cloneDeep(eSpec) || {};
+    switch (provider) {
         case 'vega':
             return getPatchedVegaSpec(vSpec);
         case 'vegaLite':
@@ -194,103 +185,22 @@ const getViewSpec = () => {
  * Gets the `config` from our visual objects and parses it to JSON.
  */
 const getParsedConfigFromSettings = (): Config => {
-    const { vega } = getState().visualSettings;
-    return cleanParse(vega.jsonConfig, propertyDefaults.jsonConfig);
+    const jsonConfig = useStoreVegaProp<string>('jsonConfig');
+    return cleanParse(jsonConfig, propertyDefaults.jsonConfig);
 };
 
 /**
  * Any logic that we need to apply to a new Vega view.
  */
 const handleNewView = (newView: View) => {
-    newView.runAsync().then(() => {
-        viewServices.bindView(newView);
+    newView.logger(loggerServices);
+    newView.runAsync().then((view) => {
         resolveSvgFilter();
-        bindInteractivityEvents(newView);
+        bindContextMenuEvents(view);
+        bindCrossFilterEvents(view);
+        getState().updateEditorView(view);
         hostServices.renderingFinished();
     });
-};
-
-/**
- * Apply any custom expressions that we have written (e.g. formatting) to the specification prior to rendering.
- */
-const registerCustomExpressions = () => {
-    expressionFunction('pbiFormat', (datum: any, params: string) =>
-        createFormatterFromString(`${params}`).format(datum)
-    );
-    expressionFunction(
-        'pbiPatternSVG',
-        (id: string, fgColor: string, bgColor: string) => {
-            return fillPatternServices.generateDynamicPattern(
-                id,
-                fgColor,
-                bgColor
-            );
-        }
-    );
-};
-
-/**
- * Bind custom schemes to the view that sync to the report theme.
- */
-const registerCustomSchemes = () => {
-    scheme('pbiColorNominal', hostServices.getThemeColors());
-    scheme('pbiColorOrdinal', ordinalPalette());
-    scheme('pbiColorLinear', divergentPalette());
-    scheme('pbiColorDivergent', divergentPaletteMed());
-};
-
-/**
- * For a given (subset of) `fields` and `datum`, create an `IVisualDatasetValueRow`
- * that can be used to search for matching values in the visual's dataset.
- */
-export const resolveDatumForFields = (
-    fields: IVisualDatasetFields,
-    datum: IVegaViewDatum
-) => {
-    const reducedDatum =
-        <IVisualDatasetValueRow>pick(datum, keys(fields)) || null;
-    return reduce(
-        reducedDatum,
-        (result, value, key) => {
-            result[key] = resolveValueForField(fields[key], value);
-            return result;
-        },
-        <IVisualDatasetValueRow>{}
-    );
-};
-
-/**
- * Because Vega's tooltip channel supplies datum field values as strings, for a
- * supplied metadata `field` and `datum`, attempt to resolve it to a pure type,
- * so that we can try to use its value to reconcile against the visual's dataset
- * in order to resolve selection IDs.
- */
-const resolveValueForField = (field: IVisualDatasetField, value: any) => {
-    switch (true) {
-        case field.type.dateTime: {
-            return new Date(value);
-        }
-        case field.type.numeric:
-        case field.type.integer: {
-            return Number.parseFloat(value);
-        }
-        default:
-            return value;
-    }
-};
-
-/**
- * Take an item from a Vega event and attempt to resolve .
- */
-export const resolveDataFromItem = (item: any): IVegaViewDatum[] => {
-    switch (true) {
-        case item === undefined:
-            return null;
-        case item?.context?.data?.facet?.values?.value:
-            return item?.context?.data?.facet?.values?.value?.slice();
-        default:
-            return [{ ...item?.datum }];
-    }
 };
 
 /**
@@ -305,7 +215,7 @@ const resolveLoaderLogic = () => {
             return Promise.resolve(href);
         };
         loader.sanitize = (uri, options) => {
-            const href = (isDataUri(uri) && uri) || blankImageBase64;
+            const href = (isDataUri(uri) && uri) || BASE64_BLANK_IMAGE;
             return Promise.resolve({
                 href
             });

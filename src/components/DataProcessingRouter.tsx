@@ -1,27 +1,57 @@
-import * as React from 'react';
+import powerbi from 'powerbi-visuals-api';
+import IViewport = powerbi.IViewport;
+
+import React from 'react';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 
-import store from '../store';
+import { useStoreProp, useStoreVegaProp } from '../store';
 import DataFetching from './status/DataFetching';
 import VisualRender from './VisualRender';
-import ApplyDialog from './modal/ApplyDialog';
+import { ApplyChangesDialog } from '../features/modal-dialog';
 import SplashInitial from './status/SplashInitial';
 import { i18nValue } from '../core/ui/i18n';
 import { getViewModeViewportStyles, zoomConfig } from '../core/ui/dom';
-import { clearSelection } from '../core/interactivity/selection';
-import { hideTooltip } from '../core/interactivity/tooltip';
+import { clearSelection, hidePowerBiTooltip } from '../features/interactivity';
+import { TDataProcessingStage } from '../core/data';
+import { TVisualMode } from '../core/ui';
+import {
+    getViewConfig,
+    getViewDataset,
+    getViewSpec,
+    TSpecProvider,
+    TSpecRenderMode
+} from '../core/vega';
+import { reactLog } from '../core/utils/reactLog';
 
 const DataProcessingRouter: React.FC = () => {
-    const { datasetProcessingStage, visualViewportReport, visualMode } = store(
-            (state) => state
-        ),
-        handleMouseLeave = () => {
-            hideTooltip();
-        },
-        isEditor = visualMode === 'Editor',
-        { editorZoomLevel, visualSettings } = store((state) => state),
-        { showViewportMarker } = visualSettings?.editor,
-        zoomLevel = (isEditor && editorZoomLevel) || zoomConfig.default;
+    const datasetProcessingStage = useStoreProp<TDataProcessingStage>(
+        'datasetProcessingStage'
+    );
+    const visualViewportReport = useStoreProp<IViewport>(
+        'visualViewportReport'
+    );
+    const enableTooltips = useStoreVegaProp<boolean>('enableTooltips');
+    const renderMode = useStoreVegaProp<TSpecRenderMode>('renderMode');
+    const provider = useStoreVegaProp<TSpecProvider>('provider');
+    const visualMode = useStoreProp<TVisualMode>('visualMode');
+    const editorZoomLevel = useStoreProp<number>('editorZoomLevel');
+    const showViewportMarker = useStoreProp<boolean>(
+        'showViewportMarker',
+        'visualSettings.editor'
+    );
+    const data = getViewDataset();
+    const specification = getViewSpec();
+    const config = getViewConfig();
+    const handleMouseLeave = () => {
+        hidePowerBiTooltip();
+    };
+    const isEditor = visualMode === 'Editor';
+    const zoomLevel = (isEditor && editorZoomLevel) || zoomConfig.default;
+    reactLog(
+        'Rendering [DataProcessingRouter]',
+        datasetProcessingStage,
+        visualMode
+    );
     switch (datasetProcessingStage) {
         case 'Initial': {
             return <SplashInitial />;
@@ -47,8 +77,15 @@ const DataProcessingRouter: React.FC = () => {
                         onClick={clearSelection}
                         onMouseLeave={handleMouseLeave}
                     >
-                        <VisualRender />
-                        <ApplyDialog />
+                        <VisualRender
+                            specification={specification}
+                            config={config}
+                            provider={provider}
+                            enableTooltips={enableTooltips}
+                            renderMode={renderMode}
+                            data={data}
+                        />
+                        <ApplyChangesDialog />
                     </div>
                 </Scrollbars>
             );

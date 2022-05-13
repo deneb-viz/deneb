@@ -3,10 +3,11 @@ import { IButtonStyles } from '@fluentui/react/lib/Button';
 import { theme } from './fluent';
 import { TEditorPosition } from '.';
 import { mergeStyleSets } from '@fluentui/react';
-import { getState } from '../../store';
+import { getState, useStoreProp } from '../../store';
 import { commandBarButtonStyles } from './commandBar';
-import { TDatasetFieldType } from '../template/schema';
+import { TDatasetFieldType } from '../../features/template';
 import { zoomConfig } from './dom';
+import { TSpecStatus } from '../../features/specification';
 
 const previewCommandBarHeight = 26;
 
@@ -26,7 +27,7 @@ export const iconButtonStyles: IButtonStyles = {
     labelHovered: { color: theme.palette.neutralDark }
 };
 
-export const zoomIconButtonStyles: IButtonStyles = mergeStyleSets(
+export const previewIconButtonStyles: IButtonStyles = mergeStyleSets(
     commandBarButtonStyles,
     {
         root: {
@@ -73,6 +74,9 @@ export const getEditorHeadingIcon = (
         ? 'ChevronLeft'
         : 'ChevronRight';
 
+export const getDebugToggleIcon = (expanded: boolean) =>
+    expanded ? 'ChevronDown' : 'ChevronUp';
+
 export const isZoomInIconDisabled = (value: number) =>
     value === zoomConfig.max || isZoomControlDisabled();
 
@@ -82,5 +86,7 @@ export const isZoomOutIconDisabled = (value: number) =>
 export const isZoomResetIconDisabled = (value: number) =>
     value === zoomConfig.default || isZoomControlDisabled();
 
-export const isZoomControlDisabled = () =>
-    getState().editorSpec?.status !== 'valid';
+const isZoomControlDisabled = () => getState().editorSpec?.status !== 'valid';
+
+export const isZoomControlDisabledReact = () =>
+    useStoreProp<TSpecStatus>('status', 'editorSpec') !== 'valid';

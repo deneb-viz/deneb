@@ -21,8 +21,10 @@ import {
     handleNavSpec,
     handleNavConfig,
     handleNavSettings,
-    handleMapFields
+    handleMapFields,
+    handleDebugPane
 } from '../core/ui/commands';
+import { reactLog } from '../core/utils/reactLog';
 
 const App = () => {
     useHotkeys(getCommandKey('applyChanges'), handleApply, hotkeyOptions);
@@ -65,10 +67,16 @@ const App = () => {
         hotkeyOptions
     );
     useHotkeys(
+        getCommandKey('toggleDebugPane'),
+        handleDebugPane,
+        hotkeyOptions
+    );
+    useHotkeys(
         getCommandKey('editorFocusOut'),
         handleFocusFirstPivot,
         hotkeyOptions
     );
+    reactLog('Rendering [App]');
     return <MainInterface />;
 };
 

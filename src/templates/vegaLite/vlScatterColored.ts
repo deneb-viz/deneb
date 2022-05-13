@@ -1,5 +1,6 @@
 import { TopLevelSpec } from 'vega-lite';
 import { authorInfo, vegaDataModelRef, vegaLiteProviderInfo } from '..';
+import { getCombinedBase64ImageWithMime } from '../../features/template';
 import thumbnail from '../thumbnail';
 
 export const vlScatterColored: TopLevelSpec = {
@@ -32,7 +33,9 @@ export const vlScatterColored: TopLevelSpec = {
             author: authorInfo,
             uuid: 'a3392ab4-6cb4-4dae-81ed-62de931cf9b7',
             generated: '2021-03-26T00:00:00.000Z',
-            previewImageBase64PNG: thumbnail.scatterColored
+            previewImageBase64PNG: getCombinedBase64ImageWithMime(
+                thumbnail.scatterColored
+            )
         },
         provider: 'vegaLite',
         dataset: [

@@ -1,0 +1,149 @@
+import React, { useEffect, useState } from 'react';
+import { ColumnDefinition } from 'react-tabulator';
+import { Stack, StackItem } from '@fluentui/react/lib/Stack';
+import {
+    Dropdown,
+    IDropdownOption,
+    IDropdownStyles
+} from '@fluentui/react/lib/Dropdown';
+import { debounce, falsy, truthy, View } from 'vega';
+import keys from 'lodash/keys';
+
+import { reactLog } from '../../../core/utils/reactLog';
+import { i18nValue } from '../../../core/ui/i18n';
+import { horizontalDropdownStyles } from '../../../components/elements';
+import store from '../../../store';
+import { DataTable } from './DataTable';
+import {
+    dataTableStackItemStyles,
+    getColumnHeaderTooltip,
+    getCellTooltip,
+    getFormattedValueForTable
+} from '../data-table';
+import {
+    DATASET_IDENTITY_NAME,
+    DATASET_KEY_NAME,
+    DATASET_NAME
+} from '../../../constants';
+
+/**
+ * Represents content to be displayed in a data table.
+ */
+interface IDataTableContent {
+    columns: ColumnDefinition[];
+    data: any[];
+}
+
+/**
+ * Override regular dropdown width styling to handle longer names.
+ */
+const dropdownStyles: Partial<IDropdownStyles> = {
+    ...horizontalDropdownStyles,
+    ...{ dropdown: { width: 200 } }
+};
+
+/**
+ * Obtains all current datasets from a Vega view.
+ */
+const getDatasets = (view: View): IDropdownOption[] =>
+    keys(view?.getState({ data: truthy, signals: falsy, recurse: true }).data)
+        .filter((key) => key !== 'root')
+        .map((key) => ({ key, text: key }));
+
+/**
+ * Retrieve a dataset from the view by name.
+ */
+const getNamedDataset = (view: View, name = DATASET_NAME) => {
+    const datasets = getDatasets(view);
+    return (
+        datasets?.find((d) => d.key === name) ||
+        datasets?.[0] || { key: null, text: 'none' }
+    );
+};
+/**
+ * For a dataset view, we need to dynamically get and assign columns from the
+ * selected dataset from the view.
+ */
+const getDataTableColumns = (dataset: string, view: View): ColumnDefinition[] =>
+    keys(view?.data(dataset)?.[0])
+        ?.filter(
+            (c) => [DATASET_KEY_NAME, DATASET_IDENTITY_NAME].indexOf(c) === -1
+        )
+        ?.map((c) => ({
+            title: c,
+            field: c,
+            tooltip: (cell) => getCellTooltip(cell),
+            headerTooltip: (column) => getColumnHeaderTooltip(column),
+            formatter: (cell, params, onRendered) =>
+                getFormattedValueForTable(cell)
+        })) || [];
+
+/**
+ * Obtain table content for display.
+ */
+const getDataTableContent = (view: View, name: string): IDataTableContent => ({
+    columns: getDataTableColumns(name, view),
+    data: view?.data(name) || []
+});
+
+/**
+ * Handles display of dataset info in the debug area.
+ */
+export const DataViewer: React.FC = () => {
+    const { editorView } = store((state) => state);
+    const dropdownOptions = getDatasets(editorView);
+    const [selectedItem, setSelectedItem] = useState<IDropdownOption>(
+        getNamedDataset(editorView)
+    );
+    const datasetName = selectedItem?.text;
+    // Ensure that if a change to the spec removes selected dataset, that its
+    // contents are set to the default dataset
+    let dataTableContent: IDataTableContent = { columns: [], data: [] };
+    try {
+        dataTableContent = getDataTableContent(editorView, datasetName);
+    } catch {
+        setSelectedItem(getNamedDataset(editorView));
+    }
+    const [key, setKey] = useState<number>(0);
+    const debounceData = debounce(100, () => setKey((key) => key + 1));
+    const handleChange = (
+        ev: React.FormEvent<HTMLDivElement>,
+        item: IDropdownOption
+    ): void => {
+        setSelectedItem(item);
+    };
+    useEffect(() => {
+        editorView?.addDataListener(datasetName, debounceData);
+        return () => {
+            editorView?.removeDataListener(datasetName, debounceData);
+        };
+    });
+    reactLog('Rendering [DataViewer]');
+    return (
+        <>
+            <StackItem>
+                <Stack horizontal horizontalAlign='end'>
+                    <Dropdown
+                        styles={dropdownStyles}
+                        options={dropdownOptions}
+                        selectedKey={selectedItem?.key}
+                        label={i18nValue('Pivot_Dataset_Select_Label')}
+                        onChange={handleChange}
+                    />
+                </Stack>
+            </StackItem>
+            <StackItem grow styles={dataTableStackItemStyles}>
+                {selectedItem ? (
+                    <DataTable
+                        name={datasetName}
+                        columns={dataTableContent.columns}
+                        data={dataTableContent.data}
+                        layout='fitData'
+                    />
+                ) : (
+                    i18nValue('Pivot_Dataset_Select_None')
+                )}
+            </StackItem>
+        </>
+    );
+};

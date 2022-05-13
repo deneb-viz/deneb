@@ -1,5 +1,7 @@
 import { Spec } from 'vega';
 import { authorInfo, vegaDataModelRef, vegaProviderInfo } from '..';
+import { DATASET_NAME } from '../../constants';
+import { getCombinedBase64ImageWithMime } from '../../features/template';
 import thumbnail from '../thumbnail';
 
 export const vLineConfInterval: Spec = {
@@ -10,7 +12,7 @@ export const vLineConfInterval: Spec = {
         {
             name: 'xscale',
             domain: {
-                data: 'dataset',
+                data: DATASET_NAME,
                 field: '__0__'
             },
             range: 'width',
@@ -19,7 +21,7 @@ export const vLineConfInterval: Spec = {
         {
             name: 'yscale',
             domain: {
-                data: 'dataset',
+                data: DATASET_NAME,
                 field: '__3__'
             },
             range: 'height',
@@ -47,7 +49,7 @@ export const vLineConfInterval: Spec = {
                 field: 'datum["__0__"]'
             },
             from: {
-                data: 'dataset'
+                data: DATASET_NAME
             },
             encode: {
                 update: {
@@ -83,7 +85,7 @@ export const vLineConfInterval: Spec = {
                 field: 'datum["__0__"]'
             },
             from: {
-                data: 'dataset'
+                data: DATASET_NAME
             },
             encode: {
                 update: {
@@ -114,7 +116,9 @@ export const vLineConfInterval: Spec = {
             author: authorInfo,
             uuid: '5b8845ad-1bcd-4066-b1ff-c844903c02e1',
             generated: '2021-03-26T00:00:00.000Z',
-            previewImageBase64PNG: thumbnail.lineConfInterval
+            previewImageBase64PNG: getCombinedBase64ImageWithMime(
+                thumbnail.lineConfInterval
+            )
         },
         provider: 'vega',
         dataset: [

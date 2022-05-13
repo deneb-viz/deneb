@@ -3,15 +3,18 @@ import IViewport = powerbi.IViewport;
 import ViewMode = powerbi.ViewMode;
 import EditMode = powerbi.EditMode;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
+import VisualUpdateType = powerbi.VisualUpdateType;
 
 import { GetState, PartialState, SetState } from 'zustand';
 import { TStoreState } from '.';
 import VisualSettings from '../properties/VisualSettings';
 import { resolveVisualMode, TVisualMode } from '../core/ui';
 import {
+    calculatePreviewMaximumHeight,
     calculateVegaViewport,
     getEditorPreviewAreaWidth,
-    getResizablePaneDefaultWidth,
+    getPreviewAreaHeightInitial,
+    getEditPaneDefaultWidth,
     getResizablePaneSize
 } from '../core/ui/advancedEditor';
 import { getReportViewport } from '../core/ui/dom';
@@ -25,6 +28,7 @@ export interface IVisualSlice {
     visualMode: TVisualMode;
     visualSettings: VisualSettings;
     visualUpdates: number;
+    visualUpdateType: VisualUpdateType;
     visualViewMode: ViewMode;
     visualViewportCurrent: IViewport;
     visualViewportReport: IViewport;
@@ -44,6 +48,7 @@ export const createVisualSlice = (
         visualMode: 'SplashInitial',
         visualSettings: <VisualSettings>VisualSettings.getDefault(),
         visualUpdates: 0,
+        visualUpdateType: null,
         visualViewMode: ViewMode.View,
         visualViewportCurrent: defaultViewport,
         visualViewportReport: defaultViewport,
@@ -70,70 +75,98 @@ const handleSetVisualUpdate = (
     state: TStoreState,
     payload: IVisualUpdatePayload
 ): PartialState<TStoreState, never, never, never, never> => {
+    const init = state.visualUpdates === 0;
     const positionNew = payload.settings.editor.position;
     const positionSwitch = positionNew !== state.visualSettings.editor.position;
     const datasetViewObjects =
         payload.options.dataViews[0]?.metadata.objects || {};
-    const visualViewMode = payload.options.viewMode;
-    const visualEditMode = payload.options.editMode;
-    const visualIsInFocusMode = payload.options.isInFocus;
+    const viewMode = payload.options.viewMode;
+    const editMode = payload.options.editMode;
+    const isInFocus = payload.options.isInFocus;
+    const updateType = payload.options.type;
     const visualMode = resolveVisualMode(
         state.datasetViewHasValidMapping,
-        visualEditMode,
-        visualIsInFocusMode,
-        visualViewMode,
+        editMode,
+        isInFocus,
+        viewMode,
         state.editorSpec
     );
-    const visualViewportCurrent = payload.options.viewport;
-    const visualViewportReport = getReportViewport(
-        visualViewportCurrent,
+    const viewportCurrent = payload.options.viewport;
+    const viewportReport = getReportViewport(
+        viewportCurrent,
         payload.settings.display
     );
-    const editorPaneDefaultWidth = getResizablePaneDefaultWidth(
-        visualViewportCurrent,
+    const edPaneDefWidth = getEditPaneDefaultWidth(
+        viewportCurrent,
         positionNew
     );
-    const editorPaneExpandedWidth =
+    const edPaneExpWidth =
         visualMode === 'Editor' &&
         (state.editorPaneExpandedWidth === null || positionSwitch)
-            ? editorPaneDefaultWidth
+            ? edPaneDefWidth
             : state.editorPaneExpandedWidth;
-    const editorPaneWidth =
+    const edPaneWidth =
         visualMode === 'Editor' &&
         (state.editorPaneWidth === null || positionSwitch)
-            ? editorPaneDefaultWidth
+            ? edPaneDefWidth
             : getResizablePaneSize(
-                  editorPaneExpandedWidth,
+                  edPaneExpWidth,
                   state.editorPaneIsExpanded,
-                  visualViewportCurrent,
+                  viewportCurrent,
                   positionNew
               );
-    const editorPreviewAreaWidth = getEditorPreviewAreaWidth(
-        visualViewportCurrent.width,
-        editorPaneWidth,
+    const edPrevAreaWidth = getEditorPreviewAreaWidth(
+        viewportCurrent.width,
+        edPaneWidth,
         positionNew
     );
+    const edPrevAreaHeight = shouldUpdateHeight(visualMode, editMode, init)
+        ? getPreviewAreaHeightInitial(
+              viewportCurrent.height,
+              state.editorPreviewAreaHeight
+          )
+        : state.editorPreviewAreaHeight;
+    const edPrevAreaHeightMax = shouldUpdateHeight(visualMode, editMode, init)
+        ? calculatePreviewMaximumHeight(viewportCurrent.height)
+        : state.editorPreviewAreaHeightMax;
+    const isExpanded = shouldUpdateHeight(visualMode, editMode, init)
+        ? edPrevAreaHeight !== edPrevAreaHeightMax
+        : state.editorPreviewDebugIsExpanded;
+    const latch = shouldUpdateHeight(visualMode, editMode, init)
+        ? edPrevAreaHeight
+        : state.editorPreviewAreaHeightLatch;
     const visualViewportVega = calculateVegaViewport(
-        visualViewportCurrent,
-        editorPaneWidth,
+        viewportCurrent,
+        edPaneWidth,
         visualMode,
         positionNew
     );
     return {
         datasetViewObjects,
         editorIsNewDialogVisible: payload.settings.vega.isNewDialogOpen,
-        editorPaneWidth,
-        editorPaneDefaultWidth,
-        editorPaneExpandedWidth,
-        editorPreviewAreaWidth,
-        visualEditMode,
-        visualIsInFocusMode,
+        editorPaneWidth: edPaneWidth,
+        editorPaneDefaultWidth: edPaneDefWidth,
+        editorPaneExpandedWidth: edPaneExpWidth,
+        editorPreviewAreaHeight: edPrevAreaHeight,
+        editorPreviewAreaHeightMax: edPrevAreaHeightMax,
+        editorPreviewAreaWidth: edPrevAreaWidth,
+        editorPreviewAreaHeightLatch: latch,
+        editorPreviewDebugIsExpanded: isExpanded,
+        visualEditMode: editMode,
+        visualIsInFocusMode: isInFocus,
         visualMode,
         visualSettings: payload.settings,
         visualUpdates: state.visualUpdates + 1,
-        visualViewMode,
-        visualViewportCurrent,
-        visualViewportReport,
+        visualUpdateType: updateType,
+        visualViewMode: viewMode,
+        visualViewportCurrent: viewportCurrent,
+        visualViewportReport: viewportReport,
         visualViewportVega
     };
 };
+
+const shouldUpdateHeight = (
+    visualMode: TVisualMode,
+    visualEditMode: EditMode,
+    init: boolean
+) => visualMode === 'Editor' || (visualEditMode === EditMode.Advanced && init);

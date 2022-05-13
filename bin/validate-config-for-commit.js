@@ -8,16 +8,15 @@ const errors = [];
 if (config.features.developerMode) {
     errors.push('features.developerMode flag is true; this should be false.');
 }
+// React logging: Should not be set in committed code
+if (config.features.enableReactLogging) {
+    errors.push(
+        'features.enableReactLogging flag is true; this should be false.'
+    );
+}
 // External URIs: Not permitted in certified visual, so needs to be disabled in committed code.
 if (config.features.enableExternalUri) {
     errors.push('features.enableExternalUri is true; this should be false.');
-}
-// Include preview image on export. Still figuring out if this is more trouble than it's worth,
-// so should be disabled in committed code.
-if (config.features.templateExportPreviewImages) {
-    errors.push(
-        'features.templateExportPreviewImages is true; this should be false'
-    );
 }
 
 if (errors.length > 0) {

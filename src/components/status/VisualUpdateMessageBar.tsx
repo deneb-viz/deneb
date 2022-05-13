@@ -12,11 +12,13 @@ import {
 import { hostServices } from '../../core/services';
 import { getConfig } from '../../core/utils/config';
 import { dismissVersionNotification } from '../../core/ui/commands';
-import store from '../../store';
+import { useStoreProp } from '../../store';
+import { reactLog } from '../../core/utils/reactLog';
 
 const VisualUpdateMessageBar: React.FC = () => {
-    const { showVersionNotification } = store(
-        (state) => state.visualSettings.developer
+    const showVersionNotification = useStoreProp<boolean>(
+        'showVersionNotification',
+        'visualSettings.developer'
     );
     const change = getVersionChangeDetail();
     const visible = showVersionNotification;
@@ -50,16 +52,17 @@ const VisualUpdateMessageBar: React.FC = () => {
             case 'decrease':
                 return (
                     <>
-                        {i18nValue(
-                            "You're using a newer version of Deneb ({0} than this specification was authored in ({1}).",
-                            [current.denebVersion, last.denebVersion]
-                        )}
+                        {i18nValue(i18nValue('Notification_Update_Decrease'), [
+                            current.denebVersion,
+                            last.denebVersion
+                        ])}
                     </>
                 );
             default:
                 return <></>;
         }
     };
+    reactLog('Rendering [VisualUpdateMesageBar]');
     return (
         <NotificationMessageBar
             dismissAction={dismissAction}
