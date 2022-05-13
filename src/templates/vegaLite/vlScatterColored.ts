@@ -1,5 +1,5 @@
 import { TopLevelSpec } from 'vega-lite';
-import { authorInfo, vegaDataModelRef, vegaLiteProviderInfo } from '..';
+import { authorInfo, vegaDataModelRef, vegaLiteProviderInfo } from '../common';
 import { getCombinedBase64ImageWithMime } from '../../features/template';
 import thumbnail from '../thumbnail';
 

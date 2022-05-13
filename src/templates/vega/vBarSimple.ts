@@ -1,5 +1,5 @@
 import { Spec } from 'vega';
-import { authorInfo, vegaDataModelRef, vegaProviderInfo } from '..';
+import { authorInfo, vegaDataModelRef, vegaProviderInfo } from '../common';
 import thumbnail from '../thumbnail';
 import { getConfig } from '../../core/utils/config';
 import { DATASET_NAME, DATASET_SELECTED_NAME } from '../../constants';

@@ -50,7 +50,7 @@
         "lodash": "^4.17.21",
         "minimist": "^1.2.5",
         "powerbi-visuals-api": "~3.8.4",
-        "powerbi-visuals-tools": "4.0.2",
+        "powerbi-visuals-tools": "^4.0.5",
         "powerbi-visuals-utils-dataviewutils": "^2.4.1",
         "powerbi-visuals-utils-formattingutils": "^4.7.1",
         "powerbi-visuals-utils-interactivityutils": "^5.7.1",

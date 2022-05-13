@@ -1,5 +1,5 @@
 import { TopLevelSpec } from 'vega-lite';
-import { authorInfo, vegaDataModelRef, vegaLiteProviderInfo } from '..';
+import { authorInfo, vegaDataModelRef, vegaLiteProviderInfo } from '../common';
 import { DATASET_SELECTED_NAME } from '../../constants';
 import { getConfig } from '../../core/utils/config';
 import { getCombinedBase64ImageWithMime } from '../../features/template';

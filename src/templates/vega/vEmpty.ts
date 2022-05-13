@@ -1,5 +1,5 @@
 import { Spec } from 'vega';
-import { authorInfo, vegaDataModelRef, vegaProviderInfo } from '..';
+import { authorInfo, vegaDataModelRef, vegaProviderInfo } from '../common';
 
 export const vEmpty: Spec = {
     $schema: vegaProviderInfo,
