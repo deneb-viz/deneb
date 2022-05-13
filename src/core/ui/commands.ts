@@ -100,6 +100,12 @@ export const handleEditorPane = () =>
     executeEditorCommand(getState().toggleEditorPane);
 export const handleDebugPane = () =>
     executeEditorCommand(getState().togglePreviewDebugPane);
+export const handleEditorDebugPaneData = () =>
+    executeEditorCommand(showDebugPaneData);
+export const handleEditorDebugPaneSignal = () =>
+    executeEditorCommand(showDebugPaneSignal);
+export const handleEditorDebugPaneLog = () =>
+    executeEditorCommand(showDebugPaneLog);
 export const handleFocusFirstPivot = () =>
     executeEditorCommand(focusFirstPivot);
 
@@ -277,6 +283,21 @@ const navConfig = () => openEditorPivotItem('config');
  * Navigate to the settings pane in the editor.
  */
 const navSettings = () => openEditorPivotItem('settings');
+
+/**
+ * Show the Data pane in the Debug Pane.
+ */
+const showDebugPaneData = () => openPreviewPivotItem('data');
+
+/**
+ * Show the Signals pane in the Debug Pane.
+ */
+const showDebugPaneSignal = () => openPreviewPivotItem('signal');
+
+/**
+ * Show the Logs pane in the Debug Pane.
+ */
+const showDebugPaneLog = () => openPreviewPivotItem('log');
 
 /**
  * Reset the specified provider (Vega) visual property to its default value.
