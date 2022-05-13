@@ -1,28 +1,5 @@
-/**
- * =======================
- * Common template helpers
- * =======================
- *
- * Templates re-use a lot of common stuff, so this section declares and exports
- * common objects that we can import as needed.
- */
-import { Spec, BaseData } from 'vega';
+import { Spec } from 'vega';
 import { TopLevelSpec } from 'vega-lite';
-import { getConfig } from '../core/utils/config';
-
-import { dataRoles } from '../../capabilities.json';
-
-function vegaDataModelRef(): BaseData {
-    return {
-        name: dataRoles[0].name
-    };
-}
-const providerInfo = getConfig().providerResources,
-    vegaProviderInfo = providerInfo.vega.schemaUrl,
-    vegaLiteProviderInfo = providerInfo.vegaLite.schemaUrl,
-    authorInfo = 'Deneb';
-
-export { authorInfo, vegaDataModelRef, vegaProviderInfo, vegaLiteProviderInfo };
 
 /**
  * ==================
