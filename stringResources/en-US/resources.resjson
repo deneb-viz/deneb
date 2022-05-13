@@ -254,7 +254,7 @@
     "Pivot_Mode_Unknown": "Select a debugging mode option from the toolbar.",
     "Pivot_Log_Error_Badge": "ERRORS",
     "Pivot_Log_No_Issues": "No log messages to report.",
-    "Pivot_Dataset_Select_Label": "Data stream",
+    "Pivot_Dataset_Select_Label": "",
     "Pivot_Dataset_Select_None": "Please use the dropdown to select a data set from the generated specification.",
     "Pivot_Dataset_RowIdentifier": "{0}: This represents the (zero-based) index of the internal dataset, and is used for interactivity reconciliation purposes.",
     "Pivot_Dataset_IdentityName": "{0}: Represents the row context for this datum, and is used for interactivity purposes.",
