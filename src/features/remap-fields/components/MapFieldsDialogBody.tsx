@@ -6,7 +6,7 @@ import { IColumn } from '@fluentui/react/lib/DetailsList';
 
 import filter from 'lodash/filter';
 
-import { getState, useStoreProp } from '../../../store';
+import store, { getState } from '../../../store';
 
 import { i18nValue } from '../../../core/ui/i18n';
 import { Paragraph } from '../../../components/elements/Typography';
@@ -19,7 +19,6 @@ import {
 import { buttonStyles } from '../../../core/ui/fluent';
 
 import { getDatasetTemplateFields } from '../../../core/data/fields';
-import { IVisualDatasetFields } from '../../../core/data';
 import { reactLog } from '../../../core/utils/reactLog';
 import {
     MODAL_DIALOG_STACK_INNER_TOKENS,
@@ -72,8 +71,7 @@ export const remapSpecificationFields = () => {
 };
 
 export const MapFieldsDialogBody = () => {
-    const editorFieldsInUse: IVisualDatasetFields =
-        useStoreProp('editorFieldsInUse');
+    const { editorFieldsInUse } = store((state) => state);
     const dataset = getDatasetTemplateFields(editorFieldsInUse);
     const remapDisabled =
         filter(
