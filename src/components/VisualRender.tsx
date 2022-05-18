@@ -10,12 +10,7 @@ import SplashNoSpec from './status/SplashNoSpec';
 
 import { hostServices } from '../core/services';
 import { locales } from '../core/ui/i18n';
-import {
-    handleNewView,
-    resolveLoaderLogic,
-    TSpecProvider,
-    TSpecRenderMode
-} from '../core/vega';
+import { handleNewView, TSpecProvider, TSpecRenderMode } from '../core/vega';
 import { View } from 'vega';
 
 import { IVisualDatasetValueRow } from '../core/data';
@@ -25,6 +20,7 @@ import { logHasErrors } from '../features/debug-area';
 import { getPowerBiTooltipHandler } from '../features/interactivity';
 import { TSpecStatus } from '../features/specification';
 import {
+    getPowerBiVegaLoader,
     registerPowerBiCustomExpressions,
     registerPowerBiCustomSchemes
 } from '../features/powerbi-vega-extensibility';
@@ -71,7 +67,7 @@ const VisualRender: React.FC<IVisualRenderProps> = memo(
             enableTooltips,
             hostServices.tooltipService
         );
-        const loader = resolveLoaderLogic();
+        const loader = getPowerBiVegaLoader();
         const newView = (view: View) => {
             handleNewView(view);
         };

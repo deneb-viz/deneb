@@ -282,5 +282,7 @@
     "Table_Placeholder_TooLong": "{...}",
     "Table_Placeholder_Object": "[Object]",
     "Table_Placeholder_Circular": "[Circular]",
-    "Table_Tooltip_TooLong": "This is a complex object, or is too large to display."
+    "Table_Tooltip_TooLong": "This is a complex object, or is too large to display.",
+    "Loader_Warning_HoverText": "Remote resources cannot be loaded in the AppSource version.",
+    "Loader_Warning_DetailedText": "Due to certification requirements, the AppSource version of Deneb does not permit loading from external URLs. This can be done with the standalone version, available from Deneb's GitHub repository. You can learn more about the standalone version on the Getting Started page on Deneb's website (https://deneb-viz.github.io/getting-started#standalone-version)."
 }

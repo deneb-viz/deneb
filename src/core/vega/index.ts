@@ -15,8 +15,7 @@ export {
     getViewConfig,
     getViewDataset,
     getViewSpec,
-    handleNewView,
-    resolveLoaderLogic
+    handleNewView
 };
 
 import cloneDeep from 'lodash/cloneDeep';
@@ -40,15 +39,12 @@ import { getConfig, providerVersions } from '../utils/config';
 import { getPatchedVegaSpec } from './vegaUtils';
 import { getPatchedVegaLiteSpec } from './vegaLiteUtils';
 
-import { isFeatureEnabled } from '../utils/features';
-
 import { resolveSvgFilter } from '../ui/svgFilter';
 import { i18nValue } from '../ui/i18n';
 import {
     bindContextMenuEvents,
     bindCrossFilterEvents
 } from '../../features/interactivity';
-import { BASE64_BLANK_IMAGE } from '../../features/template';
 
 /**
  * Defines a JSON schema by provider and role, so we can dynamically apply based on provider.
@@ -202,35 +198,5 @@ const handleNewView = (newView: View) => {
         hostServices.renderingFinished();
     });
 };
-
-/**
- * Create a custom Vega loader for the visual. We do a replace on URIs in the
- * spec to prevent, but this doubly-ensures that nothing can be loaded.
- */
-const resolveLoaderLogic = () => {
-    const loader = Vega.loader();
-    if (!isFeatureEnabled('enableExternalUri')) {
-        loader.load = (uri, options) => {
-            const href = (isDataUri(uri) && uri) || '';
-            return Promise.resolve(href);
-        };
-        loader.sanitize = (uri, options) => {
-            const href = (isDataUri(uri) && uri) || BASE64_BLANK_IMAGE;
-            return Promise.resolve({
-                href
-            });
-        };
-    }
-    return loader;
-};
-
-/**
- * Test that supplied URI matches the data: protocol and should be whitelisted
- * by the loader.
- */
-const isDataUri = (uri: string) =>
-    !!uri.match(
-        /^\s*data:([a-z]+\/[a-z]+(;[a-z\-]+\=[a-z\-]+)?)?(;base64)?,[a-z0-9\!\$\&\'\,\(\)\*\+\,\;\=\-\.\_\~\:\@\/\?\%\s]*\s*$/i
-    );
 
 const propertyDefaults = getConfig().propertyDefaults.vega;
