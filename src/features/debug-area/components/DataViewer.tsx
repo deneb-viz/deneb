@@ -6,6 +6,7 @@ import {
     IDropdownOption,
     IDropdownStyles
 } from '@fluentui/react/lib/Dropdown';
+
 import { debounce, falsy, truthy, View } from 'vega';
 import keys from 'lodash/keys';
 
@@ -98,7 +99,8 @@ const getDataTableColumns = (dataset: string, view: View): ColumnDefinition[] =>
             tooltip: (cell) => getCellTooltip(cell),
             headerTooltip: (column) => getColumnHeaderTooltip(column),
             formatter: (cell, params, onRendered) =>
-                getFormattedValueForTable(cell)
+                getFormattedValueForTable(cell),
+            sorter: (a, b, aRow, bRow, column, dir, sorterParams) => a - b
         })) || [];
 
 /**

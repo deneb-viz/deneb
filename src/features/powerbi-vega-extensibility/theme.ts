@@ -135,10 +135,11 @@ export const ordinalPalette = () => {
 };
 
 const themeBackgroundNeutral = () =>
-    hostServices.colorPalette.backgroundNeutral.value;
-const themeFirstLevelElement = () => hostServices.colorPalette.foreground.value;
+    hostServices.colorPalette?.backgroundNeutral?.value;
+const themeFirstLevelElement = () =>
+    hostServices.colorPalette?.foreground?.value;
 const themeSecondLevelElement = () =>
-    hostServices.colorPalette.foregroundNeutralSecondary.value;
+    hostServices.colorPalette?.foregroundNeutralSecondary?.value;
 const themeDivergentMin = () =>
     <string>hostServices.colorPalette?.['minimum']?.value;
 const themeDivergentMed = () =>

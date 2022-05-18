@@ -87,7 +87,9 @@ export const createTemplateSlice = (
             templateFileRawContent: null,
             templateIncludePreviewImage: false,
             templatePreviewImageDataUri: null,
-            templateToApply: templates.vegaLite[0],
+            templateToApply: getTemplateWithBasePowerBiTheme(
+                templates.vegaLite[0]
+            ),
             templateExportMetadata: null,
             templateSelectedIndex: 0,
             templateSelectedExportOperation: 'information',
