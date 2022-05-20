@@ -1,7 +1,7 @@
 import { expressionFunction, scheme } from 'vega';
 import { fillPatternServices, hostServices } from '../../core/services';
 
-import { createFormatterFromString } from '../../core/utils/formatting';
+import { powerBiFormatValue } from '../../utils';
 import {
     divergentPalette,
     divergentPaletteMed,
@@ -23,7 +23,7 @@ const pbiColor = (value: string | number, shadePercent: number = 0) =>
  * formatting to it.
  */
 const pbiFormat = (datum: any, params: string) =>
-    createFormatterFromString(`${params}`).format(datum);
+    powerBiFormatValue(datum, `${params}`);
 
 /**
  * Obtain a dynamic version of a pre-defined pattern, with a custom foregroubd

@@ -1,6 +1,8 @@
 {
     "Roles_Values": "Values",
     "Roles_Values_Description": "Visual data values.",
+    "Roles_Drilldown": "Drilldown Columns",
+    "Roles_Drilldown_Description": "To ensure that Deneb correctly knows about which columns are being used to drill-down on, add them (or a hierarchy) to this role.\n\n𝗡𝗢𝗧𝗘: This will modify the grain of your dataset to match the current drilldown context.",
     "Objects_Developer": "Developer Menu",
     "Objects_Developer_Description": "Options used for development of the visual.",
     "Objects_Developer_Version": "Deneb Version",

@@ -29,3 +29,19 @@ export const DATASET_KEY_NAME = '__key__';
  * dataset.
  */
 export const DATASET_SELECTED_NAME = '__selected__';
+
+/**
+ * The name we wish to use for handling the Drilldown data role from the data
+ * view.
+ */
+export const DATASET_ROLE_DRILLDOWN = dataRoles[1].name;
+
+/**
+ * Because Drilldown can be multi-level, and we don't know how many there are,
+ * we provide a special column which concatenates and formats the supplied
+ * columns, which can be used like how core charts tend to do this.
+ */
+export const DATASET_ROLE_DRILLDOW_FLAT = DATASET_ROLE_DRILLDOWN.replace(
+    /(__$)/,
+    '_flat$1'
+);

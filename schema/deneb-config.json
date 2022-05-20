@@ -309,6 +309,10 @@
                     "description": "Allow the option to include a preview image when generating export templates.",
                     "type": "boolean"
                 },
+                "dataDrilldown": {
+                    "description": "Enable processing of columns added to the Drilldown data role.",
+                    "type": "boolean"
+                },
                 "fx": {
                     "type": ["boolean", "string"],
                     "format": "date"

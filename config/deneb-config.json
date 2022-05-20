@@ -8,6 +8,7 @@
         "selectionContextMenu": true,
         "selectionDataPoint": true,
         "selectionCrossHighlight": true,
+        "dataDrilldown": false,
         "tooltipHandler": true,
         "tooltipResolveNumberFieldFormat": true,
         "useDownloadApi": false,
