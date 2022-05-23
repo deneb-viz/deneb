@@ -41,7 +41,7 @@ export const DATASET_ROLE_DRILLDOWN = dataRoles[1].name;
  * we provide a special column which concatenates and formats the supplied
  * columns, which can be used like how core charts tend to do this.
  */
-export const DATASET_ROLE_DRILLDOW_FLAT = DATASET_ROLE_DRILLDOWN.replace(
+export const DATASET_ROLE_DRILLDOWN_FLAT = DATASET_ROLE_DRILLDOWN.replace(
     /(__$)/,
     '_flat$1'
 );

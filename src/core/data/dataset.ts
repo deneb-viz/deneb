@@ -37,7 +37,7 @@ import { getState } from '../../store';
 import {
     DATASET_NAME,
     DATASET_ROLE_DRILLDOWN,
-    DATASET_ROLE_DRILLDOW_FLAT,
+    DATASET_ROLE_DRILLDOWN_FLAT,
     HIGHLIGHT_COMPARATOR_SUFFIX,
     HIGHLIGHT_FIELD_SUFFIX,
     HIGHLIGHT_STATUS_SUFFIX
@@ -109,8 +109,8 @@ const getDataRow = (
                     rawValue,
                     f.column.format
                 );
-                row[DATASET_ROLE_DRILLDOW_FLAT] = resolveDrilldownFlat(
-                    row?.[DATASET_ROLE_DRILLDOW_FLAT],
+                row[DATASET_ROLE_DRILLDOWN_FLAT] = resolveDrilldownFlat(
+                    row?.[DATASET_ROLE_DRILLDOWN_FLAT],
                     rawValue,
                     f.column.format
                 );
