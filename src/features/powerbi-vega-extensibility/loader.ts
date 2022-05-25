@@ -32,7 +32,7 @@ export const loader = (): Loader => {
                 return Promise.reject({ href: uri });
             }
             // Default assumes we're loading images. If we're blocking
-            // external URIs then only permit if it's valid base64/
+            // external URIs then only permit if it's valid base64
             default: {
                 const sanitized = externalUri
                     ? uri
