@@ -15,3 +15,9 @@ export type TDataPointHighlightStatus = TDataPointSelectionStatus;
  * Indicates the internal selection state of a data point.
  */
 export type TDataPointSelectionStatus = 'off' | 'neutral' | 'on';
+
+/**
+ * Used to denote supported interactivity types within Deneb. These can be used
+ * to flag any contextual methods for any particular functionality.
+ */
+export type TInteractivityType = 'tooltip' | 'highlight' | 'select' | 'context';

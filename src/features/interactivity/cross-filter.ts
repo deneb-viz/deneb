@@ -63,6 +63,15 @@ export const getDataPointCrossFilterStatus = (
     'off';
 
 /**
+ * Because existing identities are known to the visual host, we need to combine
+ * this quantity and the identities that we're looking to add to this. If this
+ * exceeds the maximum, then we should refuse it.
+ */
+const getPotentialSelectionSize = (identities: ISelectionId[]) =>
+    (identities?.length || 0) +
+    (hostServices.selectionManager.getSelectionIds()?.length || 0);
+
+/**
  * Allows us to validate for all key pre-requisites before we can bind a context
  * menu event to the visual.
  */
@@ -129,5 +138,6 @@ const isMultiSelect = () => {
  */
 const isSelectionLimitExceeded = (identities: ISelectionId[]) => {
     const { selectionMaxDataPoints } = getVegaSettings();
-    return identities?.length > selectionMaxDataPoints || false;
+    const length = getPotentialSelectionSize(identities);
+    return length > selectionMaxDataPoints || false;
 };
