@@ -1,5 +1,10 @@
 import { Spec } from 'vega';
-import { authorInfo, vegaDataModelRef, vegaProviderInfo } from '../common';
+import {
+    authorInfo,
+    getVegaTemplateSpecificConfig,
+    vegaDataModelRef,
+    vegaProviderInfo
+} from '../common';
 import { DATASET_NAME } from '../../constants';
 import { getCombinedBase64ImageWithMime } from '../../features/template';
 import thumbnail from '../thumbnail';
@@ -7,7 +12,7 @@ import thumbnail from '../thumbnail';
 export const vLineConfInterval: Spec = {
     $schema: vegaProviderInfo,
     data: [vegaDataModelRef()],
-    config: {},
+    config: getVegaTemplateSpecificConfig(),
     scales: [
         {
             name: 'xscale',
