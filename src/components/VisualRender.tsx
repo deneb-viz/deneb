@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { createClassFromSpec, VegaLite } from 'react-vega';
 import * as Vega from 'vega';
 import { deepEqual } from 'vega-lite';
+import cloneDeep from 'lodash/cloneDeep';
 
 import { useStoreProp, useStoreVegaProp } from '../store';
 import SpecificationError from './status/SpecificationError';
@@ -48,13 +49,53 @@ const areEqual = (
     nextProps: IVisualRenderProps
 ) => {
     reactLog('[VisualRender]', 'prevProps', prevProps, 'nextProps', nextProps);
+    const specificationMatch = deepEqual(
+        prevProps.specification,
+        nextProps.specification
+    );
+
+    reactLog(
+        '[VisualRender] Specification match',
+        specificationMatch,
+        JSON.stringify(prevProps.specification),
+        '  |  ',
+        JSON.stringify(nextProps.specification)
+    );
+    const configMatch = deepEqual(prevProps.config, nextProps.config);
+
+    reactLog('[VisualRender] Config match', configMatch);
+    const dataMatch = deepEqual(prevProps.data, nextProps.data);
+
+    reactLog(
+        '[VisualRender] Data match',
+        dataMatch,
+        JSON.stringify(prevProps.data),
+        '  |  ',
+        JSON.stringify(nextProps.data)
+    );
+    const providerMatch = deepEqual(prevProps.provider, nextProps.provider);
+
+    reactLog('[VisualRender] Provider match', providerMatch);
+    const enableTooltipsMatch = deepEqual(
+        prevProps.enableTooltips,
+        nextProps.enableTooltips
+    );
+
+    reactLog('[VisualRender] Enable tooltips match', enableTooltipsMatch);
+    const renderModeMatch = deepEqual(
+        prevProps.renderMode,
+        nextProps.renderMode
+    );
+
+    reactLog('[VisualRender] Render mode match', renderModeMatch);
     const result =
-        deepEqual(prevProps.specification, nextProps.specification) &&
-        deepEqual(prevProps.config, nextProps.config) &&
-        deepEqual(prevProps.data, nextProps.data) &&
-        deepEqual(prevProps.provider, nextProps.provider) &&
-        deepEqual(prevProps.enableTooltips, nextProps.enableTooltips) &&
-        deepEqual(prevProps.renderMode, nextProps.renderMode);
+        specificationMatch &&
+        configMatch &&
+        dataMatch &&
+        providerMatch &&
+        enableTooltipsMatch &&
+        renderModeMatch;
+
     reactLog('[VisualRender] Vega Re-render', !result);
     return result;
 };
@@ -90,6 +131,13 @@ const VisualRender: React.FC<IVisualRenderProps> = memo(
             locales.format[locale] || locales.format[locales.default];
         const timeFormatLocale =
             locales.timeFormat[locale] || locales.timeFormat[locales.default];
+
+        // #248: the raw props get mutated by react-vega, so we need this to
+        // ensure that we don't get stuck in an infinite loop when memoizing
+        const renderSpecification = cloneDeep(specification);
+        const renderConfig = cloneDeep(config);
+        const renderData = cloneDeep(data);
+
         reactLog('Rendering [VisualRender]');
         if (visual4d3d3d) return <FourD3D3D3 />;
         registerPowerBiCustomExpressions();
@@ -103,12 +151,12 @@ const VisualRender: React.FC<IVisualRenderProps> = memo(
                     case 'vegaLite': {
                         return (
                             <VegaLite
-                                spec={specification}
-                                data={data}
+                                spec={renderSpecification}
+                                data={renderData}
                                 renderer={renderMode}
                                 actions={false}
                                 tooltip={tooltipHandler}
-                                config={config}
+                                config={renderConfig}
                                 formatLocale={formatLocale}
                                 timeFormatLocale={timeFormatLocale}
                                 loader={loader}
@@ -120,15 +168,15 @@ const VisualRender: React.FC<IVisualRenderProps> = memo(
                     }
                     case 'vega': {
                         const VegaChart = createClassFromSpec({
-                            spec: specification
+                            spec: renderSpecification
                         });
                         return (
                             <VegaChart
-                                data={data}
+                                data={renderData}
                                 renderer={renderMode as Vega.Renderers}
                                 actions={false}
                                 tooltip={tooltipHandler}
-                                config={config}
+                                config={renderConfig}
                                 formatLocale={formatLocale}
                                 timeFormatLocale={timeFormatLocale}
                                 loader={loader}

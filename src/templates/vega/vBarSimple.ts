@@ -1,5 +1,10 @@
-import { Spec } from 'vega';
-import { authorInfo, vegaDataModelRef, vegaProviderInfo } from '../common';
+import { Config, Spec } from 'vega';
+import {
+    authorInfo,
+    getVegaTemplateSpecificConfig,
+    vegaDataModelRef,
+    vegaProviderInfo
+} from '../common';
 import thumbnail from '../thumbnail';
 import { getConfig } from '../../core/utils/config';
 import { DATASET_NAME, DATASET_SELECTED_NAME } from '../../constants';
@@ -8,7 +13,7 @@ import { getCombinedBase64ImageWithMime } from '../../features/template';
 export const vBarSimple: Spec = {
     $schema: vegaProviderInfo,
     data: [vegaDataModelRef()],
-    config: {},
+    config: getVegaTemplateSpecificConfig(),
     scales: [
         {
             name: 'yscale',
