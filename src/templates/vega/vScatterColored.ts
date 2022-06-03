@@ -1,5 +1,9 @@
 import { Spec } from 'vega';
-import { authorInfo, vegaProviderInfo } from '../common';
+import {
+    authorInfo,
+    getVegaTemplateSpecificConfig,
+    vegaProviderInfo
+} from '../common';
 import { DATASET_NAME } from '../../constants';
 import { getCombinedBase64ImageWithMime } from '../../features/template';
 import thumbnail from '../thumbnail';
@@ -17,7 +21,7 @@ export const vScatterColored: Spec = {
             ]
         }
     ],
-    config: {},
+    config: getVegaTemplateSpecificConfig(),
     scales: [
         {
             name: 'xscale',

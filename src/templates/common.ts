@@ -1,4 +1,4 @@
-import { BaseData } from 'vega';
+import { AutoSize, BaseData, Config } from 'vega';
 import { getConfig } from '../core/utils/config';
 import { dataRoles } from '../../capabilities.json';
 
@@ -16,6 +16,9 @@ export function vegaDataModelRef(): BaseData {
         name: dataRoles[0].name
     };
 }
+export const getVegaTemplateSpecificConfig = (): Config => ({
+    autosize: { contains: 'padding', type: 'fit' }
+});
 export const providerInfo = getConfig().providerResources;
 export const vegaProviderInfo = providerInfo.vega.schemaUrl;
 export const vegaLiteProviderInfo = providerInfo.vegaLite.schemaUrl;
