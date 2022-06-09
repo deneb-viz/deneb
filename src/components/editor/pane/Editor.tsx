@@ -1,6 +1,7 @@
 import React from 'react';
 import { editor } from '../../../core/services';
-import { stageEditorData } from '../../../core/utils/specification';
+import { reactLog } from '../../../core/utils/reactLog';
+import { stageEditorData } from '../../../features/specification';
 import getAssignedEditor = editor.getAssignedEditor;
 import handleComponentUpdate = editor.handleComponentUpdate;
 import IVisualEditor = editor.IVisualEditor;
@@ -13,8 +14,8 @@ class Editor extends React.Component<IVisualEditorProps> {
         super(props);
         this.bindEditorElement = this.bindEditorElement.bind(this);
     }
-
     render() {
+        reactLog('Rendering [Editor]');
         return (
             <>
                 <div className='jsoneditor' ref={this.bindEditorElement} />
@@ -23,6 +24,7 @@ class Editor extends React.Component<IVisualEditorProps> {
     }
 
     componentDidUpdate() {
+        reactLog('Rendering [Editor] - update');
         handleComponentUpdate(this.editor.jsonEditor, this.props.role);
     }
 

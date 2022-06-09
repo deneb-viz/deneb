@@ -1,10 +1,10 @@
-export { fillPatternServices, hostServices, viewServices };
+export { fillPatternServices, hostServices, loggerServices };
 export * as editor from './JsonEditorServices';
 
 import { FillPatternServices } from './FillPatternServices';
 import { HostServices } from './HostServices';
-import { ViewServices } from './ViewServices';
+import { StoreVegaLoggerService } from './VegaLoggerService';
 
 const fillPatternServices = new FillPatternServices();
 const hostServices = new HostServices();
-const viewServices = new ViewServices();
+const loggerServices = new StoreVegaLoggerService();

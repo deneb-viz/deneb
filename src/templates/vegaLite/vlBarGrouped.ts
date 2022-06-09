@@ -1,6 +1,8 @@
 import { TopLevelSpec } from 'vega-lite';
-import { authorInfo, vegaDataModelRef, vegaLiteProviderInfo } from '..';
+import { authorInfo, vegaDataModelRef, vegaLiteProviderInfo } from '../common';
+import { DATASET_SELECTED_NAME } from '../../constants';
 import { getConfig } from '../../core/utils/config';
+import { getCombinedBase64ImageWithMime } from '../../features/template';
 import thumbnail from '../thumbnail';
 
 export const vlBarGrouped: TopLevelSpec = {
@@ -25,7 +27,7 @@ export const vlBarGrouped: TopLevelSpec = {
         opacity: {
             condition: {
                 test: {
-                    field: '__selected__',
+                    field: DATASET_SELECTED_NAME,
                     equal: 'off'
                 },
                 value: 0.3
@@ -41,7 +43,9 @@ export const vlBarGrouped: TopLevelSpec = {
             author: authorInfo,
             uuid: 'ca5fe45d-6b40-4638-baf8-e6c33fdf1d59',
             generated: '2021-03-26T00:00:00.000Z',
-            previewImageBase64PNG: thumbnail.barGrouped
+            previewImageBase64PNG: getCombinedBase64ImageWithMime(
+                thumbnail.barGrouped
+            )
         },
         provider: 'vegaLite',
         dataset: [

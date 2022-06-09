@@ -45,9 +45,6 @@ export const getZoomOutLevel = (value: number) => {
     return (value > min && level) || level;
 };
 
-export const clearCatcherSelector = (prefix = false) =>
-    `${(prefix && '.') || ''}vega-embed`;
-
 export const getEditorHeadingIconClassName = (expanded: boolean) =>
     `editor-${expanded ? 'collapse' : 'expand'}`;
 
@@ -74,23 +71,6 @@ export const getViewModeViewportStyles = (
  * Convert a value intended for pt to a px equivalent.
  */
 export const ptToPx = (value: number) => value * (1 / 3 + 1);
-
-/**
- * Blank image data URI; used to return placeholder images when remote URIs are supplied
- */
-export const blankImageBase64 =
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
-
-/**
- * Test a string to determine if it's base64 or not.
- */
-export const isBase64 = (str: string) => {
-    try {
-        return btoa(atob(str)) == str;
-    } catch (err) {
-        return false;
-    }
-};
 
 /**
  * For suitable events, ensure that the visual viewport is correctly resolved and persisted. This will allow us to keep the

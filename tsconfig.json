@@ -2,11 +2,7 @@
     "compilerOptions": {
         "allowJs": false,
         "jsx": "react",
-        "types": [
-            "react",
-            "react-dom",
-            "jest"
-        ],
+        "types": ["react", "react-dom", "jest"],
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "forceConsistentCasingInFileNames": true,
@@ -17,15 +13,10 @@
         "outDir": "./.tmp/build/",
         "moduleResolution": "node",
         "declaration": true,
-        "lib": [
-            "es2019",
-            "dom"
-        ],
+        "lib": ["es2019", "dom"],
         "alwaysStrict": true,
         "resolveJsonModule": true,
         "esModuleInterop": true
     },
-    "files": [
-        "src/Deneb.ts"
-    ]
+    "files": ["src/Deneb.ts"]
 }

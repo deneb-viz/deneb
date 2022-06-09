@@ -121,6 +121,30 @@
                 }
             }
         },
+        "ILogLevel": {
+            "description": "Level information for Vega logging",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["level", "i18n", "color"],
+            "properties": {
+                "level": {
+                    "description": "Log level",
+                    "type": "number"
+                },
+                "i18n": {
+                    "description": "i18n translation key for log level in UI.",
+                    "type": "string"
+                },
+                "color": {
+                    "description": "Theme color to use when displaying log level.",
+                    "type": "string"
+                },
+                "icon": {
+                    "description": "Icon to help clarify log level.",
+                    "type": "string"
+                }
+            }
+        },
         "IThemeDefaults": {
             "description": "Property defaults for any theme integration with the Vega view.",
             "type": "object",
@@ -165,6 +189,7 @@
                 "jsonSpec",
                 "jsonConfig",
                 "provider",
+                "logLevel",
                 "renderMode",
                 "enableContextMenu",
                 "enableTooltips",
@@ -186,6 +211,12 @@
                 "provider": {
                     "description": "Provider used for rendering specification.",
                     "enum": ["vega", "vegaLite"]
+                },
+                "logLevel": {
+                    "description": "Vega log level (0 = None; 1 = Error; 2 = Warn; 3 = Info; 4 = Debug)",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4
                 },
                 "renderMode": {
                     "description": "Mode used for rendering specification.",
@@ -236,6 +267,10 @@
                 },
                 "developerMode": {
                     "description": "Provides a means of enabling developer-specific functionality independent of debugging.",
+                    "type": "boolean"
+                },
+                "enableReactLogging": {
+                    "description": "Enables verbose logging of React output via the console. Should not be enabled in a production visual.",
                     "type": "boolean"
                 },
                 "enableExternalUri": {
@@ -300,6 +335,10 @@
                 "navigateConfig",
                 "navigateSettings",
                 "toggleEditorPane",
+                "toggleDebugPane",
+                "debugPaneShowData",
+                "debugPaneShowSignals",
+                "debugPaneShowLogs",
                 "editorFocusOut",
                 "zoomIn",
                 "zoomOut",
@@ -349,6 +388,22 @@
                 },
                 "toggleEditorPane": {
                     "description": "Command to toggle display of the Editor pane.",
+                    "$ref": "#/definitions/IKeyboardShortcut"
+                },
+                "debugPaneShowData": {
+                    "description": "Command to show the Data Pane in the Debug Pane.",
+                    "$ref": "#/definitions/IKeyboardShortcut"
+                },
+                "debugPaneShowSignals": {
+                    "description": "Command to show the Signals Pane in the Debug Pane.",
+                    "$ref": "#/definitions/IKeyboardShortcut"
+                },
+                "debugPaneShowLogs": {
+                    "description": "Command to show the Logs Pane in the Debug Pane.",
+                    "$ref": "#/definitions/IKeyboardShortcut"
+                },
+                "toggleDebugPane": {
+                    "description": "Command to toggle display of the Debug pane.",
                     "$ref": "#/definitions/IKeyboardShortcut"
                 },
                 "editorFocusOut": {
@@ -470,6 +525,35 @@
                 }
             }
         },
+        "previewPane": {
+            "description": "Defaults and values to configure the display of the preview pane in the editor.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "areaMinSize",
+                "toolbarMinSize",
+                "toolbarInitialPercent",
+                "logLevels"
+            ],
+            "properties": {
+                "areaMinSize": {
+                    "description": "Minimum possible size for the preview area, in pixels.",
+                    "type": "integer"
+                },
+                "toolbarMinSize": {
+                    "description": "Minimum possible size for the preview pane, in pixels.",
+                    "type": "integer"
+                },
+                "toolbarInitialPercent": {
+                    "description": "Size to open toolbar at, if currently minimized.",
+                    "type": "integer"
+                },
+                "logLevels": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/ILogLevel" }
+                }
+            }
+        },
         "splitPaneDefaults": {
             "description": "For the Editor pane, we're using `react-split-pane` to allow the author to resize it. This object specifies the sizes we should allow for this pane within the visual viewport.",
             "type": "object",
@@ -499,7 +583,7 @@
                 }
             }
         },
-        "visualViewPortAdjust": {
+        "visualViewportAdjust": {
             "description": "For the rendered Vega spec, how much spacing (in px) to apply to the visual, within its visible area.",
             "type": "object",
             "additionalProperties": false,
@@ -562,11 +646,12 @@
         "features",
         "fluentUiTheme",
         "modalDialog",
+        "previewPane",
         "providerResources",
         "propertyDefaults",
         "selection",
         "splitPaneDefaults",
-        "visualViewPortAdjust",
+        "visualViewportAdjust",
         "templates",
         "zoomLevel"
     ]

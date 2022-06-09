@@ -21,54 +21,38 @@ import {
     handleNavSpec,
     handleNavConfig,
     handleNavSettings,
-    handleMapFields
+    handleMapFields,
+    handleDebugPane,
+    handleEditorDebugPaneData,
+    handleEditorDebugPaneSignal,
+    handleEditorDebugPaneLog
 } from '../core/ui/commands';
+import { reactLog } from '../core/utils/reactLog';
 
 const App = () => {
-    useHotkeys(getCommandKey('applyChanges'), handleApply, hotkeyOptions);
-    useHotkeys(
-        getCommandKey('autoApplyToggle'),
-        handleAutoApply,
-        hotkeyOptions
-    );
-    useHotkeys(getCommandKey('repairFormatJson'), handleFormat, hotkeyOptions);
-    useHotkeys(
-        getCommandKey('newSpecification'),
-        handleNewSpecification,
-        hotkeyOptions
-    );
-    useHotkeys(
-        getCommandKey('newTemplate'),
-        handleExportTemplate,
-        hotkeyOptions
-    );
-    useHotkeys(getCommandKey('mapFields'), handleMapFields, hotkeyOptions);
-    useHotkeys(getCommandKey('openHelpUrl'), handleHelp, hotkeyOptions);
-    useHotkeys(
-        getCommandKey('navigateSpecification'),
-        handleNavSpec,
-        hotkeyOptions
-    );
-    useHotkeys(getCommandKey('navigateConfig'), handleNavConfig, hotkeyOptions);
-    useHotkeys(
-        getCommandKey('navigateSettings'),
-        handleNavSettings,
-        hotkeyOptions
-    );
-    useHotkeys(getCommandKey('zoomIn'), handleZoomIn, hotkeyOptions);
-    useHotkeys(getCommandKey('zoomOut'), handleZoomOut, hotkeyOptions);
-    useHotkeys(getCommandKey('zoomReset'), handleZoomReset, hotkeyOptions);
-    useHotkeys(getCommandKey('zoomFit'), handleZoomFit, hotkeyOptions);
-    useHotkeys(
-        getCommandKey('toggleEditorPane'),
-        handleEditorPane,
-        hotkeyOptions
-    );
-    useHotkeys(
-        getCommandKey('editorFocusOut'),
-        handleFocusFirstPivot,
-        hotkeyOptions
-    );
+    const hotkeyHandler = (command: string, callback: () => void) =>
+        useHotkeys(getCommandKey(command), callback, hotkeyOptions);
+    hotkeyHandler('applyChanges', handleApply);
+    hotkeyHandler('autoApplyToggle', handleAutoApply);
+    hotkeyHandler('repairFormatJson', handleFormat);
+    hotkeyHandler('newSpecification', handleNewSpecification);
+    hotkeyHandler('newTemplate', handleExportTemplate);
+    hotkeyHandler('mapFields', handleMapFields);
+    hotkeyHandler('openHelpUrl', handleHelp);
+    hotkeyHandler('navigateSpecification', handleNavSpec);
+    hotkeyHandler('navigateConfig', handleNavConfig);
+    hotkeyHandler('navigateSettings', handleNavSettings);
+    hotkeyHandler('zoomIn', handleZoomIn);
+    hotkeyHandler('zoomOut', handleZoomOut);
+    hotkeyHandler('zoomReset', handleZoomReset);
+    hotkeyHandler('zoomFit', handleZoomFit);
+    hotkeyHandler('toggleEditorPane', handleEditorPane);
+    hotkeyHandler('toggleDebugPane', handleDebugPane);
+    hotkeyHandler('debugPaneShowData', handleEditorDebugPaneData);
+    hotkeyHandler('debugPaneShowSignals', handleEditorDebugPaneSignal);
+    hotkeyHandler('debugPaneShowLogs', handleEditorDebugPaneLog);
+    hotkeyHandler('editorFocusOut', handleFocusFirstPivot);
+    reactLog('Rendering [App]');
     return <MainInterface />;
 };
 

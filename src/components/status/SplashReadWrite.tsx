@@ -10,7 +10,7 @@ import StandardHeaderContent from './StandardHeaderContent';
 import UsefulResources from './UsefulResources';
 
 import { BodyHeading, Paragraph } from '../elements/Typography';
-import store from '../../store';
+import { useStoreProp } from '../../store';
 import { i18nValue } from '../../core/ui/i18n';
 import { hostServices } from '../../core/services';
 
@@ -28,8 +28,8 @@ const SplashReadWrite = () => (
 );
 
 const resolveInstructions = () => {
-    const { visualEditMode } = store((state) => state);
-    useEffect(() => hostServices.renderingFinished());
+    const visualEditMode: EditMode = useStoreProp('visualEditMode');
+    useEffect(() => hostServices.renderingFinished(), []);
     switch (visualEditMode) {
         case EditMode.Advanced:
             return (

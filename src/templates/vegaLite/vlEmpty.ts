@@ -1,11 +1,11 @@
 import { TopLevelSpec } from 'vega-lite';
-import { authorInfo, vegaDataModelRef, vegaLiteProviderInfo } from '..';
+import { authorInfo, vegaDataModelRef, vegaLiteProviderInfo } from '../common';
 
 export const vlEmpty: TopLevelSpec = {
     $schema: vegaLiteProviderInfo,
     data: vegaDataModelRef(),
     config: {},
-    mark: null,
+    layer: [],
     usermeta: {
         information: {
             name: '[empty]',

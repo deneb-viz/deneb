@@ -9,20 +9,23 @@ import { TStoreState } from '.';
 import {
     IDenebTemplateMetadata,
     ITemplateDatasetField
-} from '../core/template/schema';
+} from '../features/template';
 
+import { templates } from '../templates';
+import { TSpecProvider } from '../core/vega';
+import { DATASET_NAME } from '../constants';
 import {
-    getNewExportTemplateMetadata,
-    getPlaceholderResolutionStatus,
-    resolveTemplatesForProvider,
     TExportOperation,
     TTemplateExportState,
     TTemplateImportState,
     TTemplateProvider
-} from '../core/template';
-import { getTemplateWithBaseTheme } from '../core/vega/theme';
-import templates from '../templates';
-import { TSpecProvider } from '../core/vega';
+} from '../features/template';
+import { getNewExportTemplateMetadata } from '../features/visual-export';
+import {
+    getImportPlaceholderResolutionStatus,
+    resolveTemplatesForProvider
+} from '../features/visual-create';
+import { getTemplateWithBasePowerBiTheme } from '../features/powerbi-vega-extensibility';
 
 export interface ITemplateSlice {
     templateSelectedIndex: number;
@@ -84,7 +87,9 @@ export const createTemplateSlice = (
             templateFileRawContent: null,
             templateIncludePreviewImage: false,
             templatePreviewImageDataUri: null,
-            templateToApply: templates.vegaLite[0],
+            templateToApply: getTemplateWithBasePowerBiTheme(
+                templates.vegaLite[0]
+            ),
             templateExportMetadata: null,
             templateSelectedIndex: 0,
             templateSelectedExportOperation: 'information',
@@ -164,7 +169,7 @@ interface ITemplatePlaceholderImagePayload {
 const handleInitializeImportExport = (
     state: TStoreState
 ): PartialState<TStoreState, never, never, never, never> => ({
-    templateAllImportCriteriaApplied: getPlaceholderResolutionStatus(
+    templateAllImportCriteriaApplied: getImportPlaceholderResolutionStatus(
         templates.vegaLite[0]
     ),
     templateExportMetadata: getNewExportTemplateMetadata()
@@ -243,7 +248,7 @@ const handleUpdateSelectedTemplateProvider = (
         templateSpecProvider: isImport ? null : templateProvider,
         templateAllImportCriteriaApplied: isImport
             ? false
-            : getPlaceholderResolutionStatus(templateToApply)
+            : getImportPlaceholderResolutionStatus(templateToApply)
     };
 };
 
@@ -251,14 +256,14 @@ const handleUpdateSelectedTemplate = (
     state: TStoreState,
     index: number
 ): PartialState<TStoreState, never, never, never, never> => {
-    const templateToApply = getTemplateWithBaseTheme(
+    const templateToApply = getTemplateWithBasePowerBiTheme(
         resolveTemplatesForProvider()[index]
     );
     return {
         templateSelectedIndex: index,
         templateToApply,
         templateAllImportCriteriaApplied:
-            getPlaceholderResolutionStatus(templateToApply)
+            getImportPlaceholderResolutionStatus(templateToApply)
     };
 };
 
@@ -313,7 +318,9 @@ const handleUpdateTemplatePlaceholder = (
     payload: IPlaceholderValuePayload
 ): PartialState<TStoreState, never, never, never, never> => {
     let dataset = [
-        ...(<IDenebTemplateMetadata>state.templateToApply?.usermeta)?.dataset
+        ...(<IDenebTemplateMetadata>state.templateToApply?.usermeta)?.[
+            DATASET_NAME
+        ]
     ];
     const match = dataset?.find((ph) => ph.key === payload.key);
     if (match) {
@@ -336,7 +343,7 @@ const handleUpdateTemplatePlaceholder = (
     };
     return {
         templateAllImportCriteriaApplied:
-            getPlaceholderResolutionStatus(templateToApply),
+            getImportPlaceholderResolutionStatus(templateToApply),
         templateToApply
     };
 };

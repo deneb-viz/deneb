@@ -1,10 +1,11 @@
 import powerbi from 'powerbi-visuals-api';
-import { isHighlightPropSet } from '../interactivity/highlight';
-import { getVegaSettings } from '../vega';
-import { getHighlightStatus } from './dataView';
 import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 import DataViewValueColumns = powerbi.DataViewValueColumns;
 import PrimitiveValue = powerbi.PrimitiveValue;
+
+import { isCrossHighlightPropSet } from '../../features/interactivity';
+import { getVegaSettings } from '../vega';
+import { getHighlightStatus } from './dataView';
 
 /**
  * Enumerate all relevant areas of the data view to get an array of all
@@ -38,7 +39,7 @@ const getHighlightEntries = (
     values: DataViewValueColumns
 ): PrimitiveValue[][] =>
     (values || [])?.map((v) =>
-        isHighlightPropSet() && getHighlightStatus(values)
+        isCrossHighlightPropSet() && getHighlightStatus(values)
             ? v.highlights
             : v.values
     ) || [];
@@ -52,7 +53,7 @@ const getHighlightEntries = (
 const getValueEntries = (values: DataViewValueColumns): PrimitiveValue[][] =>
     (values || [])?.map((v) => {
         const useHighlights =
-            getHighlightStatus(values) && !isHighlightPropSet();
+            getHighlightStatus(values) && !isCrossHighlightPropSet();
         return useHighlights ? v.highlights : v.values;
     });
 

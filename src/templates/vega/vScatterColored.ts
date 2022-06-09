@@ -1,12 +1,18 @@
 import { Spec } from 'vega';
-import { authorInfo, vegaProviderInfo } from '..';
+import {
+    authorInfo,
+    getVegaTemplateSpecificConfig,
+    vegaProviderInfo
+} from '../common';
+import { DATASET_NAME } from '../../constants';
+import { getCombinedBase64ImageWithMime } from '../../features/template';
 import thumbnail from '../thumbnail';
 
 export const vScatterColored: Spec = {
     $schema: vegaProviderInfo,
     data: [
         {
-            name: 'dataset',
+            name: DATASET_NAME,
             transform: [
                 {
                     type: 'filter',
@@ -15,12 +21,12 @@ export const vScatterColored: Spec = {
             ]
         }
     ],
-    config: {},
+    config: getVegaTemplateSpecificConfig(),
     scales: [
         {
             name: 'xscale',
             domain: {
-                data: 'dataset',
+                data: DATASET_NAME,
                 field: '__0__'
             },
             range: 'width',
@@ -29,7 +35,7 @@ export const vScatterColored: Spec = {
         {
             name: 'yscale',
             domain: {
-                data: 'dataset',
+                data: DATASET_NAME,
                 field: '__1__'
             },
             range: 'height',
@@ -39,7 +45,7 @@ export const vScatterColored: Spec = {
             name: 'color',
             type: 'ordinal',
             domain: {
-                data: 'dataset',
+                data: DATASET_NAME,
                 field: '__2__',
                 sort: true
             },
@@ -64,7 +70,7 @@ export const vScatterColored: Spec = {
             type: 'symbol',
             style: ['point'],
             from: {
-                data: 'dataset'
+                data: DATASET_NAME
             },
             encode: {
                 update: {
@@ -106,7 +112,9 @@ export const vScatterColored: Spec = {
             author: authorInfo,
             uuid: 'ee329042-a7b4-43c0-9d7d-0494d8965a21',
             generated: '2021-03-26T00:00:00.000Z',
-            previewImageBase64PNG: thumbnail.scatterColored
+            previewImageBase64PNG: getCombinedBase64ImageWithMime(
+                thumbnail.scatterColored
+            )
         },
         provider: 'vega',
         dataset: [

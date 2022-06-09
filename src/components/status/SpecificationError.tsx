@@ -1,18 +1,18 @@
 import React, { useEffect } from 'react';
 
-import store from '../../store';
-
 import StatusLayoutStack from './StatusLayoutStack';
 import StatusLayoutStackItem from './StatusLayoutStackItem';
 import StatusHeaderSection from './StatusHeaderSection';
-import { Heading, SubHeading } from '../elements/Typography';
+import { Heading, Paragraph, SubHeading } from '../elements/Typography';
 import { i18nValue } from '../../core/ui/i18n';
 import { hostServices } from '../../core/services';
+import { reactLog } from '../../core/utils/reactLog';
+import { getLogErrorForStatusDisplay } from '../../features/debug-area';
 
 const SpecificationError = () => {
-    const { editorSpec } = store((state) => state),
-        { message } = editorSpec;
-    useEffect(() => hostServices.renderingFailed(message));
+    const message = getLogErrorForStatusDisplay();
+    useEffect(() => hostServices.renderingFailed(message), []);
+    reactLog('Rendering [SpecificationError]');
     return (
         <>
             <StatusLayoutStack>
@@ -21,7 +21,12 @@ const SpecificationError = () => {
                     <SubHeading>{i18nValue('Spec_Error_Overview')}</SubHeading>
                 </StatusHeaderSection>
                 <StatusLayoutStackItem verticalFill>
-                    <code>{message}</code>
+                    <pre style={{ whiteSpace: 'pre-wrap' }}>{message}</pre>
+                    <Paragraph>
+                        {i18nValue('Spec_Error_More', [
+                            i18nValue('Pivot_Preview_Log')
+                        ])}
+                    </Paragraph>
                 </StatusLayoutStackItem>
             </StatusLayoutStack>
         </>

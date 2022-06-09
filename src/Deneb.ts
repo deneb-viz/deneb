@@ -2,6 +2,7 @@ import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import '../style/visual.less';
 import '../style/fabric-icons-inline.css';
+import '../style/tabulator-deneb.less';
 import 'jsoneditor/dist/jsoneditor.css';
 import powerbi from 'powerbi-visuals-api';
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
@@ -31,13 +32,14 @@ import {
     validateDataViewRoles
 } from './core/data/dataView';
 import { theme } from './core/ui/fluent';
-import { parseActiveSpec } from './core/utils/specification';
 import { fillPatternServices, hostServices } from './core/services';
 import { initializeIcons } from './core/ui/fluent';
 import { getDataset, getMappedDataset } from './core/data/dataset';
 import { handlePropertyMigration } from './core/utils/versioning';
 import { resolveReportViewport } from './core/ui/dom';
 import { getDatasetTemplateFields } from './core/data/fields';
+import { DATASET_NAME } from './constants';
+import { parseActiveSpecification } from './features/specification';
 
 export class Deneb implements IVisual {
     private settings: VisualSettings;
@@ -161,7 +163,7 @@ export class Deneb implements IVisual {
                         datasetViewHasValidRoles =
                             datasetViewHasValidMapping &&
                             validateDataViewRoles(options.dataViews, [
-                                'dataset'
+                                DATASET_NAME
                             ]),
                         datasetViewIsValid =
                             datasetViewHasValidMapping &&
@@ -196,7 +198,8 @@ export class Deneb implements IVisual {
             default: {
             }
         }
-        getState().datasetProcessingStage === 'Processed' && parseActiveSpec();
+        getState().datasetProcessingStage === 'Processed' &&
+            parseActiveSpecification();
     }
 
     private static parseSettings(dataView: DataView): VisualSettings {

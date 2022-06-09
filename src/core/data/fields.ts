@@ -7,18 +7,16 @@ import pick from 'lodash/pick';
 import pickBy from 'lodash/pickBy';
 import reduce from 'lodash/reduce';
 
-import {
-    highlightFieldSuffix,
-    isHighlightPropSet
-} from '../interactivity/highlight';
+import { isCrossHighlightPropSet } from '../../features/interactivity';
 import {
     IAugmentedMetadataField,
     IVisualDatasetFields,
     TDatasetValueSource
 } from '.';
-import { resolveVisualMetaToDatasetField } from '../template';
+import { resolveVisualMetaToDatasetField } from '../../features/template';
 import { getDataset } from './dataset';
-import { ITemplateDatasetField } from '../template/schema';
+import { ITemplateDatasetField } from '../../features/template';
+import { HIGHLIGHT_FIELD_SUFFIX } from '../../constants';
 
 /**
  * Extract all categorical fields from the data view as suitable metadata.
@@ -81,13 +79,6 @@ export const getDatasetFields = (
 };
 
 /**
- * Get a reduced set of fields based on an array of key names from Deneb's
- * store.
- */
-export const getDatasetFieldsBySelectionKeys = (keys: string[] = []) =>
-    pick(getDataset().fields, keys);
-
-/**
  * Do a simple lookup against the store dataset for a given template key
  */
 export const getDatasetFieldByTemplateKey = (queryName: string) =>
@@ -131,13 +122,13 @@ export const getEncodedFieldName = (displayName: string) =>
  * working out highlights later on.
  */
 const getHighlightFieldEntries = (values: DataViewValueColumns) =>
-    (isHighlightPropSet() &&
+    (isCrossHighlightPropSet() &&
         values?.map(
             (v, vi): IAugmentedMetadataField => ({
                 column: {
                     ...v.source,
                     ...{
-                        displayName: `${v.source.displayName}${highlightFieldSuffix}`,
+                        displayName: `${v.source.displayName}${HIGHLIGHT_FIELD_SUFFIX}`,
                         index: -v.source.index
                     }
                 },

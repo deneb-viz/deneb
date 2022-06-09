@@ -2,6 +2,7 @@ export {
     buttonStyles,
     initializeIcons,
     linkStyles,
+    previewPaneButtonStyles,
     settingsButtonStyles,
     spinButtonStyles,
     templateTypeIconStyles,
@@ -70,6 +71,19 @@ const settingsButtonStyles: IButtonStyles = {
     },
     rootDisabled: {
         backgroundColor: theme.palette.neutralLighterAlt
+    },
+    icon: { color: theme.palette.neutralPrimary },
+    iconHovered: { color: theme.palette.neutralDark },
+    iconPressed: { color: theme.palette.neutralDark },
+    iconChecked: { color: theme.palette.neutralDark }
+};
+
+const previewPaneButtonStyles: IButtonStyles = {
+    root: {
+        backgroundColor: theme.palette.white
+    },
+    rootDisabled: {
+        backgroundColor: theme.palette.white
     },
     icon: { color: theme.palette.neutralPrimary },
     iconHovered: { color: theme.palette.neutralDark },

@@ -22,13 +22,15 @@ import debounce from 'lodash/debounce';
 
 import { getConfig } from '../utils/config';
 import { getDataset } from '../data/dataset';
-import { hasLiveSpecChanged, persist } from '../utils/specification';
 import { getState } from '../../store';
-import { isDialogOpen } from '../ui/modal';
 import { i18nValue } from '../ui/i18n';
-import { getBaseValidator } from '../utils/json';
 import { getEditorSchema, getVegaSettings, TSpecProvider } from '../vega';
 import { IVisualDatasetField } from '../data';
+import { baseValidator } from '../vega/validation';
+import {
+    hasLiveSpecChanged,
+    persistSpecification
+} from '../../features/specification';
 
 class JsonEditorServices implements IVisualEditor {
     role: TEditorRole;
@@ -107,6 +109,22 @@ const handleComponentUpdate = (jsonEditor: JSONEditor, role: TEditorRole) => {
         jsonEditor.focus();
         updateCompleters(jsonEditor, role);
     }
+};
+
+/**
+ * Determine whether Deneb is currently showing a dialog, based on the store.
+ */
+const isDialogOpen = () => {
+    const {
+        editorIsExportDialogVisible,
+        editorIsMapDialogVisible,
+        editorIsNewDialogVisible
+    } = getState();
+    return (
+        editorIsNewDialogVisible ||
+        editorIsMapDialogVisible ||
+        editorIsExportDialogVisible
+    );
 };
 
 /**
@@ -194,7 +212,7 @@ const getNewJsonEditor = (container: HTMLDivElement) =>
     new JSONEditor(container, {
         modes: [],
         ace: ace,
-        ajv: getBaseValidator(),
+        ajv: baseValidator,
         mode: 'code',
         mainMenuBar: false,
         theme: 'ace/theme/chrome',
@@ -216,7 +234,7 @@ const getInitialText = (role: TEditorRole) => {
 const handleTextEntry = () => {
     const { editorAutoApply, updateEditorDirtyStatus } = getState();
     if (editorAutoApply) {
-        persist();
+        persistSpecification();
     } else {
         updateEditorDirtyStatus(hasLiveSpecChanged());
     }

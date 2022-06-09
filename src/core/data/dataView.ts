@@ -10,12 +10,12 @@ import PrimitiveValue = powerbi.PrimitiveValue;
 
 import { isFeatureEnabled } from '../utils/features';
 import { getState } from '../../store';
-import {
-    TDataPointHighlightComparator,
-    TDataPointSelectionStatus
-} from '../interactivity';
 import { hostServices } from '../services';
 import { IAugmentedMetadataField } from '.';
+import {
+    TDataPointHighlightComparator,
+    TDataPointHighlightStatus
+} from '../../features/interactivity';
 
 /**
  * Convenience constant that confirms whether the `fetchMoreData` feature switch is enabled via features.
@@ -134,7 +134,7 @@ export const resolveHighlightStatus = (
     hasHighlights: boolean,
     fieldValue: PrimitiveValue,
     comparatorValue: PrimitiveValue
-): TDataPointSelectionStatus => {
+): TDataPointHighlightStatus => {
     switch (true) {
         case !hasHighlights:
             return 'neutral';

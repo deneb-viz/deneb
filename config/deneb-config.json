@@ -2,6 +2,7 @@
     "$schema": "../schema/deneb-config.json",
     "features": {
         "developerMode": false,
+        "enableReactLogging": false,
         "enableExternalUri": false,
         "fetchMoreData": true,
         "selectionContextMenu": true,
@@ -10,7 +11,7 @@
         "tooltipHandler": true,
         "tooltipResolveNumberFieldFormat": true,
         "useDownloadApi": false,
-        "templateExportPreviewImages": false,
+        "templateExportPreviewImages": true,
         "fx": false,
         "unitTestCanary": false
     },
@@ -38,7 +39,8 @@
             "neutralDark": "#252423",
             "black": "#252423",
             "white": "#ffffff",
-            "redDark": "#a4262c"
+            "redDark": "#a4262c",
+            "greenDark": "#0b6a0b"
         }
     },
     "keyBindings": {
@@ -71,19 +73,35 @@
             "functionalArea": "other"
         },
         "navigateSpecification": {
-            "combination": "ctrl|alt|1",
+            "combination": "ctrl|alt|1,ctrl|alt|num_1",
             "functionalArea": "other"
         },
         "navigateConfig": {
-            "combination": "ctrl|alt|2",
+            "combination": "ctrl|alt|2,ctrl|alt|num_2",
             "functionalArea": "other"
         },
         "navigateSettings": {
-            "combination": "ctrl|alt|3",
+            "combination": "ctrl|alt|3,ctrl|alt|num_3",
             "functionalArea": "other"
         },
         "toggleEditorPane": {
             "combination": "ctrl|alt|space",
+            "functionalArea": "other"
+        },
+        "toggleDebugPane": {
+            "combination": "ctrl|`",
+            "functionalArea": "other"
+        },
+        "debugPaneShowData": {
+            "combination": "ctrl|alt|7,ctrl|alt|num_7",
+            "functionalArea": "other"
+        },
+        "debugPaneShowSignals": {
+            "combination": "ctrl|alt|8,ctrl|alt|num_8",
+            "functionalArea": "other"
+        },
+        "debugPaneShowLogs": {
+            "combination": "ctrl|alt|9,ctrl|alt|num_9",
             "functionalArea": "other"
         },
         "editorFocusOut": {
@@ -140,6 +158,36 @@
             "legacyVersion": "5.1.1"
         }
     },
+    "previewPane": {
+        "areaMinSize": 100,
+        "toolbarMinSize": 36,
+        "toolbarInitialPercent": 40,
+        "logLevels": [
+            {
+                "level": 0,
+                "i18n": "Enum_LogLevel_None",
+                "color": "black"
+            },
+            {
+                "level": 1,
+                "i18n": "Enum_LogLevel_Error",
+                "color": "redDark",
+                "icon": "ErrorBadge"
+            },
+            {
+                "level": 2,
+                "i18n": "Enum_LogLevel_Warn",
+                "color": "themeDark",
+                "icon": "Warning"
+            },
+            {
+                "level": 3,
+                "i18n": "Enum_LogLevel_Info",
+                "color": "greenDark",
+                "icon": "Info"
+            }
+        ]
+    },
     "propertyDefaults": {
         "dataLimit": {
             "override": false,
@@ -164,6 +212,7 @@
             "jsonSpec": null,
             "jsonConfig": "{}",
             "provider": "vegaLite",
+            "logLevel": 2,
             "renderMode": "svg",
             "enableContextMenu": true,
             "enableTooltips": true,
@@ -274,7 +323,7 @@
         "metadataVersion": 1,
         "previewImageSize": 150
     },
-    "visualViewPortAdjust": {
+    "visualViewportAdjust": {
         "top": 5,
         "left": 5
     },

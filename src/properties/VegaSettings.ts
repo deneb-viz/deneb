@@ -3,13 +3,13 @@ import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnume
 
 import SettingsBase from './SettingsBase';
 import { getConfig } from '../core/utils/config';
-import { isHandlerEnabled } from '../core/interactivity/tooltip';
 import {
-    isContextMenuEnabled,
-    isDataPointEnabled
-} from '../core/interactivity/selection';
+    IS_CONTEXT_MENU_ENABLED,
+    IS_CROSS_FILTER_ENABLED,
+    IS_CROSS_HIGHLIGHT_ENABLED,
+    IS_TOOLTIP_HANDLER_ENABLED
+} from '../features/interactivity';
 import { isFeatureEnabled } from '../core/utils/features';
-import { isHighlightEnabled } from '../core/interactivity/highlight';
 
 const defaults = getConfig().propertyDefaults.vega,
     config = getConfig().selection;
@@ -21,15 +21,19 @@ export default class VegaSettings extends SettingsBase {
     public jsonSpec: string = defaults.jsonSpec;
     public jsonConfig: string = defaults.jsonConfig;
     public provider = defaults.provider;
+    public logLevel = defaults.logLevel;
     public version: string = null;
     public renderMode = defaults.renderMode;
-    public enableTooltips = isHandlerEnabled && defaults.enableTooltips;
+    public enableTooltips =
+        IS_TOOLTIP_HANDLER_ENABLED && defaults.enableTooltips;
     public enableContextMenu =
-        isContextMenuEnabled && defaults.enableContextMenu;
-    public enableSelection = isDataPointEnabled && defaults.enableSelection;
-    public enableHighlight = isHighlightEnabled && defaults.enableHighlight;
+        IS_CONTEXT_MENU_ENABLED && defaults.enableContextMenu;
+    public enableSelection =
+        IS_CROSS_FILTER_ENABLED && defaults.enableSelection;
+    public enableHighlight =
+        IS_CROSS_HIGHLIGHT_ENABLED && defaults.enableHighlight;
     public selectionMaxDataPoints = defaults.selectionMaxDataPoints;
-    public tooltipDelay = isHandlerEnabled && defaults.tooltipDelay;
+    public tooltipDelay = IS_TOOLTIP_HANDLER_ENABLED && defaults.tooltipDelay;
     public isNewDialogOpen = defaults.isNewDialogOpen;
 
     /**
@@ -47,17 +51,17 @@ export default class VegaSettings extends SettingsBase {
             if (!isFeatureEnabled('developerMode')) {
                 enumerationObject.instances = [];
             } else {
-                if (!isHandlerEnabled) {
+                if (!IS_TOOLTIP_HANDLER_ENABLED) {
                     delete enumerationObject.instances[0].properties[
                         'enableTooltips'
                     ];
                 }
-                if (!isContextMenuEnabled) {
+                if (!IS_CONTEXT_MENU_ENABLED) {
                     delete enumerationObject.instances[0].properties[
                         'enableContextMenu'
                     ];
                 }
-                if (!isDataPointEnabled) {
+                if (!IS_CROSS_FILTER_ENABLED) {
                     delete enumerationObject.instances[0].properties[
                         'enableSelection'
                     ];

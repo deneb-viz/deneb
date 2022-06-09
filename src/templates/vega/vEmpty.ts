@@ -1,10 +1,15 @@
 import { Spec } from 'vega';
-import { authorInfo, vegaDataModelRef, vegaProviderInfo } from '..';
+import {
+    authorInfo,
+    getVegaTemplateSpecificConfig,
+    vegaDataModelRef,
+    vegaProviderInfo
+} from '../common';
 
 export const vEmpty: Spec = {
     $schema: vegaProviderInfo,
     data: [vegaDataModelRef()],
-    config: {},
+    config: getVegaTemplateSpecificConfig(),
     marks: [],
     usermeta: {
         information: {
