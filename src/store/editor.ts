@@ -6,7 +6,6 @@ import { View } from 'vega';
 
 import { TStoreState } from '.';
 import { doUnallocatedFieldsExist } from '../core/data/dataset';
-import { TEditorRole } from '../core/services/JsonEditorServices';
 import { resolveVisualMode } from '../core/ui';
 import {
     calculateVegaViewport,
@@ -19,6 +18,7 @@ import { getConfig } from '../core/utils/config';
 import { IVisualDatasetFields } from '../core/data';
 import { getFieldsInUseFromSpec } from '../features/template';
 import { ICompiledSpec, IFixResult } from '../features/specification';
+import { TEditorRole } from '../features/json-editor';
 
 export interface IEditorSlice {
     editorAutoApply: boolean;

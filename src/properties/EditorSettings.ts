@@ -4,6 +4,7 @@ import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnume
 import SettingsBase from './SettingsBase';
 import { getConfig } from '../core/utils/config';
 import { TEditorPosition } from '../core/ui';
+import { TEditorProvider } from '../features/json-editor';
 
 /**
  * Manages editor preferences for the visual.
@@ -19,6 +20,7 @@ export default class EditorSettings extends SettingsBase {
     public showGutter: boolean = defaults.showGutter;
     public showLineNumbers: boolean = defaults.showLineNumbers;
     public showViewportMarker: boolean = defaults.showViewportMarker;
+    public provider: TEditorProvider = <TEditorProvider>defaults.provider;
 
     /**
      * Business logic for the properties within this menu.

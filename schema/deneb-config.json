@@ -73,6 +73,7 @@
             "type": "object",
             "additionalProperties": false,
             "required": [
+                "provider",
                 "debounceInterval",
                 "tabSize",
                 "position",
@@ -84,6 +85,10 @@
                 "maxLineLength"
             ],
             "properties": {
+                "provider": {
+                    "description": "The editor to use within the UI",
+                    "enum": ["jsoneditor"]
+                },
                 "debounceInterval": {
                     "description": "Time (in ms) before debouncing user input to store. The longer the interval, the less chatty things are, but the longer the perceived lag for things to happen after the user finishes typing in the editor.",
                     "type": "integer"

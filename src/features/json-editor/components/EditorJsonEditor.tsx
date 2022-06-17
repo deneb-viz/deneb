@@ -1,13 +1,20 @@
 import React from 'react';
 import { editor } from '../../../core/services';
-import { reactLog } from '../../../core/utils/reactLog';
-import { stageEditorData } from '../../../features/specification';
-import getAssignedEditor = editor.getAssignedEditor;
-import handleComponentUpdate = editor.handleComponentUpdate;
-import IVisualEditor = editor.IVisualEditor;
-import IVisualEditorProps = editor.IVisualEditorProps;
 
-class Editor extends React.Component<IVisualEditorProps> {
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/theme-chrome';
+import 'ace-builds/src-noconflict/ext-language_tools';
+import 'ace-builds/src-noconflict/ext-searchbox';
+import { reactLog } from '../../../core/utils/reactLog';
+import { stageEditorData } from '../../specification';
+import IVisualEditor = editor.IVisualEditor;
+import { IVisualEditorProps } from '../types';
+import {
+    getAssignedJsonEditor,
+    handleComponentUpdate
+} from '../utils-jsoneditor';
+
+export class EditorJsonEditor extends React.Component<IVisualEditorProps> {
     private container: HTMLDivElement;
     private editor: IVisualEditor;
     constructor(props: IVisualEditorProps) {
@@ -29,7 +36,7 @@ class Editor extends React.Component<IVisualEditorProps> {
     }
 
     componentDidMount() {
-        this.editor = getAssignedEditor(this.props.role);
+        this.editor = getAssignedJsonEditor(this.props.role);
         this.editor.createEditor(this.container);
     }
 
@@ -41,5 +48,3 @@ class Editor extends React.Component<IVisualEditorProps> {
         this.container = element;
     }
 }
-
-export default Editor;

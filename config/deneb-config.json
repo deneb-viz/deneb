@@ -199,6 +199,7 @@
             "showVersionNotification": false
         },
         "editor": {
+            "provider": "jsoneditor",
             "debounceInterval": 200,
             "tabSize": 2,
             "position": "left",

@@ -7,3 +7,4 @@ export {
     MODAL_DIALOG_STACK_STYLES
 } from './styles';
 export { TModalDialogType } from './types';
+export { isDialogOpen } from './utils';

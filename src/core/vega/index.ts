@@ -6,7 +6,6 @@ export {
     TSpecRenderMode,
     determineProviderFromSpec,
     editorConfigOverLoad,
-    getEditorSchema,
     getParsedConfigFromSettings,
     getVegaProvider,
     getVegaProvideri18n,
@@ -28,7 +27,6 @@ import { TopLevelSpec } from 'vega-lite';
 import { hostServices, loggerServices } from '../services';
 import { cleanParse } from '../utils/json';
 import { vegaLiteValidator, vegaValidator } from './validation';
-import { TEditorRole } from '../services/JsonEditorServices';
 import {
     getState,
     useStoreDataset,
@@ -47,15 +45,6 @@ import {
 } from '../../features/interactivity';
 
 /**
- * Defines a JSON schema by provider and role, so we can dynamically apply based on provider.
- */
-interface IJSonSchema {
-    provider: TSpecProvider;
-    role: TEditorRole;
-    schema: Object;
-}
-
-/**
  * Interface specifying a flexible key/value pair object, which is supplied from Vega's tooltip handler and usually casted as `any`.
  */
 interface IVegaViewDatum {
@@ -71,22 +60,6 @@ type TSpecProvider = 'vega' | 'vegaLite';
  * Used to constrain Vega rendering to supported types.
  */
 type TSpecRenderMode = 'svg' | 'canvas';
-
-/**
- * Schemas we wish to resolve when using the editor.
- */
-const editorSchemas: IJSonSchema[] = [
-    {
-        provider: 'vega',
-        role: 'spec',
-        schema: vegaValidator.schema
-    },
-    {
-        provider: 'vegaLite',
-        role: 'spec',
-        schema: vegaLiteValidator.schema
-    }
-];
 
 const editorConfigOverLoad = {
     background: null, // so we can defer to the Power BI background, if applied
@@ -110,13 +83,6 @@ const determineProviderFromSpec = (
     }
     return null;
 };
-
-/**
- * Allows an editor to dynamically swap out schema based on provider & role.
- */
-const getEditorSchema = (provider: TSpecProvider, role: TEditorRole) =>
-    editorSchemas.find((s) => s.provider === provider && s.role === role)
-        ?.schema || null;
 
 /**
  * Convenience function to get current Vega provider from persisted properties.

@@ -2,9 +2,8 @@ import React from 'react';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 
 import store from '../../../store';
-import Editor from './Editor';
+import { EditorJsonEditor, TEditorRole } from '../../../features/json-editor';
 import EditorPaneSettings from '../../settings/EditorPaneSettings';
-import { TEditorRole } from '../../../core/services/JsonEditorServices';
 import { reactLog } from '../../../core/utils/reactLog';
 
 interface IEditorOperationContainerProps {
@@ -14,9 +13,13 @@ interface IEditorOperationContainerProps {
 const EditorOperationContainer: React.FC<IEditorOperationContainerProps> = ({
     operation
 }) => {
-    const { editorSelectedOperation } = store((state) => state);
+    const { editorSelectedOperation, visualSettings } = store((state) => state);
     const visible = editorSelectedOperation === operation;
     const editorPane = operation !== 'settings';
+    const Editor =
+        visualSettings.editor.provider === 'jsoneditor'
+            ? EditorJsonEditor
+            : null;
     reactLog('Rendering [EditorOperationContainer]', operation);
     return (
         <div
