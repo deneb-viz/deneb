@@ -145,9 +145,14 @@ export class Deneb implements IVisual {
         handlePropertyMigration();
 
         // Data change or re-processing required?
-        switch (options.type) {
-            case VisualUpdateType.All:
-            case VisualUpdateType.Data: {
+        switch (true) {
+            case options.type === VisualUpdateType.All:
+            case options.type === VisualUpdateType.Data:
+            // This is needed due to an issue with the developer visual, where
+            // MS have introduced an unknown `VisualUpdateType` type that is
+            // not part of the API. Refer to powerbi-visuals-tools/#422 for
+            // details of the issue.
+            case options.type.toString() === '254': {
                 // If first segment, we test and set state accordingly for user feedback
                 if (
                     options.operationKind ===
