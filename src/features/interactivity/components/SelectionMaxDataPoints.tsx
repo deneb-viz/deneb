@@ -3,15 +3,15 @@ import React from 'react';
 import { Stack, StackItem } from '@fluentui/react/lib/Stack';
 import { SpinButton } from '@fluentui/react/lib/SpinButton';
 
-import store from '../../store';
-import { i18nValue } from '../../core/ui/i18n';
-import { spinButtonStyles } from '../../core/ui/fluent';
-import { getConfig } from '../../core/utils/config';
-import { updateSelectionMaxDataPoints } from '../../core/ui/commands';
-import ResetButton from '../elements/ResetButton';
-import { isCrossFilterPropSet } from '../../features/interactivity';
+import store from '../../../store';
+import { i18nValue } from '../../../core/ui/i18n';
+import { spinButtonStyles } from '../../../core/ui/fluent';
+import { getConfig } from '../../../core/utils/config';
+import { updateSelectionMaxDataPoints } from '../../../core/ui/commands';
+import ResetButton from '../../../components/elements/ResetButton';
+import { isCrossFilterPropSet } from '..';
 
-const SelectionMaxDataPoints: React.FC = () => {
+export const SelectionMaxDataPoints: React.FC = () => {
     const { selectionMaxDataPoints } = store(
         (state) => state.visualSettings.vega
     );
@@ -48,5 +48,3 @@ const SelectionMaxDataPoints: React.FC = () => {
         )) || <></>
     );
 };
-
-export default SelectionMaxDataPoints;

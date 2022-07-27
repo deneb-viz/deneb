@@ -63,6 +63,15 @@ export const getDataPointCrossFilterStatus = (
     'off';
 
 /**
+ * Because existing identities are known to the visual host, we need to combine
+ * this quantity and the identities that we're looking to add to this. If this
+ * exceeds the maximum, then we should refuse it.
+ */
+const getPotentialSelectionSize = (identities: ISelectionId[]) =>
+    (identities?.length || 0) +
+    (hostServices.selectionManager.getSelectionIds()?.length || 0);
+
+/**
  * Allows us to validate for all key pre-requisites before we can bind a context
  * menu event to the visual.
  */
@@ -86,12 +95,9 @@ export const handleCrossFilterEvent = (event: ScenegraphEvent, item: Item) => {
         const mouseEvent: MouseEvent = <MouseEvent>window.event;
         const data = resolveDataFromItem(item);
         const identities = getIdentitiesFromData(data);
-        mouseEvent && mouseEvent.preventDefault();
+        mouseEvent?.preventDefault();
         hidePowerBiTooltip();
         switch (true) {
-            case isEventTargetParam(mouseEvent): {
-                return;
-            }
             case isSelectionLimitExceeded(identities): {
                 dispatchCrossFilterAbort(true);
                 return;
@@ -109,12 +115,6 @@ export const handleCrossFilterEvent = (event: ScenegraphEvent, item: Item) => {
 };
 
 /**
- * Determine if the event comes from a param in the view.
- */
-const isEventTargetParam = (event: MouseEvent) =>
-    (<HTMLInputElement>event?.target)?.matches('input, select');
-
-/**
  * Determine if the window is in multi-select state, i.e. ctrl key is held
  * down by user.
  */
@@ -129,5 +129,6 @@ const isMultiSelect = () => {
  */
 const isSelectionLimitExceeded = (identities: ISelectionId[]) => {
     const { selectionMaxDataPoints } = getVegaSettings();
-    return identities?.length > selectionMaxDataPoints || false;
+    const length = getPotentialSelectionSize(identities);
+    return length > selectionMaxDataPoints || false;
 };

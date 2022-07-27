@@ -105,7 +105,6 @@ export class Deneb implements IVisual {
         const settings = this.settings;
         hostServices.visualUpdateOptions = options;
         hostServices.resolveLocaleFromSettings(settings.developer.locale);
-
         const {
             setVisualUpdate,
             syncTemplateExportDataset,
@@ -114,7 +113,6 @@ export class Deneb implements IVisual {
             updateDatasetViewFlags,
             updateDatasetViewInvalid
         } = getState();
-
         // Manage persistent viewport sizing for view vs. editor
         switch (true) {
             case options.type === VisualUpdateType.All:
@@ -134,20 +132,22 @@ export class Deneb implements IVisual {
             default: {
             }
         }
-
         // Provide intial update options to store
         setVisualUpdate({
             options,
             settings
         });
-
         // Perform any necessary property migrations
         handlePropertyMigration();
-
         // Data change or re-processing required?
-        switch (options.type) {
-            case VisualUpdateType.All:
-            case VisualUpdateType.Data: {
+        switch (true) {
+            case options.type === VisualUpdateType.All:
+            case options.type === VisualUpdateType.Data:
+            // This is needed due to an issue with the developer visual, where
+            // MS have introduced an unknown `VisualUpdateType` type that is
+            // not part of the API. Refer to powerbi-visuals-tools/#422 for
+            // details of the issue.
+            case options.type.toString() === '254': {
                 // If first segment, we test and set state accordingly for user feedback
                 if (
                     options.operationKind ===
@@ -174,7 +174,6 @@ export class Deneb implements IVisual {
                         datasetViewIsValid
                     });
                 }
-
                 // If the DV didn't validate then we shouldn't expend effort mapping it and just display landing page
                 if (!getState().datasetViewHasValidMapping) {
                     updateDatasetViewInvalid();

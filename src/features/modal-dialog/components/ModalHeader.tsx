@@ -12,26 +12,13 @@ import {
     MODAL_DIALOG_CLOSE_ICON_STYLES,
     getModalDialogContentStyles
 } from '../styles';
+import { resolveDialogTitle } from '../utils';
 
 interface IModalHeaderProps {
     type: TModalDialogType;
 }
 
 const CANCEL_ICON: IIconProps = { iconName: 'Cancel' };
-
-/**
- * Route the appropriate dialog title i18n key, based on type.
- */
-const resolveTitle = (type: TModalDialogType) => {
-    switch (type) {
-        case 'new':
-            return 'New_Spec_Heading';
-        case 'export':
-            return 'Export_Spec_Heading';
-        case 'mapping':
-            return 'Map_Fields_Heading';
-    }
-};
 
 export const ModalHeader: React.FC<IModalHeaderProps> = ({ type }) => {
     const { visualViewportCurrent } = store((state) => state);
@@ -43,7 +30,7 @@ export const ModalHeader: React.FC<IModalHeaderProps> = ({ type }) => {
 
     return (
         <div className={modalStyles.header}>
-            <span id={titleId}>{i18nValue(resolveTitle(type))}</span>
+            <span id={titleId}>{i18nValue(resolveDialogTitle(type))}</span>
             <IconButton
                 styles={MODAL_DIALOG_CLOSE_ICON_STYLES}
                 iconProps={CANCEL_ICON}

@@ -35,7 +35,6 @@ import {
 } from '../utils/properties';
 import store, { getState } from '../../store';
 import { getConfig, getVisualMetadata } from '../utils/config';
-import { TEditorRole } from '../services/JsonEditorServices';
 import { hostServices } from '../services';
 import { TModalDialogType } from '../../features/modal-dialog';
 import { TSpecProvider, TSpecRenderMode } from '../vega';
@@ -47,6 +46,7 @@ import {
     persistSpecification
 } from '../../features/specification';
 import { updateTemplateExportState } from '../../features/visual-export';
+import { TEditorRole } from '../../features/json-editor';
 
 interface IKeyboardShortcut {
     keys: string;
