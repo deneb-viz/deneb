@@ -105,7 +105,6 @@ export class Deneb implements IVisual {
         const settings = this.settings;
         hostServices.visualUpdateOptions = options;
         hostServices.resolveLocaleFromSettings(settings.developer.locale);
-
         const {
             setVisualUpdate,
             syncTemplateExportDataset,
@@ -114,7 +113,6 @@ export class Deneb implements IVisual {
             updateDatasetViewFlags,
             updateDatasetViewInvalid
         } = getState();
-
         // Manage persistent viewport sizing for view vs. editor
         switch (true) {
             case options.type === VisualUpdateType.All:
@@ -134,16 +132,13 @@ export class Deneb implements IVisual {
             default: {
             }
         }
-
         // Provide intial update options to store
         setVisualUpdate({
             options,
             settings
         });
-
         // Perform any necessary property migrations
         handlePropertyMigration();
-
         // Data change or re-processing required?
         switch (true) {
             case options.type === VisualUpdateType.All:
@@ -179,7 +174,6 @@ export class Deneb implements IVisual {
                         datasetViewIsValid
                     });
                 }
-
                 // If the DV didn't validate then we shouldn't expend effort mapping it and just display landing page
                 if (!getState().datasetViewHasValidMapping) {
                     updateDatasetViewInvalid();
