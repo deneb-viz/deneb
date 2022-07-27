@@ -25,6 +25,7 @@ export class HostServices {
         download: IDownloadService;
     */
     colorPalette: ISandboxExtendedColorPalette;
+    displayWarningIcon: (hoverText: string, detailedText: string) => void;
     element: HTMLElement;
     events: IVisualEventService;
     fetchMoreData: (aggregateSegments?: boolean) => boolean;
@@ -44,6 +45,7 @@ export class HostServices {
         */
         this.allowInteractions = host.hostCapabilities.allowInteractions;
         this.colorPalette = host.colorPalette;
+        this.displayWarningIcon = host.displayWarningIcon;
         this.element = element;
         this.events = options.host.eventService;
         this.fetchMoreData = host.fetchMoreData;

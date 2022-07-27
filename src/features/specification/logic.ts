@@ -5,8 +5,7 @@ import jsonrepair from 'jsonrepair';
 import { getConfig } from '../../core/utils/config';
 import {
     configEditorService,
-    specEditorService,
-    TEditorRole
+    specEditorService
 } from '../../core/services/JsonEditorServices';
 import { getState } from '../../store';
 import { getVegaSettings, getViewConfig, TSpecProvider } from '../../core/vega';
@@ -23,6 +22,7 @@ import { validateVega, validateVegaLite } from '../../core/vega/validation';
 import { i18nValue } from '../../core/ui/i18n';
 import { IFixResult, IFixStatus } from './types';
 import { getLastVersionInfo } from '../../core/utils/versioning';
+import { TEditorRole } from '../json-editor';
 
 const PROPERTY_DEFAULTS = getConfig().propertyDefaults.vega;
 

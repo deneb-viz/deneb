@@ -1,6 +1,8 @@
 import { getConfig } from '../../core/utils/config';
 
 import { getState } from '../../store';
+import { getBase64DataUri } from '../../utils';
+import { getBase64MimeType } from '../../utils/base64';
 
 /**
  * Encoding method used for preview images.
@@ -8,14 +10,9 @@ import { getState } from '../../store';
 const IMAGE_TYPE = 'png';
 
 /**
- * The base MIME-type used when creating preview images.
- */
-const BASE64_MIME_TYPE = `image/${IMAGE_TYPE}`;
-
-/**
  * MIME-type prefix for base64 PNG images.
  */
-const BASE64_DATA_URL_PREFIX = `data:${BASE64_MIME_TYPE};base64,`;
+const BASE64_DATA_URL_PREFIX = getBase64DataUri(IMAGE_TYPE);
 
 /**
  * Blank image data URI; used to return placeholder images when remote URIs are
@@ -44,7 +41,7 @@ export const dispatchPreviewImage = (include: boolean) => {
             canvas.height = img.height;
             canvas.width = img.width;
             ctx.drawImage(img, 0, 0);
-            dataUri = canvas.toDataURL(BASE64_MIME_TYPE);
+            dataUri = canvas.toDataURL(getBase64MimeType(IMAGE_TYPE));
         }
         updateTemplatePreviewImage({
             include,

@@ -14,7 +14,7 @@ import toString from 'lodash/toString';
 import { i18nValue } from '../../core/ui/i18n';
 import { getJsonAsIndentedString } from '../../core/utils/json';
 import { getVegaSettings, IVegaViewDatum } from '../../core/vega';
-import { createFormatterFromString } from '../../core/utils/formatting';
+import { powerBiFormatValue } from '../../utils';
 import {
     getDatasetFieldsBySelectionKeys,
     getIdentitiesFromData,
@@ -55,9 +55,10 @@ const extractTooltipDataItemsFromObject = (
         displayName: `${k}`,
         value: `${
             (autoFormatMetadata[k] &&
-                createFormatterFromString(autoFormatMetadata[k].format).format(
+                powerBiFormatValue(
                     (autoFormatMetadata[k].type.numeric && toNumber(v)) ||
-                        (autoFormatMetadata[k].type.dateTime && v)
+                        (autoFormatMetadata[k].type.dateTime && v),
+                    autoFormatMetadata[k].format
                 )) ||
             getCuratedTooltipItem(k, getSanitisedTooltipValue(v))
         }`

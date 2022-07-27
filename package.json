@@ -63,7 +63,7 @@
         "react-hotkeys-hook": "^3.4.0",
         "react-split-pane": "^0.1.92",
         "react-tabulator": "^0.18.1",
-        "react-vega": "^7.4.4",
+        "react-vega": "7.6.0",
         "tabulator-tables": "^5.1.8",
         "ts-jest": "^27.0.7",
         "ts-loader": "^9.2.5",
@@ -73,7 +73,7 @@
         "typescript-json-schema": "^0.50.0",
         "uuid": "^8.3.2",
         "vega": "5.22.1",
-        "vega-lite": "5.2.0",
+        "vega-lite": "5.4.0",
         "zustand": "3.6.5"
     }
 }

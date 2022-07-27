@@ -1,3 +1,4 @@
+export { InteractivitySettings } from './components/InteractivitySettings';
 export {
     IS_CROSS_FILTER_ENABLED,
     clearSelection,
@@ -23,8 +24,4 @@ export {
     getSanitisedTooltipValue,
     hidePowerBiTooltip
 } from './tooltip';
-export {
-    TDataPointHighlightComparator,
-    TDataPointHighlightStatus,
-    TDataPointSelectionStatus
-} from './types';
+export * from './types';

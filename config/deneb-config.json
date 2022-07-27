@@ -8,6 +8,7 @@
         "selectionContextMenu": true,
         "selectionDataPoint": true,
         "selectionCrossHighlight": true,
+        "dataDrilldown": false,
         "tooltipHandler": true,
         "tooltipResolveNumberFieldFormat": true,
         "useDownloadApi": false,
@@ -198,6 +199,7 @@
             "showVersionNotification": false
         },
         "editor": {
+            "provider": "jsoneditor",
             "debounceInterval": 200,
             "tabSize": 2,
             "position": "left",

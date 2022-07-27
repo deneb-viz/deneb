@@ -36,10 +36,17 @@ import { hostServices } from '../services';
 import { getState } from '../../store';
 import {
     DATASET_NAME,
+    DATASET_ROLE_DRILLDOWN,
+    DATASET_ROLE_DRILLDOWN_FLAT,
     HIGHLIGHT_COMPARATOR_SUFFIX,
     HIGHLIGHT_FIELD_SUFFIX,
     HIGHLIGHT_STATUS_SUFFIX
 } from '../../constants';
+import {
+    isDrilldownFeatureEnabled,
+    resolveDrilldownComponents,
+    resolveDrilldownFlat
+} from '../../features/dataset';
 
 /**
  * Compare two sets of dataset metadata, as well as the current state of the
@@ -65,14 +72,18 @@ const getDataRow = (
     fields: IAugmentedMetadataField[],
     values: PrimitiveValue[][],
     rowIndex: number,
-    hasHighlights: boolean
+    hasHighlights: boolean,
+    hasDrilldown: boolean
 ) =>
     reduce(
         fields,
         (row, f, fi) => {
-            if (f?.column.roles?.[DATASET_NAME]) {
-                const rawValue = castPrimitiveValue(f, values[fi][rowIndex]);
-                const fieldName = getEncodedFieldName(f.column.displayName);
+            const rawValue = castPrimitiveValue(f, values[fi][rowIndex]);
+            const fieldName = getEncodedFieldName(f.column.displayName);
+            const isDataset = f?.column.roles?.[DATASET_NAME];
+            const isDrilldown =
+                hasDrilldown && f?.column?.roles?.[DATASET_ROLE_DRILLDOWN];
+            if (isDataset) {
                 const fieldHighlight = `${fieldName}${HIGHLIGHT_FIELD_SUFFIX}`;
                 const fieldHighlightStatus = `${fieldName}${HIGHLIGHT_STATUS_SUFFIX}`;
                 const fieldHighlightComparator = `${fieldName}${HIGHLIGHT_COMPARATOR_SUFFIX}`;
@@ -91,6 +102,18 @@ const getDataRow = (
                         rawValueOriginal
                     );
                 }
+            }
+            if (isDrilldown) {
+                row[DATASET_ROLE_DRILLDOWN] = resolveDrilldownComponents(
+                    row?.[DATASET_ROLE_DRILLDOWN],
+                    rawValue,
+                    f.column.format
+                );
+                row[DATASET_ROLE_DRILLDOWN_FLAT] = resolveDrilldownFlat(
+                    row?.[DATASET_ROLE_DRILLDOWN_FLAT],
+                    rawValue,
+                    f.column.format
+                );
             }
             return row;
         },
@@ -128,6 +151,10 @@ export const getMappedDataset = (
             const dvValues = categorical?.values;
             const hasHighlights = getHighlightStatus(dvValues);
             const columns = getDatasetFieldEntries(dvCategories, dvValues);
+            const hasDrilldown =
+                isDrilldownFeatureEnabled() &&
+                columns.filter((c) => c.column.roles?.[DATASET_ROLE_DRILLDOWN])
+                    ?.length > 0;
             const fieldValues = getDatasetValueEntries(dvCategories, dvValues);
             const selections: ISelectionId[] = <ISelectionId[]>(
                 hostServices.selectionManager.getSelectionIds()
@@ -139,7 +166,8 @@ export const getMappedDataset = (
                         columns,
                         fieldValues,
                         ri,
-                        hasHighlights
+                        hasHighlights,
+                        hasDrilldown
                     );
                     const identity = createSelectionIds(
                         getDatasetFieldsInclusive(fields),
@@ -168,6 +196,7 @@ export const getMappedDataset = (
                 values
             };
         } catch (e) {
+            console.log(e);
             return empty;
         }
     }

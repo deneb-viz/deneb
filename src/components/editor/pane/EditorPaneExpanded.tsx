@@ -7,7 +7,6 @@ import {
     IStackItemStyles
 } from '@fluentui/react/lib/Stack';
 
-import EditorHeadingExpanded from './EditorHeadingExpanded';
 import EditorPanePivot from './EditorPanePivot';
 import EditorCommandBar from './EditorCommandBar';
 import EditorOperationContent from './EditorOperationContent';
@@ -54,9 +53,6 @@ const EditorPaneExpanded = () => {
                 styles={verticalStackInnerStyles}
                 tokens={verticalStackInnerTokens}
             >
-                <StackItem shrink styles={stackItemStyles}>
-                    <EditorHeadingExpanded />
-                </StackItem>
                 <StackItem shrink styles={stackItemStyles}>
                     <EditorCommandBar />
                 </StackItem>

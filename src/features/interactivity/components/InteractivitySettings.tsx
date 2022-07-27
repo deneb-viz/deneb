@@ -1,22 +1,21 @@
-import * as React from 'react';
+import React from 'react';
 
 import { Label } from '@fluentui/react/lib/Label';
 import { Link } from '@fluentui/react/lib/Link';
 import { Stack, IStackTokens } from '@fluentui/react/lib/Stack';
 
-import SelectionCheckbox from './SelectionCheckbox';
-import InteractivityCheckbox from './InteractivityCheckbox';
-import SelectionMaxDataPoints from './SelectionMaxDataPoints';
-import { i18nValue } from '../../core/ui/i18n';
-import store from '../../store';
-import { linkStyles } from '../../core/ui/fluent';
-import { hostServices } from '../../core/services';
-import { getConfig } from '../../core/utils/config';
-import { Paragraph } from '../elements/Typography';
+import { InteractivityCheckbox } from './InteractivityCheckbox';
+import { SelectionMaxDataPoints } from './SelectionMaxDataPoints';
+import { i18nValue } from '../../../core/ui/i18n';
+import store from '../../../store';
+import { linkStyles } from '../../../core/ui/fluent';
+import { hostServices } from '../../../core/services';
+import { getConfig } from '../../../core/utils/config';
+import { Paragraph } from '../../../components/elements/Typography';
 
 const stackTokens: IStackTokens = { childrenGap: 10, padding: 10 };
 
-const InteractivitySettings = () => {
+export const InteractivitySettings = () => {
     const { enableSelection } = store((state) => state.visualSettings.vega),
         { providerResources } = getConfig(),
         openInteractivityLink = () => {
@@ -28,19 +27,10 @@ const InteractivitySettings = () => {
         <>
             <Label>{i18nValue('Objects_Vega_Interactivity')}</Label>
             <Stack tokens={stackTokens}>
-                <InteractivityCheckbox
-                    propertyName='enableTooltips'
-                    i18nLabelKey='Objects_Vega_EnableTooltips'
-                />
-                <InteractivityCheckbox
-                    propertyName='enableContextMenu'
-                    i18nLabelKey='Objects_Vega_EnableContextMenu'
-                />
-                <InteractivityCheckbox
-                    propertyName='enableHighlight'
-                    i18nLabelKey='Objects_Vega_EnableHighlight'
-                />
-                <SelectionCheckbox />
+                <InteractivityCheckbox type='tooltip' />
+                <InteractivityCheckbox type='context' />
+                <InteractivityCheckbox type='highlight' />
+                <InteractivityCheckbox type='select' />
             </Stack>
             <Paragraph>
                 {i18nValue('Assistive_Text_Interactivity')}{' '}
@@ -63,5 +53,3 @@ const InteractivitySettings = () => {
         </>
     );
 };
-
-export default InteractivitySettings;

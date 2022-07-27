@@ -3,10 +3,10 @@ import { Pivot, PivotItem } from '@fluentui/react/lib/Pivot';
 
 import { useStoreProp } from '../../../store';
 import { openEditorPivotItem } from '../../../core/ui/commands';
-import { TEditorRole } from '../../../core/services/JsonEditorServices';
 import { i18nValue } from '../../../core/ui/i18n';
 import { resolveEditorPanePivotAria } from '../../../core/ui/aria';
 import { reactLog } from '../../../core/utils/reactLog';
+import { TEditorRole } from '../../../features/json-editor';
 
 const EditorPanePivot = () => {
     const editorSelectedOperation = useStoreProp<TEditorRole>(
