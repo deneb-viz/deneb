@@ -95,12 +95,9 @@ export const handleCrossFilterEvent = (event: ScenegraphEvent, item: Item) => {
         const mouseEvent: MouseEvent = <MouseEvent>window.event;
         const data = resolveDataFromItem(item);
         const identities = getIdentitiesFromData(data);
-        mouseEvent && mouseEvent.preventDefault();
+        mouseEvent?.preventDefault();
         hidePowerBiTooltip();
         switch (true) {
-            case isEventTargetParam(mouseEvent): {
-                return;
-            }
             case isSelectionLimitExceeded(identities): {
                 dispatchCrossFilterAbort(true);
                 return;
@@ -116,12 +113,6 @@ export const handleCrossFilterEvent = (event: ScenegraphEvent, item: Item) => {
         }
     }
 };
-
-/**
- * Determine if the event comes from a param in the view.
- */
-const isEventTargetParam = (event: MouseEvent) =>
-    (<HTMLInputElement>event?.target)?.matches('input, select');
 
 /**
  * Determine if the window is in multi-select state, i.e. ctrl key is held
