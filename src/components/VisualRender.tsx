@@ -1,8 +1,8 @@
 import React, { memo } from 'react';
 import { createClassFromSpec, VegaLite } from 'react-vega';
 import * as Vega from 'vega';
-import { deepEqual } from 'vega-lite';
 import cloneDeep from 'lodash/cloneDeep';
+import isEqual from 'lodash/isEqual';
 
 import { useStoreProp, useStoreVegaProp } from '../store';
 import SpecificationError from './status/SpecificationError';
@@ -45,7 +45,7 @@ const areEqual = (
     nextProps: IVisualRenderProps
 ) => {
     reactLog('[VisualRender]', 'prevProps', prevProps, 'nextProps', nextProps);
-    const specificationMatch = deepEqual(
+    const specificationMatch = isEqual(
         prevProps.specification,
         nextProps.specification
     );
@@ -57,10 +57,10 @@ const areEqual = (
         '  |  ',
         JSON.stringify(nextProps.specification)
     );
-    const configMatch = deepEqual(prevProps.config, nextProps.config);
+    const configMatch = isEqual(prevProps.config, nextProps.config);
 
     reactLog('[VisualRender] Config match', configMatch);
-    const dataMatch = deepEqual(prevProps.data, nextProps.data);
+    const dataMatch = isEqual(prevProps.data, nextProps.data);
 
     reactLog(
         '[VisualRender] Data match',
@@ -69,19 +69,16 @@ const areEqual = (
         '  |  ',
         JSON.stringify(nextProps.data)
     );
-    const providerMatch = deepEqual(prevProps.provider, nextProps.provider);
+    const providerMatch = isEqual(prevProps.provider, nextProps.provider);
 
     reactLog('[VisualRender] Provider match', providerMatch);
-    const enableTooltipsMatch = deepEqual(
+    const enableTooltipsMatch = isEqual(
         prevProps.enableTooltips,
         nextProps.enableTooltips
     );
 
     reactLog('[VisualRender] Enable tooltips match', enableTooltipsMatch);
-    const renderModeMatch = deepEqual(
-        prevProps.renderMode,
-        nextProps.renderMode
-    );
+    const renderModeMatch = isEqual(prevProps.renderMode, nextProps.renderMode);
 
     reactLog('[VisualRender] Render mode match', renderModeMatch);
     const result =
