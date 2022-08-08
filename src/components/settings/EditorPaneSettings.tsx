@@ -1,10 +1,10 @@
-import * as React from 'react';
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { Separator } from '@fluentui/react/lib/Separator';
 
 import ProviderSettings from './ProviderSettings';
 import RenderModeSettings from './RenderModeSettings';
-import InteractivitySettings from './InteractivitySettings';
+import { InteractivitySettings } from '../../features/interactivity';
 import { fourd3d3d } from '../../core/ui/commands';
 
 const EditorPaneSettings: React.FC = () => {

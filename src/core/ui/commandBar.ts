@@ -24,14 +24,15 @@ import {
     repairFormatJson,
     handleApply,
     handleAutoApply,
-    openMapFieldsDialog
+    openMapFieldsDialog,
+    handleEditorPane
 } from './commands';
-import { getAutoApplyIcon } from './icons';
+import { getAutoApplyIcon, getEditorHeadingIcon } from './icons';
 import { resolveAutoApplyLabel } from './labels';
 
 import { theme } from './fluent';
 import { i18nValue } from './i18n';
-import { useStoreProp } from '../../store';
+import { getState, useStoreProp } from '../../store';
 import { TSpecStatus } from '../../features/specification';
 
 const commandBarStyles: ICommandBarStyles = {
@@ -131,7 +132,8 @@ const getCommandBarOverflowItems = (): ICommandBarItemProps[] => [];
 const getCommandBarFarItems = (): ICommandBarItemProps[] => [
     getNewSpecCommandItem(),
     getExportSpecCommandItem(),
-    getHelpCommandItem()
+    getHelpCommandItem(),
+    getCollapseCommandItem()
 ];
 
 const getExportSpecCommandItem = (): ICommandBarItemProps => {
@@ -148,10 +150,25 @@ const getExportSpecCommandItem = (): ICommandBarItemProps => {
     };
 };
 
+const getCollapseCommandItem = (): ICommandBarItemProps => ({
+    key: 'collapse',
+    text: i18nValue('Tooltip_Collapse_Editor_Pane'),
+    iconOnly: true,
+    ariaLabel: i18nValue('Tooltip_Collapse_Editor_Pane'),
+    iconProps: {
+        iconName: getEditorHeadingIcon(
+            getState().visualSettings.editor.position,
+            true
+        )
+    },
+    buttonStyles: commandBarButtonStyles,
+    onClick: handleEditorPane
+});
+
 const getHelpCommandItem = (): ICommandBarItemProps => ({
     key: 'help',
     text: i18nValue('Button_Help'),
-    ariaLabel: i18nValue('Button_Reset'),
+    ariaLabel: i18nValue('Button_Help'),
     iconOnly: true,
     iconProps: { iconName: 'Help' },
     buttonStyles: commandBarButtonStyles,

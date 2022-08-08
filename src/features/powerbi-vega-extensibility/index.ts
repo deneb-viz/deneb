@@ -1,3 +1,4 @@
+export { loader as getPowerBiVegaLoader } from './loader';
 export {
     registerPowerBiCustomExpressions,
     registerPowerBiCustomSchemes

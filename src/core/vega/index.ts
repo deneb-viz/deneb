@@ -6,7 +6,6 @@ export {
     TSpecRenderMode,
     determineProviderFromSpec,
     editorConfigOverLoad,
-    getEditorSchema,
     getParsedConfigFromSettings,
     getVegaProvider,
     getVegaProvideri18n,
@@ -15,8 +14,7 @@ export {
     getViewConfig,
     getViewDataset,
     getViewSpec,
-    handleNewView,
-    resolveLoaderLogic
+    handleNewView
 };
 
 import cloneDeep from 'lodash/cloneDeep';
@@ -29,7 +27,6 @@ import { TopLevelSpec } from 'vega-lite';
 import { hostServices, loggerServices } from '../services';
 import { cleanParse } from '../utils/json';
 import { vegaLiteValidator, vegaValidator } from './validation';
-import { TEditorRole } from '../services/JsonEditorServices';
 import {
     getState,
     useStoreDataset,
@@ -40,24 +37,12 @@ import { getConfig, providerVersions } from '../utils/config';
 import { getPatchedVegaSpec } from './vegaUtils';
 import { getPatchedVegaLiteSpec } from './vegaLiteUtils';
 
-import { isFeatureEnabled } from '../utils/features';
-
 import { resolveSvgFilter } from '../ui/svgFilter';
 import { i18nValue } from '../ui/i18n';
 import {
     bindContextMenuEvents,
     bindCrossFilterEvents
 } from '../../features/interactivity';
-import { BASE64_BLANK_IMAGE } from '../../features/template';
-
-/**
- * Defines a JSON schema by provider and role, so we can dynamically apply based on provider.
- */
-interface IJSonSchema {
-    provider: TSpecProvider;
-    role: TEditorRole;
-    schema: Object;
-}
 
 /**
  * Interface specifying a flexible key/value pair object, which is supplied from Vega's tooltip handler and usually casted as `any`.
@@ -75,22 +60,6 @@ type TSpecProvider = 'vega' | 'vegaLite';
  * Used to constrain Vega rendering to supported types.
  */
 type TSpecRenderMode = 'svg' | 'canvas';
-
-/**
- * Schemas we wish to resolve when using the editor.
- */
-const editorSchemas: IJSonSchema[] = [
-    {
-        provider: 'vega',
-        role: 'spec',
-        schema: vegaValidator.schema
-    },
-    {
-        provider: 'vegaLite',
-        role: 'spec',
-        schema: vegaLiteValidator.schema
-    }
-];
 
 const editorConfigOverLoad = {
     background: null, // so we can defer to the Power BI background, if applied
@@ -114,13 +83,6 @@ const determineProviderFromSpec = (
     }
     return null;
 };
-
-/**
- * Allows an editor to dynamically swap out schema based on provider & role.
- */
-const getEditorSchema = (provider: TSpecProvider, role: TEditorRole) =>
-    editorSchemas.find((s) => s.provider === provider && s.role === role)
-        ?.schema || null;
 
 /**
  * Convenience function to get current Vega provider from persisted properties.
@@ -202,35 +164,5 @@ const handleNewView = (newView: View) => {
         hostServices.renderingFinished();
     });
 };
-
-/**
- * Create a custom Vega loader for the visual. We do a replace on URIs in the
- * spec to prevent, but this doubly-ensures that nothing can be loaded.
- */
-const resolveLoaderLogic = () => {
-    const loader = Vega.loader();
-    if (!isFeatureEnabled('enableExternalUri')) {
-        loader.load = (uri, options) => {
-            const href = (isDataUri(uri) && uri) || '';
-            return Promise.resolve(href);
-        };
-        loader.sanitize = (uri, options) => {
-            const href = (isDataUri(uri) && uri) || BASE64_BLANK_IMAGE;
-            return Promise.resolve({
-                href
-            });
-        };
-    }
-    return loader;
-};
-
-/**
- * Test that supplied URI matches the data: protocol and should be whitelisted
- * by the loader.
- */
-const isDataUri = (uri: string) =>
-    !!uri.match(
-        /^\s*data:([a-z]+\/[a-z]+(;[a-z\-]+\=[a-z\-]+)?)?(;base64)?,[a-z0-9\!\$\&\'\,\(\)\*\+\,\;\=\-\.\_\~\:\@\/\?\%\s]*\s*$/i
-    );
 
 const propertyDefaults = getConfig().propertyDefaults.vega;
