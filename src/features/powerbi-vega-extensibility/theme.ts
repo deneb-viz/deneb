@@ -143,6 +143,6 @@ const themeSecondLevelElement = () =>
 const themeDivergentMin = () =>
     <string>hostServices.colorPalette?.['minimum']?.value;
 const themeDivergentMed = () =>
-    <string>hostServices.colorPalette?.['neutral']?.value;
+    <string>hostServices.colorPalette?.['center']?.value;
 const themeDivergentMax = () =>
     <string>hostServices.colorPalette?.['maximium' || 'maximum']?.value; // There's a typo in the palette, so this covers us in case they ever fix it
