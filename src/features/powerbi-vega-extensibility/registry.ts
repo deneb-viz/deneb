@@ -6,6 +6,7 @@ import {
     divergentPalette,
     divergentPaletteMed,
     getThemeColorByIndex,
+    getThemeColorByName,
     ordinalPalette,
     shadeColor
 } from './theme';
@@ -16,7 +17,11 @@ import { IPowerBIExpression, IPowerBISchemes } from './types';
  * adjust its shade by a percentage.
  */
 const pbiColor = (value: string | number, shadePercent: number = 0) =>
-    shadeColor(getThemeColorByIndex(parseInt(`${value}`) || 0), shadePercent);
+    shadeColor(
+        getThemeColorByName(`${value}`) ||
+            getThemeColorByIndex(parseInt(`${value}`) || 0),
+        shadePercent
+    );
 
 /**
  * For the supplied value, and format string, apply Power BI-specific

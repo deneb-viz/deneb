@@ -94,6 +94,11 @@ export const getThemeColorByIndex = (index: number) =>
     hostServices.colorPalette?.['colors']?.[index]?.value;
 
 /**
+ * Helper function to extract palette color by object name.
+ */
+export const getThemeColorByName = (name: string) => namedColors()[name];
+
+/**
  * Adjust a specified hex color in a similar way that Power BI does it to its
  * own themes.
  */
@@ -146,3 +151,26 @@ const themeDivergentMed = () =>
     <string>hostServices.colorPalette?.['center']?.value;
 const themeDivergentMax = () =>
     <string>hostServices.colorPalette?.['maximium' || 'maximum']?.value; // There's a typo in the palette, so this covers us in case they ever fix it
+const themeSentimentNegative = () =>
+    <string>hostServices.colorPalette?.['negative']?.value;
+const themeSentimentPositive = () =>
+    <string>hostServices.colorPalette?.['positive']?.value;
+const themeSentimentNeutral = () =>
+    <string>hostServices.colorPalette?.['neutral']?.value;
+
+/**
+ * Named colors from the theme, that we register for use with `pbiColor`. In
+ * most cases, just passing through the name will work, but we wrap this to
+ * provide a layer where we can manage situations such as the typo for maximum
+ * in the (unsupported) `host.colorPalette` object.
+ */
+export const namedColors = () => ({
+    max: themeDivergentMax(),
+    min: themeDivergentMin(),
+    middle: themeDivergentMed(),
+    negative: themeSentimentNegative(),
+    bad: themeSentimentNegative(),
+    positive: themeSentimentPositive(),
+    good: themeSentimentPositive(),
+    neutral: themeSentimentNeutral()
+});
