@@ -4,7 +4,6 @@ export {
     IVegaViewDatum,
     TSpecProvider,
     TSpecRenderMode,
-    determineProviderFromSpec,
     editorConfigOverLoad,
     getParsedConfigFromSettings,
     getVegaProvider,
@@ -64,24 +63,6 @@ type TSpecRenderMode = 'svg' | 'canvas';
 const editorConfigOverLoad = {
     background: null, // so we can defer to the Power BI background, if applied
     customFormatTypes: true
-};
-
-/**
- * For the supplied spec, parse it to determine which provider we should use when importing it (precedence is Vega-Lite), and will then
- * fall-back to Vega if VL is not valid.
- */
-const determineProviderFromSpec = (
-    spec: Spec | TopLevelSpec
-): TSpecProvider => {
-    const vlValid = vegaLiteValidator(spec);
-    if (vlValid) {
-        return 'vegaLite';
-    }
-    const vValid = vegaValidator(spec);
-    if (vValid) {
-        return 'vega';
-    }
-    return null;
 };
 
 /**

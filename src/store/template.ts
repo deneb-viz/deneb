@@ -307,7 +307,7 @@ const handleTemplateImportSuccess = (
     templateFile: payload.templateFile,
     templateFileRawContent: payload.templateFileRawContent,
     templateToApply: payload.templateToApply,
-    specProvider:
+    templateSpecProvider:
         payload.provider ||
         (<IDenebTemplateMetadata>payload.templateToApply.usermeta)?.deneb
             ?.provider

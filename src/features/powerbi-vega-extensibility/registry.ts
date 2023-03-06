@@ -1,3 +1,4 @@
+import { ValueFormatterOptions } from 'powerbi-visuals-utils-formattingutils/lib/src/valueFormatter';
 import { expressionFunction, scheme } from 'vega';
 import { fillPatternServices, hostServices } from '../../core/services';
 
@@ -6,6 +7,7 @@ import {
     divergentPalette,
     divergentPaletteMed,
     getThemeColorByIndex,
+    getThemeColorByName,
     ordinalPalette,
     shadeColor
 } from './theme';
@@ -16,14 +18,21 @@ import { IPowerBIExpression, IPowerBISchemes } from './types';
  * adjust its shade by a percentage.
  */
 const pbiColor = (value: string | number, shadePercent: number = 0) =>
-    shadeColor(getThemeColorByIndex(parseInt(`${value}`) || 0), shadePercent);
+    shadeColor(
+        getThemeColorByName(`${value}`) ||
+            getThemeColorByIndex(parseInt(`${value}`) || 0),
+        shadePercent
+    );
 
 /**
  * For the supplied value, and format string, apply Power BI-specific
  * formatting to it.
  */
-const pbiFormat = (datum: any, params: string) =>
-    powerBiFormatValue(datum, `${params}`);
+const pbiFormat = (
+    datum: any,
+    params: string,
+    options: ValueFormatterOptions = {}
+) => powerBiFormatValue(datum, `${params}`, options);
 
 /**
  * Obtain a dynamic version of a pre-defined pattern, with a custom foregroubd

@@ -7,7 +7,7 @@ import set from 'lodash/set';
 
 import * as schema_v1 from '../../../schema/deneb-template-usermeta-v1.json';
 import { getJsonAsIndentedString } from '../../core/utils/json';
-import { determineProviderFromSpec, TSpecProvider } from '../../core/vega';
+import { TSpecProvider } from '../../core/vega';
 import { getState } from '../../store';
 import {
     IDenebTemplateMetadata,
@@ -146,7 +146,7 @@ const onReaderLoad = (event: ProgressEvent<FileReader>, templateFile: File) => {
         return;
     }
     const ajv = new Ajv({ format: 'full' });
-    const provider = determineProviderFromSpec(template);
+    const provider: TSpecProvider = template?.usermeta?.['deneb']?.['provider'];
     const templateToApply = getTemplateResolvedForLegacyVersions(
         provider,
         template
