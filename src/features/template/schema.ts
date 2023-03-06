@@ -96,7 +96,7 @@ export interface ITemplateDatasetField {
      */
     key: string;
     /**
-     * @maxLength 30
+     * @maxLength 150
      */
     name: string;
     /**
