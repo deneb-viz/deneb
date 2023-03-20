@@ -82,7 +82,7 @@
                     "description": "Specifies whether a column or measure (or either) should be used for this placeholder."
                 },
                 "name": {
-                    "maxLength": 30,
+                    "maxLength": 150,
                     "type": "string"
                 },
                 "type": {
