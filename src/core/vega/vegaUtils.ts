@@ -8,7 +8,7 @@ export { getPatchedVegaSpec };
 
 /**
  * Apply specific patching operations to a supplied spec. This applies any
- * specific signals that we don't necesairly want the creator to worry about,
+ * specific signals that we don't necessarily want the creator to worry about,
  * but will ensure that the visual functions as expected. We also patch in the
  * dataset, because we've found that binding this via react-vega causes some
  * issues with the data being available for certain calculations. This
