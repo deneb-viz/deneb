@@ -8,6 +8,7 @@ import StatusHeaderSection from './StatusHeaderSection';
 import StatusLayoutStack from './StatusLayoutStack';
 import StatusLayoutStackItem from './StatusLayoutStackItem';
 import { i18nValue } from '../../core/ui/i18n';
+import { powerBiFormatValue } from '../../utils';
 
 const DataFetching = () => {
     const { datasetRowsLoaded } = store((state) => state);
@@ -17,9 +18,10 @@ const DataFetching = () => {
                 <StatusHeaderSection icon='cog'>
                     <Heading>{i18nValue('Fetching_Data')}</Heading>
                     <Progress
-                        description={`${datasetRowsLoaded} ${i18nValue(
-                            'Fetching_Data_Progress_Suffix'
-                        )}`}
+                        description={`${powerBiFormatValue(
+                            datasetRowsLoaded,
+                            '#,##0'
+                        )} ${i18nValue('Fetching_Data_Progress_Suffix')}`}
                     />
                 </StatusHeaderSection>
                 <StatusLayoutStackItem verticalFill>
