@@ -59,27 +59,61 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
         datasetViewIsValid: false,
         datasetViewObjects: {},
         confirmDatasetLoadComplete: () =>
-            set((state) => handleConfirmDatasetLoadComplete(state)),
+            set(
+                (state) => handleConfirmDatasetLoadComplete(state),
+                false,
+                'confirmDatasetLoadComplete'
+            ),
         resetDatasetLoadInformation: (canFetchMore) =>
-            set((state) =>
-                handleResetDatasetLoadInformation(state, canFetchMore)
+            set(
+                (state) =>
+                    handleResetDatasetLoadInformation(state, canFetchMore),
+                false,
+                'resetDatasetLoadInformation'
             ),
         updateDataset: (payload) =>
-            set((state) => handleUpdateDataset(state, payload)),
+            set(
+                (state) => handleUpdateDataset(state, payload),
+                false,
+                'updateDataset'
+            ),
         updateDatasetLoadInformation: (count) =>
-            set((state) => handleUpdateDataLoadInformation(state, count)),
+            set(
+                (state) => handleUpdateDataLoadInformation(state, count),
+                false,
+                'updateDatasetLoadInformation'
+            ),
         updateDatasetProcessingStage: (stage) =>
-            set((state) => handleUpdateDatasetProcessingStage(state, stage)),
+            set(
+                (state) => handleUpdateDatasetProcessingStage(state, stage),
+                false,
+                'updateDatasetProcessingStage'
+            ),
         updateDatasetSelectors: (selectors) =>
-            set((state) => handleUpdateDatasetSelectors(state, selectors)),
+            set(
+                (state) => handleUpdateDatasetSelectors(state, selectors),
+                false,
+                'updateDatasetSelectors'
+            ),
         updateDatasetSelectionAbortStatus: (status) =>
-            set((state) =>
-                handleUpdateDatasetSelectionAbortStatus(state, status)
+            set(
+                (state) =>
+                    handleUpdateDatasetSelectionAbortStatus(state, status),
+                false,
+                'updateDatasetSelectionAbortStatus'
             ),
         updateDatasetViewFlags: (payload) =>
-            set((state) => handleUpdateDatasetViewFlags(state, payload)),
+            set(
+                (state) => handleUpdateDatasetViewFlags(state, payload),
+                false,
+                'updateDatasetViewFlags'
+            ),
         updateDatasetViewInvalid: () =>
-            set((state) => handleUpdateDatasetViewInvalid(state))
+            set(
+                (state) => handleUpdateDatasetViewInvalid(state),
+                false,
+                'updateDatasetViewInvalid'
+            )
     };
 
 export const createDatasetSlice: StateCreator<

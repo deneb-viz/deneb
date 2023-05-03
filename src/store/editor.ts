@@ -21,6 +21,8 @@ import { getFieldsInUseFromSpec } from '../features/template';
 import { ICompiledSpec, IFixResult } from '../features/specification';
 import { TEditorRole } from '../features/json-editor';
 
+// tslint:disable:max-func-body-length
+
 export interface IEditorSlice {
     editorAutoApply: boolean;
     editorCanAutoApply: boolean;
@@ -118,56 +120,151 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
         editorView: null,
         editorZoomLevel: getConfig().zoomLevel.default,
         recordLogErrorMain: (message) =>
-            set((state) => handleRecordLogErrorMain(state, message)),
+            set(
+                (state) => handleRecordLogErrorMain(state, message),
+                false,
+                'recordLogErrorMain'
+            ),
         recordLogError: (message) =>
-            set((state) => handleRecordLogError(state, message)),
+            set(
+                (state) => handleRecordLogError(state, message),
+                false,
+                'recordLogError'
+            ),
         recordLogWarn: (message) =>
-            set((state) => handleRecordLogWarn(state, message)),
+            set(
+                (state) => handleRecordLogWarn(state, message),
+                false,
+                'recordLogWarn'
+            ),
         renewEditorFieldsInUse: () =>
-            set((state) => handleRenewEditorFieldsInUse(state)),
+            set(
+                (state) => handleRenewEditorFieldsInUse(state),
+                false,
+                'renewEditorFieldsInUse'
+            ),
         setEditorFixErrorDismissed: () =>
-            set((state) => handleSetEditorFixErrorDismissed(state)),
+            set(
+                (state) => handleSetEditorFixErrorDismissed(state),
+                false,
+                'setEditorFixErrorDismissed'
+            ),
         toggleEditorAutoApplyStatus: () =>
-            set((state) => handleToggleEditorAutoApplyStatus(state)),
-        toggleEditorPane: () => set((state) => handleToggleEditorPane(state)),
+            set(
+                (state) => handleToggleEditorAutoApplyStatus(state),
+                false,
+                'toggleEditorAutoApplyStatus'
+            ),
+        toggleEditorPane: () =>
+            set(
+                (state) => handleToggleEditorPane(state),
+                false,
+                'toggleEditorPane'
+            ),
         togglePreviewDebugPane: () =>
-            set((state) => handleTogglePreviewDebugPane(state)),
+            set(
+                (state) => handleTogglePreviewDebugPane(state),
+                false,
+                'togglePreviewDebugPane'
+            ),
         updateEditorDirtyStatus: (dirty) =>
-            set((state) => handleUpdateEditorDirtyStatus(state, dirty)),
+            set(
+                (state) => handleUpdateEditorDirtyStatus(state, dirty),
+                false,
+                'updateEditorDirtyStatus'
+            ),
         updateEditorFieldMapping: (payload) =>
-            set((state) => handleUpdateEditorFieldMappings(state, payload)),
+            set(
+                (state) => handleUpdateEditorFieldMappings(state, payload),
+                false,
+                'updateEditorFieldMapping'
+            ),
         updateEditorExportDialogVisible: (visible) =>
-            set((state) =>
-                handleUpdateEditorExportDialogVisible(state, visible)
+            set(
+                (state) =>
+                    handleUpdateEditorExportDialogVisible(state, visible),
+                false,
+                'updateEditorExportDialogVisible'
             ),
         updateEditorMapDialogVisible: (visible) =>
-            set((state) => handleUpdateEditorMapDialogVisible(state, visible)),
+            set(
+                (state) => handleUpdateEditorMapDialogVisible(state, visible),
+                false,
+                'updateEditorMapDialogVisible'
+            ),
         updateEditorFixStatus: (payload) =>
-            set((state) => handleUpdateEditorFixStatus(state, payload)),
+            set(
+                (state) => handleUpdateEditorFixStatus(state, payload),
+                false,
+                'updateEditorFixStatus'
+            ),
         updateEditorPaneWidth: (payload) =>
-            set((state) => handleUpdateEditorPaneWidth(state, payload)),
+            set(
+                (state) => handleUpdateEditorPaneWidth(state, payload),
+                false,
+                'updateEditorPaneWidth'
+            ),
         updateEditorPreviewAreaHeight: (height) =>
-            set((state) => handleUpdateEditorPreviewAreaHeight(state, height)),
+            set(
+                (state) => handleUpdateEditorPreviewAreaHeight(state, height),
+                false,
+                'updateEditorPreviewAreaHeight'
+            ),
         updateEditorPreviewAreaWidth: () =>
-            set((state) => handleUpdateEditorPreviewAreaWidth(state)),
+            set(
+                (state) => handleUpdateEditorPreviewAreaWidth(state),
+                false,
+                'updateEditorPreviewAreaWidth'
+            ),
         updateEditorPreviewDebugIsExpanded: (value) =>
-            set((state) =>
-                handleUpdateEditorPreviewDebugIsExpanded(state, value)
+            set(
+                (state) =>
+                    handleUpdateEditorPreviewDebugIsExpanded(state, value),
+                false,
+                'updateEditorPreviewDebugIsExpanded'
             ),
         updateEditorSelectedOperation: (role) =>
-            set((state) => handleUpdateEditorSelectedOperation(state, role)),
+            set(
+                (state) => handleUpdateEditorSelectedOperation(state, role),
+                false,
+                'updateEditorSelectedOperation'
+            ),
         updateEditorSelectedPreviewRole: (role) =>
-            set((state) => handleUpdateEditorSelectedPreviewRole(state, role)),
+            set(
+                (state) => handleUpdateEditorSelectedPreviewRole(state, role),
+                false,
+                'updateEditorSelectedPreviewRole'
+            ),
         updateEditorSpec: (payload) =>
-            set((state) => handleUpdateEditorSpec(state, payload)),
+            set(
+                (state) => handleUpdateEditorSpec(state, payload),
+                false,
+                'updateEditorSpec'
+            ),
         updateEditorStagedConfig: (config) =>
-            set((state) => handleUpdateEditorStagedConfig(state, config)),
+            set(
+                (state) => handleUpdateEditorStagedConfig(state, config),
+                false,
+                'updateEditorStagedConfig'
+            ),
         updateEditorStagedSpec: (spec) =>
-            set((state) => handleUpdateEditorStagedSpec(state, spec)),
+            set(
+                (state) => handleUpdateEditorStagedSpec(state, spec),
+                false,
+                'updateEditorStagedSpec'
+            ),
         updateEditorView: (view) =>
-            set((state) => handleupdateEditorView(state, view)),
+            set(
+                (state) => handleupdateEditorView(state, view),
+                false,
+                'updateEditorView'
+            ),
         updateEditorZoomLevel: (zoomLevel) =>
-            set((state) => handleupdateEditorZoomLevel(state, zoomLevel))
+            set(
+                (state) => handleupdateEditorZoomLevel(state, zoomLevel),
+                false,
+                'updateEditorZoomLevel'
+            )
     };
 
 export const createEditorSlice: StateCreator<

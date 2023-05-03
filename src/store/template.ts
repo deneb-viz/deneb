@@ -28,6 +28,8 @@ import {
 } from '../features/visual-create';
 import { getTemplateWithBasePowerBiTheme } from '../features/powerbi-vega-extensibility';
 
+// tslint:disable:max-func-body-length
+
 export interface ITemplateSlice {
     templateSelectedIndex: number;
     templateFile: File;
@@ -94,45 +96,95 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
             templateSpecProvider: 'vegaLite',
             templateProvider: 'vegaLite',
             initializeImportExport: () =>
-                set((state) => handleInitializeImportExport(state)),
+                set(
+                    (state) => handleInitializeImportExport(state),
+                    false,
+                    'initializeImportExport'
+                ),
             syncTemplateExportDataset: (payload) =>
-                set((state) => handleSyncTemplateExportDataset(state, payload)),
+                set(
+                    (state) => handleSyncTemplateExportDataset(state, payload),
+                    false,
+                    'syncTemplateExportDataset'
+                ),
             updateTemplatePreviewImage: (payload) =>
-                set((state) =>
-                    handleUpdateTemplatePreviewImage(state, payload)
+                set(
+                    (state) => handleUpdateTemplatePreviewImage(state, payload),
+                    false,
+                    'updateTemplatePreviewImage'
                 ),
             updateTemplatePlaceholder: (payload) =>
-                set((state) => handleUpdateTemplatePlaceholder(state, payload)),
+                set(
+                    (state) => handleUpdateTemplatePlaceholder(state, payload),
+                    false,
+                    'updateTemplatePlaceholder'
+                ),
             updateTemplateExportPropertyBySelector: (payload) =>
-                set((state) =>
-                    handleUpdateTemplateExportPropertyBySelector(state, payload)
+                set(
+                    (state) =>
+                        handleUpdateTemplateExportPropertyBySelector(
+                            state,
+                            payload
+                        ),
+                    false,
+                    'updateTemplateExportPropertyBySelector'
                 ),
             updateSelectedExportOperation: (templateSelectedExportOperation) =>
-                set((state) =>
-                    handleUpdateSelectedExportOperation(
-                        state,
-                        templateSelectedExportOperation
-                    )
+                set(
+                    (state) =>
+                        handleUpdateSelectedExportOperation(
+                            state,
+                            templateSelectedExportOperation
+                        ),
+                    false,
+                    'updateSelectedExportOperation'
                 ),
             updateSelectedTemplateProvider: (templateProvider) =>
-                set((state) =>
-                    handleUpdateSelectedTemplateProvider(
-                        state,
-                        templateProvider
-                    )
+                set(
+                    (state) =>
+                        handleUpdateSelectedTemplateProvider(
+                            state,
+                            templateProvider
+                        ),
+                    false,
+                    'updateSelectedTemplateProvider'
                 ),
             updateSelectedTemplate: (index) =>
-                set((state) => handleUpdateSelectedTemplate(state, index)),
+                set(
+                    (state) => handleUpdateSelectedTemplate(state, index),
+                    false,
+                    'updateSelectedTemplate'
+                ),
             updateTemplateExportError: (message) =>
-                set((state) => handleTemplateExportError(state, message)),
+                set(
+                    (state) => handleTemplateExportError(state, message),
+                    false,
+                    'updateTemplateExportError'
+                ),
             updateTemplateExportState: (exportState) =>
-                set((state) => handleTemplateExportState(state, exportState)),
+                set(
+                    (state) => handleTemplateExportState(state, exportState),
+                    false,
+                    'updateTemplateExportState'
+                ),
             updateTemplateImportError: (payload) =>
-                set((state) => handleTemplateImportError(state, payload)),
+                set(
+                    (state) => handleTemplateImportError(state, payload),
+                    false,
+                    'updateTemplateImportError'
+                ),
             updateTemplateImportState: (importState) =>
-                set((state) => handleTemplateImportState(state, importState)),
+                set(
+                    (state) => handleTemplateImportState(state, importState),
+                    false,
+                    'updateTemplateImportState'
+                ),
             updateTemplateImportSuccess: (payload) =>
-                set((state) => handleTemplateImportSuccess(state, payload))
+                set(
+                    (state) => handleTemplateImportSuccess(state, payload),
+                    false,
+                    'updateTemplateImportSuccess'
+                )
         },
         ...templates
     };

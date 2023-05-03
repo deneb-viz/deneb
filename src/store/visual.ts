@@ -52,9 +52,17 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
         visualViewportReport: defaultViewport,
         visualViewportVega: defaultViewport,
         setVisual4d3d3d: (status) =>
-            set((state) => handleSetVisual4d3d3d(state, status)),
+            set(
+                (state) => handleSetVisual4d3d3d(state, status),
+                false,
+                'setVisual4d3d3d'
+            ),
         setVisualUpdate: (payload) =>
-            set((state) => handleSetVisualUpdate(state, payload))
+            set(
+                (state) => handleSetVisualUpdate(state, payload),
+                false,
+                'setVisualUpdate'
+            )
     };
 
 export const createVisualSlice: StateCreator<
