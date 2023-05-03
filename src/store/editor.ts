@@ -1,4 +1,5 @@
-import { GetState, PartialState, SetState } from 'zustand';
+import { StateCreator } from 'zustand';
+import { NamedSet } from 'zustand/middleware';
 import isEqual from 'lodash/isEqual';
 import reduce from 'lodash/reduce';
 import uniqWith from 'lodash/uniqWith';
@@ -77,10 +78,7 @@ export interface IEditorSlice {
     updateEditorZoomLevel: (zoomLevel: number) => void;
 }
 
-export const createEditorSlice = (
-    set: SetState<TStoreState>,
-    get: GetState<TStoreState>
-) =>
+const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IEditorSlice>{
         editorAutoApply: false,
         editorCanAutoApply: true,
@@ -172,6 +170,13 @@ export const createEditorSlice = (
             set((state) => handleupdateEditorZoomLevel(state, zoomLevel))
     };
 
+export const createEditorSlice: StateCreator<
+    TStoreState,
+    [['zustand/devtools', never]],
+    [],
+    IEditorSlice
+> = sliceStateInitializer;
+
 export interface IEditorPaneUpdatePayload {
     editorPaneWidth: number;
     editorPaneExpandedWidth: number;
@@ -190,7 +195,7 @@ export interface IEditorSpecUpdatePayload {
 
 const handleRenewEditorFieldsInUse = (
     state: TStoreState
-): PartialState<TStoreState, never, never, never, never> => {
+): Partial<TStoreState> => {
     const { fields } = state.dataset;
     const editorFieldsInUse = getFieldsInUseFromSpec(
         fields,
@@ -211,27 +216,27 @@ const handleRenewEditorFieldsInUse = (
 const handleRecordLogWarn = (
     state: TStoreState,
     message: string
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     editorLogWarns: uniqWith([...state.editorLogWarns, message], isEqual)
 });
 
 const handleRecordLogError = (
     state: TStoreState,
     message: string
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     editorLogErrors: uniqWith([...state.editorLogErrors, message], isEqual)
 });
 
 const handleRecordLogErrorMain = (
     state: TStoreState,
     message: string
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     editorLogError: message
 });
 
 const handleSetEditorFixErrorDismissed = (
     state: TStoreState
-): PartialState<TStoreState, never, never, never, never> => {
+): Partial<TStoreState> => {
     return {
         editorFixResult: {
             ...state.editorFixResult,
@@ -242,13 +247,11 @@ const handleSetEditorFixErrorDismissed = (
 
 const handleToggleEditorAutoApplyStatus = (
     state: TStoreState
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     editorAutoApply: !state.editorAutoApply
 });
 
-const handleToggleEditorPane = (
-    state: TStoreState
-): PartialState<TStoreState, never, never, never, never> => {
+const handleToggleEditorPane = (state: TStoreState): Partial<TStoreState> => {
     const newExpansionState = !state.editorPaneIsExpanded;
     const { position } = state.visualSettings.editor;
     const newWidth = getResizablePaneSize(
@@ -277,15 +280,15 @@ const handleToggleEditorPane = (
 const handleUpdateEditorDirtyStatus = (
     state: TStoreState,
     dirty: boolean
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     editorIsDirty: dirty
 });
 
 const handleUpdateEditorFieldMappings = (
     state: TStoreState,
     payload: IEditorFieldMappingUpdatePayload
-): PartialState<TStoreState, never, never, never, never> => ({
-    getEditorFieldsInUse: reduce(
+): Partial<TStoreState> => ({
+    editorFieldsInUse: reduce(
         state.editorFieldsInUse,
         (result, value, key) => {
             if (key === payload.key) {
@@ -301,28 +304,28 @@ const handleUpdateEditorFieldMappings = (
 const handleUpdateEditorExportDialogVisible = (
     state: TStoreState,
     visible: boolean
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     editorIsExportDialogVisible: visible
 });
 
 const handleUpdateEditorMapDialogVisible = (
     state: TStoreState,
     visible: boolean
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     editorIsMapDialogVisible: visible
 });
 
 const handleUpdateEditorFixStatus = (
     state: TStoreState,
     payload: IFixResult
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     editorFixResult: payload
 });
 
 const handleUpdateEditorPaneWidth = (
     state: TStoreState,
     payload: IEditorPaneUpdatePayload
-): PartialState<TStoreState, never, never, never, never> => {
+): Partial<TStoreState> => {
     const { editorPaneWidth, editorPaneExpandedWidth } = payload;
     const { position } = state.visualSettings.editor;
     return {
@@ -345,7 +348,7 @@ const handleUpdateEditorPaneWidth = (
 const handleUpdateEditorPreviewAreaHeight = (
     state: TStoreState,
     height: number
-): PartialState<TStoreState, never, never, never, never> => {
+): Partial<TStoreState> => {
     return {
         editorPreviewDebugIsExpanded:
             height !== state.editorPreviewAreaHeightMax,
@@ -356,7 +359,7 @@ const handleUpdateEditorPreviewAreaHeight = (
 
 const handleUpdateEditorPreviewAreaWidth = (
     state: TStoreState
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     editorPreviewAreaWidth: getEditorPreviewAreaWidth(
         state.visualViewportCurrent.width,
         state.editorPaneWidth,
@@ -367,13 +370,13 @@ const handleUpdateEditorPreviewAreaWidth = (
 const handleUpdateEditorPreviewDebugIsExpanded = (
     state: TStoreState,
     value: boolean
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     editorPreviewDebugIsExpanded: value
 });
 
 const handleTogglePreviewDebugPane = (
     state: TStoreState
-): PartialState<TStoreState, never, never, never, never> => {
+): Partial<TStoreState> => {
     const prev = state.editorPreviewDebugIsExpanded;
     const next = !prev;
     const editorPreviewAreaHeight = prev
@@ -395,14 +398,14 @@ const handleTogglePreviewDebugPane = (
 const handleUpdateEditorSelectedOperation = (
     state: TStoreState,
     role: TEditorRole
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     editorSelectedOperation: role
 });
 
 const handleUpdateEditorSelectedPreviewRole = (
     state: TStoreState,
     role: TPreviewPivotRole
-): PartialState<TStoreState, never, never, never, never> => {
+): Partial<TStoreState> => {
     const expand = state.editorPreviewDebugIsExpanded;
     const editorPreviewAreaHeight = !expand
         ? state.editorPreviewAreaHeightLatch
@@ -417,7 +420,7 @@ const handleUpdateEditorSelectedPreviewRole = (
 const handleUpdateEditorSpec = (
     state: TStoreState,
     payload: IEditorSpecUpdatePayload
-): PartialState<TStoreState, never, never, never, never> => {
+): Partial<TStoreState> => {
     return {
         editorSpec: payload.spec,
         editorLogError: payload.error,
@@ -436,27 +439,27 @@ const handleUpdateEditorSpec = (
 const handleUpdateEditorStagedConfig = (
     state: TStoreState,
     config: string
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     editorStagedConfig: config
 });
 
 const handleUpdateEditorStagedSpec = (
     state: TStoreState,
     spec: string
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     editorStagedSpec: spec
 });
 
 const handleupdateEditorView = (
     state: TStoreState,
     view: View
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     editorView: view
 });
 
 const handleupdateEditorZoomLevel = (
     state: TStoreState,
     zoomLevel: number
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     editorZoomLevel: zoomLevel
 });

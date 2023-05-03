@@ -1,4 +1,5 @@
-import { GetState, SetState, PartialState } from 'zustand';
+import { StateCreator } from 'zustand';
+import { NamedSet } from 'zustand/middleware';
 import { TopLevelSpec } from 'vega-lite';
 import { Spec } from 'vega';
 import { ErrorObject } from 'ajv';
@@ -70,10 +71,7 @@ export interface ITemplateSlice {
     updateTemplateImportSuccess: (payload: ITemplateImportPayload) => void;
 }
 
-export const createTemplateSlice = (
-    set: SetState<TStoreState>,
-    get: GetState<TStoreState>
-) =>
+const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <ITemplateSlice>{
         ...{
             templateAllImportCriteriaApplied: false,
@@ -139,6 +137,13 @@ export const createTemplateSlice = (
         ...templates
     };
 
+export const createTemplateSlice: StateCreator<
+    TStoreState,
+    [['zustand/devtools', never]],
+    [],
+    ITemplateSlice
+> = sliceStateInitializer;
+
 interface ITemplateExportFieldUpdatePayload {
     selector: string;
     value: string;
@@ -168,7 +173,7 @@ interface ITemplatePlaceholderImagePayload {
 
 const handleInitializeImportExport = (
     state: TStoreState
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     templateAllImportCriteriaApplied: getImportPlaceholderResolutionStatus(
         templates.vegaLite[0]
     ),
@@ -178,7 +183,7 @@ const handleInitializeImportExport = (
 const handleSyncTemplateExportDataset = (
     state: TStoreState,
     payload: ITemplateDatasetField[]
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     templateExportMetadata: {
         ...state.templateExportMetadata,
         ...{
@@ -204,7 +209,7 @@ const handleSyncTemplateExportDataset = (
 const handleUpdateTemplatePreviewImage = (
     state: TStoreState,
     payload: ITemplatePlaceholderImagePayload
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     templateIncludePreviewImage: payload.include,
     templatePreviewImageDataUri: payload.dataUri
 });
@@ -212,7 +217,7 @@ const handleUpdateTemplatePreviewImage = (
 const handleUpdateTemplateExportPropertyBySelector = (
     state: TStoreState,
     payload: ITemplateExportFieldUpdatePayload
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     templateExportMetadata: set(
         cloneDeep(state.templateExportMetadata),
         payload.selector,
@@ -223,14 +228,14 @@ const handleUpdateTemplateExportPropertyBySelector = (
 const handleUpdateSelectedExportOperation = (
     state: TStoreState,
     templateSelectedExportOperation: TExportOperation
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     templateSelectedExportOperation
 });
 
 const handleUpdateSelectedTemplateProvider = (
     state: TStoreState,
     templateProvider: TTemplateProvider
-): PartialState<TStoreState, never, never, never, never> => {
+): Partial<TStoreState> => {
     const templateIdx = 0,
         isImport = templateProvider === 'import';
     const templateToApply = isImport
@@ -255,7 +260,7 @@ const handleUpdateSelectedTemplateProvider = (
 const handleUpdateSelectedTemplate = (
     state: TStoreState,
     index: number
-): PartialState<TStoreState, never, never, never, never> => {
+): Partial<TStoreState> => {
     const templateToApply = getTemplateWithBasePowerBiTheme(
         resolveTemplatesForProvider()[index]
     );
@@ -270,7 +275,7 @@ const handleUpdateSelectedTemplate = (
 const handleTemplateExportError = (
     state: TStoreState,
     message: string
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     templateExportState: 'Error',
     templateImportErrorMessage: message
 });
@@ -278,7 +283,7 @@ const handleTemplateExportError = (
 const handleTemplateExportState = (
     state: TStoreState,
     exportState: TTemplateExportState
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     templateExportState: exportState,
     templateImportErrorMessage: null
 });
@@ -286,7 +291,7 @@ const handleTemplateExportState = (
 const handleTemplateImportError = (
     state: TStoreState,
     payload: ITemplateImportErrorPayload
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     templateImportState: 'Error',
     templateImportErrorMessage: payload.templateImportErrorMessage,
     templateSchemaErrors: payload.templateSchemaErrors
@@ -295,14 +300,14 @@ const handleTemplateImportError = (
 const handleTemplateImportState = (
     state: TStoreState,
     importState: TTemplateImportState
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     templateImportState: importState
 });
 
 const handleTemplateImportSuccess = (
     state: TStoreState,
     payload: ITemplateImportPayload
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     templateImportState: 'Success',
     templateFile: payload.templateFile,
     templateFileRawContent: payload.templateFileRawContent,
@@ -316,7 +321,7 @@ const handleTemplateImportSuccess = (
 const handleUpdateTemplatePlaceholder = (
     state: TStoreState,
     payload: IPlaceholderValuePayload
-): PartialState<TStoreState, never, never, never, never> => {
+): Partial<TStoreState> => {
     let dataset = [
         ...(<IDenebTemplateMetadata>state.templateToApply?.usermeta)?.[
             DATASET_NAME

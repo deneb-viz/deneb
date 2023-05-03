@@ -1,5 +1,5 @@
-import create, { GetState, SetState, StateCreator } from 'zustand';
 import { useCallback } from 'react';
+import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import get from 'lodash/get';
 import { IDatasetSlice, createDatasetSlice } from './dataset';
@@ -14,22 +14,16 @@ export type TStoreState = IDatasetSlice &
     ITemplateSlice &
     IVisualSlice;
 
-const combinedSlices: StateCreator<
-    TStoreState,
-    SetState<TStoreState>,
-    GetState<TStoreState>,
-    any
-> = (set, get) => ({
-    ...createDatasetSlice(set, get),
-    ...createEditorSlice(set, get),
-    ...createTemplateSlice(set, get),
-    ...createVisualSlice(set, get)
-});
-
-const store = create<TStoreState>(
-    isFeatureEnabled('developerMode')
-        ? devtools(combinedSlices)
-        : combinedSlices
+const store = create<TStoreState>()(
+    devtools(
+        (...a) => ({
+            ...createDatasetSlice(...a),
+            ...createEditorSlice(...a),
+            ...createTemplateSlice(...a),
+            ...createVisualSlice(...a)
+        }),
+        { enabled: isFeatureEnabled('developerMode') }
+    )
 );
 
 const getState = () => store.getState();

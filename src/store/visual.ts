@@ -5,7 +5,8 @@ import EditMode = powerbi.EditMode;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import VisualUpdateType = powerbi.VisualUpdateType;
 
-import { GetState, PartialState, SetState } from 'zustand';
+import { StateCreator } from 'zustand';
+import { NamedSet } from 'zustand/middleware';
 import { TStoreState } from '.';
 import VisualSettings from '../properties/VisualSettings';
 import { resolveVisualMode, TVisualMode } from '../core/ui';
@@ -37,10 +38,7 @@ export interface IVisualSlice {
     setVisualUpdate: (payload: IVisualUpdatePayload) => void;
 }
 
-export const createVisualSlice = (
-    set: SetState<TStoreState>,
-    get: GetState<TStoreState>
-) =>
+const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IVisualSlice>{
         visual4d3d3d: false,
         visualEditMode: EditMode.Default,
@@ -59,6 +57,13 @@ export const createVisualSlice = (
             set((state) => handleSetVisualUpdate(state, payload))
     };
 
+export const createVisualSlice: StateCreator<
+    TStoreState,
+    [['zustand/devtools', never]],
+    [],
+    IVisualSlice
+> = sliceStateInitializer;
+
 interface IVisualUpdatePayload {
     settings: VisualSettings;
     options: VisualUpdateOptions;
@@ -67,14 +72,14 @@ interface IVisualUpdatePayload {
 const handleSetVisual4d3d3d = (
     state: TStoreState,
     status: boolean
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     visual4d3d3d: status
 });
 
 const handleSetVisualUpdate = (
     state: TStoreState,
     payload: IVisualUpdatePayload
-): PartialState<TStoreState, never, never, never, never> => {
+): Partial<TStoreState> => {
     const init = state.visualUpdates === 0;
     const positionNew = payload.settings.editor.position;
     const positionSwitch = positionNew !== state.visualSettings.editor.position;

@@ -3,7 +3,8 @@ import DataViewObjects = powerbi.DataViewObjects;
 import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 import ISelectionId = powerbi.visuals.ISelectionId;
 
-import { GetState, PartialState, SetState } from 'zustand';
+import { StateCreator } from 'zustand';
+import { NamedSet } from 'zustand/middleware';
 import { TStoreState } from '.';
 import {
     doUnallocatedFieldsExist,
@@ -43,10 +44,7 @@ export interface IDatasetSlice {
     updateDatasetViewInvalid: () => void;
 }
 
-export const createDatasetSlice = (
-    set: SetState<TStoreState>,
-    get: GetState<TStoreState>
-) =>
+const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IDatasetSlice>{
         dataset: getEmptyDataset(),
         datasetCanFetchMore: false,
@@ -84,6 +82,13 @@ export const createDatasetSlice = (
             set((state) => handleUpdateDatasetViewInvalid(state))
     };
 
+export const createDatasetSlice: StateCreator<
+    TStoreState,
+    [['zustand/devtools', never]],
+    [],
+    IDatasetSlice
+> = sliceStateInitializer;
+
 interface IDatasetProcessingPayload {
     dataProcessingStage: TDataProcessingStage;
     canFetchMore: boolean;
@@ -102,7 +107,7 @@ interface IDataViewFlagsPayload {
 
 const handleConfirmDatasetLoadComplete = (
     state: TStoreState
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     datasetCanFetchMore: false,
     datasetProcessingStage: 'Processed'
 });
@@ -110,7 +115,7 @@ const handleConfirmDatasetLoadComplete = (
 const handleUpdateDataset = (
     state: TStoreState,
     payload: IVisualDatasetUpdatePayload
-): PartialState<TStoreState, never, never, never, never> => {
+): Partial<TStoreState> => {
     const datasetCategories = payload.categories || [];
     const { dataset } = payload;
     const editorFieldsInUse = getFieldsInUseFromSpec(
@@ -151,7 +156,7 @@ const handleUpdateDataset = (
 const handleResetDatasetLoadInformation = (
     state: TStoreState,
     canFetchMore: boolean
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     datasetCanFetchMore: canFetchMore,
     datasetRowsLoaded: 0,
     datasetWindowsLoaded: 0
@@ -160,7 +165,7 @@ const handleResetDatasetLoadInformation = (
 const handleUpdateDataLoadInformation = (
     state: TStoreState,
     count: number
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     datasetRowsLoaded: state.datasetRowsLoaded + count,
     datasetWindowsLoaded: state.datasetWindowsLoaded + 1
 });
@@ -168,7 +173,7 @@ const handleUpdateDataLoadInformation = (
 const handleUpdateDatasetProcessingStage = (
     state: TStoreState,
     payload: IDatasetProcessingPayload
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     datasetCanFetchMore: payload.canFetchMore,
     datasetProcessingStage: payload.dataProcessingStage
 });
@@ -176,7 +181,7 @@ const handleUpdateDatasetProcessingStage = (
 const handleUpdateDatasetSelectors = (
     state: TStoreState,
     selectors: ISelectionId[]
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     datasetHasSelectionAborted: false,
     dataset: {
         ...state.dataset,
@@ -197,14 +202,14 @@ const handleUpdateDatasetSelectors = (
 const handleUpdateDatasetSelectionAbortStatus = (
     state: TStoreState,
     status: boolean
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     datasetHasSelectionAborted: status
 });
 
 const handleUpdateDatasetViewFlags = (
     state: TStoreState,
     payload: IDataViewFlagsPayload
-): PartialState<TStoreState, never, never, never, never> => {
+): Partial<TStoreState> => {
     const {
         datasetViewHasValidMapping,
         datasetViewHasValidRoles,
@@ -226,7 +231,7 @@ const handleUpdateDatasetViewFlags = (
 
 const handleUpdateDatasetViewInvalid = (
     state: TStoreState
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     dataset: getEmptyDataset(),
     datasetProcessingStage: 'Processed',
     datasetRowsLoaded: 0,
