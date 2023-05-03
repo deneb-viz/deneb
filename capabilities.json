@@ -1,4 +1,5 @@
 {
+    "privileges": [],
     "dataRoles": [
         {
             "displayNameKey": "Roles_Values",
