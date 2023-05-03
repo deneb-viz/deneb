@@ -33,8 +33,9 @@ jobs:
               run: npm test
             - name: Confirm pbiviz package (AppSource Version)
               run: npm run package
+            # When pushing to 'next', this will invoke an alpha build
             - name: Alpha Channel Build Check
-              if: github.ref == 'refs/heads/main'
+              if: github.ref == 'refs/heads/next'
               run: |
                   echo "alpha_build=true" >> $GITHUB_ENV
             - name: 'Alpha Channel Build'
