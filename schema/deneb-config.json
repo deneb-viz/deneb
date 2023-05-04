@@ -259,6 +259,12 @@
         }
     },
     "properties": {
+        "logLevel": {
+            "description": "Visual log level (0 = None; 1 = Error; 2 = Warn; 3 = Info; 10 = Host, 11 = Render, 12 = Hook, 50 = Debug)",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 50
+        },
         "features": {
             "description": "Visual feature switches.",
             "type": "object",

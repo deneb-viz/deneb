@@ -16,6 +16,7 @@
         "fx": false,
         "unitTestCanary": false
     },
+    "logLevel": 0,
     "fluentUiTheme": {
         "palette": {
             "themePrimary": "#f2c811",
