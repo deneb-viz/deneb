@@ -9,8 +9,11 @@ const pbivizFile = 'pbiviz.json';
 const pbivizFilePath = '.';
 const configFile = 'deneb-config.json';
 const configFilePath = './config';
+const capabilitiesFile = 'capabilities.json';
+const capabilitiesFilePath = '.';
 const pbivizOriginal = require(`../${pbivizFile}`);
 const configOriginal = require(`../config/${configFile}`);
+const capabilitiesOriginal = require(`../${capabilitiesFile}`);
 
 const runNpmScript = (script, callback) => {
     // keep track of whether callback has been invoked to prevent multiple invocations
@@ -31,13 +34,15 @@ const runNpmScript = (script, callback) => {
     });
 };
 
-// Revert the pbiviz back to its original state
+// Revert the modified files back to their original state
 const cleanup = () => {
     console.log('Performing cleanup...');
     writeFile(pbivizFile, pbivizFilePath, pbivizOriginal);
     console.log(`${pbivizFile} reverted`);
     writeFile(configFile, configFilePath, configOriginal);
     console.log(`${configFile} reverted`);
+    writeFile(capabilitiesFile, capabilitiesFilePath, capabilitiesOriginal);
+    console.log(`${capabilitiesFile} reverted`);
 };
 
 // Write a pbiviz.json to the project file system
@@ -85,6 +90,12 @@ try {
             packageConfig['deneb-config']
         );
         writeFile(configFile, configFilePath, configFileNew);
+        console.log(`Updating ${capabilitiesFile} with configuration...`);
+        const capabilitiesFileNew = _.merge(
+            _.cloneDeep(capabilitiesOriginal),
+            packageConfig.capabilities
+        );
+        writeFile(capabilitiesFile, capabilitiesFilePath, capabilitiesFileNew);
         console.log('Running pbiviz package with new options...');
         runNpmScript('pbiviz package', (err) => {
             if (err) throw err;

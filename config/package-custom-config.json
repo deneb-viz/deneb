@@ -39,6 +39,14 @@
             "features": {
                 "enableExternalUri": true
             }
+        },
+        "capabilities": {
+            "privileges": [
+                {
+                    "name": "WebAccess",
+                    "parameters": ["https://*", "http://*"]
+                }
+            ]
         }
     }
 }
