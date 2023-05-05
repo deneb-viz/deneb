@@ -3,6 +3,7 @@ import { getConfig } from '../../core/utils/config';
 import { getState } from '../../store';
 import { getBase64DataUri } from '../../utils';
 import { getBase64MimeType } from '../../utils/base64';
+import { VegaViewServices } from '../vega-extensibility';
 
 /**
  * Encoding method used for preview images.
@@ -31,7 +32,7 @@ export const PREVIEW_IMAGE_CAP_SIZE = getConfig().templates.previewImageSize;
  * and dispatch it to the store.
  */
 export const dispatchPreviewImage = (include: boolean) => {
-    const { updateTemplatePreviewImage, editorView } = getState();
+    const { updateTemplatePreviewImage } = getState();
     const img = new Image();
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -48,7 +49,7 @@ export const dispatchPreviewImage = (include: boolean) => {
             dataUri
         });
     };
-    editorView
+    VegaViewServices.getView()
         ?.toImageURL(IMAGE_TYPE, getResizeScale())
         .then((i) => (img.src = i));
 };

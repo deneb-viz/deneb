@@ -134,41 +134,41 @@ const viewHasDataset = (view: View, name: string) => {
  * Handles display of dataset info in the debug area.
  */
 export const DataViewer: React.FC = () => {
-    const { editorView } = store((state) => state);
-    const dropdownOptions = getDatasets(editorView);
-    const [selectedItem, setSelectedItem] = useState<IDropdownOption>(
-        getNamedDataset(editorView)
-    );
-    const datasetName = selectedItem?.text;
-    // Ensure that if a change to the spec removes selected dataset, that its
-    // contents are set to the default dataset
-    let dataTableContent: IDataTableContent = { columns: [], data: [] };
-    try {
-        dataTableContent = getDataTableContent(editorView, datasetName);
-    } catch (e) {
-        setSelectedItem(getNamedDataset(editorView));
-    }
-    const [key, setKey] = useState<number>(0);
-    const debounceData = debounce(100, () => setKey((key) => key + 1));
-    const handleChange = (
-        ev: React.FormEvent<HTMLDivElement>,
-        item: IDropdownOption
-    ): void => {
-        setSelectedItem(item);
-    };
-    useEffect(() => {
-        viewHasDataset(editorView, datasetName) &&
-            editorView?.addDataListener(datasetName, debounceData);
-        return () => {
-            viewHasDataset(editorView, datasetName)
-                ? editorView?.removeDataListener(datasetName, debounceData)
-                : null;
-        };
-    });
+    // const dropdownOptions = getDatasets(editorView);
+    // const [selectedItem, setSelectedItem] = useState<IDropdownOption>(
+    //     getNamedDataset(editorView)
+    // );
+    // const datasetName = selectedItem?.text;
+    // // Ensure that if a change to the spec removes selected dataset, that its
+    // // contents are set to the default dataset
+    // let dataTableContent: IDataTableContent = { columns: [], data: [] };
+    // try {
+    //     dataTableContent = getDataTableContent(editorView, datasetName);
+    // } catch (e) {
+    //     setSelectedItem(getNamedDataset(editorView));
+    // }
+    // const [key, setKey] = useState<number>(0);
+    // const debounceData = debounce(100, () => setKey((key) => key + 1));
+    // const handleChange = (
+    //     ev: React.FormEvent<HTMLDivElement>,
+    //     item: IDropdownOption
+    // ): void => {
+    //     setSelectedItem(item);
+    // };
+    // useEffect(() => {
+    //     viewHasDataset(editorView, datasetName) &&
+    //         editorView?.addDataListener(datasetName, debounceData);
+    //     return () => {
+    //         viewHasDataset(editorView, datasetName)
+    //             ? editorView?.removeDataListener(datasetName, debounceData)
+    //             : null;
+    //     };
+    // });
     reactLog('Rendering [DataViewer]');
     return (
         <>
-            <StackItem>
+            <div>To be fixed soon.</div>
+            {/* <StackItem>
                 <Stack horizontal horizontalAlign='end'>
                     <Dropdown
                         styles={DROPDOWN_STYLES}
@@ -190,7 +190,7 @@ export const DataViewer: React.FC = () => {
                 ) : (
                     i18nValue('Pivot_Dataset_Select_None')
                 )}
-            </StackItem>
+            </StackItem> */}
         </>
     );
 };

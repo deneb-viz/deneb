@@ -3,7 +3,6 @@ import { NamedSet } from 'zustand/middleware';
 import isEqual from 'lodash/isEqual';
 import reduce from 'lodash/reduce';
 import uniqWith from 'lodash/uniqWith';
-import { View } from 'vega';
 
 import { TStoreState } from '.';
 import { doUnallocatedFieldsExist } from '../core/data/dataset';
@@ -50,7 +49,6 @@ export interface IEditorSlice {
     editorSpec: ICompiledSpec;
     editorStagedConfig: string;
     editorStagedSpec: string;
-    editorView: View;
     editorZoomLevel: number;
     renewEditorFieldsInUse: () => void;
     recordLogErrorMain: (message: string) => void;
@@ -76,7 +74,6 @@ export interface IEditorSlice {
     updateEditorSpec: (payload: IEditorSpecUpdatePayload) => void;
     updateEditorStagedConfig: (config: string) => void;
     updateEditorStagedSpec: (spec: string) => void;
-    updateEditorView: (view: View) => void;
     updateEditorZoomLevel: (zoomLevel: number) => void;
 }
 
@@ -117,7 +114,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
         },
         editorStagedConfig: null,
         editorStagedSpec: null,
-        editorView: null,
         editorZoomLevel: getConfig().zoomLevel.default,
         recordLogErrorMain: (message) =>
             set(
@@ -252,12 +248,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                 (state) => handleUpdateEditorStagedSpec(state, spec),
                 false,
                 'updateEditorStagedSpec'
-            ),
-        updateEditorView: (view) =>
-            set(
-                (state) => handleupdateEditorView(state, view),
-                false,
-                'updateEditorView'
             ),
         updateEditorZoomLevel: (zoomLevel) =>
             set(
@@ -545,13 +535,6 @@ const handleUpdateEditorStagedSpec = (
     spec: string
 ): Partial<TStoreState> => ({
     editorStagedSpec: spec
-});
-
-const handleupdateEditorView = (
-    state: TStoreState,
-    view: View
-): Partial<TStoreState> => ({
-    editorView: view
 });
 
 const handleupdateEditorZoomLevel = (

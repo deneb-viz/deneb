@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { createClassFromSpec, VegaLite } from 'react-vega';
 import * as Vega from 'vega';
 import cloneDeep from 'lodash/cloneDeep';
@@ -11,7 +11,8 @@ import SplashNoSpec from './status/SplashNoSpec';
 
 import { hostServices } from '../core/services';
 import { locales } from '../core/ui/i18n';
-import { handleNewView, TSpecProvider, TSpecRenderMode } from '../core/vega';
+import { TSpecProvider, TSpecRenderMode } from '../core/vega';
+import { handleNewView } from '../features/vega-extensibility';
 import { View } from 'vega';
 
 import { IVisualDatasetValueRow } from '../core/data';
@@ -106,9 +107,7 @@ const VisualRender: React.FC<IVisualRenderProps> = memo(
             hostServices.tooltipService
         );
         const loader = getPowerBiVegaLoader();
-        const newView = (view: View) => {
-            handleNewView(view);
-        };
+        const onNewView = useCallback((view: View) => handleNewView(view), []);
         const handleError = (error: Error) => {
             switch (error.message) {
                 // This is crude, but still lets us use local values without using dataset
@@ -155,7 +154,7 @@ const VisualRender: React.FC<IVisualRenderProps> = memo(
                         formatLocale={formatLocale}
                         timeFormatLocale={timeFormatLocale}
                         loader={loader}
-                        onNewView={newView}
+                        onNewView={onNewView}
                         onError={handleError}
                         logLevel={logLevel}
                     />

@@ -12,6 +12,7 @@ import ISelectionId = powerbi.visuals.ISelectionId;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import IVisualEventService = powerbi.extensibility.IVisualEventService;
 import ISandboxExtendedColorPalette = powerbi.extensibility.ISandboxExtendedColorPalette;
+import { logHost } from '../../features/logging';
 /*  Pending API 4.0.0
     import IDownloadService = powerbi.extensibility.IDownloadService;
 */
@@ -62,11 +63,18 @@ export class HostServices {
         this.colorPalette?.['colors']?.map((c: any) => c.value) || [];
 
     renderingFinished = () => {
+        logHost('Rendering event finished.');
         this.events.renderingFinished(this.visualUpdateOptions);
     };
 
     renderingFailed = (reason?: string) => {
+        logHost('Rendering event failed:', reason);
         this.events.renderingFailed(this.visualUpdateOptions, reason);
+    };
+
+    renderingStarted = () => {
+        logHost('Rendering event started.');
+        this.events.renderingStarted(this.visualUpdateOptions);
     };
 
     resolveLocaleFromSettings = (settingsLocale: TLocale) => {

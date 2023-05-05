@@ -1,1 +1,1 @@
-export { VegaViewServices } from './view';
+export { VegaViewServices, handleNewView } from './view';

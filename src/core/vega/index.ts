@@ -12,18 +12,15 @@ export {
     getVegaVersion,
     getViewConfig,
     getViewDataset,
-    getViewSpec,
-    handleNewView
+    getViewSpec
 };
 
 import cloneDeep from 'lodash/cloneDeep';
 import * as Vega from 'vega';
 import Config = Vega.Config;
 import Spec = Vega.Spec;
-import View = Vega.View;
 import { TopLevelSpec } from 'vega-lite';
 
-import { hostServices } from '../services';
 import { cleanParse } from '../utils/json';
 import {
     getState,
@@ -35,13 +32,7 @@ import { getConfig, providerVersions } from '../utils/config';
 import { getPatchedVegaSpec } from './vegaUtils';
 import { getPatchedVegaLiteSpec } from './vegaLiteUtils';
 
-import { resolveSvgFilter } from '../ui/svgFilter';
 import { i18nValue } from '../ui/i18n';
-import {
-    bindContextMenuEvents,
-    bindCrossFilterEvents
-} from '../../features/interactivity';
-import { StoreVegaLoggerService } from '../../features/logging';
 
 /**
  * Interface specifying a flexible key/value pair object, which is supplied from Vega's tooltip handler and usually casted as `any`.
@@ -130,20 +121,6 @@ const getViewSpec = () => {
 const getParsedConfigFromSettings = (): Config => {
     const jsonConfig = useStoreVegaProp<string>('jsonConfig');
     return cleanParse(jsonConfig, propertyDefaults.jsonConfig);
-};
-
-/**
- * Any logic that we need to apply to a new Vega view.
- */
-const handleNewView = (newView: View) => {
-    newView.logger(new StoreVegaLoggerService());
-    newView.runAsync().then((view) => {
-        resolveSvgFilter();
-        bindContextMenuEvents(view);
-        bindCrossFilterEvents(view);
-        getState().updateEditorView(view);
-        hostServices.renderingFinished();
-    });
 };
 
 const propertyDefaults = getConfig().propertyDefaults.vega;
