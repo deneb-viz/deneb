@@ -25,7 +25,6 @@ import { TopLevelSpec } from 'vega-lite';
 
 import { hostServices } from '../services';
 import { cleanParse } from '../utils/json';
-import { vegaLiteValidator, vegaValidator } from './validation';
 import {
     getState,
     useStoreDataset,
