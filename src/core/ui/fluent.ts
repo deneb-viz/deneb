@@ -60,7 +60,6 @@ const buttonStyles: IButtonStyles = {
         borderRadius: 0
     },
     label: {
-        color: theme.palette.black,
         fontWeight: FontWeights.regular
     }
 };
