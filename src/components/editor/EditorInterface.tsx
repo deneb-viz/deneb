@@ -1,4 +1,5 @@
 import React from 'react';
+import { FluentProvider } from '@fluentui/react-components';
 import SplitPane from 'react-split-pane';
 
 import { useStoreProp } from '../../store';
@@ -11,9 +12,10 @@ import {
     resizerVerticalStyles
 } from '../../core/ui/advancedEditor';
 import { IEditorPaneUpdatePayload } from '../../store/editor';
-import { reactLog } from '../../core/utils/reactLog';
 import { TEditorPosition } from '../../core/ui';
 import { ModalDialog } from '../../features/modal-dialog';
+import { Themes, useInterfaceStyles } from '../../features/interface';
+import { logRender } from '../../features/logging';
 
 const EditorInterface: React.FC = () => {
     const editorPaneIsExpanded: boolean = useStoreProp('editorPaneIsExpanded');
@@ -40,9 +42,14 @@ const EditorInterface: React.FC = () => {
         }
     };
     const editorPane = <EditorPane isExpanded={editorPaneIsExpanded} />;
-    reactLog('Rendering [EditorInterface]');
+    const styles = useInterfaceStyles('light');
+    logRender('EditorInterface');
     return (
-        <div id='visualEditor'>
+        <FluentProvider
+            theme={Themes.light}
+            className={styles.container}
+            id='visualEditor'
+        >
             <SplitPane
                 split='vertical'
                 minSize={getResizablePaneMinSize()}
@@ -60,7 +67,7 @@ const EditorInterface: React.FC = () => {
             <ModalDialog type='new' />
             <ModalDialog type='export' />
             <ModalDialog type='mapping' />
-        </div>
+        </FluentProvider>
     );
 };
 
