@@ -15,7 +15,6 @@ import {
     resolveObjectProperties,
     updateObjectProperties
 } from '../../core/utils/properties';
-import { LocalVegaLoggerService } from '../../core/services/VegaLoggerService';
 import { IEditorSpecUpdatePayload } from '../../store/editor';
 import { cleanParse, getJsonAsIndentedString } from '../../core/utils/json';
 import { validateVega, validateVegaLite } from '../../core/vega/validation';
@@ -23,6 +22,7 @@ import { i18nValue } from '../../core/ui/i18n';
 import { IFixResult, IFixStatus } from './types';
 import { getLastVersionInfo } from '../../core/utils/versioning';
 import { TEditorRole } from '../json-editor';
+import { LocalVegaLoggerService } from '../logging';
 
 const PROPERTY_DEFAULTS = getConfig().propertyDefaults.vega;
 

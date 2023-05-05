@@ -4,7 +4,7 @@ import * as vegaSchema from 'vega/build/vega-schema.json';
 import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
 import * as draft06 from 'ajv/lib/refs/json-schema-draft-06.json';
 
-import { LocalVegaLoggerService } from '../services/VegaLoggerService';
+import { LocalVegaLoggerService } from '../../features/logging';
 import { getVegaSettings } from '.';
 
 /**

@@ -1,7 +1,7 @@
 import * as Vega from 'vega';
 import { getState } from '../../store';
-import { reactLog } from '../utils/reactLog';
-import { getVegaSettings } from '../vega';
+import { getVegaSettings } from '../../core/vega';
+import { logInfo } from '.';
 
 /**
  * Custom Vega logger we can use to capture output from a view, into the visual
@@ -20,28 +20,28 @@ export class StoreVegaLoggerService implements Vega.LoggerInterface {
     }
     info = (...args: any[]) => {
         if (this.level() >= Vega.Info) {
-            reactLog('[DENEB INFO]', args[0]);
+            logInfo('[VEGA INFO]', args[0]);
             // Currently handle info output manually;
         }
         return this;
     };
     warn = (...args: any[]) => {
         if (this.level() >= Vega.Warn) {
-            reactLog('[DENEB WARN]', args[0]);
+            logInfo('[VEGA WARN]', args[0]);
             getState().recordLogWarn(args[0]);
         }
         return this;
     };
     error = (...args: readonly any[]) => {
         if (this.level() >= Vega.Error) {
-            reactLog('[DENEB ERROR]', args[0]);
+            logInfo('[VEGA ERROR]', args[0]);
             getState().recordLogError(args[0]?.message || args[0]);
         }
         return this;
     };
     debug = (...args: any[]) => {
         if (this.level() >= Vega.Debug) {
-            reactLog('[DENEB DEBUG]', args[0]);
+            logInfo('[VEGA DEBUG]', args[0]);
             // Currently won't log debug output to UI
         }
         return this;
@@ -69,24 +69,27 @@ export class LocalVegaLoggerService implements Vega.LoggerInterface {
     }
     warn = (...args: any[]) => {
         if (this.#level >= Vega.Warn) {
+            logInfo('[VEGA WARN]', args[0]);
             this.warns.push(...args);
         }
         return this;
     };
     info = (...args: any[]) => {
         if (this.#level >= Vega.Info) {
+            logInfo('[VEGA INFO]', args[0]);
             this.infos.push(...args);
         }
         return this;
     };
     debug = (...args: any[]) => {
         if (this.#level >= Vega.Debug) {
+            logInfo('[VEGA DEBUG]', args[0]);
             this.debugs.push(...args);
         }
         return this;
     };
     error = (...args: any[]) => {
+        logInfo('[VEGA ERROR]', args[0]);
         throw new Error(...args);
-        return this;
     };
 }

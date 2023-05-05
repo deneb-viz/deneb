@@ -1,0 +1,1 @@
+export { VegaViewServices } from './view';

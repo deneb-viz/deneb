@@ -10,6 +10,8 @@ import { getConfig } from '../../core/utils/config';
  * the Power BI visual iframe does not allow the React tools to be attached for
  * more detailed debugging, unfortunately).
  */
+export { StoreVegaLoggerService, LocalVegaLoggerService } from './vega';
+
 export enum ELogLevel {
     NONE = 0,
     ERROR = 1,

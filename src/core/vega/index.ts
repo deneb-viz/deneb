@@ -23,7 +23,7 @@ import Spec = Vega.Spec;
 import View = Vega.View;
 import { TopLevelSpec } from 'vega-lite';
 
-import { hostServices, loggerServices } from '../services';
+import { hostServices } from '../services';
 import { cleanParse } from '../utils/json';
 import { vegaLiteValidator, vegaValidator } from './validation';
 import {
@@ -42,6 +42,7 @@ import {
     bindContextMenuEvents,
     bindCrossFilterEvents
 } from '../../features/interactivity';
+import { StoreVegaLoggerService } from '../../features/logging';
 
 /**
  * Interface specifying a flexible key/value pair object, which is supplied from Vega's tooltip handler and usually casted as `any`.
@@ -136,7 +137,7 @@ const getParsedConfigFromSettings = (): Config => {
  * Any logic that we need to apply to a new Vega view.
  */
 const handleNewView = (newView: View) => {
-    newView.logger(loggerServices);
+    newView.logger(new StoreVegaLoggerService());
     newView.runAsync().then((view) => {
         resolveSvgFilter();
         bindContextMenuEvents(view);
