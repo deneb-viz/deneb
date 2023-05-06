@@ -1,16 +1,26 @@
-export { getPatchedVegaLiteSpec, vegaLiteUtils };
+// tslint:disable:export-name
+import { TopLevelSpec } from 'vega-lite';
+import { DATASET_NAME } from '../../constants';
+import { getState } from '../../store';
 
-// Apply specific patching operations to a supplied spec
-const getPatchedVegaLiteSpec = (spec: Object) => ({
+export { getPatchedVegaLiteSpec };
+
+/**
+ * Apply specific patching operations to a supplied spec. This applies any
+ * specific signals that we don't necessarily want the creator to worry about,
+ * but will ensure that the visual functions as expected. We also patch in the
+ * dataset, because we've found that binding this via react-vega causes some
+ * issues with the data being available for certain calculations. This
+ * essentially ensures that the data is processed in-line with the spec.
+ */
+const getPatchedVegaLiteSpec = (spec: TopLevelSpec): TopLevelSpec => ({
     ...spec,
-    ...getPatchedTopLevelDimensions(spec)
+    ...{
+        height: spec['height'] ?? 'container',
+        width: spec['width'] ?? 'container',
+        datasets: {
+            ...(spec.datasets ?? {}),
+            [`${DATASET_NAME}`]: getState().dataset?.values ?? []
+        }
+    }
 });
-
-// Logic to patch height and/or width into a spec, if not supplied
-const getPatchedTopLevelDimensions = (spec: Object) => ({
-    height: spec['height'] || 'container',
-    width: spec['width'] || 'container'
-});
-
-// Avoids linting issues (can't seem to disable w/eslint-disable). Can be removed if/when we extend Vega-Lite API
-const vegaLiteUtils = null;

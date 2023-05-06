@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { createClassFromSpec, VegaLite } from 'react-vega';
 import * as Vega from 'vega';
 import cloneDeep from 'lodash/cloneDeep';
@@ -129,8 +129,14 @@ const VisualRender: React.FC<IVisualRenderProps> = memo(
         // ensure that we don't get stuck in an infinite loop when memoizing
         const renderSpecification = cloneDeep(specification);
         const renderConfig = cloneDeep(config);
-        const renderData = cloneDeep(data);
-
+        const resolvedProvider = useMemo(
+            () => (provider === 'vegaLite' ? 'vega-lite' : provider),
+            [provider]
+        );
+        const VegaChart = createClassFromSpec({
+            spec: renderSpecification,
+            mode: resolvedProvider
+        });
         reactLog('Rendering [VisualRender]');
         if (visual4d3d3d) return <FourD3D3D3 />;
         registerPowerBiCustomExpressions();
@@ -140,46 +146,20 @@ const VisualRender: React.FC<IVisualRenderProps> = memo(
                 return <SpecificationError />;
             }
             case status === 'valid': {
-                switch (provider) {
-                    case 'vegaLite': {
-                        return (
-                            <VegaLite
-                                spec={renderSpecification}
-                                data={renderData}
-                                renderer={renderMode}
-                                actions={false}
-                                tooltip={tooltipHandler}
-                                config={renderConfig}
-                                formatLocale={formatLocale}
-                                timeFormatLocale={timeFormatLocale}
-                                loader={loader}
-                                onNewView={newView}
-                                onError={handleError}
-                                logLevel={logLevel}
-                            />
-                        );
-                    }
-                    case 'vega': {
-                        const VegaChart = createClassFromSpec({
-                            spec: renderSpecification
-                        });
-                        return (
-                            <VegaChart
-                                data={renderData}
-                                renderer={renderMode as Vega.Renderers}
-                                actions={false}
-                                tooltip={tooltipHandler}
-                                config={renderConfig}
-                                formatLocale={formatLocale}
-                                timeFormatLocale={timeFormatLocale}
-                                loader={loader}
-                                onNewView={newView}
-                                onError={handleError}
-                                logLevel={logLevel}
-                            />
-                        );
-                    }
-                }
+                return (
+                    <VegaChart
+                        renderer={renderMode as Vega.Renderers}
+                        actions={false}
+                        tooltip={tooltipHandler}
+                        config={renderConfig}
+                        formatLocale={formatLocale}
+                        timeFormatLocale={timeFormatLocale}
+                        loader={loader}
+                        onNewView={newView}
+                        onError={handleError}
+                        logLevel={logLevel}
+                    />
+                );
             }
             default: {
                 return <SplashNoSpec />;

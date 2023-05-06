@@ -116,9 +116,9 @@ const getViewSpec = () => {
     const vSpec = cloneDeep(eSpec) || {};
     switch (provider) {
         case 'vega':
-            return getPatchedVegaSpec(vSpec);
+            return getPatchedVegaSpec(<Spec>vSpec);
         case 'vegaLite':
-            return getPatchedVegaLiteSpec(vSpec);
+            return getPatchedVegaLiteSpec(<TopLevelSpec>vSpec);
         default:
             return vSpec;
     }
