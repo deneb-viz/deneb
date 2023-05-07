@@ -19,6 +19,7 @@ import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
+
 import { loadTheme } from '@fluentui/react/lib/Styling';
 
 import App from './components/App';
@@ -40,6 +41,14 @@ import { resolveReportViewport } from './core/ui/dom';
 import { getDatasetTemplateFields } from './core/data/fields';
 import { DATASET_NAME } from './constants';
 import { parseActiveSpecification } from './features/specification';
+import { logHeading, logHost } from './features/logging';
+import { getVisualMetadata } from './core/utils/config';
+
+/**
+ * Run to indicate that the visual has started.
+ */
+logHeading(`${getVisualMetadata()?.displayName}`);
+logHeading(`Version: ${getVisualMetadata()?.version}`, 12);
 
 export class Deneb implements IVisual {
     private settings: VisualSettings;
@@ -53,6 +62,7 @@ export class Deneb implements IVisual {
     private events: IVisualEventService;
 
     constructor(options: VisualConstructorOptions) {
+        logHost('Constructor has been called.', { options });
         try {
             loadTheme(theme);
             initializeIcons();
