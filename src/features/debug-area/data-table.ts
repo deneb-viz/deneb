@@ -147,7 +147,6 @@ export const getFormattedValueForTable = (
     tooltip = false
 ) => {
     const value = cell?.getValue();
-    const column = cell?.getColumn().getField();
     let formattedValue: ITableFormattedValue = {
         formatted: '',
         tooLong: false

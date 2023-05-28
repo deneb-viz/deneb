@@ -7,7 +7,7 @@ export * as Themes from './theme';
 
 export type InterfaceTheme = 'light' | 'dark';
 
-export const useInterfaceStyles = (theme: InterfaceTheme) =>
+export const useInterfaceStyles = () =>
     makeStyles({
         container: {
             height: 'calc(100% - 2px)',

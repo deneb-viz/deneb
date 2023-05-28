@@ -126,7 +126,7 @@ export const DataTable: React.FC<IDataTableProps> = ({
                         setCurrentColumns(
                             columns.map((c) => c._column.definition)
                         ),
-                    dataSorted: (sorters: Sorter[], rows: any[]) =>
+                    dataSorted: (sorters: Sorter[]) =>
                         setInitialSort(sorters),
                     pageLoaded: (num: number) => setPaginationInitialPage(num)
                 }}

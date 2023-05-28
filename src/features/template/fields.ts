@@ -50,7 +50,7 @@ const doesSpecContainKeyForMetadata = (
  * matching if any special characters are used.
  */
 export const getEscapedReplacerPattern = (value: string) =>
-    value.replace(/[-\/\\^$*+?.()&|[\]{}]/g, '\\$&');
+    value.replace(/[-/\\^$*+?.()&|[\]{}]/g, '\\$&');
 
 /**
  * Process the editor "fields in use" metadata to ensure that we either preserve fields that might have been removed
@@ -133,7 +133,7 @@ export const getFieldsInUseFromSpec = (
 ): IVisualDatasetFields => {
     const { jsonSpec } = getVegaSettings();
     const spec = getCleanEditorJson('spec') || jsonSpec;
-    let newFieldsInUse = getExistingFieldsInUse(editorFieldsInUse, renew);
+    const newFieldsInUse = getExistingFieldsInUse(editorFieldsInUse, renew);
     forIn(getDatasetFieldsInclusive(metadata), (value, key) => {
         const found = doesSpecContainKeyForMetadata(key, spec, metadata);
         if (found) {

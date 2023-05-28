@@ -42,7 +42,7 @@ const EditorInterface: React.FC = () => {
         }
     };
     const editorPane = <EditorPane isExpanded={editorPaneIsExpanded} />;
-    const styles = useInterfaceStyles('light');
+    const styles = useInterfaceStyles();
     logRender('EditorInterface');
     return (
         <FluentProvider

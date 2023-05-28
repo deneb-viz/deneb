@@ -1,4 +1,4 @@
-import { Config, Spec } from 'vega';
+import { Spec } from 'vega';
 import {
     authorInfo,
     getVegaTemplateSpecificConfig,

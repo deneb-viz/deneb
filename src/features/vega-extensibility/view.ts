@@ -1,13 +1,8 @@
-import powerbi from 'powerbi-visuals-api';
-import ISelectionId = powerbi.visuals.ISelectionId;
 import { falsy, truthy, View } from 'vega';
 import { handleContextMenuEvent } from '../interactivity/context-menu';
 import { handleCrossFilterEvent } from '../interactivity/cross-filter';
 import { logDebug, StoreVegaLoggerService } from '../logging';
 import { hostServices } from '../../core/services';
-import { getState } from '../../store';
-
-// tslint:disable:export-name
 
 let view: View | null;
 

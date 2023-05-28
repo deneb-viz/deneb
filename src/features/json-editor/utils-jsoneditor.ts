@@ -57,9 +57,9 @@ export const getAssignedJsonEditor = (role: TEditorRole) => {
  */
 const getCompleters = (): Completer => {
     const { fields } = getDataset();
-    let tokens = [];
+    const tokens = [];
     // Tokens for columns and measures
-    Object.entries(fields).forEach(([key, value], i) => {
+    Object.entries(fields).forEach(([key], i) => {
         tokens.push({
             name: `${key}`,
             value: `${key}`,
@@ -205,15 +205,13 @@ const updateCompleters = (jsonEditor: JSONEditor, role: TEditorRole) => {
             if (!editor) {
                 return;
             }
-            let completers = editor.completers;
+            const completers = editor.completers;
             // This is messy, but will remove the custom completer if it's already been added
             if (completers.length > 2) {
                 completers.pop();
             }
             editor.completers = completers.concat([getCompleters()]);
             break;
-        }
-        default: {
         }
     }
 };

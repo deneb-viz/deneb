@@ -1,5 +1,4 @@
-// tslint:disable:export-name
-import { Signal, Spec, ValuesData } from 'vega';
+import { Signal, Spec } from 'vega';
 import { DATASET_NAME } from '../../constants';
 import { getState } from '../../store';
 import { getConfig } from '../utils/config';

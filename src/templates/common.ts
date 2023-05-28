@@ -1,4 +1,4 @@
-import { AutoSize, BaseData, Config } from 'vega';
+import { BaseData, Config } from 'vega';
 import { getConfig } from '../core/utils/config';
 import { dataRoles } from '../../capabilities.json';
 

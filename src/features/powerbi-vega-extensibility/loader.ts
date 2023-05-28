@@ -16,7 +16,7 @@ export const loader = (): Loader => {
     // permit this if it's a valid data URI. We avoid overriding the default
     // loader logic otherwise.
     if (!externalUri) {
-        loader.load = (uri, options) => {
+        loader.load = (uri) => {
             const href = (isDataUri(uri) && uri) || null;
             handleExternalResourceWarning(href, externalUri);
             return Promise.resolve(href);
@@ -67,5 +67,5 @@ const handleExternalResourceWarning = (href: string, externalUri: boolean) =>
  */
 const isDataUri = (uri: string) =>
     !!uri.match(
-        /^\s*data:([a-z]+\/[a-z]+(;[a-z\-]+\=[a-z\-]+)?)?(;base64)?,[a-z0-9\!\$\&\'\,\(\)\*\+\,\;\=\-\.\_\~\:\@\/\?\%\s]*\s*$/i
+        /^\s*data:([a-z]+\/[a-z]+(;[a-z-]+=[a-z-]+)?)?(;base64)?,[a-z0-9!$&',()*+,;=\-._~:@/?%\s]*\s*$/i
     );
