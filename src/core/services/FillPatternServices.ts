@@ -54,7 +54,7 @@ export class FillPatternServices {
         bgColor: string = defaultPatternFillColor
     ) => {
         const modId = escape(
-                `${id}-${fgColor}-${bgColor}`.replace(/[^a-zA-Z0-9-_\-]+/g, '-')
+                `${id}-${fgColor}-${bgColor}`.replace(/[^a-zA-Z0-9-_-]+/g, '-')
             ),
             found =
                 this.patternDefRegistry?.findIndex((fpd) => fpd.id === modId) >

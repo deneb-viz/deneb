@@ -24,7 +24,6 @@ const EditorPanePivot = () => {
             <Pivot
                 aria-label={resolveEditorPanePivotAria()}
                 selectedKey={editorSelectedOperation}
-                // eslint-disable-next-line react/jsx-no-bind
                 onLinkClick={handlePivotClick}
                 headersOnly={true}
                 getTabId={getTabId}

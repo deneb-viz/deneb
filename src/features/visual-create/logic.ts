@@ -99,7 +99,7 @@ const getInteractivityPropsFromTemplate = (template: Spec | TopLevelSpec) =>
  * stringified representation of the object.
  */
 const getReplacedTemplate = (template: Spec | TopLevelSpec) => {
-    let templateToApply = { ...template };
+    const templateToApply = { ...template };
     delete templateToApply.$schema;
     delete templateToApply.config;
     delete templateToApply.usermeta;
@@ -137,8 +137,8 @@ const getTemplateResolvedForLegacyVersions = (
  */
 const onReaderLoad = (event: ProgressEvent<FileReader>, templateFile: File) => {
     updateImportState('Validating');
-    let templateFileRawContent = event.target.result.toString(),
-        template: Spec | TopLevelSpec;
+    const templateFileRawContent = event.target.result.toString();
+    let template: Spec | TopLevelSpec;
     try {
         template = JSON.parse(templateFileRawContent);
     } catch (e) {

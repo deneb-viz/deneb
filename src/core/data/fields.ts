@@ -3,7 +3,6 @@ import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 import DataViewValueColumns = powerbi.DataViewValueColumns;
 
 import find from 'lodash/find';
-import pick from 'lodash/pick';
 import pickBy from 'lodash/pickBy';
 import reduce from 'lodash/reduce';
 
@@ -101,7 +100,7 @@ export const getDatasetTemplateFields = (
 ): ITemplateDatasetField[] =>
     reduce(
         getDatasetFieldsInclusive(metadata),
-        (result, value, key) => result.concat(value.templateMetadata),
+        (result, value) => result.concat(value.templateMetadata),
         <ITemplateDatasetField[]>[]
     );
 
@@ -115,7 +114,7 @@ export const getDatasetTemplateFields = (
  *  - Vega-Lite: https://vega.github.io/vega-lite/docs/field.html
  */
 export const getEncodedFieldName = (displayName: string) =>
-    displayName?.replace(/([\\".\[\]])/g, '_') || '';
+    displayName?.replace(/([\\".[]])/g, '_') || '';
 
 /**
  * Get artificial array of values first (if needed) as we'll need them when

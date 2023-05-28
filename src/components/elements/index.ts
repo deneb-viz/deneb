@@ -1,8 +1,6 @@
 import {
-    getTheme,
     IChoiceGroupStyles,
     IChoiceGroupOptionStyles,
-    ITheme,
     IDropdownStyles
 } from '@fluentui/react';
 

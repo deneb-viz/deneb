@@ -27,7 +27,7 @@ import { getVisualMetadata, providerVersions } from './config';
  */
 const resolveObjectProperties = (objects: IPersistenceObject[]) => {
     const names = objects.map((o) => o.objectName);
-    let changes = getNewObjectInstance(names);
+    const changes = getNewObjectInstance(names);
     return reduce(
         objects,
         (result, value, index) => {

@@ -194,8 +194,7 @@ const dispatchEditorPivotItem = (operation: TEditorRole) => {
  * Manages dispatch of the export dialog command method to the store.
  */
 const dispatchExportDialog = (show = true) => {
-    const { updateEditorExportDialogVisible, updateTemplatePreviewImage } =
-        getState();
+    const { updateEditorExportDialogVisible } = getState();
     dispatchPreviewImage(false);
     updateEditorExportDialogVisible(show);
 };

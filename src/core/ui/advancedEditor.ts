@@ -119,17 +119,17 @@ export const getResizablePaneMinSize = () => {
     const { editorPaneIsExpanded, visualSettings, visualViewportCurrent } =
         getState();
     const { editor } = visualSettings;
-    let resolvedCollapsedSize =
-            editor.position === 'right'
-                ? visualViewportCurrent.width - EDITOR_PANE_SPLIT_COLLAPSED_SIZE
-                : EDITOR_PANE_SPLIT_COLLAPSED_SIZE,
-        resolvedMinSize =
-            editor.position === 'right'
-                ? visualViewportCurrent.width *
-                  (1 - EDITOR_PANE_SPLIT_MAX_SIZE_PERCENT)
-                : EDITOR_PANE_SPLIT_MIN_SIZE,
-        resolvedSize =
-            (editorPaneIsExpanded && resolvedMinSize) || resolvedCollapsedSize;
+    const resolvedCollapsedSize =
+        editor.position === 'right'
+            ? visualViewportCurrent.width - EDITOR_PANE_SPLIT_COLLAPSED_SIZE
+            : EDITOR_PANE_SPLIT_COLLAPSED_SIZE;
+    const resolvedMinSize =
+        editor.position === 'right'
+            ? visualViewportCurrent.width *
+              (1 - EDITOR_PANE_SPLIT_MAX_SIZE_PERCENT)
+            : EDITOR_PANE_SPLIT_MIN_SIZE;
+    const resolvedSize =
+        (editorPaneIsExpanded && resolvedMinSize) || resolvedCollapsedSize;
     return resolvedSize;
 };
 

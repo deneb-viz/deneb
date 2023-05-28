@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useMemo } from 'react';
-import { createClassFromSpec, VegaLite } from 'react-vega';
+import { createClassFromSpec } from 'react-vega';
 import * as Vega from 'vega';
 import cloneDeep from 'lodash/cloneDeep';
 import isEqual from 'lodash/isEqual';
@@ -95,7 +95,7 @@ const areEqual = (
 };
 
 const VisualRender: React.FC<IVisualRenderProps> = memo(
-    ({ specification, config, data, provider, enableTooltips, renderMode }) => {
+    ({ specification, config, provider, enableTooltips, renderMode }) => {
         const logLevel = useStoreVegaProp<number>('logLevel');
         const status = useStoreProp<TSpecStatus>('status', 'editorSpec');
         const visual4d3d3d = useStoreProp<boolean>('visual4d3d3d');

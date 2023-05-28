@@ -97,7 +97,7 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
             templateProvider: 'vegaLite',
             initializeImportExport: () =>
                 set(
-                    (state) => handleInitializeImportExport(state),
+                    () => handleInitializeImportExport(),
                     false,
                     'initializeImportExport'
                 ),
@@ -223,9 +223,7 @@ interface ITemplatePlaceholderImagePayload {
     dataUri: string;
 }
 
-const handleInitializeImportExport = (
-    state: TStoreState
-): Partial<TStoreState> => ({
+const handleInitializeImportExport = (): Partial<TStoreState> => ({
     templateAllImportCriteriaApplied: getImportPlaceholderResolutionStatus(
         templates.vegaLite[0]
     ),
@@ -240,7 +238,7 @@ const handleSyncTemplateExportDataset = (
         ...state.templateExportMetadata,
         ...{
             dataset: payload.map((d) => {
-                let match = state.templateExportMetadata.dataset.find(
+                const match = state.templateExportMetadata.dataset.find(
                     (ds) => ds.key === d.key
                 );
                 if (match) {
@@ -374,8 +372,8 @@ const handleUpdateTemplatePlaceholder = (
     state: TStoreState,
     payload: IPlaceholderValuePayload
 ): Partial<TStoreState> => {
-    let dataset = [
-        ...(<IDenebTemplateMetadata>state.templateToApply?.usermeta)?.[
+    const dataset = [
+        ...(<IDenebTemplateMetadata>state?.templateToApply?.usermeta)?.[
             DATASET_NAME
         ]
     ];

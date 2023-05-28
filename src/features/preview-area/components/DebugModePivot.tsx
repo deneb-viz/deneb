@@ -90,7 +90,6 @@ export const DebugModePivot = () => {
             <Pivot
                 aria-label={i18nValue('Pivot_Editor_Preview')}
                 selectedKey={editorPreviewAreaSelectedPivot}
-                // eslint-disable-next-line react/jsx-no-bind
                 onLinkClick={handlePivotClick}
                 headersOnly={true}
                 getTabId={getTabId}

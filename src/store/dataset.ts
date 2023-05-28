@@ -60,7 +60,7 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
         datasetViewObjects: {},
         confirmDatasetLoadComplete: () =>
             set(
-                (state) => handleConfirmDatasetLoadComplete(state),
+                () => handleConfirmDatasetLoadComplete(),
                 false,
                 'confirmDatasetLoadComplete'
             ),
@@ -139,9 +139,7 @@ interface IDataViewFlagsPayload {
     datasetViewIsValid: boolean;
 }
 
-const handleConfirmDatasetLoadComplete = (
-    state: TStoreState
-): Partial<TStoreState> => ({
+const handleConfirmDatasetLoadComplete = (): Partial<TStoreState> => ({
     datasetCanFetchMore: false,
     datasetProcessingStage: 'Processed'
 });

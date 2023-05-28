@@ -47,11 +47,11 @@ const resolveVisualMode = (
             return 'Editor';
         case isReadOnly(viewMode) && hasNoSpec(spec):
             return 'SplashReadOnly';
-        case isReadWriteDefault(viewMode, editMode) &&
+        case isReadWriteDefault(viewMode) &&
             datasetViewHasValidMapping &&
             hasNoSpec(spec):
             return 'DataNoSpec';
-        case isReadWriteDefault(viewMode, editMode) && hasNoSpec(spec):
+        case isReadWriteDefault(viewMode) && hasNoSpec(spec):
             return 'SplashReadWrite';
         case !hasNoSpec:
             return 'SplashInitial';
@@ -74,8 +74,7 @@ const isReadOnly = (viewMode: ViewMode) => viewMode === ViewMode.View;
 /**
  * Logic to determine if the visual is currently displayed in read/write mode (i.e. it's in Desktop, or Service + edit).
  */
-const isReadWriteDefault = (viewMode: ViewMode, editMode: EditMode) =>
-    viewMode === ViewMode.Edit;
+const isReadWriteDefault = (viewMode: ViewMode) => viewMode === ViewMode.Edit;
 
 /**
  * Logic to determine if the visual is currently in the Advanced Editor.
