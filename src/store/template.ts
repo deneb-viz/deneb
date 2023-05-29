@@ -28,8 +28,6 @@ import {
 } from '../features/visual-create';
 import { getTemplateWithBasePowerBiTheme } from '../features/powerbi-vega-extensibility';
 
-// tslint:disable:max-func-body-length
-
 export interface ITemplateSlice {
     templateSelectedIndex: number;
     templateFile: File;
@@ -73,6 +71,7 @@ export interface ITemplateSlice {
     updateTemplateImportSuccess: (payload: ITemplateImportPayload) => void;
 }
 
+// eslint-disable-next-line max-lines-per-function
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <ITemplateSlice>{
         ...{
@@ -373,9 +372,9 @@ const handleUpdateTemplatePlaceholder = (
     payload: IPlaceholderValuePayload
 ): Partial<TStoreState> => {
     const dataset = [
-        ...(<IDenebTemplateMetadata>state?.templateToApply?.usermeta)?.[
+        ...((<IDenebTemplateMetadata>state?.templateToApply?.usermeta)?.[
             DATASET_NAME
-        ]
+        ] ?? [])
     ];
     const match = dataset?.find((ph) => ph.key === payload.key);
     if (match) {

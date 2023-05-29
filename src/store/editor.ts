@@ -20,8 +20,6 @@ import { getFieldsInUseFromSpec } from '../features/template';
 import { ICompiledSpec, IFixResult } from '../features/specification';
 import { TEditorRole } from '../features/json-editor';
 
-// tslint:disable:max-func-body-length
-
 export interface IEditorSlice {
     editorAutoApply: boolean;
     editorCanAutoApply: boolean;
@@ -77,6 +75,7 @@ export interface IEditorSlice {
     updateEditorZoomLevel: (zoomLevel: number) => void;
 }
 
+// eslint-disable-next-line max-lines-per-function
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IEditorSlice>{
         editorAutoApply: false,

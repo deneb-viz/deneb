@@ -1,4 +1,3 @@
-// tslint:disable:export-name
 import { TopLevelSpec } from 'vega-lite';
 import { DATASET_NAME } from '../../constants';
 import { getState } from '../../store';

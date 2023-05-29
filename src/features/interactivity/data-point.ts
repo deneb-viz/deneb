@@ -22,12 +22,13 @@ import { hostServices } from '../../core/services';
 import { getCategoryColumns } from '../../core/data/dataView';
 
 /**
- * Confirm that each dataum in a datset contains a reconcilable identifier for
+ * Confirm that each datum in a datset contains a reconcilable identifier for
  * selection purposes.
  */
 const allDataHasIdentities = (data: IVegaViewDatum[]) =>
-    data?.filter((d) => d?.hasOwnProperty(DATASET_ROW_NAME))?.length ===
-    data?.length;
+    data?.filter((d) =>
+        Object.prototype.hasOwnProperty.call(d, DATASET_ROW_NAME)
+    )?.length === data?.length;
 
 /**
  * For the supplied (subset of) `fields`, Power BI data view `categories`
@@ -39,7 +40,7 @@ export const createSelectionIds = (
     categories: DataViewCategoryColumn[],
     rowIndices: number[]
 ) => {
-    let identities: ISelectionId[] = [];
+    const identities: ISelectionId[] = [];
     forEach(rowIndices, (ri) => {
         const identity = hostServices.selectionIdBuilder();
         forEach(fields, (v) => {
@@ -85,7 +86,10 @@ export const getIdentitiesFromData = (
             return null;
         }
         case data?.length === 1 &&
-            data[0].hasOwnProperty(DATASET_IDENTITY_NAME): {
+            Object.prototype.hasOwnProperty.call(
+                data[0],
+                DATASET_IDENTITY_NAME
+            ): {
             // Single, identifiable datum
             return [<ISelectionId>data[0]?.[DATASET_IDENTITY_NAME]];
         }

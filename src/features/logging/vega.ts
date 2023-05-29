@@ -60,6 +60,7 @@ export class LocalVegaLoggerService implements Vega.LoggerInterface {
     level(_: number): this;
     level(): number;
     level(_?: number) {
+        // eslint-disable-next-line powerbi-visuals/no-banned-terms
         if (arguments.length) {
             this.#level = +_;
             return this;

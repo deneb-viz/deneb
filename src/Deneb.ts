@@ -55,7 +55,7 @@ export class Deneb implements IVisual {
     // The root element for the entire visual
     private container: HTMLElement;
     // React app container
-    private reactRoot: React.FunctionComponentElement<{}>;
+    private reactRoot: React.FunctionComponentElement<Record<string, never>>;
     // Visual host services
     private host: IVisualHost;
     // Handle rendering events

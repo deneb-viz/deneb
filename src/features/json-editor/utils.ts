@@ -29,7 +29,7 @@ const addMarkdownProps = (value: any) => {
             value.markdownDescription = value.description;
         }
         forIn(value, (val, key) => {
-            if (value.hasOwnProperty(key)) {
+            if (Object.prototype.hasOwnProperty.call(value, key)) {
                 value[key] = addMarkdownProps(value[key]);
             }
         });

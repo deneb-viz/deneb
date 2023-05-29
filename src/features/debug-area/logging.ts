@@ -43,8 +43,12 @@ const getResolvedLogEntries = () => {
     return logHasErrors() || warns.length > 0
         ? [
               ...(error ? [{ level: Error, message: error }] : []),
-              ...errors?.map((e): ILogEntry => ({ level: Error, message: e })),
-              ...warns?.map((w): ILogEntry => ({ level: Warn, message: w }))
+              ...(errors ?? []).map(
+                  (e): ILogEntry => ({ level: Error, message: e })
+              ),
+              ...(warns ?? []).map(
+                  (w): ILogEntry => ({ level: Warn, message: w })
+              )
           ]
         : [{ level: Info, message: i18nValue('Pivot_Log_No_Issues') }];
 };
