@@ -44,7 +44,7 @@ export const getValidator = () => {
  * output to the view's custom logger.
  */
 export const validateVegaLite = (
-    spec: Object,
+    spec: object,
     logger: LocalVegaLoggerService
 ) => {
     const valid = vegaLiteValidator(spec);
@@ -63,7 +63,7 @@ export const validateVegaLite = (
  * Perform validation of a Vega specification, passing any specific log output
  * to the view's custom logger.
  */
-export const validateVega = (spec: Object, logger: LocalVegaLoggerService) => {
+export const validateVega = (spec: object, logger: LocalVegaLoggerService) => {
     const valid = vegaValidator(spec);
     if (!valid) {
         for (const error of vegaValidator.errors) {

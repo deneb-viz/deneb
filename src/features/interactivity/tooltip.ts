@@ -45,7 +45,7 @@ const TOOLTIP_RESERVED_WORDS = [DATASET_IDENTITY_NAME, DATASET_KEY_NAME];
  * Power BI tooltip items (`VisualTooltipDataItem[]`).
  */
 const extractTooltipDataItemsFromObject = (
-    tooltip: Object,
+    tooltip: object,
     autoFormatFields: IVegaViewDatum
 ): VisualTooltipDataItem[] => {
     const autoFormatMetadata = getDatasetFieldsBySelectionKeys(
@@ -77,7 +77,7 @@ const getCuratedTooltipItem = (key: string, value: any) =>
  * Sometimes, we can fudge the aggregates or other operations to create deeply nested objects in our dataset. This will apply a deeper,
  * recursive search and replace of keys matching out interactivity reserved words and 'redact' them with indicators for tooltips.
  */
-const getDeepRedactedTooltipItem = (object: Object) => {
+const getDeepRedactedTooltipItem = (object: object) => {
     return Array.isArray(object)
         ? object.map(getDeepRedactedTooltipItem)
         : object && typeof object === 'object'
@@ -99,7 +99,7 @@ const getDeepRedactedTooltipItem = (object: Object) => {
  *  - The field is a number type, and:
  *  - The tooltip value exactly matches the number representation in the `datum`.
  */
-const getFieldsEligibleForAutoFormat = (tooltip: Object) =>
+const getFieldsEligibleForAutoFormat = (tooltip: object) =>
     pickBy(tooltip, (v, k) => {
         const ttKeys = keys(tooltip),
             mdKeys = keys(getDatasetFieldsBySelectionKeys(ttKeys));
@@ -165,12 +165,12 @@ export const resolveCoordinates = (event: MouseEvent): [number, number] => [
 ];
 
 /**
- * For a given datum, resolve it to an array of keys and values. Addiitonally, we can (optionally) ensure that the
+ * For a given datum, resolve it to an array of keys and values. Additionally, we can (optionally) ensure that the
  * `interactivityReservedWords` are stripped out so that we can get actual fields and values assigned to a datum.
  */
 const resolveDatumToArray = (obj: IVegaViewDatum, filterReserved = true) =>
     Object.entries({ ...obj }).filter(
-        ([k, v]) => (filterReserved && !isTooltipReservedWord(k)) || k
+        ([k]) => (filterReserved && !isTooltipReservedWord(k)) || k
     );
 
 /**
@@ -180,7 +180,7 @@ const resolveDatumToArray = (obj: IVegaViewDatum, filterReserved = true) =>
  */
 const resolveTooltipContent =
     (tooltipService: ITooltipService) =>
-    (handler: any, event: MouseEvent, item: any, value: any) => {
+    (handler: any, event: MouseEvent, item: any) => {
         const coordinates = resolveCoordinates(event);
         if (item && item.tooltip) {
             const datum = resolveDataFromItem(item);

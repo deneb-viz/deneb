@@ -10,12 +10,12 @@ const EDITOR_SCHEMAS: IEditorSchema[] = [
     {
         provider: 'vega',
         role: 'spec',
-        schema: vegaValidator.schema
+        schema: <object>vegaValidator.schema
     },
     {
         provider: 'vegaLite',
         role: 'spec',
-        schema: vegaLiteValidator.schema
+        schema: <object>vegaLiteValidator.schema
     }
 ];
 

@@ -18,7 +18,7 @@ export type TEditorRole = 'spec' | 'config' | 'settings';
 export interface IEditorSchema {
     provider: TSpecProvider;
     role: TEditorRole;
-    schema: Object;
+    schema: object;
 }
 
 /**

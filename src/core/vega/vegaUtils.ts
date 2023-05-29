@@ -54,7 +54,7 @@ const getPatchedData = (spec: Spec) => {
 };
 
 // Logic to patch helper signals into a Vega spec
-const getPatchedSignals = (spec: Object) => ({
+const getPatchedSignals = (spec: object) => ({
     signals: [...(spec['signals'] || []), ...customSignals]
 });
 

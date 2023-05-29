@@ -13,7 +13,7 @@ type TIndentContext = 'editor' | 'tooltip';
  * default to provide if the parse fails (will return empty object (`{}`) if
  * not supplied).
  */
-export const cleanParse = (content: string, fallback?: string): Object => {
+export const cleanParse = (content: string, fallback?: string): object => {
     try {
         return JSON.parse(content);
     } catch {
@@ -43,7 +43,7 @@ export const getJsonAsIndentedString = (
  * level of depth.
  */
 export const stringifyPruned = (
-    json: Object,
+    json: object,
     maxDepth = TABLE_VALUE_MAX_DEPTH
 ) => JSON.stringify(json, prune(maxDepth));
 
@@ -51,7 +51,7 @@ export const stringifyPruned = (
  * For a given object, prune at the specified level of depth. Borrowed and
  * adapted from vega-tooltip.
  */
-const prune = (obj: Object, maxDepth = TABLE_VALUE_MAX_DEPTH) => {
+const prune = (maxDepth = TABLE_VALUE_MAX_DEPTH) => {
     const stack: any[] = [];
     return function (this: any, key: string, value: any) {
         if (typeof value !== 'object' || value === null) {

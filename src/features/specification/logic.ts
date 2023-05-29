@@ -22,7 +22,7 @@ import { i18nValue } from '../../core/ui/i18n';
 import { IFixResult, IFixStatus } from './types';
 import { getLastVersionInfo } from '../../core/utils/versioning';
 import { TEditorRole } from '../json-editor';
-import { LocalVegaLoggerService } from '../logging';
+import { LocalVegaLoggerService, logError } from '../logging';
 
 const PROPERTY_DEFAULTS = getConfig().propertyDefaults.vega;
 
@@ -105,7 +105,7 @@ export const fixAndFormatSpecification = () => {
                 configEditorService.getText()
             ),
             success = fixedRawSpec.success && fixedRawConfig.success;
-        let result: IFixResult = {
+        const result: IFixResult = {
             success: success,
             spec: fixedRawSpec,
             config: fixedRawConfig,
@@ -120,7 +120,9 @@ export const fixAndFormatSpecification = () => {
         }
         dispatchFixStatus(result);
         persistSpecification();
-    } catch (e) {}
+    } catch (e) {
+        logError('Format error', e);
+    }
 };
 
 /**
