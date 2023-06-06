@@ -31,7 +31,7 @@ export default class DeveloperSettings extends SettingsBase {
             [propertyName: string]: any;
         } = {}
     ): VisualObjectInstanceEnumerationObject {
-        enumerationObject.instances.map((i) => {
+        enumerationObject.instances.map(() => {
             if (!isFeatureEnabled('developerMode')) {
                 enumerationObject.instances = [];
             }
