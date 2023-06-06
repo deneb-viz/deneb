@@ -41,7 +41,7 @@ import { resolveReportViewport } from './core/ui/dom';
 import { getDatasetTemplateFields } from './core/data/fields';
 import { DATASET_NAME } from './constants';
 import { parseActiveSpecification } from './features/specification';
-import { logHeading, logHost } from './features/logging';
+import { logDebug, logHeading, logHost } from './features/logging';
 import { getVisualMetadata } from './core/utils/config';
 
 /**
@@ -112,6 +112,7 @@ export class Deneb implements IVisual {
     }
 
     private resolveUpdateOptions(options: VisualUpdateOptions) {
+        logDebug('Resolving update options...', { options });
         const settings = this.settings;
         hostServices.visualUpdateOptions = options;
         hostServices.resolveLocaleFromSettings(settings.developer.locale);
@@ -125,21 +126,18 @@ export class Deneb implements IVisual {
         } = getState();
         // Manage persistent viewport sizing for view vs. editor
         switch (true) {
-            case options.type === VisualUpdateType.All:
-            case options.type === VisualUpdateType.Data:
-            /**
-             * This cooercion is needed due to a bug in the API w/ `VisualUpdateType.ResizeEnd`.
-             * I've submitted a PR for a fix: https://github.com/microsoft/powerbi-visuals-api/pull/38
-             */
-            case options.type.toString() === '36': {
+            case VisualUpdateType.All === (options.type & VisualUpdateType.All):
+            case VisualUpdateType.Data ===
+                (options.type & VisualUpdateType.Data):
+            case VisualUpdateType.ResizeEnd ===
+                (options.type & VisualUpdateType.ResizeEnd): {
+                logDebug('Persisting viewport to properties...');
                 resolveReportViewport(
                     options.viewport,
                     options.viewMode,
                     options.editMode,
                     settings.display
                 );
-            }
-            default: {
             }
         }
         // Provide intial update options to store
@@ -151,13 +149,10 @@ export class Deneb implements IVisual {
         handlePropertyMigration();
         // Data change or re-processing required?
         switch (true) {
-            case options.type === VisualUpdateType.All:
-            case options.type === VisualUpdateType.Data:
-            // This is needed due to an issue with the developer visual, where
-            // MS have introduced an unknown `VisualUpdateType` type that is
-            // not part of the API. Refer to powerbi-visuals-tools/#422 for
-            // details of the issue.
-            case options.type.toString() === '254': {
+            case VisualUpdateType.All === (options.type & VisualUpdateType.All):
+            case VisualUpdateType.Data ===
+                (options.type & VisualUpdateType.Data): {
+                logDebug('Visual update is volatile. Processing data...');
                 // If first segment, we test and set state accordingly for user feedback
                 if (
                     options.operationKind ===
@@ -186,6 +181,9 @@ export class Deneb implements IVisual {
                 }
                 // If the DV didn't validate then we shouldn't expend effort mapping it and just display landing page
                 if (!getState().datasetViewHasValidMapping) {
+                    logDebug(
+                        'Dataset view is invalid. Displaying landing page.'
+                    );
                     updateDatasetViewInvalid();
                     break;
                 }
@@ -204,8 +202,6 @@ export class Deneb implements IVisual {
                 }
                 break;
             }
-            default: {
-            }
         }
         getState().datasetProcessingStage === 'Processed' &&
             parseActiveSpecification();
@@ -223,17 +219,17 @@ export class Deneb implements IVisual {
     public enumerateObjectInstances(
         options: EnumerateVisualObjectInstancesOptions
     ): VisualObjectInstance[] | VisualObjectInstanceEnumerationObject {
-        let instances = (<VisualObjectInstanceEnumerationObject>(
-                VisualSettings.enumerateObjectInstances(
-                    this.settings || VisualSettings.getDefault(),
-                    options
-                )
-            )).instances,
-            objectName = options.objectName,
-            enumerationObject: VisualObjectInstanceEnumerationObject = {
-                containers: [],
-                instances: instances
-            };
+        const instances = (<VisualObjectInstanceEnumerationObject>(
+            VisualSettings.enumerateObjectInstances(
+                this.settings || VisualSettings.getDefault(),
+                options
+            )
+        )).instances;
+        const objectName = options.objectName;
+        let enumerationObject: VisualObjectInstanceEnumerationObject = {
+            containers: [],
+            instances: instances
+        };
 
         try {
             // We try where possible to use the standard method signature to process the instance, but there are some exceptions...
@@ -253,8 +249,7 @@ export class Deneb implements IVisual {
             }
         } catch (e) {
             console.error('Error', e);
-        } finally {
-            return enumerationObject;
         }
+        return enumerationObject;
     }
 }
