@@ -24,10 +24,7 @@ export default class DataLimitSettings extends SettingsBase {
      * @returns Processed `VisualObjectInstance[]`
      */
     public processEnumerationObject(
-        enumerationObject: VisualObjectInstanceEnumerationObject,
-        options: {
-            [propertyName: string]: any;
-        } = {}
+        enumerationObject: VisualObjectInstanceEnumerationObject
     ): VisualObjectInstanceEnumerationObject {
         if (this.enabled) {
             enumerationObject.instances.map((i) => {
