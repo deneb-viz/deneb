@@ -160,9 +160,15 @@
             "legacyVersion": "5.1.1"
         }
     },
+    "dataTable": {
+        "rowsPerPage": {
+            "default": 10,
+            "values": [10, 25, 50, 100]
+        }
+    },
     "previewPane": {
         "areaMinSize": 100,
-        "toolbarMinSize": 36,
+        "toolbarMinSize": 30,
         "toolbarInitialPercent": 40,
         "logLevels": [
             {
@@ -334,6 +340,16 @@
         "min": 10,
         "max": 400,
         "step": 10,
-        "default": 100
+        "default": 100,
+        "customLevels": [
+            { "value": "400", "isLevel": true },
+            { "value": "200", "isLevel": true },
+            { "value": "100", "isLevel": true },
+            { "value": "66", "isLevel": true },
+            { "value": "50", "isLevel": true },
+            { "value": "33", "isLevel": true },
+            { "value": "Fit", "isFit": true },
+            { "value": "Custom", "isCustom": true }
+        ]
     }
 }

@@ -3,6 +3,7 @@ import { handleContextMenuEvent } from '../interactivity/context-menu';
 import { handleCrossFilterEvent } from '../interactivity/cross-filter';
 import { logDebug, StoreVegaLoggerService } from '../logging';
 import { hostServices } from '../../core/services';
+import { getState } from '../../store';
 
 let view: View | null;
 
@@ -89,6 +90,7 @@ export const handleNewView = (newView: View) => {
         logDebug('View services', view, VegaViewServices.getAllSignals());
         bindContextMenuEvents(view);
         bindCrossFilterEvents(view);
+        getState().interface.generateRenderId();
         hostServices.renderingFinished();
     });
 };

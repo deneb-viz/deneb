@@ -3,7 +3,6 @@ import SplitPane from 'react-split-pane';
 
 import store, { useStoreProp } from '../../../store';
 
-import { PreviewToolbar } from './PreviewToolbar';
 import { PreviewVisual } from './PreviewVisual';
 import {
     calculatePreviewMaximumHeight,
@@ -11,6 +10,7 @@ import {
 } from '../../../core/ui/advancedEditor';
 import { reactLog } from '../../../core/utils/reactLog';
 import { PREVIEW_PANE_AREA_MIN_SIZE } from '../../../constants';
+import { DebugAreaContent } from '../../debug-area';
 
 const getMaxSize = () =>
     calculatePreviewMaximumHeight(
@@ -34,7 +34,7 @@ export const PreviewArea: React.FC = () => {
             resizerStyle={resizerHorizontalStyles}
         >
             <PreviewVisual />
-            <PreviewToolbar />
+            <DebugAreaContent />
         </SplitPane>
     );
 };

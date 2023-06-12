@@ -1,9 +1,11 @@
-import { makeStyles } from '@fluentui/react-components';
+import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
+import { getConfig } from '../../core/utils/config';
 
 /**
  * UI theming utilities.
  */
 export * as Themes from './theme';
+export { StatusBarContainer } from './components/status-bar-container';
 
 export type InterfaceTheme = 'light' | 'dark';
 
@@ -16,5 +18,14 @@ export const useInterfaceStyles = () =>
             '& .editor-heading': {
                 cursor: 'pointer'
             }
+        },
+        statusBarContainer: {
+            boxSizing: 'border-box',
+            width: '100%',
+            height: `${getConfig().previewPane.toolbarMinSize}px}`,
+            borderTopColor: tokens.colorNeutralStroke2,
+            borderTopStyle: 'solid',
+            borderTopWidth: '1px',
+            ...shorthands.overflow('hidden')
         }
     })();

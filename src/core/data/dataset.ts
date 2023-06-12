@@ -5,6 +5,7 @@ import PrimitiveValue = powerbi.PrimitiveValue;
 
 import range from 'lodash/range';
 import reduce from 'lodash/reduce';
+import { digest } from 'jsum';
 
 import {
     IAugmentedMetadataField,
@@ -63,6 +64,15 @@ export const doUnallocatedFieldsExist = (
         (result, value, key) => !(key in fieldsAvailable) || result,
         false
     ) || currentResult;
+
+/**
+ * Create hash of dataset, that we can use to determine changes more cheaply
+ * within the UI.
+ */
+const getDatasetHash = (
+    fields: IVisualDatasetFields,
+    values: IVisualDatasetValueRow[]
+) => digest({ fields, values }, 'SHA256', 'hex');
 
 /**
  * For supplied data view field metadata, produce a suitable object
@@ -130,6 +140,7 @@ export const getDataset = (): IVisualDataset => getState().dataset;
  */
 export const getEmptyDataset = (): IVisualDataset => ({
     fields: {},
+    hashValue: getDatasetHash({}, []),
     values: [],
     hasHighlights: false
 });
@@ -190,8 +201,10 @@ export const getMappedDataset = (
                     };
                 }
             );
+            const hashValue = getDatasetHash(fields, values);
             return {
                 hasHighlights,
+                hashValue,
                 fields,
                 values
             };

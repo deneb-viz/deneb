@@ -45,13 +45,13 @@ export const getJsonAsIndentedString = (
 export const stringifyPruned = (
     json: object,
     maxDepth = TABLE_VALUE_MAX_DEPTH
-) => JSON.stringify(json, prune(maxDepth));
+) => JSON.stringify(json, getPrunedObject(maxDepth));
 
 /**
  * For a given object, prune at the specified level of depth. Borrowed and
  * adapted from vega-tooltip.
  */
-const prune = (maxDepth = TABLE_VALUE_MAX_DEPTH) => {
+export const getPrunedObject = (maxDepth = TABLE_VALUE_MAX_DEPTH) => {
     const stack: any[] = [];
     return function (this: any, key: string, value: any) {
         if (typeof value !== 'object' || value === null) {

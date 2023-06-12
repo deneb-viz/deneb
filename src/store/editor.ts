@@ -309,16 +309,27 @@ const handleRecordLogWarn = (
 const handleRecordLogError = (
     state: TStoreState,
     message: string
-): Partial<TStoreState> => ({
-    editorLogErrors: uniqWith([...state.editorLogErrors, message], isEqual)
-});
+): Partial<TStoreState> => {
+    const editorLogErrors = uniqWith(
+        [...state.editorLogErrors, message],
+        isEqual
+    );
+    return {
+        debug: { ...state.debug, logAttention: editorLogErrors.length > 0 },
+        editorLogErrors
+    };
+};
 
 const handleRecordLogErrorMain = (
     state: TStoreState,
     message: string
-): Partial<TStoreState> => ({
-    editorLogError: message
-});
+): Partial<TStoreState> => {
+    const logAttention = message !== null;
+    return {
+        editorLogError: message,
+        debug: { ...state.debug, logAttention }
+    };
+};
 
 const handleSetEditorFixErrorDismissed = (
     state: TStoreState
@@ -507,6 +518,7 @@ const handleUpdateEditorSpec = (
     state: TStoreState,
     payload: IEditorSpecUpdatePayload
 ): Partial<TStoreState> => {
+    const logAttention = payload.error !== null;
     return {
         editorSpec: payload.spec,
         editorLogError: payload.error,
@@ -518,7 +530,8 @@ const handleUpdateEditorSpec = (
             state.visualIsInFocusMode,
             state.visualViewMode,
             payload.spec
-        )
+        ),
+        debug: { ...state.debug, logAttention }
     };
 };
 
