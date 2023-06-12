@@ -248,7 +248,7 @@
     "splitPaneDefaults": {
         "minSize": 350,
         "defaultSizePercent": 0.4,
-        "maxSizePercent": 0.6,
+        "maxSizePercent": 0.5,
         "collapsedSize": 36
     },
     "svgFilters": {
