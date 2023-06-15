@@ -226,19 +226,27 @@ export const parseActiveSpecification = () => {
 };
 
 /**
- * Resolve the spec/config and use the `properties` API for persistence. Also resets the `isDirty` flag in the store.
+ * Resolve the spec/config and use the `properties` API for persistence. Also
+ * resets the `isDirty` flag in the store.
  */
 export const persistSpecification = (stage = true) => {
-    stage && stageEditorData('spec');
-    stage && stageEditorData('config');
     const {
-        editorStagedConfig,
-        editorStagedSpec,
-        renewEditorFieldsInUse,
-        updateEditorDirtyStatus
+        editor: { stagedConfig, stagedSpec, updateChanges },
+        visualSettings: {
+            vega: { provider }
+        }
     } = getState();
-    const { provider } = getVegaSettings();
-    updateEditorDirtyStatus(false);
+    const editorStagedSpec = stage ? getCleanEditorJson('spec') : stagedSpec;
+    const editorStagedConfig = stage
+        ? getCleanEditorJson('config')
+        : stagedConfig;
+    const isDirty = false;
+    updateChanges({
+        isDirty,
+        stagedSpec: editorStagedSpec,
+        stagedConfig: editorStagedConfig
+    });
+    const { renewEditorFieldsInUse } = getState();
     renewEditorFieldsInUse();
     updateObjectProperties(
         resolveObjectProperties([
@@ -273,21 +281,6 @@ const resolveFixErrorMessage = (
             )}`) ||
         undefined
     );
-};
-
-/**
- * Add the specified editor's current text to the staging area in the store. This can then be used for persistence, or
- * application of changes if the creator exits the advanced editor and there are unapplied changes.
- */
-export const stageEditorData = (role: TEditorRole) => {
-    switch (role) {
-        case 'spec':
-            getState().updateEditorStagedSpec(getCleanEditorJson('spec'));
-            return;
-        case 'config':
-            getState().updateEditorStagedConfig(getCleanEditorJson('config'));
-            return;
-    }
 };
 
 const tryFixAndFormat = (operation: TEditorRole, input: string): IFixStatus => {

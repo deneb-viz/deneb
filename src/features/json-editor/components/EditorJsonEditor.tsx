@@ -6,13 +6,13 @@ import 'ace-builds/src-noconflict/theme-chrome';
 import 'ace-builds/src-noconflict/ext-language_tools';
 import 'ace-builds/src-noconflict/ext-searchbox';
 import { reactLog } from '../../../core/utils/reactLog';
-import { stageEditorData } from '../../specification';
 import IVisualEditor = editor.IVisualEditor;
 import { IVisualEditorProps } from '../types';
 import {
     getAssignedJsonEditor,
     handleComponentUpdate
 } from '../utils-jsoneditor';
+import { getState } from '../../../store';
 
 export class EditorJsonEditor extends React.Component<IVisualEditorProps> {
     private container: HTMLDivElement;
@@ -41,7 +41,17 @@ export class EditorJsonEditor extends React.Component<IVisualEditorProps> {
     }
 
     componentWillUnmount() {
-        stageEditorData(this.editor.role);
+        const {
+            editor: { updateStagedConfig, updateStagedSpec }
+        } = getState();
+        switch (this.editor.role) {
+            case 'spec':
+                updateStagedSpec(this.editor.jsonEditor.getText());
+                break;
+            case 'config':
+                updateStagedConfig(this.editor.jsonEditor.getText());
+                break;
+        }
     }
 
     private bindEditorElement(element: HTMLDivElement) {

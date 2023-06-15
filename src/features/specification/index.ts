@@ -4,7 +4,6 @@ export {
     hasLiveSpecChanged,
     isLegacySpec,
     parseActiveSpecification,
-    persistSpecification,
-    stageEditorData
+    persistSpecification
 } from './logic';
 export * from './types';

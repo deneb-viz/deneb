@@ -128,11 +128,14 @@ export const handleComponentUpdate = (
  * checks/handles the `isDirty` state.
  */
 const handleTextEntry = () => {
-    const { editorAutoApply, updateEditorDirtyStatus } = getState();
+    const {
+        editorAutoApply,
+        editor: { updateIsDirty }
+    } = getState();
     if (editorAutoApply) {
         persistSpecification();
     } else {
-        updateEditorDirtyStatus(hasLiveSpecChanged());
+        updateIsDirty(hasLiveSpecChanged());
     }
 };
 

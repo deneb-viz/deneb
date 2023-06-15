@@ -180,7 +180,7 @@ const dispatchDefaultTemplate = () => {
  * Manages dispatch of the discard changes command method to the store.
  */
 const dispatchDiscardChanges = () => {
-    getState().updateEditorDirtyStatus(false);
+    getState().editor.updateIsDirty(false);
 };
 
 /**
@@ -232,10 +232,12 @@ const handlePersist = (
  * Check auto-apply and dirty status to determine whether the Apply button should be enabled or not.
  */
 const isApplyButtonDisabled = () => {
-    const { editorAutoApply, editorCanAutoApply, editorIsDirty } = store(
-        (state) => state
-    );
-    return (editorAutoApply && !editorCanAutoApply) || !editorIsDirty;
+    const {
+        editorAutoApply,
+        editorCanAutoApply,
+        editor: { isDirty }
+    } = store((state) => state);
+    return (editorAutoApply && !editorCanAutoApply) || !isDirty;
 };
 
 /**

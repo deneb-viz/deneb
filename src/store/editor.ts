@@ -21,12 +21,20 @@ import { ICompiledSpec, IFixResult } from '../features/specification';
 import { TEditorRole } from '../features/json-editor';
 
 export interface IEditorSlice {
+    editor: {
+        isDirty: boolean;
+        stagedConfig: string;
+        stagedSpec: string;
+        updateChanges: (payload: IEditorSliceUpdateChangesPayload) => void;
+        updateIsDirty: (isDirty: boolean) => void;
+        updateStagedConfig: (stagedConfig: string) => void;
+        updateStagedSpec: (stagedSpec: string) => void;
+    };
     editorAutoApply: boolean;
     editorCanAutoApply: boolean;
     editorFieldDatasetMismatch: boolean;
     editorFieldsInUse: IVisualDatasetFields;
     editorFixResult: IFixResult;
-    editorIsDirty: boolean;
     editorIsExportDialogVisible: boolean;
     editorIsMapDialogVisible: boolean;
     editorIsNewDialogVisible: boolean;
@@ -45,8 +53,6 @@ export interface IEditorSlice {
     editorPaneWidth: number;
     editorSelectedOperation: TEditorRole;
     editorSpec: ICompiledSpec;
-    editorStagedConfig: string;
-    editorStagedSpec: string;
     editorZoomLevel: number;
     renewEditorFieldsInUse: () => void;
     recordLogErrorMain: (message: string) => void;
@@ -57,7 +63,6 @@ export interface IEditorSlice {
     toggleEditorPane: () => void;
     togglePreviewDebugPane: () => void;
     updateEditorPreviewDebugIsExpanded: (value: boolean) => void;
-    updateEditorDirtyStatus: (dirty: boolean) => void;
     updateEditorExportDialogVisible: (visible: boolean) => void;
     updateEditorFieldMapping: (
         payload: IEditorFieldMappingUpdatePayload
@@ -70,14 +75,41 @@ export interface IEditorSlice {
     updateEditorSelectedOperation: (role: TEditorRole) => void;
     updateEditorSelectedPreviewRole: (role: TPreviewPivotRole) => void;
     updateEditorSpec: (payload: IEditorSpecUpdatePayload) => void;
-    updateEditorStagedConfig: (config: string) => void;
-    updateEditorStagedSpec: (spec: string) => void;
     updateEditorZoomLevel: (zoomLevel: number) => void;
 }
 
 // eslint-disable-next-line max-lines-per-function
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IEditorSlice>{
+        editor: {
+            isDirty: false,
+            stagedConfig: null,
+            stagedSpec: null,
+            updateChanges: (payload) =>
+                set(
+                    (state) => handleUpdateChanges(state, payload),
+                    false,
+                    'editor.updateChanges'
+                ),
+            updateIsDirty: (isDirty) =>
+                set(
+                    (state) => handleUpdateIsDirty(state, isDirty),
+                    false,
+                    'editor.updateIsDirty'
+                ),
+            updateStagedConfig: (stagedConfig) =>
+                set(
+                    (state) => handleUpdateStagedConfig(state, stagedConfig),
+                    false,
+                    'editor.updateStagedConfig'
+                ),
+            updateStagedSpec: (stagedSpec) =>
+                set(
+                    (state) => handleUpdateStagedSpec(state, stagedSpec),
+                    false,
+                    'editor.updateStagedSpec'
+                )
+        },
         editorAutoApply: false,
         editorCanAutoApply: true,
         editorFieldDatasetMismatch: false,
@@ -88,7 +120,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
             spec: null,
             config: null
         },
-        editorIsDirty: false,
         editorIsExportDialogVisible: false,
         editorIsMapDialogVisible: false,
         editorIsNewDialogVisible: true,
@@ -111,8 +142,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
             spec: null,
             rawSpec: null
         },
-        editorStagedConfig: null,
-        editorStagedSpec: null,
         editorZoomLevel: getConfig().zoomLevel.default,
         recordLogErrorMain: (message) =>
             set(
@@ -161,12 +190,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                 (state) => handleTogglePreviewDebugPane(state),
                 false,
                 'togglePreviewDebugPane'
-            ),
-        updateEditorDirtyStatus: (dirty) =>
-            set(
-                (state) => handleUpdateEditorDirtyStatus(state, dirty),
-                false,
-                'updateEditorDirtyStatus'
             ),
         updateEditorFieldMapping: (payload) =>
             set(
@@ -236,18 +259,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                 false,
                 'updateEditorSpec'
             ),
-        updateEditorStagedConfig: (config) =>
-            set(
-                (state) => handleUpdateEditorStagedConfig(state, config),
-                false,
-                'updateEditorStagedConfig'
-            ),
-        updateEditorStagedSpec: (spec) =>
-            set(
-                (state) => handleUpdateEditorStagedSpec(state, spec),
-                false,
-                'updateEditorStagedSpec'
-            ),
         updateEditorZoomLevel: (zoomLevel) =>
             set(
                 (state) => handleupdateEditorZoomLevel(state, zoomLevel),
@@ -262,6 +273,51 @@ export const createEditorSlice: StateCreator<
     [],
     IEditorSlice
 > = sliceStateInitializer;
+
+export interface IEditorSliceUpdateChangesPayload {
+    isDirty: boolean;
+    stagedConfig: string;
+    stagedSpec: string;
+}
+
+const handleUpdateChanges = (
+    state: TStoreState,
+    payload: IEditorSliceUpdateChangesPayload
+): Partial<TStoreState> => {
+    const { isDirty, stagedConfig, stagedSpec } = payload;
+    return {
+        editor: {
+            ...state.editor,
+            isDirty,
+            stagedConfig,
+            stagedSpec
+        }
+    };
+};
+
+const handleUpdateStagedSpec = (
+    state: TStoreState,
+    stagedSpec: string
+): Partial<TStoreState> => {
+    return {
+        editor: {
+            ...state.editor,
+            stagedSpec
+        }
+    };
+};
+
+const handleUpdateStagedConfig = (
+    state: TStoreState,
+    stagedConfig: string
+): Partial<TStoreState> => {
+    return {
+        editor: {
+            ...state.editor,
+            stagedConfig
+        }
+    };
+};
 
 export interface IEditorPaneUpdatePayload {
     editorPaneWidth: number;
@@ -374,11 +430,14 @@ const handleToggleEditorPane = (state: TStoreState): Partial<TStoreState> => {
     };
 };
 
-const handleUpdateEditorDirtyStatus = (
+const handleUpdateIsDirty = (
     state: TStoreState,
-    dirty: boolean
+    isDirty: boolean
 ): Partial<TStoreState> => ({
-    editorIsDirty: dirty
+    editor: {
+        ...state.editor,
+        isDirty
+    }
 });
 
 const handleUpdateEditorFieldMappings = (
@@ -534,20 +593,6 @@ const handleUpdateEditorSpec = (
         debug: { ...state.debug, logAttention }
     };
 };
-
-const handleUpdateEditorStagedConfig = (
-    state: TStoreState,
-    config: string
-): Partial<TStoreState> => ({
-    editorStagedConfig: config
-});
-
-const handleUpdateEditorStagedSpec = (
-    state: TStoreState,
-    spec: string
-): Partial<TStoreState> => ({
-    editorStagedSpec: spec
-});
 
 const handleupdateEditorZoomLevel = (
     state: TStoreState,
