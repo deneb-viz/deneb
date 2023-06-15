@@ -80,7 +80,7 @@ export const ZoomLevelPopover: React.FC = () => {
         setZoomValue(data.value);
         switch (data.value) {
             case 'Fit':
-                return handleCustomZoomLevelChange(getZoomToFitScale()); // TODO: refactor to use calculated fit value
+                return handleCustomZoomLevelChange(getZoomToFitScale());
             case 'Custom':
                 return handleCustomZoomLevelChange(customZoomLevel);
             default:
