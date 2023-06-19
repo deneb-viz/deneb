@@ -69,7 +69,7 @@ export const doUnallocatedFieldsExist = (
  * Create hash of dataset, that we can use to determine changes more cheaply
  * within the UI.
  */
-const getDatasetHash = (
+export const getDatasetHash = (
     fields: IVisualDatasetFields,
     values: IVisualDatasetValueRow[]
 ) => digest({ fields, values }, 'SHA256', 'hex');

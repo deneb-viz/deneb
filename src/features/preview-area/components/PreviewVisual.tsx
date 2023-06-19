@@ -1,20 +1,21 @@
 import React from 'react';
-
 import store from '../../../store';
+import { shallow } from 'zustand/shallow';
 
 import DataProcessingRouter from '../../../components/DataProcessingRouter';
-import SpecificationError from '../../../components/status/SpecificationError';
-import { reactLog } from '../../../core/utils/reactLog';
 import { PREVIEW_PANE_AREA_PADDING } from '../../../constants';
-import { logHasErrors } from '../../debug-area';
+import { logRender } from '../../logging';
 
 export const PreviewVisual: React.FC = () => {
-    const { editorPreviewAreaHeight, editorSpec } = store((state) => state);
-    const { status } = editorSpec;
-    reactLog('Rendering [PreviewVisual]', status, editorPreviewAreaHeight);
+    const { editorPreviewAreaHeight, status } = store(
+        (state) => ({
+            editorPreviewAreaHeight: state.editorPreviewAreaHeight,
+            status: state.specification.status
+        }),
+        shallow
+    );
+    logRender('PreviewVisual', status, editorPreviewAreaHeight);
     switch (true) {
-        case logHasErrors():
-            return <SpecificationError />;
         default:
             return (
                 <div

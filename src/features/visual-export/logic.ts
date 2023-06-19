@@ -10,8 +10,8 @@ import {
     providerVersions
 } from '../../core/utils/config';
 import { isFeatureEnabled } from '../../core/utils/features';
-import { getJsonAsIndentedString } from '../../core/utils/json';
-import { getParsedConfigFromSettings, TSpecProvider } from '../../core/vega';
+import { cleanParse, getJsonAsIndentedString } from '../../core/utils/json';
+import { TSpecProvider } from '../../core/vega';
 import { getState } from '../../store';
 import { TTemplateExportState } from '../template';
 import {
@@ -25,7 +25,10 @@ import { IDenebTemplateMetadata } from '../template/schema';
  * template for export.
  */
 export const getExportTemplate = () => {
-    const { editorSpec, visualSettings } = getState();
+    const {
+        specification: { spec },
+        visualSettings
+    } = getState();
     const { vega } = visualSettings;
     const { providerResources } = getConfig();
     const vSchema = (
@@ -39,13 +42,18 @@ export const getExportTemplate = () => {
     };
     const usermeta = resolveExportUserMeta();
     const processedSpec = getTemplatedSpecification(
-        JSON.stringify(editorSpec.spec),
+        JSON.stringify(spec),
         usermeta?.[DATASET_NAME]
     );
     const outSpec = merge(
         baseObj,
         { usermeta: getPublishableUsermeta(usermeta) },
-        { config: getParsedConfigFromSettings() },
+        {
+            config: cleanParse(
+                visualSettings.vega.jsonConfig,
+                getConfig().propertyDefaults.vega.jsonConfig
+            )
+        },
         JSON.parse(processedSpec)
     );
     return getJsonAsIndentedString(outSpec);
@@ -167,9 +175,11 @@ export const updateTemplateExportState = (state: TTemplateExportState) => {
  * Checks to see if current spec is valid and updates store state for UI accordingly.
  */
 export const validateSpecificationForExport = () => {
-    const { editorSpec } = getState();
+    const {
+        specification: { status }
+    } = getState();
     updateTemplateExportState('Validating');
-    if (editorSpec.status === 'valid') {
+    if (status === 'valid') {
         updateTemplateExportState('Editing');
     } else {
         updateExportError('Template_Export_Bad_Spec');

@@ -1,21 +1,23 @@
 import React from 'react';
 import { MessageBarType } from '@fluentui/react/lib/MessageBar';
+import { shallow } from 'zustand/shallow';
 
-import { useStoreProp, useStoreVegaProp } from '../../store';
+import store from '../../store';
 import { i18nValue } from '../../core/ui/i18n';
 import NotificationMessageBar from '../elements/NotificationMessageBar';
-import { reactLog } from '../../core/utils/reactLog';
 import { dispatchCrossFilterAbort } from '../../features/interactivity';
+import { logRender } from '../../features/logging';
 
 const SelectionLimitMessageBar: React.FC = () => {
-    const datasetHasSelectionAborted: boolean = useStoreProp(
-        'datasetHasSelectionAborted'
+    const { datasetHasSelectionAborted, selectionMaxDataPoints } = store(
+        (state) => ({
+            datasetHasSelectionAborted: state.datasetHasSelectionAborted,
+            selectionMaxDataPoints:
+                state.visualSettings.vega.selectionMaxDataPoints
+        }),
+        shallow
     );
-
-    const selectionMaxDataPoints = useStoreVegaProp<number>(
-        'selectionMaxDataPoints'
-    );
-    reactLog('Rendering [SelectionLimitMessageBar]');
+    logRender('SelectionLimitMessageBar');
     return (
         <NotificationMessageBar
             dismissAction={dispatchCrossFilterAbort}

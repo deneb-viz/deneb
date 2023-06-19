@@ -40,7 +40,6 @@ import { handlePropertyMigration } from './core/utils/versioning';
 import { resolveReportViewport } from './core/ui/dom';
 import { getDatasetTemplateFields } from './core/data/fields';
 import { DATASET_NAME } from './constants';
-import { parseActiveSpecification } from './features/specification';
 import { logDebug, logHeading, logHost } from './features/logging';
 import { getVisualMetadata } from './core/utils/config';
 
@@ -203,8 +202,6 @@ export class Deneb implements IVisual {
                 break;
             }
         }
-        getState().datasetProcessingStage === 'Processed' &&
-            parseActiveSpecification();
     }
 
     private static parseSettings(dataView: DataView): VisualSettings {

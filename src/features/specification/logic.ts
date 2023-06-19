@@ -1,6 +1,7 @@
+import * as Vega from 'vega';
 import * as VegaLite from 'vega-lite';
-import { TopLevelSpec } from 'vega-lite';
 import jsonrepair from 'jsonrepair';
+import merge from 'lodash/merge';
 
 import { getConfig } from '../../core/utils/config';
 import {
@@ -8,21 +9,31 @@ import {
     specEditorService
 } from '../../core/services/JsonEditorServices';
 import { getState } from '../../store';
-import { getVegaSettings, getViewConfig, TSpecProvider } from '../../core/vega';
+import { getVegaSettings, TSpecProvider } from '../../core/vega';
 import {
     getDenebVersionObject,
     getProviderVersionProperty,
     resolveObjectProperties,
     updateObjectProperties
 } from '../../core/utils/properties';
-import { IEditorSpecUpdatePayload } from '../../store/editor';
 import { cleanParse, getJsonAsIndentedString } from '../../core/utils/json';
-import { validateVega, validateVegaLite } from '../../core/vega/validation';
 import { i18nValue } from '../../core/ui/i18n';
-import { IFixResult, IFixStatus } from './types';
+import {
+    IFixResult,
+    IFixStatus,
+    ISpecification,
+    ISpecificationParseOptions,
+    TSpecStatus
+} from './types';
 import { getLastVersionInfo } from '../../core/utils/versioning';
 import { TEditorRole } from '../json-editor';
-import { LocalVegaLoggerService, logError } from '../logging';
+import { LocalVegaLoggerService, logDebug, logError } from '../logging';
+import { IVisualDatasetValueRow } from '../../core/data';
+import { DATASET_NAME } from '../../constants';
+import {
+    getFriendlyValidationErrors,
+    getProviderValidator
+} from './schema-validation';
 
 const PROPERTY_DEFAULTS = getConfig().propertyDefaults.vega;
 
@@ -50,43 +61,6 @@ const cleanJsonInputForPersistence = (
  */
 const dispatchFixStatus = (result: IFixResult) => {
     getState().updateEditorFixStatus(result);
-};
-
-/**
- * Dispatch a compiled specification to the store.
- */
-const dispatchSpec = (payload: IEditorSpecUpdatePayload) => {
-    getState().updateEditorSpec(payload);
-};
-
-/**
- * Borrowed from vega-editor
- */
-const errorLine = (code: string, error: string) => {
-    const pattern = /(position\s)(\d+)/;
-    let charPos: any = error.match(pattern);
-
-    if (charPos !== null) {
-        charPos = charPos[2];
-        if (!isNaN(charPos)) {
-            let line = 1;
-            let cursorPos = 0;
-
-            while (
-                cursorPos < charPos &&
-                code.indexOf('\n', cursorPos) < charPos &&
-                code.indexOf('\n', cursorPos) > -1
-            ) {
-                const newlinePos = code.indexOf('\n', cursorPos);
-                line = line + 1;
-                cursorPos = newlinePos + 1;
-            }
-
-            return `${error} and line ${line}`;
-        }
-    } else {
-        return error;
-    }
 };
 
 /**
@@ -169,60 +143,241 @@ const isVersionedSpec = () => {
     return (denebVersion && providerVersion) || false;
 };
 
-export const parseActiveSpecification = () => {
-    const {
-        provider,
-        jsonSpec: rawSpec,
-        jsonConfig,
-        logLevel
-    } = getVegaSettings();
+/**
+ * Borrowed from vega-editor
+ */
+const getErrorLine = (code: string, error: string) => {
+    const pattern = /(position\s)(\d+)/;
+    let charPos: any = error.match(pattern);
+
+    if (charPos !== null) {
+        charPos = charPos[2];
+        if (!isNaN(charPos)) {
+            let line = 1;
+            let cursorPos = 0;
+
+            while (
+                cursorPos < charPos &&
+                code.indexOf('\n', cursorPos) < charPos &&
+                code.indexOf('\n', cursorPos) > -1
+            ) {
+                const newlinePos = code.indexOf('\n', cursorPos);
+                line = line + 1;
+                cursorPos = newlinePos + 1;
+            }
+
+            return `${error} and line ${line}`;
+        }
+    } else {
+        return error;
+    }
+};
+
+/**
+ * Handle parsing of the JSON from the spec editor.
+ */
+export const getParsedSpec = (
+    options: ISpecificationParseOptions
+): ISpecification => {
+    const { config, logLevel, provider, spec, values } = options;
     const logger = new LocalVegaLoggerService();
     logger.level(logLevel);
-    let payload: IEditorSpecUpdatePayload;
-    // Spec hasn't been edited yet
-    if (!rawSpec) {
-        dispatchSpec({
-            spec: {
-                status: 'new',
-                spec: PROPERTY_DEFAULTS.jsonSpec,
-                rawSpec: PROPERTY_DEFAULTS.jsonConfig
-            },
-            error: null,
-            warns: []
-        });
-        return;
+    const patchedSpec = getPatchedSpec(spec, provider, values);
+    const patchedConfig = getPatchedConfig(config);
+    logDebug('getParsedSpec', {
+        config,
+        patchedConfig: JSON.stringify(patchedConfig)
+    });
+    const warns: string[] = [];
+    const errors: string[] = [];
+    let status: TSpecStatus = 'new';
+    if (!patchedSpec) {
+        errors.push(i18nValue('Text_Debug_Error_Spec_Parse'));
     }
+    if (!patchedConfig) {
+        errors.push(i18nValue('Text_Debug_Error_Config_Parse'));
+    }
+    let specToParse = patchedSpec
+        ? merge({ config: patchedConfig ?? {} }, patchedSpec)
+        : null;
     try {
-        const spec = cleanParse(rawSpec);
-        switch (provider) {
-            case 'vega': {
-                validateVega(spec, logger);
-                break;
-            }
-            case 'vegaLite': {
-                const config = <VegaLite.Config>(
-                    getViewConfig(cleanParse(jsonConfig))
-                );
-                const options = { config, logger };
-                validateVegaLite(spec, logger);
-                VegaLite.compile(<TopLevelSpec>spec, options);
-                break;
-            }
+        const validator = getProviderValidator({ provider });
+        const valid = validator(specToParse);
+        if (!valid && validator.errors) {
+            getFriendlyValidationErrors(validator.errors).forEach((error) =>
+                logger.warn(`Validation: ${error}`)
+            );
         }
-        payload = {
-            spec: { status: 'valid', spec, rawSpec },
-            warns: logger.warns,
-            error: null
-        };
+        if (provider === 'vegaLite') {
+            VegaLite.compile(<VegaLite.TopLevelSpec>specToParse);
+        }
+        status = 'valid';
     } catch (e) {
-        const error = errorLine(rawSpec, e.message);
-        payload = {
-            spec: { status: 'error', spec: null, rawSpec },
-            warns: logger.warns,
-            error
-        };
+        errors.push(getErrorLine(spec, e.message));
+        status = 'error';
+        specToParse = null;
     }
-    dispatchSpec(payload);
+    warns.push(...logger.warns);
+    logDebug('getParsedSpec', {
+        config,
+        patchedConfig,
+        spec,
+        patchedSpec,
+        specToParse,
+        status,
+        warns
+    });
+    return {
+        errors,
+        spec: specToParse,
+        status,
+        warns
+    };
+};
+
+/**
+ * Apply the base config for Power BI and then patch the editor config on top.
+ */
+const getPatchedConfig = (
+    content: string
+): VegaLite.Config | Vega.Config | null => {
+    try {
+        const config = cleanParse(content);
+        return merge(
+            {
+                background: 'transparent', // defer to Power BI background, if applied
+                customFormatTypes: true
+            },
+            config
+        );
+    } catch (e) {
+        return null;
+    }
+};
+
+/**
+ * Patch the data array in a spec to ensure that values from the visual
+ * dataset are in the correct place.
+ */
+const getPatchedData = (spec: Vega.Spec, values: IVisualDatasetValueRow[]) => {
+    const name = DATASET_NAME;
+    try {
+        const newSpec = typeof spec === 'undefined' ? {} : spec;
+        const data = newSpec?.data ?? [];
+        const index = data.findIndex((ds) => ds.name == name);
+        return index >= 0
+            ? [
+                  ...newSpec.data.slice(0, index),
+                  ...[
+                      {
+                          ...newSpec.data[index],
+                          values
+                      }
+                  ],
+                  ...newSpec.data.slice(index + 1)
+              ]
+            : [
+                  ...(newSpec.data ?? []),
+                  ...[
+                      {
+                          name,
+                          values
+                      }
+                  ]
+              ];
+    } catch (e) {
+        return [{ name, values }];
+    }
+};
+
+/**
+ * For the spec and dataset values, attempt to parse the JSON and apply any
+ * patches that we need to ensure that the visual functions as expected.
+ */
+const getPatchedSpec = (
+    content: string,
+    provider: TSpecProvider,
+    values: IVisualDatasetValueRow[]
+): VegaLite.TopLevelSpec | Vega.Spec | null => {
+    try {
+        const spec = cleanParse(content);
+        return provider === 'vegaLite'
+            ? getPatchedVegaLiteSpec(<VegaLite.TopLevelSpec>spec, values)
+            : getPatchedVegaSpec(<Vega.Spec>spec, values);
+    } catch (e) {
+        return null;
+    }
+};
+
+/**
+ * Apply specific patching operations to a supplied spec. This applies any
+ * specific signals that we don't necessarily want the creator to worry about,
+ * but will ensure that the visual functions as expected. We also patch in the
+ * dataset, because we've found that binding this via react-vega causes some
+ * issues with the data being available for certain calculations. This
+ * essentially ensures that the data is processed in-line with the spec.
+ */
+const getPatchedVegaSpec = (
+    spec: Vega.Spec,
+    values: IVisualDatasetValueRow[]
+): Vega.Spec => {
+    return merge(spec, {
+        height: spec['height'] ?? { signal: 'pbiContainerHeight' },
+        width: spec['width'] ?? { signal: 'pbiContainerWidth' },
+        data: getPatchedData(spec, values),
+        signals: [
+            ...(spec['signals'] || []),
+            ...(getConfig()?.providerResources?.vega?.patch?.signals || [])
+        ]
+    });
+};
+
+/**
+ * Apply specific patching operations to a supplied Vega-Lite spec. This
+ * applies any specific signals that we don't necessarily want the creator to
+ * worry about, but will ensure that the visual functions as expected. We also
+ * patch in the dataset, because we've found that binding this via react-vega
+ * causes some issues with the data being available for certain calculations.
+ * This essentially ensures that the data is processed in-line with the spec.
+ */
+const getPatchedVegaLiteSpec = (
+    spec: VegaLite.TopLevelSpec,
+    values: IVisualDatasetValueRow[]
+) => {
+    return merge(spec, {
+        height: spec['height'] ?? 'container',
+        width: spec['width'] ?? 'container',
+        datasets: {
+            ...(spec.datasets ?? {}),
+            [`${DATASET_NAME}`]: values
+        }
+    });
+};
+
+/**
+ * Get the options for parsing the specification and configuration from the
+ * store.
+ */
+const getSpecificationParseOptions = (
+    stage = true
+): ISpecificationParseOptions => {
+    const {
+        dataset: { values },
+        editor: { stagedConfig, stagedSpec },
+        visualSettings: {
+            vega: { logLevel, provider, jsonConfig, jsonSpec }
+        }
+    } = getState();
+    const spec = (stage ? getCleanEditorJson('spec') : stagedSpec) ?? jsonSpec;
+    const config =
+        (stage ? getCleanEditorJson('config') : stagedConfig) ?? jsonConfig;
+    return {
+        config,
+        logLevel,
+        provider: <TSpecProvider>provider,
+        spec,
+        values
+    };
 };
 
 /**
@@ -231,20 +386,16 @@ export const parseActiveSpecification = () => {
  */
 export const persistSpecification = (stage = true) => {
     const {
-        editor: { stagedConfig, stagedSpec, updateChanges },
-        visualSettings: {
-            vega: { provider }
-        }
+        editor: { updateChanges }
     } = getState();
-    const editorStagedSpec = stage ? getCleanEditorJson('spec') : stagedSpec;
-    const editorStagedConfig = stage
-        ? getCleanEditorJson('config')
-        : stagedConfig;
     const isDirty = false;
+    const spo = getSpecificationParseOptions(stage);
+    const specification = getParsedSpec(spo);
     updateChanges({
         isDirty,
-        stagedSpec: editorStagedSpec,
-        stagedConfig: editorStagedConfig
+        specification,
+        stagedSpec: spo.spec,
+        stagedConfig: spo.config
     });
     const { renewEditorFieldsInUse } = getState();
     renewEditorFieldsInUse();
@@ -254,9 +405,9 @@ export const persistSpecification = (stage = true) => {
             {
                 objectName: 'vega',
                 properties: [
-                    { name: 'jsonSpec', value: editorStagedSpec },
-                    { name: 'jsonConfig', value: editorStagedConfig },
-                    getProviderVersionProperty(<TSpecProvider>provider)
+                    { name: 'jsonSpec', value: spo.spec },
+                    { name: 'jsonConfig', value: spo.config },
+                    getProviderVersionProperty(spo.provider)
                 ]
             }
         ])

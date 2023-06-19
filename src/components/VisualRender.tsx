@@ -1,35 +1,31 @@
-import React, { memo, useCallback, useMemo } from 'react';
+import React, { memo, useCallback, useEffect, useMemo } from 'react';
 import { createClassFromSpec } from 'react-vega';
 import * as Vega from 'vega';
-import cloneDeep from 'lodash/cloneDeep';
 import isEqual from 'lodash/isEqual';
 
-import { useStoreProp, useStoreVegaProp } from '../store';
-import SpecificationError from './status/SpecificationError';
-import { FourD3D3D3 } from '../features/preview-area';
-import SplashNoSpec from './status/SplashNoSpec';
+import store from '../store';
 
 import { hostServices } from '../core/services';
 import { locales } from '../core/ui/i18n';
 import { TSpecProvider, TSpecRenderMode } from '../core/vega';
-import { handleNewView } from '../features/vega-extensibility';
+import {
+    VegaViewServices,
+    handleNewView
+} from '../features/vega-extensibility';
 import { View } from 'vega';
 
 import { IVisualDatasetValueRow } from '../core/data';
-import { reactLog } from '../core/utils/reactLog';
-import { DATASET_NAME } from '../constants';
-import { logHasErrors } from '../features/debug-area';
 import { getPowerBiTooltipHandler } from '../features/interactivity';
-import { TSpecStatus } from '../features/specification';
 import {
     getPowerBiVegaLoader,
     registerPowerBiCustomExpressions,
     registerPowerBiCustomSchemes
 } from '../features/powerbi-vega-extensibility';
+import { logDebug, logError, logRender } from '../features/logging';
+import { shallow } from 'zustand/shallow';
 
 interface IVisualRenderProps {
     specification: object;
-    config: object;
     provider: TSpecProvider;
     enableTooltips: boolean;
     renderMode: TSpecRenderMode;
@@ -45,76 +41,82 @@ const areEqual = (
     prevProps: IVisualRenderProps,
     nextProps: IVisualRenderProps
 ) => {
-    reactLog('[VisualRender]', 'prevProps', prevProps, 'nextProps', nextProps);
+    logDebug(
+        'VisualRender equality check',
+        'prevProps',
+        prevProps,
+        'nextProps',
+        nextProps
+    );
     const specificationMatch = isEqual(
         prevProps.specification,
         nextProps.specification
     );
-
-    reactLog(
-        '[VisualRender] Specification match',
-        specificationMatch,
-        JSON.stringify(prevProps.specification),
-        '  |  ',
-        JSON.stringify(nextProps.specification)
-    );
-    const configMatch = isEqual(prevProps.config, nextProps.config);
-
-    reactLog('[VisualRender] Config match', configMatch);
     const dataMatch = isEqual(prevProps.data, nextProps.data);
-
-    reactLog(
-        '[VisualRender] Data match',
-        dataMatch,
-        JSON.stringify(prevProps.data),
-        '  |  ',
-        JSON.stringify(nextProps.data)
-    );
     const providerMatch = isEqual(prevProps.provider, nextProps.provider);
-
-    reactLog('[VisualRender] Provider match', providerMatch);
     const enableTooltipsMatch = isEqual(
         prevProps.enableTooltips,
         nextProps.enableTooltips
     );
-
-    reactLog('[VisualRender] Enable tooltips match', enableTooltipsMatch);
     const renderModeMatch = isEqual(prevProps.renderMode, nextProps.renderMode);
-
-    reactLog('[VisualRender] Render mode match', renderModeMatch);
     const result =
         specificationMatch &&
-        configMatch &&
         dataMatch &&
         providerMatch &&
         enableTooltipsMatch &&
         renderModeMatch;
 
-    reactLog('[VisualRender] Vega Re-render', !result);
+    logDebug('VisualRender equality check', {
+        result,
+        specificationMatch,
+        dataMatch,
+        providerMatch,
+        enableTooltipsMatch,
+        renderModeMatch
+    });
     return result;
 };
 
 const VisualRender: React.FC<IVisualRenderProps> = memo(
-    ({ specification, config, provider, enableTooltips, renderMode }) => {
-        const logLevel = useStoreVegaProp<number>('logLevel');
-        const status = useStoreProp<TSpecStatus>('status', 'editorSpec');
-        const visual4d3d3d = useStoreProp<boolean>('visual4d3d3d');
-        const recordLogErrorMain =
-            useStoreProp<(message: string) => void>('recordLogErrorMain');
-        const { locale } = hostServices;
-        const tooltipHandler = getPowerBiTooltipHandler(
-            enableTooltips,
-            hostServices.tooltipService
+    ({ specification, provider, enableTooltips, renderMode }) => {
+        const { logLevel, status, generateRenderId, logStoreError } = store(
+            (state) => ({
+                logLevel: state.visualSettings.vega.logLevel,
+                status: state.specification.status,
+                generateRenderId: state.interface.generateRenderId,
+                logStoreError: state.specification.logError
+            }),
+            shallow
         );
-        const loader = getPowerBiVegaLoader();
-        const onNewView = useCallback((view: View) => handleNewView(view), []);
+        const { locale } = hostServices;
+        const tooltipHandler = useMemo(
+            () =>
+                getPowerBiTooltipHandler(
+                    enableTooltips,
+                    hostServices.tooltipService
+                ),
+            [enableTooltips]
+        );
+        const loader = useMemo(() => getPowerBiVegaLoader(), []);
+        const onNewView = useCallback((view: View) => {
+            logDebug('New view', { status, specification });
+            if (status !== 'error') {
+                handleNewView(view);
+            }
+        }, []);
         const handleError = (error: Error) => {
+            logError('Vega view error', error);
             switch (error.message) {
-                // This is crude, but still lets us use local values without using dataset
-                case `Unrecognized data set: ${DATASET_NAME}`:
-                    return;
                 default: {
-                    recordLogErrorMain(error.message);
+                    logDebug('Clearing down view...');
+                    VegaViewServices.clearView();
+                    logDebug('View services', {
+                        view: VegaViewServices.getView(),
+                        signals: VegaViewServices.getAllSignals(),
+                        data: VegaViewServices.getAllData()
+                    });
+                    logStoreError(error.message);
+                    generateRenderId();
                     return;
                 }
             }
@@ -123,47 +125,33 @@ const VisualRender: React.FC<IVisualRenderProps> = memo(
             locales.format[locale] || locales.format[locales.default];
         const timeFormatLocale =
             locales.timeFormat[locale] || locales.timeFormat[locales.default];
-
-        // #248: the raw props get mutated by react-vega, so we need this to
-        // ensure that we don't get stuck in an infinite loop when memoizing
-        const renderSpecification = cloneDeep(specification);
-        const renderConfig = cloneDeep(config);
         const resolvedProvider = useMemo(
             () => (provider === 'vegaLite' ? 'vega-lite' : provider),
             [provider]
         );
         const VegaChart = createClassFromSpec({
-            spec: renderSpecification,
+            spec: specification,
             mode: resolvedProvider
         });
-        reactLog('Rendering [VisualRender]');
-        if (visual4d3d3d) return <FourD3D3D3 />;
-        registerPowerBiCustomExpressions();
-        registerPowerBiCustomSchemes();
-        switch (true) {
-            case logHasErrors(): {
-                return <SpecificationError />;
-            }
-            case status === 'valid': {
-                return (
-                    <VegaChart
-                        renderer={renderMode as Vega.Renderers}
-                        actions={false}
-                        tooltip={tooltipHandler}
-                        config={renderConfig}
-                        formatLocale={formatLocale}
-                        timeFormatLocale={timeFormatLocale}
-                        loader={loader}
-                        onNewView={onNewView}
-                        onError={handleError}
-                        logLevel={logLevel}
-                    />
-                );
-            }
-            default: {
-                return <SplashNoSpec />;
-            }
-        }
+        logRender('VisualRender');
+        // TODO: do this on visual update
+        useEffect(() => {
+            registerPowerBiCustomExpressions();
+            registerPowerBiCustomSchemes();
+        }, []);
+        return (
+            <VegaChart
+                renderer={renderMode as Vega.Renderers}
+                actions={false}
+                tooltip={tooltipHandler}
+                formatLocale={formatLocale}
+                timeFormatLocale={timeFormatLocale}
+                loader={loader}
+                onNewView={onNewView}
+                onError={handleError}
+                logLevel={logLevel}
+            />
+        );
     },
     areEqual
 );

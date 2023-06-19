@@ -3,8 +3,9 @@ import EditMode = powerbi.EditMode;
 
 import React, { useEffect } from 'react';
 import { Scrollbars } from 'react-custom-scrollbars-2';
+import { shallow } from 'zustand/shallow';
 
-import { useStoreProp } from '../../store';
+import store from '../../store';
 
 import StatusHeaderSection from './StatusHeaderSection';
 import StatusLayoutStack from './StatusLayoutStack';
@@ -20,7 +21,12 @@ import { i18nValue } from '../../core/ui/i18n';
 import { hostServices } from '../../core/services';
 
 const SplashNospec = () => {
-    const visualEditMode: EditMode = useStoreProp('visualEditMode');
+    const { visualEditMode } = store(
+        (state) => ({
+            visualEditMode: state.visualEditMode
+        }),
+        shallow
+    );
     const resolveDataInstruction = () => {
         switch (true) {
             case visualEditMode === EditMode.Advanced: {

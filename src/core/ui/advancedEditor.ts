@@ -1,7 +1,7 @@
 import powerbi from 'powerbi-visuals-api';
 import IViewport = powerbi.IViewport;
 
-import { getState, useStoreProp } from '../../store';
+import { getState } from '../../store';
 import { getConfig } from '../utils/config';
 import { TEditorPosition, TVisualMode } from '.';
 import { CSSProperties } from 'react';
@@ -70,15 +70,14 @@ export type TPreviewPivotRole = 'log' | 'data' | 'signal';
  * Calculate a width that ensures the editor pane caps and makes the pivot overflow as needed
  */
 export const calculateEditorPaneMaxWidth = () => {
-    const position = useStoreProp<TEditorPosition>(
-        'position',
-        'visualSettings.editor'
-    );
-    const editorPaneWidth = useStoreProp<number>('editorPaneWidth');
-    const width = useStoreProp<number>('width', 'visualViewportCurrent');
-    const editorPreviewAreaWidth = useStoreProp<number>(
-        'editorPreviewAreaWidth'
-    );
+    const {
+        editorPaneWidth,
+        editorPreviewAreaWidth,
+        visualSettings: {
+            editor: { position }
+        },
+        visualViewportCurrent: { width }
+    } = getState();
     return position === 'left'
         ? editorPaneWidth
         : width - editorPreviewAreaWidth;

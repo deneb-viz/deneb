@@ -1,8 +1,6 @@
 import { StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
-import isEqual from 'lodash/isEqual';
 import reduce from 'lodash/reduce';
-import uniqWith from 'lodash/uniqWith';
 
 import { TStoreState } from '.';
 import { doUnallocatedFieldsExist } from '../core/data/dataset';
@@ -17,7 +15,7 @@ import {
 import { getConfig } from '../core/utils/config';
 import { IVisualDatasetFields } from '../core/data';
 import { getFieldsInUseFromSpec } from '../features/template';
-import { ICompiledSpec, IFixResult } from '../features/specification';
+import { IFixResult, ISpecification } from '../features/specification';
 import { TEditorRole } from '../features/json-editor';
 
 export interface IEditorSlice {
@@ -38,9 +36,6 @@ export interface IEditorSlice {
     editorIsExportDialogVisible: boolean;
     editorIsMapDialogVisible: boolean;
     editorIsNewDialogVisible: boolean;
-    editorLogError: string;
-    editorLogErrors: string[];
-    editorLogWarns: string[];
     editorPaneIsExpanded: boolean;
     editorPreviewAreaHeight: number;
     editorPreviewAreaHeightLatch: number;
@@ -52,12 +47,8 @@ export interface IEditorSlice {
     editorPaneExpandedWidth: number;
     editorPaneWidth: number;
     editorSelectedOperation: TEditorRole;
-    editorSpec: ICompiledSpec;
     editorZoomLevel: number;
     renewEditorFieldsInUse: () => void;
-    recordLogErrorMain: (message: string) => void;
-    recordLogError: (message: string) => void;
-    recordLogWarn: (message: string) => void;
     setEditorFixErrorDismissed: () => void;
     toggleEditorAutoApplyStatus: () => void;
     toggleEditorPane: () => void;
@@ -74,7 +65,6 @@ export interface IEditorSlice {
     updateEditorPreviewAreaWidth: () => void;
     updateEditorSelectedOperation: (role: TEditorRole) => void;
     updateEditorSelectedPreviewRole: (role: TPreviewPivotRole) => void;
-    updateEditorSpec: (payload: IEditorSpecUpdatePayload) => void;
     updateEditorZoomLevel: (zoomLevel: number) => void;
 }
 
@@ -123,9 +113,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
         editorIsExportDialogVisible: false,
         editorIsMapDialogVisible: false,
         editorIsNewDialogVisible: true,
-        editorLogError: null,
-        editorLogErrors: [],
-        editorLogWarns: [],
         editorPaneIsExpanded: true,
         editorPreviewAreaHeight: null,
         editorPreviewAreaHeightLatch: null,
@@ -137,30 +124,7 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
         editorPaneExpandedWidth: null,
         editorPaneWidth: null,
         editorSelectedOperation: 'spec',
-        editorSpec: {
-            status: 'new',
-            spec: null,
-            rawSpec: null
-        },
         editorZoomLevel: getConfig().zoomLevel.default,
-        recordLogErrorMain: (message) =>
-            set(
-                (state) => handleRecordLogErrorMain(state, message),
-                false,
-                'recordLogErrorMain'
-            ),
-        recordLogError: (message) =>
-            set(
-                (state) => handleRecordLogError(state, message),
-                false,
-                'recordLogError'
-            ),
-        recordLogWarn: (message) =>
-            set(
-                (state) => handleRecordLogWarn(state, message),
-                false,
-                'recordLogWarn'
-            ),
         renewEditorFieldsInUse: () =>
             set(
                 (state) => handleRenewEditorFieldsInUse(state),
@@ -253,12 +217,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                 false,
                 'updateEditorSelectedPreviewRole'
             ),
-        updateEditorSpec: (payload) =>
-            set(
-                (state) => handleUpdateEditorSpec(state, payload),
-                false,
-                'updateEditorSpec'
-            ),
         updateEditorZoomLevel: (zoomLevel) =>
             set(
                 (state) => handleupdateEditorZoomLevel(state, zoomLevel),
@@ -276,6 +234,7 @@ export const createEditorSlice: StateCreator<
 
 export interface IEditorSliceUpdateChangesPayload {
     isDirty: boolean;
+    specification: ISpecification;
     stagedConfig: string;
     stagedSpec: string;
 }
@@ -284,14 +243,25 @@ const handleUpdateChanges = (
     state: TStoreState,
     payload: IEditorSliceUpdateChangesPayload
 ): Partial<TStoreState> => {
-    const { isDirty, stagedConfig, stagedSpec } = payload;
+    const { isDirty, specification, stagedConfig, stagedSpec } = payload;
     return {
         editor: {
             ...state.editor,
             isDirty,
             stagedConfig,
             stagedSpec
-        }
+        },
+        interface: {
+            ...state.interface
+        },
+        specification: { ...state.specification, ...specification },
+        visualMode: resolveVisualMode(
+            state.datasetViewHasValidMapping,
+            state.visualEditMode,
+            state.visualIsInFocusMode,
+            state.visualViewMode,
+            payload.specification
+        )
     };
 };
 
@@ -329,12 +299,6 @@ interface IEditorFieldMappingUpdatePayload {
     objectName: string;
 }
 
-export interface IEditorSpecUpdatePayload {
-    spec: ICompiledSpec;
-    error: string;
-    warns: string[];
-}
-
 const handleRenewEditorFieldsInUse = (
     state: TStoreState
 ): Partial<TStoreState> => {
@@ -352,38 +316,6 @@ const handleRenewEditorFieldsInUse = (
     return {
         editorFieldsInUse,
         editorFieldDatasetMismatch
-    };
-};
-
-const handleRecordLogWarn = (
-    state: TStoreState,
-    message: string
-): Partial<TStoreState> => ({
-    editorLogWarns: uniqWith([...state.editorLogWarns, message], isEqual)
-});
-
-const handleRecordLogError = (
-    state: TStoreState,
-    message: string
-): Partial<TStoreState> => {
-    const editorLogErrors = uniqWith(
-        [...state.editorLogErrors, message],
-        isEqual
-    );
-    return {
-        debug: { ...state.debug, logAttention: editorLogErrors.length > 0 },
-        editorLogErrors
-    };
-};
-
-const handleRecordLogErrorMain = (
-    state: TStoreState,
-    message: string
-): Partial<TStoreState> => {
-    const logAttention = message !== null;
-    return {
-        editorLogError: message,
-        debug: { ...state.debug, logAttention }
     };
 };
 
@@ -570,27 +502,6 @@ const handleUpdateEditorSelectedPreviewRole = (
         editorPreviewAreaSelectedPivot: role,
         editorPreviewAreaHeight,
         editorPreviewDebugIsExpanded: true
-    };
-};
-
-const handleUpdateEditorSpec = (
-    state: TStoreState,
-    payload: IEditorSpecUpdatePayload
-): Partial<TStoreState> => {
-    const logAttention = payload.error !== null;
-    return {
-        editorSpec: payload.spec,
-        editorLogError: payload.error,
-        editorLogErrors: [],
-        editorLogWarns: payload.warns,
-        visualMode: resolveVisualMode(
-            state.datasetViewHasValidMapping,
-            state.visualEditMode,
-            state.visualIsInFocusMode,
-            state.visualViewMode,
-            payload.spec
-        ),
-        debug: { ...state.debug, logAttention }
     };
 };
 

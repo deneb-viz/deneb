@@ -2,14 +2,15 @@ import React from 'react';
 
 import { Text } from '@fluentui/react/lib/Text';
 import { Stack } from '@fluentui/react/lib/Stack';
+import { shallow } from 'zustand/shallow';
 
-import { useStoreProp } from '../../../store';
+import store from '../../../store';
 import { ExportVisualValidation } from './ExportVisualValidation';
 import { ExportVisualDatasetPane } from './ExportVisualDatasetPane';
 import { ExportVisualInformationPane } from './ExportVisualInformationPane';
 import { ExportVisualJsonPane } from './ExportVisualJsonPane';
 import { i18nValue } from '../../../core/ui/i18n';
-import { reactLog } from '../../../core/utils/reactLog';
+import { logRender } from '../../logging';
 import {
     MODAL_DIALOG_STACK_INNER_TOKENS,
     MODAL_DIALOG_STACK_ITEM_STYLES,
@@ -68,16 +69,20 @@ const resolveExportPivot = (state: TTemplateExportState) => {
 };
 
 export const ExportVisualDialogBody: React.FC = () => {
-    const templateSelectedExportOperation = useStoreProp<TExportOperation>(
-        'templateSelectedExportOperation'
+    const {
+        templateExportState,
+        templateExportErrorMessage,
+        templateSelectedExportOperation
+    } = store(
+        (state) => ({
+            templateExportState: state.templateExportState,
+            templateExportErrorMessage: state.templateExportErrorMessage,
+            templateSelectedExportOperation:
+                state.templateSelectedExportOperation
+        }),
+        shallow
     );
-    const templateExportState = useStoreProp<TTemplateExportState>(
-        'templateExportState'
-    );
-    const templateExportErrorMessage = useStoreProp<string>(
-        'templateExportErrorMessage'
-    );
-    reactLog('Rendering [ExportVisualDialogBody]');
+    logRender('ExportVisualDialogBody');
     return (
         <Stack
             styles={MODAL_DIALOG_STACK_STYLES}

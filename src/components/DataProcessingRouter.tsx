@@ -1,10 +1,7 @@
-import powerbi from 'powerbi-visuals-api';
-import IViewport = powerbi.IViewport;
-
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Scrollbars } from 'react-custom-scrollbars-2';
+import { shallow } from 'zustand/shallow';
 
-import { useStoreProp, useStoreVegaProp } from '../store';
 import DataFetching from './status/DataFetching';
 import VisualRender from './VisualRender';
 import { ApplyChangesDialog } from '../features/modal-dialog';
@@ -12,46 +9,44 @@ import SplashInitial from './status/SplashInitial';
 import { i18nValue } from '../core/ui/i18n';
 import { getViewModeViewportStyles, zoomConfig } from '../core/ui/dom';
 import { clearSelection, hidePowerBiTooltip } from '../features/interactivity';
-import { TDataProcessingStage } from '../core/data';
-import { TVisualMode } from '../core/ui';
-import {
-    getViewConfig,
-    getViewDataset,
-    getViewSpec,
-    TSpecProvider,
-    TSpecRenderMode
-} from '../core/vega';
-import { reactLog } from '../core/utils/reactLog';
+import { TSpecProvider, TSpecRenderMode, getViewDataset } from '../core/vega';
+import store from '../store';
+import { logRender } from '../features/logging';
 
 const DataProcessingRouter: React.FC = () => {
-    const datasetProcessingStage = useStoreProp<TDataProcessingStage>(
-        'datasetProcessingStage'
+    const {
+        datasetHashValue,
+        datasetProcessingStage,
+        editorZoomLevel,
+        enableTooltips,
+        provider,
+        renderMode,
+        showViewportMarker,
+        spec,
+        visualMode,
+        visualViewportReport
+    } = store(
+        (state) => ({
+            datasetHashValue: state.dataset.hashValue,
+            datasetProcessingStage: state.datasetProcessingStage,
+            editorZoomLevel: state.editorZoomLevel,
+            enableTooltips: state.visualSettings.vega.enableTooltips,
+            provider: state.visualSettings.vega.provider as TSpecProvider,
+            renderMode: state.visualSettings.vega.renderMode as TSpecRenderMode,
+            spec: state.specification.spec,
+            showViewportMarker: state.visualSettings.editor.showViewportMarker,
+            visualMode: state.visualMode,
+            visualViewportReport: state.visualViewportReport
+        }),
+        shallow
     );
-    const visualViewportReport = useStoreProp<IViewport>(
-        'visualViewportReport'
-    );
-    const enableTooltips = useStoreVegaProp<boolean>('enableTooltips');
-    const renderMode = useStoreVegaProp<TSpecRenderMode>('renderMode');
-    const provider = useStoreVegaProp<TSpecProvider>('provider');
-    const visualMode = useStoreProp<TVisualMode>('visualMode');
-    const editorZoomLevel = useStoreProp<number>('editorZoomLevel');
-    const showViewportMarker = useStoreProp<boolean>(
-        'showViewportMarker',
-        'visualSettings.editor'
-    );
-    const data = getViewDataset();
-    const specification = getViewSpec();
-    const config = getViewConfig();
+    const data = useMemo(() => getViewDataset(), [datasetHashValue]);
     const handleMouseLeave = () => {
         hidePowerBiTooltip();
     };
     const isEditor = visualMode === 'Editor';
     const zoomLevel = (isEditor && editorZoomLevel) || zoomConfig.default;
-    reactLog(
-        'Rendering [DataProcessingRouter]',
-        datasetProcessingStage,
-        visualMode
-    );
+    logRender('DataProcessingRouter', { datasetProcessingStage, visualMode });
     switch (datasetProcessingStage) {
         case 'Initial': {
             return <SplashInitial />;
@@ -78,8 +73,7 @@ const DataProcessingRouter: React.FC = () => {
                         onMouseLeave={handleMouseLeave}
                     >
                         <VisualRender
-                            specification={specification}
-                            config={config}
+                            specification={spec}
                             provider={provider}
                             enableTooltips={enableTooltips}
                             renderMode={renderMode}

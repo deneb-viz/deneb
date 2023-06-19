@@ -1,20 +1,24 @@
 import React from 'react';
 import { MessageBarType } from '@fluentui/react/lib/MessageBar';
 
-import { useStoreProp } from '../../store';
+import store from '../../store';
 import NotificationMessageBar from '../elements/NotificationMessageBar';
-import { reactLog } from '../../core/utils/reactLog';
+import { shallow } from 'zustand/shallow';
+import { logRender } from '../../features/logging';
 
 const FixErrorMessageBar: React.FC = () => {
-    const success = useStoreProp<boolean>('success', 'editorFixResult');
-    const dismissed = useStoreProp<boolean>('dismissed', 'editorFixResult');
-    const error = useStoreProp<boolean>('error', 'editorFixResult');
-    const setEditorFixErrorDismissed = useStoreProp<() => void>(
-        'setEditorFixErrorDismissed'
+    const { dismissed, error, success, setEditorFixErrorDismissed } = store(
+        (state) => ({
+            dismissed: state.editorFixResult.dismissed,
+            error: state.editorFixResult.error,
+            success: state.editorFixResult.success,
+            setEditorFixErrorDismissed: state.setEditorFixErrorDismissed
+        }),
+        shallow
     );
     const dismissAction = () => setEditorFixErrorDismissed();
     const visible = !success && !dismissed;
-    reactLog('Rendering [FixErrorMessageBar]');
+    logRender('FixErrorMessageBar');
     return (
         <NotificationMessageBar
             dismissAction={dismissAction}

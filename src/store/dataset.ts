@@ -8,6 +8,7 @@ import { NamedSet } from 'zustand/middleware';
 import { TStoreState } from '.';
 import {
     doUnallocatedFieldsExist,
+    getDatasetHash,
     getEmptyDataset
 } from '../core/data/dataset';
 import { IVisualDataset, TDataProcessingStage } from '../core/data';
@@ -19,6 +20,8 @@ import {
     getDataPointCrossFilterStatus,
     isCrossFilterPropSet
 } from '../features/interactivity';
+import { getParsedSpec } from '../features/specification';
+import { TSpecProvider } from '../core/vega';
 
 export interface IDatasetSlice {
     dataset: IVisualDataset;
@@ -180,8 +183,23 @@ const handleUpdateDataset = (
             state.visualEditMode,
             state.visualIsInFocusMode,
             state.visualViewMode,
-            state.editorSpec
-        )
+            state.specification
+        ),
+        // spec needs to be parsed here, only if the dataset hash has changed
+        specification: {
+            ...state.specification,
+            ...(dataset.hashValue !== state.dataset.hashValue
+                ? getParsedSpec({
+                      config: state.visualSettings.vega.jsonConfig,
+                      logLevel: state.visualSettings.vega.logLevel,
+                      provider: <TSpecProvider>(
+                          state.visualSettings.vega.provider
+                      ),
+                      spec: state.visualSettings.vega.jsonSpec,
+                      values: dataset.values
+                  })
+                : state.specification)
+        }
     };
 };
 
@@ -213,23 +231,43 @@ const handleUpdateDatasetProcessingStage = (
 const handleUpdateDatasetSelectors = (
     state: TStoreState,
     selectors: ISelectionId[]
-): Partial<TStoreState> => ({
-    datasetHasSelectionAborted: false,
-    dataset: {
-        ...state.dataset,
-        ...{
-            values: state.dataset.values.slice().map((v) => ({
-                ...v,
-                ...(isCrossFilterPropSet() && {
-                    __selected__: getDataPointCrossFilterStatus(
-                        v?.[DATASET_IDENTITY_NAME],
-                        selectors
-                    )
-                })
-            }))
+): Partial<TStoreState> => {
+    const values = state.dataset.values.slice().map((v) => ({
+        ...v,
+        ...(isCrossFilterPropSet() && {
+            __selected__: getDataPointCrossFilterStatus(
+                v?.[DATASET_IDENTITY_NAME],
+                selectors
+            )
+        })
+    }));
+    const hashValue = getDatasetHash(state.dataset.fields, values);
+    return {
+        datasetHasSelectionAborted: false,
+        dataset: {
+            ...state.dataset,
+            ...{
+                hashValue,
+                values
+            }
+        },
+        // spec needs to be parsed here, only if the dataset hash has changed
+        specification: {
+            ...state.specification,
+            ...(hashValue !== state.dataset.hashValue
+                ? getParsedSpec({
+                      config: state.visualSettings.vega.jsonConfig,
+                      logLevel: state.visualSettings.vega.logLevel,
+                      provider: <TSpecProvider>(
+                          state.visualSettings.vega.provider
+                      ),
+                      spec: state.visualSettings.vega.jsonSpec,
+                      values
+                  })
+                : state.specification)
         }
-    }
-});
+    };
+};
 
 const handleUpdateDatasetSelectionAbortStatus = (
     state: TStoreState,
@@ -256,7 +294,7 @@ const handleUpdateDatasetViewFlags = (
             state.visualEditMode,
             state.visualIsInFocusMode,
             state.visualViewMode,
-            state.editorSpec
+            state.specification
         )
     };
 };
@@ -273,6 +311,6 @@ const handleUpdateDatasetViewInvalid = (
         state.visualEditMode,
         state.visualIsInFocusMode,
         state.visualViewMode,
-        state.editorSpec
+        state.specification
     )
 });

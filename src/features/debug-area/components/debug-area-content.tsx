@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
     Toolbar,
     ToolbarGroup,
@@ -13,7 +13,7 @@ import {
 } from '@fluentui/react-icons';
 
 import store from '../../../store';
-import LogViewer from './LogViewer';
+import { LogViewer } from './log-viewer';
 import { DatasetViewer } from './dataset-viewer';
 import { SignalViewer } from './signal-viewer';
 import { Paragraph } from '../../../components/elements/Typography';
@@ -32,6 +32,7 @@ export const DebugAreaContent: React.FC = () => {
     const {
         datasetName,
         editorPreviewAreaSelectedPivot,
+        editorPreviewDebugIsExpanded,
         hashValue,
         logAttention,
         renderId
@@ -40,6 +41,7 @@ export const DebugAreaContent: React.FC = () => {
             datasetName: state.debug.datasetName,
             editorPreviewAreaSelectedPivot:
                 state.editorPreviewAreaSelectedPivot,
+            editorPreviewDebugIsExpanded: state.editorPreviewDebugIsExpanded,
             hashValue: state.dataset.hashValue,
             logAttention: state.debug.logAttention,
             renderId: state.interface.renderId
@@ -47,7 +49,7 @@ export const DebugAreaContent: React.FC = () => {
         shallow
     );
     const classes = useDebugStyles();
-    const resolvePane = () => {
+    const content = useMemo(() => {
         switch (editorPreviewAreaSelectedPivot) {
             case 'log':
                 return <LogViewer />;
@@ -65,7 +67,15 @@ export const DebugAreaContent: React.FC = () => {
             default:
                 return <Paragraph>{i18nValue('Pivot_Mode_Unknown')}</Paragraph>;
         }
-    };
+    }, [
+        datasetName,
+        editorPreviewAreaSelectedPivot,
+        editorPreviewDebugIsExpanded,
+
+        hashValue,
+        logAttention,
+        renderId
+    ]);
     const onDebugModeChange: ToolbarProps['onCheckedValueChange'] = (
         e,
         { checkedItems }
@@ -120,7 +130,7 @@ export const DebugAreaContent: React.FC = () => {
                     <DebugAreaToolbarButton command='debugAreaToggle' />
                 </ToolbarGroup>
             </Toolbar>
-            {resolvePane()}
+            {content}
         </div>
     );
 };

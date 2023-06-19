@@ -6,6 +6,7 @@ import { IDatasetSlice, createDatasetSlice } from './dataset';
 import { IDebugSlice, createDebugSlice } from './debug';
 import { IEditorSlice, createEditorSlice } from './editor';
 import { IInterfaceSlice, createInterfaceSlice } from './interface';
+import { ISpecificationSlice, createSpecificationSlice } from './specification';
 import { ITemplateSlice, createTemplateSlice } from './template';
 import { IVisualSlice, createVisualSlice } from './visual';
 import { isFeatureEnabled } from '../core/utils/features';
@@ -15,6 +16,7 @@ export type TStoreState = IDatasetSlice &
     IDebugSlice &
     IEditorSlice &
     IInterfaceSlice &
+    ISpecificationSlice &
     ITemplateSlice &
     IVisualSlice;
 
@@ -25,6 +27,7 @@ const store = create<TStoreState>()(
             ...createDebugSlice(...a),
             ...createEditorSlice(...a),
             ...createInterfaceSlice(...a),
+            ...createSpecificationSlice(...a),
             ...createTemplateSlice(...a),
             ...createVisualSlice(...a)
         }),
@@ -34,19 +37,5 @@ const store = create<TStoreState>()(
 
 const getState = () => store.getState();
 
-const useStoreProp = <T>(propname: string, path = ''): T => {
-    const resolved = `${(path && `${path}.`) || ''}${propname}`;
-    const selector = useCallback(
-        (state) => get(state, `${resolved}`),
-        [propname]
-    );
-    return store(selector);
-};
-
-const useStoreVegaProp = <T>(propname: string): T =>
-    useStoreProp(propname, 'visualSettings.vega');
-
-const useStoreDataset = (): IVisualDataset => useStoreProp('dataset');
-
 export default store;
-export { getState, useStoreProp, useStoreVegaProp, useStoreDataset };
+export { getState };

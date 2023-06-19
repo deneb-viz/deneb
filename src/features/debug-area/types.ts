@@ -5,8 +5,6 @@ export interface ILogEntry {
 
 export interface ILogEntryDisplay extends ILogEntry {
     i18nLevel: string;
-    icon: string;
-    color: string;
 }
 
 export interface ILogLevel {

@@ -28,14 +28,14 @@ export class StoreVegaLoggerService implements Vega.LoggerInterface {
     warn = (...args: any[]) => {
         if (this.level() >= Vega.Warn) {
             logInfo('[VEGA WARN]', args[0]);
-            getState().recordLogWarn(args[0]);
+            getState().specification.logWarn(args[0]);
         }
         return this;
     };
     error = (...args: readonly any[]) => {
         if (this.level() >= Vega.Error) {
             logInfo('[VEGA ERROR]', args[0]);
-            getState().recordLogError(args[0]?.message || args[0]);
+            getState().specification.logError(args[0]?.message || args[0]);
         }
         return this;
     };

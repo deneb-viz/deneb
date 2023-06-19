@@ -21,6 +21,7 @@ export const useInterfaceStyles = () =>
         },
         statusBarContainer: {
             boxSizing: 'border-box',
+            flexShrink: 0,
             width: '100%',
             height: `${getConfig().previewPane.toolbarMinSize}px}`,
             borderTopColor: tokens.colorNeutralStroke2,

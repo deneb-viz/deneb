@@ -3,16 +3,13 @@ import React from 'react';
 import { Stack } from '@fluentui/react/lib/Stack';
 import { Text } from '@fluentui/react/lib/Text';
 import { PrimaryButton } from '@fluentui/react/lib/Button';
+import { shallow } from 'zustand/shallow';
 
-import { useStoreProp } from '../../../store';
+import store from '../../../store';
 import { CreateVisualDialogBodyDetail } from './CreateVisualDialogBodyDetail';
 
 import { i18nValue } from '../../../core/ui/i18n';
 import { buttonStyles } from '../../../core/ui/fluent';
-import { Spec } from 'vega';
-import { TopLevelSpec } from 'vega-lite';
-import { TSpecProvider } from '../../../core/vega';
-import { reactLog } from '../../../core/utils/reactLog';
 import {
     MODAL_DIALOG_STACK_INNER_TOKENS,
     MODAL_DIALOG_STACK_ITEM_STYLES,
@@ -21,21 +18,27 @@ import {
 } from '../../modal-dialog';
 import { TemplateDialogPivot } from '../../template/components/TemplateDialogPivot';
 import { createFromTemplate } from '../logic';
+import { logRender } from '../../logging';
 
 export const CreateVisualDialogBody: React.FC = () => {
-    const templateAllImportCriteriaApplied: boolean = useStoreProp(
-        'templateAllImportCriteriaApplied'
+    const {
+        templateAllImportCriteriaApplied,
+        templateSpecProvider,
+        templateToApply
+    } = store(
+        (state) => ({
+            templateAllImportCriteriaApplied:
+                state.templateAllImportCriteriaApplied,
+            templateSpecProvider: state.templateSpecProvider,
+            templateToApply: state.templateToApply
+        }),
+        shallow
     );
-    const templateSpecProvider: TSpecProvider = useStoreProp(
-        'templateSpecProvider'
-    );
-    const templateToApply: Spec | TopLevelSpec =
-        useStoreProp('templateToApply');
     const handleCreate = () => {
             createFromTemplate(templateSpecProvider, templateToApply);
         },
         createDisabled = !templateAllImportCriteriaApplied;
-    reactLog('Rendering [CreateVisualDialogBody]');
+    logRender('CreateVisualDialogBody');
     return (
         <Stack
             styles={MODAL_DIALOG_STACK_STYLES}

@@ -1,12 +1,13 @@
 import React from 'react';
 import { Pivot, PivotItem, IPivotStyles } from '@fluentui/react/lib/Pivot';
 import { IStyleSet } from '@fluentui/react/lib/Styling';
+import { shallow } from 'zustand/shallow';
 
-import { useStoreProp } from '../../../store';
+import store from '../../../store';
 import { i18nValue } from '../../../core/ui/i18n';
-import { reactLog } from '../../../core/utils/reactLog';
 import { TExportOperation, TTemplateProvider } from '../types';
 import { TModalDialogType } from '../../modal-dialog';
+import { logRender } from '../../logging';
 
 const PIVOT_STYLES: Partial<IStyleSet<IPivotStyles>> = {
     itemContainer: {
@@ -62,12 +63,21 @@ const getPivotItems = (items: IPivotItemData[]) =>
 export const TemplateDialogPivot: React.FC<ITemplateDialogPivotProps> = ({
     type
 }) => {
-    const updateSelectedTemplateProvider: (
-        templateProvider: TTemplateProvider
-    ) => void = useStoreProp('updateSelectedTemplateProvider');
-    const updateSelectedExportOperation: (
-        templateSelectedExportOperation: TExportOperation
-    ) => void = useStoreProp('updateSelectedExportOperation');
+    const {
+        templateProvider,
+        templateSelectedExportOperation,
+        updateSelectedExportOperation,
+        updateSelectedTemplateProvider
+    } = store(
+        (state) => ({
+            templateProvider: state.templateProvider,
+            templateSelectedExportOperation:
+                state.templateSelectedExportOperation,
+            updateSelectedExportOperation: state.updateSelectedExportOperation,
+            updateSelectedTemplateProvider: state.updateSelectedTemplateProvider
+        }),
+        shallow
+    );
     const getTabId = (itemKey: string) => {
         return `${type}-spec-pivot-${itemKey}`;
     };
@@ -86,15 +96,13 @@ export const TemplateDialogPivot: React.FC<ITemplateDialogPivotProps> = ({
     const getSelectedKey = () => {
         switch (type) {
             case 'new':
-                return useStoreProp<TTemplateProvider>('templateProvider');
+                return templateProvider;
             case 'export':
-                return useStoreProp<TExportOperation>(
-                    'templateSelectedExportOperation'
-                );
+                return templateSelectedExportOperation;
         }
     };
     const ariaLabel = getPivotAria(type);
-    reactLog('Rendering [TemplateDialogPivot]');
+    logRender('TemplateDialogPivot');
     return (
         <div className='new-spec-dialog-pivot'>
             <Pivot

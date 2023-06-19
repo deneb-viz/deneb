@@ -102,7 +102,7 @@ const handleSetVisualUpdate = (
         editMode,
         isInFocus,
         viewMode,
-        state.editorSpec
+        state.specification
     );
     const viewportCurrent = payload.options.viewport;
     const viewportReport = getReportViewport(

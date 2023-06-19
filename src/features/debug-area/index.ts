@@ -2,7 +2,6 @@ import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { getConfig } from '../../core/utils/config';
 
 export { DebugAreaContent } from './components/debug-area-content';
-export { getLogErrorForStatusDisplay, logHasErrors } from './logging';
 
 /**
  * Font family to use for data table. We use a monospace font, to be able to
@@ -32,11 +31,12 @@ export const useDebugStyles = makeStyles({
         ...shorthands.overflow('hidden')
     },
     container: {
-        height: `calc(100% - ${getConfig().previewPane.toolbarMinSize}px)`
+        height: `calc(100% - ${getConfig().previewPane.toolbarMinSize}px - 4px)`
     },
     contentWrapper: {
         display: 'flex',
         height: '100%',
+        maxHeight: '100%',
         flexDirection: 'column'
     },
     dataTableDetails: {
@@ -57,8 +57,8 @@ export const useDebugStyles = makeStyles({
         display: 'flex',
         flexDirection: 'column',
         flexGrow: 1,
-        flexShrink: 1000,
-        ...shorthands.margin('5px'),
+        height: '0px',
+        ...shorthands.padding('5px'),
         ...shorthands.overflow('auto')
     },
     logLevelDropdown: {
@@ -89,7 +89,6 @@ export const useDebugStyles = makeStyles({
     statusBarLog: {
         display: 'flex',
         justifyContent: 'flex-start',
-        flexShrink: 1,
         alignItems: 'center',
         columnGap: '10px',
         height: '100%',

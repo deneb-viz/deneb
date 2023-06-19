@@ -1,23 +1,24 @@
 import React from 'react';
-
+import { shallow } from 'zustand/shallow';
 import { TooltipHost } from '@fluentui/react/lib/Tooltip';
 
-import { useStoreProp } from '../../../store';
+import store from '../../../store';
 import { i18nValue } from '../../../core/ui/i18n';
 
 import EditorToggleIcon from './EditorToggleIcon';
 import EditorHeadingText from './EditorHeadingText';
-import { reactLog } from '../../../core/utils/reactLog';
-import { TEditorPosition } from '../../../core/ui';
+import { logRender } from '../../../features/logging';
 
 const EditorPaneCollapsed = () => {
-    const editorPaneIsExpanded = useStoreProp<boolean>('editorPaneIsExpanded');
-    const position = useStoreProp<TEditorPosition>(
-        'position',
-        'visualSettings.editor'
+    const { editorPaneIsExpanded, position } = store(
+        (state) => ({
+            editorPaneIsExpanded: state.editorPaneIsExpanded,
+            position: state.visualSettings.editor.position
+        }),
+        shallow
     );
     const tooltip_i18_key = 'Tooltip_Expand_Editor_Pane';
-    reactLog('Rendering [EditorPaneCollapsed]');
+    logRender('EditorPaneCollapsed');
     return (
         <div id='editorPane' className='collapsed'>
             <TooltipHost

@@ -3,15 +3,16 @@ import React from 'react';
 import { useId } from '@fluentui/react-hooks';
 import { Modal } from '@fluentui/react/lib/Modal';
 
-import { useStoreProp } from '../../../store';
+import store from '../../../store';
 import { ModalHeader } from './ModalHeader';
 import { closeModalDialog } from '../../../core/ui/commands';
 import { TModalDialogType } from '../types';
 import { getModalDialogContentStyles } from '../styles';
-import { reactLog } from '../../../core/utils/reactLog';
 import { CreateVisualDialogBody } from '../../visual-create';
 import { ExportVisualDialogBody } from '../../visual-export';
 import { MapFieldsDialogBody } from '../../remap-fields';
+import { shallow } from 'zustand/shallow';
+import { logRender } from '../../logging';
 
 interface IModalDialogProps {
     type: TModalDialogType;
@@ -35,19 +36,37 @@ const getDialogBody = (type: TModalDialogType) => {
  * Derive dialog visibility, based on the store state for its type.
  */
 const getDialogVisibility = (type: TModalDialogType) => {
+    const {
+        editorIsNewDialogVisible,
+        editorIsExportDialogVisible,
+        editorIsMapDialogVisible
+    } = store(
+        (state) => ({
+            editorIsNewDialogVisible: state.editorIsNewDialogVisible,
+            editorIsExportDialogVisible: state.editorIsExportDialogVisible,
+            editorIsMapDialogVisible: state.editorIsMapDialogVisible
+        }),
+        shallow
+    );
     switch (type) {
         case 'new':
-            return useStoreProp<boolean>('editorIsNewDialogVisible');
+            return editorIsNewDialogVisible;
         case 'export':
-            return useStoreProp<boolean>('editorIsExportDialogVisible');
+            return editorIsExportDialogVisible;
         case 'mapping':
-            return useStoreProp<boolean>('editorIsMapDialogVisible');
+            return editorIsMapDialogVisible;
     }
 };
 
 export const ModalDialog: React.FC<IModalDialogProps> = ({ type }) => {
-    const height = useStoreProp<number>('height', 'visualViewportCurrent');
-    const width = useStoreProp<number>('width', 'visualViewportCurrent');
+    const {
+        visualViewportCurrent: { height, width }
+    } = store(
+        (state) => ({
+            visualViewportCurrent: state.visualViewportCurrent
+        }),
+        shallow
+    );
     const modalStyles = getModalDialogContentStyles({ height, width });
     const handleClose = () => {
         closeModalDialog(type);
@@ -55,7 +74,7 @@ export const ModalDialog: React.FC<IModalDialogProps> = ({ type }) => {
     const titleId = useId('modal-dialog');
     const child = getDialogBody(type);
     const visible = getDialogVisibility(type);
-    reactLog('Rendering [ModalDialog]');
+    logRender('ModalDialog');
     return (
         <Modal
             titleAriaId={titleId}

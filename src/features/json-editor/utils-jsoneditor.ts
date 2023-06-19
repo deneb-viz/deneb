@@ -11,15 +11,19 @@ import {
 } from '../../core/services/JsonEditorServices';
 import { getConfig } from '../../core/utils/config';
 import { getState } from '../../store';
-import { hasLiveSpecChanged, persistSpecification } from '../specification';
+import {
+    BASE_VALIDATOR,
+    hasLiveSpecChanged,
+    persistSpecification
+} from '../specification';
 import { TEditorRole } from './types';
 import { getVegaSettings, TSpecProvider } from '../../core/vega';
-import { getEditorInitialText, getEditorSchema } from './utils';
-import { baseValidator } from '../../core/vega/validation';
+import { getEditorInitialText } from './utils';
 import { isDialogOpen } from '../modal-dialog';
 import { getDataset } from '../../core/data/dataset';
 import { i18nValue } from '../../core/ui/i18n';
 import { IVisualDatasetField } from '../../core/data';
+import { getProviderSchema } from '../specification/schema-validation';
 
 /**
  * Ensures that when auto-apply is enabled, the store is updated at a sensible interval after input has finished, rather than applying
@@ -100,7 +104,7 @@ export const getNewJsonEditor = (container: HTMLDivElement) =>
     new JSONEditor(container, {
         modes: [],
         ace: ace,
-        ajv: baseValidator,
+        ajv: BASE_VALIDATOR,
         mode: 'code',
         mainMenuBar: false,
         theme: 'ace/theme/chrome',
@@ -185,7 +189,11 @@ export const setInitialText = (jsonEditor: JSONEditor, role: TEditorRole) => {
  */
 const setProviderSchema = (jsonEditor: JSONEditor, role: TEditorRole) => {
     const { provider } = getVegaSettings();
-    jsonEditor?.setSchema(getEditorSchema(<TSpecProvider>provider, role));
+    jsonEditor?.setSchema(
+        role === 'spec'
+            ? getProviderSchema({ provider: <TSpecProvider>provider })
+            : {}
+    );
 };
 
 /**

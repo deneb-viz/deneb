@@ -32,8 +32,7 @@ import { resolveAutoApplyLabel } from './labels';
 
 import { theme } from './fluent';
 import { i18nValue } from './i18n';
-import { getState, useStoreProp } from '../../store';
-import { TSpecStatus } from '../../features/specification';
+import { getState } from '../../store';
 
 const commandBarStyles: ICommandBarStyles = {
     root: {
@@ -111,8 +110,7 @@ const getAutoApplyToggle = (
  * Gets the command bar items for the left side of the bar, which is concerned with persistence.
  */
 const getCommandBarItems = (): ICommandBarItemProps[] => {
-    const editorAutoApply = useStoreProp<boolean>('editorAutoApply');
-    const editorCanAutoApply = useStoreProp<boolean>('editorCanAutoApply');
+    const { editorAutoApply, editorCanAutoApply } = getState();
     return [
         getApplyCommandItem(),
         getAutoApplyToggle(editorAutoApply, editorCanAutoApply),
@@ -137,7 +135,7 @@ const getCommandBarFarItems = (): ICommandBarItemProps[] => [
 ];
 
 const getExportSpecCommandItem = (): ICommandBarItemProps => {
-    const status = useStoreProp<TSpecStatus>('status', 'editorSpec');
+    const { status } = getState().specification;
     return {
         key: 'export',
         text: i18nValue('Button_Export'),

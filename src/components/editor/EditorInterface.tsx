@@ -1,8 +1,9 @@
 import React from 'react';
 import { FluentProvider } from '@fluentui/react-components';
 import SplitPane from 'react-split-pane';
+import { shallow } from 'zustand/shallow';
 
-import { useStoreProp } from '../../store';
+import store from '../../store';
 import EditorPane from './pane/EditorPane';
 import { PreviewArea } from '../../features/preview-area';
 import {
@@ -11,24 +12,27 @@ import {
     resizerPaneVerticalStyles,
     resizerVerticalStyles
 } from '../../core/ui/advancedEditor';
-import { IEditorPaneUpdatePayload } from '../../store/editor';
-import { TEditorPosition } from '../../core/ui';
 import { ModalDialog } from '../../features/modal-dialog';
 import { Themes, useInterfaceStyles } from '../../features/interface';
 import { logRender } from '../../features/logging';
 
 const EditorInterface: React.FC = () => {
-    const editorPaneIsExpanded: boolean = useStoreProp('editorPaneIsExpanded');
-    const editorPaneDefaultWidth: number = useStoreProp(
-        'editorPaneDefaultWidth'
+    const {
+        editorPaneDefaultWidth,
+        editorPaneIsExpanded,
+        editorPaneWidth,
+        position,
+        updateEditorPaneWidth
+    } = store(
+        (state) => ({
+            editorPaneDefaultWidth: state.editorPaneDefaultWidth,
+            editorPaneIsExpanded: state.editorPaneIsExpanded,
+            editorPaneWidth: state.editorPaneWidth,
+            position: state.visualSettings.editor.position,
+            updateEditorPaneWidth: state.updateEditorPaneWidth
+        }),
+        shallow
     );
-    const editorPaneWidth: number = useStoreProp('editorPaneWidth');
-    const position = useStoreProp<TEditorPosition>(
-        'position',
-        'visualSettings.editor'
-    );
-    const updateEditorPaneWidth: (payload: IEditorPaneUpdatePayload) => void =
-        useStoreProp('updateEditorPaneWidth');
     const handleResize = (width: number) => {
         updateEditorPaneWidth({
             editorPaneWidth: width,

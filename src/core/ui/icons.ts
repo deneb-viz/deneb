@@ -3,11 +3,10 @@ import { IButtonStyles } from '@fluentui/react/lib/Button';
 import { theme } from './fluent';
 import { TEditorPosition } from '.';
 import { mergeStyleSets } from '@fluentui/react';
-import { getState, useStoreProp } from '../../store';
+import { getState } from '../../store';
 import { commandBarButtonStyles } from './commandBar';
 import { TDatasetFieldType } from '../../features/template';
 import { zoomConfig } from './dom';
-import { TSpecStatus } from '../../features/specification';
 
 const previewCommandBarHeight = 26;
 
@@ -83,7 +82,8 @@ export const isZoomOutIconDisabled = (value: number) =>
 export const isZoomResetIconDisabled = (value: number) =>
     value === zoomConfig.default || isZoomControlDisabled();
 
-const isZoomControlDisabled = () => getState().editorSpec?.status !== 'valid';
+const isZoomControlDisabled = () =>
+    getState().specification?.status !== 'valid';
 
 export const isZoomControlDisabledReact = () =>
-    useStoreProp<TSpecStatus>('status', 'editorSpec') !== 'valid';
+    getState().specification.status !== 'valid';

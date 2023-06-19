@@ -7,12 +7,11 @@ import { DialogType, IDialogContentProps } from '@fluentui/react/lib/Dialog';
 import { discardChanges } from '../../../core/ui/commands';
 import { i18nValue } from '../../../core/ui/i18n';
 import { buttonStyles } from '../../../core/ui/fluent';
-import store, { useStoreProp } from '../../../store';
-import { TVisualMode } from '../../../core/ui';
-import { reactLog } from '../../../core/utils/reactLog';
+import store from '../../../store';
 import { MODAL_DIALOG_PROPS } from '../styles';
 import { persistSpecification } from '../../specification';
 import { shallow } from 'zustand/shallow';
+import { logRender } from '../../logging';
 
 /**
  * Populate suitable `IDialogContentProps` based on supplied i18n keys.
@@ -30,11 +29,13 @@ const getDialogContentProps = (
 };
 
 export const ApplyChangesDialog: React.FC = () => {
-    const { isDirty } = store(
-        (state) => ({ isDirty: state.editor.isDirty }),
+    const { isDirty, visualMode } = store(
+        (state) => ({
+            isDirty: state.editor.isDirty,
+            visualMode: state.visualMode
+        }),
         shallow
     );
-    const visualMode: TVisualMode = useStoreProp('visualMode');
     const hidden = !(isDirty && visualMode === 'Standard');
     const handleApply = () => persistSpecification(false);
     const handleDiscard = () => discardChanges();
@@ -44,7 +45,7 @@ export const ApplyChangesDialog: React.FC = () => {
     );
     const applyText = i18nValue('Dialog_Unapplied_Changes_Apply');
     const discardText = i18nValue('Dialog_Unapplied_Changes_Discard');
-    reactLog('Rendering [ApplyDialog]');
+    logRender('ApplyDialog');
     return (
         <>
             <Dialog

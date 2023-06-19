@@ -1,18 +1,23 @@
 import React from 'react';
 
 import EditorInterface from './editor/EditorInterface';
-import { useStoreProp } from '../store';
+import store from '../store';
 import DataProcessingRouter from './DataProcessingRouter';
 import SplashInitial from './status/SplashInitial';
 import SplashReadOnly from './status/SplashReadOnly';
 import SplashReadWrite from './status/SplashReadWrite';
 import SplashNoSpec from './status/SplashNoSpec';
 import SelectionLimitMessageBar from './status/SelectionLimitMessageBar';
-import { TVisualMode } from '../core/ui';
 import { reactLog } from '../core/utils/reactLog';
+import { shallow } from 'zustand/shallow';
 
 const MainInterface = () => {
-    const visualMode = useStoreProp<TVisualMode>('visualMode');
+    const { visualMode } = store(
+        (state) => ({
+            visualMode: state.visualMode
+        }),
+        shallow
+    );
     const mainComponent = () => {
         switch (visualMode) {
             case 'SplashInitial':
