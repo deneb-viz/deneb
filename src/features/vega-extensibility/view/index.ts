@@ -102,3 +102,23 @@ export const handleNewView = (newView: View) => {
         hostServices.renderingFinished();
     });
 };
+
+/**
+ * Any logic that we need to apply when the view errors.
+ */
+export const handleViewError = (error: Error, containerRef: HTMLDivElement) => {
+    logDebug('Vega view error.', error);
+    logDebug('Clearing view...');
+    const {
+        interface: { generateRenderId },
+        specification: { logError }
+    } = getState();
+    VegaViewServices.clearView();
+    logDebug('View services', {
+        view: VegaViewServices.getView(),
+        signals: VegaViewServices.getAllSignals(),
+        data: VegaViewServices.getAllData()
+    });
+    logError(error.message);
+    generateRenderId();
+};

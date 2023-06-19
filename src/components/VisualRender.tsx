@@ -8,14 +8,11 @@ import store from '../store';
 import { hostServices } from '../core/services';
 import { locales } from '../core/ui/i18n';
 import { TSpecProvider, TSpecRenderMode } from '../core/vega';
-import {
-    VegaViewServices,
-    handleNewView
-} from '../features/vega-extensibility';
+import { handleNewView, handleViewError } from '../features/vega-extensibility';
 import { IVisualDatasetValueRow } from '../core/data';
 import { getPowerBiTooltipHandler } from '../features/interactivity';
 import { getVegaLoader } from '../features/vega-extensibility';
-import { logDebug, logError, logRender } from '../features/logging';
+import { logDebug, logRender } from '../features/logging';
 
 interface IVisualRenderProps {
     specification: object;
@@ -72,12 +69,10 @@ const areEqual = (
 
 const VisualRender: React.FC<IVisualRenderProps> = memo(
     ({ specification, provider, enableTooltips, renderMode }) => {
-        const { logLevel, status, generateRenderId, logStoreError } = store(
+        const { logLevel, status } = store(
             (state) => ({
                 logLevel: state.visualSettings.vega.logLevel,
-                status: state.specification.status,
-                generateRenderId: state.interface.generateRenderId,
-                logStoreError: state.specification.logError
+                status: state.specification.status
             }),
             shallow
         );
@@ -93,26 +88,10 @@ const VisualRender: React.FC<IVisualRenderProps> = memo(
         const loader = useMemo(() => getVegaLoader(), []);
         const onNewView = useCallback((view: Vega.View) => {
             logDebug('New view', { status, specification });
-            if (status !== 'error') {
-                handleNewView(view);
-            }
+            handleNewView(view);
         }, []);
-        const handleError = (error: Error) => {
-            logError('Vega view error', error);
-            switch (error.message) {
-                default: {
-                    logDebug('Clearing down view...');
-                    VegaViewServices.clearView();
-                    logDebug('View services', {
-                        view: VegaViewServices.getView(),
-                        signals: VegaViewServices.getAllSignals(),
-                        data: VegaViewServices.getAllData()
-                    });
-                    logStoreError(error.message);
-                    generateRenderId();
-                    return;
-                }
-            }
+        const handleError = (error: Error, containerRef: HTMLDivElement) => {
+            handleViewError(error, containerRef);
         };
         const formatLocale =
             locales.format[locale] || locales.format[locales.default];
