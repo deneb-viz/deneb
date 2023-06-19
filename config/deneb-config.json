@@ -221,7 +221,7 @@
             "jsonSpec": null,
             "jsonConfig": "{}",
             "provider": "vegaLite",
-            "logLevel": 2,
+            "logLevel": 3,
             "renderMode": "svg",
             "enableContextMenu": true,
             "enableTooltips": true,
