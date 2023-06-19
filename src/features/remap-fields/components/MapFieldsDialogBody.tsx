@@ -19,7 +19,6 @@ import {
 import { buttonStyles } from '../../../core/ui/fluent';
 
 import { getDatasetTemplateFields } from '../../../core/data/fields';
-import { reactLog } from '../../../core/utils/reactLog';
 import {
     MODAL_DIALOG_STACK_INNER_TOKENS,
     MODAL_DIALOG_STACK_ITEM_STYLES,
@@ -27,6 +26,7 @@ import {
 } from '../../modal-dialog';
 import { specEditorService } from '../../../core/services/JsonEditorServices';
 import { persistSpecification } from '../../specification';
+import { logRender } from '../../logging';
 
 const datasetItemStyles: IStackItemStyles = {
     root: {
@@ -81,7 +81,7 @@ export const MapFieldsDialogBody = () => {
     const handleRemap = () => {
         remapSpecificationFields();
     };
-    reactLog('Rendering [MapFieldsDialogBody]');
+    logRender('MapFieldsDialogBody');
     return (
         <Stack
             styles={MODAL_DIALOG_STACK_STYLES}

@@ -3,16 +3,16 @@ import { Stack } from '@fluentui/react/lib/Stack';
 
 import { CreateVisualStateHandler } from './CreateVisualStateHandler';
 import { CreateVisualTemplateNav } from './CreateVisualTemplateNav';
-import { reactLog } from '../../../core/utils/reactLog';
 import {
     TEMPLATE_PICKER_NON_SHRINKING_STACK_ITEM_STYLES,
     TEMPLATE_PICKER_STACK_ITEM_LIST_STYLES,
     TEMPLATE_PICKER_STACK_STYLES,
     TEMPLATE_PICKER_STACK_TOKENS
 } from '../../template';
+import { logRender } from '../../logging';
 
 export const CreateVisualDialogBodyDetail: React.FC = () => {
-    reactLog('Rendering [CreateVisualDialogBodyDetail]');
+    logRender('CreateVisualDialogBodyDetail');
     return (
         <Stack
             horizontal

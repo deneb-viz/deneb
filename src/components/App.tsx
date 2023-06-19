@@ -27,7 +27,7 @@ import {
     handleEditorDebugPaneSignal,
     handleEditorDebugPaneLog
 } from '../core/ui/commands';
-import { reactLog } from '../core/utils/reactLog';
+import { logRender } from '../features/logging';
 
 const App = () => {
     const hotkeyHandler = (command: string, callback: () => void) =>
@@ -52,7 +52,7 @@ const App = () => {
     hotkeyHandler('debugPaneShowSignals', handleEditorDebugPaneSignal);
     hotkeyHandler('debugPaneShowLogs', handleEditorDebugPaneLog);
     hotkeyHandler('editorFocusOut', handleFocusFirstPivot);
-    reactLog('Rendering [App]');
+    logRender('App');
     return <MainInterface />;
 };
 

@@ -15,7 +15,7 @@ import VisualUpdateMessageBar from '../../status/VisualUpdateMessageBar';
 
 import { theme } from '../../../core/ui/fluent';
 import { calculateEditorPaneMaxWidth } from '../../../core/ui/advancedEditor';
-import { reactLog } from '../../../core/utils/reactLog';
+import { logRender } from '../../../features/logging';
 
 const verticalStackOuterTokens: IStackTokens = { childrenGap: 5 };
 const verticalStackInnerTokens: IStackTokens = {
@@ -41,7 +41,7 @@ const finalStackItemStyles: IStackItemStyles = {
 };
 
 const EditorPaneExpanded = () => {
-    reactLog('Rendering [EditorPaneExpanded]');
+    logRender('EditorPaneExpanded');
     return (
         <Stack
             id='editorPane'

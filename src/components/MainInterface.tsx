@@ -1,4 +1,5 @@
 import React from 'react';
+import { shallow } from 'zustand/shallow';
 
 import EditorInterface from './editor/EditorInterface';
 import store from '../store';
@@ -8,8 +9,7 @@ import SplashReadOnly from './status/SplashReadOnly';
 import SplashReadWrite from './status/SplashReadWrite';
 import SplashNoSpec from './status/SplashNoSpec';
 import SelectionLimitMessageBar from './status/SelectionLimitMessageBar';
-import { reactLog } from '../core/utils/reactLog';
-import { shallow } from 'zustand/shallow';
+import { logRender } from '../features/logging';
 
 const MainInterface = () => {
     const { visualMode } = store(
@@ -34,7 +34,7 @@ const MainInterface = () => {
                 return <DataProcessingRouter />;
         }
     };
-    reactLog('Rendering [MainInterface]', visualMode);
+    logRender('MainInterface', visualMode);
     return (
         <>
             {mainComponent()}

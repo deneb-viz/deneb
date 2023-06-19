@@ -1,10 +1,10 @@
 import React from 'react';
-import { reactLog } from '../../../core/utils/reactLog';
 
 import EditorOperationContainer from './EditorOperationContainer';
+import { logRender } from '../../../features/logging';
 
 const EditorOperationContent: React.FC = () => {
-    reactLog('Rendering [EditorOperationContent]');
+    logRender('EditorOperationContent');
     return (
         <>
             <EditorOperationContainer operation='spec' />

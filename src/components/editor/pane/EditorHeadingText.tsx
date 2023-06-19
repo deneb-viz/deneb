@@ -2,12 +2,12 @@ import React from 'react';
 
 import { handleEditorPane } from '../../../core/ui/commands';
 import { i18nValue } from '../../../core/ui/i18n';
-import { reactLog } from '../../../core/utils/reactLog';
 
 import { EditorHeading } from '../../elements/Typography';
+import { logRender } from '../../../features/logging';
 
 const EditorHeadingText: React.FC = () => {
-    reactLog('Rendering [EditorHeadingText]');
+    logRender('EditorHeadingText');
     return (
         <>
             <div

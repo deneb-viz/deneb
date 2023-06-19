@@ -5,7 +5,6 @@ import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-chrome';
 import 'ace-builds/src-noconflict/ext-language_tools';
 import 'ace-builds/src-noconflict/ext-searchbox';
-import { reactLog } from '../../../core/utils/reactLog';
 import IVisualEditor = editor.IVisualEditor;
 import { IVisualEditorProps } from '../types';
 import {
@@ -13,6 +12,7 @@ import {
     handleComponentUpdate
 } from '../utils-jsoneditor';
 import { getState } from '../../../store';
+import { logRender } from '../../logging';
 
 export class EditorJsonEditor extends React.Component<IVisualEditorProps> {
     private container: HTMLDivElement;
@@ -22,7 +22,7 @@ export class EditorJsonEditor extends React.Component<IVisualEditorProps> {
         this.bindEditorElement = this.bindEditorElement.bind(this);
     }
     render() {
-        reactLog('Rendering [Editor]');
+        logRender('Editor');
         return (
             <>
                 <div className='jsoneditor' ref={this.bindEditorElement} />
@@ -31,7 +31,7 @@ export class EditorJsonEditor extends React.Component<IVisualEditorProps> {
     }
 
     componentDidUpdate() {
-        reactLog('Rendering [Editor] - update');
+        logRender('Editor - update');
         handleComponentUpdate(this.editor.jsonEditor, this.props.role);
     }
 

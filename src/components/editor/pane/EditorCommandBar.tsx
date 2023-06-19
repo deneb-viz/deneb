@@ -11,14 +11,14 @@ import {
 } from '../../../core/ui/commandBar';
 
 import { i18nValue } from '../../../core/ui/i18n';
-import { reactLog } from '../../../core/utils/reactLog';
+import { logRender } from '../../../features/logging';
 
 const EditorCommandBar: React.FC = () => {
     const items = getCommandBarItems();
     const overflowItems = getCommandBarOverflowItems();
     const overflowButtonProps = commandBarOverflowProps();
     const farItems = getCommandBarFarItems();
-    reactLog('Rendering [EditorCommandBar]');
+    logRender('EditorCommandBar');
     return (
         <div style={{ width: '100%' }}>
             <CommandBar

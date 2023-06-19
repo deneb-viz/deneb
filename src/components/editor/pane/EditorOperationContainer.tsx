@@ -4,7 +4,7 @@ import { Scrollbars } from 'react-custom-scrollbars-2';
 import store from '../../../store';
 import { EditorJsonEditor, TEditorRole } from '../../../features/json-editor';
 import EditorPaneSettings from '../../settings/EditorPaneSettings';
-import { reactLog } from '../../../core/utils/reactLog';
+import { logRender } from '../../../features/logging';
 
 interface IEditorOperationContainerProps {
     operation: TEditorRole;
@@ -20,7 +20,7 @@ const EditorOperationContainer: React.FC<IEditorOperationContainerProps> = ({
         visualSettings.editor.provider === 'jsoneditor'
             ? EditorJsonEditor
             : null;
-    reactLog('Rendering [EditorOperationContainer]', operation);
+    logRender('EditorOperationContainer', operation);
     return (
         <div
             className={`editor-pane-container ${

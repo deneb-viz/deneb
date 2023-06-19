@@ -8,12 +8,12 @@ import { Paragraph } from '../../../components/elements/Typography';
 import store from '../../../store';
 import { i18nValue } from '../../../core/ui/i18n';
 import { isFeatureEnabled } from '../../../core/utils/features';
-import { reactLog } from '../../../core/utils/reactLog';
 import {
     dispatchPreviewImage,
     PreviewImage,
     PREVIEW_IMAGE_CAP_SIZE
 } from '../../template';
+import { logRender } from '../../logging';
 
 const stackTokens: IStackTokens = {
     childrenGap: 25
@@ -32,7 +32,7 @@ export const ExportVisualPreviewImage: React.FC = () => {
         },
         []
     );
-    reactLog('Rendering [TemplateExportPreviewImage]');
+    logRender('TemplateExportPreviewImage');
     return isFeatureEnabled('templateExportPreviewImages') ? (
         <>
             <Separator />

@@ -6,7 +6,7 @@ import {
 } from '@fluentui/react/lib/MessageBar';
 
 import { i18nValue } from '../../core/ui/i18n';
-import { reactLog } from '../../core/utils/reactLog';
+import { logRender } from '../../features/logging';
 
 interface INotificationMessageBarProps {
     dismissAction: () => any;
@@ -51,7 +51,7 @@ const NotificationMessageBar: React.FC<INotificationMessageBarProps> = ({
             </MessageBar>
         </>
     );
-    reactLog('Rendering [NotificationMessageBar]');
+    logRender('NotificationMessageBar');
     return (visible && notification()) || <></>;
 };
 

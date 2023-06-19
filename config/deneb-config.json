@@ -2,7 +2,6 @@
     "$schema": "../schema/deneb-config.json",
     "features": {
         "developerMode": false,
-        "enableReactLogging": false,
         "enableExternalUri": false,
         "fetchMoreData": true,
         "selectionContextMenu": true,
