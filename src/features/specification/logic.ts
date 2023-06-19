@@ -111,39 +111,6 @@ export const getCleanEditorJson = (role: TEditorRole) =>
     );
 
 /**
- * Looks at the active specification and config in the visual editors and compares with persisted values in the visual properties. Used to set
- * the `isDirty` flag in the store.
- */
-export const hasLiveSpecChanged = () => {
-    const { jsonSpec, jsonConfig } = getVegaSettings(),
-        liveSpec = getCleanEditorJson('spec'),
-        liveConfig = getCleanEditorJson('config');
-    return liveSpec != jsonSpec || liveConfig != jsonConfig;
-};
-
-/**
- * Determine if a visual's persisted spec pre-dates version 1.1.0.0 (when we started writing versions to properties).
- */
-export const isLegacySpec = () => !isNewSpec() && !isVersionedSpec();
-
-/**
- * In order to determine if our current spec/config is the same as the default properties, indicating that
- */
-const isNewSpec = () => {
-    const defaults = getConfig().propertyDefaults.vega;
-    const { jsonSpec, jsonConfig } = getVegaSettings();
-    return jsonSpec === defaults.jsonSpec && jsonConfig === defaults.jsonConfig;
-};
-
-/**
- * Determine if a visual is 'versioned' based on persisted properties.
- */
-const isVersionedSpec = () => {
-    const { denebVersion, providerVersion } = getLastVersionInfo();
-    return (denebVersion && providerVersion) || false;
-};
-
-/**
  * Borrowed from vega-editor
  */
 const getErrorLine = (code: string, error: string) => {
@@ -378,6 +345,39 @@ const getSpecificationParseOptions = (
         spec,
         values
     };
+};
+
+/**
+ * Looks at the active specification and config in the visual editors and compares with persisted values in the visual properties. Used to set
+ * the `isDirty` flag in the store.
+ */
+export const hasLiveSpecChanged = () => {
+    const { jsonSpec, jsonConfig } = getVegaSettings(),
+        liveSpec = getCleanEditorJson('spec'),
+        liveConfig = getCleanEditorJson('config');
+    return liveSpec != jsonSpec || liveConfig != jsonConfig;
+};
+
+/**
+ * Determine if a visual's persisted spec pre-dates version 1.1.0.0 (when we started writing versions to properties).
+ */
+export const isLegacySpec = () => !isNewSpec() && !isVersionedSpec();
+
+/**
+ * In order to determine if our current spec/config is the same as the default properties, indicating that
+ */
+const isNewSpec = () => {
+    const defaults = getConfig().propertyDefaults.vega;
+    const { jsonSpec, jsonConfig } = getVegaSettings();
+    return jsonSpec === defaults.jsonSpec && jsonConfig === defaults.jsonConfig;
+};
+
+/**
+ * Determine if a visual is 'versioned' based on persisted properties.
+ */
+const isVersionedSpec = () => {
+    const { denebVersion, providerVersion } = getLastVersionInfo();
+    return (denebVersion && providerVersion) || false;
 };
 
 /**

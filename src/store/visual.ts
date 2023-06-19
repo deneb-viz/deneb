@@ -19,6 +19,8 @@ import {
     getResizablePaneSize
 } from '../core/ui/advancedEditor';
 import { getReportViewport } from '../core/ui/dom';
+import { getParsedSpec } from '../features/specification';
+import { TSpecProvider } from '../core/vega';
 
 const defaultViewport = { width: 0, height: 0 };
 
@@ -154,6 +156,20 @@ const handleSetVisualUpdate = (
         visualMode,
         positionNew
     );
+    // spec needs to be parsed if any pertinent settings have changed between updates
+    const specification = {
+        ...state.specification,
+        ...(payload.settings.vega.provider !==
+        state.visualSettings.vega.provider
+            ? getParsedSpec({
+                  spec: payload.settings.vega.jsonSpec,
+                  config: payload.settings.vega.jsonConfig,
+                  logLevel: payload.settings.vega.logLevel,
+                  provider: <TSpecProvider>payload.settings.vega.provider,
+                  values: state.dataset.values
+              })
+            : state.specification)
+    };
     return {
         datasetViewObjects,
         editorIsNewDialogVisible: payload.settings.vega.isNewDialogOpen,
@@ -174,7 +190,8 @@ const handleSetVisualUpdate = (
         visualViewMode: viewMode,
         visualViewportCurrent: viewportCurrent,
         visualViewportReport: viewportReport,
-        visualViewportVega
+        visualViewportVega,
+        specification
     };
 };
 
