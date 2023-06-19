@@ -162,6 +162,19 @@ const handleUpdateDataset = (
         editorFieldsInUse,
         state.editorFieldDatasetMismatch
     );
+    // spec needs to be parsed here, only if the dataset hash has changed
+    const specification = {
+        ...state.specification,
+        ...(dataset.hashValue !== state.dataset.hashValue
+            ? getParsedSpec({
+                  config: state.visualSettings.vega.jsonConfig,
+                  logLevel: state.visualSettings.vega.logLevel,
+                  provider: <TSpecProvider>state.visualSettings.vega.provider,
+                  spec: state.visualSettings.vega.jsonSpec,
+                  values: dataset.values
+              })
+            : state.specification)
+    };
     return {
         dataset: payload.dataset,
         datasetCategories,
@@ -183,23 +196,9 @@ const handleUpdateDataset = (
             state.visualEditMode,
             state.visualIsInFocusMode,
             state.visualViewMode,
-            state.specification
+            specification
         ),
-        // spec needs to be parsed here, only if the dataset hash has changed
-        specification: {
-            ...state.specification,
-            ...(dataset.hashValue !== state.dataset.hashValue
-                ? getParsedSpec({
-                      config: state.visualSettings.vega.jsonConfig,
-                      logLevel: state.visualSettings.vega.logLevel,
-                      provider: <TSpecProvider>(
-                          state.visualSettings.vega.provider
-                      ),
-                      spec: state.visualSettings.vega.jsonSpec,
-                      values: dataset.values
-                  })
-                : state.specification)
-        }
+        specification
     };
 };
 
