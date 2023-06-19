@@ -1,10 +1,10 @@
-import React, { memo, useCallback, useEffect, useMemo } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { createClassFromSpec } from 'react-vega';
 import * as Vega from 'vega';
 import isEqual from 'lodash/isEqual';
+import { shallow } from 'zustand/shallow';
 
 import store from '../store';
-
 import { hostServices } from '../core/services';
 import { locales } from '../core/ui/i18n';
 import { TSpecProvider, TSpecRenderMode } from '../core/vega';
@@ -12,13 +12,10 @@ import {
     VegaViewServices,
     handleNewView
 } from '../features/vega-extensibility';
-import { View } from 'vega';
-
 import { IVisualDatasetValueRow } from '../core/data';
 import { getPowerBiTooltipHandler } from '../features/interactivity';
 import { getVegaLoader } from '../features/vega-extensibility';
 import { logDebug, logError, logRender } from '../features/logging';
-import { shallow } from 'zustand/shallow';
 
 interface IVisualRenderProps {
     specification: object;
@@ -94,7 +91,7 @@ const VisualRender: React.FC<IVisualRenderProps> = memo(
             [enableTooltips]
         );
         const loader = useMemo(() => getVegaLoader(), []);
-        const onNewView = useCallback((view: View) => {
+        const onNewView = useCallback((view: Vega.View) => {
             logDebug('New view', { status, specification });
             if (status !== 'error') {
                 handleNewView(view);
