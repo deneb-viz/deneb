@@ -12,7 +12,10 @@ import toNumber from 'lodash/toNumber';
 import toString from 'lodash/toString';
 
 import { i18nValue } from '../../core/ui/i18n';
-import { getJsonAsIndentedString } from '../../core/utils/json';
+import {
+    getJsonAsIndentedString,
+    stringifyPruned
+} from '../../core/utils/json';
 import { getVegaSettings, IVegaViewDatum } from '../../core/vega';
 import { powerBiFormatValue } from '../../utils';
 import {
@@ -223,6 +226,6 @@ const resolveTooltipItem = (tooltip: any) => {
         case typeof tooltip !== 'object':
             return { ' ': `${tooltip}` };
         default:
-            return { ...tooltip };
+            return JSON.parse(stringifyPruned(tooltip));
     }
 };
