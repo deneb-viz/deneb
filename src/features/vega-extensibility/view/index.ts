@@ -1,9 +1,12 @@
 import { falsy, truthy, View } from 'vega';
-import { handleContextMenuEvent } from '../interactivity/context-menu';
-import { handleCrossFilterEvent } from '../interactivity/cross-filter';
-import { logDebug, StoreVegaLoggerService } from '../logging';
-import { hostServices } from '../../core/services';
-import { getState } from '../../store';
+import { handleContextMenuEvent } from '../../interactivity/context-menu';
+import { handleCrossFilterEvent } from '../../interactivity/cross-filter';
+import { logDebug, StoreVegaLoggerService } from '../../logging';
+import { hostServices } from '../../../core/services';
+import { getState } from '../../../store';
+import { VegaPatternFillServices } from '../pattern-fill';
+
+export { getVegaLoader } from './loader';
 
 let view: View | null;
 
@@ -86,8 +89,13 @@ export const handleNewView = (newView: View) => {
     newView.runAfter((view) => {
         logDebug('Running post-Vega view logic...', view);
         logDebug('Binding view services...');
+        VegaPatternFillServices.update();
         VegaViewServices.bind(view);
-        logDebug('View services', view, VegaViewServices.getAllSignals());
+        logDebug('View services', {
+            view: VegaViewServices.getView(),
+            signals: VegaViewServices.getAllSignals(),
+            data: VegaViewServices.getAllData()
+        });
         bindContextMenuEvents(view);
         bindCrossFilterEvents(view);
         getState().interface.generateRenderId();

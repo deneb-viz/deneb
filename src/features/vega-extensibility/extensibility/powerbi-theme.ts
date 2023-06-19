@@ -3,17 +3,17 @@ import { Config as VlConfig, TopLevelSpec } from 'vega-lite';
 import merge from 'lodash/merge';
 import { interpolateHcl, interpolateRgbBasis, quantize } from 'd3';
 
-import { hostServices } from '../../core/services';
-import { ptToPx } from '../../core/ui/dom';
-import { getState } from '../../store';
+import { hostServices } from '../../../core/services';
+import { ptToPx } from '../../../core/ui/dom';
+import { getState } from '../../../store';
 
 type Config = VgConfig | VlConfig;
 
-const fontSmallPx = ptToPx(9);
-const legendFontPx = ptToPx(10);
-const fontLargePx = ptToPx(12);
-const fontStandard = 'Segoe UI';
-const fontTitle = 'wf_standard-font, helvetica, arial, sans-serif';
+const FONT_SMALL_PX = ptToPx(9);
+const LEGEND_FONT_PX = ptToPx(10);
+const FONT_LARGE_PX = ptToPx(12);
+const FONT_STANDARD = 'Segoe UI';
+const FONT_TITLE = 'wf_standard-font, helvetica, arial, sans-serif';
 
 /**
  * Pre-defined theme that can work with Power BI, based on our work to add this to vega-themes.
@@ -21,7 +21,7 @@ const fontTitle = 'wf_standard-font, helvetica, arial, sans-serif';
  */
 export const powerbiTheme = (): Config => ({
     view: { stroke: 'transparent' },
-    font: fontStandard,
+    font: FONT_STANDARD,
     arc: {},
     area: { line: true, opacity: 0.6 },
     bar: {},
@@ -36,8 +36,8 @@ export const powerbiTheme = (): Config => ({
     shape: {},
     symbol: { strokeWidth: 1.5, size: 50 },
     text: {
-        font: fontStandard,
-        fontSize: fontSmallPx,
+        font: FONT_STANDARD,
+        fontSize: FONT_SMALL_PX,
         fill: themeSecondLevelElement()
     },
     axis: {
@@ -45,10 +45,10 @@ export const powerbiTheme = (): Config => ({
         grid: false,
         domain: false,
         labelColor: themeSecondLevelElement(),
-        labelFontSize: fontSmallPx,
-        titleFont: fontTitle,
+        labelFontSize: FONT_SMALL_PX,
+        titleFont: FONT_TITLE,
         titleColor: themeFirstLevelElement(),
-        titleFontSize: fontLargePx,
+        titleFontSize: FONT_LARGE_PX,
         titleFontWeight: 'normal'
     },
     axisQuantitative: {
@@ -61,19 +61,19 @@ export const powerbiTheme = (): Config => ({
     axisX: { labelPadding: 5 },
     axisY: { labelPadding: 10 },
     header: {
-        titleFont: fontTitle,
-        titleFontSize: fontLargePx,
+        titleFont: FONT_TITLE,
+        titleFontSize: FONT_LARGE_PX,
         titleColor: themeFirstLevelElement(),
-        labelFont: fontStandard,
-        labelFontSize: legendFontPx,
+        labelFont: FONT_STANDARD,
+        labelFontSize: LEGEND_FONT_PX,
         labelColor: themeSecondLevelElement()
     },
     legend: {
-        titleFont: fontStandard,
+        titleFont: FONT_STANDARD,
         titleFontWeight: 'bold',
         titleColor: themeSecondLevelElement(),
-        labelFont: fontStandard,
-        labelFontSize: legendFontPx,
+        labelFont: FONT_STANDARD,
+        labelFontSize: LEGEND_FONT_PX,
         labelColor: themeSecondLevelElement(),
         symbolType: 'circle',
         symbolSize: 75
@@ -99,39 +99,35 @@ export const getThemeColorByIndex = (index: number) =>
 export const getThemeColorByName = (name: string) => namedColors()[name];
 
 /**
- * Adjust a specified hex color in a similar way that Power BI does it to its
- * own themes.
+ * Retrieve all current theme color values from the visual host.
  */
-export const shadeColor = (color: string, percent: number) => {
-    const f = parseInt(color.slice(1), 16);
-    const t = percent < 0 ? 0 : 255;
-    const p = percent < 0 ? percent * -1 : percent;
-    const R = f >> 16;
-    const G = (f >> 8) & 0x00ff;
-    const B = f & 0x0000ff;
-    return `#${(
-        0x1000000 +
-        (Math.round((t - R) * p) + R) * 0x10000 +
-        (Math.round((t - G) * p) + G) * 0x100 +
-        (Math.round((t - B) * p) + B)
-    )
-        .toString(16)
-        .slice(1)}`;
-};
+export const powerBiColors = () =>
+    hostServices?.colorPalette?.['colors']?.map((c: any) => c.value) || [];
 
 /**
- * Helper functions to generate color ranges based on theme color palette
+ * Calculate an interpolated divergent palette, based on the current theme's
+ * minimum and maximum divergent colors.
  */
 export const divergentPalette = () =>
     interpolateRgbBasis([themeDivergentMin(), themeDivergentMax()]);
+
+/**
+ * Calculate an interpolated divergent palette, based on the current theme's
+ * minimum, middle, and maximum divergent colors.
+ */
 export const divergentPaletteMed = () =>
     interpolateRgbBasis([
         themeDivergentMin(),
         themeDivergentMed(),
         themeDivergentMax()
     ]);
-export const ordinalPalette = () => {
-    const { ordinalColorCount } = getState().visualSettings.theme;
+
+/**
+ * Calculate an ordinal palette, based on the defined number of available
+ * categories. This will interpolate between the theme's minimum and maximum
+ * divergent colors.
+ */
+export const ordinalPalette = (ordinalColorCount: number) => {
     if (ordinalColorCount === 1) return [themeDivergentMax()];
     return quantize(
         interpolateHcl(themeDivergentMin(), themeDivergentMax()),
@@ -139,22 +135,59 @@ export const ordinalPalette = () => {
     );
 };
 
+/**
+ * Get neutral background color from the current theme.
+ */
 const themeBackgroundNeutral = () =>
     hostServices.colorPalette?.backgroundNeutral?.value;
+
+/**
+ * Get primary foreground color from the current theme.
+ */
 const themeFirstLevelElement = () =>
     hostServices.colorPalette?.foreground?.value;
+
+/**
+ * Get secondary foreground color from the current theme.
+ */
 const themeSecondLevelElement = () =>
     hostServices.colorPalette?.foregroundNeutralSecondary?.value;
+
+/**
+ * Get minimum divergent color from the current theme.
+ */
 const themeDivergentMin = () =>
     <string>hostServices.colorPalette?.['minimum']?.value;
+
+/**
+ * Get middle divergent color from the current theme.
+ */
 const themeDivergentMed = () =>
     <string>hostServices.colorPalette?.['center']?.value;
+
+/**
+ * Get maximum divergent color from the current theme.
+ * @privateRemarks There's a typo in the palette, so  we cast the correct
+ * spelling in case they ever fix it.
+ */
 const themeDivergentMax = () =>
-    <string>hostServices.colorPalette?.['maximium' || 'maximum']?.value; // There's a typo in the palette, so this covers us in case they ever fix it
+    <string>hostServices.colorPalette?.['maximium' || 'maximum']?.value;
+
+/**
+ * Get negative sentiment color from the current theme.
+ */
 const themeSentimentNegative = () =>
     <string>hostServices.colorPalette?.['negative']?.value;
+
+/**
+ * Get positive sentiment color from the current theme.
+ */
 const themeSentimentPositive = () =>
     <string>hostServices.colorPalette?.['positive']?.value;
+
+/**
+ * Get neutral sentiment color from the current theme.
+ */
 const themeSentimentNeutral = () =>
     <string>hostServices.colorPalette?.['neutral']?.value;
 

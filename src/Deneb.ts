@@ -33,7 +33,7 @@ import {
     validateDataViewRoles
 } from './core/data/dataView';
 import { theme } from './core/ui/fluent';
-import { fillPatternServices, hostServices } from './core/services';
+import { hostServices } from './core/services';
 import { initializeIcons } from './core/ui/fluent';
 import { getDataset, getMappedDataset } from './core/data/dataset';
 import { handlePropertyMigration } from './core/utils/versioning';
@@ -42,6 +42,10 @@ import { getDatasetTemplateFields } from './core/data/fields';
 import { DATASET_NAME } from './constants';
 import { logDebug, logHeading, logHost } from './features/logging';
 import { getVisualMetadata } from './core/utils/config';
+import {
+    VegaExtensibilityServices,
+    VegaPatternFillServices
+} from './features/vega-extensibility';
 
 /**
  * Run to indicate that the visual has started.
@@ -66,6 +70,7 @@ export class Deneb implements IVisual {
             loadTheme(theme);
             initializeIcons();
             hostServices.bindHostServices(options);
+            VegaPatternFillServices.bind();
             getState().initializeImportExport();
             this.container = options.element;
             this.host = options.host;
@@ -75,7 +80,6 @@ export class Deneb implements IVisual {
             this.container.oncontextmenu = (ev) => {
                 ev.preventDefault();
             };
-            fillPatternServices.setPatternContainer(this.container);
         } catch (e) {
             console?.error('Error', e);
         }
@@ -115,6 +119,7 @@ export class Deneb implements IVisual {
         const settings = this.settings;
         hostServices.visualUpdateOptions = options;
         hostServices.resolveLocaleFromSettings(settings.developer.locale);
+        VegaExtensibilityServices.bind(settings.theme.ordinalColorCount);
         const {
             setVisualUpdate,
             syncTemplateExportDataset,

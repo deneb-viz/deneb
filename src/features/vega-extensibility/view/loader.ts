@@ -1,14 +1,14 @@
 import * as Vega from 'vega';
 import { Loader } from 'vega';
-import { hostServices } from '../../core/services';
-import { i18nValue } from '../../core/ui/i18n';
-import { isFeatureEnabled } from '../../core/utils/features';
-import { BASE64_BLANK_IMAGE } from '../template';
+import { hostServices } from '../../../core/services';
+import { i18nValue } from '../../../core/ui/i18n';
+import { isFeatureEnabled } from '../../../core/utils/features';
+import { BASE64_BLANK_IMAGE } from '../../template';
 
 /**
  * Custom Vega loader for Power BI.
  */
-export const loader = (): Loader => {
+export const getVegaLoader = (): Loader => {
     const loader = Vega.loader();
     const externalUri = isFeatureEnabled('enableExternalUri');
 

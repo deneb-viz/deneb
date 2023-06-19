@@ -16,11 +16,7 @@ import { View } from 'vega';
 
 import { IVisualDatasetValueRow } from '../core/data';
 import { getPowerBiTooltipHandler } from '../features/interactivity';
-import {
-    getPowerBiVegaLoader,
-    registerPowerBiCustomExpressions,
-    registerPowerBiCustomSchemes
-} from '../features/powerbi-vega-extensibility';
+import { getVegaLoader } from '../features/vega-extensibility';
 import { logDebug, logError, logRender } from '../features/logging';
 import { shallow } from 'zustand/shallow';
 
@@ -97,7 +93,7 @@ const VisualRender: React.FC<IVisualRenderProps> = memo(
                 ),
             [enableTooltips]
         );
-        const loader = useMemo(() => getPowerBiVegaLoader(), []);
+        const loader = useMemo(() => getVegaLoader(), []);
         const onNewView = useCallback((view: View) => {
             logDebug('New view', { status, specification });
             if (status !== 'error') {
@@ -134,11 +130,6 @@ const VisualRender: React.FC<IVisualRenderProps> = memo(
             mode: resolvedProvider
         });
         logRender('VisualRender');
-        // TODO: do this on visual update
-        useEffect(() => {
-            registerPowerBiCustomExpressions();
-            registerPowerBiCustomSchemes();
-        }, []);
         return (
             <VegaChart
                 renderer={renderMode as Vega.Renderers}

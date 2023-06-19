@@ -26,7 +26,7 @@ import {
     getImportPlaceholderResolutionStatus,
     resolveTemplatesForProvider
 } from '../features/visual-create';
-import { getTemplateWithBasePowerBiTheme } from '../features/powerbi-vega-extensibility';
+import { getTemplateWithBasePowerBiTheme } from '../features/vega-extensibility';
 
 export interface ITemplateSlice {
     templateSelectedIndex: number;
