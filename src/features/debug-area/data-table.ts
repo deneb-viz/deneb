@@ -5,10 +5,9 @@ import {
     DATASET_IDENTITY_NAME,
     DATASET_ROW_NAME,
     DATASET_SELECTED_NAME,
-    TABLE_COLUMN_RESERVED_WORDS,
-    TABLE_VALUE_MAX_LENGTH
+    TABLE_COLUMN_RESERVED_WORDS
 } from '../../constants';
-import { IDataTableWorkerTranslations, ITableFormattedValue } from './types';
+import { IDataTableWorkerTranslations } from './types';
 import { i18nValue } from '../../core/ui/i18n';
 import { getPrunedObject, stringifyPruned } from '../../core/utils/json';
 import {

@@ -5,7 +5,6 @@ import { interpolateHcl, interpolateRgbBasis, quantize } from 'd3';
 
 import { hostServices } from '../../../core/services';
 import { ptToPx } from '../../../core/ui/dom';
-import { getState } from '../../../store';
 
 type Config = VgConfig | VlConfig;
 

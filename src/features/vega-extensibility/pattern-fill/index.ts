@@ -52,7 +52,7 @@ export const generateDynamicPatternFill = (
     bgColor: string = PATTERN_FILL_DEFAULT_FILL_COLOR
 ) => {
     const modId = encodeURI(
-        `${id}-${fgColor}-${bgColor}`.replace(/[^a-zA-Z0-9-_\-]+/g, '-')
+        `${id}-${fgColor}-${bgColor}`.replace(/[^a-zA-Z0-9-_-]+/g, '-')
     );
     const found = defsRegistry?.findIndex((fpd) => fpd.id === modId) > -1;
     const template = defsRegistry?.find((fdp) => fdp.id === id);
