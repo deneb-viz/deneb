@@ -28,6 +28,7 @@ export const DATA_TABLE_VALUE_MAX_LENGTH = 100;
 export const useDebugStyles = makeStyles({
     body: {
         height: '100%',
+        backgroundColor: tokens.colorNeutralBackground1,
         ...shorthands.overflow('hidden')
     },
     container: {
