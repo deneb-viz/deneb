@@ -21,8 +21,8 @@ import { useDebugStyles } from '..';
 import store from '../../../store';
 import { StatusBarContainer } from '../../interface';
 import { DatasetViewerOptions } from './dataset-viewer-options';
-import { i18nValue } from '../../../core/ui/i18n';
 import { getConfig } from '../../../core/utils/config';
+import { getI18nValue } from '../../i18n';
 
 /**
  * Displays at the footer of the data table, and used to control pagination
@@ -93,7 +93,7 @@ export const DataTableStatusBar: React.FC<PaginationComponentProps> = ({
                 <div className={classes.statusBarTableNavigation}>
                     <div>
                         <Label htmlFor={rowsPerPageId} size='small'>
-                            {i18nValue('Text_Data_Table_Navigation_Rows')}
+                            {getI18nValue('Text_Data_Table_Navigation_Rows')}
                         </Label>
                     </div>
                     <div>
@@ -111,7 +111,7 @@ export const DataTableStatusBar: React.FC<PaginationComponentProps> = ({
                     </div>
                     <div>
                         <Tooltip
-                            content={i18nValue(
+                            content={getI18nValue(
                                 'Text_Data_Table_Navigation_First'
                             )}
                             relationship='label'
@@ -126,7 +126,7 @@ export const DataTableStatusBar: React.FC<PaginationComponentProps> = ({
                     </div>
                     <div>
                         <Tooltip
-                            content={i18nValue(
+                            content={getI18nValue(
                                 'Text_Data_Table_Navigation_Previous'
                             )}
                             relationship='label'
@@ -141,7 +141,7 @@ export const DataTableStatusBar: React.FC<PaginationComponentProps> = ({
                     </div>
                     <div>
                         <Tooltip
-                            content={i18nValue(
+                            content={getI18nValue(
                                 'Text_Data_Table_Navigation_Next'
                             )}
                             relationship='label'
@@ -156,7 +156,7 @@ export const DataTableStatusBar: React.FC<PaginationComponentProps> = ({
                     </div>
                     <div>
                         <Tooltip
-                            content={i18nValue(
+                            content={getI18nValue(
                                 'Text_Data_Table_Navigation_Last'
                             )}
                             relationship='label'

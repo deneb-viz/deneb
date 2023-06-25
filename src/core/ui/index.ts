@@ -4,7 +4,6 @@ export * as commandBar from './commandBar';
 export * as commands from './commands';
 export * as dom from './dom';
 export * as fluent from './fluent';
-export * as i18n from './i18n';
 export * as icons from './icons';
 export * as labels from './labels';
 export * as selectors from './selectors';
@@ -17,16 +16,16 @@ import ViewMode = powerbi.ViewMode;
 import EditMode = powerbi.EditMode;
 
 import { getVisualMetadata, providerVersions } from '../../core/utils/config';
-import { i18nValue } from '../../core/ui/i18n';
+import { getI18nValue } from '../../features/i18n';
 
 /**
  * Returns visual + Vega + Vega-Lite version information as a single string.
  */
 const getVersionInfo = () => {
     const visualMetadata = getVisualMetadata();
-    return `${visualMetadata.version} | ${i18nValue('Provider_Vega')}: ${
+    return `${visualMetadata.version} | ${getI18nValue('Provider_Vega')}: ${
         providerVersions.vega
-    } | ${i18nValue('Provider_VegaLite')}: ${providerVersions.vegaLite}`;
+    } | ${getI18nValue('Provider_VegaLite')}: ${providerVersions.vegaLite}`;
 };
 
 /**

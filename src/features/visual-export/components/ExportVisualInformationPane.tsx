@@ -4,7 +4,6 @@ import { Stack } from '@fluentui/react/lib/Stack';
 
 import CappedTextField from '../../../components/elements/CappedTextField';
 import { ExportVisualPreviewImage } from './ExportVisualPreviewImage';
-import { i18nValue } from '../../../core/ui/i18n';
 
 import { Assistive } from '../../../components/elements/Typography';
 
@@ -14,6 +13,7 @@ import {
     TEMPLATE_PICKER_NON_SHRINKING_STACK_ITEM_STYLES,
     TEMPLATE_PICKER_STACK_STYLES
 } from '../../template';
+import { getI18nValue } from '../../i18n';
 
 export const ExportVisualInformationPane: React.FC = () => {
     return (
@@ -23,7 +23,7 @@ export const ExportVisualInformationPane: React.FC = () => {
         >
             <Stack.Item>
                 <Assistive>
-                    {i18nValue('Template_Export_Information_Assistive')}
+                    {getI18nValue('Template_Export_Information_Assistive')}
                 </Assistive>
             </Stack.Item>
             <Stack.Item

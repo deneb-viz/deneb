@@ -6,7 +6,6 @@ import { Stack, StackItem, IStackTokens } from '@fluentui/react/lib/Stack';
 
 import { Paragraph } from '../../../components/elements/Typography';
 import store from '../../../store';
-import { i18nValue } from '../../../core/ui/i18n';
 import { isFeatureEnabled } from '../../../core/utils/features';
 import {
     dispatchPreviewImage,
@@ -14,6 +13,7 @@ import {
     PREVIEW_IMAGE_CAP_SIZE
 } from '../../template';
 import { logRender } from '../../logging';
+import { getI18nValue } from '../../i18n';
 
 const stackTokens: IStackTokens = {
     childrenGap: 25
@@ -39,7 +39,7 @@ export const ExportVisualPreviewImage: React.FC = () => {
             <Stack horizontal tokens={stackTokens}>
                 <StackItem disableShrink>
                     <Checkbox
-                        label={i18nValue(
+                        label={getI18nValue(
                             'Template_Export_Include_Preview_Image'
                         )}
                         checked={templateIncludePreviewImage}
@@ -55,19 +55,19 @@ export const ExportVisualPreviewImage: React.FC = () => {
                 <StackItem grow>
                     {templateIncludePreviewImage && (
                         <Paragraph>
-                            {i18nValue(
+                            {getI18nValue(
                                 'Template_Export_IncludePreview_Image_Disclaimer_Para1',
                                 [PREVIEW_IMAGE_CAP_SIZE, PREVIEW_IMAGE_CAP_SIZE]
                             )}
                             <br />
                             <br />
                             <strong>
-                                {i18nValue(
+                                {getI18nValue(
                                     'Template_Export_IncludePreview_Image_Disclaimer_Para2'
                                 )}
                                 <br />
                                 <br />
-                                {i18nValue(
+                                {getI18nValue(
                                     'Template_Export_IncludePreview_Image_Disclaimer_Suffix'
                                 )}
                             </strong>

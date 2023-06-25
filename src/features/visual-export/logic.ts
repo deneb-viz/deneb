@@ -3,7 +3,6 @@ import omit from 'lodash/omit';
 import { v4 as uuidv4 } from 'uuid';
 
 import { DATASET_NAME } from '../../constants';
-import { i18nValue } from '../../core/ui/i18n';
 import {
     getConfig,
     getVisualMetadata,
@@ -19,6 +18,7 @@ import {
     getTemplatePlaceholderKey
 } from '../template';
 import { IDenebTemplateMetadata } from '../template/schema';
+import { getI18nValue } from '../i18n';
 
 /**
  * Combines spec, config and specified metadata to produce a valid JSON
@@ -129,13 +129,13 @@ const resolveExportUserMeta = (): IDenebTemplateMetadata => {
         information: {
             name:
                 templateExportMetadata?.information?.name ||
-                i18nValue('Template_Export_Information_Name_Empty'),
+                getI18nValue('Template_Export_Information_Name_Empty'),
             description:
                 templateExportMetadata?.information?.description ||
-                i18nValue('Template_Export_Information_Description_Empty'),
+                getI18nValue('Template_Export_Information_Description_Empty'),
             author:
                 templateExportMetadata?.information?.author ||
-                i18nValue('Template_Export_Author_Name_Empty'),
+                getI18nValue('Template_Export_Author_Name_Empty'),
             uuid: templateExportMetadata?.information?.uuid || uuidv4(),
             generated: new Date().toISOString(),
             previewImageBase64PNG:
@@ -161,7 +161,7 @@ const resolveExportUserMeta = (): IDenebTemplateMetadata => {
  * Persist the supplied export error information to the store.
  */
 const updateExportError = (i18nKey: string) => {
-    getState().updateTemplateExportError(i18nValue(i18nKey));
+    getState().updateTemplateExportError(getI18nValue(i18nKey));
 };
 
 /**

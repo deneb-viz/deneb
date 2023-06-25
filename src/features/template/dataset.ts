@@ -1,9 +1,9 @@
 import { IColumn } from '@fluentui/react/lib/DetailsList';
-import { i18nValue } from '../../core/ui/i18n';
+import { getI18nValue } from '../i18n';
 
 export const getTemplateDatasetNameColumn = (): IColumn => ({
     key: 'name',
-    name: i18nValue('Template_Dataset_Field_Name'),
+    name: getI18nValue('Template_Dataset_Field_Name'),
     fieldName: 'name',
     minWidth: 150,
     maxWidth: 250

@@ -9,7 +9,6 @@ import { ExportVisualValidation } from './ExportVisualValidation';
 import { ExportVisualDatasetPane } from './ExportVisualDatasetPane';
 import { ExportVisualInformationPane } from './ExportVisualInformationPane';
 import { ExportVisualJsonPane } from './ExportVisualJsonPane';
-import { i18nValue } from '../../../core/ui/i18n';
 import { logRender } from '../../logging';
 import {
     MODAL_DIALOG_STACK_INNER_TOKENS,
@@ -20,6 +19,7 @@ import {
 import { TExportOperation, TTemplateExportState } from '../../template/types';
 import { TemplateDialogPivot } from '../../template/components/TemplateDialogPivot';
 import { validateSpecificationForExport } from '../logic';
+import { getI18nValue } from '../../i18n';
 
 /**
  * Ensure correct content is displayed in the body, based on store state.
@@ -90,7 +90,7 @@ export const ExportVisualDialogBody: React.FC = () => {
         >
             <Stack.Item shrink styles={MODAL_DIALOG_STACK_ITEM_STYLES}>
                 <Text variant='small'>
-                    {i18nValue('Export_Spec_Assistive')}
+                    {getI18nValue('Export_Spec_Assistive')}
                 </Text>
             </Stack.Item>
             <Stack.Item shrink styles={MODAL_DIALOG_STACK_ITEM_STYLES}>

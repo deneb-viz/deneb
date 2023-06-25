@@ -3,10 +3,10 @@ import { MessageBarType } from '@fluentui/react/lib/MessageBar';
 import { shallow } from 'zustand/shallow';
 
 import store from '../../store';
-import { i18nValue } from '../../core/ui/i18n';
 import NotificationMessageBar from '../elements/NotificationMessageBar';
 import { dispatchCrossFilterAbort } from '../../features/interactivity';
 import { logRender } from '../../features/logging';
+import { getI18nValue } from '../../features/i18n';
 
 const SelectionLimitMessageBar: React.FC = () => {
     const { datasetHasSelectionAborted, selectionMaxDataPoints } = store(
@@ -26,7 +26,9 @@ const SelectionLimitMessageBar: React.FC = () => {
             truncated={true}
             top={true}
         >
-            {i18nValue('Selection_Aborted_Message', [selectionMaxDataPoints])}
+            {getI18nValue('Selection_Aborted_Message', [
+                selectionMaxDataPoints
+            ])}
         </NotificationMessageBar>
     );
 };

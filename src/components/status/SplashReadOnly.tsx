@@ -6,8 +6,8 @@ import StatusLayoutStackItem from './StatusLayoutStackItem';
 import StandardHeaderContent from './StandardHeaderContent';
 import UsefulResources from './UsefulResources';
 import { Paragraph } from '../elements/Typography';
-import { i18nValue } from '../../core/ui/i18n';
 import { hostServices } from '../../core/services';
+import { getI18nValue } from '../../features/i18n';
 
 const SplashReadOnly = () => {
     useEffect(() => hostServices.renderingFinished(), []);
@@ -18,10 +18,10 @@ const SplashReadOnly = () => {
                 <StatusLayoutStackItem verticalFill>
                     <div>
                         <Paragraph>
-                            {i18nValue('Landing_Read_Only_01')}
+                            {getI18nValue('Landing_Read_Only_01')}
                         </Paragraph>
                         <Paragraph>
-                            {i18nValue('Landing_Read_Only_02')}
+                            {getI18nValue('Landing_Read_Only_02')}
                         </Paragraph>
                     </div>
                     <UsefulResources />

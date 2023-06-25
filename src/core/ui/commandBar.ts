@@ -31,8 +31,8 @@ import { getAutoApplyIcon, getEditorHeadingIcon } from './icons';
 import { resolveAutoApplyLabel } from './labels';
 
 import { theme } from './fluent';
-import { i18nValue } from './i18n';
 import { getState } from '../../store';
+import { getI18nValue } from '../../features/i18n';
 
 const commandBarStyles: ICommandBarStyles = {
     root: {
@@ -68,7 +68,7 @@ const menuStyles: Partial<IContextualMenuStyles> = {
 };
 const commandBarOverflowProps = (): IButtonProps => ({
     styles: commandBarButtonStyles,
-    ariaLabel: i18nValue('Button_More_Commands'),
+    ariaLabel: getI18nValue('Button_More_Commands'),
     menuProps: {
         styles: menuStyles,
         items: []
@@ -77,8 +77,8 @@ const commandBarOverflowProps = (): IButtonProps => ({
 
 const getApplyCommandItem = (): ICommandBarItemProps => ({
     key: 'applyChanges',
-    text: i18nValue('Button_Apply'),
-    ariaLabel: i18nValue('Button_Apply'),
+    text: getI18nValue('Button_Apply'),
+    ariaLabel: getI18nValue('Button_Apply'),
     iconOnly: true,
     iconProps: {
         iconName: 'Play'
@@ -138,9 +138,9 @@ const getExportSpecCommandItem = (): ICommandBarItemProps => {
     const { status } = getState().specification;
     return {
         key: 'export',
-        text: i18nValue('Button_Export'),
+        text: getI18nValue('Button_Export'),
         iconOnly: true,
-        ariaLabel: i18nValue('Button_Export'),
+        ariaLabel: getI18nValue('Button_Export'),
         iconProps: { iconName: 'Share' },
         buttonStyles: commandBarButtonStyles,
         disabled: !(status === 'valid'),
@@ -150,9 +150,9 @@ const getExportSpecCommandItem = (): ICommandBarItemProps => {
 
 const getCollapseCommandItem = (): ICommandBarItemProps => ({
     key: 'collapse',
-    text: i18nValue('Tooltip_Collapse_Editor_Pane'),
+    text: getI18nValue('Tooltip_Collapse_Editor_Pane'),
     iconOnly: true,
-    ariaLabel: i18nValue('Tooltip_Collapse_Editor_Pane'),
+    ariaLabel: getI18nValue('Tooltip_Collapse_Editor_Pane'),
     iconProps: {
         iconName: getEditorHeadingIcon(
             getState().visualSettings.editor.position,
@@ -165,8 +165,8 @@ const getCollapseCommandItem = (): ICommandBarItemProps => ({
 
 const getHelpCommandItem = (): ICommandBarItemProps => ({
     key: 'help',
-    text: i18nValue('Button_Help'),
-    ariaLabel: i18nValue('Button_Help'),
+    text: getI18nValue('Button_Help'),
+    ariaLabel: getI18nValue('Button_Help'),
     iconOnly: true,
     iconProps: { iconName: 'Help' },
     buttonStyles: commandBarButtonStyles,
@@ -175,9 +175,9 @@ const getHelpCommandItem = (): ICommandBarItemProps => ({
 
 const getNewSpecCommandItem = (): ICommandBarItemProps => ({
     key: 'reset',
-    text: i18nValue('Button_New'),
+    text: getI18nValue('Button_New'),
     iconOnly: true,
-    ariaLabel: i18nValue('Button_New'),
+    ariaLabel: getI18nValue('Button_New'),
     iconProps: { iconName: 'Page' },
     buttonStyles: commandBarButtonStyles,
     onClick: createNewSpec
@@ -185,8 +185,8 @@ const getNewSpecCommandItem = (): ICommandBarItemProps => ({
 
 const getRepairFormatCommandItem = (): ICommandBarItemProps => ({
     key: 'formatJson',
-    text: i18nValue('Button_Format_Json'),
-    ariaLabel: i18nValue('Button_Format_Json'),
+    text: getI18nValue('Button_Format_Json'),
+    ariaLabel: getI18nValue('Button_Format_Json'),
     iconOnly: true,
     iconProps: { iconName: 'Repair' },
     buttonStyles: commandBarButtonStyles,
@@ -195,8 +195,8 @@ const getRepairFormatCommandItem = (): ICommandBarItemProps => ({
 
 const getMapFieldsCommandItem = (): ICommandBarItemProps => ({
     key: 'mapFields',
-    text: i18nValue('Button_Map_Fields'),
-    ariaLabel: i18nValue('Button_Map_Fields'),
+    text: getI18nValue('Button_Map_Fields'),
+    ariaLabel: getI18nValue('Button_Map_Fields'),
     iconOnly: true,
     iconProps: { iconName: 'Switch' },
     buttonStyles: commandBarButtonStyles,

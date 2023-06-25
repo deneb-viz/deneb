@@ -3,7 +3,6 @@ import { Label, useId } from '@fluentui/react-components';
 import { shallow } from 'zustand/shallow';
 import { Error, Info, Warn } from 'vega';
 
-import { i18nValue } from '../../../core/ui/i18n';
 import store from '../../../store';
 import { logRender } from '../../logging';
 import { useDebugStyles } from '..';
@@ -12,6 +11,7 @@ import { ICapabilitiesEnumMember } from '../../powerbi-settings';
 import { getDebugLogLevels } from '../logging';
 import { StatusBarContainer } from '../../interface';
 import { LogLevelDropdown } from './log-level-dropdown';
+import { getI18nValue } from '../../i18n';
 
 export const LogViewer: React.FC = () => {
     const { errors, logLevel, warns } = store(
@@ -24,7 +24,7 @@ export const LogViewer: React.FC = () => {
     );
     const classes = useDebugStyles();
     const levelId = useId();
-    const levelLabel = useMemo(() => i18nValue('Objects_Vega_LogLevel'), []);
+    const levelLabel = useMemo(() => getI18nValue('Objects_Vega_LogLevel'), []);
     const logEntries = useMemo(
         () => getLogEntries(warns, errors, logLevel),
         [warns, errors, logLevel]
@@ -88,7 +88,7 @@ const getDebugLogEntryDisplayDetails = (entry: ILogEntry): ILogEntryDisplay => {
         metadata && {
             level,
             message,
-            i18nLevel: i18nValue(metadata.displayNameKey)
+            i18nLevel: getI18nValue(metadata.displayNameKey)
         }
     );
 };
@@ -119,7 +119,7 @@ const getResolvedLogEntries = (
             : [
                   {
                       level: Info,
-                      message: i18nValue('Pivot_Log_No_Issues')
+                      message: getI18nValue('Pivot_Log_No_Issues')
                   }
               ]
     ).filter((e) => e.level <= logLevel);

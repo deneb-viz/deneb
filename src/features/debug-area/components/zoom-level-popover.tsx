@@ -19,8 +19,8 @@ import { useDebugStyles } from '..';
 import store from '../../../store';
 import { logDebug, logRender } from '../../logging';
 import { getConfig } from '../../../core/utils/config';
-import { i18nValue } from '../../../core/ui/i18n';
 import { getZoomToFitScale } from '../../../core/ui/advancedEditor';
+import { getI18nValue } from '../../i18n';
 
 const CONFIGURATION = getConfig();
 
@@ -40,7 +40,9 @@ export const ZoomLevelPopover: React.FC = () => {
         (): JSX.Element[] =>
             CONFIGURATION.zoomLevel.customLevels.map((l) => (
                 <Radio
-                    label={i18nValue(`Text_Radio_Group_ZoomLevel_${l.value}`)}
+                    label={getI18nValue(
+                        `Text_Radio_Group_ZoomLevel_${l.value}`
+                    )}
                     value={l.value}
                 />
             )) || [],
@@ -103,7 +105,7 @@ export const ZoomLevelPopover: React.FC = () => {
             <PopoverSurface>
                 <div className={classes.zoomLevelControlBase}>
                     <Label id={id}>
-                        {i18nValue('Text_Zoom_Level_Custom_Label')}
+                        {getI18nValue('Text_Zoom_Level_Custom_Label')}
                     </Label>
                     <RadioGroup
                         aria-labelledby={id}

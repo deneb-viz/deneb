@@ -4,9 +4,9 @@ import { usePrevious } from '../../../hooks';
 import { DataTableCell } from './data-table-cell';
 import { DATA_TABLE_VALUE_MAX_LENGTH } from '..';
 import { VegaViewServices } from '../../vega-extensibility';
-import { i18nValue } from '../../../core/ui/i18n';
 import { stringifyPruned } from '../../../core/utils/json';
 import { logDebug, logRender } from '../../logging';
+import { getI18nValue } from '../../i18n';
 
 interface IDataTableCellSignalValueProps {
     signalName: string;
@@ -83,7 +83,7 @@ export const SignalValue: React.FC<IDataTableCellSignalValueProps> = ({
             VegaViewServices.getSignalByName(signalName)
         );
         return value?.length > DATA_TABLE_VALUE_MAX_LENGTH
-            ? i18nValue('Table_Placeholder_TooLong')
+            ? getI18nValue('Table_Placeholder_TooLong')
             : value;
     };
     /**

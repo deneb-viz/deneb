@@ -21,9 +21,9 @@ import { getVegaSettings, TSpecProvider } from '../../core/vega';
 import { getEditorInitialText } from './utils';
 import { isDialogOpen } from '../modal-dialog';
 import { getDataset } from '../../core/data/dataset';
-import { i18nValue } from '../../core/ui/i18n';
 import { IVisualDatasetField } from '../../core/data';
 import { getProviderSchema } from '../specification/schema-validation';
+import { getI18nValue } from '../i18n';
 
 /**
  * Ensures that when auto-apply is enabled, the store is updated at a sensible interval after input has finished, rather than applying
@@ -149,10 +149,10 @@ const handleTextEntry = () => {
 const resolveCompleterMeta = (field: IVisualDatasetField) => {
     switch (true) {
         case field.isMeasure: {
-            return i18nValue('Completer_Cap_Measure');
+            return getI18nValue('Completer_Cap_Measure');
         }
         default: {
-            return i18nValue('Completer_Cap_Column');
+            return getI18nValue('Completer_Cap_Column');
         }
     }
 };

@@ -2,12 +2,12 @@ import React from 'react';
 import { IconButton } from '@fluentui/react/lib/Button';
 import { TooltipHost } from '@fluentui/react/lib/Tooltip';
 
-import { i18nValue } from '../../core/ui/i18n';
 import {
     previewPaneButtonStyles,
     settingsButtonStyles
 } from '../../core/ui/fluent';
 import { resetProviderPropertyValue } from '../../core/ui/commands';
+import { getI18nValue } from '../../features/i18n';
 
 type TButtonLocation = 'editor' | 'debugger';
 
@@ -30,7 +30,7 @@ const ResetButton: React.FC<IResetButtonProps> = ({
         (location === 'editor' && settingsButtonStyles) ||
         previewPaneButtonStyles;
     return (
-        <TooltipHost content={i18nValue(i18nKey)}>
+        <TooltipHost content={getI18nValue(i18nKey)}>
             <IconButton
                 iconProps={{ iconName: 'Reset' }}
                 styles={styles}

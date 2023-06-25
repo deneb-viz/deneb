@@ -8,7 +8,7 @@ import { linkStyles } from '../../core/ui/fluent';
 
 import { BodyHeading } from '../elements/Typography';
 import { hostServices } from '../../core/services';
-import { i18nValue } from '../../core/ui/i18n';
+import { getI18nValue } from '../../features/i18n';
 
 const resourceStackTokens: IStackTokens = {
     childrenGap: 25,
@@ -29,16 +29,18 @@ const UsefulResources = () => {
         };
     return (
         <>
-            <BodyHeading>{i18nValue('Landing_Resources_Heading')}</BodyHeading>
+            <BodyHeading>
+                {getI18nValue('Landing_Resources_Heading')}
+            </BodyHeading>
             <Stack horizontal tokens={resourceStackTokens}>
                 <Link styles={linkStyles} onClick={openSupportLink}>
-                    {i18nValue('Link_Homepage')}
+                    {getI18nValue('Link_Homepage')}
                 </Link>
                 <Link styles={linkStyles} onClick={openVegaDocLink}>
-                    {i18nValue('Link_Vega_Doc')}
+                    {getI18nValue('Link_Vega_Doc')}
                 </Link>
                 <Link styles={linkStyles} onClick={openVegaLiteDocLink}>
-                    {i18nValue('Link_VegaLite_Doc')}
+                    {getI18nValue('Link_VegaLite_Doc')}
                 </Link>
             </Stack>
         </>

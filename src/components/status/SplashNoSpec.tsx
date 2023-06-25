@@ -17,8 +17,8 @@ import {
     SubHeading
 } from '../elements/Typography';
 import UsefulResources from './UsefulResources';
-import { i18nValue } from '../../core/ui/i18n';
 import { hostServices } from '../../core/services';
+import { getI18nValue } from '../../features/i18n';
 
 const SplashNospec = () => {
     const { visualEditMode } = store(
@@ -32,14 +32,14 @@ const SplashNospec = () => {
             case visualEditMode === EditMode.Advanced: {
                 return (
                     <Paragraph>
-                        {i18nValue('New_Visual_Placeholder_Editor')}
+                        {getI18nValue('New_Visual_Placeholder_Editor')}
                     </Paragraph>
                 );
             }
             default: {
                 return (
                     <Paragraph>
-                        {i18nValue('New_Visual_Placeholder_Open_Edit')}
+                        {getI18nValue('New_Visual_Placeholder_Open_Edit')}
                     </Paragraph>
                 );
             }
@@ -51,15 +51,15 @@ const SplashNospec = () => {
             <StatusLayoutStack>
                 <StatusHeaderSection icon='edit'>
                     <Heading>
-                        {i18nValue('New_Visual_Placeholder_Title')}
+                        {getI18nValue('New_Visual_Placeholder_Title')}
                     </Heading>
                     <SubHeading>
-                        {i18nValue('New_Visual_Placeholder_Subtitle')}
+                        {getI18nValue('New_Visual_Placeholder_Subtitle')}
                     </SubHeading>
                 </StatusHeaderSection>
                 <StatusLayoutStackItem verticalFill>
                     <BodyHeading>
-                        {i18nValue('Landing_Data_Heading')}
+                        {getI18nValue('Landing_Data_Heading')}
                     </BodyHeading>
                     <div>{resolveDataInstruction()}</div>
                     <UsefulResources />

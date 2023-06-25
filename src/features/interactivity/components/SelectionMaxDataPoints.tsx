@@ -4,12 +4,12 @@ import { Stack, StackItem } from '@fluentui/react/lib/Stack';
 import { SpinButton } from '@fluentui/react/lib/SpinButton';
 
 import store from '../../../store';
-import { i18nValue } from '../../../core/ui/i18n';
 import { spinButtonStyles } from '../../../core/ui/fluent';
 import { getConfig } from '../../../core/utils/config';
 import { updateSelectionMaxDataPoints } from '../../../core/ui/commands';
 import ResetButton from '../../../components/elements/ResetButton';
 import { isCrossFilterPropSet } from '..';
+import { getI18nValue } from '../../i18n';
 
 export const SelectionMaxDataPoints: React.FC = () => {
     const { selectionMaxDataPoints } = store(
@@ -33,7 +33,9 @@ export const SelectionMaxDataPoints: React.FC = () => {
                         step={dataPointsStepValue}
                         value={`${selectionMaxDataPoints}`}
                         styles={spinButtonStyles}
-                        label={i18nValue('Objects_Vega_SelectionMaxDataPoints')}
+                        label={getI18nValue(
+                            'Objects_Vega_SelectionMaxDataPoints'
+                        )}
                         onChange={handleChange}
                     />
                 </StackItem>

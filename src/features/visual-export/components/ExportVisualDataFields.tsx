@@ -4,11 +4,11 @@ import { IColumn } from '@fluentui/react/lib/DetailsList';
 import { DATASET_NAME } from '../../../constants';
 import store from '../../../store';
 import { Dataset, getTemplateDatasetTypeColumn } from '../../template';
-import { i18nValue } from '../../../core/ui/i18n';
+import { getI18nValue } from '../../i18n';
 
 const getExportNameColumn = (): IColumn => ({
     key: 'export_name',
-    name: i18nValue('Template_Export_Dataset_Field_Name'),
+    name: getI18nValue('Template_Export_Dataset_Field_Name'),
     fieldName: 'name',
     minWidth: 150,
     maxWidth: 250
@@ -16,7 +16,7 @@ const getExportNameColumn = (): IColumn => ({
 
 const getExportDescriptionColumn = (): IColumn => ({
     key: 'export_description',
-    name: i18nValue('Template_Export_Dataset_Field_Description'),
+    name: getI18nValue('Template_Export_Dataset_Field_Description'),
     fieldName: 'description',
     minWidth: 350,
     flexGrow: 1

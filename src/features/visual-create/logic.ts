@@ -29,9 +29,9 @@ import {
     TTemplateImportState
 } from '../template';
 import { getConfig } from '../../core/utils/config';
-import { i18nValue } from '../../core/ui/i18n';
 import { ITemplateImportPayload } from '../../store/template';
 import { DATASET_NAME } from '../../constants';
+import { getI18nValue } from '../i18n';
 
 /**
  * For the supplied provider and specification template, add this to the visual and persist to properties, ready for
@@ -204,7 +204,7 @@ export const resolveTemplatesForProvider = () => {
  */
 const updateImportError = (i18nKey: string, errors: ErrorObject[] = []) => {
     getState().updateTemplateImportError({
-        templateImportErrorMessage: i18nValue(i18nKey),
+        templateImportErrorMessage: getI18nValue(i18nKey),
         templateSchemaErrors: errors
     });
 };

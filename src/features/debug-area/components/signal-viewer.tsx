@@ -10,8 +10,8 @@ import { NoDataMessage } from './no-data-message';
 import { logRender } from '../../logging';
 import { VegaViewServices } from '../../vega-extensibility';
 import { stringifyPruned } from '../../../core/utils/json';
-import { i18nValue } from '../../../core/ui/i18n';
 import { ISignalTableDataRow } from '../types';
+import { getI18nValue } from '../../i18n';
 
 interface ISignalViewerProps {
     renderId: string;
@@ -59,14 +59,14 @@ const getTableColumns = (
     renderId: string
 ): TableColumn<ISignalTableDataRow>[] => [
     {
-        name: i18nValue('Pivot_Signals_KeyColumn'),
+        name: getI18nValue('Pivot_Signals_KeyColumn'),
         id: 'key',
         selector: (row) => row.key,
         sortable: true,
         grow: 1
     },
     {
-        name: i18nValue('Pivot_Signals_ValueColumn'),
+        name: getI18nValue('Pivot_Signals_ValueColumn'),
         id: 'value',
         grow: 5,
         selector: (row) => row.value,

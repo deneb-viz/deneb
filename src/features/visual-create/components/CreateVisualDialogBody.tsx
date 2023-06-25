@@ -7,8 +7,6 @@ import { shallow } from 'zustand/shallow';
 
 import store from '../../../store';
 import { CreateVisualDialogBodyDetail } from './CreateVisualDialogBodyDetail';
-
-import { i18nValue } from '../../../core/ui/i18n';
 import { buttonStyles } from '../../../core/ui/fluent';
 import {
     MODAL_DIALOG_STACK_INNER_TOKENS,
@@ -19,6 +17,7 @@ import {
 import { TemplateDialogPivot } from '../../template/components/TemplateDialogPivot';
 import { createFromTemplate } from '../logic';
 import { logRender } from '../../logging';
+import { getI18nValue } from '../../i18n';
 
 export const CreateVisualDialogBody: React.FC = () => {
     const {
@@ -45,7 +44,9 @@ export const CreateVisualDialogBody: React.FC = () => {
             tokens={MODAL_DIALOG_STACK_INNER_TOKENS}
         >
             <Stack.Item shrink styles={MODAL_DIALOG_STACK_ITEM_STYLES}>
-                <Text variant='small'>{i18nValue('New_Spec_Assistive')}</Text>
+                <Text variant='small'>
+                    {getI18nValue('New_Spec_Assistive')}
+                </Text>
             </Stack.Item>
             <Stack.Item shrink styles={MODAL_DIALOG_STACK_ITEM_STYLES}>
                 <div className='editor-pane-pivot'>
@@ -68,7 +69,7 @@ export const CreateVisualDialogBody: React.FC = () => {
                 <PrimaryButton
                     styles={buttonStyles}
                     onClick={handleCreate}
-                    text={i18nValue('Button_Create')}
+                    text={getI18nValue('Button_Create')}
                     disabled={createDisabled}
                 />
             </Stack.Item>

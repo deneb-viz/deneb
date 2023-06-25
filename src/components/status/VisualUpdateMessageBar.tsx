@@ -3,7 +3,6 @@ import { MessageBarType } from '@fluentui/react/lib/MessageBar';
 import { Link } from '@fluentui/react/lib/Link';
 import { shallow } from 'zustand/shallow';
 
-import { i18nValue } from '../../core/ui/i18n';
 import { linkStyles } from '../../core/ui/fluent';
 import NotificationMessageBar from '../elements/NotificationMessageBar';
 import {
@@ -15,6 +14,7 @@ import { getConfig } from '../../core/utils/config';
 import { dismissVersionNotification } from '../../core/ui/commands';
 import store from '../../store';
 import { logRender } from '../../features/logging';
+import { getI18nValue } from '../../features/i18n';
 
 const VisualUpdateMessageBar: React.FC = () => {
     const { showVersionNotification } = store(
@@ -41,7 +41,7 @@ const VisualUpdateMessageBar: React.FC = () => {
             case 'increase':
                 return (
                     <>
-                        {i18nValue('Notification_Update_Increase', [
+                        {getI18nValue('Notification_Update_Increase', [
                             last.denebVersion,
                             current.denebVersion
                         ])}{' '}
@@ -49,17 +49,17 @@ const VisualUpdateMessageBar: React.FC = () => {
                             styles={linkStyles}
                             onClick={openInteractivityLink}
                         >
-                            {i18nValue('Link_Changelog')}.
+                            {getI18nValue('Link_Changelog')}.
                         </Link>
                     </>
                 );
             case 'decrease':
                 return (
                     <>
-                        {i18nValue(i18nValue('Notification_Update_Decrease'), [
-                            current.denebVersion,
-                            last.denebVersion
-                        ])}
+                        {getI18nValue(
+                            getI18nValue('Notification_Update_Decrease'),
+                            [current.denebVersion, last.denebVersion]
+                        )}
                     </>
                 );
             default:

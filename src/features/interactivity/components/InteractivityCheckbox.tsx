@@ -3,13 +3,13 @@ import { Checkbox } from '@fluentui/react/lib/Checkbox';
 
 import store from '../../../store';
 import { updateBooleanProperty } from '../../../core/ui/commands';
-import { i18nValue } from '../../../core/ui/i18n';
 import { TInteractivityType } from '../types';
 import { hostServices } from '../../../core/services';
 import { IS_TOOLTIP_HANDLER_ENABLED } from '../tooltip';
 import { IS_CROSS_FILTER_ENABLED } from '../cross-filter';
 import { IS_CROSS_HIGHLIGHT_ENABLED } from '../cross-highlight';
 import { IS_CONTEXT_MENU_ENABLED } from '../context-menu';
+import { getI18nValue } from '../../i18n';
 
 interface IInteractivityCheckboxProps {
     type: TInteractivityType;
@@ -38,7 +38,7 @@ export const InteractivityCheckbox: React.FC<IInteractivityCheckboxProps> = ({
     return (
         getFeatureStatus(type) && (
             <Checkbox
-                label={i18nValue(geti18LabelKey(type))}
+                label={getI18nValue(geti18LabelKey(type))}
                 checked={vega[propertyName]}
                 onChange={handleToggle}
             />

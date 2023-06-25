@@ -7,8 +7,6 @@ import { IColumn } from '@fluentui/react/lib/DetailsList';
 import filter from 'lodash/filter';
 
 import store, { getState } from '../../../store';
-
-import { i18nValue } from '../../../core/ui/i18n';
 import { Paragraph } from '../../../components/elements/Typography';
 import {
     Dataset,
@@ -27,6 +25,7 @@ import {
 import { specEditorService } from '../../../core/services/JsonEditorServices';
 import { persistSpecification } from '../../specification';
 import { logRender } from '../../logging';
+import { getI18nValue } from '../../i18n';
 
 const datasetItemStyles: IStackItemStyles = {
     root: {
@@ -36,13 +35,13 @@ const datasetItemStyles: IStackItemStyles = {
 
 const getMapFieldAssignmentColumn = (): IColumn => ({
     key: 'map_field_assignment',
-    name: i18nValue('Template_Dataset_Field_Assignment'),
+    name: getI18nValue('Template_Dataset_Field_Assignment'),
     fieldName: 'assignment',
     minWidth: 300
 });
 const getMapNameOriginalColumn = (): IColumn => ({
     key: 'name',
-    name: i18nValue('Map_Fields_Dataset_Original_Name'),
+    name: getI18nValue('Map_Fields_Dataset_Original_Name'),
     fieldName: 'name',
     minWidth: 150,
     maxWidth: 250
@@ -89,13 +88,13 @@ export const MapFieldsDialogBody = () => {
         >
             <Stack.Item shrink>
                 <Paragraph>
-                    {i18nValue('Map_Fields_Assistive_Introduction')}
+                    {getI18nValue('Map_Fields_Assistive_Introduction')}
                 </Paragraph>
                 <Paragraph>
-                    {i18nValue('Map_Fields_Assistive_Instructions')}
+                    {getI18nValue('Map_Fields_Assistive_Instructions')}
                 </Paragraph>
                 <Paragraph>
-                    {i18nValue('Map_Fields_Completion_Instructions')}
+                    {getI18nValue('Map_Fields_Completion_Instructions')}
                 </Paragraph>
             </Stack.Item>
             <Stack.Item verticalFill styles={datasetItemStyles}>
@@ -111,7 +110,7 @@ export const MapFieldsDialogBody = () => {
                 <PrimaryButton
                     styles={buttonStyles}
                     onClick={handleRemap}
-                    text={i18nValue('Button_Remap')}
+                    text={getI18nValue('Button_Remap')}
                     disabled={remapDisabled}
                 />
             </Stack.Item>

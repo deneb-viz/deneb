@@ -18,13 +18,13 @@ import {
     getDatasetFieldByTemplateKey,
     getDatasetTemplateFields
 } from '../../../core/data/fields';
-import { i18nValue } from '../../../core/ui/i18n';
 import DataFieldLabel from './DataFieldLabel';
 import DatasetFieldAssignmentDropdown from './DatasetFieldAssignmentDropdown';
 import { TModalDialogType } from '../../modal-dialog';
 import { getState } from '../../../store';
 import { DATASET_NAME } from '../../../constants';
 import { TEMPLATE_DATASET_FIELD_PROPS } from '../fields';
+import { getI18nValue } from '../../i18n';
 
 const getDataTypeIcon = (item: ITemplateDatasetField) => (
     <DataTypeIcon datasetField={item} />
@@ -53,7 +53,7 @@ const getExportNameField = (item: ITemplateDatasetField, index: number) => (
         i18nPlaceholder={`${item?.namePlaceholder}`}
         maxLength={TEMPLATE_DATASET_FIELD_PROPS.name.maxLength}
         inline
-        description={`${i18nValue(
+        description={`${getI18nValue(
             `Template_Export_Kind_${item?.kind || 'None'}`
         )} ${item?.namePlaceholder}`}
     />

@@ -14,8 +14,7 @@ import cloneDeep from 'lodash/cloneDeep';
 
 import { getState } from '../../store';
 import { providerVersions } from '../utils/config';
-
-import { i18nValue } from '../ui/i18n';
+import { getI18nValue } from '../../features/i18n';
 
 /**
  * Interface specifying a flexible key/value pair object, which is supplied from Vega's tooltip handler and usually casted as `any`.
@@ -48,7 +47,7 @@ const getVegaProvider = () => <TSpecProvider>getVegaSettings().provider;
  * Get the Vega provider, resolved for i18n.
  */
 const getVegaProvideri18n = () =>
-    i18nValue(
+    getI18nValue(
         getVegaProvider() === 'vegaLite' ? 'Provider_VegaLite' : 'Provider_Vega'
     );
 

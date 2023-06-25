@@ -8,7 +8,6 @@ import { IIconProps } from '@fluentui/react/lib/Icon';
 import { ITextStyles } from '@fluentui/react/lib/Text';
 
 import { getExportTemplate } from '../logic';
-import { i18nValue } from '../../../core/ui/i18n';
 import { iconButtonStyles } from '../../../core/ui/icons';
 import { ExportVisualDownloadButton } from './ExportVisualDownloadButton';
 import { Assistive } from '../../../components/elements/Typography';
@@ -17,6 +16,7 @@ import {
     TEMPLATE_PICKER_NON_SHRINKING_STACK_ITEM_STYLES,
     TEMPLATE_PICKER_STACK_STYLES
 } from '../../template';
+import { getI18nValue } from '../../i18n';
 
 const exportPivotAssistiveToastTextStyles: ITextStyles = {
     root: {
@@ -67,7 +67,7 @@ export const ExportVisualJsonPane: React.FC = () => {
                 <Stack horizontal>
                     <Stack.Item grow>
                         <Assistive>
-                            {i18nValue('Template_Export_Json_Assistive')}
+                            {getI18nValue('Template_Export_Json_Assistive')}
                         </Assistive>
                     </Stack.Item>
                     <Stack.Item>
@@ -76,7 +76,7 @@ export const ExportVisualJsonPane: React.FC = () => {
                                 variant='small'
                                 styles={exportPivotAssistiveToastTextStyles}
                             >
-                                {i18nValue('Template_Export_Json_Copied')}
+                                {getI18nValue('Template_Export_Json_Copied')}
                             </Text>
                         )}
                     </Stack.Item>
@@ -86,8 +86,10 @@ export const ExportVisualJsonPane: React.FC = () => {
                             componentRef={copyRef}
                             iconProps={copyIcon}
                             styles={iconButtonStyles}
-                            ariaLabel={i18nValue('Template_Export_Json_Copy')}
-                            ariaDescription={i18nValue(
+                            ariaLabel={getI18nValue(
+                                'Template_Export_Json_Copy'
+                            )}
+                            ariaDescription={getI18nValue(
                                 'Template_Export_Json_Copy'
                             )}
                             onClick={handleCopy}

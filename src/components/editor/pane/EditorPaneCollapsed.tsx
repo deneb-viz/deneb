@@ -3,11 +3,11 @@ import { shallow } from 'zustand/shallow';
 import { TooltipHost } from '@fluentui/react/lib/Tooltip';
 
 import store from '../../../store';
-import { i18nValue } from '../../../core/ui/i18n';
 
 import EditorToggleIcon from './EditorToggleIcon';
 import EditorHeadingText from './EditorHeadingText';
 import { logRender } from '../../../features/logging';
+import { getI18nValue } from '../../../features/i18n';
 
 const EditorPaneCollapsed = () => {
     const { editorPaneIsExpanded, position } = store(
@@ -22,7 +22,7 @@ const EditorPaneCollapsed = () => {
     return (
         <div id='editorPane' className='collapsed'>
             <TooltipHost
-                content={i18nValue(tooltip_i18_key)}
+                content={getI18nValue(tooltip_i18_key)}
                 id={tooltip_i18_key}
             >
                 <div role='button'>

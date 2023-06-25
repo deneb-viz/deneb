@@ -5,13 +5,13 @@ import { PrimaryButton, DefaultButton } from '@fluentui/react/lib/Button';
 import { DialogType, IDialogContentProps } from '@fluentui/react/lib/Dialog';
 
 import { discardChanges } from '../../../core/ui/commands';
-import { i18nValue } from '../../../core/ui/i18n';
 import { buttonStyles } from '../../../core/ui/fluent';
 import store from '../../../store';
 import { MODAL_DIALOG_PROPS } from '../styles';
 import { persistSpecification } from '../../specification';
 import { shallow } from 'zustand/shallow';
 import { logRender } from '../../logging';
+import { getI18nValue } from '../../i18n';
 
 /**
  * Populate suitable `IDialogContentProps` based on supplied i18n keys.
@@ -22,8 +22,8 @@ const getDialogContentProps = (
 ): IDialogContentProps => {
     return {
         type: DialogType.normal,
-        title: i18nValue(titleKey),
-        subText: i18nValue(subTextKey),
+        title: getI18nValue(titleKey),
+        subText: getI18nValue(subTextKey),
         showCloseButton: false
     };
 };
@@ -43,8 +43,8 @@ export const ApplyChangesDialog: React.FC = () => {
         'Dialog_Unapplied_Changes_Title',
         'Dialog_Unapplied_Changes_Subtext'
     );
-    const applyText = i18nValue('Dialog_Unapplied_Changes_Apply');
-    const discardText = i18nValue('Dialog_Unapplied_Changes_Discard');
+    const applyText = getI18nValue('Dialog_Unapplied_Changes_Apply');
+    const discardText = getI18nValue('Dialog_Unapplied_Changes_Discard');
     logRender('ApplyDialog');
     return (
         <>

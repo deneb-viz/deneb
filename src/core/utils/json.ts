@@ -2,7 +2,7 @@ import stringify from 'json-stringify-pretty-compact';
 
 import { getConfig } from '../../core/utils/config';
 import { TABLE_VALUE_MAX_DEPTH } from '../../constants';
-import { i18nValue } from '../ui/i18n';
+import { getI18nValue } from '../../features/i18n';
 
 type TIndentContext = 'editor' | 'tooltip';
 
@@ -60,10 +60,10 @@ export const getPrunedObject = (maxDepth = TABLE_VALUE_MAX_DEPTH) => {
         const pos = stack.indexOf(this) + 1;
         stack.length = pos;
         if (stack.length > maxDepth) {
-            return i18nValue('Table_Placeholder_Object');
+            return getI18nValue('Table_Placeholder_Object');
         }
         if (stack.indexOf(value) >= 0) {
-            return i18nValue('Table_Placeholder_Circular');
+            return getI18nValue('Table_Placeholder_Circular');
         }
         stack.push(value);
         return value;

@@ -7,8 +7,8 @@ import { BodyHeading, Heading } from '../elements/Typography';
 import StatusHeaderSection from './StatusHeaderSection';
 import StatusLayoutStack from './StatusLayoutStack';
 import StatusLayoutStackItem from './StatusLayoutStackItem';
-import { i18nValue } from '../../core/ui/i18n';
 import { powerBiFormatValue } from '../../utils';
+import { getI18nValue } from '../../features/i18n';
 
 const DataFetching = () => {
     const { datasetRowsLoaded } = store((state) => state);
@@ -16,12 +16,12 @@ const DataFetching = () => {
         <>
             <StatusLayoutStack>
                 <StatusHeaderSection icon='cog'>
-                    <Heading>{i18nValue('Fetching_Data')}</Heading>
+                    <Heading>{getI18nValue('Fetching_Data')}</Heading>
                     <Progress
                         description={`${powerBiFormatValue(
                             datasetRowsLoaded,
                             '#,##0'
-                        )} ${i18nValue('Fetching_Data_Progress_Suffix')}`}
+                        )} ${getI18nValue('Fetching_Data_Progress_Suffix')}`}
                     />
                 </StatusHeaderSection>
                 <StatusLayoutStackItem verticalFill>
@@ -41,41 +41,53 @@ const customVisualNotes = () => {
                 <>
                     <div>
                         <BodyHeading>
-                            {i18nValue('Fetching_Data_Developer_Notes')}
+                            {getI18nValue('Fetching_Data_Developer_Notes')}
                         </BodyHeading>
                     </div>
                     <div className='ms-Grid-row ms-fontSize-12'>
                         <div className='ms-Grid-col ms-sm12'>
                             <p>
-                                {i18nValue('Fetching_Data_Assitive_01_Prefix')}
-                                <b>{i18nValue('Objects_DataLimit_Override')}</b>
-                                {i18nValue('Fetching_Data_Assitive_01_Suffix')}
+                                {getI18nValue(
+                                    'Fetching_Data_Assitive_01_Prefix'
+                                )}
+                                <b>
+                                    {getI18nValue('Objects_DataLimit_Override')}
+                                </b>
+                                {getI18nValue(
+                                    'Fetching_Data_Assitive_01_Suffix'
+                                )}
                             </p>
                             <p>
                                 <ul>
                                     <li>
-                                        {i18nValue(
+                                        {getI18nValue(
                                             'Fetching_Data_Assitive_02_Point_01'
                                         )}
                                     </li>
                                     <li>
-                                        {i18nValue(
+                                        {getI18nValue(
                                             'Fetching_Data_Assitive_02_Point_02'
                                         )}
                                     </li>
                                 </ul>
                             </p>
                             <p>
-                                {i18nValue('Fetching_Data_Assitive_02_Suffix')}
+                                {getI18nValue(
+                                    'Fetching_Data_Assitive_02_Suffix'
+                                )}
                             </p>
                             <p>
-                                {i18nValue('Fetching_Data_Assitive_03_Prefix')}
+                                {getI18nValue(
+                                    'Fetching_Data_Assitive_03_Prefix'
+                                )}
                                 <b>
-                                    {i18nValue(
+                                    {getI18nValue(
                                         'Objects_DataLimit_ShowCustomVisualNotes'
                                     )}
                                 </b>
-                                {i18nValue('Fetching_Data_Assitive_03_Suffix')}
+                                {getI18nValue(
+                                    'Fetching_Data_Assitive_03_Suffix'
+                                )}
                             </p>
                         </div>
                     </div>

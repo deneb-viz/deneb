@@ -10,8 +10,8 @@ import {
     DEBUG_ROOT_DATASET_NAME
 } from '../../../constants';
 import { logRender } from '../../logging';
-import { i18nValue } from '../../../core/ui/i18n';
 import { VegaViewServices } from '../../vega-extensibility';
+import { getI18nValue } from '../../i18n';
 
 /**
  * Provides the ability to select a dataset from the Vega view. If no datasets
@@ -52,7 +52,7 @@ export const DatasetViewerOptions: React.FC = () => {
         <div className={classes.statusBarOptions}>
             <div>
                 <Label htmlFor={datasetSelectId} size='small'>
-                    {i18nValue('Text_Data_Table_Dataset_Label')}
+                    {getI18nValue('Text_Data_Table_Dataset_Label')}
                 </Label>
             </div>
             <div>

@@ -5,9 +5,9 @@ import DataFetching from './status/DataFetching';
 import { VegaContainer } from '../features/vega-output';
 import { ApplyChangesDialog } from '../features/modal-dialog';
 import SplashInitial from './status/SplashInitial';
-import { i18nValue } from '../core/ui/i18n';
 import store from '../store';
 import { logRender } from '../features/logging';
+import { getI18nValue } from '../features/i18n';
 
 /**
  * Handles routing of the main visual display, when in report view.
@@ -33,7 +33,9 @@ export const ReportViewRouter: React.FC = () => {
             }
             case 'Processing': {
                 return (
-                    <div>{i18nValue('Fetching_Data_Assistive_Processed')}</div>
+                    <div>
+                        {getI18nValue('Fetching_Data_Assistive_Processed')}
+                    </div>
                 );
             }
             case 'Processed': {

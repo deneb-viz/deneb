@@ -21,13 +21,13 @@ import {
     updatePreviewDebugPaneState
 } from '../../../core/ui/commands';
 import { resolveEditorDebugPaneToggleAria } from '../../../core/ui/aria';
-import { i18nValue } from '../../../core/ui/i18n';
 import { useDebugStyles } from '..';
 import {
     isZoomControlDisabledReact,
     isZoomInIconDisabled,
     isZoomOutIconDisabled
 } from '../../../core/ui/icons';
+import { getI18nValue } from '../../i18n';
 
 interface IDebugAreaToolbarButtonProps {
     command: DebugAreaCommand;
@@ -37,7 +37,7 @@ export const DebugAreaToolbarButton: React.FC<IDebugAreaToolbarButtonProps> = ({
     command
 }) => {
     const classes = useDebugStyles();
-    const i18nKey = i18nValue(resolveI18nKey(command));
+    const i18nKey = getI18nValue(resolveI18nKey(command));
     const icon = resolveIcon(command);
     const caption = resolveCaption(command);
     const buttonClass = mergeClasses(

@@ -1,8 +1,10 @@
 import * as React from 'react';
-import { i18nValue } from '../../../core/ui/i18n';
 
 import { Progress } from '../../../components/status/Progress';
+import { getI18nValue } from '../../i18n';
 
 export const ExportVisualValidation: React.FC = () => {
-    return <Progress description={i18nValue(`Template_Export_Validation`)} />;
+    return (
+        <Progress description={getI18nValue(`Template_Export_Validation`)} />
+    );
 };

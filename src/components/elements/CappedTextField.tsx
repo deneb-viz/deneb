@@ -10,7 +10,7 @@ import store from '../../store';
 import { getConfig } from '../../core/utils/config';
 import FieldInfoIcon from './FieldInfoIcon';
 import { IRenderFunction } from '@fluentui/react/lib/Utilities';
-import { i18nValue } from '../../core/ui/i18n';
+import { getI18nValue } from '../../features/i18n';
 
 const stackTokens: IStackTokens = {
     childrenGap: 4
@@ -59,7 +59,7 @@ const CappedTextField: React.FC<ICappedTextFieldProps> = (props) => {
             if (!props.inline) {
                 const description =
                     (props.i18nAssistiveText &&
-                        i18nValue(props.i18nAssistiveText)) ||
+                        getI18nValue(props.i18nAssistiveText)) ||
                     '';
                 return (
                     <Stack
@@ -78,10 +78,10 @@ const CappedTextField: React.FC<ICappedTextFieldProps> = (props) => {
             id={props.id}
             key={props.id}
             value={textFieldValue}
-            label={`${i18nValue(props.i18nLabel)} (${
+            label={`${getI18nValue(props.i18nLabel)} (${
                 textFieldValue?.length || 0
             }/${props.maxLength})`}
-            placeholder={i18nValue(props.i18nPlaceholder)}
+            placeholder={getI18nValue(props.i18nPlaceholder)}
             onChange={onChangeField}
             onRenderLabel={onRenderLabel}
             multiline={props.multiline}

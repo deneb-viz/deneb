@@ -3,11 +3,11 @@ import { Pivot, PivotItem } from '@fluentui/react/lib/Pivot';
 
 import store from '../../../store';
 import { openEditorPivotItem } from '../../../core/ui/commands';
-import { i18nValue } from '../../../core/ui/i18n';
 import { resolveEditorPanePivotAria } from '../../../core/ui/aria';
 import { TEditorRole } from '../../../features/json-editor';
 import { shallow } from 'zustand/shallow';
 import { logRender } from '../../../features/logging';
+import { getI18nValue } from '../../../features/i18n';
 
 const EditorPanePivot = () => {
     const { editorSelectedOperation } = store(
@@ -34,17 +34,17 @@ const EditorPanePivot = () => {
                 overflowBehavior='menu'
             >
                 <PivotItem
-                    headerText={i18nValue('Editor_Role_Spec')}
+                    headerText={getI18nValue('Editor_Role_Spec')}
                     itemKey='spec'
                     itemIcon='BarChartVertical'
                 />
                 <PivotItem
-                    headerText={i18nValue('Editor_Role_Config')}
+                    headerText={getI18nValue('Editor_Role_Config')}
                     itemKey='config'
                     itemIcon='EditStyle'
                 />
                 <PivotItem
-                    headerText={i18nValue('Editor_Role_Settings')}
+                    headerText={getI18nValue('Editor_Role_Settings')}
                     itemKey='settings'
                     itemIcon='Settings'
                 />

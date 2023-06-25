@@ -5,8 +5,8 @@ import { Slider, SliderProps, Tooltip } from '@fluentui/react-components';
 import { useDebugStyles } from '..';
 import store from '../../../store';
 import { logRender } from '../../logging';
-import { i18nValue } from '../../../core/ui/i18n';
 import { getConfig } from '../../../core/utils/config';
+import { getI18nValue } from '../../i18n';
 
 const CONFIGURATION = getConfig();
 
@@ -19,7 +19,7 @@ export const ZoomSlider: React.FC = () => {
         }),
         shallow
     );
-    const i18nText = i18nValue('Text_Slider_Zoom_Level');
+    const i18nText = getI18nValue('Text_Slider_Zoom_Level');
     const onChange: SliderProps['onChange'] = (event, data) =>
         updateEditorZoomLevel(data.value);
     logRender('ZoomSlider');

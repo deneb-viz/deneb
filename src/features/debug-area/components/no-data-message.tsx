@@ -3,7 +3,8 @@ import { shallow } from 'zustand/shallow';
 import { useDebugStyles } from '..';
 import store from '../../../store';
 import { StatusBarContainer } from '../../interface';
-import { i18nValue } from '../../../core/ui/i18n';
+import { getI18nValue } from '../../i18n';
+
 // import { DatasetViewerOptions } from './dataset-viewer-options';
 
 /**
@@ -15,7 +16,7 @@ export const NoDataMessage: React.FC = () => {
         shallow
     );
     const classes = useDebugStyles();
-    const message = i18nValue(
+    const message = getI18nValue(
         mode === 'data'
             ? 'Text_Debug_Data_No_Data'
             : 'Text_Debug_Signal_No_Data'

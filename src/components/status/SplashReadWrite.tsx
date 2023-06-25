@@ -12,15 +12,17 @@ import UsefulResources from './UsefulResources';
 
 import { BodyHeading, Paragraph } from '../elements/Typography';
 import store from '../../store';
-import { i18nValue } from '../../core/ui/i18n';
 import { hostServices } from '../../core/services';
+import { getI18nValue } from '../../features/i18n';
 
 const SplashReadWrite = () => (
     <Scrollbars>
         <StatusLayoutStack>
             <StandardHeaderContent />
             <StatusLayoutStackItem verticalFill>
-                <BodyHeading>{i18nValue('Landing_Data_Heading')}</BodyHeading>
+                <BodyHeading>
+                    {getI18nValue('Landing_Data_Heading')}
+                </BodyHeading>
                 <div>{resolveInstructions()}</div>
                 <UsefulResources />
             </StatusLayoutStackItem>
@@ -40,14 +42,18 @@ const resolveInstructions = () => {
         case EditMode.Advanced:
             return (
                 <Paragraph>
-                    {i18nValue('Landing_EditMode_Assistive_01')}
+                    {getI18nValue('Landing_EditMode_Assistive_01')}
                 </Paragraph>
             );
         default:
             return (
                 <>
-                    <Paragraph>{i18nValue('Landing_Assistive_01')}</Paragraph>
-                    <Paragraph>{i18nValue('Landing_Assistive_02')}</Paragraph>
+                    <Paragraph>
+                        {getI18nValue('Landing_Assistive_01')}
+                    </Paragraph>
+                    <Paragraph>
+                        {getI18nValue('Landing_Assistive_02')}
+                    </Paragraph>
                 </>
             );
     }

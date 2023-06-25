@@ -7,8 +7,8 @@ import store from '../../../store';
 import { logRender } from '../../logging';
 import { getDebugLogLevels } from '../logging';
 import { ICapabilitiesEnumMember } from '../../powerbi-settings';
-import { i18nValue } from '../../../core/ui/i18n';
 import { updateLogLevel } from '../../../core/ui/commands';
+import { getI18nValue } from '../../i18n';
 
 interface ILogLevelDropdownProps {
     id: string;
@@ -55,7 +55,7 @@ const getFieldOptions = (logLevel: number) =>
 
         return (
             <option value={`${e.value}`} selected={selected}>
-                {i18nValue(e.displayNameKey as string)}
+                {getI18nValue(e.displayNameKey as string)}
             </option>
         );
     });

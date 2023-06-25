@@ -1,5 +1,5 @@
 import powerbi from 'powerbi-visuals-api';
-import { TLocale } from '../ui/i18n';
+import { TLocale } from '../../features/i18n';
 import { isFeatureEnabled } from '../utils/features';
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;

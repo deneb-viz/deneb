@@ -5,8 +5,8 @@ import {
     IMessageBarStyles
 } from '@fluentui/react/lib/MessageBar';
 
-import { i18nValue } from '../../core/ui/i18n';
 import { logRender } from '../../features/logging';
+import { getI18nValue } from '../../features/i18n';
 
 interface INotificationMessageBarProps {
     dismissAction: () => any;
@@ -42,8 +42,10 @@ const NotificationMessageBar: React.FC<INotificationMessageBarProps> = ({
                 isMultiline={isMultiline}
                 truncated={truncated}
                 onDismiss={dismissAction}
-                dismissButtonAriaLabel={i18nValue('Button_Dismiss_MessageBar')}
-                overflowButtonAriaLabel={i18nValue(
+                dismissButtonAriaLabel={getI18nValue(
+                    'Button_Dismiss_MessageBar'
+                )}
+                overflowButtonAriaLabel={getI18nValue(
                     'Button_See_More_MessageBar'
                 )}
             >

@@ -7,12 +7,12 @@ import { IIconProps } from '@fluentui/react/lib/Icon';
 import store from '../../../store';
 import { closeModalDialog } from '../../../core/ui/commands';
 import { TModalDialogType } from '../types';
-import { i18nValue } from '../../../core/ui/i18n';
 import {
     MODAL_DIALOG_CLOSE_ICON_STYLES,
     getModalDialogContentStyles
 } from '../styles';
 import { resolveDialogTitle } from '../utils';
+import { getI18nValue } from '../../i18n';
 
 interface IModalHeaderProps {
     type: TModalDialogType;
@@ -30,11 +30,11 @@ export const ModalHeader: React.FC<IModalHeaderProps> = ({ type }) => {
 
     return (
         <div className={modalStyles.header}>
-            <span id={titleId}>{i18nValue(resolveDialogTitle(type))}</span>
+            <span id={titleId}>{getI18nValue(resolveDialogTitle(type))}</span>
             <IconButton
                 styles={MODAL_DIALOG_CLOSE_ICON_STYLES}
                 iconProps={CANCEL_ICON}
-                ariaLabel={i18nValue('Modal_Close')}
+                ariaLabel={getI18nValue('Modal_Close')}
                 onClick={handleClose}
             />
         </div>

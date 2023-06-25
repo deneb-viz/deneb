@@ -17,7 +17,6 @@ import { LogViewer } from './log-viewer';
 import { DatasetViewer } from './dataset-viewer';
 import { SignalViewer } from './signal-viewer';
 import { Paragraph } from '../../../components/elements/Typography';
-import { i18nValue } from '../../../core/ui/i18n';
 import { useDebugStyles } from '..';
 import { logRender } from '../../logging';
 import { openPreviewPivotItem } from '../../../core/ui/commands';
@@ -27,6 +26,7 @@ import { DebugAreaToolbarButton } from './debug-area-toolbar-button';
 import { ProviderDetail } from './provider-detail';
 import { ZoomLevelPopover } from './zoom-level-popover';
 import { ZoomSlider } from './zoom-slider';
+import { getI18nValue } from '../../i18n';
 
 export const DebugAreaContent: React.FC = () => {
     const {
@@ -65,7 +65,9 @@ export const DebugAreaContent: React.FC = () => {
             case 'signal':
                 return <SignalViewer renderId={renderId} />;
             default:
-                return <Paragraph>{i18nValue('Pivot_Mode_Unknown')}</Paragraph>;
+                return (
+                    <Paragraph>{getI18nValue('Pivot_Mode_Unknown')}</Paragraph>
+                );
         }
     }, [
         datasetName,

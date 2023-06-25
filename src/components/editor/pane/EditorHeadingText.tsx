@@ -1,10 +1,10 @@
 import React from 'react';
 
 import { handleEditorPane } from '../../../core/ui/commands';
-import { i18nValue } from '../../../core/ui/i18n';
 
 import { EditorHeading } from '../../elements/Typography';
 import { logRender } from '../../../features/logging';
+import { getI18nValue } from '../../../features/i18n';
 
 const EditorHeadingText: React.FC = () => {
     logRender('EditorHeadingText');
@@ -15,7 +15,7 @@ const EditorHeadingText: React.FC = () => {
                 onClick={handleEditorPane}
                 role='button'
             >
-                <EditorHeading>{i18nValue('Editor_Heading')}</EditorHeading>
+                <EditorHeading>{getI18nValue('Editor_Heading')}</EditorHeading>
             </div>
         </>
     );

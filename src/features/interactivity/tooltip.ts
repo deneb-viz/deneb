@@ -11,7 +11,6 @@ import pickBy from 'lodash/pickBy';
 import toNumber from 'lodash/toNumber';
 import toString from 'lodash/toString';
 
-import { i18nValue } from '../../core/ui/i18n';
 import {
     getJsonAsIndentedString,
     stringifyPruned
@@ -26,6 +25,7 @@ import {
 import { isFeatureEnabled } from '../../core/utils/features';
 import { hostServices } from '../../core/services';
 import { DATASET_IDENTITY_NAME, DATASET_KEY_NAME } from '../../constants';
+import { getI18nValue } from '../i18n';
 
 /**
  * Convenience constant for tooltip events, as it's required by Power BI.
@@ -73,7 +73,7 @@ const extractTooltipDataItemsFromObject = (
  */
 const getCuratedTooltipItem = (key: string, value: any) =>
     isTooltipReservedWord(key)
-        ? i18nValue('Selection_KW_Present')
+        ? getI18nValue('Selection_KW_Present')
         : getDeepRedactedTooltipItem(value);
 
 /**

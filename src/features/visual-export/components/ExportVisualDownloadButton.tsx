@@ -5,9 +5,9 @@ import { IconButton } from '@fluentui/react/lib/Button';
 import { IIconProps } from '@fluentui/react/lib/Icon';
 
 //import store from '../../../store';
-import { i18nValue } from '../../../core/ui/i18n';
 import { iconButtonStyles } from '../../../core/ui/icons';
 import { isFeatureEnabled } from '../../../core/utils/features';
+import { getI18nValue } from '../../i18n';
 
 const downloadIcon: IIconProps = { iconName: 'Download' };
 
@@ -18,7 +18,7 @@ export const ExportVisualDownloadButton: React.FC = () => {
         resolvedName =
             name || i18nValue('Template_Export_Information_Name_Placeholder'),*/
     const handleDownload = () => {
-            /*  Pending API 4.0.0
+        /*  Pending API 4.0.0
                 hostServices.download.exportVisualsContent(
                     getExportTemplate(),
                     `${resolvedName}.json`,
@@ -26,7 +26,7 @@ export const ExportVisualDownloadButton: React.FC = () => {
                     i18nValue('Template_Export_Json_File_Description')
                 );
             */
-        };
+    };
 
     return (
         (isFeatureEnabled('useDownloadApi') && (
@@ -34,8 +34,8 @@ export const ExportVisualDownloadButton: React.FC = () => {
                 <IconButton
                     iconProps={downloadIcon}
                     styles={iconButtonStyles}
-                    ariaLabel={i18nValue('Template_Export_Json_Copy')}
-                    ariaDescription={i18nValue('Template_Export_Json_Copy')}
+                    ariaLabel={getI18nValue('Template_Export_Json_Copy')}
+                    ariaDescription={getI18nValue('Template_Export_Json_Copy')}
                     onClick={handleDownload}
                 />
             </Stack.Item>

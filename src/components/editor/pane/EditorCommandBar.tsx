@@ -10,8 +10,8 @@ import {
     commandBarOverflowProps
 } from '../../../core/ui/commandBar';
 
-import { i18nValue } from '../../../core/ui/i18n';
 import { logRender } from '../../../features/logging';
+import { getI18nValue } from '../../../features/i18n';
 
 const EditorCommandBar: React.FC = () => {
     const items = getCommandBarItems();
@@ -26,7 +26,7 @@ const EditorCommandBar: React.FC = () => {
                 overflowItems={overflowItems}
                 overflowButtonProps={overflowButtonProps}
                 farItems={farItems}
-                ariaLabel={i18nValue('CommandBar_Aria_Label')}
+                ariaLabel={getI18nValue('CommandBar_Aria_Label')}
                 styles={commandBarStyles}
             />
         </div>

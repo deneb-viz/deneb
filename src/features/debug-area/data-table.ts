@@ -8,7 +8,6 @@ import {
     TABLE_COLUMN_RESERVED_WORDS
 } from '../../constants';
 import { IDataTableWorkerTranslations } from './types';
-import { i18nValue } from '../../core/ui/i18n';
 import { getPrunedObject, stringifyPruned } from '../../core/utils/json';
 import {
     getCrossHighlightFieldBaseMeasureName,
@@ -21,6 +20,7 @@ import {
     TDataPointSelectionStatus
 } from '../interactivity';
 import { DATA_TABLE_FONT_FAMILY, DATA_TABLE_FONT_SIZE } from '.';
+import { getI18nValue } from '../i18n';
 
 /**
  * This sets the StackItem for the table to the correct positioning for
@@ -37,11 +37,11 @@ export const dataTableStackItemStyles: Partial<IStackItemStyles> = {
 const getCellCrossFilterTooltip = (value: TDataPointSelectionStatus) => {
     switch (value) {
         case 'neutral':
-            return i18nValue('Pivot_Debug_SelectedNeutral');
+            return getI18nValue('Pivot_Debug_SelectedNeutral');
         case 'on':
-            return i18nValue('Pivot_Debug_SelectedOn');
+            return getI18nValue('Pivot_Debug_SelectedOn');
         case 'off':
-            return i18nValue('Pivot_Debug_SelectedOff');
+            return getI18nValue('Pivot_Debug_SelectedOff');
     }
 };
 
@@ -58,7 +58,7 @@ export const getCellTooltip = (field: string, value: any) => {
         case isCrossHighlightStatusField(field):
             return getCellHighlightComparatorStatus(value);
         case isValuePlaceholderComplex(value):
-            return i18nValue('Table_Tooltip_TooLong');
+            return getI18nValue('Table_Tooltip_TooLong');
         case isDate(value):
             return new Date(value).toUTCString();
         case isNumber(value):
@@ -77,11 +77,11 @@ export const getCellTooltip = (field: string, value: any) => {
 const getCellHighlightComparatorStatus = (value: TDataPointHighlightStatus) => {
     switch (value) {
         case 'neutral':
-            return i18nValue('Pivot_Debug_HighlightStatusNeutral');
+            return getI18nValue('Pivot_Debug_HighlightStatusNeutral');
         case 'on':
-            return i18nValue('Pivot_Debug_HighlightStatusOn');
+            return getI18nValue('Pivot_Debug_HighlightStatusOn');
         case 'off':
-            return i18nValue('Pivot_Debug_HighlightStatusOff');
+            return getI18nValue('Pivot_Debug_HighlightStatusOff');
     }
 };
 
@@ -94,13 +94,13 @@ const getCellHighlightComparatorTooltip = (
 ) => {
     switch (value) {
         case 'eq':
-            return i18nValue('Pivot_Debug_HighlightComparatorEq');
+            return getI18nValue('Pivot_Debug_HighlightComparatorEq');
         case 'lt':
-            return i18nValue('Pivot_Debug_HighlightComparatorLt');
+            return getI18nValue('Pivot_Debug_HighlightComparatorLt');
         case 'gt':
-            return i18nValue('Pivot_Debug_HighlightComparatorGt');
+            return getI18nValue('Pivot_Debug_HighlightComparatorGt');
         case 'neq':
-            return i18nValue('Pivot_Debug_HighlightComparatorNeq');
+            return getI18nValue('Pivot_Debug_HighlightComparatorNeq');
     }
 };
 
@@ -113,24 +113,24 @@ export const getColumnHeaderTooltip = (column: string) => {
         case isTableColumnNameReserved(column):
             return getReservedTableColumnTooltip(column);
         case isCrossHighlightComparatorField(column):
-            return i18nValue('Pivot_Dataset_HighlightComparatorField', [
+            return getI18nValue('Pivot_Dataset_HighlightComparatorField', [
                 getCrossHighlightFieldBaseMeasureName(column),
-                i18nValue('Pivot_Debug_HighlightComparatorEq'),
-                i18nValue('Pivot_Debug_HighlightComparatorLt'),
-                i18nValue('Pivot_Debug_HighlightComparatorGt'),
-                i18nValue('Pivot_Debug_HighlightComparatorNeq'),
-                i18nValue('Pivot_Debug_Refer_Documentation')
+                getI18nValue('Pivot_Debug_HighlightComparatorEq'),
+                getI18nValue('Pivot_Debug_HighlightComparatorLt'),
+                getI18nValue('Pivot_Debug_HighlightComparatorGt'),
+                getI18nValue('Pivot_Debug_HighlightComparatorNeq'),
+                getI18nValue('Pivot_Debug_Refer_Documentation')
             ]);
         case isCrossHighlightStatusField(column):
-            return i18nValue('Pivot_Dataset_HighlightStatusField', [
+            return getI18nValue('Pivot_Dataset_HighlightStatusField', [
                 getCrossHighlightFieldBaseMeasureName(column),
-                i18nValue('Pivot_Debug_HighlightStatusNeutral'),
-                i18nValue('Pivot_Debug_HighlightStatusOn'),
-                i18nValue('Pivot_Debug_HighlightStatusOff'),
-                i18nValue('Pivot_Debug_Refer_Documentation')
+                getI18nValue('Pivot_Debug_HighlightStatusNeutral'),
+                getI18nValue('Pivot_Debug_HighlightStatusOn'),
+                getI18nValue('Pivot_Debug_HighlightStatusOff'),
+                getI18nValue('Pivot_Debug_Refer_Documentation')
             ]);
         case isCrossHighlightField(column):
-            return i18nValue('Pivot_Dataset_HighlightField', [
+            return getI18nValue('Pivot_Dataset_HighlightField', [
                 getCrossHighlightFieldBaseMeasureName(column)
             ]);
         default:
@@ -167,13 +167,13 @@ export const getDataTableRenderedCharWidth = () => {
  */
 export const getDataTableWorkerTranslations =
     (): IDataTableWorkerTranslations => ({
-        placeholderInfinity: i18nValue('Table_Placeholder_Infinity'),
-        placeholderNaN: i18nValue('Table_Placeholder_NaN'),
-        placeholderTooLong: i18nValue('Table_Placeholder_TooLong'),
-        selectedNeutral: i18nValue('Pivot_Debug_SelectedNeutral'),
-        selectedOn: i18nValue('Pivot_Debug_SelectedOn'),
-        selectedOff: i18nValue('Pivot_Debug_SelectedOff'),
-        selectionKeywordPresent: i18nValue('Selection_KW_Present')
+        placeholderInfinity: getI18nValue('Table_Placeholder_Infinity'),
+        placeholderNaN: getI18nValue('Table_Placeholder_NaN'),
+        placeholderTooLong: getI18nValue('Table_Placeholder_TooLong'),
+        selectedNeutral: getI18nValue('Pivot_Debug_SelectedNeutral'),
+        selectedOn: getI18nValue('Pivot_Debug_SelectedOn'),
+        selectedOff: getI18nValue('Pivot_Debug_SelectedOff'),
+        selectionKeywordPresent: getI18nValue('Selection_KW_Present')
     });
 
 /**
@@ -182,15 +182,15 @@ export const getDataTableWorkerTranslations =
 const getReservedTableColumnTooltip = (field: string) => {
     switch (true) {
         case field === DATASET_SELECTED_NAME:
-            return i18nValue('Pivot_Dataset_SelectedName', [
+            return getI18nValue('Pivot_Dataset_SelectedName', [
                 field,
-                i18nValue('Pivot_Debug_SelectedNeutral'),
-                i18nValue('Pivot_Debug_SelectedOn'),
-                i18nValue('Pivot_Debug_SelectedOff'),
-                i18nValue('Pivot_Debug_Refer_Documentation')
+                getI18nValue('Pivot_Debug_SelectedNeutral'),
+                getI18nValue('Pivot_Debug_SelectedOn'),
+                getI18nValue('Pivot_Debug_SelectedOff'),
+                getI18nValue('Pivot_Debug_Refer_Documentation')
             ]);
         default:
-            return i18nValue(
+            return getI18nValue(
                 `Pivot_Dataset_${
                     field === DATASET_ROW_NAME
                         ? 'RowIdentifier'
@@ -209,11 +209,11 @@ const getReservedTableColumnTooltip = (field: string) => {
  */
 const formatNumberValueForTable = (value: number, tooltip = false) =>
     isNaN(value)
-        ? i18nValue('Table_Placeholder_NaN')
+        ? getI18nValue('Table_Placeholder_NaN')
         : value === Number.POSITIVE_INFINITY
-        ? i18nValue('Table_Placeholder_Infinity')
+        ? getI18nValue('Table_Placeholder_Infinity')
         : value === Number.NEGATIVE_INFINITY
-        ? `-${i18nValue('Table_Placeholder_Infinity')}`
+        ? `-${getI18nValue('Table_Placeholder_Infinity')}`
         : getStringifiedDisplayValue(value, tooltip);
 
 /**
@@ -229,9 +229,9 @@ const getStringifiedDisplayValue = (value: any, tooltip = false) => {
  * for a table cell.
  */
 const isValuePlaceholderComplex = (value: string) =>
-    value === i18nValue('Table_Placeholder_TooLong') ||
-    value === i18nValue('Table_Placeholder_Object') ||
-    value === i18nValue('Table_Placeholder_Circular') ||
+    value === getI18nValue('Table_Placeholder_TooLong') ||
+    value === getI18nValue('Table_Placeholder_Object') ||
+    value === getI18nValue('Table_Placeholder_Circular') ||
     false;
 
 /**

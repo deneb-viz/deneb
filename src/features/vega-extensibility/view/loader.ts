@@ -1,9 +1,9 @@
 import * as Vega from 'vega';
 import { Loader } from 'vega';
 import { hostServices } from '../../../core/services';
-import { i18nValue } from '../../../core/ui/i18n';
 import { isFeatureEnabled } from '../../../core/utils/features';
 import { BASE64_BLANK_IMAGE } from '../../template';
+import { getI18nValue } from '../../i18n';
 
 /**
  * Custom Vega loader for Power BI.
@@ -57,8 +57,8 @@ const handleExternalResourceWarning = (href: string, externalUri: boolean) =>
     !href &&
     !externalUri &&
     hostServices.displayWarningIcon(
-        i18nValue('Loader_Warning_HoverText'),
-        i18nValue('Loader_Warning_DetailedText')
+        getI18nValue('Loader_Warning_HoverText'),
+        getI18nValue('Loader_Warning_DetailedText')
     );
 
 /**

@@ -1,6 +1,12 @@
 import powerbi from 'powerbi-visuals-api';
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
+import reduce from 'lodash/reduce';
+
+import { ILocaleConfiguration } from './types';
+import { hostServices } from '../../core/services';
+
+export * from './types';
 
 let i18n: ILocalizationManager;
 let locale: string;
@@ -23,24 +29,6 @@ export const I18nServices = {
 Object.freeze(I18nServices);
 
 /**
- * Represents all i18n date and time formats available for D3 that we can add
- * to the visual.
- */
-interface ILocaleConfiguration {
-    default: string;
-    format: ILocaleFormatConfiguration;
-    timeFormat: ILocaleTimeConfiguration;
-}
-
-interface ILocaleFormatConfiguration {
-    [key: string]: Record<string, unknown>;
-}
-
-interface ILocaleTimeConfiguration {
-    [key: string]: Record<string, unknown>;
-}
-
-/**
  * Resolve the D3 number format specifier, based on locale settings.
  */
 export const getD3FormatLocale = () =>
@@ -53,6 +41,19 @@ export const getD3FormatLocale = () =>
 export const getD3TimeFormatLocale = () =>
     I18N_D3_LOCALES.timeFormat[getLocale()] ||
     I18N_D3_LOCALES.timeFormat[I18N_D3_LOCALES.default];
+
+/**
+ * Convenience function allows i18n value lookup by key using host services.
+ * Will tokenise the optional array of values matching {i} pattern.
+ */
+export const getI18nValue = (key: string, tokens: (string | number)[] = []) =>
+    reduce(
+        tokens,
+        (prev, value, idx) => {
+            return prev.replace(`{${idx}}`, `${value}`);
+        },
+        hostServices.i18n.getDisplayName(key)
+    );
 
 /**
  * Get the resolved local for the visual. If using debugging, this will

@@ -8,7 +8,6 @@ import {
     getTemplateDatasetTypeColumn,
     IDenebTemplateMetadata
 } from '../../template';
-import { i18nValue } from '../../../core/ui/i18n';
 import { CreateVisualDatasetPlaceholders } from './CreateVisualDatasetPlaceholders';
 import { CreateVisualPreviewImage } from './CreateVisualPreviewImage';
 import {
@@ -18,6 +17,7 @@ import {
 import { Dataset } from '../../template';
 
 import { DATASET_NAME } from '../../../constants';
+import { getI18nValue } from '../../i18n';
 
 const stackTokens: IStackTokens = {
     childrenGap: 25
@@ -25,7 +25,7 @@ const stackTokens: IStackTokens = {
 
 const getTemplateFieldAssignmentColumn = (): IColumn => ({
     key: 'field_assignment',
-    name: i18nValue('Template_Dataset_Field_Assignment'),
+    name: getI18nValue('Template_Dataset_Field_Assignment'),
     fieldName: 'assignment',
     minWidth: 300
 });
@@ -47,7 +47,7 @@ export const CreateVisualTemplateInfo: React.FC = () => {
                     <BodyHeading>{usermeta?.information?.name}</BodyHeading>
                     <SubHeading>
                         {usermeta?.information?.description ||
-                            i18nValue('Template_No_Description')}
+                            getI18nValue('Template_No_Description')}
                     </SubHeading>
                     <CreateVisualDatasetPlaceholders />
                 </StackItem>

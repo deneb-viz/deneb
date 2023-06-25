@@ -7,9 +7,9 @@ import {
 import { updateProvider } from '../../core/ui/commands';
 import { choiceItemStyles, choiceGroupStyles } from '../elements';
 import store from '../../store';
-import { i18nValue } from '../../core/ui/i18n';
 import { TSpecProvider } from '../../core/vega';
 import { Paragraph } from '../elements/Typography';
+import { getI18nValue } from '../../features/i18n';
 
 const ProviderSettings = () => {
     const { vega } = store((state) => state.visualSettings),
@@ -25,12 +25,12 @@ const ProviderSettings = () => {
         providerOptions: IChoiceGroupOption[] = [
             {
                 key: 'vegaLite',
-                text: i18nValue('Provider_VegaLite'),
+                text: getI18nValue('Provider_VegaLite'),
                 styles: choiceItemStyles
             },
             {
                 key: 'vega',
-                text: i18nValue('Provider_Vega'),
+                text: getI18nValue('Provider_Vega'),
                 styles: choiceItemStyles
             }
         ];
@@ -41,9 +41,9 @@ const ProviderSettings = () => {
                 styles={choiceGroupStyles}
                 onChange={handleProvider}
                 selectedKey={vega.provider}
-                label={i18nValue('Objects_Vega_Provider')}
+                label={getI18nValue('Objects_Vega_Provider')}
             />
-            <Paragraph>{i18nValue('Assistive_Text_Provider')}</Paragraph>
+            <Paragraph>{getI18nValue('Assistive_Text_Provider')}</Paragraph>
         </>
     );
 };

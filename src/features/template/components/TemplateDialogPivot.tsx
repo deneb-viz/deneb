@@ -4,10 +4,10 @@ import { IStyleSet } from '@fluentui/react/lib/Styling';
 import { shallow } from 'zustand/shallow';
 
 import store from '../../../store';
-import { i18nValue } from '../../../core/ui/i18n';
 import { TExportOperation, TTemplateProvider } from '../types';
 import { TModalDialogType } from '../../modal-dialog';
 import { logRender } from '../../logging';
+import { getI18nValue } from '../../i18n';
 
 const PIVOT_STYLES: Partial<IStyleSet<IPivotStyles>> = {
     itemContainer: {
@@ -40,9 +40,9 @@ interface IPivotItemData {
 const getPivotAria = (type: TModalDialogType) => {
     switch (type) {
         case 'new':
-            return i18nValue('Pivot_Editor_Create');
+            return getI18nValue('Pivot_Editor_Create');
         case 'export':
-            return i18nValue('Pivot_Editor_Export');
+            return getI18nValue('Pivot_Editor_Export');
     }
 };
 
@@ -57,7 +57,7 @@ const getPivotData = (type: TModalDialogType) => {
 
 const getPivotItems = (items: IPivotItemData[]) =>
     items.map((i) => (
-        <PivotItem headerText={i18nValue(i.i18nKey)} itemKey={i.itemKey} />
+        <PivotItem headerText={getI18nValue(i.i18nKey)} itemKey={i.itemKey} />
     ));
 
 export const TemplateDialogPivot: React.FC<ITemplateDialogPivotProps> = ({

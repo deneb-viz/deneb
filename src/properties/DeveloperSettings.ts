@@ -3,7 +3,7 @@ import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnume
 
 import SettingsBase from './SettingsBase';
 import { getConfig } from '../core/utils/config';
-import { TLocale } from '../core/ui/i18n';
+import { TLocale } from '../features/i18n';
 import { isFeatureEnabled } from '../core/utils/features';
 
 const defaults = getConfig().propertyDefaults.developer;

@@ -1,8 +1,8 @@
+import { getI18nValue } from '../../features/i18n';
 import {
     ITemplateDatasetField,
     TDatasetFieldType
 } from '../../features/template';
-import { i18nValue } from './i18n';
 
 /**
  * For a given column or measure (or template placeholder), resolve the UI tooltip/title text for its data type.
@@ -10,15 +10,15 @@ import { i18nValue } from './i18n';
 export const getDataTypeIconTitle = (type: TDatasetFieldType) => {
     switch (type) {
         case 'bool':
-            return i18nValue('Template_Type_Descriptor_Bool');
+            return getI18nValue('Template_Type_Descriptor_Bool');
         case 'text':
-            return i18nValue('Template_Type_Descriptor_Text');
+            return getI18nValue('Template_Type_Descriptor_Text');
         case 'numeric':
-            return i18nValue('Template_Type_Descriptor_Numeric');
+            return getI18nValue('Template_Type_Descriptor_Numeric');
         case 'dateTime':
-            return i18nValue('Template_Type_Descriptor_DateTime');
+            return getI18nValue('Template_Type_Descriptor_DateTime');
         default:
-            return i18nValue('Template_Import_Not_Deneb');
+            return getI18nValue('Template_Import_Not_Deneb');
     }
 };
 
@@ -30,15 +30,15 @@ export const getPlaceholderDropdownText = (
 ) => {
     switch (datasetField.kind) {
         case 'column':
-            return i18nValue('Dropdown_Placeholder_Column');
+            return getI18nValue('Dropdown_Placeholder_Column');
         case 'measure':
-            return i18nValue('Dropdown_Placeholder_Measure');
+            return getI18nValue('Dropdown_Placeholder_Measure');
         default:
-            return i18nValue('Dropdown_Placeholder_Both');
+            return getI18nValue('Dropdown_Placeholder_Both');
     }
 };
 
 export const resolveAutoApplyLabel = (enabled: boolean) =>
     enabled
-        ? i18nValue('Button_Auto_Apply_Off')
-        : i18nValue('Button_Auto_Apply_On');
+        ? getI18nValue('Button_Auto_Apply_Off')
+        : getI18nValue('Button_Auto_Apply_On');

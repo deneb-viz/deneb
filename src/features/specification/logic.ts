@@ -19,7 +19,6 @@ import {
     updateObjectProperties
 } from '../../core/utils/properties';
 import { cleanParse, getJsonAsIndentedString } from '../../core/utils/json';
-import { i18nValue } from '../../core/ui/i18n';
 import {
     IFixResult,
     IFixStatus,
@@ -37,6 +36,7 @@ import {
     getFriendlyValidationErrors,
     getProviderValidator
 } from './schema-validation';
+import { getI18nValue } from '../i18n';
 
 const PROPERTY_DEFAULTS = getConfig().propertyDefaults.vega;
 
@@ -171,10 +171,10 @@ export const getParsedSpec = (
     const errors: string[] = [];
     let status: TSpecStatus = 'new';
     if (!patchedSpec) {
-        errors.push(i18nValue('Text_Debug_Error_Spec_Parse'));
+        errors.push(getI18nValue('Text_Debug_Error_Spec_Parse'));
     }
     if (!patchedConfig) {
-        errors.push(i18nValue('Text_Debug_Error_Config_Parse'));
+        errors.push(getI18nValue('Text_Debug_Error_Config_Parse'));
     }
     let specToParse = patchedSpec
         ? merge({ config: patchedConfig ?? {} }, patchedSpec)
@@ -450,10 +450,10 @@ const resolveFixErrorMessage = (
 ): string => {
     return (
         (!success &&
-            `${i18nValue('Fix_Failed_Prefix')} ${fixedRawSpec.error || ''}${
+            `${getI18nValue('Fix_Failed_Prefix')} ${fixedRawSpec.error || ''}${
                 (!fixedRawSpec.success && !fixedRawConfig.success && ' & ') ||
                 ''
-            }${fixedRawConfig.error || ''}. ${i18nValue(
+            }${fixedRawConfig.error || ''}. ${getI18nValue(
                 'Fix_Failed_Suffix'
             )}`) ||
         undefined
@@ -470,9 +470,9 @@ const tryFixAndFormat = (operation: TEditorRole, input: string): IFixStatus => {
         return {
             success: false,
             text: input,
-            error: `${i18nValue(
+            error: `${getI18nValue(
                 operation === 'spec' ? 'Editor_Role_Spec' : 'Editor_Role_Config'
-            )} ${i18nValue('Fix_Failed_Item')}`
+            )} ${getI18nValue('Fix_Failed_Item')}`
         };
     }
 };

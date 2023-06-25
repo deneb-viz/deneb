@@ -12,13 +12,13 @@ import {
 import { choiceGroupStyles, choiceItemStyles } from '../elements';
 import store from '../../store';
 import { updateRenderMode, updateSvgFilter } from '../../core/ui/commands';
-import { i18nValue } from '../../core/ui/i18n';
 import { TSpecRenderMode } from '../../core/vega';
 import { Paragraph } from '../elements/Typography';
 import {
     getSvgFilterAsDropdownList,
     isFilterEnabled
 } from '../../core/ui/svgFilter';
+import { getI18nValue } from '../../features/i18n';
 
 const dropdownStyles: Partial<IDropdownStyles> = {
     root: {
@@ -43,12 +43,12 @@ const RenderModeSettings = () => {
     const rendererOptions: IChoiceGroupOption[] = [
         {
             key: 'canvas',
-            text: i18nValue('Enum_Grammar_RenderMode_Canvas'),
+            text: getI18nValue('Enum_Grammar_RenderMode_Canvas'),
             styles: choiceItemStyles
         },
         {
             key: 'svg',
-            text: i18nValue('Enum_Grammar_RenderMode_Svg'),
+            text: getI18nValue('Enum_Grammar_RenderMode_Svg'),
             styles: choiceItemStyles
         }
     ];
@@ -59,12 +59,12 @@ const RenderModeSettings = () => {
                 styles={choiceGroupStyles}
                 onChange={handleRenderMode}
                 selectedKey={vega.renderMode}
-                label={i18nValue('Objects_Vega_RenderMode')}
+                label={getI18nValue('Objects_Vega_RenderMode')}
             />
-            <Paragraph>{i18nValue('Assistive_Text_RenderMode')}</Paragraph>
+            <Paragraph>{getI18nValue('Assistive_Text_RenderMode')}</Paragraph>
             {isFilterEnabled() ? (
                 <Dropdown
-                    label={i18nValue('Objects_Display_SVGFilter')}
+                    label={getI18nValue('Objects_Display_SVGFilter')}
                     options={getSvgFilterAsDropdownList()}
                     styles={dropdownStyles}
                     selectedKey={display.svgFilter}
