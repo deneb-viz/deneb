@@ -18,7 +18,6 @@ import EditMode = powerbi.EditMode;
 
 import { getVisualMetadata, providerVersions } from '../../core/utils/config';
 import { i18nValue } from '../../core/ui/i18n';
-import { ISpecification } from '../../features/specification';
 
 /**
  * Returns visual + Vega + Vega-Lite version information as a single string.
@@ -38,7 +37,7 @@ const resolveVisualMode = (
     editMode: EditMode,
     isInFocus: boolean,
     viewMode: ViewMode,
-    spec: ISpecification
+    spec: string
 ): TVisualMode => {
     switch (true) {
         case datasetViewHasValidMapping &&
@@ -63,8 +62,7 @@ const resolveVisualMode = (
 /**
  * Determines if the visual has no spec, for managing UI state.
  */
-const hasNoSpec = (spec: ISpecification) =>
-    !spec || !spec.status || spec.status === 'new';
+const hasNoSpec = (spec: string) => !spec;
 
 /**
  * Logic to determine if the visual is currently in read-only mode. This is typically when being used in the Service by readers.

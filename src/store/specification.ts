@@ -7,8 +7,18 @@ import { TStoreState } from '.';
 import { ISpecification } from '../features/specification';
 
 interface ISpecificationSliceProperties extends ISpecification {
+    /**
+     * Record a new error message into the current array of errors.
+     */
     logError: (error: string) => void;
+    /**
+     * Record a new warning message into the current array of warnings.
+     */
     logWarn: (warn: string) => void;
+    /**
+     * Set the current specification and parse results.
+     */
+    setSpecificationParseResults: (spec: ISpecification) => void;
 }
 
 export interface ISpecificationSlice {
@@ -33,6 +43,12 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                     (state) => handleLogWarns(state, warn),
                     false,
                     'specification.logWarns'
+                ),
+            setSpecificationParseResults: (spec) =>
+                set(
+                    (state) => handleSetSpecificationParseResults(state, spec),
+                    false,
+                    'specification.setSpecificationParseResults'
                 )
         }
     };
@@ -67,3 +83,13 @@ const handleLogErrors = (
         }
     };
 };
+
+const handleSetSpecificationParseResults = (
+    state: TStoreState,
+    spec: ISpecification
+): Partial<TStoreState> => ({
+    specification: {
+        ...state.specification,
+        ...spec
+    }
+});

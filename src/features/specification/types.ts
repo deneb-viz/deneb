@@ -1,4 +1,5 @@
 import { IVisualDatasetValueRow } from '../../core/data';
+import { TVisualMode } from '../../core/ui';
 import { TSpecProvider } from '../../core/vega';
 
 /**
@@ -14,17 +15,34 @@ export interface ISpecification {
     spec: object | null;
     status: TSpecStatus;
     warns: string[];
+    hashValue: string;
+}
+
+/**
+ * Items we need to compare whether a specification has changed or not.
+ */
+export interface ISpecificationComparisonOptions {
+    datasetHash: string;
+    config: string;
+    spec: string;
+    provider: TSpecProvider;
+    viewportHeight: number;
+    viewportWidth: number;
 }
 
 /**
  * Options for parsing the specification.
  */
 export interface ISpecificationParseOptions {
-    spec: string;
     config: string;
+    datasetHash: string;
     logLevel: number;
     provider: TSpecProvider;
+    spec: string;
     values: IVisualDatasetValueRow[];
+    viewportHeight: number;
+    viewportWidth: number;
+    visualMode: TVisualMode;
 }
 
 /**

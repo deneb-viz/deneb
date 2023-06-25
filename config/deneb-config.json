@@ -169,6 +169,7 @@
         "areaMinSize": 100,
         "toolbarMinSize": 30,
         "toolbarInitialPercent": 40,
+        "viewportBorderSize": 2,
         "logLevels": [
             {
                 "level": 0,
@@ -214,7 +215,8 @@
             "showGutter": true,
             "showLineNumbers": true,
             "showViewportMarker": true,
-            "maxLineLength": 40
+            "maxLineLength": 40,
+            "previewScrollbars": false
         },
         "vega": {
             "jsonSpec": null,
@@ -234,6 +236,15 @@
             "ordinalColorCount": 10,
             "ordinalColorCountMin": 1,
             "ordinalColorCountMax": 100
+        },
+        "display": {
+            "scrollbarColor": "#000000",
+            "scrollbarOpacity": 20,
+            "scrollbarRadius": {
+                "min": 0,
+                "max": 3,
+                "default": 0
+            }
         },
         "performance": {
             "enableResizeRecalc": false

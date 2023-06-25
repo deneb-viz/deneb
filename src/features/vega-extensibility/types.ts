@@ -1,4 +1,6 @@
 import { Selection, BaseType } from 'd3-selection';
+import { View } from 'vega';
+
 /**
  * Defined pattern fill groups.
  */
@@ -54,4 +56,14 @@ export interface IPowerBIExpression {
 export interface IPowerBISchemes {
     name: string;
     values: string[] | ((t: number) => string);
+}
+
+export interface IVegaViewServices {
+    bind: (v: View) => void;
+    clearView: () => any;
+    getAllData: () => any;
+    getAllSignals: () => any;
+    getDataByName: (name: string) => any[];
+    getSignalByName: (name: string) => any;
+    getView: () => View;
 }

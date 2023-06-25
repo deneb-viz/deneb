@@ -7,10 +7,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import set from 'lodash/set';
 
 import { TStoreState } from '.';
-import {
-    IDenebTemplateMetadata,
-    ITemplateDatasetField
-} from '../features/template';
+import { IDenebTemplateMetadata } from '../features/template';
 
 import { templates } from '../templates';
 import { TSpecProvider } from '../core/vega';
@@ -49,7 +46,6 @@ export interface ITemplateSlice {
     vegaLite: TopLevelSpec[];
     vega: Spec[];
     initializeImportExport: () => void;
-    syncTemplateExportDataset: (payload: ITemplateDatasetField[]) => void;
     updateTemplatePreviewImage: (
         payload: ITemplatePlaceholderImagePayload
     ) => void;
@@ -99,12 +95,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                     () => handleInitializeImportExport(),
                     false,
                     'initializeImportExport'
-                ),
-            syncTemplateExportDataset: (payload) =>
-                set(
-                    (state) => handleSyncTemplateExportDataset(state, payload),
-                    false,
-                    'syncTemplateExportDataset'
                 ),
             updateTemplatePreviewImage: (payload) =>
                 set(
@@ -227,32 +217,6 @@ const handleInitializeImportExport = (): Partial<TStoreState> => ({
         templates.vegaLite[0]
     ),
     templateExportMetadata: getNewExportTemplateMetadata()
-});
-
-const handleSyncTemplateExportDataset = (
-    state: TStoreState,
-    payload: ITemplateDatasetField[]
-): Partial<TStoreState> => ({
-    templateExportMetadata: {
-        ...state.templateExportMetadata,
-        ...{
-            dataset: payload.map((d) => {
-                const match = state.templateExportMetadata.dataset.find(
-                    (ds) => ds.key === d.key
-                );
-                if (match) {
-                    return {
-                        ...match,
-                        ...{
-                            name: d.name,
-                            namePlaceholder: d.namePlaceholder
-                        }
-                    };
-                }
-                return d;
-            })
-        }
-    }
 });
 
 const handleUpdateTemplatePreviewImage = (

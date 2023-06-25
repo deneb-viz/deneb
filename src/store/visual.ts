@@ -19,8 +19,11 @@ import {
     getResizablePaneSize
 } from '../core/ui/advancedEditor';
 import { getReportViewport } from '../core/ui/dom';
+import { IVisualUpdateSliceProperties } from './visual-update';
 import { getParsedSpec } from '../features/specification';
+import { getSpecificationParseOptions } from '../features/specification/logic';
 import { TSpecProvider } from '../core/vega';
+import { logDebug } from '../features/logging';
 
 const defaultViewport = { width: 0, height: 0 };
 
@@ -90,6 +93,7 @@ const handleSetVisualUpdate = (
     state: TStoreState,
     payload: IVisualUpdatePayload
 ): Partial<TStoreState> => {
+    logDebug('setVisualUpdate', payload);
     const init = state.visualUpdates === 0;
     const positionNew = payload.settings.editor.position;
     const positionSwitch = positionNew !== state.visualSettings.editor.position;
@@ -104,7 +108,7 @@ const handleSetVisualUpdate = (
         editMode,
         isInFocus,
         viewMode,
-        state.specification
+        payload.settings.vega.jsonSpec
     );
     const viewportCurrent = payload.options.viewport;
     const viewportReport = getReportViewport(
@@ -156,20 +160,22 @@ const handleSetVisualUpdate = (
         visualMode,
         positionNew
     );
-    // spec needs to be parsed if any pertinent settings have changed between updates
-    const specification = {
-        ...state.specification,
-        ...(payload.settings.vega.provider !==
-        state.visualSettings.vega.provider
-            ? getParsedSpec({
-                  spec: payload.settings.vega.jsonSpec,
-                  config: payload.settings.vega.jsonConfig,
-                  logLevel: payload.settings.vega.logLevel,
-                  provider: <TSpecProvider>payload.settings.vega.provider,
-                  values: state.dataset.values
+    const specOptions = getSpecificationParseOptions(state);
+    const spec =
+        state.datasetProcessingStage == 'Processed'
+            ? getParsedSpec(state.specification, specOptions, {
+                  ...specOptions,
+                  ...{
+                      config: payload.settings.vega.jsonConfig,
+                      logLevel: payload.settings.vega.logLevel,
+                      provider: <TSpecProvider>payload.settings.vega.provider,
+                      spec: payload.settings.vega.jsonSpec,
+                      viewportHeight: viewportReport.height,
+                      viewportWidth: viewportReport.width,
+                      visualMode
+                  }
               })
-            : state.specification)
-    };
+            : state.specification;
     return {
         datasetViewObjects,
         editorIsNewDialogVisible: payload.settings.vega.isNewDialogOpen,
@@ -181,6 +187,10 @@ const handleSetVisualUpdate = (
         editorPreviewAreaWidth: edPrevAreaWidth,
         editorPreviewAreaHeightLatch: latch,
         editorPreviewDebugIsExpanded: isExpanded,
+        specification: {
+            ...state.specification,
+            ...spec
+        },
         visualEditMode: editMode,
         visualIsInFocusMode: isInFocus,
         visualMode,
@@ -191,7 +201,7 @@ const handleSetVisualUpdate = (
         visualViewportCurrent: viewportCurrent,
         visualViewportReport: viewportReport,
         visualViewportVega,
-        specification
+        visualUpdateOptions: <IVisualUpdateSliceProperties>payload.options
     };
 };
 

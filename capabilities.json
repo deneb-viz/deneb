@@ -78,14 +78,39 @@
                     "descriptionKey": "Objects_Display_ViewportHeight_Description",
                     "displayName": "Viewport Height",
                     "description": "Viewport Height description.",
-                    "type": { "numeric": true }
+                    "type": {
+                        "numeric": true
+                    }
                 },
                 "viewportWidth": {
                     "displayNameKey": "Objects_Display_ViewportWidth",
                     "descriptionKey": "Objects_Display_ViewportWidth_Description",
                     "displayName": "Viewport Width",
                     "description": "Viewport Width description.",
-                    "type": { "numeric": true }
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "scrollbarColor": {
+                    "displayNameKey": "Objects_Display_ScrollbarColor",
+                    "descriptionKey": "Objects_Display_ScrollbarColor_Description",
+                    "displayName": "Scrollbar color",
+                    "description": "Scrollbar color description.",
+                    "type": { "fill": { "solid": { "color": true } } }
+                },
+                "scrollbarOpacity": {
+                    "displayNameKey": "Objects_Display_ScrollbarOpacity",
+                    "descriptionKey": "Objects_Display_ScrollbarOpacity_Description",
+                    "displayName": "Scrollbar opacity",
+                    "description": "Scrollbar opacity description.",
+                    "type": { "integer": true }
+                },
+                "scrollbarRadius": {
+                    "displayNameKey": "Objects_Display_ScrollbarRadius",
+                    "descriptionKey": "Objects_Display_ScrollbarRadius_Description",
+                    "displayName": "Scrollbar radius",
+                    "description": "Scrollbar radius description.",
+                    "type": { "integer": true }
                 },
                 "svgFilter": {
                     "displayNameKey": "Objects_Display_SVGFilter",
@@ -94,8 +119,14 @@
                     "description": "SVG Filter description.",
                     "type": {
                         "enumeration": [
-                            { "displayName": "None", "value": "none" },
-                            { "displayName": "Deneb.XKCD", "value": "xkcd" }
+                            {
+                                "displayName": "None",
+                                "value": "none"
+                            },
+                            {
+                                "displayName": "Deneb.XKCD",
+                                "value": "xkcd"
+                            }
                         ]
                     }
                 }
@@ -214,46 +245,60 @@
                     "descriptionKey": "Objects_Vega_EnableTooltips_Description",
                     "displayName": "Tooltips",
                     "description": "Tooltips description.",
-                    "type": { "bool": true }
+                    "type": {
+                        "bool": true
+                    }
                 },
                 "enableContextMenu": {
                     "displayNameKey": "Objects_Vega_EnableContextMenu",
                     "descriptionKey": "Objects_Vega_EnableContextMenu_Description",
                     "displayName": "Context Menu",
                     "description": "Context Menu description.",
-                    "type": { "bool": true }
+                    "type": {
+                        "bool": true
+                    }
                 },
                 "enableHighlight": {
                     "displayNameKey": "Objects_Vega_EnableHighlight",
                     "descriptionKey": "Objects_Vega_EnableHighlight_Description",
                     "displayName": "Highlight",
                     "description": "Highlight description.",
-                    "type": { "bool": true }
+                    "type": {
+                        "bool": true
+                    }
                 },
                 "enableSelection": {
                     "displayNameKey": "Objects_Vega_EnableSelection",
                     "descriptionKey": "Objects_Vega_EnableSelection_Description",
                     "displayName": "Selections",
                     "description": "Selections description.",
-                    "type": { "bool": true }
+                    "type": {
+                        "bool": true
+                    }
                 },
                 "selectionMaxDataPoints": {
                     "displayNameKey": "Objects_Vega_SelectionMaxDataPoints",
                     "descriptionKey": "Objects_Vega_SelectionMaxDataPoints_Description",
                     "displayName": "Max Points",
                     "description": "Max Points description.",
-                    "type": { "numeric": true }
+                    "type": {
+                        "numeric": true
+                    }
                 },
                 "tooltipDelay": {
                     "displayNameKey": "Objects_Vega_TooltipDelay",
                     "descriptionKey": "Objects_Vega_TooltipDelay_Description",
                     "displayName": "Tooltip Delay",
                     "description": "Tooltip Delay description.",
-                    "type": { "numeric": true }
+                    "type": {
+                        "numeric": true
+                    }
                 },
                 "isNewDialogOpen": {
                     "displayName": "Show New Dialog?",
-                    "type": { "bool": true }
+                    "type": {
+                        "bool": true
+                    }
                 }
             }
         },
@@ -326,6 +371,15 @@
                     "descriptionKey": "Objects_Editor_ShowViewportMarker_Description",
                     "displayName": "Viewport Marker",
                     "description": "Viewport Marker description",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "previewScrollbars": {
+                    "displayNameKey": "Objects_Editor_PreviewScrollbars",
+                    "descriptionKey": "Objects_Editor_PreviewScrollbars_Description",
+                    "displayName": "Preview Scrollbars",
+                    "description": "Preview Scrollbars description",
                     "type": {
                         "bool": true
                     }
@@ -406,7 +460,13 @@
         {
             "categorical": {
                 "categories": {
-                    "select": [{ "bind": { "to": "dataset" } }],
+                    "select": [
+                        {
+                            "bind": {
+                                "to": "dataset"
+                            }
+                        }
+                    ],
                     "dataReductionAlgorithm": {
                         "window": {
                             "count": 10000
@@ -414,7 +474,13 @@
                     }
                 },
                 "values": {
-                    "select": [{ "bind": { "to": "dataset" } }]
+                    "select": [
+                        {
+                            "bind": {
+                                "to": "dataset"
+                            }
+                        }
+                    ]
                 }
             }
         }

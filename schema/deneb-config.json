@@ -104,7 +104,8 @@
                 "showGutter",
                 "showLineNumbers",
                 "showViewportMarker",
-                "maxLineLength"
+                "maxLineLength",
+                "previewScrollbars"
             ],
             "properties": {
                 "provider": {
@@ -145,6 +146,10 @@
                 },
                 "maxLineLength": {
                     "description": "Number of characters to try to cap lines at when prettifying JSON."
+                },
+                "previewScrollbars": {
+                    "description": "Whether to show scrollbars in the visual preview container or not.",
+                    "type": "boolean"
                 }
             }
         },
@@ -575,6 +580,10 @@
             "properties": {
                 "areaMinSize": {
                     "description": "Minimum possible size for the preview area, in pixels.",
+                    "type": "integer"
+                },
+                "viewportBorderSize": {
+                    "description": "Space to allocate for the viewport indicator in the preview area",
                     "type": "integer"
                 },
                 "toolbarMinSize": {

@@ -16,11 +16,13 @@ import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 import IVisualEventService = powerbi.extensibility.IVisualEventService;
 import VisualUpdateType = powerbi.VisualUpdateType;
 import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
+import DataViewCategorical = powerbi.DataViewCategorical;
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-
 import { loadTheme } from '@fluentui/react/lib/Styling';
+import clone from 'lodash/clone';
+import isEqual from 'lodash/isEqual';
 
 import App from './components/App';
 import VisualSettings from './properties/VisualSettings';
@@ -35,10 +37,9 @@ import {
 import { theme } from './core/ui/fluent';
 import { hostServices } from './core/services';
 import { initializeIcons } from './core/ui/fluent';
-import { getDataset, getMappedDataset } from './core/data/dataset';
+import { getMappedDataset } from './core/data/dataset';
 import { handlePropertyMigration } from './core/utils/versioning';
 import { resolveReportViewport } from './core/ui/dom';
-import { getDatasetTemplateFields } from './core/data/fields';
 import { DATASET_NAME } from './constants';
 import { logDebug, logHeading, logHost } from './features/logging';
 import { getVisualMetadata } from './core/utils/config';
@@ -46,6 +47,8 @@ import {
     VegaExtensibilityServices,
     VegaPatternFillServices
 } from './features/vega-extensibility';
+import { I18nServices, getLocale } from './features/i18n';
+import { isFeatureEnabled } from './core/utils/features';
 
 /**
  * Run to indicate that the visual has started.
@@ -55,6 +58,7 @@ logHeading(`Version: ${getVisualMetadata()?.version}`, 12);
 
 export class Deneb implements IVisual {
     private settings: VisualSettings;
+    private prevDataView: DataViewCategorical;
     // The root element for the entire visual
     private container: HTMLElement;
     // React app container
@@ -70,6 +74,7 @@ export class Deneb implements IVisual {
             loadTheme(theme);
             initializeIcons();
             hostServices.bindHostServices(options);
+            I18nServices.bind(options);
             VegaPatternFillServices.bind();
             getState().initializeImportExport();
             this.container = options.element;
@@ -119,10 +124,14 @@ export class Deneb implements IVisual {
         const settings = this.settings;
         hostServices.visualUpdateOptions = options;
         hostServices.resolveLocaleFromSettings(settings.developer.locale);
+        I18nServices.update(
+            isFeatureEnabled('developerMode')
+                ? this.settings.developer.locale
+                : getLocale()
+        );
         VegaExtensibilityServices.bind(settings.theme.ordinalColorCount);
         const {
             setVisualUpdate,
-            syncTemplateExportDataset,
             updateDataset,
             updateDatasetProcessingStage,
             updateDatasetViewFlags,
@@ -152,59 +161,51 @@ export class Deneb implements IVisual {
         // Perform any necessary property migrations
         handlePropertyMigration();
         // Data change or re-processing required?
-        switch (true) {
-            case VisualUpdateType.All === (options.type & VisualUpdateType.All):
-            case VisualUpdateType.Data ===
-                (options.type & VisualUpdateType.Data): {
-                logDebug('Visual update is volatile. Processing data...');
-                // If first segment, we test and set state accordingly for user feedback
-                if (
-                    options.operationKind ===
-                    VisualDataChangeOperationKind.Create
-                ) {
-                    updateDatasetProcessingStage({
-                        dataProcessingStage: 'Fetching',
-                        canFetchMore: canFetchMore()
-                    });
-                    const datasetViewHasValidMapping = validateDataViewMapping(
-                            options.dataViews
-                        ),
-                        datasetViewHasValidRoles =
-                            datasetViewHasValidMapping &&
-                            validateDataViewRoles(options.dataViews, [
-                                DATASET_NAME
-                            ]),
-                        datasetViewIsValid =
-                            datasetViewHasValidMapping &&
-                            datasetViewHasValidRoles;
-                    updateDatasetViewFlags({
-                        datasetViewHasValidMapping,
-                        datasetViewHasValidRoles,
-                        datasetViewIsValid
-                    });
-                }
-                // If the DV didn't validate then we shouldn't expend effort mapping it and just display landing page
-                if (!getState().datasetViewHasValidMapping) {
-                    logDebug(
-                        'Dataset view is invalid. Displaying landing page.'
-                    );
-                    updateDatasetViewInvalid();
-                    break;
-                }
-                handleDataFetch(options);
-                if (!canFetchMore()) {
-                    updateDataset({
-                        categories:
-                            options.dataViews[0]?.categorical?.categories,
-                        dataset: getMappedDataset(
-                            options.dataViews[0]?.categorical
-                        )
-                    });
-                    syncTemplateExportDataset(
-                        getDatasetTemplateFields(getDataset().fields)
-                    );
-                }
-                break;
+        const { categorical } = options.dataViews[0];
+        const isDataVolatile =
+            VisualUpdateType.Data === (options.type & VisualUpdateType.Data) &&
+            !isEqual(this.prevDataView, categorical);
+        if (isDataVolatile) {
+            logDebug('Visual dataset has changed and should be re-processed.');
+            logDebug('Recording data view for next update...');
+            this.prevDataView = clone(categorical);
+            // If first segment, we test and set state accordingly for user feedback
+            if (
+                options.operationKind === VisualDataChangeOperationKind.Create
+            ) {
+                updateDatasetProcessingStage({
+                    dataProcessingStage: 'Fetching',
+                    canFetchMore: canFetchMore()
+                });
+                const datasetViewHasValidMapping = validateDataViewMapping(
+                        options.dataViews
+                    ),
+                    datasetViewHasValidRoles =
+                        datasetViewHasValidMapping &&
+                        validateDataViewRoles(options.dataViews, [
+                            DATASET_NAME
+                        ]),
+                    datasetViewIsValid =
+                        datasetViewHasValidMapping && datasetViewHasValidRoles;
+                updateDatasetViewFlags({
+                    datasetViewHasValidMapping,
+                    datasetViewHasValidRoles,
+                    datasetViewIsValid
+                });
+            }
+            // If the DV didn't validate then we shouldn't expend effort mapping it and just display landing page
+            if (!getState().datasetViewHasValidMapping) {
+                logDebug('Dataset view is invalid. Displaying landing page.');
+                updateDatasetViewInvalid();
+                return;
+            }
+            handleDataFetch(options);
+            if (!canFetchMore()) {
+                const dataset = getMappedDataset(categorical);
+                updateDataset({
+                    categories: options.dataViews[0]?.categorical?.categories,
+                    dataset
+                });
             }
         }
     }

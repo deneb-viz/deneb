@@ -15,7 +15,7 @@ import {
 import { getConfig } from '../core/utils/config';
 import { IVisualDatasetFields } from '../core/data';
 import { getFieldsInUseFromSpec } from '../features/template';
-import { IFixResult, ISpecification } from '../features/specification';
+import { IFixResult } from '../features/specification';
 import { TEditorRole } from '../features/json-editor';
 
 export interface IEditorSlice {
@@ -234,7 +234,6 @@ export const createEditorSlice: StateCreator<
 
 export interface IEditorSliceUpdateChangesPayload {
     isDirty: boolean;
-    specification: ISpecification;
     stagedConfig: string;
     stagedSpec: string;
 }
@@ -243,7 +242,7 @@ const handleUpdateChanges = (
     state: TStoreState,
     payload: IEditorSliceUpdateChangesPayload
 ): Partial<TStoreState> => {
-    const { isDirty, specification, stagedConfig, stagedSpec } = payload;
+    const { isDirty, stagedConfig, stagedSpec } = payload;
     return {
         editor: {
             ...state.editor,
@@ -254,13 +253,12 @@ const handleUpdateChanges = (
         interface: {
             ...state.interface
         },
-        specification: { ...state.specification, ...specification },
         visualMode: resolveVisualMode(
             state.datasetViewHasValidMapping,
             state.visualEditMode,
             state.visualIsInFocusMode,
             state.visualViewMode,
-            payload.specification
+            stagedSpec
         )
     };
 };

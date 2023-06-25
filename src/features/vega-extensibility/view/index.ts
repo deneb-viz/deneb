@@ -5,6 +5,7 @@ import { logDebug, StoreVegaLoggerService } from '../../logging';
 import { hostServices } from '../../../core/services';
 import { getState } from '../../../store';
 import { VegaPatternFillServices } from '../pattern-fill';
+import { IVegaViewServices } from '../types';
 
 export { getVegaLoader } from './loader';
 
@@ -17,7 +18,7 @@ let view: View | null;
  * debugging. As such, any dependent components need to factor this into their
  * rendering logic.
  */
-export const VegaViewServices = {
+export const VegaViewServices: IVegaViewServices = {
     bind: (v: View) => {
         view = v;
     },
@@ -98,7 +99,6 @@ export const handleNewView = (newView: View) => {
         });
         bindContextMenuEvents(view);
         bindCrossFilterEvents(view);
-        getState().interface.generateRenderId();
         hostServices.renderingFinished();
     });
 };

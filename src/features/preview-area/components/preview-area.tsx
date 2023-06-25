@@ -3,7 +3,7 @@ import SplitPane from 'react-split-pane';
 import { shallow } from 'zustand/shallow';
 
 import store from '../../../store';
-import { PreviewVisual } from './PreviewVisual';
+import { VisualPreview } from './visual-preview';
 import {
     calculatePreviewMaximumHeight,
     resizerHorizontalStyles
@@ -41,7 +41,7 @@ export const PreviewArea: React.FC = () => {
             allowResize={true}
             resizerStyle={resizerHorizontalStyles}
         >
-            <PreviewVisual />
+            <VisualPreview />
             <DebugAreaContent />
         </SplitPane>
     );

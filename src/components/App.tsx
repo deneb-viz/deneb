@@ -2,7 +2,7 @@ import React from 'react';
 
 import { useHotkeys } from 'react-hotkeys-hook';
 
-import MainInterface from './MainInterface';
+import { VisualInterface } from './visual-interface';
 import {
     getCommandKey,
     hotkeyOptions,
@@ -53,7 +53,7 @@ const App = () => {
     hotkeyHandler('debugPaneShowLogs', handleEditorDebugPaneLog);
     hotkeyHandler('editorFocusOut', handleFocusFirstPivot);
     logRender('App');
-    return <MainInterface />;
+    return <VisualInterface />;
 };
 
 export default App;

@@ -20,6 +20,14 @@ import {
     VISUAL_VIEWPORT_ADJUST_TOP
 } from '../../constants';
 
+/**
+ * How many pixels to apply to the preview area calculations as a "safety"
+ * margin. On occasion, the calculation results in a slightly higher than
+ * desirable scaling result and this helps to err on the lower-side of things
+ * so that the preview will definitely fit.
+ */
+const ZOOM_FIT_BUFFER = 15;
+
 const resizerBoxSizing = 'border-box';
 const resizerBackgroundClip = 'padding-box';
 
@@ -221,8 +229,12 @@ export const getZoomToFitScale = () => {
         previewHeight = getAdjustedPreviewAreaHeightForPadding(
             editorPreviewAreaHeight
         ),
-        scaleFactorWidth = Math.floor(100 / (width / previewWidth)),
-        scaleFactorHeight = Math.floor(100 / (height / previewHeight)),
+        scaleFactorWidth = Math.floor(
+            100 / (width / (previewWidth - ZOOM_FIT_BUFFER))
+        ),
+        scaleFactorHeight = Math.floor(
+            100 / (height / (previewHeight - ZOOM_FIT_BUFFER))
+        ),
         { default: zDefault } = getConfig().zoomLevel;
     switch (true) {
         case willScaledDimensionFit(width, scaleFactorWidth, previewWidth) &&

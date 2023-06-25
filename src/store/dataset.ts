@@ -20,8 +20,12 @@ import {
     getDataPointCrossFilterStatus,
     isCrossFilterPropSet
 } from '../features/interactivity';
-import { getParsedSpec } from '../features/specification';
-import { TSpecProvider } from '../core/vega';
+import { getDatasetTemplateFields } from '../core/data/fields';
+import {
+    getParsedSpec,
+    getSpecificationParseOptions
+} from '../features/specification/logic';
+import { logDebug } from '../features/logging';
 
 export interface IDatasetSlice {
     dataset: IVisualDataset;
@@ -151,6 +155,7 @@ const handleUpdateDataset = (
     state: TStoreState,
     payload: IVisualDatasetUpdatePayload
 ): Partial<TStoreState> => {
+    logDebug('dataset.updateDataset', payload);
     const datasetCategories = payload.categories || [];
     const { dataset } = payload;
     const editorFieldsInUse = getFieldsInUseFromSpec(
@@ -162,19 +167,37 @@ const handleUpdateDataset = (
         editorFieldsInUse,
         state.editorFieldDatasetMismatch
     );
-    // spec needs to be parsed here, only if the dataset hash has changed
-    const specification = {
-        ...state.specification,
-        ...(dataset.hashValue !== state.dataset.hashValue
-            ? getParsedSpec({
-                  config: state.visualSettings.vega.jsonConfig,
-                  logLevel: state.visualSettings.vega.logLevel,
-                  provider: <TSpecProvider>state.visualSettings.vega.provider,
-                  spec: state.visualSettings.vega.jsonSpec,
-                  values: dataset.values
-              })
-            : state.specification)
+    const templateExportMetadata = {
+        ...state.templateExportMetadata,
+        ...{
+            dataset: getDatasetTemplateFields(payload.dataset.fields).map(
+                (d) => {
+                    const match = state.templateExportMetadata.dataset.find(
+                        (ds) => ds.key === d.key
+                    );
+                    if (match) {
+                        return {
+                            ...match,
+                            ...{
+                                name: d.name,
+                                namePlaceholder: d.namePlaceholder
+                            }
+                        };
+                    }
+                    return d;
+                }
+            )
+        }
     };
+    const specOptions = getSpecificationParseOptions(state);
+    const spec = getParsedSpec(state.specification, specOptions, {
+        ...specOptions,
+        ...{
+            datasetHash: payload.dataset.hashValue,
+            values: payload.dataset.values
+        }
+    });
+    logDebug('dataset.updateDataset persisting to store...');
     return {
         dataset: payload.dataset,
         datasetCategories,
@@ -191,14 +214,18 @@ const handleUpdateDataset = (
             !state.editorIsNewDialogVisible &&
             !state.editorIsExportDialogVisible &&
             editorFieldDatasetMismatch,
+        specification: {
+            ...state.specification,
+            ...spec
+        },
+        templateExportMetadata,
         visualMode: resolveVisualMode(
             state.datasetViewHasValidMapping,
             state.visualEditMode,
             state.visualIsInFocusMode,
             state.visualViewMode,
-            specification
-        ),
-        specification
+            state.visualSettings.vega.jsonSpec
+        )
     };
 };
 
@@ -231,6 +258,7 @@ const handleUpdateDatasetSelectors = (
     state: TStoreState,
     selectors: ISelectionId[]
 ): Partial<TStoreState> => {
+    logDebug('dataset.updateDatasetSelectors', selectors);
     const values = state.dataset.values.slice().map((v) => ({
         ...v,
         ...(isCrossFilterPropSet() && {
@@ -241,6 +269,14 @@ const handleUpdateDatasetSelectors = (
         })
     }));
     const hashValue = getDatasetHash(state.dataset.fields, values);
+    const specOptions = getSpecificationParseOptions(state);
+    const spec = getParsedSpec(state.specification, specOptions, {
+        ...specOptions,
+        ...{
+            datasetHash: hashValue,
+            values
+        }
+    });
     return {
         datasetHasSelectionAborted: false,
         dataset: {
@@ -250,20 +286,9 @@ const handleUpdateDatasetSelectors = (
                 values
             }
         },
-        // spec needs to be parsed here, only if the dataset hash has changed
         specification: {
             ...state.specification,
-            ...(hashValue !== state.dataset.hashValue
-                ? getParsedSpec({
-                      config: state.visualSettings.vega.jsonConfig,
-                      logLevel: state.visualSettings.vega.logLevel,
-                      provider: <TSpecProvider>(
-                          state.visualSettings.vega.provider
-                      ),
-                      spec: state.visualSettings.vega.jsonSpec,
-                      values
-                  })
-                : state.specification)
+            ...spec
         }
     };
 };
@@ -293,7 +318,7 @@ const handleUpdateDatasetViewFlags = (
             state.visualEditMode,
             state.visualIsInFocusMode,
             state.visualViewMode,
-            state.specification
+            state.visualSettings.vega.jsonSpec
         )
     };
 };
@@ -310,6 +335,6 @@ const handleUpdateDatasetViewInvalid = (
         state.visualEditMode,
         state.visualIsInFocusMode,
         state.visualViewMode,
-        state.specification
+        state.visualSettings.vega.jsonSpec
     )
 });

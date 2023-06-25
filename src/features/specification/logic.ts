@@ -1,14 +1,16 @@
 import * as Vega from 'vega';
 import * as VegaLite from 'vega-lite';
 import jsonrepair from 'jsonrepair';
+import isEqual from 'lodash/isEqual';
 import merge from 'lodash/merge';
+import { digest } from 'jsum';
 
 import { getConfig } from '../../core/utils/config';
 import {
     configEditorService,
     specEditorService
 } from '../../core/services/JsonEditorServices';
-import { getState } from '../../store';
+import { TStoreState, getState } from '../../store';
 import { getVegaSettings, TSpecProvider } from '../../core/vega';
 import {
     getDenebVersionObject,
@@ -22,6 +24,7 @@ import {
     IFixResult,
     IFixStatus,
     ISpecification,
+    ISpecificationComparisonOptions,
     ISpecificationParseOptions,
     TSpecStatus
 } from './types';
@@ -144,17 +147,26 @@ const getErrorLine = (code: string, error: string) => {
  * Handle parsing of the JSON from the spec editor.
  */
 export const getParsedSpec = (
-    options: ISpecificationParseOptions
+    currentSpec: ISpecification,
+    prevOptions: ISpecificationParseOptions,
+    nextOptions: ISpecificationParseOptions
 ): ISpecification => {
-    const { config, logLevel, provider, spec, values } = options;
+    logDebug('getParsedSpec starting', {
+        currentSpec,
+        prevOptions,
+        nextOptions
+    });
+    const isVolatile = isSpecificationVolatile(prevOptions, nextOptions);
+    if (!isVolatile) {
+        logDebug('prev and next values match. No need to re-parse.');
+        return currentSpec;
+    }
+    logDebug('prev and next values differ. Re-parsing...');
+    const { config, logLevel, provider, spec, values } = nextOptions;
     const logger = new LocalVegaLoggerService();
     logger.level(logLevel);
     const patchedSpec = getPatchedSpec(spec, provider, values);
     const patchedConfig = getPatchedConfig(config);
-    logDebug('getParsedSpec', {
-        config,
-        patchedConfig: JSON.stringify(patchedConfig)
-    });
     const warns: string[] = [];
     const errors: string[] = [];
     let status: TSpecStatus = 'new';
@@ -185,7 +197,8 @@ export const getParsedSpec = (
         specToParse = null;
     }
     warns.push(...logger.warns);
-    logDebug('getParsedSpec', {
+    const hashValue = digest(specToParse, 'SHA256', 'hex');
+    logDebug('getParsedSpec results', {
         config,
         patchedConfig,
         spec,
@@ -194,12 +207,14 @@ export const getParsedSpec = (
         status,
         warns
     });
-    return {
+    const specification = {
         errors,
+        hashValue,
         spec: specToParse,
         status,
         warns
     };
+    return specification;
 };
 
 /**
@@ -325,27 +340,19 @@ const getPatchedVegaLiteSpec = (
  * Get the options for parsing the specification and configuration from the
  * store.
  */
-const getSpecificationParseOptions = (
-    stage = true
-): ISpecificationParseOptions => {
-    const {
-        dataset: { values },
-        editor: { stagedConfig, stagedSpec },
-        visualSettings: {
-            vega: { logLevel, provider, jsonConfig, jsonSpec }
-        }
-    } = getState();
-    const spec = (stage ? getCleanEditorJson('spec') : stagedSpec) ?? jsonSpec;
-    const config =
-        (stage ? getCleanEditorJson('config') : stagedConfig) ?? jsonConfig;
-    return {
-        config,
-        logLevel,
-        provider: <TSpecProvider>provider,
-        spec,
-        values
-    };
-};
+export const getSpecificationParseOptions = (
+    state: TStoreState
+): ISpecificationParseOptions => ({
+    config: state.visualSettings.vega.jsonConfig,
+    datasetHash: state.dataset.hashValue,
+    logLevel: state.visualSettings.vega.logLevel,
+    provider: <TSpecProvider>state.visualSettings.vega.provider,
+    spec: state.visualSettings.vega.jsonSpec,
+    values: state.dataset.values,
+    viewportHeight: state.visualViewportReport.height,
+    viewportWidth: state.visualViewportReport.width,
+    visualMode: state.visualMode
+});
 
 /**
  * Looks at the active specification and config in the visual editors and compares with persisted values in the visual properties. Used to set
@@ -373,6 +380,22 @@ const isNewSpec = () => {
 };
 
 /**
+ * We only need to parse a specification if key information changes between
+ * events. This is a simple equality check against that key information.
+ *
+ * @privateRemarks current events where a spec may need to be checked and re-
+ * parsed if necessary are:
+ *  - dataset updated (in dataset slice)
+ *  - dataset selectors updated (in dataset slice)
+ *  - visual properties change during update (spec, config, provider, viewport)
+ *      and dataset has been processed
+ */
+export const isSpecificationVolatile = (
+    prev: ISpecificationComparisonOptions,
+    next: ISpecificationComparisonOptions
+) => !isEqual(prev, next);
+
+/**
  * Determine if a visual is 'versioned' based on persisted properties.
  */
 const isVersionedSpec = () => {
@@ -386,16 +409,19 @@ const isVersionedSpec = () => {
  */
 export const persistSpecification = (stage = true) => {
     const {
-        editor: { updateChanges }
+        editor: { stagedConfig, stagedSpec, updateChanges },
+        visualSettings: {
+            vega: { provider, jsonConfig, jsonSpec }
+        }
     } = getState();
     const isDirty = false;
-    const spo = getSpecificationParseOptions(stage);
-    const specification = getParsedSpec(spo);
+    const spec = (stage ? getCleanEditorJson('spec') : stagedSpec) ?? jsonSpec;
+    const config =
+        (stage ? getCleanEditorJson('config') : stagedConfig) ?? jsonConfig;
     updateChanges({
         isDirty,
-        specification,
-        stagedSpec: spo.spec,
-        stagedConfig: spo.config
+        stagedSpec: spec,
+        stagedConfig: config
     });
     const { renewEditorFieldsInUse } = getState();
     renewEditorFieldsInUse();
@@ -405,9 +431,9 @@ export const persistSpecification = (stage = true) => {
             {
                 objectName: 'vega',
                 properties: [
-                    { name: 'jsonSpec', value: spo.spec },
-                    { name: 'jsonConfig', value: spo.config },
-                    getProviderVersionProperty(spo.provider)
+                    { name: 'jsonSpec', value: spec },
+                    { name: 'jsonConfig', value: config },
+                    getProviderVersionProperty(<TSpecProvider>provider)
                 ]
             }
         ])

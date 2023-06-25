@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { shallow } from 'zustand/shallow';
 
 import EditorInterface from './editor/EditorInterface';
 import store from '../store';
-import DataProcessingRouter from './DataProcessingRouter';
+import { ReportViewRouter } from './report-view-router';
 import SplashInitial from './status/SplashInitial';
 import SplashReadOnly from './status/SplashReadOnly';
 import SplashReadWrite from './status/SplashReadWrite';
@@ -11,14 +11,14 @@ import SplashNoSpec from './status/SplashNoSpec';
 import SelectionLimitMessageBar from './status/SelectionLimitMessageBar';
 import { logRender } from '../features/logging';
 
-const MainInterface = () => {
+export const VisualInterface = () => {
     const { visualMode } = store(
         (state) => ({
             visualMode: state.visualMode
         }),
         shallow
     );
-    const mainComponent = () => {
+    const mainComponent = useMemo(() => {
         switch (visualMode) {
             case 'SplashInitial':
                 return <SplashInitial />;
@@ -31,16 +31,14 @@ const MainInterface = () => {
             case 'Editor':
                 return <EditorInterface />;
             case 'Standard':
-                return <DataProcessingRouter />;
+                return <ReportViewRouter />;
         }
-    };
+    }, [visualMode]);
     logRender('MainInterface', visualMode);
     return (
         <>
-            {mainComponent()}
+            {mainComponent}
             <SelectionLimitMessageBar />
         </>
     );
 };
-
-export default MainInterface;
