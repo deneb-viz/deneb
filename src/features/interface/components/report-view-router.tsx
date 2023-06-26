@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react';
 import { shallow } from 'zustand/shallow';
 
-import DataFetching from './status/DataFetching';
-import { VegaContainer } from '../features/vega-output';
-import { ApplyChangesDialog } from '../features/modal-dialog';
-import SplashInitial from './status/SplashInitial';
-import store from '../store';
-import { logRender } from '../features/logging';
-import { getI18nValue } from '../features/i18n';
+import DataFetching from '../../../components/status/DataFetching';
+import { VegaContainer } from '../../vega-output';
+import { ApplyChangesDialog } from '../../modal-dialog';
+import SplashInitial from '../../../components/status/SplashInitial';
+import store from '../../../store';
+import { logRender } from '../../logging';
+import { getI18nValue } from '../../i18n';
 
 /**
  * Handles routing of the main visual display, when in report view.

@@ -6,6 +6,7 @@ import { getConfig } from '../../core/utils/config';
  */
 export * as Themes from './theme';
 export { StatusBarContainer } from './components/status-bar-container';
+export { VisualInterface } from './components/visual-interface';
 
 export type InterfaceTheme = 'light' | 'dark';
 

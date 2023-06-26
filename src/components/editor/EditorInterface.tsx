@@ -12,6 +12,7 @@ import {
     resizerPaneVerticalStyles,
     resizerVerticalStyles
 } from '../../core/ui/advancedEditor';
+import { useKonami as fourd3d3d } from 'react-konami-code';
 import { ModalDialog } from '../../features/modal-dialog';
 import { Themes, useInterfaceStyles } from '../../features/interface';
 import { logRender } from '../../features/logging';
@@ -22,6 +23,7 @@ const EditorInterface: React.FC = () => {
         editorPaneIsExpanded,
         editorPaneWidth,
         position,
+        setVisual4d3d3d,
         updateEditorPaneWidth
     } = store(
         (state) => ({
@@ -29,6 +31,7 @@ const EditorInterface: React.FC = () => {
             editorPaneIsExpanded: state.editorPaneIsExpanded,
             editorPaneWidth: state.editorPaneWidth,
             position: state.visualSettings.editor.position,
+            setVisual4d3d3d: state.setVisual4d3d3d,
             updateEditorPaneWidth: state.updateEditorPaneWidth
         }),
         shallow
@@ -45,6 +48,9 @@ const EditorInterface: React.FC = () => {
             handleResize(editorPaneDefaultWidth);
         }
     };
+    fourd3d3d(() => {
+        setVisual4d3d3d(true);
+    });
     const editorPane = <EditorPane isExpanded={editorPaneIsExpanded} />;
     const styles = useInterfaceStyles();
     logRender('EditorInterface');

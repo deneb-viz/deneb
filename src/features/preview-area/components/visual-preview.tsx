@@ -6,7 +6,7 @@ import store from '../../../store';
 import { logRender } from '../../logging';
 import { VegaContainer } from '../../vega-output';
 import { getConfig } from '../../../core/utils/config';
-import { FourD3D3D3 } from './FourD3D3D3';
+import { FourD3D3D } from './fourd3d3d';
 
 /**
  * Preview area styles
@@ -83,7 +83,7 @@ export const VisualPreview: React.FC = () => {
         editorZoomLevel
     )();
     const out = useMemo(
-        () => (visual4d3d3d ? <FourD3D3D3 /> : <VegaContainer />),
+        () => (visual4d3d3d ? <FourD3D3D /> : <VegaContainer />),
         [visual4d3d3d, editorZoomLevel]
     );
     logRender('VisualPreview', status, editorPreviewAreaHeight);

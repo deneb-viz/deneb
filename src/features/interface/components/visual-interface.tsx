@@ -1,15 +1,15 @@
 import React, { useMemo } from 'react';
 import { shallow } from 'zustand/shallow';
 
-import EditorInterface from './editor/EditorInterface';
-import store from '../store';
+import EditorInterface from '../../../components/editor/EditorInterface';
+import store from '../../../store';
 import { ReportViewRouter } from './report-view-router';
-import SplashInitial from './status/SplashInitial';
-import SplashReadOnly from './status/SplashReadOnly';
-import SplashReadWrite from './status/SplashReadWrite';
-import SplashNoSpec from './status/SplashNoSpec';
-import SelectionLimitMessageBar from './status/SelectionLimitMessageBar';
-import { logRender } from '../features/logging';
+import SplashInitial from '../../../components/status/SplashInitial';
+import SplashReadOnly from '../../../components/status/SplashReadOnly';
+import SplashReadWrite from '../../../components/status/SplashReadWrite';
+import SplashNoSpec from '../../../components/status/SplashNoSpec';
+import SelectionLimitMessageBar from '../../../components/status/SelectionLimitMessageBar';
+import { logRender } from '../../logging';
 
 export const VisualInterface = () => {
     const { visualMode } = store(

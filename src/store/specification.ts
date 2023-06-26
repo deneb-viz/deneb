@@ -8,6 +8,10 @@ import { ISpecification } from '../features/specification';
 
 interface ISpecificationSliceProperties extends ISpecification {
     /**
+     * Clear all current errors and warnings.
+     */
+    clearLog: () => void;
+    /**
      * Record a new error message into the current array of errors.
      */
     logError: (error: string) => void;
@@ -32,6 +36,8 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
             spec: null,
             status: 'new',
             warns: [],
+            clearLog: () =>
+                set(handleClearLog, false, 'specification.clearLog'),
             logError: (error) =>
                 set(
                     (state) => handleLogErrors(state, error),
@@ -59,6 +65,14 @@ export const createSpecificationSlice: StateCreator<
     [],
     ISpecificationSlice
 > = sliceStateInitializer;
+
+const handleClearLog = (state: TStoreState): Partial<TStoreState> => ({
+    specification: {
+        ...state.specification,
+        errors: [],
+        warns: []
+    }
+});
 
 const handleLogWarns = (
     state: TStoreState,

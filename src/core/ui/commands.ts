@@ -3,7 +3,6 @@ export {
     createExportableTemplate,
     createNewSpec,
     discardChanges,
-    fourd3d3d,
     getCommandKey,
     hotkeyOptions,
     isApplyButtonDisabled,
@@ -210,12 +209,6 @@ const dispatchPreviewPivotItem = (role: TPreviewPivotRole) => {
 const dispatchPreviewDebugToggle = () => {
     getState().togglePreviewDebugPane();
 };
-
-const dispatchFourd3d3d = () => {
-    getState().setVisual4d3d3d(true);
-};
-
-const fourd3d3d = () => dispatchFourd3d3d();
 
 /**
  * Manages persistence of a properties object to the store from an operation.

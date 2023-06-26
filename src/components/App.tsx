@@ -1,8 +1,7 @@
 import React from 'react';
-
 import { useHotkeys } from 'react-hotkeys-hook';
 
-import { VisualInterface } from './visual-interface';
+import { VisualInterface } from '../features/interface';
 import {
     getCommandKey,
     hotkeyOptions,
