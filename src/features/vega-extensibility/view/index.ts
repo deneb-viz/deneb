@@ -86,6 +86,9 @@ const bindCrossFilterEvents = (view: View) => {
 export const handleNewView = (newView: View) => {
     logDebug('Vega view initialized.');
     hostServices.renderingStarted();
+    const {
+        interface: { generateRenderId }
+    } = getState();
     newView.logger(new StoreVegaLoggerService());
     newView.runAfter((view) => {
         logDebug('Running post-Vega view logic...', view);
@@ -99,6 +102,7 @@ export const handleNewView = (newView: View) => {
         });
         bindContextMenuEvents(view);
         bindCrossFilterEvents(view);
+        generateRenderId();
         hostServices.renderingFinished();
     });
 };
