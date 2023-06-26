@@ -110,7 +110,7 @@ export const handleNewView = (newView: View) => {
 /**
  * Any logic that we need to apply when the view errors.
  */
-export const handleViewError = (error: Error, containerRef: HTMLDivElement) => {
+export const handleViewError = (error: Error) => {
     logDebug('Vega view error.', error);
     logDebug('Clearing view...');
     const {

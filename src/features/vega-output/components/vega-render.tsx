@@ -108,12 +108,9 @@ export const VegaRender: React.FC<IVegaRenderProps> = memo(
             });
             handleNewView(view);
         }, []);
-        const onError = useCallback(
-            (error: Error, containerRef: HTMLDivElement) => {
-                handleViewError(error, containerRef);
-            },
-            []
-        );
+        const onError = useCallback((error: Error) => {
+            handleViewError(error);
+        }, []);
         const resolvedProvider = useMemo(
             () => (provider === 'vegaLite' ? 'vega-lite' : provider),
             [provider]

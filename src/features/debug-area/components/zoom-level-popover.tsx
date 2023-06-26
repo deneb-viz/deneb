@@ -1,9 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { shallow } from 'zustand/shallow';
 import {
     Label,
     Popover,
-    PopoverProps,
     PopoverSurface,
     PopoverTrigger,
     Radio,
