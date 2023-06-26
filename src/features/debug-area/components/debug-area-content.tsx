@@ -24,6 +24,7 @@ import { shallow } from 'zustand/shallow';
 import { TPreviewPivotRole } from '../../../core/ui/advancedEditor';
 import { DebugAreaToolbarButton } from './debug-area-toolbar-button';
 import { ProviderDetail } from './provider-detail';
+import { LogErrorIndicator } from './log-error-indicator';
 import { ZoomLevelPopover } from './zoom-level-popover';
 import { ZoomSlider } from './zoom-slider';
 import { getI18nValue } from '../../i18n';
@@ -73,7 +74,6 @@ export const DebugAreaContent: React.FC = () => {
         datasetName,
         editorPreviewAreaSelectedPivot,
         editorPreviewDebugIsExpanded,
-
         hashValue,
         logAttention,
         renderId
@@ -119,7 +119,8 @@ export const DebugAreaContent: React.FC = () => {
                         size='small'
                         icon={<Notebook16Regular />}
                     >
-                        Logs
+                        Logs &nbsp;
+                        <LogErrorIndicator />
                     </ToolbarRadioButton>
                 </ToolbarRadioGroup>
                 <ToolbarGroup className={classes.toolbarGroup}>
