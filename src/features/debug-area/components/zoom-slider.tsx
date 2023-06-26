@@ -7,6 +7,7 @@ import store from '../../../store';
 import { logRender } from '../../logging';
 import { getConfig } from '../../../core/utils/config';
 import { getI18nValue } from '../../i18n';
+import { isZoomControlDisabledReact } from '../../../core/ui/icons';
 
 const CONFIGURATION = getConfig();
 
@@ -33,6 +34,7 @@ export const ZoomSlider: React.FC = () => {
                 value={editorZoomLevel}
                 size='small'
                 onChange={onChange}
+                disabled={isZoomControlDisabledReact()}
             />
         </Tooltip>
     );

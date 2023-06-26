@@ -21,6 +21,7 @@ import { logDebug, logRender } from '../../logging';
 import { getConfig } from '../../../core/utils/config';
 import { getZoomToFitScale } from '../../../core/ui/advancedEditor';
 import { getI18nValue } from '../../i18n';
+import { isZoomControlDisabledReact } from '../../../core/ui/icons';
 
 const CONFIGURATION = getConfig();
 
@@ -98,6 +99,7 @@ export const ZoomLevelPopover: React.FC = () => {
                         classes.toolbarButton,
                         classes.zoomLevelButton
                     )}
+                    disabled={isZoomControlDisabledReact()}
                 >
                     {caption}
                 </ToolbarButton>

@@ -317,5 +317,6 @@
     "Text_Radio_Group_ZoomLevel_33": "33%",
     "Text_Radio_Group_ZoomLevel_Fit": "Fit to preview area",
     "Text_Radio_Group_ZoomLevel_Custom": "Custom",
+    "Text_Slider_Zoom_Level": "Adjust zoom level",
     "Text_Zoom_Level_Custom_Label": "Zoom to"
 }
