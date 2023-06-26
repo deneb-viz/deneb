@@ -1,8 +1,9 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { shallow } from 'zustand/shallow';
 import {
     Label,
     Popover,
+    PopoverProps,
     PopoverSurface,
     PopoverTrigger,
     Radio,
@@ -52,6 +53,11 @@ export const ZoomLevelPopover: React.FC = () => {
     const [zoomValue, setZoomValue] = useState('Custom');
     const [customZoomLevel, setCustomZoomLevel] = useState(editorZoomLevel);
     const customDisabled = zoomValue !== 'Custom';
+    // Ensure that popover state is always reset whenever it's opened or closed.
+    const onOpenChange = () => {
+        setZoomValue('Custom');
+        setCustomZoomLevel(editorZoomLevel);
+    };
     const handleCustomZoomLevelChange = useCallback(
         (value: number) => {
             setCustomZoomLevel(value);
@@ -92,7 +98,7 @@ export const ZoomLevelPopover: React.FC = () => {
     };
     logRender('ZoomLevelPopover');
     return (
-        <Popover withArrow trapFocus>
+        <Popover withArrow trapFocus onOpenChange={onOpenChange}>
             <PopoverTrigger>
                 <ToolbarButton
                     className={mergeClasses(
