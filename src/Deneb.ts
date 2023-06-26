@@ -12,8 +12,6 @@ import EnumerateVisualObjectInstancesOptions = powerbi.EnumerateVisualObjectInst
 import VisualObjectInstance = powerbi.VisualObjectInstance;
 import DataView = powerbi.DataView;
 import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnumerationObject;
-import IVisualHost = powerbi.extensibility.visual.IVisualHost;
-import IVisualEventService = powerbi.extensibility.IVisualEventService;
 import VisualUpdateType = powerbi.VisualUpdateType;
 import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
 import DataViewCategorical = powerbi.DataViewCategorical;
@@ -59,14 +57,7 @@ logHeading(`Version: ${getVisualMetadata()?.version}`, 12);
 export class Deneb implements IVisual {
     private settings: VisualSettings;
     private prevDataView: DataViewCategorical;
-    // The root element for the entire visual
-    private container: HTMLElement;
-    // React app container
-    private reactRoot: React.FunctionComponentElement<Record<string, never>>;
-    // Visual host services
-    private host: IVisualHost;
-    // Handle rendering events
-    private events: IVisualEventService;
+    private prevSettings: VisualSettings;
 
     constructor(options: VisualConstructorOptions) {
         logHost('Constructor has been called.', { options });
@@ -77,12 +68,9 @@ export class Deneb implements IVisual {
             I18nServices.bind(options);
             VegaPatternFillServices.bind();
             getState().initializeImportExport();
-            this.container = options.element;
-            this.host = options.host;
-            this.events = this.host.eventService;
-            this.reactRoot = React.createElement(App);
-            ReactDOM.render(this.reactRoot, this.container);
-            this.container.oncontextmenu = (ev) => {
+            const { element } = options;
+            ReactDOM.render(React.createElement(App), element);
+            element.oncontextmenu = (ev) => {
                 ev.preventDefault();
             };
         } catch (e) {
@@ -93,10 +81,8 @@ export class Deneb implements IVisual {
     public update(options: VisualUpdateOptions) {
         // Handle main update flow
         try {
-            // Signal we've begun rendering
-            this.events.renderingStarted(options);
-
             // Parse the settings for use in the visual
+            this.prevSettings = clone(this.settings);
             this.settings = Deneb.parseSettings(
                 options && options.dataViews && options.dataViews[0]
             );
@@ -121,15 +107,16 @@ export class Deneb implements IVisual {
 
     private resolveUpdateOptions(options: VisualUpdateOptions) {
         logDebug('Resolving update options...', { options });
-        const settings = this.settings;
         hostServices.visualUpdateOptions = options;
-        hostServices.resolveLocaleFromSettings(settings.developer.locale);
+        // Signal we've begun rendering
+        hostServices.renderingStarted();
+        hostServices.resolveLocaleFromSettings(this.settings.developer.locale);
         I18nServices.update(
             isFeatureEnabled('developerMode')
                 ? this.settings.developer.locale
                 : getLocale()
         );
-        VegaExtensibilityServices.bind(settings.theme.ordinalColorCount);
+        VegaExtensibilityServices.bind(this.settings.theme.ordinalColorCount);
         const {
             setVisualUpdate,
             updateDataset,
@@ -149,22 +136,26 @@ export class Deneb implements IVisual {
                     options.viewport,
                     options.viewMode,
                     options.editMode,
-                    settings.display
+                    this.settings.display
                 );
             }
         }
         // Provide intial update options to store
         setVisualUpdate({
             options,
-            settings
+            settings: this.settings
         });
         // Perform any necessary property migrations
         handlePropertyMigration();
         // Data change or re-processing required?
         const { categorical } = options.dataViews[0];
         const isDataVolatile =
-            VisualUpdateType.Data === (options.type & VisualUpdateType.Data) &&
-            !isEqual(this.prevDataView, categorical);
+            (VisualUpdateType.Data === (options.type & VisualUpdateType.Data) &&
+                !isEqual(this.prevDataView, categorical)) ||
+            this.prevSettings?.vega?.enableSelection !==
+                this.settings.vega.enableSelection ||
+            this.prevSettings?.vega?.enableHighlight !==
+                this.settings.vega.enableHighlight;
         if (isDataVolatile) {
             logDebug('Visual dataset has changed and should be re-processed.');
             logDebug('Recording data view for next update...');
@@ -207,6 +198,8 @@ export class Deneb implements IVisual {
                     dataset
                 });
             }
+        } else {
+            logDebug('Visual dataset has not changed. No need to process.');
         }
     }
 

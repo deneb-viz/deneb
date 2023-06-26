@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { TableColumn, TableProps } from 'react-data-table-component';
+import isEqual from 'lodash/isEqual';
 import keys from 'lodash/keys';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -25,12 +26,18 @@ import {
 } from '../types';
 import { VegaViewServices } from '../../vega-extensibility';
 import { getDataTableWorker } from '../data-table-worker';
+import { digest } from 'jsum';
 
 interface IDatasetViewerProps {
     datasetName: string;
     hashValue: string;
     logAttention: boolean;
     renderId: string;
+}
+
+interface IDatasetRaw {
+    hashValue: string;
+    values: any[];
 }
 
 interface IDatasetState {
@@ -52,7 +59,10 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
 }) => {
     const [sortColumnId, setSortColumnId] = useState<string | number>(null);
     const [sortAsc, setSortAsc] = useState(false);
-    const [datasetRaw, setDatasetRaw] = useState<any[]>(null);
+    const [datasetRaw, setDatasetRaw] = useState<IDatasetRaw>({
+        hashValue: null,
+        values: []
+    });
     const [datasetState, setDatasetState] = useState<IDatasetState>({
         columns: null,
         jobQueue: [],
@@ -82,7 +92,7 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
              */
             const message: IDataTableWorkerMessage = {
                 canvasFontCharWidth: getDataTableRenderedCharWidth(),
-                dataset: getDatasetForWorker(datasetRaw),
+                dataset: getDatasetForWorker(datasetRaw.values),
                 datasetKeyName: DATASET_KEY_NAME,
                 jobId,
                 translations: getDataTableWorkerTranslations(),
@@ -118,9 +128,9 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
                 });
                 setDatasetState(() => ({
                     columns,
-                    values,
                     jobQueue: newJobQueue,
-                    processing: !complete
+                    processing: !complete,
+                    values
                 }));
             };
         }
@@ -177,18 +187,35 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
             `DatasetViewer: [${renderId}] dataset ${name} has changed`,
             value
         );
-        setDatasetRaw(() => value);
+        const hashValue = getDataHash(value);
+        setDatasetRaw(() => ({ hashValue, values: value }));
     };
     /**
      * Ensure that listener is added/removed when the data might change.
      */
     useEffect(() => {
-        logDebug(
-            `DatasetViewer: change necessitates dataset update. Updating...`,
-            { hashValue, datasetName, renderId, logAttention }
-        );
-        setDatasetRaw(() => getDatasetValues(datasetName, logAttention));
-        cycleListeners();
+        const latest = getDatasetValues(datasetName, logAttention);
+        const latestHash = getDataHash(latest);
+        const latestDatasetRaw: IDatasetRaw = {
+            values: latest,
+            hashValue: latestHash
+        };
+        logDebug('DataSetViewer: checking for dataset change...', {
+            datasetRaw,
+            latestDatasetRaw
+        });
+        if (!isEqual(latestHash, datasetRaw?.hashValue)) {
+            logDebug(
+                `DatasetViewer: change necessitates dataset update. Updating...`,
+                { hashValue, datasetName, renderId, logAttention }
+            );
+            setDatasetRaw(() => latestDatasetRaw);
+            cycleListeners();
+        } else {
+            logDebug(
+                `DatasetViewer: no change detected. Skipping dataset update.`
+            );
+        }
         return () => {
             removeListener();
         };
@@ -315,3 +342,9 @@ const calculateMaxWidth = (fieldName: string, fieldDataMaxWidth: number) => {
     logDebug('DatasetViewer: max width calculated as', { max });
     return max;
 };
+
+/**
+ * Create hash of dataset, that we can use to determine changes more cheaply
+ * within the UI.
+ */
+const getDataHash = (data: any[]) => digest(data, 'SHA256', 'hex');
