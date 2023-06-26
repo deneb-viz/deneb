@@ -29,6 +29,7 @@ import { ZoomLevelPopover } from './zoom-level-popover';
 import { ZoomSlider } from './zoom-slider';
 import { getI18nValue } from '../../i18n';
 
+// eslint-disable-next-line max-lines-per-function
 export const DebugAreaContent: React.FC = () => {
     const {
         datasetName,

@@ -16,6 +16,7 @@ import { clearSelection, hidePowerBiTooltip } from '../../interactivity';
  * around memoisation of UI-specific dependencies here, so that we don't
  * compute more re-renders than we need to.
  */
+// eslint-disable-next-line max-lines-per-function
 export const VegaContainer: React.FC = () => {
     const {
         datasetHash,

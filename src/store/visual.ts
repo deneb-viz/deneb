@@ -89,6 +89,7 @@ const handleSetVisual4d3d3d = (
     visual4d3d3d: status
 });
 
+// eslint-disable-next-line max-lines-per-function
 const handleSetVisualUpdate = (
     state: TStoreState,
     payload: IVisualUpdatePayload
