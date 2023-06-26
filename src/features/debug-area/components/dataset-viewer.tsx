@@ -27,6 +27,8 @@ import {
 import { VegaViewServices } from '../../vega-extensibility';
 import { getDataTableWorker } from '../data-table-worker';
 import { digest } from 'jsum';
+import { getPrunedObject } from '../../../core/utils/json';
+import { stringifyPruned } from '../../../core/utils/json';
 
 interface IDatasetViewerProps {
     datasetName: string;
@@ -194,13 +196,16 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
      * Ensure that listener is added/removed when the data might change.
      */
     useEffect(() => {
-        const latest = getDatasetValues(datasetName, logAttention);
+        const latest = JSON.parse(
+            stringifyPruned(getDatasetValues(datasetName, logAttention))
+        );
         const latestHash = getDataHash(latest);
         const latestDatasetRaw: IDatasetRaw = {
             values: latest,
             hashValue: latestHash
         };
         logDebug('DataSetViewer: checking for dataset change...', {
+            datasetName,
             datasetRaw,
             latestDatasetRaw
         });

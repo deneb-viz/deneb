@@ -8,7 +8,7 @@ import {
     TABLE_COLUMN_RESERVED_WORDS
 } from '../../constants';
 import { IDataTableWorkerTranslations } from './types';
-import { getPrunedObject, stringifyPruned } from '../../core/utils/json';
+import { stringifyPruned } from '../../core/utils/json';
 import {
     getCrossHighlightFieldBaseMeasureName,
     getSanitisedTooltipValue,
@@ -144,7 +144,7 @@ export const getColumnHeaderTooltip = (column: string) => {
  * that can cause issues with serialization.
  */
 export const getDatasetForWorker = (dataset: any[]) =>
-    JSON.parse(JSON.stringify(dataset, getPrunedObject(3)));
+    JSON.parse(stringifyPruned(dataset));
 
 /**
  * We need to measure how much space a table value (and heading) will take up
