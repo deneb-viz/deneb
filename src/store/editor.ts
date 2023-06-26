@@ -253,6 +253,7 @@ const handleUpdateChanges = (
         interface: {
             ...state.interface
         },
+        visual4d3d3d: false,
         visualMode: resolveVisualMode(
             state.datasetViewHasValidMapping,
             state.visualEditMode,
