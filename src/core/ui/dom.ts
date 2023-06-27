@@ -2,7 +2,7 @@ import powerbi from 'powerbi-visuals-api';
 import IViewport = powerbi.IViewport;
 import EditMode = powerbi.EditMode;
 import ViewMode = powerbi.ViewMode;
-import React from 'react';
+
 import { getConfig } from '../utils/config';
 import DisplaySettings from '../../properties/DisplaySettings';
 import {
@@ -22,10 +22,6 @@ export const getReportViewport = (
 });
 
 export const zoomConfig = getConfig().zoomLevel;
-
-const calculateZoomLevelPercent = (zoomLevel: number) => zoomLevel / 100;
-
-export const getDefaultZoomLevel = () => zoomConfig.default;
 
 /**
  * Manages the increase of zoom level in the visual editor by increasing it by step value.
