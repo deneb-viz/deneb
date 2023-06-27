@@ -86,16 +86,6 @@ export class Deneb implements IVisual {
             this.settings = Deneb.parseSettings(
                 options && options.dataViews && options.dataViews[0]
             );
-
-            // No volatile operations occur during a resize event, and the DOM/Vega view takes care of handling any
-            // responsiveness for anything that will change. No additional computations are needed, so we can save a few
-            // cycles.
-            if (
-                options.type === VisualUpdateType.Resize &&
-                !this.settings.performance.enableResizeRecalc
-            )
-                return;
-
             // Handle the update options and dispatch to store as needed
             this.resolveUpdateOptions(options);
             return;
