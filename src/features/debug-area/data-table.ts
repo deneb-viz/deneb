@@ -8,7 +8,7 @@ import {
     TABLE_COLUMN_RESERVED_WORDS
 } from '../../constants';
 import { IDataTableWorkerTranslations } from './types';
-import { stringifyPruned } from '../../core/utils/json';
+import { gwtPrunedObject } from '../../core/utils/json';
 import {
     getCrossHighlightFieldBaseMeasureName,
     getSanitisedTooltipValue,
@@ -143,8 +143,7 @@ export const getColumnHeaderTooltip = (column: string) => {
  * suffciently pruned to avoid any issues with cyclic references, or properties
  * that can cause issues with serialization.
  */
-export const getDatasetForWorker = (dataset: any[]) =>
-    JSON.parse(stringifyPruned(dataset));
+export const getDatasetForWorker = (dataset: any[]) => gwtPrunedObject(dataset);
 
 /**
  * We need to measure how much space a table value (and heading) will take up
@@ -220,8 +219,8 @@ const formatNumberValueForTable = (value: number, tooltip = false) =>
  * Handle the processing of a stringified value within a data table.
  */
 const getStringifiedDisplayValue = (value: any, tooltip = false) => {
-    const pruned = stringifyPruned(value);
-    return tooltip ? getSanitisedTooltipValue(JSON.parse(pruned)) : pruned;
+    const pruned = gwtPrunedObject(value);
+    return tooltip ? getSanitisedTooltipValue(pruned) : pruned;
 };
 
 /**

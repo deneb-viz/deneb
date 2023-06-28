@@ -46,19 +46,27 @@ export const getJsonAsIndentedString = (
     });
 
 /**
+ * Prune an object at a specified level of depth.
+ */
+export const gwtPrunedObject = (
+    json: object,
+    maxDepth = TABLE_VALUE_MAX_DEPTH
+) => objectPrune(maxDepth)(null, json);
+
+/**
  * Create a stringified representation of an object, pruned at a specified
  * level of depth.
  */
 export const stringifyPruned = (
     json: object,
     maxDepth = TABLE_VALUE_MAX_DEPTH
-) => JSON.stringify(json, getPrunedObject(maxDepth));
+) => JSON.stringify(json, objectPrune(maxDepth));
 
 /**
  * For a given object, prune at the specified level of depth. Borrowed and
  * adapted from vega-tooltip.
  */
-export const getPrunedObject = (maxDepth = TABLE_VALUE_MAX_DEPTH) => {
+const objectPrune = (maxDepth = TABLE_VALUE_MAX_DEPTH) => {
     const stack: any[] = [];
     return function (this: any, key: string, value: any) {
         if (typeof value !== 'object' || value === null) {
