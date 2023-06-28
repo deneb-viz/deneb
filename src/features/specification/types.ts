@@ -1,3 +1,5 @@
+import * as Vega from 'vega';
+import * as VegaLite from 'vega-lite';
 import { IVisualDatasetValueRow } from '../../core/data';
 import { TVisualMode } from '../../core/ui';
 import { TSpecProvider } from '../../core/vega';
@@ -6,6 +8,24 @@ import { TSpecProvider } from '../../core/vega';
  * Values for a spec's parse status.
  */
 export type TSpecStatus = 'valid' | 'error' | 'new';
+
+/**
+ * When we perform parsing of the JSON editor or property content (prior to
+ * patching it), we need to know if there are any errors so we can log them.
+ */
+export interface IContentParseResult {
+    result: object | null;
+    errors: string[];
+}
+
+/**
+ * After parsing, we need to patch content. This represents the results of
+ * that operation.
+ */
+export interface IContentPatchResult {
+    result: Vega.Spec | VegaLite.TopLevelSpec | null;
+    errors: string[];
+}
 
 /**
  * Represents a parsed and validated specification.

@@ -3,21 +3,28 @@ import stringify from 'json-stringify-pretty-compact';
 import { getConfig } from '../../core/utils/config';
 import { TABLE_VALUE_MAX_DEPTH } from '../../constants';
 import { getI18nValue } from '../../features/i18n';
+import { logDebug } from '../../features/logging';
+import { IContentParseResult } from '../../features/specification';
 
 type TIndentContext = 'editor' | 'tooltip';
 
 /**
  * Intended to be used as a substitute for `JSON.parse`; will ensure that any
- * supplied `content` is sanitised for URLs (if blocking them) prior to a
- * regular parse. The optional `fallback` allows the caller to provide a
- * default to provide if the parse fails (will return empty object (`{}`) if
- * not supplied).
+ * supplied `content` is tested as .
  */
-export const cleanParse = (content: string, fallback?: string): object => {
+export const parseAndValidateContentJson = (
+    content: string,
+    fallback?: string
+): IContentParseResult => {
     try {
-        return JSON.parse(content);
-    } catch {
-        return JSON.parse(fallback || '{}');
+        return { result: JSON.parse(content), errors: [] };
+    } catch (e) {
+        logDebug(
+            'parseAndValidateContentJson: error encountered when parsing. Returning fallback...',
+            { fallback }
+        );
+        if (!fallback) return { result: null, errors: [e.message] };
+        return { result: JSON.parse(fallback), errors: [] };
     }
 };
 

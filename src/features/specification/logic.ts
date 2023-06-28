@@ -18,8 +18,12 @@ import {
     resolveObjectProperties,
     updateObjectProperties
 } from '../../core/utils/properties';
-import { cleanParse, getJsonAsIndentedString } from '../../core/utils/json';
 import {
+    parseAndValidateContentJson,
+    getJsonAsIndentedString
+} from '../../core/utils/json';
+import {
+    IContentPatchResult,
     IFixResult,
     IFixStatus,
     ISpecification,
@@ -170,33 +174,47 @@ export const getParsedSpec = (
     const warns: string[] = [];
     const errors: string[] = [];
     let status: TSpecStatus = 'new';
-    if (!patchedSpec) {
+    const specHasErrors = patchedSpec.errors.length > 0;
+    const configHasErrors = patchedConfig.errors.length > 0;
+    if (specHasErrors) {
         errors.push(getI18nValue('Text_Debug_Error_Spec_Parse'));
+        errors.push(...patchedSpec.errors);
     }
-    if (!patchedConfig) {
+    if (configHasErrors) {
         errors.push(getI18nValue('Text_Debug_Error_Config_Parse'));
+        errors.push(...patchedConfig.errors);
     }
-    let specToParse = patchedSpec
-        ? merge({ config: patchedConfig ?? {} }, patchedSpec)
-        : null;
-    try {
-        const validator = getProviderValidator({ provider });
-        const valid = validator(specToParse);
-        if (!valid && validator.errors) {
-            getFriendlyValidationErrors(validator.errors).forEach((error) =>
-                logger.warn(`Validation: ${error}`)
-            );
+    let specToParse: Vega.Spec | VegaLite.TopLevelSpec | null = null;
+    if (!specHasErrors && !configHasErrors) {
+        logDebug('Spec and config are valid. Attempting to parse...', {
+            patchedSpec,
+            patchedConfig
+        });
+        specToParse = patchedSpec
+            ? merge({ config: patchedConfig.result ?? {} }, patchedSpec.result)
+            : null;
+        try {
+            const validator = getProviderValidator({ provider });
+            const valid = validator(specToParse);
+            if (!valid && validator.errors) {
+                getFriendlyValidationErrors(validator.errors).forEach((error) =>
+                    logger.warn(`Validation: ${error}`)
+                );
+            }
+            if (provider === 'vegaLite') {
+                VegaLite.compile(<VegaLite.TopLevelSpec>specToParse);
+            } else {
+                Vega.parse(<Vega.Spec>specToParse);
+            }
+            specToParse;
+            status = 'valid';
+        } catch (e) {
+            errors.push(getErrorLine(spec, e.message));
+            status = 'error';
+            specToParse = null;
         }
-        if (provider === 'vegaLite') {
-            VegaLite.compile(<VegaLite.TopLevelSpec>specToParse);
-        }
-        status = 'valid';
-    } catch (e) {
-        errors.push(getErrorLine(spec, e.message));
-        status = 'error';
-        specToParse = null;
+        warns.push(...logger.warns);
     }
-    warns.push(...logger.warns);
     const hashValue = digest(specToParse, 'SHA256', 'hex');
     logDebug('getParsedSpec results', {
         config,
@@ -220,20 +238,22 @@ export const getParsedSpec = (
 /**
  * Apply the base config for Power BI and then patch the editor config on top.
  */
-const getPatchedConfig = (
-    content: string
-): VegaLite.Config | Vega.Config | null => {
+const getPatchedConfig = (content: string): IContentPatchResult => {
     try {
-        const config = cleanParse(content);
-        return merge(
-            {
-                background: 'transparent', // defer to Power BI background, if applied
-                customFormatTypes: true
-            },
-            config
-        );
+        const parsedConfig = parseAndValidateContentJson(content);
+        if (parsedConfig.errors.length > 0) return parsedConfig;
+        return {
+            result: merge(
+                {
+                    background: 'transparent', // defer to Power BI background, if applied
+                    customFormatTypes: true
+                },
+                parsedConfig.result
+            ),
+            errors: []
+        };
     } catch (e) {
-        return null;
+        return { result: null, errors: [e.message] };
     }
 };
 
@@ -280,14 +300,22 @@ const getPatchedSpec = (
     content: string,
     provider: TSpecProvider,
     values: IVisualDatasetValueRow[]
-): VegaLite.TopLevelSpec | Vega.Spec | null => {
+): IContentPatchResult => {
     try {
-        const spec = cleanParse(content);
-        return provider === 'vegaLite'
-            ? getPatchedVegaLiteSpec(<VegaLite.TopLevelSpec>spec, values)
-            : getPatchedVegaSpec(<Vega.Spec>spec, values);
+        const parsedSpec = parseAndValidateContentJson(content);
+        if (parsedSpec.errors.length > 0) return parsedSpec;
+        return {
+            result:
+                provider === 'vegaLite'
+                    ? getPatchedVegaLiteSpec(
+                          <VegaLite.TopLevelSpec>parsedSpec.result,
+                          values
+                      )
+                    : getPatchedVegaSpec(<Vega.Spec>parsedSpec.result, values),
+            errors: []
+        };
     } catch (e) {
-        return null;
+        return { result: null, errors: [e.message] };
     }
 };
 
