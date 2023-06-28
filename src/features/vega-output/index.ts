@@ -1,5 +1,7 @@
 import { makeStyles, shorthands } from '@fluentui/react-components';
 
+import { VEGA_VIEWPORT_ADJUST } from '../../constants';
+
 export { VegaContainer } from './components/vega-container';
 
 /**
@@ -18,7 +20,7 @@ export const useVegaStyles = makeStyles({
         ...shorthands.overflow('overlay')
     },
     vegaRender: {
-        height: 'calc(100% - 4px)',
-        width: 'calc(100% - 4px)'
+        height: `calc(100% - ${VEGA_VIEWPORT_ADJUST}px)`,
+        width: `calc(100% - ${VEGA_VIEWPORT_ADJUST}px)`
     }
 });

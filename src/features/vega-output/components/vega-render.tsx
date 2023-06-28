@@ -85,7 +85,9 @@ export const VegaRender: React.FC<IVegaRenderProps> = memo(
         logLevel,
         provider,
         renderMode,
-        specification
+        specification,
+        viewportHeight,
+        viewportWidth
     }) => {
         const loader = useMemo(() => getVegaLoader(), []);
         const classes = useVegaStyles();
@@ -115,6 +117,23 @@ export const VegaRender: React.FC<IVegaRenderProps> = memo(
             () => (provider === 'vegaLite' ? 'vega-lite' : provider),
             [provider]
         );
+        /**
+         * Vega doesn't easily recompute the layout when the viewport changes,
+         * so we need to override the style to force it to resize. This is
+         * similar logic to the styling we apply on the `vegaRender` class,
+         * but with explicit sizing rather than percentages. Doing it this way
+         * allows Vega-Lite to be reasonably responsive on resize.
+         */
+        const styleOverride: React.CSSProperties = useMemo(
+            () =>
+                provider == 'vega'
+                    ? {
+                          height: `${viewportHeight - 4}px`,
+                          width: `${viewportWidth - 4}px`
+                      }
+                    : {},
+            [viewportHeight, viewportWidth, provider]
+        );
         const VegaChart = createClassFromSpec({
             spec: specification.spec as object,
             mode: resolvedProvider
@@ -135,6 +154,7 @@ export const VegaRender: React.FC<IVegaRenderProps> = memo(
                 onNewView={onNewView}
                 onError={onError}
                 className={classes.vegaRender}
+                style={styleOverride}
             />
         );
     },
