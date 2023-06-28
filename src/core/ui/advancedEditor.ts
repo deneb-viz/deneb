@@ -235,14 +235,14 @@ export const getZoomToFitScale = () => {
         scaleFactorHeight = Math.floor(
             100 / (height / (previewHeight - ZOOM_FIT_BUFFER))
         ),
-        { default: zDefault } = getConfig().zoomLevel;
+        { default: zDefault, max } = getConfig().zoomLevel;
     switch (true) {
         case willScaledDimensionFit(width, scaleFactorWidth, previewWidth) &&
             willScaledDimensionFit(height, scaleFactorWidth, previewHeight):
-            return scaleFactorWidth;
+            return Math.min(scaleFactorWidth, max);
         case willScaledDimensionFit(width, scaleFactorHeight, previewWidth) &&
             willScaledDimensionFit(height, scaleFactorHeight, previewHeight):
-            return scaleFactorHeight;
+            return Math.min(scaleFactorHeight, max);
         default:
             zDefault;
     }
