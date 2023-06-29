@@ -59,8 +59,12 @@ export const ZoomLevelPopover: React.FC = () => {
     };
     const handleCustomZoomLevelChange = useCallback(
         (value: number) => {
-            setCustomZoomLevel(value);
-            updateEditorZoomLevel(value);
+            const level = Math.max(
+                Math.min(value, CONFIGURATION.zoomLevel.max),
+                CONFIGURATION.zoomLevel.min
+            );
+            setCustomZoomLevel(level);
+            updateEditorZoomLevel(level);
         },
         [editorZoomLevel]
     );
