@@ -9,7 +9,10 @@ import {
     providerVersions
 } from '../../core/utils/config';
 import { isFeatureEnabled } from '../../core/utils/features';
-import { cleanParse, getJsonAsIndentedString } from '../../core/utils/json';
+import {
+    parseAndValidateContentJson,
+    getJsonAsIndentedString
+} from '../../core/utils/json';
 import { TSpecProvider } from '../../core/vega';
 import { getState } from '../../store';
 import { TTemplateExportState } from '../template';
@@ -25,10 +28,7 @@ import { getI18nValue } from '../i18n';
  * template for export.
  */
 export const getExportTemplate = () => {
-    const {
-        specification: { spec },
-        visualSettings
-    } = getState();
+    const { visualSettings } = getState();
     const { vega } = visualSettings;
     const { providerResources } = getConfig();
     const vSchema = (
@@ -42,17 +42,17 @@ export const getExportTemplate = () => {
     };
     const usermeta = resolveExportUserMeta();
     const processedSpec = getTemplatedSpecification(
-        JSON.stringify(spec),
+        visualSettings.vega.jsonSpec,
         usermeta?.[DATASET_NAME]
     );
     const outSpec = merge(
         baseObj,
         { usermeta: getPublishableUsermeta(usermeta) },
         {
-            config: cleanParse(
+            config: parseAndValidateContentJson(
                 visualSettings.vega.jsonConfig,
                 getConfig().propertyDefaults.vega.jsonConfig
-            )
+            )?.result
         },
         JSON.parse(processedSpec)
     );
