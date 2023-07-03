@@ -44,7 +44,7 @@ const getFormattingStringEntries = (
 ): PrimitiveValue[][] => {
     return reduce(
         values || [],
-        (acc, v: DataViewValueColumn, vi: number) => {
+        (acc, v: DataViewValueColumn) => {
             if (isDataViewFieldEligibleForFormatting(v)) {
                 const values = v.values;
                 const formatStrings = values.map((vv, vvi) =>
