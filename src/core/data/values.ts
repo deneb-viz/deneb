@@ -10,6 +10,7 @@ import { isCrossHighlightPropSet } from '../../features/interactivity';
 import { getVegaSettings } from '../vega';
 import { getHighlightStatus } from './dataView';
 import { powerBiFormatValue } from '../../utils';
+import { isDataViewFieldEligibleForFormatting } from '../../features/dataset';
 
 /**
  * Enumerate all relevant areas of the data view to get an array of all
@@ -44,15 +45,17 @@ const getFormattingStringEntries = (
     return reduce(
         values || [],
         (acc, v: DataViewValueColumn, vi: number) => {
-            const values = v.values;
-            const formatStrings = values.map((vv, vvi) =>
-                getFormatStringForValueByIndex(v, vvi)
-            );
-            const formattedValues = values.map((vv, vvi) =>
-                powerBiFormatValue(vv, formatStrings[vvi])
-            );
-            acc.push(formatStrings);
-            acc.push(formattedValues);
+            if (isDataViewFieldEligibleForFormatting(v)) {
+                const values = v.values;
+                const formatStrings = values.map((vv, vvi) =>
+                    getFormatStringForValueByIndex(v, vvi)
+                );
+                const formattedValues = values.map((vv, vvi) =>
+                    powerBiFormatValue(vv, formatStrings[vvi])
+                );
+                acc.push(formatStrings);
+                acc.push(formattedValues);
+            }
             return acc;
         },
         <PrimitiveValue[][]>[]

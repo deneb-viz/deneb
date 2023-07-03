@@ -4,4 +4,7 @@ export {
     resolveDrilldownFlat
 } from './drilldown';
 
-export { getFormatFieldRegExpAlternation } from './formatting';
+export {
+    getFormatFieldRegExpAlternation,
+    isDataViewFieldEligibleForFormatting
+} from './formatting';

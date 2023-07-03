@@ -1,7 +1,6 @@
 import powerbi from 'powerbi-visuals-api';
 import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 import DataViewValueColumns = powerbi.DataViewValueColumns;
-import DataViewValueColumn = powerbi.DataViewValueColumn;
 
 import find from 'lodash/find';
 import pickBy from 'lodash/pickBy';
@@ -21,6 +20,7 @@ import {
     DATASET_FIELD_FORMATED_VALUE_SUFFIX,
     HIGHLIGHT_FIELD_SUFFIX
 } from '../../constants';
+import { isDataViewFieldEligibleForFormatting } from '../../features/dataset';
 
 /**
  * Extract all categorical fields from the data view as suitable metadata.
@@ -169,30 +169,32 @@ const getMeasureFormatEntries = (
     return reduce(
         values,
         (result, v, vi) => {
-            result = result.concat([
-                {
-                    column: {
-                        ...v.source,
-                        ...{
-                            displayName: `${v.source.displayName}${DATASET_DYNAMIC_FORMAT_STRING_SUFFIX}`,
-                            index: -v.source.index
-                        }
+            if (isDataViewFieldEligibleForFormatting(v)) {
+                result = result.concat([
+                    {
+                        column: {
+                            ...v.source,
+                            ...{
+                                displayName: `${v.source.displayName}${DATASET_DYNAMIC_FORMAT_STRING_SUFFIX}`,
+                                index: -v.source.index
+                            }
+                        },
+                        source: 'formatting',
+                        sourceIndex: vi
                     },
-                    source: 'formatting',
-                    sourceIndex: vi
-                },
-                {
-                    column: {
-                        ...v.source,
-                        ...{
-                            displayName: `${v.source.displayName}${DATASET_FIELD_FORMATED_VALUE_SUFFIX}`,
-                            index: -v.source.index
-                        }
-                    },
-                    source: 'formatting',
-                    sourceIndex: vi
-                }
-            ]);
+                    {
+                        column: {
+                            ...v.source,
+                            ...{
+                                displayName: `${v.source.displayName}${DATASET_FIELD_FORMATED_VALUE_SUFFIX}`,
+                                index: -v.source.index
+                            }
+                        },
+                        source: 'formatting',
+                        sourceIndex: vi
+                    }
+                ]);
+            }
             return result;
         },
         <IAugmentedMetadataField[]>[]
