@@ -91,4 +91,5 @@ export type TDatasetValueSource =
     | 'categories'
     | 'values'
     | 'highlights'
+    | 'formatting'
     | 'none';

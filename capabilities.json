@@ -11,6 +11,17 @@
         }
     ],
     "objects": {
+        "general": {
+            "properties": {
+                "formatString": {
+                    "type": {
+                        "formatting": {
+                            "formatString": true
+                        }
+                    }
+                }
+            }
+        },
         "developer": {
             "displayNameKey": "Objects_Developer",
             "descriptionKey": "Objects_Developer_Description",

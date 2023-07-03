@@ -13,6 +13,7 @@ import { getCrossHighlightRegExpAlternation } from '../interactivity';
 import { getCleanEditorJson } from '../specification';
 import { ITemplateDatasetField, TDatasetFieldType } from './schema';
 import { ITemplatePattern } from './types';
+import { getFormatFieldRegExpAlternation } from '../dataset';
 
 /**
  * Used for validation of text field lengths vs. generated schema.
@@ -99,20 +100,30 @@ export const getExportFieldTokenPatterns = (
     name: string
 ): ITemplatePattern[] => {
     const namePattern = getEscapedReplacerPattern(name);
-    return [
-        {
-            match: `"()(${namePattern})(${getCrossHighlightRegExpAlternation()})?"(?!\\s*:)`,
-            replacer: '"$1$2$3"'
-        },
-        {
-            match: `\\.()(${namePattern})(${getCrossHighlightRegExpAlternation()})?`,
-            replacer: `['$1$2$3']`
-        },
-        {
-            match: `(')(${namePattern})((?=${getCrossHighlightRegExpAlternation()}')?)`,
-            replacer: '$1$2$3'
-        }
+    const alternations = [
+        getCrossHighlightRegExpAlternation(),
+        getFormatFieldRegExpAlternation()
     ];
+    return reduce(
+        alternations,
+        (result, alternation) => {
+            return result.concat([
+                {
+                    match: `"()(${namePattern})(${alternation})?"(?!\\s*:)`,
+                    replacer: '"$1$2$3"'
+                },
+                {
+                    match: `\\.()(${namePattern})(${alternation})?`,
+                    replacer: `['$1$2$3']`
+                },
+                {
+                    match: `(')(${namePattern})((?=${alternation}')?)`,
+                    replacer: '$1$2$3'
+                }
+            ]);
+        },
+        <ITemplatePattern[]>[]
+    );
 };
 
 /**
