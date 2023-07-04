@@ -1,5 +1,4 @@
 import React from 'react';
-import { Scrollbars } from 'react-custom-scrollbars-2';
 
 import store from '../../../store';
 import { EditorJsonEditor, TEditorRole } from '../../../features/json-editor';
@@ -30,13 +29,7 @@ const EditorOperationContainer: React.FC<IEditorOperationContainerProps> = ({
                 display: visible ? 'inherit' : 'none'
             }}
         >
-            {editorPane ? (
-                <Editor role={operation} />
-            ) : (
-                <Scrollbars>
-                    <SettingsPane />
-                </Scrollbars>
-            )}
+            {editorPane ? <Editor role={operation} /> : <SettingsPane />}
         </div>
     );
 };

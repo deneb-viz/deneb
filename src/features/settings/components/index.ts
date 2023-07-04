@@ -13,6 +13,9 @@ export const useSettingsStyles = makeStyles({
     interactivityLink: {
         ...typographyStyles.caption1
     },
+    paneContainer: {
+        ...shorthands.overflow('overlay')
+    },
     radioGroupHorizontal: {
         display: 'grid',
         gridRowGap: tokens.spacingVerticalS
