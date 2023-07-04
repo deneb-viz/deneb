@@ -24,12 +24,12 @@ const usePreviewStyles = (
     return makeStyles({
         previewArea: {
             ...shorthands.padding('2px'),
+            ...shorthands.overflow('overlay'),
             boxSizing: 'border-box'
         },
         previewWrapper: {
             height: `${(height + borderWidth) * scale}px`,
             width: `${(width + borderWidth) * scale}px`,
-            ...shorthands.overflow('visible'),
             ...shorthands.padding(`${borderWidth}px`),
             ...shorthands.borderStyle('dashed'),
             ...shorthands.borderWidth(`${borderWidth}px`),
