@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import EditorPaneCollapsed from './EditorPaneCollapsed';
+import JsonEditorPaneCollapsed from '../../../features/json-editor/components/json-editor-pane-collapsed';
 import EditorPaneExpanded from './EditorPaneExpanded';
 
 interface IEditorPaneProps {
@@ -16,4 +16,4 @@ export const EditorPane: React.FC<IEditorPaneProps> = (props) => (
 export default EditorPane;
 
 const getEditorPaneContent = (isExpanded: boolean) =>
-    isExpanded ? <EditorPaneExpanded /> : <EditorPaneCollapsed />;
+    isExpanded ? <EditorPaneExpanded /> : <JsonEditorPaneCollapsed />;

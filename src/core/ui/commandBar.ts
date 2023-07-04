@@ -27,7 +27,7 @@ import {
     openMapFieldsDialog,
     handleEditorPane
 } from './commands';
-import { getAutoApplyIcon, getEditorHeadingIcon } from './icons';
+import { getAutoApplyIcon } from './icons';
 import { resolveAutoApplyLabel } from './labels';
 
 import { theme } from './fluent';
@@ -154,10 +154,7 @@ const getCollapseCommandItem = (): ICommandBarItemProps => ({
     iconOnly: true,
     ariaLabel: getI18nValue('Tooltip_Collapse_Editor_Pane'),
     iconProps: {
-        iconName: getEditorHeadingIcon(
-            getState().visualSettings.editor.position,
-            true
-        )
+        iconName: 'ChevronLeft'
     },
     buttonStyles: commandBarButtonStyles,
     onClick: handleEditorPane

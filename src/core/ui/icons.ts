@@ -65,14 +65,6 @@ export const getDataTypeIcon = (type: TDatasetFieldType) => {
     }
 };
 
-export const getEditorHeadingIcon = (
-    position: TEditorPosition,
-    expanded: boolean
-) =>
-    (position === 'left' && expanded) || (position === 'right' && !expanded)
-        ? 'ChevronLeft'
-        : 'ChevronRight';
-
 export const isZoomInIconDisabled = (value: number) =>
     value === zoomConfig.max || isZoomControlDisabled();
 

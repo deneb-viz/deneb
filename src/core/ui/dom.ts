@@ -41,9 +41,6 @@ export const getZoomOutLevel = (value: number) => {
     return (value > min && level) || level;
 };
 
-export const getEditorHeadingIconClassName = (expanded: boolean) =>
-    `editor-${expanded ? 'collapse' : 'expand'}`;
-
 /**
  * Convert a value intended for pt to a px equivalent.
  */
