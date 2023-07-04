@@ -7,7 +7,7 @@ import store from '../../../store';
 import { logRender } from '../../logging';
 import { useDebugStyles } from '..';
 import { ILogEntry, ILogEntryDisplay } from '../types';
-import { ICapabilitiesEnumMember } from '../../powerbi-settings';
+import { ICapabilitiesEnumMember } from '../../settings';
 import { getDebugLogLevels } from '../logging';
 import { StatusBarContainer } from '../../interface';
 import { LogLevelDropdown } from './log-level-dropdown';

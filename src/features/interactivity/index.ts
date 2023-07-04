@@ -1,4 +1,3 @@
-export { InteractivitySettings } from './components/InteractivitySettings';
 export {
     IS_CROSS_FILTER_ENABLED,
     clearSelection,

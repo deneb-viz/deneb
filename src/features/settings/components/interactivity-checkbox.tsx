@@ -1,15 +1,16 @@
-import React from 'react';
-import { Checkbox } from '@fluentui/react/lib/Checkbox';
+import React, { useMemo } from 'react';
+import { Checkbox, CheckboxOnChangeData } from '@fluentui/react-components';
 
 import store from '../../../store';
 import { updateBooleanProperty } from '../../../core/ui/commands';
-import { TInteractivityType } from '../types';
+import { TInteractivityType } from '../../interactivity/types';
 import { hostServices } from '../../../core/services';
-import { IS_TOOLTIP_HANDLER_ENABLED } from '../tooltip';
-import { IS_CROSS_FILTER_ENABLED } from '../cross-filter';
-import { IS_CROSS_HIGHLIGHT_ENABLED } from '../cross-highlight';
-import { IS_CONTEXT_MENU_ENABLED } from '../context-menu';
+import { IS_TOOLTIP_HANDLER_ENABLED } from '../../interactivity/tooltip';
+import { IS_CROSS_FILTER_ENABLED } from '../../interactivity/cross-filter';
+import { IS_CROSS_HIGHLIGHT_ENABLED } from '../../interactivity/cross-highlight';
+import { IS_CONTEXT_MENU_ENABLED } from '../../interactivity/context-menu';
 import { getI18nValue } from '../../i18n';
+import { useSettingsStyles } from '.';
 
 interface IInteractivityCheckboxProps {
     type: TInteractivityType;
@@ -20,10 +21,14 @@ export const InteractivityCheckbox: React.FC<IInteractivityCheckboxProps> = ({
 }) => {
     const { vega } = store((state) => state.visualSettings);
     const { selectionManager } = hostServices;
-    const propertyName = getPropertyName(type);
+    const propertyName = useMemo(() => getPropertyName(type), [type]);
+    const classes = useSettingsStyles();
     const handleToggle = React.useCallback(
-        (ev: React.FormEvent<HTMLElement>, checked: boolean): void => {
-            const value = !!checked;
+        (
+            ev: React.ChangeEvent<HTMLInputElement>,
+            data: CheckboxOnChangeData
+        ): void => {
+            const value = !!data.checked;
             if (
                 type === 'select' &&
                 !value &&
@@ -35,12 +40,14 @@ export const InteractivityCheckbox: React.FC<IInteractivityCheckboxProps> = ({
         },
         []
     );
+    const status = useMemo(() => getFeatureStatus(type), [type]);
     return (
-        getFeatureStatus(type) && (
+        status && (
             <Checkbox
                 label={getI18nValue(geti18LabelKey(type))}
                 checked={vega[propertyName]}
                 onChange={handleToggle}
+                className={classes.sectionItem}
             />
         )
     );

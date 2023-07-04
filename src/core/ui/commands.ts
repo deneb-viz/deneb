@@ -323,7 +323,7 @@ const updateProvider = (provider: TSpecProvider) =>
 /**
  * Handle the change in maximm permitted underlying data points for selection.
  */
-const updateSelectionMaxDataPoints = (value: string) =>
+const updateSelectionMaxDataPoints = (value: number) =>
     handlePersist([{ name: 'selectionMaxDataPoints', value }]);
 
 /**

@@ -3,8 +3,8 @@ import { Scrollbars } from 'react-custom-scrollbars-2';
 
 import store from '../../../store';
 import { EditorJsonEditor, TEditorRole } from '../../../features/json-editor';
-import EditorPaneSettings from '../../settings/EditorPaneSettings';
 import { logRender } from '../../../features/logging';
+import { SettingsPane } from '../../../features/settings';
 
 interface IEditorOperationContainerProps {
     operation: TEditorRole;
@@ -34,7 +34,7 @@ const EditorOperationContainer: React.FC<IEditorOperationContainerProps> = ({
                 <Editor role={operation} />
             ) : (
                 <Scrollbars>
-                    <EditorPaneSettings />
+                    <SettingsPane />
                 </Scrollbars>
             )}
         </div>

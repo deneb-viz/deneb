@@ -1,5 +1,5 @@
 import { SETTINGS_OBJECTS } from '../../core/utils/config';
-import { ICapabilitiesEnumMember } from '../powerbi-settings';
+import { ICapabilitiesEnumMember } from '../settings';
 
 /**
  * Used to exlude debug level entries from the UI.

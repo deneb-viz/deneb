@@ -6,7 +6,7 @@ import { useDebugStyles } from '..';
 import store from '../../../store';
 import { logRender } from '../../logging';
 import { getDebugLogLevels } from '../logging';
-import { ICapabilitiesEnumMember } from '../../powerbi-settings';
+import { ICapabilitiesEnumMember } from '../../settings';
 import { updateLogLevel } from '../../../core/ui/commands';
 import { getI18nValue } from '../../i18n';
 

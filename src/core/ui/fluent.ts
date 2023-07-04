@@ -3,8 +3,6 @@ export {
     initializeIcons,
     linkStyles,
     previewPaneButtonStyles,
-    settingsButtonStyles,
-    spinButtonStyles,
     templateTypeIconStyles,
     templateTypeIconOptionStyles,
     theme
@@ -12,7 +10,6 @@ export {
 
 import { IButtonStyles } from '@fluentui/react/lib/Button';
 import { ILinkStyles } from '@fluentui/react/lib/Link';
-import { ISpinButtonStyles } from '@fluentui/react/lib/SpinButton';
 import {
     FontWeights,
     IIconOptions,
@@ -64,19 +61,6 @@ const buttonStyles: IButtonStyles = {
     }
 };
 
-const settingsButtonStyles: IButtonStyles = {
-    root: {
-        backgroundColor: theme.palette.neutralLighterAlt
-    },
-    rootDisabled: {
-        backgroundColor: theme.palette.neutralLighterAlt
-    },
-    icon: { color: theme.palette.neutralPrimary },
-    iconHovered: { color: theme.palette.neutralDark },
-    iconPressed: { color: theme.palette.neutralDark },
-    iconChecked: { color: theme.palette.neutralDark }
-};
-
 const previewPaneButtonStyles: IButtonStyles = {
     root: {
         backgroundColor: theme.palette.white
@@ -94,10 +78,6 @@ const linkStyles: ILinkStyles = {
     root: {
         color: theme.palette.themeDark
     }
-};
-
-const spinButtonStyles: Partial<ISpinButtonStyles> = {
-    spinButtonWrapper: { width: 50 }
 };
 
 const templateTypeIconStyles: IButtonStyles = {
