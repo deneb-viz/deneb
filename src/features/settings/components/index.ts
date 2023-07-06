@@ -14,7 +14,8 @@ export const useSettingsStyles = makeStyles({
         ...typographyStyles.caption1
     },
     paneContainer: {
-        ...shorthands.overflow('overlay')
+        ...shorthands.overflow('overlay'),
+        ...shorthands.padding('5px')
     },
     radioGroupHorizontal: {
         display: 'grid',
