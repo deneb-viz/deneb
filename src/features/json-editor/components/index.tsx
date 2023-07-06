@@ -12,8 +12,6 @@ export const useJsonEditorStyles = makeStyles({
         marginRight: '2px'
     },
     paneContainerCollapsed: {
-        paddingTop: '8px',
-        paddingBottom: '16px',
         height: '100%',
         backgroundColor: tokens.colorNeutralBackground2,
         ...shorthands.overflow('hidden')
