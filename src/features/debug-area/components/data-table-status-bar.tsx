@@ -1,18 +1,10 @@
 import {
-    Button,
     Caption1,
     Label,
     Select,
     SelectProps,
-    Tooltip,
     useId
 } from '@fluentui/react-components';
-import {
-    ArrowNext12Regular,
-    ArrowPrevious12Regular,
-    ChevronLeft12Regular,
-    ChevronRight12Regular
-} from '@fluentui/react-icons';
 import React, { useMemo } from 'react';
 import { PaginationComponentProps } from 'react-data-table-component';
 import { shallow } from 'zustand/shallow';

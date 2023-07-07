@@ -1,8 +1,6 @@
 import React from 'react';
 
 import EditorOperationContent from './editor-operation-content';
-import FixErrorMessageBar from '../../../components/status/FixErrorMessageBar';
-import VisualUpdateMessageBar from '../../../components/status/VisualUpdateMessageBar';
 
 import { calculateEditorPaneMaxWidth } from '../../../core/ui/advancedEditor';
 import { logRender } from '../../logging';
