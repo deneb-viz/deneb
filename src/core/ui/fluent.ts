@@ -2,7 +2,6 @@ export {
     buttonStyles,
     initializeIcons,
     linkStyles,
-    previewPaneButtonStyles,
     templateTypeIconStyles,
     templateTypeIconOptionStyles,
     theme
@@ -59,19 +58,6 @@ const buttonStyles: IButtonStyles = {
     label: {
         fontWeight: FontWeights.regular
     }
-};
-
-const previewPaneButtonStyles: IButtonStyles = {
-    root: {
-        backgroundColor: theme.palette.white
-    },
-    rootDisabled: {
-        backgroundColor: theme.palette.white
-    },
-    icon: { color: theme.palette.neutralPrimary },
-    iconHovered: { color: theme.palette.neutralDark },
-    iconPressed: { color: theme.palette.neutralDark },
-    iconChecked: { color: theme.palette.neutralDark }
 };
 
 const linkStyles: ILinkStyles = {

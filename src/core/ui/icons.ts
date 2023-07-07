@@ -1,14 +1,9 @@
 import { IButtonStyles } from '@fluentui/react/lib/Button';
 
 import { theme } from './fluent';
-import { TEditorPosition } from '.';
-import { mergeStyleSets } from '@fluentui/react';
 import { getState } from '../../store';
-import { commandBarButtonStyles } from './commandBar';
 import { TDatasetFieldType } from '../../features/template';
 import { zoomConfig } from './dom';
-
-const previewCommandBarHeight = 26;
 
 export const iconButtonStyles: IButtonStyles = {
     root: {
@@ -25,27 +20,6 @@ export const iconButtonStyles: IButtonStyles = {
     label: { color: theme.palette.neutralPrimary },
     labelHovered: { color: theme.palette.neutralDark }
 };
-
-export const previewIconButtonStyles: IButtonStyles = mergeStyleSets(
-    commandBarButtonStyles,
-    {
-        root: {
-            height: previewCommandBarHeight,
-            width: previewCommandBarHeight
-        },
-        icon: {
-            fontSize: 12,
-            height: 14,
-            margin: '0px 2px',
-            color: theme.palette.neutralPrimary
-        },
-        rootHovered: { backgroundColor: theme.palette.neutralLighterAlt },
-        rootDisabled: { backgroundColor: theme.palette.neutralLighterAlt }
-    }
-);
-
-export const getAutoApplyIcon = (enabled: boolean) =>
-    enabled ? 'CircleStopSolid' : 'PlaybackRate1x';
 
 /**
  * For a given column or measure (or template placeholder), resolve the UI icon for its data type.

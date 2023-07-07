@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { shallow } from 'zustand/shallow';
 
-import EditorInterface from '../../../components/editor/EditorInterface';
+import { AdvancedEditorInterface } from '../../interface';
 import store from '../../../store';
 import { ReportViewRouter } from './report-view-router';
 import SplashInitial from '../../../components/status/SplashInitial';
@@ -29,7 +29,7 @@ export const VisualInterface = () => {
             case 'DataNoSpec':
                 return <SplashNoSpec />;
             case 'Editor':
-                return <EditorInterface />;
+                return <AdvancedEditorInterface />;
             case 'Standard':
                 return <ReportViewRouter />;
         }

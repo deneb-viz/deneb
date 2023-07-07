@@ -5,7 +5,6 @@ export {
     discardChanges,
     getCommandKey,
     hotkeyOptions,
-    isApplyButtonDisabled,
     openEditorPivotItem,
     openHelpSite,
     openMapFieldsDialog,
@@ -77,9 +76,11 @@ const getCommandKey = (command: string): string =>
  */
 export const handleApply = () => executeEditorCommand(persistSpecification);
 export const handleAutoApply = () => {
-    const { toggleEditorAutoApplyStatus } = getState();
+    const {
+        editor: { toggleApplyMode }
+    } = getState();
     handleApply();
-    executeEditorCommand(toggleEditorAutoApplyStatus);
+    executeEditorCommand(toggleApplyMode);
 };
 export const handleFormat = () =>
     executeEditorCommand(fixAndFormatSpecification);
@@ -220,18 +221,6 @@ const handlePersist = (
     updateObjectProperties(
         resolveObjectProperties([{ objectName, properties }])
     );
-
-/**
- * Check auto-apply and dirty status to determine whether the Apply button should be enabled or not.
- */
-const isApplyButtonDisabled = () => {
-    const {
-        editorAutoApply,
-        editorCanAutoApply,
-        editor: { isDirty }
-    } = store((state) => state);
-    return (editorAutoApply && !editorCanAutoApply) || !isDirty;
-};
 
 /**
  * Open a specific pivot item from the editor.

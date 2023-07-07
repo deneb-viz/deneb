@@ -14,7 +14,7 @@ import {
 import { getState } from '../../../store';
 import { logRender } from '../../logging';
 
-export class EditorJsonEditor extends React.Component<IVisualEditorProps> {
+export class JsonEditor extends React.Component<IVisualEditorProps> {
     private container: HTMLDivElement;
     private editor: IVisualEditor;
     constructor(props: IVisualEditorProps) {

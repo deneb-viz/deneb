@@ -1,13 +1,14 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { shallow } from 'zustand/shallow';
 import { Button, Tooltip } from '@fluentui/react-components';
 
 import store from '../../../store';
 import { getI18nValue } from '../../i18n';
-import { getEditorPaneStateIcon, useJsonEditorStyles } from '.';
+import { getEditorPaneStateIcon, useEditorPaneStyles } from '.';
 import { handleEditorPane } from '../../../core/ui/commands';
+import { TooltipCustomMount } from '../../interface';
 
-const JsonEditorPaneCollapsed: React.FC = () => {
+export const EditorPaneCollapsed: React.FC = () => {
     const { editorPaneIsExpanded, position } = store(
         (state) => ({
             editorPaneIsExpanded: state.editorPaneIsExpanded,
@@ -15,7 +16,7 @@ const JsonEditorPaneCollapsed: React.FC = () => {
         }),
         shallow
     );
-    const classes = useJsonEditorStyles();
+    const classes = useEditorPaneStyles();
     const icon = useMemo(
         () => getEditorPaneStateIcon(editorPaneIsExpanded, position),
         [editorPaneIsExpanded, position]
@@ -27,22 +28,25 @@ const JsonEditorPaneCollapsed: React.FC = () => {
                 : classes.buttonCollapsedRight,
         [position]
     );
+    const [ref, setRef] = useState<HTMLElement | null>();
     return (
         <div id='editorPane' className={classes.paneContainerCollapsed}>
-            <Tooltip
-                content={getI18nValue('Tooltip_Expand_Editor_Pane')}
-                relationship='label'
-                withArrow
-            >
-                <Button
-                    icon={icon}
-                    onClick={handleEditorPane}
-                    className={buttonClass}
-                    appearance='subtle'
-                />
-            </Tooltip>
+            <>
+                <Tooltip
+                    content={getI18nValue('Tooltip_Expand_Editor_Pane')}
+                    relationship='label'
+                    withArrow
+                    mountNode={ref}
+                >
+                    <Button
+                        icon={icon}
+                        onClick={handleEditorPane}
+                        className={buttonClass}
+                        appearance='subtle'
+                    />
+                </Tooltip>
+                <TooltipCustomMount setRef={setRef} />
+            </>
         </div>
     );
 };
-
-export default JsonEditorPaneCollapsed;

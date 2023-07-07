@@ -1,7 +1,7 @@
 import React from 'react';
 
-import EditorOperationContainer from './EditorOperationContainer';
-import { logRender } from '../../../features/logging';
+import { EditorOperationContainer } from './editor-operation-container';
+import { logRender } from '../../logging';
 
 const EditorOperationContent: React.FC = () => {
     logRender('EditorOperationContent');

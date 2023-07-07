@@ -1,5 +1,8 @@
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
-import { getConfig } from '../../core/utils/config';
+import {
+    PREVIEW_PANE_TOOLBAR_MIN_SIZE,
+    SPLIT_PANE_RESIZER_SIZE
+} from '../../constants';
 
 export { DebugAreaContent } from './components/debug-area-content';
 
@@ -32,7 +35,9 @@ export const useDebugStyles = makeStyles({
         ...shorthands.overflow('hidden')
     },
     container: {
-        height: `calc(100% - ${getConfig().previewPane.toolbarMinSize}px - 4px)`
+        height: `calc(100% - ${PREVIEW_PANE_TOOLBAR_MIN_SIZE}px - ${
+            SPLIT_PANE_RESIZER_SIZE / 2
+        }px)`
     },
     contentWrapper: {
         display: 'flex',
@@ -108,7 +113,7 @@ export const useDebugStyles = makeStyles({
         alignItems: 'center',
         columnGap: '10px',
         height: '100%',
-        ...shorthands.margin('0px', '10px')
+        ...shorthands.margin('1px', '10px')
     },
     statusBarTableNavigation: {
         display: 'flex',
@@ -119,35 +124,5 @@ export const useDebugStyles = makeStyles({
     },
     tab: {
         paddingBottom: '1px'
-    },
-    toolbar: {
-        justifyContent: 'space-between',
-        ...shorthands.borderBottom('1px', 'solid', tokens.colorNeutralStroke2),
-        paddingBottom: '0px',
-        paddingTop: '0px'
-    },
-    toolbarGroup: { alignItems: 'center' },
-    toolbarSlider: {
-        minWidth: '75px',
-        width: '75px',
-        height: '100%',
-        ...shorthands.margin('0px', '5px'),
-        '& div::before': { backgroundImage: 'none' }
-    },
-    toolbarButton: { ...shorthands.padding('2px') },
-    zoomLevelButton: { minWidth: '50px' },
-    zoomLevelControlBase: {
-        display: 'flex',
-        flexBasis: '100%',
-        flexDirection: 'column',
-        '> label': {
-            marginBottom: tokens.spacingVerticalXXS
-        }
-    },
-    zoomLevelCustomSpinButton: {
-        marginLeft: '40px',
-        width: '80px'
-    },
-    zoomInButton: { marginLeft: '-8px' },
-    zoomOutButton: { marginRight: '-8px' }
+    }
 });

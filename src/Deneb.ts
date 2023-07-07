@@ -2,7 +2,6 @@ import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import '../style/visual.less';
 import '../style/fabric-icons-inline.css';
-import '../style/tabulator-deneb.less';
 import 'jsoneditor/dist/jsoneditor.css';
 import powerbi from 'powerbi-visuals-api';
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;

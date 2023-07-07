@@ -133,10 +133,9 @@ export const handleComponentUpdate = (
  */
 const handleTextEntry = () => {
     const {
-        editorAutoApply,
-        editor: { updateIsDirty }
+        editor: { applyMode, updateIsDirty }
     } = getState();
-    if (editorAutoApply) {
+    if (applyMode === 'Auto') {
         persistSpecification();
     } else {
         updateIsDirty(hasLiveSpecChanged());

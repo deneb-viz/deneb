@@ -23,6 +23,7 @@ import { StatusBarContainer } from '../../interface';
 import { DatasetViewerOptions } from './dataset-viewer-options';
 import { getConfig } from '../../../core/utils/config';
 import { getI18nValue } from '../../i18n';
+import { DataTableNavigationButton } from './data-table-navigation-button';
 
 /**
  * Displays at the footer of the data table, and used to control pagination
@@ -109,66 +110,26 @@ export const DataTableStatusBar: React.FC<PaginationComponentProps> = ({
                     <div>
                         <Caption1>{range}</Caption1>
                     </div>
-                    <div>
-                        <Tooltip
-                            content={getI18nValue(
-                                'Text_Data_Table_Navigation_First'
-                            )}
-                            relationship='label'
-                        >
-                            <Button
-                                icon={<ArrowPrevious12Regular />}
-                                onClick={handleFirstPageButtonClick}
-                                appearance='subtle'
-                                disabled={currentPage === 1}
-                            />
-                        </Tooltip>
-                    </div>
-                    <div>
-                        <Tooltip
-                            content={getI18nValue(
-                                'Text_Data_Table_Navigation_Previous'
-                            )}
-                            relationship='label'
-                        >
-                            <Button
-                                icon={<ChevronLeft12Regular />}
-                                onClick={handlePreviousButtonClick}
-                                appearance='subtle'
-                                disabled={currentPage === 1}
-                            />
-                        </Tooltip>
-                    </div>
-                    <div>
-                        <Tooltip
-                            content={getI18nValue(
-                                'Text_Data_Table_Navigation_Next'
-                            )}
-                            relationship='label'
-                        >
-                            <Button
-                                icon={<ChevronRight12Regular />}
-                                onClick={handleNextButtonClick}
-                                appearance='subtle'
-                                disabled={currentPage === numPages}
-                            />
-                        </Tooltip>
-                    </div>
-                    <div>
-                        <Tooltip
-                            content={getI18nValue(
-                                'Text_Data_Table_Navigation_Last'
-                            )}
-                            relationship='label'
-                        >
-                            <Button
-                                icon={<ArrowNext12Regular />}
-                                onClick={handleLastPageButtonClick}
-                                appearance='subtle'
-                                disabled={currentPage === numPages}
-                            />
-                        </Tooltip>
-                    </div>
+                    <DataTableNavigationButton
+                        type='first'
+                        onClick={handleFirstPageButtonClick}
+                        disabled={currentPage === 1}
+                    />
+                    <DataTableNavigationButton
+                        type='previous'
+                        onClick={handlePreviousButtonClick}
+                        disabled={currentPage === 1}
+                    />
+                    <DataTableNavigationButton
+                        type='next'
+                        onClick={handleNextButtonClick}
+                        disabled={currentPage === numPages}
+                    />
+                    <DataTableNavigationButton
+                        type='last'
+                        onClick={handleLastPageButtonClick}
+                        disabled={currentPage === numPages}
+                    />
                 </div>
             </div>
         </StatusBarContainer>

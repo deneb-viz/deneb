@@ -3,21 +3,23 @@ import { FluentProvider } from '@fluentui/react-components';
 import SplitPane from 'react-split-pane';
 import { shallow } from 'zustand/shallow';
 
-import store from '../../store';
-import EditorPane from './pane/EditorPane';
-import { PreviewArea } from '../../features/preview-area';
+import store from '../../../store';
+import { EditorPane } from '../../json-editor';
+import { PreviewArea } from '../../preview-area';
 import {
     getResizablePaneMaxSize,
     getResizablePaneMinSize,
     resizerPaneVerticalStyles,
     resizerVerticalStyles
-} from '../../core/ui/advancedEditor';
+} from '../../../core/ui/advancedEditor';
 import { useKonami as fourd3d3d } from 'react-konami-code';
-import { ModalDialog } from '../../features/modal-dialog';
-import { Themes, useInterfaceStyles } from '../../features/interface';
-import { logRender } from '../../features/logging';
+import { ModalDialog } from '../../modal-dialog';
+import { Themes, useInterfaceStyles } from '..';
+import { logRender } from '../../logging';
+import { AdvancedEditorToolbar } from '../../toolbar';
+import { ADVANCED_EDITOR_TOOLBAR_HEIGHT } from '../../../constants';
 
-const EditorInterface: React.FC = () => {
+export const AdvancedEditorInterface: React.FC = () => {
     const {
         editorPaneDefaultWidth,
         editorPaneIsExpanded,
@@ -53,14 +55,20 @@ const EditorInterface: React.FC = () => {
     });
     const editorPane = <EditorPane isExpanded={editorPaneIsExpanded} />;
     const styles = useInterfaceStyles();
-    logRender('EditorInterface');
+    logRender('AdvancedEditorInterface');
     return (
         <FluentProvider
             theme={Themes.light}
             className={styles.container}
             id='visualEditor'
         >
+            <AdvancedEditorToolbar />
             <SplitPane
+                style={{
+                    height: `calc(100% - ${
+                        ADVANCED_EDITOR_TOOLBAR_HEIGHT + 1
+                    }px)`
+                }}
                 split='vertical'
                 minSize={getResizablePaneMinSize()}
                 maxSize={getResizablePaneMaxSize()}
@@ -80,5 +88,3 @@ const EditorInterface: React.FC = () => {
         </FluentProvider>
     );
 };
-
-export default EditorInterface;

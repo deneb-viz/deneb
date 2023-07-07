@@ -7,6 +7,7 @@ import { TEditorPosition, TVisualMode } from '.';
 import { CSSProperties } from 'react';
 import { theme } from './fluent';
 import {
+    ADVANCED_EDITOR_TOOLBAR_HEIGHT,
     EDITOR_PANE_SPLIT_COLLAPSED_SIZE,
     EDITOR_PANE_SPLIT_DEFAULT_SIZE_PERCENT,
     EDITOR_PANE_SPLIT_MAX_SIZE_PERCENT,
@@ -44,7 +45,8 @@ const resizerStyles: CSSProperties = {
 };
 
 const resizerPaneStyles: CSSProperties = {
-    border: `1px solid ${theme.palette.neutralLight}`
+    border: `1px solid ${theme.palette.neutralLight}`,
+    boxSizing: 'border-box'
 };
 
 export const resizerPaneVerticalStyles: CSSProperties = {
@@ -206,9 +208,10 @@ export const getPreviewAreaHeightInitial = (
 
 export const calculatePreviewMaximumHeight = (height: number) =>
     height -
+    ADVANCED_EDITOR_TOOLBAR_HEIGHT -
     PREVIEW_PANE_TOOLBAR_MIN_SIZE -
     SPLIT_PANE_RESIZER_SIZE -
-    PREVIEW_PANE_TOOLBAR_PADDING;
+    getConfig().previewPane.viewportBorderSize * 2;
 
 export const calculateToolbarInitialHeight = (height: number) =>
     height - height * (PREVIEW_PANE_TOOLBAR_DEFAULT_SIZE_PERCENT / 100);

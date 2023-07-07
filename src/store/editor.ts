@@ -16,20 +16,21 @@ import { getConfig } from '../core/utils/config';
 import { IVisualDatasetFields } from '../core/data';
 import { getFieldsInUseFromSpec } from '../features/template';
 import { IFixResult } from '../features/specification';
-import { TEditorRole } from '../features/json-editor';
+import { EditorApplyMode, TEditorRole } from '../features/json-editor';
 
 export interface IEditorSlice {
     editor: {
+        applyMode: EditorApplyMode;
         isDirty: boolean;
         stagedConfig: string;
         stagedSpec: string;
+        toggleApplyMode: () => void;
+        updateApplyMode: (applyMode: EditorApplyMode) => void;
         updateChanges: (payload: IEditorSliceUpdateChangesPayload) => void;
         updateIsDirty: (isDirty: boolean) => void;
         updateStagedConfig: (stagedConfig: string) => void;
         updateStagedSpec: (stagedSpec: string) => void;
     };
-    editorAutoApply: boolean;
-    editorCanAutoApply: boolean;
     editorFieldDatasetMismatch: boolean;
     editorFieldsInUse: IVisualDatasetFields;
     editorFixResult: IFixResult;
@@ -50,7 +51,6 @@ export interface IEditorSlice {
     editorZoomLevel: number;
     renewEditorFieldsInUse: () => void;
     setEditorFixErrorDismissed: () => void;
-    toggleEditorAutoApplyStatus: () => void;
     toggleEditorPane: () => void;
     togglePreviewDebugPane: () => void;
     updateEditorPreviewDebugIsExpanded: (value: boolean) => void;
@@ -72,9 +72,22 @@ export interface IEditorSlice {
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IEditorSlice>{
         editor: {
+            applyMode: 'Manual',
             isDirty: false,
             stagedConfig: null,
             stagedSpec: null,
+            toggleApplyMode: () =>
+                set(
+                    (state) => handleToggleApplyMode(state),
+                    false,
+                    'editor.toggleApplyMode'
+                ),
+            updateApplyMode: (applyMode) =>
+                set(
+                    (state) => handleUpdateApplyMode(state, applyMode),
+                    false,
+                    'editor.updateApplyMode'
+                ),
             updateChanges: (payload) =>
                 set(
                     (state) => handleUpdateChanges(state, payload),
@@ -100,8 +113,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                     'editor.updateStagedSpec'
                 )
         },
-        editorAutoApply: false,
-        editorCanAutoApply: true,
         editorFieldDatasetMismatch: false,
         editorFieldsInUse: {},
         editorFixResult: {
@@ -136,12 +147,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                 (state) => handleSetEditorFixErrorDismissed(state),
                 false,
                 'setEditorFixErrorDismissed'
-            ),
-        toggleEditorAutoApplyStatus: () =>
-            set(
-                (state) => handleToggleEditorAutoApplyStatus(state),
-                false,
-                'toggleEditorAutoApplyStatus'
             ),
         toggleEditorPane: () =>
             set(
@@ -238,6 +243,27 @@ export interface IEditorSliceUpdateChangesPayload {
     stagedSpec: string;
 }
 
+const handleToggleApplyMode = (state: TStoreState): Partial<TStoreState> => {
+    const { applyMode } = state.editor;
+    const nextApplyMode = applyMode === 'Auto' ? 'Manual' : 'Auto';
+    return {
+        editor: {
+            ...state.editor,
+            applyMode: nextApplyMode
+        }
+    };
+};
+
+const handleUpdateApplyMode = (
+    state: TStoreState,
+    applyMode: EditorApplyMode
+): Partial<TStoreState> => ({
+    editor: {
+        ...state.editor,
+        applyMode
+    }
+});
+
 const handleUpdateChanges = (
     state: TStoreState,
     payload: IEditorSliceUpdateChangesPayload
@@ -328,12 +354,6 @@ const handleSetEditorFixErrorDismissed = (
         }
     };
 };
-
-const handleToggleEditorAutoApplyStatus = (
-    state: TStoreState
-): Partial<TStoreState> => ({
-    editorAutoApply: !state.editorAutoApply
-});
 
 const handleToggleEditorPane = (state: TStoreState): Partial<TStoreState> => {
     const newExpansionState = !state.editorPaneIsExpanded;

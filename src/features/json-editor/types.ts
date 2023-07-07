@@ -1,6 +1,11 @@
 import { TSpecProvider } from '../../core/vega';
 
 /**
+ * Whether the editor is in auto-apply mode or not.
+ */
+export type EditorApplyMode = 'Auto' | 'Manual';
+
+/**
  * Available providers for the JSON editor in the editor pane.
  */
 export type TEditorProvider = 'jsoneditor';

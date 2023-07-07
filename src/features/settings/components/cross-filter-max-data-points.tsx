@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { shallow } from 'zustand/shallow';
 import {
     Button,
@@ -21,6 +21,7 @@ import { isCrossFilterPropSet } from '../../interactivity';
 import { getI18nValue } from '../../i18n';
 import { useSettingsStyles } from '.';
 import { logDebug } from '../../logging';
+import { TooltipCustomMount } from '../../interface';
 
 const DEFAULT_VALUE = getConfig().propertyDefaults.vega.selectionMaxDataPoints;
 const SPIN_RANGES = getConfig().selection;
@@ -52,6 +53,7 @@ export const CrossFilterMaxDataPoints: React.FC = () => {
         () => selectionMaxDataPoints === DEFAULT_VALUE,
         [selectionMaxDataPoints]
     );
+    const [ref, setRef] = useState<HTMLElement | null>();
     return (
         (isCrossFilterPropSet() && (
             <div className={classes.spinButtonContainer}>
@@ -69,17 +71,22 @@ export const CrossFilterMaxDataPoints: React.FC = () => {
                         step={SPIN_RANGES.dataPointsStepValue}
                         onChange={onChange}
                     />
-                    <Tooltip
-                        content={getI18nValue('Tooltip_Setting_Reset')}
-                        relationship='label'
-                    >
-                        <Button
-                            icon={<ArrowResetRegular />}
-                            appearance='subtle'
-                            onClick={onReset}
-                            disabled={disabled}
-                        />
-                    </Tooltip>
+                    <>
+                        <Tooltip
+                            content={getI18nValue('Tooltip_Setting_Reset')}
+                            relationship='label'
+                            withArrow
+                            mountNode={ref}
+                        >
+                            <Button
+                                icon={<ArrowResetRegular />}
+                                appearance='subtle'
+                                onClick={onReset}
+                                disabled={disabled}
+                            />
+                        </Tooltip>
+                        <TooltipCustomMount setRef={setRef} />
+                    </>
                 </div>
             </div>
         )) || <></>

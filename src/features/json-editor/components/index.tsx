@@ -4,7 +4,7 @@ import { ChevronLeftRegular, ChevronRightRegular } from '@fluentui/react-icons';
 
 import { TEditorPosition } from '../../../core/ui';
 
-export const useJsonEditorStyles = makeStyles({
+export const useEditorPaneStyles = makeStyles({
     buttonCollapsedLeft: {
         marginLeft: '2px'
     },
@@ -15,6 +15,11 @@ export const useJsonEditorStyles = makeStyles({
         height: '100%',
         backgroundColor: tokens.colorNeutralBackground2,
         ...shorthands.overflow('hidden')
+    },
+    paneContainerExpanded: {
+        backgroundColor: tokens.colorNeutralBackground2,
+        display: 'flex',
+        height: '100%'
     }
 });
 

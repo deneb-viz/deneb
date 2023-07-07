@@ -1,2 +1,2 @@
-export { EditorJsonEditor } from './components/EditorJsonEditor';
+export { EditorPane } from './components/editor-pane';
 export * from './types';

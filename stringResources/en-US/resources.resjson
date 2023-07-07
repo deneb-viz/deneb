@@ -291,6 +291,8 @@
     "Table_Tooltip_TooLong": "This is a complex object, or is too large to display.",
     "Loader_Warning_HoverText": "Remote resources cannot be loaded in the AppSource version.",
     "Loader_Warning_DetailedText": "Due to certification requirements, the AppSource version of Deneb does not permit loading from external URLs. This can be done with the standalone version, available from Deneb's GitHub repository. You can learn more about the standalone version on the Getting Started page on Deneb's website (https://deneb-viz.github.io/getting-started#standalone-version).",
+    "Text_Button_Apply_Auto": "[AUTO]",
+    "Text_Button_Apply_Manual": "Apply changes",
     "Text_Data_Table_Dataset_Label": "Data set",
     "Text_Data_Table_Navigation_First": "Go to first page",
     "Text_Data_Table_Navigation_Last": "Go to last page",
@@ -304,6 +306,8 @@
     "Text_Debug_Data_No_Data": "The specified dataset currently has no data to display. If your dataset responds to dynamic events, this will update to show the relevant data when such events occur; otherwise, you can select an alternative datset to view its data.",
     "Text_Debug_Data_Processing": "Selected data set is being processed and formatted for the table. This may take a while for large data sets, but you can continue to use the editor while this is in progress. Please wait...",
     "Text_Debug_Signal_No_Data": "No signal data was found in the Vega view. Please ensure that your specification has parsed correctly and is free of errors.",
+    "Text_Menu_Apply_Auto": "As you type",
+    "Text_Menu_Apply_Manual": "Manually",
     "Text_Radio_Group_Select_Template": "Select your template",
     "Text_Radio_Group_ZoomLevel_400": "400%",
     "Text_Radio_Group_ZoomLevel_200": "200%",
@@ -314,5 +318,7 @@
     "Text_Radio_Group_ZoomLevel_Fit": "Fit to preview area",
     "Text_Radio_Group_ZoomLevel_Custom": "Custom",
     "Text_Slider_Zoom_Level": "Adjust zoom level",
+    "Text_Tooltip_Button_Apply": "Apply [Ctrl+Enter], or toggle auto / manual mode with [Ctrl+Shift+Enter]",
+    "Text_Tooltip_Zoom_Level_Popover": "Set a specific zoom level",
     "Text_Zoom_Level_Custom_Label": "Zoom to"
 }
