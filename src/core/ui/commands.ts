@@ -31,7 +31,7 @@ import {
     resolveObjectProperties,
     updateObjectProperties
 } from '../utils/properties';
-import store, { getState } from '../../store';
+import { getState } from '../../store';
 import { getConfig, getVisualMetadata } from '../utils/config';
 import { hostServices } from '../services';
 import { TModalDialogType } from '../../features/modal-dialog';
