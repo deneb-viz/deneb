@@ -18,6 +18,7 @@ export type InterfaceTheme = 'light' | 'dark';
 export const useInterfaceStyles = () =>
     makeStyles({
         container: {
+            backgroundColor: 'transparent',
             boxSizing: 'border-box',
             height: '100%',
             width: '100%',
