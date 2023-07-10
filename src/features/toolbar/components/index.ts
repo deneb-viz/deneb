@@ -49,6 +49,7 @@ export const useToolbarStyles = makeStyles({
         width: '80px'
     },
     toolbarAdvancedEditor: {
+        backgroundColor: tokens.colorNeutralBackground1,
         display: 'flex',
         justifyContent: 'space-between'
     },
