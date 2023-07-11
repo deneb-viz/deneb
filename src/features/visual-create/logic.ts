@@ -18,8 +18,6 @@ import {
     specEditorService
 } from '../../core/services/JsonEditorServices';
 import {
-    getDenebVersionObject,
-    getProviderVersionProperty,
     IPersistenceProperty,
     resolveObjectProperties,
     updateObjectProperties
@@ -44,12 +42,9 @@ export const createFromTemplate = (
     const jsonSpec = getReplacedTemplate(template);
     const jsonConfig = getJsonAsIndentedString(template.config);
     const interactivity = getInteractivityPropsFromTemplate(template);
-    const specProvider: TSpecProvider =
-        provider || template?.usermeta?.['deneb']?.['provider'];
     const { renewEditorFieldsInUse } = getState();
     updateObjectProperties(
         resolveObjectProperties([
-            getDenebVersionObject(),
             {
                 objectName: 'vega',
                 properties: [
@@ -57,8 +52,7 @@ export const createFromTemplate = (
                         { name: 'provider', value: provider },
                         { name: 'jsonSpec', value: jsonSpec },
                         { name: 'jsonConfig', value: jsonConfig },
-                        { name: 'isNewDialogOpen', value: false },
-                        getProviderVersionProperty(specProvider)
+                        { name: 'isNewDialogOpen', value: false }
                     ],
                     ...resolveInteractivityProps(interactivity)
                 ]

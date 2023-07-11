@@ -3,7 +3,7 @@ export {
     getCleanEditorJson,
     getParsedSpec,
     hasLiveSpecChanged,
-    isLegacySpec,
+    isUnversionedSpec,
     persistSpecification
 } from './logic';
 export { BASE_VALIDATOR, getProviderValidator } from './schema-validation';

@@ -13,7 +13,7 @@ import {
     resizerVerticalStyles
 } from '../../../core/ui/advancedEditor';
 import { useKonami as fourd3d3d } from 'react-konami-code';
-import { ModalDialogLegacy } from '../../modal-dialog';
+import { ModalDialog, ModalDialogLegacy } from '../../modal-dialog';
 import { Themes, useInterfaceStyles } from '..';
 import { logRender } from '../../logging';
 import { AdvancedEditorToolbar } from '../../toolbar';
@@ -85,6 +85,7 @@ export const AdvancedEditorInterface: React.FC = () => {
             <ModalDialogLegacy type='new' />
             <ModalDialogLegacy type='export' />
             <ModalDialogLegacy type='mapping' />
+            <ModalDialog />
         </FluentProvider>
     );
 };

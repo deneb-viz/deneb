@@ -13,8 +13,6 @@ import {
 import { TStoreState, getState } from '../../store';
 import { getVegaSettings, TSpecProvider } from '../../core/vega';
 import {
-    getDenebVersionObject,
-    getProviderVersionProperty,
     resolveObjectProperties,
     updateObjectProperties
 } from '../../core/utils/properties';
@@ -31,7 +29,6 @@ import {
     ISpecificationParseOptions,
     TSpecStatus
 } from './types';
-import { getLastVersionInfo } from '../../core/utils/versioning';
 import { TEditorRole } from '../json-editor';
 import { LocalVegaLoggerService, logDebug, logError } from '../logging';
 import { IVisualDatasetValueRow } from '../../core/data';
@@ -394,9 +391,10 @@ export const hasLiveSpecChanged = () => {
 };
 
 /**
- * Determine if a visual's persisted spec pre-dates version 1.1.0.0 (when we started writing versions to properties).
+ * Determine if the current spec is 'unversioned', meaning that it's the same
+ * as the default properties.
  */
-export const isLegacySpec = () => !isNewSpec() && !isVersionedSpec();
+export const isUnversionedSpec = () => !isNewSpec() && !isVersionedSpec();
 
 /**
  * In order to determine if our current spec/config is the same as the default properties, indicating that
@@ -427,7 +425,12 @@ export const isSpecificationVolatile = (
  * Determine if a visual is 'versioned' based on persisted properties.
  */
 const isVersionedSpec = () => {
-    const { denebVersion, providerVersion } = getLastVersionInfo();
+    const {
+        visualSettings: {
+            developer: { version: denebVersion },
+            vega: { version: providerVersion }
+        }
+    } = getState();
     return (denebVersion && providerVersion) || false;
 };
 
@@ -439,7 +442,7 @@ export const persistSpecification = (stage = true) => {
     const {
         editor: { stagedConfig, stagedSpec, updateChanges },
         visualSettings: {
-            vega: { provider, jsonConfig, jsonSpec }
+            vega: { jsonConfig, jsonSpec }
         }
     } = getState();
     const isDirty = false;
@@ -455,13 +458,11 @@ export const persistSpecification = (stage = true) => {
     renewEditorFieldsInUse();
     updateObjectProperties(
         resolveObjectProperties([
-            getDenebVersionObject(),
             {
                 objectName: 'vega',
                 properties: [
                     { name: 'jsonSpec', value: spec },
-                    { name: 'jsonConfig', value: config },
-                    getProviderVersionProperty(<TSpecProvider>provider)
+                    { name: 'jsonConfig', value: config }
                 ]
             }
         ])

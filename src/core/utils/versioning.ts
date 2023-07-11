@@ -1,13 +1,19 @@
-import { isLegacySpec } from '../../features/specification';
+import { logDebug } from '../../features/logging';
+import { isUnversionedSpec } from '../../features/specification';
+import VisualSettings from '../../properties/VisualSettings';
 import { getState } from '../../store';
-import { getVegaProvider, getVegaSettings, TSpecProvider } from '../vega';
-import { getConfig, getVisualMetadata, providerVersions } from './config';
-import { resolveObjectProperties, updateObjectProperties } from './properties';
+import { TSpecProvider } from '../vega';
+import { getVisualMetadata, providerVersions } from './config';
+import {
+    getDenebVersionProperty,
+    resolveObjectProperties,
+    updateObjectProperties
+} from './properties';
 
 /**
  * Structured version information that we can use for comparison or inspection purposes.
  */
-interface IVersionInformation {
+export interface IVersionInformation {
     denebVersion: string;
     provider: string;
     providerVersion: string;
@@ -16,21 +22,25 @@ interface IVersionInformation {
 /**
  * Holds both current and previous version information.
  */
-interface IVersionComparator {
+export interface IVersionComparator {
     current: IVersionInformation;
-    last: IVersionInformation;
+    previous: IVersionInformation;
 }
 
 /**
  * Denotes type of version change, that we can use for appropriate handling.
  */
-type TVersionChange = 'decrease' | 'equal' | 'increase';
+export type TVersionChange = 'decrease' | 'equal' | 'increase';
 
 /**
  * Current visual and provider information
  */
-const getCurrentVersionInfo = (): IVersionInformation => {
-    const { provider } = getVegaSettings();
+const getCurrentVersionInfo = (
+    visualSettings: VisualSettings
+): IVersionInformation => {
+    const {
+        vega: { provider }
+    } = visualSettings;
     return {
         denebVersion: getVisualMetadata().version,
         provider,
@@ -41,11 +51,13 @@ const getCurrentVersionInfo = (): IVersionInformation => {
 /**
  * Visual and provider information, according to visual properties (when changes were last persisted).
  */
-export const getLastVersionInfo = (): IVersionInformation => {
-    const { developer } = getState().visualSettings;
-    const denebVersion = developer?.version;
-    const { provider, version } = getVegaSettings();
-    const providerVersion = version;
+const getLastVersionInfo = (
+    visualSettings: VisualSettings
+): IVersionInformation => {
+    const {
+        developer: { version: denebVersion },
+        vega: { provider, version: providerVersion }
+    } = visualSettings;
     return {
         denebVersion,
         provider,
@@ -56,23 +68,34 @@ export const getLastVersionInfo = (): IVersionInformation => {
 /**
  * Get previous and current version information as a single object.
  */
-export const getVersionComparatorInfo = (): IVersionComparator => ({
-    current: getCurrentVersionInfo(),
-    last: getLastVersionInfo()
+const getVersionComparatorInfo = (
+    visualSettings: VisualSettings
+): IVersionComparator => ({
+    current: getCurrentVersionInfo(visualSettings),
+    previous: getLastVersionInfo(visualSettings)
 });
 
 /**
  * Determine if a change has occurred since last persist, and the direction.
  */
-export const getVersionChangeDetail = (): TVersionChange => {
-    const { current, last } = getVersionComparatorInfo();
+const getVersionChangeDetail = (
+    comparatorInfo: IVersionComparator
+): TVersionChange => {
+    const { current, previous } = comparatorInfo;
+    logDebug('getVersionChangeDetail', { current, previous });
     try {
         switch (true) {
-            case isNewerVersion(last.denebVersion, current.denebVersion) ||
-                isNewerVersion(last.providerVersion, current.providerVersion):
+            case isNewerVersion(previous.denebVersion, current.denebVersion) ||
+                isNewerVersion(
+                    previous.providerVersion,
+                    current.providerVersion
+                ):
                 return 'increase';
-            case isNewerVersion(current.denebVersion, last.denebVersion) ||
-                isNewerVersion(current.providerVersion, last.providerVersion):
+            case isNewerVersion(current.denebVersion, previous.denebVersion) ||
+                isNewerVersion(
+                    current.providerVersion,
+                    previous.providerVersion
+                ):
                 return 'decrease';
             default:
                 return 'equal';
@@ -86,16 +109,28 @@ export const getVersionChangeDetail = (): TVersionChange => {
  * For updates, we need to be able to manage property migration between versions as necessary, just in case we're editing
  * a visual that hasn't caught up with the functionality we need in v-latest.
  */
-export const handlePropertyMigration = () => {
+export const handlePropertyMigration = (visualSettings: VisualSettings) => {
+    const {
+        vega: { provider }
+    } = visualSettings;
+    const {
+        migration: { updateMigrationDetails }
+    } = getState();
+    const versionComparator = getVersionComparatorInfo(visualSettings);
+    const changeType = getVersionChangeDetail(versionComparator);
+    updateMigrationDetails({
+        changeType,
+        ...versionComparator
+    });
     switch (true) {
-        // 1.0 > greater
-        case isLegacySpec(): {
-            migrateV1_0toV1_1(getVegaProvider());
+        // No spec yet, or pre 1.1
+        case isUnversionedSpec(): {
+            migrateUnversionedSpec(<TSpecProvider>provider);
             break;
         }
         // general change
-        case getVersionChangeDetail() !== 'equal': {
-            migrateWithNoChanges();
+        case changeType !== 'equal': {
+            migrateWithNoChanges(<TSpecProvider>provider);
             break;
         }
         default:
@@ -109,7 +144,7 @@ export const handlePropertyMigration = () => {
  * isn't 100% compatible with semver, so we're managing this with a good enough function here.
  * Credit: https://stackoverflow.com/a/52059759
  */
-export const isNewerVersion = (oldVer: string, newVer: string) => {
+const isNewerVersion = (oldVer: string, newVer: string) => {
     const oldParts = oldVer?.split('.');
     const newParts = newVer?.split('.');
     for (let i = 0; i < newParts.length; i++) {
@@ -125,26 +160,20 @@ export const isNewerVersion = (oldVer: string, newVer: string) => {
 /**
  * Handles property migration from 1.0 to 1.1
  */
-const migrateV1_0toV1_1 = (provider: TSpecProvider) => {
-    const { providerResources } = getConfig();
+const migrateUnversionedSpec = (provider: TSpecProvider) => {
+    logDebug('Migrate: initial versions for tracking');
     updateObjectProperties(
         resolveObjectProperties([
             {
                 objectName: 'developer',
-                properties: [
-                    {
-                        name: 'version',
-                        value: providerResources.deneb.legacyVersion
-                    },
-                    { name: 'showVersionNotification', value: true }
-                ]
+                properties: [getDenebVersionProperty()]
             },
             {
                 objectName: 'vega',
                 properties: [
                     {
                         name: 'version',
-                        value: providerResources[provider].legacyVersion
+                        value: providerVersions[provider]
                     }
                 ]
             }
@@ -153,14 +182,26 @@ const migrateV1_0toV1_1 = (provider: TSpecProvider) => {
 };
 
 /**
- * Perform a migration where no changes are required (basically just re-flagging the "new version" notification)
+ * Perform a migration where no changes are required (basically just updating
+ * the visual and provider versions, and re-flagging the "new version"
+ * notification).
  */
-const migrateWithNoChanges = () => {
+const migrateWithNoChanges = (provider: TSpecProvider) => {
+    logDebug('Migrate to current version (no changes)');
     updateObjectProperties(
         resolveObjectProperties([
             {
                 objectName: 'developer',
-                properties: [{ name: 'showVersionNotification', value: true }]
+                properties: [getDenebVersionProperty()]
+            },
+            {
+                objectName: 'vega',
+                properties: [
+                    {
+                        name: 'version',
+                        value: providerVersions[provider]
+                    }
+                ]
             }
         ])
     );

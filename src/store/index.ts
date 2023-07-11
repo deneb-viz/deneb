@@ -4,6 +4,7 @@ import { IDatasetSlice, createDatasetSlice } from './dataset';
 import { IDebugSlice, createDebugSlice } from './debug';
 import { IEditorSlice, createEditorSlice } from './editor';
 import { IInterfaceSlice, createInterfaceSlice } from './interface';
+import { IMigrationSlice, createMigrationSlice } from './migration';
 import { ISpecificationSlice, createSpecificationSlice } from './specification';
 import { ITemplateSlice, createTemplateSlice } from './template';
 import { IVisualSlice, createVisualSlice } from './visual';
@@ -14,6 +15,7 @@ export type TStoreState = IDatasetSlice &
     IDebugSlice &
     IEditorSlice &
     IInterfaceSlice &
+    IMigrationSlice &
     ISpecificationSlice &
     ITemplateSlice &
     IVisualSlice &
@@ -26,6 +28,7 @@ const store = create<TStoreState>()(
             ...createDebugSlice(...a),
             ...createEditorSlice(...a),
             ...createInterfaceSlice(...a),
+            ...createMigrationSlice(...a),
             ...createSpecificationSlice(...a),
             ...createTemplateSlice(...a),
             ...createVisualSlice(...a),
