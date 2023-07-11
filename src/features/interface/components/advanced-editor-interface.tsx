@@ -13,7 +13,7 @@ import {
     resizerVerticalStyles
 } from '../../../core/ui/advancedEditor';
 import { useKonami as fourd3d3d } from 'react-konami-code';
-import { ModalDialog } from '../../modal-dialog';
+import { ModalDialogLegacy } from '../../modal-dialog';
 import { Themes, useInterfaceStyles } from '..';
 import { logRender } from '../../logging';
 import { AdvancedEditorToolbar } from '../../toolbar';
@@ -82,9 +82,9 @@ export const AdvancedEditorInterface: React.FC = () => {
                 {position === 'left' ? editorPane : <PreviewArea />}
                 {position === 'left' ? <PreviewArea /> : editorPane}
             </SplitPane>
-            <ModalDialog type='new' />
-            <ModalDialog type='export' />
-            <ModalDialog type='mapping' />
+            <ModalDialogLegacy type='new' />
+            <ModalDialogLegacy type='export' />
+            <ModalDialogLegacy type='mapping' />
         </FluentProvider>
     );
 };

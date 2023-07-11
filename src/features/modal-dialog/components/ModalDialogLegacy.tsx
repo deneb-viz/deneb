@@ -58,7 +58,7 @@ const getDialogVisibility = (type: TModalDialogType) => {
     }
 };
 
-export const ModalDialog: React.FC<IModalDialogProps> = ({ type }) => {
+export const ModalDialogLegacy: React.FC<IModalDialogProps> = ({ type }) => {
     const {
         visualViewportCurrent: { height, width }
     } = store(
