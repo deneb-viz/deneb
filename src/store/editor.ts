@@ -404,7 +404,7 @@ const handleUpdateEditorFieldMappings = (
             }
             return result;
         },
-        <IVisualDatasetFields>{}
+        <IVisualDatasetFields>state.editorFieldsInUse
     )
 });
 
