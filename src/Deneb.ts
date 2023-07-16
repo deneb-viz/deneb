@@ -137,7 +137,7 @@ export class Deneb implements IVisual {
         // Perform any necessary property migrations
         handlePropertyMigration(this.settings);
         // Data change or re-processing required?
-        const { categorical } = options.dataViews[0];
+        const { categorical } = options?.dataViews?.[0] || {};
         const isDataVolatile =
             (VisualUpdateType.Data === (options.type & VisualUpdateType.Data) &&
                 !isEqual(this.prevDataView, categorical)) ||
