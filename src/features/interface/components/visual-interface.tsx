@@ -4,37 +4,36 @@ import { shallow } from 'zustand/shallow';
 import { AdvancedEditorInterface } from '../../interface';
 import store from '../../../store';
 import { ReportViewRouter } from './report-view-router';
-import SplashInitial from '../../../components/status/SplashInitial';
-import SplashReadOnly from '../../../components/status/SplashReadOnly';
-import SplashReadWrite from '../../../components/status/SplashReadWrite';
-import SplashNoSpec from '../../../components/status/SplashNoSpec';
+import { FetchingMessage, SplashInitial } from '../../status';
 import SelectionLimitMessageBar from '../../../components/status/SelectionLimitMessageBar';
 import { logRender } from '../../logging';
+import { LandingPage } from '../../status';
 
 export const VisualInterface = () => {
-    const { visualMode } = store(
+    const { mode } = store(
         (state) => ({
-            visualMode: state.visualMode
+            mode: state.interface.mode
         }),
         shallow
     );
     const mainComponent = useMemo(() => {
-        switch (visualMode) {
-            case 'SplashInitial':
+        switch (mode) {
+            case 'Initializing':
                 return <SplashInitial />;
-            case 'SplashReadOnly':
-                return <SplashReadOnly />;
-            case 'SplashReadWrite':
-                return <SplashReadWrite />;
-            case 'DataNoSpec':
-                return <SplashNoSpec />;
+            case 'Fetching':
+                return <FetchingMessage />;
+            case 'Landing':
+            case 'NoSpec':
+                return <LandingPage />;
             case 'Editor':
                 return <AdvancedEditorInterface />;
-            case 'Standard':
+            case 'View':
                 return <ReportViewRouter />;
+            default:
+                return <>{mode}</>;
         }
-    }, [visualMode]);
-    logRender('MainInterface', visualMode);
+    }, [mode]);
+    logRender('VisualInterface', mode);
     return (
         <>
             {mainComponent}

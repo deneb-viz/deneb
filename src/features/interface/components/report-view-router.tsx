@@ -1,10 +1,9 @@
 import React, { useMemo } from 'react';
 import { shallow } from 'zustand/shallow';
 
-import DataFetching from '../../../components/status/DataFetching';
 import { VegaContainer } from '../../vega-output';
 import { ApplyChangesDialog } from '../../modal-dialog';
-import SplashInitial from '../../../components/status/SplashInitial';
+import { FetchingMessage, SplashInitial } from '../../status';
 import store from '../../../store';
 import { logRender } from '../../logging';
 import { getI18nValue } from '../../i18n';
@@ -13,13 +12,10 @@ import { getI18nValue } from '../../i18n';
  * Handles routing of the main visual display, when in report view.
  */
 export const ReportViewRouter: React.FC = () => {
-    const { datasetProcessingStage, visualMode } = store(
+    const { datasetProcessingStage, mode } = store(
         (state) => ({
             datasetProcessingStage: state.datasetProcessingStage,
-            editorZoomLevel: state.editorZoomLevel,
-            showViewportMarker: state.visualSettings.editor.showViewportMarker,
-            visualMode: state.visualMode,
-            visualViewportReport: state.visualViewportReport
+            mode: state.interface.mode
         }),
         shallow
     );
@@ -29,7 +25,7 @@ export const ReportViewRouter: React.FC = () => {
                 return <SplashInitial />;
             }
             case 'Fetching': {
-                return <DataFetching />;
+                return <FetchingMessage />;
             }
             case 'Processing': {
                 return (
@@ -48,6 +44,6 @@ export const ReportViewRouter: React.FC = () => {
             }
         }
     }, [datasetProcessingStage]);
-    logRender('DataProcessingRouter', { datasetProcessingStage, visualMode });
+    logRender('DataProcessingRouter', { datasetProcessingStage, mode });
     return component;
 };

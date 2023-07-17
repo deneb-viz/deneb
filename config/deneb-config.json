@@ -167,7 +167,7 @@
     },
     "previewPane": {
         "areaMinSize": 100,
-        "toolbarMinSize": 30,
+        "toolbarMinSize": 28,
         "toolbarInitialPercent": 40,
         "viewportBorderSize": 2,
         "logLevels": [

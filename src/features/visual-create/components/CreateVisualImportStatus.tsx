@@ -3,7 +3,7 @@ import React from 'react';
 import { MessageBar, MessageBarType } from '@fluentui/react/lib/MessageBar';
 
 import store from '../../../store';
-import { Progress } from '../../../components/status/Progress';
+import { Progress } from '../../status';
 import { getI18nValue } from '../../i18n';
 
 export const CreateVisualImportStatus: React.FC = () => {
