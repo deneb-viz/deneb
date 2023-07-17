@@ -193,6 +193,10 @@ const handleUpdateDatasetProcessingStage = (
         dataset: {
             ...state.dataset,
             rowsLoaded
+        },
+        interface: {
+            ...state.interface,
+            mode
         }
     };
 };

@@ -56,18 +56,3 @@ export const LandingPageCard: React.FC<ILandingPageCardProps> = ({
         </section>
     );
 };
-
-const resolveIcon = (iconName: TLandingPageIcon) => {
-    switch (iconName) {
-        case 'Edit':
-            return <Edit24Regular />;
-        case 'Data':
-            return <TableAdd24Regular />;
-        case 'Code':
-            return <Braces24Regular />;
-        case 'View':
-            return <DataHistogram24Regular />;
-        case 'Learn':
-            return <QuestionCircle24Regular />;
-    }
-};

@@ -22,19 +22,13 @@ import App from './components/App';
 import VisualSettings from './properties/VisualSettings';
 
 import { getState } from './store';
-import {
-    canFetchMoreFromDataview,
-    getRowCount,
-    validateDataViewMapping,
-    validateDataViewRoles
-} from './core/data/dataView';
+import { canFetchMoreFromDataview, getRowCount } from './core/data/dataView';
 import { theme } from './core/ui/fluent';
 import { hostServices } from './core/services';
 import { initializeIcons } from './core/ui/fluent';
 import { getMappedDataset } from './core/data/dataset';
 import { handlePropertyMigration } from './core/utils/versioning';
 import { resolveReportViewport } from './core/ui/dom';
-import { DATASET_NAME } from './constants';
 import { logDebug, logHeading, logHost } from './features/logging';
 import { getVisualMetadata } from './core/utils/config';
 import {

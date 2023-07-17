@@ -2,8 +2,7 @@ import {
     GriffelStyle,
     makeStyles,
     shorthands,
-    tokens,
-    typographyStyles
+    tokens
 } from '@fluentui/react-components';
 
 const flexContainerGeneric: GriffelStyle = {

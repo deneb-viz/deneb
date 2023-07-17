@@ -1,5 +1,4 @@
 import { StateCreator } from 'zustand';
-import { NamedSet } from 'zustand/middleware';
 
 import { TStoreState } from '.';
 
@@ -9,7 +8,7 @@ export interface IProcessingSlice {
     };
 }
 
-const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
+const sliceStateInitializer = () =>
     <IProcessingSlice>{
         processing: {
             shouldProcessDataset: false

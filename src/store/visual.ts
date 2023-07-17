@@ -1,9 +1,7 @@
 import powerbi from 'powerbi-visuals-api';
 import IViewport = powerbi.IViewport;
-import ViewMode = powerbi.ViewMode;
 import EditMode = powerbi.EditMode;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
-import VisualUpdateType = powerbi.VisualUpdateType;
 
 import { StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
@@ -88,7 +86,6 @@ const handleSetVisualUpdate = (
     const positionSwitch = positionNew !== state.visualSettings.editor.position;
     const datasetViewObjects =
         payload.options.dataViews[0]?.metadata.objects || {};
-    const viewMode = payload.options.viewMode;
     const editMode = payload.options.editMode;
     const isInFocus = payload.options.isInFocus;
     const updateType = payload.options.type;

@@ -1,7 +1,5 @@
 import powerbi from 'powerbi-visuals-api';
 import EditMode = powerbi.EditMode;
-import ViewMode = powerbi.ViewMode;
-import IViewport = powerbi.IViewport;
 import VisualUpdateType = powerbi.VisualUpdateType;
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import {
@@ -103,11 +101,13 @@ const isEligibleForEditor = (
             case isEditorViewport(parameters) &&
                 (getState().interface.mode === 'Editor' ||
                     getState().interface.mode === 'EditorNoData'):
+                return true;
             /**
              * Visual is opened in an advanced editor state (e.g., switching to the
              * visual from another Deneb visual GUID. where the editor was open).
              */
             case isEditorViewport(parameters) && getState().visualUpdates === 1:
+                return true;
             /**
              * Edit mode is invoked from the report canvas by the user. In this
              * case, the visual host does 4 successive updates and only one of them
