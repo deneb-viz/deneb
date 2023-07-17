@@ -376,7 +376,7 @@ export const getSpecificationParseOptions = (
     values: state.dataset.values,
     viewportHeight: state.visualViewportReport.height,
     viewportWidth: state.visualViewportReport.width,
-    visualMode: state.visualMode
+    visualMode: state.interface.mode
 });
 
 /**

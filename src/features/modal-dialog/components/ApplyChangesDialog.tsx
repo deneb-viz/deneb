@@ -29,14 +29,14 @@ const getDialogContentProps = (
 };
 
 export const ApplyChangesDialog: React.FC = () => {
-    const { isDirty, visualMode } = store(
+    const { isDirty, mode } = store(
         (state) => ({
             isDirty: state.editor.isDirty,
-            visualMode: state.visualMode
+            mode: state.interface.mode
         }),
         shallow
     );
-    const hidden = !(isDirty && visualMode === 'Standard');
+    const hidden = !(isDirty && mode === 'View');
     const handleApply = () => persistSpecification(false);
     const handleDiscard = () => discardChanges();
     const dialogContentProps = getDialogContentProps(

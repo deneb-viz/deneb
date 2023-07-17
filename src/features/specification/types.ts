@@ -1,8 +1,8 @@
 import * as Vega from 'vega';
 import * as VegaLite from 'vega-lite';
 import { IVisualDatasetValueRow } from '../../core/data';
-import { TVisualMode } from '../../core/ui';
 import { TSpecProvider } from '../../core/vega';
+import { InterfaceMode } from '../interface';
 
 /**
  * Values for a spec's parse status.
@@ -62,7 +62,7 @@ export interface ISpecificationParseOptions {
     values: IVisualDatasetValueRow[];
     viewportHeight: number;
     viewportWidth: number;
-    visualMode: TVisualMode;
+    visualMode: InterfaceMode;
 }
 
 /**

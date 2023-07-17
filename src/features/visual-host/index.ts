@@ -64,6 +64,12 @@ export const getCategoricalDataViewFromOptions = (
 ) => options?.dataViews?.[0]?.categorical || {};
 
 /**
+ * Checks if a visual has finished resizing.
+ */
+export const isVisualUpdateTypeResizeEnd = (type: VisualUpdateType) =>
+    VisualUpdateType.ResizeEnd === (type & VisualUpdateType.ResizeEnd);
+
+/**
  * Check the visual update type to see if it is volatile.
  */
 const isVisualUpdateTypeVolatile = (options: VisualUpdateOptions) =>

@@ -4,9 +4,7 @@ import reduce from 'lodash/reduce';
 
 import { TStoreState } from '.';
 import { doUnallocatedFieldsExist } from '../core/data/dataset';
-import { resolveVisualMode } from '../core/ui';
 import {
-    calculateVegaViewport,
     getEditorPreviewAreaWidth,
     getPreviewAreaHeightInitial,
     getResizablePaneSize,
@@ -17,6 +15,7 @@ import { IVisualDatasetFields } from '../core/data';
 import { getFieldsInUseFromSpec } from '../features/template';
 import { IFixResult } from '../features/specification';
 import { EditorApplyMode, TEditorRole } from '../features/json-editor';
+import { getApplicationMode } from '../features/interface';
 
 export interface IEditorSlice {
     editor: {
@@ -277,16 +276,16 @@ const handleUpdateChanges = (
             stagedSpec
         },
         interface: {
-            ...state.interface
+            ...state.interface,
+            mode: getApplicationMode({
+                dataset: state.dataset,
+                editMode: state.visualUpdateOptions.editMode,
+                isInFocus: state.visualUpdateOptions.isInFocus,
+                specification: state.editor.stagedSpec,
+                updateType: state.visualUpdateOptions.type
+            })
         },
-        visual4d3d3d: false,
-        visualMode: resolveVisualMode(
-            state.dataset.rowsLoaded,
-            state.visualEditMode,
-            state.visualIsInFocusMode,
-            state.visualViewMode,
-            stagedSpec
-        )
+        visual4d3d3d: false
     };
 };
 
@@ -371,12 +370,6 @@ const handleToggleEditorPane = (state: TStoreState): Partial<TStoreState> => {
             state.visualViewportCurrent.width,
             newWidth,
             position
-        ),
-        visualViewportVega: calculateVegaViewport(
-            state.visualViewportCurrent,
-            newWidth,
-            state.visualMode,
-            position
         )
     };
 };
@@ -441,12 +434,6 @@ const handleUpdateEditorPaneWidth = (
         editorPreviewAreaWidth: getEditorPreviewAreaWidth(
             state.visualViewportCurrent.width,
             editorPaneWidth,
-            position
-        ),
-        visualViewportVega: calculateVegaViewport(
-            state.visualViewportCurrent,
-            editorPaneWidth,
-            state.visualMode,
             position
         )
     };

@@ -12,7 +12,6 @@ import {
     getEmptyDataset
 } from '../core/data/dataset';
 import { IVisualDataset, TDataProcessingStage } from '../core/data';
-import { resolveVisualMode } from '../core/ui';
 import { getResizablePaneSize } from '../core/ui/advancedEditor';
 import { getFieldsInUseFromSpec } from '../features/template';
 import { DATASET_IDENTITY_NAME } from '../constants';
@@ -26,10 +25,10 @@ import {
     getSpecificationParseOptions
 } from '../features/specification/logic';
 import { logDebug } from '../features/logging';
+import { getApplicationMode } from '../features/interface';
 
 export interface IDatasetSlice {
     dataset: IVisualDataset;
-    datasetCanFetchMore: boolean;
     datasetCategories: DataViewCategoryColumn[];
     datasetHasHighlights: boolean;
     datasetHasSelectionAborted: boolean;
@@ -44,7 +43,6 @@ export interface IDatasetSlice {
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IDatasetSlice>{
         dataset: getEmptyDataset(),
-        datasetCanFetchMore: false,
         datasetCategories: [],
         datasetHasHighlights: false,
         datasetHasSelectionAborted: false,
@@ -93,11 +91,6 @@ interface IVisualDatasetUpdatePayload {
     categories: DataViewCategoryColumn[];
     dataset: IVisualDataset;
 }
-
-const handleConfirmDatasetLoadComplete = (): Partial<TStoreState> => ({
-    datasetCanFetchMore: false,
-    datasetProcessingStage: 'Processed'
-});
 
 const handleUpdateDataset = (
     state: TStoreState,
@@ -162,6 +155,16 @@ const handleUpdateDataset = (
             !state.editorIsNewDialogVisible &&
             !state.editorIsExportDialogVisible &&
             editorFieldDatasetMismatch,
+        interface: {
+            ...state.interface,
+            mode: getApplicationMode({
+                dataset: payload.dataset,
+                editMode: state.visualUpdateOptions.editMode,
+                isInFocus: state.visualUpdateOptions.isInFocus,
+                specification: state.visualSettings.vega.jsonSpec,
+                updateType: state.visualUpdateOptions.type
+            })
+        },
         processing: {
             ...state.processing,
             shouldProcessDataset: false
@@ -170,27 +173,29 @@ const handleUpdateDataset = (
             ...state.specification,
             ...spec
         },
-        templateExportMetadata,
-        visualMode: resolveVisualMode(
-            state.dataset.rowsLoaded,
-            state.visualEditMode,
-            state.visualIsInFocusMode,
-            state.visualViewMode,
-            state.visualSettings.vega.jsonSpec
-        )
+        templateExportMetadata
     };
 };
 
 const handleUpdateDatasetProcessingStage = (
     state: TStoreState,
     payload: IDatasetProcessingPayload
-): Partial<TStoreState> => ({
-    datasetProcessingStage: payload.dataProcessingStage,
-    dataset: {
-        ...state.dataset,
-        rowsLoaded: payload.rowsLoaded
-    }
-});
+): Partial<TStoreState> => {
+    const { dataProcessingStage, rowsLoaded } = payload;
+    const mode = getApplicationMode({
+        invokeMode:
+            dataProcessingStage === 'Fetching'
+                ? dataProcessingStage
+                : state.interface.mode
+    });
+    return {
+        datasetProcessingStage: dataProcessingStage,
+        dataset: {
+            ...state.dataset,
+            rowsLoaded
+        }
+    };
+};
 
 const handleUpdateDatasetSelectors = (
     state: TStoreState,

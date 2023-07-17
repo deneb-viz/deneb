@@ -4,9 +4,14 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { TStoreState } from '.';
 import { ModalDialogRole } from '../features/modal-dialog/types';
+import { InterfaceMode } from '../features/interface';
 
 export interface IInterfaceSlice {
     interface: {
+        /**
+         * The current application mode
+         */
+        mode: InterfaceMode;
         /**
          * Current modal dialog display role. Used to display correct dialog to
          * the user (or not at all).
@@ -33,6 +38,7 @@ export interface IInterfaceSlice {
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IInterfaceSlice>{
         interface: {
+            mode: 'Initializing',
             modalDialogRole: 'None',
             renderId: uuidv4(),
             generateRenderId: () =>

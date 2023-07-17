@@ -54,7 +54,7 @@ export const VegaContainer: React.FC = () => {
             specification: state.specification,
             viewportHeight: state.visualViewportReport.height,
             viewportWidth: state.visualViewportReport.width,
-            visualMode: state.visualMode
+            visualMode: state.interface.mode
         }),
         (prev, next) => isEqual(prev, next)
     );
@@ -63,7 +63,7 @@ export const VegaContainer: React.FC = () => {
         [jsonConfig, jsonSpec, devLocale]
     );
     const useScrollbars = useMemo(
-        () => visualMode === 'Standard' || previewScrollbars,
+        () => visualMode === 'View' || previewScrollbars,
         [
             visualMode,
             previewScrollbars,
@@ -74,7 +74,7 @@ export const VegaContainer: React.FC = () => {
     );
     const classes = useVegaStyles();
     const containerClassName = mergeClasses(
-        visualMode === 'Standard'
+        visualMode === 'View'
             ? classes.overflowOverlay
             : classes.overflowVisible,
         classes.vegaContainer

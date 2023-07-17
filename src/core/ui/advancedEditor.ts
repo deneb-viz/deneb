@@ -3,7 +3,7 @@ import IViewport = powerbi.IViewport;
 
 import { getState } from '../../store';
 import { getConfig } from '../utils/config';
-import { TEditorPosition, TVisualMode } from '.';
+import { TEditorPosition } from '.';
 import { CSSProperties } from 'react';
 import { theme } from './fluent';
 import {
@@ -173,26 +173,6 @@ export const getResizablePaneSize = (
                 getEditPaneDefaultWidth(viewport, position)) ||
             collapsedSize;
     return resolvedWidth;
-};
-
-/** Calculate the dimensions of the Vega/Vega-Lite visual viewport (height/width) based on the interface state and a
- *  number of other factors (including any config defaults). */
-export const calculateVegaViewport = (
-    viewport: IViewport,
-    paneWidth: number,
-    visualMode: TVisualMode,
-    position: TEditorPosition
-) => {
-    let { height } = viewport,
-        width =
-            (visualMode === 'Editor' &&
-                (position === 'right'
-                    ? paneWidth
-                    : viewport.width - paneWidth)) ||
-            viewport.width;
-    height -= VISUAL_VIEWPORT_ADJUST_TOP;
-    width -= VISUAL_VIEWPORT_ADJUST_LEFT;
-    return { width, height };
 };
 
 /**

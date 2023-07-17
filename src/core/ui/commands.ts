@@ -61,8 +61,10 @@ const hotkeyOptions: Options = {
 };
 
 const executeEditorCommand = (command: () => void) => {
-    const { visualMode } = getState();
-    visualMode === 'Editor' && command();
+    const {
+        interface: { mode }
+    } = getState();
+    mode === 'Editor' && command();
 };
 
 /**
