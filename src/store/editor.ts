@@ -281,7 +281,7 @@ const handleUpdateChanges = (
         },
         visual4d3d3d: false,
         visualMode: resolveVisualMode(
-            state.datasetViewHasValidMapping,
+            state.dataset.rowsLoaded,
             state.visualEditMode,
             state.visualIsInFocusMode,
             state.visualViewMode,

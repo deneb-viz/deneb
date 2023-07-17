@@ -13,21 +13,18 @@ import DataView = powerbi.DataView;
 import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnumerationObject;
 import VisualUpdateType = powerbi.VisualUpdateType;
 import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
-import DataViewCategorical = powerbi.DataViewCategorical;
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { loadTheme } from '@fluentui/react/lib/Styling';
-import clone from 'lodash/clone';
-import isEqual from 'lodash/isEqual';
 
 import App from './components/App';
 import VisualSettings from './properties/VisualSettings';
 
 import { getState } from './store';
 import {
-    canFetchMore,
-    handleDataFetch,
+    canFetchMoreFromDataview,
+    getRowCount,
     validateDataViewMapping,
     validateDataViewRoles
 } from './core/data/dataView';
@@ -46,6 +43,7 @@ import {
 } from './features/vega-extensibility';
 import { I18nServices, getLocale } from './features/i18n';
 import { isFeatureEnabled } from './core/utils/features';
+import { getCategoricalDataViewFromOptions } from './features/visual-host';
 
 /**
  * Run to indicate that the visual has started.
@@ -55,8 +53,6 @@ logHeading(`Version: ${getVisualMetadata()?.version}`, 12);
 
 export class Deneb implements IVisual {
     private settings: VisualSettings;
-    private prevDataView: DataViewCategorical;
-    private prevSettings: VisualSettings;
 
     constructor(options: VisualConstructorOptions) {
         logHost('Constructor has been called.', { options });
@@ -81,7 +77,6 @@ export class Deneb implements IVisual {
         // Handle main update flow
         try {
             // Parse the settings for use in the visual
-            this.prevSettings = clone(this.settings);
             this.settings = Deneb.parseSettings(
                 options && options.dataViews && options.dataViews[0]
             );
@@ -106,13 +101,8 @@ export class Deneb implements IVisual {
                 : getLocale()
         );
         VegaExtensibilityServices.bind(this.settings.theme.ordinalColorCount);
-        const {
-            setVisualUpdate,
-            updateDataset,
-            updateDatasetProcessingStage,
-            updateDatasetViewFlags,
-            updateDatasetViewInvalid
-        } = getState();
+        const { setVisualUpdate, updateDataset, updateDatasetProcessingStage } =
+            getState();
         // Manage persistent viewport sizing for view vs. editor
         switch (true) {
             case VisualUpdateType.All === (options.type & VisualUpdateType.All):
@@ -137,53 +127,43 @@ export class Deneb implements IVisual {
         // Perform any necessary property migrations
         handlePropertyMigration(this.settings);
         // Data change or re-processing required?
-        const { categorical } = options?.dataViews?.[0] || {};
-        const isDataVolatile =
-            (VisualUpdateType.Data === (options.type & VisualUpdateType.Data) &&
-                !isEqual(this.prevDataView, categorical)) ||
-            this.prevSettings?.vega?.enableSelection !==
-                this.settings.vega.enableSelection ||
-            this.prevSettings?.vega?.enableHighlight !==
-                this.settings.vega.enableHighlight;
-        if (isDataVolatile) {
+        let fetchSuccess = false;
+        const {
+            processing: { shouldProcessDataset }
+        } = getState();
+        const categorical = getCategoricalDataViewFromOptions(options);
+        if (shouldProcessDataset) {
             logDebug('Visual dataset has changed and should be re-processed.');
-            logDebug('Recording data view for next update...');
-            this.prevDataView = clone(categorical);
+            const canFetchMore = canFetchMoreFromDataview(
+                this.settings,
+                options?.dataViews?.[0]?.metadata
+            );
+            const rowsLoaded = getRowCount(categorical);
             // If first segment, we test and set state accordingly for user feedback
             if (
                 options.operationKind === VisualDataChangeOperationKind.Create
             ) {
+                logDebug('Initial data segment.');
+            }
+            if (canFetchMore) {
+                logDebug(
+                    `${rowsLoaded} row(s) loaded. Attempting to fetch more data...`
+                );
                 updateDatasetProcessingStage({
                     dataProcessingStage: 'Fetching',
-                    canFetchMore: canFetchMore()
+                    rowsLoaded
                 });
-                const datasetViewHasValidMapping = validateDataViewMapping(
-                        options.dataViews
-                    ),
-                    datasetViewHasValidRoles =
-                        datasetViewHasValidMapping &&
-                        validateDataViewRoles(options.dataViews, [
-                            DATASET_NAME
-                        ]),
-                    datasetViewIsValid =
-                        datasetViewHasValidMapping && datasetViewHasValidRoles;
-                updateDatasetViewFlags({
-                    datasetViewHasValidMapping,
-                    datasetViewHasValidRoles,
-                    datasetViewIsValid
+                fetchSuccess = hostServices.fetchMoreData(true);
+            }
+            if (!fetchSuccess) {
+                logDebug('No more data to fetch. Processing dataset...');
+                updateDatasetProcessingStage({
+                    dataProcessingStage: 'Processing',
+                    rowsLoaded
                 });
-            }
-            // If the DV didn't validate then we shouldn't expend effort mapping it and just display landing page
-            if (!getState().datasetViewHasValidMapping) {
-                logDebug('Dataset view is invalid. Displaying landing page.');
-                updateDatasetViewInvalid();
-                return;
-            }
-            handleDataFetch(options);
-            if (!canFetchMore()) {
                 const dataset = getMappedDataset(categorical);
                 updateDataset({
-                    categories: options.dataViews[0]?.categorical?.categories,
+                    categories: categorical?.categories,
                     dataset
                 });
             }

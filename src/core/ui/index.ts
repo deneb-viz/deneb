@@ -30,22 +30,20 @@ const getVersionInfo = () => {
  * Calculated during store update, and based on this state, determine what interface should be displayed to the end-user.
  */
 const resolveVisualMode = (
-    datasetViewHasValidMapping: boolean,
+    rowsLoaded: number,
     editMode: EditMode,
     isInFocus: boolean,
     viewMode: ViewMode,
     spec: string
 ): TVisualMode => {
     switch (true) {
-        case datasetViewHasValidMapping &&
+        case rowsLoaded > 0 &&
             isReadWriteAdvanced(viewMode, editMode) &&
             isInFocus:
             return 'Editor';
         case isReadOnly(viewMode) && hasNoSpec(spec):
             return 'SplashReadOnly';
-        case isReadWriteDefault(viewMode) &&
-            datasetViewHasValidMapping &&
-            hasNoSpec(spec):
+        case isReadWriteDefault(viewMode) && rowsLoaded > 0 && hasNoSpec(spec):
             return 'DataNoSpec';
         case isReadWriteDefault(viewMode) && hasNoSpec(spec):
             return 'SplashReadWrite';

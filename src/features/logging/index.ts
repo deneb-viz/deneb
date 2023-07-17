@@ -20,7 +20,8 @@ export enum ELogLevel {
     HOST = 10,
     RENDER = 11,
     HOOK = 12,
-    DEBUG = 50
+    DEBUG = 50,
+    TIMING = 51
 }
 
 /**
@@ -52,7 +53,7 @@ const getLog = (level: ELogLevel): ((...args: any[]) => void) => {
 /**
  * General purpose log function; curried by the public log functions below.
  */
-const log =
+const _log =
     (level: ELogLevel) =>
     (...args: any[]) => {
         const importance = <string>ELogLevel[level];
@@ -62,6 +63,20 @@ const log =
                 `${importance.padEnd(LOG_IMPORTANCE_PAD)}`,
                 ...args
             );
+    };
+
+const _logTimeStart =
+    (level: ELogLevel = ELogLevel.TIMING) =>
+    (label: string) => {
+        const enabled = LOG_LEVEL >= level;
+        enabled && console.time?.(label);
+    };
+
+const _logTimeEnd =
+    (level: ELogLevel = ELogLevel.TIMING) =>
+    (label: string) => {
+        const enabled = LOG_LEVEL >= level;
+        enabled && console.timeEnd?.(label);
     };
 
 /**
@@ -76,34 +91,44 @@ export const logHeading = (message: string, size: number = 20) =>
 /**
  * Debug-level logging to the console.
  */
-export const logDebug = log(ELogLevel.DEBUG);
+export const logDebug = _log(ELogLevel.DEBUG);
 
 /**
  * Error-level logging to the console.
  */
-export const logError = log(ELogLevel.ERROR);
+export const logError = _log(ELogLevel.ERROR);
 
 /**
  * Info-level logging to the console.
  */
-export const logInfo = log(ELogLevel.INFO);
+export const logInfo = _log(ELogLevel.INFO);
 
 /**
  * Host-level logging to the console.
  */
-export const logHost = log(ELogLevel.HOST);
+export const logHost = _log(ELogLevel.HOST);
 
 /**
  * Render-level logging to the console.
  */
-export const logRender = log(ELogLevel.RENDER);
+export const logRender = _log(ELogLevel.RENDER);
 
 /**
  * Hook-level logging to the console.
  */
-export const logHook = log(ELogLevel.HOOK);
+export const logHook = _log(ELogLevel.HOOK);
+
+/**
+ * For debug-level logging, start a timer.
+ */
+export const logTimeStart = _logTimeStart();
+
+/**
+ * For debug-level logging, end a timer.
+ */
+export const logTimeEnd = _logTimeEnd();
 
 /**
  * Warn-level logging to the console.
  */
-export const logWarning = log(ELogLevel.WARN);
+export const logWarning = _log(ELogLevel.WARN);

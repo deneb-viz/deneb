@@ -11,7 +11,9 @@ import { powerBiFormatValue } from '../../utils';
 import { getI18nValue } from '../../features/i18n';
 
 const DataFetching = () => {
-    const { datasetRowsLoaded } = store((state) => state);
+    const { rowsLoaded } = store((state) => ({
+        rowsLoaded: state.dataset.rowsLoaded
+    }));
     return (
         <>
             <StatusLayoutStack>
@@ -19,7 +21,7 @@ const DataFetching = () => {
                     <Heading>{getI18nValue('Fetching_Data')}</Heading>
                     <Progress
                         description={`${powerBiFormatValue(
-                            datasetRowsLoaded,
+                            rowsLoaded,
                             '#,##0'
                         )} ${getI18nValue('Fetching_Data_Progress_Suffix')}`}
                     />

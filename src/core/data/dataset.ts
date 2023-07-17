@@ -142,7 +142,8 @@ export const getEmptyDataset = (): IVisualDataset => ({
     fields: {},
     hashValue: getDatasetHash({}, []),
     values: [],
-    hasHighlights: false
+    hasHighlights: false,
+    rowsLoaded: 0
 });
 
 /**
@@ -152,9 +153,9 @@ export const getEmptyDataset = (): IVisualDataset => ({
 export const getMappedDataset = (
     categorical: DataViewCategorical
 ): IVisualDataset => {
-    const rowCount = getRowCount(categorical);
+    const rowsLoaded = getRowCount(categorical);
     const empty = getEmptyDataset();
-    if (rowCount === 0) {
+    if (rowsLoaded === 0) {
         return empty;
     } else {
         try {
@@ -171,7 +172,7 @@ export const getMappedDataset = (
                 hostServices.selectionManager.getSelectionIds()
             );
             const fields = getDatasetFields(dvCategories, dvValues);
-            const values: IVisualDatasetValueRow[] = range(rowCount).map(
+            const values: IVisualDatasetValueRow[] = range(rowsLoaded).map(
                 (r, ri) => {
                     const md = getDataRow(
                         columns,
@@ -206,7 +207,8 @@ export const getMappedDataset = (
                 hasHighlights,
                 hashValue,
                 fields,
-                values
+                values,
+                rowsLoaded
             };
         } catch (e) {
             console.log(e);

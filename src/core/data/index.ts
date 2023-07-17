@@ -33,6 +33,7 @@ export interface IVisualDataset {
     // row-related fields.
     values: IVisualDatasetValueRow[];
     hasHighlights: boolean;
+    rowsLoaded: number;
 }
 
 /**

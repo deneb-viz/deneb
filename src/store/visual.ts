@@ -24,6 +24,7 @@ import { getParsedSpec } from '../features/specification';
 import { getSpecificationParseOptions } from '../features/specification/logic';
 import { TSpecProvider } from '../core/vega';
 import { logDebug } from '../features/logging';
+import { isVisualUpdateVolatile } from '../features/visual-host';
 
 const defaultViewport = { width: 0, height: 0 };
 
@@ -105,7 +106,7 @@ const handleSetVisualUpdate = (
     const isInFocus = payload.options.isInFocus;
     const updateType = payload.options.type;
     const visualMode = resolveVisualMode(
-        state.datasetViewHasValidMapping,
+        state.dataset.rowsLoaded,
         editMode,
         isInFocus,
         viewMode,
@@ -177,6 +178,13 @@ const handleSetVisualUpdate = (
                   }
               })
             : state.specification;
+    const shouldProcessDataset = isVisualUpdateVolatile({
+        currentProcessingFlag: state.processing.shouldProcessDataset,
+        currentOptions: payload.options,
+        currentSettings: payload.settings,
+        previousOptions: state.visualUpdateOptions,
+        previousSettings: state.visualSettings
+    });
     return {
         datasetViewObjects,
         editorIsNewDialogVisible: payload.settings.vega.isNewDialogOpen,
@@ -188,6 +196,10 @@ const handleSetVisualUpdate = (
         editorPreviewAreaWidth: edPrevAreaWidth,
         editorPreviewAreaHeightLatch: latch,
         editorPreviewDebugIsExpanded: isExpanded,
+        processing: {
+            ...state.processing,
+            shouldProcessDataset
+        },
         specification: {
             ...state.specification,
             ...spec
