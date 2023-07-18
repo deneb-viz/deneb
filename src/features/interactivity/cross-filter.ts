@@ -69,7 +69,9 @@ export const getDataPointCrossFilterStatus = (
  */
 const getPotentialSelectionSize = (identities: ISelectionId[]) =>
     (identities?.length || 0) +
-    (hostServices.selectionManager.getSelectionIds()?.length || 0);
+    (isMultiSelect()
+        ? hostServices.selectionManager.getSelectionIds()?.length || 0
+        : 0);
 
 /**
  * Allows us to validate for all key pre-requisites before we can bind a context
