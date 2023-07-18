@@ -33,6 +33,16 @@ export const EDITOR_PANE_SPLIT_MAX_SIZE_PERCENT =
 export const EDITOR_PANE_SPLIT_MIN_SIZE = splitPaneDefaults.minSize;
 
 /**
+ * Horizontal offset (in px) for toaster in editor view.
+ */
+export const EDITOR_TOAST_OFFSET_HORIZONTAL = 5;
+
+/**
+ * Vertical offset (in px) for toaster in editor view.
+ */
+export const EDITOR_TOAST_OFFSET_VERTICAL = 30;
+
+/**
  * The z-index to apply to popover elements, as we are having to render them
  * inline.
  */
