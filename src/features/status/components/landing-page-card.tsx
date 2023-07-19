@@ -1,12 +1,5 @@
 import React from 'react';
 import {
-    Edit24Regular,
-    TableAdd24Regular,
-    Braces24Regular,
-    DataHistogram24Regular,
-    QuestionCircle24Regular
-} from '@fluentui/react-icons';
-import {
     Caption1,
     Card,
     CardHeader,
@@ -15,8 +8,6 @@ import {
 } from '@fluentui/react-components';
 import { useStatusStyles } from '.';
 import { getI18nValue } from '../../i18n';
-
-type TLandingPageIcon = 'Edit' | 'Data' | 'Code' | 'View' | 'Learn';
 
 interface ILandingPageCardProps {
     i18nHeader: string;
