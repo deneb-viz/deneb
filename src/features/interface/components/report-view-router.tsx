@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { shallow } from 'zustand/shallow';
 
 import { VegaContainer } from '../../vega-output';
-import { ApplyChangesDialog } from '../../modal-dialog';
 import { FetchingMessage, SplashInitial } from '../../status';
 import store from '../../../store';
 import { logRender } from '../../logging';
@@ -35,12 +34,7 @@ export const ReportViewRouter: React.FC = () => {
                 );
             }
             case 'Processed': {
-                return (
-                    <>
-                        <VegaContainer />
-                        <ApplyChangesDialog />
-                    </>
-                );
+                return <VegaContainer />;
             }
         }
     }, [datasetProcessingStage]);

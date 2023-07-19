@@ -5,7 +5,7 @@ import { AdvancedEditorInterface } from '../../interface';
 import store from '../../../store';
 import { ReportViewRouter } from './report-view-router';
 import { FetchingMessage, SplashInitial } from '../../status';
-import { SelectionLimitToaster } from '../../../components/status/selection-limit-toaster';
+import { NotificationToaster } from '../../toaster';
 import { logRender } from '../../logging';
 import { LandingPage } from '../../status';
 
@@ -36,7 +36,7 @@ export const VisualInterface = () => {
     return (
         <>
             {mainComponent}
-            <SelectionLimitToaster />
+            <NotificationToaster />
         </>
     );
 };
