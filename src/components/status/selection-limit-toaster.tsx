@@ -86,6 +86,8 @@ export const SelectionLimitToaster: React.FC = () => {
     useEffect(() => {
         if (datasetHasSelectionAborted) {
             notify();
+        } else {
+            dismissToast(toastId);
         }
     }, [datasetHasSelectionAborted]);
     return (
