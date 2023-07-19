@@ -9,6 +9,7 @@ import {
     resolveObjectProperties,
     updateObjectProperties
 } from '../utils/properties';
+import { logDebug } from '../../features/logging';
 
 const viewportAdjust = 4;
 
@@ -62,6 +63,7 @@ export const resolveReportViewport = (
         (displaySettings.viewportHeight !== viewport.height ||
             displaySettings.viewportWidth !== viewport.width)
     ) {
+        logDebug('Persisting viewport to properties...');
         updateObjectProperties(
             resolveObjectProperties([
                 {

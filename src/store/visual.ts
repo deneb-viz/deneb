@@ -90,6 +90,7 @@ const handleSetVisualUpdate = (
     const isInFocus = payload.options.isInFocus;
     const updateType = payload.options.type;
     const mode = getApplicationMode({
+        currentMode: state.interface.mode,
         dataset: state.dataset,
         editMode,
         isInFocus,

@@ -21,6 +21,10 @@ export type InterfaceMode =
  */
 export interface IInterfaceModeResolutionParameters {
     /**
+     * The current mode (from state). Can be used as a fallback.
+     */
+    currentMode?: InterfaceMode;
+    /**
      * Either the current data view (indicating presence of data to be
      * processed), othe the processed dataset.
      */

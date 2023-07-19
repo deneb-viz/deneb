@@ -158,6 +158,7 @@ const handleUpdateDataset = (
         interface: {
             ...state.interface,
             mode: getApplicationMode({
+                currentMode: state.interface.mode,
                 dataset: payload.dataset,
                 editMode: state.visualUpdateOptions.editMode,
                 isInFocus: state.visualUpdateOptions.isInFocus,

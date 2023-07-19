@@ -82,7 +82,7 @@ export const getApplicationMode = (
         case !isEditor && datasetValid && parameters.specification && true:
             return 'View';
         default:
-            return 'Landing';
+            return parameters.currentMode ?? 'Landing';
     }
 };
 

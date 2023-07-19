@@ -72,5 +72,5 @@ export const isVisualUpdateTypeResizeEnd = (type: VisualUpdateType) =>
 /**
  * Check the visual update type to see if it is volatile.
  */
-const isVisualUpdateTypeVolatile = (options: VisualUpdateOptions) =>
+export const isVisualUpdateTypeVolatile = (options: VisualUpdateOptions) =>
     VisualUpdateType.Data === (options.type & VisualUpdateType.Data);

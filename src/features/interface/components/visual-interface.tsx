@@ -24,13 +24,12 @@ export const VisualInterface = () => {
                 return <FetchingMessage />;
             case 'Landing':
             case 'NoSpec':
+            case 'EditorNoData':
                 return <LandingPage />;
             case 'Editor':
                 return <AdvancedEditorInterface />;
             case 'View':
                 return <ReportViewRouter />;
-            default:
-                return <>{mode}</>;
         }
     }, [mode]);
     logRender('VisualInterface', mode);

@@ -11,7 +11,6 @@ import EnumerateVisualObjectInstancesOptions = powerbi.EnumerateVisualObjectInst
 import VisualObjectInstance = powerbi.VisualObjectInstance;
 import DataView = powerbi.DataView;
 import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnumerationObject;
-import VisualUpdateType = powerbi.VisualUpdateType;
 import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
 
 import * as React from 'react';
@@ -37,7 +36,11 @@ import {
 } from './features/vega-extensibility';
 import { I18nServices, getLocale } from './features/i18n';
 import { isFeatureEnabled } from './core/utils/features';
-import { getCategoricalDataViewFromOptions } from './features/visual-host';
+import {
+    getCategoricalDataViewFromOptions,
+    isVisualUpdateTypeResizeEnd,
+    isVisualUpdateTypeVolatile
+} from './features/visual-host';
 
 /**
  * Run to indicate that the visual has started.
@@ -99,12 +102,8 @@ export class Deneb implements IVisual {
             getState();
         // Manage persistent viewport sizing for view vs. editor
         switch (true) {
-            case VisualUpdateType.All === (options.type & VisualUpdateType.All):
-            case VisualUpdateType.Data ===
-                (options.type & VisualUpdateType.Data):
-            case VisualUpdateType.ResizeEnd ===
-                (options.type & VisualUpdateType.ResizeEnd): {
-                logDebug('Persisting viewport to properties...');
+            case isVisualUpdateTypeVolatile(options):
+            case isVisualUpdateTypeResizeEnd(options.type): {
                 resolveReportViewport(
                     options.viewport,
                     options.viewMode,
