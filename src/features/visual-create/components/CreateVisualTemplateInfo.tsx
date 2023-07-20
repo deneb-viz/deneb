@@ -1,17 +1,11 @@
 import React from 'react';
 import { Stack, StackItem, IStackTokens } from '@fluentui/react/lib/Stack';
-import { IColumn } from '@fluentui/react/lib/DetailsList';
 import { Subtitle2, Title3 } from '@fluentui/react-components';
 
 import store from '../../../store';
-import {
-    getTemplateDatasetNameColumn,
-    getTemplateDatasetTypeColumn,
-    IDenebTemplateMetadata
-} from '../../template';
+import { IDenebTemplateMetadata, TemplateDataset } from '../../template';
 import { CreateVisualDatasetPlaceholders } from './CreateVisualDatasetPlaceholders';
 import { CreateVisualPreviewImage } from './CreateVisualPreviewImage';
-import { Dataset } from '../../template';
 
 import { DATASET_NAME } from '../../../constants';
 import { getI18nValue } from '../../i18n';
@@ -19,19 +13,6 @@ import { getI18nValue } from '../../i18n';
 const stackTokens: IStackTokens = {
     childrenGap: 25
 };
-
-const getTemplateFieldAssignmentColumn = (): IColumn => ({
-    key: 'field_assignment',
-    name: getI18nValue('Template_Dataset_Field_Assignment'),
-    fieldName: 'assignment',
-    minWidth: 300
-});
-
-const getImportColumns = (): IColumn[] => [
-    getTemplateDatasetTypeColumn(),
-    getTemplateDatasetNameColumn(),
-    getTemplateFieldAssignmentColumn()
-];
 
 export const CreateVisualTemplateInfo: React.FC = () => {
     const usermeta = store((state) => state).templateToApply
@@ -50,14 +31,7 @@ export const CreateVisualTemplateInfo: React.FC = () => {
                 </StackItem>
                 <CreateVisualPreviewImage />
             </Stack>
-            {hasPlaceholders ? (
-                <Dataset
-                    dataset={usermeta?.[DATASET_NAME]}
-                    columns={getImportColumns}
-                />
-            ) : (
-                <></>
-            )}
+            {hasPlaceholders ? <TemplateDataset datasetRole='new' /> : <></>}
         </>
     );
 };

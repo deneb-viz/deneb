@@ -40,4 +40,5 @@ export {
     isBase64Image
 } from './preview-image';
 export { Dataset } from './components/Dataset';
-export { PreviewImage } from './components/PreviewImage';
+export { PreviewImage } from './components/preview-image';
+export { TemplateDataset } from './components/template-dataset';

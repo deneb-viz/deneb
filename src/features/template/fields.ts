@@ -12,8 +12,10 @@ import { getVegaSettings } from '../../core/vega';
 import { getCrossHighlightRegExpAlternation } from '../interactivity';
 import { getCleanEditorJson } from '../specification';
 import { ITemplateDatasetField, TDatasetFieldType } from './schema';
-import { ITemplatePattern } from './types';
+import { ITemplatePattern, TemplateDatasetColumnRole } from './types';
 import { getFormatFieldRegExpAlternation } from '../dataset';
+import { getI18nValue } from '../i18n';
+import { useTemplateStyles } from './components';
 
 /**
  * Used for validation of text field lengths vs. generated schema.
@@ -43,6 +45,61 @@ const doesSpecContainKeyForMetadata = (
         },
         false
     );
+
+/**
+ * Resolve class name based on role.
+ */
+export const getDataColumnClass = (role: TemplateDatasetColumnRole) => {
+    const classes = useTemplateStyles();
+    switch (role) {
+        case 'type':
+            return classes.datasetDataType;
+        case 'name':
+        case 'originalName':
+            return classes.datasetColumnName;
+        case 'assignment':
+            return classes.datasetColumnAssignment;
+        default:
+            return '';
+    }
+};
+
+/**
+ * Resolve heading column text based on role.
+ */
+export const getDataColumnText = (role: TemplateDatasetColumnRole) => {
+    switch (role) {
+        case 'name':
+            return getI18nValue('Text_Template_Dataset_Field_Name');
+        case 'originalName':
+            return getI18nValue('Text_Template_Dataset_Field_OriginalName');
+        case 'assignment':
+            return getI18nValue('Text_Template_Dataset_Field_Assignment');
+        case 'description':
+            return getI18nValue('Text_Template_Dataset_Field_Description');
+        default:
+            return '';
+    }
+};
+
+/**
+ * For a given column or measure (or template placeholder), resolve the UI
+ * tooltip/title text for its data type.
+ */
+export const getDataTypeIconTitle = (type: TDatasetFieldType) => {
+    switch (type) {
+        case 'bool':
+            return getI18nValue('Template_Type_Descriptor_Bool');
+        case 'text':
+            return getI18nValue('Template_Type_Descriptor_Text');
+        case 'numeric':
+            return getI18nValue('Template_Type_Descriptor_Numeric');
+        case 'dateTime':
+            return getI18nValue('Template_Type_Descriptor_DateTime');
+        default:
+            return getI18nValue('Template_Import_Not_Deneb');
+    }
+};
 
 /**
  * When performing placeholder replacements, we need to ensure that special
