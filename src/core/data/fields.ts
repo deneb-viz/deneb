@@ -122,7 +122,7 @@ export const getDatasetTemplateFields = (
  *  - Vega-Lite: https://vega.github.io/vega-lite/docs/field.html
  */
 export const getEncodedFieldName = (displayName: string) =>
-    displayName?.replace(/([\\".[]])/g, '_') || '';
+    displayName?.replace(/([\\".[\]])/g, '_') || '';
 
 /**
  * Get artificial array of values first (if needed) as we'll need them when
