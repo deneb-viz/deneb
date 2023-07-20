@@ -13,6 +13,8 @@ import { ExportVisualDialogBody } from '../../visual-export';
 import { MapFieldsDialogBody } from '../../remap-fields';
 import { shallow } from 'zustand/shallow';
 import { logRender } from '../../logging';
+import { FluentProvider } from '@fluentui/react-components';
+import { Themes } from '../../interface';
 
 interface IModalDialogProps {
     type: TModalDialogType;
@@ -85,7 +87,9 @@ export const ModalDialogLegacy: React.FC<IModalDialogProps> = ({ type }) => {
             dragOptions={undefined}
         >
             <ModalHeader type={type} />
-            <div className={modalStyles.body}>{child}</div>
+            <FluentProvider theme={Themes.light}>
+                <div className={modalStyles.body}>{child}</div>
+            </FluentProvider>
         </Modal>
     );
 };
