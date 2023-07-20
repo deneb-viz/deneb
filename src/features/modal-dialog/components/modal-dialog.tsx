@@ -16,6 +16,8 @@ import store from '../../../store';
 import { getI18nValue } from '../../i18n';
 import { ModalDialogRole } from '../types';
 import { VersionChangeContent } from './version-change-content';
+import { FieldRemapPane, RemapButton } from '../../remap-fields';
+import { logRender } from '../../logging';
 
 export const ModalDialog: React.FC = () => {
     const { modalDialogRole, clearMigrationDialog, setModalDialogRole } = store(
@@ -57,6 +59,7 @@ export const ModalDialog: React.FC = () => {
         },
         []
     );
+    logRender('ModalDialog', { isOpen, modalDialogRole });
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogSurface className={dialogSurfaceClassName}>
@@ -68,7 +71,7 @@ export const ModalDialog: React.FC = () => {
                         </div>
                     </DialogContent>
                     <DialogActions>
-                        {/* TODO: primary action button */}
+                        {getDialogPrimaryButton(modalDialogRole)}
                         <Button appearance='secondary' onClick={onClose}>
                             {closeLabel}
                         </Button>
@@ -79,10 +82,27 @@ export const ModalDialog: React.FC = () => {
     );
 };
 
+/**
+ * Routes the primary button (and logic) based on the dialog role.
+ */
+const getDialogPrimaryButton = (dialogRole: ModalDialogRole) => {
+    switch (dialogRole) {
+        case 'Remap':
+            return <RemapButton />;
+        default:
+            return <></>;
+    }
+};
+
+/**
+ * Routes the dialog content based on the dialog role.
+ */
 const getDialogContent = (modalDialogRole: ModalDialogRole) => {
     switch (modalDialogRole) {
         case 'Version':
             return <VersionChangeContent />;
+        case 'Remap':
+            return <FieldRemapPane />;
         default: {
             return <></>;
         }

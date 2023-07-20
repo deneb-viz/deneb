@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     TableCell,
     TableCellLayout,
@@ -9,6 +9,7 @@ import { useTemplateStyles } from '.';
 import { DataTypeIcon } from './data-type-icon';
 import { getDataTypeIconTitle } from '../fields';
 import { TDatasetFieldType } from '../schema';
+import { TooltipCustomMount } from '../../interface';
 
 interface IDataTypeColumnCellProps {
     type: TDatasetFieldType;
@@ -21,14 +22,20 @@ export const DataTypeColumnCell: React.FC<IDataTypeColumnCellProps> = ({
     type
 }) => {
     const classes = useTemplateStyles();
+    const [ref, setRef] = useState<HTMLElement | null>();
     return (
-        <Tooltip
-            content={getDataTypeIconTitle(type)}
-            relationship='description'
-        >
-            <TableCell className={classes.datasetDataType}>
-                <TableCellLayout media={<DataTypeIcon type={type} />} />
-            </TableCell>
-        </Tooltip>
+        <>
+            <Tooltip
+                content={getDataTypeIconTitle(type)}
+                relationship='label'
+                withArrow
+                mountNode={ref}
+            >
+                <TableCell className={classes.datasetDataType}>
+                    <TableCellLayout media={<DataTypeIcon type={type} />} />
+                </TableCell>
+            </Tooltip>
+            <TooltipCustomMount setRef={setRef} />
+        </>
     );
 };

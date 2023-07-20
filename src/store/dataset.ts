@@ -26,6 +26,8 @@ import {
 } from '../features/specification/logic';
 import { logDebug } from '../features/logging';
 import { getApplicationMode } from '../features/interface';
+import { ModalDialogRole } from '../features/modal-dialog/types';
+import { isMappingDialogRequired } from '../features/remap-fields';
 
 export interface IDatasetSlice {
     dataset: IVisualDataset;
@@ -138,6 +140,11 @@ const handleUpdateDataset = (
             values: payload.dataset.values
         }
     });
+    const modalDialogRole: ModalDialogRole = isMappingDialogRequired(
+        editorFieldsInUse
+    )
+        ? 'Remap'
+        : state.interface.modalDialogRole;
     logDebug('dataset.updateDataset persisting to store...');
     return {
         dataset: payload.dataset,
@@ -151,12 +158,9 @@ const handleUpdateDataset = (
             state.visualViewportCurrent,
             state.visualSettings.editor.position
         ),
-        editorIsMapDialogVisible:
-            !state.editorIsNewDialogVisible &&
-            !state.editorIsExportDialogVisible &&
-            editorFieldDatasetMismatch,
         interface: {
             ...state.interface,
+            modalDialogRole,
             mode: getApplicationMode({
                 currentMode: state.interface.mode,
                 dataset: payload.dataset,

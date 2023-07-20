@@ -202,7 +202,7 @@ const dispatchExportDialog = (show = true) => {
 };
 
 const dispatchMapFieldsDialog = (show = true) => {
-    getState().updateEditorMapDialogVisible(show);
+    getState().interface.setModalDialogRole('Remap');
 };
 
 const dispatchPreviewPivotItem = (role: TPreviewPivotRole) => {

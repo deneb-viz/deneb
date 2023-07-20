@@ -1,6 +1,17 @@
 import { TSpecProvider } from '../../core/vega';
 
 /**
+ * Denotes the role that a column performs, allowing us to switch based this
+ * value.
+ */
+export type TemplateDatasetColumnRole =
+    | 'type'
+    | 'name'
+    | 'assignment'
+    | 'description'
+    | 'originalName';
+
+/**
  * Used to indicate which part of the export dialog has focus.
  */
 export type TExportOperation = 'information' | 'dataset' | 'template';

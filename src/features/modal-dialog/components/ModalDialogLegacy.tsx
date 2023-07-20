@@ -10,7 +10,6 @@ import { TModalDialogType } from '../types';
 import { getModalDialogContentStyles } from '../styles';
 import { CreateVisualDialogBody } from '../../visual-create';
 import { ExportVisualDialogBody } from '../../visual-export';
-import { MapFieldsDialogBody } from '../../remap-fields';
 import { shallow } from 'zustand/shallow';
 import { logRender } from '../../logging';
 import { FluentProvider } from '@fluentui/react-components';
@@ -29,8 +28,6 @@ const getDialogBody = (type: TModalDialogType) => {
             return <CreateVisualDialogBody />;
         case 'export':
             return <ExportVisualDialogBody />;
-        case 'mapping':
-            return <MapFieldsDialogBody />;
     }
 };
 
@@ -38,15 +35,10 @@ const getDialogBody = (type: TModalDialogType) => {
  * Derive dialog visibility, based on the store state for its type.
  */
 const getDialogVisibility = (type: TModalDialogType) => {
-    const {
-        editorIsNewDialogVisible,
-        editorIsExportDialogVisible,
-        editorIsMapDialogVisible
-    } = store(
+    const { editorIsNewDialogVisible, editorIsExportDialogVisible } = store(
         (state) => ({
             editorIsNewDialogVisible: state.editorIsNewDialogVisible,
-            editorIsExportDialogVisible: state.editorIsExportDialogVisible,
-            editorIsMapDialogVisible: state.editorIsMapDialogVisible
+            editorIsExportDialogVisible: state.editorIsExportDialogVisible
         }),
         shallow
     );
@@ -55,8 +47,6 @@ const getDialogVisibility = (type: TModalDialogType) => {
             return editorIsNewDialogVisible;
         case 'export':
             return editorIsExportDialogVisible;
-        case 'mapping':
-            return editorIsMapDialogVisible;
     }
 };
 

@@ -34,7 +34,6 @@ export interface IEditorSlice {
     editorFieldsInUse: IVisualDatasetFields;
     editorFixResult: IFixResult;
     editorIsExportDialogVisible: boolean;
-    editorIsMapDialogVisible: boolean;
     editorIsNewDialogVisible: boolean;
     editorPaneIsExpanded: boolean;
     editorPreviewAreaHeight: number;
@@ -57,7 +56,6 @@ export interface IEditorSlice {
     updateEditorFieldMapping: (
         payload: IEditorFieldMappingUpdatePayload
     ) => void;
-    updateEditorMapDialogVisible: (visible: boolean) => void;
     updateEditorFixStatus: (payload: IFixResult) => void;
     updateEditorPaneWidth: (payload: IEditorPaneUpdatePayload) => void;
     updateEditorPreviewAreaHeight: (height: number) => void;
@@ -121,7 +119,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
             config: null
         },
         editorIsExportDialogVisible: false,
-        editorIsMapDialogVisible: false,
         editorIsNewDialogVisible: true,
         editorPaneIsExpanded: true,
         editorPreviewAreaHeight: null,
@@ -171,12 +168,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                     handleUpdateEditorExportDialogVisible(state, visible),
                 false,
                 'updateEditorExportDialogVisible'
-            ),
-        updateEditorMapDialogVisible: (visible) =>
-            set(
-                (state) => handleUpdateEditorMapDialogVisible(state, visible),
-                false,
-                'updateEditorMapDialogVisible'
             ),
         updateEditorFixStatus: (payload) =>
             set(
@@ -407,13 +398,6 @@ const handleUpdateEditorExportDialogVisible = (
     visible: boolean
 ): Partial<TStoreState> => ({
     editorIsExportDialogVisible: visible
-});
-
-const handleUpdateEditorMapDialogVisible = (
-    state: TStoreState,
-    visible: boolean
-): Partial<TStoreState> => ({
-    editorIsMapDialogVisible: visible
 });
 
 const handleUpdateEditorFixStatus = (

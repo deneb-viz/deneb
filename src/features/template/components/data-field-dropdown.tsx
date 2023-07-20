@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     Dropdown,
     DropdownProps,
     Option,
+    PositioningImperativeRef,
     useId
 } from '@fluentui/react-components';
 import reduce from 'lodash/reduce';
@@ -32,7 +33,7 @@ export const DataFieldDropDown: React.FC<IDatasetFieldAssignmentDropdownProps> =
         } = store((state) => state);
         const selectedKeyDefault = getDefaultSelectedKey(datasetField, fields);
         const [selectedKey, setSelectedKey] =
-            React.useState<string>(selectedKeyDefault);
+            useState<string>(selectedKeyDefault);
         const selectedField = getDatasetField(selectedKey, dialogType);
         const options = getTemplateDatasetFields(fields);
         const dropdownOptionElements = getFieldOptions(options);
@@ -73,6 +74,7 @@ export const DataFieldDropDown: React.FC<IDatasetFieldAssignmentDropdownProps> =
         return (
             <Dropdown
                 id={dropdownId}
+                inlinePopup
                 defaultSelectedOptions={[selectedKey]}
                 className={classes.datasetAssignmentDropdown}
                 placeholder={getI18nValue(

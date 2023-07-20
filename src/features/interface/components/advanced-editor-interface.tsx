@@ -84,7 +84,6 @@ export const AdvancedEditorInterface: React.FC = () => {
             </SplitPane>
             <ModalDialogLegacy type='new' />
             <ModalDialogLegacy type='export' />
-            <ModalDialogLegacy type='mapping' />
             <ModalDialog />
         </FluentProvider>
     );
