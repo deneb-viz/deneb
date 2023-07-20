@@ -3,11 +3,11 @@ import React from 'react';
 import { Stack, IStackItemStyles } from '@fluentui/react/lib/Stack';
 import { PrimaryButton } from '@fluentui/react/lib/Button';
 import { IColumn } from '@fluentui/react/lib/DetailsList';
+import { Caption1 } from '@fluentui/react-components';
 
 import filter from 'lodash/filter';
 
 import store, { getState } from '../../../store';
-import { Paragraph } from '../../../components/elements/Typography';
 import {
     Dataset,
     getReducedPlaceholdersForMetadata,
@@ -87,15 +87,21 @@ export const MapFieldsDialogBody = () => {
             tokens={MODAL_DIALOG_STACK_INNER_TOKENS}
         >
             <Stack.Item shrink>
-                <Paragraph>
-                    {getI18nValue('Map_Fields_Assistive_Introduction')}
-                </Paragraph>
-                <Paragraph>
-                    {getI18nValue('Map_Fields_Assistive_Instructions')}
-                </Paragraph>
-                <Paragraph>
-                    {getI18nValue('Map_Fields_Completion_Instructions')}
-                </Paragraph>
+                <p>
+                    <Caption1>
+                        {getI18nValue('Map_Fields_Assistive_Introduction')}
+                    </Caption1>
+                </p>
+                <p>
+                    <Caption1>
+                        {getI18nValue('Map_Fields_Assistive_Instructions')}
+                    </Caption1>
+                </p>
+                <p>
+                    <Caption1>
+                        {getI18nValue('Map_Fields_Completion_Instructions')}
+                    </Caption1>
+                </p>
             </Stack.Item>
             <Stack.Item verticalFill styles={datasetItemStyles}>
                 <>

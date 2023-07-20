@@ -1,6 +1,7 @@
 import React from 'react';
 import { Stack, StackItem, IStackTokens } from '@fluentui/react/lib/Stack';
 import { IColumn } from '@fluentui/react/lib/DetailsList';
+import { Subtitle2, Title3 } from '@fluentui/react-components';
 
 import store from '../../../store';
 import {
@@ -10,10 +11,6 @@ import {
 } from '../../template';
 import { CreateVisualDatasetPlaceholders } from './CreateVisualDatasetPlaceholders';
 import { CreateVisualPreviewImage } from './CreateVisualPreviewImage';
-import {
-    BodyHeading,
-    SubHeading
-} from '../../../components/elements/Typography';
 import { Dataset } from '../../template';
 
 import { DATASET_NAME } from '../../../constants';
@@ -44,11 +41,11 @@ export const CreateVisualTemplateInfo: React.FC = () => {
         <>
             <Stack horizontal tokens={stackTokens}>
                 <StackItem grow>
-                    <BodyHeading>{usermeta?.information?.name}</BodyHeading>
-                    <SubHeading>
+                    <Title3>{usermeta?.information?.name}</Title3>
+                    <Subtitle2>
                         {usermeta?.information?.description ||
                             getI18nValue('Template_No_Description')}
-                    </SubHeading>
+                    </Subtitle2>
                     <CreateVisualDatasetPlaceholders />
                 </StackItem>
                 <CreateVisualPreviewImage />

@@ -4,7 +4,6 @@ import { Checkbox } from '@fluentui/react/lib/Checkbox';
 import { Separator } from '@fluentui/react/lib/Separator';
 import { Stack, StackItem, IStackTokens } from '@fluentui/react/lib/Stack';
 
-import { Paragraph } from '../../../components/elements/Typography';
 import store from '../../../store';
 import { isFeatureEnabled } from '../../../core/utils/features';
 import {
@@ -14,6 +13,7 @@ import {
 } from '../../template';
 import { logRender } from '../../logging';
 import { getI18nValue } from '../../i18n';
+import { Caption1 } from '@fluentui/react-components';
 
 const stackTokens: IStackTokens = {
     childrenGap: 25
@@ -54,24 +54,29 @@ export const ExportVisualPreviewImage: React.FC = () => {
                 </StackItem>
                 <StackItem grow>
                     {templateIncludePreviewImage && (
-                        <Paragraph>
-                            {getI18nValue(
-                                'Template_Export_IncludePreview_Image_Disclaimer_Para1',
-                                [PREVIEW_IMAGE_CAP_SIZE, PREVIEW_IMAGE_CAP_SIZE]
-                            )}
-                            <br />
-                            <br />
-                            <strong>
+                        <p>
+                            <Caption1>
                                 {getI18nValue(
-                                    'Template_Export_IncludePreview_Image_Disclaimer_Para2'
+                                    'Template_Export_IncludePreview_Image_Disclaimer_Para1',
+                                    [
+                                        PREVIEW_IMAGE_CAP_SIZE,
+                                        PREVIEW_IMAGE_CAP_SIZE
+                                    ]
                                 )}
                                 <br />
                                 <br />
-                                {getI18nValue(
-                                    'Template_Export_IncludePreview_Image_Disclaimer_Suffix'
-                                )}
-                            </strong>
-                        </Paragraph>
+                                <strong>
+                                    {getI18nValue(
+                                        'Template_Export_IncludePreview_Image_Disclaimer_Para2'
+                                    )}
+                                    <br />
+                                    <br />
+                                    {getI18nValue(
+                                        'Template_Export_IncludePreview_Image_Disclaimer_Suffix'
+                                    )}
+                                </strong>
+                            </Caption1>
+                        </p>
                     )}
                 </StackItem>
             </Stack>

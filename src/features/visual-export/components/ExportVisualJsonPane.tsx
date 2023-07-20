@@ -6,11 +6,11 @@ import { ITextFieldStyles, TextField } from '@fluentui/react/lib/TextField';
 import { IconButton } from '@fluentui/react/lib/Button';
 import { IIconProps } from '@fluentui/react/lib/Icon';
 import { ITextStyles } from '@fluentui/react/lib/Text';
+import { Caption2 } from '@fluentui/react-components';
 
 import { getExportTemplate } from '../logic';
 import { iconButtonStyles } from '../../../core/ui/icons';
 import { ExportVisualDownloadButton } from './ExportVisualDownloadButton';
-import { Assistive } from '../../../components/elements/Typography';
 import {
     TEMPLATE_EXPORT_INFO_STACK_TOKENS,
     TEMPLATE_PICKER_NON_SHRINKING_STACK_ITEM_STYLES,
@@ -66,9 +66,9 @@ export const ExportVisualJsonPane: React.FC = () => {
             <Stack.Item>
                 <Stack horizontal>
                     <Stack.Item grow>
-                        <Assistive>
+                        <Caption2>
                             {getI18nValue('Template_Export_Json_Assistive')}
-                        </Assistive>
+                        </Caption2>
                     </Stack.Item>
                     <Stack.Item>
                         {copySuccess && (

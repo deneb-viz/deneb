@@ -1,9 +1,9 @@
 import React from 'react';
 
 import { Stack } from '@fluentui/react/lib/Stack';
+import { Caption2 } from '@fluentui/react-components';
 
 import { ExportVisualDataFields } from './ExportVisualDataFields';
-import { Assistive } from '../../../components/elements/Typography';
 import {
     TEMPLATE_PICKER_STACK_STYLES,
     TEMPLATE_PICKER_NON_SHRINKING_STACK_ITEM_STYLES,
@@ -17,9 +17,9 @@ export const ExportVisualDatasetPane: React.FC = () => (
         tokens={TEMPLATE_EXPORT_INFO_STACK_TOKENS}
     >
         <Stack.Item>
-            <Assistive>
+            <Caption2>
                 {getI18nValue('Template_Export_Dataset_Assistive')}
-            </Assistive>
+            </Caption2>
         </Stack.Item>
         <Stack.Item
             grow={3}

@@ -1,14 +1,16 @@
 import React from 'react';
 
-import { Paragraph } from '../../../components/elements/Typography';
 import { getI18nValue } from '../../i18n';
+import { Caption1 } from '@fluentui/react-components';
 
 export const CreateVisualDatasetPlaceholderEmpty: React.FC = () => {
     return (
-        <Paragraph>
-            {getI18nValue('Data_Placeholder_Assistive_No_PH', [
-                getI18nValue('Button_Create')
-            ])}
-        </Paragraph>
+        <p>
+            <Caption1>
+                {getI18nValue('Data_Placeholder_Assistive_No_PH', [
+                    getI18nValue('Button_Create')
+                ])}
+            </Caption1>
+        </p>
     );
 };

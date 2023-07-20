@@ -5,11 +5,11 @@ import store from '../../../store';
 import { LogViewer } from './log-viewer';
 import { DatasetViewer } from './dataset-viewer';
 import { SignalViewer } from './signal-viewer';
-import { Paragraph } from '../../../components/elements/Typography';
 import { useDebugStyles } from '..';
 import { logRender } from '../../logging';
 import { DebugToolbar } from '../../toolbar';
 import { getI18nValue } from '../../i18n';
+import { Caption1 } from '@fluentui/react-components';
 
 // eslint-disable-next-line max-lines-per-function
 export const DebugAreaContent: React.FC = () => {
@@ -50,7 +50,7 @@ export const DebugAreaContent: React.FC = () => {
                 return <SignalViewer renderId={renderId} />;
             default:
                 return (
-                    <Paragraph>{getI18nValue('Pivot_Mode_Unknown')}</Paragraph>
+                    <Caption1>{getI18nValue('Pivot_Mode_Unknown')}</Caption1>
                 );
         }
     }, [

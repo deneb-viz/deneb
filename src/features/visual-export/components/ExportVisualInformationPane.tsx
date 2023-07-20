@@ -1,12 +1,10 @@
 import React from 'react';
 
 import { Stack } from '@fluentui/react/lib/Stack';
+import { Caption2 } from '@fluentui/react-components';
 
 import CappedTextField from '../../../components/elements/CappedTextField';
 import { ExportVisualPreviewImage } from './ExportVisualPreviewImage';
-
-import { Assistive } from '../../../components/elements/Typography';
-
 import {
     TEMPLATE_INFORMATION_PROPS,
     TEMPLATE_EXPORT_INFO_STACK_TOKENS,
@@ -22,9 +20,9 @@ export const ExportVisualInformationPane: React.FC = () => {
             tokens={TEMPLATE_EXPORT_INFO_STACK_TOKENS}
         >
             <Stack.Item>
-                <Assistive>
+                <Caption2>
                     {getI18nValue('Template_Export_Information_Assistive')}
-                </Assistive>
+                </Caption2>
             </Stack.Item>
             <Stack.Item
                 grow={3}
