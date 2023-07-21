@@ -18,7 +18,6 @@ import {
     getDatasetFieldByTemplateKey,
     getDatasetTemplateFields
 } from '../../../core/data/fields';
-import DataFieldLabel from './DataFieldLabel';
 import DatasetFieldAssignmentDropdown from './DatasetFieldAssignmentDropdown';
 import { TModalDialogType } from '../../modal-dialog';
 import { getState } from '../../../store';
@@ -31,7 +30,7 @@ const getDataTypeIcon = (item: ITemplateDatasetField) => (
 );
 
 const getNameField = (item: ITemplateDatasetField) => (
-    <DataFieldLabel datasetField={item} />
+    <Caption1>{item.name}</Caption1>
 );
 
 const getAssignmentField = (
