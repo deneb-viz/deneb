@@ -1,5 +1,4 @@
 import { isDate, isFunction, isNumber } from 'vega';
-import { IStackItemStyles } from '@fluentui/react/lib/Stack';
 
 import {
     DATASET_IDENTITY_NAME,
@@ -21,14 +20,6 @@ import {
 } from '../interactivity';
 import { DATA_TABLE_FONT_FAMILY, DATA_TABLE_FONT_SIZE } from '.';
 import { getI18nValue } from '../i18n';
-
-/**
- * This sets the StackItem for the table to the correct positioning for
- * Tabulator.
- */
-export const dataTableStackItemStyles: Partial<IStackItemStyles> = {
-    root: { position: 'relative' }
-};
 
 /**
  * If the column/cell relates to cross-filtering, return a tooltip value that
