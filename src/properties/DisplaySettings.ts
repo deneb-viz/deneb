@@ -21,8 +21,6 @@ export default class DisplaySettings extends SettingsBase {
     public scrollbarOpacity: number = defaults.scrollbarOpacity;
     // Radius of displayed scrollbars
     public scrollbarRadius: number = defaults.scrollbarRadius.default;
-    // SVG filter to apply to view
-    public svgFilter: string = Object.keys(getConfig().svgFilters)[0];
 
     /**
      * Business logic for the properties within this menu.

@@ -17,7 +17,6 @@ export {
     updateProvider,
     updateSelectionMaxDataPoints,
     updateRenderMode,
-    updateSvgFilter,
     dismissVersionNotification,
     IKeyboardShortcut
 };
@@ -322,12 +321,6 @@ const updateSelectionMaxDataPoints = (value: number) =>
  */
 const updateRenderMode = (renderMode: TSpecRenderMode) =>
     handlePersist([{ name: 'renderMode', value: renderMode }]);
-
-/**
- * Handle the change in SVG filter from one to the other and update necessary store dependencies and properties.
- */
-const updateSvgFilter = (value: string) =>
-    handlePersist([{ name: 'svgFilter', value }], 'display');
 
 /**
  * Handle the dynamic setting of the version notification property.

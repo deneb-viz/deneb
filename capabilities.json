@@ -112,24 +112,8 @@
                     "descriptionKey": "Objects_Display_ScrollbarRadius_Description",
                     "displayName": "Scrollbar radius",
                     "description": "Scrollbar radius description.",
-                    "type": { "integer": true }
-                },
-                "svgFilter": {
-                    "displayNameKey": "Objects_Display_SVGFilter",
-                    "descriptionKey": "Objects_Display_SVGFilter_Description",
-                    "displayName": "SVG Filter",
-                    "description": "SVG Filter description.",
                     "type": {
-                        "enumeration": [
-                            {
-                                "displayName": "None",
-                                "value": "none"
-                            },
-                            {
-                                "displayName": "Deneb.XKCD",
-                                "value": "xkcd"
-                            }
-                        ]
+                        "integer": true
                     }
                 }
             }

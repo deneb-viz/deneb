@@ -4,8 +4,6 @@ export * as dom from './dom';
 export * as fluent from './fluent';
 export * as icons from './icons';
 export * as labels from './labels';
-export * as selectors from './selectors';
-export * as svgFilter from './svgFilter';
 
 export { getVersionInfo, TEditorPosition };
 

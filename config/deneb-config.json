@@ -12,7 +12,6 @@
         "tooltipResolveNumberFieldFormat": true,
         "useDownloadApi": false,
         "templateExportPreviewImages": true,
-        "fx": false,
         "unitTestCanary": false
     },
     "logLevel": 0,
@@ -260,83 +259,6 @@
         "defaultSizePercent": 0.4,
         "maxSizePercent": 0.5,
         "collapsedSize": 36
-    },
-    "svgFilters": {
-        "none": {
-            "displayName": "None",
-            "attributes": [],
-            "effects": []
-        },
-        "xkcd": {
-            "displayName": "Deneb.XKCD",
-            "ignoreText": true,
-            "attributes": [
-                {
-                    "name": "filterUnits",
-                    "value": "userSpaceOnUse"
-                },
-                {
-                    "name": "x",
-                    "value": "-5"
-                },
-                {
-                    "name": "y",
-                    "value": "-5"
-                },
-                {
-                    "name": "width",
-                    "value": "100%"
-                },
-                {
-                    "name": "height",
-                    "value": "100%"
-                }
-            ],
-            "effects": [
-                {
-                    "primitive": "feTurbulence",
-                    "attributes": [
-                        {
-                            "name": "type",
-                            "value": "fractalNoise"
-                        },
-                        {
-                            "name": "baseFrequency",
-                            "value": "0.05"
-                        },
-                        {
-                            "name": "result",
-                            "value": "noise"
-                        }
-                    ]
-                },
-                {
-                    "primitive": "feDisplacementMap",
-                    "attributes": [
-                        {
-                            "name": "scale",
-                            "value": "5"
-                        },
-                        {
-                            "name": "xChannelSelector",
-                            "value": "R"
-                        },
-                        {
-                            "name": "yChannelSelector",
-                            "value": "G"
-                        },
-                        {
-                            "name": "in",
-                            "value": "SourceGraphic"
-                        },
-                        {
-                            "name": "in2",
-                            "value": "noise"
-                        }
-                    ]
-                }
-            ]
-        }
     },
     "templates": {
         "metadataVersion": 1,
