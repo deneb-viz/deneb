@@ -3,7 +3,6 @@ import * as React from 'react';
 import { Text } from '@fluentui/react/lib/Text';
 import { Stack, IStackStyles } from '@fluentui/react/lib/Stack';
 
-import FieldInfoIcon from '../../../components/elements/FieldInfoIcon';
 import { ITemplateDatasetField } from '..';
 
 export interface IDataFieldLabelProps {
@@ -21,7 +20,6 @@ const DataFieldLabel: React.FC<IDataFieldLabelProps> = (props) => {
     return (
         <Stack horizontal verticalAlign='center' styles={stackStyles}>
             <Text>{datasetField.name}</Text>{' '}
-            <FieldInfoIcon description={datasetField.description} />
         </Stack>
     );
 };

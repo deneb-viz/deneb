@@ -8,7 +8,6 @@ import { IStackTokens, Stack } from '@fluentui/react/lib/Stack';
 
 import store from '../../store';
 import { getConfig } from '../../core/utils/config';
-import FieldInfoIcon from './FieldInfoIcon';
 import { IRenderFunction } from '@fluentui/react/lib/Utilities';
 import { getI18nValue } from '../../features/i18n';
 
@@ -68,7 +67,6 @@ const CappedTextField: React.FC<ICappedTextFieldProps> = (props) => {
                         tokens={stackTokens}
                     >
                         <span>{defaultRender(fieldProps)}</span>
-                        <FieldInfoIcon description={description} />
                     </Stack>
                 );
             }
