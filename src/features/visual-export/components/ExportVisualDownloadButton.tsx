@@ -1,22 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import { Stack } from '@fluentui/react/lib/Stack';
-import { IconButton } from '@fluentui/react/lib/Button';
-import { IIconProps } from '@fluentui/react/lib/Icon';
+import { Button, Tooltip } from '@fluentui/react-components';
+import { ArrowDownloadRegular } from '@fluentui/react-icons';
+import { shallow } from 'zustand/shallow';
 
 //import store from '../../../store';
-import { iconButtonStyles } from '../../../core/ui/icons';
 import { isFeatureEnabled } from '../../../core/utils/features';
 import { getI18nValue } from '../../i18n';
 
 const downloadIcon: IIconProps = { iconName: 'Download' };
+import { TooltipCustomMount } from '../../interface';
 
 export const ExportVisualDownloadButton: React.FC = () => {
     /*const name = store(
             (state) => state.templateExportMetadata?.information?.name
         ),
         resolvedName =
-            name || i18nValue('Template_Export_Information_Name_Placeholder'),*/
+    const [ttRef, setTtRef] = useState<HTMLElement | null>();
     const handleDownload = () => {
         /*  Pending API 4.0.0
                 hostServices.download.exportVisualsContent(
@@ -31,13 +32,18 @@ export const ExportVisualDownloadButton: React.FC = () => {
     return (
         (isFeatureEnabled('useDownloadApi') && (
             <Stack.Item>
-                <IconButton
-                    iconProps={downloadIcon}
-                    styles={iconButtonStyles}
-                    ariaLabel={getI18nValue('Template_Export_Json_Copy')}
-                    ariaDescription={getI18nValue('Template_Export_Json_Copy')}
-                    onClick={handleDownload}
-                />
+                <Tooltip
+                    content={getI18nValue('Template_Export_Json_Copy')}
+                    relationship='label'
+                    withArrow
+                    mountNode={ttRef}
+                >
+                    <Button
+                        onClick={handleDownload}
+                        icon={<ArrowDownloadRegular />}
+                    />
+                </Tooltip>
+                <TooltipCustomMount setRef={setTtRef} />
             </Stack.Item>
         )) || <></>
     );

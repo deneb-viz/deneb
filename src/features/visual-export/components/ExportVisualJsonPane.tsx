@@ -1,15 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 
+import { CopyRegular } from '@fluentui/react-icons';
 import { Stack } from '@fluentui/react/lib/Stack';
 import { Text } from '@fluentui/react/lib/Text';
 import { ITextFieldStyles, TextField } from '@fluentui/react/lib/TextField';
-import { IconButton } from '@fluentui/react/lib/Button';
-import { IIconProps } from '@fluentui/react/lib/Icon';
 import { ITextStyles } from '@fluentui/react/lib/Text';
-import { Caption2 } from '@fluentui/react-components';
+import { Button, Caption2, Tooltip } from '@fluentui/react-components';
 
 import { getExportTemplate } from '../logic';
-import { iconButtonStyles } from '../../../core/ui/icons';
 import { ExportVisualDownloadButton } from './ExportVisualDownloadButton';
 import {
     TEMPLATE_EXPORT_INFO_STACK_TOKENS,
@@ -17,6 +15,7 @@ import {
     TEMPLATE_PICKER_STACK_STYLES
 } from '../../template';
 import { getI18nValue } from '../../i18n';
+import { TooltipCustomMount } from '../../interface';
 
 const exportPivotAssistiveToastTextStyles: ITextStyles = {
     root: {
@@ -42,21 +41,21 @@ const textStyles: Partial<ITextFieldStyles> = {
         fontSize: '85%'
     }
 };
-const copyIcon: IIconProps = { iconName: 'Copy' };
 
 export const ExportVisualJsonPane: React.FC = () => {
     const [copySuccess, setCopySuccess] = React.useState(false),
         textAreaRef = React.useRef(null),
-        copyRef = React.useRef(null),
-        handleCopy = () => {
-            textAreaRef.current.select();
-            document.execCommand('copy');
-            setCopySuccess(true);
-            copyRef.current.focus();
-            setTimeout(() => {
-                setCopySuccess(false);
-            }, 3500);
-        };
+        copyRef = React.useRef(null);
+    const [ttRef, setTtRef] = useState<HTMLElement | null>();
+    const handleCopy = () => {
+        textAreaRef.current.select();
+        document.execCommand('copy');
+        setCopySuccess(true);
+        copyRef.current.focus();
+        setTimeout(() => {
+            setCopySuccess(false);
+        }, 3500);
+    };
 
     return (
         <Stack
@@ -82,18 +81,19 @@ export const ExportVisualJsonPane: React.FC = () => {
                     </Stack.Item>
                     <ExportVisualDownloadButton />
                     <Stack.Item>
-                        <IconButton
-                            componentRef={copyRef}
-                            iconProps={copyIcon}
-                            styles={iconButtonStyles}
-                            ariaLabel={getI18nValue(
-                                'Template_Export_Json_Copy'
-                            )}
-                            ariaDescription={getI18nValue(
-                                'Template_Export_Json_Copy'
-                            )}
-                            onClick={handleCopy}
-                        />
+                        <Tooltip
+                            content={getI18nValue('Template_Export_Json_Copy')}
+                            relationship='label'
+                            withArrow
+                            mountNode={ttRef}
+                        >
+                            <Button
+                                ref={copyRef}
+                                onClick={handleCopy}
+                                icon={<CopyRegular />}
+                            />
+                        </Tooltip>
+                        <TooltipCustomMount setRef={setTtRef} />
                     </Stack.Item>
                 </Stack>
             </Stack.Item>
