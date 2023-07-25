@@ -22,6 +22,7 @@ import { TSpecProvider } from '../core/vega';
 import { logDebug } from '../features/logging';
 import { isVisualUpdateVolatile } from '../features/visual-host';
 import { InterfaceMode, getApplicationMode } from '../features/interface';
+import { getOnboardingDialog } from '../features/modal-dialog';
 
 const defaultViewport = { width: 0, height: 0 };
 
@@ -163,6 +164,12 @@ const handleSetVisualUpdate = (
         previousOptions: state.visualUpdateOptions,
         previousSettings: state.visualSettings
     });
+    // Check to see if onboarding dialog should be shown
+    const modalDialogRole = getOnboardingDialog(
+        payload.settings,
+        mode,
+        state.interface.modalDialogRole
+    );
     return {
         datasetViewObjects,
         editorIsNewDialogVisible: payload.settings.vega.isNewDialogOpen,
@@ -176,6 +183,7 @@ const handleSetVisualUpdate = (
         editorPreviewDebugIsExpanded: isExpanded,
         interface: {
             ...state.interface,
+            modalDialogRole,
             mode
         },
         processing: {

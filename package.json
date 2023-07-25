@@ -66,6 +66,7 @@
         "react-custom-scrollbars-2": "^4.4.0",
         "react-data-table-component": "^7.5.3",
         "react-dom": "^17.0.1",
+        "react-dropzone": "^14.2.3",
         "react-hotkeys-hook": "^3.4.0",
         "react-konami-code": "^2.3.0",
         "react-split-pane": "^0.1.92",

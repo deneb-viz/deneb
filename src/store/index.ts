@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
+import { ICreateSlice, createCreateSlice } from './create';
 import { IDatasetSlice, createDatasetSlice } from './dataset';
 import { IDebugSlice, createDebugSlice } from './debug';
 import { IEditorSlice, createEditorSlice } from './editor';
@@ -12,7 +13,8 @@ import { IVisualSlice, createVisualSlice } from './visual';
 import { IVisualUpdateSlice, createVisualUpdateSlice } from './visual-update';
 import { isFeatureEnabled } from '../core/utils/features';
 
-export type TStoreState = IDatasetSlice &
+export type TStoreState = ICreateSlice &
+    IDatasetSlice &
     IDebugSlice &
     IEditorSlice &
     IInterfaceSlice &
@@ -26,6 +28,7 @@ export type TStoreState = IDatasetSlice &
 const store = create<TStoreState>()(
     devtools(
         (...a) => ({
+            ...createCreateSlice(...a),
             ...createDatasetSlice(...a),
             ...createDebugSlice(...a),
             ...createEditorSlice(...a),

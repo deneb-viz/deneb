@@ -63,30 +63,21 @@ const getPivotItems = (items: IPivotItemData[]) =>
 export const TemplateDialogPivot: React.FC<ITemplateDialogPivotProps> = ({
     type
 }) => {
-    const {
-        templateProvider,
-        templateSelectedExportOperation,
-        updateSelectedExportOperation,
-        updateSelectedTemplateProvider
-    } = store(
-        (state) => ({
-            templateProvider: state.templateProvider,
-            templateSelectedExportOperation:
-                state.templateSelectedExportOperation,
-            updateSelectedExportOperation: state.updateSelectedExportOperation,
-            updateSelectedTemplateProvider: state.updateSelectedTemplateProvider
-        }),
-        shallow
-    );
+    const { templateSelectedExportOperation, updateSelectedExportOperation } =
+        store(
+            (state) => ({
+                templateSelectedExportOperation:
+                    state.templateSelectedExportOperation,
+                updateSelectedExportOperation:
+                    state.updateSelectedExportOperation
+            }),
+            shallow
+        );
     const getTabId = (itemKey: string) => {
         return `${type}-spec-pivot-${itemKey}`;
     };
     const handlePivotClick = (item: PivotItem) => {
         switch (type) {
-            case 'new':
-                return updateSelectedTemplateProvider(
-                    item.props.itemKey as TTemplateProvider
-                );
             case 'export':
                 return updateSelectedExportOperation(
                     item.props.itemKey as TExportOperation
@@ -95,8 +86,6 @@ export const TemplateDialogPivot: React.FC<ITemplateDialogPivotProps> = ({
     };
     const getSelectedKey = () => {
         switch (type) {
-            case 'new':
-                return templateProvider;
             case 'export':
                 return templateSelectedExportOperation;
         }

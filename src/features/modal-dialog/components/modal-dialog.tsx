@@ -18,6 +18,8 @@ import { ModalDialogRole } from '../types';
 import { VersionChangeContent } from './version-change-content';
 import { FieldRemapPane, RemapButton } from '../../remap-fields';
 import { logRender } from '../../logging';
+import { CreateButton, VisualCreatePane } from '../../visual-create';
+import { closeCreateDialog } from '../../../core/ui/commands';
 
 export const ModalDialog: React.FC = () => {
     const { modalDialogRole, clearMigrationDialog, setModalDialogRole } = store(
@@ -48,6 +50,9 @@ export const ModalDialog: React.FC = () => {
         // For version dialog, we update the version in properties
         if (modalDialogRole === 'Version') {
             clearMigrationDialog();
+        }
+        if (modalDialogRole === 'Create') {
+            closeCreateDialog();
         }
         setModalDialogRole('None');
     };
@@ -87,6 +92,8 @@ export const ModalDialog: React.FC = () => {
  */
 const getDialogPrimaryButton = (dialogRole: ModalDialogRole) => {
     switch (dialogRole) {
+        case 'Create':
+            return <CreateButton />;
         case 'Remap':
             return <RemapButton />;
         default:
@@ -99,6 +106,8 @@ const getDialogPrimaryButton = (dialogRole: ModalDialogRole) => {
  */
 const getDialogContent = (modalDialogRole: ModalDialogRole) => {
     switch (modalDialogRole) {
+        case 'Create':
+            return <VisualCreatePane />;
         case 'Version':
             return <VersionChangeContent />;
         case 'Remap':

@@ -126,22 +126,17 @@ const zoomOut = () =>
     );
 const zoomFit = () => getState().updateEditorZoomLevel(getZoomToFitScale());
 
+export const closeCreateDialog = () =>
+    handlePersist([{ name: 'isNewDialogOpen', value: false }]);
+
 /**
  * Handle the necessary logic required to close down a modal dialog.
  */
 const closeModalDialog = (type: TModalDialogType) => {
     switch (type) {
-        case 'new': {
-            handlePersist([{ name: 'isNewDialogOpen', value: false }]);
-            break;
-        }
         case 'export': {
             dispatchExportDialog(false);
             updateTemplateExportState('None');
-            break;
-        }
-        case 'mapping': {
-            dispatchMapFieldsDialog(false);
             break;
         }
     }
@@ -162,20 +157,12 @@ const openMapFieldsDialog = () => dispatchMapFieldsDialog();
  */
 const createNewSpec = () => {
     handlePersist([{ name: 'isNewDialogOpen', value: true }]);
-    dispatchDefaultTemplate();
 };
 
 /**
  * Handle the discard operation from the apply dialog, if the editors are dirty and the creator exits without applying them.
  */
 const discardChanges = () => dispatchDiscardChanges();
-
-/**
- * Manages dispatch of the default template select method to the store.
- */
-const dispatchDefaultTemplate = () => {
-    getState().updateSelectedTemplate(0);
-};
 
 /**
  * Manages dispatch of the discard changes command method to the store.

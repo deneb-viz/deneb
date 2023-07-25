@@ -11,22 +11,18 @@ import {
 } from '@fluentui/react/lib/DetailsList';
 
 import { ITemplateDatasetField } from '..';
-import DataTypeIcon from '../../../components/elements/DataTypeIcon';
+import { DataTypeIcon } from './data-type-icon';
 import CappedTextField from '../../../components/elements/CappedTextField';
-import { getDataset } from '../../../core/data/dataset';
-import {
-    getDatasetFieldByTemplateKey,
-    getDatasetTemplateFields
-} from '../../../core/data/fields';
-import DatasetFieldAssignmentDropdown from './DatasetFieldAssignmentDropdown';
+import { getDatasetFieldByTemplateKey } from '../../../core/data/fields';
+import { DataFieldDropDown } from './data-field-dropdown';
 import { TModalDialogType } from '../../modal-dialog';
-import { getState } from '../../../store';
 import { DATASET_NAME } from '../../../constants';
 import { TEMPLATE_DATASET_FIELD_PROPS } from '../fields';
 import { getI18nValue } from '../../i18n';
+import { Caption1 } from '@fluentui/react-components';
 
 const getDataTypeIcon = (item: ITemplateDatasetField) => (
-    <DataTypeIcon datasetField={item} />
+    <DataTypeIcon type={item.type} />
 );
 
 const getNameField = (item: ITemplateDatasetField) => (
@@ -35,15 +31,8 @@ const getNameField = (item: ITemplateDatasetField) => (
 
 const getAssignmentField = (
     item: ITemplateDatasetField,
-    type: TModalDialogType,
-    dataset: ITemplateDatasetField[]
-) => (
-    <DatasetFieldAssignmentDropdown
-        datasetField={item}
-        dialogType={type}
-        dataset={dataset}
-    />
-);
+    type: TModalDialogType
+) => <DataFieldDropDown datasetField={item} dialogType={type} />;
 
 const getExportNameField = (item: ITemplateDatasetField, index: number) => (
     <CappedTextField
@@ -76,24 +65,15 @@ const renderDatasetItem = (
 ) => {
     const displayName =
         getDatasetFieldByTemplateKey(item.key)?.displayName || '';
-    const { editorFieldsInUse } = getState();
     switch (column.key) {
         case 'type':
             return getDataTypeIcon(item);
         case 'name':
             return getNameField(item);
         case 'field_assignment':
-            return getAssignmentField(
-                item,
-                'new',
-                getDatasetTemplateFields(getDataset().fields)
-            );
+            return getAssignmentField(item, 'new');
         case 'map_field_assignment':
-            return getAssignmentField(
-                item,
-                'mapping',
-                getDatasetTemplateFields(editorFieldsInUse)
-            );
+            return getAssignmentField(item, 'mapping');
         case 'export_name':
             return getExportNameField(item, index);
         case 'export_description':

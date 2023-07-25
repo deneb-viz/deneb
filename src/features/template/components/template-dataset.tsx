@@ -13,6 +13,7 @@ import { TemplateDatasetColumns } from './template-dataset-columns';
 import { TemplateDatasetRow } from './template-dataset-row';
 import { TModalDialogType } from '../../modal-dialog';
 import { IDenebTemplateMetadata, ITemplateDatasetField } from '../schema';
+import { logDebug } from '../../logging';
 
 interface ITemplateDatasetProps {
     datasetRole: TModalDialogType;
@@ -25,7 +26,7 @@ export const TemplateDataset: React.FC<ITemplateDatasetProps> = ({
     datasetRole
 }) => {
     const metadata = store(
-        (state) => state.templateToApply.usermeta as IDenebTemplateMetadata,
+        (state) => state.create.metadata as IDenebTemplateMetadata,
         shallow
     );
     const { dataset } = metadata || {};
@@ -48,7 +49,10 @@ export const TemplateDataset: React.FC<ITemplateDatasetProps> = ({
  * Provide content for eligible dataset fields.
  */
 const getTableFieldRows = (role: TModalDialogType) => {
-    const { editorFieldsInUse, templateToApply } = getState();
+    const {
+        editorFieldsInUse,
+        create: { metadata }
+    } = getState();
     const mappedFieldsInUse = reduce(
         editorFieldsInUse,
         (acc, field) => {
@@ -62,14 +66,13 @@ const getTableFieldRows = (role: TModalDialogType) => {
     let items: ITemplateDatasetField[] = [];
     switch (role) {
         case 'new':
-            items =
-                (templateToApply.usermeta as IDenebTemplateMetadata)?.dataset ||
-                [];
+            items = metadata?.dataset || [];
             break;
         case 'mapping':
-        case 'export':
             items = mappedFieldsInUse;
+            break;
     }
+    logDebug('getTableFieldRows', { items });
     return items.map((item) => (
         <TableRow>
             <TemplateDatasetRow item={item} role={role} />

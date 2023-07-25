@@ -82,7 +82,6 @@ export const AdvancedEditorInterface: React.FC = () => {
                 {position === 'left' ? editorPane : <PreviewArea />}
                 {position === 'left' ? <PreviewArea /> : editorPane}
             </SplitPane>
-            <ModalDialogLegacy type='new' />
             <ModalDialogLegacy type='export' />
             <ModalDialog />
         </FluentProvider>

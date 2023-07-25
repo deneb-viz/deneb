@@ -29,11 +29,9 @@ export const powerbiTheme = (): Config => ({
         strokeCap: 'round',
         strokeJoin: 'round'
     },
-    path: {},
     point: { filled: true, size: 75 },
     rect: {},
-    shape: {},
-    symbol: { strokeWidth: 1.5, size: 50 },
+
     text: {
         font: FONT_STANDARD,
         fontSize: FONT_SMALL_PX,
@@ -78,6 +76,19 @@ export const powerbiTheme = (): Config => ({
         symbolSize: 75
     }
 });
+
+/**
+ * Add Vega-specific theme overrides to the Power BI theme.
+ */
+export const powerBiThemeVega = () =>
+    ({
+        ...powerbiTheme(),
+        ...{
+            path: {},
+            shape: {},
+            symbol: { strokeWidth: 1.5, size: 50 }
+        }
+    } as VgConfig);
 
 /**
  * Merge supplied template with base theme config

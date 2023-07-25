@@ -7,14 +7,9 @@ import { TModalDialogType } from './types';
 export const isDialogOpen = () => {
     const {
         editorIsExportDialogVisible,
-        editorIsNewDialogVisible,
         interface: { modalDialogRole }
     } = getState();
-    return (
-        editorIsNewDialogVisible ||
-        editorIsExportDialogVisible ||
-        modalDialogRole !== 'None'
-    );
+    return editorIsExportDialogVisible || modalDialogRole !== 'None';
 };
 
 /**

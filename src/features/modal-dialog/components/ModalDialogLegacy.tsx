@@ -8,7 +8,6 @@ import { ModalHeader } from './ModalHeader';
 import { closeModalDialog } from '../../../core/ui/commands';
 import { TModalDialogType } from '../types';
 import { getModalDialogContentStyles } from '../styles';
-import { CreateVisualDialogBody } from '../../visual-create';
 import { ExportVisualDialogBody } from '../../visual-export';
 import { shallow } from 'zustand/shallow';
 import { logRender } from '../../logging';
@@ -24,8 +23,6 @@ interface IModalDialogProps {
  */
 const getDialogBody = (type: TModalDialogType) => {
     switch (type) {
-        case 'new':
-            return <CreateVisualDialogBody />;
         case 'export':
             return <ExportVisualDialogBody />;
     }
@@ -35,16 +32,13 @@ const getDialogBody = (type: TModalDialogType) => {
  * Derive dialog visibility, based on the store state for its type.
  */
 const getDialogVisibility = (type: TModalDialogType) => {
-    const { editorIsNewDialogVisible, editorIsExportDialogVisible } = store(
+    const { editorIsExportDialogVisible } = store(
         (state) => ({
-            editorIsNewDialogVisible: state.editorIsNewDialogVisible,
             editorIsExportDialogVisible: state.editorIsExportDialogVisible
         }),
         shallow
     );
     switch (type) {
-        case 'new':
-            return editorIsNewDialogVisible;
         case 'export':
             return editorIsExportDialogVisible;
     }

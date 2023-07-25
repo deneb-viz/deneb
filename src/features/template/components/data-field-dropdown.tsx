@@ -1,9 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Dropdown,
     DropdownProps,
     Option,
-    PositioningImperativeRef,
     useId
 } from '@fluentui/react-components';
 import reduce from 'lodash/reduce';
@@ -28,7 +27,7 @@ export const DataFieldDropDown: React.FC<IDatasetFieldAssignmentDropdownProps> =
         const classes = useTemplateStyles();
         const {
             dataset: { fields },
-            updateTemplatePlaceholder,
+            create: { setFieldAssignment },
             updateEditorFieldMapping
         } = store((state) => state);
         const selectedKeyDefault = getDefaultSelectedKey(datasetField, fields);
@@ -51,9 +50,9 @@ export const DataFieldDropDown: React.FC<IDatasetFieldAssignmentDropdownProps> =
             const option = options.find((o) => o.queryName === selectedKey);
             switch (dialogType) {
                 case 'new':
-                    return updateTemplatePlaceholder({
-                        key: option?.templateMetadata?.key,
-                        objectName: option?.templateMetadata?.name
+                    return setFieldAssignment({
+                        key: datasetField.key,
+                        suppliedObjectName: option?.templateMetadata?.name
                     });
                 case 'mapping':
                     return updateEditorFieldMapping({
@@ -65,9 +64,10 @@ export const DataFieldDropDown: React.FC<IDatasetFieldAssignmentDropdownProps> =
             }
         }, [selectedKey]);
         const dropdownId = useId('dataset-field');
-        logRender('DatasetFieldAssignmentDropdown', {
+        logRender('DataFieldDropdown', {
             datasetField,
             dialogType,
+            fields,
             selectedKey,
             options
         });

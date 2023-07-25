@@ -1,4 +1,6 @@
+import { Spec } from 'vega';
 import { TSpecProvider } from '../../core/vega';
+import { TopLevelSpec } from 'vega-lite';
 
 /**
  * Denotes the role that a column performs, allowing us to switch based this
@@ -44,6 +46,14 @@ export type TTemplateImportState =
  * `vega` and `vegaLite`.
  */
 export type TTemplateProvider = TSpecProvider | 'import';
+
+/**
+ * Represents templates that are packaged in the .pbiviz for demo purposes.
+ */
+export interface IDenebTemplatesIncluded {
+    vega: Spec[];
+    vegaLite: TopLevelSpec[];
+}
 
 /**
  * Used to manage regex match/replace for portions of a template that represent
