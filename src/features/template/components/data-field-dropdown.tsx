@@ -143,7 +143,7 @@ const getFieldOptions = (fields: IVisualDatasetField[]) => {
 const getTemplateDatasetFields = (metadata: IVisualDatasetFields) =>
     reduce(
         getDatasetFieldsInclusive(metadata),
-        (result, value, key) => {
+        (result, value) => {
             return result.concat(value);
         },
         [] as IVisualDatasetField[]

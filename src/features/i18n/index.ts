@@ -4,7 +4,6 @@ import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 import reduce from 'lodash/reduce';
 
 import { ILocaleConfiguration } from './types';
-import { hostServices } from '../../core/services';
 
 export * from './types';
 
@@ -52,7 +51,7 @@ export const getI18nValue = (key: string, tokens: (string | number)[] = []) =>
         (prev, value, idx) => {
             return prev.replace(`{${idx}}`, `${value}`);
         },
-        hostServices.i18n.getDisplayName(key)
+        i18n.getDisplayName(key)
     );
 
 /**

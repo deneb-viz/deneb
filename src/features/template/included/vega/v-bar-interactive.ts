@@ -29,6 +29,7 @@ const dataset: ITemplateDatasetField[] = [
     }
 ];
 
+// eslint-disable-next-line max-lines-per-function
 export const vBarInteractive = (): Spec => ({
     $schema: VEGA_SCHEMA_URL,
     data: getDenebTemplateVegaDatasetRef(),

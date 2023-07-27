@@ -72,7 +72,7 @@ export const SelectIncludedTemplate: React.FC<ISelectIncludedTemplateProps> = ({
     }, []);
     useEffect(() => {
         setSelectedTemplate(templateMetadata[0]);
-        const { name } = selectedTemplate?.information;
+        const { name } = selectedTemplate?.information ?? { name: null };
         setRadioValue(name);
         onTemplateSelect(name);
     }, [createMode]);
