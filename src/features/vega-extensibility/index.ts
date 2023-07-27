@@ -1,5 +1,3 @@
-import { registerCustomSchemes } from './extensibility/schemes';
-
 export { VegaPatternFillServices } from './pattern-fill';
 export {
     VegaViewServices,
