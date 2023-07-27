@@ -140,7 +140,7 @@ export const vBarInteractive = (): Spec => ({
             'vega',
             'Interactive bar chart',
             'An evolution of the simple bar chart, with tooltips, cross-filtering and cross-highlighting, compatible with Power BI.',
-            'vBarSimple'
+            'vBarInteractive'
         ),
         ...{
             dataset,

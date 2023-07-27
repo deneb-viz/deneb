@@ -59,7 +59,7 @@ export const dispatchPreviewImage = (include: boolean) => {
  * encoded image.
  */
 export const getCombinedBase64ImageWithMime = (base64: string) =>
-    `${BASE64_DATA_URL_PREFIX}${base64.trim()}`;
+    `${BASE64_DATA_URL_PREFIX}${base64?.trim() ?? ''}`;
 
 /**
  * For the visual viewport dimensions, calculate the correct scaling to use for preview
