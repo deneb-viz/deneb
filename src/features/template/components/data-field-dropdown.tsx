@@ -40,12 +40,17 @@ export const DataFieldDropDown: React.FC<IDatasetFieldAssignmentDropdownProps> =
             const intendedItem = selectedKey
                 ? selectedKey
                 : fields[datasetField.name]?.queryName || null;
-            intendedItem !== selectedKey && setSelectedKey(intendedItem);
+            intendedItem !== selectedKey && setSelectedKey(() => intendedItem);
         };
         const onOptionSelect: DropdownProps['onOptionSelect'] = (ev, data) => {
             setSelectedKey(() => data.optionValue);
         };
         resolveSelectedKey();
+        useEffect(() => {
+            if (!selectedField) {
+                setSelectedKey(selectedKeyDefault);
+            }
+        }, [selectedField?.queryName]);
         useEffect(() => {
             const option = options.find((o) => o.queryName === selectedKey);
             switch (dialogType) {
@@ -64,11 +69,13 @@ export const DataFieldDropDown: React.FC<IDatasetFieldAssignmentDropdownProps> =
             }
         }, [selectedKey]);
         const dropdownId = useId('dataset-field');
-        logRender('DataFieldDropdown', {
+        logRender(`DataFieldDropdown ${datasetField.key}`, {
             datasetField,
             dialogType,
             fields,
+            selectedField,
             selectedKey,
+            selectedKeyDefault,
             options
         });
         return (
@@ -81,7 +88,7 @@ export const DataFieldDropDown: React.FC<IDatasetFieldAssignmentDropdownProps> =
                     'Text_Placeholder_Create_Assigned_Field'
                 )}
                 onOptionSelect={onOptionSelect}
-                value={selectedField?.templateMetadata?.name}
+                value={selectedField?.templateMetadata?.name || null}
             >
                 {dropdownOptionElements}
             </Dropdown>
