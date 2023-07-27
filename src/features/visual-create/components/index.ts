@@ -4,6 +4,10 @@ import { makeStyles, shorthands } from '@fluentui/react-components';
  * Create pane styles
  */
 export const useCreateStyles = makeStyles({
+    additionalResourcesMessage: {
+        height: '25%',
+        ...shorthands.margin('25px')
+    },
     importRadioGroup: {
         ...shorthands.padding('10px'),
         paddingLeft: '0px'
@@ -14,9 +18,9 @@ export const useCreateStyles = makeStyles({
     noTemplateMessage: {
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
-        height: '50%',
-        fontStyle: 'italic'
+        height: '25%',
+        fontStyle: 'italic',
+        marginLeft: '25px'
     },
     templateInformationHeader: {
         display: 'flex',
