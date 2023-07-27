@@ -29,6 +29,7 @@ import { getApplicationMode } from '../features/interface';
 import { ModalDialogRole } from '../features/modal-dialog/types';
 import { isMappingDialogRequired } from '../features/remap-fields';
 import { getOnboardingDialog } from '../features/modal-dialog';
+import { areAllCreateDataRequirementsMet } from '../features/visual-create';
 
 export interface IDatasetSlice {
     dataset: IVisualDataset;
@@ -111,6 +112,8 @@ const handleUpdateDataset = (
         editorFieldsInUse,
         state.editorFieldDatasetMismatch
     );
+    const { metadataAllDependenciesAssigned, metadataAllFieldsAssigned } =
+        areAllCreateDataRequirementsMet(state.create.metadata);
     const templateExportMetadata = {
         ...state.templateExportMetadata,
         ...{
@@ -160,6 +163,11 @@ const handleUpdateDataset = (
           );
     logDebug('dataset.updateDataset persisting to store...');
     return {
+        create: {
+            ...state.create,
+            metadataAllDependenciesAssigned,
+            metadataAllFieldsAssigned
+        },
         dataset: payload.dataset,
         datasetCategories,
         datasetProcessingStage: 'Processed',
