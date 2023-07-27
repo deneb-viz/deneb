@@ -187,7 +187,7 @@ const dispatchExportDialog = (show = true) => {
     updateEditorExportDialogVisible(show);
 };
 
-const dispatchMapFieldsDialog = (show = true) => {
+const dispatchMapFieldsDialog = () => {
     getState().interface.setModalDialogRole('Remap');
 };
 
