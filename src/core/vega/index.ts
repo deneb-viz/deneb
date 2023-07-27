@@ -46,10 +46,12 @@ const getVegaProvider = () => <TSpecProvider>getVegaSettings().provider;
 /**
  * Get the Vega provider, resolved for i18n.
  */
-const getVegaProvideri18n = () =>
-    getI18nValue(
-        getVegaProvider() === 'vegaLite' ? 'Provider_VegaLite' : 'Provider_Vega'
+const getVegaProvideri18n = (provider?: TSpecProvider) => {
+    const resolved = provider ?? getVegaProvider();
+    return getI18nValue(
+        resolved === 'vegaLite' ? 'Provider_VegaLite' : 'Provider_Vega'
     );
+};
 
 /**
  * For the current provider, get the version from our package configuration.

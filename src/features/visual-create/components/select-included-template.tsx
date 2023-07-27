@@ -20,7 +20,7 @@ import {
 } from '../../template';
 import { getState } from '../../../store';
 import { useCreateStyles } from './';
-import { TSpecProvider } from '../../../core/vega';
+import { getVegaProvideri18n, TSpecProvider } from '../../../core/vega';
 
 interface ISelectIncludedTemplateProps {
     createMode: TSpecProvider;
@@ -76,6 +76,13 @@ export const SelectIncludedTemplate: React.FC<ISelectIncludedTemplateProps> = ({
         setRadioValue(name);
         onTemplateSelect(name);
     }, [createMode]);
+    const subtitle = useMemo(
+        () =>
+            getI18nValue('Text_Radio_Group_Select_Template', [
+                getVegaProvideri18n(createMode)
+            ]),
+        [createMode]
+    );
     logRender('SelectIncludedTemplate', createMode);
     return (
         <div
@@ -85,9 +92,7 @@ export const SelectIncludedTemplate: React.FC<ISelectIncludedTemplateProps> = ({
             }}
         >
             <Label id={labelId}>
-                <Subtitle2>
-                    {getI18nValue('Text_Radio_Group_Select_Template')}
-                </Subtitle2>
+                <Subtitle2>{subtitle}</Subtitle2>
             </Label>
             <RadioGroup
                 aria-labelledby={labelId}
