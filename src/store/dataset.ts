@@ -28,6 +28,7 @@ import { logDebug } from '../features/logging';
 import { getApplicationMode } from '../features/interface';
 import { ModalDialogRole } from '../features/modal-dialog/types';
 import { isMappingDialogRequired } from '../features/remap-fields';
+import { getOnboardingDialog } from '../features/modal-dialog';
 
 export interface IDatasetSlice {
     dataset: IVisualDataset;
@@ -140,11 +141,23 @@ const handleUpdateDataset = (
             values: payload.dataset.values
         }
     });
+    const mode = getApplicationMode({
+        currentMode: state.interface.mode,
+        dataset: payload.dataset,
+        editMode: state.visualUpdateOptions.editMode,
+        isInFocus: state.visualUpdateOptions.isInFocus,
+        specification: state.visualSettings.vega.jsonSpec,
+        updateType: state.visualUpdateOptions.type
+    });
     const modalDialogRole: ModalDialogRole = isMappingDialogRequired(
         editorFieldsInUse
     )
         ? 'Remap'
-        : state.interface.modalDialogRole;
+        : getOnboardingDialog(
+              state.visualSettings,
+              mode,
+              state.interface.modalDialogRole
+          );
     logDebug('dataset.updateDataset persisting to store...');
     return {
         dataset: payload.dataset,
@@ -161,14 +174,7 @@ const handleUpdateDataset = (
         interface: {
             ...state.interface,
             modalDialogRole,
-            mode: getApplicationMode({
-                currentMode: state.interface.mode,
-                dataset: payload.dataset,
-                editMode: state.visualUpdateOptions.editMode,
-                isInFocus: state.visualUpdateOptions.isInFocus,
-                specification: state.visualSettings.vega.jsonSpec,
-                updateType: state.visualUpdateOptions.type
-            })
+            mode
         },
         processing: {
             ...state.processing,
