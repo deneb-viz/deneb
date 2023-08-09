@@ -2,7 +2,6 @@ import React from 'react';
 import { TableCell } from '@fluentui/react-components';
 
 import { CappedTextField } from '../../interface';
-import { ITemplateDatasetField } from '../schema';
 import { TEMPLATE_DATASET_FIELD_PROPS } from '../fields';
 import { DATASET_NAME } from '../../../constants';
 

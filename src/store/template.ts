@@ -33,11 +33,10 @@ export interface ITemplateSlice {
     updateSelectedExportOperation: (
         templateSelectedExportOperation: TExportOperation
     ) => void;
-    updateTemplateExportError: (message: string) => void;
+    updateTemplateExportError: () => void;
     updateTemplateExportState: (exportState: TTemplateExportState) => void;
 }
 
-// eslint-disable-next-line max-lines-per-function
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <ITemplateSlice>{
         ...{
@@ -81,9 +80,9 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                     false,
                     'updateSelectedExportOperation'
                 ),
-            updateTemplateExportError: (message) =>
+            updateTemplateExportError: () =>
                 set(
-                    (state) => handleTemplateExportError(state, message),
+                    () => handleTemplateExportError(),
                     false,
                     'updateTemplateExportError'
                 ),
@@ -150,10 +149,7 @@ const handleUpdateSelectedExportOperation = (
     templateSelectedExportOperation
 });
 
-const handleTemplateExportError = (
-    state: TStoreState,
-    message: string
-): Partial<TStoreState> => ({
+const handleTemplateExportError = (): Partial<TStoreState> => ({
     templateExportState: 'Error'
 });
 

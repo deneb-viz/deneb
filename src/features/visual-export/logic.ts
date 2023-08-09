@@ -160,8 +160,8 @@ const resolveExportUserMeta = (): IDenebTemplateMetadata => {
 /**
  * Persist the supplied export error information to the store.
  */
-const updateExportError = (i18nKey: string) => {
-    getState().updateTemplateExportError(getI18nValue(i18nKey));
+const updateExportError = () => {
+    getState().updateTemplateExportError();
 };
 
 /**
@@ -182,6 +182,6 @@ export const validateSpecificationForExport = () => {
     if (status === 'valid') {
         updateTemplateExportState('Editing');
     } else {
-        updateExportError('Template_Export_Bad_Spec');
+        updateExportError();
     }
 };

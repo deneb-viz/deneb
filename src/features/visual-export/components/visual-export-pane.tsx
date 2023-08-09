@@ -1,7 +1,5 @@
 import React from 'react';
-import { shallow } from 'zustand/shallow';
 
-import store from '../../../store';
 import { logRender } from '../../logging';
 import { getI18nValue } from '../../i18n';
 import { useModalDialogStyles } from '../../modal-dialog';
@@ -13,7 +11,6 @@ import { Subtitle2 } from '@fluentui/react-components';
  * Interface (pane) for exporting a existing visualization.
  */
 export const VisualExportPane: React.FC = () => {
-    const mode = store((state) => state.create.mode, shallow);
     const classes = useModalDialogStyles();
     logRender('VisualExportPane');
     return (

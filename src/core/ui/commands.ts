@@ -1,5 +1,4 @@
 export {
-    closeModalDialog,
     createExportableTemplate,
     createNewSpec,
     discardChanges,
@@ -33,16 +32,13 @@ import {
 import { getState } from '../../store';
 import { getConfig, getVisualMetadata } from '../utils/config';
 import { hostServices } from '../services';
-import { TModalDialogType } from '../../features/modal-dialog';
 import { TSpecProvider, TSpecRenderMode } from '../vega';
 import { getZoomInLevel, getZoomOutLevel, zoomConfig } from './dom';
 import { getZoomToFitScale, TPreviewPivotRole } from './advancedEditor';
-import { dispatchPreviewImage } from '../../features/template';
 import {
     fixAndFormatSpecification,
     persistSpecification
 } from '../../features/specification';
-import { updateTemplateExportState } from '../../features/visual-export';
 import { TEditorRole } from '../../features/json-editor';
 
 interface IKeyboardShortcut {
@@ -130,19 +126,6 @@ export const closeCreateDialog = () =>
     handlePersist([{ name: 'isNewDialogOpen', value: false }]);
 
 /**
- * Handle the necessary logic required to close down a modal dialog.
- */
-const closeModalDialog = (type: TModalDialogType) => {
-    switch (type) {
-        case 'export': {
-            dispatchExportDialog(false);
-            updateTemplateExportState('None');
-            break;
-        }
-    }
-};
-
-/**
  * Handle the Generate JSON Template command.
  */
 const createExportableTemplate = () => dispatchExportDialog();
@@ -181,7 +164,7 @@ const dispatchEditorPivotItem = (operation: TEditorRole) => {
 /**
  * Manages dispatch of the export dialog command method to the store.
  */
-const dispatchExportDialog = (show = true) => {
+const dispatchExportDialog = () => {
     getState().interface.setModalDialogRole('Export');
 };
 
