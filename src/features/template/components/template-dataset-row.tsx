@@ -4,12 +4,15 @@ import { DataTypeColumnCell } from './data-type-column-cell';
 import { DataNameColumnCell } from './data-name-column-cell';
 import { DataAssignmentColumnCell } from './data-assignment-column-cell';
 import { DataDescriptionColumnCell } from './data-description-column-cell';
+import { DataNameColumnField } from './data-name-column-field';
+import { DataDescriptionColumnField } from './data-description-column-field';
 import { TModalDialogType } from '../../modal-dialog';
 import { ITemplateDatasetField } from '../schema';
 
 interface ITemplateDatasetRowProps {
     role: TModalDialogType;
     item: ITemplateDatasetField;
+    index: number;
 }
 
 /**
@@ -18,7 +21,8 @@ interface ITemplateDatasetRowProps {
  */
 export const TemplateDatasetRow: React.FC<ITemplateDatasetRowProps> = ({
     role,
-    item
+    item,
+    index
 }) => {
     const description = item?.description || '';
     switch (role) {
@@ -38,6 +42,16 @@ export const TemplateDatasetRow: React.FC<ITemplateDatasetRowProps> = ({
                     <DataTypeColumnCell type={item.type} />
                     <DataNameColumnCell name={item.name} />
                     <DataAssignmentColumnCell item={item} role={role} />
+                </>
+            );
+        }
+        case 'export': {
+            return (
+                <>
+                    <DataTypeColumnCell type={item.type} />
+                    <DataNameColumnCell name={item.name} />
+                    <DataNameColumnField item={item} index={index} />
+                    <DataDescriptionColumnField index={index} />
                 </>
             );
         }

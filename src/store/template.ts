@@ -6,7 +6,10 @@ import cloneDeep from 'lodash/cloneDeep';
 import set from 'lodash/set';
 
 import { TStoreState } from '.';
-import { IDenebTemplateMetadata } from '../features/template';
+import {
+    BASE64_BLANK_IMAGE,
+    IDenebTemplateMetadata
+} from '../features/template';
 
 import { TSpecProvider } from '../core/vega';
 import { TExportOperation, TTemplateExportState } from '../features/template';
@@ -43,7 +46,7 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
             templateExportErrorMessage: null,
             templateFileRawContent: null,
             templateIncludePreviewImage: false,
-            templatePreviewImageDataUri: null,
+            templatePreviewImageDataUri: BASE64_BLANK_IMAGE,
             templateExportMetadata: null,
             templateSelectedExportOperation: 'information',
             initializeImportExport: () =>
@@ -118,9 +121,6 @@ interface ITemplatePlaceholderImagePayload {
 }
 
 const handleInitializeImportExport = (): Partial<TStoreState> => ({
-    // templateAllImportCriteriaApplied: getImportPlaceholderResolutionStatus(
-    //     INCLUDED_TEMPLATES.vegaLite[0]
-    // ),
     templateExportMetadata: getNewExportTemplateMetadata()
 });
 

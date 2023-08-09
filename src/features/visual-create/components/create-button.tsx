@@ -31,7 +31,7 @@ export const CreateButton: React.FC = () => {
         logDebug('Creating from template...');
         createFromTemplate(provider, specification, metadata);
     };
-    logRender('CreateFromTemplate');
+    logRender('CreateButton');
     return (
         <Button
             disabled={!metadataAllDependenciesAssigned}

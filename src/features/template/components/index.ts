@@ -31,5 +31,8 @@ export const useTemplateStyles = makeStyles({
         width: `${TEMPLATE_PREVIEW_IMAGE_MAX_SIZE}px`,
         height: `${TEMPLATE_PREVIEW_IMAGE_MAX_SIZE}px`,
         ...shorthands.margin('5px')
+    },
+    tableRow: {
+        alignItems: 'start'
     }
 });

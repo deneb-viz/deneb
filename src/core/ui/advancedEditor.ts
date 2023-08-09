@@ -5,7 +5,6 @@ import { getState } from '../../store';
 import { getConfig } from '../utils/config';
 import { TEditorPosition } from '.';
 import { CSSProperties } from 'react';
-import { theme } from './fluent';
 import {
     ADVANCED_EDITOR_TOOLBAR_HEIGHT,
     EDITOR_PANE_SPLIT_COLLAPSED_SIZE,
@@ -17,6 +16,7 @@ import {
     PREVIEW_PANE_TOOLBAR_MIN_SIZE,
     SPLIT_PANE_RESIZER_SIZE
 } from '../../constants';
+import { tokens } from '@fluentui/react-components';
 
 /**
  * How many pixels to apply to the preview area calculations as a "safety"
@@ -30,7 +30,7 @@ const resizerBoxSizing = 'border-box';
 const resizerBackgroundClip = 'padding-box';
 
 const resizerStyles: CSSProperties = {
-    background: theme.palette.neutralLighter,
+    background: tokens.colorNeutralBackground5,
     zIndex: 1,
     MozBoxSizing: resizerBoxSizing,
     WebkitBoxSizing: resizerBoxSizing,
@@ -38,11 +38,11 @@ const resizerStyles: CSSProperties = {
     MozBackgroundClip: resizerBackgroundClip,
     WebkitBackgroundClip: resizerBackgroundClip,
     backgroundClip: resizerBackgroundClip,
-    border: `1px solid ${theme.palette.neutralLight}`
+    border: `1px solid ${tokens.colorNeutralStroke2}`
 };
 
 const resizerPaneStyles: CSSProperties = {
-    border: `1px solid ${theme.palette.neutralLight}`,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
     boxSizing: 'border-box'
 };
 

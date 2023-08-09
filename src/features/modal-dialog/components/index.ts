@@ -23,25 +23,8 @@ export const useModalDialogStyles = makeStyles({
         width: 'auto',
         overflowY: 'hidden'
     },
-    paneRoot: {
-        marginTop: '5px',
-        marginBottom: '0px',
-        flexGrow: 1,
-        display: 'flex',
-        flexDirection: 'row',
-        flexWrap: 'nowrap',
-        width: 'auto',
-        height: 'auto',
-        boxSizing: 'border-box',
-        overflowY: 'hidden'
-    },
-    paneMenu: {
-        width: '300px',
-        minWidth: '300px',
-        overflowY: 'auto',
-        paddingBottom: '0px',
-        paddingRight: '24px',
-        marginRight: '5px'
+    paneAssistiveText: {
+        marginBottom: tokens.spacingVerticalL
     },
     paneContent: {
         overflowY: 'hidden',
@@ -55,11 +38,12 @@ export const useModalDialogStyles = makeStyles({
         ...shorthands.borderStyle('solid'),
         ...shorthands.margin('0px')
     },
-    paneContentScrollable: {
-        height: '100%',
-        overflowY: 'auto',
-        ...shorthands.padding('10px'),
-        paddingTop: '0px'
+    paneContentField: {
+        ...shorthands.padding(
+            tokens.spacingVerticalNone,
+            tokens.spacingHorizontalNone,
+            tokens.spacingVerticalS
+        )
     },
     paneContentFooter: {
         display: 'flex',
@@ -71,7 +55,39 @@ export const useModalDialogStyles = makeStyles({
         borderTopWidth: '1px',
         borderTopStyle: 'solid'
     },
+    paneContentHeading: {
+        paddingBottom: tokens.spacingVerticalM
+    },
+    paneContentScrollable: {
+        height: '100%',
+        overflowY: 'auto',
+        ...shorthands.padding('10px'),
+        paddingTop: '0px'
+    },
+    paneContentSection: {
+        paddingBottom: tokens.spacingVerticalXL
+    },
     paneContentFooterButtonContainer: {
         paddingRight: '15px'
+    },
+    paneMenu: {
+        width: '300px',
+        minWidth: '300px',
+        overflowY: 'auto',
+        paddingBottom: '0px',
+        paddingRight: '24px',
+        marginRight: '5px'
+    },
+    paneRoot: {
+        marginTop: '5px',
+        marginBottom: '0px',
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'nowrap',
+        width: 'auto',
+        height: 'auto',
+        boxSizing: 'border-box',
+        overflowY: 'hidden'
     }
 });

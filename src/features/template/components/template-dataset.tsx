@@ -14,6 +14,7 @@ import { TemplateDatasetRow } from './template-dataset-row';
 import { TModalDialogType } from '../../modal-dialog';
 import { IDenebTemplateMetadata, ITemplateDatasetField } from '../schema';
 import { logDebug } from '../../logging';
+import { useTemplateStyles } from '.';
 
 interface ITemplateDatasetProps {
     datasetRole: TModalDialogType;
@@ -51,7 +52,8 @@ export const TemplateDataset: React.FC<ITemplateDatasetProps> = ({
 const getTableFieldRows = (role: TModalDialogType) => {
     const {
         editorFieldsInUse,
-        create: { metadata }
+        create: { metadata },
+        templateExportMetadata
     } = getState();
     const mappedFieldsInUse = reduce(
         editorFieldsInUse,
@@ -63,6 +65,7 @@ const getTableFieldRows = (role: TModalDialogType) => {
         },
         ([] as ITemplateDatasetField[]) || []
     );
+    const classes = useTemplateStyles();
     let items: ITemplateDatasetField[] = [];
     switch (role) {
         case 'new':
@@ -71,11 +74,14 @@ const getTableFieldRows = (role: TModalDialogType) => {
         case 'mapping':
             items = mappedFieldsInUse;
             break;
+        case 'export':
+            items = templateExportMetadata?.dataset || [];
+            break;
     }
     logDebug('getTableFieldRows', { items });
-    return items.map((item) => (
-        <TableRow>
-            <TemplateDatasetRow item={item} role={role} />
+    return items.map((item, index) => (
+        <TableRow className={classes.tableRow}>
+            <TemplateDatasetRow item={item} role={role} index={index} />
         </TableRow>
     ));
 };

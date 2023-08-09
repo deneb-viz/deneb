@@ -1,7 +1,6 @@
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import '../style/visual.less';
-import '../style/fabric-icons-inline.css';
 import 'jsoneditor/dist/jsoneditor.css';
 import powerbi from 'powerbi-visuals-api';
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
@@ -15,16 +14,13 @@ import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { loadTheme } from '@fluentui/react/lib/Styling';
 
 import App from './components/App';
 import VisualSettings from './properties/VisualSettings';
 
 import { getState } from './store';
 import { canFetchMoreFromDataview, getRowCount } from './core/data/dataView';
-import { theme } from './core/ui/fluent';
 import { hostServices } from './core/services';
-import { initializeIcons } from './core/ui/fluent';
 import { getMappedDataset } from './core/data/dataset';
 import { handlePropertyMigration } from './core/utils/versioning';
 import { resolveReportViewport } from './core/ui/dom';
@@ -54,8 +50,6 @@ export class Deneb implements IVisual {
     constructor(options: VisualConstructorOptions) {
         logHost('Constructor has been called.', { options });
         try {
-            loadTheme(theme);
-            initializeIcons();
             hostServices.bindHostServices(options);
             I18nServices.bind(options);
             VegaPatternFillServices.bind();

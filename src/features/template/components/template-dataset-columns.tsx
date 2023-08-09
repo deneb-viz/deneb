@@ -33,6 +33,16 @@ export const TemplateDatasetColumns: React.FC<ITemplateDatasetColumnsProps> = ({
                 </>
             );
         }
+        case 'export': {
+            return (
+                <>
+                    <DataColumnHeader columnRole='type' />
+                    <DataColumnHeader columnRole='originalName' />
+                    <DataColumnHeader columnRole='exportName' />
+                    <DataColumnHeader columnRole='exportDescription' />
+                </>
+            );
+        }
     }
     return <></>;
 };

@@ -43,6 +43,10 @@
         "capabilities": {
             "privileges": [
                 {
+                    "name": "ExportContent",
+                    "essential": true
+                },
+                {
                     "name": "WebAccess",
                     "parameters": ["https://*", "http://*"]
                 }

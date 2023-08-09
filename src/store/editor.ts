@@ -52,7 +52,6 @@ export interface IEditorSlice {
     toggleEditorPane: () => void;
     togglePreviewDebugPane: () => void;
     updateEditorPreviewDebugIsExpanded: (value: boolean) => void;
-    updateEditorExportDialogVisible: (visible: boolean) => void;
     updateEditorFieldMapping: (
         payload: IEditorFieldMappingUpdatePayload
     ) => void;
@@ -161,13 +160,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                 (state) => handleUpdateEditorFieldMappings(state, payload),
                 false,
                 'updateEditorFieldMapping'
-            ),
-        updateEditorExportDialogVisible: (visible) =>
-            set(
-                (state) =>
-                    handleUpdateEditorExportDialogVisible(state, visible),
-                false,
-                'updateEditorExportDialogVisible'
             ),
         updateEditorFixStatus: (payload) =>
             set(
@@ -391,13 +383,6 @@ const handleUpdateEditorFieldMappings = (
         },
         <IVisualDatasetFields>state.editorFieldsInUse
     )
-});
-
-const handleUpdateEditorExportDialogVisible = (
-    state: TStoreState,
-    visible: boolean
-): Partial<TStoreState> => ({
-    editorIsExportDialogVisible: visible
 });
 
 const handleUpdateEditorFixStatus = (

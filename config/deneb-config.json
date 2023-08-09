@@ -10,11 +10,11 @@
         "dataDrilldown": false,
         "tooltipHandler": true,
         "tooltipResolveNumberFieldFormat": true,
-        "useDownloadApi": false,
+        "useDownloadApi": true,
         "templateExportPreviewImages": true,
         "unitTestCanary": false
     },
-    "logLevel": 0,
+    "logLevel": 50,
     "fluentUiTheme": {
         "palette": {
             "themePrimary": "#117865",

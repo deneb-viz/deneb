@@ -11,19 +11,15 @@ import ITooltipService = powerbi.extensibility.ITooltipService;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import IVisualEventService = powerbi.extensibility.IVisualEventService;
 import ISandboxExtendedColorPalette = powerbi.extensibility.ISandboxExtendedColorPalette;
+import IDownloadService = powerbi.extensibility.IDownloadService;
 import { logHost } from '../../features/logging';
-/*  Pending API 4.0.0
-    import IDownloadService = powerbi.extensibility.IDownloadService;
-*/
 
 /**
  * Proxy service for Power BI host services, plus any additional logic we wish to encapsulate.
  */
 export class HostServices {
     allowInteractions: boolean;
-    /*  Pending API 4.0.0
-        download: IDownloadService;
-    */
+    download: IDownloadService;
     colorPalette: ISandboxExtendedColorPalette;
     displayWarningIcon: (hoverText: string, detailedText: string) => void;
     element: HTMLElement;
@@ -40,9 +36,7 @@ export class HostServices {
 
     bindHostServices = (options: VisualConstructorOptions) => {
         const { element, host } = options;
-        /*  Pending API 4.0.0
-            this.download = options.host.downloadService;
-        */
+        this.download = options.host.downloadService;
         this.allowInteractions = host.hostCapabilities.allowInteractions;
         this.colorPalette = host.colorPalette;
         this.displayWarningIcon = host.displayWarningIcon;

@@ -17,6 +17,7 @@ import { isVisualUpdateTypeResizeEnd } from '../visual-host';
  */
 export * as Themes from './theme';
 export { AdvancedEditorInterface } from './components/advanced-editor-interface';
+export { CappedTextField } from './components/capped-text-field';
 export { Hyperlink } from './components/hyperlink';
 export { StatusBarContainer } from './components/status-bar-container';
 export { TooltipCustomMount } from './components/tooltip-custom-mount';

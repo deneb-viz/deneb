@@ -11,7 +11,9 @@ export type TemplateDatasetColumnRole =
     | 'name'
     | 'assignment'
     | 'description'
-    | 'originalName';
+    | 'originalName'
+    | 'exportName'
+    | 'exportDescription';
 
 /**
  * Used to indicate which part of the export dialog has focus.

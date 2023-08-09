@@ -56,6 +56,7 @@ export const getDataColumnClass = (role: TemplateDatasetColumnRole) => {
             return classes.datasetDataType;
         case 'name':
         case 'originalName':
+        case 'exportName':
             return classes.datasetColumnName;
         case 'assignment':
             return classes.datasetColumnAssignment;
@@ -71,11 +72,14 @@ export const getDataColumnText = (role: TemplateDatasetColumnRole) => {
     switch (role) {
         case 'name':
             return getI18nValue('Text_Template_Dataset_Field_Name');
+        case 'exportName':
+            return getI18nValue('Text_Template_Dataset_Field_Name_Export');
         case 'originalName':
             return getI18nValue('Text_Template_Dataset_Field_OriginalName');
         case 'assignment':
             return getI18nValue('Text_Template_Dataset_Field_Assignment');
         case 'description':
+        case 'exportDescription':
             return getI18nValue('Text_Template_Dataset_Field_Description');
         default:
             return '';

@@ -182,9 +182,7 @@ const dispatchEditorPivotItem = (operation: TEditorRole) => {
  * Manages dispatch of the export dialog command method to the store.
  */
 const dispatchExportDialog = (show = true) => {
-    const { updateEditorExportDialogVisible } = getState();
-    dispatchPreviewImage(false);
-    updateEditorExportDialogVisible(show);
+    getState().interface.setModalDialogRole('Export');
 };
 
 const dispatchMapFieldsDialog = () => {

@@ -20,6 +20,7 @@ import { FieldRemapPane, RemapButton } from '../../remap-fields';
 import { logRender } from '../../logging';
 import { CreateButton, VisualCreatePane } from '../../visual-create';
 import { closeCreateDialog } from '../../../core/ui/commands';
+import { ExportButtons, VisualExportPane } from '../../visual-export';
 
 export const ModalDialog: React.FC = () => {
     const { modalDialogRole, clearMigrationDialog, setModalDialogRole } = store(
@@ -96,6 +97,8 @@ const getDialogPrimaryButton = (dialogRole: ModalDialogRole) => {
             return <CreateButton />;
         case 'Remap':
             return <RemapButton />;
+        case 'Export':
+            return <ExportButtons />;
         default:
             return <></>;
     }
@@ -112,6 +115,8 @@ const getDialogContent = (modalDialogRole: ModalDialogRole) => {
             return <VersionChangeContent />;
         case 'Remap':
             return <FieldRemapPane />;
+        case 'Export':
+            return <VisualExportPane />;
         default: {
             return <></>;
         }
