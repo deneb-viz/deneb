@@ -325,6 +325,7 @@
     "Text_Menu_Apply_Auto": "As you type",
     "Text_Menu_Apply_Manual": "Manually",
     "Text_No_Template_Selected": "No template currently selected - please import a template, or choose from the list of included templates.",
+    "Text_Placeholder_Create_Assigned_Field": "Select a column or measure",
     "Text_Radio_Button_Create_Import": "Existing template",
     "Text_Radio_Button_Create_VegaLite": "Vega-Lite",
     "Text_Radio_Button_Create_Vega": "Vega",
