@@ -28,7 +28,9 @@ import {
     IZoomLevelCommandTestOptions,
     isZoomOtherCommandEnabled,
     isZoomInCommandEnabled,
-    isZoomOutCommandEnabled
+    isZoomOutCommandEnabled,
+    isExportSpecCommandEnabled,
+    IExportSpecCommandTestOptions
 } from '../features/commands';
 
 const defaultViewport = { width: 0, height: 0 };
@@ -186,9 +188,17 @@ const handleSetVisualUpdate = (
         specification: spec,
         interfaceMode: mode
     };
+    const exportSpecCommandTest: IExportSpecCommandTestOptions = {
+        editorIsDirty: state.editor.isDirty,
+        specification: spec,
+        interfaceMode: mode
+    };
     return {
         commands: {
             ...state.commands,
+            exportSpecification: isExportSpecCommandEnabled(
+                exportSpecCommandTest
+            ),
             zoomFit: isZoomOtherCommandEnabled(zoomOtherCommandTest),
             zoomIn: isZoomInCommandEnabled(zoomLevelCommandTest),
             zoomOut: isZoomOutCommandEnabled(zoomLevelCommandTest),

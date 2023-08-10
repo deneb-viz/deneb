@@ -22,6 +22,7 @@ export type Command =
 
 export interface IExportSpecCommandTestOptions {
     editorIsDirty: boolean;
+    specification: ISpecification;
     interfaceMode: InterfaceMode;
 }
 

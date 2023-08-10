@@ -83,7 +83,10 @@ export const handleZoomReset = () =>
  */
 export const isExportSpecCommandEnabled = (
     options: IExportSpecCommandTestOptions
-) => !options.editorIsDirty && isInterfaceModeValid(options.interfaceMode);
+) =>
+    !options.editorIsDirty &&
+    isSpecificationValid(options.specification) &&
+    isInterfaceModeValid(options.interfaceMode);
 
 /**
  * Tests whether other zoom commands are enabled.

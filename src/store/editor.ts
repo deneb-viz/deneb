@@ -264,7 +264,8 @@ const handleUpdateChanges = (
             ...state.commands,
             exportSpecification: isExportSpecCommandEnabled({
                 editorIsDirty: isDirty,
-                interfaceMode: state.interface.mode
+                interfaceMode: state.interface.mode,
+                specification: state.specification
             })
         },
         editor: {
@@ -381,7 +382,8 @@ const handleUpdateIsDirty = (
         ...state.commands,
         exportSpecification: isExportSpecCommandEnabled({
             editorIsDirty: isDirty,
-            interfaceMode: state.interface.mode
+            interfaceMode: state.interface.mode,
+            specification: state.specification
         })
     },
     editor: {
