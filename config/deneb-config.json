@@ -14,7 +14,7 @@
         "templateExportPreviewImages": true,
         "unitTestCanary": false
     },
-    "logLevel": 50,
+    "logLevel": 0,
     "fluentUiTheme": {
         "palette": {
             "themePrimary": "#117865",
