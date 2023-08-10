@@ -1,7 +1,6 @@
 export * as advancedEditor from './advancedEditor';
 export * as commands from './commands';
 export * as dom from './dom';
-export * as icons from './icons';
 export * as labels from './labels';
 
 export { getVersionInfo, TEditorPosition };
