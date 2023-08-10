@@ -25,24 +25,6 @@ export const getReportViewport = (
 export const zoomConfig = getConfig().zoomLevel;
 
 /**
- * Manages the increase of zoom level in the visual editor by increasing it by step value.
- */
-export const getZoomInLevel = (value: number) => {
-    const { step, max } = zoomConfig,
-        level = Math.min(max, Math.floor((value + step) / 10) * 10);
-    return (value < max && level) || level;
-};
-
-/**
- * Manages the decrease of zoom level in the visual editor by decreasing it by step value.
- */
-export const getZoomOutLevel = (value: number) => {
-    const { step, min } = zoomConfig,
-        level = Math.max(min, Math.ceil((value - step) / 10) * 10);
-    return (value > min && level) || level;
-};
-
-/**
  * Convert a value intended for pt to a px equivalent.
  */
 export const ptToPx = (value: number) => value * (1 / 3 + 1);

@@ -23,6 +23,13 @@ import { logDebug } from '../features/logging';
 import { isVisualUpdateVolatile } from '../features/visual-host';
 import { InterfaceMode, getApplicationMode } from '../features/interface';
 import { getOnboardingDialog } from '../features/modal-dialog';
+import {
+    IZoomOtherCommandTestOptions,
+    IZoomLevelCommandTestOptions,
+    isZoomOtherCommandEnabled,
+    isZoomInCommandEnabled,
+    isZoomOutCommandEnabled
+} from '../features/commands';
 
 const defaultViewport = { width: 0, height: 0 };
 
@@ -170,7 +177,23 @@ const handleSetVisualUpdate = (
         mode,
         state.interface.modalDialogRole
     );
+    const zoomOtherCommandTest: IZoomOtherCommandTestOptions = {
+        specification: spec,
+        interfaceMode: mode
+    };
+    const zoomLevelCommandTest: IZoomLevelCommandTestOptions = {
+        value: state.editorZoomLevel,
+        specification: spec,
+        interfaceMode: mode
+    };
     return {
+        commands: {
+            ...state.commands,
+            zoomFit: isZoomOtherCommandEnabled(zoomOtherCommandTest),
+            zoomIn: isZoomInCommandEnabled(zoomLevelCommandTest),
+            zoomOut: isZoomOutCommandEnabled(zoomLevelCommandTest),
+            zoomReset: isZoomOtherCommandEnabled(zoomLevelCommandTest)
+        },
         datasetViewObjects,
         editorIsNewDialogVisible: payload.settings.vega.isNewDialogOpen,
         editorPaneWidth: edPaneWidth,

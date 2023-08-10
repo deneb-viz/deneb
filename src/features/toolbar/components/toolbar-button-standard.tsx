@@ -16,31 +16,30 @@ import {
     ZoomInRegular,
     ZoomOutRegular
 } from '@fluentui/react-icons';
+import { shallow } from 'zustand/shallow';
 
-import { getState } from '../../../store';
+import store, { getState } from '../../../store';
 import {
-    createExportableTemplate,
     createNewSpec,
-    handleZoomFit,
-    handleZoomIn,
-    handleZoomOut,
     openHelpSite,
     openMapFieldsDialog,
     repairFormatJson,
     updatePreviewDebugPaneState
 } from '../../../core/ui/commands';
 import { useToolbarStyles } from '.';
-import {
-    isZoomControlDisabledReact,
-    isZoomInIconDisabled,
-    isZoomOutIconDisabled
-} from '../../../core/ui/icons';
 import { getI18nValue } from '../../i18n';
-import { ToolbarCommand, ToolbarRole } from '../types';
+import {
+    Command,
+    handleExportSpecification,
+    handleZoomFit,
+    handleZoomIn,
+    handleZoomOut
+} from '../../commands';
+import { ToolbarRole } from '../types';
 import { TooltipCustomMount } from '../../interface';
 
 interface IToolbarButtonProps {
-    command: ToolbarCommand;
+    command: Command;
     role: ToolbarRole;
 }
 
@@ -48,6 +47,12 @@ export const ToolbarButtonStandard: React.FC<IToolbarButtonProps> = ({
     command,
     role
 }) => {
+    const { commands } = store(
+        (state) => ({
+            commands: state.commands
+        }),
+        shallow
+    );
     const classes = useToolbarStyles();
     const i18nKey = getI18nValue(resolveI18nKey(command));
     const icon = resolveIcon(command);
@@ -70,7 +75,7 @@ export const ToolbarButtonStandard: React.FC<IToolbarButtonProps> = ({
                     className={buttonClass}
                     onClick={handleClick}
                     icon={icon}
-                    disabled={resolveDisabledState(command)}
+                    disabled={!commands[command]}
                 >
                     {caption}
                 </ToolbarButton>
@@ -80,7 +85,7 @@ export const ToolbarButtonStandard: React.FC<IToolbarButtonProps> = ({
     );
 };
 
-const resolveCaption = (command: ToolbarCommand) => {
+const resolveCaption = (command: Command) => {
     const { editorZoomLevel } = getState();
     switch (command) {
         case 'zoomLevel':
@@ -90,12 +95,12 @@ const resolveCaption = (command: ToolbarCommand) => {
     }
 };
 
-const resolveClick = (command: ToolbarCommand) => {
+const resolveClick = (command: Command) => {
     switch (command) {
         case 'debugAreaToggle':
             return updatePreviewDebugPaneState;
         case 'exportSpecification':
-            return createExportableTemplate;
+            return handleExportSpecification;
         case 'fieldMappings':
             return openMapFieldsDialog;
         case 'formatJson':
@@ -115,21 +120,7 @@ const resolveClick = (command: ToolbarCommand) => {
     }
 };
 
-const resolveDisabledState = (command: ToolbarCommand) => {
-    const { editorZoomLevel } = getState();
-    switch (command) {
-        case 'zoomFit':
-            return isZoomControlDisabledReact();
-        case 'zoomIn':
-            return isZoomInIconDisabled(editorZoomLevel);
-        case 'zoomOut':
-            return isZoomOutIconDisabled(editorZoomLevel);
-        default:
-            return false;
-    }
-};
-
-const resolveI18nKey = (command: ToolbarCommand) => {
+const resolveI18nKey = (command: Command) => {
     const { editorPreviewDebugIsExpanded } = getState();
     switch (command) {
         case 'debugAreaToggle':
@@ -159,7 +150,7 @@ const resolveI18nKey = (command: ToolbarCommand) => {
     }
 };
 
-const resolveIcon = (command: ToolbarCommand) => {
+const resolveIcon = (command: Command) => {
     const { editorPreviewDebugIsExpanded } = getState();
     switch (command) {
         case 'debugAreaToggle':
@@ -189,7 +180,7 @@ const resolveIcon = (command: ToolbarCommand) => {
     }
 };
 
-const resolveClasses = (command: ToolbarCommand) => {
+const resolveClasses = (command: Command) => {
     const classes = useToolbarStyles();
     switch (command) {
         case 'zoomIn':

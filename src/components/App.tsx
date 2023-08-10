@@ -5,10 +5,6 @@ import { VisualInterface } from '../features/interface';
 import {
     getCommandKey,
     hotkeyOptions,
-    handleZoomIn,
-    handleZoomOut,
-    handleZoomReset,
-    handleZoomFit,
     handleApply,
     handleFocusFirstPivot,
     handleAutoApply,
@@ -16,7 +12,6 @@ import {
     handleEditorPane,
     handleHelp,
     handleNewSpecification,
-    handleExportTemplate,
     handleNavSpec,
     handleNavConfig,
     handleNavSettings,
@@ -26,6 +21,13 @@ import {
     handleEditorDebugPaneSignal,
     handleEditorDebugPaneLog
 } from '../core/ui/commands';
+import {
+    handleExportSpecification,
+    handleZoomFit,
+    handleZoomIn,
+    handleZoomOut,
+    handleZoomReset
+} from '../features/commands';
 import { logRender } from '../features/logging';
 
 const App = () => {
@@ -35,7 +37,7 @@ const App = () => {
     hotkeyHandler('autoApplyToggle', handleAutoApply);
     hotkeyHandler('repairFormatJson', handleFormat);
     hotkeyHandler('newSpecification', handleNewSpecification);
-    hotkeyHandler('newTemplate', handleExportTemplate);
+    hotkeyHandler('exportSpecification', handleExportSpecification);
     hotkeyHandler('mapFields', handleMapFields);
     hotkeyHandler('openHelpUrl', handleHelp);
     hotkeyHandler('navigateSpecification', handleNavSpec);

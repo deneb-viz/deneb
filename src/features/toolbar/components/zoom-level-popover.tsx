@@ -21,7 +21,6 @@ import { logDebug, logRender } from '../../logging';
 import { getConfig } from '../../../core/utils/config';
 import { getZoomToFitScale } from '../../../core/ui/advancedEditor';
 import { getI18nValue } from '../../i18n';
-import { isZoomControlDisabledReact } from '../../../core/ui/icons';
 import { useToolbarStyles } from '.';
 import { TooltipCustomMount } from '../../interface';
 
@@ -29,9 +28,10 @@ const CONFIGURATION = getConfig();
 
 // eslint-disable-next-line max-lines-per-function
 export const ZoomLevelPopover: React.FC = () => {
-    const { editorZoomLevel, updateEditorZoomLevel } = store(
+    const { editorZoomLevel, zoomFitEnabled, updateEditorZoomLevel } = store(
         (state) => ({
             editorZoomLevel: state.editorZoomLevel,
+            zoomFitEnabled: state.commands.zoomFit,
             updateEditorZoomLevel: state.updateEditorZoomLevel
         }),
         shallow
@@ -118,7 +118,7 @@ export const ZoomLevelPopover: React.FC = () => {
                                 classes.buttonSmall,
                                 classes.buttonZoomLevel
                             )}
-                            disabled={isZoomControlDisabledReact()}
+                            disabled={!zoomFitEnabled}
                         >
                             {caption}
                         </ToolbarButton>

@@ -16,6 +16,14 @@ import { getFieldsInUseFromSpec } from '../features/template';
 import { IFixResult } from '../features/specification';
 import { EditorApplyMode, TEditorRole } from '../features/json-editor';
 import { getApplicationMode } from '../features/interface';
+import {
+    isExportSpecCommandEnabled,
+    isZoomOtherCommandEnabled,
+    isZoomInCommandEnabled,
+    isZoomOutCommandEnabled,
+    IZoomOtherCommandTestOptions,
+    IZoomLevelCommandTestOptions
+} from '../features/commands';
 
 export interface IEditorSlice {
     editor: {
@@ -252,6 +260,13 @@ const handleUpdateChanges = (
 ): Partial<TStoreState> => {
     const { isDirty, stagedConfig, stagedSpec } = payload;
     return {
+        commands: {
+            ...state.commands,
+            exportSpecification: isExportSpecCommandEnabled({
+                editorIsDirty: isDirty,
+                interfaceMode: state.interface.mode
+            })
+        },
         editor: {
             ...state.editor,
             isDirty,
@@ -362,6 +377,13 @@ const handleUpdateIsDirty = (
     state: TStoreState,
     isDirty: boolean
 ): Partial<TStoreState> => ({
+    commands: {
+        ...state.commands,
+        exportSpecification: isExportSpecCommandEnabled({
+            editorIsDirty: isDirty,
+            interfaceMode: state.interface.mode
+        })
+    },
     editor: {
         ...state.editor,
         isDirty
@@ -484,6 +506,24 @@ const handleUpdateEditorSelectedPreviewRole = (
 const handleupdateEditorZoomLevel = (
     state: TStoreState,
     zoomLevel: number
-): Partial<TStoreState> => ({
-    editorZoomLevel: zoomLevel
-});
+): Partial<TStoreState> => {
+    const zoomOtherCommandTest: IZoomOtherCommandTestOptions = {
+        specification: state.specification,
+        interfaceMode: state.interface.mode
+    };
+    const zoomLevelCommandTest: IZoomLevelCommandTestOptions = {
+        value: zoomLevel,
+        specification: state.specification,
+        interfaceMode: state.interface.mode
+    };
+    return {
+        commands: {
+            ...state.commands,
+            zoomFit: isZoomOtherCommandEnabled(zoomOtherCommandTest),
+            zoomIn: isZoomInCommandEnabled(zoomLevelCommandTest),
+            zoomOut: isZoomOutCommandEnabled(zoomLevelCommandTest),
+            zoomReset: isZoomOtherCommandEnabled(zoomOtherCommandTest)
+        },
+        editorZoomLevel: zoomLevel
+    };
+};

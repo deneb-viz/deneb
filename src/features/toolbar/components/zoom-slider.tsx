@@ -6,7 +6,6 @@ import store from '../../../store';
 import { logRender } from '../../logging';
 import { getConfig } from '../../../core/utils/config';
 import { getI18nValue } from '../../i18n';
-import { isZoomControlDisabledReact } from '../../../core/ui/icons';
 import { useToolbarStyles } from '.';
 import { TooltipCustomMount } from '../../interface';
 
@@ -14,9 +13,10 @@ const CONFIGURATION = getConfig();
 
 export const ZoomSlider: React.FC = () => {
     const classes = useToolbarStyles();
-    const { editorZoomLevel, updateEditorZoomLevel } = store(
+    const { editorZoomLevel, zoomFitEnabled, updateEditorZoomLevel } = store(
         (state) => ({
             editorZoomLevel: state.editorZoomLevel,
+            zoomFitEnabled: state.commands.zoomFit,
             updateEditorZoomLevel: state.updateEditorZoomLevel
         }),
         shallow
@@ -42,7 +42,7 @@ export const ZoomSlider: React.FC = () => {
                     value={editorZoomLevel}
                     size='small'
                     onChange={onChange}
-                    disabled={isZoomControlDisabledReact()}
+                    disabled={!zoomFitEnabled}
                 />
             </Tooltip>
             <TooltipCustomMount setRef={setRef} />

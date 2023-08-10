@@ -26,13 +26,7 @@ import { ZoomSlider } from './zoom-slider';
 export const DebugToolbar: React.FC = () => {
     const { editorPreviewAreaSelectedPivot } = store(
         (state) => ({
-            datasetName: state.debug.datasetName,
-            editorPreviewAreaSelectedPivot:
-                state.editorPreviewAreaSelectedPivot,
-            editorPreviewDebugIsExpanded: state.editorPreviewDebugIsExpanded,
-            hashValue: state.dataset.hashValue,
-            logAttention: state.debug.logAttention,
-            renderId: state.interface.renderId
+            editorPreviewAreaSelectedPivot: state.editorPreviewAreaSelectedPivot
         }),
         shallow
     );

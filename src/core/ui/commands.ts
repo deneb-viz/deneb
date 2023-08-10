@@ -1,5 +1,4 @@
 export {
-    createExportableTemplate,
     createNewSpec,
     discardChanges,
     getCommandKey,
@@ -16,11 +15,9 @@ export {
     updateProvider,
     updateSelectionMaxDataPoints,
     updateRenderMode,
-    dismissVersionNotification,
-    IKeyboardShortcut
+    dismissVersionNotification
 };
 
-import { KeyHandler } from 'hotkeys-js';
 import { Options } from 'react-hotkeys-hook';
 
 import {
@@ -33,26 +30,20 @@ import { getState } from '../../store';
 import { getConfig, getVisualMetadata } from '../utils/config';
 import { hostServices } from '../services';
 import { TSpecProvider, TSpecRenderMode } from '../vega';
-import { getZoomInLevel, getZoomOutLevel, zoomConfig } from './dom';
-import { getZoomToFitScale, TPreviewPivotRole } from './advancedEditor';
+import { zoomConfig } from './dom';
+import { TPreviewPivotRole } from './advancedEditor';
 import {
     fixAndFormatSpecification,
     persistSpecification
 } from '../../features/specification';
 import { TEditorRole } from '../../features/json-editor';
 
-interface IKeyboardShortcut {
-    keys: string;
-    command: KeyHandler;
-    options: Options;
-}
-
 /**
  * Constant specifying `react-hotkeys-hook` bindings for particular HTML elements.
  */
 const hotkeyOptions: Options = {
-    enableOnTags: ['INPUT', 'SELECT', 'TEXTAREA'],
-    splitKey: '|'
+    enableOnFormTags: ['INPUT', 'SELECT', 'TEXTAREA'],
+    combinationKey: '|'
 };
 
 const executeEditorCommand = (command: () => void) => {
@@ -82,13 +73,8 @@ export const handleAutoApply = () => {
 export const handleFormat = () =>
     executeEditorCommand(fixAndFormatSpecification);
 export const handleNewSpecification = () => executeEditorCommand(createNewSpec);
-export const handleExportTemplate = () =>
-    executeEditorCommand(createExportableTemplate);
 export const handleMapFields = () => executeEditorCommand(openMapFieldsDialog);
-export const handleZoomIn = () => executeEditorCommand(zoomIn);
-export const handleZoomOut = () => executeEditorCommand(zoomOut);
-export const handleZoomReset = () => executeEditorCommand(zoomReset);
-export const handleZoomFit = () => executeEditorCommand(zoomFit);
+
 export const handleHelp = () => executeEditorCommand(openHelpSite);
 export const handleNavSpec = () => executeEditorCommand(navSpec);
 export const handleNavConfig = () => executeEditorCommand(navConfig);
@@ -111,24 +97,9 @@ export const handleFocusFirstPivot = () =>
  */
 const focusFirstPivot = () =>
     document.getElementById('editor-pivot-spec').focus();
-const zoomReset = () => getState().updateEditorZoomLevel(zoomConfig.default);
-const zoomIn = () =>
-    getState().updateEditorZoomLevel(
-        getZoomInLevel(getState().editorZoomLevel)
-    );
-const zoomOut = () =>
-    getState().updateEditorZoomLevel(
-        getZoomOutLevel(getState().editorZoomLevel)
-    );
-const zoomFit = () => getState().updateEditorZoomLevel(getZoomToFitScale());
 
 export const closeCreateDialog = () =>
     handlePersist([{ name: 'isNewDialogOpen', value: false }]);
-
-/**
- * Handle the Generate JSON Template command.
- */
-const createExportableTemplate = () => dispatchExportDialog();
 
 /**
  * Handle opening the map fields dialog.
@@ -159,13 +130,6 @@ const dispatchDiscardChanges = () => {
  */
 const dispatchEditorPivotItem = (operation: TEditorRole) => {
     getState().updateEditorSelectedOperation(operation);
-};
-
-/**
- * Manages dispatch of the export dialog command method to the store.
- */
-const dispatchExportDialog = () => {
-    getState().interface.setModalDialogRole('Export');
 };
 
 const dispatchMapFieldsDialog = () => {
