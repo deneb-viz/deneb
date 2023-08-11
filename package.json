@@ -4,7 +4,7 @@
     "scripts": {
         "pbiviz": "pbiviz",
         "pbiviz-version": "pbiviz --version",
-        "install-cert": "pbiviz --install-cert",
+        "install-cert": "pbiviz install-cert",
         "start": "npm run template-schemagen && pbiviz start",
         "package": "npm run validate-config-for-commit && npm run template-schemagen && pbiviz package",
         "package-standalone": "npm run template-schemagen && node bin/package-custom --mode standalone",
@@ -53,7 +53,7 @@
         "lodash": "^4.17.21",
         "minimist": "^1.2.5",
         "powerbi-visuals-api": "^5.3.0",
-        "powerbi-visuals-tools": "^4.3.1",
+        "powerbi-visuals-tools": "^5.0.3",
         "powerbi-visuals-utils-dataviewutils": "^6.0.1",
         "powerbi-visuals-utils-formattingutils": "^6.0.1",
         "powerbi-visuals-utils-interactivityutils": "^6.0.2",
