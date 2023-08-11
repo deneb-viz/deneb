@@ -48,6 +48,7 @@ export const DataTableViewer: React.FC<TableProps<any>> = ({
             fixedHeader
             fixedHeaderScrollHeight={`${debugAreaHeight}px`}
             sortIcon={<ArrowSortDown16Regular />}
+            defaultSortFieldId={columns[0].id}
             pagination
             paginationComponent={DataTableStatusBar}
             paginationPerPage={getConfig().dataTable.rowsPerPage.default}

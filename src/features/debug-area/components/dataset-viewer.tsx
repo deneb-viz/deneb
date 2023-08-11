@@ -27,7 +27,7 @@ import {
 import { VegaViewServices } from '../../vega-extensibility';
 import { getDataTableWorker } from '../data-table-worker';
 import { digest } from 'jsum';
-import { gwtPrunedObject } from '../../../core/utils/json';
+import { getPrunedObject } from '../../../core/utils/json';
 
 interface IDatasetViewerProps {
     datasetName: string;
@@ -195,7 +195,7 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
      * Ensure that listener is added/removed when the data might change.
      */
     useEffect(() => {
-        const latest = gwtPrunedObject(
+        const latest = getPrunedObject(
             getDatasetValues(datasetName, logAttention)
         );
         const latestHash = getDataHash(latest);
@@ -318,7 +318,18 @@ const getTableColumns = (
             selector: (row) => row[c]?.displayValue,
             reorder: true,
             compact: true,
-            width: `${calculateMaxWidth(c, maxLengths[c])}px`
+            width: `${calculateMaxWidth(c, maxLengths[c])}px`,
+            sortFunction: (rowA, rowB) => {
+                const a = rowA[c]?.rawValue;
+                const b = rowB[c]?.rawValue;
+                if (a < b) {
+                    return -1;
+                }
+                if (a > b) {
+                    return 1;
+                }
+                return 0;
+            }
         }));
 };
 
