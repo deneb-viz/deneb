@@ -11,6 +11,7 @@ import { ModalDialogRole } from '../features/modal-dialog/types';
 
 export interface IMigrationSliceProperties extends IVersionComparator {
     changeType: TVersionChange;
+    migrationCheckPerformed: boolean;
     showMigrationDialog: boolean;
     clearMigrationDialog: () => void;
     updateMigrationDetails: (
@@ -28,6 +29,7 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
             current: null,
             previous: null,
             changeType: 'equal',
+            migrationCheckPerformed: false,
             showMigrationDialog: false,
             clearMigrationDialog: () =>
                 set(
@@ -85,7 +87,8 @@ const handleUpdateMigrationDetails = (
         },
         migration: {
             ...state.migration,
-            ...payload
+            ...payload,
+            migrationCheckPerformed: true
         }
     };
 };

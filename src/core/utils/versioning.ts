@@ -114,27 +114,29 @@ export const handlePropertyMigration = (visualSettings: VisualSettings) => {
         vega: { provider }
     } = visualSettings;
     const {
-        migration: { updateMigrationDetails }
+        migration: { migrationCheckPerformed, updateMigrationDetails }
     } = getState();
-    const versionComparator = getVersionComparatorInfo(visualSettings);
-    const changeType = getVersionChangeDetail(versionComparator);
-    updateMigrationDetails({
-        changeType,
-        ...versionComparator
-    });
-    switch (true) {
-        // No spec yet, or pre 1.1
-        case isUnversionedSpec(): {
-            migrateUnversionedSpec(<TSpecProvider>provider);
-            break;
+    if (!migrationCheckPerformed) {
+        const versionComparator = getVersionComparatorInfo(visualSettings);
+        const changeType = getVersionChangeDetail(versionComparator);
+        updateMigrationDetails({
+            changeType,
+            ...versionComparator
+        });
+        switch (true) {
+            // No spec yet, or pre 1.1
+            case isUnversionedSpec(): {
+                migrateUnversionedSpec(<TSpecProvider>provider);
+                break;
+            }
+            // general change
+            case changeType !== 'equal': {
+                migrateWithNoChanges(<TSpecProvider>provider);
+                break;
+            }
+            default:
+                break;
         }
-        // general change
-        case changeType !== 'equal': {
-            migrateWithNoChanges(<TSpecProvider>provider);
-            break;
-        }
-        default:
-            break;
     }
 };
 
