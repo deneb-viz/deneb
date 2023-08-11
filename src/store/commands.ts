@@ -1,5 +1,4 @@
 import { StateCreator } from 'zustand';
-import { NamedSet } from 'zustand/middleware';
 
 import { TStoreState } from '.';
 import { Command } from '../features/commands';
@@ -12,7 +11,7 @@ export interface ICommandsSlice {
     commands: ICommandsSliceProperties;
 }
 
-const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
+const sliceStateInitializer = () =>
     <ICommandsSlice>{
         commands: {
             applyChanges: true,
