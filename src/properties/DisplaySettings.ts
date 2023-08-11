@@ -29,22 +29,20 @@ export default class DisplaySettings extends SettingsBase {
     public processEnumerationObject(
         enumerationObject: VisualObjectInstanceEnumerationObject
     ): VisualObjectInstanceEnumerationObject {
-        enumerationObject.instances.map(() => {
+        enumerationObject.instances.map((i) => {
             if (!isFeatureEnabled('developerMode')) {
-                enumerationObject.instances = [];
-            } else {
-                enumerationObject.instances.map((i) => {
-                    i.validValues = {
-                        scrollbarOpacity: { numberRange: { min: 0, max: 100 } },
-                        scrollbarRadius: {
-                            numberRange: {
-                                min: defaults.scrollbarRadius.min,
-                                max: defaults.scrollbarRadius.max
-                            }
-                        }
-                    };
-                });
+                delete i.properties['viewportHeight'];
+                delete i.properties['viewportWidth'];
             }
+            i.validValues = {
+                scrollbarOpacity: { numberRange: { min: 0, max: 100 } },
+                scrollbarRadius: {
+                    numberRange: {
+                        min: defaults.scrollbarRadius.min,
+                        max: defaults.scrollbarRadius.max
+                    }
+                }
+            };
         });
         return enumerationObject;
     }
