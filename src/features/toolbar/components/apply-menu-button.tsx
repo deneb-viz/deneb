@@ -15,7 +15,7 @@ import { getI18nValue } from '../../i18n';
 import store from '../../../store';
 import { PlayRegular, ReplayRegular } from '@fluentui/react-icons';
 import { useToolbarStyles } from '.';
-import { handleApply } from '../../../core/ui/commands';
+import { handleApplyChanges } from '../../commands';
 import { TooltipCustomMount } from '../../interface';
 
 export const ApplyMenuButton: React.FC = () => {
@@ -33,14 +33,14 @@ export const ApplyMenuButton: React.FC = () => {
         [applyMode]
     );
     const onClick = useCallback(() => {
-        handleApply();
+        handleApplyChanges();
     }, []);
     const onAutoSelect = useCallback(() => {
-        handleApply();
+        handleApplyChanges();
         updateApplyMode('Auto');
     }, []);
     const onManualSelect = useCallback(() => {
-        handleApply();
+        handleApplyChanges();
         updateApplyMode('Manual');
     }, []);
     const classes = useToolbarStyles();

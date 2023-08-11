@@ -19,18 +19,16 @@ import {
 import { shallow } from 'zustand/shallow';
 
 import store, { getState } from '../../../store';
-import {
-    createNewSpec,
-    openHelpSite,
-    openMapFieldsDialog,
-    repairFormatJson,
-    updatePreviewDebugPaneState
-} from '../../../core/ui/commands';
 import { useToolbarStyles } from '.';
 import { getI18nValue } from '../../i18n';
 import {
     Command,
     handleExportSpecification,
+    handleFormatJson,
+    handleOpenCreateSpecificationDialog,
+    handleOpenRemapDialog,
+    handleOpenWebsite,
+    handleToggleDebugPane,
     handleZoomFit,
     handleZoomIn,
     handleZoomOut
@@ -97,18 +95,18 @@ const resolveCaption = (command: Command) => {
 
 const resolveClick = (command: Command) => {
     switch (command) {
-        case 'debugAreaToggle':
-            return updatePreviewDebugPaneState;
+        case 'debugPaneToggle':
+            return handleToggleDebugPane;
         case 'exportSpecification':
             return handleExportSpecification;
         case 'fieldMappings':
-            return openMapFieldsDialog;
+            return handleOpenRemapDialog;
         case 'formatJson':
-            return repairFormatJson;
+            return handleFormatJson;
         case 'helpSite':
-            return openHelpSite;
+            return handleOpenWebsite;
         case 'newSpecification':
-            return createNewSpec;
+            return handleOpenCreateSpecificationDialog;
         case 'zoomFit':
             return handleZoomFit;
         case 'zoomIn':
@@ -123,7 +121,7 @@ const resolveClick = (command: Command) => {
 const resolveI18nKey = (command: Command) => {
     const { editorPreviewDebugIsExpanded } = getState();
     switch (command) {
-        case 'debugAreaToggle':
+        case 'debugPaneToggle':
             return editorPreviewDebugIsExpanded
                 ? 'Tooltip_Collapse_Debug_Pane'
                 : 'Tooltip_Expand_Debug_Pane';
@@ -153,7 +151,7 @@ const resolveI18nKey = (command: Command) => {
 const resolveIcon = (command: Command) => {
     const { editorPreviewDebugIsExpanded } = getState();
     switch (command) {
-        case 'debugAreaToggle':
+        case 'debugPaneToggle':
             return editorPreviewDebugIsExpanded ? (
                 <ChevronDownRegular />
             ) : (

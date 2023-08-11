@@ -5,8 +5,8 @@ import { Button, Tooltip } from '@fluentui/react-components';
 import store from '../../../store';
 import { getI18nValue } from '../../i18n';
 import { getEditorPaneStateIcon, useEditorPaneStyles } from '.';
-import { handleEditorPane } from '../../../core/ui/commands';
 import { TooltipCustomMount } from '../../interface';
+import { handleToggleEditorPane } from '../../commands';
 
 export const EditorPaneCollapsed: React.FC = () => {
     const { editorPaneIsExpanded, position } = store(
@@ -40,7 +40,7 @@ export const EditorPaneCollapsed: React.FC = () => {
                 >
                     <Button
                         icon={icon}
-                        onClick={handleEditorPane}
+                        onClick={handleToggleEditorPane}
                         className={buttonClass}
                         appearance='subtle'
                     />

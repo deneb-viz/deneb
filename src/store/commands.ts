@@ -15,12 +15,22 @@ export interface ICommandsSlice {
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <ICommandsSlice>{
         commands: {
-            debugAreaToggle: true,
+            applyChanges: true,
+            autoApplyToggle: true,
+            debugPaneShowData: true,
+            debugPaneShowLogs: true,
+            debugPaneShowSignals: true,
+            debugPaneToggle: true,
+            discardChanges: true,
+            editorFocusOut: true,
             editorPaneToggle: true,
             exportSpecification: true,
             fieldMappings: true,
             formatJson: true,
             helpSite: true,
+            navigateConfig: true,
+            navigateSettings: true,
+            navigateSpecification: true,
             newSpecification: true,
             themeToggle: true,
             zoomFit: true,

@@ -1,24 +1,11 @@
 export {
-    createNewSpec,
-    discardChanges,
-    getCommandKey,
-    hotkeyOptions,
-    openEditorPivotItem,
-    openHelpSite,
-    openMapFieldsDialog,
-    openPreviewPivotItem,
-    repairFormatJson,
     resetProviderPropertyValue,
     updateBooleanProperty,
     updateLogLevel,
-    updatePreviewDebugPaneState,
     updateProvider,
     updateSelectionMaxDataPoints,
-    updateRenderMode,
-    dismissVersionNotification
+    updateRenderMode
 };
-
-import { Options } from 'react-hotkeys-hook';
 
 import {
     getProviderVersionProperty,
@@ -26,123 +13,15 @@ import {
     resolveObjectProperties,
     updateObjectProperties
 } from '../utils/properties';
-import { getState } from '../../store';
-import { getConfig, getVisualMetadata } from '../utils/config';
-import { hostServices } from '../services';
+import { getConfig } from '../utils/config';
 import { TSpecProvider, TSpecRenderMode } from '../vega';
-import { zoomConfig } from './dom';
-import { TPreviewPivotRole } from './advancedEditor';
-import {
-    fixAndFormatSpecification,
-    persistSpecification
-} from '../../features/specification';
-import { TEditorRole } from '../../features/json-editor';
-
-/**
- * Constant specifying `react-hotkeys-hook` bindings for particular HTML elements.
- */
-const hotkeyOptions: Options = {
-    enableOnFormTags: ['INPUT', 'SELECT', 'TEXTAREA'],
-    combinationKey: '|'
-};
-
-const executeEditorCommand = (command: () => void) => {
-    const {
-        interface: { mode }
-    } = getState();
-    mode === 'Editor' && command();
-};
-
-/**
- * Convenience method to get key binding details from configuration for the specified command.
- */
-const getCommandKey = (command: string): string =>
-    getConfig()?.keyBindings?.[command?.trim()]?.combination || '';
-
-/**
- * Wrappers for event handling
- */
-export const handleApply = () => executeEditorCommand(persistSpecification);
-export const handleAutoApply = () => {
-    const {
-        editor: { toggleApplyMode }
-    } = getState();
-    handleApply();
-    executeEditorCommand(toggleApplyMode);
-};
-export const handleFormat = () =>
-    executeEditorCommand(fixAndFormatSpecification);
-export const handleNewSpecification = () => executeEditorCommand(createNewSpec);
-export const handleMapFields = () => executeEditorCommand(openMapFieldsDialog);
-
-export const handleHelp = () => executeEditorCommand(openHelpSite);
-export const handleNavSpec = () => executeEditorCommand(navSpec);
-export const handleNavConfig = () => executeEditorCommand(navConfig);
-export const handleNavSettings = () => executeEditorCommand(navSettings);
-export const handleEditorPane = () =>
-    executeEditorCommand(getState().toggleEditorPane);
-export const handleDebugPane = () =>
-    executeEditorCommand(getState().togglePreviewDebugPane);
-export const handleEditorDebugPaneData = () =>
-    executeEditorCommand(showDebugPaneData);
-export const handleEditorDebugPaneSignal = () =>
-    executeEditorCommand(showDebugPaneSignal);
-export const handleEditorDebugPaneLog = () =>
-    executeEditorCommand(showDebugPaneLog);
-export const handleFocusFirstPivot = () =>
-    executeEditorCommand(focusFirstPivot);
 
 /**
  * Actual event handling logic for wrappers
  */
-const focusFirstPivot = () =>
-    document.getElementById('editor-pivot-spec').focus();
 
 export const closeCreateDialog = () =>
     handlePersist([{ name: 'isNewDialogOpen', value: false }]);
-
-/**
- * Handle opening the map fields dialog.
- */
-const openMapFieldsDialog = () => dispatchMapFieldsDialog();
-
-/**
- * Handle the Create New Spec command.
- */
-const createNewSpec = () => {
-    handlePersist([{ name: 'isNewDialogOpen', value: true }]);
-};
-
-/**
- * Handle the discard operation from the apply dialog, if the editors are dirty and the creator exits without applying them.
- */
-const discardChanges = () => dispatchDiscardChanges();
-
-/**
- * Manages dispatch of the discard changes command method to the store.
- */
-const dispatchDiscardChanges = () => {
-    getState().editor.updateIsDirty(false);
-};
-
-/**
- * Manages dispatch of the a pivot item selection method to the store.
- */
-const dispatchEditorPivotItem = (operation: TEditorRole) => {
-    getState().updateEditorSelectedOperation(operation);
-};
-
-const dispatchMapFieldsDialog = () => {
-    getState().interface.setModalDialogRole('Remap');
-};
-
-const dispatchPreviewPivotItem = (role: TPreviewPivotRole) => {
-    getState().updateEditorSelectedPreviewRole(role);
-};
-
-const dispatchPreviewDebugToggle = () => {
-    getState().togglePreviewDebugPane();
-};
 
 /**
  * Manages persistence of a properties object to the store from an operation.
@@ -154,66 +33,6 @@ const handlePersist = (
     updateObjectProperties(
         resolveObjectProperties([{ objectName, properties }])
     );
-
-/**
- * Open a specific pivot item from the editor.
- */
-const openEditorPivotItem = (operation: TEditorRole) =>
-    dispatchEditorPivotItem(operation);
-
-/**
- * Open a specific pivot item in the preview pane.
- */
-const openPreviewPivotItem = (role: TPreviewPivotRole) =>
-    dispatchPreviewPivotItem(role);
-
-/**
- * Handles update of debug pane toggle state.
- */
-const updatePreviewDebugPaneState = () => dispatchPreviewDebugToggle();
-
-/**
- * Handle the Get Help command.
- */
-const openHelpSite = () => {
-    const visualMetadata = getVisualMetadata();
-    hostServices.launchUrl(visualMetadata.supportUrl);
-};
-
-/**
- * Handle the Repair/Format JSON command.
- */
-const repairFormatJson = () => fixAndFormatSpecification();
-
-/**
- * Navigate to the spec pane in the editor.
- */
-const navSpec = () => openEditorPivotItem('spec');
-
-/**
- * Navigate to the config pane in the editor.
- */
-const navConfig = () => openEditorPivotItem('config');
-
-/**
- * Navigate to the settings pane in the editor.
- */
-const navSettings = () => openEditorPivotItem('settings');
-
-/**
- * Show the Data pane in the Debug Pane.
- */
-const showDebugPaneData = () => openPreviewPivotItem('data');
-
-/**
- * Show the Signals pane in the Debug Pane.
- */
-const showDebugPaneSignal = () => openPreviewPivotItem('signal');
-
-/**
- * Show the Logs pane in the Debug Pane.
- */
-const showDebugPaneLog = () => openPreviewPivotItem('log');
 
 /**
  * Reset the specified provider (Vega) visual property to its default value.
@@ -253,8 +72,3 @@ const updateSelectionMaxDataPoints = (value: number) =>
  */
 const updateRenderMode = (renderMode: TSpecRenderMode) =>
     handlePersist([{ name: 'renderMode', value: renderMode }]);
-
-/**
- * Handle the dynamic setting of the version notification property.
- */
-const dismissVersionNotification = () => handleApply();

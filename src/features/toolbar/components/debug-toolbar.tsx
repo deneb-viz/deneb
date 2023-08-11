@@ -14,7 +14,6 @@ import {
 import { shallow } from 'zustand/shallow';
 
 import store from '../../../store';
-import { openPreviewPivotItem } from '../../../core/ui/commands';
 import { TPreviewPivotRole } from '../../../core/ui/advancedEditor';
 import { ProviderDetail } from './provider-detail';
 import { LogErrorIndicator } from './log-error-indicator';
@@ -22,6 +21,11 @@ import { useToolbarStyles } from '.';
 import { ToolbarButtonStandard } from './toolbar-button-standard';
 import { ZoomLevelPopover } from './zoom-level-popover';
 import { ZoomSlider } from './zoom-slider';
+import {
+    handleDebugPaneData,
+    handleDebugPaneLog,
+    handleDebugPaneSignal
+} from '../../commands';
 
 export const DebugToolbar: React.FC = () => {
     const { editorPreviewAreaSelectedPivot } = store(
@@ -35,7 +39,18 @@ export const DebugToolbar: React.FC = () => {
         e,
         { checkedItems }
     ) => {
-        openPreviewPivotItem(checkedItems[0] as TPreviewPivotRole);
+        const role = checkedItems[0] as TPreviewPivotRole;
+        switch (role) {
+            case 'data':
+                handleDebugPaneData();
+                break;
+            case 'signal':
+                handleDebugPaneSignal();
+                break;
+            case 'log':
+                handleDebugPaneLog();
+                break;
+        }
     };
     return (
         <Toolbar
@@ -81,7 +96,7 @@ export const DebugToolbar: React.FC = () => {
                 <ToolbarButtonStandard command='zoomIn' role='debug' />
                 <ZoomLevelPopover />
                 <ToolbarButtonStandard command='zoomFit' role='debug' />
-                <ToolbarButtonStandard command='debugAreaToggle' role='debug' />
+                <ToolbarButtonStandard command='debugPaneToggle' role='debug' />
             </ToolbarGroup>
         </Toolbar>
     );

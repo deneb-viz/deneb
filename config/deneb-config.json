@@ -52,7 +52,7 @@
             "combination": "ctrl|shift|enter",
             "functionalArea": "other"
         },
-        "repairFormatJson": {
+        "formatJson": {
             "combination": "ctrl|alt|r",
             "functionalArea": "other"
         },
@@ -64,11 +64,11 @@
             "combination": "ctrl|alt|n",
             "functionalArea": "other"
         },
-        "mapFields": {
+        "fieldMappings": {
             "combination": "ctrl|alt|f",
             "functionalArea": "other"
         },
-        "openHelpUrl": {
+        "helpSite": {
             "combination": "ctrl|alt|h",
             "functionalArea": "other"
         },
@@ -84,11 +84,11 @@
             "combination": "ctrl|alt|3,ctrl|alt|num_3",
             "functionalArea": "other"
         },
-        "toggleEditorPane": {
+        "editorPaneToggle": {
             "combination": "ctrl|alt|space",
             "functionalArea": "other"
         },
-        "toggleDebugPane": {
+        "debugPaneToggle": {
             "combination": "ctrl|`",
             "functionalArea": "other"
         },

@@ -16,11 +16,15 @@ import { shallow } from 'zustand/shallow';
 
 import { getI18nValue } from '../../i18n';
 import store from '../../../store';
-import { openEditorPivotItem } from '../../../core/ui/commands';
 import { TEditorRole } from '../../json-editor';
 import { ApplyMenuButton } from './apply-menu-button';
 import { ToolbarButtonStandard } from './toolbar-button-standard';
 import { useToolbarStyles } from '.';
+import {
+    handleEditorPaneConfig,
+    handleEditorPaneSettings,
+    handleEditorPaneSpecification
+} from '../../commands';
 
 export const AdvancedEditorToolbar: React.FC = () => {
     const { editorSelectedOperation } = store(
@@ -32,7 +36,18 @@ export const AdvancedEditorToolbar: React.FC = () => {
         e,
         { checkedItems }
     ) => {
-        openEditorPivotItem(checkedItems[0] as TEditorRole);
+        const role = checkedItems[0] as TEditorRole;
+        switch (role) {
+            case 'spec':
+                handleEditorPaneSpecification();
+                break;
+            case 'config':
+                handleEditorPaneConfig();
+                break;
+            case 'settings':
+                handleEditorPaneSettings();
+                break;
+        }
     };
     return (
         <Toolbar

@@ -11,7 +11,7 @@ import {
 import { NotificationToast } from './notification-toast';
 import { INotificationProps } from '.';
 import { persistSpecification } from '../../specification';
-import { discardChanges } from '../../../core/ui/commands';
+import { handleDiscardChanges } from '../../commands';
 
 export const NotificationApplyChanges: React.FC<INotificationProps> = ({
     toasterId
@@ -31,7 +31,7 @@ export const NotificationApplyChanges: React.FC<INotificationProps> = ({
     };
     const handleDiscard = () => {
         dismissToast(toastId);
-        discardChanges();
+        handleDiscardChanges();
     };
     const notify = () =>
         dispatchToast(
