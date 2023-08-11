@@ -36,6 +36,8 @@ export const isSettingsChangeVolatile = (
         previous?.vega?.enableSelection !== current?.vega?.enableSelection;
     const highlightStatusChanged =
         previous?.vega?.enableHighlight !== current?.vega?.enableHighlight;
+    const localeChanged =
+        previous?.developer?.locale !== current?.developer?.locale;
     // If we implement configurable window size (API 5.2) this will be needed.
     // const dataWindowStatusChanged =
     //     previous?.dataReductionCustomization?.categoryCount !==
@@ -45,6 +47,7 @@ export const isSettingsChangeVolatile = (
     return (
         selectionStatusChanged ||
         highlightStatusChanged ||
+        localeChanged ||
         // If we implement configurable window size (API 5.2) this will be needed.
         // dataWindowStatusChanged ||
         dataLimitStatusChanged ||
