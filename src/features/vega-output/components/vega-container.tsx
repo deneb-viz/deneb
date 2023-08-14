@@ -121,7 +121,7 @@ export const VegaContainer: React.FC = () => {
             renderThumbHorizontal={scrollbarThumbHorizontal}
             renderThumbVertical={scrollbarThumbVertical}
             onClick={clearSelection}
-            onMouseLeave={hidePowerBiTooltip}
+            onMouseOut={hidePowerBiTooltip}
         >
             {vegaComponent}
         </Scrollbars>
