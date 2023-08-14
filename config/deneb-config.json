@@ -109,11 +109,11 @@
             "functionalArea": "other"
         },
         "zoomIn": {
-            "combination": "ctrl|alt|num_add,ctrl|alt|=",
+            "combination": "ctrl|alt|+,ctrl|alt|=",
             "functionalArea": "other"
         },
         "zoomOut": {
-            "combination": "ctrl|alt|num_subtract,ctrl|alt|-",
+            "combination": "ctrl|alt|-",
             "functionalArea": "other"
         },
         "zoomReset": {
