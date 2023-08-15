@@ -4,7 +4,7 @@ import EditMode = powerbi.EditMode;
 import ViewMode = powerbi.ViewMode;
 
 import { getConfig } from '../utils/config';
-import DisplaySettings from '../../properties/DisplaySettings';
+import DisplaySettings from '../../properties/display-settings';
 import {
     resolveObjectProperties,
     updateObjectProperties

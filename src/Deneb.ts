@@ -6,17 +6,15 @@ import powerbi from 'powerbi-visuals-api';
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import IVisual = powerbi.extensibility.visual.IVisual;
-import EnumerateVisualObjectInstancesOptions = powerbi.EnumerateVisualObjectInstancesOptions;
-import VisualObjectInstance = powerbi.VisualObjectInstance;
 import DataView = powerbi.DataView;
-import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnumerationObject;
 import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
+import FormattingModel = powerbi.visuals.FormattingModel;
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
 import App from './components/App';
-import VisualSettings from './properties/VisualSettings';
+import VisualSettings from './properties/visual-settings';
 
 import { getState } from './store';
 import { canFetchMoreFromDataview, getRowCount } from './core/data/dataView';
@@ -164,44 +162,38 @@ export class Deneb implements IVisual {
     }
 
     /**
-     * This function gets called for each of the objects defined in the capabilities files and allows you to select which of the
-     * objects and properties you want to expose to the users in the property pane.
+     * This function gets called for each of the objects defined in the
+     * capabilities files and allows you to select which of the objects and
+     * properties you want to expose to the users in the property pane.
      *
+     * This is the newer way of populating the properties pane, using the new-
+     * style formatting cards.
      */
-    public enumerateObjectInstances(
-        options: EnumerateVisualObjectInstancesOptions
-    ): VisualObjectInstance[] | VisualObjectInstanceEnumerationObject {
-        const instances = (<VisualObjectInstanceEnumerationObject>(
-            VisualSettings.enumerateObjectInstances(
-                this.settings || VisualSettings.getDefault(),
-                options
-            )
-        )).instances;
-        const objectName = options.objectName;
-        let enumerationObject: VisualObjectInstanceEnumerationObject = {
-            containers: [],
-            instances: instances
-        };
-
+    public getFormattingModel(): FormattingModel {
+        logDebug('[start] getformattingModel');
         try {
-            // We try where possible to use the standard method signature to process the instance, but there are some exceptions...
-            switch (objectName) {
-                default: {
-                    // Check to see if the class has our method for processing business logic and run it if so
-                    if (
-                        typeof this.settings[`${objectName}`]
-                            .processEnumerationObject === 'function'
-                    ) {
-                        enumerationObject =
-                            this.settings[
-                                `${objectName}`
-                            ].processEnumerationObject(enumerationObject);
-                    }
-                }
-            }
+            const { settings } = this;
+            const model = {
+                cards: [
+                    ...[
+                        settings.editor.getFormattingCard(),
+                        settings.theme.getFormattingCard(),
+                        settings.display.getFormattingCard(),
+                        settings.dataLimit.getFormattingCard()
+                    ],
+                    ...(isFeatureEnabled('developerMode')
+                        ? [
+                              settings.developer.getFormattingCard(),
+                              settings.vega.getFormattingCard()
+                          ]
+                        : [])
+                ]
+            };
+            logDebug('[return] getFormattingModel', { settings, model });
+            return model;
         } catch (e) {
-            console.error('Error', e);
+            logDebug('[error] getFormattingModel', e);
+            return null;
         }
-        return enumerationObject;
     }
 }

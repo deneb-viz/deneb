@@ -1,4 +1,4 @@
-import VisualSettings from '../../properties/VisualSettings';
+import VisualSettings from '../../properties/visual-settings';
 
 export { SettingsPane } from './components/settings-pane';
 export { VisualSettings };

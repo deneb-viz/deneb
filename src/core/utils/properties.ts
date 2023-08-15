@@ -13,7 +13,7 @@ import DataViewPropertyValue = powerbi.DataViewPropertyValue;
 import cloneDeep from 'lodash/cloneDeep';
 import reduce from 'lodash/reduce';
 
-import VisualSettings from '../../properties/VisualSettings';
+import VisualSettings from '../../properties/visual-settings';
 
 import { getState } from '../../store';
 import { hostServices } from '../services';

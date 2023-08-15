@@ -1,6 +1,6 @@
 import { logDebug } from '../../features/logging';
 import { isUnversionedSpec } from '../../features/specification';
-import VisualSettings from '../../properties/VisualSettings';
+import VisualSettings from '../../properties/visual-settings';
 import { getState } from '../../store';
 import { TSpecProvider } from '../vega';
 import { getVisualMetadata, providerVersions } from './config';

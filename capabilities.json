@@ -134,6 +134,7 @@
                     "descriptionKey": "Objects_Vega_JsonSpec_Description",
                     "displayName": "JSON Spec",
                     "description": "JSON Spec description.",
+                    "placeHolderTextKey": "Objects_Vega_JsonSpec_Placeholder",
                     "type": {
                         "text": true
                     }
@@ -143,6 +144,7 @@
                     "descriptionKey": "Objects_Vega_JsonConfig_Description",
                     "displayName": "JSON Config",
                     "description": "JSON Config description.",
+                    "placeHolderTextKey": "Objects_Vega_JsonConfig_Placeholder",
                     "type": {
                         "text": true
                     }
@@ -172,6 +174,7 @@
                     "descriptionKey": "Objects_Vega_Version_Description",
                     "displayName": "Version",
                     "description": "Version description",
+                    "placeHolderTextKey": "Objects_Vega_Version_Placeholder",
                     "type": {
                         "text": true
                     }
@@ -286,7 +289,10 @@
                     }
                 },
                 "isNewDialogOpen": {
+                    "displayNameKey": "Objects_Vega_IsNewDialogOpen",
+                    "descriptionKey": "Objects_Vega_IsNewDialogOpen_Description",
                     "displayName": "Show New Dialog?",
+                    "description": "Show New Dialog? description.",
                     "type": {
                         "bool": true
                     }

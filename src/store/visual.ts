@@ -6,7 +6,7 @@ import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import { StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
 import { TStoreState } from '.';
-import VisualSettings from '../properties/VisualSettings';
+import VisualSettings from '../properties/visual-settings';
 import {
     calculatePreviewMaximumHeight,
     getEditorPreviewAreaWidth,
