@@ -206,7 +206,7 @@ export const getParsedSpec = (
             specToParse;
             status = 'valid';
         } catch (e) {
-            errors.push(getErrorLine(spec, e.message));
+            errors.push(getErrorLine(spec, getRedactedError(e.message)));
             status = 'error';
             specToParse = null;
         }
@@ -359,6 +359,15 @@ const getPatchedVegaLiteSpec = (
             [`${DATASET_NAME}`]: values
         }
     });
+};
+
+/**
+ * Due to spec patching, we get quite verbose error messages if the spec is
+ * invalid. This will contain the raw dataset and other things we add, so to
+ * prevent confusing the user, we'll just redact the JSON from the message.
+ */
+const getRedactedError = (message: string) => {
+    return message.replace(/(Invalid specification) (\{.*\})/g, '$1');
 };
 
 /**
