@@ -215,6 +215,7 @@ const handleUpdateDatasetProcessingStage = (
         },
         interface: {
             ...state.interface,
+            isInitialized: true,
             mode
         }
     };

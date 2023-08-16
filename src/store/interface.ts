@@ -9,6 +9,15 @@ import { InterfaceMode } from '../features/interface';
 export interface IInterfaceSlice {
     interface: {
         /**
+         * Whether the visual has initialized or not. The visual is regarded
+         * as initialized once the very first attempt to check the dataset has
+         * been made. This is to ensure that we only start to handle mode
+         * states beyond `Initializing` after this point (and prevent the UI
+         * from flickering between modes during the initial constructor and
+         * update events).
+         */
+        isInitialized: boolean;
+        /**
          * The current application mode
          */
         mode: InterfaceMode;
@@ -18,9 +27,10 @@ export interface IInterfaceSlice {
          */
         modalDialogRole: ModalDialogRole;
         /**
-         * Unique ID representing the current render operation. Used to ensure that
-         * we can trigger a re-render of the Vega view for specific conditions that
-         * sit outside the obvious triggers (e.g. data changes).
+         * Unique ID representing the current render operation. Used to ensure
+         * that we can trigger a re-render of the Vega view for specific
+         * conditions that sit outside the obvious triggers (e.g. data
+         * changes).
          */
         renderId: string;
         /**
@@ -28,6 +38,12 @@ export interface IInterfaceSlice {
          * specification.
          */
         generateRenderId: () => void;
+        /**
+         * For situations where we're not ready to process data (e.g. first
+         * run), then we will explicitly flag the visual as initialized and set
+         * the mode to `Landing`.
+         */
+        setExplicitInitialize: () => void;
         /**
          * Sets the role of the modal dialog to display.
          */
@@ -38,6 +54,7 @@ export interface IInterfaceSlice {
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IInterfaceSlice>{
         interface: {
+            isInitialized: false,
             mode: 'Initializing',
             modalDialogRole: 'None',
             renderId: uuidv4(),
@@ -46,6 +63,12 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                     (state) => handleGenerateRenderId(state),
                     false,
                     'interface.generateRenderId'
+                ),
+            setExplicitInitialize: () =>
+                set(
+                    (state) => handleSetExplicitInitialize(state),
+                    false,
+                    'interface.setExplicitInitialize'
                 ),
             setModalDialogRole: (role: ModalDialogRole) =>
                 set(
@@ -75,4 +98,17 @@ const handleSetModalDialogRole = (
     role: ModalDialogRole
 ): Partial<TStoreState> => ({
     interface: { ...state.interface, modalDialogRole: role }
+});
+
+/**
+ * Explicitly set the visual as initialized and set the mode to `Landing`.
+ */
+const handleSetExplicitInitialize = (
+    state: TStoreState
+): TStoreState | Partial<TStoreState> => ({
+    interface: {
+        ...state.interface,
+        isInitialized: true,
+        mode: 'Landing'
+    }
 });

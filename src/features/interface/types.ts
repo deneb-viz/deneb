@@ -1,6 +1,8 @@
 import powerbi from 'powerbi-visuals-api';
 import VisualUpdateType = powerbi.VisualUpdateType;
 import EditMode = powerbi.EditMode;
+import ViewMode = powerbi.ViewMode;
+import IViewport = powerbi.IViewport;
 
 import { IVisualDataset } from '../../core/data';
 
@@ -50,4 +52,18 @@ export interface IInterfaceModeResolutionParameters {
      * The current visual update type from the visual host, if needed.
      */
     updateType?: VisualUpdateType;
+}
+
+/**
+ * In some cases (changing from canvas to advanced editor and back), we need to
+ * compare the update history to determin the correct point to switch, as well as
+ * which viewport to use (as the visual host supplies the dimensions out of
+ * order). This tracks the point-in-time values we need to do that.
+ */
+export interface IVisualUpdateHistoryRecord {
+    editMode: EditMode;
+    isInFocus: boolean;
+    type: VisualUpdateType;
+    viewMode: ViewMode;
+    viewport: IViewport;
 }

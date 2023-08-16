@@ -1,5 +1,6 @@
 import powerbi from 'powerbi-visuals-api';
 import EditMode = powerbi.EditMode;
+import ViewMode = powerbi.ViewMode;
 import VisualUpdateType = powerbi.VisualUpdateType;
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import {
@@ -7,10 +8,18 @@ import {
     PREVIEW_PANE_TOOLBAR_MIN_SIZE
 } from '../../constants';
 
-import { IInterfaceModeResolutionParameters, InterfaceMode } from './types';
+import {
+    IInterfaceModeResolutionParameters,
+    IVisualUpdateHistoryRecord,
+    InterfaceMode
+} from './types';
 import { logDebug } from '../logging';
 import { getState } from '../../store';
-import { isVisualUpdateTypeResizeEnd } from '../visual-host';
+import {
+    isVisualUpdateTypeResize,
+    isVisualUpdateTypeResizeEnd,
+    isVisualUpdateTypeViewMode
+} from '../visual-host';
 
 /**
  * UI theming utilities.
@@ -85,6 +94,28 @@ export const getApplicationMode = (
         default:
             return parameters.currentMode ?? 'Landing';
     }
+};
+
+/**
+ * When moving our visual from the canvas to the advanced editor, the visual
+ * viewport gets out of sequence and can cause issues with our UI calculations.
+ * This does the necessary checks against the update history and retrieves the
+ * correct dimensions as necessary.
+ */
+export const getCorrectViewport = (history: IVisualUpdateHistoryRecord[]) => {
+    console.log('getCorrectViewport', history);
+    if (
+        isVisualUpdateTypeResize(history?.[0]?.type) &&
+        isVisualUpdateTypeResizeEnd(history?.[1]?.type) &&
+        isVisualUpdateTypeResizeEnd(history?.[2]?.type) &&
+        isVisualUpdateTypeViewMode(history?.[3]?.type) &&
+        history[0].isInFocus &&
+        history[0].viewMode === ViewMode.Edit &&
+        history[0].editMode === EditMode.Advanced
+    ) {
+        return history[1].viewport;
+    }
+    return history[0].viewport;
 };
 
 /**

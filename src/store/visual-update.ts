@@ -3,8 +3,14 @@ import powerbi from 'powerbi-visuals-api';
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 
 import { TStoreState } from '.';
+import { IVisualUpdateHistoryRecord } from '../features/interface';
 
 export interface IVisualUpdateSliceProperties extends VisualUpdateOptions {
+    /**
+     * History of visual update operations. The most recent update is at the
+     * start of the array.
+     */
+    history: IVisualUpdateHistoryRecord[];
     /**
      * This is not present in the Power BI visuals API and is useful to us, so
      * this creates an explicit type for it.
@@ -18,7 +24,10 @@ export interface IVisualUpdateSlice {
 
 const sliceStateInitializer = () =>
     <IVisualUpdateSlice>{
-        visualUpdateOptions: <unknown>null
+        visualUpdateOptions: {
+            history: [],
+            updateId: null
+        }
     };
 
 export const createVisualUpdateSlice: StateCreator<

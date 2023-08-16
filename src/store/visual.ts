@@ -21,7 +21,12 @@ import { getSpecificationParseOptions } from '../features/specification/logic';
 import { TSpecProvider } from '../core/vega';
 import { logDebug } from '../features/logging';
 import { isVisualUpdateVolatile } from '../features/visual-host';
-import { InterfaceMode, getApplicationMode } from '../features/interface';
+import {
+    IVisualUpdateHistoryRecord,
+    InterfaceMode,
+    getApplicationMode,
+    getCorrectViewport
+} from '../features/interface';
 import { getOnboardingDialog } from '../features/modal-dialog';
 import {
     IZoomOtherCommandTestOptions,
@@ -34,6 +39,8 @@ import {
 } from '../features/commands';
 
 const defaultViewport = { width: 0, height: 0 };
+
+const MAX_UPDATE_HISTORY_COUNT = 100;
 
 export interface IVisualSlice {
     visual4d3d3d: boolean;
@@ -99,6 +106,17 @@ const handleSetVisualUpdate = (
     const editMode = payload.options.editMode;
     const isInFocus = payload.options.isInFocus;
     const updateType = payload.options.type;
+    const history: IVisualUpdateHistoryRecord[] = [
+        {
+            editMode,
+            isInFocus,
+            type: updateType,
+            viewMode: payload.options.viewMode,
+            viewport: payload.options.viewport
+        }
+    ].concat(
+        state.visualUpdateOptions.history.slice(0, MAX_UPDATE_HISTORY_COUNT)
+    );
     const mode = getApplicationMode({
         currentMode: state.interface.mode,
         dataset: state.dataset,
@@ -107,7 +125,8 @@ const handleSetVisualUpdate = (
         specification: payload.settings.vega.jsonSpec,
         updateType
     });
-    const viewportCurrent = payload.options.viewport;
+    const viewportCurrent = getCorrectViewport(history);
+    payload.options.viewport;
     const viewportReport = getReportViewport(
         viewportCurrent,
         payload.settings.display
@@ -193,6 +212,13 @@ const handleSetVisualUpdate = (
         specification: spec,
         interfaceMode: mode
     };
+    const visualUpdateOptions: IVisualUpdateSliceProperties = {
+        ...payload.options,
+        ...{
+            history,
+            updateId: payload['updateId']
+        }
+    };
     return {
         commands: {
             ...state.commands,
@@ -231,7 +257,7 @@ const handleSetVisualUpdate = (
         visualUpdates: state.visualUpdates + 1,
         visualViewportCurrent: viewportCurrent,
         visualViewportReport: viewportReport,
-        visualUpdateOptions: <IVisualUpdateSliceProperties>payload.options
+        visualUpdateOptions
     };
 };
 

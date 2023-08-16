@@ -155,6 +155,13 @@ export class Deneb implements IVisual {
         } else {
             logDebug('Visual dataset has not changed. No need to process.');
         }
+        const {
+            interface: { isInitialized, setExplicitInitialize }
+        } = getState();
+        if (!isInitialized) {
+            logDebug('Visual has not been initialized yet. Setting...');
+            setExplicitInitialize();
+        }
     }
 
     private static parseSettings(dataView: DataView): VisualSettings {

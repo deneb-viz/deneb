@@ -64,10 +64,22 @@ export const getCategoricalDataViewFromOptions = (
 ) => options?.dataViews?.[0]?.categorical || {};
 
 /**
+ * Checks if a visual update type is a resize event.
+ */
+export const isVisualUpdateTypeResize = (type: VisualUpdateType) =>
+    VisualUpdateType.Resize === (type & VisualUpdateType.Resize);
+
+/**
  * Checks if a visual has finished resizing.
  */
 export const isVisualUpdateTypeResizeEnd = (type: VisualUpdateType) =>
     VisualUpdateType.ResizeEnd === (type & VisualUpdateType.ResizeEnd);
+
+/**
+ * Checks if a visual update type is view mode change.
+ */
+export const isVisualUpdateTypeViewMode = (type: VisualUpdateType) =>
+    VisualUpdateType.ViewMode === (type & VisualUpdateType.ViewMode);
 
 /**
  * Check the visual update type to see if it is volatile.
