@@ -212,7 +212,11 @@
             "debounceInterval": 200,
             "tabSize": 2,
             "position": "left",
-            "fontSize": 10,
+            "fontSize": {
+                "default": 10,
+                "min": 8,
+                "max": 30
+            },
             "wordWrap": true,
             "showGutter": true,
             "showLineNumbers": true,
@@ -235,9 +239,11 @@
             "isNewDialogOpen": true
         },
         "theme": {
-            "ordinalColorCount": 10,
-            "ordinalColorCountMin": 1,
-            "ordinalColorCountMax": 100
+            "ordinalColorCount": {
+                "default": 10,
+                "min": 1,
+                "max": 100
+            }
         },
         "display": {
             "scrollbarColor": "#000000",
@@ -258,7 +264,7 @@
         "dataPointsStepValue": 1
     },
     "splitPaneDefaults": {
-        "minSize": 350,
+        "minSize": 200,
         "defaultSizePercent": 0.4,
         "maxSizePercent": 0.5,
         "collapsedSize": 36
