@@ -12,7 +12,7 @@ const FONT_SMALL_PX = ptToPx(9);
 const LEGEND_FONT_PX = ptToPx(10);
 const FONT_LARGE_PX = ptToPx(12);
 const FONT_STANDARD = 'Segoe UI';
-const FONT_TITLE = 'wf_standard-font, helvetica, arial, sans-serif';
+const FONT_TITLE = 'din';
 
 /**
  * Pre-defined theme that can work with Power BI, based on our work to add this to vega-themes.
