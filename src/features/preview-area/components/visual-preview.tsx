@@ -25,7 +25,9 @@ const usePreviewStyles = (
         previewArea: {
             ...shorthands.padding('2px'),
             ...shorthands.overflow('overlay'),
-            boxSizing: 'border-box'
+            boxSizing: 'border-box',
+            width: '100%',
+            height: '100%'
         },
         previewWrapper: {
             height: `${(height + borderWidth) * scale}px`,

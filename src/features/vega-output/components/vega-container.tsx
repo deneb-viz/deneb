@@ -10,6 +10,7 @@ import { useVegaStyles } from '..';
 import { mergeClasses } from '@griffel/core';
 import Scrollbars from 'react-custom-scrollbars-2';
 import { clearSelection, hidePowerBiTooltip } from '../../interactivity';
+import { VEGA_CONTAINER_ID } from '../../../constants';
 
 /**
  * Master component for hosting Vega content. We will handle the workflow
@@ -116,7 +117,7 @@ export const VegaContainer: React.FC = () => {
     ]);
     return useScrollbars ? (
         <Scrollbars
-            id='deneb-vega-container'
+            id={VEGA_CONTAINER_ID}
             className={containerClassName}
             renderThumbHorizontal={scrollbarThumbHorizontal}
             renderThumbVertical={scrollbarThumbVertical}
