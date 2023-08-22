@@ -103,7 +103,6 @@ export const getApplicationMode = (
  * correct dimensions as necessary.
  */
 export const getCorrectViewport = (history: IVisualUpdateHistoryRecord[]) => {
-    console.log('getCorrectViewport', history);
     if (
         isVisualUpdateTypeResize(history?.[0]?.type) &&
         isVisualUpdateTypeResizeEnd(history?.[1]?.type) &&
