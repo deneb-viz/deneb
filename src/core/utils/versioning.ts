@@ -142,7 +142,7 @@ export const handlePropertyMigration = (visualSettings: VisualSettings) => {
 
 /**
  * Allows comparison of versions, so that we can determine if there are any actions that need to be taken in the event
- * of a change in Deneb version or the Vega versions. We'd norally use semver for this, but AppSource version numbering
+ * of a change in Deneb version or the Vega versions. We'd normally use semver for this, but AppSource version numbering
  * isn't 100% compatible with semver, so we're managing this with a good enough function here.
  * Credit: https://stackoverflow.com/a/52059759
  */
