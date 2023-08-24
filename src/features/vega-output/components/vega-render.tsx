@@ -3,7 +3,7 @@ import { createClassFromSpec, View } from 'react-vega';
 
 import { ISpecification } from '../../specification';
 import { TSpecProvider, TSpecRenderMode } from '../../../core/vega';
-import { logDebug, logRender } from '../../logging';
+import { logDebug, logRender, logTimeStart } from '../../logging';
 import {
     getVegaLoader,
     handleNewView,
@@ -142,6 +142,7 @@ export const VegaRender: React.FC<IVegaRenderProps> = memo(
             hashValue: specification.hashValue,
             spec: VegaChart.getSpec()
         });
+        logTimeStart('VegaRender');
         return (
             <VegaChart
                 actions={false}

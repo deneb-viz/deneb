@@ -1,7 +1,7 @@
 import { falsy, truthy, View } from 'vega';
 import { handleContextMenuEvent } from '../../interactivity/context-menu';
 import { handleCrossFilterEvent } from '../../interactivity/cross-filter';
-import { logDebug, StoreVegaLoggerService } from '../../logging';
+import { logDebug, logTimeEnd, StoreVegaLoggerService } from '../../logging';
 import { hostServices } from '../../../core/services';
 import { getState } from '../../../store';
 import { VegaPatternFillServices } from '../pattern-fill';
@@ -103,6 +103,7 @@ export const handleNewView = (newView: View) => {
         bindContextMenuEvents(view);
         bindCrossFilterEvents(view);
         generateRenderId();
+        logTimeEnd('VegaRender');
         hostServices.renderingFinished();
     });
 };

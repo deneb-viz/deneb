@@ -30,7 +30,13 @@ import {
     TSpecStatus
 } from './types';
 import { TEditorRole } from '../json-editor';
-import { LocalVegaLoggerService, logDebug, logError } from '../logging';
+import {
+    LocalVegaLoggerService,
+    logDebug,
+    logError,
+    logTimeEnd,
+    logTimeStart
+} from '../logging';
 import { IVisualDatasetValueRow } from '../../core/data';
 import { DATASET_NAME } from '../../constants';
 import {
@@ -152,6 +158,7 @@ export const getParsedSpec = (
     prevOptions: ISpecificationParseOptions,
     nextOptions: ISpecificationParseOptions
 ): ISpecification => {
+    logTimeStart('getParsedSpec');
     logDebug('getParsedSpec starting', {
         currentSpec,
         prevOptions,
@@ -160,6 +167,7 @@ export const getParsedSpec = (
     const isVolatile = isSpecificationVolatile(prevOptions, nextOptions);
     if (!isVolatile) {
         logDebug('prev and next values match. No need to re-parse.');
+        logTimeEnd('getParsedSpec');
         return currentSpec;
     }
     logDebug('prev and next values differ. Re-parsing...');
@@ -229,6 +237,7 @@ export const getParsedSpec = (
         status,
         warns
     };
+    logTimeEnd('getParsedSpec');
     return specification;
 };
 

@@ -22,7 +22,13 @@ import { hostServices } from './core/services';
 import { getMappedDataset } from './core/data/dataset';
 import { handlePropertyMigration } from './core/utils/versioning';
 import { resolveReportViewport } from './core/ui/dom';
-import { logDebug, logHeading, logHost } from './features/logging';
+import {
+    logDebug,
+    logHeading,
+    logHost,
+    logTimeEnd,
+    logTimeStart
+} from './features/logging';
 import { getVisualMetadata } from './core/utils/config';
 import {
     VegaExtensibilityServices,
@@ -65,12 +71,14 @@ export class Deneb implements IVisual {
     public update(options: VisualUpdateOptions) {
         // Handle main update flow
         try {
+            logTimeStart('update');
             // Parse the settings for use in the visual
             this.settings = Deneb.parseSettings(
                 options && options.dataViews && options.dataViews[0]
             );
             // Handle the update options and dispatch to store as needed
             this.resolveUpdateOptions(options);
+            logTimeEnd('update');
             return;
         } catch (e) {
             // Signal that we've encountered an error
@@ -80,6 +88,7 @@ export class Deneb implements IVisual {
 
     private resolveUpdateOptions(options: VisualUpdateOptions) {
         logDebug('Resolving update options...', { options });
+        logTimeStart('resolveUpdateOptions');
         hostServices.visualUpdateOptions = options;
         // Signal we've begun rendering
         hostServices.renderingStarted();
@@ -119,6 +128,7 @@ export class Deneb implements IVisual {
         const categorical = getCategoricalDataViewFromOptions(options);
         if (shouldProcessDataset) {
             logDebug('Visual dataset has changed and should be re-processed.');
+            logTimeStart('processDataset');
             const canFetchMore = canFetchMoreFromDataview(
                 this.settings,
                 options?.dataViews?.[0]?.metadata
@@ -152,6 +162,7 @@ export class Deneb implements IVisual {
                     dataset
                 });
             }
+            logTimeEnd('processDataset');
         } else {
             logDebug('Visual dataset has not changed. No need to process.');
         }
@@ -162,6 +173,7 @@ export class Deneb implements IVisual {
             logDebug('Visual has not been initialized yet. Setting...');
             setExplicitInitialize();
         }
+        logTimeEnd('resolveUpdateOptions');
     }
 
     private static parseSettings(dataView: DataView): VisualSettings {
