@@ -181,7 +181,7 @@ const handleSetVisualUpdate = (
                       spec: payload.settings.vega.jsonSpec,
                       viewportHeight: viewportReport.height,
                       viewportWidth: viewportReport.width,
-                      mode
+                      visualMode: mode
                   }
               })
             : state.specification;

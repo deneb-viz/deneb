@@ -136,14 +136,6 @@ const handleUpdateDataset = (
             )
         }
     };
-    const specOptions = getSpecificationParseOptions(state);
-    const spec = getParsedSpec(state.specification, specOptions, {
-        ...specOptions,
-        ...{
-            datasetHash: payload.dataset.hashValue,
-            values: payload.dataset.values
-        }
-    });
     const mode = getApplicationMode({
         currentMode: state.interface.mode,
         dataset: payload.dataset,
@@ -151,6 +143,15 @@ const handleUpdateDataset = (
         isInFocus: state.visualUpdateOptions.isInFocus,
         specification: state.visualSettings.vega.jsonSpec,
         updateType: state.visualUpdateOptions.type
+    });
+    const specOptions = getSpecificationParseOptions(state);
+    const spec = getParsedSpec(state.specification, specOptions, {
+        ...specOptions,
+        ...{
+            datasetHash: payload.dataset.hashValue,
+            values: payload.dataset.values,
+            visualMode: mode
+        }
     });
     const modalDialogRole: ModalDialogRole = isMappingDialogRequired(
         editorFieldsInUse
