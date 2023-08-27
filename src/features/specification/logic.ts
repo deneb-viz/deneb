@@ -360,14 +360,22 @@ const getPatchedVegaLiteSpec = (
     spec: VegaLite.TopLevelSpec,
     values: IVisualDatasetValueRow[]
 ) => {
-    return merge(spec, {
-        height: spec['height'] ?? 'container',
-        width: spec['width'] ?? 'container',
-        datasets: {
-            ...(spec.datasets ?? {}),
-            [`${DATASET_NAME}`]: values
+    const isNsl = isVegaLiteSpecNonStandardLayout(spec);
+    return merge(
+        spec,
+        isNsl
+            ? {}
+            : {
+                  height: spec['height'] ?? 'container',
+                  width: spec['width'] ?? 'container'
+              },
+        {
+            datasets: {
+                ...(spec.datasets ?? {}),
+                [`${DATASET_NAME}`]: values
+            }
         }
-    });
+    );
 };
 
 /**
@@ -398,7 +406,8 @@ export const getSpecificationParseOptions = (
 });
 
 /**
- * Looks at the active specification and config in the visual editors and compares with persisted values in the visual properties. Used to set
+ * Looks at the active specification and config in the visual editors and
+ * compares with persisted values in the visual properties. Used to set
  * the `isDirty` flag in the store.
  */
 export const hasLiveSpecChanged = () => {
@@ -407,6 +416,16 @@ export const hasLiveSpecChanged = () => {
         liveConfig = getCleanEditorJson('config');
     return liveSpec != jsonSpec || liveConfig != jsonConfig;
 };
+
+/**
+ * If the Vega-Lite spec uses facet, vconcat or hconcat, we need to ensure that
+ * we don't patch the spec with the viewport dimensions. This is because the
+ * spec is not the top-level spec, but a child of the facet/vconcat/hconcat
+ * spec. We'll need to look at the spec and determine if it's a non-standard
+ * layout.
+ */
+const isVegaLiteSpecNonStandardLayout = (spec: VegaLite.TopLevelSpec) =>
+    'facet' in spec || 'hconcat' in spec || 'vconcat' in spec;
 
 /**
  * Determine if the current spec is 'unversioned', meaning that it's the same
