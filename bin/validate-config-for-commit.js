@@ -18,9 +18,7 @@ if (config.features.enableReactLogging) {
 }
 // Log level: should be 0 (NONE) in committed code
 if (config.logLevel !== 0) {
-    errors.push(
-        `❌ features.logLevel is ${config.features.logLevel}; this should be 0 (NONE).`
-    );
+    errors.push(`❌ logLevel is ${config.logLevel}; this should be 0 (NONE).`);
 }
 // External URIs: Not permitted in certified visual, so needs to be disabled in committed code.
 if (config.features.enableExternalUri) {
