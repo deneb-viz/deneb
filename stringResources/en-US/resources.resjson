@@ -317,7 +317,7 @@
     "Text_Import_Template_Subtitle": "Import your file",
     "Text_Landing_Get_Started_Body": "Here's how to get started:",
     "Text_Landing_Add_Data_Heading": "Add your data",
-    "Text_Landing_Add_Data_Subtitle": "At least one column or measure in your dataset is required for Deneb to function.",
+    "Text_Landing_Add_Data_Subtitle": "At least one column or measure in your visual's dataset is needed for Deneb to function.",
     "Text_Landing_Add_Data_Body": "Add the columns and/or measures you wish to visualize to the Values data role. You can add as many as you wish, in order to achieve the desired 'shape' of your dataset.",
     "Text_Landing_Create_Visual_Heading": "Create your visual",
     "Text_Landing_Create_Visual_Subtitle": "Click [...] on the visual header, then 'Edit' to open the advanced editor.",
