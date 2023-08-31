@@ -97,7 +97,7 @@ try {
         );
         writeFile(capabilitiesFile, capabilitiesFilePath, capabilitiesFileNew);
         console.log('Running pbiviz package with new options...');
-        runNpmScript('pbiviz package', (err) => {
+        runNpmScript('pbiviz package --all-locales', (err) => {
             if (err) throw err;
             console.log('Completed package process.');
             cleanup();
