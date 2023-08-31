@@ -60,7 +60,7 @@ const getPatchedPbiviz = (packageConfig, commit) => {
         visual: {
             version: pbivizOriginal.visual.version.replace(
                 /(\d+\.\d+\.\d+.)(\d+)/,
-                `$1${suffix}#${commit.shortHash}`
+                `$1${suffix}#${commit?.shortHash || '0000000'}`
             ),
             guid: guid.replace(/(.*)(\{0\})/, `$1${pbivizOriginal.visual.guid}`)
         }
