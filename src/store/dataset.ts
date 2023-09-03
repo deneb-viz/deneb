@@ -3,14 +3,15 @@ import DataViewObjects = powerbi.DataViewObjects;
 import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 import ISelectionId = powerbi.visuals.ISelectionId;
 
-import { GetState, PartialState, SetState } from 'zustand';
+import { StateCreator } from 'zustand';
+import { NamedSet } from 'zustand/middleware';
 import { TStoreState } from '.';
 import {
     doUnallocatedFieldsExist,
+    getDatasetHash,
     getEmptyDataset
 } from '../core/data/dataset';
 import { IVisualDataset, TDataProcessingStage } from '../core/data';
-import { resolveVisualMode } from '../core/ui';
 import { getResizablePaneSize } from '../core/ui/advancedEditor';
 import { getFieldsInUseFromSpec } from '../features/template';
 import { DATASET_IDENTITY_NAME } from '../constants';
@@ -18,75 +19,76 @@ import {
     getDataPointCrossFilterStatus,
     isCrossFilterPropSet
 } from '../features/interactivity';
+import { getDatasetTemplateFields } from '../core/data/fields';
+import {
+    getParsedSpec,
+    getSpecificationParseOptions
+} from '../features/specification/logic';
+import { logDebug } from '../features/logging';
+import { getApplicationMode } from '../features/interface';
+import { ModalDialogRole } from '../features/modal-dialog/types';
+import { isMappingDialogRequired } from '../features/remap-fields';
+import { getOnboardingDialog } from '../features/modal-dialog';
+import { areAllCreateDataRequirementsMet } from '../features/visual-create';
 
 export interface IDatasetSlice {
     dataset: IVisualDataset;
-    datasetCanFetchMore: boolean;
     datasetCategories: DataViewCategoryColumn[];
     datasetHasHighlights: boolean;
     datasetHasSelectionAborted: boolean;
     datasetProcessingStage: TDataProcessingStage;
-    datasetRowsLoaded: number;
-    datasetWindowsLoaded: number;
-    datasetViewHasValidMapping: boolean;
-    datasetViewHasValidRoles: boolean;
-    datasetViewIsValid: boolean;
     datasetViewObjects: DataViewObjects;
-    confirmDatasetLoadComplete: () => void;
-    resetDatasetLoadInformation: (canFetchMore: boolean) => void;
     updateDataset: (payload: IVisualDatasetUpdatePayload) => void;
-    updateDatasetLoadInformation: (count: number) => void;
     updateDatasetProcessingStage: (payload: IDatasetProcessingPayload) => void;
     updateDatasetSelectors: (selectors: ISelectionId[]) => void;
     updateDatasetSelectionAbortStatus: (status: boolean) => void;
-    updateDatasetViewFlags: (payload: IDataViewFlagsPayload) => void;
-    updateDatasetViewInvalid: () => void;
 }
 
-export const createDatasetSlice = (
-    set: SetState<TStoreState>,
-    get: GetState<TStoreState>
-) =>
+const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IDatasetSlice>{
         dataset: getEmptyDataset(),
-        datasetCanFetchMore: false,
         datasetCategories: [],
         datasetHasHighlights: false,
         datasetHasSelectionAborted: false,
         datasetProcessingStage: 'Initial',
-        datasetRowsLoaded: 0,
-        datasetWindowsLoaded: 0,
-        datasetViewHasValidMapping: false,
-        datasetViewHasValidRoles: false,
-        datasetViewIsValid: false,
         datasetViewObjects: {},
-        confirmDatasetLoadComplete: () =>
-            set((state) => handleConfirmDatasetLoadComplete(state)),
-        resetDatasetLoadInformation: (canFetchMore) =>
-            set((state) =>
-                handleResetDatasetLoadInformation(state, canFetchMore)
-            ),
         updateDataset: (payload) =>
-            set((state) => handleUpdateDataset(state, payload)),
-        updateDatasetLoadInformation: (count) =>
-            set((state) => handleUpdateDataLoadInformation(state, count)),
-        updateDatasetProcessingStage: (stage) =>
-            set((state) => handleUpdateDatasetProcessingStage(state, stage)),
-        updateDatasetSelectors: (selectors) =>
-            set((state) => handleUpdateDatasetSelectors(state, selectors)),
-        updateDatasetSelectionAbortStatus: (status) =>
-            set((state) =>
-                handleUpdateDatasetSelectionAbortStatus(state, status)
+            set(
+                (state) => handleUpdateDataset(state, payload),
+                false,
+                'updateDataset'
             ),
-        updateDatasetViewFlags: (payload) =>
-            set((state) => handleUpdateDatasetViewFlags(state, payload)),
-        updateDatasetViewInvalid: () =>
-            set((state) => handleUpdateDatasetViewInvalid(state))
+        updateDatasetProcessingStage: (stage) =>
+            set(
+                (state) => handleUpdateDatasetProcessingStage(state, stage),
+                false,
+                'updateDatasetProcessingStage'
+            ),
+        updateDatasetSelectors: (selectors) =>
+            set(
+                (state) => handleUpdateDatasetSelectors(state, selectors),
+                false,
+                'updateDatasetSelectors'
+            ),
+        updateDatasetSelectionAbortStatus: (status) =>
+            set(
+                (state) =>
+                    handleUpdateDatasetSelectionAbortStatus(state, status),
+                false,
+                'updateDatasetSelectionAbortStatus'
+            )
     };
+
+export const createDatasetSlice: StateCreator<
+    TStoreState,
+    [['zustand/devtools', never]],
+    [],
+    IDatasetSlice
+> = sliceStateInitializer;
 
 interface IDatasetProcessingPayload {
     dataProcessingStage: TDataProcessingStage;
-    canFetchMore: boolean;
+    rowsLoaded: number;
 }
 
 interface IVisualDatasetUpdatePayload {
@@ -94,23 +96,11 @@ interface IVisualDatasetUpdatePayload {
     dataset: IVisualDataset;
 }
 
-interface IDataViewFlagsPayload {
-    datasetViewHasValidMapping: boolean;
-    datasetViewHasValidRoles: boolean;
-    datasetViewIsValid: boolean;
-}
-
-const handleConfirmDatasetLoadComplete = (
-    state: TStoreState
-): PartialState<TStoreState, never, never, never, never> => ({
-    datasetCanFetchMore: false,
-    datasetProcessingStage: 'Processed'
-});
-
 const handleUpdateDataset = (
     state: TStoreState,
     payload: IVisualDatasetUpdatePayload
-): PartialState<TStoreState, never, never, never, never> => {
+): Partial<TStoreState> => {
+    logDebug('dataset.updateDataset', payload);
     const datasetCategories = payload.categories || [];
     const { dataset } = payload;
     const editorFieldsInUse = getFieldsInUseFromSpec(
@@ -122,7 +112,63 @@ const handleUpdateDataset = (
         editorFieldsInUse,
         state.editorFieldDatasetMismatch
     );
+    const { metadataAllDependenciesAssigned, metadataAllFieldsAssigned } =
+        areAllCreateDataRequirementsMet(state.create.metadata);
+    const templateExportMetadata = {
+        ...state.templateExportMetadata,
+        ...{
+            dataset: getDatasetTemplateFields(payload.dataset.fields).map(
+                (d) => {
+                    const match = state.templateExportMetadata.dataset.find(
+                        (ds) => ds.key === d.key
+                    );
+                    if (match) {
+                        return {
+                            ...match,
+                            ...{
+                                name: d.name,
+                                namePlaceholder: d.namePlaceholder
+                            }
+                        };
+                    }
+                    return d;
+                }
+            )
+        }
+    };
+    const mode = getApplicationMode({
+        currentMode: state.interface.mode,
+        dataset: payload.dataset,
+        editMode: state.visualUpdateOptions.editMode,
+        isInFocus: state.visualUpdateOptions.isInFocus,
+        specification: state.visualSettings.vega.jsonSpec,
+        updateType: state.visualUpdateOptions.type
+    });
+    const specOptions = getSpecificationParseOptions(state);
+    const spec = getParsedSpec(state.specification, specOptions, {
+        ...specOptions,
+        ...{
+            datasetHash: payload.dataset.hashValue,
+            values: payload.dataset.values,
+            visualMode: mode
+        }
+    });
+    const modalDialogRole: ModalDialogRole = isMappingDialogRequired(
+        editorFieldsInUse
+    )
+        ? 'Remap'
+        : getOnboardingDialog(
+              state.visualSettings,
+              mode,
+              state.interface.modalDialogRole
+          );
+    logDebug('dataset.updateDataset persisting to store...');
     return {
+        create: {
+            ...state.create,
+            metadataAllDependenciesAssigned,
+            metadataAllFieldsAssigned
+        },
         dataset: payload.dataset,
         datasetCategories,
         datasetProcessingStage: 'Processed',
@@ -134,108 +180,90 @@ const handleUpdateDataset = (
             state.visualViewportCurrent,
             state.visualSettings.editor.position
         ),
-        editorIsMapDialogVisible:
-            !state.editorIsNewDialogVisible &&
-            !state.editorIsExportDialogVisible &&
-            editorFieldDatasetMismatch,
-        visualMode: resolveVisualMode(
-            state.datasetViewHasValidMapping,
-            state.visualEditMode,
-            state.visualIsInFocusMode,
-            state.visualViewMode,
-            state.editorSpec
-        )
+        interface: {
+            ...state.interface,
+            modalDialogRole,
+            mode
+        },
+        processing: {
+            ...state.processing,
+            shouldProcessDataset: false
+        },
+        specification: {
+            ...state.specification,
+            ...spec
+        },
+        templateExportMetadata
     };
 };
-
-const handleResetDatasetLoadInformation = (
-    state: TStoreState,
-    canFetchMore: boolean
-): PartialState<TStoreState, never, never, never, never> => ({
-    datasetCanFetchMore: canFetchMore,
-    datasetRowsLoaded: 0,
-    datasetWindowsLoaded: 0
-});
-
-const handleUpdateDataLoadInformation = (
-    state: TStoreState,
-    count: number
-): PartialState<TStoreState, never, never, never, never> => ({
-    datasetRowsLoaded: state.datasetRowsLoaded + count,
-    datasetWindowsLoaded: state.datasetWindowsLoaded + 1
-});
 
 const handleUpdateDatasetProcessingStage = (
     state: TStoreState,
     payload: IDatasetProcessingPayload
-): PartialState<TStoreState, never, never, never, never> => ({
-    datasetCanFetchMore: payload.canFetchMore,
-    datasetProcessingStage: payload.dataProcessingStage
-});
+): Partial<TStoreState> => {
+    const { dataProcessingStage, rowsLoaded } = payload;
+    const mode = getApplicationMode({
+        invokeMode:
+            dataProcessingStage === 'Fetching'
+                ? dataProcessingStage
+                : state.interface.mode
+    });
+    return {
+        datasetProcessingStage: dataProcessingStage,
+        dataset: {
+            ...state.dataset,
+            rowsLoaded
+        },
+        interface: {
+            ...state.interface,
+            isInitialized: true,
+            mode
+        }
+    };
+};
 
 const handleUpdateDatasetSelectors = (
     state: TStoreState,
     selectors: ISelectionId[]
-): PartialState<TStoreState, never, never, never, never> => ({
-    datasetHasSelectionAborted: false,
-    dataset: {
-        ...state.dataset,
+): Partial<TStoreState> => {
+    logDebug('dataset.updateDatasetSelectors', selectors);
+    const values = state.dataset.values.slice().map((v) => ({
+        ...v,
+        ...(isCrossFilterPropSet() && {
+            __selected__: getDataPointCrossFilterStatus(
+                v?.[DATASET_IDENTITY_NAME],
+                selectors
+            )
+        })
+    }));
+    const hashValue = getDatasetHash(state.dataset.fields, values);
+    const specOptions = getSpecificationParseOptions(state);
+    const spec = getParsedSpec(state.specification, specOptions, {
+        ...specOptions,
         ...{
-            values: state.dataset.values.slice().map((v) => ({
-                ...v,
-                ...(isCrossFilterPropSet() && {
-                    __selected__: getDataPointCrossFilterStatus(
-                        v?.[DATASET_IDENTITY_NAME],
-                        selectors
-                    )
-                })
-            }))
+            datasetHash: hashValue,
+            values
         }
-    }
-});
+    });
+    return {
+        datasetHasSelectionAborted: false,
+        dataset: {
+            ...state.dataset,
+            ...{
+                hashValue,
+                values
+            }
+        },
+        specification: {
+            ...state.specification,
+            ...spec
+        }
+    };
+};
 
 const handleUpdateDatasetSelectionAbortStatus = (
     state: TStoreState,
     status: boolean
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     datasetHasSelectionAborted: status
-});
-
-const handleUpdateDatasetViewFlags = (
-    state: TStoreState,
-    payload: IDataViewFlagsPayload
-): PartialState<TStoreState, never, never, never, never> => {
-    const {
-        datasetViewHasValidMapping,
-        datasetViewHasValidRoles,
-        datasetViewIsValid
-    } = payload;
-    return {
-        datasetViewHasValidMapping,
-        datasetViewHasValidRoles,
-        datasetViewIsValid,
-        visualMode: resolveVisualMode(
-            datasetViewHasValidMapping,
-            state.visualEditMode,
-            state.visualIsInFocusMode,
-            state.visualViewMode,
-            state.editorSpec
-        )
-    };
-};
-
-const handleUpdateDatasetViewInvalid = (
-    state: TStoreState
-): PartialState<TStoreState, never, never, never, never> => ({
-    dataset: getEmptyDataset(),
-    datasetProcessingStage: 'Processed',
-    datasetRowsLoaded: 0,
-    datasetWindowsLoaded: 0,
-    visualMode: resolveVisualMode(
-        state.datasetViewHasValidMapping,
-        state.visualEditMode,
-        state.visualIsInFocusMode,
-        state.visualViewMode,
-        state.editorSpec
-    )
 });

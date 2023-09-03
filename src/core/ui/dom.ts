@@ -2,13 +2,14 @@ import powerbi from 'powerbi-visuals-api';
 import IViewport = powerbi.IViewport;
 import EditMode = powerbi.EditMode;
 import ViewMode = powerbi.ViewMode;
-import React from 'react';
+
 import { getConfig } from '../utils/config';
-import DisplaySettings from '../../properties/DisplaySettings';
+import DisplaySettings from '../../properties/display-settings';
 import {
     resolveObjectProperties,
     updateObjectProperties
 } from '../utils/properties';
+import { logDebug } from '../../features/logging';
 
 const viewportAdjust = 4;
 
@@ -22,50 +23,6 @@ export const getReportViewport = (
 });
 
 export const zoomConfig = getConfig().zoomLevel;
-
-const calculateZoomLevelPercent = (zoomLevel: number) => zoomLevel / 100;
-
-export const getDefaultZoomLevel = () => zoomConfig.default;
-
-/**
- * Manages the increase of zoom level in the visual editor by increasing it by step value.
- */
-export const getZoomInLevel = (value: number) => {
-    const { step, max } = zoomConfig,
-        level = Math.min(max, Math.floor((value + step) / 10) * 10);
-    return (value < max && level) || level;
-};
-
-/**
- * Manages the decrease of zoom level in the visual editor by decreasing it by step value.
- */
-export const getZoomOutLevel = (value: number) => {
-    const { step, min } = zoomConfig,
-        level = Math.max(min, Math.ceil((value - step) / 10) * 10);
-    return (value > min && level) || level;
-};
-
-export const getEditorHeadingIconClassName = (expanded: boolean) =>
-    `editor-${expanded ? 'collapse' : 'expand'}`;
-
-export const getViewModeViewportStyles = (
-    viewport: IViewport,
-    isEditor: boolean,
-    zoomLevel: number,
-    showViewportMarker: boolean
-): React.CSSProperties => {
-    const resolved = `calc(100% - ${viewportAdjust}px)`,
-        scale = calculateZoomLevelPercent(zoomLevel);
-    return {
-        height: isEditor ? viewport.height : resolved,
-        minHeight: isEditor ? viewport.height : resolved,
-        width: isEditor ? viewport.width : resolved,
-        minWidth: isEditor ? viewport.width : resolved,
-        transform: `scale(${scale})`,
-        transformOrigin: '0% 0% 0px',
-        border: showViewportMarker ? '2px dashed #b3b3b3' : null
-    };
-};
 
 /**
  * Convert a value intended for pt to a px equivalent.
@@ -88,6 +45,7 @@ export const resolveReportViewport = (
         (displaySettings.viewportHeight !== viewport.height ||
             displaySettings.viewportWidth !== viewport.width)
     ) {
+        logDebug('Persisting viewport to properties...');
         updateObjectProperties(
             resolveObjectProperties([
                 {

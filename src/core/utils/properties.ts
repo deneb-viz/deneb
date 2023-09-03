@@ -1,5 +1,4 @@
 export {
-    getDenebVersionObject,
     getProviderVersionProperty,
     getDenebVersionProperty,
     resolveObjectProperties,
@@ -14,7 +13,7 @@ import DataViewPropertyValue = powerbi.DataViewPropertyValue;
 import cloneDeep from 'lodash/cloneDeep';
 import reduce from 'lodash/reduce';
 
-import VisualSettings from '../../properties/VisualSettings';
+import VisualSettings from '../../properties/visual-settings';
 
 import { getState } from '../../store';
 import { hostServices } from '../services';
@@ -27,7 +26,7 @@ import { getVisualMetadata, providerVersions } from './config';
  */
 const resolveObjectProperties = (objects: IPersistenceObject[]) => {
     const names = objects.map((o) => o.objectName);
-    let changes = getNewObjectInstance(names);
+    const changes = getNewObjectInstance(names);
     return reduce(
         objects,
         (result, value, index) => {
@@ -48,7 +47,7 @@ const resolveObjectProperties = (objects: IPersistenceObject[]) => {
  * Manage persistence of content to the visual's data view `objects`.
  */
 const updateObjectProperties = (changes: VisualObjectInstancesToPersist) =>
-    persistProperties()(changes);
+    hostServices.persistProperties(changes);
 
 /**
  * An object for persisting to the data view.
@@ -96,11 +95,6 @@ const getNewObjectInstanceToPersist = (): VisualObjectInstancesToPersist => ({
 });
 
 /**
- * Convenience function that returns the visual host's `persistProperties` instance from Deneb's store.
- */
-const persistProperties = () => hostServices.persistProperties;
-
-/**
  * Return the version number for the supplied provider as a persistable property.
  */
 const getProviderVersionProperty = (
@@ -111,16 +105,8 @@ const getProviderVersionProperty = (
 });
 
 /**
- * Return the persistence objects and properties for updating the Deneb version.
+ * Return the version number for Deneb as a persistable property.
  */
-const getDenebVersionObject = (): IPersistenceObject => ({
-    objectName: 'developer',
-    properties: [
-        getDenebVersionProperty(),
-        { name: 'showVersionNotification', value: false }
-    ]
-});
-
 const getDenebVersionProperty = (): IPersistenceProperty => ({
     name: 'version',
     value: getVisualMetadata().version

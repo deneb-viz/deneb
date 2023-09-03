@@ -39,6 +39,18 @@
             "features": {
                 "enableExternalUri": true
             }
+        },
+        "capabilities": {
+            "privileges": [
+                {
+                    "name": "ExportContent",
+                    "essential": true
+                },
+                {
+                    "name": "WebAccess",
+                    "parameters": ["https://*", "http://*"]
+                }
+            ]
         }
     }
 }

@@ -2,7 +2,6 @@
     "$schema": "../schema/deneb-config.json",
     "features": {
         "developerMode": false,
-        "enableReactLogging": false,
         "enableExternalUri": false,
         "fetchMoreData": true,
         "selectionContextMenu": true,
@@ -11,22 +10,22 @@
         "dataDrilldown": false,
         "tooltipHandler": true,
         "tooltipResolveNumberFieldFormat": true,
-        "useDownloadApi": false,
+        "useDownloadApi": true,
         "templateExportPreviewImages": true,
-        "fx": false,
         "unitTestCanary": false
     },
+    "logLevel": 0,
     "fluentUiTheme": {
         "palette": {
-            "themePrimary": "#f2c811",
+            "themePrimary": "#117865",
             "themeLighterAlt": "#fefdf5",
             "themeLighter": "#fdf6d7",
             "themeLight": "#fbeeb5",
             "themeTertiary": "#f7de6d",
             "themeSecondary": "#f4cf2c",
-            "themeDarkAlt": "#dab50f",
-            "themeDark": "#b8990d",
-            "themeDarker": "#887109",
+            "themeDarkAlt": "#054d43",
+            "themeDark": "#054d43",
+            "themeDarker": "#033f38",
             "neutralLighterAlt": "#f3f2f1",
             "neutralLighter": "#eaeaea",
             "neutralLight": "#dadada",
@@ -53,11 +52,11 @@
             "combination": "ctrl|shift|enter",
             "functionalArea": "other"
         },
-        "repairFormatJson": {
+        "formatJson": {
             "combination": "ctrl|alt|r",
             "functionalArea": "other"
         },
-        "newTemplate": {
+        "exportSpecification": {
             "combination": "ctrl|alt|t",
             "functionalArea": "other"
         },
@@ -65,11 +64,11 @@
             "combination": "ctrl|alt|n",
             "functionalArea": "other"
         },
-        "mapFields": {
+        "fieldMappings": {
             "combination": "ctrl|alt|f",
             "functionalArea": "other"
         },
-        "openHelpUrl": {
+        "helpSite": {
             "combination": "ctrl|alt|h",
             "functionalArea": "other"
         },
@@ -85,11 +84,11 @@
             "combination": "ctrl|alt|3,ctrl|alt|num_3",
             "functionalArea": "other"
         },
-        "toggleEditorPane": {
+        "editorPaneToggle": {
             "combination": "ctrl|alt|space",
             "functionalArea": "other"
         },
-        "toggleDebugPane": {
+        "debugPaneToggle": {
             "combination": "ctrl|`",
             "functionalArea": "other"
         },
@@ -110,11 +109,11 @@
             "functionalArea": "other"
         },
         "zoomIn": {
-            "combination": "ctrl|alt|num_add,ctrl|alt|=",
+            "combination": "ctrl|alt|+,ctrl|alt|=",
             "functionalArea": "other"
         },
         "zoomOut": {
-            "combination": "ctrl|alt|num_subtract,ctrl|alt|-",
+            "combination": "ctrl|alt|-",
             "functionalArea": "other"
         },
         "zoomReset": {
@@ -134,10 +133,12 @@
         "deneb": {
             "interactivityDocumentationUrl": "https://deneb-viz.github.io/interactivity-overview",
             "changelogDocumentationUrl": "https://deneb-viz.github.io/changelog",
+            "examplesUrl": "https://deneb-viz.github.io/community/resources",
             "legacyVersion": "1.0.0.57"
         },
         "vega": {
             "documentationUrl": "https://vega.github.io/vega/docs/",
+            "examplesUrl": "https://vega.github.io/vega/examples/",
             "schemaUrl": "https://vega.github.io/schema/vega/v5.json",
             "legacyVersion": "5.21.0",
             "patch": {
@@ -155,14 +156,22 @@
         },
         "vegaLite": {
             "documentationUrl": "https://vega.github.io/vega-lite/docs/",
+            "examplesUrl": "https://vega.github.io/vega-lite/examples/",
             "schemaUrl": "https://vega.github.io/schema/vega-lite/v5.json",
             "legacyVersion": "5.1.1"
         }
     },
+    "dataTable": {
+        "rowsPerPage": {
+            "default": 10,
+            "values": [10, 25, 50, 100]
+        }
+    },
     "previewPane": {
         "areaMinSize": 100,
-        "toolbarMinSize": 36,
+        "toolbarMinSize": 28,
         "toolbarInitialPercent": 40,
+        "viewportBorderSize": 2,
         "logLevels": [
             {
                 "level": 0,
@@ -203,18 +212,23 @@
             "debounceInterval": 200,
             "tabSize": 2,
             "position": "left",
-            "fontSize": 10,
+            "fontSize": {
+                "default": 10,
+                "min": 8,
+                "max": 30
+            },
             "wordWrap": true,
             "showGutter": true,
             "showLineNumbers": true,
             "showViewportMarker": true,
-            "maxLineLength": 40
+            "maxLineLength": 40,
+            "previewScrollbars": false
         },
         "vega": {
             "jsonSpec": null,
             "jsonConfig": "{}",
             "provider": "vegaLite",
-            "logLevel": 2,
+            "logLevel": 3,
             "renderMode": "svg",
             "enableContextMenu": true,
             "enableTooltips": true,
@@ -225,9 +239,20 @@
             "isNewDialogOpen": true
         },
         "theme": {
-            "ordinalColorCount": 10,
-            "ordinalColorCountMin": 1,
-            "ordinalColorCountMax": 100
+            "ordinalColorCount": {
+                "default": 10,
+                "min": 1,
+                "max": 100
+            }
+        },
+        "display": {
+            "scrollbarColor": "#000000",
+            "scrollbarOpacity": 20,
+            "scrollbarRadius": {
+                "min": 0,
+                "max": 3,
+                "default": 0
+            }
         },
         "performance": {
             "enableResizeRecalc": false
@@ -239,87 +264,10 @@
         "dataPointsStepValue": 1
     },
     "splitPaneDefaults": {
-        "minSize": 350,
+        "minSize": 200,
         "defaultSizePercent": 0.4,
-        "maxSizePercent": 0.6,
+        "maxSizePercent": 0.5,
         "collapsedSize": 36
-    },
-    "svgFilters": {
-        "none": {
-            "displayName": "None",
-            "attributes": [],
-            "effects": []
-        },
-        "xkcd": {
-            "displayName": "Deneb.XKCD",
-            "ignoreText": true,
-            "attributes": [
-                {
-                    "name": "filterUnits",
-                    "value": "userSpaceOnUse"
-                },
-                {
-                    "name": "x",
-                    "value": "-5"
-                },
-                {
-                    "name": "y",
-                    "value": "-5"
-                },
-                {
-                    "name": "width",
-                    "value": "100%"
-                },
-                {
-                    "name": "height",
-                    "value": "100%"
-                }
-            ],
-            "effects": [
-                {
-                    "primitive": "feTurbulence",
-                    "attributes": [
-                        {
-                            "name": "type",
-                            "value": "fractalNoise"
-                        },
-                        {
-                            "name": "baseFrequency",
-                            "value": "0.05"
-                        },
-                        {
-                            "name": "result",
-                            "value": "noise"
-                        }
-                    ]
-                },
-                {
-                    "primitive": "feDisplacementMap",
-                    "attributes": [
-                        {
-                            "name": "scale",
-                            "value": "5"
-                        },
-                        {
-                            "name": "xChannelSelector",
-                            "value": "R"
-                        },
-                        {
-                            "name": "yChannelSelector",
-                            "value": "G"
-                        },
-                        {
-                            "name": "in",
-                            "value": "SourceGraphic"
-                        },
-                        {
-                            "name": "in2",
-                            "value": "noise"
-                        }
-                    ]
-                }
-            ]
-        }
     },
     "templates": {
         "metadataVersion": 1,
@@ -331,8 +279,42 @@
     },
     "zoomLevel": {
         "min": 10,
-        "max": 300,
+        "max": 400,
         "step": 10,
-        "default": 100
+        "default": 100,
+        "customLevels": [
+            {
+                "value": "400",
+                "isLevel": true
+            },
+            {
+                "value": "200",
+                "isLevel": true
+            },
+            {
+                "value": "100",
+                "isLevel": true
+            },
+            {
+                "value": "66",
+                "isLevel": true
+            },
+            {
+                "value": "50",
+                "isLevel": true
+            },
+            {
+                "value": "33",
+                "isLevel": true
+            },
+            {
+                "value": "Fit",
+                "isFit": true
+            },
+            {
+                "value": "Custom",
+                "isCustom": true
+            }
+        ]
     }
 }

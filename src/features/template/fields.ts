@@ -12,7 +12,10 @@ import { getVegaSettings } from '../../core/vega';
 import { getCrossHighlightRegExpAlternation } from '../interactivity';
 import { getCleanEditorJson } from '../specification';
 import { ITemplateDatasetField, TDatasetFieldType } from './schema';
-import { ITemplatePattern } from './types';
+import { ITemplatePattern, TemplateDatasetColumnRole } from './types';
+import { getFormatFieldRegExpAlternation } from '../dataset';
+import { getI18nValue } from '../i18n';
+import { useTemplateStyles } from './components';
 
 /**
  * Used for validation of text field lengths vs. generated schema.
@@ -44,13 +47,72 @@ const doesSpecContainKeyForMetadata = (
     );
 
 /**
+ * Resolve class name based on role.
+ */
+export const getDataColumnClass = (role: TemplateDatasetColumnRole) => {
+    const classes = useTemplateStyles();
+    switch (role) {
+        case 'type':
+            return classes.datasetDataType;
+        case 'name':
+        case 'originalName':
+        case 'exportName':
+            return classes.datasetColumnName;
+        case 'assignment':
+            return classes.datasetColumnAssignment;
+        default:
+            return '';
+    }
+};
+
+/**
+ * Resolve heading column text based on role.
+ */
+export const getDataColumnText = (role: TemplateDatasetColumnRole) => {
+    switch (role) {
+        case 'name':
+            return getI18nValue('Text_Template_Dataset_Field_Name');
+        case 'exportName':
+            return getI18nValue('Text_Template_Dataset_Field_Name_Export');
+        case 'originalName':
+            return getI18nValue('Text_Template_Dataset_Field_OriginalName');
+        case 'assignment':
+            return getI18nValue('Text_Template_Dataset_Field_Assignment');
+        case 'description':
+        case 'exportDescription':
+            return getI18nValue('Text_Template_Dataset_Field_Description');
+        default:
+            return '';
+    }
+};
+
+/**
+ * For a given column or measure (or template placeholder), resolve the UI
+ * tooltip/title text for its data type.
+ */
+export const getDataTypeIconTitle = (type: TDatasetFieldType) => {
+    switch (type) {
+        case 'bool':
+            return getI18nValue('Template_Type_Descriptor_Bool');
+        case 'text':
+            return getI18nValue('Template_Type_Descriptor_Text');
+        case 'numeric':
+            return getI18nValue('Template_Type_Descriptor_Numeric');
+        case 'dateTime':
+            return getI18nValue('Template_Type_Descriptor_DateTime');
+        default:
+            return getI18nValue('Template_Import_Not_Deneb');
+    }
+};
+
+/**
  * When performing placeholder replacements, we need to ensure that special
  * characters used in regex qualifiers are suitably escaped so that we don't
  * inadvertently mangle them. Returns escaped string, suitable for pattern
  * matching if any special characters are used.
  */
 export const getEscapedReplacerPattern = (value: string) =>
-    value.replace(/[-\/\\^$*+?.()&|[\]{}]/g, '\\$&');
+    value.replace(/[-/\\^$*+?.()&|[\]{}]/g, '\\$&');
 
 /**
  * Process the editor "fields in use" metadata to ensure that we either preserve fields that might have been removed
@@ -99,20 +161,30 @@ export const getExportFieldTokenPatterns = (
     name: string
 ): ITemplatePattern[] => {
     const namePattern = getEscapedReplacerPattern(name);
-    return [
-        {
-            match: `"()(${namePattern})(${getCrossHighlightRegExpAlternation()})?"(?!\\s*:)`,
-            replacer: '"$1$2$3"'
-        },
-        {
-            match: `\\.()(${namePattern})(${getCrossHighlightRegExpAlternation()})?`,
-            replacer: `['$1$2$3']`
-        },
-        {
-            match: `(')(${namePattern})((?=${getCrossHighlightRegExpAlternation()}')?)`,
-            replacer: '$1$2$3'
-        }
+    const alternations = [
+        getCrossHighlightRegExpAlternation(),
+        getFormatFieldRegExpAlternation()
     ];
+    return reduce(
+        alternations,
+        (result, alternation) => {
+            return result.concat([
+                {
+                    match: `"()(${namePattern})(${alternation})?"(?!\\s*:)`,
+                    replacer: '"$1$2$3"'
+                },
+                {
+                    match: `\\.()(${namePattern})(${alternation})?`,
+                    replacer: `['$1$2$3']`
+                },
+                {
+                    match: `(')(${namePattern})((?=${alternation}')?)`,
+                    replacer: '$1$2$3'
+                }
+            ]);
+        },
+        <ITemplatePattern[]>[]
+    );
 };
 
 /**
@@ -133,7 +205,7 @@ export const getFieldsInUseFromSpec = (
 ): IVisualDatasetFields => {
     const { jsonSpec } = getVegaSettings();
     const spec = getCleanEditorJson('spec') || jsonSpec;
-    let newFieldsInUse = getExistingFieldsInUse(editorFieldsInUse, renew);
+    const newFieldsInUse = getExistingFieldsInUse(editorFieldsInUse, renew);
     forIn(getDatasetFieldsInclusive(metadata), (value, key) => {
         const found = doesSpecContainKeyForMetadata(key, spec, metadata);
         if (found) {

@@ -1,23 +1,30 @@
 import stringify from 'json-stringify-pretty-compact';
+import { stringify as prune } from 'vega-tooltip';
 
 import { getConfig } from '../../core/utils/config';
 import { TABLE_VALUE_MAX_DEPTH } from '../../constants';
-import { i18nValue } from '../ui/i18n';
+import { logDebug } from '../../features/logging';
+import { IContentParseResult } from '../../features/specification';
 
 type TIndentContext = 'editor' | 'tooltip';
 
 /**
  * Intended to be used as a substitute for `JSON.parse`; will ensure that any
- * supplied `content` is sanitised for URLs (if blocking them) prior to a
- * regular parse. The optional `fallback` allows the caller to provide a
- * default to provide if the parse fails (will return empty object (`{}`) if
- * not supplied).
+ * supplied `content` is tested as .
  */
-export const cleanParse = (content: string, fallback?: string): Object => {
+export const parseAndValidateContentJson = (
+    content: string,
+    fallback?: string
+): IContentParseResult => {
     try {
-        return JSON.parse(content);
-    } catch {
-        return JSON.parse(fallback || '{}');
+        return { result: JSON.parse(content), errors: [] };
+    } catch (e) {
+        logDebug(
+            'parseAndValidateContentJson: error encountered when parsing. Returning fallback...',
+            { fallback }
+        );
+        if (!fallback) return { result: null, errors: [e.message] };
+        return { result: JSON.parse(fallback), errors: [] };
     }
 };
 
@@ -39,33 +46,18 @@ export const getJsonAsIndentedString = (
     });
 
 /**
+ * Prune an object at a specified level of depth.
+ */
+export const getPrunedObject = (
+    json: object,
+    maxDepth = TABLE_VALUE_MAX_DEPTH
+) => JSON.parse(prune(json, maxDepth));
+
+/**
  * Create a stringified representation of an object, pruned at a specified
  * level of depth.
  */
 export const stringifyPruned = (
-    json: Object,
+    json: object,
     maxDepth = TABLE_VALUE_MAX_DEPTH
-) => JSON.stringify(json, prune(maxDepth));
-
-/**
- * For a given object, prune at the specified level of depth. Borrowed and
- * adapted from vega-tooltip.
- */
-const prune = (obj: Object, maxDepth = TABLE_VALUE_MAX_DEPTH) => {
-    const stack: any[] = [];
-    return function (this: any, key: string, value: any) {
-        if (typeof value !== 'object' || value === null) {
-            return value;
-        }
-        const pos = stack.indexOf(this) + 1;
-        stack.length = pos;
-        if (stack.length > maxDepth) {
-            return i18nValue('Table_Placeholder_Object');
-        }
-        if (stack.indexOf(value) >= 0) {
-            return i18nValue('Table_Placeholder_Circular');
-        }
-        stack.push(value);
-        return value;
-    };
-};
+) => prune(json, maxDepth);

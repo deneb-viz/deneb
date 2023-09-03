@@ -7,14 +7,9 @@ import { TModalDialogType } from './types';
 export const isDialogOpen = () => {
     const {
         editorIsExportDialogVisible,
-        editorIsMapDialogVisible,
-        editorIsNewDialogVisible
+        interface: { modalDialogRole }
     } = getState();
-    return (
-        editorIsNewDialogVisible ||
-        editorIsMapDialogVisible ||
-        editorIsExportDialogVisible
-    );
+    return editorIsExportDialogVisible || modalDialogRole !== 'None';
 };
 
 /**
@@ -26,7 +21,5 @@ export const resolveDialogTitle = (type: TModalDialogType) => {
             return 'New_Spec_Heading';
         case 'export':
             return 'Export_Spec_Heading';
-        case 'mapping':
-            return 'Map_Fields_Heading';
     }
 };

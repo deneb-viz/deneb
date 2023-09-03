@@ -1,72 +1,68 @@
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import '../style/visual.less';
-import '../style/fabric-icons-inline.css';
-import '../style/tabulator-deneb.less';
 import 'jsoneditor/dist/jsoneditor.css';
 import powerbi from 'powerbi-visuals-api';
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import IVisual = powerbi.extensibility.visual.IVisual;
-import EnumerateVisualObjectInstancesOptions = powerbi.EnumerateVisualObjectInstancesOptions;
-import VisualObjectInstance = powerbi.VisualObjectInstance;
 import DataView = powerbi.DataView;
-import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnumerationObject;
-import IVisualHost = powerbi.extensibility.visual.IVisualHost;
-import IVisualEventService = powerbi.extensibility.IVisualEventService;
-import VisualUpdateType = powerbi.VisualUpdateType;
 import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
+import FormattingModel = powerbi.visuals.FormattingModel;
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { loadTheme } from '@fluentui/react/lib/Styling';
 
 import App from './components/App';
-import VisualSettings from './properties/VisualSettings';
+import VisualSettings from './properties/visual-settings';
 
 import { getState } from './store';
-import {
-    canFetchMore,
-    handleDataFetch,
-    validateDataViewMapping,
-    validateDataViewRoles
-} from './core/data/dataView';
-import { theme } from './core/ui/fluent';
-import { fillPatternServices, hostServices } from './core/services';
-import { initializeIcons } from './core/ui/fluent';
-import { getDataset, getMappedDataset } from './core/data/dataset';
+import { canFetchMoreFromDataview, getRowCount } from './core/data/dataView';
+import { hostServices } from './core/services';
+import { getMappedDataset } from './core/data/dataset';
 import { handlePropertyMigration } from './core/utils/versioning';
 import { resolveReportViewport } from './core/ui/dom';
-import { getDatasetTemplateFields } from './core/data/fields';
-import { DATASET_NAME } from './constants';
-import { parseActiveSpecification } from './features/specification';
+import {
+    logDebug,
+    logHeading,
+    logHost,
+    logTimeEnd,
+    logTimeStart
+} from './features/logging';
+import { getVisualMetadata } from './core/utils/config';
+import {
+    VegaExtensibilityServices,
+    VegaPatternFillServices
+} from './features/vega-extensibility';
+import { I18nServices, getLocale } from './features/i18n';
+import { isFeatureEnabled } from './core/utils/features';
+import {
+    getCategoricalDataViewFromOptions,
+    isVisualUpdateTypeResizeEnd,
+    isVisualUpdateTypeVolatile
+} from './features/visual-host';
+
+/**
+ * Run to indicate that the visual has started.
+ */
+logHeading(`${getVisualMetadata()?.displayName}`);
+logHeading(`Version: ${getVisualMetadata()?.version}`, 12);
 
 export class Deneb implements IVisual {
     private settings: VisualSettings;
-    // The root element for the entire visual
-    private container: HTMLElement;
-    // React app container
-    private reactRoot: React.FunctionComponentElement<{}>;
-    // Visual host services
-    private host: IVisualHost;
-    // Handle rendering events
-    private events: IVisualEventService;
 
     constructor(options: VisualConstructorOptions) {
+        logHost('Constructor has been called.', { options });
         try {
-            loadTheme(theme);
-            initializeIcons();
             hostServices.bindHostServices(options);
+            I18nServices.bind(options);
+            VegaPatternFillServices.bind();
             getState().initializeImportExport();
-            this.container = options.element;
-            this.host = options.host;
-            this.events = this.host.eventService;
-            this.reactRoot = React.createElement(App);
-            ReactDOM.render(this.reactRoot, this.container);
-            this.container.oncontextmenu = (ev) => {
+            const { element } = options;
+            ReactDOM.render(React.createElement(App), element);
+            element.oncontextmenu = (ev) => {
                 ev.preventDefault();
             };
-            fillPatternServices.setPatternContainer(this.container);
         } catch (e) {
             console?.error('Error', e);
         }
@@ -75,25 +71,14 @@ export class Deneb implements IVisual {
     public update(options: VisualUpdateOptions) {
         // Handle main update flow
         try {
-            // Signal we've begun rendering
-            this.events.renderingStarted(options);
-
+            logTimeStart('update');
             // Parse the settings for use in the visual
             this.settings = Deneb.parseSettings(
                 options && options.dataViews && options.dataViews[0]
             );
-
-            // No volatile operations occur during a resize event, and the DOM/Vega view takes care of handling any
-            // responsiveness for anything that will change. No additional computations are needed, so we can save a few
-            // cycles.
-            if (
-                options.type === VisualUpdateType.Resize &&
-                !this.settings.performance.enableResizeRecalc
-            )
-                return;
-
             // Handle the update options and dispatch to store as needed
             this.resolveUpdateOptions(options);
+            logTimeEnd('update');
             return;
         } catch (e) {
             // Signal that we've encountered an error
@@ -102,103 +87,93 @@ export class Deneb implements IVisual {
     }
 
     private resolveUpdateOptions(options: VisualUpdateOptions) {
-        const settings = this.settings;
+        logDebug('Resolving update options...', { options });
+        logTimeStart('resolveUpdateOptions');
         hostServices.visualUpdateOptions = options;
-        hostServices.resolveLocaleFromSettings(settings.developer.locale);
-        const {
-            setVisualUpdate,
-            syncTemplateExportDataset,
-            updateDataset,
-            updateDatasetProcessingStage,
-            updateDatasetViewFlags,
-            updateDatasetViewInvalid
-        } = getState();
+        // Signal we've begun rendering
+        hostServices.renderingStarted();
+        hostServices.resolveLocaleFromSettings(this.settings.developer.locale);
+        I18nServices.update(
+            isFeatureEnabled('developerMode')
+                ? this.settings.developer.locale
+                : getLocale()
+        );
+        VegaExtensibilityServices.bind(this.settings.theme.ordinalColorCount);
+        const { setVisualUpdate, updateDataset, updateDatasetProcessingStage } =
+            getState();
         // Manage persistent viewport sizing for view vs. editor
         switch (true) {
-            case options.type === VisualUpdateType.All:
-            case options.type === VisualUpdateType.Data:
-            /**
-             * This cooercion is needed due to a bug in the API w/ `VisualUpdateType.ResizeEnd`.
-             * I've submitted a PR for a fix: https://github.com/microsoft/powerbi-visuals-api/pull/38
-             */
-            case options.type.toString() === '36': {
+            case isVisualUpdateTypeVolatile(options):
+            case isVisualUpdateTypeResizeEnd(options.type): {
                 resolveReportViewport(
                     options.viewport,
                     options.viewMode,
                     options.editMode,
-                    settings.display
+                    this.settings.display
                 );
-            }
-            default: {
             }
         }
         // Provide intial update options to store
         setVisualUpdate({
             options,
-            settings
+            settings: this.settings
         });
         // Perform any necessary property migrations
-        handlePropertyMigration();
+        handlePropertyMigration(this.settings);
         // Data change or re-processing required?
-        switch (true) {
-            case options.type === VisualUpdateType.All:
-            case options.type === VisualUpdateType.Data:
-            // This is needed due to an issue with the developer visual, where
-            // MS have introduced an unknown `VisualUpdateType` type that is
-            // not part of the API. Refer to powerbi-visuals-tools/#422 for
-            // details of the issue.
-            case options.type.toString() === '254': {
-                // If first segment, we test and set state accordingly for user feedback
-                if (
-                    options.operationKind ===
-                    VisualDataChangeOperationKind.Create
-                ) {
-                    updateDatasetProcessingStage({
-                        dataProcessingStage: 'Fetching',
-                        canFetchMore: canFetchMore()
-                    });
-                    const datasetViewHasValidMapping = validateDataViewMapping(
-                            options.dataViews
-                        ),
-                        datasetViewHasValidRoles =
-                            datasetViewHasValidMapping &&
-                            validateDataViewRoles(options.dataViews, [
-                                DATASET_NAME
-                            ]),
-                        datasetViewIsValid =
-                            datasetViewHasValidMapping &&
-                            datasetViewHasValidRoles;
-                    updateDatasetViewFlags({
-                        datasetViewHasValidMapping,
-                        datasetViewHasValidRoles,
-                        datasetViewIsValid
-                    });
-                }
-                // If the DV didn't validate then we shouldn't expend effort mapping it and just display landing page
-                if (!getState().datasetViewHasValidMapping) {
-                    updateDatasetViewInvalid();
-                    break;
-                }
-                handleDataFetch(options);
-                if (!canFetchMore()) {
-                    updateDataset({
-                        categories:
-                            options.dataViews[0]?.categorical?.categories,
-                        dataset: getMappedDataset(
-                            options.dataViews[0]?.categorical
-                        )
-                    });
-                    syncTemplateExportDataset(
-                        getDatasetTemplateFields(getDataset().fields)
-                    );
-                }
-                break;
+        let fetchSuccess = false;
+        const {
+            processing: { shouldProcessDataset }
+        } = getState();
+        const categorical = getCategoricalDataViewFromOptions(options);
+        if (shouldProcessDataset) {
+            logDebug('Visual dataset has changed and should be re-processed.');
+            logTimeStart('processDataset');
+            const canFetchMore = canFetchMoreFromDataview(
+                this.settings,
+                options?.dataViews?.[0]?.metadata
+            );
+            const rowsLoaded = getRowCount(categorical);
+            // If first segment, we test and set state accordingly for user feedback
+            if (
+                options.operationKind === VisualDataChangeOperationKind.Create
+            ) {
+                logDebug('Initial data segment.');
             }
-            default: {
+            if (canFetchMore) {
+                logDebug(
+                    `${rowsLoaded} row(s) loaded. Attempting to fetch more data...`
+                );
+                updateDatasetProcessingStage({
+                    dataProcessingStage: 'Fetching',
+                    rowsLoaded
+                });
+                fetchSuccess = hostServices.fetchMoreData(true);
             }
+            if (!fetchSuccess) {
+                logDebug('No more data to fetch. Processing dataset...');
+                updateDatasetProcessingStage({
+                    dataProcessingStage: 'Processing',
+                    rowsLoaded
+                });
+                const dataset = getMappedDataset(categorical);
+                updateDataset({
+                    categories: categorical?.categories,
+                    dataset
+                });
+            }
+            logTimeEnd('processDataset');
+        } else {
+            logDebug('Visual dataset has not changed. No need to process.');
         }
-        getState().datasetProcessingStage === 'Processed' &&
-            parseActiveSpecification();
+        const {
+            interface: { isInitialized, setExplicitInitialize }
+        } = getState();
+        if (!isInitialized) {
+            logDebug('Visual has not been initialized yet. Setting...');
+            setExplicitInitialize();
+        }
+        logTimeEnd('resolveUpdateOptions');
     }
 
     private static parseSettings(dataView: DataView): VisualSettings {
@@ -206,45 +181,38 @@ export class Deneb implements IVisual {
     }
 
     /**
-     * This function gets called for each of the objects defined in the capabilities files and allows you to select which of the
-     * objects and properties you want to expose to the users in the property pane.
+     * This function gets called for each of the objects defined in the
+     * capabilities files and allows you to select which of the objects and
+     * properties you want to expose to the users in the property pane.
      *
+     * This is the newer way of populating the properties pane, using the new-
+     * style formatting cards.
      */
-    public enumerateObjectInstances(
-        options: EnumerateVisualObjectInstancesOptions
-    ): VisualObjectInstance[] | VisualObjectInstanceEnumerationObject {
-        let instances = (<VisualObjectInstanceEnumerationObject>(
-                VisualSettings.enumerateObjectInstances(
-                    this.settings || VisualSettings.getDefault(),
-                    options
-                )
-            )).instances,
-            objectName = options.objectName,
-            enumerationObject: VisualObjectInstanceEnumerationObject = {
-                containers: [],
-                instances: instances
-            };
-
+    public getFormattingModel(): FormattingModel {
+        logDebug('[start] getformattingModel');
         try {
-            // We try where possible to use the standard method signature to process the instance, but there are some exceptions...
-            switch (objectName) {
-                default: {
-                    // Check to see if the class has our method for processing business logic and run it if so
-                    if (
-                        typeof this.settings[`${objectName}`]
-                            .processEnumerationObject === 'function'
-                    ) {
-                        enumerationObject =
-                            this.settings[
-                                `${objectName}`
-                            ].processEnumerationObject(enumerationObject);
-                    }
-                }
-            }
+            const { settings } = this;
+            const model = {
+                cards: [
+                    ...[
+                        settings.editor.getFormattingCard(),
+                        settings.theme.getFormattingCard(),
+                        settings.display.getFormattingCard(),
+                        settings.dataLimit.getFormattingCard()
+                    ],
+                    ...(isFeatureEnabled('developerMode')
+                        ? [
+                              settings.developer.getFormattingCard(),
+                              settings.vega.getFormattingCard()
+                          ]
+                        : [])
+                ]
+            };
+            logDebug('[return] getFormattingModel', { settings, model });
+            return model;
         } catch (e) {
-            console.error('Error', e);
-        } finally {
-            return enumerationObject;
+            logDebug('[error] getFormattingModel', e);
+            return null;
         }
     }
 }

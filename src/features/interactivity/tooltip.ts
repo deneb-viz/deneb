@@ -11,8 +11,10 @@ import pickBy from 'lodash/pickBy';
 import toNumber from 'lodash/toNumber';
 import toString from 'lodash/toString';
 
-import { i18nValue } from '../../core/ui/i18n';
-import { getJsonAsIndentedString } from '../../core/utils/json';
+import {
+    getJsonAsIndentedString,
+    stringifyPruned
+} from '../../core/utils/json';
 import { getVegaSettings, IVegaViewDatum } from '../../core/vega';
 import { powerBiFormatValue } from '../../utils';
 import {
@@ -23,6 +25,7 @@ import {
 import { isFeatureEnabled } from '../../core/utils/features';
 import { hostServices } from '../../core/services';
 import { DATASET_IDENTITY_NAME, DATASET_KEY_NAME } from '../../constants';
+import { getI18nValue } from '../i18n';
 
 /**
  * Convenience constant for tooltip events, as it's required by Power BI.
@@ -45,7 +48,7 @@ const TOOLTIP_RESERVED_WORDS = [DATASET_IDENTITY_NAME, DATASET_KEY_NAME];
  * Power BI tooltip items (`VisualTooltipDataItem[]`).
  */
 const extractTooltipDataItemsFromObject = (
-    tooltip: Object,
+    tooltip: object,
     autoFormatFields: IVegaViewDatum
 ): VisualTooltipDataItem[] => {
     const autoFormatMetadata = getDatasetFieldsBySelectionKeys(
@@ -70,14 +73,14 @@ const extractTooltipDataItemsFromObject = (
  */
 const getCuratedTooltipItem = (key: string, value: any) =>
     isTooltipReservedWord(key)
-        ? i18nValue('Selection_KW_Present')
+        ? getI18nValue('Selection_KW_Present')
         : getDeepRedactedTooltipItem(value);
 
 /**
  * Sometimes, we can fudge the aggregates or other operations to create deeply nested objects in our dataset. This will apply a deeper,
  * recursive search and replace of keys matching out interactivity reserved words and 'redact' them with indicators for tooltips.
  */
-const getDeepRedactedTooltipItem = (object: Object) => {
+const getDeepRedactedTooltipItem = (object: object) => {
     return Array.isArray(object)
         ? object.map(getDeepRedactedTooltipItem)
         : object && typeof object === 'object'
@@ -99,7 +102,7 @@ const getDeepRedactedTooltipItem = (object: Object) => {
  *  - The field is a number type, and:
  *  - The tooltip value exactly matches the number representation in the `datum`.
  */
-const getFieldsEligibleForAutoFormat = (tooltip: Object) =>
+const getFieldsEligibleForAutoFormat = (tooltip: object) =>
     pickBy(tooltip, (v, k) => {
         const ttKeys = keys(tooltip),
             mdKeys = keys(getDatasetFieldsBySelectionKeys(ttKeys));
@@ -165,12 +168,12 @@ export const resolveCoordinates = (event: MouseEvent): [number, number] => [
 ];
 
 /**
- * For a given datum, resolve it to an array of keys and values. Addiitonally, we can (optionally) ensure that the
+ * For a given datum, resolve it to an array of keys and values. Additionally, we can (optionally) ensure that the
  * `interactivityReservedWords` are stripped out so that we can get actual fields and values assigned to a datum.
  */
 const resolveDatumToArray = (obj: IVegaViewDatum, filterReserved = true) =>
     Object.entries({ ...obj }).filter(
-        ([k, v]) => (filterReserved && !isTooltipReservedWord(k)) || k
+        ([k]) => (filterReserved && !isTooltipReservedWord(k)) || k
     );
 
 /**
@@ -180,7 +183,7 @@ const resolveDatumToArray = (obj: IVegaViewDatum, filterReserved = true) =>
  */
 const resolveTooltipContent =
     (tooltipService: ITooltipService) =>
-    (handler: any, event: MouseEvent, item: any, value: any) => {
+    (handler: any, event: MouseEvent, item: any) => {
         const coordinates = resolveCoordinates(event);
         if (item && item.tooltip) {
             const datum = resolveDataFromItem(item);
@@ -223,6 +226,6 @@ const resolveTooltipItem = (tooltip: any) => {
         case typeof tooltip !== 'object':
             return { ' ': `${tooltip}` };
         default:
-            return { ...tooltip };
+            return JSON.parse(stringifyPruned(tooltip));
     }
 };

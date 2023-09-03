@@ -3,7 +3,6 @@ import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 import DataViewValueColumns = powerbi.DataViewValueColumns;
 
 import find from 'lodash/find';
-import pick from 'lodash/pick';
 import pickBy from 'lodash/pickBy';
 import reduce from 'lodash/reduce';
 
@@ -16,7 +15,12 @@ import {
 import { resolveVisualMetaToDatasetField } from '../../features/template';
 import { getDataset } from './dataset';
 import { ITemplateDatasetField } from '../../features/template';
-import { HIGHLIGHT_FIELD_SUFFIX } from '../../constants';
+import {
+    DATASET_DYNAMIC_FORMAT_STRING_SUFFIX,
+    DATASET_FIELD_FORMATED_VALUE_SUFFIX,
+    HIGHLIGHT_FIELD_SUFFIX
+} from '../../constants';
+import { isDataViewFieldEligibleForFormatting } from '../../features/dataset';
 
 /**
  * Extract all categorical fields from the data view as suitable metadata.
@@ -42,7 +46,8 @@ export const getDatasetFieldEntries = (
 ) => [
     ...getCategoryFieldEntries(categories),
     ...getHighlightFieldEntries(values),
-    ...getMeasureFieldEntries(values)
+    ...getMeasureFieldEntries(values),
+    ...getMeasureFormatEntries(values)
 ];
 
 /**
@@ -59,7 +64,9 @@ export const getDatasetFields = (
         fields,
         (result, c) => {
             const encodedName = getEncodedFieldName(c.column.displayName);
-            const isExcludedFromTemplate = c.source === 'highlights';
+            const isExcludedFromTemplate = isSourceExcludedFromTemplate(
+                c.source
+            );
             result[`${encodedName}`] = {
                 ...c.column,
                 ...{
@@ -101,7 +108,7 @@ export const getDatasetTemplateFields = (
 ): ITemplateDatasetField[] =>
     reduce(
         getDatasetFieldsInclusive(metadata),
-        (result, value, key) => result.concat(value.templateMetadata),
+        (result, value) => result.concat(value.templateMetadata),
         <ITemplateDatasetField[]>[]
     );
 
@@ -115,7 +122,7 @@ export const getDatasetTemplateFields = (
  *  - Vega-Lite: https://vega.github.io/vega-lite/docs/field.html
  */
 export const getEncodedFieldName = (displayName: string) =>
-    displayName?.replace(/([\\".\[\]])/g, '_') || '';
+    displayName?.replace(/([\\".[\]])/g, '_') || '';
 
 /**
  * Get artificial array of values first (if needed) as we'll need them when
@@ -149,3 +156,53 @@ const getMeasureFieldEntries = (values: DataViewValueColumns) =>
             sourceIndex: vi
         })
     ) || [];
+
+/**
+ * For each measure, we also wish to obtain the format string and the formatted
+ * value, so that we can utilise these at a datum level for sceanrios like the
+ * new dynamic formatting values for measurers, and calculation groups with
+ * contextual formatting.
+ */
+const getMeasureFormatEntries = (
+    values: DataViewValueColumns
+): IAugmentedMetadataField[] => {
+    return reduce(
+        values,
+        (result, v, vi) => {
+            if (isDataViewFieldEligibleForFormatting(v)) {
+                result = result.concat([
+                    {
+                        column: {
+                            ...v.source,
+                            ...{
+                                displayName: `${v.source.displayName}${DATASET_DYNAMIC_FORMAT_STRING_SUFFIX}`,
+                                index: -v.source.index
+                            }
+                        },
+                        source: 'formatting',
+                        sourceIndex: vi
+                    },
+                    {
+                        column: {
+                            ...v.source,
+                            ...{
+                                displayName: `${v.source.displayName}${DATASET_FIELD_FORMATED_VALUE_SUFFIX}`,
+                                index: -v.source.index
+                            }
+                        },
+                        source: 'formatting',
+                        sourceIndex: vi
+                    }
+                ]);
+            }
+            return result;
+        },
+        <IAugmentedMetadataField[]>[]
+    );
+};
+
+/**
+ * Allows us to test that a field is excluded from templating activities.
+ */
+const isSourceExcludedFromTemplate = (source: TDatasetValueSource) =>
+    ['highlights', 'formatting'].includes(source);

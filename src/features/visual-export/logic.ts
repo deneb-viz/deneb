@@ -3,15 +3,17 @@ import omit from 'lodash/omit';
 import { v4 as uuidv4 } from 'uuid';
 
 import { DATASET_NAME } from '../../constants';
-import { i18nValue } from '../../core/ui/i18n';
 import {
     getConfig,
     getVisualMetadata,
     providerVersions
 } from '../../core/utils/config';
 import { isFeatureEnabled } from '../../core/utils/features';
-import { getJsonAsIndentedString } from '../../core/utils/json';
-import { getParsedConfigFromSettings, TSpecProvider } from '../../core/vega';
+import {
+    parseAndValidateContentJson,
+    getJsonAsIndentedString
+} from '../../core/utils/json';
+import { TSpecProvider } from '../../core/vega';
 import { getState } from '../../store';
 import { TTemplateExportState } from '../template';
 import {
@@ -19,13 +21,14 @@ import {
     getTemplatePlaceholderKey
 } from '../template';
 import { IDenebTemplateMetadata } from '../template/schema';
+import { getI18nValue } from '../i18n';
 
 /**
  * Combines spec, config and specified metadata to produce a valid JSON
  * template for export.
  */
 export const getExportTemplate = () => {
-    const { editorSpec, visualSettings } = getState();
+    const { visualSettings } = getState();
     const { vega } = visualSettings;
     const { providerResources } = getConfig();
     const vSchema = (
@@ -39,13 +42,18 @@ export const getExportTemplate = () => {
     };
     const usermeta = resolveExportUserMeta();
     const processedSpec = getTemplatedSpecification(
-        JSON.stringify(editorSpec.spec),
+        visualSettings.vega.jsonSpec,
         usermeta?.[DATASET_NAME]
     );
     const outSpec = merge(
         baseObj,
         { usermeta: getPublishableUsermeta(usermeta) },
-        { config: getParsedConfigFromSettings() },
+        {
+            config: parseAndValidateContentJson(
+                visualSettings.vega.jsonConfig,
+                getConfig().propertyDefaults.vega.jsonConfig
+            )?.result
+        },
         JSON.parse(processedSpec)
     );
     return getJsonAsIndentedString(outSpec);
@@ -121,13 +129,13 @@ const resolveExportUserMeta = (): IDenebTemplateMetadata => {
         information: {
             name:
                 templateExportMetadata?.information?.name ||
-                i18nValue('Template_Export_Information_Name_Empty'),
+                getI18nValue('Template_Export_Information_Name_Empty'),
             description:
                 templateExportMetadata?.information?.description ||
-                i18nValue('Template_Export_Information_Description_Empty'),
+                getI18nValue('Template_Export_Information_Description_Empty'),
             author:
                 templateExportMetadata?.information?.author ||
-                i18nValue('Template_Export_Author_Name_Empty'),
+                getI18nValue('Template_Export_Author_Name_Empty'),
             uuid: templateExportMetadata?.information?.uuid || uuidv4(),
             generated: new Date().toISOString(),
             previewImageBase64PNG:
@@ -152,8 +160,8 @@ const resolveExportUserMeta = (): IDenebTemplateMetadata => {
 /**
  * Persist the supplied export error information to the store.
  */
-const updateExportError = (i18nKey: string) => {
-    getState().updateTemplateExportError(i18nValue(i18nKey));
+const updateExportError = () => {
+    getState().updateTemplateExportError();
 };
 
 /**
@@ -167,11 +175,13 @@ export const updateTemplateExportState = (state: TTemplateExportState) => {
  * Checks to see if current spec is valid and updates store state for UI accordingly.
  */
 export const validateSpecificationForExport = () => {
-    const { editorSpec } = getState();
+    const {
+        specification: { status }
+    } = getState();
     updateTemplateExportState('Validating');
-    if (editorSpec.status === 'valid') {
+    if (status === 'valid') {
         updateTemplateExportState('Editing');
     } else {
-        updateExportError('Template_Export_Bad_Spec');
+        updateExportError();
     }
 };

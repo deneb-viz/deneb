@@ -1,10 +1,10 @@
 export {
     fixAndFormatSpecification,
     getCleanEditorJson,
+    getParsedSpec,
     hasLiveSpecChanged,
-    isLegacySpec,
-    parseActiveSpecification,
-    persistSpecification,
-    stageEditorData
+    isUnversionedSpec,
+    persistSpecification
 } from './logic';
+export { BASE_VALIDATOR, getProviderValidator } from './schema-validation';
 export * from './types';

@@ -1,52 +1,53 @@
-import create, { GetState, SetState, StateCreator } from 'zustand';
-import { useCallback } from 'react';
+import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import get from 'lodash/get';
+import { ICommandsSlice, createCommandsSlice } from './commands';
+import { ICreateSlice, createCreateSlice } from './create';
 import { IDatasetSlice, createDatasetSlice } from './dataset';
+import { IDebugSlice, createDebugSlice } from './debug';
 import { IEditorSlice, createEditorSlice } from './editor';
+import { IInterfaceSlice, createInterfaceSlice } from './interface';
+import { IMigrationSlice, createMigrationSlice } from './migration';
+import { IProcessingSlice, createProcessingSlice } from './processing';
+import { ISpecificationSlice, createSpecificationSlice } from './specification';
 import { ITemplateSlice, createTemplateSlice } from './template';
 import { IVisualSlice, createVisualSlice } from './visual';
+import { IVisualUpdateSlice, createVisualUpdateSlice } from './visual-update';
 import { isFeatureEnabled } from '../core/utils/features';
-import { IVisualDataset } from '../core/data';
 
-export type TStoreState = IDatasetSlice &
+export type TStoreState = ICommandsSlice &
+    ICreateSlice &
+    IDatasetSlice &
+    IDebugSlice &
     IEditorSlice &
+    IInterfaceSlice &
+    IMigrationSlice &
+    IProcessingSlice &
+    ISpecificationSlice &
     ITemplateSlice &
-    IVisualSlice;
+    IVisualSlice &
+    IVisualUpdateSlice;
 
-const combinedSlices: StateCreator<
-    TStoreState,
-    SetState<TStoreState>,
-    GetState<TStoreState>,
-    any
-> = (set, get) => ({
-    ...createDatasetSlice(set, get),
-    ...createEditorSlice(set, get),
-    ...createTemplateSlice(set, get),
-    ...createVisualSlice(set, get)
-});
-
-const store = create<TStoreState>(
-    isFeatureEnabled('developerMode')
-        ? devtools(combinedSlices)
-        : combinedSlices
+const store = create<TStoreState>()(
+    devtools(
+        (...a) => ({
+            ...createCommandsSlice(...a),
+            ...createCreateSlice(...a),
+            ...createDatasetSlice(...a),
+            ...createDebugSlice(...a),
+            ...createEditorSlice(...a),
+            ...createInterfaceSlice(...a),
+            ...createMigrationSlice(...a),
+            ...createProcessingSlice(...a),
+            ...createSpecificationSlice(...a),
+            ...createTemplateSlice(...a),
+            ...createVisualSlice(...a),
+            ...createVisualUpdateSlice(...a)
+        }),
+        { enabled: isFeatureEnabled('developerMode') }
+    )
 );
 
 const getState = () => store.getState();
 
-const useStoreProp = <T>(propname: string, path = ''): T => {
-    const resolved = `${(path && `${path}.`) || ''}${propname}`;
-    const selector = useCallback(
-        (state) => get(state, `${resolved}`),
-        [propname]
-    );
-    return store(selector);
-};
-
-const useStoreVegaProp = <T>(propname: string): T =>
-    useStoreProp(propname, 'visualSettings.vega');
-
-const useStoreDataset = (): IVisualDataset => useStoreProp('dataset');
-
 export default store;
-export { getState, useStoreProp, useStoreVegaProp, useStoreDataset };
+export { getState };

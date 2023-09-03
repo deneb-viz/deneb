@@ -5,6 +5,7 @@ import PrimitiveValue = powerbi.PrimitiveValue;
 
 import range from 'lodash/range';
 import reduce from 'lodash/reduce';
+import { digest } from 'jsum';
 
 import {
     IAugmentedMetadataField,
@@ -63,6 +64,15 @@ export const doUnallocatedFieldsExist = (
         (result, value, key) => !(key in fieldsAvailable) || result,
         false
     ) || currentResult;
+
+/**
+ * Create hash of dataset, that we can use to determine changes more cheaply
+ * within the UI.
+ */
+export const getDatasetHash = (
+    fields: IVisualDatasetFields,
+    values: IVisualDatasetValueRow[]
+) => digest({ fields, values }, 'SHA256', 'hex');
 
 /**
  * For supplied data view field metadata, produce a suitable object
@@ -130,8 +140,10 @@ export const getDataset = (): IVisualDataset => getState().dataset;
  */
 export const getEmptyDataset = (): IVisualDataset => ({
     fields: {},
+    hashValue: getDatasetHash({}, []),
     values: [],
-    hasHighlights: false
+    hasHighlights: false,
+    rowsLoaded: 0
 });
 
 /**
@@ -141,9 +153,9 @@ export const getEmptyDataset = (): IVisualDataset => ({
 export const getMappedDataset = (
     categorical: DataViewCategorical
 ): IVisualDataset => {
-    const rowCount = getRowCount(categorical);
+    const rowsLoaded = getRowCount(categorical);
     const empty = getEmptyDataset();
-    if (rowCount === 0) {
+    if (rowsLoaded === 0) {
         return empty;
     } else {
         try {
@@ -160,7 +172,7 @@ export const getMappedDataset = (
                 hostServices.selectionManager.getSelectionIds()
             );
             const fields = getDatasetFields(dvCategories, dvValues);
-            const values: IVisualDatasetValueRow[] = range(rowCount).map(
+            const values: IVisualDatasetValueRow[] = range(rowsLoaded).map(
                 (r, ri) => {
                     const md = getDataRow(
                         columns,
@@ -190,10 +202,13 @@ export const getMappedDataset = (
                     };
                 }
             );
+            const hashValue = getDatasetHash(fields, values);
             return {
                 hasHighlights,
+                hashValue,
                 fields,
-                values
+                values,
+                rowsLoaded
             };
         } catch (e) {
             console.log(e);

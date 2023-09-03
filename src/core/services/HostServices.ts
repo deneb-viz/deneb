@@ -1,5 +1,5 @@
 import powerbi from 'powerbi-visuals-api';
-import { TLocale } from '../ui/i18n';
+import { TLocale } from '../../features/i18n';
 import { isFeatureEnabled } from '../utils/features';
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
@@ -8,22 +8,18 @@ import VisualObjectInstancesToPersist = powerbi.VisualObjectInstancesToPersist;
 import ISelectionManager = powerbi.extensibility.ISelectionManager;
 import ISelectionIdBuilder = powerbi.visuals.ISelectionIdBuilder;
 import ITooltipService = powerbi.extensibility.ITooltipService;
-import ISelectionId = powerbi.visuals.ISelectionId;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import IVisualEventService = powerbi.extensibility.IVisualEventService;
 import ISandboxExtendedColorPalette = powerbi.extensibility.ISandboxExtendedColorPalette;
-/*  Pending API 4.0.0
-    import IDownloadService = powerbi.extensibility.IDownloadService;
-*/
+import IDownloadService = powerbi.extensibility.IDownloadService;
+import { logHost } from '../../features/logging';
 
 /**
  * Proxy service for Power BI host services, plus any additional logic we wish to encapsulate.
  */
 export class HostServices {
     allowInteractions: boolean;
-    /*  Pending API 4.0.0
-        download: IDownloadService;
-    */
+    download: IDownloadService;
     colorPalette: ISandboxExtendedColorPalette;
     displayWarningIcon: (hoverText: string, detailedText: string) => void;
     element: HTMLElement;
@@ -40,9 +36,7 @@ export class HostServices {
 
     bindHostServices = (options: VisualConstructorOptions) => {
         const { element, host } = options;
-        /*  Pending API 4.0.0
-            this.download = options.host.downloadService;
-        */
+        this.download = options.host.downloadService;
         this.allowInteractions = host.hostCapabilities.allowInteractions;
         this.colorPalette = host.colorPalette;
         this.displayWarningIcon = host.displayWarningIcon;
@@ -62,11 +56,18 @@ export class HostServices {
         this.colorPalette?.['colors']?.map((c: any) => c.value) || [];
 
     renderingFinished = () => {
+        logHost('Rendering event finished.');
         this.events.renderingFinished(this.visualUpdateOptions);
     };
 
     renderingFailed = (reason?: string) => {
+        logHost('Rendering event failed:', reason);
         this.events.renderingFailed(this.visualUpdateOptions, reason);
+    };
+
+    renderingStarted = () => {
+        logHost('Rendering event started.');
+        this.events.renderingStarted(this.visualUpdateOptions);
     };
 
     resolveLocaleFromSettings = (settingsLocale: TLocale) => {

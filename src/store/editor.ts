@@ -1,14 +1,10 @@
-import { GetState, PartialState, SetState } from 'zustand';
-import isEqual from 'lodash/isEqual';
+import { StateCreator } from 'zustand';
+import { NamedSet } from 'zustand/middleware';
 import reduce from 'lodash/reduce';
-import uniqWith from 'lodash/uniqWith';
-import { View } from 'vega';
 
 import { TStoreState } from '.';
 import { doUnallocatedFieldsExist } from '../core/data/dataset';
-import { resolveVisualMode } from '../core/ui';
 import {
-    calculateVegaViewport,
     getEditorPreviewAreaWidth,
     getPreviewAreaHeightInitial,
     getResizablePaneSize,
@@ -17,22 +13,36 @@ import {
 import { getConfig } from '../core/utils/config';
 import { IVisualDatasetFields } from '../core/data';
 import { getFieldsInUseFromSpec } from '../features/template';
-import { ICompiledSpec, IFixResult } from '../features/specification';
-import { TEditorRole } from '../features/json-editor';
+import { IFixResult } from '../features/specification';
+import { EditorApplyMode, TEditorRole } from '../features/json-editor';
+import { getApplicationMode } from '../features/interface';
+import {
+    isExportSpecCommandEnabled,
+    isZoomOtherCommandEnabled,
+    isZoomInCommandEnabled,
+    isZoomOutCommandEnabled,
+    IZoomOtherCommandTestOptions,
+    IZoomLevelCommandTestOptions
+} from '../features/commands';
 
 export interface IEditorSlice {
-    editorAutoApply: boolean;
-    editorCanAutoApply: boolean;
+    editor: {
+        applyMode: EditorApplyMode;
+        isDirty: boolean;
+        stagedConfig: string;
+        stagedSpec: string;
+        toggleApplyMode: () => void;
+        updateApplyMode: (applyMode: EditorApplyMode) => void;
+        updateChanges: (payload: IEditorSliceUpdateChangesPayload) => void;
+        updateIsDirty: (isDirty: boolean) => void;
+        updateStagedConfig: (stagedConfig: string) => void;
+        updateStagedSpec: (stagedSpec: string) => void;
+    };
     editorFieldDatasetMismatch: boolean;
     editorFieldsInUse: IVisualDatasetFields;
     editorFixResult: IFixResult;
-    editorIsDirty: boolean;
     editorIsExportDialogVisible: boolean;
-    editorIsMapDialogVisible: boolean;
     editorIsNewDialogVisible: boolean;
-    editorLogError: string;
-    editorLogErrors: string[];
-    editorLogWarns: string[];
     editorPaneIsExpanded: boolean;
     editorPreviewAreaHeight: number;
     editorPreviewAreaHeightLatch: number;
@@ -44,46 +54,69 @@ export interface IEditorSlice {
     editorPaneExpandedWidth: number;
     editorPaneWidth: number;
     editorSelectedOperation: TEditorRole;
-    editorSpec: ICompiledSpec;
-    editorStagedConfig: string;
-    editorStagedSpec: string;
-    editorView: View;
     editorZoomLevel: number;
     renewEditorFieldsInUse: () => void;
-    recordLogErrorMain: (message: string) => void;
-    recordLogError: (message: string) => void;
-    recordLogWarn: (message: string) => void;
     setEditorFixErrorDismissed: () => void;
-    toggleEditorAutoApplyStatus: () => void;
     toggleEditorPane: () => void;
     togglePreviewDebugPane: () => void;
     updateEditorPreviewDebugIsExpanded: (value: boolean) => void;
-    updateEditorDirtyStatus: (dirty: boolean) => void;
-    updateEditorExportDialogVisible: (visible: boolean) => void;
     updateEditorFieldMapping: (
         payload: IEditorFieldMappingUpdatePayload
     ) => void;
-    updateEditorMapDialogVisible: (visible: boolean) => void;
     updateEditorFixStatus: (payload: IFixResult) => void;
     updateEditorPaneWidth: (payload: IEditorPaneUpdatePayload) => void;
     updateEditorPreviewAreaHeight: (height: number) => void;
     updateEditorPreviewAreaWidth: () => void;
     updateEditorSelectedOperation: (role: TEditorRole) => void;
     updateEditorSelectedPreviewRole: (role: TPreviewPivotRole) => void;
-    updateEditorSpec: (payload: IEditorSpecUpdatePayload) => void;
-    updateEditorStagedConfig: (config: string) => void;
-    updateEditorStagedSpec: (spec: string) => void;
-    updateEditorView: (view: View) => void;
     updateEditorZoomLevel: (zoomLevel: number) => void;
 }
 
-export const createEditorSlice = (
-    set: SetState<TStoreState>,
-    get: GetState<TStoreState>
-) =>
+// eslint-disable-next-line max-lines-per-function
+const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IEditorSlice>{
-        editorAutoApply: false,
-        editorCanAutoApply: true,
+        editor: {
+            applyMode: 'Manual',
+            isDirty: false,
+            stagedConfig: null,
+            stagedSpec: null,
+            toggleApplyMode: () =>
+                set(
+                    (state) => handleToggleApplyMode(state),
+                    false,
+                    'editor.toggleApplyMode'
+                ),
+            updateApplyMode: (applyMode) =>
+                set(
+                    (state) => handleUpdateApplyMode(state, applyMode),
+                    false,
+                    'editor.updateApplyMode'
+                ),
+            updateChanges: (payload) =>
+                set(
+                    (state) => handleUpdateChanges(state, payload),
+                    false,
+                    'editor.updateChanges'
+                ),
+            updateIsDirty: (isDirty) =>
+                set(
+                    (state) => handleUpdateIsDirty(state, isDirty),
+                    false,
+                    'editor.updateIsDirty'
+                ),
+            updateStagedConfig: (stagedConfig) =>
+                set(
+                    (state) => handleUpdateStagedConfig(state, stagedConfig),
+                    false,
+                    'editor.updateStagedConfig'
+                ),
+            updateStagedSpec: (stagedSpec) =>
+                set(
+                    (state) => handleUpdateStagedSpec(state, stagedSpec),
+                    false,
+                    'editor.updateStagedSpec'
+                )
+        },
         editorFieldDatasetMismatch: false,
         editorFieldsInUse: {},
         editorFixResult: {
@@ -92,13 +125,8 @@ export const createEditorSlice = (
             spec: null,
             config: null
         },
-        editorIsDirty: false,
         editorIsExportDialogVisible: false,
-        editorIsMapDialogVisible: false,
         editorIsNewDialogVisible: true,
-        editorLogError: null,
-        editorLogErrors: [],
-        editorLogWarns: [],
         editorPaneIsExpanded: true,
         editorPreviewAreaHeight: null,
         editorPreviewAreaHeightLatch: null,
@@ -110,67 +138,180 @@ export const createEditorSlice = (
         editorPaneExpandedWidth: null,
         editorPaneWidth: null,
         editorSelectedOperation: 'spec',
-        editorSpec: {
-            status: 'new',
-            spec: null,
-            rawSpec: null
-        },
-        editorStagedConfig: null,
-        editorStagedSpec: null,
-        editorView: null,
         editorZoomLevel: getConfig().zoomLevel.default,
-        recordLogErrorMain: (message) =>
-            set((state) => handleRecordLogErrorMain(state, message)),
-        recordLogError: (message) =>
-            set((state) => handleRecordLogError(state, message)),
-        recordLogWarn: (message) =>
-            set((state) => handleRecordLogWarn(state, message)),
         renewEditorFieldsInUse: () =>
-            set((state) => handleRenewEditorFieldsInUse(state)),
-        setEditorFixErrorDismissed: () =>
-            set((state) => handleSetEditorFixErrorDismissed(state)),
-        toggleEditorAutoApplyStatus: () =>
-            set((state) => handleToggleEditorAutoApplyStatus(state)),
-        toggleEditorPane: () => set((state) => handleToggleEditorPane(state)),
-        togglePreviewDebugPane: () =>
-            set((state) => handleTogglePreviewDebugPane(state)),
-        updateEditorDirtyStatus: (dirty) =>
-            set((state) => handleUpdateEditorDirtyStatus(state, dirty)),
-        updateEditorFieldMapping: (payload) =>
-            set((state) => handleUpdateEditorFieldMappings(state, payload)),
-        updateEditorExportDialogVisible: (visible) =>
-            set((state) =>
-                handleUpdateEditorExportDialogVisible(state, visible)
+            set(
+                (state) => handleRenewEditorFieldsInUse(state),
+                false,
+                'renewEditorFieldsInUse'
             ),
-        updateEditorMapDialogVisible: (visible) =>
-            set((state) => handleUpdateEditorMapDialogVisible(state, visible)),
+        setEditorFixErrorDismissed: () =>
+            set(
+                (state) => handleSetEditorFixErrorDismissed(state),
+                false,
+                'setEditorFixErrorDismissed'
+            ),
+        toggleEditorPane: () =>
+            set(
+                (state) => handleToggleEditorPane(state),
+                false,
+                'toggleEditorPane'
+            ),
+        togglePreviewDebugPane: () =>
+            set(
+                (state) => handleTogglePreviewDebugPane(state),
+                false,
+                'togglePreviewDebugPane'
+            ),
+        updateEditorFieldMapping: (payload) =>
+            set(
+                (state) => handleUpdateEditorFieldMappings(state, payload),
+                false,
+                'updateEditorFieldMapping'
+            ),
         updateEditorFixStatus: (payload) =>
-            set((state) => handleUpdateEditorFixStatus(state, payload)),
+            set(
+                (state) => handleUpdateEditorFixStatus(state, payload),
+                false,
+                'updateEditorFixStatus'
+            ),
         updateEditorPaneWidth: (payload) =>
-            set((state) => handleUpdateEditorPaneWidth(state, payload)),
+            set(
+                (state) => handleUpdateEditorPaneWidth(state, payload),
+                false,
+                'updateEditorPaneWidth'
+            ),
         updateEditorPreviewAreaHeight: (height) =>
-            set((state) => handleUpdateEditorPreviewAreaHeight(state, height)),
+            set(
+                (state) => handleUpdateEditorPreviewAreaHeight(state, height),
+                false,
+                'updateEditorPreviewAreaHeight'
+            ),
         updateEditorPreviewAreaWidth: () =>
-            set((state) => handleUpdateEditorPreviewAreaWidth(state)),
+            set(
+                (state) => handleUpdateEditorPreviewAreaWidth(state),
+                false,
+                'updateEditorPreviewAreaWidth'
+            ),
         updateEditorPreviewDebugIsExpanded: (value) =>
-            set((state) =>
-                handleUpdateEditorPreviewDebugIsExpanded(state, value)
+            set(
+                (state) =>
+                    handleUpdateEditorPreviewDebugIsExpanded(state, value),
+                false,
+                'updateEditorPreviewDebugIsExpanded'
             ),
         updateEditorSelectedOperation: (role) =>
-            set((state) => handleUpdateEditorSelectedOperation(state, role)),
+            set(
+                (state) => handleUpdateEditorSelectedOperation(state, role),
+                false,
+                'updateEditorSelectedOperation'
+            ),
         updateEditorSelectedPreviewRole: (role) =>
-            set((state) => handleUpdateEditorSelectedPreviewRole(state, role)),
-        updateEditorSpec: (payload) =>
-            set((state) => handleUpdateEditorSpec(state, payload)),
-        updateEditorStagedConfig: (config) =>
-            set((state) => handleUpdateEditorStagedConfig(state, config)),
-        updateEditorStagedSpec: (spec) =>
-            set((state) => handleUpdateEditorStagedSpec(state, spec)),
-        updateEditorView: (view) =>
-            set((state) => handleupdateEditorView(state, view)),
+            set(
+                (state) => handleUpdateEditorSelectedPreviewRole(state, role),
+                false,
+                'updateEditorSelectedPreviewRole'
+            ),
         updateEditorZoomLevel: (zoomLevel) =>
-            set((state) => handleupdateEditorZoomLevel(state, zoomLevel))
+            set(
+                (state) => handleupdateEditorZoomLevel(state, zoomLevel),
+                false,
+                'updateEditorZoomLevel'
+            )
     };
+
+export const createEditorSlice: StateCreator<
+    TStoreState,
+    [['zustand/devtools', never]],
+    [],
+    IEditorSlice
+> = sliceStateInitializer;
+
+export interface IEditorSliceUpdateChangesPayload {
+    isDirty: boolean;
+    stagedConfig: string;
+    stagedSpec: string;
+}
+
+const handleToggleApplyMode = (state: TStoreState): Partial<TStoreState> => {
+    const { applyMode } = state.editor;
+    const nextApplyMode = applyMode === 'Auto' ? 'Manual' : 'Auto';
+    return {
+        editor: {
+            ...state.editor,
+            applyMode: nextApplyMode
+        }
+    };
+};
+
+const handleUpdateApplyMode = (
+    state: TStoreState,
+    applyMode: EditorApplyMode
+): Partial<TStoreState> => ({
+    editor: {
+        ...state.editor,
+        applyMode
+    }
+});
+
+const handleUpdateChanges = (
+    state: TStoreState,
+    payload: IEditorSliceUpdateChangesPayload
+): Partial<TStoreState> => {
+    const { isDirty, stagedConfig, stagedSpec } = payload;
+    return {
+        commands: {
+            ...state.commands,
+            exportSpecification: isExportSpecCommandEnabled({
+                editorIsDirty: isDirty,
+                interfaceMode: state.interface.mode,
+                specification: state.specification
+            })
+        },
+        editor: {
+            ...state.editor,
+            isDirty,
+            stagedConfig,
+            stagedSpec
+        },
+        interface: {
+            ...state.interface,
+            mode: getApplicationMode({
+                currentMode: state.interface.mode,
+                dataset: state.dataset,
+                editMode: state.visualUpdateOptions.editMode,
+                isInFocus: state.visualUpdateOptions.isInFocus,
+                specification: state.editor.stagedSpec,
+                updateType: state.visualUpdateOptions.type
+            })
+        },
+        visual4d3d3d: false
+    };
+};
+
+const handleUpdateStagedSpec = (
+    state: TStoreState,
+    stagedSpec: string
+): Partial<TStoreState> => {
+    return {
+        editor: {
+            ...state.editor,
+            stagedSpec
+        }
+    };
+};
+
+const handleUpdateStagedConfig = (
+    state: TStoreState,
+    stagedConfig: string
+): Partial<TStoreState> => {
+    return {
+        editor: {
+            ...state.editor,
+            stagedConfig
+        }
+    };
+};
 
 export interface IEditorPaneUpdatePayload {
     editorPaneWidth: number;
@@ -182,15 +323,9 @@ interface IEditorFieldMappingUpdatePayload {
     objectName: string;
 }
 
-export interface IEditorSpecUpdatePayload {
-    spec: ICompiledSpec;
-    error: string;
-    warns: string[];
-}
-
 const handleRenewEditorFieldsInUse = (
     state: TStoreState
-): PartialState<TStoreState, never, never, never, never> => {
+): Partial<TStoreState> => {
     const { fields } = state.dataset;
     const editorFieldsInUse = getFieldsInUseFromSpec(
         fields,
@@ -208,30 +343,9 @@ const handleRenewEditorFieldsInUse = (
     };
 };
 
-const handleRecordLogWarn = (
-    state: TStoreState,
-    message: string
-): PartialState<TStoreState, never, never, never, never> => ({
-    editorLogWarns: uniqWith([...state.editorLogWarns, message], isEqual)
-});
-
-const handleRecordLogError = (
-    state: TStoreState,
-    message: string
-): PartialState<TStoreState, never, never, never, never> => ({
-    editorLogErrors: uniqWith([...state.editorLogErrors, message], isEqual)
-});
-
-const handleRecordLogErrorMain = (
-    state: TStoreState,
-    message: string
-): PartialState<TStoreState, never, never, never, never> => ({
-    editorLogError: message
-});
-
 const handleSetEditorFixErrorDismissed = (
     state: TStoreState
-): PartialState<TStoreState, never, never, never, never> => {
+): Partial<TStoreState> => {
     return {
         editorFixResult: {
             ...state.editorFixResult,
@@ -240,15 +354,7 @@ const handleSetEditorFixErrorDismissed = (
     };
 };
 
-const handleToggleEditorAutoApplyStatus = (
-    state: TStoreState
-): PartialState<TStoreState, never, never, never, never> => ({
-    editorAutoApply: !state.editorAutoApply
-});
-
-const handleToggleEditorPane = (
-    state: TStoreState
-): PartialState<TStoreState, never, never, never, never> => {
+const handleToggleEditorPane = (state: TStoreState): Partial<TStoreState> => {
     const newExpansionState = !state.editorPaneIsExpanded;
     const { position } = state.visualSettings.editor;
     const newWidth = getResizablePaneSize(
@@ -264,28 +370,33 @@ const handleToggleEditorPane = (
             state.visualViewportCurrent.width,
             newWidth,
             position
-        ),
-        visualViewportVega: calculateVegaViewport(
-            state.visualViewportCurrent,
-            newWidth,
-            state.visualMode,
-            position
         )
     };
 };
 
-const handleUpdateEditorDirtyStatus = (
+const handleUpdateIsDirty = (
     state: TStoreState,
-    dirty: boolean
-): PartialState<TStoreState, never, never, never, never> => ({
-    editorIsDirty: dirty
+    isDirty: boolean
+): Partial<TStoreState> => ({
+    commands: {
+        ...state.commands,
+        exportSpecification: isExportSpecCommandEnabled({
+            editorIsDirty: isDirty,
+            interfaceMode: state.interface.mode,
+            specification: state.specification
+        })
+    },
+    editor: {
+        ...state.editor,
+        isDirty
+    }
 });
 
 const handleUpdateEditorFieldMappings = (
     state: TStoreState,
     payload: IEditorFieldMappingUpdatePayload
-): PartialState<TStoreState, never, never, never, never> => ({
-    getEditorFieldsInUse: reduce(
+): Partial<TStoreState> => ({
+    editorFieldsInUse: reduce(
         state.editorFieldsInUse,
         (result, value, key) => {
             if (key === payload.key) {
@@ -294,35 +405,21 @@ const handleUpdateEditorFieldMappings = (
             }
             return result;
         },
-        <IVisualDatasetFields>{}
+        <IVisualDatasetFields>state.editorFieldsInUse
     )
-});
-
-const handleUpdateEditorExportDialogVisible = (
-    state: TStoreState,
-    visible: boolean
-): PartialState<TStoreState, never, never, never, never> => ({
-    editorIsExportDialogVisible: visible
-});
-
-const handleUpdateEditorMapDialogVisible = (
-    state: TStoreState,
-    visible: boolean
-): PartialState<TStoreState, never, never, never, never> => ({
-    editorIsMapDialogVisible: visible
 });
 
 const handleUpdateEditorFixStatus = (
     state: TStoreState,
     payload: IFixResult
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     editorFixResult: payload
 });
 
 const handleUpdateEditorPaneWidth = (
     state: TStoreState,
     payload: IEditorPaneUpdatePayload
-): PartialState<TStoreState, never, never, never, never> => {
+): Partial<TStoreState> => {
     const { editorPaneWidth, editorPaneExpandedWidth } = payload;
     const { position } = state.visualSettings.editor;
     return {
@@ -332,12 +429,6 @@ const handleUpdateEditorPaneWidth = (
             state.visualViewportCurrent.width,
             editorPaneWidth,
             position
-        ),
-        visualViewportVega: calculateVegaViewport(
-            state.visualViewportCurrent,
-            editorPaneWidth,
-            state.visualMode,
-            position
         )
     };
 };
@@ -345,7 +436,7 @@ const handleUpdateEditorPaneWidth = (
 const handleUpdateEditorPreviewAreaHeight = (
     state: TStoreState,
     height: number
-): PartialState<TStoreState, never, never, never, never> => {
+): Partial<TStoreState> => {
     return {
         editorPreviewDebugIsExpanded:
             height !== state.editorPreviewAreaHeightMax,
@@ -356,7 +447,7 @@ const handleUpdateEditorPreviewAreaHeight = (
 
 const handleUpdateEditorPreviewAreaWidth = (
     state: TStoreState
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     editorPreviewAreaWidth: getEditorPreviewAreaWidth(
         state.visualViewportCurrent.width,
         state.editorPaneWidth,
@@ -367,13 +458,13 @@ const handleUpdateEditorPreviewAreaWidth = (
 const handleUpdateEditorPreviewDebugIsExpanded = (
     state: TStoreState,
     value: boolean
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     editorPreviewDebugIsExpanded: value
 });
 
 const handleTogglePreviewDebugPane = (
     state: TStoreState
-): PartialState<TStoreState, never, never, never, never> => {
+): Partial<TStoreState> => {
     const prev = state.editorPreviewDebugIsExpanded;
     const next = !prev;
     const editorPreviewAreaHeight = prev
@@ -395,14 +486,14 @@ const handleTogglePreviewDebugPane = (
 const handleUpdateEditorSelectedOperation = (
     state: TStoreState,
     role: TEditorRole
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     editorSelectedOperation: role
 });
 
 const handleUpdateEditorSelectedPreviewRole = (
     state: TStoreState,
     role: TPreviewPivotRole
-): PartialState<TStoreState, never, never, never, never> => {
+): Partial<TStoreState> => {
     const expand = state.editorPreviewDebugIsExpanded;
     const editorPreviewAreaHeight = !expand
         ? state.editorPreviewAreaHeightLatch
@@ -414,49 +505,27 @@ const handleUpdateEditorSelectedPreviewRole = (
     };
 };
 
-const handleUpdateEditorSpec = (
-    state: TStoreState,
-    payload: IEditorSpecUpdatePayload
-): PartialState<TStoreState, never, never, never, never> => {
-    return {
-        editorSpec: payload.spec,
-        editorLogError: payload.error,
-        editorLogErrors: [],
-        editorLogWarns: payload.warns,
-        visualMode: resolveVisualMode(
-            state.datasetViewHasValidMapping,
-            state.visualEditMode,
-            state.visualIsInFocusMode,
-            state.visualViewMode,
-            payload.spec
-        )
-    };
-};
-
-const handleUpdateEditorStagedConfig = (
-    state: TStoreState,
-    config: string
-): PartialState<TStoreState, never, never, never, never> => ({
-    editorStagedConfig: config
-});
-
-const handleUpdateEditorStagedSpec = (
-    state: TStoreState,
-    spec: string
-): PartialState<TStoreState, never, never, never, never> => ({
-    editorStagedSpec: spec
-});
-
-const handleupdateEditorView = (
-    state: TStoreState,
-    view: View
-): PartialState<TStoreState, never, never, never, never> => ({
-    editorView: view
-});
-
 const handleupdateEditorZoomLevel = (
     state: TStoreState,
     zoomLevel: number
-): PartialState<TStoreState, never, never, never, never> => ({
-    editorZoomLevel: zoomLevel
-});
+): Partial<TStoreState> => {
+    const zoomOtherCommandTest: IZoomOtherCommandTestOptions = {
+        specification: state.specification,
+        interfaceMode: state.interface.mode
+    };
+    const zoomLevelCommandTest: IZoomLevelCommandTestOptions = {
+        value: zoomLevel,
+        specification: state.specification,
+        interfaceMode: state.interface.mode
+    };
+    return {
+        commands: {
+            ...state.commands,
+            zoomFit: isZoomOtherCommandEnabled(zoomOtherCommandTest),
+            zoomIn: isZoomInCommandEnabled(zoomLevelCommandTest),
+            zoomOut: isZoomOutCommandEnabled(zoomLevelCommandTest),
+            zoomReset: isZoomOtherCommandEnabled(zoomOtherCommandTest)
+        },
+        editorZoomLevel: zoomLevel
+    };
+};

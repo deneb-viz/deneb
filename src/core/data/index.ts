@@ -12,7 +12,7 @@ export * as dataView from './dataView';
  * Used to store interim data whilst the data view is being processed
  */
 export interface IAugmentedMetadataField {
-    // Power bI data view metadata.
+    // Power BI data view metadata.
     column: powerbi.DataViewMetadataColumn;
     // Where we have derived the metadata from.
     source: TDatasetValueSource;
@@ -26,10 +26,14 @@ export interface IAugmentedMetadataField {
 export interface IVisualDataset {
     // Field metadata
     fields: IVisualDatasetFields;
+    // Hash of the dataset, used to determine if we need to re-process for
+    // the dataset view.
+    hashValue: string;
     // Processed values, pointing to field metadata, as well as any dedicated
     // row-related fields.
     values: IVisualDatasetValueRow[];
     hasHighlights: boolean;
+    rowsLoaded: number;
 }
 
 /**
@@ -88,4 +92,5 @@ export type TDatasetValueSource =
     | 'categories'
     | 'values'
     | 'highlights'
+    | 'formatting'
     | 'none';

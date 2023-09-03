@@ -1,63 +1,84 @@
 import powerbi from 'powerbi-visuals-api';
 import IViewport = powerbi.IViewport;
-import ViewMode = powerbi.ViewMode;
 import EditMode = powerbi.EditMode;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
-import VisualUpdateType = powerbi.VisualUpdateType;
 
-import { GetState, PartialState, SetState } from 'zustand';
+import { StateCreator } from 'zustand';
+import { NamedSet } from 'zustand/middleware';
 import { TStoreState } from '.';
-import VisualSettings from '../properties/VisualSettings';
-import { resolveVisualMode, TVisualMode } from '../core/ui';
+import VisualSettings from '../properties/visual-settings';
 import {
     calculatePreviewMaximumHeight,
-    calculateVegaViewport,
     getEditorPreviewAreaWidth,
     getPreviewAreaHeightInitial,
     getEditPaneDefaultWidth,
     getResizablePaneSize
 } from '../core/ui/advancedEditor';
 import { getReportViewport } from '../core/ui/dom';
+import { IVisualUpdateSliceProperties } from './visual-update';
+import { getParsedSpec } from '../features/specification';
+import { getSpecificationParseOptions } from '../features/specification/logic';
+import { TSpecProvider } from '../core/vega';
+import { logDebug } from '../features/logging';
+import { isVisualUpdateVolatile } from '../features/visual-host';
+import {
+    IVisualUpdateHistoryRecord,
+    InterfaceMode,
+    getApplicationMode,
+    getCorrectViewport
+} from '../features/interface';
+import { getOnboardingDialog } from '../features/modal-dialog';
+import {
+    IZoomOtherCommandTestOptions,
+    IZoomLevelCommandTestOptions,
+    isZoomOtherCommandEnabled,
+    isZoomInCommandEnabled,
+    isZoomOutCommandEnabled,
+    isExportSpecCommandEnabled,
+    IExportSpecCommandTestOptions
+} from '../features/commands';
 
 const defaultViewport = { width: 0, height: 0 };
 
+const MAX_UPDATE_HISTORY_COUNT = 100;
+
 export interface IVisualSlice {
     visual4d3d3d: boolean;
-    visualEditMode: EditMode;
-    visualIsInFocusMode: boolean;
-    visualMode: TVisualMode;
     visualSettings: VisualSettings;
     visualUpdates: number;
-    visualUpdateType: VisualUpdateType;
-    visualViewMode: ViewMode;
     visualViewportCurrent: IViewport;
     visualViewportReport: IViewport;
-    visualViewportVega: IViewport;
     setVisual4d3d3d: (status: boolean) => void;
     setVisualUpdate: (payload: IVisualUpdatePayload) => void;
 }
 
-export const createVisualSlice = (
-    set: SetState<TStoreState>,
-    get: GetState<TStoreState>
-) =>
+const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IVisualSlice>{
         visual4d3d3d: false,
-        visualEditMode: EditMode.Default,
-        visualIsInFocusMode: false,
-        visualMode: 'SplashInitial',
         visualSettings: <VisualSettings>VisualSettings.getDefault(),
         visualUpdates: 0,
-        visualUpdateType: null,
-        visualViewMode: ViewMode.View,
         visualViewportCurrent: defaultViewport,
         visualViewportReport: defaultViewport,
-        visualViewportVega: defaultViewport,
         setVisual4d3d3d: (status) =>
-            set((state) => handleSetVisual4d3d3d(state, status)),
+            set(
+                (state) => handleSetVisual4d3d3d(state, status),
+                false,
+                'setVisual4d3d3d'
+            ),
         setVisualUpdate: (payload) =>
-            set((state) => handleSetVisualUpdate(state, payload))
+            set(
+                (state) => handleSetVisualUpdate(state, payload),
+                false,
+                'setVisualUpdate'
+            )
     };
+
+export const createVisualSlice: StateCreator<
+    TStoreState,
+    [['zustand/devtools', never]],
+    [],
+    IVisualSlice
+> = sliceStateInitializer;
 
 interface IVisualUpdatePayload {
     settings: VisualSettings;
@@ -67,31 +88,45 @@ interface IVisualUpdatePayload {
 const handleSetVisual4d3d3d = (
     state: TStoreState,
     status: boolean
-): PartialState<TStoreState, never, never, never, never> => ({
+): Partial<TStoreState> => ({
     visual4d3d3d: status
 });
 
+// eslint-disable-next-line max-lines-per-function
 const handleSetVisualUpdate = (
     state: TStoreState,
     payload: IVisualUpdatePayload
-): PartialState<TStoreState, never, never, never, never> => {
+): Partial<TStoreState> => {
+    logDebug('setVisualUpdate', payload);
     const init = state.visualUpdates === 0;
     const positionNew = payload.settings.editor.position;
     const positionSwitch = positionNew !== state.visualSettings.editor.position;
     const datasetViewObjects =
         payload.options.dataViews[0]?.metadata.objects || {};
-    const viewMode = payload.options.viewMode;
     const editMode = payload.options.editMode;
     const isInFocus = payload.options.isInFocus;
     const updateType = payload.options.type;
-    const visualMode = resolveVisualMode(
-        state.datasetViewHasValidMapping,
+    const history: IVisualUpdateHistoryRecord[] = [
+        {
+            editMode,
+            isInFocus,
+            type: updateType,
+            viewMode: payload.options.viewMode,
+            viewport: payload.options.viewport
+        }
+    ].concat(
+        state.visualUpdateOptions.history.slice(0, MAX_UPDATE_HISTORY_COUNT)
+    );
+    const mode = getApplicationMode({
+        currentMode: state.interface.mode,
+        dataset: state.dataset,
         editMode,
         isInFocus,
-        viewMode,
-        state.editorSpec
-    );
-    const viewportCurrent = payload.options.viewport;
+        specification: payload.settings.vega.jsonSpec,
+        updateType
+    });
+    const viewportCurrent = getCorrectViewport(history);
+    payload.options.viewport;
     const viewportReport = getReportViewport(
         viewportCurrent,
         payload.settings.display
@@ -101,13 +136,12 @@ const handleSetVisualUpdate = (
         positionNew
     );
     const edPaneExpWidth =
-        visualMode === 'Editor' &&
+        mode === 'Editor' &&
         (state.editorPaneExpandedWidth === null || positionSwitch)
             ? edPaneDefWidth
             : state.editorPaneExpandedWidth;
     const edPaneWidth =
-        visualMode === 'Editor' &&
-        (state.editorPaneWidth === null || positionSwitch)
+        mode === 'Editor' && (state.editorPaneWidth === null || positionSwitch)
             ? edPaneDefWidth
             : getResizablePaneSize(
                   edPaneExpWidth,
@@ -120,28 +154,82 @@ const handleSetVisualUpdate = (
         edPaneWidth,
         positionNew
     );
-    const edPrevAreaHeight = shouldUpdateHeight(visualMode, editMode, init)
+    const edPrevAreaHeight = shouldUpdateHeight(mode, editMode, init)
         ? getPreviewAreaHeightInitial(
               viewportCurrent.height,
               state.editorPreviewAreaHeight
           )
         : state.editorPreviewAreaHeight;
-    const edPrevAreaHeightMax = shouldUpdateHeight(visualMode, editMode, init)
+    const edPrevAreaHeightMax = shouldUpdateHeight(mode, editMode, init)
         ? calculatePreviewMaximumHeight(viewportCurrent.height)
         : state.editorPreviewAreaHeightMax;
-    const isExpanded = shouldUpdateHeight(visualMode, editMode, init)
+    const isExpanded = shouldUpdateHeight(mode, editMode, init)
         ? edPrevAreaHeight !== edPrevAreaHeightMax
         : state.editorPreviewDebugIsExpanded;
-    const latch = shouldUpdateHeight(visualMode, editMode, init)
+    const latch = shouldUpdateHeight(mode, editMode, init)
         ? edPrevAreaHeight
         : state.editorPreviewAreaHeightLatch;
-    const visualViewportVega = calculateVegaViewport(
-        viewportCurrent,
-        edPaneWidth,
-        visualMode,
-        positionNew
+    const specOptions = getSpecificationParseOptions(state);
+    const spec =
+        state.datasetProcessingStage == 'Processed'
+            ? getParsedSpec(state.specification, specOptions, {
+                  ...specOptions,
+                  ...{
+                      config: payload.settings.vega.jsonConfig,
+                      logLevel: payload.settings.vega.logLevel,
+                      provider: <TSpecProvider>payload.settings.vega.provider,
+                      spec: payload.settings.vega.jsonSpec,
+                      viewportHeight: viewportReport.height,
+                      viewportWidth: viewportReport.width,
+                      visualMode: mode
+                  }
+              })
+            : state.specification;
+    const shouldProcessDataset = isVisualUpdateVolatile({
+        currentProcessingFlag: state.processing.shouldProcessDataset,
+        currentOptions: payload.options,
+        currentSettings: payload.settings,
+        previousOptions: state.visualUpdateOptions,
+        previousSettings: state.visualSettings
+    });
+    // Check to see if onboarding dialog should be shown
+    const modalDialogRole = getOnboardingDialog(
+        payload.settings,
+        mode,
+        state.interface.modalDialogRole
     );
+    const zoomOtherCommandTest: IZoomOtherCommandTestOptions = {
+        specification: spec,
+        interfaceMode: mode
+    };
+    const zoomLevelCommandTest: IZoomLevelCommandTestOptions = {
+        value: state.editorZoomLevel,
+        specification: spec,
+        interfaceMode: mode
+    };
+    const exportSpecCommandTest: IExportSpecCommandTestOptions = {
+        editorIsDirty: state.editor.isDirty,
+        specification: spec,
+        interfaceMode: mode
+    };
+    const visualUpdateOptions: IVisualUpdateSliceProperties = {
+        ...payload.options,
+        ...{
+            history,
+            updateId: payload['updateId']
+        }
+    };
     return {
+        commands: {
+            ...state.commands,
+            exportSpecification: isExportSpecCommandEnabled(
+                exportSpecCommandTest
+            ),
+            zoomFit: isZoomOtherCommandEnabled(zoomOtherCommandTest),
+            zoomIn: isZoomInCommandEnabled(zoomLevelCommandTest),
+            zoomOut: isZoomOutCommandEnabled(zoomLevelCommandTest),
+            zoomReset: isZoomOtherCommandEnabled(zoomLevelCommandTest)
+        },
         datasetViewObjects,
         editorIsNewDialogVisible: payload.settings.vega.isNewDialogOpen,
         editorPaneWidth: edPaneWidth,
@@ -152,21 +240,29 @@ const handleSetVisualUpdate = (
         editorPreviewAreaWidth: edPrevAreaWidth,
         editorPreviewAreaHeightLatch: latch,
         editorPreviewDebugIsExpanded: isExpanded,
-        visualEditMode: editMode,
-        visualIsInFocusMode: isInFocus,
-        visualMode,
+        interface: {
+            ...state.interface,
+            modalDialogRole,
+            mode
+        },
+        processing: {
+            ...state.processing,
+            shouldProcessDataset
+        },
+        specification: {
+            ...state.specification,
+            ...spec
+        },
         visualSettings: payload.settings,
         visualUpdates: state.visualUpdates + 1,
-        visualUpdateType: updateType,
-        visualViewMode: viewMode,
         visualViewportCurrent: viewportCurrent,
         visualViewportReport: viewportReport,
-        visualViewportVega
+        visualUpdateOptions
     };
 };
 
 const shouldUpdateHeight = (
-    visualMode: TVisualMode,
+    mode: InterfaceMode,
     visualEditMode: EditMode,
     init: boolean
-) => visualMode === 'Editor' || (visualEditMode === EditMode.Advanced && init);
+) => mode === 'Editor' || (visualEditMode === EditMode.Advanced && init);

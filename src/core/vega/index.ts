@@ -1,47 +1,20 @@
-export * as vegaUtils from './vegaUtils';
-export * as vegaLiteUtils from './vegaLiteUtils';
 export {
     IVegaViewDatum,
     TSpecProvider,
     TSpecRenderMode,
     editorConfigOverLoad,
-    getParsedConfigFromSettings,
     getVegaProvider,
     getVegaProvideri18n,
     getVegaSettings,
     getVegaVersion,
-    getViewConfig,
-    getViewDataset,
-    getViewSpec,
-    handleNewView
+    getViewDataset
 };
 
 import cloneDeep from 'lodash/cloneDeep';
-import * as Vega from 'vega';
-import Config = Vega.Config;
-import Spec = Vega.Spec;
-import View = Vega.View;
-import { TopLevelSpec } from 'vega-lite';
 
-import { hostServices, loggerServices } from '../services';
-import { cleanParse } from '../utils/json';
-import { vegaLiteValidator, vegaValidator } from './validation';
-import {
-    getState,
-    useStoreDataset,
-    useStoreProp,
-    useStoreVegaProp
-} from '../../store';
-import { getConfig, providerVersions } from '../utils/config';
-import { getPatchedVegaSpec } from './vegaUtils';
-import { getPatchedVegaLiteSpec } from './vegaLiteUtils';
-
-import { resolveSvgFilter } from '../ui/svgFilter';
-import { i18nValue } from '../ui/i18n';
-import {
-    bindContextMenuEvents,
-    bindCrossFilterEvents
-} from '../../features/interactivity';
+import { getState } from '../../store';
+import { providerVersions } from '../utils/config';
+import { getI18nValue } from '../../features/i18n';
 
 /**
  * Interface specifying a flexible key/value pair object, which is supplied from Vega's tooltip handler and usually casted as `any`.
@@ -73,10 +46,12 @@ const getVegaProvider = () => <TSpecProvider>getVegaSettings().provider;
 /**
  * Get the Vega provider, resolved for i18n.
  */
-const getVegaProvideri18n = () =>
-    i18nValue(
-        getVegaProvider() === 'vegaLite' ? 'Provider_VegaLite' : 'Provider_Vega'
+const getVegaProvideri18n = (provider?: TSpecProvider) => {
+    const resolved = provider ?? getVegaProvider();
+    return getI18nValue(
+        resolved === 'vegaLite' ? 'Provider_VegaLite' : 'Provider_Vega'
     );
+};
 
 /**
  * For the current provider, get the version from our package configuration.
@@ -92,58 +67,5 @@ const getVegaSettings = () => getState().visualSettings.vega;
  * Create the `data` object for the Vega view specification. Ensures that the dataset applied to the visual is a cloned, mutable copy of the store version.
  */
 const getViewDataset = () => ({
-    dataset: cloneDeep(useStoreDataset()?.values)
+    dataset: cloneDeep(getState().dataset?.values ?? [])
 });
-
-/**
- * Form the config that is applied to the Vega view. This will retrieve the config from our visual properties, and enrich it with anything we want
- * to abstract out from the end-user to make things as "at home" in Power BI as possible, without explicitly adding it to the editor or exported template.
- */
-const getViewConfig = (config = getParsedConfigFromSettings()): Config => {
-    return {
-        ...editorConfigOverLoad,
-        ...config
-    };
-};
-
-/**
- * Form the specification that is applied to the Vega view. This will retrieve the specification from our visual properties, and enrich it with anything we want
- * to abstract out from the end-user to make things as "at home" in Power BI as possible, without explicitly adding it to the editor or exported template.
- */
-const getViewSpec = () => {
-    const eSpec = useStoreProp<object>('spec', 'editorSpec');
-    const provider = useStoreVegaProp<TSpecProvider>('provider');
-    const vSpec = cloneDeep(eSpec) || {};
-    switch (provider) {
-        case 'vega':
-            return getPatchedVegaSpec(<Spec>vSpec);
-        case 'vegaLite':
-            return getPatchedVegaLiteSpec(<TopLevelSpec>vSpec);
-        default:
-            return vSpec;
-    }
-};
-
-/**
- * Gets the `config` from our visual objects and parses it to JSON.
- */
-const getParsedConfigFromSettings = (): Config => {
-    const jsonConfig = useStoreVegaProp<string>('jsonConfig');
-    return cleanParse(jsonConfig, propertyDefaults.jsonConfig);
-};
-
-/**
- * Any logic that we need to apply to a new Vega view.
- */
-const handleNewView = (newView: View) => {
-    newView.logger(loggerServices);
-    newView.runAsync().then((view) => {
-        resolveSvgFilter();
-        bindContextMenuEvents(view);
-        bindCrossFilterEvents(view);
-        getState().updateEditorView(view);
-        hostServices.renderingFinished();
-    });
-};
-
-const propertyDefaults = getConfig().propertyDefaults.vega;

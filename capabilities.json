@@ -1,4 +1,10 @@
 {
+    "privileges": [
+        {
+            "name": "ExportContent",
+            "essential": true
+        }
+    ],
     "dataRoles": [
         {
             "displayNameKey": "Roles_Values",
@@ -10,6 +16,17 @@
         }
     ],
     "objects": {
+        "general": {
+            "properties": {
+                "formatString": {
+                    "type": {
+                        "formatting": {
+                            "formatString": true
+                        }
+                    }
+                }
+            }
+        },
         "developer": {
             "displayNameKey": "Objects_Developer",
             "descriptionKey": "Objects_Developer_Description",
@@ -23,15 +40,6 @@
                     "description": "Version description",
                     "type": {
                         "text": true
-                    }
-                },
-                "showVersionNotification": {
-                    "displayNameKey": "Objects_Developer_ShowVersionNotification",
-                    "descriptionKey": "Objects_Developer_ShowVersionNotification_Description",
-                    "displayName": "Version Notification",
-                    "description": "Version Notification description.",
-                    "type": {
-                        "bool": true
                     }
                 },
                 "locale": {
@@ -77,25 +85,40 @@
                     "descriptionKey": "Objects_Display_ViewportHeight_Description",
                     "displayName": "Viewport Height",
                     "description": "Viewport Height description.",
-                    "type": { "numeric": true }
+                    "type": {
+                        "numeric": true
+                    }
                 },
                 "viewportWidth": {
                     "displayNameKey": "Objects_Display_ViewportWidth",
                     "descriptionKey": "Objects_Display_ViewportWidth_Description",
                     "displayName": "Viewport Width",
                     "description": "Viewport Width description.",
-                    "type": { "numeric": true }
-                },
-                "svgFilter": {
-                    "displayNameKey": "Objects_Display_SVGFilter",
-                    "descriptionKey": "Objects_Display_SVGFilter_Description",
-                    "displayName": "SVG Filter",
-                    "description": "SVG Filter description.",
                     "type": {
-                        "enumeration": [
-                            { "displayName": "None", "value": "none" },
-                            { "displayName": "Deneb.XKCD", "value": "xkcd" }
-                        ]
+                        "numeric": true
+                    }
+                },
+                "scrollbarColor": {
+                    "displayNameKey": "Objects_Display_ScrollbarColor",
+                    "descriptionKey": "Objects_Display_ScrollbarColor_Description",
+                    "displayName": "Scrollbar color",
+                    "description": "Scrollbar color description.",
+                    "type": { "fill": { "solid": { "color": true } } }
+                },
+                "scrollbarOpacity": {
+                    "displayNameKey": "Objects_Display_ScrollbarOpacity",
+                    "descriptionKey": "Objects_Display_ScrollbarOpacity_Description",
+                    "displayName": "Scrollbar opacity",
+                    "description": "Scrollbar opacity description.",
+                    "type": { "integer": true }
+                },
+                "scrollbarRadius": {
+                    "displayNameKey": "Objects_Display_ScrollbarRadius",
+                    "descriptionKey": "Objects_Display_ScrollbarRadius_Description",
+                    "displayName": "Scrollbar radius",
+                    "description": "Scrollbar radius description.",
+                    "type": {
+                        "integer": true
                     }
                 }
             }
@@ -111,6 +134,7 @@
                     "descriptionKey": "Objects_Vega_JsonSpec_Description",
                     "displayName": "JSON Spec",
                     "description": "JSON Spec description.",
+                    "placeHolderTextKey": "Objects_Vega_JsonSpec_Placeholder",
                     "type": {
                         "text": true
                     }
@@ -120,6 +144,7 @@
                     "descriptionKey": "Objects_Vega_JsonConfig_Description",
                     "displayName": "JSON Config",
                     "description": "JSON Config description.",
+                    "placeHolderTextKey": "Objects_Vega_JsonConfig_Placeholder",
                     "type": {
                         "text": true
                     }
@@ -149,6 +174,7 @@
                     "descriptionKey": "Objects_Vega_Version_Description",
                     "displayName": "Version",
                     "description": "Version description",
+                    "placeHolderTextKey": "Objects_Vega_Version_Placeholder",
                     "type": {
                         "text": true
                     }
@@ -213,46 +239,63 @@
                     "descriptionKey": "Objects_Vega_EnableTooltips_Description",
                     "displayName": "Tooltips",
                     "description": "Tooltips description.",
-                    "type": { "bool": true }
+                    "type": {
+                        "bool": true
+                    }
                 },
                 "enableContextMenu": {
                     "displayNameKey": "Objects_Vega_EnableContextMenu",
                     "descriptionKey": "Objects_Vega_EnableContextMenu_Description",
                     "displayName": "Context Menu",
                     "description": "Context Menu description.",
-                    "type": { "bool": true }
+                    "type": {
+                        "bool": true
+                    }
                 },
                 "enableHighlight": {
                     "displayNameKey": "Objects_Vega_EnableHighlight",
                     "descriptionKey": "Objects_Vega_EnableHighlight_Description",
                     "displayName": "Highlight",
                     "description": "Highlight description.",
-                    "type": { "bool": true }
+                    "type": {
+                        "bool": true
+                    }
                 },
                 "enableSelection": {
                     "displayNameKey": "Objects_Vega_EnableSelection",
                     "descriptionKey": "Objects_Vega_EnableSelection_Description",
                     "displayName": "Selections",
                     "description": "Selections description.",
-                    "type": { "bool": true }
+                    "type": {
+                        "bool": true
+                    }
                 },
                 "selectionMaxDataPoints": {
                     "displayNameKey": "Objects_Vega_SelectionMaxDataPoints",
                     "descriptionKey": "Objects_Vega_SelectionMaxDataPoints_Description",
                     "displayName": "Max Points",
                     "description": "Max Points description.",
-                    "type": { "numeric": true }
+                    "type": {
+                        "numeric": true
+                    }
                 },
                 "tooltipDelay": {
                     "displayNameKey": "Objects_Vega_TooltipDelay",
                     "descriptionKey": "Objects_Vega_TooltipDelay_Description",
                     "displayName": "Tooltip Delay",
                     "description": "Tooltip Delay description.",
-                    "type": { "numeric": true }
+                    "type": {
+                        "numeric": true
+                    }
                 },
                 "isNewDialogOpen": {
+                    "displayNameKey": "Objects_Vega_IsNewDialogOpen",
+                    "descriptionKey": "Objects_Vega_IsNewDialogOpen_Description",
                     "displayName": "Show New Dialog?",
-                    "type": { "bool": true }
+                    "description": "Show New Dialog? description.",
+                    "type": {
+                        "bool": true
+                    }
                 }
             }
         },
@@ -328,6 +371,15 @@
                     "type": {
                         "bool": true
                     }
+                },
+                "previewScrollbars": {
+                    "displayNameKey": "Objects_Editor_PreviewScrollbars",
+                    "descriptionKey": "Objects_Editor_PreviewScrollbars_Description",
+                    "displayName": "Preview Scrollbars",
+                    "description": "Preview Scrollbars description",
+                    "type": {
+                        "bool": true
+                    }
                 }
             }
         },
@@ -344,23 +396,6 @@
                     "description": "Ordinal Color Count description",
                     "type": {
                         "integer": true
-                    }
-                }
-            }
-        },
-        "performance": {
-            "displayNameKey": "Objects_Performance",
-            "descriptionKey": "Objects_Performance_Description",
-            "displayName": "Performance Options",
-            "description": "Performance Options description",
-            "properties": {
-                "enableResizeRecalc": {
-                    "displayNameKey": "Objects_Performance_EnableResizeRecalc",
-                    "descriptionKey": "Objects_Performance_EnableResizeRecalc_Description",
-                    "displayName": "Recalculate on Resize",
-                    "description": "Recalculate on Resize description",
-                    "type": {
-                        "bool": true
                     }
                 }
             }
@@ -405,7 +440,13 @@
         {
             "categorical": {
                 "categories": {
-                    "select": [{ "bind": { "to": "dataset" } }],
+                    "select": [
+                        {
+                            "bind": {
+                                "to": "dataset"
+                            }
+                        }
+                    ],
                     "dataReductionAlgorithm": {
                         "window": {
                             "count": 10000
@@ -413,7 +454,13 @@
                     }
                 },
                 "values": {
-                    "select": [{ "bind": { "to": "dataset" } }]
+                    "select": [
+                        {
+                            "bind": {
+                                "to": "dataset"
+                            }
+                        }
+                    ]
                 }
             }
         }
