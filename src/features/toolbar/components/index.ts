@@ -9,6 +9,10 @@ export const useToolbarStyles = makeStyles({
     buttonSmall: {
         ...shorthands.padding(`${PREVIEW_PANE_TOOLBAR_BUTTON_PADDING}px}`)
     },
+    buttonAutoApplyEnabled: {
+        backgroundColor: tokens.colorNeutralBackground1Selected,
+        color: tokens.colorBrandForeground1
+    },
     buttonZoomLevel: { minWidth: '50px' },
     buttonZoomIn: { marginLeft: '-8px' },
     buttonZoomOut: { marginRight: '-8px' },

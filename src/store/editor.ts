@@ -22,7 +22,8 @@ import {
     isZoomInCommandEnabled,
     isZoomOutCommandEnabled,
     IZoomOtherCommandTestOptions,
-    IZoomLevelCommandTestOptions
+    IZoomLevelCommandTestOptions,
+    getNextApplyMode
 } from '../features/commands';
 
 export interface IEditorSlice {
@@ -235,8 +236,12 @@ export interface IEditorSliceUpdateChangesPayload {
 
 const handleToggleApplyMode = (state: TStoreState): Partial<TStoreState> => {
     const { applyMode } = state.editor;
-    const nextApplyMode = applyMode === 'Auto' ? 'Manual' : 'Auto';
+    const nextApplyMode = getNextApplyMode(applyMode);
     return {
+        commands: {
+            ...state.commands,
+            applyChanges: nextApplyMode === 'Manual'
+        },
         editor: {
             ...state.editor,
             applyMode: nextApplyMode

@@ -12,6 +12,7 @@
         "tooltipResolveNumberFieldFormat": true,
         "useDownloadApi": true,
         "templateExportPreviewImages": true,
+        "combinedApplyButton": false,
         "unitTestCanary": false
     },
     "logLevel": 0,

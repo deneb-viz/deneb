@@ -23,7 +23,7 @@ import {
     IZoomOtherCommandTestOptions,
     IZoomLevelCommandTestOptions
 } from './types';
-import { TEditorRole } from '../json-editor';
+import { EditorApplyMode, TEditorRole } from '../json-editor';
 
 export * from './types';
 
@@ -50,6 +50,12 @@ const executeCommand = (command: Command, callback: () => void) => {
     } = getState();
     mode === 'Editor' && commands[command] && callback();
 };
+
+/**
+ * For the current apply mode, determine what the new one should be.
+ */
+export const getNextApplyMode = (applyMode: EditorApplyMode): EditorApplyMode =>
+    applyMode === 'Auto' ? 'Manual' : 'Auto';
 
 /**
  * Applies the changes to the specification.

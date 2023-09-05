@@ -9,7 +9,9 @@ import {
     ChevronDownRegular,
     ChevronUpRegular,
     DocumentRegular,
+    PlayRegular,
     QuestionRegular,
+    ReplayRegular,
     ShareRegular,
     TextGrammarWandRegular,
     ZoomFitRegular,
@@ -23,6 +25,8 @@ import { useToolbarStyles } from '.';
 import { getI18nValue } from '../../i18n';
 import {
     Command,
+    handleApplyChanges,
+    handleAutoApplyChanges,
     handleExportSpecification,
     handleFormatJson,
     handleOpenCreateSpecificationDialog,
@@ -95,6 +99,10 @@ const resolveCaption = (command: Command) => {
 
 const resolveClick = (command: Command) => {
     switch (command) {
+        case 'applyChanges':
+            return handleApplyChanges;
+        case 'autoApplyToggle':
+            return handleAutoApplyChanges;
         case 'debugPaneToggle':
             return handleToggleDebugPane;
         case 'exportSpecification':
@@ -119,8 +127,17 @@ const resolveClick = (command: Command) => {
 };
 
 const resolveI18nKey = (command: Command) => {
-    const { editorPreviewDebugIsExpanded } = getState();
+    const {
+        editorPreviewDebugIsExpanded,
+        editor: { applyMode }
+    } = getState();
     switch (command) {
+        case 'applyChanges':
+            return 'Button_Apply';
+        case 'autoApplyToggle':
+            return applyMode === 'Manual'
+                ? 'Button_Auto_Apply_On'
+                : 'Button_Auto_Apply_Off';
         case 'debugPaneToggle':
             return editorPreviewDebugIsExpanded
                 ? 'Tooltip_Collapse_Debug_Pane'
@@ -151,6 +168,10 @@ const resolveI18nKey = (command: Command) => {
 const resolveIcon = (command: Command) => {
     const { editorPreviewDebugIsExpanded } = getState();
     switch (command) {
+        case 'applyChanges':
+            return <PlayRegular />;
+        case 'autoApplyToggle':
+            return <ReplayRegular />;
         case 'debugPaneToggle':
             return editorPreviewDebugIsExpanded ? (
                 <ChevronDownRegular />
@@ -179,8 +200,13 @@ const resolveIcon = (command: Command) => {
 };
 
 const resolveClasses = (command: Command) => {
+    const {
+        editor: { applyMode }
+    } = getState();
     const classes = useToolbarStyles();
     switch (command) {
+        case 'autoApplyToggle':
+            return applyMode === 'Auto' ? classes.buttonAutoApplyEnabled : '';
         case 'zoomIn':
             return classes.buttonZoomIn;
         case 'zoomOut':
