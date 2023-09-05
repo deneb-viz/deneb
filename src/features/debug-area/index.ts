@@ -20,6 +20,16 @@ export const DATA_TABLE_FONT_FAMILY = 'Consolas, "Courier New", monospace';
 export const DATA_TABLE_FONT_SIZE = 12;
 
 /**
+ * The height of a single row in the data table.
+ */
+export const DATA_TABLE_ROW_HEIGHT = 24;
+
+/**
+ * The padding to apply to the left of a table row.
+ */
+export const DATA_TABLE_ROW_PADDING_LEFT = 10;
+
+/**
  * The maximum permitted length of a value for a table cell before 'truncating'
  * it for display.
  */

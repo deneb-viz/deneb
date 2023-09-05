@@ -6,7 +6,12 @@ import DataTable, { TableProps } from 'react-data-table-component';
 
 import store from '../../../store';
 import { DataTableStatusBar } from './data-table-status-bar';
-import { DATA_TABLE_FONT_FAMILY, DATA_TABLE_FONT_SIZE } from '..';
+import {
+    DATA_TABLE_FONT_FAMILY,
+    DATA_TABLE_FONT_SIZE,
+    DATA_TABLE_ROW_HEIGHT,
+    DATA_TABLE_ROW_PADDING_LEFT
+} from '..';
 import { logRender } from '../../logging';
 import { getConfig } from '../../../core/utils/config';
 import {
@@ -65,22 +70,30 @@ export const DataTableViewer: React.FC<TableProps<any>> = ({
                         borderBottomColor: tokens.colorNeutralStroke3,
                         borderBottomStyle: 'solid',
                         borderBottomWidth: '1px',
-                        paddingLeft: '20px'
+                        paddingLeft: `${DATA_TABLE_ROW_PADDING_LEFT}px}`,
+                        minHeight: `${DATA_TABLE_ROW_HEIGHT}px`
+                    },
+                    denseStyle: {
+                        minHeight: `${DATA_TABLE_ROW_HEIGHT}px`
                     }
                 },
                 rows: {
                     style: {
                         backgroundColor: tokens.colorNeutralBackground1,
                         color: tokens.colorNeutralForeground2,
-                        paddingLeft: '20px',
+                        paddingLeft: `${DATA_TABLE_ROW_PADDING_LEFT}px}`,
                         borderBottomColor: tokens.colorNeutralStroke3,
                         borderBottomStyle: 'solid',
                         borderBottomWidth: '1px',
+                        minHeight: `${DATA_TABLE_ROW_HEIGHT}px`,
                         '&:not(:last-of-type)': {
                             borderBottomColor: tokens.colorNeutralStroke3,
                             borderBottomStyle: 'solid',
                             borderBottomWidth: '1px'
                         }
+                    },
+                    denseStyle: {
+                        minHeight: `${DATA_TABLE_ROW_HEIGHT}px`
                     }
                 },
                 cells: {
