@@ -13,11 +13,14 @@ import { DataTableCell } from './data-table-cell';
 import {
     getColumnHeaderTooltip,
     getDataTableRenderedCharWidth,
-    getDataTableWorkerTranslations,
-    getDatasetForWorker
+    getDataTableWorkerTranslations
 } from '../data-table';
-import { logDebug, logRender } from '../../logging';
-import { DATASET_IDENTITY_NAME, DATASET_KEY_NAME } from '../../../constants';
+import { logDebug, logRender, logTimeEnd, logTimeStart } from '../../logging';
+import {
+    DATASET_IDENTITY_NAME,
+    DATASET_KEY_NAME,
+    TABLE_VALUE_MAX_DEPTH
+} from '../../../constants';
 import {
     IDataTableRow,
     IDataTableWorkerMaxDisplayWidths,
@@ -93,7 +96,7 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
              */
             const message: IDataTableWorkerMessage = {
                 canvasFontCharWidth: getDataTableRenderedCharWidth(),
-                dataset: getDatasetForWorker(datasetRaw.values),
+                dataset: datasetRaw.values,
                 datasetKeyName: DATASET_KEY_NAME,
                 jobId,
                 translations: getDataTableWorkerTranslations(),
@@ -195,12 +198,22 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
      * Ensure that listener is added/removed when the data might change.
      */
     useEffect(() => {
-        const latest = getPrunedObject(
-            getDatasetValues(datasetName, logAttention)
+        logDebug('DatasetViewer: getting latest dataset from view...');
+        const datasetView = getDatasetValues(datasetName, logAttention);
+        const datasetForHash = getPrunedObject(
+            datasetView,
+            TABLE_VALUE_MAX_DEPTH
         );
-        const latestHash = getDataHash(latest);
+        logDebug('DatasetViewer: latest dataset retrieved', {
+            latest: datasetForHash
+        });
+        logDebug('DatasetViewer: calculating latest dataset hash...');
+        const latestHash = getDataHash(datasetForHash);
+        logDebug('DatasetViewer: latest dataset hash calculated', {
+            latestHash
+        });
         const latestDatasetRaw: IDatasetRaw = {
-            values: latest,
+            values: datasetForHash,
             hashValue: latestHash
         };
         logDebug('DataSetViewer: checking for dataset change...', {
@@ -275,19 +288,23 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
  * store if there are issues with the view).
  */
 const getDatasetValues = (datasetName: string, logAttention: boolean) => {
+    logTimeStart('getDatasetValues');
     const storeDs = () => {
         logDebug('Falling back to store dataset...');
         return getState()?.dataset?.values;
     };
     try {
-        return logAttention
+        const ds = logAttention
             ? storeDs()
             : VegaViewServices.getDataByName(datasetName) || storeDs();
+        logTimeEnd('getDatasetValues');
+        return ds;
     } catch (e) {
         logDebug(
             `DatasetViewer: could not retrieve dataset ${datasetName} from Vega view. Returning the visual dataset.`,
             { e }
         );
+        logTimeEnd('getDatasetValues');
         return storeDs();
     }
 };
@@ -362,4 +379,9 @@ const calculateMaxWidth = (fieldName: string, fieldDataMaxWidth: number) => {
  * Create hash of dataset, that we can use to determine changes more cheaply
  * within the UI.
  */
-const getDataHash = (data: any[]) => digest(data, 'SHA256', 'hex');
+const getDataHash = (data: any[]) => {
+    logTimeStart('getDataHash');
+    const result = digest(data, 'SHA256', 'hex');
+    logTimeEnd('getDataHash');
+    return result;
+};

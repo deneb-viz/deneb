@@ -130,13 +130,6 @@ export const getColumnHeaderTooltip = (column: string) => {
 };
 
 /**
- * When posting to the web worker, we need to ensure that our dataset is
- * suffciently pruned to avoid any issues with cyclic references, or properties
- * that can cause issues with serialization.
- */
-export const getDatasetForWorker = (dataset: any[]) => getPrunedObject(dataset);
-
-/**
  * We need to measure how much space a table value (and heading) will take up
  * in the UI, so that we can pre-calculate the width of each column. This is
  * computationally expensive, to do by value, so with a monospace font, we can
