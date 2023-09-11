@@ -29,8 +29,8 @@ import {
 } from '../types';
 import { VegaViewServices } from '../../vega-extensibility';
 import { getDataTableWorker } from '../data-table-worker';
-import { digest } from 'jsum';
 import { getPrunedObject } from '../../../core/utils/json';
+import { getHashValue } from '../../../utils';
 
 interface IDatasetViewerProps {
     datasetName: string;
@@ -381,7 +381,7 @@ const calculateMaxWidth = (fieldName: string, fieldDataMaxWidth: number) => {
  */
 const getDataHash = (data: any[]) => {
     logTimeStart('getDataHash');
-    const result = digest(data, 'SHA256', 'hex');
+    const result = getHashValue(data);
     logTimeEnd('getDataHash');
     return result;
 };

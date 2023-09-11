@@ -8,7 +8,6 @@ import { NamedSet } from 'zustand/middleware';
 import { TStoreState } from '.';
 import {
     doUnallocatedFieldsExist,
-    getDatasetHash,
     getEmptyDataset
 } from '../core/data/dataset';
 import { IVisualDataset, TDataProcessingStage } from '../core/data';
@@ -30,6 +29,7 @@ import { ModalDialogRole } from '../features/modal-dialog/types';
 import { isMappingDialogRequired } from '../features/remap-fields';
 import { getOnboardingDialog } from '../features/modal-dialog';
 import { areAllCreateDataRequirementsMet } from '../features/visual-create';
+import { getHashValue } from '../utils';
 
 export interface IDatasetSlice {
     dataset: IVisualDataset;
@@ -236,7 +236,7 @@ const handleUpdateDatasetSelectors = (
             )
         })
     }));
-    const hashValue = getDatasetHash(state.dataset.fields, values);
+    const hashValue = getHashValue({ fields: state.dataset.fields, values });
     const specOptions = getSpecificationParseOptions(state);
     const spec = getParsedSpec(state.specification, specOptions, {
         ...specOptions,

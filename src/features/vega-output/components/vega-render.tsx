@@ -13,6 +13,7 @@ import { useVegaStyles } from '..';
 import { getPowerBiTooltipHandler } from '../../interactivity';
 import { hostServices } from '../../../core/services';
 import { getD3FormatLocale, getD3TimeFormatLocale } from '../../i18n';
+import { getSpecificationForVisual } from '../../specification/logic';
 
 interface IVegaRenderProps {
     datasetHash: string;
@@ -135,7 +136,7 @@ export const VegaRender: React.FC<IVegaRenderProps> = memo(
             [viewportHeight, viewportWidth, provider]
         );
         const VegaChart = createClassFromSpec({
-            spec: specification.spec as object,
+            spec: getSpecificationForVisual(),
             mode: resolvedProvider
         });
         logRender('VegaRender', {

@@ -3,7 +3,6 @@ import * as VegaLite from 'vega-lite';
 import jsonrepair from 'jsonrepair';
 import isEqual from 'lodash/isEqual';
 import merge from 'lodash/merge';
-import { digest } from 'jsum';
 
 import { getConfig } from '../../core/utils/config';
 import {
@@ -44,6 +43,7 @@ import {
     getProviderValidator
 } from './schema-validation';
 import { getI18nValue } from '../i18n';
+import { getHashValue } from '../../utils';
 
 const PROPERTY_DEFAULTS = getConfig().propertyDefaults.vega;
 
@@ -171,10 +171,10 @@ export const getParsedSpec = (
         return currentSpec;
     }
     logDebug('prev and next values differ. Re-parsing...');
-    const { config, logLevel, provider, spec, values } = nextOptions;
+    const { config, logLevel, provider, spec } = nextOptions;
     const logger = new LocalVegaLoggerService();
     logger.level(logLevel);
-    const patchedSpec = getPatchedSpec(spec, provider, values);
+    const patchedSpec = getPatchedSpec(spec, provider);
     const patchedConfig = getPatchedConfig(config);
     const warns: string[] = [];
     const errors: string[] = [];
@@ -198,6 +198,7 @@ export const getParsedSpec = (
         specToParse = patchedSpec
             ? merge({ config: patchedConfig.result ?? {} }, patchedSpec.result)
             : null;
+        logDebug('Spec size: ', JSON.stringify(specToParse).length);
         try {
             const validator = getProviderValidator({ provider });
             const valid = validator(specToParse);
@@ -220,7 +221,7 @@ export const getParsedSpec = (
         }
         warns.push(...logger.warns);
     }
-    const hashValue = digest(specToParse, 'SHA256', 'hex');
+    const hashValue = getHashValue(specToParse);
     logDebug('getParsedSpec results', {
         config,
         patchedConfig,
@@ -304,8 +305,7 @@ const getPatchedData = (spec: Vega.Spec, values: IVisualDatasetValueRow[]) => {
  */
 const getPatchedSpec = (
     content: string,
-    provider: TSpecProvider,
-    values: IVisualDatasetValueRow[]
+    provider: TSpecProvider
 ): IContentPatchResult => {
     try {
         const parsedSpec = parseAndValidateContentJson(content);
@@ -314,10 +314,9 @@ const getPatchedSpec = (
             result:
                 provider === 'vegaLite'
                     ? getPatchedVegaLiteSpec(
-                          <VegaLite.TopLevelSpec>parsedSpec.result,
-                          values
+                          <VegaLite.TopLevelSpec>parsedSpec.result
                       )
-                    : getPatchedVegaSpec(<Vega.Spec>parsedSpec.result, values),
+                    : getPatchedVegaSpec(<Vega.Spec>parsedSpec.result),
             errors: []
         };
     } catch (e) {
@@ -328,19 +327,12 @@ const getPatchedSpec = (
 /**
  * Apply specific patching operations to a supplied spec. This applies any
  * specific signals that we don't necessarily want the creator to worry about,
- * but will ensure that the visual functions as expected. We also patch in the
- * dataset, because we've found that binding this via react-vega causes some
- * issues with the data being available for certain calculations. This
- * essentially ensures that the data is processed in-line with the spec.
+ * but will ensure that the visual functions as expected.
  */
-const getPatchedVegaSpec = (
-    spec: Vega.Spec,
-    values: IVisualDatasetValueRow[]
-): Vega.Spec => {
+const getPatchedVegaSpec = (spec: Vega.Spec): Vega.Spec => {
     return merge(spec, {
         height: spec['height'] ?? { signal: 'pbiContainerHeight' },
         width: spec['width'] ?? { signal: 'pbiContainerWidth' },
-        data: getPatchedData(spec, values),
         signals: [
             ...(spec['signals'] || []),
             ...(getConfig()?.providerResources?.vega?.patch?.signals || [])
@@ -349,17 +341,29 @@ const getPatchedVegaSpec = (
 };
 
 /**
- * Apply specific patching operations to a supplied Vega-Lite spec. This
- * applies any specific signals that we don't necessarily want the creator to
- * worry about, but will ensure that the visual functions as expected. We also
- * patch in the dataset, because we've found that binding this via react-vega
- * causes some issues with the data being available for certain calculations.
- * This essentially ensures that the data is processed in-line with the spec.
+ * Merge the Vega spec and dataset values together.
+ * @privateRemarks We've found some issues with react-vega, where if we supply
+ * the dataset separately, we have a number of errors that don't take place if
+ * we include the data directly (like we might normally do in a tool like Vega
+ * Editor), so we do this here. We don;t do this in `getPatchedVegaSpec`, as
+ * this creates too much overhead when parsing the spec.
  */
-const getPatchedVegaLiteSpec = (
-    spec: VegaLite.TopLevelSpec,
+const getPatchedVegaSpecWithData = (
+    spec: Vega.Spec,
     values: IVisualDatasetValueRow[]
 ) => {
+    logTimeStart('getPatchedVegaSpecWithData');
+    const merged = Object.assign(spec, { data: getPatchedData(spec, values) });
+    logTimeEnd('getPatchedVegaSpecWithData');
+    return merged;
+};
+
+/**
+ * Apply specific patching operations to a supplied Vega-Lite spec. This
+ * applies any specific signals that we don't necessarily want the creator to
+ * worry about, but will ensure that the visual functions as expected.
+ */
+const getPatchedVegaLiteSpec = (spec: VegaLite.TopLevelSpec) => {
     const isNsl = isVegaLiteSpecNonStandardLayout(spec);
     return merge(
         spec,
@@ -368,14 +372,31 @@ const getPatchedVegaLiteSpec = (
             : {
                   height: spec['height'] ?? 'container',
                   width: spec['width'] ?? 'container'
-              },
-        {
-            datasets: {
-                ...(spec.datasets ?? {}),
-                [`${DATASET_NAME}`]: values
-            }
-        }
+              }
     );
+};
+
+/**
+ * Merge the Vega-Lite spec and dataset values together.
+ * @privateRemarks We've found some issues with react-vega, where if we supply
+ * the dataset separately, we have a number of errors that don't take place if
+ * we include the data directly (like we might normally do in a tool like Vega
+ * Editor), so we do this here. We don;t do this in `getPatchedVegaLiteSpec`,
+ * as this creates too much overhead when parsing the spec.
+ */
+const getPatchedVegaLiteSpecWithData = (
+    spec: VegaLite.TopLevelSpec,
+    values: IVisualDatasetValueRow[]
+) => {
+    logTimeStart('getPatchedVegaLiteSpecWithData');
+    const merged = Object.assign(spec, {
+        datasets: {
+            ...(spec.datasets ?? {}),
+            [`${DATASET_NAME}`]: values
+        }
+    });
+    logTimeEnd('getPatchedVegaLiteSpecWithData');
+    return merged;
 };
 
 /**
@@ -385,6 +406,25 @@ const getPatchedVegaLiteSpec = (
  */
 const getRedactedError = (message: string) => {
     return message.replace(/(Invalid specification) (\{.*\})/g, '$1');
+};
+
+export const getSpecificationForVisual = () => {
+    const {
+        dataset: { values },
+        specification: { spec },
+        visualSettings: {
+            vega: { provider }
+        }
+    } = getState();
+    switch (provider) {
+        case 'vega':
+            return getPatchedVegaSpecWithData(<Vega.Spec>spec, values);
+        case 'vegaLite':
+            return getPatchedVegaLiteSpecWithData(
+                <VegaLite.TopLevelSpec>spec,
+                values
+            );
+    }
 };
 
 /**
