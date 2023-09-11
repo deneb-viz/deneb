@@ -5,7 +5,6 @@ import PrimitiveValue = powerbi.PrimitiveValue;
 
 import range from 'lodash/range';
 import reduce from 'lodash/reduce';
-import { digest } from 'jsum';
 
 import {
     IAugmentedMetadataField,
@@ -48,6 +47,8 @@ import {
     resolveDrilldownComponents,
     resolveDrilldownFlat
 } from '../../features/dataset';
+import { logTimeEnd, logTimeStart } from '../../features/logging';
+import { getHashValue } from '../../utils';
 
 /**
  * Compare two sets of dataset metadata, as well as the current state of the
@@ -64,15 +65,6 @@ export const doUnallocatedFieldsExist = (
         (result, value, key) => !(key in fieldsAvailable) || result,
         false
     ) || currentResult;
-
-/**
- * Create hash of dataset, that we can use to determine changes more cheaply
- * within the UI.
- */
-export const getDatasetHash = (
-    fields: IVisualDatasetFields,
-    values: IVisualDatasetValueRow[]
-) => digest({ fields, values }, 'SHA256', 'hex');
 
 /**
  * For supplied data view field metadata, produce a suitable object
@@ -140,7 +132,7 @@ export const getDataset = (): IVisualDataset => getState().dataset;
  */
 export const getEmptyDataset = (): IVisualDataset => ({
     fields: {},
-    hashValue: getDatasetHash({}, []),
+    hashValue: getHashValue({}),
     values: [],
     hasHighlights: false,
     rowsLoaded: 0
@@ -172,6 +164,14 @@ export const getMappedDataset = (
                 hostServices.selectionManager.getSelectionIds()
             );
             const fields = getDatasetFields(dvCategories, dvValues);
+            /**
+             * #357 hash the values here rather than after we process them, as
+             * it can be significantly faster (we don't need the selection IDs)
+             */
+            logTimeStart('getMappedDataset hashValue');
+            const hashValue = getHashValue({ fields, fieldValues });
+            logTimeEnd('getMappedDataset hashValue');
+            logTimeStart('getMappedDataset values');
             const values: IVisualDatasetValueRow[] = range(rowsLoaded).map(
                 (r, ri) => {
                     const md = getDataRow(
@@ -202,7 +202,7 @@ export const getMappedDataset = (
                     };
                 }
             );
-            const hashValue = getDatasetHash(fields, values);
+            logTimeEnd('getMappedDataset values');
             return {
                 hasHighlights,
                 hashValue,

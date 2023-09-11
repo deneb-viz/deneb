@@ -21,6 +21,7 @@ import {
     HIGHLIGHT_FIELD_SUFFIX
 } from '../../constants';
 import { isDataViewFieldEligibleForFormatting } from '../../features/dataset';
+import { logTimeEnd, logTimeStart } from '../../features/logging';
 
 /**
  * Extract all categorical fields from the data view as suitable metadata.
@@ -43,12 +44,17 @@ const getCategoryFieldEntries = (
 export const getDatasetFieldEntries = (
     categories: DataViewCategoryColumn[],
     values: DataViewValueColumns
-) => [
-    ...getCategoryFieldEntries(categories),
-    ...getHighlightFieldEntries(values),
-    ...getMeasureFieldEntries(values),
-    ...getMeasureFormatEntries(values)
-];
+) => {
+    logTimeStart('getDatasetFieldEntries');
+    const fieldEntries = [
+        ...getCategoryFieldEntries(categories),
+        ...getHighlightFieldEntries(values),
+        ...getMeasureFieldEntries(values),
+        ...getMeasureFormatEntries(values)
+    ];
+    logTimeEnd('getDatasetFieldEntries');
+    return fieldEntries;
+};
 
 /**
  * For all dataset fields, get a consolidated array of all entries, plus
