@@ -8,6 +8,7 @@ import { FetchingMessage, SplashInitial } from '../../status';
 import { NotificationToaster } from '../../toaster';
 import { logRender } from '../../logging';
 import { LandingPage } from '../../status';
+import { VisualUpdateHistoryOverlay } from './visual-update-history-overlay';
 
 export const VisualInterface = () => {
     const { mode } = store(
@@ -37,6 +38,7 @@ export const VisualInterface = () => {
         <>
             {mainComponent}
             <NotificationToaster />
+            <VisualUpdateHistoryOverlay />
         </>
     );
 };

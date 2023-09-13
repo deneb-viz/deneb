@@ -106,17 +106,6 @@ const handleSetVisualUpdate = (
     const editMode = payload.options.editMode;
     const isInFocus = payload.options.isInFocus;
     const updateType = payload.options.type;
-    const history: IVisualUpdateHistoryRecord[] = [
-        {
-            editMode,
-            isInFocus,
-            type: updateType,
-            viewMode: payload.options.viewMode,
-            viewport: payload.options.viewport
-        }
-    ].concat(
-        state.visualUpdateOptions.history.slice(0, MAX_UPDATE_HISTORY_COUNT)
-    );
     const mode = getApplicationMode({
         currentMode: state.interface.mode,
         dataset: state.dataset,
@@ -125,6 +114,18 @@ const handleSetVisualUpdate = (
         specification: payload.settings.vega.jsonSpec,
         updateType
     });
+    const history: IVisualUpdateHistoryRecord[] = [
+        {
+            editMode,
+            interfaceMode: mode,
+            isInFocus,
+            type: updateType,
+            viewMode: payload.options.viewMode,
+            viewport: payload.options.viewport
+        }
+    ].concat(
+        state.visualUpdateOptions.history.slice(0, MAX_UPDATE_HISTORY_COUNT)
+    );
     const viewportCurrent = getCorrectViewport(history);
     payload.options.viewport;
     const viewportReport = getReportViewport(

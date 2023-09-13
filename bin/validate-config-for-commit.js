@@ -16,6 +16,12 @@ if (config.features.enableReactLogging) {
         '❌ features.enableReactLogging flag is true; this should be false.'
     );
 }
+// Visual update history overlay: Should not be set in committed code
+if (config.features.visualUpdateHistoryOverlay) {
+    errors.push(
+        '❌ features.visualUpdateHistoryOverlay flag is true; this should be false.'
+    );
+}
 // Log level: should be 0 (NONE) in committed code
 if (config.logLevel !== 0) {
     errors.push(`❌ logLevel is ${config.logLevel}; this should be 0 (NONE).`);
