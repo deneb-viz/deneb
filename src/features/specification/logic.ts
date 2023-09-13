@@ -353,7 +353,9 @@ const getPatchedVegaSpecWithData = (
     values: IVisualDatasetValueRow[]
 ) => {
     logTimeStart('getPatchedVegaSpecWithData');
-    const merged = Object.assign(spec, { data: getPatchedData(spec, values) });
+    const merged = Object.assign(spec || {}, {
+        data: getPatchedData(spec, values)
+    });
     logTimeEnd('getPatchedVegaSpecWithData');
     return merged;
 };
@@ -389,9 +391,9 @@ const getPatchedVegaLiteSpecWithData = (
     values: IVisualDatasetValueRow[]
 ) => {
     logTimeStart('getPatchedVegaLiteSpecWithData');
-    const merged = Object.assign(spec, {
+    const merged = Object.assign(spec || {}, {
         datasets: {
-            ...(spec.datasets ?? {}),
+            ...(spec?.datasets ?? {}),
             [`${DATASET_NAME}`]: values
         }
     });
@@ -418,11 +420,15 @@ export const getSpecificationForVisual = () => {
     } = getState();
     switch (provider) {
         case 'vega':
-            return getPatchedVegaSpecWithData(<Vega.Spec>spec, values);
+            return <Vega.Spec>(
+                getPatchedVegaSpecWithData(<Vega.Spec>spec, values)
+            );
         case 'vegaLite':
-            return getPatchedVegaLiteSpecWithData(
-                <VegaLite.TopLevelSpec>spec,
-                values
+            return <VegaLite.TopLevelSpec>(
+                getPatchedVegaLiteSpecWithData(
+                    <VegaLite.TopLevelSpec>spec,
+                    values
+                )
             );
     }
 };
