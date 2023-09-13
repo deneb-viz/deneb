@@ -17,8 +17,7 @@ import { logDebug } from '../logging';
 import { getState } from '../../store';
 import {
     isVisualUpdateTypeResize,
-    isVisualUpdateTypeResizeEnd,
-    isVisualUpdateTypeViewMode
+    isVisualUpdateTypeResizeEnd
 } from '../visual-host';
 
 /**
@@ -106,8 +105,6 @@ export const getCorrectViewport = (history: IVisualUpdateHistoryRecord[]) => {
     if (
         isVisualUpdateTypeResize(history?.[0]?.type) &&
         isVisualUpdateTypeResizeEnd(history?.[1]?.type) &&
-        isVisualUpdateTypeResizeEnd(history?.[2]?.type) &&
-        isVisualUpdateTypeViewMode(history?.[3]?.type) &&
         history[0].isInFocus &&
         history[0].viewMode === ViewMode.Edit &&
         history[0].editMode === EditMode.Advanced
@@ -141,13 +138,15 @@ const isEligibleForEditor = (
                 return true;
             /**
              * Edit mode is invoked from the report canvas by the user. In this
-             * case, the visual host does 4 successive updates and only one of them
-             * has the correct viewport dimensions. It would understandably be
+             * case, the visual host does 4 successive updates and the one at
+             * the point of switching over to the advanced editor doesn't have
+             * the correct viewport dimensions. It would understandably be
              * better if we didn't have this situation, but we can check for
-             * consecutive `ResizeEnd` types and use them as our condition.
+             * consecutive types that we know will result in the correct 'full
+             * screen' viewport size and use them as our condition.
              */
             case isEditorViewport(parameters) &&
-                isVisualUpdateTypeResizeEnd(parameters.updateType) &&
+                isVisualUpdateTypeResize(parameters.updateType) &&
                 isVisualUpdateTypeResizeEnd(
                     getState().visualUpdateOptions?.type
                 ):

@@ -56,12 +56,13 @@ export interface IInterfaceModeResolutionParameters {
 
 /**
  * In some cases (changing from canvas to advanced editor and back), we need to
- * compare the update history to determin the correct point to switch, as well as
- * which viewport to use (as the visual host supplies the dimensions out of
+ * compare the update history to determine the correct point to switch, as well
+ * as which viewport to use (as the visual host supplies the dimensions out of
  * order). This tracks the point-in-time values we need to do that.
  */
 export interface IVisualUpdateHistoryRecord {
     editMode: EditMode;
+    interfaceMode: InterfaceMode;
     isInFocus: boolean;
     type: VisualUpdateType;
     viewMode: ViewMode;

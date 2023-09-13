@@ -13,6 +13,7 @@
         "useDownloadApi": true,
         "templateExportPreviewImages": true,
         "combinedApplyButton": false,
+        "visualUpdateHistoryOverlay": false,
         "unitTestCanary": false
     },
     "logLevel": 0,
