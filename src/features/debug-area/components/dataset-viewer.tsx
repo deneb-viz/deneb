@@ -105,7 +105,7 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
             datasetWorker.postMessage(message);
             logDebug('DatasetViewer: worker message sent');
         }
-    }, [datasetRaw]);
+    }, [datasetRaw.hashValue]);
     /**
      * When we get a response from our worker, we need to update our state
      * with the processed data table output.
@@ -198,39 +198,51 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
      * Ensure that listener is added/removed when the data might change.
      */
     useEffect(() => {
-        logDebug('DatasetViewer: getting latest dataset from view...');
-        const datasetView = getDatasetValues(datasetName, logAttention);
-        const datasetForHash = getPrunedObject(
-            datasetView,
-            TABLE_VALUE_MAX_DEPTH
-        );
-        logDebug('DatasetViewer: latest dataset retrieved', {
-            latest: datasetForHash
-        });
-        logDebug('DatasetViewer: calculating latest dataset hash...');
-        const latestHash = getDataHash(datasetForHash);
-        logDebug('DatasetViewer: latest dataset hash calculated', {
-            latestHash
-        });
-        const latestDatasetRaw: IDatasetRaw = {
-            values: datasetForHash,
-            hashValue: latestHash
-        };
-        logDebug('DataSetViewer: checking for dataset change...', {
-            datasetName,
-            datasetRaw,
-            latestDatasetRaw
-        });
-        if (!isEqual(latestHash, datasetRaw?.hashValue)) {
-            logDebug(
-                `DatasetViewer: change necessitates dataset update. Updating...`,
-                { hashValue, datasetName, renderId, logAttention }
+        try {
+            logDebug('DatasetViewer: getting latest dataset from view...');
+            const datasetView = getDatasetValues(datasetName, logAttention);
+            const datasetForHash = getPrunedObject(
+                datasetView,
+                TABLE_VALUE_MAX_DEPTH
             );
-            setDatasetRaw(() => latestDatasetRaw);
-            cycleListeners();
-        } else {
-            logDebug(
-                `DatasetViewer: no change detected. Skipping dataset update.`
+            logDebug('DatasetViewer: latest dataset retrieved', {
+                latest: datasetForHash
+            });
+            logDebug('DatasetViewer: calculating latest dataset hash...');
+            const latestHash = getDataHash(datasetForHash);
+            logDebug('DatasetViewer: latest dataset hash calculated', {
+                latestHash
+            });
+            const latestDatasetRaw: IDatasetRaw = {
+                values: datasetForHash,
+                hashValue: latestHash
+            };
+            logDebug('DataSetViewer: checking for dataset change...', {
+                datasetName,
+                datasetRaw,
+                latestDatasetRaw
+            });
+            if (!isEqual(latestHash, datasetRaw?.hashValue)) {
+                logDebug(
+                    `DatasetViewer: change necessitates dataset update. Updating...`,
+                    { hashValue, datasetName, renderId, logAttention }
+                );
+                setDatasetRaw(() => latestDatasetRaw);
+                cycleListeners();
+            } else {
+                logDebug(
+                    `DatasetViewer: no change detected. Skipping dataset update.`
+                );
+            }
+        } catch (e) {
+            const {
+                specification: { logError }
+            } = getState();
+            logDebug(`DatasetViewer: error getting latest dataset from view.`, {
+                e
+            });
+            logError(
+                `Failed to load dataset [${datasetName}] from view. Error details: ${e.message}`
             );
         }
         return () => {
