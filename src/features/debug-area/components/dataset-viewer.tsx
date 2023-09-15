@@ -105,7 +105,7 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
             datasetWorker.postMessage(message);
             logDebug('DatasetViewer: worker message sent');
         }
-    }, [datasetRaw]);
+    }, [datasetRaw.hashValue]);
     /**
      * When we get a response from our worker, we need to update our state
      * with the processed data table output.
