@@ -149,7 +149,6 @@ const handleUpdateDataset = (
         ...specOptions,
         ...{
             datasetHash: payload.dataset.hashValue,
-            values: payload.dataset.values,
             visualMode: mode
         }
     });

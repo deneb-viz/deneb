@@ -59,7 +59,6 @@ export interface ISpecificationParseOptions {
     logLevel: number;
     provider: TSpecProvider;
     spec: string;
-    values: IVisualDatasetValueRow[];
     viewportHeight: number;
     viewportWidth: number;
     visualMode: InterfaceMode;
