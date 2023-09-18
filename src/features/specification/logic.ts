@@ -1,6 +1,7 @@
 import * as Vega from 'vega';
 import * as VegaLite from 'vega-lite';
 import jsonrepair from 'jsonrepair';
+import cloneDeep from 'lodash/cloneDeep';
 import isEqual from 'lodash/isEqual';
 import merge from 'lodash/merge';
 
@@ -270,6 +271,7 @@ const getPatchedConfig = (content: string): IContentPatchResult => {
  */
 const getPatchedData = (spec: Vega.Spec, values: IVisualDatasetValueRow[]) => {
     const name = DATASET_NAME;
+    logDebug('getPatchedData', { spec, values });
     try {
         const newSpec = typeof spec === 'undefined' ? {} : spec;
         const data = newSpec?.data ?? [];
@@ -353,6 +355,7 @@ const getPatchedVegaSpecWithData = (
     values: IVisualDatasetValueRow[]
 ) => {
     logTimeStart('getPatchedVegaSpecWithData');
+    logDebug('getPatchedVegaSpecWithData', { spec, values });
     const merged = Object.assign(spec || {}, {
         data: getPatchedData(spec, values)
     });
@@ -418,16 +421,21 @@ export const getSpecificationForVisual = () => {
             vega: { provider }
         }
     } = getState();
+    /**
+     * #369: if we don't clone values to a unique object, they get mutated in
+     * the store and this breaks the dataset until we re-initialize.
+     */
+    const specValues = cloneDeep(values);
     switch (provider) {
         case 'vega':
             return <Vega.Spec>(
-                getPatchedVegaSpecWithData(<Vega.Spec>spec, values)
+                getPatchedVegaSpecWithData(<Vega.Spec>spec, specValues)
             );
         case 'vegaLite':
             return <VegaLite.TopLevelSpec>(
                 getPatchedVegaLiteSpecWithData(
                     <VegaLite.TopLevelSpec>spec,
-                    values
+                    specValues
                 )
             );
     }
@@ -445,7 +453,6 @@ export const getSpecificationParseOptions = (
     logLevel: state.visualSettings.vega.logLevel,
     provider: <TSpecProvider>state.visualSettings.vega.provider,
     spec: state.visualSettings.vega.jsonSpec,
-    values: state.dataset.values,
     viewportHeight: state.visualViewportReport.height,
     viewportWidth: state.visualViewportReport.width,
     visualMode: state.interface.mode

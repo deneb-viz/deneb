@@ -149,7 +149,6 @@ const handleUpdateDataset = (
         ...specOptions,
         ...{
             datasetHash: payload.dataset.hashValue,
-            values: payload.dataset.values,
             visualMode: mode
         }
     });
@@ -172,6 +171,7 @@ const handleUpdateDataset = (
         dataset: payload.dataset,
         datasetCategories,
         datasetProcessingStage: 'Processed',
+        debug: { ...state.debug, logAttention: spec.errors.length > 0 },
         editorFieldDatasetMismatch,
         editorFieldsInUse,
         editorPaneWidth: getResizablePaneSize(

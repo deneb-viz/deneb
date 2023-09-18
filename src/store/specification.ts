@@ -103,6 +103,7 @@ const handleSetSpecificationParseResults = (
     state: TStoreState,
     spec: ISpecification
 ): Partial<TStoreState> => ({
+    debug: { ...state.debug, logAttention: spec.errors.length > 0 },
     specification: {
         ...state.specification,
         ...spec
