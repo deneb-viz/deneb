@@ -126,6 +126,7 @@ interface ICreateSliceSetTemplate {
 const handleCreateFromTemplate = (
     state: TStoreState
 ): Partial<TStoreState> => ({
+    debug: { ...state.debug, logAttention: false },
     interface: { ...state.interface, modalDialogRole: 'None' }
 });
 

@@ -232,6 +232,7 @@ const handleSetVisualUpdate = (
             zoomReset: isZoomOtherCommandEnabled(zoomLevelCommandTest)
         },
         datasetViewObjects,
+        debug: { ...state.debug, logAttention: spec.errors.length > 0 },
         editorIsNewDialogVisible: payload.settings.vega.isNewDialogOpen,
         editorPaneWidth: edPaneWidth,
         editorPaneDefaultWidth: edPaneDefWidth,
