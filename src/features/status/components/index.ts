@@ -61,8 +61,8 @@ export const useStatusStyles = makeStyles({
     headerFlexHorizontal: {
         display: 'flex',
         width: '100%',
-        justifyContent: 'space-between',
-        columnGap: '5px'
+        justifyContent: 'normal',
+        columnGap: '10px'
     },
     li: {
         listStyleType: 'unset'
