@@ -17,34 +17,6 @@
         "unitTestCanary": false
     },
     "logLevel": 0,
-    "fluentUiTheme": {
-        "palette": {
-            "themePrimary": "#117865",
-            "themeLighterAlt": "#fefdf5",
-            "themeLighter": "#fdf6d7",
-            "themeLight": "#fbeeb5",
-            "themeTertiary": "#f7de6d",
-            "themeSecondary": "#f4cf2c",
-            "themeDarkAlt": "#054d43",
-            "themeDark": "#054d43",
-            "themeDarker": "#033f38",
-            "neutralLighterAlt": "#f3f2f1",
-            "neutralLighter": "#eaeaea",
-            "neutralLight": "#dadada",
-            "neutralQuaternaryAlt": "#dadada",
-            "neutralQuaternary": "#d0d0d0",
-            "neutralTertiaryAlt": "#c8c8c8",
-            "neutralTertiary": "#c2c2c2",
-            "neutralSecondary": "#666666",
-            "neutralPrimaryAlt": "#4b4b4b",
-            "neutralPrimary": "#252423",
-            "neutralDark": "#252423",
-            "black": "#252423",
-            "white": "#ffffff",
-            "redDark": "#a4262c",
-            "greenDark": "#0b6a0b"
-        }
-    },
     "keyBindings": {
         "applyChanges": {
             "combination": "ctrl|enter",

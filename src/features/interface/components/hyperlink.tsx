@@ -8,9 +8,7 @@ interface IHyperlinkProps {
 }
 
 const useLinkStyles = makeStyles({
-    root: {
-        color: tokens.colorBrandForegroundLinkHover
-    }
+    root: {}
 });
 
 /**
