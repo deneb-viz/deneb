@@ -48,7 +48,9 @@
                 },
                 {
                     "name": "WebAccess",
-                    "parameters": ["https://*", "http://*"]
+                    "parameters": [
+                        "*"
+                    ]
                 }
             ]
         }
