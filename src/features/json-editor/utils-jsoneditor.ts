@@ -11,15 +11,19 @@ import {
 } from '../../core/services/JsonEditorServices';
 import { getConfig } from '../../core/utils/config';
 import { getState } from '../../store';
-import { hasLiveSpecChanged, persistSpecification } from '../specification';
+import {
+    BASE_VALIDATOR,
+    hasLiveSpecChanged,
+    persistSpecification
+} from '../specification';
 import { TEditorRole } from './types';
 import { getVegaSettings, TSpecProvider } from '../../core/vega';
-import { getEditorInitialText, getEditorSchema } from './utils';
-import { baseValidator } from '../../core/vega/validation';
+import { getEditorInitialText } from './utils';
 import { isDialogOpen } from '../modal-dialog';
 import { getDataset } from '../../core/data/dataset';
-import { i18nValue } from '../../core/ui/i18n';
 import { IVisualDatasetField } from '../../core/data';
+import { getProviderSchema } from '../specification/schema-validation';
+import { getI18nValue } from '../i18n';
 
 /**
  * Ensures that when auto-apply is enabled, the store is updated at a sensible interval after input has finished, rather than applying
@@ -57,9 +61,9 @@ export const getAssignedJsonEditor = (role: TEditorRole) => {
  */
 const getCompleters = (): Completer => {
     const { fields } = getDataset();
-    let tokens = [];
+    const tokens = [];
     // Tokens for columns and measures
-    Object.entries(fields).forEach(([key, value], i) => {
+    Object.entries(fields).forEach(([key], i) => {
         tokens.push({
             name: `${key}`,
             value: `${key}`,
@@ -100,7 +104,7 @@ export const getNewJsonEditor = (container: HTMLDivElement) =>
     new JSONEditor(container, {
         modes: [],
         ace: ace,
-        ajv: baseValidator,
+        ajv: BASE_VALIDATOR,
         mode: 'code',
         mainMenuBar: false,
         theme: 'ace/theme/chrome',
@@ -128,11 +132,13 @@ export const handleComponentUpdate = (
  * checks/handles the `isDirty` state.
  */
 const handleTextEntry = () => {
-    const { editorAutoApply, updateEditorDirtyStatus } = getState();
-    if (editorAutoApply) {
+    const {
+        editor: { applyMode, updateIsDirty }
+    } = getState();
+    if (applyMode === 'Auto') {
         persistSpecification();
     } else {
-        updateEditorDirtyStatus(hasLiveSpecChanged());
+        updateIsDirty(hasLiveSpecChanged());
     }
 };
 
@@ -142,10 +148,10 @@ const handleTextEntry = () => {
 const resolveCompleterMeta = (field: IVisualDatasetField) => {
     switch (true) {
         case field.isMeasure: {
-            return i18nValue('Completer_Cap_Measure');
+            return getI18nValue('Completer_Cap_Measure');
         }
         default: {
-            return i18nValue('Completer_Cap_Column');
+            return getI18nValue('Completer_Cap_Column');
         }
     }
 };
@@ -182,7 +188,11 @@ export const setInitialText = (jsonEditor: JSONEditor, role: TEditorRole) => {
  */
 const setProviderSchema = (jsonEditor: JSONEditor, role: TEditorRole) => {
     const { provider } = getVegaSettings();
-    jsonEditor?.setSchema(getEditorSchema(<TSpecProvider>provider, role));
+    jsonEditor?.setSchema(
+        role === 'spec'
+            ? getProviderSchema({ provider: <TSpecProvider>provider })
+            : {}
+    );
 };
 
 /**
@@ -205,15 +215,13 @@ const updateCompleters = (jsonEditor: JSONEditor, role: TEditorRole) => {
             if (!editor) {
                 return;
             }
-            let completers = editor.completers;
+            const completers = editor.completers;
             // This is messy, but will remove the custom completer if it's already been added
             if (completers.length > 2) {
                 completers.pop();
             }
             editor.completers = completers.concat([getCompleters()]);
             break;
-        }
-        default: {
         }
     }
 };

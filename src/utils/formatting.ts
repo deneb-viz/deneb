@@ -2,8 +2,8 @@ import powerbi from 'powerbi-visuals-api';
 import PrimitiveValue = powerbi.PrimitiveValue;
 import { valueFormatter } from 'powerbi-visuals-utils-formattingutils';
 
-import { hostServices } from '../core/services';
 import { ValueFormatterOptions } from 'powerbi-visuals-utils-formattingutils/lib/src/valueFormatter';
+import { getLocale } from '../features/i18n';
 
 /**
  * Convenience function that creates a Power BI `valueFormatter.IValueFormatter` using the supplied format string, and using the visual's locale.
@@ -16,7 +16,7 @@ export const createFormatterFromString = (
     const formatOptions = {
         ...{
             format,
-            cultureSelector: hostServices.locale
+            cultureSelector: getLocale()
         },
         ...options
     };

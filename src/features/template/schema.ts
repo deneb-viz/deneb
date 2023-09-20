@@ -127,7 +127,7 @@ export interface ITemplateDatasetField {
 /**
  * @additionalProperties true
  */
-interface ITemplateInformation {
+export interface ITemplateInformation {
     /**
      * Display name of template.
      * @maxLength 100

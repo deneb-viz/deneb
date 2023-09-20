@@ -47,6 +47,8 @@ import {
     resolveDrilldownComponents,
     resolveDrilldownFlat
 } from '../../features/dataset';
+import { logTimeEnd, logTimeStart } from '../../features/logging';
+import { getHashValue } from '../../utils';
 
 /**
  * Compare two sets of dataset metadata, as well as the current state of the
@@ -130,8 +132,10 @@ export const getDataset = (): IVisualDataset => getState().dataset;
  */
 export const getEmptyDataset = (): IVisualDataset => ({
     fields: {},
+    hashValue: getHashValue({}),
     values: [],
-    hasHighlights: false
+    hasHighlights: false,
+    rowsLoaded: 0
 });
 
 /**
@@ -141,9 +145,9 @@ export const getEmptyDataset = (): IVisualDataset => ({
 export const getMappedDataset = (
     categorical: DataViewCategorical
 ): IVisualDataset => {
-    const rowCount = getRowCount(categorical);
+    const rowsLoaded = getRowCount(categorical);
     const empty = getEmptyDataset();
-    if (rowCount === 0) {
+    if (rowsLoaded === 0) {
         return empty;
     } else {
         try {
@@ -160,7 +164,15 @@ export const getMappedDataset = (
                 hostServices.selectionManager.getSelectionIds()
             );
             const fields = getDatasetFields(dvCategories, dvValues);
-            const values: IVisualDatasetValueRow[] = range(rowCount).map(
+            /**
+             * #357 hash the values here rather than after we process them, as
+             * it can be significantly faster (we don't need the selection IDs)
+             */
+            logTimeStart('getMappedDataset hashValue');
+            const hashValue = getHashValue({ fields, fieldValues });
+            logTimeEnd('getMappedDataset hashValue');
+            logTimeStart('getMappedDataset values');
+            const values: IVisualDatasetValueRow[] = range(rowsLoaded).map(
                 (r, ri) => {
                     const md = getDataRow(
                         columns,
@@ -190,10 +202,13 @@ export const getMappedDataset = (
                     };
                 }
             );
+            logTimeEnd('getMappedDataset values');
             return {
                 hasHighlights,
+                hashValue,
                 fields,
-                values
+                values,
+                rowsLoaded
             };
         } catch (e) {
             console.log(e);

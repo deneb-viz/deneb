@@ -1,12 +1,12 @@
 import powerbi from 'powerbi-visuals-api';
 import IViewport = powerbi.IViewport;
 
-import { getState, useStoreProp } from '../../store';
+import { getState } from '../../store';
 import { getConfig } from '../utils/config';
-import { TEditorPosition, TVisualMode } from '.';
+import { TEditorPosition } from '.';
 import { CSSProperties } from 'react';
-import { theme } from './fluent';
 import {
+    ADVANCED_EDITOR_TOOLBAR_HEIGHT,
     EDITOR_PANE_SPLIT_COLLAPSED_SIZE,
     EDITOR_PANE_SPLIT_DEFAULT_SIZE_PERCENT,
     EDITOR_PANE_SPLIT_MAX_SIZE_PERCENT,
@@ -14,17 +14,23 @@ import {
     PREVIEW_PANE_AREA_PADDING,
     PREVIEW_PANE_TOOLBAR_DEFAULT_SIZE_PERCENT,
     PREVIEW_PANE_TOOLBAR_MIN_SIZE,
-    PREVIEW_PANE_TOOLBAR_PADDING,
-    SPLIT_PANE_RESIZER_SIZE,
-    VISUAL_VIEWPORT_ADJUST_LEFT,
-    VISUAL_VIEWPORT_ADJUST_TOP
+    SPLIT_PANE_RESIZER_SIZE
 } from '../../constants';
+import { tokens } from '@fluentui/react-components';
+
+/**
+ * How many pixels to apply to the preview area calculations as a "safety"
+ * margin. On occasion, the calculation results in a slightly higher than
+ * desirable scaling result and this helps to err on the lower-side of things
+ * so that the preview will definitely fit.
+ */
+const ZOOM_FIT_BUFFER = 15;
 
 const resizerBoxSizing = 'border-box';
 const resizerBackgroundClip = 'padding-box';
 
 const resizerStyles: CSSProperties = {
-    background: theme.palette.neutralLighter,
+    background: tokens.colorNeutralBackground5,
     zIndex: 1,
     MozBoxSizing: resizerBoxSizing,
     WebkitBoxSizing: resizerBoxSizing,
@@ -32,11 +38,12 @@ const resizerStyles: CSSProperties = {
     MozBackgroundClip: resizerBackgroundClip,
     WebkitBackgroundClip: resizerBackgroundClip,
     backgroundClip: resizerBackgroundClip,
-    border: `1px solid ${theme.palette.neutralLight}`
+    border: `1px solid ${tokens.colorNeutralStroke2}`
 };
 
 const resizerPaneStyles: CSSProperties = {
-    border: `1px solid ${theme.palette.neutralLight}`
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    boxSizing: 'border-box'
 };
 
 export const resizerPaneVerticalStyles: CSSProperties = {
@@ -70,15 +77,14 @@ export type TPreviewPivotRole = 'log' | 'data' | 'signal';
  * Calculate a width that ensures the editor pane caps and makes the pivot overflow as needed
  */
 export const calculateEditorPaneMaxWidth = () => {
-    const position = useStoreProp<TEditorPosition>(
-        'position',
-        'visualSettings.editor'
-    );
-    const editorPaneWidth = useStoreProp<number>('editorPaneWidth');
-    const width = useStoreProp<number>('width', 'visualViewportCurrent');
-    const editorPreviewAreaWidth = useStoreProp<number>(
-        'editorPreviewAreaWidth'
-    );
+    const {
+        editorPaneWidth,
+        editorPreviewAreaWidth,
+        visualSettings: {
+            editor: { position }
+        },
+        visualViewportCurrent: { width }
+    } = getState();
     return position === 'left'
         ? editorPaneWidth
         : width - editorPreviewAreaWidth;
@@ -119,17 +125,17 @@ export const getResizablePaneMinSize = () => {
     const { editorPaneIsExpanded, visualSettings, visualViewportCurrent } =
         getState();
     const { editor } = visualSettings;
-    let resolvedCollapsedSize =
-            editor.position === 'right'
-                ? visualViewportCurrent.width - EDITOR_PANE_SPLIT_COLLAPSED_SIZE
-                : EDITOR_PANE_SPLIT_COLLAPSED_SIZE,
-        resolvedMinSize =
-            editor.position === 'right'
-                ? visualViewportCurrent.width *
-                  (1 - EDITOR_PANE_SPLIT_MAX_SIZE_PERCENT)
-                : EDITOR_PANE_SPLIT_MIN_SIZE,
-        resolvedSize =
-            (editorPaneIsExpanded && resolvedMinSize) || resolvedCollapsedSize;
+    const resolvedCollapsedSize =
+        editor.position === 'right'
+            ? visualViewportCurrent.width - EDITOR_PANE_SPLIT_COLLAPSED_SIZE
+            : EDITOR_PANE_SPLIT_COLLAPSED_SIZE;
+    const resolvedMinSize =
+        editor.position === 'right'
+            ? visualViewportCurrent.width *
+              (1 - EDITOR_PANE_SPLIT_MAX_SIZE_PERCENT)
+            : EDITOR_PANE_SPLIT_MIN_SIZE;
+    const resolvedSize =
+        (editorPaneIsExpanded && resolvedMinSize) || resolvedCollapsedSize;
     return resolvedSize;
 };
 
@@ -167,26 +173,6 @@ export const getResizablePaneSize = (
     return resolvedWidth;
 };
 
-/** Calculate the dimensions of the Vega/Vega-Lite visual viewport (height/width) based on the interface state and a
- *  number of other factors (including any config defaults). */
-export const calculateVegaViewport = (
-    viewport: IViewport,
-    paneWidth: number,
-    visualMode: TVisualMode,
-    position: TEditorPosition
-) => {
-    let { height } = viewport,
-        width =
-            (visualMode === 'Editor' &&
-                (position === 'right'
-                    ? paneWidth
-                    : viewport.width - paneWidth)) ||
-            viewport.width;
-    height -= VISUAL_VIEWPORT_ADJUST_TOP;
-    width -= VISUAL_VIEWPORT_ADJUST_LEFT;
-    return { width, height };
-};
-
 /**
  * Calculate an height for the preview area, so that we can use this to work out fit zoom functions.
  */
@@ -199,9 +185,10 @@ export const getPreviewAreaHeightInitial = (
 
 export const calculatePreviewMaximumHeight = (height: number) =>
     height -
+    ADVANCED_EDITOR_TOOLBAR_HEIGHT -
     PREVIEW_PANE_TOOLBAR_MIN_SIZE -
     SPLIT_PANE_RESIZER_SIZE -
-    PREVIEW_PANE_TOOLBAR_PADDING;
+    getConfig().previewPane.viewportBorderSize * 2;
 
 export const calculateToolbarInitialHeight = (height: number) =>
     height - height * (PREVIEW_PANE_TOOLBAR_DEFAULT_SIZE_PERCENT / 100);
@@ -222,16 +209,20 @@ export const getZoomToFitScale = () => {
         previewHeight = getAdjustedPreviewAreaHeightForPadding(
             editorPreviewAreaHeight
         ),
-        scaleFactorWidth = Math.floor(100 / (width / previewWidth)),
-        scaleFactorHeight = Math.floor(100 / (height / previewHeight)),
-        { default: zDefault } = getConfig().zoomLevel;
+        scaleFactorWidth = Math.floor(
+            100 / (width / (previewWidth - ZOOM_FIT_BUFFER))
+        ),
+        scaleFactorHeight = Math.floor(
+            100 / (height / (previewHeight - ZOOM_FIT_BUFFER))
+        ),
+        { default: zDefault, max } = getConfig().zoomLevel;
     switch (true) {
         case willScaledDimensionFit(width, scaleFactorWidth, previewWidth) &&
             willScaledDimensionFit(height, scaleFactorWidth, previewHeight):
-            return scaleFactorWidth;
+            return Math.min(scaleFactorWidth, max);
         case willScaledDimensionFit(width, scaleFactorHeight, previewWidth) &&
             willScaledDimensionFit(height, scaleFactorHeight, previewHeight):
-            return scaleFactorHeight;
+            return Math.min(scaleFactorHeight, max);
         default:
             zDefault;
     }

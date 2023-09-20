@@ -1,23 +1,31 @@
 import stringify from 'json-stringify-pretty-compact';
+import cloneDeep from 'lodash/cloneDeep';
 
 import { getConfig } from '../../core/utils/config';
 import { TABLE_VALUE_MAX_DEPTH } from '../../constants';
-import { i18nValue } from '../ui/i18n';
+import { logDebug, logTimeEnd, logTimeStart } from '../../features/logging';
+import { IContentParseResult } from '../../features/specification';
+import { getI18nValue } from '../../features/i18n';
 
 type TIndentContext = 'editor' | 'tooltip';
 
 /**
  * Intended to be used as a substitute for `JSON.parse`; will ensure that any
- * supplied `content` is sanitised for URLs (if blocking them) prior to a
- * regular parse. The optional `fallback` allows the caller to provide a
- * default to provide if the parse fails (will return empty object (`{}`) if
- * not supplied).
+ * supplied `content` is tested as .
  */
-export const cleanParse = (content: string, fallback?: string): Object => {
+export const parseAndValidateContentJson = (
+    content: string,
+    fallback?: string
+): IContentParseResult => {
     try {
-        return JSON.parse(content);
-    } catch {
-        return JSON.parse(fallback || '{}');
+        return { result: JSON.parse(content), errors: [] };
+    } catch (e) {
+        logDebug(
+            'parseAndValidateContentJson: error encountered when parsing. Returning fallback...',
+            { fallback }
+        );
+        if (!fallback) return { result: null, errors: [e.message] };
+        return { result: JSON.parse(fallback), errors: [] };
     }
 };
 
@@ -39,11 +47,27 @@ export const getJsonAsIndentedString = (
     });
 
 /**
+ * Prune an object at a specified level of depth.
+ */
+export const getPrunedObject = (
+    json: object,
+    maxDepth = TABLE_VALUE_MAX_DEPTH
+) => {
+    logTimeStart('getPrunedObject clone');
+    const newObj = cloneDeep(json);
+    logTimeEnd('getPrunedObject clone');
+    logTimeStart('getPrunedObject prune');
+    const pruned = JSON.parse(stringifyPruned(newObj, maxDepth));
+    logTimeEnd('getPrunedObject prune');
+    return pruned;
+};
+
+/**
  * Create a stringified representation of an object, pruned at a specified
  * level of depth.
  */
 export const stringifyPruned = (
-    json: Object,
+    json: object,
     maxDepth = TABLE_VALUE_MAX_DEPTH
 ) => JSON.stringify(json, prune(maxDepth));
 
@@ -51,7 +75,7 @@ export const stringifyPruned = (
  * For a given object, prune at the specified level of depth. Borrowed and
  * adapted from vega-tooltip.
  */
-const prune = (obj: Object, maxDepth = TABLE_VALUE_MAX_DEPTH) => {
+const prune = (maxDepth = TABLE_VALUE_MAX_DEPTH) => {
     const stack: any[] = [];
     return function (this: any, key: string, value: any) {
         if (typeof value !== 'object' || value === null) {
@@ -59,11 +83,19 @@ const prune = (obj: Object, maxDepth = TABLE_VALUE_MAX_DEPTH) => {
         }
         const pos = stack.indexOf(this) + 1;
         stack.length = pos;
+        /**
+         * We're hitting memory limits when we try to stringify the dataflow,
+         * as it contains the scenegraph (#352). We manually remove this from
+         * our object to avoid this.
+         */
+        if (key === 'dataflow') {
+            delete value._scenegraph;
+        }
         if (stack.length > maxDepth) {
-            return i18nValue('Table_Placeholder_Object');
+            return getI18nValue('Table_Placeholder_Object');
         }
         if (stack.indexOf(value) >= 0) {
-            return i18nValue('Table_Placeholder_Circular');
+            return getI18nValue('Table_Placeholder_Circular');
         }
         stack.push(value);
         return value;

@@ -2,7 +2,7 @@
     "compilerOptions": {
         "allowJs": false,
         "jsx": "react",
-        "types": ["react", "react-dom", "jest"],
+        "types": ["react", "react-dom"],
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "forceConsistentCasingInFileNames": true,

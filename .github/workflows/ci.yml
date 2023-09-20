@@ -26,15 +26,16 @@ jobs:
             - name: Validate Current Configuration (deneb-config.json)
               run: npm run validate-config-for-commit
             - name: Linting Checks
-              run: npm run lint
+              run: npm run eslint
             - name: Prettier Checks
               run: npm run prettier-check
             - name: Unit Tests
               run: npm test
             - name: Confirm pbiviz package (AppSource Version)
               run: npm run package
+            # When pushing to 'next', this will invoke an alpha build
             - name: Alpha Channel Build Check
-              if: github.ref == 'refs/heads/main'
+              if: github.ref == 'refs/heads/next'
               run: |
                   echo "alpha_build=true" >> $GITHUB_ENV
             - name: 'Alpha Channel Build'
