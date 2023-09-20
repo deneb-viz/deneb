@@ -75,7 +75,7 @@
         "typescript-json-schema": "^0.50.0",
         "uuid": "^8.3.2",
         "vega": "5.25.0",
-        "vega-lite": "5.14.1",
+        "vega-lite": "5.15.0",
         "zustand": "^4.3.7"
     }
 }
