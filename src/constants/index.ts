@@ -6,5 +6,6 @@ export * from './properties';
 export * from './table-view';
 export * from './template';
 export * from './toaster';
+export * from './vega-extensibility';
 export * from './vega-output';
 export * from './visual-layout';
