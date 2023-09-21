@@ -5,6 +5,12 @@ import {
     ordinalPalette,
     powerBiColors
 } from './powerbi-theme';
+import {
+    VEGA_SCHEME_POWERBI_DIVERGENT,
+    VEGA_SCHEME_POWERBI_LINEAR,
+    VEGA_SCHEME_POWERBI_NOMINAL,
+    VEGA_SCHEME_POWERBI_ORDINAL
+} from '../../../constants';
 
 /**
  * A custom scheme that should be added to the Vega view.
@@ -24,11 +30,11 @@ export const registerCustomSchemes = (ordinalColorCount: number) =>
  * Registry of custom schemes to add to the Vega view.
  */
 const schemesRegistry = (ordinalColorCount: number): ICustomScheme[] => [
-    { name: 'pbiColorNominal', values: powerBiColors() },
+    { name: VEGA_SCHEME_POWERBI_NOMINAL, values: powerBiColors() },
     {
-        name: 'pbiColorOrdinal',
+        name: VEGA_SCHEME_POWERBI_ORDINAL,
         values: ordinalPalette(ordinalColorCount)
     },
-    { name: 'pbiColorLinear', values: divergentPalette() },
-    { name: 'pbiColorDivergent', values: divergentPaletteMed() }
+    { name: VEGA_SCHEME_POWERBI_LINEAR, values: divergentPalette() },
+    { name: VEGA_SCHEME_POWERBI_DIVERGENT, values: divergentPaletteMed() }
 ];

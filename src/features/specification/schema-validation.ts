@@ -3,6 +3,38 @@ import * as vegaSchema from 'vega/build/vega-schema.json';
 import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
 import * as draft06 from 'ajv/lib/refs/json-schema-draft-06.json';
 
+import merge from 'lodash/merge';
+import {
+    VEGA_SCHEME_POWERBI_DIVERGENT,
+    VEGA_SCHEME_POWERBI_LINEAR,
+    VEGA_SCHEME_POWERBI_NOMINAL,
+    VEGA_SCHEME_POWERBI_ORDINAL
+} from '../../constants';
+
+/**
+ * Array of custom schemes, for incorporation into schemas.
+ */
+const POWERBI_CUSTOM_SCHEMES = [
+    VEGA_SCHEME_POWERBI_DIVERGENT,
+    VEGA_SCHEME_POWERBI_LINEAR,
+    VEGA_SCHEME_POWERBI_NOMINAL,
+    VEGA_SCHEME_POWERBI_ORDINAL
+];
+
+/**
+ * Add custom schemes to Vega-Lite schema.
+ */
+const VEGA_LITE_SCHEMA_POWERBI = merge(vegaLiteSchema, {
+    definitions: {
+        Diverging: {
+            enum: [
+                ...vegaLiteSchema.definitions.Diverging.enum,
+                ...POWERBI_CUSTOM_SCHEMES
+            ]
+        }
+    }
+});
+
 export type GetProviderValidatorOptions = {
     provider: SchemaProvider;
     version?: string;
@@ -79,7 +111,7 @@ const SCHEMA_MAPPING: SchemaProviderReference = {
         current: getSchemaWithMarkdownProps(vegaSchema)
     },
     vegaLite: {
-        current: getSchemaWithMarkdownProps(vegaLiteSchema)
+        current: getSchemaWithMarkdownProps(VEGA_LITE_SCHEMA_POWERBI)
     }
 };
 
