@@ -1,6 +1,5 @@
 import * as Vega from 'vega';
 import * as VegaLite from 'vega-lite';
-import { IVisualDatasetValueRow } from '../../core/data';
 import { TSpecProvider } from '../../core/vega';
 import { InterfaceMode } from '../interface';
 
