@@ -78,7 +78,13 @@ export const stringifyPruned = (
 const prune = (maxDepth = TABLE_VALUE_MAX_DEPTH) => {
     const stack: any[] = [];
     return function (this: any, key: string, value: any) {
-        if (typeof value !== 'object' || value === null) {
+        if (value === undefined) {
+            return 'undefined';
+        }
+        if (value === null) {
+            return 'null';
+        }
+        if (typeof value !== 'object') {
             return value;
         }
         const pos = stack.indexOf(this) + 1;
