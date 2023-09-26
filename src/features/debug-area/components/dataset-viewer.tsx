@@ -201,6 +201,7 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
         try {
             logDebug('DatasetViewer: getting latest dataset from view...');
             const datasetView = getDatasetValues(datasetName, logAttention);
+            logDebug('DatasetViewer: dataset from view', datasetView);
             const datasetForHash = getPrunedObject(
                 datasetView,
                 TABLE_VALUE_MAX_DEPTH
