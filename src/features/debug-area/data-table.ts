@@ -1,3 +1,4 @@
+import { textMeasurementService } from 'powerbi-visuals-utils-formattingutils';
 import { isDate, isFunction, isNumber } from 'vega';
 
 import {
@@ -136,12 +137,27 @@ export const getColumnHeaderTooltip = (column: string) => {
  * measure this once, and project by the number of characters in the supplied
  * value. This method measures the width of a single character, based on font
  * size and family.
+ *
+ * @privateRemarks `OffScreenCanvas` is not supported in Safari until 16.2, and
+ * MS currently tests on 16.1, so we need to handle falling back if we can't
+ * use it. As we have the formattingutils loaded, we'll use their method.
  */
 export const getDataTableRenderedCharWidth = () => {
-    const canvas = new OffscreenCanvas(100, 10);
-    const ctx: OffscreenCanvasRenderingContext2D = <any>canvas.getContext('2d');
-    ctx.font = `${DATA_TABLE_FONT_SIZE}px ${DATA_TABLE_FONT_FAMILY}`;
-    return ctx.measureText(' ').width;
+    const textToMeasure = '-'; // MS APIs strip whitespace
+    if (typeof OffscreenCanvas !== 'undefined') {
+        const canvas = new OffscreenCanvas(100, 10);
+        const ctx: OffscreenCanvasRenderingContext2D = <any>(
+            canvas.getContext('2d')
+        );
+        ctx.font = `${DATA_TABLE_FONT_SIZE}px ${DATA_TABLE_FONT_FAMILY}`;
+        return ctx.measureText(textToMeasure).width;
+    } else {
+        return textMeasurementService.measureSvgTextRect({
+            text: textToMeasure,
+            fontFamily: DATA_TABLE_FONT_FAMILY,
+            fontSize: `${DATA_TABLE_FONT_SIZE}px`
+        }).width;
+    }
 };
 
 /**
