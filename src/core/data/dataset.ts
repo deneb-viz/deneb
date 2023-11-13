@@ -147,12 +147,13 @@ export const getMappedDataset = (
 ): IVisualDataset => {
     const rowsLoaded = getRowCount(categorical);
     const empty = getEmptyDataset();
-    if (rowsLoaded === 0) {
+    const dvCategories = categorical?.categories;
+    const dvValues = categorical?.values;
+    const hasDataView = (dvCategories || dvValues) && true;
+    if (!hasDataView) {
         return empty;
     } else {
         try {
-            const dvCategories = categorical?.categories;
-            const dvValues = categorical?.values;
             const hasHighlights = getHighlightStatus(dvValues);
             const columns = getDatasetFieldEntries(dvCategories, dvValues);
             const hasDrilldown =
