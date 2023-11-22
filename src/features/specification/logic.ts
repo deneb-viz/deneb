@@ -386,7 +386,7 @@ const getPatchedVegaLiteSpec = (spec: VegaLite.TopLevelSpec) => {
  * @privateRemarks We've found some issues with react-vega, where if we supply
  * the dataset separately, we have a number of errors that don't take place if
  * we include the data directly (like we might normally do in a tool like Vega
- * Editor), so we do this here. We don;t do this in `getPatchedVegaLiteSpec`,
+ * Editor), so we do this here. We don't do this in `getPatchedVegaLiteSpec`,
  * as this creates too much overhead when parsing the spec.
  */
 const getPatchedVegaLiteSpecWithData = (
