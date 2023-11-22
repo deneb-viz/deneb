@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { TableColumn, TableProps } from 'react-data-table-component';
+import debounce from 'lodash/debounce';
 import isEqual from 'lodash/isEqual';
 import keys from 'lodash/keys';
 import { v4 as uuidv4 } from 'uuid';
@@ -50,6 +51,8 @@ interface IDatasetState {
     processing: boolean;
     values: IDataTableRow[];
 }
+
+const DATA_LISTENER_DEBOUNCE_INTERVAL = 100;
 
 /**
  * Handles display of dataset details for the current Vega view.
@@ -194,14 +197,18 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
     /**
      * Handler for dataset listener events.
      */
-    const dataListener = (name: string, value: any) => {
-        logDebug(
-            `DatasetViewer: [${renderId}] dataset ${name} has changed`,
-            value
-        );
-        const hashValue = getDataHash(value);
-        setDatasetRaw(() => ({ hashValue, values: value }));
-    };
+    const dataListener = React.useCallback(
+        debounce((name: string, value: any) => {
+            logDebug(
+                `DatasetViewer: [${renderId}] dataset ${name} has changed`,
+                value
+            );
+            const newDataset = getPrunedObject(value);
+            const hashValue = getDataHash(newDataset);
+            setDatasetRaw(() => ({ hashValue, values: newDataset }));
+        }, DATA_LISTENER_DEBOUNCE_INTERVAL),
+        []
+    );
     /**
      * Ensure that listener is added/removed when the data might change.
      */
