@@ -144,15 +144,19 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
      */
     const addListener = () => {
         try {
-            `DatasetViewer: attempting to add listener for dataset ${datasetName}...`;
+            logDebug(
+                `DatasetViewer: attempting to add listener for dataset [${datasetName}]...`
+            );
             VegaViewServices.getView()?.addDataListener(
                 datasetName,
                 dataListener
             );
-            `DatasetViewer: listener for dataset ${datasetName} added.`;
+            logDebug(
+                `DatasetViewer: listener for dataset [${datasetName}] added.`
+            );
         } catch (e) {
             logDebug(
-                `DatasetViewer: listener for dataset ${datasetName} could not be added.`
+                `DatasetViewer: listener for dataset [${datasetName}] could not be added.`
             );
         }
     };
@@ -161,15 +165,19 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
      */
     const removeListener = () => {
         try {
-            `DatasetViewer: attempting to remove listener for dataset ${datasetName}...`;
+            logDebug(
+                `DatasetViewer: attempting to remove listener for dataset [${datasetName}]...`
+            );
             VegaViewServices.getView()?.removeDataListener(
                 datasetName,
                 dataListener
             );
-            `DatasetViewer: listener for dataset ${datasetName} removed.`;
+            logDebug(
+                `DatasetViewer: listener for dataset [${datasetName}] removed.`
+            );
         } catch (e) {
             logDebug(
-                `DatasetViewer: listener for dataset ${datasetName} could not be removed.`
+                `DatasetViewer: listener for dataset [${datasetName}] could not be removed.`
             );
         }
     };
@@ -178,7 +186,7 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
      */
     const cycleListeners = () => {
         logDebug(
-            `DatasetViewer: cycling listeners for dataset: ${datasetName}...`
+            `DatasetViewer: cycling listeners for dataset: [${datasetName}]...`
         );
         removeListener();
         addListener();
@@ -199,21 +207,34 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
      */
     useEffect(() => {
         try {
-            logDebug('DatasetViewer: getting latest dataset from view...');
+            logDebug(
+                `DatasetViewer: getting latest dataset from view (${datasetName})...`
+            );
             const datasetView = getDatasetValues(datasetName, logAttention);
-            logDebug('DatasetViewer: dataset from view', datasetView);
+            logDebug(
+                `DatasetViewer: dataset from view (${datasetName})`,
+                datasetView
+            );
             const datasetForHash = getPrunedObject(
                 datasetView,
                 TABLE_VALUE_MAX_DEPTH
             );
-            logDebug('DatasetViewer: latest dataset retrieved', {
-                latest: datasetForHash
-            });
-            logDebug('DatasetViewer: calculating latest dataset hash...');
+            logDebug(
+                `DatasetViewer: latest dataset retrieved (${datasetName})`,
+                {
+                    latest: datasetForHash
+                }
+            );
+            logDebug(
+                `DatasetViewer: calculating latest dataset hash (${datasetName})...`
+            );
             const latestHash = getDataHash(datasetForHash);
-            logDebug('DatasetViewer: latest dataset hash calculated', {
-                latestHash
-            });
+            logDebug(
+                `DatasetViewer: latest dataset hash calculated (${datasetName})`,
+                {
+                    latestHash
+                }
+            );
             const latestDatasetRaw: IDatasetRaw = {
                 values: datasetForHash,
                 hashValue: latestHash
