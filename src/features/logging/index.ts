@@ -56,28 +56,45 @@ const getLog = (level: ELogLevel): ((...args: any[]) => void) => {
 const _log =
     (level: ELogLevel) =>
     (...args: any[]) => {
-        const importance = <string>ELogLevel[level];
         const enabled = LOG_LEVEL >= level;
-        enabled &&
-            getLog(level)?.(
-                `${importance.padEnd(LOG_IMPORTANCE_PAD)}`,
-                ...args
-            );
+        if (!enabled) return;
+        const importance = getPaddedImportance(level);
+        getLog(level)?.(`${importance}`, ...args);
     };
 
+/**
+ * Start a timer for debug-level logging.
+ */
 const _logTimeStart =
     (level: ELogLevel = ELogLevel.TIMING) =>
     (label: string) => {
         const enabled = LOG_LEVEL >= level;
-        enabled && console.time?.(label);
+        if (!enabled) return;
+        const importance = getPaddedImportance(level);
+        const newLabel = `${importance} ${label}`;
+        console.time?.(newLabel);
     };
 
+/**
+ * End a timer for debug-level logging.
+ */
 const _logTimeEnd =
     (level: ELogLevel = ELogLevel.TIMING) =>
     (label: string) => {
         const enabled = LOG_LEVEL >= level;
-        enabled && console.timeEnd?.(label);
+        if (!enabled) return;
+        const importance = getPaddedImportance(level);
+        const newLabel = `${importance} ${label}`;
+        console.timeEnd?.(newLabel);
     };
+
+/**
+ * Get the importance string for the log entry.
+ */
+const getPaddedImportance = (level: ELogLevel) => {
+    const importance = <string>ELogLevel[level];
+    return importance.padEnd(LOG_IMPORTANCE_PAD);
+};
 
 /**
  * Special method to provide decorated log entries in the console.

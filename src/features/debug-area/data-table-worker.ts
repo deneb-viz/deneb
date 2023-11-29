@@ -88,9 +88,12 @@ const dataTableWorker = () => {
     ): IDataTableWorkerResponse => {
         const maxWidths: IDataTableWorkerMaxDisplayWidths = {};
         const values: IDataTableRow[] = data.dataset.map((d) => {
-            const allKeys = Object.keys(d);
+            // If our sanitized datum prior to sending is empty, we need to add a placeholder
+            const newDatum: Record<string, unknown> =
+                Object.keys(d).length === 0 ? { datum: {} } : { ...d };
+            const allKeys = Object.keys(newDatum);
             return allKeys.reduce((acc, key) => {
-                const value = d[key];
+                const value = newDatum[key];
                 const valueType = getValueType(key, value, data.datasetKeyName);
                 const rawValue = getRawValueForTableCell(
                     valueType,

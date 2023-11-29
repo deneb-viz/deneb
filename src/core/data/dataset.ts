@@ -47,7 +47,7 @@ import {
     resolveDrilldownComponents,
     resolveDrilldownFlat
 } from '../../features/dataset';
-import { logTimeEnd, logTimeStart } from '../../features/logging';
+import { logError, logTimeEnd, logTimeStart } from '../../features/logging';
 import { getHashValue } from '../../utils';
 
 /**
@@ -154,6 +154,8 @@ export const getMappedDataset = (
         return empty;
     } else {
         try {
+            logTimeStart('getMappedDataset');
+            const isCrossFilter = isCrossFilterPropSet();
             const hasHighlights = getHighlightStatus(dvValues);
             const columns = getDatasetFieldEntries(dvCategories, dvValues);
             const hasDrilldown =
@@ -165,14 +167,19 @@ export const getMappedDataset = (
                 hostServices.selectionManager.getSelectionIds()
             );
             const fields = getDatasetFields(dvCategories, dvValues);
+            logTimeStart('getMappedDataset values');
             /**
-             * #357 hash the values here rather than after we process them, as
-             * it can be significantly faster (we don't need the selection IDs)
+             * #357, #396 the selection IDs massively degrade performance when
+             * hashing, so we has a copy of the values without the selection
+             * IDs present.
              */
             logTimeStart('getMappedDataset hashValue');
-            const hashValue = getHashValue({ fields, fieldValues });
+            const hashValue = getHashValue({
+                fields,
+                fieldValues,
+                isCrossFilter
+            });
             logTimeEnd('getMappedDataset hashValue');
-            logTimeStart('getMappedDataset values');
             const values: IVisualDatasetValueRow[] = range(rowsLoaded).map(
                 (r, ri) => {
                     const md = getDataRow(
@@ -204,6 +211,7 @@ export const getMappedDataset = (
                 }
             );
             logTimeEnd('getMappedDataset values');
+            logTimeEnd('getMappedDataset');
             return {
                 hasHighlights,
                 hashValue,
@@ -212,7 +220,7 @@ export const getMappedDataset = (
                 rowsLoaded
             };
         } catch (e) {
-            console.log(e);
+            logError('getMappedDataset failure', e);
             return empty;
         }
     }
