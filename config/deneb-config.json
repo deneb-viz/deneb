@@ -1,5 +1,4 @@
 {
-    "$schema": "../schema/deneb-config.json",
     "features": {
         "developerMode": false,
         "enableExternalUri": false,
