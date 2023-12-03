@@ -1,19 +1,13 @@
-const { exit } = require('process');
-const config = require('../config/deneb-config.json');
+import { exit } from 'process';
+import * as config from '../config/deneb-config.json';
 
 console.log('Checking visual configuration is correct...\n');
-const errors = [];
+const errors: string[] = [];
 
 // Developer mode: Should not be set in committed code
 if (config.features.developerMode) {
     errors.push(
         '❌ features.developerMode flag is true; this should be false.'
-    );
-}
-// React logging: Should not be set in committed code
-if (config.features.enableReactLogging) {
-    errors.push(
-        '❌ features.enableReactLogging flag is true; this should be false.'
     );
 }
 // Visual update history overlay: Should not be set in committed code

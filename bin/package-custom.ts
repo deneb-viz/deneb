@@ -1,10 +1,11 @@
-const fs = require('fs');
-const exec = require('child_process').exec;
-const git = require('git-last-commit');
-const _ = require('lodash');
-const parseArgs = require('minimist');
-const { exit } = require('process');
-const config = require('./package-custom-config.json');
+import fs from 'fs';
+import { exec } from 'child_process';
+import git from 'git-last-commit';
+import _ from 'lodash';
+import parseArgs from 'minimist';
+import process, { exit } from 'process';
+import config from './package-custom-config.json';
+
 const pbivizFile = 'pbiviz.json';
 const pbivizFilePath = '.';
 const configFile = 'deneb-config.json';
@@ -15,7 +16,10 @@ const pbivizOriginal = require(`../${pbivizFile}`);
 const configOriginal = require(`../config/${configFile}`);
 const capabilitiesOriginal = require(`../${capabilitiesFile}`);
 
-const runNpmScript = (script, callback) => {
+const runNpmScript = (
+    script: string,
+    callback: (err: Error | null) => void | null
+) => {
     // keep track of whether callback has been invoked to prevent multiple invocations
     var invoked = false;
     var process = exec(script);
