@@ -25,9 +25,7 @@ import {
     handleEditorPaneSettings,
     handleEditorPaneSpecification
 } from '../../commands';
-import { isFeatureEnabled } from '../../../core/utils/features';
-
-const COMBINED_APPLY_BUTTON = isFeatureEnabled('combinedApplyButton');
+import { FEATURES } from '../../../../config';
 
 export const AdvancedEditorToolbar: React.FC = () => {
     const { editorSelectedOperation } = store(
@@ -88,7 +86,7 @@ export const AdvancedEditorToolbar: React.FC = () => {
                     </ToolbarRadioButton>
                 </ToolbarRadioGroup>
                 <ToolbarDivider />
-                {(COMBINED_APPLY_BUTTON && <ApplyMenuButton />) || (
+                {(FEATURES.combined_apply_button && <ApplyMenuButton />) || (
                     <>
                         <ToolbarButtonStandard
                             command='applyChanges'

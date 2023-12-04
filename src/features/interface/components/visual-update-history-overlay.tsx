@@ -1,7 +1,7 @@
 import React from 'react';
 import { shallow } from 'zustand/shallow';
 import store from '../../../store';
-import { isFeatureEnabled } from '../../../core/utils/features';
+import { FEATURES } from '../../../../config';
 
 /**
  * Provides a simple textarea that we can view the visual update history from
@@ -15,7 +15,7 @@ export const VisualUpdateHistoryOverlay: React.FC = () => {
         }),
         shallow
     );
-    return isFeatureEnabled('visualUpdateHistoryOverlay') ? (
+    return FEATURES.visual_update_history_overlay ? (
         <textarea
             style={{
                 position: 'absolute',

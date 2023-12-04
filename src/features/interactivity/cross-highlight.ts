@@ -4,15 +4,7 @@ import {
     HIGHLIGHT_FIELD_SUFFIX
 } from '../../constants';
 import { hostServices } from '../../core/services';
-import { isFeatureEnabled } from '../../core/utils/features';
 import { getVegaSettings } from '../../core/vega';
-
-/**
- * Convenience constant that confirms whether the `selectionContextMenu` feature switch is enabled via features.
- */
-export const IS_CROSS_HIGHLIGHT_ENABLED = isFeatureEnabled(
-    'selectionCrossHighlight'
-);
 
 /**
  * Provides all highlight field suffixes, suitable for a RegExp expression.
@@ -55,12 +47,7 @@ export const isCrossHighlightField = (field: string) =>
  */
 export const isCrossHighlightPropSet = () => {
     const { enableHighlight } = getVegaSettings();
-    return (
-        (hostServices.allowInteractions &&
-            IS_CROSS_HIGHLIGHT_ENABLED &&
-            enableHighlight) ||
-        false
-    );
+    return (hostServices.allowInteractions && enableHighlight) || false;
 };
 
 /**

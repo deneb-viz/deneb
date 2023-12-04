@@ -5,10 +5,6 @@ import store from '../../../store';
 import { updateBooleanProperty } from '../../../core/ui/commands';
 import { TInteractivityType } from '../../interactivity/types';
 import { hostServices } from '../../../core/services';
-import { IS_TOOLTIP_HANDLER_ENABLED } from '../../interactivity/tooltip';
-import { IS_CROSS_FILTER_ENABLED } from '../../interactivity/cross-filter';
-import { IS_CROSS_HIGHLIGHT_ENABLED } from '../../interactivity/cross-highlight';
-import { IS_CONTEXT_MENU_ENABLED } from '../../interactivity/context-menu';
 import { getI18nValue } from '../../i18n';
 import { useSettingsStyles } from '.';
 
@@ -58,14 +54,8 @@ export const InteractivityCheckbox: React.FC<IInteractivityCheckboxProps> = ({
  */
 const getFeatureStatus = (type: TInteractivityType) => {
     switch (type) {
-        case 'context':
-            return IS_CONTEXT_MENU_ENABLED;
-        case 'highlight':
-            return IS_CROSS_HIGHLIGHT_ENABLED;
-        case 'select':
-            return IS_CROSS_FILTER_ENABLED;
-        case 'tooltip':
-            return IS_TOOLTIP_HANDLER_ENABLED;
+        default:
+            return true;
     }
 };
 

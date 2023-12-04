@@ -2,13 +2,12 @@ import powerbi from 'powerbi-visuals-api';
 import PrimitiveValue = powerbi.PrimitiveValue;
 
 import { powerBiFormatValue } from '../../utils';
-import { isFeatureEnabled } from '../../core/utils/features';
+import { FEATURES } from '../../../config';
 
 /**
  * Convenience check for statis of Drilldown feature flag.
  */
-export const isDrilldownFeatureEnabled = () =>
-    isFeatureEnabled('dataDrilldown');
+export const isDrilldownFeatureEnabled = () => FEATURES.data_drilldown;
 
 /**
  * For the supplied column/value, process it into an array of all drilldown

@@ -2,7 +2,6 @@ import powerbi from 'powerbi-visuals-api';
 import FormattingCard = powerbi.visuals.FormattingCard;
 
 import SettingsBase from './settings-base';
-import { isFetchMoreEnabled } from '../core/data/dataView';
 import { SETTINGS_DEFAULTS, SETTINGS_OBJECTS } from '../constants';
 import { getI18nValue } from '../features/i18n';
 import { getToggleSlice } from './formatting-model';
@@ -16,8 +15,6 @@ const PROPERTIES = OBJECT_DEF.properties;
  * Manages data limit override preferences for the visual.
  */
 export default class DataLimitSettings extends SettingsBase {
-    // Feature enabled or not
-    public enabled: boolean = isFetchMoreEnabled;
     // Allow override of `dataReductionAlgorithm` limit.
     public override: boolean = SETTINGS_DEFAULTS.dataLimit.override;
     // Display information about the custom visual limitations and recommendations for end users.

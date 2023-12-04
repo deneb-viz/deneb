@@ -35,12 +35,12 @@ import {
     VegaPatternFillServices
 } from './features/vega-extensibility';
 import { I18nServices, getLocale } from './features/i18n';
-import { isFeatureEnabled } from './core/utils/features';
 import {
     getCategoricalDataViewFromOptions,
     isVisualUpdateTypeResizeEnd,
     isVisualUpdateTypeVolatile
 } from './features/visual-host';
+import { FEATURES } from '../config';
 
 /**
  * Run to indicate that the visual has started.
@@ -94,7 +94,7 @@ export class Deneb implements IVisual {
         hostServices.renderingStarted();
         hostServices.resolveLocaleFromSettings(this.settings.developer.locale);
         I18nServices.update(
-            isFeatureEnabled('developerMode')
+            FEATURES.developer_mode
                 ? this.settings.developer.locale
                 : getLocale()
         );
@@ -200,7 +200,7 @@ export class Deneb implements IVisual {
                         settings.display.getFormattingCard(),
                         settings.dataLimit.getFormattingCard()
                     ],
-                    ...(isFeatureEnabled('developerMode')
+                    ...(FEATURES.developer_mode
                         ? [
                               settings.developer.getFormattingCard(),
                               settings.vega.getFormattingCard()

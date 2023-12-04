@@ -1,4 +1,5 @@
-import { getConfig } from '../../core/utils/config';
+import { LOG_LEVEL } from '../../../config';
+
 /**
  * Represents values used for logging to the console. The `logLevel`
  * configuration property will determine which log levels are actually output
@@ -27,7 +28,7 @@ export enum ELogLevel {
 /**
  * Resolved log level, from configuration.
  */
-const LOG_LEVEL = getConfig()?.logLevel ?? ELogLevel.NONE;
+const CONFIG_LOG_LEVEL: ELogLevel = LOG_LEVEL ?? ELogLevel.NONE;
 
 /**
  * Padding for the `importance` portion of log output.
@@ -56,7 +57,7 @@ const getLog = (level: ELogLevel): ((...args: any[]) => void) => {
 const _log =
     (level: ELogLevel) =>
     (...args: any[]) => {
-        const enabled = LOG_LEVEL >= level;
+        const enabled = CONFIG_LOG_LEVEL >= level;
         if (!enabled) return;
         const importance = getPaddedImportance(level);
         getLog(level)?.(`${importance}`, ...args);
@@ -68,7 +69,7 @@ const _log =
 const _logTimeStart =
     (level: ELogLevel = ELogLevel.TIMING) =>
     (label: string) => {
-        const enabled = LOG_LEVEL >= level;
+        const enabled = CONFIG_LOG_LEVEL >= level;
         if (!enabled) return;
         const importance = getPaddedImportance(level);
         const newLabel = `${importance} ${label}`;
@@ -81,7 +82,7 @@ const _logTimeStart =
 const _logTimeEnd =
     (level: ELogLevel = ELogLevel.TIMING) =>
     (label: string) => {
-        const enabled = LOG_LEVEL >= level;
+        const enabled = CONFIG_LOG_LEVEL >= level;
         if (!enabled) return;
         const importance = getPaddedImportance(level);
         const newLabel = `${importance} ${label}`;

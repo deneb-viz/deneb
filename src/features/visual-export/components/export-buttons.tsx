@@ -6,7 +6,6 @@ import { shallow } from 'zustand/shallow';
 import { getI18nValue } from '../../i18n';
 import store from '../../../store';
 import { logDebug, logRender } from '../../logging';
-import { isFeatureEnabled } from '../../../core/utils/features';
 import { TooltipCustomMount } from '../../interface';
 import { hostServices } from '../../../core/services';
 import { getExportTemplate } from '../logic';
@@ -46,41 +45,35 @@ export const ExportButtons: React.FC = () => {
         document.execCommand('copy');
         document.body.removeChild(dummy);
     };
-    logRender('CreateFromTemplate');
+    logRender('ExportButtons');
     return (
         <>
-            {(isFeatureEnabled('useDownloadApi') && (
-                <>
-                    <Tooltip
-                        content={getI18nValue('Text_Tooltip_Export_Download')}
-                        relationship='label'
-                        withArrow
-                        mountNode={ttRefDownload}
-                    >
-                        <Button
-                            onClick={handleDownload}
-                            appearance='primary'
-                            icon={<ArrowDownloadRegular />}
-                        >
-                            {getI18nValue('Text_Button_Download')}
-                        </Button>
-                    </Tooltip>
-                    <TooltipCustomMount setRef={setTtRefDownload} />
-                </>
-            )) || <></>}
-            <>
-                <Tooltip
-                    content={getI18nValue('Text_Tooltip_Export_Copy')}
-                    relationship='label'
-                    withArrow
-                    mountNode={ttRefCopy}
+            <Tooltip
+                content={getI18nValue('Text_Tooltip_Export_Download')}
+                relationship='label'
+                withArrow
+                mountNode={ttRefDownload}
+            >
+                <Button
+                    onClick={handleDownload}
+                    appearance='primary'
+                    icon={<ArrowDownloadRegular />}
                 >
-                    <Button onClick={handleCopy} icon={<CopyRegular />}>
-                        {getI18nValue('Text_Button_Copy')}
-                    </Button>
-                </Tooltip>
-                <TooltipCustomMount setRef={setTtRefCopy} />
-            </>
+                    {getI18nValue('Text_Button_Download')}
+                </Button>
+            </Tooltip>
+            <TooltipCustomMount setRef={setTtRefDownload} />
+            <Tooltip
+                content={getI18nValue('Text_Tooltip_Export_Copy')}
+                relationship='label'
+                withArrow
+                mountNode={ttRefCopy}
+            >
+                <Button onClick={handleCopy} icon={<CopyRegular />}>
+                    {getI18nValue('Text_Button_Copy')}
+                </Button>
+            </Tooltip>
+            <TooltipCustomMount setRef={setTtRefCopy} />
         </>
     );
 };

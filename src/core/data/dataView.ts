@@ -6,7 +6,6 @@ import DataViewValueColumns = powerbi.DataViewValueColumns;
 import PrimitiveValue = powerbi.PrimitiveValue;
 import DataViewMetadata = powerbi.DataViewMetadata;
 
-import { isFeatureEnabled } from '../utils/features';
 import { getState } from '../../store';
 import { IAugmentedMetadataField } from '.';
 import {
@@ -14,11 +13,6 @@ import {
     TDataPointHighlightStatus
 } from '../../features/interactivity';
 import { VisualSettings } from '../../features/settings';
-
-/**
- * Convenience constant that confirms whether the `fetchMoreData` feature switch is enabled via features.
- */
-export const isFetchMoreEnabled = isFeatureEnabled('fetchMoreData');
 
 /**
  * Determines whether the visual can fetch more data, based on the feature switch and the corresponding flag in the store

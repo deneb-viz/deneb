@@ -1,21 +1,25 @@
-const fs = require('fs');
-const exec = require('child_process').exec;
-const git = require('git-last-commit');
-const _ = require('lodash');
-const parseArgs = require('minimist');
-const { exit } = require('process');
-const config = require('../config/package-custom-config.json');
+import fs from 'fs';
+import { exec } from 'child_process';
+import git from 'git-last-commit';
+import _ from 'lodash';
+import parseArgs from 'minimist';
+import process, { exit } from 'process';
+import config from '../config/package-custom.json';
+
 const pbivizFile = 'pbiviz.json';
 const pbivizFilePath = '.';
-const configFile = 'deneb-config.json';
-const configFilePath = './config';
+const featuresFile = 'features.json';
+const featuresFilePath = './config';
 const capabilitiesFile = 'capabilities.json';
 const capabilitiesFilePath = '.';
 const pbivizOriginal = require(`../${pbivizFile}`);
-const configOriginal = require(`../config/${configFile}`);
+const featuresOriginal = require(`../config/${featuresFile}`);
 const capabilitiesOriginal = require(`../${capabilitiesFile}`);
 
-const runNpmScript = (script, callback) => {
+const runNpmScript = (
+    script: string,
+    callback: (err: Error | null) => void | null
+) => {
     // keep track of whether callback has been invoked to prevent multiple invocations
     var invoked = false;
     var process = exec(script);
@@ -39,14 +43,14 @@ const cleanup = () => {
     console.log('Performing cleanup...');
     writeFile(pbivizFile, pbivizFilePath, pbivizOriginal);
     console.log(`${pbivizFile} reverted`);
-    writeFile(configFile, configFilePath, configOriginal);
-    console.log(`${configFile} reverted`);
+    writeFile(featuresFile, featuresFilePath, featuresOriginal);
+    console.log(`${featuresFile} reverted`);
     writeFile(capabilitiesFile, capabilitiesFilePath, capabilitiesOriginal);
     console.log(`${capabilitiesFile} reverted`);
 };
 
 // Write a pbiviz.json to the project file system
-const writeFile = (name, path, content) => {
+const writeFile = (name: string, path: string, content: string) => {
     console.log(`Writing ${name}...`);
     fs.writeFileSync(`${path}/${name}`, JSON.stringify(content, null, 4));
     console.log(`${name}.updated`);
@@ -84,12 +88,12 @@ try {
             getPatchedPbiviz(packageConfig, commit)
         );
         writeFile(pbivizFile, pbivizFilePath, pbivizNew);
-        console.log(`Updating ${configFile} with configuration...`);
-        const configFileNew = _.merge(
-            _.cloneDeep(configOriginal),
-            packageConfig['deneb-config']
+        console.log(`Updating ${featuresFile} with configuration...`);
+        const featuresFileNew = _.merge(
+            _.cloneDeep(featuresOriginal),
+            packageConfig.features
         );
-        writeFile(configFile, configFilePath, configFileNew);
+        writeFile(featuresFile, featuresFilePath, featuresFileNew);
         console.log(`Updating ${capabilitiesFile} with configuration...`);
         const capabilitiesFileNew = _.merge(
             _.cloneDeep(capabilitiesOriginal),
