@@ -81,10 +81,6 @@
             "functionalArea": "other"
         }
     },
-    "modalDialog": {
-        "heightPercent": 0.95,
-        "widthPercent": 0.95
-    },
     "providerResources": {
         "deneb": {
             "interactivityDocumentationUrl": "https://deneb-viz.github.io/interactivity-overview",
