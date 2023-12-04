@@ -21,6 +21,7 @@ import {
 } from '../template';
 import { IDenebTemplateMetadata } from '../template/schema';
 import { getI18nValue } from '../i18n';
+import { PROPERTY_DEFAULTS } from '../../../config';
 
 /**
  * Combines spec, config and specified metadata to produce a valid JSON
@@ -50,7 +51,7 @@ export const getExportTemplate = () => {
         {
             config: parseAndValidateContentJson(
                 visualSettings.vega.jsonConfig,
-                getConfig().propertyDefaults.vega.jsonConfig
+                PROPERTY_DEFAULTS.vega.jsonConfig
             )?.result
         },
         JSON.parse(processedSpec)

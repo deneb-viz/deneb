@@ -22,8 +22,9 @@ import { getI18nValue } from '../../i18n';
 import { useSettingsStyles } from '.';
 import { logDebug } from '../../logging';
 import { TooltipCustomMount } from '../../interface';
+import { PROPERTY_DEFAULTS } from '../../../../config';
 
-const DEFAULT_VALUE = getConfig().propertyDefaults.vega.selectionMaxDataPoints;
+const DEFAULT_VALUE = PROPERTY_DEFAULTS.vega.selectionMaxDataPoints;
 const SPIN_RANGES = getConfig().selection;
 
 export const CrossFilterMaxDataPoints: React.FC = () => {

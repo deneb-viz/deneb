@@ -9,7 +9,6 @@ import {
     configEditorService,
     specEditorService
 } from '../../core/services/JsonEditorServices';
-import { getConfig } from '../../core/utils/config';
 import { getState } from '../../store';
 import {
     BASE_VALIDATOR,
@@ -24,16 +23,14 @@ import { getDataset } from '../../core/data/dataset';
 import { IVisualDatasetField } from '../../core/data';
 import { getProviderSchema } from '../specification/schema-validation';
 import { getI18nValue } from '../i18n';
+import { PROPERTY_DEFAULTS } from '../../../config';
 
 /**
  * Ensures that when auto-apply is enabled, the store is updated at a sensible interval after input has finished, rather than applying
  * changes for every keystroke.
  */
 const debounceEditorInput = () =>
-    debounce(
-        handleTextEntry,
-        getConfig().propertyDefaults.editor.debounceInterval
-    );
+    debounce(handleTextEntry, PROPERTY_DEFAULTS.editor.debounceInterval);
 
 /**
  * Gets the Ace editor instance from the supplied `jsonEditor`.

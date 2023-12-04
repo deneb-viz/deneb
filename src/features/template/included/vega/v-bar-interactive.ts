@@ -8,7 +8,7 @@ import {
 import { getNewIncludedTemplateMetadata } from '..';
 import { ITemplateDatasetField } from '../../schema';
 import { DATASET_NAME, DATASET_SELECTED_NAME } from '../../../../constants';
-import { getConfig } from '../../../../core/utils/config';
+import { PROPERTY_DEFAULTS } from '../../../../../config';
 
 const dataset: ITemplateDatasetField[] = [
     {
@@ -150,8 +150,7 @@ export const vBarInteractive = (): Spec => ({
                 contextMenu: true,
                 highlight: true,
                 selection: true,
-                dataPointLimit:
-                    getConfig().propertyDefaults.vega.selectionMaxDataPoints
+                dataPointLimit: PROPERTY_DEFAULTS.vega.selectionMaxDataPoints
             }
         }
     }

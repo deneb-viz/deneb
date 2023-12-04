@@ -11,11 +11,8 @@ import { IDenebTemplatesIncluded } from './types';
 import { TSpecProvider } from '../../core/vega';
 import { Spec } from 'vega';
 import { TopLevelSpec } from 'vega-lite';
-import {
-    getConfig,
-    getVisualMetadata,
-    providerVersions
-} from '../../core/utils/config';
+import { getVisualMetadata, providerVersions } from '../../core/utils/config';
+import { PROPERTY_DEFAULTS } from '../../../config';
 
 export { getExportTemplate } from '../visual-export/logic';
 export {
@@ -48,8 +45,6 @@ export {
 } from './preview-image';
 export { PreviewImage } from './components/preview-image';
 export { TemplateDataset } from './components/template-dataset';
-
-const SETTINGS_DEFAULTS = getConfig().propertyDefaults;
 
 export const TEMPLATE_METADATA_VERSION = 1;
 
@@ -89,11 +84,11 @@ export const getNewTemplateMetadata = (
         providerVersion: providerVersions[provider]
     },
     interactivity: {
-        tooltip: SETTINGS_DEFAULTS.vega.enableTooltips,
-        contextMenu: SETTINGS_DEFAULTS.vega.enableContextMenu,
-        selection: SETTINGS_DEFAULTS.vega.enableSelection,
-        dataPointLimit: SETTINGS_DEFAULTS.vega.selectionMaxDataPoints,
-        highlight: SETTINGS_DEFAULTS.vega.enableHighlight
+        tooltip: PROPERTY_DEFAULTS.vega.enableTooltips,
+        contextMenu: PROPERTY_DEFAULTS.vega.enableContextMenu,
+        selection: PROPERTY_DEFAULTS.vega.enableSelection,
+        dataPointLimit: PROPERTY_DEFAULTS.vega.selectionMaxDataPoints,
+        highlight: PROPERTY_DEFAULTS.vega.enableHighlight
     },
     dataset: []
 });

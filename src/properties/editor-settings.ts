@@ -10,16 +10,16 @@ import {
     getToggleSlice
 } from './formatting-model';
 import { logDebug } from '../features/logging';
-import { SETTINGS_DEFAULTS, SETTINGS_OBJECTS } from '../constants';
 import { getI18nValue } from '../features/i18n';
 import {
     IDropdownSliceOptions,
     IIntegerSliceOptions,
     IToggleSliceOptions
 } from './types';
+import { CAPABILITIES, PROPERTY_DEFAULTS } from '../../config';
 
 const OBJECT_NAME = 'editor';
-const OBJECT_DEF = SETTINGS_OBJECTS[OBJECT_NAME];
+const OBJECT_DEF = CAPABILITIES.objects[OBJECT_NAME];
 const PROPERTIES = OBJECT_DEF.properties;
 
 /**
@@ -28,26 +28,26 @@ const PROPERTIES = OBJECT_DEF.properties;
 export default class EditorSettings extends SettingsBase {
     // Preferred editor position within interface
     public position: TEditorPosition = <TEditorPosition>(
-        SETTINGS_DEFAULTS.editor.position
+        PROPERTY_DEFAULTS.editor.position
     );
     // JSON editor font size
-    public fontSize: number = SETTINGS_DEFAULTS.editor.fontSize.default;
+    public fontSize: number = PROPERTY_DEFAULTS.editor.fontSize.default;
     // Whether to wrap text in the JSON editor or not
-    public wordWrap: boolean = SETTINGS_DEFAULTS.editor.wordWrap;
+    public wordWrap: boolean = PROPERTY_DEFAULTS.editor.wordWrap;
     // Show the gutter in the JSON editor
-    public showGutter: boolean = SETTINGS_DEFAULTS.editor.showGutter;
+    public showGutter: boolean = PROPERTY_DEFAULTS.editor.showGutter;
     // Show line numbers in the JSON Editor
-    public showLineNumbers: boolean = SETTINGS_DEFAULTS.editor.showLineNumbers;
+    public showLineNumbers: boolean = PROPERTY_DEFAULTS.editor.showLineNumbers;
     // Show viewport marker in editor
     public showViewportMarker: boolean =
-        SETTINGS_DEFAULTS.editor.showViewportMarker;
+        PROPERTY_DEFAULTS.editor.showViewportMarker;
     // Specified provider (Vega or Vega-Lite)
     public provider: TEditorProvider = <TEditorProvider>(
-        SETTINGS_DEFAULTS.editor.provider
+        PROPERTY_DEFAULTS.editor.provider
     );
     // Show scrollbars in advanced editor preview area
     public previewScrollbars: boolean =
-        SETTINGS_DEFAULTS.editor.previewScrollbars;
+        PROPERTY_DEFAULTS.editor.previewScrollbars;
 
     /**
      * Formatting card for these settings.
@@ -78,8 +78,8 @@ export default class EditorSettings extends SettingsBase {
             objectName: OBJECT_NAME,
             propertyName: 'fontSize',
             value: this.fontSize,
-            minValue: SETTINGS_DEFAULTS.editor.fontSize.min,
-            maxValue: SETTINGS_DEFAULTS.editor.fontSize.max
+            minValue: PROPERTY_DEFAULTS.editor.fontSize.min,
+            maxValue: PROPERTY_DEFAULTS.editor.fontSize.max
         };
         const WORD_WRAP_SLICE: IToggleSliceOptions = {
             displayNameKey: PROPERTIES.wordWrap.displayNameKey,

@@ -1,11 +1,11 @@
 import stringify from 'json-stringify-pretty-compact';
 import cloneDeep from 'lodash/cloneDeep';
 
-import { getConfig } from '../../core/utils/config';
 import { TABLE_VALUE_MAX_DEPTH } from '../../constants';
 import { logDebug, logTimeEnd, logTimeStart } from '../../features/logging';
 import { IContentParseResult } from '../../features/specification';
 import { getI18nValue } from '../../features/i18n';
+import { PROPERTY_DEFAULTS } from '../../../config';
 
 type TIndentContext = 'editor' | 'tooltip';
 
@@ -39,10 +39,9 @@ export const getJsonAsIndentedString = (
     context: TIndentContext = 'editor'
 ) =>
     stringify(json, {
-        maxLength: getConfig().propertyDefaults.editor.maxLineLength,
+        maxLength: PROPERTY_DEFAULTS.editor.maxLineLength,
         indent:
-            (context === 'editor' &&
-                getConfig().propertyDefaults.editor.tabSize) ||
+            (context === 'editor' && PROPERTY_DEFAULTS.editor.tabSize) ||
             '\u2800'
     });
 

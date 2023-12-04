@@ -1,4 +1,10 @@
+import capabilities from '../capabilities.json';
 import features from './features.json';
+
+/**
+ * This is an object that contains the capabilities of the visual.
+ */
+export const CAPABILITIES = capabilities;
 
 /**
  * The primary set of feature switches for the packaged application. These are
@@ -13,3 +19,67 @@ export const FEATURES = features;
  * information, see the `src/features/logging` directory.
  */
 export const LOG_LEVEL: number = 0;
+
+/**
+ * Default values for the visual properties.
+ */
+export const PROPERTY_DEFAULTS = {
+    dataLimit: {
+        override: false,
+        showCustomVisualNotes: true
+    },
+    developer: {
+        locale: 'en-US',
+        showVersionNotification: false
+    },
+    editor: {
+        provider: 'jsoneditor',
+        debounceInterval: 200,
+        tabSize: 2,
+        position: 'left',
+        fontSize: {
+            default: 10,
+            min: 8,
+            max: 30
+        },
+        wordWrap: true,
+        showGutter: true,
+        showLineNumbers: true,
+        showViewportMarker: true,
+        maxLineLength: 40,
+        previewScrollbars: false
+    },
+    vega: {
+        jsonSpec: null,
+        jsonConfig: '{}',
+        provider: 'vegaLite',
+        logLevel: 3,
+        renderMode: 'svg',
+        enableContextMenu: true,
+        enableTooltips: true,
+        enableSelection: false,
+        enableHighlight: false,
+        selectionMaxDataPoints: 50,
+        tooltipDelay: 0,
+        isNewDialogOpen: true
+    },
+    theme: {
+        ordinalColorCount: {
+            default: 10,
+            min: 1,
+            max: 100
+        }
+    },
+    display: {
+        scrollbarColor: '#000000',
+        scrollbarOpacity: 20,
+        scrollbarRadius: {
+            min: 0,
+            max: 3,
+            default: 0
+        }
+    },
+    performance: {
+        enableResizeRecalc: false
+    }
+};
