@@ -130,7 +130,7 @@ export const KEY_BINDINGS = {
 export const PREVIEW_PANE_DATA_TABLE = {
     rowsPerPage: {
         default: 50,
-        values: [10, 25, 50, 100]
+        values: [10, 25, 50, 100, 150, 200]
     }
 };
 
