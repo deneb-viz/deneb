@@ -5,8 +5,8 @@ import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import store from '../../../store';
 import { logRender } from '../../logging';
 import { VegaContainer } from '../../vega-output';
-import { getConfig } from '../../../core/utils/config';
 import { FourD3D3D } from './fourd3d3d';
+import { PREVIEW_PANE_DEFAULTS } from '../../../../config';
 
 /**
  * Preview area styles
@@ -17,7 +17,7 @@ const usePreviewStyles = (
     showViewportMarker: boolean,
     editorZoomLevel: number
 ) => {
-    const borderWidth = getConfig().previewPane.viewportBorderSize;
+    const borderWidth = PREVIEW_PANE_DEFAULTS.viewportBorderSize;
     const height = viewportHeight;
     const width = viewportWidth;
     const scale = editorZoomLevel / 100;

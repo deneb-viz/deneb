@@ -30,6 +30,41 @@ export const FEATURES = features;
 export const LOG_LEVEL: number = 0;
 
 /**
+ * Default configuration for the preview pane (AKA the debug pane).
+ */
+export const PREVIEW_PANE_DEFAULTS = {
+    areaMinSize: 100,
+    toolbarMinSize: 28,
+    toolbarInitialPercent: 40,
+    viewportBorderSize: 2,
+    logLevels: [
+        {
+            level: 0,
+            i18n: 'Enum_LogLevel_None',
+            color: 'black'
+        },
+        {
+            level: 1,
+            i18n: 'Enum_LogLevel_Error',
+            color: 'redDark',
+            icon: 'ErrorBadge'
+        },
+        {
+            level: 2,
+            i18n: 'Enum_LogLevel_Warn',
+            color: 'themeDark',
+            icon: 'Warning'
+        },
+        {
+            level: 3,
+            i18n: 'Enum_LogLevel_Info',
+            color: 'greenDark',
+            icon: 'Info'
+        }
+    ]
+};
+
+/**
  * Default values for the visual properties.
  */
 export const PROPERTY_DEFAULTS = {

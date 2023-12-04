@@ -1,7 +1,4 @@
-import { SPLIT_PANE_DEFAULTS } from '../../config';
-import { getConfig } from '../core/utils/config';
-
-const { previewPane } = getConfig();
+import { PREVIEW_PANE_DEFAULTS, SPLIT_PANE_DEFAULTS } from '../../config';
 
 /**
  * HOw much vertical space to reserve for the main toolbar.
@@ -44,7 +41,7 @@ export const POPOVER_Z_INDEX = 1000;
  * The minimum vertical space that the preview area should be permitted to
  * occupy, and prevent the toolbar/debug pane from using all available space.
  */
-export const PREVIEW_PANE_AREA_MIN_SIZE = previewPane.areaMinSize;
+export const PREVIEW_PANE_AREA_MIN_SIZE = PREVIEW_PANE_DEFAULTS.areaMinSize;
 
 /**
  * The amount of padding to apply around the preview area.
@@ -56,13 +53,14 @@ export const PREVIEW_PANE_AREA_PADDING = 5;
  * should occupy when initialized/reset to default.
  */
 export const PREVIEW_PANE_TOOLBAR_DEFAULT_SIZE_PERCENT =
-    previewPane.toolbarInitialPercent;
+    PREVIEW_PANE_DEFAULTS.toolbarInitialPercent;
 
 /**
  * The minimum vertical space that the preview toolbar/debug pane should be
  * permitted to occupy (also used for collapsed size).
  */
-export const PREVIEW_PANE_TOOLBAR_MIN_SIZE = previewPane.toolbarMinSize;
+export const PREVIEW_PANE_TOOLBAR_MIN_SIZE =
+    PREVIEW_PANE_DEFAULTS.toolbarMinSize;
 
 /**
  * The amount of padding to apply around the preview area toolbar/debug pane.
