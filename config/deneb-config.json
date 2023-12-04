@@ -123,9 +123,5 @@
                 100
             ]
         }
-    },
-    "templates": {
-        "metadataVersion": 1,
-        "previewImageSize": 150
     }
 }

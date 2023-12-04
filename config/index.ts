@@ -159,6 +159,19 @@ export const SPLIT_PANE_DEFAULTS = {
 };
 
 /**
+ * Current major version of the template metadata. This is used to ensure that
+ * we can handle migrations between versions, and that we can handle different
+ * versions of the template metadata if needed.
+ */
+export const TEMPLATE_METADATA_VERSION = 1;
+
+/**
+ * Represents the max cap for any preview images generated from the Vega View
+ * API.
+ */
+export const TEMPLATE_PREVIEW_IMAGE_MAX_SIZE = 150;
+
+/**
  * Configuration for the zoom controls in the visual preview pane.
  */
 export const VISUAL_PREVIEW_ZOOM = {

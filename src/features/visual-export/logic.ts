@@ -20,7 +20,8 @@ import { getI18nValue } from '../i18n';
 import {
     APPLICATION_INFORMATION,
     PROPERTY_DEFAULTS,
-    PROVIDER_VERSIONS
+    PROVIDER_VERSIONS,
+    TEMPLATE_METADATA_VERSION
 } from '../../../config';
 
 /**
@@ -63,11 +64,10 @@ export const getExportTemplate = () => {
  * Instantiates a new object for export template metadata, ready for population.
  */
 export const getNewExportTemplateMetadata = (): IDenebTemplateMetadata => {
-    const { metadataVersion } = getConfig().templates;
     return {
         deneb: {
             build: APPLICATION_INFORMATION.version,
-            metaVersion: metadataVersion,
+            metaVersion: TEMPLATE_METADATA_VERSION,
             provider: null,
             providerVersion: null
         },
@@ -103,8 +103,7 @@ const getPublishableUsermeta = (usermeta: IDenebTemplateMetadata) => {
  * export templates make sense (as much as possible).
  */
 const resolveExportUserMeta = (): IDenebTemplateMetadata => {
-    const { metadataVersion } = getConfig().templates,
-        {
+    const {
             templateExportMetadata,
             templatePreviewImageDataUri,
             templateIncludePreviewImage
@@ -113,7 +112,7 @@ const resolveExportUserMeta = (): IDenebTemplateMetadata => {
     return {
         deneb: {
             build: APPLICATION_INFORMATION.version,
-            metaVersion: metadataVersion,
+            metaVersion: TEMPLATE_METADATA_VERSION,
             provider: <TSpecProvider>vega.provider,
             providerVersion: PROVIDER_VERSIONS[vega.provider]
         },

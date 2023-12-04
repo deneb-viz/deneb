@@ -14,7 +14,8 @@ import { TopLevelSpec } from 'vega-lite';
 import {
     APPLICATION_INFORMATION,
     PROPERTY_DEFAULTS,
-    PROVIDER_VERSIONS
+    PROVIDER_VERSIONS,
+    TEMPLATE_METADATA_VERSION
 } from '../../../config';
 
 export { getExportTemplate } from '../visual-export/logic';
@@ -41,15 +42,12 @@ export {
 } from './types';
 export {
     BASE64_BLANK_IMAGE,
-    PREVIEW_IMAGE_CAP_SIZE,
     dispatchPreviewImage,
     getCombinedBase64ImageWithMime,
     isBase64Image
 } from './preview-image';
 export { PreviewImage } from './components/preview-image';
 export { TemplateDataset } from './components/template-dataset';
-
-export const TEMPLATE_METADATA_VERSION = 1;
 
 /**
  * For a given array of template dataset fields, confirm that they all have a

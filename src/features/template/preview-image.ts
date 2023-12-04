@@ -1,4 +1,4 @@
-import { getConfig } from '../../core/utils/config';
+import { TEMPLATE_PREVIEW_IMAGE_MAX_SIZE } from '../../../config';
 
 import { getState } from '../../store';
 import { getBase64DataUri } from '../../utils';
@@ -20,12 +20,6 @@ const BASE64_DATA_URL_PREFIX = getBase64DataUri(IMAGE_TYPE);
  * supplied.
  */
 export const BASE64_BLANK_IMAGE = `${BASE64_DATA_URL_PREFIX}iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=`;
-
-/**
- * Convenience constant for our config, and represents the max cap for any
- * preview images generated from the Vega View API.
- */
-export const PREVIEW_IMAGE_CAP_SIZE = getConfig().templates.previewImageSize;
 
 /**
  * Based on template export configuration, prepare a preview image for export,
@@ -68,8 +62,8 @@ export const getCombinedBase64ImageWithMime = (base64: string) =>
 const getResizeScale = () => {
     const { width, height } = getState().visualViewportReport;
     return width >= height
-        ? PREVIEW_IMAGE_CAP_SIZE / width
-        : PREVIEW_IMAGE_CAP_SIZE / height;
+        ? TEMPLATE_PREVIEW_IMAGE_MAX_SIZE / width
+        : TEMPLATE_PREVIEW_IMAGE_MAX_SIZE / height;
 };
 
 /**

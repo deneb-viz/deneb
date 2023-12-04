@@ -1,5 +1,5 @@
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
-import { TEMPLATE_PREVIEW_IMAGE_MAX_SIZE } from '../../../constants';
+import { TEMPLATE_PREVIEW_IMAGE_MAX_SIZE } from '../../../../config';
 
 export const useTemplateStyles = makeStyles({
     datasetDataType: {
