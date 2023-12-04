@@ -4,7 +4,6 @@ import {
     TPreviewPivotRole,
     getZoomToFitScale
 } from '../../core/ui/advancedEditor';
-import { getConfig } from '../../core/utils/config';
 import {
     IPersistenceProperty,
     resolveObjectProperties,
@@ -24,7 +23,7 @@ import {
     IZoomLevelCommandTestOptions
 } from './types';
 import { EditorApplyMode, TEditorRole } from '../json-editor';
-import { APPLICATION_INFORMATION } from '../../../config';
+import { APPLICATION_INFORMATION, VISUAL_PREVIEW_ZOOM } from '../../../config';
 
 export * from './types';
 
@@ -35,8 +34,6 @@ export const HOTKEY_OPTIONS: Options = {
     enableOnFormTags: ['INPUT', 'SELECT', 'TEXTAREA'],
     combinationKey: '|'
 };
-
-const ZOOM_CONFIG = getConfig().zoomLevel;
 
 /**
  * Executes a command if:
@@ -209,7 +206,7 @@ export const handleZoomFit = () =>
 export const handleZoomIn = () =>
     executeCommand('zoomIn', () => {
         const value = getState().editorZoomLevel;
-        const { step, max } = ZOOM_CONFIG,
+        const { step, max } = VISUAL_PREVIEW_ZOOM,
             level = Math.min(max, Math.floor((value + step) / 10) * 10);
         const zoomLevel = (value < max && level) || level;
         getState().updateEditorZoomLevel(zoomLevel);
@@ -222,7 +219,7 @@ export const handleZoomIn = () =>
 export const handleZoomOut = () =>
     executeCommand('zoomOut', () => {
         const value = getState().editorZoomLevel;
-        const { step, min } = ZOOM_CONFIG,
+        const { step, min } = VISUAL_PREVIEW_ZOOM,
             level = Math.max(min, Math.ceil((value - step) / 10) * 10);
         const zoomLevel = (value > min && level) || level;
         getState().updateEditorZoomLevel(zoomLevel);
@@ -233,7 +230,7 @@ export const handleZoomOut = () =>
  */
 export const handleZoomReset = () =>
     executeCommand('zoomReset', () => {
-        getState().updateEditorZoomLevel(ZOOM_CONFIG.default);
+        getState().updateEditorZoomLevel(VISUAL_PREVIEW_ZOOM.default);
     });
 
 /**
@@ -259,7 +256,7 @@ export const isZoomOtherCommandEnabled = (
  * Tests whether the zoom in command is enabled.
  */
 export const isZoomInCommandEnabled = (options: IZoomLevelCommandTestOptions) =>
-    options.value !== ZOOM_CONFIG.max &&
+    options.value !== VISUAL_PREVIEW_ZOOM.max &&
     isSpecificationValid(options.specification) &&
     isInterfaceModeValid(options.interfaceMode);
 
@@ -269,7 +266,7 @@ export const isZoomInCommandEnabled = (options: IZoomLevelCommandTestOptions) =>
 export const isZoomOutCommandEnabled = (
     options: IZoomLevelCommandTestOptions
 ) =>
-    options.value !== ZOOM_CONFIG.min &&
+    options.value !== VISUAL_PREVIEW_ZOOM.min &&
     isSpecificationValid(options.specification) &&
     isInterfaceModeValid(options.interfaceMode);
 

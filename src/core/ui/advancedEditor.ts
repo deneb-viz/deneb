@@ -17,6 +17,7 @@ import {
     SPLIT_PANE_RESIZER_SIZE
 } from '../../constants';
 import { tokens } from '@fluentui/react-components';
+import { VISUAL_PREVIEW_ZOOM } from '../../../config';
 
 /**
  * How many pixels to apply to the preview area calculations as a "safety"
@@ -215,7 +216,7 @@ export const getZoomToFitScale = () => {
         scaleFactorHeight = Math.floor(
             100 / (height / (previewHeight - ZOOM_FIT_BUFFER))
         ),
-        { default: zDefault, max } = getConfig().zoomLevel;
+        { default: zDefault, max } = VISUAL_PREVIEW_ZOOM;
     switch (true) {
         case willScaledDimensionFit(width, scaleFactorWidth, previewWidth) &&
             willScaledDimensionFit(height, scaleFactorWidth, previewHeight):

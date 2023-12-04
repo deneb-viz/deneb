@@ -103,3 +103,47 @@ export const PROVIDER_VERSIONS = {
     vega: dependencies['vega'],
     vegaLite: dependencies['vega-lite']
 };
+
+/**
+ * Configuration for the zoom controls in the visual preview pane.
+ */
+export const VISUAL_PREVIEW_ZOOM = {
+    min: 10,
+    max: 400,
+    step: 10,
+    default: 100,
+    customLevels: [
+        {
+            value: '400',
+            isLevel: true
+        },
+        {
+            value: '200',
+            isLevel: true
+        },
+        {
+            value: '100',
+            isLevel: true
+        },
+        {
+            value: '66',
+            isLevel: true
+        },
+        {
+            value: '50',
+            isLevel: true
+        },
+        {
+            value: '33',
+            isLevel: true
+        },
+        {
+            value: 'Fit',
+            isFit: true
+        },
+        {
+            value: 'Custom',
+            isCustom: true
+        }
+    ]
+};
