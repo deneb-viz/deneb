@@ -128,11 +128,6 @@
             ]
         }
     },
-    "selection": {
-        "minDataPointsValue": 1,
-        "maxDataPointsValue": 250,
-        "dataPointsStepValue": 1
-    },
     "templates": {
         "metadataVersion": 1,
         "previewImageSize": 150

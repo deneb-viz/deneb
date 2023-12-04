@@ -16,6 +16,15 @@ export const APPLICATION_INFORMATION = visual;
 export const CAPABILITIES = capabilities;
 
 /**
+ * Specifies the limits (and step size) for handling cross-filtering.
+ */
+export const CROSS_FILTER_LIMITS = {
+    minDataPointsValue: 1,
+    maxDataPointsValue: 250,
+    dataPointsStepValue: 1
+};
+
+/**
  * The primary set of feature switches for the packaged application. These are
  * loaded from the `config/features.json` file, so that we can hot-swap them
  * for different configurations as needed.

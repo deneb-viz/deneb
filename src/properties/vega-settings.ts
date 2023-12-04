@@ -9,13 +9,15 @@ import {
     getTextSlice,
     getToggleSlice
 } from './formatting-model';
-import { getConfig } from '../core/utils/config';
-import { CAPABILITIES, PROPERTY_DEFAULTS } from '../../config';
+import {
+    CAPABILITIES,
+    CROSS_FILTER_LIMITS,
+    PROPERTY_DEFAULTS
+} from '../../config';
 
 const OBJECT_NAME = 'vega';
 const OBJECT_DEF = CAPABILITIES.objects[OBJECT_NAME];
 const PROPERTIES = OBJECT_DEF.properties;
-const { selection: SELECTION } = getConfig();
 
 /**
  * Manages the specification grammar and the user-provided source
@@ -140,8 +142,8 @@ export default class VegaSettings extends SettingsBase {
                             objectName: OBJECT_NAME,
                             propertyName: 'selectionMaxDataPoints',
                             value: this.selectionMaxDataPoints,
-                            minValue: SELECTION.minDataPointsValue,
-                            maxValue: SELECTION.maxDataPointsValue,
+                            minValue: CROSS_FILTER_LIMITS.minDataPointsValue,
+                            maxValue: CROSS_FILTER_LIMITS.maxDataPointsValue,
                             slider: true
                         }),
                         getToggleSlice({
