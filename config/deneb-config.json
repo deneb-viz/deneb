@@ -127,9 +127,5 @@
     "templates": {
         "metadataVersion": 1,
         "previewImageSize": 150
-    },
-    "visualViewportAdjust": {
-        "top": 5,
-        "left": 5
     }
 }

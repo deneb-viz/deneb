@@ -7,4 +7,3 @@ export * from './template';
 export * from './toaster';
 export * from './vega-extensibility';
 export * from './vega-output';
-export * from './visual-layout';
