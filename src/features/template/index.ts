@@ -12,10 +12,11 @@ import { TSpecProvider } from '../../core/vega';
 import { Spec } from 'vega';
 import { TopLevelSpec } from 'vega-lite';
 import {
-    getConfig,
-    getVisualMetadata,
-    providerVersions
-} from '../../core/utils/config';
+    APPLICATION_INFORMATION,
+    PROPERTY_DEFAULTS,
+    PROVIDER_VERSIONS,
+    TEMPLATE_METADATA_VERSION
+} from '../../../config';
 
 export { getExportTemplate } from '../visual-export/logic';
 export {
@@ -41,17 +42,12 @@ export {
 } from './types';
 export {
     BASE64_BLANK_IMAGE,
-    PREVIEW_IMAGE_CAP_SIZE,
     dispatchPreviewImage,
     getCombinedBase64ImageWithMime,
     isBase64Image
 } from './preview-image';
 export { PreviewImage } from './components/preview-image';
 export { TemplateDataset } from './components/template-dataset';
-
-const SETTINGS_DEFAULTS = getConfig().propertyDefaults;
-
-export const TEMPLATE_METADATA_VERSION = 1;
 
 /**
  * For a given array of template dataset fields, confirm that they all have a
@@ -83,17 +79,17 @@ export const getNewTemplateMetadata = (
         generated: new Date().toISOString()
     },
     deneb: {
-        build: getVisualMetadata().version,
+        build: APPLICATION_INFORMATION.version,
         metaVersion: TEMPLATE_METADATA_VERSION,
         provider,
-        providerVersion: providerVersions[provider]
+        providerVersion: PROVIDER_VERSIONS[provider]
     },
     interactivity: {
-        tooltip: SETTINGS_DEFAULTS.vega.enableTooltips,
-        contextMenu: SETTINGS_DEFAULTS.vega.enableContextMenu,
-        selection: SETTINGS_DEFAULTS.vega.enableSelection,
-        dataPointLimit: SETTINGS_DEFAULTS.vega.selectionMaxDataPoints,
-        highlight: SETTINGS_DEFAULTS.vega.enableHighlight
+        tooltip: PROPERTY_DEFAULTS.vega.enableTooltips,
+        contextMenu: PROPERTY_DEFAULTS.vega.enableContextMenu,
+        selection: PROPERTY_DEFAULTS.vega.enableSelection,
+        dataPointLimit: PROPERTY_DEFAULTS.vega.selectionMaxDataPoints,
+        highlight: PROPERTY_DEFAULTS.vega.enableHighlight
     },
     dataset: []
 });

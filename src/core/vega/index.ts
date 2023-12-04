@@ -13,8 +13,8 @@ export {
 import cloneDeep from 'lodash/cloneDeep';
 
 import { getState } from '../../store';
-import { providerVersions } from '../utils/config';
 import { getI18nValue } from '../../features/i18n';
+import { PROVIDER_VERSIONS } from '../../../config';
 
 /**
  * Interface specifying a flexible key/value pair object, which is supplied from Vega's tooltip handler and usually casted as `any`.
@@ -56,7 +56,7 @@ const getVegaProvideri18n = (provider?: TSpecProvider) => {
 /**
  * For the current provider, get the version from our package configuration.
  */
-const getVegaVersion = () => providerVersions[getVegaProvider()];
+const getVegaVersion = () => PROVIDER_VERSIONS[getVegaProvider()];
 
 /**
  * Convenience function to get current Vega/Spec settings from the visual objects (as we use this a lot).

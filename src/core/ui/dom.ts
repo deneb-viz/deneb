@@ -3,7 +3,6 @@ import IViewport = powerbi.IViewport;
 import EditMode = powerbi.EditMode;
 import ViewMode = powerbi.ViewMode;
 
-import { getConfig } from '../utils/config';
 import DisplaySettings from '../../properties/display-settings';
 import {
     resolveObjectProperties,
@@ -21,8 +20,6 @@ export const getReportViewport = (
         (displaySettings.viewportHeight || viewport.height) - viewportAdjust,
     width: (displaySettings.viewportWidth || viewport.width) - viewportAdjust
 });
-
-export const zoomConfig = getConfig().zoomLevel;
 
 /**
  * Convert a value intended for pt to a px equivalent.

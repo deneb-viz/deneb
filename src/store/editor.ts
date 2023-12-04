@@ -10,7 +10,6 @@ import {
     getResizablePaneSize,
     TPreviewPivotRole
 } from '../core/ui/advancedEditor';
-import { getConfig } from '../core/utils/config';
 import { IVisualDatasetFields } from '../core/data';
 import { getFieldsInUseFromSpec } from '../features/template';
 import { IFixResult } from '../features/specification';
@@ -25,6 +24,7 @@ import {
     IZoomLevelCommandTestOptions,
     getNextApplyMode
 } from '../features/commands';
+import { VISUAL_PREVIEW_ZOOM } from '../../config';
 
 export interface IEditorSlice {
     editor: {
@@ -139,7 +139,7 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
         editorPaneExpandedWidth: null,
         editorPaneWidth: null,
         editorSelectedOperation: 'spec',
-        editorZoomLevel: getConfig().zoomLevel.default,
+        editorZoomLevel: VISUAL_PREVIEW_ZOOM.default,
         renewEditorFieldsInUse: () =>
             set(
                 (state) => handleRenewEditorFieldsInUse(state),

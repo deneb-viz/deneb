@@ -2,7 +2,6 @@ import powerbi from 'powerbi-visuals-api';
 import FormattingCard = powerbi.visuals.FormattingCard;
 
 import SettingsBase from './settings-base';
-import { SETTINGS_DEFAULTS, SETTINGS_OBJECTS } from '../constants';
 import { getI18nValue } from '../features/i18n';
 import {
     getDropdownSlice,
@@ -10,31 +9,34 @@ import {
     getTextSlice,
     getToggleSlice
 } from './formatting-model';
-import { getConfig } from '../core/utils/config';
+import {
+    CAPABILITIES,
+    CROSS_FILTER_LIMITS,
+    PROPERTY_DEFAULTS
+} from '../../config';
 
 const OBJECT_NAME = 'vega';
-const OBJECT_DEF = SETTINGS_OBJECTS[OBJECT_NAME];
+const OBJECT_DEF = CAPABILITIES.objects[OBJECT_NAME];
 const PROPERTIES = OBJECT_DEF.properties;
-const { selection: SELECTION } = getConfig();
 
 /**
  * Manages the specification grammar and the user-provided source
  */
 export default class VegaSettings extends SettingsBase {
-    public jsonSpec: string = SETTINGS_DEFAULTS.vega.jsonSpec;
-    public jsonConfig: string = SETTINGS_DEFAULTS.vega.jsonConfig;
-    public provider = SETTINGS_DEFAULTS.vega.provider;
-    public logLevel = SETTINGS_DEFAULTS.vega.logLevel;
+    public jsonSpec: string = PROPERTY_DEFAULTS.vega.jsonSpec;
+    public jsonConfig: string = PROPERTY_DEFAULTS.vega.jsonConfig;
+    public provider = PROPERTY_DEFAULTS.vega.provider;
+    public logLevel = PROPERTY_DEFAULTS.vega.logLevel;
     public version: string = null;
-    public renderMode = SETTINGS_DEFAULTS.vega.renderMode;
-    public enableTooltips = SETTINGS_DEFAULTS.vega.enableTooltips;
-    public enableContextMenu = SETTINGS_DEFAULTS.vega.enableContextMenu;
-    public enableSelection = SETTINGS_DEFAULTS.vega.enableSelection;
-    public enableHighlight = SETTINGS_DEFAULTS.vega.enableHighlight;
+    public renderMode = PROPERTY_DEFAULTS.vega.renderMode;
+    public enableTooltips = PROPERTY_DEFAULTS.vega.enableTooltips;
+    public enableContextMenu = PROPERTY_DEFAULTS.vega.enableContextMenu;
+    public enableSelection = PROPERTY_DEFAULTS.vega.enableSelection;
+    public enableHighlight = PROPERTY_DEFAULTS.vega.enableHighlight;
     public selectionMaxDataPoints =
-        SETTINGS_DEFAULTS.vega.selectionMaxDataPoints;
-    public tooltipDelay = SETTINGS_DEFAULTS.vega.tooltipDelay;
-    public isNewDialogOpen = SETTINGS_DEFAULTS.vega.isNewDialogOpen;
+        PROPERTY_DEFAULTS.vega.selectionMaxDataPoints;
+    public tooltipDelay = PROPERTY_DEFAULTS.vega.tooltipDelay;
+    public isNewDialogOpen = PROPERTY_DEFAULTS.vega.isNewDialogOpen;
 
     // eslint-disable-next-line max-lines-per-function
     public getFormattingCard = (): FormattingCard => {
@@ -140,8 +142,8 @@ export default class VegaSettings extends SettingsBase {
                             objectName: OBJECT_NAME,
                             propertyName: 'selectionMaxDataPoints',
                             value: this.selectionMaxDataPoints,
-                            minValue: SELECTION.minDataPointsValue,
-                            maxValue: SELECTION.maxDataPointsValue,
+                            minValue: CROSS_FILTER_LIMITS.minDataPointsValue,
+                            maxValue: CROSS_FILTER_LIMITS.maxDataPointsValue,
                             slider: true
                         }),
                         getToggleSlice({

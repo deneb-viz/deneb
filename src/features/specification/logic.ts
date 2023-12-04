@@ -5,7 +5,6 @@ import cloneDeep from 'lodash/cloneDeep';
 import isEqual from 'lodash/isEqual';
 import merge from 'lodash/merge';
 
-import { getConfig } from '../../core/utils/config';
 import {
     configEditorService,
     specEditorService
@@ -45,8 +44,7 @@ import {
 } from './schema-validation';
 import { getI18nValue } from '../i18n';
 import { getHashValue } from '../../utils';
-
-const PROPERTY_DEFAULTS = getConfig().propertyDefaults.vega;
+import { PROPERTY_DEFAULTS, PROVIDER_RESOURCES } from '../../../config';
 
 /**
  * For a given operation and string input, ensure that it's trimmed and replaced with suitable defaults if empty.
@@ -59,9 +57,9 @@ const cleanJsonInputForPersistence = (
     if (clean === '') {
         switch (operation) {
             case 'spec':
-                return PROPERTY_DEFAULTS.jsonSpec;
+                return PROPERTY_DEFAULTS.vega.jsonSpec;
             case 'config':
-                return PROPERTY_DEFAULTS.jsonConfig;
+                return PROPERTY_DEFAULTS.vega.jsonConfig;
         }
     }
     return clean;
@@ -337,7 +335,7 @@ const getPatchedVegaSpec = (spec: Vega.Spec): Vega.Spec => {
         width: spec['width'] ?? { signal: 'pbiContainerWidth' },
         signals: [
             ...(spec['signals'] || []),
-            ...(getConfig()?.providerResources?.vega?.patch?.signals || [])
+            ...(PROVIDER_RESOURCES?.vega?.patch?.signals || [])
         ]
     });
 };
@@ -490,7 +488,7 @@ export const isUnversionedSpec = () => !isNewSpec() && !isVersionedSpec();
  * In order to determine if our current spec/config is the same as the default properties, indicating that
  */
 const isNewSpec = () => {
-    const defaults = getConfig().propertyDefaults.vega;
+    const defaults = PROPERTY_DEFAULTS.vega;
     const { jsonSpec, jsonConfig } = getVegaSettings();
     return jsonSpec === defaults.jsonSpec && jsonConfig === defaults.jsonConfig;
 };

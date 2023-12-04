@@ -1,5 +1,4 @@
 import { exit } from 'process';
-import * as config from '../config/deneb-config.json';
 import { FEATURES, LOG_LEVEL } from '../config';
 
 console.log('Checking visual configuration is correct...\n');

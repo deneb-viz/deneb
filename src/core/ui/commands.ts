@@ -13,8 +13,8 @@ import {
     resolveObjectProperties,
     updateObjectProperties
 } from '../utils/properties';
-import { getConfig } from '../utils/config';
 import { TSpecProvider, TSpecRenderMode } from '../vega';
+import { PROPERTY_DEFAULTS } from '../../../config';
 
 /**
  * Actual event handling logic for wrappers
@@ -38,7 +38,7 @@ const handlePersist = (
  * Reset the specified provider (Vega) visual property to its default value.
  */
 const resetProviderPropertyValue = (propertyKey: string) => {
-    const value: string = getConfig().propertyDefaults.vega?.[propertyKey];
+    const value: string = PROPERTY_DEFAULTS.vega?.[propertyKey];
     handlePersist([{ name: propertyKey, value }]);
 };
 

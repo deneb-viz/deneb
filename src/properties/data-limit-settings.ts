@@ -2,13 +2,13 @@ import powerbi from 'powerbi-visuals-api';
 import FormattingCard = powerbi.visuals.FormattingCard;
 
 import SettingsBase from './settings-base';
-import { SETTINGS_DEFAULTS, SETTINGS_OBJECTS } from '../constants';
 import { getI18nValue } from '../features/i18n';
 import { getToggleSlice } from './formatting-model';
 import { IToggleSliceOptions } from './types';
+import { CAPABILITIES, PROPERTY_DEFAULTS } from '../../config';
 
 const OBJECT_NAME = 'dataLimit';
-const OBJECT_DEF = SETTINGS_OBJECTS[OBJECT_NAME];
+const OBJECT_DEF = CAPABILITIES.objects[OBJECT_NAME];
 const PROPERTIES = OBJECT_DEF.properties;
 
 /**
@@ -16,10 +16,10 @@ const PROPERTIES = OBJECT_DEF.properties;
  */
 export default class DataLimitSettings extends SettingsBase {
     // Allow override of `dataReductionAlgorithm` limit.
-    public override: boolean = SETTINGS_DEFAULTS.dataLimit.override;
+    public override: boolean = PROPERTY_DEFAULTS.dataLimit.override;
     // Display information about the custom visual limitations and recommendations for end users.
     public showCustomVisualNotes: boolean =
-        SETTINGS_DEFAULTS.dataLimit.showCustomVisualNotes;
+        PROPERTY_DEFAULTS.dataLimit.showCustomVisualNotes;
 
     public getFormattingCard = (): FormattingCard => {
         const OVERRIDE_SLICE: IToggleSliceOptions = {

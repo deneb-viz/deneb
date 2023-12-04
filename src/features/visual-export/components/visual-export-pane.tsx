@@ -3,9 +3,10 @@ import React from 'react';
 import { logRender } from '../../logging';
 import { getI18nValue } from '../../i18n';
 import { useModalDialogStyles } from '../../modal-dialog';
-import { PREVIEW_IMAGE_CAP_SIZE, TemplateDataset } from '../../template';
+import { TemplateDataset } from '../../template';
 import { VisualExportInformation } from './visual-export-information';
 import { Subtitle2 } from '@fluentui/react-components';
+import { TEMPLATE_PREVIEW_IMAGE_MAX_SIZE } from '../../../../config';
 
 /**
  * Interface (pane) for exporting a existing visualization.
@@ -24,8 +25,8 @@ export const VisualExportPane: React.FC = () => {
                 </div>
                 <div className={classes.paneAssistiveText}>
                     {getI18nValue('Text_Overview_Export_3', [
-                        PREVIEW_IMAGE_CAP_SIZE,
-                        PREVIEW_IMAGE_CAP_SIZE
+                        TEMPLATE_PREVIEW_IMAGE_MAX_SIZE,
+                        TEMPLATE_PREVIEW_IMAGE_MAX_SIZE
                     ])}
                 </div>
                 <div className={classes.paneAssistiveText}>

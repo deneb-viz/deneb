@@ -13,12 +13,12 @@ import {
     DATA_TABLE_ROW_PADDING_LEFT
 } from '..';
 import { logRender } from '../../logging';
-import { getConfig } from '../../../core/utils/config';
 import {
     ADVANCED_EDITOR_TOOLBAR_HEIGHT,
     PREVIEW_PANE_AREA_PADDING,
     PREVIEW_PANE_TOOLBAR_MIN_SIZE
 } from '../../../constants';
+import { PREVIEW_PANE_DATA_TABLE } from '../../../../config';
 
 /**
  * Displays a table of data, either for a dataset or the signals in the Vega
@@ -56,7 +56,7 @@ export const DataTableViewer: React.FC<TableProps<any>> = ({
             defaultSortFieldId={columns[0].id}
             pagination
             paginationComponent={DataTableStatusBar}
-            paginationPerPage={getConfig().dataTable.rowsPerPage.default}
+            paginationPerPage={PREVIEW_PANE_DATA_TABLE.rowsPerPage.default}
             customStyles={{
                 head: {
                     style: {

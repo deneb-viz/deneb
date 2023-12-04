@@ -3,12 +3,12 @@ import FormattingCard = powerbi.visuals.FormattingCard;
 
 import SettingsBase from './settings-base';
 import { TLocale, getI18nValue } from '../features/i18n';
-import { SETTINGS_DEFAULTS, SETTINGS_OBJECTS } from '../constants';
 import { getDropdownSlice, getTextSlice } from './formatting-model';
 import { ITextSliceOptions } from './types';
+import { CAPABILITIES, PROPERTY_DEFAULTS } from '../../config';
 
 const OBJECT_NAME = 'developer';
-const OBJECT_DEF = SETTINGS_OBJECTS[OBJECT_NAME];
+const OBJECT_DEF = CAPABILITIES.objects[OBJECT_NAME];
 const PROPERTIES = OBJECT_DEF.properties;
 
 /**
@@ -18,7 +18,7 @@ export default class DeveloperSettings extends SettingsBase {
     // Visual version. Used to check for updates
     public version: string = null;
     // Locale override for testing formatting and i18n
-    public locale: TLocale = <TLocale>SETTINGS_DEFAULTS.developer.locale;
+    public locale: TLocale = <TLocale>PROPERTY_DEFAULTS.developer.locale;
 
     public getFormattingCard = (): FormattingCard => {
         const VERSION_SLICE: ITextSliceOptions = {

@@ -1,4 +1,4 @@
-import { SETTINGS_OBJECTS } from '../../core/utils/config';
+import { CAPABILITIES } from '../../../config';
 import { ICapabilitiesEnumMember } from '../settings';
 
 /**
@@ -11,6 +11,6 @@ const DEBUG_LOG_LEVEL = 4;
  * want to include this in the UI.
  */
 export const getDebugLogLevels = (): ICapabilitiesEnumMember[] =>
-    SETTINGS_OBJECTS.vega.properties.logLevel.type.enumeration.filter(
+    CAPABILITIES.objects.vega.properties.logLevel.type.enumeration.filter(
         (e: ICapabilitiesEnumMember) => e.value !== `${DEBUG_LOG_LEVEL}`
     );

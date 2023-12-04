@@ -4,11 +4,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { DATASET_NAME } from '../../constants';
 import {
-    getConfig,
-    getVisualMetadata,
-    providerVersions
-} from '../../core/utils/config';
-import {
     parseAndValidateContentJson,
     getJsonAsIndentedString
 } from '../../core/utils/json';
@@ -21,6 +16,13 @@ import {
 } from '../template';
 import { IDenebTemplateMetadata } from '../template/schema';
 import { getI18nValue } from '../i18n';
+import {
+    APPLICATION_INFORMATION,
+    PROPERTY_DEFAULTS,
+    PROVIDER_RESOURCES,
+    PROVIDER_VERSIONS,
+    TEMPLATE_METADATA_VERSION
+} from '../../../config';
 
 /**
  * Combines spec, config and specified metadata to produce a valid JSON
@@ -29,10 +31,9 @@ import { getI18nValue } from '../i18n';
 export const getExportTemplate = () => {
     const { visualSettings } = getState();
     const { vega } = visualSettings;
-    const { providerResources } = getConfig();
     const vSchema = (
-        (vega.provider === 'vega' && providerResources.vega) ||
-        providerResources.vegaLite
+        (vega.provider === 'vega' && PROVIDER_RESOURCES.vega) ||
+        PROVIDER_RESOURCES.vegaLite
     ).schemaUrl;
     const baseObj = {
         $schema: vSchema,
@@ -50,7 +51,7 @@ export const getExportTemplate = () => {
         {
             config: parseAndValidateContentJson(
                 visualSettings.vega.jsonConfig,
-                getConfig().propertyDefaults.vega.jsonConfig
+                PROPERTY_DEFAULTS.vega.jsonConfig
             )?.result
         },
         JSON.parse(processedSpec)
@@ -62,12 +63,10 @@ export const getExportTemplate = () => {
  * Instantiates a new object for export template metadata, ready for population.
  */
 export const getNewExportTemplateMetadata = (): IDenebTemplateMetadata => {
-    const visualMetadata = getVisualMetadata(),
-        { metadataVersion } = getConfig().templates;
     return {
         deneb: {
-            build: visualMetadata.version,
-            metaVersion: metadataVersion,
+            build: APPLICATION_INFORMATION.version,
+            metaVersion: TEMPLATE_METADATA_VERSION,
             provider: null,
             providerVersion: null
         },
@@ -103,9 +102,7 @@ const getPublishableUsermeta = (usermeta: IDenebTemplateMetadata) => {
  * export templates make sense (as much as possible).
  */
 const resolveExportUserMeta = (): IDenebTemplateMetadata => {
-    const visualMetadata = getVisualMetadata(),
-        { metadataVersion } = getConfig().templates,
-        {
+    const {
             templateExportMetadata,
             templatePreviewImageDataUri,
             templateIncludePreviewImage
@@ -113,10 +110,10 @@ const resolveExportUserMeta = (): IDenebTemplateMetadata => {
         { vega } = getState().visualSettings;
     return {
         deneb: {
-            build: visualMetadata.version,
-            metaVersion: metadataVersion,
+            build: APPLICATION_INFORMATION.version,
+            metaVersion: TEMPLATE_METADATA_VERSION,
             provider: <TSpecProvider>vega.provider,
-            providerVersion: providerVersions[vega.provider]
+            providerVersion: PROVIDER_VERSIONS[vega.provider]
         },
         interactivity: {
             tooltip: vega.enableTooltips,

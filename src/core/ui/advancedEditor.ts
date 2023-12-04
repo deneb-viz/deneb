@@ -2,7 +2,6 @@ import powerbi from 'powerbi-visuals-api';
 import IViewport = powerbi.IViewport;
 
 import { getState } from '../../store';
-import { getConfig } from '../utils/config';
 import { TEditorPosition } from '.';
 import { CSSProperties } from 'react';
 import {
@@ -17,6 +16,7 @@ import {
     SPLIT_PANE_RESIZER_SIZE
 } from '../../constants';
 import { tokens } from '@fluentui/react-components';
+import { PREVIEW_PANE_DEFAULTS, VISUAL_PREVIEW_ZOOM } from '../../../config';
 
 /**
  * How many pixels to apply to the preview area calculations as a "safety"
@@ -188,7 +188,7 @@ export const calculatePreviewMaximumHeight = (height: number) =>
     ADVANCED_EDITOR_TOOLBAR_HEIGHT -
     PREVIEW_PANE_TOOLBAR_MIN_SIZE -
     SPLIT_PANE_RESIZER_SIZE -
-    getConfig().previewPane.viewportBorderSize * 2;
+    PREVIEW_PANE_DEFAULTS.viewportBorderSize * 2;
 
 export const calculateToolbarInitialHeight = (height: number) =>
     height - height * (PREVIEW_PANE_TOOLBAR_DEFAULT_SIZE_PERCENT / 100);
@@ -215,7 +215,7 @@ export const getZoomToFitScale = () => {
         scaleFactorHeight = Math.floor(
             100 / (height / (previewHeight - ZOOM_FIT_BUFFER))
         ),
-        { default: zDefault, max } = getConfig().zoomLevel;
+        { default: zDefault, max } = VISUAL_PREVIEW_ZOOM;
     switch (true) {
         case willScaledDimensionFit(width, scaleFactorWidth, previewWidth) &&
             willScaledDimensionFit(height, scaleFactorWidth, previewHeight):

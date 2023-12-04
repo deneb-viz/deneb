@@ -12,7 +12,6 @@ import {
 import { ArrowResetRegular } from '@fluentui/react-icons';
 
 import store from '../../../store';
-import { getConfig } from '../../../core/utils/config';
 import {
     resetProviderPropertyValue,
     updateSelectionMaxDataPoints
@@ -22,9 +21,9 @@ import { getI18nValue } from '../../i18n';
 import { useSettingsStyles } from '.';
 import { logDebug } from '../../logging';
 import { TooltipCustomMount } from '../../interface';
+import { CROSS_FILTER_LIMITS, PROPERTY_DEFAULTS } from '../../../../config';
 
-const DEFAULT_VALUE = getConfig().propertyDefaults.vega.selectionMaxDataPoints;
-const SPIN_RANGES = getConfig().selection;
+const DEFAULT_VALUE = PROPERTY_DEFAULTS.vega.selectionMaxDataPoints;
 
 export const CrossFilterMaxDataPoints: React.FC = () => {
     const {
@@ -37,8 +36,11 @@ export const CrossFilterMaxDataPoints: React.FC = () => {
             const resolvedValue = getResolvedValue(data);
             updateSelectionMaxDataPoints(
                 Math.min(
-                    Math.max(resolvedValue, SPIN_RANGES.minDataPointsValue),
-                    SPIN_RANGES.maxDataPointsValue
+                    Math.max(
+                        resolvedValue,
+                        CROSS_FILTER_LIMITS.minDataPointsValue
+                    ),
+                    CROSS_FILTER_LIMITS.maxDataPointsValue
                 )
             );
         },
@@ -66,9 +68,9 @@ export const CrossFilterMaxDataPoints: React.FC = () => {
                         appearance='underline'
                         value={selectionMaxDataPoints}
                         id={id}
-                        min={SPIN_RANGES.minDataPointsValue}
-                        max={SPIN_RANGES.maxDataPointsValue}
-                        step={SPIN_RANGES.dataPointsStepValue}
+                        min={CROSS_FILTER_LIMITS.minDataPointsValue}
+                        max={CROSS_FILTER_LIMITS.maxDataPointsValue}
+                        step={CROSS_FILTER_LIMITS.dataPointsStepValue}
                         onChange={onChange}
                     />
                     <>

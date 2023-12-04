@@ -1,8 +1,8 @@
 import React from 'react';
 import { Image } from '@fluentui/react-components';
 
-import { PREVIEW_IMAGE_CAP_SIZE } from '../preview-image';
 import { useTemplateStyles } from '.';
+import { TEMPLATE_PREVIEW_IMAGE_MAX_SIZE } from '../../../../config';
 
 interface IPreviewImageProps {
     isValid: boolean;
@@ -19,8 +19,8 @@ export const PreviewImage: React.FC<IPreviewImageProps> = ({
     if (isValid) {
         return (
             <Image
-                height={PREVIEW_IMAGE_CAP_SIZE}
-                width={PREVIEW_IMAGE_CAP_SIZE}
+                height={TEMPLATE_PREVIEW_IMAGE_MAX_SIZE}
+                width={TEMPLATE_PREVIEW_IMAGE_MAX_SIZE}
                 className={classes.previewImage}
                 fit='none'
                 src={dataUri}

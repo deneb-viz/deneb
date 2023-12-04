@@ -18,13 +18,11 @@ import {
 
 import store from '../../../store';
 import { logDebug, logRender } from '../../logging';
-import { getConfig } from '../../../core/utils/config';
 import { getZoomToFitScale } from '../../../core/ui/advancedEditor';
 import { getI18nValue } from '../../i18n';
 import { useToolbarStyles } from '.';
 import { TooltipCustomMount } from '../../interface';
-
-const CONFIGURATION = getConfig();
+import { VISUAL_PREVIEW_ZOOM } from '../../../../config';
 
 // eslint-disable-next-line max-lines-per-function
 export const ZoomLevelPopover: React.FC = () => {
@@ -41,7 +39,7 @@ export const ZoomLevelPopover: React.FC = () => {
     const classes = useToolbarStyles();
     const options = useMemo(
         (): JSX.Element[] =>
-            CONFIGURATION.zoomLevel.customLevels.map((l) => (
+            VISUAL_PREVIEW_ZOOM.customLevels.map((l) => (
                 <Radio
                     label={getI18nValue(
                         `Text_Radio_Group_ZoomLevel_${l.value}`
@@ -62,8 +60,8 @@ export const ZoomLevelPopover: React.FC = () => {
     const handleCustomZoomLevelChange = useCallback(
         (value: number) => {
             const level = Math.max(
-                Math.min(value, CONFIGURATION.zoomLevel.max),
-                CONFIGURATION.zoomLevel.min
+                Math.min(value, VISUAL_PREVIEW_ZOOM.max),
+                VISUAL_PREVIEW_ZOOM.min
             );
             setCustomZoomLevel(level);
             updateEditorZoomLevel(level);
@@ -148,8 +146,8 @@ export const ZoomLevelPopover: React.FC = () => {
                             displayValue={`${customZoomLevel}%`}
                             onChange={updateSpinSettingValue}
                             id={id}
-                            min={CONFIGURATION.zoomLevel.min}
-                            max={CONFIGURATION.zoomLevel.max}
+                            min={VISUAL_PREVIEW_ZOOM.min}
+                            max={VISUAL_PREVIEW_ZOOM.max}
                         />
                     </div>
                 </div>

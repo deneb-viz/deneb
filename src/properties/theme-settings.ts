@@ -3,13 +3,13 @@ import VisualEnumerationInstanceKinds = powerbi.VisualEnumerationInstanceKinds;
 import FormattingCard = powerbi.visuals.FormattingCard;
 
 import SettingsBase from './settings-base';
-import { SETTINGS_DEFAULTS, SETTINGS_OBJECTS } from '../constants';
 import { getI18nValue } from '../features/i18n';
 import { getIntegerSlice } from './formatting-model';
 import { IIntegerSliceOptions } from './types';
+import { CAPABILITIES, PROPERTY_DEFAULTS } from '../../config';
 
 const OBJECT_NAME = 'theme';
-const OBJECT_DEF = SETTINGS_OBJECTS[OBJECT_NAME];
+const OBJECT_DEF = CAPABILITIES.objects[OBJECT_NAME];
 const PROPERTIES = OBJECT_DEF.properties;
 
 /**
@@ -18,7 +18,7 @@ const PROPERTIES = OBJECT_DEF.properties;
 export default class ThemeSettings extends SettingsBase {
     // Number of discrete colors to use when computing the `pbiColorOrdinal` scheme hues
     public ordinalColorCount =
-        SETTINGS_DEFAULTS.theme.ordinalColorCount.default;
+        PROPERTY_DEFAULTS.theme.ordinalColorCount.default;
 
     public getFormattingCard = (): FormattingCard => {
         const ORDINAL_COLOR_COUNT_SLICE: IIntegerSliceOptions = {
@@ -26,8 +26,8 @@ export default class ThemeSettings extends SettingsBase {
             objectName: OBJECT_NAME,
             propertyName: 'ordinalColorCount',
             value: this.ordinalColorCount,
-            minValue: SETTINGS_DEFAULTS.theme.ordinalColorCount.min,
-            maxValue: SETTINGS_DEFAULTS.theme.ordinalColorCount.max,
+            minValue: PROPERTY_DEFAULTS.theme.ordinalColorCount.min,
+            maxValue: PROPERTY_DEFAULTS.theme.ordinalColorCount.max,
             instanceKind: VisualEnumerationInstanceKinds.ConstantOrRule
         };
         return {

@@ -4,12 +4,10 @@ import { Slider, SliderProps, Tooltip } from '@fluentui/react-components';
 
 import store from '../../../store';
 import { logRender } from '../../logging';
-import { getConfig } from '../../../core/utils/config';
 import { getI18nValue } from '../../i18n';
 import { useToolbarStyles } from '.';
 import { TooltipCustomMount } from '../../interface';
-
-const CONFIGURATION = getConfig();
+import { VISUAL_PREVIEW_ZOOM } from '../../../../config';
 
 export const ZoomSlider: React.FC = () => {
     const classes = useToolbarStyles();
@@ -36,9 +34,9 @@ export const ZoomSlider: React.FC = () => {
             >
                 <Slider
                     className={classes.slider}
-                    min={CONFIGURATION.zoomLevel.min}
-                    max={CONFIGURATION.zoomLevel.max}
-                    step={CONFIGURATION.zoomLevel.step}
+                    min={VISUAL_PREVIEW_ZOOM.min}
+                    max={VISUAL_PREVIEW_ZOOM.max}
+                    step={VISUAL_PREVIEW_ZOOM.step}
                     value={editorZoomLevel}
                     size='small'
                     onChange={onChange}

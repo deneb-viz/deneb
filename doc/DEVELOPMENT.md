@@ -87,4 +87,4 @@ Logging is govered using a number and anything lower than this number if output 
 
 -   The standard levels (`Error`, `Warn` and `Info` use their corresponding) levels in the browser console. Everything else goes under the `Verbose` level, so check that you have this enabled if you aren't seeing the expected output in the console.
 
--   This process can result in methods being less 'pure' and may blur their purpose, so it is reocmmended that you try to balance this as much as possible so that methods are suitably traceable when logging it enabled vs. making them too verbose and therefore hard to understand and maintain.
+-   This process can result in methods being less 'pure' and may blur their purpose, so it is recommended that you try to balance this as much as possible so that methods are suitably traceable when logging it enabled vs. making them too verbose and therefore hard to understand and maintain.

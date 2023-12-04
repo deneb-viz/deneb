@@ -1,13 +1,12 @@
 /**
  * Vega-Lite templates that are included with Deneb.
  */
-import { getConfig } from '../../../../core/utils/config';
+import { PROVIDER_RESOURCES } from '../../../../../config';
 
 /**
  * Schema URL for all templates.
  */
-export const VEGA_LITE_SCHEMA_URL =
-    getConfig().providerResources.vegaLite.schemaUrl;
+export const VEGA_LITE_SCHEMA_URL = PROVIDER_RESOURCES.vegaLite.schemaUrl;
 
 import { vlEmpty } from './vl-empty';
 import { vlEmptyConfig } from './vl-empty-config';

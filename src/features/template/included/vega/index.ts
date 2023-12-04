@@ -3,12 +3,12 @@
  */
 import { Config } from 'vega';
 import { getDenebTemplateDatasetRef } from '..';
-import { getConfig } from '../../../../core/utils/config';
+import { PROVIDER_RESOURCES } from '../../../../../config';
 
 /**
  * Schema URL for all templates.
  */
-export const VEGA_SCHEMA_URL = getConfig().providerResources.vega.schemaUrl;
+export const VEGA_SCHEMA_URL = PROVIDER_RESOURCES.vega.schemaUrl;
 
 /**
  * Vega specifications allow multiple datasets to be bound, so this provides
