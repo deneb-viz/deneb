@@ -159,12 +159,6 @@
         "maxDataPointsValue": 250,
         "dataPointsStepValue": 1
     },
-    "splitPaneDefaults": {
-        "minSize": 200,
-        "defaultSizePercent": 0.4,
-        "maxSizePercent": 0.5,
-        "collapsedSize": 36
-    },
     "templates": {
         "metadataVersion": 1,
         "previewImageSize": 150

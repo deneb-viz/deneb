@@ -1,6 +1,7 @@
+import { SPLIT_PANE_DEFAULTS } from '../../config';
 import { getConfig } from '../core/utils/config';
 
-const { previewPane, splitPaneDefaults } = getConfig();
+const { previewPane } = getConfig();
 
 /**
  * HOw much vertical space to reserve for the main toolbar.
@@ -10,27 +11,28 @@ export const ADVANCED_EDITOR_TOOLBAR_HEIGHT = 40;
 /**
  * How much horizontal space the editor pane should occupy when collapsed.
  */
-export const EDITOR_PANE_SPLIT_COLLAPSED_SIZE = splitPaneDefaults.collapsedSize;
+export const EDITOR_PANE_SPLIT_COLLAPSED_SIZE =
+    SPLIT_PANE_DEFAULTS.collapsedSize;
 
 /**
  * How much horizontal space (in percent) that the editor pane should occupy
  * when initialized/reset to default.
  */
 export const EDITOR_PANE_SPLIT_DEFAULT_SIZE_PERCENT =
-    splitPaneDefaults.defaultSizePercent;
+    SPLIT_PANE_DEFAULTS.defaultSizePercent;
 
 /**
  * The maximum horizontal space (in percent) that the editor pane should be
  * permitted to occupy.
  */
 export const EDITOR_PANE_SPLIT_MAX_SIZE_PERCENT =
-    splitPaneDefaults.maxSizePercent;
+    SPLIT_PANE_DEFAULTS.maxSizePercent;
 
 /**
  * The maximum horizontal space that the editor pane should be permitted to
  * occupy when expanded.
  */
-export const EDITOR_PANE_SPLIT_MIN_SIZE = splitPaneDefaults.minSize;
+export const EDITOR_PANE_SPLIT_MIN_SIZE = SPLIT_PANE_DEFAULTS.minSize;
 
 /**
  * The z-index to apply to popover elements, as we are having to render them
