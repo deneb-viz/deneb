@@ -8,7 +8,6 @@ import {
     getVisualMetadata,
     providerVersions
 } from '../../core/utils/config';
-import { isFeatureEnabled } from '../../core/utils/features';
 import {
     parseAndValidateContentJson,
     getJsonAsIndentedString
@@ -138,11 +137,9 @@ const resolveExportUserMeta = (): IDenebTemplateMetadata => {
                 getI18nValue('Template_Export_Author_Name_Empty'),
             uuid: templateExportMetadata?.information?.uuid || uuidv4(),
             generated: new Date().toISOString(),
-            previewImageBase64PNG:
-                isFeatureEnabled('templateExportPreviewImages') &&
-                templateIncludePreviewImage
-                    ? templatePreviewImageDataUri
-                    : undefined
+            previewImageBase64PNG: templateIncludePreviewImage
+                ? templatePreviewImageDataUri
+                : undefined
         },
         dataset: templateExportMetadata?.[DATASET_NAME].map((d, di) => {
             return {

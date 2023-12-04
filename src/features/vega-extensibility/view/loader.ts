@@ -1,16 +1,16 @@
 import * as Vega from 'vega';
 import { Loader } from 'vega';
 import { hostServices } from '../../../core/services';
-import { isFeatureEnabled } from '../../../core/utils/features';
 import { BASE64_BLANK_IMAGE } from '../../template';
 import { getI18nValue } from '../../i18n';
+import { FEATURES } from '../../../../config';
 
 /**
  * Custom Vega loader for Power BI.
  */
 export const getVegaLoader = (): Loader => {
     const loader = Vega.loader();
-    const externalUri = isFeatureEnabled('enableExternalUri');
+    const externalUri = FEATURES.enable_external_uri;
 
     // Handle regular load requests. If we're blocking external URIs then only
     // permit this if it's a valid data URI. We avoid overriding the default

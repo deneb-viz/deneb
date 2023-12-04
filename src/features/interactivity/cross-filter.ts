@@ -4,18 +4,11 @@ import ISelectionId = powerbi.visuals.ISelectionId;
 import { ScenegraphEvent, Item } from 'vega';
 import { hostServices } from '../../core/services';
 
-import { isFeatureEnabled } from '../../core/utils/features';
 import { getVegaSettings } from '../../core/vega';
 import { hidePowerBiTooltip } from './tooltip';
 import { getState } from '../../store';
 import { getIdentitiesFromData, resolveDataFromItem } from './data-point';
 import { TDataPointSelectionStatus } from './types';
-
-/**
- * Convenience constant that confirms whether the `selectionDataPoint` feature
- * switch is enabled via features.
- */
-export const IS_CROSS_FILTER_ENABLED = isFeatureEnabled('selectionDataPoint');
 
 /**
  * For the supplied list of identities, ensure that the selection manager is
@@ -79,12 +72,7 @@ const getPotentialSelectionSize = (identities: ISelectionId[]) =>
  */
 export const isCrossFilterPropSet = () => {
     const { enableSelection } = getVegaSettings();
-    return (
-        (IS_CROSS_FILTER_ENABLED &&
-            enableSelection &&
-            hostServices.allowInteractions) ||
-        false
-    );
+    return (enableSelection && hostServices.allowInteractions) || false;
 };
 
 /**

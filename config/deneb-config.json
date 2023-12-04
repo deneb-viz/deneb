@@ -1,21 +1,4 @@
 {
-    "features": {
-        "developerMode": false,
-        "enableExternalUri": false,
-        "fetchMoreData": true,
-        "selectionContextMenu": true,
-        "selectionDataPoint": true,
-        "selectionCrossHighlight": true,
-        "dataDrilldown": false,
-        "tooltipHandler": true,
-        "tooltipResolveNumberFieldFormat": true,
-        "useDownloadApi": true,
-        "templateExportPreviewImages": true,
-        "combinedApplyButton": false,
-        "visualUpdateHistoryOverlay": false,
-        "unitTestCanary": false
-    },
-    "logLevel": 0,
     "keyBindings": {
         "applyChanges": {
             "combination": "ctrl|enter",

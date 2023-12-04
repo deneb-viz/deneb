@@ -22,7 +22,6 @@ import {
     getIdentitiesFromData,
     resolveDataFromItem
 } from './data-point';
-import { isFeatureEnabled } from '../../core/utils/features';
 import { hostServices } from '../../core/services';
 import { DATASET_IDENTITY_NAME, DATASET_KEY_NAME } from '../../constants';
 import { getI18nValue } from '../i18n';
@@ -31,11 +30,6 @@ import { getI18nValue } from '../i18n';
  * Convenience constant for tooltip events, as it's required by Power BI.
  */
 const IS_TOUCH_EVENT = true;
-
-/**
- * Convenience constant that confirms whether the `tooltipHandler` feature switch is enabled via features.
- */
-export const IS_TOOLTIP_HANDLER_ENABLED = isFeatureEnabled('tooltipHandler');
 
 /**
  * Array of reserved keywords used to handle selection IDs from the visual's
@@ -97,7 +91,6 @@ const getDeepRedactedTooltipItem = (object: object) => {
  * For given Vega `tooltip` object (key-value pairs), return an object of fields from the visual dataset's metadata that are in the tooltip,
  * and eligible for automatic formatting. Eligibility criteria is as follows:
  *
- *  - The `tooltipResolveNumberFieldFormat` feature is enabled, and:
  *  - The field display name has a corresponding entry in the visual datset's metadata, and:
  *  - The field is a number type, and:
  *  - The tooltip value exactly matches the number representation in the `datum`.
@@ -106,11 +99,7 @@ const getFieldsEligibleForAutoFormat = (tooltip: object) =>
     pickBy(tooltip, (v, k) => {
         const ttKeys = keys(tooltip),
             mdKeys = keys(getDatasetFieldsBySelectionKeys(ttKeys));
-        return (
-            indexOf(mdKeys, k) > -1 &&
-            isResolveNumberFormatEnabled() &&
-            toNumber(tooltip[k])
-        );
+        return indexOf(mdKeys, k) > -1 && toNumber(tooltip[k]);
     });
 
 /**
@@ -128,11 +117,7 @@ export const getSanitisedTooltipValue = (value: any) =>
 export const getPowerBiTooltipHandler = (
     isSettingEnabled: boolean,
     tooltipService: ITooltipService
-) =>
-    (IS_TOOLTIP_HANDLER_ENABLED &&
-        isSettingEnabled &&
-        resolveTooltipContent(tooltipService)) ||
-    undefined;
+) => (isSettingEnabled && resolveTooltipContent(tooltipService)) || undefined;
 
 /**
  * Request Power BI hides the tooltip.
@@ -144,13 +129,6 @@ export const hidePowerBiTooltip = () => {
         isTouchEvent: IS_TOUCH_EVENT
     });
 };
-
-/**
- *  Confirms whether the `tooltipResolveNumberFieldFormat` feature switch is enabled via features.
- */
-const isResolveNumberFormatEnabled = () =>
-    IS_TOOLTIP_HANDLER_ENABLED &&
-    isFeatureEnabled('tooltipResolveNumberFieldFormat');
 
 /**
  * Helper method to determine if a supplied key (string) is reserved for
@@ -204,7 +182,8 @@ const resolveTooltipContent =
             };
             switch (event.type) {
                 case 'mouseover':
-                case 'mousemove': {
+                case 'mousemove':
+                case 'pointermove': {
                     delay(() => tooltipService.show(options), waitFor);
                     break;
                 }

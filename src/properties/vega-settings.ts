@@ -2,12 +2,6 @@ import powerbi from 'powerbi-visuals-api';
 import FormattingCard = powerbi.visuals.FormattingCard;
 
 import SettingsBase from './settings-base';
-import {
-    IS_CONTEXT_MENU_ENABLED,
-    IS_CROSS_FILTER_ENABLED,
-    IS_CROSS_HIGHLIGHT_ENABLED,
-    IS_TOOLTIP_HANDLER_ENABLED
-} from '../features/interactivity';
 import { SETTINGS_DEFAULTS, SETTINGS_OBJECTS } from '../constants';
 import { getI18nValue } from '../features/i18n';
 import {
@@ -33,18 +27,13 @@ export default class VegaSettings extends SettingsBase {
     public logLevel = SETTINGS_DEFAULTS.vega.logLevel;
     public version: string = null;
     public renderMode = SETTINGS_DEFAULTS.vega.renderMode;
-    public enableTooltips =
-        IS_TOOLTIP_HANDLER_ENABLED && SETTINGS_DEFAULTS.vega.enableTooltips;
-    public enableContextMenu =
-        IS_CONTEXT_MENU_ENABLED && SETTINGS_DEFAULTS.vega.enableContextMenu;
-    public enableSelection =
-        IS_CROSS_FILTER_ENABLED && SETTINGS_DEFAULTS.vega.enableSelection;
-    public enableHighlight =
-        IS_CROSS_HIGHLIGHT_ENABLED && SETTINGS_DEFAULTS.vega.enableHighlight;
+    public enableTooltips = SETTINGS_DEFAULTS.vega.enableTooltips;
+    public enableContextMenu = SETTINGS_DEFAULTS.vega.enableContextMenu;
+    public enableSelection = SETTINGS_DEFAULTS.vega.enableSelection;
+    public enableHighlight = SETTINGS_DEFAULTS.vega.enableHighlight;
     public selectionMaxDataPoints =
         SETTINGS_DEFAULTS.vega.selectionMaxDataPoints;
-    public tooltipDelay =
-        IS_TOOLTIP_HANDLER_ENABLED && SETTINGS_DEFAULTS.vega.tooltipDelay;
+    public tooltipDelay = SETTINGS_DEFAULTS.vega.tooltipDelay;
     public isNewDialogOpen = SETTINGS_DEFAULTS.vega.isNewDialogOpen;
 
     // eslint-disable-next-line max-lines-per-function

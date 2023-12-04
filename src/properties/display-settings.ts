@@ -3,12 +3,12 @@ import FormattingCard = powerbi.visuals.FormattingCard;
 import FormattingGroup = powerbi.visuals.FormattingGroup;
 
 import SettingsBase from './settings-base';
-import { isFeatureEnabled } from '../core/utils/features';
 import { SETTINGS_DEFAULTS, SETTINGS_OBJECTS } from '../constants';
 import { logDebug } from '../features/logging';
 import { getI18nValue } from '../features/i18n';
 import { getColorSlice, getIntegerSlice } from './formatting-model';
 import { IColorSliceOptions, IIntegerSliceOptions } from './types';
+import { FEATURES } from '../../config';
 
 const OBJECT_NAME = 'display';
 const OBJECT_DEF = SETTINGS_OBJECTS[OBJECT_NAME];
@@ -110,7 +110,7 @@ export default class DisplaySettings extends SettingsBase {
             propertyName: 'viewportWidth',
             value: this.viewportWidth
         };
-        return isFeatureEnabled('developerMode')
+        return FEATURES.developer_mode
             ? [
                   {
                       displayName: getI18nValue(

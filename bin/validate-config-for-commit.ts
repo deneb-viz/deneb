@@ -1,28 +1,31 @@
 import { exit } from 'process';
 import * as config from '../config/deneb-config.json';
+import { FEATURES, LOG_LEVEL } from '../config';
 
 console.log('Checking visual configuration is correct...\n');
 const errors: string[] = [];
 
 // Developer mode: Should not be set in committed code
-if (config.features.developerMode) {
+if (FEATURES.developer_mode) {
     errors.push(
-        '❌ features.developerMode flag is true; this should be false.'
+        '❌ FEATURES.developer_mode flag is true; this should be false.'
     );
 }
 // Visual update history overlay: Should not be set in committed code
-if (config.features.visualUpdateHistoryOverlay) {
+if (FEATURES.visual_update_history_overlay) {
     errors.push(
-        '❌ features.visualUpdateHistoryOverlay flag is true; this should be false.'
+        '❌ FEATURES.visual_update_history_overlay flag is true; this should be false.'
     );
 }
 // Log level: should be 0 (NONE) in committed code
-if (config.logLevel !== 0) {
-    errors.push(`❌ logLevel is ${config.logLevel}; this should be 0 (NONE).`);
+if (LOG_LEVEL !== 0) {
+    errors.push(`❌ logLevel is ${LOG_LEVEL}; this should be 0 (NONE).`);
 }
 // External URIs: Not permitted in certified visual, so needs to be disabled in committed code.
-if (config.features.enableExternalUri) {
-    errors.push('❌ features.enableExternalUri is true; this should be false.');
+if (FEATURES.enable_external_uri) {
+    errors.push(
+        '❌ FEATURES.enable_external_uri is true; this should be false.'
+    );
 }
 
 if (errors.length > 0) {

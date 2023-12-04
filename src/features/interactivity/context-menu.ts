@@ -1,15 +1,8 @@
 import { ScenegraphEvent, Item } from 'vega';
 
 import { hostServices } from '../../core/services';
-import { isFeatureEnabled } from '../../core/utils/features';
 import { getVegaSettings } from '../../core/vega';
 import { getIdentitiesFromData, resolveDataFromItem } from './data-point';
-
-/**
- * Convenience constant that confirms whether the `selectionContextMenu` feature
- * switch is enabled via features.
- */
-export const IS_CONTEXT_MENU_ENABLED = isFeatureEnabled('selectionContextMenu');
 
 /**
  * If a context menu event is fired over the visual, attempt to retrieve any
@@ -45,10 +38,5 @@ export const handleContextMenuEvent = (event: ScenegraphEvent, item: Item) => {
  */
 const isContextMenuPropSet = () => {
     const { enableContextMenu } = getVegaSettings();
-    return (
-        (IS_CONTEXT_MENU_ENABLED &&
-            enableContextMenu &&
-            hostServices.allowInteractions) ||
-        false
-    );
+    return (enableContextMenu && hostServices.allowInteractions) || false;
 };

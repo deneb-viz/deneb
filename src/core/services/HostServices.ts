@@ -1,6 +1,4 @@
 import powerbi from 'powerbi-visuals-api';
-import { TLocale } from '../../features/i18n';
-import { isFeatureEnabled } from '../utils/features';
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
@@ -12,7 +10,9 @@ import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import IVisualEventService = powerbi.extensibility.IVisualEventService;
 import ISandboxExtendedColorPalette = powerbi.extensibility.ISandboxExtendedColorPalette;
 import IDownloadService = powerbi.extensibility.IDownloadService;
+import { TLocale } from '../../features/i18n';
 import { logHost } from '../../features/logging';
+import { FEATURES } from '../../../config';
 
 /**
  * Proxy service for Power BI host services, plus any additional logic we wish to encapsulate.
@@ -72,8 +72,7 @@ export class HostServices {
 
     resolveLocaleFromSettings = (settingsLocale: TLocale) => {
         this.locale =
-            (isFeatureEnabled('developerMode') && settingsLocale) ||
-            this.locale;
+            (FEATURES.developer_mode && settingsLocale) || this.locale;
     };
 }
 

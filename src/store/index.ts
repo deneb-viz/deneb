@@ -12,7 +12,7 @@ import { ISpecificationSlice, createSpecificationSlice } from './specification';
 import { ITemplateSlice, createTemplateSlice } from './template';
 import { IVisualSlice, createVisualSlice } from './visual';
 import { IVisualUpdateSlice, createVisualUpdateSlice } from './visual-update';
-import { isFeatureEnabled } from '../core/utils/features';
+import { FEATURES } from '../../config';
 
 export type TStoreState = ICommandsSlice &
     ICreateSlice &
@@ -43,7 +43,7 @@ const store = create<TStoreState>()(
             ...createVisualSlice(...a),
             ...createVisualUpdateSlice(...a)
         }),
-        { enabled: isFeatureEnabled('developerMode') }
+        { enabled: FEATURES.developer_mode }
     )
 );
 
