@@ -6,11 +6,9 @@ import {
 } from '@fluentui/react-components';
 import React from 'react';
 
-import { getVisualMetadata } from '../../../core/utils/config';
 import { useStatusStyles } from '.';
 import { StatusStackItem } from './status-stack-item';
-
-const VISUAL_METADATA = getVisualMetadata();
+import { APPLICATION_INFORMATION } from '../../../../config';
 
 /**
  * Displays the visual metadata as part of the landing status page.
@@ -34,12 +32,16 @@ export const LandingPageInfoHeader = () => {
                                     color: '#7a7170'
                                 }}
                             >
-                                {VISUAL_METADATA.displayName}{' '}
+                                {APPLICATION_INFORMATION.displayName}{' '}
                             </span>
-                            <Caption2>{VISUAL_METADATA.version}</Caption2>
+                            <Caption2>
+                                {APPLICATION_INFORMATION.version}
+                            </Caption2>
                         </Title2>
                         <br />
-                        <Caption1>{VISUAL_METADATA.description}</Caption1>
+                        <Caption1>
+                            {APPLICATION_INFORMATION.description}
+                        </Caption1>
                     </div>
                 </div>
             </StatusStackItem>

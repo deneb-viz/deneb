@@ -3,7 +3,7 @@ import omit from 'lodash/omit';
 import { v4 as uuidv4 } from 'uuid';
 
 import { DATASET_NAME } from '../../constants';
-import { getConfig, getVisualMetadata } from '../../core/utils/config';
+import { getConfig } from '../../core/utils/config';
 import {
     parseAndValidateContentJson,
     getJsonAsIndentedString
@@ -17,7 +17,11 @@ import {
 } from '../template';
 import { IDenebTemplateMetadata } from '../template/schema';
 import { getI18nValue } from '../i18n';
-import { PROPERTY_DEFAULTS, PROVIDER_VERSIONS } from '../../../config';
+import {
+    APPLICATION_INFORMATION,
+    PROPERTY_DEFAULTS,
+    PROVIDER_VERSIONS
+} from '../../../config';
 
 /**
  * Combines spec, config and specified metadata to produce a valid JSON
@@ -59,11 +63,10 @@ export const getExportTemplate = () => {
  * Instantiates a new object for export template metadata, ready for population.
  */
 export const getNewExportTemplateMetadata = (): IDenebTemplateMetadata => {
-    const visualMetadata = getVisualMetadata(),
-        { metadataVersion } = getConfig().templates;
+    const { metadataVersion } = getConfig().templates;
     return {
         deneb: {
-            build: visualMetadata.version,
+            build: APPLICATION_INFORMATION.version,
             metaVersion: metadataVersion,
             provider: null,
             providerVersion: null
@@ -100,8 +103,7 @@ const getPublishableUsermeta = (usermeta: IDenebTemplateMetadata) => {
  * export templates make sense (as much as possible).
  */
 const resolveExportUserMeta = (): IDenebTemplateMetadata => {
-    const visualMetadata = getVisualMetadata(),
-        { metadataVersion } = getConfig().templates,
+    const { metadataVersion } = getConfig().templates,
         {
             templateExportMetadata,
             templatePreviewImageDataUri,
@@ -110,7 +112,7 @@ const resolveExportUserMeta = (): IDenebTemplateMetadata => {
         { vega } = getState().visualSettings;
     return {
         deneb: {
-            build: visualMetadata.version,
+            build: APPLICATION_INFORMATION.version,
             metaVersion: metadataVersion,
             provider: <TSpecProvider>vega.provider,
             providerVersion: PROVIDER_VERSIONS[vega.provider]

@@ -1,6 +1,14 @@
 import capabilities from '../capabilities.json';
 import features from './features.json';
 import { dependencies } from '../package.json';
+import { visual } from '../pbiviz.json';
+
+/**
+ * This is an object that contains the visual's metadata. This is used to
+ * handle places we need to display this information in the UI, as well as
+ * for versioning and other purposes.
+ */
+export const APPLICATION_INFORMATION = visual;
 
 /**
  * This is an object that contains the capabilities of the visual.
@@ -85,6 +93,12 @@ export const PROPERTY_DEFAULTS = {
     }
 };
 
+/**
+ * Provider versions, sourced from the `package.json` file. These are used to
+ * track which version of Vega or Vega-Lite we're currently using, whether this
+ * may have changed between visual versions, and potentially perform migrations
+ * if necessary.
+ */
 export const PROVIDER_VERSIONS = {
     vega: dependencies['vega'],
     vegaLite: dependencies['vega-lite']

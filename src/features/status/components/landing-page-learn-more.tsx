@@ -2,10 +2,10 @@ import React from 'react';
 import { useStatusStyles } from '.';
 import { getI18nValue } from '../../i18n';
 import { Hyperlink } from '../../interface';
-import { getConfig, getVisualMetadata } from '../../../core/utils/config';
+import { getConfig } from '../../../core/utils/config';
 import { Caption1 } from '@fluentui/react-components';
+import { APPLICATION_INFORMATION } from '../../../../config';
 
-const VISUAL_METADATA = getVisualMetadata();
 const VEGA_RESOURCES = getConfig().providerResources;
 
 /**
@@ -17,7 +17,7 @@ export const LandingPageLearnMore: React.FC = () => {
         <div>
             <ul className={classes.landingUl}>
                 <li className={classes.landingLi}>
-                    <Hyperlink href={VISUAL_METADATA.supportUrl}>
+                    <Hyperlink href={APPLICATION_INFORMATION.supportUrl}>
                         <Caption1>{`${getI18nValue(
                             'Text_Landing_Resources_Deneb'
                         )} ${getI18nValue(

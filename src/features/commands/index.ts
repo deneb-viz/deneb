@@ -4,7 +4,7 @@ import {
     TPreviewPivotRole,
     getZoomToFitScale
 } from '../../core/ui/advancedEditor';
-import { getConfig, getVisualMetadata } from '../../core/utils/config';
+import { getConfig } from '../../core/utils/config';
 import {
     IPersistenceProperty,
     resolveObjectProperties,
@@ -24,6 +24,7 @@ import {
     IZoomLevelCommandTestOptions
 } from './types';
 import { EditorApplyMode, TEditorRole } from '../json-editor';
+import { APPLICATION_INFORMATION } from '../../../config';
 
 export * from './types';
 
@@ -171,7 +172,7 @@ export const handleOpenRemapDialog = () => {
  */
 export const handleOpenWebsite = () => {
     executeCommand('helpSite', () => {
-        hostServices.launchUrl(getVisualMetadata().supportUrl);
+        hostServices.launchUrl(APPLICATION_INFORMATION.supportUrl);
     });
 };
 

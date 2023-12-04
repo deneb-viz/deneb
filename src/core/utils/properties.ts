@@ -18,8 +18,7 @@ import VisualSettings from '../../properties/visual-settings';
 import { getState } from '../../store';
 import { hostServices } from '../services';
 import { TSpecProvider } from '../vega';
-import { getVisualMetadata } from './config';
-import { PROVIDER_VERSIONS } from '../../../config';
+import { APPLICATION_INFORMATION, PROVIDER_VERSIONS } from '../../../config';
 
 /**
  * Handles resolution of object properties from the data view, either for persistence.
@@ -110,5 +109,5 @@ const getProviderVersionProperty = (
  */
 const getDenebVersionProperty = (): IPersistenceProperty => ({
     name: 'version',
-    value: getVisualMetadata().version
+    value: APPLICATION_INFORMATION.version
 });

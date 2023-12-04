@@ -29,7 +29,6 @@ import {
     logTimeEnd,
     logTimeStart
 } from './features/logging';
-import { getVisualMetadata } from './core/utils/config';
 import {
     VegaExtensibilityServices,
     VegaPatternFillServices
@@ -40,13 +39,13 @@ import {
     isVisualUpdateTypeResizeEnd,
     isVisualUpdateTypeVolatile
 } from './features/visual-host';
-import { FEATURES } from '../config';
+import { APPLICATION_INFORMATION, FEATURES } from '../config';
 
 /**
  * Run to indicate that the visual has started.
  */
-logHeading(`${getVisualMetadata()?.displayName}`);
-logHeading(`Version: ${getVisualMetadata()?.version}`, 12);
+logHeading(`${APPLICATION_INFORMATION?.displayName}`);
+logHeading(`Version: ${APPLICATION_INFORMATION?.version}`, 12);
 
 export class Deneb implements IVisual {
     private settings: VisualSettings;

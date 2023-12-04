@@ -3,21 +3,7 @@ export * as commands from './commands';
 export * as dom from './dom';
 export * as labels from './labels';
 
-export { getVersionInfo, TEditorPosition };
-
-import { PROVIDER_VERSIONS } from '../../../config';
-import { getVisualMetadata } from '../../core/utils/config';
-import { getI18nValue } from '../../features/i18n';
-
-/**
- * Returns visual + Vega + Vega-Lite version information as a single string.
- */
-const getVersionInfo = () => {
-    const visualMetadata = getVisualMetadata();
-    return `${visualMetadata.version} | ${getI18nValue('Provider_Vega')}: ${
-        PROVIDER_VERSIONS.vega
-    } | ${getI18nValue('Provider_VegaLite')}: ${PROVIDER_VERSIONS.vegaLite}`;
-};
+export { TEditorPosition };
 
 /**
  * Type to allow structure of the value for position of editor within the advanced editor view.

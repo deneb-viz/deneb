@@ -1,10 +1,9 @@
-import { PROVIDER_VERSIONS } from '../../../config';
+import { APPLICATION_INFORMATION, PROVIDER_VERSIONS } from '../../../config';
 import { logDebug } from '../../features/logging';
 import { isUnversionedSpec } from '../../features/specification';
 import VisualSettings from '../../properties/visual-settings';
 import { getState } from '../../store';
 import { TSpecProvider } from '../vega';
-import { getVisualMetadata } from './config';
 import {
     getDenebVersionProperty,
     resolveObjectProperties,
@@ -43,7 +42,7 @@ const getCurrentVersionInfo = (
         vega: { provider }
     } = visualSettings;
     return {
-        denebVersion: getVisualMetadata().version,
+        denebVersion: APPLICATION_INFORMATION.version,
         provider,
         providerVersion: PROVIDER_VERSIONS[provider]
     };

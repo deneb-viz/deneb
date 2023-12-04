@@ -11,8 +11,11 @@ import { IDenebTemplatesIncluded } from './types';
 import { TSpecProvider } from '../../core/vega';
 import { Spec } from 'vega';
 import { TopLevelSpec } from 'vega-lite';
-import { getVisualMetadata } from '../../core/utils/config';
-import { PROPERTY_DEFAULTS, PROVIDER_VERSIONS } from '../../../config';
+import {
+    APPLICATION_INFORMATION,
+    PROPERTY_DEFAULTS,
+    PROVIDER_VERSIONS
+} from '../../../config';
 
 export { getExportTemplate } from '../visual-export/logic';
 export {
@@ -78,7 +81,7 @@ export const getNewTemplateMetadata = (
         generated: new Date().toISOString()
     },
     deneb: {
-        build: getVisualMetadata().version,
+        build: APPLICATION_INFORMATION.version,
         metaVersion: TEMPLATE_METADATA_VERSION,
         provider,
         providerVersion: PROVIDER_VERSIONS[provider]
