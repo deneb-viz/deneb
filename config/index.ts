@@ -138,6 +138,45 @@ export const PROPERTY_DEFAULTS = {
 };
 
 /**
+ * Additional resources neede for each provider in the application (Vega,
+ * Vega-Lite and Deneb). These are used to provide links to documentation,
+ * examples, other resouces, and patching of specifications.
+ */
+export const PROVIDER_RESOURCES = {
+    deneb: {
+        interactivityDocumentationUrl:
+            'https://deneb-viz.github.io/interactivity-overview',
+        changelogDocumentationUrl: 'https://deneb-viz.github.io/changelog',
+        examplesUrl: 'https://deneb-viz.github.io/community/resources',
+        legacyVersion: '1.0.0.57'
+    },
+    vega: {
+        documentationUrl: 'https://vega.github.io/vega/docs/',
+        examplesUrl: 'https://vega.github.io/vega/examples/',
+        schemaUrl: 'https://vega.github.io/schema/vega/v5.json',
+        legacyVersion: '5.21.0',
+        patch: {
+            signals: [
+                {
+                    name: 'pbiContainerHeight',
+                    update: 'containerSize()[1]'
+                },
+                {
+                    name: 'pbiContainerWidth',
+                    update: 'containerSize()[0]'
+                }
+            ]
+        }
+    },
+    vegaLite: {
+        documentationUrl: 'https://vega.github.io/vega-lite/docs/',
+        examplesUrl: 'https://vega.github.io/vega-lite/examples/',
+        schemaUrl: 'https://vega.github.io/schema/vega-lite/v5.json',
+        legacyVersion: '5.1.1'
+    }
+};
+
+/**
  * Provider versions, sourced from the `package.json` file. These are used to
  * track which version of Vega or Vega-Lite we're currently using, whether this
  * may have changed between visual versions, and potentially perform migrations

@@ -9,19 +9,18 @@ import { SettingsTextSection } from './settings-text-section';
 import { CrossFilterMaxDataPoints } from './cross-filter-max-data-points';
 import store from '../../../store';
 import { hostServices } from '../../../core/services';
-import { getConfig } from '../../../core/utils/config';
 import { getI18nValue } from '../../i18n';
 import { useSettingsStyles } from '.';
+import { PROVIDER_RESOURCES } from '../../../../config';
 
 export const InteractivitySettings: React.FC = () => {
     const { enableSelection } = store(
         (state) => state.visualSettings.vega,
         shallow
     );
-    const { providerResources } = getConfig();
     const openInteractivityLink = useCallback(() => {
         hostServices.launchUrl(
-            providerResources.deneb.interactivityDocumentationUrl
+            PROVIDER_RESOURCES.deneb.interactivityDocumentationUrl
         );
     }, []);
     const classes = useSettingsStyles();

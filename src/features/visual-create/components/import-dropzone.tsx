@@ -25,7 +25,7 @@ import { Spec } from 'vega';
 import { TopLevelSpec } from 'vega-lite';
 import * as schema_v1 from '../../../../schema/deneb-template-usermeta-v1.json';
 import { TSpecProvider } from '../../../core/vega';
-import { getConfig } from '../../../core/utils/config';
+import { PROVIDER_RESOURCES } from '../../../../config';
 
 /**
  * Base styling for dropzone.
@@ -263,9 +263,8 @@ const getTemplateResolvedForLegacyVersions = (
 ) => {
     const deneb = (template?.usermeta as IDenebTemplateMetadata)?.deneb;
     const legacyVersion =
-        (provider === 'vega' &&
-            getConfig().providerResources.vega.legacyVersion) ||
-        getConfig().providerResources.vegaLite.legacyVersion;
+        (provider === 'vega' && PROVIDER_RESOURCES.vega.legacyVersion) ||
+        PROVIDER_RESOURCES.vegaLite.legacyVersion;
     const providerVersion = has(deneb, 'providerVersion')
         ? deneb.providerVersion
         : legacyVersion;

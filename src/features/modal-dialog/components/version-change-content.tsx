@@ -6,7 +6,7 @@ import { getI18nValue } from '../../i18n';
 import { getVegaProvideri18n } from '../../../core/vega';
 import { Link } from '@fluentui/react-components';
 import { hostServices } from '../../../core/services';
-import { getConfig } from '../../../core/utils/config';
+import { PROVIDER_RESOURCES } from '../../../../config';
 
 export const VersionChangeContent: React.FC = () => {
     const { changeType, current, previous, showMigrationDialog } = store(
@@ -65,7 +65,7 @@ export const VersionChangeContent: React.FC = () => {
     }, [showMigrationDialog]);
     const openLink = () => {
         hostServices.launchUrl(
-            getConfig().providerResources.deneb.changelogDocumentationUrl
+            PROVIDER_RESOURCES.deneb.changelogDocumentationUrl
         );
     };
     return (

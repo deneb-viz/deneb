@@ -3,10 +3,8 @@ import { Body1, Divider } from '@fluentui/react-components';
 
 import { useCreateStyles } from './';
 import { getI18nValue } from '../../i18n';
-import { getConfig } from '../../../core/utils/config';
 import { Hyperlink } from '../../interface';
-
-const { providerResources: resources } = getConfig();
+import { PROVIDER_RESOURCES } from '../../../../config';
 
 export const NoTemplateMessage: React.FC = () => {
     const classes = useCreateStyles();
@@ -21,19 +19,25 @@ export const NoTemplateMessage: React.FC = () => {
                     {getI18nValue('Text_Create_Discover_More')}
                     <ul>
                         <li>
-                            <Hyperlink href={resources.deneb.examplesUrl}>
+                            <Hyperlink
+                                href={PROVIDER_RESOURCES.deneb.examplesUrl}
+                            >
                                 {getI18nValue(
                                     'Text_Link_Create_Deneb_Community'
                                 )}
                             </Hyperlink>
                         </li>
                         <li>
-                            <Hyperlink href={resources.vega.examplesUrl}>
+                            <Hyperlink
+                                href={PROVIDER_RESOURCES.vega.examplesUrl}
+                            >
                                 {getI18nValue('Text_Link_Create_Vega_Examples')}
                             </Hyperlink>
                         </li>
                         <li>
-                            <Hyperlink href={resources.vegaLite.examplesUrl}>
+                            <Hyperlink
+                                href={PROVIDER_RESOURCES.vegaLite.examplesUrl}
+                            >
                                 {getI18nValue(
                                     'Text_Link_Create_VegaLite_Examples'
                                 )}

@@ -5,7 +5,6 @@ import cloneDeep from 'lodash/cloneDeep';
 import isEqual from 'lodash/isEqual';
 import merge from 'lodash/merge';
 
-import { getConfig } from '../../core/utils/config';
 import {
     configEditorService,
     specEditorService
@@ -45,7 +44,7 @@ import {
 } from './schema-validation';
 import { getI18nValue } from '../i18n';
 import { getHashValue } from '../../utils';
-import { PROPERTY_DEFAULTS } from '../../../config';
+import { PROPERTY_DEFAULTS, PROVIDER_RESOURCES } from '../../../config';
 
 /**
  * For a given operation and string input, ensure that it's trimmed and replaced with suitable defaults if empty.
@@ -336,7 +335,7 @@ const getPatchedVegaSpec = (spec: Vega.Spec): Vega.Spec => {
         width: spec['width'] ?? { signal: 'pbiContainerWidth' },
         signals: [
             ...(spec['signals'] || []),
-            ...(getConfig()?.providerResources?.vega?.patch?.signals || [])
+            ...(PROVIDER_RESOURCES?.vega?.patch?.signals || [])
         ]
     });
 };

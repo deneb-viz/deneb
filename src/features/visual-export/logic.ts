@@ -3,7 +3,6 @@ import omit from 'lodash/omit';
 import { v4 as uuidv4 } from 'uuid';
 
 import { DATASET_NAME } from '../../constants';
-import { getConfig } from '../../core/utils/config';
 import {
     parseAndValidateContentJson,
     getJsonAsIndentedString
@@ -20,6 +19,7 @@ import { getI18nValue } from '../i18n';
 import {
     APPLICATION_INFORMATION,
     PROPERTY_DEFAULTS,
+    PROVIDER_RESOURCES,
     PROVIDER_VERSIONS,
     TEMPLATE_METADATA_VERSION
 } from '../../../config';
@@ -31,10 +31,9 @@ import {
 export const getExportTemplate = () => {
     const { visualSettings } = getState();
     const { vega } = visualSettings;
-    const { providerResources } = getConfig();
     const vSchema = (
-        (vega.provider === 'vega' && providerResources.vega) ||
-        providerResources.vegaLite
+        (vega.provider === 'vega' && PROVIDER_RESOURCES.vega) ||
+        PROVIDER_RESOURCES.vegaLite
     ).schemaUrl;
     const baseObj = {
         $schema: vSchema,

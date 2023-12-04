@@ -1,12 +1,13 @@
 import React from 'react';
+import { Caption1 } from '@fluentui/react-components';
+
 import { useStatusStyles } from '.';
 import { getI18nValue } from '../../i18n';
 import { Hyperlink } from '../../interface';
-import { getConfig } from '../../../core/utils/config';
-import { Caption1 } from '@fluentui/react-components';
-import { APPLICATION_INFORMATION } from '../../../../config';
-
-const VEGA_RESOURCES = getConfig().providerResources;
+import {
+    APPLICATION_INFORMATION,
+    PROVIDER_RESOURCES
+} from '../../../../config';
 
 /**
  * Provides the hyperlinks to associated documentation for the landing page.
@@ -26,7 +27,7 @@ export const LandingPageLearnMore: React.FC = () => {
                     </Hyperlink>
                 </li>
                 <li className={classes.landingLi}>
-                    <Hyperlink href={VEGA_RESOURCES.vega.documentationUrl}>
+                    <Hyperlink href={PROVIDER_RESOURCES.vega.documentationUrl}>
                         <Caption1>{`${getI18nValue(
                             'Link_Vega_Doc'
                         )} ${getI18nValue(
@@ -35,7 +36,9 @@ export const LandingPageLearnMore: React.FC = () => {
                     </Hyperlink>
                 </li>
                 <li className={classes.landingLi}>
-                    <Hyperlink href={VEGA_RESOURCES.vegaLite.documentationUrl}>
+                    <Hyperlink
+                        href={PROVIDER_RESOURCES.vegaLite.documentationUrl}
+                    >
                         <Caption1>{`${getI18nValue(
                             'Link_VegaLite_Doc'
                         )} ${getI18nValue(
