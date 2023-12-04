@@ -39,6 +39,16 @@ export const FEATURES = features;
 export const LOG_LEVEL: number = 0;
 
 /**
+ * Default values for the data table in the preview pane (AKA the debug pane).
+ */
+export const PREVIEW_PANE_DATA_TABLE = {
+    rowsPerPage: {
+        default: 10,
+        values: [10, 25, 50, 100]
+    }
+};
+
+/**
  * Default configuration for the preview pane (AKA the debug pane).
  */
 export const PREVIEW_PANE_DEFAULTS = {

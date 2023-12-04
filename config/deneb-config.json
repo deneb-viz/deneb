@@ -80,16 +80,5 @@
             "combination": "ctrl|alt|num_multiply",
             "functionalArea": "other"
         }
-    },
-    "dataTable": {
-        "rowsPerPage": {
-            "default": 10,
-            "values": [
-                10,
-                25,
-                50,
-                100
-            ]
-        }
     }
 }
