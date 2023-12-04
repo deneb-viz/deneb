@@ -39,6 +39,92 @@ export const FEATURES = features;
 export const LOG_LEVEL: number = 0;
 
 /**
+ * Keyboard shortcuts for the application.
+ */
+export const KEY_BINDINGS = {
+    applyChanges: {
+        combination: 'ctrl|enter',
+        functionalArea: 'other'
+    },
+    autoApplyToggle: {
+        combination: 'ctrl|shift|enter',
+        functionalArea: 'other'
+    },
+    formatJson: {
+        combination: 'ctrl|alt|r',
+        functionalArea: 'other'
+    },
+    exportSpecification: {
+        combination: 'ctrl|alt|t',
+        functionalArea: 'other'
+    },
+    newSpecification: {
+        combination: 'ctrl|alt|n',
+        functionalArea: 'other'
+    },
+    fieldMappings: {
+        combination: 'ctrl|alt|f',
+        functionalArea: 'other'
+    },
+    helpSite: {
+        combination: 'ctrl|alt|h',
+        functionalArea: 'other'
+    },
+    navigateSpecification: {
+        combination: 'ctrl|alt|1,ctrl|alt|num_1',
+        functionalArea: 'other'
+    },
+    navigateConfig: {
+        combination: 'ctrl|alt|2,ctrl|alt|num_2',
+        functionalArea: 'other'
+    },
+    navigateSettings: {
+        combination: 'ctrl|alt|3,ctrl|alt|num_3',
+        functionalArea: 'other'
+    },
+    editorPaneToggle: {
+        combination: 'ctrl|alt|space',
+        functionalArea: 'other'
+    },
+    debugPaneToggle: {
+        combination: 'ctrl|`',
+        functionalArea: 'other'
+    },
+    debugPaneShowData: {
+        combination: 'ctrl|alt|7,ctrl|alt|num_7',
+        functionalArea: 'other'
+    },
+    debugPaneShowSignals: {
+        combination: 'ctrl|alt|8,ctrl|alt|num_8',
+        functionalArea: 'other'
+    },
+    debugPaneShowLogs: {
+        combination: 'ctrl|alt|9,ctrl|alt|num_9',
+        functionalArea: 'other'
+    },
+    editorFocusOut: {
+        combination: 'esc',
+        functionalArea: 'other'
+    },
+    zoomIn: {
+        combination: 'ctrl|alt|+,ctrl|alt|=',
+        functionalArea: 'other'
+    },
+    zoomOut: {
+        combination: 'ctrl|alt|-',
+        functionalArea: 'other'
+    },
+    zoomReset: {
+        combination: 'ctrl|alt|0,ctrl|alt|num_0',
+        functionalArea: 'other'
+    },
+    zoomFit: {
+        combination: 'ctrl|alt|num_multiply',
+        functionalArea: 'other'
+    }
+};
+
+/**
  * Default values for the data table in the preview pane (AKA the debug pane).
  */
 export const PREVIEW_PANE_DATA_TABLE = {

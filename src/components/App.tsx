@@ -27,7 +27,7 @@ import {
     handleZoomReset
 } from '../features/commands';
 import { logRender } from '../features/logging';
-import { getConfig } from '../core/utils/config';
+import { KEY_BINDINGS } from '../../config';
 
 const App = () => {
     const hotkeyHandler = (command: Command, callback: () => void) =>
@@ -60,6 +60,6 @@ const App = () => {
  * Convenience method to get key binding details from configuration for the specified command.
  */
 const getCommandKey = (command: Command): string =>
-    getConfig()?.keyBindings?.[command]?.combination || '';
+    KEY_BINDINGS?.[command]?.combination || '';
 
 export default App;
