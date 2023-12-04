@@ -1,9 +1,10 @@
+import { PROVIDER_VERSIONS } from '../../../config';
 import { logDebug } from '../../features/logging';
 import { isUnversionedSpec } from '../../features/specification';
 import VisualSettings from '../../properties/visual-settings';
 import { getState } from '../../store';
 import { TSpecProvider } from '../vega';
-import { getVisualMetadata, providerVersions } from './config';
+import { getVisualMetadata } from './config';
 import {
     getDenebVersionProperty,
     resolveObjectProperties,
@@ -44,7 +45,7 @@ const getCurrentVersionInfo = (
     return {
         denebVersion: getVisualMetadata().version,
         provider,
-        providerVersion: providerVersions[provider]
+        providerVersion: PROVIDER_VERSIONS[provider]
     };
 };
 
@@ -175,7 +176,7 @@ const migrateUnversionedSpec = (provider: TSpecProvider) => {
                 properties: [
                     {
                         name: 'version',
-                        value: providerVersions[provider]
+                        value: PROVIDER_VERSIONS[provider]
                     }
                 ]
             }
@@ -201,7 +202,7 @@ const migrateWithNoChanges = (provider: TSpecProvider) => {
                 properties: [
                     {
                         name: 'version',
-                        value: providerVersions[provider]
+                        value: PROVIDER_VERSIONS[provider]
                     }
                 ]
             }

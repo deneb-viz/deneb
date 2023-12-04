@@ -3,11 +3,7 @@ import omit from 'lodash/omit';
 import { v4 as uuidv4 } from 'uuid';
 
 import { DATASET_NAME } from '../../constants';
-import {
-    getConfig,
-    getVisualMetadata,
-    providerVersions
-} from '../../core/utils/config';
+import { getConfig, getVisualMetadata } from '../../core/utils/config';
 import {
     parseAndValidateContentJson,
     getJsonAsIndentedString
@@ -21,7 +17,7 @@ import {
 } from '../template';
 import { IDenebTemplateMetadata } from '../template/schema';
 import { getI18nValue } from '../i18n';
-import { PROPERTY_DEFAULTS } from '../../../config';
+import { PROPERTY_DEFAULTS, PROVIDER_VERSIONS } from '../../../config';
 
 /**
  * Combines spec, config and specified metadata to produce a valid JSON
@@ -117,7 +113,7 @@ const resolveExportUserMeta = (): IDenebTemplateMetadata => {
             build: visualMetadata.version,
             metaVersion: metadataVersion,
             provider: <TSpecProvider>vega.provider,
-            providerVersion: providerVersions[vega.provider]
+            providerVersion: PROVIDER_VERSIONS[vega.provider]
         },
         interactivity: {
             tooltip: vega.enableTooltips,

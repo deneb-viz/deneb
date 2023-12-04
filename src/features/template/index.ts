@@ -11,8 +11,8 @@ import { IDenebTemplatesIncluded } from './types';
 import { TSpecProvider } from '../../core/vega';
 import { Spec } from 'vega';
 import { TopLevelSpec } from 'vega-lite';
-import { getVisualMetadata, providerVersions } from '../../core/utils/config';
-import { PROPERTY_DEFAULTS } from '../../../config';
+import { getVisualMetadata } from '../../core/utils/config';
+import { PROPERTY_DEFAULTS, PROVIDER_VERSIONS } from '../../../config';
 
 export { getExportTemplate } from '../visual-export/logic';
 export {
@@ -81,7 +81,7 @@ export const getNewTemplateMetadata = (
         build: getVisualMetadata().version,
         metaVersion: TEMPLATE_METADATA_VERSION,
         provider,
-        providerVersion: providerVersions[provider]
+        providerVersion: PROVIDER_VERSIONS[provider]
     },
     interactivity: {
         tooltip: PROPERTY_DEFAULTS.vega.enableTooltips,

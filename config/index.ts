@@ -1,5 +1,6 @@
 import capabilities from '../capabilities.json';
 import features from './features.json';
+import { dependencies } from '../package.json';
 
 /**
  * This is an object that contains the capabilities of the visual.
@@ -82,4 +83,9 @@ export const PROPERTY_DEFAULTS = {
     performance: {
         enableResizeRecalc: false
     }
+};
+
+export const PROVIDER_VERSIONS = {
+    vega: dependencies['vega'],
+    vegaLite: dependencies['vega-lite']
 };

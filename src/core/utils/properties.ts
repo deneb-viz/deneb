@@ -18,7 +18,8 @@ import VisualSettings from '../../properties/visual-settings';
 import { getState } from '../../store';
 import { hostServices } from '../services';
 import { TSpecProvider } from '../vega';
-import { getVisualMetadata, providerVersions } from './config';
+import { getVisualMetadata } from './config';
+import { PROVIDER_VERSIONS } from '../../../config';
 
 /**
  * Handles resolution of object properties from the data view, either for persistence.
@@ -101,7 +102,7 @@ const getProviderVersionProperty = (
     provider: TSpecProvider
 ): IPersistenceProperty => ({
     name: 'version',
-    value: providerVersions[provider]
+    value: PROVIDER_VERSIONS[provider]
 });
 
 /**

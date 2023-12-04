@@ -16,6 +16,10 @@
         "template-schemagen": "typescript-json-schema ./src/features/template/schema.ts IDenebTemplateMetadata -o ./schema/deneb-template-usermeta-v1.json --required --topRef",
         "validate-config-for-commit": "ts-node -P tsconfig.build-scripts.json bin/validate-config-for-commit"
     },
+    "dependencies": {
+        "vega": "5.26.1",
+        "vega-lite": "5.16.3"
+    },
     "devDependencies": {
         "@babel/core": "^7.15.0",
         "@babel/plugin-transform-runtime": "^7.15.0",
@@ -74,8 +78,6 @@
         "typescript": "^4.2.4",
         "typescript-json-schema": "^0.50.0",
         "uuid": "^8.3.2",
-        "vega": "5.26.1",
-        "vega-lite": "5.16.3",
         "zustand": "^4.3.7"
     }
 }

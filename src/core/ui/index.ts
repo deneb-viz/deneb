@@ -5,7 +5,8 @@ export * as labels from './labels';
 
 export { getVersionInfo, TEditorPosition };
 
-import { getVisualMetadata, providerVersions } from '../../core/utils/config';
+import { PROVIDER_VERSIONS } from '../../../config';
+import { getVisualMetadata } from '../../core/utils/config';
 import { getI18nValue } from '../../features/i18n';
 
 /**
@@ -14,8 +15,8 @@ import { getI18nValue } from '../../features/i18n';
 const getVersionInfo = () => {
     const visualMetadata = getVisualMetadata();
     return `${visualMetadata.version} | ${getI18nValue('Provider_Vega')}: ${
-        providerVersions.vega
-    } | ${getI18nValue('Provider_VegaLite')}: ${providerVersions.vegaLite}`;
+        PROVIDER_VERSIONS.vega
+    } | ${getI18nValue('Provider_VegaLite')}: ${PROVIDER_VERSIONS.vegaLite}`;
 };
 
 /**
