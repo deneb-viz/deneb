@@ -103,14 +103,22 @@
                     "descriptionKey": "Objects_Display_ScrollbarColor_Description",
                     "displayName": "Scrollbar color",
                     "description": "Scrollbar color description.",
-                    "type": { "fill": { "solid": { "color": true } } }
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
                 },
                 "scrollbarOpacity": {
                     "displayNameKey": "Objects_Display_ScrollbarOpacity",
                     "descriptionKey": "Objects_Display_ScrollbarOpacity_Description",
                     "displayName": "Scrollbar opacity",
                     "description": "Scrollbar opacity description.",
-                    "type": { "integer": true }
+                    "type": {
+                        "integer": true
+                    }
                 },
                 "scrollbarRadius": {
                     "displayNameKey": "Objects_Display_ScrollbarRadius",
@@ -379,6 +387,15 @@
                     "description": "Preview Scrollbars description",
                     "type": {
                         "bool": true
+                    }
+                },
+                "debugTableRowsPerPage": {
+                    "displayNameKey": "Objects_Editor_DebugTableRowsPerPage",
+                    "descriptionKey": "Objects_Editor_DebugTableRowsPerPage_Description",
+                    "displayName": "Rows Per Page",
+                    "description": "Rows Per Page description",
+                    "type": {
+                        "numeric": true
                     }
                 }
             }

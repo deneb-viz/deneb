@@ -129,8 +129,8 @@ export const KEY_BINDINGS = {
  */
 export const PREVIEW_PANE_DATA_TABLE = {
     rowsPerPage: {
-        default: 10,
-        values: [10, 25, 50, 100]
+        default: 50,
+        values: [10, 25, 50, 100, 150, 200]
     }
 };
 
@@ -196,7 +196,8 @@ export const PROPERTY_DEFAULTS = {
         showLineNumbers: true,
         showViewportMarker: true,
         maxLineLength: 40,
-        previewScrollbars: false
+        previewScrollbars: false,
+        dataTableRowsPerPage: PREVIEW_PANE_DATA_TABLE.rowsPerPage.default
     },
     vega: {
         jsonSpec: null,
