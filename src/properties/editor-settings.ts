@@ -115,7 +115,6 @@ export default class EditorSettings extends SettingsBase {
             value: `${this.debugTableRowsPerPage}`,
             items: getPageRowCountEnum()
         };
-        console.log('DATA_ROW_COUNT_SLICE', TABLE_ROW_COUNT_SLICE);
         return {
             displayName: getI18nValue(OBJECT_DEF.displayNameKey),
             description: getI18nValue(OBJECT_DEF.descriptionKey),
