@@ -196,7 +196,8 @@ export const PROPERTY_DEFAULTS = {
         showLineNumbers: true,
         showViewportMarker: true,
         maxLineLength: 40,
-        previewScrollbars: false
+        previewScrollbars: false,
+        dataTableRowsPerPage: PREVIEW_PANE_DATA_TABLE.rowsPerPage.default
     },
     vega: {
         jsonSpec: null,

@@ -18,20 +18,21 @@ import {
     PREVIEW_PANE_AREA_PADDING,
     PREVIEW_PANE_TOOLBAR_MIN_SIZE
 } from '../../../constants';
-import { PREVIEW_PANE_DATA_TABLE } from '../../../../config';
 
 /**
  * Displays a table of data, either for a dataset or the signals in the Vega
  * view.
  */
+// eslint-disable-next-line max-lines-per-function
 export const DataTableViewer: React.FC<TableProps<any>> = ({
     columns,
     data,
     ...props
 }) => {
-    const { editorPreviewAreaHeight, viewportHeight } = store(
+    const { editorPreviewAreaHeight, viewportHeight, editorSettings } = store(
         (state) => ({
             editorPreviewAreaHeight: state.editorPreviewAreaHeight,
+            editorSettings: state.visualSettings.editor,
             viewportHeight: state.visualViewportCurrent.height
         }),
         shallow
@@ -56,7 +57,7 @@ export const DataTableViewer: React.FC<TableProps<any>> = ({
             defaultSortFieldId={columns[0].id}
             pagination
             paginationComponent={DataTableStatusBar}
-            paginationPerPage={PREVIEW_PANE_DATA_TABLE.rowsPerPage.default}
+            paginationPerPage={editorSettings.debugTableRowsPerPage}
             customStyles={{
                 head: {
                     style: {

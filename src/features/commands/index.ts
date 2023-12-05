@@ -297,7 +297,7 @@ const setEditorPivotItem = (operation: TEditorRole) =>
 /**
  * Manages persistence of a properties object to the store from an operation.
  */
-const setVisualProperty = (
+export const setVisualProperty = (
     properties: IPersistenceProperty[],
     objectName = 'vega'
 ) =>
