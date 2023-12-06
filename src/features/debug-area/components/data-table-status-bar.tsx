@@ -5,7 +5,7 @@ import {
     SelectProps,
     useId
 } from '@fluentui/react-components';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { PaginationComponentProps } from 'react-data-table-component';
 import { shallow } from 'zustand/shallow';
 
@@ -22,19 +22,27 @@ import { setVisualProperty } from '../../commands';
  * Displays at the footer of the data table, and used to control pagination
  * and other options.
  */
+// eslint-disable-next-line max-lines-per-function
 export const DataTableStatusBar: React.FC<PaginationComponentProps> = ({
     rowCount,
+    rowsPerPage,
     onChangePage,
     onChangeRowsPerPage,
     currentPage
 }) => {
-    const { rowsPerPage, mode } = store(
+    const { rowsPerPageSetting, mode } = store(
         (state) => ({
-            rowsPerPage: state.visualSettings.editor.debugTableRowsPerPage,
+            rowsPerPageSetting:
+                state.visualSettings.editor.debugTableRowsPerPage,
             mode: state.editorPreviewAreaSelectedPivot
         }),
         shallow
     );
+    useEffect(() => {
+        if (rowsPerPage !== rowsPerPageSetting) {
+            onChangeRowsPerPage(rowsPerPageSetting, currentPage);
+        }
+    }, [rowsPerPage, rowsPerPageSetting]);
     const handleFirstPageButtonClick = () => {
         onChangePage(1, rowCount);
     };
@@ -45,16 +53,16 @@ export const DataTableStatusBar: React.FC<PaginationComponentProps> = ({
         onChangePage(currentPage + 1, rowCount);
     };
     const handleLastPageButtonClick = () => {
-        onChangePage(Math.ceil(rowCount / rowsPerPage), rowCount);
+        onChangePage(Math.ceil(rowCount / rowsPerPageSetting), rowCount);
     };
     const handleChangeRowsPerPage: SelectProps['onChange'] = (event, data) => {
         const value = Number(data.value);
         onChangeRowsPerPage(value, currentPage);
         setVisualProperty([{ name: 'debugTableRowsPerPage', value }], 'editor');
     };
-    const numPages = getNumberOfPages(rowCount, rowsPerPage);
-    const lastIndex = currentPage * rowsPerPage;
-    const firstIndex = lastIndex - rowsPerPage + 1;
+    const numPages = getNumberOfPages(rowCount, rowsPerPageSetting);
+    const lastIndex = currentPage * rowsPerPageSetting;
+    const firstIndex = lastIndex - rowsPerPageSetting + 1;
     const range =
         currentPage === numPages
             ? `${firstIndex}-${rowCount} of ${rowCount}`
@@ -84,7 +92,7 @@ export const DataTableStatusBar: React.FC<PaginationComponentProps> = ({
                     <div>
                         <Select
                             id={rowsPerPageId}
-                            value={rowsPerPage}
+                            value={rowsPerPageSetting}
                             onChange={handleChangeRowsPerPage}
                             size='small'
                         >
