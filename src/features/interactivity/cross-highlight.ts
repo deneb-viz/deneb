@@ -3,8 +3,8 @@ import {
     HIGHLIGHT_STATUS_SUFFIX,
     HIGHLIGHT_FIELD_SUFFIX
 } from '../../constants';
-import { hostServices } from '../../core/services';
 import { getVegaSettings } from '../../core/vega';
+import { getVisualInteractionStatus } from '../visual-host';
 
 /**
  * Provides all highlight field suffixes, suitable for a RegExp expression.
@@ -47,7 +47,7 @@ export const isCrossHighlightField = (field: string) =>
  */
 export const isCrossHighlightPropSet = () => {
     const { enableHighlight } = getVegaSettings();
-    return (hostServices.allowInteractions && enableHighlight) || false;
+    return (getVisualInteractionStatus() && enableHighlight) || false;
 };
 
 /**

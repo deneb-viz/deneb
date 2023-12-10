@@ -32,7 +32,6 @@ import {
     isCrossFilterPropSet,
     isCrossHighlightPropSet
 } from '../../features/interactivity';
-import { hostServices } from '../services';
 import { getState } from '../../store';
 import {
     DATASET_NAME,
@@ -49,6 +48,7 @@ import {
 } from '../../features/dataset';
 import { logError, logTimeEnd, logTimeStart } from '../../features/logging';
 import { getHashValue } from '../../utils';
+import { getVisualSelectionManager } from '../../features/visual-host';
 
 /**
  * Compare two sets of dataset metadata, as well as the current state of the
@@ -164,7 +164,7 @@ export const getMappedDataset = (
                     ?.length > 0;
             const fieldValues = getDatasetValueEntries(dvCategories, dvValues);
             const selections: ISelectionId[] = <ISelectionId[]>(
-                hostServices.selectionManager.getSelectionIds()
+                getVisualSelectionManager().getSelectionIds()
             );
             const fields = getDatasetFields(dvCategories, dvValues);
             logTimeStart('getMappedDataset values');

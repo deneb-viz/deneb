@@ -22,9 +22,9 @@ import {
     getIdentitiesFromData,
     resolveDataFromItem
 } from './data-point';
-import { hostServices } from '../../core/services';
 import { DATASET_IDENTITY_NAME, DATASET_KEY_NAME } from '../../constants';
 import { getI18nValue } from '../i18n';
+import { getVisualHost } from '../visual-host';
 
 /**
  * Convenience constant for tooltip events, as it's required by Power BI.
@@ -124,7 +124,7 @@ export const getPowerBiTooltipHandler = (
  */
 export const hidePowerBiTooltip = () => {
     const immediately = true;
-    hostServices.tooltipService.hide({
+    getVisualHost().tooltipService.hide({
         immediately,
         isTouchEvent: IS_TOUCH_EVENT
     });

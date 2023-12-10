@@ -8,10 +8,10 @@ import { SettingsHeadingLabel } from './settings-heading-label';
 import { SettingsTextSection } from './settings-text-section';
 import { CrossFilterMaxDataPoints } from './cross-filter-max-data-points';
 import store from '../../../store';
-import { hostServices } from '../../../core/services';
 import { getI18nValue } from '../../i18n';
 import { useSettingsStyles } from '.';
 import { PROVIDER_RESOURCES } from '../../../../config';
+import { launchUrl } from '../../visual-host';
 
 export const InteractivitySettings: React.FC = () => {
     const { enableSelection } = store(
@@ -19,9 +19,7 @@ export const InteractivitySettings: React.FC = () => {
         shallow
     );
     const openInteractivityLink = useCallback(() => {
-        hostServices.launchUrl(
-            PROVIDER_RESOURCES.deneb.interactivityDocumentationUrl
-        );
+        launchUrl(PROVIDER_RESOURCES.deneb.interactivityDocumentationUrl);
     }, []);
     const classes = useSettingsStyles();
     return (

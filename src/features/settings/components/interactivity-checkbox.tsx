@@ -4,9 +4,9 @@ import { Checkbox, CheckboxOnChangeData } from '@fluentui/react-components';
 import store from '../../../store';
 import { updateBooleanProperty } from '../../../core/ui/commands';
 import { TInteractivityType } from '../../interactivity/types';
-import { hostServices } from '../../../core/services';
 import { getI18nValue } from '../../i18n';
 import { useSettingsStyles } from '.';
+import { getVisualSelectionManager } from '../../visual-host';
 
 interface IInteractivityCheckboxProps {
     type: TInteractivityType;
@@ -16,7 +16,6 @@ export const InteractivityCheckbox: React.FC<IInteractivityCheckboxProps> = ({
     type
 }) => {
     const { vega } = store((state) => state.visualSettings);
-    const { selectionManager } = hostServices;
     const propertyName = useMemo(() => getPropertyName(type), [type]);
     const classes = useSettingsStyles();
     const handleToggle = React.useCallback(
@@ -28,9 +27,9 @@ export const InteractivityCheckbox: React.FC<IInteractivityCheckboxProps> = ({
             if (
                 type === 'select' &&
                 !value &&
-                selectionManager.hasSelection()
+                getVisualSelectionManager().hasSelection()
             ) {
-                selectionManager.clear();
+                getVisualSelectionManager().clear();
             }
             updateBooleanProperty(propertyName, value);
         },

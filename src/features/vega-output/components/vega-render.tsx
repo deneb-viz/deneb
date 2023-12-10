@@ -11,9 +11,9 @@ import {
 } from '../../vega-extensibility';
 import { useVegaStyles } from '..';
 import { getPowerBiTooltipHandler } from '../../interactivity';
-import { hostServices } from '../../../core/services';
 import { getD3FormatLocale, getD3TimeFormatLocale } from '../../i18n';
 import { getSpecificationForVisual } from '../../specification/logic';
+import { getVisualHost } from '../../visual-host';
 
 interface IVegaRenderProps {
     datasetHash: string;
@@ -96,7 +96,7 @@ export const VegaRender: React.FC<IVegaRenderProps> = memo(
             () =>
                 getPowerBiTooltipHandler(
                     enableTooltips,
-                    hostServices.tooltipService
+                    getVisualHost().tooltipService
                 ),
             [enableTooltips]
         );
