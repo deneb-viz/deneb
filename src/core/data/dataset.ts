@@ -76,8 +76,9 @@ const getDataRow = (
     rowIndex: number,
     hasHighlights: boolean,
     hasDrilldown: boolean
-) =>
-    reduce(
+) => {
+    const isCrossHighlight = isCrossHighlightPropSet();
+    return reduce(
         fields,
         (row, f, fi) => {
             const rawValue = castPrimitiveValue(f, values[fi][rowIndex]);
@@ -91,7 +92,7 @@ const getDataRow = (
                 const fieldHighlightComparator = `${fieldName}${HIGHLIGHT_COMPARATOR_SUFFIX}`;
                 const rawValueOriginal: PrimitiveValue = row[fieldHighlight];
                 const shouldHighlight =
-                    isCrossHighlightPropSet() && f.source === 'values';
+                    isCrossHighlight && f.source === 'values';
                 row[fieldName] = rawValue;
                 if (shouldHighlight) {
                     row[fieldHighlightStatus] = resolveHighlightStatus(
@@ -121,6 +122,7 @@ const getDataRow = (
         },
         <IVisualDatasetValueRow>{}
     );
+};
 
 /**
  * Get current processed dataset (metadata and values) from Deneb's store.
@@ -167,7 +169,6 @@ export const getMappedDataset = (
                 getVisualSelectionManager().getSelectionIds()
             );
             const fields = getDatasetFields(dvCategories, dvValues);
-            logTimeStart('getMappedDataset values');
             /**
              * #357, #396 the selection IDs massively degrade performance when
              * hashing, so we has a copy of the values without the selection
@@ -180,6 +181,8 @@ export const getMappedDataset = (
                 isCrossFilter
             });
             logTimeEnd('getMappedDataset hashValue');
+            logTimeStart('getMappedDataset values');
+            const selectionFields = getDatasetFieldsInclusive(fields);
             const values: IVisualDatasetValueRow[] = range(rowsLoaded).map(
                 (r, ri) => {
                     const md = getDataRow(
@@ -190,7 +193,7 @@ export const getMappedDataset = (
                         hasDrilldown
                     );
                     const identity = createSelectionIds(
-                        getDatasetFieldsInclusive(fields),
+                        selectionFields,
                         dvCategories,
                         [r]
                     )[0];
@@ -200,7 +203,7 @@ export const getMappedDataset = (
                             __identity__: identity,
                             __key__: getSidString(identity)
                         },
-                        ...(isCrossFilterPropSet() && {
+                        ...(isCrossFilter && {
                             __selected__: getDataPointCrossFilterStatus(
                                 identity,
                                 selections

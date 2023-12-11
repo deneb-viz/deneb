@@ -11,6 +11,7 @@ import { getVegaSettings } from '../vega';
 import { getHighlightStatus } from './dataView';
 import { powerBiFormatValue } from '../../utils';
 import { isDataViewFieldEligibleForFormatting } from '../../features/dataset';
+import { logTimeEnd, logTimeStart } from '../../features/logging';
 
 /**
  * Enumerate all relevant areas of the data view to get an array of all
@@ -34,7 +35,12 @@ export const getDatasetValueEntries = (
  */
 const getCategoryEntries = (
     categories: DataViewCategoryColumn[]
-): PrimitiveValue[][] => categories?.map((c) => c.values) || [];
+): PrimitiveValue[][] => {
+    logTimeStart('getCategoryEntries');
+    const entries = categories?.map((c) => c.values) || [];
+    logTimeEnd('getCategoryEntries');
+    return entries;
+};
 
 /**
  * For measures, return the formatting string per row, and the formatted value.
@@ -42,7 +48,8 @@ const getCategoryEntries = (
 const getFormattingStringEntries = (
     values: DataViewValueColumns
 ): PrimitiveValue[][] => {
-    return reduce(
+    logTimeStart('getFormattingStringEntries');
+    const entries = reduce(
         values || [],
         (acc, v: DataViewValueColumn) => {
             if (isDataViewFieldEligibleForFormatting(v)) {
@@ -60,6 +67,8 @@ const getFormattingStringEntries = (
         },
         <PrimitiveValue[][]>[]
     );
+    logTimeEnd('getFormattingStringEntries');
+    return entries;
 };
 
 /**
@@ -83,12 +92,17 @@ const getFormatStringForValueByIndex = (
  */
 const getHighlightEntries = (
     values: DataViewValueColumns
-): PrimitiveValue[][] =>
-    (values || [])?.map((v: DataViewValueColumn) =>
-        isCrossHighlightPropSet() && getHighlightStatus(values)
-            ? v.highlights
-            : v.values
-    ) || [];
+): PrimitiveValue[][] => {
+    logTimeStart('getHighlightEntries');
+    const entries =
+        (values || [])?.map((v: DataViewValueColumn) =>
+            isCrossHighlightPropSet() && getHighlightStatus(values)
+                ? v.highlights
+                : v.values
+        ) || [];
+    logTimeEnd('getHighlightEntries');
+    return entries;
+};
 
 /**
  * Extract all measure field value arrays from the data view. We try to assist
@@ -96,12 +110,16 @@ const getHighlightEntries = (
  * using the cross-filter interaction on the visual by substituting the
  * highlight values passed in by Power BI
  */
-const getValueEntries = (values: DataViewValueColumns): PrimitiveValue[][] =>
-    (values || [])?.map((v: DataViewValueColumn) => {
+const getValueEntries = (values: DataViewValueColumns): PrimitiveValue[][] => {
+    logTimeStart('getValueEntries');
+    const entries = (values || [])?.map((v: DataViewValueColumn) => {
         const useHighlights =
             getHighlightStatus(values) && !isCrossHighlightPropSet();
         return useHighlights ? v.highlights : v.values;
     });
+    logTimeEnd('getValueEntries');
+    return entries;
+};
 
 /** Avoids linting issues (can't seem to disable w/eslint-disable). Can be
  *  removed if/when we extend this module.
