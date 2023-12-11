@@ -7,8 +7,8 @@ import { getI18nValue } from '../../i18n';
 import store from '../../../store';
 import { logDebug, logRender } from '../../logging';
 import { TooltipCustomMount } from '../../interface';
-import { hostServices } from '../../../core/services';
 import { getExportTemplate } from '../logic';
+import { getVisualHost } from '../../visual-host';
 
 /**
  * Displays download and copy template to clipboard buttons.
@@ -26,8 +26,8 @@ export const ExportButtons: React.FC = () => {
         templateName ||
         getI18nValue('Template_Export_Information_Name_Placeholder');
     const handleDownload = () => {
-        hostServices.download
-            .exportVisualsContentExtended(
+        getVisualHost()
+            .downloadService.exportVisualsContentExtended(
                 getExportTemplate(),
                 `${resolvedName}.deneb.json`,
                 'json',

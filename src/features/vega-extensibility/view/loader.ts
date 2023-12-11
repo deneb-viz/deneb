@@ -1,9 +1,9 @@
 import * as Vega from 'vega';
 import { Loader } from 'vega';
-import { hostServices } from '../../../core/services';
 import { BASE64_BLANK_IMAGE } from '../../template';
 import { getI18nValue } from '../../i18n';
 import { FEATURES } from '../../../../config';
+import { getVisualHost, launchUrl } from '../../visual-host';
 
 /**
  * Custom Vega loader for Power BI.
@@ -28,7 +28,7 @@ export const getVegaLoader = (): Loader => {
         switch (options?.context) {
             // Hyperlinks will be delegated to the visual host
             case 'href': {
-                hostServices.launchUrl(uri);
+                launchUrl(uri);
                 return Promise.reject({ href: uri });
             }
             // Default assumes we're loading images. If we're blocking
@@ -56,7 +56,7 @@ export const getVegaLoader = (): Loader => {
 const handleExternalResourceWarning = (href: string, externalUri: boolean) =>
     !href &&
     !externalUri &&
-    hostServices.displayWarningIcon(
+    getVisualHost().displayWarningIcon(
         getI18nValue('Loader_Warning_HoverText'),
         getI18nValue('Loader_Warning_DetailedText')
     );

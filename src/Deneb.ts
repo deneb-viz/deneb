@@ -18,7 +18,6 @@ import VisualSettings from './properties/visual-settings';
 
 import { getState } from './store';
 import { canFetchMoreFromDataview, getRowCount } from './core/data/dataView';
-import { hostServices } from './core/services';
 import { getMappedDataset } from './core/data/dataset';
 import { handlePropertyMigration } from './core/utils/versioning';
 import { resolveReportViewport } from './core/ui/dom';
@@ -35,9 +34,13 @@ import {
 } from './features/vega-extensibility';
 import { I18nServices, getLocale } from './features/i18n';
 import {
+    VisualHostServices,
     getCategoricalDataViewFromOptions,
+    getVisualHost,
     isVisualUpdateTypeResizeEnd,
-    isVisualUpdateTypeVolatile
+    isVisualUpdateTypeVolatile,
+    setRenderingFailed,
+    setRenderingStarted
 } from './features/visual-host';
 import { APPLICATION_INFORMATION, FEATURES } from '../config';
 
@@ -53,7 +56,7 @@ export class Deneb implements IVisual {
     constructor(options: VisualConstructorOptions) {
         logHost('Constructor has been called.', { options });
         try {
-            hostServices.bindHostServices(options);
+            VisualHostServices.bind(options);
             I18nServices.bind(options);
             VegaPatternFillServices.bind();
             getState().initializeImportExport();
@@ -81,17 +84,16 @@ export class Deneb implements IVisual {
             return;
         } catch (e) {
             // Signal that we've encountered an error
-            hostServices.renderingFailed(e.message);
+            setRenderingFailed(e.message);
         }
     }
 
     private resolveUpdateOptions(options: VisualUpdateOptions) {
         logDebug('Resolving update options...', { options });
         logTimeStart('resolveUpdateOptions');
-        hostServices.visualUpdateOptions = options;
+        VisualHostServices.update(options);
         // Signal we've begun rendering
-        hostServices.renderingStarted();
-        hostServices.resolveLocaleFromSettings(this.settings.developer.locale);
+        setRenderingStarted();
         I18nServices.update(
             FEATURES.developer_mode
                 ? this.settings.developer.locale
@@ -147,7 +149,7 @@ export class Deneb implements IVisual {
                     dataProcessingStage: 'Fetching',
                     rowsLoaded
                 });
-                fetchSuccess = hostServices.fetchMoreData(true);
+                fetchSuccess = getVisualHost().fetchMoreData(true);
             }
             if (!fetchSuccess) {
                 logDebug('No more data to fetch. Processing dataset...');

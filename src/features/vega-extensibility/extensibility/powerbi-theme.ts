@@ -3,8 +3,8 @@ import { Config as VlConfig, TopLevelSpec } from 'vega-lite';
 import merge from 'lodash/merge';
 import { interpolateHcl, interpolateRgbBasis, quantize } from 'd3';
 
-import { hostServices } from '../../../core/services';
 import { ptToPx } from '../../../core/ui/dom';
+import { getVisualHost } from '../../visual-host';
 
 type Config = VgConfig | VlConfig;
 
@@ -101,7 +101,7 @@ export const getTemplateWithBasePowerBiTheme = (
  * Helper function to extract palette color by (zero-based) index.
  */
 export const getThemeColorByIndex = (index: number) =>
-    hostServices.colorPalette?.['colors']?.[index]?.value;
+    getVisualHost()?.colorPalette?.['colors']?.[index]?.value;
 
 /**
  * Helper function to extract palette color by object name.
@@ -112,7 +112,7 @@ export const getThemeColorByName = (name: string) => namedColors()[name];
  * Retrieve all current theme color values from the visual host.
  */
 export const powerBiColors = () =>
-    hostServices?.colorPalette?.['colors']?.map((c: any) => c.value) || [];
+    getVisualHost()?.colorPalette?.['colors']?.map((c: any) => c.value) || [];
 
 /**
  * Calculate an interpolated divergent palette, based on the current theme's
@@ -149,31 +149,31 @@ export const ordinalPalette = (ordinalColorCount: number) => {
  * Get neutral background color from the current theme.
  */
 const themeBackgroundNeutral = () =>
-    hostServices.colorPalette?.backgroundNeutral?.value;
+    getVisualHost()?.colorPalette?.backgroundNeutral?.value;
 
 /**
  * Get primary foreground color from the current theme.
  */
 const themeFirstLevelElement = () =>
-    hostServices.colorPalette?.foreground?.value;
+    getVisualHost()?.colorPalette?.foreground?.value;
 
 /**
  * Get secondary foreground color from the current theme.
  */
 const themeSecondLevelElement = () =>
-    hostServices.colorPalette?.foregroundNeutralSecondary?.value;
+    getVisualHost()?.colorPalette?.foregroundNeutralSecondary?.value;
 
 /**
  * Get minimum divergent color from the current theme.
  */
 const themeDivergentMin = () =>
-    <string>hostServices.colorPalette?.['minimum']?.value;
+    <string>getVisualHost()?.colorPalette?.['minimum']?.value;
 
 /**
  * Get middle divergent color from the current theme.
  */
 const themeDivergentMed = () =>
-    <string>hostServices.colorPalette?.['center']?.value;
+    <string>getVisualHost()?.colorPalette?.['center']?.value;
 
 /**
  * Get maximum divergent color from the current theme.
@@ -181,25 +181,25 @@ const themeDivergentMed = () =>
  * spelling in case they ever fix it.
  */
 const themeDivergentMax = () =>
-    <string>hostServices.colorPalette?.['maximium' || 'maximum']?.value;
+    <string>getVisualHost()?.colorPalette?.['maximium' || 'maximum']?.value;
 
 /**
  * Get negative sentiment color from the current theme.
  */
 const themeSentimentNegative = () =>
-    <string>hostServices.colorPalette?.['negative']?.value;
+    <string>getVisualHost()?.colorPalette?.['negative']?.value;
 
 /**
  * Get positive sentiment color from the current theme.
  */
 const themeSentimentPositive = () =>
-    <string>hostServices.colorPalette?.['positive']?.value;
+    <string>getVisualHost()?.colorPalette?.['positive']?.value;
 
 /**
  * Get neutral sentiment color from the current theme.
  */
 const themeSentimentNeutral = () =>
-    <string>hostServices.colorPalette?.['neutral']?.value;
+    <string>getVisualHost()?.colorPalette?.['neutral']?.value;
 
 /**
  * Named colors from the theme, that we register for use with `pbiColor`. In

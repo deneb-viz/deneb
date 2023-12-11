@@ -1,8 +1,11 @@
 import { ScenegraphEvent, Item } from 'vega';
 
-import { hostServices } from '../../core/services';
 import { getVegaSettings } from '../../core/vega';
 import { getIdentitiesFromData, resolveDataFromItem } from './data-point';
+import {
+    getVisualInteractionStatus,
+    getVisualSelectionManager
+} from '../visual-host';
 
 /**
  * If a context menu event is fired over the visual, attempt to retrieve any
@@ -16,17 +19,14 @@ import { getIdentitiesFromData, resolveDataFromItem } from './data-point';
  */
 export const handleContextMenuEvent = (event: ScenegraphEvent, item: Item) => {
     event.stopPropagation();
-    const { selectionManager } = hostServices,
-        mouseEvent: MouseEvent = <MouseEvent>window.event,
-        data = resolveDataFromItem(item),
-        identities = getIdentitiesFromData(data),
-        identity =
-            (isContextMenuPropSet() &&
-                identities?.length === 1 &&
-                identities[0]) ||
-            null;
+    const mouseEvent: MouseEvent = <MouseEvent>window.event;
+    const data = resolveDataFromItem(item);
+    const identities = getIdentitiesFromData(data);
+    const identity =
+        (isContextMenuPropSet() && identities?.length === 1 && identities[0]) ||
+        null;
     mouseEvent && mouseEvent.preventDefault();
-    selectionManager.showContextMenu(identity, {
+    getVisualSelectionManager().showContextMenu(identity, {
         x: mouseEvent.clientX,
         y: mouseEvent.clientY
     });
@@ -38,5 +38,5 @@ export const handleContextMenuEvent = (event: ScenegraphEvent, item: Item) => {
  */
 const isContextMenuPropSet = () => {
     const { enableContextMenu } = getVegaSettings();
-    return (enableContextMenu && hostServices.allowInteractions) || false;
+    return (enableContextMenu && getVisualInteractionStatus()) || false;
 };

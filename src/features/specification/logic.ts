@@ -199,18 +199,24 @@ export const getParsedSpec = (
             : null;
         logDebug('Spec size: ', JSON.stringify(specToParse).length);
         try {
-            const validator = getProviderValidator({ provider });
-            const valid = validator(specToParse);
-            if (!valid && validator.errors) {
-                getFriendlyValidationErrors(validator.errors).forEach((error) =>
-                    logger.warn(`Validation: ${error}`)
-                );
+            if (nextOptions.visualMode === 'Editor') {
+                logTimeStart('schema validation');
+                const validator = getProviderValidator({ provider });
+                const valid = validator(specToParse);
+                logTimeEnd('schema validation');
+                if (!valid && validator.errors) {
+                    getFriendlyValidationErrors(validator.errors).forEach(
+                        (error) => logger.warn(`Validation: ${error}`)
+                    );
+                }
             }
+            logTimeStart('vega/vega-lite compile');
             if (provider === 'vegaLite') {
                 VegaLite.compile(<VegaLite.TopLevelSpec>specToParse);
             } else {
                 Vega.parse(<Vega.Spec>specToParse);
             }
+            logTimeEnd('vega/vega-lite compile');
             specToParse;
             status = 'valid';
         } catch (e) {

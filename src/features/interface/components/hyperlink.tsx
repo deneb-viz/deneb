@@ -1,6 +1,6 @@
 import { Link, makeStyles } from '@fluentui/react-components';
 import React from 'react';
-import { hostServices } from '../../../core/services';
+import { launchUrl } from '../../visual-host';
 
 interface IHyperlinkProps {
     href: string;
@@ -24,7 +24,7 @@ export const Hyperlink: React.FC<IHyperlinkProps> = ({ href, children }) => {
     ) => {
         event.preventDefault();
         event.stopPropagation();
-        hostServices.launchUrl(href);
+        launchUrl(href);
     };
     const classes = useLinkStyles();
     return (

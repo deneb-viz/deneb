@@ -2,10 +2,10 @@ import { falsy, truthy, View } from 'vega';
 import { handleContextMenuEvent } from '../../interactivity/context-menu';
 import { handleCrossFilterEvent } from '../../interactivity/cross-filter';
 import { logDebug, logTimeEnd, StoreVegaLoggerService } from '../../logging';
-import { hostServices } from '../../../core/services';
 import { getState } from '../../../store';
 import { VegaPatternFillServices } from '../pattern-fill';
 import { IVegaViewServices } from '../types';
+import { setRenderingFinished, setRenderingStarted } from '../../visual-host';
 
 export { getVegaLoader } from './loader';
 
@@ -85,7 +85,7 @@ const bindCrossFilterEvents = (view: View) => {
  */
 export const handleNewView = (newView: View) => {
     logDebug('Vega view initialized.');
-    hostServices.renderingStarted();
+    setRenderingStarted();
     const {
         interface: { generateRenderId }
     } = getState();
@@ -104,7 +104,7 @@ export const handleNewView = (newView: View) => {
         bindCrossFilterEvents(view);
         generateRenderId();
         logTimeEnd('VegaRender');
-        hostServices.renderingFinished();
+        setRenderingFinished();
     });
 };
 

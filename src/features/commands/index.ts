@@ -1,5 +1,4 @@
 import { Options } from 'react-hotkeys-hook';
-import { hostServices } from '../../core/services';
 import {
     TPreviewPivotRole,
     getZoomToFitScale
@@ -24,6 +23,7 @@ import {
 } from './types';
 import { EditorApplyMode, TEditorRole } from '../json-editor';
 import { APPLICATION_INFORMATION, VISUAL_PREVIEW_ZOOM } from '../../../config';
+import { launchUrl } from '../visual-host';
 
 export * from './types';
 
@@ -169,7 +169,7 @@ export const handleOpenRemapDialog = () => {
  */
 export const handleOpenWebsite = () => {
     executeCommand('helpSite', () => {
-        hostServices.launchUrl(APPLICATION_INFORMATION.supportUrl);
+        launchUrl(APPLICATION_INFORMATION.supportUrl);
     });
 };
 

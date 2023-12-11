@@ -16,9 +16,9 @@ import reduce from 'lodash/reduce';
 import VisualSettings from '../../properties/visual-settings';
 
 import { getState } from '../../store';
-import { hostServices } from '../services';
 import { TSpecProvider } from '../vega';
 import { APPLICATION_INFORMATION, PROVIDER_VERSIONS } from '../../../config';
+import { getVisualHost } from '../../features/visual-host';
 
 /**
  * Handles resolution of object properties from the data view, either for persistence.
@@ -47,7 +47,7 @@ const resolveObjectProperties = (objects: IPersistenceObject[]) => {
  * Manage persistence of content to the visual's data view `objects`.
  */
 const updateObjectProperties = (changes: VisualObjectInstancesToPersist) =>
-    hostServices.persistProperties(changes);
+    getVisualHost().persistProperties(changes);
 
 /**
  * An object for persisting to the data view.

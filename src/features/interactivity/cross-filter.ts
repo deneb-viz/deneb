@@ -2,26 +2,30 @@ import powerbi from 'powerbi-visuals-api';
 import ISelectionId = powerbi.visuals.ISelectionId;
 
 import { ScenegraphEvent, Item } from 'vega';
-import { hostServices } from '../../core/services';
 
 import { getVegaSettings } from '../../core/vega';
 import { hidePowerBiTooltip } from './tooltip';
 import { getState } from '../../store';
 import { getIdentitiesFromData, resolveDataFromItem } from './data-point';
 import { TDataPointSelectionStatus } from './types';
+import {
+    getVisualInteractionStatus,
+    getVisualSelectionManager
+} from '../visual-host';
 
 /**
  * For the supplied list of identities, ensure that the selection manager is
  * invoked, before synchronising the dataset for correct selection status.
  */
 const applySelection = (identities: ISelectionId[]) => {
-    const { selectionManager } = hostServices;
     const { updateDatasetSelectors } = getState();
-    selectionManager.select(identities, isMultiSelect()).then(() => {
-        updateDatasetSelectors(
-            <ISelectionId[]>selectionManager.getSelectionIds()
-        );
-    });
+    getVisualSelectionManager()
+        .select(identities, isMultiSelect())
+        .then(() => {
+            updateDatasetSelectors(
+                <ISelectionId[]>getVisualSelectionManager().getSelectionIds()
+            );
+        });
 };
 
 /**
@@ -29,7 +33,7 @@ const applySelection = (identities: ISelectionId[]) => {
  */
 export const clearSelection = () => {
     const { updateDatasetSelectors } = getState();
-    hostServices.selectionManager
+    getVisualSelectionManager()
         .clear()
         .then(() => updateDatasetSelectors([]));
 };
@@ -63,7 +67,7 @@ export const getDataPointCrossFilterStatus = (
 const getPotentialSelectionSize = (identities: ISelectionId[]) =>
     (identities?.length || 0) +
     (isMultiSelect()
-        ? hostServices.selectionManager.getSelectionIds()?.length || 0
+        ? getVisualSelectionManager().getSelectionIds()?.length || 0
         : 0);
 
 /**
@@ -72,7 +76,7 @@ const getPotentialSelectionSize = (identities: ISelectionId[]) =>
  */
 export const isCrossFilterPropSet = () => {
     const { enableSelection } = getVegaSettings();
-    return (enableSelection && hostServices.allowInteractions) || false;
+    return (enableSelection && getVisualInteractionStatus()) || false;
 };
 
 /**

@@ -18,8 +18,8 @@ import { IVegaViewDatum } from '../../core/vega';
 import { getState } from '../../store';
 import { DATASET_IDENTITY_NAME, DATASET_ROW_NAME } from '../../constants';
 import { getDataset } from '../../core/data/dataset';
-import { hostServices } from '../../core/services';
 import { getCategoryColumns } from '../../core/data/dataView';
+import { getVisualSelectionIdBuilder } from '../visual-host';
 
 /**
  * Confirm that each datum in a datset contains a reconcilable identifier for
@@ -42,7 +42,7 @@ export const createSelectionIds = (
 ) => {
     const identities: ISelectionId[] = [];
     forEach(rowIndices, (ri) => {
-        const identity = hostServices.selectionIdBuilder();
+        const identity = getVisualSelectionIdBuilder();
         forEach(fields, (v) => {
             switch (true) {
                 case v?.isMeasure: {
