@@ -3,10 +3,8 @@ import omit from 'lodash/omit';
 import { v4 as uuidv4 } from 'uuid';
 
 import { DATASET_NAME } from '../../constants';
-import {
-    parseAndValidateContentJson,
-    getJsonAsIndentedString
-} from '../../core/utils/json';
+import { parseAndValidateContentJson } from '../json-processing';
+import { getJsonAsIndentedString } from '../../core/utils/json';
 import { TSpecProvider } from '../../core/vega';
 import { getState } from '../../store';
 import { TTemplateExportState } from '../template';

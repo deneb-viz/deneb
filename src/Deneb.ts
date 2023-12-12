@@ -1,5 +1,3 @@
-import 'core-js/stable';
-import 'regenerator-runtime/runtime';
 import '../style/visual.less';
 import 'jsoneditor/dist/jsoneditor.css';
 import powerbi from 'powerbi-visuals-api';

@@ -83,7 +83,7 @@ const addMarkdownProps = (value: any) => {
 };
 
 /**
- * Importing the schemas as JSON modules mukes them immutable, so in order to
+ * Importing the schemas as JSON modules makes them immutable, so in order to
  * process them for markdown props, we need to clone them first. As we only
  * need to do this once per schema, it makes sense to do it here.
  */

@@ -16,9 +16,9 @@ import {
     updateObjectProperties
 } from '../../core/utils/properties';
 import {
-    parseAndValidateContentJson,
-    getJsonAsIndentedString
-} from '../../core/utils/json';
+    getTextFormattedAsJsonC,
+    parseAndValidateContentJson
+} from '../json-processing';
 import {
     IContentPatchResult,
     IFixResult,
@@ -587,7 +587,10 @@ const tryFixAndFormat = (operation: TEditorRole, input: string): IFixStatus => {
     try {
         return {
             success: true,
-            text: getJsonAsIndentedString(JSON.parse(jsonrepair(input)))
+            text: getTextFormattedAsJsonC(
+                input,
+                PROPERTY_DEFAULTS.editor.tabSize
+            )
         };
     } catch (e) {
         return {
