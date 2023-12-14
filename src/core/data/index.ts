@@ -48,17 +48,29 @@ export interface IVisualDatasetFields {
  * enriched with other properties that we need for Deneb.
  */
 export interface IVisualDatasetField extends DataViewMetadataColumn {
-    // Flag to confirm if this is a column, according to the data model. This
-    // is not in the Power BI metadata but is helpful for us to know later on.
+    /**
+     * Flag to confirm if this is a column, according to the data model. This
+     * is not in the Power BI metadata but is helpful for us to know later on.
+     */
     isColumn: boolean;
-    // Indicates field should not be included in templating activities and
-    // supports another field in the dataset.
+    /**
+     * Indicates field should not be included in templating activities and
+     * supports another field in the dataset.
+     */
     isExcludedFromTemplate: boolean;
-    // Original dataView index (from categories or values), if we need it for
-    // other operations post assembly.
+    /**
+     * Indicates the field is to support highlight-functionality.
+     */
+    isHighlightComponent: boolean;
+    /**
+     * Original dataView index (from categories or values), if we need it for
+     * other operations post assembly.
+     */
     sourceIndex: number;
-    // Template export object (which allows customisation from base, while
-    // preserving) should not be present for `isExcludedFromTemplate: true`.
+    /**
+     * Representation of the field for templating purposes. Should not be
+     * present for `isExcludedFromTemplate === true`.
+     */
     templateMetadata?: ITemplateDatasetField;
 }
 

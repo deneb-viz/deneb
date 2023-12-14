@@ -77,6 +77,7 @@ export const getDatasetFields = (
                 ...c.column,
                 ...{
                     isColumn: !c.column.isMeasure,
+                    isHighlightComponent: c.source === 'highlights',
                     isExcludedFromTemplate,
                     sourceIndex: c.sourceIndex,
                     source: <TDatasetValueSource>c.source,
