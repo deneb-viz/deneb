@@ -1,6 +1,5 @@
 import * as Vega from 'vega';
 import * as VegaLite from 'vega-lite';
-import jsonrepair from 'jsonrepair';
 import cloneDeep from 'lodash/cloneDeep';
 import isEqual from 'lodash/isEqual';
 import merge from 'lodash/merge';

@@ -82,6 +82,13 @@ export const getJsonPure = (content: string, replaceCh: string = ' ') =>
     stripComments(content || '{}', replaceCh);
 
 /**
+ * For the supplied content, generate a VS Code `TextDocument`, with the
+ * necessary metadata for validation using language services downstream.
+ */
+export const getJsonTextDocument = (content: string) =>
+    TextDocument.create(JSON_INTERNAL_CONTENT_URI, 'json', 1, content);
+
+/**
  * Prune an object at a specified level of depth.
  */
 export const getPrunedObject = (
