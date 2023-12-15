@@ -174,3 +174,15 @@ const isEligibleForEditor = (
  */
 const isEditorViewport = (parameters: IInterfaceModeResolutionParameters) =>
     parameters.editMode === EditMode.Advanced && parameters.isInFocus;
+
+/**
+ * Confirms that specificed events are not occurring in the advanced editor UI
+ * and the JSON editor can have focus set to it (or other similar actions).
+ */
+export const shouldPrioritizeJsonEditor = () => {
+    const {
+        interface: { modalDialogRole }
+    } = getState();
+    const isPopover = modalDialogRole !== 'None';
+    return !isPopover;
+};

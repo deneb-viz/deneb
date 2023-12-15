@@ -109,34 +109,24 @@ li {
     border-color: transparent !important;
 }
 
-/* JSON Editor overrides */
-.jsoneditor-statusbar,
-.ace_gutter,
-div.pico-modal-header,
-.pico-close,
-.jsoneditor-jmespath-label {
-    color: @pbiviz-dark !important;
+/* Ace Editor customizations */
+#deneb-token-tooltip {
+    li {
+        list-style: unset;
+        font-size: unset;
+    }
 }
-.jsoneditor-modal,
-.pico-modal-header,
-.jsoneditor-modal-input,
-.jsoneditor-modal table td {
-    font-family: @font-family-sans-serif !important;
-    font-size: @font-small;
+
+.ace_editor.ace_autocomplete {
+    width: 450px;
 }
-.jsoneditor {
-    height: 100%;
-    width: 100%;
+
+.ace_editor {
+    line-height: 1.2;
 }
-div.jsoneditor {
-    border-color: transparent;
-}
-div.jsoneditor-menu {
-    border-color: @powerbi-pane-border;
-}
-div.jsoneditor-menu,
-div.pico-modal-header {
-    background-color: @powerbi-bg-light !important;
+
+.deneb-token-tooltip {
+    position: absolute;
 }
 
 .fourd3d3d {
