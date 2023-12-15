@@ -182,22 +182,22 @@ export const PROPERTY_DEFAULTS = {
         showVersionNotification: false
     },
     editor: {
-        provider: 'jsoneditor',
+        dataTableRowsPerPage: PREVIEW_PANE_DATA_TABLE.rowsPerPage.default,
         debounceInterval: 200,
-        tabSize: 2,
-        position: 'left',
         fontSize: {
             default: 10,
             min: 8,
             max: 30
         },
-        wordWrap: true,
+        localCompletion: false,
+        maxLineLength: 40,
+        position: 'left',
+        previewScrollbars: false,
         showGutter: true,
         showLineNumbers: true,
         showViewportMarker: true,
-        maxLineLength: 40,
-        previewScrollbars: false,
-        dataTableRowsPerPage: PREVIEW_PANE_DATA_TABLE.rowsPerPage.default
+        tabSize: 2,
+        wordWrap: true
     },
     vega: {
         jsonSpec: null,

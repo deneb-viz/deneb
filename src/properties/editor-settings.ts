@@ -53,8 +53,11 @@ export default class EditorSettings extends SettingsBase {
     // Show scrollbars in advanced editor preview area
     public previewScrollbars: boolean =
         PROPERTY_DEFAULTS.editor.previewScrollbars;
+    // Number of rows in debug table
     public debugTableRowsPerPage: number =
         PROPERTY_DEFAULTS.editor.dataTableRowsPerPage;
+    // perform local completion in the JSON editor
+    public localCompletion: boolean = PROPERTY_DEFAULTS.editor.localCompletion;
 
     /**
      * Formatting card for these settings.
@@ -115,6 +118,12 @@ export default class EditorSettings extends SettingsBase {
             value: `${this.debugTableRowsPerPage}`,
             items: getPageRowCountEnum()
         };
+        const LOCAL_COMPLETION_SLICE: IToggleSliceOptions = {
+            displayNameKey: PROPERTIES.localCompletion.displayNameKey,
+            objectName: OBJECT_NAME,
+            propertyName: 'localCompletion',
+            value: PROPERTY_DEFAULTS.editor.localCompletion
+        };
         return {
             displayName: getI18nValue(OBJECT_DEF.displayNameKey),
             description: getI18nValue(OBJECT_DEF.descriptionKey),
@@ -152,6 +161,13 @@ export default class EditorSettings extends SettingsBase {
                         getToggleSlice(SHOW_GUTTER_SLICE),
                         getToggleSlice(SHOW_LINE_NUMBERS_SLICE)
                     ]
+                },
+                {
+                    displayName: getI18nValue(
+                        `${OBJECT_DEF.displayNameKey}_Group_Completion`
+                    ),
+                    uid: `${OBJECT_DEF.displayNameKey}_Group_COmpletion`,
+                    slices: [getToggleSlice(LOCAL_COMPLETION_SLICE)]
                 },
                 {
                     displayName: getI18nValue(

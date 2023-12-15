@@ -397,6 +397,15 @@
                     "type": {
                         "numeric": true
                     }
+                },
+                "localCompletion": {
+                    "displayNameKey": "Objects_Editor_LocalCompletion",
+                    "descriptionKey": "Objects_Editor_LocalCompletion_Description",
+                    "displayName": "Local auto-completion",
+                    "description": "Local auto-completion description",
+                    "type": {
+                        "bool": true
+                    }
                 }
             }
         },
