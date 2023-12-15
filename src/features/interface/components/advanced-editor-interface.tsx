@@ -19,6 +19,7 @@ import { logRender } from '../../logging';
 import { AdvancedEditorToolbar } from '../../toolbar';
 import { ADVANCED_EDITOR_TOOLBAR_HEIGHT } from '../../../constants';
 import { JsonEditorContextProvider } from '../../json-editor';
+import { PortalRoot } from './portal-root';
 
 export const AdvancedEditorInterface: React.FC = () => {
     const {
@@ -85,6 +86,7 @@ export const AdvancedEditorInterface: React.FC = () => {
                     {position === 'left' ? <PreviewArea /> : editorPane}
                 </SplitPane>
                 <ModalDialog />
+                <PortalRoot />
             </JsonEditorContextProvider>
         </FluentProvider>
     );
