@@ -48,7 +48,7 @@ export default class EditorSettings extends SettingsBase {
         PROPERTY_DEFAULTS.editor.showViewportMarker;
     // Specified provider (Vega or Vega-Lite)
     public provider: TEditorProvider = <TEditorProvider>(
-        PROPERTY_DEFAULTS.editor.provider
+        PROPERTY_DEFAULTS.vega.provider
     );
     // Show scrollbars in advanced editor preview area
     public previewScrollbars: boolean =
