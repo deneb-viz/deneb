@@ -1,4 +1,6 @@
+import AceEditor from 'react-ace';
 import { TSpecProvider } from '../../core/vega';
+import { MutableRefObject } from 'react';
 
 /**
  * Whether the editor is in auto-apply mode or not.
@@ -15,6 +17,16 @@ export type TEditorProvider = 'jsoneditor';
  * control in the editor pane.
  */
 export type TEditorRole = 'spec' | 'config' | 'settings';
+
+/**
+/**
+ * We need to be able to access the editors across components, so this provides
+ * an interface to make this easier for forwarding refs.
+ */
+export interface IEditorRefs {
+    spec: MutableRefObject<AceEditor>;
+    config: MutableRefObject<AceEditor>;
+}
 
 /**
  * Defines a JSON schema by provider and role, so we can dynamically apply
