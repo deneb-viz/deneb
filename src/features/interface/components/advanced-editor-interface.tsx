@@ -18,6 +18,7 @@ import { Themes, useInterfaceStyles } from '..';
 import { logRender } from '../../logging';
 import { AdvancedEditorToolbar } from '../../toolbar';
 import { ADVANCED_EDITOR_TOOLBAR_HEIGHT } from '../../../constants';
+import { JsonEditorContextProvider } from '../../json-editor';
 
 export const AdvancedEditorInterface: React.FC = () => {
     const {
@@ -62,27 +63,29 @@ export const AdvancedEditorInterface: React.FC = () => {
             className={styles.container}
             id='visualEditor'
         >
-            <AdvancedEditorToolbar />
-            <SplitPane
-                style={{
-                    height: `calc(100% - ${
-                        ADVANCED_EDITOR_TOOLBAR_HEIGHT + 1
-                    }px)`
-                }}
-                split='vertical'
-                minSize={getResizablePaneMinSize()}
-                maxSize={getResizablePaneMaxSize()}
-                size={editorPaneWidth}
-                onChange={handleResize}
-                onResizerDoubleClick={resolveDoubleClick}
-                allowResize={editorPaneIsExpanded}
-                resizerStyle={resizerVerticalStyles}
-                paneStyle={resizerPaneVerticalStyles}
-            >
-                {position === 'left' ? editorPane : <PreviewArea />}
-                {position === 'left' ? <PreviewArea /> : editorPane}
-            </SplitPane>
-            <ModalDialog />
+            <JsonEditorContextProvider>
+                <AdvancedEditorToolbar />
+                <SplitPane
+                    style={{
+                        height: `calc(100% - ${
+                            ADVANCED_EDITOR_TOOLBAR_HEIGHT + 1
+                        }px)`
+                    }}
+                    split='vertical'
+                    minSize={getResizablePaneMinSize()}
+                    maxSize={getResizablePaneMaxSize()}
+                    size={editorPaneWidth}
+                    onChange={handleResize}
+                    onResizerDoubleClick={resolveDoubleClick}
+                    allowResize={editorPaneIsExpanded}
+                    resizerStyle={resizerVerticalStyles}
+                    paneStyle={resizerPaneVerticalStyles}
+                >
+                    {position === 'left' ? editorPane : <PreviewArea />}
+                    {position === 'left' ? <PreviewArea /> : editorPane}
+                </SplitPane>
+                <ModalDialog />
+            </JsonEditorContextProvider>
         </FluentProvider>
     );
 };
