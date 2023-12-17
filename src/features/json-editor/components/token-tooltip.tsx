@@ -41,7 +41,10 @@ const useTooltipStyles = makeStyles({
             tokens.strokeWidthThin,
             'solid',
             tokens.colorNeutralStroke2
-        )
+        ),
+        '& p': {
+            ...shorthands.margin(tokens.spacingVerticalNone)
+        }
     }
 });
 
