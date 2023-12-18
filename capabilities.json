@@ -313,6 +313,35 @@
             "displayName": "Editor Options",
             "description": "Editor Options description.",
             "properties": {
+                "theme": {
+                    "displayNameKey": "Objects_Editor_Theme",
+                    "descriptionKey": "Objects_Editor_Theme_Description",
+                    "displayName": "Theme",
+                    "description": "Theme description.",
+                    "type": {
+                        "enumeration": [
+                            {
+                                "displayNameKey": "Enum_Theme_Dark",
+                                "value": "dark",
+                                "displayName": "Dark"
+                            },
+                            {
+                                "displayNameKey": "Enum_Theme_Light",
+                                "value": "light",
+                                "displayName": "Light"
+                            }
+                        ]
+                    }
+                },
+                "backgroundPassThrough": {
+                    "displayNameKey": "Objects_Editor_BackgroundPassThrough",
+                    "descriptionKey": "Objects_Editor_BackgroundPassThrough_Description",
+                    "displayName": "BG pass-through",
+                    "description": "BG pass-through description",
+                    "type": {
+                        "bool": true
+                    }
+                },
                 "position": {
                     "displayNameKey": "Objects_Editor_Position",
                     "descriptionKey": "Objects_Editor_Position_Description",

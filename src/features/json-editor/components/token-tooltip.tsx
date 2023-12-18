@@ -9,6 +9,8 @@ import {
     shorthands,
     tokens
 } from '@fluentui/react-components';
+import store from '../../../store';
+import { shallow } from 'zustand/shallow';
 
 interface ITokenTooltipProps {
     event: any;
@@ -61,6 +63,10 @@ export const TokenTooltip: React.FC<ITokenTooltipProps> = ({
         setVisible(false);
     };
     const handleMouseover = () => setVisible(true);
+    const { theme } = store(
+        (state) => ({ theme: state.visualSettings.editor.theme }),
+        shallow
+    );
     const positionStyles: CSSProperties = {
         margin: `${TOOLTIP_OFFSET_PX}px`,
         left: event?.clientX - TOOLTIP_OFFSET_PX,
@@ -79,7 +85,7 @@ export const TokenTooltip: React.FC<ITokenTooltipProps> = ({
     }, [event]);
     return visible ? (
         <Portal>
-            <FluentProvider theme={Themes.light}>
+            <FluentProvider theme={Themes[theme]}>
                 <div
                     id={TOOLTIP_ID}
                     className={classes.container}

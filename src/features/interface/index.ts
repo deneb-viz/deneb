@@ -38,7 +38,6 @@ export type InterfaceTheme = 'light' | 'dark';
 export const useInterfaceStyles = () =>
     makeStyles({
         container: {
-            backgroundColor: 'transparent',
             boxSizing: 'border-box',
             height: '100%',
             width: '100%',
@@ -60,6 +59,12 @@ export const useInterfaceStyles = () =>
         },
         tooltipMount: {
             zIndex: POPOVER_Z_INDEX
+        },
+        themeBackground: {
+            backgroundColor: tokens.colorNeutralBackground1
+        },
+        visualBackground: {
+            backgroundColor: 'transparent'
         }
     })();
 

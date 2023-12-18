@@ -182,6 +182,7 @@ export const PROPERTY_DEFAULTS = {
         showVersionNotification: false
     },
     editor: {
+        backgroundPassThrough: true,
         dataTableRowsPerPage: PREVIEW_PANE_DATA_TABLE.rowsPerPage.default,
         debounceInterval: 200,
         fontSize: {
@@ -197,6 +198,7 @@ export const PROPERTY_DEFAULTS = {
         showLineNumbers: true,
         showViewportMarker: true,
         tabSize: 2,
+        theme: 'light',
         wordWrap: true
     },
     vega: {

@@ -58,6 +58,11 @@ export default class EditorSettings extends SettingsBase {
         PROPERTY_DEFAULTS.editor.dataTableRowsPerPage;
     // perform local completion in the JSON editor
     public localCompletion: boolean = PROPERTY_DEFAULTS.editor.localCompletion;
+    // editor theme
+    public theme: string = PROPERTY_DEFAULTS.editor.theme;
+    // Whether to pass through the visual background effects in the preview area.
+    public backgroundPassThrough: boolean =
+        PROPERTY_DEFAULTS.editor.backgroundPassThrough;
 
     /**
      * Formatting card for these settings.
@@ -124,6 +129,19 @@ export default class EditorSettings extends SettingsBase {
             propertyName: 'localCompletion',
             value: PROPERTY_DEFAULTS.editor.localCompletion
         };
+        const THEME_SLICE: IDropdownSliceOptions = {
+            displayNameKey: PROPERTIES.theme.displayNameKey,
+            objectName: OBJECT_NAME,
+            propertyName: 'theme',
+            value: this.theme,
+            items: PROPERTIES.theme.type.enumeration
+        };
+        const BACKGROUND_PASS_THROUGH_SLICE: IToggleSliceOptions = {
+            displayNameKey: PROPERTIES.backgroundPassThrough.displayNameKey,
+            objectName: OBJECT_NAME,
+            propertyName: 'backgroundPassThrough',
+            value: this.backgroundPassThrough
+        };
         return {
             displayName: getI18nValue(OBJECT_DEF.displayNameKey),
             description: getI18nValue(OBJECT_DEF.descriptionKey),
@@ -141,12 +159,20 @@ export default class EditorSettings extends SettingsBase {
             groups: [
                 {
                     displayName: getI18nValue(
+                        `${OBJECT_DEF.displayNameKey}_Group_Interface`
+                    ),
+                    uid: `${OBJECT_DEF.displayNameKey}_Group_Interface`,
+                    slices: [getDropdownSlice(THEME_SLICE)]
+                },
+                {
+                    displayName: getI18nValue(
                         `${OBJECT_DEF.displayNameKey}_Group_Preview`
                     ),
                     uid: `${OBJECT_DEF.displayNameKey}_Group_Preview`,
                     slices: [
                         getToggleSlice(SHOW_VIEWPORT_MARKER_SLICE),
-                        getToggleSlice(PREVIEW_SCROLLBARS_SLICE)
+                        getToggleSlice(PREVIEW_SCROLLBARS_SLICE),
+                        getToggleSlice(BACKGROUND_PASS_THROUGH_SLICE)
                     ]
                 },
                 {

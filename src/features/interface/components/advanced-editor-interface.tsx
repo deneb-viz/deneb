@@ -1,5 +1,5 @@
-import React from 'react';
-import { FluentProvider } from '@fluentui/react-components';
+import React, { useMemo } from 'react';
+import { FluentProvider, mergeClasses } from '@fluentui/react-components';
 import SplitPane from 'react-split-pane';
 import { shallow } from 'zustand/shallow';
 
@@ -23,18 +23,23 @@ import { PortalRoot } from './portal-root';
 
 export const AdvancedEditorInterface: React.FC = () => {
     const {
+        backgroundPassThrough,
         editorPaneDefaultWidth,
         editorPaneIsExpanded,
         editorPaneWidth,
         position,
+        theme,
         setVisual4d3d3d,
         updateEditorPaneWidth
     } = store(
         (state) => ({
+            backgroundPassThrough:
+                state.visualSettings.editor.backgroundPassThrough,
             editorPaneDefaultWidth: state.editorPaneDefaultWidth,
             editorPaneIsExpanded: state.editorPaneIsExpanded,
             editorPaneWidth: state.editorPaneWidth,
             position: state.visualSettings.editor.position,
+            theme: state.visualSettings.editor.theme,
             setVisual4d3d3d: state.setVisual4d3d3d,
             updateEditorPaneWidth: state.updateEditorPaneWidth
         }),
@@ -56,12 +61,23 @@ export const AdvancedEditorInterface: React.FC = () => {
         setVisual4d3d3d(true);
     });
     const editorPane = <EditorPane isExpanded={editorPaneIsExpanded} />;
-    const styles = useInterfaceStyles();
+    const classes = useInterfaceStyles();
+    const resolvedTheme = useMemo(() => Themes[theme], [theme]);
+    const className = useMemo(
+        () =>
+            mergeClasses(
+                classes.container,
+                backgroundPassThrough
+                    ? classes.visualBackground
+                    : classes.themeBackground
+            ),
+        [theme, backgroundPassThrough]
+    );
     logRender('AdvancedEditorInterface');
     return (
         <FluentProvider
-            theme={Themes.light}
-            className={styles.container}
+            theme={resolvedTheme}
+            className={className}
             id='visualEditor'
         >
             <JsonEditorContextProvider>
