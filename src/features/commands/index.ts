@@ -104,7 +104,7 @@ export const handleDebugPaneSignal = () => {
  */
 export const handleEditorPaneConfig = () => {
     executeCommand('navigateConfig', () => {
-        setEditorPivotItem('config');
+        setEditorPivotItem('Config');
     });
 };
 
@@ -113,7 +113,7 @@ export const handleEditorPaneConfig = () => {
  */
 export const handleEditorPaneSettings = () => {
     executeCommand('navigateSettings', () => {
-        setEditorPivotItem('settings');
+        setEditorPivotItem('Settings');
     });
 };
 
@@ -122,7 +122,7 @@ export const handleEditorPaneSettings = () => {
  */
 export const handleEditorPaneSpecification = () => {
     executeCommand('navigateSpecification', () => {
-        setEditorPivotItem('spec');
+        setEditorPivotItem('Spec');
     });
 };
 

@@ -105,7 +105,7 @@ const getCompletionResults = async (
     const textDocument = getJsonTextDocument(text);
     const jsonSchema = getProviderSchema({
         provider,
-        isConfig: editorRole === 'config'
+        isConfig: editorRole === 'Config'
     });
     const languageService = getJsonLanguageService(jsonSchema);
     const jsonDocument = languageService.parseJSONDocument(textDocument);

@@ -6,5 +6,5 @@ import { TEditorRole } from './types';
  */
 export const getEditorInitialText = (role: TEditorRole) => {
     const { jsonConfig, jsonSpec } = getVegaSettings();
-    return role === 'spec' ? jsonSpec || '' : jsonConfig;
+    return role === 'Spec' ? jsonSpec || '' : jsonConfig;
 };

@@ -39,13 +39,13 @@ export const AdvancedEditorToolbar: React.FC = () => {
     ) => {
         const role = checkedItems[0] as TEditorRole;
         switch (role) {
-            case 'spec':
+            case 'Spec':
                 handleEditorPaneSpecification();
                 break;
-            case 'config':
+            case 'Config':
                 handleEditorPaneConfig();
                 break;
-            case 'settings':
+            case 'Settings':
                 handleEditorPaneSettings();
                 break;
         }

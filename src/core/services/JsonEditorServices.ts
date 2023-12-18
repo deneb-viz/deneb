@@ -67,9 +67,9 @@ class JsonEditorServices implements IVisualEditor {
 /**
  * Instance of `JsonEditorServices` that is used to track and manage specification in the visual.
  */
-const specEditorService = new JsonEditorServices('spec');
+const specEditorService = new JsonEditorServices('Spec');
 
 /**
  * Instance of `VisualEditor` that is used to track and manage config in the visual.
  */
-const configEditorService = new JsonEditorServices('config');
+const configEditorService = new JsonEditorServices('Config');

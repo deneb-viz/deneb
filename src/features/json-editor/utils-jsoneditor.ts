@@ -43,10 +43,10 @@ export const getAceEditor = (jsonEditor: JSONEditor): Editor =>
  */
 export const getAssignedJsonEditor = (role: TEditorRole) => {
     switch (role) {
-        case 'spec': {
+        case 'Spec': {
             return specEditorService;
         }
-        case 'config': {
+        case 'Config': {
             return configEditorService;
         }
     }
@@ -186,7 +186,7 @@ export const setInitialText = (jsonEditor: JSONEditor, role: TEditorRole) => {
 const setProviderSchema = (jsonEditor: JSONEditor, role: TEditorRole) => {
     const { provider } = getVegaSettings();
     jsonEditor?.setSchema(
-        role === 'spec'
+        role === 'Spec'
             ? getProviderSchema({ provider: <TSpecProvider>provider })
             : {}
     );
@@ -208,7 +208,7 @@ const setText = (jsonEditor: JSONEditor, text: string) => {
 const updateCompleters = (jsonEditor: JSONEditor, role: TEditorRole) => {
     const editor = getAceEditor(jsonEditor);
     switch (role) {
-        case 'spec': {
+        case 'Spec': {
             if (!editor) {
                 return;
             }

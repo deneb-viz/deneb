@@ -14,11 +14,7 @@ import {
 import { getProviderSchema } from '../specification/schema-validation';
 import { TSpecProvider } from '../../core/vega';
 import { TEditorRole } from './types';
-
-/**
- * Class to apply to the tooltip marker, so that we can hook into it later.
- */
-export const EDITOR_INDICATOR_TOOLTIP_NAME = 'deneb-token-tooltip';
+import { EDITOR_INDICATOR_TOOLTIP_NAME } from '../../constants';
 
 /**
  * For a hover event in the editor, resolve it to get any relevant tooltip
@@ -44,7 +40,7 @@ export const getHoverResult = async (
         const languageService = getJsonLanguageService(
             getProviderSchema({
                 provider,
-                isConfig: editorRole === 'config'
+                isConfig: editorRole === 'Config'
             })
         );
         const jsonDocument = languageService.parseJSONDocument(textDocument);

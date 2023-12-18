@@ -13,7 +13,11 @@ import {
 import { IVisualDatasetFields } from '../core/data';
 import { getFieldsInUseFromSpec } from '../features/template';
 import { IFixResult } from '../features/specification';
-import { EditorApplyMode, TEditorRole } from '../features/json-editor';
+import {
+    EditorApplyMode,
+    IEditorFoldPosition,
+    TEditorRole
+} from '../features/json-editor';
 import { getApplicationMode } from '../features/interface';
 import {
     isExportSpecCommandEnabled,
