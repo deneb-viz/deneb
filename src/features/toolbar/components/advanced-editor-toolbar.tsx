@@ -62,7 +62,7 @@ export const AdvancedEditorToolbar: React.FC = () => {
                 >
                     <ToolbarRadioButton
                         name='editorMode'
-                        value='spec'
+                        value='Spec'
                         appearance='subtle'
                         icon={<DataHistogramFilled />}
                     >
@@ -70,7 +70,7 @@ export const AdvancedEditorToolbar: React.FC = () => {
                     </ToolbarRadioButton>
                     <ToolbarRadioButton
                         name='editorMode'
-                        value='config'
+                        value='Config'
                         appearance='subtle'
                         icon={<TextEditStyleRegular />}
                     >
@@ -78,7 +78,7 @@ export const AdvancedEditorToolbar: React.FC = () => {
                     </ToolbarRadioButton>
                     <ToolbarRadioButton
                         name='editorMode'
-                        value='settings'
+                        value='Settings'
                         appearance='subtle'
                         icon={<SettingsRegular />}
                     >
