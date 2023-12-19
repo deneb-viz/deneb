@@ -1,8 +1,7 @@
 import React, { CSSProperties, useEffect } from 'react';
 import Markdown from 'react-markdown';
-import { Portal, Themes } from '../../interface';
+import { Hyperlink, Portal, Themes } from '../../interface';
 
-import { getVisualHost } from '../../visual-host';
 import {
     FluentProvider,
     makeStyles,
@@ -98,10 +97,9 @@ export const TokenTooltip: React.FC<ITokenTooltipProps> = ({
                     <Markdown
                         components={{
                             a: ({ ...props }) => (
-                                <a
+                                <Hyperlink
                                     role='hyperlink'
-                                    href=''
-                                    onClick={processMarkdownLinks}
+                                    href={props.href}
                                     {...props}
                                 />
                             )
@@ -113,14 +111,4 @@ export const TokenTooltip: React.FC<ITokenTooltipProps> = ({
             </FluentProvider>
         </Portal>
     ) : null;
-};
-
-/**
- * Process any hyperlinks to use the `launchUrl` API.
- */
-const processMarkdownLinks = (
-    event: React.MouseEvent<HTMLAnchorElement, MouseEvent>
-) => {
-    event.preventDefault();
-    getVisualHost().launchUrl(event?.currentTarget?.href);
 };
