@@ -6,6 +6,7 @@ import { getI18nValue } from '../../i18n';
 import store from '../../../store';
 import { logDebug, logRender } from '../../logging';
 import { createFromTemplate } from '../logic';
+import { useJsonEditorContext } from '../../json-editor';
 
 /**
  * Displays the content for creating a specification using the selected
@@ -27,9 +28,16 @@ export const CreateButton: React.FC = () => {
         }),
         shallow
     );
+    const { spec, config } = useJsonEditorContext();
     const onCreate = () => {
         logDebug('Creating from template...');
-        createFromTemplate(provider, specification, metadata);
+        createFromTemplate(
+            provider,
+            specification,
+            metadata,
+            spec?.current.editor,
+            config?.current.editor
+        );
     };
     logRender('CreateButton');
     return (

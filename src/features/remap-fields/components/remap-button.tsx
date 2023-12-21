@@ -11,20 +11,27 @@ import {
     getReducedPlaceholdersForMetadata,
     getTemplatedSpecification
 } from '../../template';
-import { specEditorService } from '../../../core/services/JsonEditorServices';
 import { persistSpecification } from '../../specification';
+import { useJsonEditorContext } from '../../json-editor';
+import { IAceEditor } from 'react-ace/lib/types';
 
 /**
  * Button for applying field mapping changes via the modal dialog.
  */
 export const RemapButton: React.FC = () => {
+    const { spec, config } = useJsonEditorContext();
     const { editorFieldsInUse, setModalDialogRole } = store((state) => ({
         editorFieldsInUse: state.editorFieldsInUse,
         setModalDialogRole: state.interface.setModalDialogRole
     }));
     const remapDisabled = isMappingDialogRequired(editorFieldsInUse);
+    spec.current.editor;
     const onRemap = () => {
-        remapSpecificationFields(editorFieldsInUse);
+        remapSpecificationFields(
+            editorFieldsInUse,
+            spec.current.editor,
+            config.current.editor
+        );
         setModalDialogRole('None');
     };
     logRender('RemapButton', { remapDisabled });
@@ -38,13 +45,17 @@ export const RemapButton: React.FC = () => {
 /**
  * For a supplied template, substitute placeholder values and return a stringified representation of the object.
  */
-const remapSpecificationFields = (editorFieldsInUse: IVisualDatasetFields) => {
+const remapSpecificationFields = (
+    editorFieldsInUse: IVisualDatasetFields,
+    specEditor: IAceEditor,
+    configEditor: IAceEditor
+) => {
     const dataset = getDatasetTemplateFields(editorFieldsInUse);
     const spec = getTemplatedSpecification(
-        specEditorService.getText(),
+        specEditor?.getValue() || '',
         dataset
     );
     const replaced = getReducedPlaceholdersForMetadata(dataset, spec);
-    specEditorService.setText(replaced);
-    persistSpecification();
+    specEditor?.setValue(replaced);
+    persistSpecification(specEditor, configEditor);
 };

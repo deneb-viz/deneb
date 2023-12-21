@@ -24,7 +24,7 @@ import {
  * UI theming utilities.
  */
 export * as Themes from './theme';
-export { AdvancedEditorInterface } from './components/advanced-editor-interface';
+export { AdvancedEditor } from './components/advanced-editor';
 export { CappedTextField } from './components/capped-text-field';
 export { Hyperlink } from './components/hyperlink';
 export { Portal } from './components/portal';
@@ -46,6 +46,13 @@ export const useInterfaceStyles = () =>
                 cursor: 'pointer'
             },
             ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2)
+        },
+        editorContainer: {
+            height: '100%',
+            maxHeight: '100%',
+            maxWidth: '100%',
+            width: '100%',
+            ...shorthands.overflow('hidden')
         },
         statusBarContainer: {
             boxSizing: 'border-box',
@@ -181,7 +188,7 @@ const isEditorViewport = (parameters: IInterfaceModeResolutionParameters) =>
     parameters.editMode === EditMode.Advanced && parameters.isInFocus;
 
 /**
- * Confirms that specificed events are not occurring in the advanced editor UI
+ * Confirms that specified events are not occurring in the advanced editor UI
  * and the JSON editor can have focus set to it (or other similar actions).
  */
 export const shouldPrioritizeJsonEditor = () => {

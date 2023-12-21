@@ -24,6 +24,7 @@ export {
     getObjectFormattedAsText,
     getTextFormattedAsJsonC
 } from './formatting';
+export { getJsonDocumentValidation } from './validation';
 
 /**
  * 'Filename' to use for validating editor JSON content using language services.

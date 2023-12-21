@@ -12,6 +12,7 @@ import { NotificationToast } from './notification-toast';
 import { INotificationProps } from '.';
 import { persistSpecification } from '../../specification';
 import { handleDiscardChanges } from '../../commands';
+import { useJsonEditorContext } from '../../json-editor';
 
 export const NotificationApplyChanges: React.FC<INotificationProps> = ({
     toasterId
@@ -25,9 +26,14 @@ export const NotificationApplyChanges: React.FC<INotificationProps> = ({
     );
     const toastId = useId(TOAST_NOTIFICATION_ID_APPLY_CHANGES);
     const { dispatchToast, dismissToast } = useToastController(toasterId);
+    const { spec, config } = useJsonEditorContext();
     const handleApply = () => {
         dismissToast(toastId);
-        persistSpecification(false);
+        persistSpecification(
+            spec?.current.editor,
+            config?.current.editor,
+            false
+        );
     };
     const handleDiscard = () => {
         dismissToast(toastId);

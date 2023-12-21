@@ -39,6 +39,7 @@ import {
 } from '../../commands';
 import { ToolbarRole } from '../types';
 import { TooltipCustomMount } from '../../interface';
+import { useJsonEditorContext } from '../../json-editor';
 
 interface IToolbarButtonProps {
     command: Command;
@@ -63,7 +64,9 @@ export const ToolbarButtonStandard: React.FC<IToolbarButtonProps> = ({
         role === 'debug' ? classes.buttonSmall : '',
         resolveClasses(command)
     );
-    const handleClick = resolveClick(command);
+    const { spec, config } = useJsonEditorContext();
+    const handleClick = () =>
+        resolveClick(command)(spec?.current.editor, config?.current.editor);
     const [ref, setRef] = useState<HTMLElement | null>();
     return (
         <>

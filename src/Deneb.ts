@@ -1,5 +1,5 @@
 import '../style/visual.less';
-import 'jsoneditor/dist/jsoneditor.css';
+import 'ace-builds';
 import powerbi from 'powerbi-visuals-api';
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;

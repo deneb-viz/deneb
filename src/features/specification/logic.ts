@@ -3,11 +3,8 @@ import * as VegaLite from 'vega-lite';
 import cloneDeep from 'lodash/cloneDeep';
 import isEqual from 'lodash/isEqual';
 import merge from 'lodash/merge';
+import omit from 'lodash/omit';
 
-import {
-    configEditorService,
-    specEditorService
-} from '../../core/services/JsonEditorServices';
 import { TStoreState, getState } from '../../store';
 import { getVegaSettings, TSpecProvider } from '../../core/vega';
 import {
@@ -44,6 +41,7 @@ import {
 import { getI18nValue } from '../i18n';
 import { getHashValue } from '../../utils';
 import { PROPERTY_DEFAULTS, PROVIDER_RESOURCES } from '../../../config';
+import { IAceEditor } from 'react-ace/lib/types';
 
 /**
  * For a given operation and string input, ensure that it's trimmed and replaced with suitable defaults if empty.
@@ -52,12 +50,12 @@ const cleanJsonInputForPersistence = (
     operation: TEditorRole,
     input: string
 ): string => {
-    const clean = input.trim();
+    const clean = input?.trim() || '';
     if (clean === '') {
         switch (operation) {
-            case 'spec':
+            case 'Spec':
                 return PROPERTY_DEFAULTS.vega.jsonSpec;
-            case 'config':
+            case 'Config':
                 return PROPERTY_DEFAULTS.vega.jsonConfig;
         }
     }
@@ -76,16 +74,13 @@ const dispatchFixStatus = (result: IFixResult) => {
  * JSON. We'll also indent it if valid. If it doesn't work, we'll update the store with the error details so that we can inform the
  * user to take action.
  */
-export const fixAndFormatSpecification = () => {
+export const fixAndFormatSpecification = (
+    specEditor: IAceEditor,
+    configEditor: IAceEditor
+) => {
     try {
-        const fixedRawSpec = tryFixAndFormat(
-                'spec',
-                specEditorService.getText()
-            ),
-            fixedRawConfig = tryFixAndFormat(
-                'config',
-                configEditorService.getText()
-            ),
+        const fixedRawSpec = tryFixAndFormat('Spec', specEditor.getValue()),
+            fixedRawConfig = tryFixAndFormat('Config', configEditor.getValue()),
             success = fixedRawSpec.success && fixedRawConfig.success;
         const result: IFixResult = {
             success: success,
@@ -95,13 +90,13 @@ export const fixAndFormatSpecification = () => {
             error: resolveFixErrorMessage(success, fixedRawSpec, fixedRawConfig)
         };
         if (fixedRawSpec.success) {
-            specEditorService.setText(fixedRawSpec.text);
+            specEditor.setValue(fixedRawSpec.text);
         }
         if (fixedRawConfig.success) {
-            configEditorService.setText(fixedRawConfig.text);
+            configEditor.setValue(fixedRawConfig.text);
         }
         dispatchFixStatus(result);
-        persistSpecification();
+        persistSpecification(specEditor, configEditor);
     } catch (e) {
         logError('Format error', e);
     }
@@ -110,13 +105,8 @@ export const fixAndFormatSpecification = () => {
 /**
  * Further abstracts the `cleanJsonInputForPersistence` workflow so that calling functions are easier to follow.
  */
-export const getCleanEditorJson = (role: TEditorRole) =>
-    cleanJsonInputForPersistence(
-        role,
-        role === 'spec'
-            ? specEditorService.getText()
-            : configEditorService.getText()
-    );
+export const getCleanEditorJson = (role: TEditorRole, editor: IAceEditor) =>
+    cleanJsonInputForPersistence(role, editor?.getValue());
 
 /**
  * Borrowed from vega-editor
@@ -466,10 +456,13 @@ export const getSpecificationParseOptions = (
  * compares with persisted values in the visual properties. Used to set
  * the `isDirty` flag in the store.
  */
-export const hasLiveSpecChanged = () => {
+export const hasLiveSpecChanged = (
+    specEditor: IAceEditor,
+    configEditor: IAceEditor
+) => {
     const { jsonSpec, jsonConfig } = getVegaSettings(),
-        liveSpec = getCleanEditorJson('spec'),
-        liveConfig = getCleanEditorJson('config');
+        liveSpec = getCleanEditorJson('Spec', specEditor),
+        liveConfig = getCleanEditorJson('Config', configEditor);
     return liveSpec != jsonSpec || liveConfig != jsonConfig;
 };
 
@@ -512,7 +505,13 @@ const isNewSpec = () => {
 export const isSpecificationVolatile = (
     prev: ISpecificationComparisonOptions,
     next: ISpecificationComparisonOptions
-) => !isEqual(prev, next);
+) => {
+    const omitList = ['datasetHash', 'values'];
+    const newPrev = omit(prev, omitList);
+    const newNext = omit(next, omitList);
+    logDebug('isSpecificationVolatile', { newPrev, newNext });
+    return !isEqual(newPrev, newNext);
+};
 
 /**
  * Determine if a visual is 'versioned' based on persisted properties.
@@ -531,24 +530,27 @@ const isVersionedSpec = () => {
  * Resolve the spec/config and use the `properties` API for persistence. Also
  * resets the `isDirty` flag in the store.
  */
-export const persistSpecification = (stage = true) => {
+export const persistSpecification = (
+    specEditor: IAceEditor,
+    configEditor: IAceEditor,
+    stage = true
+) => {
     const {
         editor: { stagedConfig, stagedSpec, updateChanges },
         visualSettings: {
             vega: { jsonConfig, jsonSpec }
         }
     } = getState();
-    const isDirty = false;
-    const spec = (stage ? getCleanEditorJson('spec') : stagedSpec) ?? jsonSpec;
+    const spec =
+        (stage ? getCleanEditorJson('Spec', specEditor) : stagedSpec) ??
+        jsonSpec;
     const config =
-        (stage ? getCleanEditorJson('config') : stagedConfig) ?? jsonConfig;
-    updateChanges({
-        isDirty,
-        stagedSpec: spec,
-        stagedConfig: config
-    });
+        (stage ? getCleanEditorJson('Config', configEditor) : stagedConfig) ??
+        jsonConfig;
+    updateChanges({ role: 'Spec', text: spec });
+    updateChanges({ role: 'Config', text: config });
     const { renewEditorFieldsInUse } = getState();
-    renewEditorFieldsInUse();
+    renewEditorFieldsInUse(specEditor);
     updateObjectProperties(
         resolveObjectProperties([
             {
@@ -596,7 +598,7 @@ const tryFixAndFormat = (operation: TEditorRole, input: string): IFixStatus => {
             success: false,
             text: input,
             error: `${getI18nValue(
-                operation === 'spec' ? 'Editor_Role_Spec' : 'Editor_Role_Config'
+                operation === 'Spec' ? 'Editor_Role_Spec' : 'Editor_Role_Config'
             )} ${getI18nValue('Fix_Failed_Item')}`
         };
     }

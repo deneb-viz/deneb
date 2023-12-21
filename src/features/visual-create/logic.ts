@@ -9,16 +9,13 @@ import {
     ITemplateInteractivityOptions
 } from '../template/schema';
 import {
-    configEditorService,
-    specEditorService
-} from '../../core/services/JsonEditorServices';
-import {
     IPersistenceProperty,
     resolveObjectProperties,
     updateObjectProperties
 } from '../../core/utils/properties';
 import { getReducedPlaceholdersForMetadata } from '../template';
 import { logDebug } from '../logging';
+import { IAceEditor } from 'react-ace/lib/types';
 
 /**
  * For the supplied provider and specification template, add this to the visual and persist to properties, ready for
@@ -27,7 +24,9 @@ import { logDebug } from '../logging';
 export const createFromTemplate = (
     provider: TSpecProvider,
     template: Spec | TopLevelSpec,
-    metadata: IDenebTemplateMetadata
+    metadata: IDenebTemplateMetadata,
+    specEditor: IAceEditor,
+    configEditor: IAceEditor
 ) => {
     logDebug('createFromTemplate', { provider, template });
     const {
@@ -58,9 +57,9 @@ export const createFromTemplate = (
             }
         ])
     );
-    renewEditorFieldsInUse();
-    specEditorService.setText(jsonSpec);
-    configEditorService.setText(jsonConfig);
+    renewEditorFieldsInUse(specEditor);
+    specEditor.setValue(jsonSpec);
+    configEditor.setValue(jsonConfig);
     createFromTemplate();
 };
 

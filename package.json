@@ -52,7 +52,6 @@
         "git-last-commit": "^1.0.1",
         "json-stringify-pretty-compact": "^4.0.0",
         "jsonc-parser": "^3.2.0",
-        "jsoneditor": "^9.7.4",
         "jsum": "^2.0.0-alpha.4",
         "lodash": "^4.17.21",
         "minimist": "^1.2.5",

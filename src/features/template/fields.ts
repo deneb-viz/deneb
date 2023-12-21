@@ -16,6 +16,7 @@ import { ITemplatePattern, TemplateDatasetColumnRole } from './types';
 import { getFormatFieldRegExpAlternation } from '../dataset';
 import { getI18nValue } from '../i18n';
 import { useTemplateStyles } from './components';
+import { IAceEditor } from 'react-ace/lib/types';
 
 /**
  * Used for validation of text field lengths vs. generated schema.
@@ -201,10 +202,11 @@ export const getFieldExpression = (exp: string) => new RegExp(exp, 'g');
 export const getFieldsInUseFromSpec = (
     metadata: IVisualDatasetFields,
     editorFieldsInUse: IVisualDatasetFields,
+    specEditor?: IAceEditor,
     renew = false
 ): IVisualDatasetFields => {
     const { jsonSpec } = getVegaSettings();
-    const spec = getCleanEditorJson('Spec') || jsonSpec;
+    const spec = getCleanEditorJson('Spec', specEditor) || jsonSpec;
     const newFieldsInUse = getExistingFieldsInUse(editorFieldsInUse, renew);
     forIn(getDatasetFieldsInclusive(metadata), (value, key) => {
         const found = doesSpecContainKeyForMetadata(key, spec, metadata);

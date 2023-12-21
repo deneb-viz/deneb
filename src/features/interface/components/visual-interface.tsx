@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { shallow } from 'zustand/shallow';
 
-import { AdvancedEditorInterface } from '../../interface';
+import { AdvancedEditor } from '../../interface';
 import store from '../../../store';
 import { ReportViewRouter } from './report-view-router';
 import { FetchingMessage, SplashInitial } from '../../status';
@@ -28,7 +28,7 @@ export const VisualInterface = () => {
             case 'EditorNoData':
                 return <LandingPage />;
             case 'Editor':
-                return <AdvancedEditorInterface />;
+                return <AdvancedEditor />;
             case 'View':
                 return <ReportViewRouter />;
         }

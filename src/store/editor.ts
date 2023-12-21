@@ -29,19 +29,35 @@ import {
     getNextApplyMode
 } from '../features/commands';
 import { VISUAL_PREVIEW_ZOOM } from '../../config';
+import { IAceEditor } from 'react-ace/lib/types';
 
 export interface IEditorSlice {
     editor: {
         applyMode: EditorApplyMode;
+        foldsConfig: IEditorFoldPosition[];
+        foldsSpec: IEditorFoldPosition[];
+        /**
+         * Tracks high-level error state of the editor. Essentially if either
+         * editor fails to parse as valid JSON (or JSONC) then we should prevent
+         * the ability to format the current content (potentially breaking it even
+         * further).
+         */
+        hasErrors: boolean;
         isDirty: boolean;
         stagedConfig: string;
         stagedSpec: string;
+        /**
+         * Set the fold information for the specified editor role.
+         */
+        setFolds: (payload: IEditorSliceSetFolds) => void;
+        /**
+         * Sets the high-level error state flag accordingly.
+         */
+        setHasErrors: (hasErrors: boolean) => void;
         toggleApplyMode: () => void;
         updateApplyMode: (applyMode: EditorApplyMode) => void;
         updateChanges: (payload: IEditorSliceUpdateChangesPayload) => void;
         updateIsDirty: (isDirty: boolean) => void;
-        updateStagedConfig: (stagedConfig: string) => void;
-        updateStagedSpec: (stagedSpec: string) => void;
     };
     editorFieldDatasetMismatch: boolean;
     editorFieldsInUse: IVisualDatasetFields;
@@ -60,7 +76,7 @@ export interface IEditorSlice {
     editorPaneWidth: number;
     editorSelectedOperation: TEditorRole;
     editorZoomLevel: number;
-    renewEditorFieldsInUse: () => void;
+    renewEditorFieldsInUse: (editor: IAceEditor) => void;
     setEditorFixErrorDismissed: () => void;
     toggleEditorPane: () => void;
     togglePreviewDebugPane: () => void;
@@ -82,9 +98,24 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IEditorSlice>{
         editor: {
             applyMode: 'Manual',
+            foldsConfig: [],
+            foldsSpec: [],
+            hasErrors: false,
             isDirty: false,
             stagedConfig: null,
             stagedSpec: null,
+            setFolds: (payload) =>
+                set(
+                    (state) => handleSetFolds(state, payload),
+                    false,
+                    'editor.setFolds'
+                ),
+            setHasErrors: (hasErrors) =>
+                set(
+                    (state) => handleSetHasErrors(state, hasErrors),
+                    false,
+                    'editor.setHasErrors'
+                ),
             toggleApplyMode: () =>
                 set(
                     (state) => handleToggleApplyMode(state),
@@ -108,18 +139,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                     (state) => handleUpdateIsDirty(state, isDirty),
                     false,
                     'editor.updateIsDirty'
-                ),
-            updateStagedConfig: (stagedConfig) =>
-                set(
-                    (state) => handleUpdateStagedConfig(state, stagedConfig),
-                    false,
-                    'editor.updateStagedConfig'
-                ),
-            updateStagedSpec: (stagedSpec) =>
-                set(
-                    (state) => handleUpdateStagedSpec(state, stagedSpec),
-                    false,
-                    'editor.updateStagedSpec'
                 )
         },
         editorFieldDatasetMismatch: false,
@@ -142,11 +161,11 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
         editorPaneDefaultWidth: null,
         editorPaneExpandedWidth: null,
         editorPaneWidth: null,
-        editorSelectedOperation: 'spec',
+        editorSelectedOperation: 'Spec',
         editorZoomLevel: VISUAL_PREVIEW_ZOOM.default,
-        renewEditorFieldsInUse: () =>
+        renewEditorFieldsInUse: (editor) =>
             set(
-                (state) => handleRenewEditorFieldsInUse(state),
+                (state) => handleRenewEditorFieldsInUse(state, editor),
                 false,
                 'renewEditorFieldsInUse'
             ),
@@ -232,11 +251,51 @@ export const createEditorSlice: StateCreator<
     IEditorSlice
 > = sliceStateInitializer;
 
-export interface IEditorSliceUpdateChangesPayload {
-    isDirty: boolean;
-    stagedConfig: string;
-    stagedSpec: string;
+export interface IEditorSliceSetFolds {
+    /**
+     * The editor that the folds apply to.
+     */
+    role: TEditorRole;
+    /**
+     * Current fold data from the editor.
+     */
+    folds: IEditorFoldPosition[];
 }
+
+/**
+ * Used to update the "staging" text for a JSON editor and ensure that it can
+ * be restored (if navigating the UI), or persisted with a prompt, if the user
+ * exits without saving changes.
+ */
+export interface IEditorSliceUpdateChangesPayload {
+    /**
+     * The editor that the text applies to.
+     */
+    role: TEditorRole;
+    /**
+     * The editor text value to stage into the store
+     */
+    text: string;
+    /**
+     * Current fold data from the editor. If omitted, will use the current fold
+     * data for that editor.
+     */
+    folds?: IEditorFoldPosition[];
+}
+
+/**
+ * Sets which nodes in the editor are folded, for retrieval later.
+ */
+const handleSetFolds = (
+    state: TStoreState,
+    payload: IEditorSliceSetFolds
+): Partial<TStoreState> => ({
+    editor: { ...state.editor, [`folds${payload.role}`]: payload.folds }
+});
+
+const handleSetHasErrors = (state: TStoreState, hasErrors: boolean) => ({
+    editor: { ...state.editor, hasErrors }
+});
 
 const handleToggleApplyMode = (state: TStoreState): Partial<TStoreState> => {
     const { applyMode } = state.editor;
@@ -267,7 +326,19 @@ const handleUpdateChanges = (
     state: TStoreState,
     payload: IEditorSliceUpdateChangesPayload
 ): Partial<TStoreState> => {
-    const { isDirty, stagedConfig, stagedSpec } = payload;
+    const { role, text, folds } = payload;
+    const existingFolds =
+        role === 'Spec' ? state.editor.foldsSpec : state.editor.foldsConfig;
+    const isDirty =
+        state.visualSettings.vega.jsonConfig !== text &&
+        state.visualSettings.vega.jsonSpec !== text &&
+        state.editor.applyMode !== 'Auto';
+    const foldsConfig =
+        role === 'Config' ? folds ?? state.editor.foldsConfig : existingFolds;
+    const foldsSpec =
+        role === 'Spec' ? folds ?? state.editor.foldsSpec : existingFolds;
+    const stagedConfig = role === 'Config' ? text : state.editor.stagedConfig;
+    const stagedSpec = role === 'Spec' ? text : state.editor.stagedSpec;
     return {
         commands: {
             ...state.commands,
@@ -280,6 +351,8 @@ const handleUpdateChanges = (
         editor: {
             ...state.editor,
             isDirty,
+            foldsConfig,
+            foldsSpec,
             stagedConfig,
             stagedSpec
         },
@@ -298,30 +371,6 @@ const handleUpdateChanges = (
     };
 };
 
-const handleUpdateStagedSpec = (
-    state: TStoreState,
-    stagedSpec: string
-): Partial<TStoreState> => {
-    return {
-        editor: {
-            ...state.editor,
-            stagedSpec
-        }
-    };
-};
-
-const handleUpdateStagedConfig = (
-    state: TStoreState,
-    stagedConfig: string
-): Partial<TStoreState> => {
-    return {
-        editor: {
-            ...state.editor,
-            stagedConfig
-        }
-    };
-};
-
 export interface IEditorPaneUpdatePayload {
     editorPaneWidth: number;
     editorPaneExpandedWidth: number;
@@ -333,12 +382,14 @@ interface IEditorFieldMappingUpdatePayload {
 }
 
 const handleRenewEditorFieldsInUse = (
-    state: TStoreState
+    state: TStoreState,
+    editor: IAceEditor
 ): Partial<TStoreState> => {
     const { fields } = state.dataset;
     const editorFieldsInUse = getFieldsInUseFromSpec(
         fields,
         state.editorFieldsInUse,
+        editor,
         true
     );
     const editorFieldDatasetMismatch = doUnallocatedFieldsExist(
