@@ -12,7 +12,6 @@ import {
 } from '../core/ui/advancedEditor';
 import { IVisualDatasetFields } from '../core/data';
 import { getFieldsInUseFromSpec } from '../features/template';
-import { IFixResult } from '../features/specification';
 import {
     EditorApplyMode,
     IEditorFoldPosition,
@@ -61,7 +60,6 @@ export interface IEditorSlice {
     };
     editorFieldDatasetMismatch: boolean;
     editorFieldsInUse: IVisualDatasetFields;
-    editorFixResult: IFixResult;
     editorIsExportDialogVisible: boolean;
     editorIsNewDialogVisible: boolean;
     editorPaneIsExpanded: boolean;
@@ -77,14 +75,12 @@ export interface IEditorSlice {
     editorSelectedOperation: TEditorRole;
     editorZoomLevel: number;
     renewEditorFieldsInUse: (editor: IAceEditor) => void;
-    setEditorFixErrorDismissed: () => void;
     toggleEditorPane: () => void;
     togglePreviewDebugPane: () => void;
     updateEditorPreviewDebugIsExpanded: (value: boolean) => void;
     updateEditorFieldMapping: (
         payload: IEditorFieldMappingUpdatePayload
     ) => void;
-    updateEditorFixStatus: (payload: IFixResult) => void;
     updateEditorPaneWidth: (payload: IEditorPaneUpdatePayload) => void;
     updateEditorPreviewAreaHeight: (height: number) => void;
     updateEditorPreviewAreaWidth: () => void;
@@ -143,12 +139,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
         },
         editorFieldDatasetMismatch: false,
         editorFieldsInUse: {},
-        editorFixResult: {
-            success: true,
-            dismissed: false,
-            spec: null,
-            config: null
-        },
         editorIsExportDialogVisible: false,
         editorIsNewDialogVisible: true,
         editorPaneIsExpanded: true,
@@ -169,12 +159,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                 false,
                 'renewEditorFieldsInUse'
             ),
-        setEditorFixErrorDismissed: () =>
-            set(
-                (state) => handleSetEditorFixErrorDismissed(state),
-                false,
-                'setEditorFixErrorDismissed'
-            ),
         toggleEditorPane: () =>
             set(
                 (state) => handleToggleEditorPane(state),
@@ -192,12 +176,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                 (state) => handleUpdateEditorFieldMappings(state, payload),
                 false,
                 'updateEditorFieldMapping'
-            ),
-        updateEditorFixStatus: (payload) =>
-            set(
-                (state) => handleUpdateEditorFixStatus(state, payload),
-                false,
-                'updateEditorFixStatus'
             ),
         updateEditorPaneWidth: (payload) =>
             set(
@@ -403,17 +381,6 @@ const handleRenewEditorFieldsInUse = (
     };
 };
 
-const handleSetEditorFixErrorDismissed = (
-    state: TStoreState
-): Partial<TStoreState> => {
-    return {
-        editorFixResult: {
-            ...state.editorFixResult,
-            ...{ dismissed: true }
-        }
-    };
-};
-
 const handleToggleEditorPane = (state: TStoreState): Partial<TStoreState> => {
     const newExpansionState = !state.editorPaneIsExpanded;
     const { position } = state.visualSettings.editor;
@@ -467,13 +434,6 @@ const handleUpdateEditorFieldMappings = (
         },
         <IVisualDatasetFields>state.editorFieldsInUse
     )
-});
-
-const handleUpdateEditorFixStatus = (
-    state: TStoreState,
-    payload: IFixResult
-): Partial<TStoreState> => ({
-    editorFixResult: payload
 });
 
 const handleUpdateEditorPaneWidth = (

@@ -17,7 +17,6 @@ import {
 } from '../json-processing';
 import {
     IContentPatchResult,
-    IFixResult,
     IFixStatus,
     ISpecification,
     ISpecificationComparisonOptions,
@@ -63,13 +62,6 @@ const cleanJsonInputForPersistence = (
 };
 
 /**
- * Dispatch the results of a fix and repair operation to the store.
- */
-const dispatchFixStatus = (result: IFixResult) => {
-    getState().updateEditorFixStatus(result);
-};
-
-/**
  * For the specification and configuration in each editor, attempt to fix any simple issues that might prevent it from being valid
  * JSON. We'll also indent it if valid. If it doesn't work, we'll update the store with the error details so that we can inform the
  * user to take action.
@@ -79,23 +71,17 @@ export const fixAndFormatSpecification = (
     configEditor: IAceEditor
 ) => {
     try {
-        const fixedRawSpec = tryFixAndFormat('Spec', specEditor.getValue()),
-            fixedRawConfig = tryFixAndFormat('Config', configEditor.getValue()),
-            success = fixedRawSpec.success && fixedRawConfig.success;
-        const result: IFixResult = {
-            success: success,
-            spec: fixedRawSpec,
-            config: fixedRawConfig,
-            dismissed: false,
-            error: resolveFixErrorMessage(success, fixedRawSpec, fixedRawConfig)
-        };
+        const fixedRawSpec = tryFixAndFormat('Spec', specEditor.getValue());
+        const fixedRawConfig = tryFixAndFormat(
+            'Config',
+            configEditor.getValue()
+        );
         if (fixedRawSpec.success) {
             specEditor.setValue(fixedRawSpec.text);
         }
         if (fixedRawConfig.success) {
             configEditor.setValue(fixedRawConfig.text);
         }
-        dispatchFixStatus(result);
         persistSpecification(specEditor, configEditor);
     } catch (e) {
         logError('Format error', e);
@@ -561,26 +547,6 @@ export const persistSpecification = (
                 ]
             }
         ])
-    );
-};
-
-/**
- * For the results of a fix and repair operation, resolve the error message for the end-user (if applicable).
- */
-const resolveFixErrorMessage = (
-    success: boolean,
-    fixedRawSpec: IFixStatus,
-    fixedRawConfig: IFixStatus
-): string => {
-    return (
-        (!success &&
-            `${getI18nValue('Fix_Failed_Prefix')} ${fixedRawSpec.error || ''}${
-                (!fixedRawSpec.success && !fixedRawConfig.success && ' & ') ||
-                ''
-            }${fixedRawConfig.error || ''}. ${getI18nValue(
-                'Fix_Failed_Suffix'
-            )}`) ||
-        undefined
     );
 };
 
