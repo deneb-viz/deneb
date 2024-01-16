@@ -12,6 +12,7 @@ import {
     updateObjectProperties
 } from '../../core/utils/properties';
 import {
+    getJsonLocationAtPath,
     getTextFormattedAsJsonC,
     parseAndValidateContentJson
 } from '../json-processing';
@@ -41,6 +42,12 @@ import { getI18nValue } from '../i18n';
 import { getHashValue } from '../../utils';
 import { PROPERTY_DEFAULTS, PROVIDER_RESOURCES } from '../../../config';
 import { IAceEditor } from 'react-ace/lib/types';
+import {
+    getEditorFolds,
+    getUpdatedEditorFolds,
+    toggleEditorFolds
+} from '../json-editor/folding';
+import { getJsonPathAtLocation } from '../json-processing/formatting';
 
 /**
  * For a given operation and string input, ensure that it's trimmed and replaced with suitable defaults if empty.
@@ -62,29 +69,46 @@ const cleanJsonInputForPersistence = (
 };
 
 /**
- * For the specification and configuration in each editor, attempt to fix any simple issues that might prevent it from being valid
- * JSON. We'll also indent it if valid. If it doesn't work, we'll update the store with the error details so that we can inform the
- * user to take action.
+ * For the specification and configuration in each editor, attempt to format
+ * the JSON and update the editor contents accordingly.
  */
 export const fixAndFormatSpecification = (
     specEditor: IAceEditor,
     configEditor: IAceEditor
 ) => {
     try {
-        const fixedRawSpec = tryFixAndFormat('Spec', specEditor.getValue());
-        const fixedRawConfig = tryFixAndFormat(
-            'Config',
-            configEditor.getValue()
-        );
-        if (fixedRawSpec.success) {
-            specEditor.setValue(fixedRawSpec.text);
-        }
-        if (fixedRawConfig.success) {
-            configEditor.setValue(fixedRawConfig.text);
-        }
+        updateEditorFormatResults(specEditor, 'Spec');
+        updateEditorFormatResults(configEditor, 'Config');
         persistSpecification(specEditor, configEditor);
     } catch (e) {
         logError('Format error', e);
+    }
+};
+
+/**
+ * For the given editor and role, perform the formatting, restore folds, cursor
+ * position, and update the store.
+ */
+const updateEditorFormatResults = (editor: IAceEditor, role: TEditorRole) => {
+    const fixedSpec = tryFormatJson(role, editor.getValue());
+    const {
+        editor: { setFolds }
+    } = getState();
+    if (fixedSpec.success) {
+        const foldsPrev = getEditorFolds(editor);
+        const pathPrev = getJsonPathAtLocation(editor);
+        const offsetNew = getJsonLocationAtPath(fixedSpec.text, pathPrev);
+        editor.setValue(fixedSpec.text);
+        const foldsNew = getUpdatedEditorFolds(editor, foldsPrev);
+        const cursorNew = editor.session.doc.indexToPosition(
+            offsetNew.offset + (offsetNew.length || 0),
+            0
+        );
+        toggleEditorFolds(editor, foldsNew);
+        const folds = getEditorFolds(editor);
+        editor.clearSelection();
+        editor.moveCursorTo(cursorNew.row, cursorNew.column);
+        setFolds({ role, folds });
     }
 };
 
@@ -550,7 +574,7 @@ export const persistSpecification = (
     );
 };
 
-const tryFixAndFormat = (operation: TEditorRole, input: string): IFixStatus => {
+const tryFormatJson = (operation: TEditorRole, input: string): IFixStatus => {
     try {
         return {
             success: true,
