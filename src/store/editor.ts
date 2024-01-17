@@ -271,7 +271,14 @@ const handleSetFolds = (
     editor: { ...state.editor, [`folds${payload.role}`]: payload.folds }
 });
 
-const handleSetHasErrors = (state: TStoreState, hasErrors: boolean) => ({
+const handleSetHasErrors = (
+    state: TStoreState,
+    hasErrors: boolean
+): Partial<TStoreState> => ({
+    commands: {
+        ...state.commands,
+        formatJson: !hasErrors
+    },
     editor: { ...state.editor, hasErrors }
 });
 
