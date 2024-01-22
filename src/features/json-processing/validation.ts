@@ -1,4 +1,4 @@
-import { getJsonLanguageService, getJsonTextDocument } from '.';
+import { getJsonLanguageService, getJsonTextDocument } from '@deneb-viz/json';
 import { getProviderSchema } from '../specification';
 import { TSpecProvider } from '../../core/vega';
 import { TEditorRole } from '../json-editor';

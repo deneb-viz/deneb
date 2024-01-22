@@ -1,46 +1,20 @@
-import {
-    getLanguageService,
-    TextDocument,
-    Position
-} from 'vscode-json-languageservice';
-import {
-    findNodeAtLocation,
-    JSONPath,
-    parseTree,
-    stripComments
-} from 'jsonc-parser';
+import { Position } from 'vscode-json-languageservice';
 
 import cloneDeep from 'lodash/cloneDeep';
 import * as ace from 'ace-builds';
 import Ace = ace.Ace;
 import Point = Ace.Point;
 
-import { TABLE_VALUE_MAX_DEPTH } from '../../constants';
 import { getI18nValue } from '../i18n';
 import { logDebug, logTimeEnd, logTimeStart } from '../logging';
 import { IContentParseResult } from '../specification';
+import { JSON_MAX_PRUNE_DEPTH, getJsonPureString } from '@deneb-viz/json';
 
 export {
     getObjectFormattedAsText,
     getTextFormattedAsJsonC
 } from './formatting';
 export { getJsonDocumentValidation } from './validation';
-
-/**
- * 'Filename' to use for validating editor JSON content using language services.
- */
-export const JSON_INTERNAL_CONTENT_URI = 'deneb://spec.json';
-
-/**
- * URI/namespace to use for establishing language services for an editor spec.
- */
-export const JSON_INTERNAL_SCHEMA_URI = 'deneb://schema.json';
-
-/**
- * When resolving JSON to readable strings, this is the default maximum level
- * of depth to stop at.
- */
-export const JSON_MAX_PRUNE_DEPTH = 3;
 
 /**
  * Convert an Ace `Point` to a VS Code `Position`, for resolving content using
@@ -52,49 +26,11 @@ export const getEditorPointToPosition = (point: Point): Position => ({
 });
 
 /**
- * For the supplied schema, generate a VS Code `LanguageService` that can be
- * used for autocompletion and hover events.
- */
-export const getJsonLanguageService = (schema: any) => {
-    const ls = getLanguageService({
-        schemaRequestService: () => Promise.resolve(JSON.stringify(schema))
-    });
-    ls.configure({
-        allowComments: false,
-        schemas: [{ fileMatch: ['*.json'], uri: JSON_INTERNAL_SCHEMA_URI }]
-    });
-    return ls;
-};
-
-/**
- * For the supplied content and path, return the JSON node at that location.
- */
-export const getJsonLocationAtPath = (content: string, path: JSONPath) => {
-    return findNodeAtLocation(parseTree(content), path);
-};
-
-/**
- * For editor JSON, process it to remove any potential comments, and therefor
- * make it a parsable JSON string. By default, we will replace any comment
- * data with spaces, so that the line numbers remain the same. This can be
- * overridden by specifying a different replacement character.
- */
-export const getJsonPure = (content: string, replaceCh: string = ' ') =>
-    stripComments(content || '{}', replaceCh);
-
-/**
- * For the supplied content, generate a VS Code `TextDocument`, with the
- * necessary metadata for validation using language services downstream.
- */
-export const getJsonTextDocument = (content: string) =>
-    TextDocument.create(JSON_INTERNAL_CONTENT_URI, 'json', 1, content);
-
-/**
  * Prune an object at a specified level of depth.
  */
 export const getPrunedObject = (
     json: object,
-    maxDepth = TABLE_VALUE_MAX_DEPTH
+    maxDepth = JSON_MAX_PRUNE_DEPTH
 ) => {
     logTimeStart('getPrunedObject clone');
     const newObj = cloneDeep(json);
@@ -114,7 +50,7 @@ export const parseAndValidateContentJson = (
     fallback?: string
 ): IContentParseResult => {
     try {
-        return { result: JSON.parse(getJsonPure(content)), errors: [] };
+        return { result: JSON.parse(getJsonPureString(content)), errors: [] };
     } catch (e) {
         logDebug(
             'parseAndValidateContentJson: error encountered when parsing. Returning fallback...',
@@ -131,14 +67,14 @@ export const parseAndValidateContentJson = (
  */
 export const stringifyPruned = (
     json: object,
-    maxDepth = TABLE_VALUE_MAX_DEPTH
+    maxDepth = JSON_MAX_PRUNE_DEPTH
 ) => JSON.stringify(json, prune(maxDepth));
 
 /**
  * For a given object, prune at the specified level of depth. Borrowed and
  * adapted from vega-tooltip.
  */
-const prune = (maxDepth = TABLE_VALUE_MAX_DEPTH) => {
+const prune = (maxDepth = JSON_MAX_PRUNE_DEPTH) => {
     const stack: any[] = [];
     return function (this: any, key: string, value: any) {
         if (value === undefined) {

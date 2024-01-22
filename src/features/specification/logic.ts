@@ -12,7 +12,6 @@ import {
     updateObjectProperties
 } from '../../core/utils/properties';
 import {
-    getJsonLocationAtPath,
     getTextFormattedAsJsonC,
     parseAndValidateContentJson
 } from '../json-processing';
@@ -48,6 +47,7 @@ import {
     toggleEditorFolds
 } from '../json-editor/folding';
 import { getJsonPathAtLocation } from '../json-processing/formatting';
+import { getJsonLocationAtPath } from '@deneb-viz/json';
 
 /**
  * For a given operation and string input, ensure that it's trimmed and replaced with suitable defaults if empty.

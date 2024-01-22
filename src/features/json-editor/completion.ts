@@ -13,12 +13,9 @@ import { TSpecProvider } from '../../core/vega';
 import { TEditorRole } from '.';
 import { logDebug } from '../logging';
 import { getI18nValue } from '../i18n';
-import {
-    getEditorPointToPosition,
-    getJsonLanguageService,
-    getJsonTextDocument
-} from '../json-processing';
+import { getEditorPointToPosition } from '../json-processing';
 import { getProviderSchema } from '../specification/schema-validation';
+import { getJsonLanguageService, getJsonTextDocument } from '@deneb-viz/json';
 
 /**
  * For local completions, represents the word and distance from the current

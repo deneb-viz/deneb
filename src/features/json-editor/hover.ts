@@ -6,15 +6,12 @@ import Editor = Ace.Editor;
 import Range = ace.Range;
 
 import { logDebug } from '../logging';
-import {
-    getEditorPointToPosition,
-    getJsonLanguageService,
-    getJsonTextDocument
-} from '../json-processing';
+import { getEditorPointToPosition } from '../json-processing';
 import { getProviderSchema } from '../specification/schema-validation';
 import { TSpecProvider } from '../../core/vega';
 import { TEditorRole } from './types';
 import { EDITOR_INDICATOR_TOOLTIP_NAME } from '../../constants';
+import { getJsonLanguageService, getJsonTextDocument } from '@deneb-viz/json';
 
 /**
  * For a hover event in the editor, resolve it to get any relevant tooltip
