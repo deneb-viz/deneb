@@ -7,14 +7,15 @@ import Editor = Ace.Editor;
 import Range = ace.Range;
 
 import { logDebug } from '../logging';
-import { getJsonDocumentValidation } from '../json-processing';
+
 import {
     EDITOR_INDICATOR_ERROR_NAME,
     EDITOR_INDICATOR_TOOLTIP_NAME,
     EDITOR_INDICATOR_WARNING_NAME
 } from '../../constants';
 import { TSpecProvider } from '../../core/vega';
-import { TEditorRole } from './types';
+import { getJsonDocumentValidationResults } from '@deneb-viz/json-processing';
+import { JsonContentType } from '@deneb-viz/core-dependencies';
 
 /**
  * Clear down any existing validation markers before we (re) validate.
@@ -43,50 +44,52 @@ const clearCustomMarkers = (editor: Editor) => {
 export const validateEditorJson = (
     editor: Editor,
     provider: TSpecProvider,
-    editorRole: TEditorRole,
+    editorRole: JsonContentType,
     content: string,
     currentlyHasErrors: boolean,
     storeErrorSetter: (hasErrors: boolean) => void
 ) => {
     if (!editor || !content) return;
-    getJsonDocumentValidation(provider, editorRole, content).then((results) => {
-        clearCustomMarkers(editor);
-        const { session } = editor;
-        const annotations: Ace.Annotation[] = [];
-        let editorHasErrors = false;
-        results.forEach((result) => {
-            logDebug(result);
-            if (result.severity === 1) {
-                editorHasErrors = true;
-            }
-            annotations.push({
-                row: result.range.start.line,
-                text: result.message,
-                type:
-                    result.severity === 1
-                        ? EDITOR_INDICATOR_ERROR_NAME
-                        : EDITOR_INDICATOR_WARNING_NAME
+    getJsonDocumentValidationResults(provider, editorRole, content).then(
+        (results) => {
+            clearCustomMarkers(editor);
+            const { session } = editor;
+            const annotations: Ace.Annotation[] = [];
+            let editorHasErrors = false;
+            results.forEach((result) => {
+                logDebug(result);
+                if (result.severity === 1) {
+                    editorHasErrors = true;
+                }
+                annotations.push({
+                    row: result.range.start.line,
+                    text: result.message,
+                    type:
+                        result.severity === 1
+                            ? EDITOR_INDICATOR_ERROR_NAME
+                            : EDITOR_INDICATOR_WARNING_NAME
+                });
+                session?.addMarker(
+                    new Range(
+                        result.range.start.line,
+                        result.range.start.character,
+                        result.range.end.line,
+                        result.range.end.character
+                    ),
+                    `${
+                        result.severity === 1
+                            ? EDITOR_INDICATOR_ERROR_NAME
+                            : EDITOR_INDICATOR_WARNING_NAME
+                    }_marker`,
+                    'text'
+                );
             });
-            session?.addMarker(
-                new Range(
-                    result.range.start.line,
-                    result.range.start.character,
-                    result.range.end.line,
-                    result.range.end.character
-                ),
-                `${
-                    result.severity === 1
-                        ? EDITOR_INDICATOR_ERROR_NAME
-                        : EDITOR_INDICATOR_WARNING_NAME
-                }_marker`,
-                'text'
-            );
-        });
-        session?.clearAnnotations();
-        session?.setAnnotations(annotations);
-        if (editorHasErrors !== currentlyHasErrors) {
-            storeErrorSetter(editorHasErrors);
+            session?.clearAnnotations();
+            session?.setAnnotations(annotations);
+            if (editorHasErrors !== currentlyHasErrors) {
+                storeErrorSetter(editorHasErrors);
+            }
+            logDebug('Validation results', { results, annotations });
         }
-        logDebug('Validation results', { results, annotations });
-    });
+    );
 };

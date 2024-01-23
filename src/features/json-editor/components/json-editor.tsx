@@ -37,6 +37,7 @@ import { PROPERTY_DEFAULTS } from '../../../../config';
 import { JsonEditorStatusBar } from './json-editor-status-bar';
 import { validateEditorJson } from '../validation';
 import { persistSpecification } from '../../specification';
+import { JsonContentType } from '@deneb-viz/core-dependencies';
 
 interface IJsonEditorProps {
     thisEditorRole: TEditorRole;
@@ -221,7 +222,7 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
             validateEditorJson(
                 ref?.current?.editor,
                 provider,
-                current,
+                current as JsonContentType,
                 editorText,
                 hasErrors,
                 setHasErrors

@@ -8,13 +8,13 @@ import Point = Ace.Point;
 import { getI18nValue } from '../i18n';
 import { logDebug, logTimeEnd, logTimeStart } from '../logging';
 import { IContentParseResult } from '../specification';
-import { JSON_MAX_PRUNE_DEPTH, getJsonPureString } from '@deneb-viz/json';
+import { JSON_MAX_PRUNE_DEPTH } from '@deneb-viz/core-dependencies';
+import { getJsonPureString } from '@deneb-viz/json-processing';
 
 export {
     getObjectFormattedAsText,
     getTextFormattedAsJsonC
 } from './formatting';
-export { getJsonDocumentValidation } from './validation';
 
 /**
  * Convert an Ace `Point` to a VS Code `Position`, for resolving content using

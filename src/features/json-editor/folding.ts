@@ -7,7 +7,7 @@ import Point = Ace.Point;
 import { IEditorFoldPosition } from './types';
 import { logDebug } from '../logging';
 import { getJsonPathAtLocation } from '../json-processing/formatting';
-import { getJsonLocationAtPath } from '@deneb-viz/json';
+import { getJsonLocationAtPath } from '@deneb-viz/json-processing';
 
 /**
  * Get all folds from the editor, process them into a flattened array, and

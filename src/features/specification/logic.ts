@@ -33,10 +33,6 @@ import {
 } from '../logging';
 import { IVisualDatasetValueRow } from '../../core/data';
 import { DATASET_NAME } from '../../constants';
-import {
-    getFriendlyValidationErrors,
-    getProviderValidator
-} from './schema-validation';
 import { getI18nValue } from '../i18n';
 import { getHashValue } from '../../utils';
 import { PROPERTY_DEFAULTS, PROVIDER_RESOURCES } from '../../../config';
@@ -47,7 +43,11 @@ import {
     toggleEditorFolds
 } from '../json-editor/folding';
 import { getJsonPathAtLocation } from '../json-processing/formatting';
-import { getJsonLocationAtPath } from '@deneb-viz/json';
+import {
+    getFriendlyValidationErrors,
+    getJsonLocationAtPath,
+    getProviderValidator
+} from '@deneb-viz/json-processing';
 
 /**
  * For a given operation and string input, ensure that it's trimmed and replaced with suitable defaults if empty.

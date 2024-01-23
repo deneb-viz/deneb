@@ -14,8 +14,11 @@ import { TEditorRole } from '.';
 import { logDebug } from '../logging';
 import { getI18nValue } from '../i18n';
 import { getEditorPointToPosition } from '../json-processing';
-import { getProviderSchema } from '../specification/schema-validation';
-import { getJsonLanguageService, getJsonTextDocument } from '@deneb-viz/json';
+import {
+    getJsonLanguageService,
+    getJsonTextDocument,
+    getProviderSchema
+} from '@deneb-viz/json-processing';
 
 /**
  * For local completions, represents the word and distance from the current
