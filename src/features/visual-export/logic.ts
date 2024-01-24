@@ -3,7 +3,6 @@ import omit from 'lodash/omit';
 import { v4 as uuidv4 } from 'uuid';
 
 import { DATASET_NAME } from '../../constants';
-import { parseAndValidateContentJson } from '../json-processing';
 import { getJsonAsIndentedString } from '../../core/utils/json';
 import { TSpecProvider } from '../../core/vega';
 import { getState } from '../../store';
@@ -21,6 +20,7 @@ import {
     PROVIDER_VERSIONS,
     TEMPLATE_METADATA_VERSION
 } from '../../../config';
+import { getParsedJsonWithResult } from '@deneb-viz/json-processing';
 
 /**
  * Combines spec, config and specified metadata to produce a valid JSON
@@ -47,7 +47,7 @@ export const getExportTemplate = () => {
         baseObj,
         { usermeta: getPublishableUsermeta(usermeta) },
         {
-            config: parseAndValidateContentJson(
+            config: getParsedJsonWithResult(
                 visualSettings.vega.jsonConfig,
                 PROPERTY_DEFAULTS.vega.jsonConfig
             )?.result

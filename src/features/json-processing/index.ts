@@ -6,10 +6,8 @@ import Ace = ace.Ace;
 import Point = Ace.Point;
 
 import { getI18nValue } from '../i18n';
-import { logDebug, logTimeEnd, logTimeStart } from '../logging';
-import { IContentParseResult } from '../specification';
+import { logTimeEnd, logTimeStart } from '../logging';
 import { JSON_MAX_PRUNE_DEPTH } from '@deneb-viz/core-dependencies';
-import { getJsonPureString } from '@deneb-viz/json-processing';
 
 export {
     getObjectFormattedAsText,
@@ -39,26 +37,6 @@ export const getPrunedObject = (
     const pruned = JSON.parse(stringifyPruned(newObj, maxDepth));
     logTimeEnd('getPrunedObject prune');
     return pruned;
-};
-
-/**
- * Intended to be used as a substitute for `JSON.parse`; will ensure that any
- * supplied `content` is tested as .
- */
-export const parseAndValidateContentJson = (
-    content: string,
-    fallback?: string
-): IContentParseResult => {
-    try {
-        return { result: JSON.parse(getJsonPureString(content)), errors: [] };
-    } catch (e) {
-        logDebug(
-            'parseAndValidateContentJson: error encountered when parsing. Returning fallback...',
-            { fallback }
-        );
-        if (!fallback) return { result: null, errors: [e.message] };
-        return { result: JSON.parse(fallback), errors: [] };
-    }
 };
 
 /**

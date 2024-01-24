@@ -11,10 +11,7 @@ import {
     resolveObjectProperties,
     updateObjectProperties
 } from '../../core/utils/properties';
-import {
-    getTextFormattedAsJsonC,
-    parseAndValidateContentJson
-} from '../json-processing';
+import { getTextFormattedAsJsonC } from '../json-processing';
 import {
     IContentPatchResult,
     IFixStatus,
@@ -46,6 +43,7 @@ import { getJsonPathAtLocation } from '../json-processing/formatting';
 import {
     getFriendlyValidationErrors,
     getJsonLocationAtPath,
+    getParsedJsonWithResult,
     getProviderValidator
 } from '@deneb-viz/json-processing';
 
@@ -251,7 +249,7 @@ export const getParsedSpec = (
  */
 const getPatchedConfig = (content: string): IContentPatchResult => {
     try {
-        const parsedConfig = parseAndValidateContentJson(content);
+        const parsedConfig = getParsedJsonWithResult(content);
         if (parsedConfig.errors.length > 0) return parsedConfig;
         return {
             result: merge(
@@ -313,7 +311,7 @@ const getPatchedSpec = (
     provider: TSpecProvider
 ): IContentPatchResult => {
     try {
-        const parsedSpec = parseAndValidateContentJson(content);
+        const parsedSpec = getParsedJsonWithResult(content);
         if (parsedSpec.errors.length > 0) return parsedSpec;
         return {
             result:
