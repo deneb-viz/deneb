@@ -5,7 +5,7 @@ import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import forIn from 'lodash/forIn';
 import reduce from 'lodash/reduce';
 
-import * as schema_v1 from '../../../schema/deneb-template-usermeta-v1.json';
+import * as schema_v1 from '@deneb-viz/template-usermeta-schema';
 import { IVisualDatasetFields } from '../../core/data';
 import { getDatasetFieldsInclusive } from '../../core/data/fields';
 import { getVegaSettings } from '../../core/vega';
@@ -22,10 +22,10 @@ import { IAceEditor } from 'react-ace/lib/types';
  * Used for validation of text field lengths vs. generated schema.
  */
 export const TEMPLATE_DATASET_FIELD_PROPS =
-    schema_v1.definitions.ITemplateDatasetField.properties;
+    schema_v1.definitions.UsermetaDatasetField.properties;
 
 export const TEMPLATE_INFORMATION_PROPS =
-    schema_v1.definitions.ITemplateInformation.properties;
+    schema_v1.definitions.UsermetaInformation.properties;
 
 /**
  * For the given field key, check the spec for its occurrence using all established RegEx patterns.

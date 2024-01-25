@@ -23,7 +23,7 @@ import {
 } from '../../template';
 import { Spec } from 'vega';
 import { TopLevelSpec } from 'vega-lite';
-import * as schema_v1 from '../../../../schema/deneb-template-usermeta-v1.json';
+import * as schema_v1 from '@deneb-viz/template-usermeta-schema';
 import { TSpecProvider } from '../../../core/vega';
 import { PROVIDER_RESOURCES } from '../../../../config';
 

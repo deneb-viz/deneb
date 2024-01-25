@@ -5,15 +5,14 @@
         "pbiviz": "pbiviz",
         "pbiviz-version": "pbiviz --version",
         "install-cert": "pbiviz install-cert",
-        "start": "npm run template-schemagen && pbiviz start --all-locales",
-        "package": "npm run validate-config-for-commit && npm run template-schemagen && pbiviz package --all-locales",
-        "package-standalone": "npm run template-schemagen && ts-node -P tsconfig.build-scripts.json bin/package-custom --mode standalone",
-        "package-alpha": "npm run template-schemagen && ts-node -P tsconfig.build-scripts.json bin/package-custom --mode alpha",
-        "package-beta": "npm run template-schemagen && ts-node -P tsconfig.build-scripts.json bin/package-custom --mode beta",
+        "start": "pbiviz start --all-locales",
+        "package": "npm run validate-config-for-commit pbiviz package --all-locales",
+        "package-standalone": "ts-node -P tsconfig.build-scripts.json bin/package-custom --mode standalone",
+        "package-alpha": "ts-node -P tsconfig.build-scripts.json bin/package-custom --mode alpha",
+        "package-beta": "ts-node -P tsconfig.build-scripts.json bin/package-custom --mode beta",
         "eslint": "npx eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0",
         "prettier-check": "prettier --config .prettierrc {src,spec,style}/**/{*.ts*,*.css,*.less} --check",
         "prettier-format": "prettier --config .prettierrc {src,spec,style}/**/{*.ts*,*.css,*.less} --write",
-        "template-schemagen": "typescript-json-schema ./src/features/template/schema.ts IDenebTemplateMetadata -o ./schema/deneb-template-usermeta-v1.json --required --topRef",
         "validate-config-for-commit": "ts-node -P tsconfig.build-scripts.json bin/validate-config-for-commit"
     },
     "dependencies": {
@@ -73,7 +72,6 @@
         "styled-components": "^6.0.0-rc.3",
         "ts-loader": "^9.2.5",
         "typescript": "^4.2.4",
-        "typescript-json-schema": "^0.50.0",
         "uuid": "^8.3.2",
         "vscode-json-languageservice": "^5.3.6",
         "zustand": "^4.3.7"
