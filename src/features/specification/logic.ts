@@ -11,7 +11,6 @@ import {
     resolveObjectProperties,
     updateObjectProperties
 } from '../../core/utils/properties';
-import { getTextFormattedAsJsonC } from '../json-processing';
 import {
     IContentPatchResult,
     IFixStatus,
@@ -44,7 +43,8 @@ import {
     getFriendlyValidationErrors,
     getJsonLocationAtPath,
     getParsedJsonWithResult,
-    getProviderValidator
+    getProviderValidator,
+    getTextFormattedAsJsonC
 } from '@deneb-viz/json-processing';
 
 /**

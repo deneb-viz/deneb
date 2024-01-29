@@ -9,10 +9,7 @@ import { getI18nValue } from '../i18n';
 import { logTimeEnd, logTimeStart } from '../logging';
 import { JSON_MAX_PRUNE_DEPTH } from '@deneb-viz/core-dependencies';
 
-export {
-    getObjectFormattedAsText,
-    getTextFormattedAsJsonC
-} from './formatting';
+export { getObjectFormattedAsText } from './formatting';
 
 /**
  * Convert an Ace `Point` to a VS Code `Position`, for resolving content using

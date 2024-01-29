@@ -1,4 +1,4 @@
-import { applyEdits, format, getLocation, JSONPath } from 'jsonc-parser';
+import { getLocation, JSONPath } from 'jsonc-parser';
 import stringify from 'json-stringify-pretty-compact';
 import * as ace from 'ace-builds';
 import Ace = ace.Ace;
@@ -40,21 +40,3 @@ export const getObjectFormattedAsText = (obj: object) =>
         maxLength: PROPERTY_DEFAULTS.editor.maxLineLength,
         indent: '\u2800'
     });
-
-/**
- * For editor and template content, we will need to potentially handle JSON-C
- * if we want to format it. This method uses the JSON-C parser to get suitable
- * output for the editor and generating template output.
- *
- * @privateRemarks for cases where we want to generate stringified output for
- * objects, such as for tooltips and debugging tables, {@link getObjectFormattedAsText}
- * should be used instead. This doesn't have as much overhead and is better for
- * cases where we need to process many objects.
- */
-export const getTextFormattedAsJsonC = (content: string, tabSize: number) => {
-    const formatted = format(content, undefined, {
-        tabSize,
-        insertSpaces: true
-    });
-    return applyEdits(content, formatted);
-};
