@@ -3,7 +3,6 @@ import { IDenebTemplatesIncluded } from './types';
 import { TSpecProvider } from '../../core/vega';
 import { Spec } from 'vega';
 import { TopLevelSpec } from 'vega-lite';
-import { UsermetaTemplate } from '@deneb-viz/core-dependencies';
 import { getTemplateMetadata } from '@deneb-viz/template';
 
 export { getExportTemplate } from '../visual-export/logic';
@@ -48,10 +47,3 @@ export const getTemplateByProviderandName = (
             getTemplateMetadata(JSON.stringify(t))?.information?.name === name
     );
 };
-
-/**
- * Confirms that the supplied template metadata contains dataset entries, and
- * that placeholders are needed to populate them.
- */
-export const templateHasPlaceholders = (template: UsermetaTemplate) =>
-    template?.dataset?.length > 0;

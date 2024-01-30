@@ -4,8 +4,8 @@ import { shallow } from 'zustand/shallow';
 
 import { useCreateStyles } from './';
 import store from '../../../store';
-import { templateHasPlaceholders } from '../../template';
 import { getI18nValue } from '../../i18n';
+import { UsermetaTemplate } from '@deneb-viz/core-dependencies';
 
 /**
  * Displays correct message, depending on whether the template has
@@ -32,3 +32,10 @@ export const TemplatePlaceholderMessage: React.FC = () => {
         </div>
     );
 };
+
+/**
+ * Confirms that the supplied template metadata contains dataset entries, and
+ * that placeholders are needed to populate them.
+ */
+const templateHasPlaceholders = (template: UsermetaTemplate) =>
+    template?.dataset?.length > 0;
