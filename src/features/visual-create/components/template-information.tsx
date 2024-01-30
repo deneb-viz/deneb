@@ -19,6 +19,7 @@ export const TemplateInformation: React.FC = () => {
         }),
         shallow
     );
+    if (!metadata) return null;
     const classes = useCreateStyles();
     const { previewImageBase64PNG } = metadata?.information || {};
     const isValid =

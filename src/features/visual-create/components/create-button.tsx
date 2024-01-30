@@ -13,18 +13,12 @@ import { useJsonEditorContext } from '../../json-editor';
  * template.
  */
 export const CreateButton: React.FC = () => {
-    const {
-        metadata,
-        metadataAllDependenciesAssigned,
-        provider,
-        specification
-    } = store(
+    const { candidates, metadata, metadataAllDependenciesAssigned } = store(
         (state) => ({
+            candidates: state.create.candidates,
             metadata: state.create.metadata,
             metadataAllDependenciesAssigned:
-                state.create.metadataAllDependenciesAssigned,
-            provider: state.create.provider,
-            specification: state.create.specification
+                state.create.metadataAllDependenciesAssigned
         }),
         shallow
     );
@@ -32,9 +26,8 @@ export const CreateButton: React.FC = () => {
     const onCreate = () => {
         logDebug('Creating from template...');
         createFromTemplate(
-            provider,
-            specification,
             metadata,
+            candidates,
             spec?.current.editor,
             config?.current.editor
         );

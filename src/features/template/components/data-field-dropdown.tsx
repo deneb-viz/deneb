@@ -8,7 +8,6 @@ import {
 import reduce from 'lodash/reduce';
 
 import store, { getState } from '../../../store';
-import { ITemplateDatasetField } from '..';
 import { TModalDialogType } from '../../modal-dialog';
 import { IVisualDatasetField, IVisualDatasetFields } from '../../../core/data';
 import { getDatasetFieldsInclusive } from '../../../core/data/fields';
@@ -16,9 +15,10 @@ import { logRender } from '../../logging';
 import { useTemplateStyles } from '.';
 import { getI18nValue } from '../../i18n';
 import { DataTypeIcon } from './data-type-icon';
+import { UsermetaDatasetField } from '@deneb-viz/core-dependencies';
 
 interface IDatasetFieldAssignmentDropdownProps {
-    datasetField: ITemplateDatasetField;
+    datasetField: UsermetaDatasetField;
     dialogType: TModalDialogType;
 }
 
@@ -57,6 +57,7 @@ export const DataFieldDropDown: React.FC<IDatasetFieldAssignmentDropdownProps> =
                 case 'new':
                     return setFieldAssignment({
                         key: datasetField.key,
+                        suppliedObjectKey: option?.queryName,
                         suppliedObjectName: option?.templateMetadata?.name
                     });
                 case 'mapping':
@@ -120,7 +121,7 @@ const getDatasetField = (
  * with an empty value and prompt the user to select, as normal.
  */
 const getDefaultSelectedKey = (
-    field: ITemplateDatasetField,
+    field: UsermetaDatasetField,
     fields: IVisualDatasetFields
 ) => fields[field.name]?.queryName || null;
 

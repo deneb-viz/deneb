@@ -6,21 +6,19 @@ import cloneDeep from 'lodash/cloneDeep';
 import set from 'lodash/set';
 
 import { TStoreState } from '.';
-import {
-    BASE64_BLANK_IMAGE,
-    IDenebTemplateMetadata
-} from '../features/template';
+import { BASE64_BLANK_IMAGE } from '../features/template';
 
 import { TSpecProvider } from '../core/vega';
 import { TExportOperation, TTemplateExportState } from '../features/template';
 import { getNewExportTemplateMetadata } from '../features/visual-export';
+import { UsermetaTemplate } from '@deneb-viz/core-dependencies';
 
 export interface ITemplateSlice {
     templateExportState: TTemplateExportState;
     templateExportErrorMessage: string;
     templateIncludePreviewImage: boolean;
     templatePreviewImageDataUri: string;
-    templateExportMetadata: IDenebTemplateMetadata;
+    templateExportMetadata: UsermetaTemplate;
     templateAllExportCriteriaApplied: boolean;
     templateSelectedExportOperation: TExportOperation;
     initializeImportExport: () => void;

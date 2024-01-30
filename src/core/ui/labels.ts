@@ -1,13 +1,13 @@
-import { getI18nValue } from '../../features/i18n';
 import {
-    ITemplateDatasetField,
-    TDatasetFieldType
-} from '../../features/template';
+    UsermetaDatasetField,
+    UsermetaDatasetFieldType
+} from '@deneb-viz/core-dependencies';
+import { getI18nValue } from '../../features/i18n';
 
 /**
  * For a given column or measure (or template placeholder), resolve the UI tooltip/title text for its data type.
  */
-export const getDataTypeIconTitle = (type: TDatasetFieldType) => {
+export const getDataTypeIconTitle = (type: UsermetaDatasetFieldType) => {
     switch (type) {
         case 'bool':
             return getI18nValue('Template_Type_Descriptor_Bool');
@@ -26,7 +26,7 @@ export const getDataTypeIconTitle = (type: TDatasetFieldType) => {
  * Supply assistive text to a placeholder, based on whether it allows columns, measures or both.
  */
 export const getPlaceholderDropdownText = (
-    datasetField: ITemplateDatasetField
+    datasetField: UsermetaDatasetField
 ) => {
     switch (datasetField.kind) {
         case 'column':

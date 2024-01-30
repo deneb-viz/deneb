@@ -1,44 +1,38 @@
-import { Spec } from 'vega';
-import { TopLevelSpec } from 'vega-lite';
-
-import { getJsonAsIndentedString } from '../../core/utils/json';
-import { TSpecProvider } from '../../core/vega';
 import { getState } from '../../store';
 import {
-    IDenebTemplateMetadata,
-    ITemplateInteractivityOptions
-} from '../template/schema';
-import {
-    IPersistenceProperty,
     resolveObjectProperties,
     updateObjectProperties
 } from '../../core/utils/properties';
-import { getReducedPlaceholdersForMetadata } from '../template';
 import { logDebug } from '../logging';
 import { IAceEditor } from 'react-ace/lib/types';
+import {
+    IDenebTemplateAllocationComponents,
+    UsermetaTemplate
+} from '@deneb-viz/core-dependencies';
+import { getTemplateReplacedForDataset } from '@deneb-viz/template';
 
 /**
  * For the supplied provider and specification template, add this to the visual and persist to properties, ready for
  * subsequent editing.
  */
 export const createFromTemplate = (
-    provider: TSpecProvider,
-    template: Spec | TopLevelSpec,
-    metadata: IDenebTemplateMetadata,
+    metadata: UsermetaTemplate,
+    candidates: IDenebTemplateAllocationComponents,
     specEditor: IAceEditor,
     configEditor: IAceEditor
 ) => {
-    logDebug('createFromTemplate', { provider, template });
+    logDebug('createFromTemplate', { metadata, candidates });
     const {
         create: { createFromTemplate }
     } = getState();
-    const jsonSpec = getReplacedTemplate(template, metadata);
-    const jsonConfig = getJsonAsIndentedString(template.config);
-    const interactivity = getInteractivityPropsFromTemplate(template);
-    logDebug('createFromTemplate', {
+    const jsonSpec = getTemplateReplacedForDataset(
+        candidates.spec,
+        metadata.dataset
+    );
+    const jsonConfig = candidates.config;
+    logDebug('createFromTemplate - processed candidates', {
         jsonSpec,
-        jsonConfig,
-        interactivity
+        jsonConfig
     });
     const { renewEditorFieldsInUse } = getState();
     updateObjectProperties(
@@ -46,13 +40,30 @@ export const createFromTemplate = (
             {
                 objectName: 'vega',
                 properties: [
-                    ...[
-                        { name: 'provider', value: provider },
-                        { name: 'jsonSpec', value: jsonSpec },
-                        { name: 'jsonConfig', value: jsonConfig },
-                        { name: 'isNewDialogOpen', value: false }
-                    ],
-                    ...resolveInteractivityProps(interactivity)
+                    { name: 'provider', value: metadata.deneb.provider },
+                    { name: 'jsonSpec', value: jsonSpec },
+                    { name: 'jsonConfig', value: jsonConfig },
+                    { name: 'isNewDialogOpen', value: false },
+                    {
+                        name: 'enableTooltips',
+                        value: metadata.interactivity?.tooltip || false
+                    },
+                    {
+                        name: 'enableContextMenu',
+                        value: metadata.interactivity?.contextMenu || false
+                    },
+                    {
+                        name: 'enableHighlight',
+                        value: metadata.interactivity?.highlight || false
+                    },
+                    {
+                        name: 'enableSelection',
+                        value: metadata.interactivity?.selection || false
+                    },
+                    {
+                        name: 'selectionMaxDataPoints',
+                        value: metadata.interactivity?.dataPointLimit || 0
+                    }
                 ]
             }
         ])
@@ -62,42 +73,3 @@ export const createFromTemplate = (
     configEditor.setValue(jsonConfig);
     createFromTemplate();
 };
-
-/**
- * For supplied template, ensure that we can obtain interactivity properties
- * from it.
- */
-const getInteractivityPropsFromTemplate = (template: Spec | TopLevelSpec) =>
-    (<IDenebTemplateMetadata>template?.usermeta)?.interactivity || null;
-
-/**
- * For a supplied template, substitute placeholder values and return a
- * stringified representation of the object.
- */
-const getReplacedTemplate = (
-    template: Spec | TopLevelSpec,
-    metadata: IDenebTemplateMetadata
-) => {
-    const templateToApply = { ...template };
-    delete templateToApply.$schema;
-    delete templateToApply.config;
-    delete templateToApply.usermeta;
-    const { dataset } = metadata;
-    const spec = getJsonAsIndentedString(templateToApply);
-    return getReducedPlaceholdersForMetadata(dataset, spec);
-};
-
-/**
- * If we have resolved interactivity props from the template, create appropriate persistence properties
- */
-const resolveInteractivityProps = (
-    interactivity: ITemplateInteractivityOptions
-): IPersistenceProperty[] =>
-    (interactivity && [
-        { name: 'enableTooltips', value: interactivity.tooltip },
-        { name: 'enableContextMenu', value: interactivity.contextMenu },
-        { name: 'enableHighlight', value: interactivity.highlight || false },
-        { name: 'enableSelection', value: interactivity.selection },
-        { name: 'selectionMaxDataPoints', value: interactivity.dataPointLimit }
-    ]) ||
-    [];

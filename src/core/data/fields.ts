@@ -14,7 +14,6 @@ import {
 } from '.';
 import { resolveVisualMetaToDatasetField } from '../../features/template';
 import { getDataset } from './dataset';
-import { ITemplateDatasetField } from '../../features/template';
 import {
     DATASET_DYNAMIC_FORMAT_STRING_SUFFIX,
     DATASET_FIELD_FORMATED_VALUE_SUFFIX,
@@ -22,6 +21,7 @@ import {
 } from '../../constants';
 import { isDataViewFieldEligibleForFormatting } from '../../features/dataset';
 import { logTimeEnd, logTimeStart } from '../../features/logging';
+import { UsermetaDatasetField } from '@deneb-viz/core-dependencies';
 
 /**
  * Extract all categorical fields from the data view as suitable metadata.
@@ -112,11 +112,11 @@ export const getDatasetFieldsInclusive = (fields: IVisualDatasetFields) =>
  */
 export const getDatasetTemplateFields = (
     metadata: IVisualDatasetFields
-): ITemplateDatasetField[] =>
+): UsermetaDatasetField[] =>
     reduce(
         getDatasetFieldsInclusive(metadata),
         (result, value) => result.concat(value.templateMetadata),
-        <ITemplateDatasetField[]>[]
+        <UsermetaDatasetField[]>[]
     );
 
 /**

@@ -3,58 +3,33 @@ import { NamedSet } from 'zustand/middleware';
 
 import { TStoreState } from '.';
 import {
-    IDenebTemplateMetadata,
-    ITemplateDatasetField,
-    TTemplateImportState,
-    TTemplateProvider
-} from '../features/template';
-import { Spec } from 'vega';
-import { TopLevelSpec } from 'vega-lite';
-import { areAllCreateDataRequirementsMet } from '../features/visual-create';
-import { logDebug } from '../features/logging';
-import { TSpecProvider } from '../core/vega';
+    CreateMode,
+    ICreateSliceProperties,
+    ICreateSliceSetFieldAssignment,
+    ICreateSliceSetImportFile,
+    ICreateSliceSetImportState,
+    ICreateSliceSetTemplate,
+    UsermetaDatasetField,
+    UsermetaTemplate
+} from '@deneb-viz/core-dependencies';
+import {
+    areAllCreateDataRequirementsMet,
+    getNewCreateFromTemplateSliceProperties
+} from '@deneb-viz/template';
 
-export interface ICreateSliceProperties {
-    importFile: string;
-    importState: TTemplateImportState;
-    metadata: IDenebTemplateMetadata;
+export interface ICreateSlicePropertiesLegacy {
     metadataAllDependenciesAssigned: boolean;
     metadataAllFieldsAssigned: boolean;
-    mode: TTemplateProvider;
-    provider: TSpecProvider;
-    specification: Spec | TopLevelSpec;
-}
-
-interface ICreateSlicePropertiesWithReducers extends ICreateSliceProperties {
-    createFromTemplate: () => void;
-    setFieldAssignment: (payload: ICreateSliceSetFieldAssignment) => void;
-    setImportFile: (payload: ICreateSliceSetImportFile) => void;
-    setImportState: (payload: TTemplateImportState) => void;
-    setMode: (mode: TTemplateProvider) => void;
-    setTemplate: (payload: ICreateSliceSetTemplate) => void;
 }
 
 export interface ICreateSlice {
-    create: ICreateSlicePropertiesWithReducers;
+    create: ICreateSliceProperties;
 }
 
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <ICreateSlice>{
         create: {
-            importFile: null,
-            importState: 'None',
-            metadata: null,
-            metadataAllDependenciesAssigned: false,
-            metadataAllFieldsAssigned: false,
-            mode: 'import',
-            provider: null,
-            specification: null,
-            createFromTemplate: () =>
-                set(
-                    (state: TStoreState) => handleCreateFromTemplate(state),
-                    false,
-                    'create.createFromTemplate'
-                ),
+            ...getNewCreateFromTemplateSliceProperties(),
             setFieldAssignment: (payload: ICreateSliceSetFieldAssignment) =>
                 set(
                     (state: TStoreState) =>
@@ -62,28 +37,33 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                     false,
                     'create.setFieldAssignment'
                 ),
-            setImportFile: (payload: ICreateSliceSetImportFile) =>
+            createFromTemplate: () =>
                 set(
-                    (state: TStoreState) => handleSetImportFile(state, payload),
+                    (state) => handleCreateFromTemplate(state),
+                    false,
+                    'create.createFromTemplate'
+                ),
+            setImportFile: (payload) =>
+                set(
+                    (state) => handleSetImportFile(state, payload),
                     false,
                     'create.setImportFile'
                 ),
-            setImportState: (importState: TTemplateImportState) =>
+            setImportState: (payload) =>
                 set(
-                    (state: TStoreState) =>
-                        handleSetImportState(state, importState),
+                    (state) => handleSetImportState(state, payload),
                     false,
                     'create.setImportState'
                 ),
-            setMode: (mode: TTemplateProvider) =>
+            setMode: (mode) =>
                 set(
-                    (state: TStoreState) => handleSetMode(state, mode),
+                    (state) => handleSetMode(state, mode),
                     false,
                     'create.setMode'
                 ),
-            setTemplate: (payload: ICreateSliceSetTemplate) =>
+            setTemplate: (payload) =>
                 set(
-                    (state: TStoreState) => handleSetTemplate(state, payload),
+                    (state) => handleSetTemplate(state, payload),
                     false,
                     'create.setTemplate'
                 )
@@ -98,37 +78,14 @@ export const createCreateSlice: StateCreator<
 > = sliceStateInitializer;
 
 /**
- * Represents the payload for a template field assignment.
+ * Take the supplied template and process it ready for creation.
  */
-interface ICreateSliceSetFieldAssignment {
-    key: string;
-    suppliedObjectName: string;
-}
-
-/**
- * Represents the payload for a processed template file.
- */
-interface ICreateSliceSetImportFile {
-    specification: Spec | TopLevelSpec;
-    metadata: IDenebTemplateMetadata;
-    importFile: string | null;
-    importState: TTemplateImportState;
-}
-
-/**
- * Represents the payload for a selected template (included in visual).
- */
-interface ICreateSliceSetTemplate {
-    specification: Spec | TopLevelSpec;
-    metadata: IDenebTemplateMetadata;
-}
-
-const handleCreateFromTemplate = (
-    state: TStoreState
-): Partial<TStoreState> => ({
-    debug: { ...state.debug, logAttention: false },
-    interface: { ...state.interface, modalDialogRole: 'None' }
-});
+const handleCreateFromTemplate = (state: TStoreState): Partial<TStoreState> => {
+    const modalDialogRole = 'None';
+    return {
+        interface: { ...state.interface, modalDialogRole }
+    };
+};
 
 /**
  * For the given key, set its placeholder value to match the supplied dataset
@@ -142,7 +99,6 @@ const handleSetFieldAssignment = (
     if (dataset) {
         const phIndex =
             dataset.findIndex((ph) => ph.key === payload.key) ?? dataset.length;
-        logDebug('handleSetFieldAssignment', { payload, phIndex });
         const metadata = {
             ...state.create.metadata,
             dataset:
@@ -150,15 +106,18 @@ const handleSetFieldAssignment = (
                     ? [...dataset]
                     : [
                           ...dataset.slice(0, phIndex),
-                          <ITemplateDatasetField>{
+                          <UsermetaDatasetField>{
                               ...dataset[phIndex],
+                              suppliedObjectKey: payload.suppliedObjectKey,
                               suppliedObjectName: payload.suppliedObjectName
                           },
                           ...dataset.slice(phIndex + 1, dataset.length)
                       ]
         };
-        const { metadataAllDependenciesAssigned, metadataAllFieldsAssigned } =
-            areAllCreateDataRequirementsMet(metadata);
+        const {
+            metadataAllDependenciesAssigned = false,
+            metadataAllFieldsAssigned = false
+        } = areAllCreateDataRequirementsMet(metadata);
         return {
             create: {
                 ...state.create,
@@ -168,6 +127,7 @@ const handleSetFieldAssignment = (
             }
         };
     }
+    return {};
 };
 
 /**
@@ -177,21 +137,21 @@ const handleSetImportFile = (
     state: TStoreState,
     payload: ICreateSliceSetImportFile
 ): Partial<TStoreState> => {
-    const { importFile, importState, metadata, specification } = payload;
-    const { metadataAllDependenciesAssigned, metadataAllFieldsAssigned } =
-        areAllCreateDataRequirementsMet(metadata);
-    const provider = metadata.deneb.provider;
+    const { candidates, importFile, importState, metadata } = payload;
+    const {
+        metadataAllDependenciesAssigned = false,
+        metadataAllFieldsAssigned = false
+    } = areAllCreateDataRequirementsMet(metadata);
     return {
         create: {
             ...state.create,
             ...{
+                candidates,
                 importFile,
                 importState,
                 metadata,
                 metadataAllDependenciesAssigned,
-                metadataAllFieldsAssigned,
-                provider,
-                specification
+                metadataAllFieldsAssigned
             }
         }
     };
@@ -202,24 +162,36 @@ const handleSetImportFile = (
  */
 const handleSetImportState = (
     state: TStoreState,
-    importState: TTemplateImportState
-): Partial<TStoreState> => ({ create: { ...state.create, importState } });
+    payload: ICreateSliceSetImportState
+): Partial<TStoreState> => {
+    const { importState, refresh } = payload;
+    return refresh
+        ? {
+              create: {
+                  ...state.create,
+                  ...getNewCreateFromTemplateSliceProperties(),
+                  importState
+              }
+          }
+        : { create: { ...state.create, importState } };
+};
 
 /**
  * Updates the dataset and related properties, after this has been processed.
  */
 const handleSetMode = (
     state: TStoreState,
-    mode: TTemplateProvider
+    mode: CreateMode
 ): Partial<TStoreState> => {
     return {
         create: {
             ...state.create,
-            importFile: null,
+            importFile: '',
             importState: 'None',
-            metadata: null,
+            metadata: <UsermetaTemplate>{},
             metadataAllDependenciesAssigned: false,
             metadataAllFieldsAssigned: false,
+            metadataDrilldownAssigned: false,
             mode
         }
     };
@@ -232,18 +204,18 @@ const handleSetTemplate = (
     state: TStoreState,
     payload: ICreateSliceSetTemplate
 ): Partial<TStoreState> => {
-    const { metadata, specification } = payload;
-    const { metadataAllDependenciesAssigned, metadataAllFieldsAssigned } =
-        areAllCreateDataRequirementsMet(metadata);
-    const provider = metadata.deneb.provider;
+    const { metadata, candidates } = payload;
+    const {
+        metadataAllDependenciesAssigned = false,
+        metadataAllFieldsAssigned = false
+    } = areAllCreateDataRequirementsMet(metadata);
     return {
         create: {
             ...state.create,
+            candidates,
             metadata,
             metadataAllDependenciesAssigned,
-            metadataAllFieldsAssigned,
-            provider,
-            specification
+            metadataAllFieldsAssigned
         }
     };
 };

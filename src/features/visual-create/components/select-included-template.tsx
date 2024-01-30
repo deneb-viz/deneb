@@ -14,13 +14,17 @@ import { logRender } from '../../logging';
 import { getI18nValue } from '../../i18n';
 import {
     getIncludedTemplates,
-    getTemplateByProviderandName,
-    getTemplateMetadata,
-    IDenebTemplateMetadata
+    getTemplateByProviderandName
 } from '../../template';
 import { getState } from '../../../store';
 import { useCreateStyles } from './';
 import { getVegaProvideri18n, TSpecProvider } from '../../../core/vega';
+import {
+    getTemplateMetadata,
+    getTemplateResolvedForPlaceholderAssignment
+} from '@deneb-viz/template';
+import { PROPERTY_DEFAULTS } from '../../../../config';
+import { UsermetaTemplate } from '@deneb-viz/core-dependencies';
 
 interface ISelectIncludedTemplateProps {
     createMode: TSpecProvider;
@@ -38,7 +42,7 @@ export const SelectIncludedTemplate: React.FC<ISelectIncludedTemplateProps> = ({
     const templates = useMemo(() => getIncludedTemplates(), []);
     const templateList = templates[createMode];
     const templateMetadata = templateList.map(
-        (t: Spec | TopLevelSpec) => t.usermeta as IDenebTemplateMetadata
+        (t: Spec | TopLevelSpec) => t.usermeta as UsermetaTemplate
     );
     const templateOptions = useMemo(
         () =>
@@ -111,11 +115,17 @@ export const SelectIncludedTemplate: React.FC<ISelectIncludedTemplateProps> = ({
  * downstream.
  */
 const dispatchSelectedTemplate = (createMode: TSpecProvider, name: string) => {
-    const { setTemplate } = getState().create;
+    const {
+        create: { setTemplate }
+    } = getState();
     const template = getTemplateByProviderandName(createMode, name);
     const templateContent = JSON.stringify(template);
+    const candidates = getTemplateResolvedForPlaceholderAssignment(
+        templateContent,
+        PROPERTY_DEFAULTS.editor.tabSize
+    );
     setTemplate({
         metadata: getTemplateMetadata(templateContent),
-        specification: template
+        candidates
     });
 };

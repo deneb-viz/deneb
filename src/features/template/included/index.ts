@@ -8,9 +8,13 @@ import { BaseData } from 'vega';
 import { getCombinedBase64ImageWithMime } from '../preview-image';
 import { THUMBNAIL_IMAGES } from './thumbnail-images';
 import { TSpecProvider } from '../../../core/vega';
-import { IDenebTemplateMetadata, ITemplateInformation } from '../schema';
-import { getNewTemplateMetadata } from '..';
 import { DATASET_NAME } from '../../../constants';
+import { getNewTemplateMetadata } from '@deneb-viz/template';
+import { APPLICATION_INFORMATION, PROVIDER_VERSIONS } from '../../../../config';
+import {
+    UsermetaInformation,
+    UsermetaTemplate
+} from '@deneb-viz/core-dependencies';
 
 /**
  * Included templates are exported using the provider shorthand, so that they
@@ -41,11 +45,15 @@ export const getNewIncludedTemplateMetadata = (
     name: string,
     description: string = '',
     previewImageKey?: string
-): Partial<IDenebTemplateMetadata> => {
-    const metadata = getNewTemplateMetadata(provider);
+): Partial<UsermetaTemplate> => {
+    const metadata = getNewTemplateMetadata({
+        buildVersion: APPLICATION_INFORMATION.version,
+        provider,
+        providerVersion: PROVIDER_VERSIONS[provider]
+    });
     return {
         ...metadata,
-        information: <ITemplateInformation>{
+        information: <UsermetaInformation>{
             ...metadata.information,
             name,
             description,

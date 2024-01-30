@@ -2,8 +2,8 @@ import powerbi from 'powerbi-visuals-api';
 import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import ISelectionId = powerbi.visuals.ISelectionId;
 
-import { ITemplateDatasetField } from '../../features/template';
 import { TDataPointSelectionStatus } from '../../features/interactivity';
+import { UsermetaDatasetField } from '@deneb-viz/core-dependencies';
 
 export * as dataset from './dataset';
 export * as dataView from './dataView';
@@ -71,7 +71,7 @@ export interface IVisualDatasetField extends DataViewMetadataColumn {
      * Representation of the field for templating purposes. Should not be
      * present for `isExcludedFromTemplate === true`.
      */
-    templateMetadata?: ITemplateDatasetField;
+    templateMetadata?: UsermetaDatasetField;
 }
 
 export interface IVisualDatasetValueRow {

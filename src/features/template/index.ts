@@ -1,22 +1,10 @@
-import cloneDeep from 'lodash/cloneDeep';
-import { v4 as uuidv4 } from 'uuid';
-
 import * as INCLUDED_TEMPLATES from './included';
-import {
-    IDenebTemplateMetadata,
-    ITemplateDatasetField,
-    ITemplateInformation
-} from './schema';
 import { IDenebTemplatesIncluded } from './types';
 import { TSpecProvider } from '../../core/vega';
 import { Spec } from 'vega';
 import { TopLevelSpec } from 'vega-lite';
-import {
-    APPLICATION_INFORMATION,
-    PROPERTY_DEFAULTS,
-    PROVIDER_VERSIONS,
-    TEMPLATE_METADATA_VERSION
-} from '../../../config';
+import { UsermetaTemplate } from '@deneb-viz/core-dependencies';
+import { getTemplateMetadata } from '@deneb-viz/template';
 
 export { getExportTemplate } from '../visual-export/logic';
 export {
@@ -28,18 +16,7 @@ export {
     getTemplatePlaceholderKey,
     resolveVisualMetaToDatasetField
 } from './fields';
-export {
-    TDatasetFieldType,
-    IDenebTemplateMetadata,
-    ITemplateDatasetField,
-    ITemplateInteractivityOptions
-} from './schema';
-export {
-    TExportOperation,
-    TTemplateExportState,
-    TTemplateImportState,
-    TTemplateProvider
-} from './types';
+export { TExportOperation, TTemplateExportState } from './types';
 export {
     BASE64_BLANK_IMAGE,
     dispatchPreviewImage,
@@ -50,48 +27,11 @@ export { PreviewImage } from './components/preview-image';
 export { TemplateDataset } from './components/template-dataset';
 
 /**
- * For a given array of template dataset fields, confirm that they all have a
- * field allocated for assignment later on.
- */
-export const areAllTemplateFieldsAssigned = (fields: ITemplateDatasetField[]) =>
-    fields?.length === 0 ||
-    fields?.filter((f) => !f.suppliedObjectName)?.length === 0 ||
-    false;
-
-/**
  * Provides a list of included templates for the specified provider.
  */
 export const getIncludedTemplates = (): IDenebTemplatesIncluded => ({
     vega: INCLUDED_TEMPLATES.vega.map((t) => t()),
     vegaLite: INCLUDED_TEMPLATES.vegaLite.map((t) => t())
-});
-
-/**
- * Base metadata for a new Deneb template. This gives you a starting point for
- * spreading-in new metadata fields for UI-created templates, or adding an
- * included template.
- */
-export const getNewTemplateMetadata = (
-    provider: TSpecProvider
-): Partial<IDenebTemplateMetadata> => ({
-    information: <ITemplateInformation>{
-        uuid: uuidv4(),
-        generated: new Date().toISOString()
-    },
-    deneb: {
-        build: APPLICATION_INFORMATION.version,
-        metaVersion: TEMPLATE_METADATA_VERSION,
-        provider,
-        providerVersion: PROVIDER_VERSIONS[provider]
-    },
-    interactivity: {
-        tooltip: PROPERTY_DEFAULTS.vega.enableTooltips,
-        contextMenu: PROPERTY_DEFAULTS.vega.enableContextMenu,
-        selection: PROPERTY_DEFAULTS.vega.enableSelection,
-        dataPointLimit: PROPERTY_DEFAULTS.vega.selectionMaxDataPoints,
-        highlight: PROPERTY_DEFAULTS.vega.enableHighlight
-    },
-    dataset: []
 });
 
 /**
@@ -110,18 +50,8 @@ export const getTemplateByProviderandName = (
 };
 
 /**
- * Attempt to resolve the Deneb-specific metadata from a specification.
- */
-export const getTemplateMetadata = (
-    template: string
-): IDenebTemplateMetadata => {
-    const tree = JSON.parse(template);
-    return cloneDeep(tree?.usermeta);
-};
-
-/**
  * Confirms that the supplied template metadata contains dataset entries, and
  * that placeholders are needed to populate them.
  */
-export const templateHasPlaceholders = (template: IDenebTemplateMetadata) =>
+export const templateHasPlaceholders = (template: UsermetaTemplate) =>
     template?.dataset?.length > 0;
