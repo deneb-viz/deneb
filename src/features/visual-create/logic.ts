@@ -70,6 +70,9 @@ export const createFromTemplate = (
     );
     renewEditorFieldsInUse(specEditor);
     specEditor.setValue(jsonSpec);
+    specEditor.moveCursorToPosition({ row: 0, column: 0 });
     configEditor.setValue(jsonConfig);
+    configEditor.moveCursorToPosition({ row: 0, column: 0 });
+    specEditor.focus();
     createFromTemplate();
 };

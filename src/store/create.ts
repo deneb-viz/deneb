@@ -83,6 +83,7 @@ export const createCreateSlice: StateCreator<
 const handleCreateFromTemplate = (state: TStoreState): Partial<TStoreState> => {
     const modalDialogRole = 'None';
     return {
+        editorSelectedOperation: 'Spec',
         interface: { ...state.interface, modalDialogRole }
     };
 };
