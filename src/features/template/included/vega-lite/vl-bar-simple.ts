@@ -2,9 +2,9 @@ import { TopLevelSpec } from 'vega-lite';
 
 import { VEGA_LITE_SCHEMA_URL } from '.';
 import { getDenebTemplateDatasetRef, getNewIncludedTemplateMetadata } from '..';
-import { ITemplateDatasetField } from '../../schema';
+import { UsermetaDatasetField } from '@deneb-viz/core-dependencies';
 
-const dataset: ITemplateDatasetField[] = [
+const dataset: UsermetaDatasetField[] = [
     {
         key: '__0__',
         name: 'Category',

@@ -11,12 +11,15 @@ import { getDatasetFieldsInclusive } from '../../core/data/fields';
 import { getVegaSettings } from '../../core/vega';
 import { getCrossHighlightRegExpAlternation } from '../interactivity';
 import { getCleanEditorJson } from '../specification';
-import { ITemplateDatasetField, TDatasetFieldType } from './schema';
 import { ITemplatePattern, TemplateDatasetColumnRole } from './types';
 import { getFormatFieldRegExpAlternation } from '../dataset';
 import { getI18nValue } from '../i18n';
 import { useTemplateStyles } from './components';
 import { IAceEditor } from 'react-ace/lib/types';
+import {
+    UsermetaDatasetField,
+    UsermetaDatasetFieldType
+} from '@deneb-viz/core-dependencies';
 
 /**
  * Used for validation of text field lengths vs. generated schema.
@@ -91,7 +94,7 @@ export const getDataColumnText = (role: TemplateDatasetColumnRole) => {
  * For a given column or measure (or template placeholder), resolve the UI
  * tooltip/title text for its data type.
  */
-export const getDataTypeIconTitle = (type: TDatasetFieldType) => {
+export const getDataTypeIconTitle = (type: UsermetaDatasetFieldType) => {
     switch (type) {
         case 'bool':
             return getI18nValue('Template_Type_Descriptor_Bool');
@@ -225,7 +228,7 @@ export const getFieldsInUseFromSpec = (
  * the new spec.
  */
 export const getReducedPlaceholdersForMetadata = (
-    dataset: ITemplateDatasetField[],
+    dataset: UsermetaDatasetField[],
     spec: string
 ) =>
     reduce(
@@ -263,7 +266,7 @@ const getResequencedMetadata = (metadata: IVisualDatasetFields) => {
  */
 export const getTemplatedSpecification = (
     spec: string,
-    dataset: ITemplateDatasetField[]
+    dataset: UsermetaDatasetField[]
 ) => {
     return reduce(
         dataset,
@@ -341,7 +344,7 @@ const replaceTemplatePlaceholders = (
  */
 export const resolveValueDescriptor = (
     type: ValueTypeDescriptor
-): TDatasetFieldType => {
+): UsermetaDatasetFieldType => {
     switch (true) {
         case type?.bool:
             return 'bool';
@@ -363,7 +366,7 @@ export const resolveValueDescriptor = (
 export const resolveVisualMetaToDatasetField = (
     metadata: DataViewMetadataColumn,
     encodedName: string
-): ITemplateDatasetField => {
+): UsermetaDatasetField => {
     return {
         key: metadata.queryName,
         name: encodedName,

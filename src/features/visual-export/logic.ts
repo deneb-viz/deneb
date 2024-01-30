@@ -11,7 +11,6 @@ import {
     getTemplatedSpecification,
     getTemplatePlaceholderKey
 } from '../template';
-import { IDenebTemplateMetadata } from '../template/schema';
 import { getI18nValue } from '../i18n';
 import {
     APPLICATION_INFORMATION,
@@ -21,6 +20,7 @@ import {
     TEMPLATE_METADATA_VERSION
 } from '../../../config';
 import { getParsedJsonWithResult } from '@deneb-viz/json-processing';
+import { UsermetaTemplate } from '@deneb-viz/core-dependencies';
 
 /**
  * Combines spec, config and specified metadata to produce a valid JSON
@@ -60,7 +60,7 @@ export const getExportTemplate = () => {
 /**
  * Instantiates a new object for export template metadata, ready for population.
  */
-export const getNewExportTemplateMetadata = (): IDenebTemplateMetadata => {
+export const getNewExportTemplateMetadata = (): UsermetaTemplate => {
     return {
         deneb: {
             build: APPLICATION_INFORMATION.version,
@@ -83,7 +83,7 @@ export const getNewExportTemplateMetadata = (): IDenebTemplateMetadata => {
  * Ensure that usermeta is in its final, publishable state after all
  * necessary substitutions and processing have been done.
  */
-const getPublishableUsermeta = (usermeta: IDenebTemplateMetadata) => {
+const getPublishableUsermeta = (usermeta: UsermetaTemplate) => {
     return {
         ...usermeta,
         ...{
@@ -99,7 +99,7 @@ const getPublishableUsermeta = (usermeta: IDenebTemplateMetadata) => {
  * state and provides suitable defaults if they are missing, so that generated
  * export templates make sense (as much as possible).
  */
-const resolveExportUserMeta = (): IDenebTemplateMetadata => {
+const resolveExportUserMeta = (): UsermetaTemplate => {
     const {
             templateExportMetadata,
             templatePreviewImageDataUri,

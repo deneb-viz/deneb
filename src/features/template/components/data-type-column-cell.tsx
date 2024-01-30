@@ -8,11 +8,11 @@ import {
 import { useTemplateStyles } from '.';
 import { DataTypeIcon } from './data-type-icon';
 import { getDataTypeIconTitle } from '../fields';
-import { TDatasetFieldType } from '../schema';
 import { TooltipCustomMount } from '../../interface';
+import { UsermetaDatasetFieldType } from '@deneb-viz/core-dependencies';
 
 interface IDataTypeColumnCellProps {
-    type: TDatasetFieldType;
+    type: UsermetaDatasetFieldType;
 }
 
 /**

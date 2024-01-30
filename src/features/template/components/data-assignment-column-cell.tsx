@@ -3,11 +3,11 @@ import { TableCell } from '@fluentui/react-components';
 
 import { useTemplateStyles } from '.';
 import { DataFieldDropDown } from './data-field-dropdown';
-import { ITemplateDatasetField } from '../schema';
 import { TModalDialogType } from '../../modal-dialog';
+import { UsermetaDatasetField } from '@deneb-viz/core-dependencies';
 
 interface IDataAssignmentColumnCellProps {
-    item: ITemplateDatasetField;
+    item: UsermetaDatasetField;
     role: TModalDialogType;
 }
 
