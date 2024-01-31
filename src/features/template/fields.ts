@@ -11,12 +11,13 @@ import { getDatasetFieldsInclusive } from '../../core/data/fields';
 import { getVegaSettings } from '../../core/vega';
 import { getCrossHighlightRegExpAlternation } from '../interactivity';
 import { getCleanEditorJson } from '../specification';
-import { ITemplatePattern, TemplateDatasetColumnRole } from './types';
 import { getFormatFieldRegExpAlternation } from '../dataset';
 import { getI18nValue } from '../i18n';
 import { useTemplateStyles } from './components';
 import { IAceEditor } from 'react-ace/lib/types';
 import {
+    DenebTemplateDataFieldReplacerPattern,
+    DenebTemplateDatasetColumnRole,
     UsermetaDatasetField,
     UsermetaDatasetFieldType
 } from '@deneb-viz/core-dependencies';
@@ -53,7 +54,7 @@ const doesSpecContainKeyForMetadata = (
 /**
  * Resolve class name based on role.
  */
-export const getDataColumnClass = (role: TemplateDatasetColumnRole) => {
+export const getDataColumnClass = (role: DenebTemplateDatasetColumnRole) => {
     const classes = useTemplateStyles();
     switch (role) {
         case 'type':
@@ -72,7 +73,7 @@ export const getDataColumnClass = (role: TemplateDatasetColumnRole) => {
 /**
  * Resolve heading column text based on role.
  */
-export const getDataColumnText = (role: TemplateDatasetColumnRole) => {
+export const getDataColumnText = (role: DenebTemplateDatasetColumnRole) => {
     switch (role) {
         case 'name':
             return getI18nValue('Text_Template_Dataset_Field_Name');
@@ -163,7 +164,7 @@ const getExistingFieldsInUse = (
  */
 export const getExportFieldTokenPatterns = (
     name: string
-): ITemplatePattern[] => {
+): DenebTemplateDataFieldReplacerPattern[] => {
     const namePattern = getEscapedReplacerPattern(name);
     const alternations = [
         getCrossHighlightRegExpAlternation(),
@@ -187,7 +188,7 @@ export const getExportFieldTokenPatterns = (
                 }
             ]);
         },
-        <ITemplatePattern[]>[]
+        <DenebTemplateDataFieldReplacerPattern[]>[]
     );
 };
 
@@ -301,7 +302,7 @@ export const getTemplatePlaceholderKey = (i: number) => `__${i}__`;
  */
 export const replaceTemplateFieldWithToken = (
     template: string,
-    pattern: ITemplatePattern,
+    pattern: DenebTemplateDataFieldReplacerPattern,
     token: string
 ) =>
     template.replace(

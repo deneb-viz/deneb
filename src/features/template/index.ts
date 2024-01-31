@@ -1,9 +1,9 @@
 import * as INCLUDED_TEMPLATES from './included';
-import { IDenebTemplatesIncluded } from './types';
 import { TSpecProvider } from '../../core/vega';
 import { Spec } from 'vega';
 import { TopLevelSpec } from 'vega-lite';
 import { getTemplateMetadata } from '@deneb-viz/template';
+import { DenebTemplatesIncluded } from '@deneb-viz/core-dependencies';
 
 export { getExportTemplate } from '../visual-export/logic';
 export {
@@ -15,7 +15,6 @@ export {
     getTemplatePlaceholderKey,
     resolveVisualMetaToDatasetField
 } from './fields';
-export { TExportOperation, TTemplateExportState } from './types';
 export {
     BASE64_BLANK_IMAGE,
     dispatchPreviewImage,
@@ -28,7 +27,7 @@ export { TemplateDataset } from './components/template-dataset';
 /**
  * Provides a list of included templates for the specified provider.
  */
-export const getIncludedTemplates = (): IDenebTemplatesIncluded => ({
+export const getIncludedTemplates = (): DenebTemplatesIncluded => ({
     vega: INCLUDED_TEMPLATES.vega.map((t) => t()),
     vegaLite: INCLUDED_TEMPLATES.vegaLite.map((t) => t())
 });

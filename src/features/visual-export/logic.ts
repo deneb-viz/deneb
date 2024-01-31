@@ -6,7 +6,6 @@ import { DATASET_NAME } from '../../constants';
 import { getJsonAsIndentedString } from '../../core/utils/json';
 import { TSpecProvider } from '../../core/vega';
 import { getState } from '../../store';
-import { TTemplateExportState } from '../template';
 import {
     getTemplatedSpecification,
     getTemplatePlaceholderKey
@@ -20,7 +19,10 @@ import {
     TEMPLATE_METADATA_VERSION
 } from '../../../config';
 import { getParsedJsonWithResult } from '@deneb-viz/json-processing';
-import { UsermetaTemplate } from '@deneb-viz/core-dependencies';
+import {
+    DenebTemplateExportState,
+    UsermetaTemplate
+} from '@deneb-viz/core-dependencies';
 
 /**
  * Combines spec, config and specified metadata to produce a valid JSON
@@ -159,7 +161,7 @@ const updateExportError = () => {
 /**
  * Persist the supplied `TTemplateExportState` to Deneb's store.
  */
-export const updateTemplateExportState = (state: TTemplateExportState) => {
+export const updateTemplateExportState = (state: DenebTemplateExportState) => {
     getState().updateTemplateExportState(state);
 };
 

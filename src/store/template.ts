@@ -9,18 +9,19 @@ import { TStoreState } from '.';
 import { BASE64_BLANK_IMAGE } from '../features/template';
 
 import { TSpecProvider } from '../core/vega';
-import { TExportOperation, TTemplateExportState } from '../features/template';
 import { getNewExportTemplateMetadata } from '../features/visual-export';
-import { UsermetaTemplate } from '@deneb-viz/core-dependencies';
+import {
+    DenebTemplateExportState,
+    UsermetaTemplate
+} from '@deneb-viz/core-dependencies';
 
 export interface ITemplateSlice {
-    templateExportState: TTemplateExportState;
+    templateExportState: DenebTemplateExportState;
     templateExportErrorMessage: string;
     templateIncludePreviewImage: boolean;
     templatePreviewImageDataUri: string;
     templateExportMetadata: UsermetaTemplate;
     templateAllExportCriteriaApplied: boolean;
-    templateSelectedExportOperation: TExportOperation;
     initializeImportExport: () => void;
     updateTemplatePreviewImage: (
         payload: ITemplatePlaceholderImagePayload
@@ -28,11 +29,8 @@ export interface ITemplateSlice {
     updateTemplateExportPropertyBySelector: (
         payload: ITemplateExportFieldUpdatePayload
     ) => void;
-    updateSelectedExportOperation: (
-        templateSelectedExportOperation: TExportOperation
-    ) => void;
     updateTemplateExportError: () => void;
-    updateTemplateExportState: (exportState: TTemplateExportState) => void;
+    updateTemplateExportState: (exportState: DenebTemplateExportState) => void;
 }
 
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
@@ -45,7 +43,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
             templateIncludePreviewImage: false,
             templatePreviewImageDataUri: BASE64_BLANK_IMAGE,
             templateExportMetadata: null,
-            templateSelectedExportOperation: 'information',
             initializeImportExport: () =>
                 set(
                     () => handleInitializeImportExport(),
@@ -67,16 +64,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                         ),
                     false,
                     'updateTemplateExportPropertyBySelector'
-                ),
-            updateSelectedExportOperation: (templateSelectedExportOperation) =>
-                set(
-                    (state) =>
-                        handleUpdateSelectedExportOperation(
-                            state,
-                            templateSelectedExportOperation
-                        ),
-                    false,
-                    'updateSelectedExportOperation'
                 ),
             updateTemplateExportError: () =>
                 set(
@@ -140,20 +127,13 @@ const handleUpdateTemplateExportPropertyBySelector = (
     )
 });
 
-const handleUpdateSelectedExportOperation = (
-    state: TStoreState,
-    templateSelectedExportOperation: TExportOperation
-): Partial<TStoreState> => ({
-    templateSelectedExportOperation
-});
-
 const handleTemplateExportError = (): Partial<TStoreState> => ({
     templateExportState: 'Error'
 });
 
 const handleTemplateExportState = (
     state: TStoreState,
-    exportState: TTemplateExportState
+    exportState: DenebTemplateExportState
 ): Partial<TStoreState> => ({
     templateExportState: exportState
 });
