@@ -37,7 +37,7 @@ if (FEATURES.developer_mode) {
 }
 ```
 
-**Please strive as much as possible to keep feature logic behind flags and tests where you can**. This minimizes issues when merging code to the trunk and ensures ocntinuity of the visual if we are not ready to enable these features yet.
+**Please strive as much as possible to keep feature logic behind flags and tests where you can**. This minimizes issues when merging code to the trunk and ensures continuity of the visual if we are not ready to enable these features yet.
 
 ### Feature Flag Maintenance
 

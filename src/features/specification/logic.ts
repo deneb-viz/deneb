@@ -48,7 +48,11 @@ import {
 } from './schema-validation';
 import { getI18nValue } from '../i18n';
 import { getHashValue } from '../../utils';
-import { PROPERTY_DEFAULTS, PROVIDER_RESOURCES } from '../../../config';
+import {
+    FEATURES,
+    PROPERTY_DEFAULTS,
+    PROVIDER_RESOURCES
+} from '../../../config';
 
 /**
  * For a given operation and string input, ensure that it's trimmed and replaced with suitable defaults if empty.
@@ -290,32 +294,35 @@ const getPatchedData = (spec: Vega.Spec, values: IVisualDatasetValueRow[]) => {
         const newSpec = typeof spec === 'undefined' ? {} : spec;
         const data = newSpec?.data ?? [];
         const index = data.findIndex((ds) => ds.name == name);
-        const crossFilterData = {
-            name: CROSS_FILTER_STATE_DATASET_NAME,
-            values: getCrossFilterSubset(values)
-        };
-        return index >= 0
-            ? [
-                  ...newSpec.data.slice(0, index),
-                  ...[
-                      {
-                          ...newSpec.data[index],
-                          values
-                      }
-                  ],
-                  ...newSpec.data.slice(index + 1),
-                  crossFilterData
-              ]
-            : [
-                  ...(newSpec.data ?? []),
-                  ...[
-                      {
-                          name,
-                          values
-                      }
-                  ],
-                  crossFilterData
-              ];
+        const patchedData =
+            index >= 0
+                ? [
+                      ...newSpec.data.slice(0, index),
+                      ...[
+                          {
+                              ...newSpec.data[index],
+                              values
+                          }
+                      ],
+                      ...newSpec.data.slice(index + 1)
+                  ]
+                : [
+                      ...(newSpec.data ?? []),
+                      ...[
+                          {
+                              name,
+                              values
+                          }
+                      ]
+                  ];
+        if (FEATURES.advanced_cross_filtering) {
+            const crossFilterData = {
+                name: CROSS_FILTER_STATE_DATASET_NAME,
+                values: getCrossFilterSubset(values)
+            };
+            return [...patchedData, ...[crossFilterData]];
+        }
+        return patchedData;
     } catch (e) {
         return [{ name, values }];
     }
@@ -414,12 +421,16 @@ const getPatchedVegaLiteSpecWithData = (
     values: IVisualDatasetValueRow[]
 ): any => {
     logTimeStart('getPatchedVegaLiteSpecWithData');
+    const datasets = {
+        ...(spec?.datasets ?? {}),
+        [`${DATASET_NAME}`]: values
+    };
+    if (FEATURES.advanced_cross_filtering) {
+        datasets[CROSS_FILTER_STATE_DATASET_NAME] =
+            getCrossFilterSubset(values);
+    }
     const merged = Object.assign(spec || {}, {
-        datasets: {
-            ...(spec?.datasets ?? {}),
-            [`${DATASET_NAME}`]: values,
-            [`${CROSS_FILTER_STATE_DATASET_NAME}`]: getCrossFilterSubset(values)
-        }
+        datasets
     });
     console.log('Merged Vega-Lite spec', merged);
     logTimeEnd('getPatchedVegaLiteSpecWithData');
