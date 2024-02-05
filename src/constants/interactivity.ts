@@ -1,4 +1,9 @@
 /**
+ * Denotes the name of the dataset that contains the cross filter state.
+ */
+export const CROSS_FILTER_STATE_DATASET_NAME = 'dataset_cross_filter_context';
+
+/**
  * Denotes how we suffix fields in the dataset that contain highlight values.
  */
 export const HIGHLIGHT_FIELD_SUFFIX = '__highlight';
