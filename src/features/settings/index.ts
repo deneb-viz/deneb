@@ -34,6 +34,8 @@ export const isSettingsChangeVolatile = (
     if (!previous) return false;
     const selectionStatusChanged =
         previous?.vega?.enableSelection !== current?.vega?.enableSelection;
+    const selectionModeChanged =
+        previous?.vega?.selectionMode !== current?.vega?.selectionMode;
     const highlightStatusChanged =
         previous?.vega?.enableHighlight !== current?.vega?.enableHighlight;
     const localeChanged =
@@ -46,6 +48,7 @@ export const isSettingsChangeVolatile = (
         previous?.dataLimit?.override !== current?.dataLimit?.override;
     return (
         selectionStatusChanged ||
+        selectionModeChanged ||
         highlightStatusChanged ||
         localeChanged ||
         // If we implement configurable window size (API 5.2) this will be needed.

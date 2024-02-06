@@ -17,11 +17,11 @@ import { getI18nValue } from '../../i18n';
 
 export const ProviderSettings: React.FC = () => {
     const {
-        vega: { provider }
+        vega: { provider, selectionMode }
     } = store((state) => state.visualSettings, shallow);
     const onChange = React.useCallback(
         (ev: React.FormEvent<HTMLDivElement>, data: RadioGroupOnChangeData) => {
-            updateProvider(data.value as TSpecProvider);
+            updateProvider(data.value as TSpecProvider, selectionMode);
         },
         []
     );

@@ -17,6 +17,11 @@ export type TDataPointHighlightStatus = TDataPointSelectionStatus;
 export type TDataPointSelectionStatus = 'off' | 'neutral' | 'on';
 
 /**
+ * Indicates the type of selection mode that is currently active.
+ */
+export type SelectionMode = 'simple' | 'advanced';
+
+/**
  * Used to denote supported interactivity types within Deneb. These can be used
  * to flag any contextual methods for any particular functionality.
  */

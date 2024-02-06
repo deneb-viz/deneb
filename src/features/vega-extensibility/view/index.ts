@@ -101,7 +101,7 @@ export const handleNewView = (newView: View) => {
             data: VegaViewServices.getAllData()
         });
         bindContextMenuEvents(view);
-        bindCrossFilterEvents(view);
+        selectionMode === 'simple' && bindCrossFilterEvents(view);
         generateRenderId();
         logTimeEnd('VegaRender');
         setRenderingFinished();

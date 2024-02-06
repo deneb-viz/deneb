@@ -278,6 +278,26 @@
                         "bool": true
                     }
                 },
+                "selectionMode": {
+                    "displayNameKey": "Objects_Vega_SelectionMode",
+                    "descriptionKey": "Objects_Vega_SelectionMode_Description",
+                    "displayName": "Selection Mode",
+                    "description": "Selection Mode description.",
+                    "type": {
+                        "enumeration": [
+                            {
+                                "displayNameKey": "Enum_SelectionMode_Simple",
+                                "displayName": "Simple",
+                                "value": "simple"
+                            },
+                            {
+                                "displayNameKey": "Enum_SelectionMode_Advanced",
+                                "displayName": "Advanced",
+                                "value": "advanced"
+                            }
+                        ]
+                    }
+                },
                 "selectionMaxDataPoints": {
                     "displayNameKey": "Objects_Vega_SelectionMaxDataPoints",
                     "descriptionKey": "Objects_Vega_SelectionMaxDataPoints_Description",
