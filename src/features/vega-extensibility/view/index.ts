@@ -28,6 +28,11 @@ export const VegaViewServices: IVegaViewServices = {
      */
     clearView: () => (view = null),
     /**
+     * Check if a signal with the specified name exists in the current Vega view.
+     */
+    doesSignalNameExist: (name: string) =>
+        VegaViewServices.getAllSignals()[name] !== undefined,
+    /**
      * Get all datasets and their content from the current Vega view (for the
      * dataset table). Returns an empty object if nothing is available.
      */
@@ -87,7 +92,10 @@ export const handleNewView = (newView: View) => {
     logDebug('Vega view initialized.');
     setRenderingStarted();
     const {
-        interface: { generateRenderId }
+        interface: { generateRenderId },
+        visualSettings: {
+            vega: { selectionMode }
+        }
     } = getState();
     newView.logger(new StoreVegaLoggerService());
     newView.runAfter((view) => {

@@ -30,6 +30,7 @@ import { isMappingDialogRequired } from '../features/remap-fields';
 import { getOnboardingDialog } from '../features/modal-dialog';
 import { areAllCreateDataRequirementsMet } from '../features/visual-create';
 import { getHashValue } from '../utils';
+import { PROPERTY_DEFAULTS } from '../../config';
 
 export interface IDatasetSlice {
     dataset: IVisualDataset;
@@ -37,11 +38,14 @@ export interface IDatasetSlice {
     datasetHasHighlights: boolean;
     datasetHasSelectionAborted: boolean;
     datasetProcessingStage: TDataProcessingStage;
+    datasetSelectionLimit: number;
     datasetViewObjects: DataViewObjects;
     updateDataset: (payload: IVisualDatasetUpdatePayload) => void;
     updateDatasetProcessingStage: (payload: IDatasetProcessingPayload) => void;
     updateDatasetSelectors: (selectors: ISelectionId[]) => void;
-    updateDatasetSelectionAbortStatus: (status: boolean) => void;
+    updateDatasetSelectionAbortStatus: (
+        payload: IVisualDatasetAbortPayload
+    ) => void;
 }
 
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
@@ -51,6 +55,7 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
         datasetHasHighlights: false,
         datasetHasSelectionAborted: false,
         datasetProcessingStage: 'Initial',
+        datasetSelectionLimit: PROPERTY_DEFAULTS.vega.selectionMaxDataPoints,
         datasetViewObjects: {},
         updateDataset: (payload) =>
             set(
@@ -70,10 +75,10 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                 false,
                 'updateDatasetSelectors'
             ),
-        updateDatasetSelectionAbortStatus: (status) =>
+        updateDatasetSelectionAbortStatus: (payload) =>
             set(
                 (state) =>
-                    handleUpdateDatasetSelectionAbortStatus(state, status),
+                    handleUpdateDatasetSelectionAbortStatus(state, payload),
                 false,
                 'updateDatasetSelectionAbortStatus'
             )
@@ -94,6 +99,11 @@ interface IDatasetProcessingPayload {
 interface IVisualDatasetUpdatePayload {
     categories: DataViewCategoryColumn[];
     dataset: IVisualDataset;
+}
+
+interface IVisualDatasetAbortPayload {
+    status: boolean;
+    limit: number;
 }
 
 const handleUpdateDataset = (
@@ -263,7 +273,8 @@ const handleUpdateDatasetSelectors = (
 
 const handleUpdateDatasetSelectionAbortStatus = (
     state: TStoreState,
-    status: boolean
+    payload: IVisualDatasetAbortPayload
 ): Partial<TStoreState> => ({
-    datasetHasSelectionAborted: status
+    datasetHasSelectionAborted: payload.status,
+    datasetSelectionLimit: payload.limit
 });
