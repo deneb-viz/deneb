@@ -120,7 +120,6 @@ export const handleCrossFilterEvent = (
 ): CrossFilterResult => {
     event.stopPropagation();
     event.preventDefault();
-    // TODO: handle multiSelect options
     if (isCrossFilterPropSet()) {
         try {
             hidePowerBiTooltip();
