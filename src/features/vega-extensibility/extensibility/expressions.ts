@@ -17,6 +17,7 @@ import { getI18nValue } from '../../i18n';
 import { CROSS_FILTER_LIMITS, PROPERTY_DEFAULTS } from '../../../../config';
 import { handleCrossFilterEvent } from '../../interactivity/cross-filter';
 import { logDebug, logWarning } from '../../logging';
+import { VisualSettings } from '../../settings';
 
 /**
  * A custom expression that should be added to the Vega view.
@@ -84,12 +85,21 @@ const pbiCrossFilterApply = (
     fOptions: CrossFilterOptions
 ) => {
     const {
-        specification: { logWarn }
+        specification: { logWarn },
+        visualSettings: {
+            vega: { selectionMode }
+        }
     } = getState();
     logDebug('[pbiCrossFilterApply] cross-filter event fired from view', {
         event,
         expr: filterExpr
     });
+    if (selectionMode !== 'advanced') {
+        logWarn(
+            getI18nValue('Text_Warning_Invalid_Cross_Filter_Incorrect_Mode')
+        );
+        return {};
+    }
     try {
         // Event must be valid
         if (!isEventPresent(event)) {

@@ -388,6 +388,7 @@
     "Text_Warning_Invalid_Cross_Filter_Event_Type": "The first parameter must be a valid `event` from the Vega view.",
     "Text_Warning_Invalid_Cross_Filter_General_Error": "[pbiCrossFilterApply] {0}",
     "Text_Warning_Invalid_Cross_Filter_Missing_Filter": "The second parameter must be a valid filter expression.",
+    "Text_Warning_Invalid_Cross_Filter_Incorrect_Mode": "[pbiCrossFilter] expression functions are valid only for Advanced cross-filtering management mode. Please refer to the documentation for more information.",
     "Text_Warning_Invalid_Cross_Filter_Incorrect_Options": "`options` must be a valid object, and contain valid property values. Refer to the documentation for more information.",
     "Text_Warning_Invalid_Cross_Filter_Not_Applied": "[pbiCrossFilterApply] We were not able to cross-filter data based on your supplied parameters.",
     "Text_Zoom_Level_Custom_Label": "Zoom to"
