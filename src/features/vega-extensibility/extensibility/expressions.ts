@@ -17,7 +17,6 @@ import { getI18nValue } from '../../i18n';
 import { CROSS_FILTER_LIMITS, PROPERTY_DEFAULTS } from '../../../../config';
 import { handleCrossFilterEvent } from '../../interactivity/cross-filter';
 import { logDebug, logWarning } from '../../logging';
-import { VisualSettings } from '../../settings';
 
 /**
  * A custom expression that should be added to the Vega view.
@@ -150,7 +149,6 @@ const pbiCrossFilterApply = (
             ])
         );
         logWarning('[pbiCrossFilterApply] error', e.message);
-        console.log('Error', e.message, e);
         return <CrossFilterResult>{ warning: e.message, identities: [] };
     }
 };
@@ -191,5 +189,5 @@ const isCrossFilterOptionValid = (options: CrossFilterOptions) =>
     !options ||
     (options && typeof options === 'object' && options.limit
         ? options.limit >= CROSS_FILTER_LIMITS.minDataPointsValue &&
-          options.limit <= CROSS_FILTER_LIMITS.maxDataPointsValue
+          options.limit <= CROSS_FILTER_LIMITS.maxDataPointsAdvancedValue
         : true);

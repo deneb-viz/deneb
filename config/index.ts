@@ -22,6 +22,7 @@ export const CAPABILITIES = capabilities;
 export const CROSS_FILTER_LIMITS = {
     minDataPointsValue: 1,
     maxDataPointsValue: 250,
+    maxDataPointsAdvancedValue: 1000,
     dataPointsStepValue: 1
 };
 
