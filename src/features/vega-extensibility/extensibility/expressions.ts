@@ -114,10 +114,10 @@ const pbiCrossFilterApply = (
             );
         }
         const item = clone(<Item>event['item']);
-        const { datum } = item;
-        const expr = filterExpr?.replace(/_{(.*?)}_/g, (m, m1) => {
-            return `'${datum[m1]}'`;
-        });
+        const expr = getResolvedFilterExpressionForPlaceholder(
+            filterExpr,
+            item.datum
+        );
         if (expr) {
             parseExpression(expr);
         }
@@ -152,6 +152,25 @@ const pbiCrossFilterApply = (
         return <CrossFilterResult>{ warning: e.message, identities: [] };
     }
 };
+
+/**
+ * Substitute any placeholders in the filter expression with actual values from the datum. We also consider the type
+ * of a resolved property from the datum, to ensure that we replace with the correct criteria.
+ */
+const getResolvedFilterExpressionForPlaceholder = (
+    filterExpr: string,
+    datum: any
+) =>
+    filterExpr?.replace(/_{(.*?)}_/g, (m, m1) => {
+        const value = datum[m1];
+        if (typeof value === 'number' || typeof value === 'boolean') {
+            return `${value}`;
+        }
+        if (value instanceof Date) {
+            return `datetime('${value.toISOString()}')`;
+        }
+        return `'${datum[m1]}'`;
+    });
 
 /**
  * Create the correctly structured options object for advanced cross-filtering, based on what is supplied by the user
