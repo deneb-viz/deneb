@@ -167,7 +167,7 @@ const getResolvedFilterExpressionForPlaceholder = (
             return `${value}`;
         }
         if (value instanceof Date) {
-            return `datetime('${value.toISOString()}')`;
+            return `toDate('${value}')`;
         }
         return `'${datum[m1]}'`;
     });
