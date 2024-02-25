@@ -190,9 +190,14 @@ const getCrossFilterIdentitiesAdvanced = (
         '[pbiCrossFilterApply] deriving identities for advanced cross-filtering...'
     );
     try {
+        const signals = event?.['dataflow']?._signals || {};
         const { filterExpr } = options;
         const datasetName = 'cross-filter';
         const headlessSpec: Vega.Spec = {
+            signals: Object.keys(signals).map((key) => ({
+                name: key,
+                value: signals[key]
+            })),
             data: [
                 {
                     name: datasetName,
@@ -210,7 +215,7 @@ const getCrossFilterIdentitiesAdvanced = (
         };
         logDebug(
             '[pbiCrossFilterApply] performing headless validation of cross-filter options...',
-            { event, item, options, headlessSpec }
+            { event, item, options, headlessSpec, signals }
         );
         const filteredData: IVisualDatasetValueRow[] = new Vega.View(
             Vega.parse(headlessSpec)
