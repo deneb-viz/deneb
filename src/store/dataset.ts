@@ -29,7 +29,7 @@ import { ModalDialogRole } from '../features/modal-dialog/types';
 import { isMappingDialogRequired } from '../features/remap-fields';
 import { getOnboardingDialog } from '../features/modal-dialog';
 import { getHashValue } from '../utils';
-import { areAllCreateDataRequirementsMet } from '@deneb-viz/template';
+import { areAllCreateDataRequirementsMet } from '@deneb-viz/json-processing';
 
 export interface IDatasetSlice {
     dataset: IVisualDataset;

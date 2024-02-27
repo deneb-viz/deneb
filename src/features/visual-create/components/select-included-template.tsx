@@ -22,7 +22,7 @@ import { getVegaProvideri18n, TSpecProvider } from '../../../core/vega';
 import {
     getTemplateMetadata,
     getTemplateResolvedForPlaceholderAssignment
-} from '@deneb-viz/template';
+} from '@deneb-viz/json-processing';
 import { PROPERTY_DEFAULTS } from '../../../../config';
 import { UsermetaTemplate } from '@deneb-viz/core-dependencies';
 

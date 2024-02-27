@@ -11,7 +11,7 @@ import {
     IDenebTemplateAllocationComponents,
     UsermetaTemplate
 } from '@deneb-viz/core-dependencies';
-import { getTemplateReplacedForDataset } from '@deneb-viz/template';
+import { getTemplateReplacedForDataset } from '@deneb-viz/json-processing';
 import {
     resolveObjectProperties,
     updateObjectProperties

@@ -13,7 +13,7 @@ import { useDropzone, FileWithPath } from 'react-dropzone';
 import store, { getState } from '../../../store';
 import { getI18nValue } from '../../i18n';
 import { logDebug, logRender } from '../../logging';
-import { getValidatedTemplate } from '@deneb-viz/template';
+import { getValidatedTemplate } from '@deneb-viz/json-processing';
 import { PROPERTY_DEFAULTS } from '../../../../config';
 import { DenebTemplateImportState } from '@deneb-viz/core-dependencies';
 

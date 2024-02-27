@@ -15,7 +15,7 @@ import {
 import {
     areAllCreateDataRequirementsMet,
     getNewCreateFromTemplateSliceProperties
-} from '@deneb-viz/template';
+} from '@deneb-viz/json-processing';
 
 export interface ICreateSlicePropertiesLegacy {
     metadataAllDependenciesAssigned: boolean;

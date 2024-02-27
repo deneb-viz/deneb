@@ -2,7 +2,7 @@ import * as INCLUDED_TEMPLATES from './included';
 import { TSpecProvider } from '../../core/vega';
 import { Spec } from 'vega';
 import { TopLevelSpec } from 'vega-lite';
-import { getTemplateMetadata } from '@deneb-viz/template';
+import { getTemplateMetadata } from '@deneb-viz/json-processing';
 import { DenebTemplatesIncluded } from '@deneb-viz/core-dependencies';
 
 export { getExportTemplate } from '../visual-export/logic';
