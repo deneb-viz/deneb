@@ -4,5 +4,5 @@
     "data_drilldown": false,
     "enable_external_uri": false,
     "visual_update_history_overlay": false,
-    "advanced_cross_filtering": false
+    "advanced_cross_filtering": true
 }
