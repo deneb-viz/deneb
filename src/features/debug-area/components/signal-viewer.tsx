@@ -12,6 +12,7 @@ import { VegaViewServices } from '../../vega-extensibility';
 import { stringifyPruned } from '../../json-processing';
 import { ISignalTableDataRow } from '../types';
 import { getI18nValue } from '../../i18n';
+import { DataTableCell } from './data-table-cell';
 
 interface ISignalViewerProps {
     renderId: string;
@@ -63,7 +64,14 @@ const getTableColumns = (
         id: 'key',
         selector: (row) => row.key,
         sortable: true,
-        grow: 1
+        grow: 2,
+        cell: (row) => (
+            <DataTableCell
+                displayValue={row.key}
+                field={row.key}
+                rawValue={row.key}
+            />
+        )
     },
     {
         name: getI18nValue('Pivot_Signals_ValueColumn'),

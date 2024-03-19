@@ -14,6 +14,7 @@ import {
     CROSS_FILTER_LIMITS,
     PROPERTY_DEFAULTS
 } from '../../config';
+import { SelectionMode } from '../features/interactivity';
 
 const OBJECT_NAME = 'vega';
 const OBJECT_DEF = CAPABILITIES.objects[OBJECT_NAME];
@@ -33,6 +34,7 @@ export default class VegaSettings extends SettingsBase {
     public enableContextMenu = PROPERTY_DEFAULTS.vega.enableContextMenu;
     public enableSelection = PROPERTY_DEFAULTS.vega.enableSelection;
     public enableHighlight = PROPERTY_DEFAULTS.vega.enableHighlight;
+    public selectionMode: SelectionMode = PROPERTY_DEFAULTS.vega.selectionMode;
     public selectionMaxDataPoints =
         PROPERTY_DEFAULTS.vega.selectionMaxDataPoints;
     public tooltipDelay = PROPERTY_DEFAULTS.vega.tooltipDelay;
@@ -134,6 +136,14 @@ export default class VegaSettings extends SettingsBase {
                             objectName: OBJECT_NAME,
                             propertyName: 'enableSelection',
                             value: this.enableSelection
+                        }),
+                        getDropdownSlice({
+                            displayNameKey:
+                                PROPERTIES.selectionMode.displayNameKey,
+                            objectName: OBJECT_NAME,
+                            propertyName: 'selectionMode',
+                            value: this.selectionMode,
+                            items: PROPERTIES.selectionMode.type.enumeration
                         }),
                         getIntegerSlice({
                             displayNameKey:

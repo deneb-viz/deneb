@@ -277,26 +277,28 @@ const getPatchedData = (spec: Vega.Spec, values: IVisualDatasetValueRow[]) => {
         const newSpec = typeof spec === 'undefined' ? {} : spec;
         const data = newSpec?.data ?? [];
         const index = data.findIndex((ds) => ds.name == name);
-        return index >= 0
-            ? [
-                  ...newSpec.data.slice(0, index),
-                  ...[
-                      {
-                          ...newSpec.data[index],
-                          values
-                      }
-                  ],
-                  ...newSpec.data.slice(index + 1)
-              ]
-            : [
-                  ...(newSpec.data ?? []),
-                  ...[
-                      {
-                          name,
-                          values
-                      }
+        const patchedData =
+            index >= 0
+                ? [
+                      ...newSpec.data.slice(0, index),
+                      ...[
+                          {
+                              ...newSpec.data[index],
+                              values
+                          }
+                      ],
+                      ...newSpec.data.slice(index + 1)
                   ]
-              ];
+                : [
+                      ...(newSpec.data ?? []),
+                      ...[
+                          {
+                              name,
+                              values
+                          }
+                      ]
+                  ];
+        return patchedData;
     } catch (e) {
         return [{ name, values }];
     }
@@ -393,13 +395,14 @@ const getPatchedVegaLiteSpec = (spec: VegaLite.TopLevelSpec) => {
 const getPatchedVegaLiteSpecWithData = (
     spec: VegaLite.TopLevelSpec,
     values: IVisualDatasetValueRow[]
-) => {
+): any => {
     logTimeStart('getPatchedVegaLiteSpecWithData');
+    const datasets = {
+        ...(spec?.datasets ?? {}),
+        [`${DATASET_NAME}`]: values
+    };
     const merged = Object.assign(spec || {}, {
-        datasets: {
-            ...(spec?.datasets ?? {}),
-            [`${DATASET_NAME}`]: values
-        }
+        datasets
     });
     logTimeEnd('getPatchedVegaLiteSpecWithData');
     return merged;

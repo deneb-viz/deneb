@@ -2,6 +2,7 @@ import capabilities from '../capabilities.json';
 import features from './features.json';
 import { dependencies } from '../package.json';
 import { visual } from '../pbiviz.json';
+import { SelectionMode } from '../src/features/interactivity';
 
 /**
  * This is an object that contains the visual's metadata. This is used to
@@ -21,6 +22,7 @@ export const CAPABILITIES = capabilities;
 export const CROSS_FILTER_LIMITS = {
     minDataPointsValue: 1,
     maxDataPointsValue: 250,
+    maxDataPointsAdvancedValue: 2500,
     dataPointsStepValue: 1
 };
 
@@ -211,6 +213,7 @@ export const PROPERTY_DEFAULTS = {
         enableTooltips: true,
         enableSelection: false,
         enableHighlight: false,
+        selectionMode: <SelectionMode>'simple',
         selectionMaxDataPoints: 50,
         tooltipDelay: 0,
         isNewDialogOpen: true

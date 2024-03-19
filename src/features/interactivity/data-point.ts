@@ -140,7 +140,7 @@ const getMatchedValues = (
 /**
  * For the supplied data, extract all `SelectionId`s into an array.
  */
-const getSelectorsFromData = (
+export const getSelectorsFromData = (
     data: IVegaViewDatum[] | IVisualDatasetValueRow[]
 ) =>
     getValuesByIndices(getIdentityIndices(data)).map(

@@ -7,14 +7,15 @@ import { InteractivityCheckbox } from './interactivity-checkbox';
 import { SettingsHeadingLabel } from './settings-heading-label';
 import { SettingsTextSection } from './settings-text-section';
 import { CrossFilterMaxDataPoints } from './cross-filter-max-data-points';
+import { CrossFilterModeSettings } from './cross-filter-mode-settings';
 import store from '../../../store';
 import { getI18nValue } from '../../i18n';
 import { useSettingsStyles } from '.';
-import { PROVIDER_RESOURCES } from '../../../../config';
+import { FEATURES, PROVIDER_RESOURCES } from '../../../../config';
 import { launchUrl } from '../../visual-host';
 
 export const InteractivitySettings: React.FC = () => {
-    const { enableSelection } = store(
+    const { enableSelection, selectionMode } = store(
         (state) => state.visualSettings.vega,
         shallow
     );
@@ -42,12 +43,19 @@ export const InteractivitySettings: React.FC = () => {
             </SettingsTextSection>
             {(enableSelection && (
                 <>
-                    <CrossFilterMaxDataPoints />
-                    <SettingsTextSection>
-                        {getI18nValue(
-                            'Objects_Vega_SelectionMaxDataPoints_Description'
-                        )}
-                    </SettingsTextSection>
+                    {FEATURES.advanced_cross_filtering && (
+                        <CrossFilterModeSettings />
+                    )}
+                    {selectionMode === 'simple' && (
+                        <>
+                            <CrossFilterMaxDataPoints />
+                            <SettingsTextSection>
+                                {getI18nValue(
+                                    'Objects_Vega_SelectionMaxDataPoints_Description'
+                                )}
+                            </SettingsTextSection>
+                        </>
+                    )}
                 </>
             )) || <></>}
         </div>

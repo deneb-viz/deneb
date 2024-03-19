@@ -21,6 +21,12 @@ export const useSettingsStyles = makeStyles({
         display: 'grid',
         gridRowGap: tokens.spacingVerticalS
     },
+    radioGroupLabel: {
+        userSelect: 'none',
+        msUserSelect: 'none',
+        WebkitUserSelect: 'none',
+        MozUserSelect: 'none'
+    },
     sectionContainer: {
         display: 'flex',
         flexDirection: 'column',
@@ -37,7 +43,7 @@ export const useSettingsStyles = makeStyles({
             marginRight: tokens.spacingHorizontalM
         },
         alignItems: 'center',
-        ...shorthands.padding('5px', '5px')
+        ...shorthands.padding('5px', tokens.spacingHorizontalNone)
     },
     spinButtonControl: {
         width: '80px'
