@@ -13,12 +13,15 @@ import { ITemplateSlice, createTemplateSlice } from './template';
 import { IVisualSlice, createVisualSlice } from './visual';
 import { IVisualUpdateSlice, createVisualUpdateSlice } from './visual-update';
 import { FEATURES } from '../../config';
+import { IFieldUsageSliceState } from '@deneb-viz/core-dependencies';
+import { createFieldUsageSlice } from './field-usage';
 
 export type TStoreState = ICommandsSlice &
     ICreateSlice &
     IDatasetSlice &
     IDebugSlice &
     IEditorSlice &
+    IFieldUsageSliceState &
     IInterfaceSlice &
     IMigrationSlice &
     IProcessingSlice &
@@ -35,6 +38,7 @@ const store = create<TStoreState>()(
             ...createDatasetSlice(...a),
             ...createDebugSlice(...a),
             ...createEditorSlice(...a),
+            ...createFieldUsageSlice(...a),
             ...createInterfaceSlice(...a),
             ...createMigrationSlice(...a),
             ...createProcessingSlice(...a),
