@@ -1,0 +1,26 @@
+{
+  "name": "@deneb-viz/template-usermeta-schema",
+  "version": "0.1.1",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deneb-viz/sadr.git"
+  },
+  "main": "dist/deneb-template-usermeta.json",
+  "module": "dist/deneb-template-usermeta.json",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "npm run schemagen:template-usermeta-schema",
+    "build": "npm run schemagen:template-usermeta-schema",
+    "lint": "eslint . --max-warnings 0",
+    "publish-local": "yalc publish",
+    "publish-npm:template-usermeta-schema": "dotenv -e ../../.env npm publish",
+    "schemagen:template-usermeta-schema": "typescript-json-schema ./src/schema.ts UsermetaTemplate -o ./dist/deneb-template-usermeta.json --required --topRef"
+  },
+  "yalcSig": "ef2d76ed828901df104ce93414dce215"
+}

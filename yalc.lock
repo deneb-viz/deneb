@@ -1,0 +1,34 @@
+{
+  "version": "v1",
+  "packages": {
+    "@deneb-viz/template-usermeta": {
+      "signature": "c6ab4a25d501842385034bd3d7154f97",
+      "file": true,
+      "replaced": "link:.yalc/@deneb-viz/template-usermeta"
+    },
+    "@deneb-viz/common-types": {
+      "signature": "8506193d6a86d1e0cc68d6402f6344ad",
+      "file": true
+    },
+    "@deneb-viz/json": {
+      "signature": "d7c5a35e20cb124ca8f5c337222fac23",
+      "file": true
+    },
+    "@deneb-viz/core-dependencies": {
+      "signature": "19fce5477bfa2c44ac24b62e62bf77c3",
+      "file": true
+    },
+    "@deneb-viz/json-processing": {
+      "signature": "d25f96df34a4eaa7d5cad3ed28a14350",
+      "file": true
+    },
+    "@deneb-viz/template": {
+      "signature": "a933f9cc903c7c66696cc35a8d98c1a0",
+      "file": true
+    },
+    "@deneb-viz/template-usermeta-schema": {
+      "signature": "ef2d76ed828901df104ce93414dce215",
+      "file": true
+    }
+  }
+}

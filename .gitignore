@@ -68,3 +68,6 @@ typings/
 .tmp/
 dist/
 webpack.statistics*.html
+
+# Yalc
+**/.yalc/**/*.md
