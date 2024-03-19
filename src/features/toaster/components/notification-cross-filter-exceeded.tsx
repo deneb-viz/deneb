@@ -20,11 +20,10 @@ import { INotificationProps } from '.';
 export const NotificationCrossFilterExceeded: React.FC<INotificationProps> = ({
     toasterId
 }) => {
-    const { datasetHasSelectionAborted, selectionMaxDataPoints } = store(
+    const { datasetHasSelectionAborted, datasetSelectionLimit } = store(
         (state) => ({
             datasetHasSelectionAborted: state.datasetHasSelectionAborted,
-            selectionMaxDataPoints:
-                state.visualSettings.vega.selectionMaxDataPoints
+            datasetSelectionLimit: state.datasetSelectionLimit
         }),
         shallow
     );
@@ -45,7 +44,7 @@ export const NotificationCrossFilterExceeded: React.FC<INotificationProps> = ({
                 )}
                 body={getI18nValue(
                     'Text_Toast_Body_Cross_Filter_Limit_Reached',
-                    [selectionMaxDataPoints]
+                    [datasetSelectionLimit]
                 )}
                 footer={
                     <>
@@ -67,7 +66,7 @@ export const NotificationCrossFilterExceeded: React.FC<INotificationProps> = ({
                 intent: 'warning',
                 onStatusChange: (e, { status: toastStatus }) => {
                     if (toastStatus === 'dismissed') {
-                        dispatchCrossFilterAbort();
+                        dispatchCrossFilterAbort(false, datasetSelectionLimit);
                     }
                 },
                 timeout: TOAST_NOTIFICATION_TIMEOUT

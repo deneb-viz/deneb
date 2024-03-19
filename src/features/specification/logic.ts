@@ -37,22 +37,14 @@ import {
     logTimeStart
 } from '../logging';
 import { IVisualDatasetValueRow } from '../../core/data';
-import {
-    CROSS_FILTER_STATE_DATASET_NAME,
-    DATASET_NAME,
-    DATASET_SELECTED_NAME
-} from '../../constants';
+import { DATASET_NAME } from '../../constants';
 import {
     getFriendlyValidationErrors,
     getProviderValidator
 } from './schema-validation';
 import { getI18nValue } from '../i18n';
 import { getHashValue } from '../../utils';
-import {
-    FEATURES,
-    PROPERTY_DEFAULTS,
-    PROVIDER_RESOURCES
-} from '../../../config';
+import { PROPERTY_DEFAULTS, PROVIDER_RESOURCES } from '../../../config';
 
 /**
  * For a given operation and string input, ensure that it's trimmed and replaced with suitable defaults if empty.
@@ -126,12 +118,6 @@ export const getCleanEditorJson = (role: TEditorRole) =>
             ? specEditorService.getText()
             : configEditorService.getText()
     );
-
-/**
- * Filter the base Power BI dataset to only include the rows that are selected (either 'on' or 'neutral').
- */
-const getCrossFilterSubset = (values: IVisualDatasetValueRow[]) =>
-    values.filter((d) => d[DATASET_SELECTED_NAME] !== 'off');
 
 /**
  * Borrowed from vega-editor
@@ -315,13 +301,6 @@ const getPatchedData = (spec: Vega.Spec, values: IVisualDatasetValueRow[]) => {
                           }
                       ]
                   ];
-        if (FEATURES.advanced_cross_filtering) {
-            const crossFilterData = {
-                name: CROSS_FILTER_STATE_DATASET_NAME,
-                values: getCrossFilterSubset(values)
-            };
-            return [...patchedData, ...[crossFilterData]];
-        }
         return patchedData;
     } catch (e) {
         return [{ name, values }];
@@ -425,14 +404,9 @@ const getPatchedVegaLiteSpecWithData = (
         ...(spec?.datasets ?? {}),
         [`${DATASET_NAME}`]: values
     };
-    if (FEATURES.advanced_cross_filtering) {
-        datasets[CROSS_FILTER_STATE_DATASET_NAME] =
-            getCrossFilterSubset(values);
-    }
     const merged = Object.assign(spec || {}, {
         datasets
     });
-    console.log('Merged Vega-Lite spec', merged);
     logTimeEnd('getPatchedVegaLiteSpecWithData');
     return merged;
 };

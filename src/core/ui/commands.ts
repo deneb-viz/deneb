@@ -4,6 +4,7 @@ export {
     updateLogLevel,
     updateProvider,
     updateSelectionMaxDataPoints,
+    updateSelectionMode,
     updateRenderMode
 };
 
@@ -15,6 +16,7 @@ import {
 } from '../utils/properties';
 import { TSpecProvider, TSpecRenderMode } from '../vega';
 import { PROPERTY_DEFAULTS } from '../../../config';
+import { SelectionMode } from '../../features/interactivity';
 
 /**
  * Actual event handling logic for wrappers
@@ -55,10 +57,31 @@ const updateLogLevel = (value: string) => {
 /**
  * Handle the change in provider from one to the other and update necessary store dependencies and properties.
  */
-const updateProvider = (provider: TSpecProvider) =>
+const updateProvider = (
+    provider: TSpecProvider,
+    currentSelectionMode: SelectionMode
+) =>
     handlePersist([
         { name: 'provider', value: provider },
+        {
+            name: 'selectionMode',
+            value: provider === 'vegaLite' ? 'simple' : currentSelectionMode
+        },
         getProviderVersionProperty(provider)
+    ]);
+
+/**
+ * Handle the change in selection mode from one to the other and update necessary store dependencies and properties.
+ */
+const updateSelectionMode = (
+    selectionMode: SelectionMode,
+    provider: TSpecProvider
+) =>
+    handlePersist([
+        {
+            name: 'selectionMode',
+            value: provider === 'vegaLite' ? 'simple' : selectionMode
+        }
     ]);
 
 /**
