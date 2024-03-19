@@ -178,6 +178,11 @@ export const handleCrossFilterEvent = (
     return { identities: [] };
 };
 
+/**
+ * For advanced cross-filtering, we create a headless Vega view, with the same dataset and top-level signals as our
+ * visual. We then apply the filter expression to the dataset, and retrieve the resulting data points. We then extract
+ * the identities from this data, and return them.
+ */
 const getCrossFilterIdentitiesAdvanced = (
     event: Vega.ScenegraphEvent,
     item: Vega.Item,
@@ -243,6 +248,9 @@ const getCrossFilterIdentitiesAdvanced = (
     }
 };
 
+/**
+ * For simple cross-filtering, we can simply retrieve the data from the item, and extract the identities from this.
+ */
 const getCrossFilterIdentitiesSimple = (
     event: Vega.ScenegraphEvent,
     item: Vega.Item
@@ -309,9 +317,15 @@ const isSelectionLimitExceeded = (
     return length > limit || false;
 };
 
+/**
+ * Determine if cross-filtering mode should be simple, based on the options provided (or omitted).
+ */
 const isSimpleSelectionMode = (options?: CrossFilterOptions) =>
     !options || options.mode === 'simple';
 
+/**
+ * Retrieve the selection limit size from the options, or the default from the visual settings.
+ */
 const getSelectionLimitSize = (options?: CrossFilterOptions) => {
     const { selectionMaxDataPoints } = getVegaSettings();
     return ((options && options.limit) || null) ?? selectionMaxDataPoints;
