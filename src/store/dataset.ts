@@ -10,7 +10,7 @@ import {
     doUnallocatedFieldsExist,
     getEmptyDataset
 } from '../core/data/dataset';
-import { IVisualDataset, TDataProcessingStage } from '../core/data';
+import { TDataProcessingStage } from '../core/data';
 import { getResizablePaneSize } from '../core/ui/advancedEditor';
 import { getFieldsInUseFromSpec } from '../features/template';
 import { DATASET_IDENTITY_NAME } from '../constants';
@@ -31,9 +31,10 @@ import { getOnboardingDialog } from '../features/modal-dialog';
 import { getHashValue } from '../utils';
 import { PROPERTY_DEFAULTS } from '../../config';
 import { areAllCreateDataRequirementsMet } from '@deneb-viz/json-processing';
+import { IDataset } from '@deneb-viz/core-dependencies';
 
 export interface IDatasetSlice {
-    dataset: IVisualDataset;
+    dataset: IDataset;
     datasetCategories: DataViewCategoryColumn[];
     datasetHasHighlights: boolean;
     datasetHasSelectionAborted: boolean;
@@ -98,7 +99,7 @@ interface IDatasetProcessingPayload {
 
 interface IVisualDatasetUpdatePayload {
     categories: DataViewCategoryColumn[];
-    dataset: IVisualDataset;
+    dataset: IDataset;
 }
 
 interface IVisualDatasetAbortPayload {
@@ -106,6 +107,7 @@ interface IVisualDatasetAbortPayload {
     limit: number;
 }
 
+// eslint-disable-next-line max-lines-per-function
 const handleUpdateDataset = (
     state: TStoreState,
     payload: IVisualDatasetUpdatePayload

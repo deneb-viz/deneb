@@ -21,22 +21,6 @@ export interface IAugmentedMetadataField {
 }
 
 /**
- * Represents the processed dataset, available to the visual store.
- */
-export interface IVisualDataset {
-    // Field metadata
-    fields: IVisualDatasetFields;
-    // Hash of the dataset, used to determine if we need to re-process for
-    // the dataset view.
-    hashValue: string;
-    // Processed values, pointing to field metadata, as well as any dedicated
-    // row-related fields.
-    values: IVisualDatasetValueRow[];
-    hasHighlights: boolean;
-    rowsLoaded: number;
-}
-
-/**
  * Field metadata that we wish to expose to the dataset; flexible keys.
  */
 export interface IVisualDatasetFields {

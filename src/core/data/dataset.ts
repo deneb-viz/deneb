@@ -8,7 +8,6 @@ import reduce from 'lodash/reduce';
 
 import {
     IAugmentedMetadataField,
-    IVisualDataset,
     IVisualDatasetFields,
     IVisualDatasetValueRow
 } from '.';
@@ -49,6 +48,7 @@ import {
 import { logError, logTimeEnd, logTimeStart } from '../../features/logging';
 import { getHashValue } from '../../utils';
 import { getVisualSelectionManager } from '../../features/visual-host';
+import { IDataset } from '@deneb-viz/core-dependencies';
 
 /**
  * Compare two sets of dataset metadata, as well as the current state of the
@@ -127,15 +127,16 @@ const getDataRow = (
 /**
  * Get current processed dataset (metadata and values) from Deneb's store.
  */
-export const getDataset = (): IVisualDataset => getState().dataset;
+export const getDataset = (): IDataset => getState().dataset;
 
 /**
  * Ensures an empty dataset is made available.
  */
-export const getEmptyDataset = (): IVisualDataset => ({
+export const getEmptyDataset = (): IDataset => ({
     fields: {},
     hashValue: getHashValue({}),
     values: [],
+    hasDrilldown: false,
     hasHighlights: false,
     rowsLoaded: 0
 });
@@ -146,7 +147,7 @@ export const getEmptyDataset = (): IVisualDataset => ({
  */
 export const getMappedDataset = (
     categorical: DataViewCategorical
-): IVisualDataset => {
+): IDataset => {
     const rowsLoaded = getRowCount(categorical);
     const empty = getEmptyDataset();
     const dvCategories = categorical?.categories;
@@ -216,6 +217,7 @@ export const getMappedDataset = (
             logTimeEnd('getMappedDataset values');
             logTimeEnd('getMappedDataset');
             return {
+                hasDrilldown,
                 hasHighlights,
                 hashValue,
                 fields,
