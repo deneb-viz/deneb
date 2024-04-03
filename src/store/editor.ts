@@ -1,17 +1,13 @@
 import { StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
-import reduce from 'lodash/reduce';
 
 import { TStoreState } from '.';
-import { doUnallocatedFieldsExist } from '../core/data/dataset';
 import {
     getEditorPreviewAreaWidth,
     getPreviewAreaHeightInitial,
     getResizablePaneSize,
     TPreviewPivotRole
 } from '../core/ui/advancedEditor';
-import { IVisualDatasetFields } from '../core/data';
-import { getFieldsInUseFromSpec } from '../features/template';
 import {
     EditorApplyMode,
     IEditorFoldPosition,
@@ -28,7 +24,11 @@ import {
     getNextApplyMode
 } from '../features/commands';
 import { VISUAL_PREVIEW_ZOOM } from '../../config';
-import { IAceEditor } from 'react-ace/lib/types';
+import {
+    getFieldsInUseFromSpecification,
+    getRemapEligibleFields,
+    getTokenizedSpec
+} from '@deneb-viz/json-processing';
 
 export interface IEditorSlice {
     editor: {
@@ -58,8 +58,6 @@ export interface IEditorSlice {
         updateChanges: (payload: IEditorSliceUpdateChangesPayload) => void;
         updateIsDirty: (isDirty: boolean) => void;
     };
-    editorFieldDatasetMismatch: boolean;
-    editorFieldsInUse: IVisualDatasetFields;
     editorIsExportDialogVisible: boolean;
     editorIsNewDialogVisible: boolean;
     editorPaneIsExpanded: boolean;
@@ -74,13 +72,9 @@ export interface IEditorSlice {
     editorPaneWidth: number;
     editorSelectedOperation: TEditorRole;
     editorZoomLevel: number;
-    renewEditorFieldsInUse: (editor: IAceEditor) => void;
     toggleEditorPane: () => void;
     togglePreviewDebugPane: () => void;
     updateEditorPreviewDebugIsExpanded: (value: boolean) => void;
-    updateEditorFieldMapping: (
-        payload: IEditorFieldMappingUpdatePayload
-    ) => void;
     updateEditorPaneWidth: (payload: IEditorPaneUpdatePayload) => void;
     updateEditorPreviewAreaHeight: (height: number) => void;
     updateEditorPreviewAreaWidth: () => void;
@@ -137,8 +131,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                     'editor.updateIsDirty'
                 )
         },
-        editorFieldDatasetMismatch: false,
-        editorFieldsInUse: {},
         editorIsExportDialogVisible: false,
         editorIsNewDialogVisible: true,
         editorPaneIsExpanded: true,
@@ -153,12 +145,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
         editorPaneWidth: null,
         editorSelectedOperation: 'Spec',
         editorZoomLevel: VISUAL_PREVIEW_ZOOM.default,
-        renewEditorFieldsInUse: (editor) =>
-            set(
-                (state) => handleRenewEditorFieldsInUse(state, editor),
-                false,
-                'renewEditorFieldsInUse'
-            ),
         toggleEditorPane: () =>
             set(
                 (state) => handleToggleEditorPane(state),
@@ -170,12 +156,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                 (state) => handleTogglePreviewDebugPane(state),
                 false,
                 'togglePreviewDebugPane'
-            ),
-        updateEditorFieldMapping: (payload) =>
-            set(
-                (state) => handleUpdateEditorFieldMappings(state, payload),
-                false,
-                'updateEditorFieldMapping'
             ),
         updateEditorPaneWidth: (payload) =>
             set(
@@ -324,6 +304,23 @@ const handleUpdateChanges = (
         role === 'Spec' ? folds ?? state.editor.foldsSpec : existingFolds;
     const stagedConfig = role === 'Config' ? text : state.editor.stagedConfig;
     const stagedSpec = role === 'Spec' ? text : state.editor.stagedSpec;
+    const {
+        fieldUsage: { dataset, drilldown, editorShouldSkipRemap, tokenizedSpec }
+    } = state;
+    const tracking = editorShouldSkipRemap
+        ? { trackedFields: dataset, trackedDrilldown: drilldown }
+        : getFieldsInUseFromSpecification({
+              spec: stagedSpec,
+              dataset: state.dataset,
+              trackedFieldsCurrent: dataset
+          });
+    const tokenizedSpecNew = editorShouldSkipRemap
+        ? tokenizedSpec
+        : getTokenizedSpec({
+              textSpec: stagedSpec,
+              trackedFields: tracking.trackedFields
+          });
+
     return {
         commands: {
             ...state.commands,
@@ -340,6 +337,14 @@ const handleUpdateChanges = (
             foldsSpec,
             stagedConfig,
             stagedSpec
+        },
+        fieldUsage: {
+            ...state.fieldUsage,
+            dataset: tracking.trackedFields,
+            drilldown: tracking.trackedDrilldown,
+            editorShouldSkipRemap: false,
+            remapFields: getRemapEligibleFields(tracking.trackedFields),
+            tokenizedSpec: tokenizedSpecNew
         },
         interface: {
             ...state.interface,
@@ -360,33 +365,6 @@ export interface IEditorPaneUpdatePayload {
     editorPaneWidth: number;
     editorPaneExpandedWidth: number;
 }
-
-interface IEditorFieldMappingUpdatePayload {
-    key: string;
-    objectName: string;
-}
-
-const handleRenewEditorFieldsInUse = (
-    state: TStoreState,
-    editor: IAceEditor
-): Partial<TStoreState> => {
-    const { fields } = state.dataset;
-    const editorFieldsInUse = getFieldsInUseFromSpec(
-        fields,
-        state.editorFieldsInUse,
-        editor,
-        true
-    );
-    const editorFieldDatasetMismatch = doUnallocatedFieldsExist(
-        fields,
-        editorFieldsInUse,
-        false
-    );
-    return {
-        editorFieldsInUse,
-        editorFieldDatasetMismatch
-    };
-};
 
 const handleToggleEditorPane = (state: TStoreState): Partial<TStoreState> => {
     const newExpansionState = !state.editorPaneIsExpanded;
@@ -424,23 +402,6 @@ const handleUpdateIsDirty = (
         ...state.editor,
         isDirty
     }
-});
-
-const handleUpdateEditorFieldMappings = (
-    state: TStoreState,
-    payload: IEditorFieldMappingUpdatePayload
-): Partial<TStoreState> => ({
-    editorFieldsInUse: reduce(
-        state.editorFieldsInUse,
-        (result, value, key) => {
-            if (key === payload.key) {
-                value.templateMetadata.suppliedObjectName = payload.objectName;
-                result[key] = value;
-            }
-            return result;
-        },
-        <IVisualDatasetFields>state.editorFieldsInUse
-    )
 });
 
 const handleUpdateEditorPaneWidth = (

@@ -9,8 +9,6 @@ export { getExportTemplate } from '../visual-export/logic';
 export {
     TEMPLATE_DATASET_FIELD_PROPS,
     TEMPLATE_INFORMATION_PROPS,
-    getFieldsInUseFromSpec,
-    getReducedPlaceholdersForMetadata,
     getTemplatedSpecification,
     getTemplatePlaceholderKey,
     resolveVisualMetaToDatasetField

@@ -6,11 +6,7 @@ import PrimitiveValue = powerbi.PrimitiveValue;
 import range from 'lodash/range';
 import reduce from 'lodash/reduce';
 
-import {
-    IAugmentedMetadataField,
-    IVisualDatasetFields,
-    IVisualDatasetValueRow
-} from '.';
+import { IAugmentedMetadataField, IVisualDatasetValueRow } from '.';
 import {
     castPrimitiveValue,
     getHighlightStatus,
@@ -49,22 +45,6 @@ import { logError, logTimeEnd, logTimeStart } from '../../features/logging';
 import { getHashValue } from '../../utils';
 import { getVisualSelectionManager } from '../../features/visual-host';
 import { IDataset } from '@deneb-viz/core-dependencies';
-
-/**
- * Compare two sets of dataset metadata, as well as the current state of the
- * comparison (if supplied) to ensure that any discrepancies can still be
- * flagged to Deneb for addressing by the creator.
- */
-export const doUnallocatedFieldsExist = (
-    fieldsAvailable: IVisualDatasetFields,
-    fieldsUsed: IVisualDatasetFields,
-    currentResult = false
-) =>
-    reduce(
-        fieldsUsed,
-        (result, value, key) => !(key in fieldsAvailable) || result,
-        false
-    ) || currentResult;
 
 /**
  * For supplied data view field metadata, produce a suitable object

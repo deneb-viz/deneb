@@ -2,19 +2,13 @@ import powerbi from 'powerbi-visuals-api';
 import ValueTypeDescriptor = powerbi.ValueTypeDescriptor;
 import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 
-import forIn from 'lodash/forIn';
 import reduce from 'lodash/reduce';
 
 import * as schema_v1 from '@deneb-viz/template-usermeta-schema';
-import { IVisualDatasetFields } from '../../core/data';
-import { getDatasetFieldsInclusive } from '../../core/data/fields';
-import { getVegaSettings } from '../../core/vega';
 import { getCrossHighlightRegExpAlternation } from '../interactivity';
-import { getCleanEditorJson } from '../specification';
 import { getFormatFieldRegExpAlternation } from '../dataset';
 import { getI18nValue } from '../i18n';
 import { useTemplateStyles } from './components';
-import { IAceEditor } from 'react-ace/lib/types';
 import {
     DenebTemplateDataFieldReplacerPattern,
     DenebTemplateDatasetColumnRole,
@@ -30,26 +24,6 @@ export const TEMPLATE_DATASET_FIELD_PROPS =
 
 export const TEMPLATE_INFORMATION_PROPS =
     schema_v1.definitions.UsermetaInformation.properties;
-
-/**
- * For the given field key, check the spec for its occurrence using all established RegEx patterns.
- */
-const doesSpecContainKeyForMetadata = (
-    key: string,
-    spec: string,
-    metadata: IVisualDatasetFields
-) =>
-    reduce(
-        getExportFieldTokenPatterns(key),
-        (result, expr) => {
-            return (
-                (getFieldExpression(expr.match).test(spec) &&
-                    key in metadata) ||
-                result
-            );
-        },
-        false
-    );
 
 /**
  * Resolve class name based on role.
@@ -120,26 +94,6 @@ export const getEscapedReplacerPattern = (value: string) =>
     value.replace(/[-/\\^$*+?.()&|[\]{}]/g, '\\$&');
 
 /**
- * Process the editor "fields in use" metadata to ensure that we either preserve fields that might have been removed
- * from our datase (and clear out their supplied object name for another attempt), or whether to start again.
- */
-const getExistingFieldsInUse = (
-    metadata: IVisualDatasetFields,
-    renew = false
-): IVisualDatasetFields =>
-    renew
-        ? {}
-        : reduce(
-              metadata,
-              (result, value, key) => {
-                  delete value.templateMetadata.suppliedObjectName;
-                  result[key] = value;
-                  return result;
-              },
-              <IVisualDatasetFields>{}
-          );
-
-/**
  * As fields can be used in a variety of places in a Vega specification, this
  * generates an array of regex patterns we should use to match eligible
  * placeholders in export templates. All patterns should contain three capture
@@ -197,69 +151,6 @@ export const getExportFieldTokenPatterns = (
  * expression.
  */
 export const getFieldExpression = (exp: string) => new RegExp(exp, 'g');
-
-/**
- * Interrogate the current spec against the dataset metadata and existing list of fields in use from the store for
- * known field patterns and get an `IVisualValueMetadata` representation of any that have been identified since the
- * last execution. We can use this to compare to the current dataset to see if there are gaps.
- */
-export const getFieldsInUseFromSpec = (
-    metadata: IVisualDatasetFields,
-    editorFieldsInUse: IVisualDatasetFields,
-    specEditor?: IAceEditor,
-    renew = false
-): IVisualDatasetFields => {
-    const { jsonSpec } = getVegaSettings();
-    const spec = getCleanEditorJson('Spec', specEditor) || jsonSpec;
-    const newFieldsInUse = getExistingFieldsInUse(editorFieldsInUse, renew);
-    forIn(getDatasetFieldsInclusive(metadata), (value, key) => {
-        const found = doesSpecContainKeyForMetadata(key, spec, metadata);
-        if (found) {
-            value.templateMetadata.suppliedObjectName = key;
-            newFieldsInUse[key] = value;
-        } else {
-            delete newFieldsInUse[key];
-        }
-    });
-    return getResequencedMetadata(newFieldsInUse);
-};
-
-/**
- * For all supplied template fields, perform a replace on all tokens and return
- * the new spec.
- */
-export const getReducedPlaceholdersForMetadata = (
-    dataset: UsermetaDatasetField[],
-    spec: string
-) =>
-    reduce(
-        dataset,
-        (result, value, index) => {
-            const pattern = getFieldExpression(
-                getEscapedReplacerPattern(getTemplatePlaceholderKey(index))
-            );
-            return result.replace(pattern, value.suppliedObjectName);
-        },
-        spec
-    );
-
-/**
- * Assign numeric keys - suitable for templating - to an `IVisualValueMetadata`
- * object, based on the order in which it is reduced.
- */
-const getResequencedMetadata = (metadata: IVisualDatasetFields) => {
-    let keyCount = 0;
-    return reduce(
-        metadata,
-        (result, value, key) => {
-            value.templateMetadata.key = getTemplatePlaceholderKey(keyCount);
-            result[key] = value;
-            keyCount++;
-            return result;
-        },
-        {}
-    );
-};
 
 /**
  * For a given spec and template metadata, create the necessary placeholders

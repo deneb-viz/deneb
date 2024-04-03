@@ -560,8 +560,6 @@ export const persistSpecification = (
         jsonConfig;
     updateChanges({ role: 'Spec', text: spec });
     updateChanges({ role: 'Config', text: config });
-    const { renewEditorFieldsInUse } = getState();
-    renewEditorFieldsInUse(specEditor);
     updateObjectProperties(
         resolveObjectProperties([
             {

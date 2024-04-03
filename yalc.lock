@@ -15,11 +15,11 @@
       "file": true
     },
     "@deneb-viz/core-dependencies": {
-      "signature": "19fce5477bfa2c44ac24b62e62bf77c3",
+      "signature": "b503e73c946a44ea96bc26c5b4c78b12",
       "file": true
     },
     "@deneb-viz/json-processing": {
-      "signature": "d25f96df34a4eaa7d5cad3ed28a14350",
+      "signature": "6709d0f29abccb804d81e3ebaee8f36a",
       "file": true
     },
     "@deneb-viz/template": {

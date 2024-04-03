@@ -76,7 +76,6 @@ const handleCreateFromTemplate = (
         jsonSpec,
         jsonConfig
     });
-    const { renewEditorFieldsInUse } = getState();
     updateObjectProperties(
         resolveObjectProperties([
             {
@@ -110,7 +109,6 @@ const handleCreateFromTemplate = (
             }
         ])
     );
-    renewEditorFieldsInUse(specEditor);
     specEditor.setValue(jsonSpec);
     specEditor.moveCursorToPosition({ row: 0, column: 0 });
     configEditor.setValue(jsonConfig);

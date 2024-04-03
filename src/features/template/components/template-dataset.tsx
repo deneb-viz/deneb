@@ -6,7 +6,6 @@ import {
     TableHeader
 } from '@fluentui/react-components';
 import { shallow } from 'zustand/shallow';
-import reduce from 'lodash/reduce';
 
 import store, { getState } from '../../../store';
 import { TemplateDatasetColumns } from './template-dataset-columns';
@@ -54,20 +53,10 @@ export const TemplateDataset: React.FC<ITemplateDatasetProps> = ({
  */
 const getTableFieldRows = (role: TModalDialogType) => {
     const {
-        editorFieldsInUse,
         create: { metadata },
+        fieldUsage,
         templateExportMetadata
     } = getState();
-    const mappedFieldsInUse = reduce(
-        editorFieldsInUse,
-        (acc, field) => {
-            if (field?.templateMetadata) {
-                acc.push(field?.templateMetadata);
-            }
-            return acc;
-        },
-        ([] as UsermetaDatasetField[]) || []
-    );
     const classes = useTemplateStyles();
     let items: UsermetaDatasetField[] = [];
     switch (role) {
@@ -75,7 +64,7 @@ const getTableFieldRows = (role: TModalDialogType) => {
             items = metadata?.dataset || [];
             break;
         case 'mapping':
-            items = mappedFieldsInUse;
+            items = fieldUsage.remapFields.slice() || [];
             break;
         case 'export':
             items = templateExportMetadata?.dataset || [];
