@@ -30,18 +30,18 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <ICreateSlice>{
         create: {
             ...getNewCreateFromTemplateSliceProperties(),
+            createFromTemplate: () =>
+                set(
+                    (state) => handleCreateFromTemplate(state),
+                    false,
+                    'create.createFromTemplate'
+                ),
             setFieldAssignment: (payload: ICreateSliceSetFieldAssignment) =>
                 set(
                     (state: TStoreState) =>
                         handleSetFieldAssignment(state, payload),
                     false,
                     'create.setFieldAssignment'
-                ),
-            createFromTemplate: () =>
-                set(
-                    (state) => handleCreateFromTemplate(state),
-                    false,
-                    'create.createFromTemplate'
                 ),
             setImportFile: (payload) =>
                 set(
