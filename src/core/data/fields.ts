@@ -14,14 +14,14 @@ import {
 } from '.';
 import { resolveVisualMetaToDatasetField } from '../../features/template';
 import { getDataset } from './dataset';
-import {
-    DATASET_DYNAMIC_FORMAT_STRING_SUFFIX,
-    DATASET_FIELD_FORMATED_VALUE_SUFFIX,
-    HIGHLIGHT_FIELD_SUFFIX
-} from '../../constants';
+import { HIGHLIGHT_FIELD_SUFFIX } from '../../constants';
 import { isDataViewFieldEligibleForFormatting } from '../../features/dataset';
 import { logTimeEnd, logTimeStart } from '../../features/logging';
-import { UsermetaDatasetField } from '@deneb-viz/core-dependencies';
+import {
+    DATASET_FIELD_FORMAT_STRING_SUFFIX,
+    DATASET_FIELD_FORMATED_VALUE_SUFFIX,
+    UsermetaDatasetField
+} from '@deneb-viz/core-dependencies';
 
 /**
  * Extract all categorical fields from the data view as suitable metadata.
@@ -182,7 +182,7 @@ const getMeasureFormatEntries = (
                         column: {
                             ...v.source,
                             ...{
-                                displayName: `${v.source.displayName}${DATASET_DYNAMIC_FORMAT_STRING_SUFFIX}`,
+                                displayName: `${v.source.displayName}${DATASET_FIELD_FORMAT_STRING_SUFFIX}`,
                                 index: -v.source.index
                             }
                         },

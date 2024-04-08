@@ -1,5 +1,5 @@
 {
-  "name": "@deneb-viz/core-dependencies",
+  "name": "@deneb-viz/integration-powerbi",
   "version": "0.0.1",
   "license": "MIT",
   "publishConfig": {
@@ -15,6 +15,14 @@
   "files": [
     "dist"
   ],
+  "browser": {
+    "canvas": false,
+    "encoding": false,
+    "fs": false,
+    "fs/promises": false,
+    "net": false,
+    "tls": false
+  },
   "scripts": {
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
     "build": "tsup src/index.ts --format cjs,esm --dts",
@@ -22,10 +30,10 @@
     "test:watch": "jest --watch",
     "lint": "eslint . --max-warnings 0",
     "publish-local": "yalc publish",
-    "publish-npm:core-dependencies": "dotenv -e ../../.env npm publish"
+    "publish-npm:json": "dotenv -e ../../.env npm publish"
   },
   "jest": {
     "preset": "@deneb-viz/jest-presets/jest/node"
   },
-  "yalcSig": "094d4b5cef6a0868ab6a7c29d2490f2b"
+  "yalcSig": "979e40e2ffae5e83fa2f496eb8386cf1"
 }
