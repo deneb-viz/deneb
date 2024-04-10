@@ -75,6 +75,7 @@ export const applyRemappedFields = (
         remapFields,
         tracking: trackedFields
     });
+    const cursorPrev = specEditor.getCursorPosition();
     const {
         dataset,
         fieldUsage: { applyFieldMapping }
@@ -87,6 +88,7 @@ export const applyRemappedFields = (
     // Assign new spec and clear selection
     specEditor?.setValue(mappedSpec);
     specEditor?.clearSelection();
+    specEditor?.moveCursorToPosition(cursorPrev);
     // Make sure that we get the new tracking data, but reset the original
     const trackingUpdated = getFieldsInUseFromSpecification({
         spec: mappedSpec,
