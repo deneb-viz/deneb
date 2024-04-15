@@ -15,11 +15,11 @@
       "file": true
     },
     "@deneb-viz/core-dependencies": {
-      "signature": "094d4b5cef6a0868ab6a7c29d2490f2b",
+      "signature": "d7ed4248c71b4f124ec183a2a5d7f297",
       "file": true
     },
     "@deneb-viz/json-processing": {
-      "signature": "70fef802b7cf652712c41e9a4c48111b",
+      "signature": "d0d8123335ec41ce4e93060cd94417a8",
       "file": true,
       "replaced": "link:.yalc/@deneb-viz/json-processing"
     },
@@ -32,7 +32,7 @@
       "file": true
     },
     "@deneb-viz/integration-powerbi": {
-      "signature": "979e40e2ffae5e83fa2f496eb8386cf1",
+      "signature": "5d9318649007ab475f9a3077f1f5c9e0",
       "link": true
     }
   }

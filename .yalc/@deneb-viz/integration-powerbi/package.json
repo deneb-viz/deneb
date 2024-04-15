@@ -35,5 +35,5 @@
   "jest": {
     "preset": "@deneb-viz/jest-presets/jest/node"
   },
-  "yalcSig": "979e40e2ffae5e83fa2f496eb8386cf1"
+  "yalcSig": "5d9318649007ab475f9a3077f1f5c9e0"
 }
