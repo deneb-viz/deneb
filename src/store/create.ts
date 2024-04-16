@@ -17,11 +17,6 @@ import {
     getNewCreateFromTemplateSliceProperties
 } from '@deneb-viz/json-processing';
 
-export interface ICreateSlicePropertiesLegacy {
-    metadataAllDependenciesAssigned: boolean;
-    metadataAllFieldsAssigned: boolean;
-}
-
 export interface ICreateSlice {
     create: ICreateSliceProperties;
 }
