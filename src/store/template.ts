@@ -29,8 +29,6 @@ export interface ITemplateSlice {
     updateTemplateExportPropertyBySelector: (
         payload: ITemplateExportFieldUpdatePayload
     ) => void;
-    updateTemplateExportError: () => void;
-    updateTemplateExportState: (exportState: DenebTemplateExportState) => void;
 }
 
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
@@ -64,18 +62,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                         ),
                     false,
                     'updateTemplateExportPropertyBySelector'
-                ),
-            updateTemplateExportError: () =>
-                set(
-                    () => handleTemplateExportError(),
-                    false,
-                    'updateTemplateExportError'
-                ),
-            updateTemplateExportState: (exportState) =>
-                set(
-                    (state) => handleTemplateExportState(state, exportState),
-                    false,
-                    'updateTemplateExportState'
                 )
         }
     };
@@ -125,15 +111,4 @@ const handleUpdateTemplateExportPropertyBySelector = (
         payload.selector,
         payload.value
     )
-});
-
-const handleTemplateExportError = (): Partial<TStoreState> => ({
-    templateExportState: 'Error'
-});
-
-const handleTemplateExportState = (
-    state: TStoreState,
-    exportState: DenebTemplateExportState
-): Partial<TStoreState> => ({
-    templateExportState: exportState
 });

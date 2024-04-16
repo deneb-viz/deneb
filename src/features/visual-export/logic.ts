@@ -150,32 +150,3 @@ const resolveExportUserMeta = (): UsermetaTemplate => {
         })
     };
 };
-
-/**
- * Persist the supplied export error information to the store.
- */
-const updateExportError = () => {
-    getState().updateTemplateExportError();
-};
-
-/**
- * Persist the supplied `TTemplateExportState` to Deneb's store.
- */
-export const updateTemplateExportState = (state: DenebTemplateExportState) => {
-    getState().updateTemplateExportState(state);
-};
-
-/**
- * Checks to see if current spec is valid and updates store state for UI accordingly.
- */
-export const validateSpecificationForExport = () => {
-    const {
-        specification: { status }
-    } = getState();
-    updateTemplateExportState('Validating');
-    if (status === 'valid') {
-        updateTemplateExportState('Editing');
-    } else {
-        updateExportError();
-    }
-};
