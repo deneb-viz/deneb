@@ -13,7 +13,6 @@ import { getNewExportTemplateMetadata } from '../features/visual-export';
 import { UsermetaTemplate } from '@deneb-viz/core-dependencies';
 
 export interface ITemplateSlice {
-    templateExportErrorMessage: string;
     templateIncludePreviewImage: boolean;
     templatePreviewImageDataUri: string;
     templateExportMetadata: UsermetaTemplate;
@@ -31,8 +30,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <ITemplateSlice>{
         ...{
             templateAllExportCriteriaApplied: false,
-            templateExportErrorMessage: null,
-            templateFileRawContent: null,
             templateIncludePreviewImage: false,
             templatePreviewImageDataUri: BASE64_BLANK_IMAGE,
             templateExportMetadata: null,
