@@ -4,11 +4,11 @@ import { NamedSet } from 'zustand/middleware';
 import { TStoreState } from '.';
 import {
     CreateMode,
-    ICreateSliceProperties,
     ICreateSliceSetFieldAssignment,
     ICreateSliceSetImportFile,
     ICreateSliceSetImportState,
     ICreateSliceSetTemplate,
+    ICreateSliceState,
     UsermetaDatasetField,
     UsermetaTemplate
 } from '@deneb-viz/core-dependencies';
@@ -17,12 +17,8 @@ import {
     getNewCreateFromTemplateSliceProperties
 } from '@deneb-viz/json-processing';
 
-export interface ICreateSlice {
-    create: ICreateSliceProperties;
-}
-
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
-    <ICreateSlice>{
+    <ICreateSliceState>{
         create: {
             ...getNewCreateFromTemplateSliceProperties(),
             createFromTemplate: () =>
@@ -69,7 +65,7 @@ export const createCreateSlice: StateCreator<
     TStoreState,
     [['zustand/devtools', never]],
     [],
-    ICreateSlice
+    ICreateSliceState
 > = sliceStateInitializer;
 
 /**

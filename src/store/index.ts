@@ -1,10 +1,11 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { ICommandsSlice, createCommandsSlice } from './commands';
-import { ICreateSlice, createCreateSlice } from './create';
+import { createCreateSlice } from './create';
 import { IDatasetSlice, createDatasetSlice } from './dataset';
 import { IDebugSlice, createDebugSlice } from './debug';
 import { IEditorSlice, createEditorSlice } from './editor';
+import { createFieldUsageSlice } from './field-usage';
 import { IInterfaceSlice, createInterfaceSlice } from './interface';
 import { IMigrationSlice, createMigrationSlice } from './migration';
 import { IProcessingSlice, createProcessingSlice } from './processing';
@@ -13,11 +14,13 @@ import { ITemplateSlice, createTemplateSlice } from './template';
 import { IVisualSlice, createVisualSlice } from './visual';
 import { IVisualUpdateSlice, createVisualUpdateSlice } from './visual-update';
 import { FEATURES } from '../../config';
-import { IFieldUsageSliceState } from '@deneb-viz/core-dependencies';
-import { createFieldUsageSlice } from './field-usage';
+import {
+    ICreateSliceState,
+    IFieldUsageSliceState
+} from '@deneb-viz/core-dependencies';
 
 export type TStoreState = ICommandsSlice &
-    ICreateSlice &
+    ICreateSliceState &
     IDatasetSlice &
     IDebugSlice &
     IEditorSlice &
