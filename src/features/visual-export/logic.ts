@@ -19,10 +19,7 @@ import {
     TEMPLATE_METADATA_VERSION
 } from '../../../config';
 import { getParsedJsonWithResult } from '@deneb-viz/json-processing';
-import {
-    DenebTemplateExportState,
-    UsermetaTemplate
-} from '@deneb-viz/core-dependencies';
+import { UsermetaTemplate } from '@deneb-viz/core-dependencies';
 
 /**
  * Combines spec, config and specified metadata to produce a valid JSON

@@ -10,13 +10,9 @@ import { BASE64_BLANK_IMAGE } from '../features/template';
 
 import { TSpecProvider } from '../core/vega';
 import { getNewExportTemplateMetadata } from '../features/visual-export';
-import {
-    DenebTemplateExportState,
-    UsermetaTemplate
-} from '@deneb-viz/core-dependencies';
+import { UsermetaTemplate } from '@deneb-viz/core-dependencies';
 
 export interface ITemplateSlice {
-    templateExportState: DenebTemplateExportState;
     templateExportErrorMessage: string;
     templateIncludePreviewImage: boolean;
     templatePreviewImageDataUri: string;
@@ -35,7 +31,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <ITemplateSlice>{
         ...{
             templateAllExportCriteriaApplied: false,
-            templateExportState: 'None',
             templateExportErrorMessage: null,
             templateFileRawContent: null,
             templateIncludePreviewImage: false,
