@@ -70,13 +70,6 @@ interface ITemplateExportFieldUpdatePayload {
     value: string;
 }
 
-export interface ITemplateImportPayload {
-    templateFile: File;
-    templateFileRawContent: string;
-    templateToApply: Spec | TopLevelSpec;
-    provider?: TSpecProvider;
-}
-
 interface ITemplatePlaceholderImagePayload {
     include: boolean;
     dataUri: string;
