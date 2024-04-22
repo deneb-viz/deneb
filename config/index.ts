@@ -2,7 +2,7 @@ import capabilities from '../capabilities.json';
 import features from './features.json';
 import { dependencies } from '../package.json';
 import { visual } from '../pbiviz.json';
-import { SelectionMode } from '../src/features/interactivity';
+import { SelectionMode } from '@deneb-viz/core-dependencies';
 
 /**
  * This is an object that contains the visual's metadata. This is used to
@@ -249,14 +249,12 @@ export const PROVIDER_RESOURCES = {
         interactivityDocumentationUrl:
             'https://deneb-viz.github.io/interactivity-overview',
         changelogDocumentationUrl: 'https://deneb-viz.github.io/changelog',
-        examplesUrl: 'https://deneb-viz.github.io/community/resources',
-        legacyVersion: '1.0.0.57'
+        examplesUrl: 'https://deneb-viz.github.io/community/resources'
     },
     vega: {
         documentationUrl: 'https://vega.github.io/vega/docs/',
         examplesUrl: 'https://vega.github.io/vega/examples/',
         schemaUrl: 'https://vega.github.io/schema/vega/v5.json',
-        legacyVersion: '5.21.0',
         patch: {
             signals: [
                 {
@@ -273,8 +271,7 @@ export const PROVIDER_RESOURCES = {
     vegaLite: {
         documentationUrl: 'https://vega.github.io/vega-lite/docs/',
         examplesUrl: 'https://vega.github.io/vega-lite/examples/',
-        schemaUrl: 'https://vega.github.io/schema/vega-lite/v5.json',
-        legacyVersion: '5.1.1'
+        schemaUrl: 'https://vega.github.io/schema/vega-lite/v5.json'
     }
 };
 

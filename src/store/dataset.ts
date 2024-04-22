@@ -31,6 +31,7 @@ import {
     getFieldsInUseFromSpecification,
     getRemapEligibleFields,
     getTokenizedSpec,
+    getUpdatedExportMetadata,
     isMappingDialogRequired
 } from '@deneb-viz/json-processing';
 import { IDataset } from '@deneb-viz/core-dependencies';
@@ -119,28 +120,6 @@ const handleUpdateDataset = (
     const { dataset } = payload;
     const { metadataAllDependenciesAssigned, metadataAllFieldsAssigned } =
         areAllCreateDataRequirementsMet(state.create.metadata);
-    const templateExportMetadata = {
-        ...state.templateExportMetadata,
-        ...{
-            dataset: getDatasetTemplateFields(payload.dataset.fields).map(
-                (d) => {
-                    const match = state.templateExportMetadata.dataset.find(
-                        (ds) => ds.key === d.key
-                    );
-                    if (match) {
-                        return {
-                            ...match,
-                            ...{
-                                name: d.name,
-                                namePlaceholder: d.namePlaceholder
-                            }
-                        };
-                    }
-                    return d;
-                }
-            )
-        }
-    };
     const jsonSpec = state.visualSettings.vega.jsonSpec;
     const mode = getApplicationMode({
         currentMode: state.interface.mode,
@@ -176,6 +155,23 @@ const handleUpdateDataset = (
         remapFields,
         drilldownProperties: tracking.trackedDrilldown
     });
+    const exportMetadata = getUpdatedExportMetadata(state.export.metadata, {
+        dataset: getDatasetTemplateFields(payload.dataset.fields).map((d) => {
+            const match = state.export.metadata.dataset.find(
+                (ds) => ds.key === d.key
+            );
+            if (match) {
+                return {
+                    ...match,
+                    ...{
+                        name: d.name,
+                        namePlaceholder: d.namePlaceholder
+                    }
+                };
+            }
+            return d;
+        })
+    });
     const modalDialogRole: ModalDialogRole = isMappingDialogRequired({
         trackedFields: tracking.trackedFields,
         drilldownProperties: tracking.trackedDrilldown
@@ -203,6 +199,10 @@ const handleUpdateDataset = (
             state.visualViewportCurrent,
             state.visualSettings.editor.position
         ),
+        export: {
+            ...state.export,
+            metadata: exportMetadata
+        },
         fieldUsage: {
             ...state.fieldUsage,
             dataset: tracking.trackedFields,
@@ -225,8 +225,7 @@ const handleUpdateDataset = (
         specification: {
             ...state.specification,
             ...spec
-        },
-        templateExportMetadata
+        }
     };
 };
 

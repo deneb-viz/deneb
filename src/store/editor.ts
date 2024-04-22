@@ -27,7 +27,8 @@ import { VISUAL_PREVIEW_ZOOM } from '../../config';
 import {
     getFieldsInUseFromSpecification,
     getRemapEligibleFields,
-    getTokenizedSpec
+    getTokenizedSpec,
+    getUpdatedExportMetadata
 } from '@deneb-viz/json-processing';
 
 export interface IEditorSlice {
@@ -320,7 +321,7 @@ const handleUpdateChanges = (
               textSpec: stagedSpec,
               trackedFields: tracking.trackedFields
           });
-
+    const exportMetadata = getUpdatedExportMetadata(state.export.metadata, {});
     return {
         commands: {
             ...state.commands,
@@ -338,6 +339,7 @@ const handleUpdateChanges = (
             stagedConfig,
             stagedSpec
         },
+        export: { ...state.export, metadata: exportMetadata },
         fieldUsage: {
             ...state.fieldUsage,
             dataset: tracking.trackedFields,

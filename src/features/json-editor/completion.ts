@@ -101,7 +101,6 @@ const getCompletionResults = async (
     provider: TSpecProvider,
     editorRole: TEditorRole
 ) => {
-    console.log('getCompletionResults', { text, point, provider, editorRole });
     const textDocument = getJsonTextDocument(text);
     const jsonSchema = getProviderSchema({
         provider,
@@ -110,13 +109,6 @@ const getCompletionResults = async (
     const languageService = getJsonLanguageService(jsonSchema);
     const jsonDocument = languageService.parseJSONDocument(textDocument);
     const position = getEditorPointToPosition(point);
-    console.log('getCompletionResults', {
-        textDocument,
-        jsonDocument,
-        jsonSchema,
-        languageService,
-        position
-    });
     return await languageService.doComplete(
         textDocument,
         position,

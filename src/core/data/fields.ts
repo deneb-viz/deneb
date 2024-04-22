@@ -12,7 +12,6 @@ import {
     IVisualDatasetFields,
     TDatasetValueSource
 } from '.';
-import { resolveVisualMetaToDatasetField } from '../../features/template';
 import { getDataset } from './dataset';
 import { HIGHLIGHT_FIELD_SUFFIX } from '../../constants';
 import { isDataViewFieldEligibleForFormatting } from '../../features/dataset';
@@ -22,6 +21,7 @@ import {
     DATASET_FIELD_FORMATED_VALUE_SUFFIX,
     UsermetaDatasetField
 } from '@deneb-viz/core-dependencies';
+import { getResolvedVisualMetadataToDatasetField } from '@deneb-viz/json-processing';
 
 /**
  * Extract all categorical fields from the data view as suitable metadata.
@@ -83,7 +83,10 @@ export const getDatasetFields = (
                     source: <TDatasetValueSource>c.source,
                     templateMetadata: isExcludedFromTemplate
                         ? undefined
-                        : resolveVisualMetaToDatasetField(c.column, encodedName)
+                        : getResolvedVisualMetadataToDatasetField(
+                              c.column,
+                              encodedName
+                          )
                 }
             };
             return result;

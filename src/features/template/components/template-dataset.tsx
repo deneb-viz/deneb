@@ -53,21 +53,21 @@ export const TemplateDataset: React.FC<ITemplateDatasetProps> = ({
  */
 const getTableFieldRows = (role: TModalDialogType) => {
     const {
-        create: { metadata },
-        fieldUsage,
-        templateExportMetadata
+        create: { metadata: createMetadata },
+        export: { metadata: exportMetadata },
+        fieldUsage
     } = getState();
     const classes = useTemplateStyles();
     let items: UsermetaDatasetField[] = [];
     switch (role) {
         case 'new':
-            items = metadata?.dataset || [];
+            items = createMetadata?.dataset.slice() || [];
             break;
         case 'mapping':
             items = fieldUsage.remapFields.slice() || [];
             break;
         case 'export':
-            items = templateExportMetadata?.dataset || [];
+            items = exportMetadata?.dataset.slice() || [];
             break;
     }
     logDebug('getTableFieldRows', { items });

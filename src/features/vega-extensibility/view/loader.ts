@@ -1,9 +1,9 @@
 import * as Vega from 'vega';
 import { Loader } from 'vega';
-import { BASE64_BLANK_IMAGE } from '../../template';
 import { getI18nValue } from '../../i18n';
 import { FEATURES } from '../../../../config';
 import { getVisualHost, launchUrl } from '../../visual-host';
+import { utils } from '@deneb-viz/core-dependencies';
 
 /**
  * Custom Vega loader for Power BI.
@@ -37,7 +37,7 @@ export const getVegaLoader = (): Loader => {
                 const sanitized = externalUri
                     ? uri
                     : (isDataUri(uri) && uri) || null;
-                const href = sanitized || BASE64_BLANK_IMAGE;
+                const href = sanitized || utils.getBase64ImagePngBlank();
                 handleExternalResourceWarning(sanitized, externalUri);
                 return Promise.resolve({
                     href

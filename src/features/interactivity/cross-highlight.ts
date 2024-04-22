@@ -1,3 +1,4 @@
+import { getPowerBiCrossHighlightRegExpAlternation } from '@deneb-viz/integration-powerbi';
 import {
     HIGHLIGHT_COMPARATOR_SUFFIX,
     HIGHLIGHT_STATUS_SUFFIX,
@@ -5,12 +6,6 @@ import {
 } from '../../constants';
 import { getVegaSettings } from '../../core/vega';
 import { getVisualInteractionStatus } from '../visual-host';
-
-/**
- * Provides all highlight field suffixes, suitable for a RegExp expression.
- */
-export const getCrossHighlightRegExpAlternation = () =>
-    `${HIGHLIGHT_COMPARATOR_SUFFIX}|${HIGHLIGHT_STATUS_SUFFIX}|${HIGHLIGHT_FIELD_SUFFIX}`;
 
 /**
  * Produces a simple RegExp pattern for matching highlight fields.
@@ -24,7 +19,7 @@ const getCrossHighlightFieldRegExp = (pattern: string) =>
  */
 export const getCrossHighlightFieldBaseMeasureName = (field: string) => {
     const pattern = getCrossHighlightFieldRegExp(
-        getCrossHighlightRegExpAlternation()
+        getPowerBiCrossHighlightRegExpAlternation()
     );
     return field.match(pattern)?.[1] || field;
 };

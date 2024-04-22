@@ -57,7 +57,6 @@ export class Deneb implements IVisual {
             VisualHostServices.bind(options);
             I18nServices.bind(options);
             VegaPatternFillServices.bind();
-            getState().initializeImportExport();
             const { element } = options;
             ReactDOM.render(React.createElement(App), element);
             element.oncontextmenu = (ev) => {

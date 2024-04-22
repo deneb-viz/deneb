@@ -22,5 +22,5 @@
     "publish-npm:template-usermeta-schema": "dotenv -e ../../.env npm publish",
     "schemagen:template-usermeta-schema": "typescript-json-schema ./src/schema.ts UsermetaTemplate -o ./dist/deneb-template-usermeta.json --required --topRef"
   },
-  "yalcSig": "ef2d76ed828901df104ce93414dce215"
+  "yalcSig": "7687e574adcbe7e18fe03bf290ebf1eb"
 }

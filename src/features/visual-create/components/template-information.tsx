@@ -6,8 +6,9 @@ import { useCreateStyles } from './';
 import store from '../../../store';
 import { logDebug, logRender } from '../../logging';
 import { getI18nValue } from '../../i18n';
-import { PreviewImage, TemplateDataset, isBase64Image } from '../../template';
+import { PreviewImage, TemplateDataset } from '../../template';
 import { TemplatePlaceholderMessage } from './template-placeholder-message';
+import { utils } from '@deneb-viz/core-dependencies';
 
 /**
  * Displays the information and placeholders for a template.
@@ -23,7 +24,7 @@ export const TemplateInformation: React.FC = () => {
     const classes = useCreateStyles();
     const { previewImageBase64PNG } = metadata?.information || {};
     const isValid =
-        (previewImageBase64PNG && isBase64Image(previewImageBase64PNG)) ||
+        (previewImageBase64PNG && utils.isBase64Image(previewImageBase64PNG)) ||
         false;
     const dataUri = isValid ? previewImageBase64PNG : '';
     logDebug('Image', { previewImageBase64PNG, isValid, dataUri });

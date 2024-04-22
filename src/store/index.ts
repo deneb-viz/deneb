@@ -5,17 +5,18 @@ import { createCreateSlice } from './create';
 import { IDatasetSlice, createDatasetSlice } from './dataset';
 import { IDebugSlice, createDebugSlice } from './debug';
 import { IEditorSlice, createEditorSlice } from './editor';
+import { createExportSlice } from './export';
 import { createFieldUsageSlice } from './field-usage';
 import { IInterfaceSlice, createInterfaceSlice } from './interface';
 import { IMigrationSlice, createMigrationSlice } from './migration';
 import { IProcessingSlice, createProcessingSlice } from './processing';
 import { ISpecificationSlice, createSpecificationSlice } from './specification';
-import { ITemplateSlice, createTemplateSlice } from './template';
 import { IVisualSlice, createVisualSlice } from './visual';
 import { IVisualUpdateSlice, createVisualUpdateSlice } from './visual-update';
 import { FEATURES } from '../../config';
 import {
     ICreateSliceState,
+    IExportSliceState,
     IFieldUsageSliceState
 } from '@deneb-viz/core-dependencies';
 
@@ -24,12 +25,12 @@ export type TStoreState = ICommandsSlice &
     IDatasetSlice &
     IDebugSlice &
     IEditorSlice &
+    IExportSliceState &
     IFieldUsageSliceState &
     IInterfaceSlice &
     IMigrationSlice &
     IProcessingSlice &
     ISpecificationSlice &
-    ITemplateSlice &
     IVisualSlice &
     IVisualUpdateSlice;
 
@@ -41,12 +42,12 @@ const store = create<TStoreState>()(
             ...createDatasetSlice(...a),
             ...createDebugSlice(...a),
             ...createEditorSlice(...a),
+            ...createExportSlice(...a),
             ...createFieldUsageSlice(...a),
             ...createInterfaceSlice(...a),
             ...createMigrationSlice(...a),
             ...createProcessingSlice(...a),
             ...createSpecificationSlice(...a),
-            ...createTemplateSlice(...a),
             ...createVisualSlice(...a),
             ...createVisualUpdateSlice(...a)
         }),

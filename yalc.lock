@@ -15,11 +15,11 @@
       "file": true
     },
     "@deneb-viz/core-dependencies": {
-      "signature": "d7ed4248c71b4f124ec183a2a5d7f297",
+      "signature": "59bbb64cd8f165c176f4ae50f6f804da",
       "file": true
     },
     "@deneb-viz/json-processing": {
-      "signature": "d0d8123335ec41ce4e93060cd94417a8",
+      "signature": "c409ed0a7a78800e7dc46c000578541b",
       "file": true,
       "replaced": "link:.yalc/@deneb-viz/json-processing"
     },
@@ -28,11 +28,11 @@
       "file": true
     },
     "@deneb-viz/template-usermeta-schema": {
-      "signature": "ef2d76ed828901df104ce93414dce215",
+      "signature": "7687e574adcbe7e18fe03bf290ebf1eb",
       "file": true
     },
     "@deneb-viz/integration-powerbi": {
-      "signature": "5d9318649007ab475f9a3077f1f5c9e0",
+      "signature": "d7394dea249b5b5b725975ac246060be",
       "link": true
     }
   }
