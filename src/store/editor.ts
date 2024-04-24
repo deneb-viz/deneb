@@ -296,8 +296,9 @@ const handleUpdateChanges = (
     const existingFolds =
         role === 'Spec' ? state.editor.foldsSpec : state.editor.foldsConfig;
     const isDirty =
-        state.visualSettings.vega.jsonConfig !== text &&
-        state.visualSettings.vega.jsonSpec !== text &&
+        (role === 'Spec'
+            ? state.visualSettings.vega.jsonSpec !== text
+            : state.visualSettings.vega.jsonConfig !== text) &&
         state.editor.applyMode !== 'Auto';
     const foldsConfig =
         role === 'Config' ? folds ?? state.editor.foldsConfig : existingFolds;
