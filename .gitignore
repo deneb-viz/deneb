@@ -71,3 +71,6 @@ webpack.statistics*.html
 
 # Yalc
 **/.yalc/**/*.md
+
+# Turbo
+.turbo

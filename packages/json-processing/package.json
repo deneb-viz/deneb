@@ -1,0 +1,54 @@
+{
+  "name": "@deneb-viz/json-processing",
+  "version": "0.0.1",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deneb-viz/sadr.git"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "browser": {
+    "canvas": false,
+    "encoding": false,
+    "fs": false,
+    "fs/promises": false,
+    "net": false,
+    "tls": false
+  },
+  "scripts": {
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "eslint": "eslint . --max-warnings 0"
+  },
+  "jest": {
+    "preset": "@deneb-viz/jest-presets/jest/node"
+  },
+  "devDependencies": {
+    "@deneb-viz/core-dependencies": "*",
+    "@deneb-viz/eslint-config": "*",
+    "@deneb-viz/jest-presets": "*",
+    "@deneb-viz/integration-powerbi": "*",
+    "@deneb-viz/template-usermeta-schema": "*",
+    "@deneb-viz/typescript-config": "*",
+    "@types/lodash": "^4.14.202",
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1",
+    "jsonc-parser": "^3.2.0",
+    "jsonpath-plus": "^8.1.0",
+    "lodash": "^4.17.21",
+    "powerbi-visuals-api": "^5.8.0",
+    "vega": "^5.27.0",
+    "vega-lite": "^5.16.3",
+    "vscode-json-languageservice": "^5.3.7"
+  }
+}

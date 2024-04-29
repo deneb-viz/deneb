@@ -67,6 +67,7 @@ export const customCompleter = (
 ): Completer => {
     return {
         getCompletions: async (editor, session, pos, prefix, callback) => {
+            console.time('customCompleter');
             logDebug('[customCompleter] Called completer', {
                 editor,
                 editorRole,
@@ -87,6 +88,7 @@ export const customCompleter = (
                     : [])
             ];
             callback(null, suggestions);
+            console.timeEnd('customCompleter');
         }
     };
 };
