@@ -15,12 +15,6 @@
         "prettier-format": "prettier --config .prettierrc {src,spec,style}/**/{*.ts*,*.css,*.less} --write",
         "validate-config-for-commit": "ts-node -P tsconfig.build-scripts.json bin/validate-config-for-commit"
     },
-    "dependencies": {
-        "@deneb-viz/integration-powerbi": "link:.yalc/@deneb-viz/integration-powerbi",
-        "react-markdown": "^8.0.7",
-        "vega": "5.26.1",
-        "vega-lite": "5.16.3"
-    },
     "devDependencies": {
         "@babel/core": "^7.15.0",
         "@babel/plugin-transform-runtime": "^7.15.0",
@@ -28,6 +22,7 @@
         "@babel/runtime": "^7.14.8",
         "@babel/runtime-corejs3": "^7.14.9",
         "@deneb-viz/core-dependencies": "file:.yalc/@deneb-viz/core-dependencies",
+        "@deneb-viz/integration-powerbi": "file:.yalc/@deneb-viz/integration-powerbi",
         "@deneb-viz/json-processing": "file:.yalc/@deneb-viz/json-processing",
         "@deneb-viz/template-usermeta-schema": "file:.yalc/@deneb-viz/template-usermeta-schema",
         "@fluentui/react-components": "^9.26.2",
@@ -70,6 +65,7 @@
         "react-dropzone": "^14.2.3",
         "react-hotkeys-hook": "^4.4.1",
         "react-konami-code": "^2.3.0",
+        "react-markdown": "^8.0.7",
         "react-split-pane": "^0.1.92",
         "react-vega": "7.6.0",
         "styled-components": "^6.0.0-rc.3",
@@ -77,6 +73,8 @@
         "ts-node": "^10.9.2",
         "typescript": "^4.2.4",
         "uuid": "^8.3.2",
+        "vega": "5.26.1",
+        "vega-lite": "5.16.3",
         "vscode-json-languageservice": "^5.3.6",
         "zustand": "^4.3.7"
     },
