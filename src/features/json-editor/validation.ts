@@ -56,7 +56,7 @@ export const validateEditorJson = (
             const { session } = editor;
             const annotations: Ace.Annotation[] = [];
             let editorHasErrors = false;
-            results.forEach((result) => {
+            for (const result of results) {
                 logDebug(result);
                 if (result.severity === 1) {
                     editorHasErrors = true;
@@ -83,7 +83,7 @@ export const validateEditorJson = (
                     }_marker`,
                     'text'
                 );
-            });
+            }
             session?.clearAnnotations();
             session?.setAnnotations(annotations);
             if (editorHasErrors !== currentlyHasErrors) {
