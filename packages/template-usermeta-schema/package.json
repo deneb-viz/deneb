@@ -1,30 +1,30 @@
 {
-  "name": "@deneb-viz/template-usermeta-schema",
-  "version": "1.7.0",
-  "license": "MIT",
-  "publishConfig": {
-    "access": "public"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/deneb-viz/sadr.git"
-  },
-  "main": "dist/deneb-template-usermeta.json",
-  "module": "dist/deneb-template-usermeta.json",
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "dev": "npm exec turbowatch ./bin/turbowatch.ts",
-    "build": "npm run schemagen:template-usermeta-schema",
-    "eslint": "eslint . --max-warnings 0",
-    "schemagen:template-usermeta-schema": "typescript-json-schema ./src/schema.ts UsermetaTemplate -o ./dist/deneb-template-usermeta.json --required --topRef"
-  },
-  "devDependencies": {
-    "@deneb-viz/core-dependencies": "*",
-    "@deneb-viz/eslint-config": "*",
-    "@deneb-viz/typescript-config": "*",
-    "turbowatch": "^2.29.4",
-    "typescript-json-schema": "^0.62.0"
-  }
+    "name": "@deneb-viz/template-usermeta-schema",
+    "version": "1.7.0",
+    "license": "MIT",
+    "publishConfig": {
+        "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/deneb-viz/sadr.git"
+    },
+    "main": "dist/deneb-template-usermeta.json",
+    "module": "dist/deneb-template-usermeta.json",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "dev": "npm exec turbowatch ./bin/turbowatch.ts",
+        "build": "npm run schemagen:template-usermeta-schema",
+        "eslint": "eslint . --max-warnings 0",
+        "schemagen:template-usermeta-schema": "typescript-json-schema ./src/schema.ts UsermetaTemplate -o ./dist/deneb-template-usermeta.json --required --topRef"
+    },
+    "devDependencies": {
+        "@deneb-viz/core-dependencies": "*",
+        "@deneb-viz/eslint-config": "*",
+        "@deneb-viz/typescript-config": "*",
+        "turbowatch": "^2.29.4",
+        "typescript-json-schema": "^0.62.0"
+    }
 }

@@ -1,0 +1,50 @@
+{
+    "$schema": "https://unpkg.com/syncpack@11.2.1/dist/schema.json",
+    "source": [
+        "package.json",
+        "packages/*/package.json"
+    ],
+    "indent": "    ",
+    "versionGroups": [
+        {
+            "label": "Power BI Visuals API should match desired version",
+            "dependencies": [
+                "powerbi-visuals-api"
+            ],
+            "dependencyTypes": [
+                "dev"
+            ],
+            "pinVersion": "5.7.0"
+        },
+        {
+            "label": "Vega should be specific version we wish to package",
+            "dependencies": [
+                "vega"
+            ],
+            "dependencyTypes": [
+                "dev"
+            ],
+            "pinVersion": "5.28.0"
+        },
+        {
+            "label": "Vega-Lite should be specific version we wish to package",
+            "dependencies": [
+                "vega-lite"
+            ],
+            "dependencyTypes": [
+                "dev"
+            ],
+            "pinVersion": "5.18.0"
+        },
+        {
+            "label": "Use wildcard when developing local packages",
+            "dependencies": [
+                "@deneb-viz/**"
+            ],
+            "dependencyTypes": [
+                "dev"
+            ],
+            "pinVersion": "*"
+        }
+    ]
+}
