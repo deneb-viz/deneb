@@ -54,7 +54,7 @@
         "@types/uuid": "^9.0.7",
         "@typescript-eslint/eslint-plugin": "^6.17.0",
         "@typescript-eslint/parser": "^6.17.0",
-        "ace-builds": "^1.32.1",
+        "ace-builds": "^1.33.1",
         "adm-zip": "^0.5.5",
         "d3": "7.2.1",
         "d3-format": "^2.0.0",
