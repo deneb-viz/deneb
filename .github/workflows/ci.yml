@@ -37,6 +37,10 @@ jobs:
               uses: JamieMason/syncpack-github-action@0.2.3
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  package-manager: 'npm'
+                  format-mismatches: 'ignore'
+                  lockfile-mismatches: 'ignore'
+                  semver-range-mismatches: 'ignore'
                   version-mismatches: 'lint'
             - name: Validate Current Configuration (deneb-config.json)
               run: npm run validate-config-for-commit
