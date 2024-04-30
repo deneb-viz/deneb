@@ -27,7 +27,8 @@
         "build": "turbo build",
         "prettier-check": "prettier --config .prettierrc {src,spec,style}/**/{*.ts*,*.css,*.less} --check",
         "prettier-format": "prettier --config .prettierrc {src,spec,style}/**/{*.ts*,*.css,*.less} --write",
-        "validate-config-for-commit": "ts-node -P tsconfig.build-scripts.json bin/validate-config-for-commit"
+        "validate-config-for-commit": "ts-node -P tsconfig.build-scripts.json bin/validate-config-for-commit",
+        "validate-packages-sync": "syncpack list-mismatches"
     },
     "devDependencies": {
         "@babel/core": "^7.15.0",
