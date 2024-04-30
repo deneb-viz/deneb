@@ -37,6 +37,7 @@ jobs:
               uses: JamieMason/syncpack-github-action@0.2.3
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  version-mismatches: 'lint'
             - name: Validate Current Configuration (deneb-config.json)
               run: npm run validate-config-for-commit
             - name: Linting Checks
