@@ -31,14 +31,14 @@ jobs:
                       ${{ runner.OS }}-
             - name: Install Packages
               run: npm ci
+            - name: Build packages
+              run: npm run build
             - name: Validate Current Configuration (deneb-config.json)
               run: npm run validate-config-for-commit
             - name: Linting Checks
               run: npm run eslint
             - name: Prettier Checks
               run: npm run prettier-check
-            - name: Build
-              run: npm run build
             - name: Tests
               run: npm run test
             - name: Confirm pbiviz package (AppSource Version)
