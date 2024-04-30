@@ -18,7 +18,7 @@
         "install-cert": "pbiviz install-cert",
         "pbiviz:eslint": "npx eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0",
         "pbiviz:start": "pbiviz start --all-locales",
-        "pbiviz:package": "npm run validate-config-for-commit pbiviz package --all-locales",
+        "pbiviz:package": "npm run validate-config-for-commit && pbiviz package --all-locales",
         "pbiviz:package-standalone": "ts-node -P tsconfig.build-scripts.json bin/package-custom --mode standalone",
         "pbiviz:package-alpha": "ts-node -P tsconfig.build-scripts.json bin/package-custom --mode alpha",
         "pbiviz:package-beta": "ts-node -P tsconfig.build-scripts.json bin/package-custom --mode beta",
