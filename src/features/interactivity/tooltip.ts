@@ -97,9 +97,11 @@ const getDeepRedactedTooltipItem = (object: object) => {
  */
 const getFieldsEligibleForAutoFormat = (tooltip: object) =>
     pickBy(tooltip, (v, k) => {
-        const ttKeys = keys(tooltip),
-            mdKeys = keys(getDatasetFieldsBySelectionKeys(ttKeys));
-        return indexOf(mdKeys, k) > -1 && toNumber(tooltip[k]);
+        const ttKeys = keys(tooltip);
+        const fields = getDatasetFieldsBySelectionKeys(ttKeys);
+        const mdKeys = keys(fields);
+        const isNumeric = fields[k]?.type?.numeric || false;
+        return indexOf(mdKeys, k) > -1 && isNumeric;
     });
 
 /**
