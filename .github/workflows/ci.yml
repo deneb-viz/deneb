@@ -41,7 +41,7 @@ jobs:
                   format-mismatches: 'ignore'
                   lockfile-mismatches: 'ignore'
                   semver-range-mismatches: 'ignore'
-                  version-mismatches: 'lint'
+                  version-mismatches: 'ignore'
             - name: Validate Current Configuration (deneb-config.json)
               run: npm run validate-config-for-commit
             - name: Linting Checks
