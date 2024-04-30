@@ -1,6 +1,6 @@
 import capabilities from '../capabilities.json';
 import features from './features.json';
-import { dependencies } from '../package.json';
+import { devDependencies } from '../package.json';
 import { visual } from '../pbiviz.json';
 import { SelectionMode } from '@deneb-viz/core-dependencies';
 
@@ -282,8 +282,8 @@ export const PROVIDER_RESOURCES = {
  * if necessary.
  */
 export const PROVIDER_VERSIONS = {
-    vega: dependencies['vega'],
-    vegaLite: dependencies['vega-lite']
+    vega: devDependencies['vega'],
+    vegaLite: devDependencies['vega-lite']
 };
 
 /**
