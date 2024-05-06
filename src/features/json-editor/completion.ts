@@ -53,7 +53,7 @@ const LANGUAGE_KEYWORD_SCORE_BASE = 100000;
  * Used when calculating word distance for local completion items. Surfaced
  * from Ace.
  */
-const SPLIT_REGEX = /[^a-zA-Z_0-9$\-\u00C0-\u1FFF\u2C00-\uD7FF\w]+/;
+const SPLIT_REGEX = /[^\w$\-\u00C0-\u1FFF\u2C00-\uD7FF\w]+/;
 
 /**
  * Used to handle auto-completion within the editor, based on the JSON schema
