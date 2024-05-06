@@ -14,7 +14,7 @@ import {
     CROSS_FILTER_LIMITS,
     PROPERTY_DEFAULTS
 } from '../../config';
-import { SelectionMode } from '../features/interactivity';
+import { SelectionMode } from '@deneb-viz/core-dependencies';
 
 const OBJECT_NAME = 'vega';
 const OBJECT_DEF = CAPABILITIES.objects[OBJECT_NAME];

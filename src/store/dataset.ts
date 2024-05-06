@@ -6,13 +6,9 @@ import ISelectionId = powerbi.visuals.ISelectionId;
 import { StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
 import { TStoreState } from '.';
-import {
-    doUnallocatedFieldsExist,
-    getEmptyDataset
-} from '../core/data/dataset';
-import { IVisualDataset, TDataProcessingStage } from '../core/data';
+import { getEmptyDataset } from '../core/data/dataset';
+import { TDataProcessingStage } from '../core/data';
 import { getResizablePaneSize } from '../core/ui/advancedEditor';
-import { getFieldsInUseFromSpec } from '../features/template';
 import { DATASET_IDENTITY_NAME } from '../constants';
 import {
     getDataPointCrossFilterStatus,
@@ -26,14 +22,22 @@ import {
 import { logDebug } from '../features/logging';
 import { getApplicationMode } from '../features/interface';
 import { ModalDialogRole } from '../features/modal-dialog/types';
-import { isMappingDialogRequired } from '../features/remap-fields';
 import { getOnboardingDialog } from '../features/modal-dialog';
-import { areAllCreateDataRequirementsMet } from '../features/visual-create';
 import { getHashValue } from '../utils';
 import { PROPERTY_DEFAULTS } from '../../config';
+import {
+    areAllCreateDataRequirementsMet,
+    areAllRemapDataRequirementsMet,
+    getFieldsInUseFromSpecification,
+    getRemapEligibleFields,
+    getTokenizedSpec,
+    getUpdatedExportMetadata,
+    isMappingDialogRequired
+} from '@deneb-viz/json-processing';
+import { IDataset } from '@deneb-viz/core-dependencies';
 
 export interface IDatasetSlice {
-    dataset: IVisualDataset;
+    dataset: IDataset;
     datasetCategories: DataViewCategoryColumn[];
     datasetHasHighlights: boolean;
     datasetHasSelectionAborted: boolean;
@@ -98,7 +102,7 @@ interface IDatasetProcessingPayload {
 
 interface IVisualDatasetUpdatePayload {
     categories: DataViewCategoryColumn[];
-    dataset: IVisualDataset;
+    dataset: IDataset;
 }
 
 interface IVisualDatasetAbortPayload {
@@ -106,6 +110,7 @@ interface IVisualDatasetAbortPayload {
     limit: number;
 }
 
+// eslint-disable-next-line max-lines-per-function
 const handleUpdateDataset = (
     state: TStoreState,
     payload: IVisualDatasetUpdatePayload
@@ -113,45 +118,15 @@ const handleUpdateDataset = (
     logDebug('dataset.updateDataset', payload);
     const datasetCategories = payload.categories || [];
     const { dataset } = payload;
-    const editorFieldsInUse = getFieldsInUseFromSpec(
-        dataset.fields,
-        state.editorFieldsInUse
-    );
-    const editorFieldDatasetMismatch = doUnallocatedFieldsExist(
-        dataset.fields,
-        editorFieldsInUse,
-        state.editorFieldDatasetMismatch
-    );
     const { metadataAllDependenciesAssigned, metadataAllFieldsAssigned } =
         areAllCreateDataRequirementsMet(state.create.metadata);
-    const templateExportMetadata = {
-        ...state.templateExportMetadata,
-        ...{
-            dataset: getDatasetTemplateFields(payload.dataset.fields).map(
-                (d) => {
-                    const match = state.templateExportMetadata.dataset.find(
-                        (ds) => ds.key === d.key
-                    );
-                    if (match) {
-                        return {
-                            ...match,
-                            ...{
-                                name: d.name,
-                                namePlaceholder: d.namePlaceholder
-                            }
-                        };
-                    }
-                    return d;
-                }
-            )
-        }
-    };
+    const jsonSpec = state.visualSettings.vega.jsonSpec;
     const mode = getApplicationMode({
         currentMode: state.interface.mode,
         dataset: payload.dataset,
         editMode: state.visualUpdateOptions.editMode,
         isInFocus: state.visualUpdateOptions.isInFocus,
-        specification: state.visualSettings.vega.jsonSpec,
+        specification: jsonSpec,
         updateType: state.visualUpdateOptions.type
     });
     const specOptions = getSpecificationParseOptions(state);
@@ -162,9 +137,45 @@ const handleUpdateDataset = (
             visualMode: mode
         }
     });
-    const modalDialogRole: ModalDialogRole = isMappingDialogRequired(
-        editorFieldsInUse
-    )
+    const tracking = getFieldsInUseFromSpecification({
+        spec: jsonSpec,
+        dataset,
+        trackedFieldsCurrent: state.fieldUsage.dataset
+    });
+    const tokenizedSpec = getTokenizedSpec({
+        textSpec: jsonSpec,
+        trackedFields: tracking.trackedFields
+    });
+    const remapFields = getRemapEligibleFields(tracking.trackedFields);
+    const {
+        remapAllDependenciesAssigned,
+        remapAllFieldsAssigned,
+        remapDrilldownAssigned
+    } = areAllRemapDataRequirementsMet({
+        remapFields,
+        drilldownProperties: tracking.trackedDrilldown
+    });
+    const exportMetadata = getUpdatedExportMetadata(state.export.metadata, {
+        dataset: getDatasetTemplateFields(payload.dataset.fields).map((d) => {
+            const match = state.export.metadata.dataset.find(
+                (ds) => ds.key === d.key
+            );
+            if (match) {
+                return {
+                    ...match,
+                    ...{
+                        name: d.name,
+                        namePlaceholder: d.namePlaceholder
+                    }
+                };
+            }
+            return d;
+        })
+    });
+    const modalDialogRole: ModalDialogRole = isMappingDialogRequired({
+        trackedFields: tracking.trackedFields,
+        drilldownProperties: tracking.trackedDrilldown
+    })
         ? 'Remap'
         : getOnboardingDialog(
               state.visualSettings,
@@ -182,14 +193,26 @@ const handleUpdateDataset = (
         datasetCategories,
         datasetProcessingStage: 'Processed',
         debug: { ...state.debug, logAttention: spec.errors.length > 0 },
-        editorFieldDatasetMismatch,
-        editorFieldsInUse,
         editorPaneWidth: getResizablePaneSize(
             state.editorPaneExpandedWidth,
             state.editorPaneIsExpanded,
             state.visualViewportCurrent,
             state.visualSettings.editor.position
         ),
+        export: {
+            ...state.export,
+            metadata: exportMetadata
+        },
+        fieldUsage: {
+            ...state.fieldUsage,
+            dataset: tracking.trackedFields,
+            drilldown: tracking.trackedDrilldown,
+            remapFields,
+            remapAllDependenciesAssigned,
+            remapAllFieldsAssigned,
+            remapDrilldownAssigned,
+            tokenizedSpec
+        },
         interface: {
             ...state.interface,
             modalDialogRole,
@@ -202,8 +225,7 @@ const handleUpdateDataset = (
         specification: {
             ...state.specification,
             ...spec
-        },
-        templateExportMetadata
+        }
     };
 };
 

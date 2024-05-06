@@ -13,7 +13,7 @@ import store from '../../../store';
 import { logRender } from '../../logging';
 import { useCreateStyles } from './';
 import { getI18nValue } from '../../i18n';
-import { TTemplateProvider } from '../../template';
+import { CreateMode } from '@deneb-viz/core-dependencies';
 
 /**
  * Represents the radio button group used to specify how a new specification
@@ -31,7 +31,7 @@ export const CreateMethod = () => {
         ev: React.FormEvent<HTMLDivElement>,
         data: RadioGroupOnChangeData
     ) => {
-        setMode(data.value as TTemplateProvider);
+        setMode(data.value as CreateMode);
     };
     const labelId = useId('label');
     const classes = useCreateStyles();

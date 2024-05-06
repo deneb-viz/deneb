@@ -6,15 +6,17 @@ import {
     TableHeader
 } from '@fluentui/react-components';
 import { shallow } from 'zustand/shallow';
-import reduce from 'lodash/reduce';
 
 import store, { getState } from '../../../store';
 import { TemplateDatasetColumns } from './template-dataset-columns';
 import { TemplateDatasetRow } from './template-dataset-row';
 import { TModalDialogType } from '../../modal-dialog';
-import { IDenebTemplateMetadata, ITemplateDatasetField } from '../schema';
 import { logDebug } from '../../logging';
 import { useTemplateStyles } from '.';
+import {
+    UsermetaDatasetField,
+    UsermetaTemplate
+} from '@deneb-viz/core-dependencies';
 
 interface ITemplateDatasetProps {
     datasetRole: TModalDialogType;
@@ -27,7 +29,7 @@ export const TemplateDataset: React.FC<ITemplateDatasetProps> = ({
     datasetRole
 }) => {
     const metadata = store(
-        (state) => state.create.metadata as IDenebTemplateMetadata,
+        (state) => state.create.metadata as UsermetaTemplate,
         shallow
     );
     const { dataset } = metadata || {};
@@ -51,31 +53,21 @@ export const TemplateDataset: React.FC<ITemplateDatasetProps> = ({
  */
 const getTableFieldRows = (role: TModalDialogType) => {
     const {
-        editorFieldsInUse,
-        create: { metadata },
-        templateExportMetadata
+        create: { metadata: createMetadata },
+        export: { metadata: exportMetadata },
+        fieldUsage
     } = getState();
-    const mappedFieldsInUse = reduce(
-        editorFieldsInUse,
-        (acc, field) => {
-            if (field?.templateMetadata) {
-                acc.push(field?.templateMetadata);
-            }
-            return acc;
-        },
-        ([] as ITemplateDatasetField[]) || []
-    );
     const classes = useTemplateStyles();
-    let items: ITemplateDatasetField[] = [];
+    let items: UsermetaDatasetField[] = [];
     switch (role) {
         case 'new':
-            items = metadata?.dataset || [];
+            items = createMetadata?.dataset.slice() || [];
             break;
         case 'mapping':
-            items = mappedFieldsInUse;
+            items = fieldUsage.remapFields.slice() || [];
             break;
         case 'export':
-            items = templateExportMetadata?.dataset || [];
+            items = exportMetadata?.dataset.slice() || [];
             break;
     }
     logDebug('getTableFieldRows', { items });

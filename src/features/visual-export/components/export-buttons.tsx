@@ -4,11 +4,11 @@ import { ArrowDownloadRegular, CopyRegular } from '@fluentui/react-icons';
 import { shallow } from 'zustand/shallow';
 
 import { getI18nValue } from '../../i18n';
-import store from '../../../store';
+import store, { getState } from '../../../store';
 import { logDebug, logRender } from '../../logging';
 import { TooltipCustomMount } from '../../interface';
-import { getExportTemplate } from '../logic';
 import { getVisualHost } from '../../visual-host';
+import { getExportTemplate } from '@deneb-viz/json-processing';
 
 /**
  * Displays download and copy template to clipboard buttons.
@@ -16,7 +16,7 @@ import { getVisualHost } from '../../visual-host';
 export const ExportButtons: React.FC = () => {
     const { templateName } = store(
         (state) => ({
-            templateName: state.templateExportMetadata?.information?.name
+            templateName: state.export?.metadata?.information?.name
         }),
         shallow
     );
@@ -28,7 +28,7 @@ export const ExportButtons: React.FC = () => {
     const handleDownload = () => {
         getVisualHost()
             .downloadService.exportVisualsContentExtended(
-                getExportTemplate(),
+                getProcessedExportTemplate(),
                 `${resolvedName}.deneb.json`,
                 'json',
                 getI18nValue('Template_Export_Json_File_Description')
@@ -40,7 +40,7 @@ export const ExportButtons: React.FC = () => {
     const handleCopy = () => {
         const dummy = document.createElement('textarea');
         document.body.appendChild(dummy);
-        dummy.value = getExportTemplate();
+        dummy.value = getProcessedExportTemplate();
         dummy.select();
         document.execCommand('copy');
         document.body.removeChild(dummy);
@@ -76,4 +76,24 @@ export const ExportButtons: React.FC = () => {
             <TooltipCustomMount setRef={setTtRefCopy} />
         </>
     );
+};
+
+const getProcessedExportTemplate = () => {
+    const {
+        export: { metadata },
+        fieldUsage: { dataset: trackedFields, tokenizedSpec }
+    } = getState();
+    const informationTranslationPlaceholders = {
+        name: getI18nValue('Template_Export_Information_Name_Empty'),
+        description: getI18nValue(
+            'Template_Export_Information_Description_Empty'
+        ),
+        author: getI18nValue('Template_Export_Author_Name_Empty')
+    };
+    return getExportTemplate({
+        informationTranslationPlaceholders,
+        metadata,
+        tokenizedSpec,
+        trackedFields
+    });
 };

@@ -9,15 +9,6 @@ import { InterfaceMode } from '../interface';
 export type TSpecStatus = 'valid' | 'error' | 'new';
 
 /**
- * When we perform parsing of the JSON editor or property content (prior to
- * patching it), we need to know if there are any errors so we can log them.
- */
-export interface IContentParseResult {
-    result: object | null;
-    errors: string[];
-}
-
-/**
  * After parsing, we need to patch content. This represents the results of
  * that operation.
  */
@@ -61,17 +52,6 @@ export interface ISpecificationParseOptions {
     viewportHeight: number;
     viewportWidth: number;
     visualMode: InterfaceMode;
-}
-
-/**
- * Represents the results of a fix and repair operation.
- */
-export interface IFixResult {
-    spec: IFixStatus;
-    config: IFixStatus;
-    success: boolean;
-    dismissed: boolean;
-    error?: string;
 }
 
 /**

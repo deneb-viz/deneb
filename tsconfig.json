@@ -1,22 +1,7 @@
 {
+    "extends": "./packages/typescript-config/deneb-pbi.json",
     "compilerOptions": {
-        "allowJs": false,
-        "jsx": "react",
-        "types": ["react", "react-dom"],
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "forceConsistentCasingInFileNames": true,
-        "module": "es6",
-        "target": "es6",
-        "sourceMap": true,
-        "skipLibCheck": true,
-        "outDir": "./.tmp/build/",
-        "moduleResolution": "node",
-        "declaration": true,
-        "lib": ["es2019", "dom"],
-        "alwaysStrict": true,
-        "resolveJsonModule": true,
-        "esModuleInterop": true
+        "outDir": "./.tmp/build/"
     },
     "files": ["src/Deneb.ts"]
 }

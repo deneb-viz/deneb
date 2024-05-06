@@ -1,18 +1,6 @@
 import { dataRoles } from '../../capabilities.json';
 
 /**
- * For a measure, this is suffixed to the column name to denote the format
- * string.
- */
-export const DATASET_DYNAMIC_FORMAT_STRING_SUFFIX = '__format';
-
-/**
- * For a measure, this is suffixed to the column name to denote the formatted
- * value.
- */
-export const DATASET_FIELD_FORMATED_VALUE_SUFFIX = '__formatted';
-
-/**
  * The name to use for the dataset in Deneb, bound from the data view, into the
  * Vega view as a named reference.
  */

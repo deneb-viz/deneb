@@ -7,11 +7,11 @@ import { DataDescriptionColumnCell } from './data-description-column-cell';
 import { DataNameColumnField } from './data-name-column-field';
 import { DataDescriptionColumnField } from './data-description-column-field';
 import { TModalDialogType } from '../../modal-dialog';
-import { ITemplateDatasetField } from '../schema';
+import { UsermetaDatasetField } from '@deneb-viz/core-dependencies';
 
 interface ITemplateDatasetRowProps {
     role: TModalDialogType;
-    item: ITemplateDatasetField;
+    item: UsermetaDatasetField;
     index: number;
 }
 

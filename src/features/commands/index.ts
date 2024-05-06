@@ -24,6 +24,7 @@ import {
 import { EditorApplyMode, TEditorRole } from '../json-editor';
 import { APPLICATION_INFORMATION, VISUAL_PREVIEW_ZOOM } from '../../../config';
 import { launchUrl } from '../visual-host';
+import { IAceEditor } from 'react-ace/lib/types';
 
 export * from './types';
 
@@ -58,17 +59,25 @@ export const getNextApplyMode = (applyMode: EditorApplyMode): EditorApplyMode =>
 /**
  * Applies the changes to the specification.
  */
-export const handleApplyChanges = () =>
-    executeCommand('applyChanges', persistSpecification);
+export const handleApplyChanges = (
+    specEditor: IAceEditor,
+    configEditor: IAceEditor
+) =>
+    executeCommand('applyChanges', () =>
+        persistSpecification(specEditor, configEditor)
+    );
 
 /**
  * Toggles the auto-apply changes mode.
  */
-export const handleAutoApplyChanges = () => {
+export const handleAutoApplyChanges = (
+    specEditor: IAceEditor,
+    configEditor: IAceEditor
+) => {
     const {
         editor: { toggleApplyMode }
     } = getState();
-    handleApplyChanges();
+    handleApplyChanges(specEditor, configEditor);
     executeCommand('autoApplyToggle', toggleApplyMode);
 };
 
@@ -104,7 +113,7 @@ export const handleDebugPaneSignal = () => {
  */
 export const handleEditorPaneConfig = () => {
     executeCommand('navigateConfig', () => {
-        setEditorPivotItem('config');
+        setEditorPivotItem('Config');
     });
 };
 
@@ -113,7 +122,7 @@ export const handleEditorPaneConfig = () => {
  */
 export const handleEditorPaneSettings = () => {
     executeCommand('navigateSettings', () => {
-        setEditorPivotItem('settings');
+        setEditorPivotItem('Settings');
     });
 };
 
@@ -122,7 +131,7 @@ export const handleEditorPaneSettings = () => {
  */
 export const handleEditorPaneSpecification = () => {
     executeCommand('navigateSpecification', () => {
-        setEditorPivotItem('spec');
+        setEditorPivotItem('Spec');
     });
 };
 
@@ -146,8 +155,13 @@ export const handleFocusSpecificationEditor = () => {
 /**
  * Invokes JSON formatting.
  */
-export const handleFormatJson = () =>
-    executeCommand('formatJson', fixAndFormatSpecification);
+export const handleFormatJson = (
+    specEditor: IAceEditor,
+    configEditor: IAceEditor
+) =>
+    executeCommand('formatJson', () =>
+        fixAndFormatSpecification(specEditor, configEditor)
+    );
 
 export const handleOpenCreateSpecificationDialog = () => {
     executeCommand('newSpecification', () => {

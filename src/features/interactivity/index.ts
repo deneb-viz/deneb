@@ -6,7 +6,6 @@ export {
 } from './cross-filter';
 export {
     getCrossHighlightFieldBaseMeasureName,
-    getCrossHighlightRegExpAlternation,
     isCrossHighlightField,
     isCrossHighlightComparatorField,
     isCrossHighlightPropSet,

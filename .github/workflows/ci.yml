@@ -7,12 +7,20 @@ jobs:
     build:
         runs-on: ubuntu-latest
         steps:
-            - name: Checkout Project
-              uses: actions/checkout@v2
-            - name: Setup Node
-              uses: actions/setup-node@v2
+            - name: Check out code
+              uses: actions/checkout@v3
+            - name: Cache turbo build setup
+              uses: actions/cache@v3
               with:
-                  node-version: 14
+                  path: .turbo
+                  key: ${{ runner.os }}-turbo-${{ github.sha }}
+                  restore-keys: |
+                      ${{ runner.os }}-turbo-
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: 'npm'
             - name: Cache Node.js modules
               uses: actions/cache@v2
               with:
@@ -23,14 +31,18 @@ jobs:
                       ${{ runner.OS }}-
             - name: Install Packages
               run: npm ci
+            - name: Build packages
+              run: npm run build
+            - name: Check Package Versions are in Sync
+              run: npm run validate-packages-sync
             - name: Validate Current Configuration (deneb-config.json)
               run: npm run validate-config-for-commit
             - name: Linting Checks
               run: npm run eslint
             - name: Prettier Checks
               run: npm run prettier-check
-            - name: Unit Tests
-              run: npm test
+            - name: Tests
+              run: npm run test
             - name: Confirm pbiviz package (AppSource Version)
               run: npm run package
             # When pushing to 'main', this will invoke an alpha build

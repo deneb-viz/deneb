@@ -9,23 +9,13 @@ import {
 } from '@fluentui/react-components';
 import { shallow } from 'zustand/shallow';
 import { useDropzone, FileWithPath } from 'react-dropzone';
-import Ajv from 'ajv';
-import has from 'lodash/has';
-import set from 'lodash/set';
 
 import store, { getState } from '../../../store';
 import { getI18nValue } from '../../i18n';
 import { logDebug, logRender } from '../../logging';
-import {
-    IDenebTemplateMetadata,
-    TTemplateImportState,
-    getTemplateMetadata
-} from '../../template';
-import { Spec } from 'vega';
-import { TopLevelSpec } from 'vega-lite';
-import * as schema_v1 from '../../../../schema/deneb-template-usermeta-v1.json';
-import { TSpecProvider } from '../../../core/vega';
-import { PROVIDER_RESOURCES } from '../../../../config';
+import { getValidatedTemplate } from '@deneb-viz/json-processing';
+import { PROPERTY_DEFAULTS } from '../../../../config';
+import { DenebTemplateImportState } from '@deneb-viz/core-dependencies';
 
 /**
  * Base styling for dropzone.
@@ -161,7 +151,7 @@ export const ImportDropzone: React.FC = () => {
 /**
  * Ensure correct styling is applied to validation result.
  */
-const getValidationClassName = (state: TTemplateImportState) => {
+const getValidationClassName = (state: DenebTemplateImportState) => {
     const classes = useStatusStyles();
     switch (state) {
         case 'Success':
@@ -176,7 +166,7 @@ const getValidationClassName = (state: TTemplateImportState) => {
 /**
  * Apply correct message for validation result.
  */
-const getValidationContent = (state: TTemplateImportState) => {
+const getValidationContent = (state: DenebTemplateImportState) => {
     switch (state) {
         case 'Success':
             return getI18nValue('Text_Create_Validation_Success');
@@ -194,7 +184,7 @@ const handleFileLoad = (file: FileWithPath | File) => {
     const {
         create: { setImportState }
     } = getState();
-    setImportState('Loading');
+    setImportState({ importState: 'Loading', refresh: true });
     const reader = new FileReader();
     if (file) {
         reader.onload = (event) =>
@@ -211,39 +201,12 @@ const handleValidation = (content: string) => {
     const {
         create: { setImportFile, setImportState }
     } = getState();
-    setImportState('Validating');
-    const templateFileRawContent = content;
-    let template: Spec | TopLevelSpec;
-    try {
-        template = JSON.parse(templateFileRawContent);
-    } catch (e) {
-        logDebug('Template is not valid JSON.');
-        return;
-    }
-    const ajv = new Ajv({ format: 'full' });
-    const provider: TSpecProvider = template?.usermeta?.['deneb']?.['provider'];
-    const templateToApply = getTemplateResolvedForLegacyVersions(
-        provider,
-        template
+    setImportState({ importState: 'Validating', refresh: true });
+    const validationResult = getValidatedTemplate(
+        content,
+        PROPERTY_DEFAULTS.editor.tabSize
     );
-    const metadata = getTemplateMetadata(content);
-    if (ajv.validate(schema_v1, templateToApply?.usermeta)) {
-        logDebug('Template validated successfully.');
-        setImportFile({
-            importFile: content,
-            importState: 'Success',
-            metadata,
-            specification: templateToApply
-        });
-    } else {
-        logDebug('Template validation failed.');
-        setImportFile({
-            importFile: null,
-            importState: 'Error',
-            metadata: null,
-            specification: null
-        });
-    }
+    setImportFile(validationResult);
 };
 
 /**
@@ -251,22 +214,3 @@ const handleValidation = (content: string) => {
  */
 const onDrop = (acceptedFiles: FileWithPath[]) =>
     handleFileLoad(acceptedFiles[0] || null);
-
-/**
- * We (unwisely) didn't populate the template metadata with the Vega/Vega-Lite
- *  version for initial builds of Deneb, so here we check the template for a
- * suitable `providerVersion` and patch it with a legacy version as appropriate.
- */
-const getTemplateResolvedForLegacyVersions = (
-    provider: TSpecProvider,
-    template: Spec | TopLevelSpec
-) => {
-    const deneb = (template?.usermeta as IDenebTemplateMetadata)?.deneb;
-    const legacyVersion =
-        (provider === 'vega' && PROVIDER_RESOURCES.vega.legacyVersion) ||
-        PROVIDER_RESOURCES.vegaLite.legacyVersion;
-    const providerVersion = has(deneb, 'providerVersion')
-        ? deneb.providerVersion
-        : legacyVersion;
-    return set(template, 'usermeta.deneb.providerVersion', providerVersion);
-};

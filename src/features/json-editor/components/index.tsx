@@ -14,12 +14,12 @@ export const useEditorPaneStyles = makeStyles({
     },
     paneContainerCollapsed: {
         height: '100%',
-        backgroundColor: tokens.colorNeutralBackground2,
+        backgroundColor: tokens.colorNeutralBackground1,
         zindex: POPOVER_Z_INDEX,
         ...shorthands.overflow('hidden')
     },
     paneContainerExpanded: {
-        backgroundColor: tokens.colorNeutralBackground2,
+        backgroundColor: tokens.colorNeutralBackground1,
         display: 'flex',
         height: '100%'
     }

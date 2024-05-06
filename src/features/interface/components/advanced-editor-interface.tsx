@@ -1,10 +1,11 @@
-import React from 'react';
-import { FluentProvider } from '@fluentui/react-components';
+import React, { useMemo } from 'react';
+import { FluentProvider, mergeClasses } from '@fluentui/react-components';
 import SplitPane from 'react-split-pane';
 import { shallow } from 'zustand/shallow';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 import store from '../../../store';
-import { EditorPane } from '../../json-editor';
+import { EditorPane, useJsonEditorContext } from '../../json-editor';
 import { PreviewArea } from '../../preview-area';
 import {
     getResizablePaneMaxSize,
@@ -12,32 +13,90 @@ import {
     resizerPaneVerticalStyles,
     resizerVerticalStyles
 } from '../../../core/ui/advancedEditor';
-import { useKonami as fourd3d3d } from 'react-konami-code';
 import { ModalDialog } from '../../modal-dialog';
 import { Themes, useInterfaceStyles } from '..';
 import { logRender } from '../../logging';
 import { AdvancedEditorToolbar } from '../../toolbar';
 import { ADVANCED_EDITOR_TOOLBAR_HEIGHT } from '../../../constants';
+import { PortalRoot } from './portal-root';
+import { KEY_BINDINGS } from '../../../../config';
+import {
+    Command,
+    HOTKEY_OPTIONS,
+    handleApplyChanges,
+    handleAutoApplyChanges,
+    handleDebugPaneData,
+    handleDebugPaneLog,
+    handleDebugPaneSignal,
+    handleEditorPaneConfig,
+    handleEditorPaneSettings,
+    handleEditorPaneSpecification,
+    handleExportSpecification,
+    handleFocusSpecificationEditor,
+    handleFormatJson,
+    handleOpenCreateSpecificationDialog,
+    handleOpenRemapDialog,
+    handleOpenWebsite,
+    handleToggleDebugPane,
+    handleToggleEditorPane,
+    handleZoomFit,
+    handleZoomIn,
+    handleZoomOut,
+    handleZoomReset
+} from '../../commands';
 
+//eslint-disable-next-line max-lines-per-function
 export const AdvancedEditorInterface: React.FC = () => {
     const {
+        backgroundPassThrough,
         editorPaneDefaultWidth,
         editorPaneIsExpanded,
         editorPaneWidth,
         position,
-        setVisual4d3d3d,
+        theme,
         updateEditorPaneWidth
     } = store(
         (state) => ({
+            backgroundPassThrough:
+                state.visualSettings.editor.backgroundPassThrough,
             editorPaneDefaultWidth: state.editorPaneDefaultWidth,
             editorPaneIsExpanded: state.editorPaneIsExpanded,
             editorPaneWidth: state.editorPaneWidth,
             position: state.visualSettings.editor.position,
-            setVisual4d3d3d: state.setVisual4d3d3d,
+            theme: state.visualSettings.editor.theme,
             updateEditorPaneWidth: state.updateEditorPaneWidth
         }),
         shallow
     );
+    const { spec, config } = useJsonEditorContext();
+    const hotkeyHandler = (command: Command, callback: () => void) =>
+        useHotkeys(getCommandKey(command), callback, HOTKEY_OPTIONS);
+    hotkeyHandler('applyChanges', () =>
+        handleApplyChanges(spec?.current.editor, config?.current.editor)
+    );
+    hotkeyHandler('autoApplyToggle', () =>
+        handleAutoApplyChanges(spec?.current.editor, config?.current.editor)
+    );
+    hotkeyHandler('formatJson', () =>
+        handleFormatJson(spec?.current.editor, config?.current.editor)
+    );
+    hotkeyHandler('newSpecification', handleOpenCreateSpecificationDialog);
+    hotkeyHandler('exportSpecification', handleExportSpecification);
+    hotkeyHandler('fieldMappings', handleOpenRemapDialog);
+    hotkeyHandler('helpSite', handleOpenWebsite);
+    hotkeyHandler('navigateSpecification', handleEditorPaneSpecification);
+    hotkeyHandler('navigateConfig', handleEditorPaneConfig);
+    hotkeyHandler('navigateSettings', handleEditorPaneSettings);
+    hotkeyHandler('zoomIn', handleZoomIn);
+    hotkeyHandler('zoomOut', handleZoomOut);
+    hotkeyHandler('zoomReset', handleZoomReset);
+    hotkeyHandler('zoomFit', handleZoomFit);
+    hotkeyHandler('editorPaneToggle', handleToggleEditorPane);
+    hotkeyHandler('debugPaneToggle', handleToggleDebugPane);
+    hotkeyHandler('debugPaneShowData', handleDebugPaneData);
+    hotkeyHandler('debugPaneShowSignals', handleDebugPaneSignal);
+    hotkeyHandler('debugPaneShowLogs', handleDebugPaneLog);
+    hotkeyHandler('editorFocusOut', handleFocusSpecificationEditor);
     const handleResize = (width: number) => {
         updateEditorPaneWidth({
             editorPaneWidth: width,
@@ -50,16 +109,24 @@ export const AdvancedEditorInterface: React.FC = () => {
             handleResize(editorPaneDefaultWidth);
         }
     };
-    fourd3d3d(() => {
-        setVisual4d3d3d(true);
-    });
     const editorPane = <EditorPane isExpanded={editorPaneIsExpanded} />;
-    const styles = useInterfaceStyles();
+    const classes = useInterfaceStyles();
+    const resolvedTheme = useMemo(() => Themes[theme], [theme]);
+    const className = useMemo(
+        () =>
+            mergeClasses(
+                classes.container,
+                backgroundPassThrough
+                    ? classes.visualBackground
+                    : classes.themeBackground
+            ),
+        [theme, backgroundPassThrough]
+    );
     logRender('AdvancedEditorInterface');
     return (
         <FluentProvider
-            theme={Themes.light}
-            className={styles.container}
+            theme={resolvedTheme}
+            className={className}
             id='visualEditor'
         >
             <AdvancedEditorToolbar />
@@ -83,6 +150,13 @@ export const AdvancedEditorInterface: React.FC = () => {
                 {position === 'left' ? <PreviewArea /> : editorPane}
             </SplitPane>
             <ModalDialog />
+            <PortalRoot />
         </FluentProvider>
     );
 };
+
+/**
+ * Convenience method to get key binding details from configuration for the specified command.
+ */
+const getCommandKey = (command: Command): string =>
+    KEY_BINDINGS?.[command]?.combination || '';

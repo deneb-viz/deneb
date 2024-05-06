@@ -41,14 +41,13 @@ const useStyles = makeStyles({
 export const CappedTextField: React.FC<ICappedTextFieldProps> = (props) => {
     const inputId = useId(props.id);
     const classes = useStyles();
-    const { templateExportMetadata, updateTemplateExportPropertyBySelector } =
-        store();
-    const [value, setValue] = React.useState(
-        get(templateExportMetadata, props.id, '')
-    );
+    const {
+        export: { metadata, setMetadataPropertyBySelector }
+    } = store();
+    const [value, setValue] = React.useState(get(metadata, props.id, ''));
     const delayedInput = React.useCallback(
         debounce((value: string) => {
-            updateTemplateExportPropertyBySelector({
+            setMetadataPropertyBySelector({
                 selector: props.id,
                 value
             });

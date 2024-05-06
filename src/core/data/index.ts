@@ -2,8 +2,8 @@ import powerbi from 'powerbi-visuals-api';
 import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import ISelectionId = powerbi.visuals.ISelectionId;
 
-import { ITemplateDatasetField } from '../../features/template';
 import { TDataPointSelectionStatus } from '../../features/interactivity';
+import { UsermetaDatasetField } from '@deneb-viz/core-dependencies';
 
 export * as dataset from './dataset';
 export * as dataView from './dataView';
@@ -21,22 +21,6 @@ export interface IAugmentedMetadataField {
 }
 
 /**
- * Represents the processed dataset, available to the visual store.
- */
-export interface IVisualDataset {
-    // Field metadata
-    fields: IVisualDatasetFields;
-    // Hash of the dataset, used to determine if we need to re-process for
-    // the dataset view.
-    hashValue: string;
-    // Processed values, pointing to field metadata, as well as any dedicated
-    // row-related fields.
-    values: IVisualDatasetValueRow[];
-    hasHighlights: boolean;
-    rowsLoaded: number;
-}
-
-/**
  * Field metadata that we wish to expose to the dataset; flexible keys.
  */
 export interface IVisualDatasetFields {
@@ -48,18 +32,30 @@ export interface IVisualDatasetFields {
  * enriched with other properties that we need for Deneb.
  */
 export interface IVisualDatasetField extends DataViewMetadataColumn {
-    // Flag to confirm if this is a column, according to the data model. This
-    // is not in the Power BI metadata but is helpful for us to know later on.
+    /**
+     * Flag to confirm if this is a column, according to the data model. This
+     * is not in the Power BI metadata but is helpful for us to know later on.
+     */
     isColumn: boolean;
-    // Indicates field should not be included in templating activities and
-    // supports another field in the dataset.
+    /**
+     * Indicates field should not be included in templating activities and
+     * supports another field in the dataset.
+     */
     isExcludedFromTemplate: boolean;
-    // Original dataView index (from categories or values), if we need it for
-    // other operations post assembly.
+    /**
+     * Indicates the field is to support highlight-functionality.
+     */
+    isHighlightComponent: boolean;
+    /**
+     * Original dataView index (from categories or values), if we need it for
+     * other operations post assembly.
+     */
     sourceIndex: number;
-    // Template export object (which allows customisation from base, while
-    // preserving) should not be present for `isExcludedFromTemplate: true`.
-    templateMetadata?: ITemplateDatasetField;
+    /**
+     * Representation of the field for templating purposes. Should not be
+     * present for `isExcludedFromTemplate === true`.
+     */
+    templateMetadata?: UsermetaDatasetField;
 }
 
 export interface IVisualDatasetValueRow {

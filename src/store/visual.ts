@@ -37,6 +37,9 @@ import {
     isExportSpecCommandEnabled,
     IExportSpecCommandTestOptions
 } from '../features/commands';
+import { SpecProvider } from '@deneb-viz/core-dependencies';
+import { getUpdatedExportMetadata } from '@deneb-viz/json-processing';
+import { PROVIDER_VERSIONS } from '../../config';
 
 const defaultViewport = { width: 0, height: 0 };
 
@@ -209,7 +212,9 @@ const handleSetVisualUpdate = (
         interfaceMode: mode
     };
     const exportSpecCommandTest: IExportSpecCommandTestOptions = {
-        editorIsDirty: state.editor.isDirty,
+        editorIsDirty:
+            state.editor.stagedSpec !== payload.settings.vega.jsonSpec ||
+            state.editor.stagedConfig !== payload.settings.vega.jsonConfig,
         specification: spec,
         interfaceMode: mode
     };
@@ -220,6 +225,22 @@ const handleSetVisualUpdate = (
             updateId: payload['updateId']
         }
     };
+    const exportMetadata = getUpdatedExportMetadata(state.export.metadata, {
+        config:
+            state.specification.status === 'valid'
+                ? payload.settings.vega.jsonConfig
+                : state.export.metadata.config,
+        provider: payload.settings.vega.provider as SpecProvider,
+        providerVersion: PROVIDER_VERSIONS[payload.settings.vega.provider],
+        interactivity: {
+            tooltip: payload.settings.vega.enableTooltips,
+            contextMenu: payload.settings.vega.enableContextMenu,
+            selection: payload.settings.vega.enableSelection,
+            selectionMode: payload.settings.vega.selectionMode,
+            highlight: payload.settings.vega.enableHighlight,
+            dataPointLimit: payload.settings.vega.selectionMaxDataPoints
+        }
+    });
     return {
         commands: {
             ...state.commands,
@@ -242,6 +263,10 @@ const handleSetVisualUpdate = (
         editorPreviewAreaWidth: edPrevAreaWidth,
         editorPreviewAreaHeightLatch: latch,
         editorPreviewDebugIsExpanded: isExpanded,
+        export: {
+            ...state.export,
+            metadata: exportMetadata
+        },
         interface: {
             ...state.interface,
             modalDialogRole,

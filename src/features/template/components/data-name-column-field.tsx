@@ -3,12 +3,12 @@ import { TableCell } from '@fluentui/react-components';
 
 import { CappedTextField } from '../../interface';
 import { useTemplateStyles } from '.';
-import { ITemplateDatasetField } from '../schema';
 import { TEMPLATE_DATASET_FIELD_PROPS } from '../fields';
 import { DATASET_NAME } from '../../../constants';
+import { UsermetaDatasetField } from '@deneb-viz/core-dependencies';
 
 interface IDataNameColumnCellProps {
-    item: ITemplateDatasetField;
+    item: UsermetaDatasetField;
     index: number;
 }
 

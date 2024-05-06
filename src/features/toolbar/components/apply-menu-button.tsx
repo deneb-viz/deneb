@@ -17,6 +17,7 @@ import { PlayRegular, ReplayRegular } from '@fluentui/react-icons';
 import { useToolbarStyles } from '.';
 import { handleApplyChanges } from '../../commands';
 import { TooltipCustomMount } from '../../interface';
+import { useJsonEditorContext } from '../../json-editor';
 
 export const ApplyMenuButton: React.FC = () => {
     const { applyMode, updateApplyMode } = store(
@@ -32,15 +33,16 @@ export const ApplyMenuButton: React.FC = () => {
         () => (applyMode === 'Manual' ? manualIcon : autoIcon),
         [applyMode]
     );
+    const { spec, config } = useJsonEditorContext();
     const onClick = useCallback(() => {
-        handleApplyChanges();
+        handleApplyChanges(spec?.current.editor, config?.current.editor);
     }, []);
     const onAutoSelect = useCallback(() => {
-        handleApplyChanges();
+        handleApplyChanges(spec?.current.editor, config?.current.editor);
         updateApplyMode('Auto');
     }, []);
     const onManualSelect = useCallback(() => {
-        handleApplyChanges();
+        handleApplyChanges(spec?.current.editor, config?.current.editor);
         updateApplyMode('Manual');
     }, []);
     const classes = useToolbarStyles();

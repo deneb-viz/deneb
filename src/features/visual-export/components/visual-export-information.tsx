@@ -18,10 +18,11 @@ import { CappedTextField } from '../../interface';
  * Interface (pane) for exporting a existing visualization.
  */
 export const VisualExportInformation: React.FC = () => {
-    const { templateIncludePreviewImage, templatePreviewImageDataUri } = store(
+    const { includePreviewImage, previewImageBase64PNG } = store(
         (state) => ({
-            templateIncludePreviewImage: state.templateIncludePreviewImage,
-            templatePreviewImageDataUri: state.templatePreviewImageDataUri
+            includePreviewImage: state.export.includePreviewImage,
+            previewImageBase64PNG:
+                state.export.metadata.information.previewImageBase64PNG
         }),
         shallow
     );
@@ -78,7 +79,7 @@ export const VisualExportInformation: React.FC = () => {
                 <div>
                     <div className={exportClasses.informationPreviewCheckbox}>
                         <Checkbox
-                            checked={templateIncludePreviewImage}
+                            checked={includePreviewImage}
                             label={getI18nValue(
                                 'Template_Export_Include_Preview_Image'
                             )}
@@ -88,7 +89,7 @@ export const VisualExportInformation: React.FC = () => {
                     <div>
                         <PreviewImage
                             isValid={true}
-                            dataUri={templatePreviewImageDataUri}
+                            dataUri={previewImageBase64PNG}
                         />
                     </div>
                 </div>

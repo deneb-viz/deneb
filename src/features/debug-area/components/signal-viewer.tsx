@@ -9,7 +9,7 @@ import { DataTableViewer } from './data-table-viewer';
 import { NoDataMessage } from './no-data-message';
 import { logRender } from '../../logging';
 import { VegaViewServices } from '../../vega-extensibility';
-import { stringifyPruned } from '../../../core/utils/json';
+import { stringifyPruned } from '../../json-processing';
 import { ISignalTableDataRow } from '../types';
 import { getI18nValue } from '../../i18n';
 import { DataTableCell } from './data-table-cell';

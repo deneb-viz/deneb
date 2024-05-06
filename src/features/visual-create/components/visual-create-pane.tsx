@@ -9,7 +9,7 @@ import { SelectIncludedTemplate } from './select-included-template';
 import { CreateFromTemplate } from './create-from-template';
 import { getI18nValue } from '../../i18n';
 import { useModalDialogStyles } from '../../modal-dialog';
-import { TTemplateProvider } from '../../template';
+import { CreateMode } from '@deneb-viz/core-dependencies';
 
 /**
  * Interface (pane) for creating a new visualization.
@@ -34,7 +34,7 @@ export const VisualCreatePane: React.FC = () => {
  * Ensures that the correct component is displayed based on the desired create
  * method.
  */
-const routeCreateModePane = (createMode: TTemplateProvider) => {
+const routeCreateModePane = (createMode: CreateMode) => {
     switch (createMode) {
         case 'import':
             return (

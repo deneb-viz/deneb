@@ -1,5 +1,6 @@
 import powerbi from 'powerbi-visuals-api';
 import ISelectionId = powerbi.visuals.ISelectionId;
+import { SelectionMode } from '@deneb-viz/core-dependencies';
 
 /**
  * Optins that can be supplied for advanced cross-filtering behavior.
@@ -65,13 +66,6 @@ export type TDataPointSelectionStatus = 'off' | 'neutral' | 'on';
  * Define which keys should invoke multi-select behavior (for advanced cross-filtering).
  */
 export type MultiSelectKey = 'ctrl' | 'shift' | 'alt';
-
-/**
- * Indicates the type of selection mode that is currently active.
- * `simple` = legacy selection mode (let Deneb do it for me);
- * `advanced` = advanced selection mode (let me do it for Deneb).
- */
-export type SelectionMode = 'simple' | 'advanced';
 
 /**
  * Used to denote supported interactivity types within Deneb. These can be used

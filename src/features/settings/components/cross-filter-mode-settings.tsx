@@ -12,7 +12,7 @@ import { updateSelectionMode } from '../../../core/ui/commands';
 import store from '../../../store';
 import { TSpecProvider } from '../../../core/vega';
 import { getI18nValue } from '../../i18n';
-import { SelectionMode } from '../../interactivity';
+import { SelectionMode } from '@deneb-viz/core-dependencies';
 import { getVisualSelectionManager } from '../../visual-host';
 import { useSettingsStyles } from '.';
 

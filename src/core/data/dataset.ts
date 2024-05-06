@@ -6,12 +6,7 @@ import PrimitiveValue = powerbi.PrimitiveValue;
 import range from 'lodash/range';
 import reduce from 'lodash/reduce';
 
-import {
-    IAugmentedMetadataField,
-    IVisualDataset,
-    IVisualDatasetFields,
-    IVisualDatasetValueRow
-} from '.';
+import { IAugmentedMetadataField, IVisualDatasetValueRow } from '.';
 import {
     castPrimitiveValue,
     getHighlightStatus,
@@ -49,22 +44,7 @@ import {
 import { logError, logTimeEnd, logTimeStart } from '../../features/logging';
 import { getHashValue } from '../../utils';
 import { getVisualSelectionManager } from '../../features/visual-host';
-
-/**
- * Compare two sets of dataset metadata, as well as the current state of the
- * comparison (if supplied) to ensure that any discrepancies can still be
- * flagged to Deneb for addressing by the creator.
- */
-export const doUnallocatedFieldsExist = (
-    fieldsAvailable: IVisualDatasetFields,
-    fieldsUsed: IVisualDatasetFields,
-    currentResult = false
-) =>
-    reduce(
-        fieldsUsed,
-        (result, value, key) => !(key in fieldsAvailable) || result,
-        false
-    ) || currentResult;
+import { IDataset } from '@deneb-viz/core-dependencies';
 
 /**
  * For supplied data view field metadata, produce a suitable object
@@ -127,15 +107,16 @@ const getDataRow = (
 /**
  * Get current processed dataset (metadata and values) from Deneb's store.
  */
-export const getDataset = (): IVisualDataset => getState().dataset;
+export const getDataset = (): IDataset => getState().dataset;
 
 /**
  * Ensures an empty dataset is made available.
  */
-export const getEmptyDataset = (): IVisualDataset => ({
+export const getEmptyDataset = (): IDataset => ({
     fields: {},
     hashValue: getHashValue({}),
     values: [],
+    hasDrilldown: false,
     hasHighlights: false,
     rowsLoaded: 0
 });
@@ -146,7 +127,7 @@ export const getEmptyDataset = (): IVisualDataset => ({
  */
 export const getMappedDataset = (
     categorical: DataViewCategorical
-): IVisualDataset => {
+): IDataset => {
     const rowsLoaded = getRowCount(categorical);
     const empty = getEmptyDataset();
     const dvCategories = categorical?.categories;
@@ -216,6 +197,7 @@ export const getMappedDataset = (
             logTimeEnd('getMappedDataset values');
             logTimeEnd('getMappedDataset');
             return {
+                hasDrilldown,
                 hasHighlights,
                 hashValue,
                 fields,

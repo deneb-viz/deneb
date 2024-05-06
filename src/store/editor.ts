@@ -1,19 +1,18 @@
 import { StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
-import reduce from 'lodash/reduce';
 
 import { TStoreState } from '.';
-import { doUnallocatedFieldsExist } from '../core/data/dataset';
 import {
     getEditorPreviewAreaWidth,
     getPreviewAreaHeightInitial,
     getResizablePaneSize,
     TPreviewPivotRole
 } from '../core/ui/advancedEditor';
-import { IVisualDatasetFields } from '../core/data';
-import { getFieldsInUseFromSpec } from '../features/template';
-import { IFixResult } from '../features/specification';
-import { EditorApplyMode, TEditorRole } from '../features/json-editor';
+import {
+    EditorApplyMode,
+    IEditorFoldPosition,
+    TEditorRole
+} from '../features/json-editor';
 import { getApplicationMode } from '../features/interface';
 import {
     isExportSpecCommandEnabled,
@@ -25,23 +24,41 @@ import {
     getNextApplyMode
 } from '../features/commands';
 import { VISUAL_PREVIEW_ZOOM } from '../../config';
+import {
+    getFieldsInUseFromSpecification,
+    getRemapEligibleFields,
+    getTokenizedSpec,
+    getUpdatedExportMetadata
+} from '@deneb-viz/json-processing';
 
 export interface IEditorSlice {
     editor: {
         applyMode: EditorApplyMode;
+        foldsConfig: IEditorFoldPosition[];
+        foldsSpec: IEditorFoldPosition[];
+        /**
+         * Tracks high-level error state of the editor. Essentially if either
+         * editor fails to parse as valid JSON (or JSONC) then we should prevent
+         * the ability to format the current content (potentially breaking it even
+         * further).
+         */
+        hasErrors: boolean;
         isDirty: boolean;
         stagedConfig: string;
         stagedSpec: string;
+        /**
+         * Set the fold information for the specified editor role.
+         */
+        setFolds: (payload: IEditorSliceSetFolds) => void;
+        /**
+         * Sets the high-level error state flag accordingly.
+         */
+        setHasErrors: (hasErrors: boolean) => void;
         toggleApplyMode: () => void;
         updateApplyMode: (applyMode: EditorApplyMode) => void;
         updateChanges: (payload: IEditorSliceUpdateChangesPayload) => void;
         updateIsDirty: (isDirty: boolean) => void;
-        updateStagedConfig: (stagedConfig: string) => void;
-        updateStagedSpec: (stagedSpec: string) => void;
     };
-    editorFieldDatasetMismatch: boolean;
-    editorFieldsInUse: IVisualDatasetFields;
-    editorFixResult: IFixResult;
     editorIsExportDialogVisible: boolean;
     editorIsNewDialogVisible: boolean;
     editorPaneIsExpanded: boolean;
@@ -56,15 +73,9 @@ export interface IEditorSlice {
     editorPaneWidth: number;
     editorSelectedOperation: TEditorRole;
     editorZoomLevel: number;
-    renewEditorFieldsInUse: () => void;
-    setEditorFixErrorDismissed: () => void;
     toggleEditorPane: () => void;
     togglePreviewDebugPane: () => void;
     updateEditorPreviewDebugIsExpanded: (value: boolean) => void;
-    updateEditorFieldMapping: (
-        payload: IEditorFieldMappingUpdatePayload
-    ) => void;
-    updateEditorFixStatus: (payload: IFixResult) => void;
     updateEditorPaneWidth: (payload: IEditorPaneUpdatePayload) => void;
     updateEditorPreviewAreaHeight: (height: number) => void;
     updateEditorPreviewAreaWidth: () => void;
@@ -78,9 +89,24 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IEditorSlice>{
         editor: {
             applyMode: 'Manual',
+            foldsConfig: [],
+            foldsSpec: [],
+            hasErrors: false,
             isDirty: false,
             stagedConfig: null,
             stagedSpec: null,
+            setFolds: (payload) =>
+                set(
+                    (state) => handleSetFolds(state, payload),
+                    false,
+                    'editor.setFolds'
+                ),
+            setHasErrors: (hasErrors) =>
+                set(
+                    (state) => handleSetHasErrors(state, hasErrors),
+                    false,
+                    'editor.setHasErrors'
+                ),
             toggleApplyMode: () =>
                 set(
                     (state) => handleToggleApplyMode(state),
@@ -104,27 +130,7 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                     (state) => handleUpdateIsDirty(state, isDirty),
                     false,
                     'editor.updateIsDirty'
-                ),
-            updateStagedConfig: (stagedConfig) =>
-                set(
-                    (state) => handleUpdateStagedConfig(state, stagedConfig),
-                    false,
-                    'editor.updateStagedConfig'
-                ),
-            updateStagedSpec: (stagedSpec) =>
-                set(
-                    (state) => handleUpdateStagedSpec(state, stagedSpec),
-                    false,
-                    'editor.updateStagedSpec'
                 )
-        },
-        editorFieldDatasetMismatch: false,
-        editorFieldsInUse: {},
-        editorFixResult: {
-            success: true,
-            dismissed: false,
-            spec: null,
-            config: null
         },
         editorIsExportDialogVisible: false,
         editorIsNewDialogVisible: true,
@@ -138,20 +144,8 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
         editorPaneDefaultWidth: null,
         editorPaneExpandedWidth: null,
         editorPaneWidth: null,
-        editorSelectedOperation: 'spec',
+        editorSelectedOperation: 'Spec',
         editorZoomLevel: VISUAL_PREVIEW_ZOOM.default,
-        renewEditorFieldsInUse: () =>
-            set(
-                (state) => handleRenewEditorFieldsInUse(state),
-                false,
-                'renewEditorFieldsInUse'
-            ),
-        setEditorFixErrorDismissed: () =>
-            set(
-                (state) => handleSetEditorFixErrorDismissed(state),
-                false,
-                'setEditorFixErrorDismissed'
-            ),
         toggleEditorPane: () =>
             set(
                 (state) => handleToggleEditorPane(state),
@@ -163,18 +157,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                 (state) => handleTogglePreviewDebugPane(state),
                 false,
                 'togglePreviewDebugPane'
-            ),
-        updateEditorFieldMapping: (payload) =>
-            set(
-                (state) => handleUpdateEditorFieldMappings(state, payload),
-                false,
-                'updateEditorFieldMapping'
-            ),
-        updateEditorFixStatus: (payload) =>
-            set(
-                (state) => handleUpdateEditorFixStatus(state, payload),
-                false,
-                'updateEditorFixStatus'
             ),
         updateEditorPaneWidth: (payload) =>
             set(
@@ -228,11 +210,58 @@ export const createEditorSlice: StateCreator<
     IEditorSlice
 > = sliceStateInitializer;
 
-export interface IEditorSliceUpdateChangesPayload {
-    isDirty: boolean;
-    stagedConfig: string;
-    stagedSpec: string;
+export interface IEditorSliceSetFolds {
+    /**
+     * The editor that the folds apply to.
+     */
+    role: TEditorRole;
+    /**
+     * Current fold data from the editor.
+     */
+    folds: IEditorFoldPosition[];
 }
+
+/**
+ * Used to update the "staging" text for a JSON editor and ensure that it can
+ * be restored (if navigating the UI), or persisted with a prompt, if the user
+ * exits without saving changes.
+ */
+export interface IEditorSliceUpdateChangesPayload {
+    /**
+     * The editor that the text applies to.
+     */
+    role: TEditorRole;
+    /**
+     * The editor text value to stage into the store
+     */
+    text: string;
+    /**
+     * Current fold data from the editor. If omitted, will use the current fold
+     * data for that editor.
+     */
+    folds?: IEditorFoldPosition[];
+}
+
+/**
+ * Sets which nodes in the editor are folded, for retrieval later.
+ */
+const handleSetFolds = (
+    state: TStoreState,
+    payload: IEditorSliceSetFolds
+): Partial<TStoreState> => ({
+    editor: { ...state.editor, [`folds${payload.role}`]: payload.folds }
+});
+
+const handleSetHasErrors = (
+    state: TStoreState,
+    hasErrors: boolean
+): Partial<TStoreState> => ({
+    commands: {
+        ...state.commands,
+        formatJson: !hasErrors
+    },
+    editor: { ...state.editor, hasErrors }
+});
 
 const handleToggleApplyMode = (state: TStoreState): Partial<TStoreState> => {
     const { applyMode } = state.editor;
@@ -263,7 +292,37 @@ const handleUpdateChanges = (
     state: TStoreState,
     payload: IEditorSliceUpdateChangesPayload
 ): Partial<TStoreState> => {
-    const { isDirty, stagedConfig, stagedSpec } = payload;
+    const { role, text, folds } = payload;
+    const existingFolds =
+        role === 'Spec' ? state.editor.foldsSpec : state.editor.foldsConfig;
+    const isDirty =
+        (role === 'Spec'
+            ? state.visualSettings.vega.jsonSpec !== text
+            : state.visualSettings.vega.jsonConfig !== text) &&
+        state.editor.applyMode !== 'Auto';
+    const foldsConfig =
+        role === 'Config' ? folds ?? state.editor.foldsConfig : existingFolds;
+    const foldsSpec =
+        role === 'Spec' ? folds ?? state.editor.foldsSpec : existingFolds;
+    const stagedConfig = role === 'Config' ? text : state.editor.stagedConfig;
+    const stagedSpec = role === 'Spec' ? text : state.editor.stagedSpec;
+    const {
+        fieldUsage: { dataset, drilldown, editorShouldSkipRemap, tokenizedSpec }
+    } = state;
+    const tracking = editorShouldSkipRemap
+        ? { trackedFields: dataset, trackedDrilldown: drilldown }
+        : getFieldsInUseFromSpecification({
+              spec: stagedSpec,
+              dataset: state.dataset,
+              trackedFieldsCurrent: dataset
+          });
+    const tokenizedSpecNew = editorShouldSkipRemap
+        ? tokenizedSpec
+        : getTokenizedSpec({
+              textSpec: stagedSpec,
+              trackedFields: tracking.trackedFields
+          });
+    const exportMetadata = getUpdatedExportMetadata(state.export.metadata, {});
     return {
         commands: {
             ...state.commands,
@@ -276,8 +335,19 @@ const handleUpdateChanges = (
         editor: {
             ...state.editor,
             isDirty,
+            foldsConfig,
+            foldsSpec,
             stagedConfig,
             stagedSpec
+        },
+        export: { ...state.export, metadata: exportMetadata },
+        fieldUsage: {
+            ...state.fieldUsage,
+            dataset: tracking.trackedFields,
+            drilldown: tracking.trackedDrilldown,
+            editorShouldSkipRemap: false,
+            remapFields: getRemapEligibleFields(tracking.trackedFields),
+            tokenizedSpec: tokenizedSpecNew
         },
         interface: {
             ...state.interface,
@@ -294,70 +364,10 @@ const handleUpdateChanges = (
     };
 };
 
-const handleUpdateStagedSpec = (
-    state: TStoreState,
-    stagedSpec: string
-): Partial<TStoreState> => {
-    return {
-        editor: {
-            ...state.editor,
-            stagedSpec
-        }
-    };
-};
-
-const handleUpdateStagedConfig = (
-    state: TStoreState,
-    stagedConfig: string
-): Partial<TStoreState> => {
-    return {
-        editor: {
-            ...state.editor,
-            stagedConfig
-        }
-    };
-};
-
 export interface IEditorPaneUpdatePayload {
     editorPaneWidth: number;
     editorPaneExpandedWidth: number;
 }
-
-interface IEditorFieldMappingUpdatePayload {
-    key: string;
-    objectName: string;
-}
-
-const handleRenewEditorFieldsInUse = (
-    state: TStoreState
-): Partial<TStoreState> => {
-    const { fields } = state.dataset;
-    const editorFieldsInUse = getFieldsInUseFromSpec(
-        fields,
-        state.editorFieldsInUse,
-        true
-    );
-    const editorFieldDatasetMismatch = doUnallocatedFieldsExist(
-        fields,
-        editorFieldsInUse,
-        false
-    );
-    return {
-        editorFieldsInUse,
-        editorFieldDatasetMismatch
-    };
-};
-
-const handleSetEditorFixErrorDismissed = (
-    state: TStoreState
-): Partial<TStoreState> => {
-    return {
-        editorFixResult: {
-            ...state.editorFixResult,
-            ...{ dismissed: true }
-        }
-    };
-};
 
 const handleToggleEditorPane = (state: TStoreState): Partial<TStoreState> => {
     const newExpansionState = !state.editorPaneIsExpanded;
@@ -395,30 +405,6 @@ const handleUpdateIsDirty = (
         ...state.editor,
         isDirty
     }
-});
-
-const handleUpdateEditorFieldMappings = (
-    state: TStoreState,
-    payload: IEditorFieldMappingUpdatePayload
-): Partial<TStoreState> => ({
-    editorFieldsInUse: reduce(
-        state.editorFieldsInUse,
-        (result, value, key) => {
-            if (key === payload.key) {
-                value.templateMetadata.suppliedObjectName = payload.objectName;
-                result[key] = value;
-            }
-            return result;
-        },
-        <IVisualDatasetFields>state.editorFieldsInUse
-    )
-});
-
-const handleUpdateEditorFixStatus = (
-    state: TStoreState,
-    payload: IFixResult
-): Partial<TStoreState> => ({
-    editorFixResult: payload
 });
 
 const handleUpdateEditorPaneWidth = (

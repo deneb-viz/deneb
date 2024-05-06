@@ -6,3 +6,6 @@ test
 .eslintrc.js
 karma.conf.ts
 test.webpack.config.js
+src/features/json-editor/theme/*.js
+# packages are handled by individual inting
+packages

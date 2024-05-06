@@ -4,7 +4,7 @@ import EditMode = powerbi.EditMode;
 import ViewMode = powerbi.ViewMode;
 import IViewport = powerbi.IViewport;
 
-import { IVisualDataset } from '../../core/data';
+import { IDataset } from '@deneb-viz/core-dependencies';
 
 /**
  * Available application modes. Used to represent current state of the application.
@@ -30,7 +30,7 @@ export interface IInterfaceModeResolutionParameters {
      * Either the current data view (indicating presence of data to be
      * processed), othe the processed dataset.
      */
-    dataset?: IVisualDataset;
+    dataset?: IDataset;
     /**
      * Power BI's current edit mode, according to the visual host.
      */

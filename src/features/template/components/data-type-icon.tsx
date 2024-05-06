@@ -5,11 +5,10 @@ import {
     NumberSymbolRegular,
     TextCaseUppercaseRegular
 } from '@fluentui/react-icons';
-
-import { TDatasetFieldType } from '..';
+import { UsermetaDatasetFieldType } from '@deneb-viz/core-dependencies';
 
 interface IDataTypeIconProps {
-    type: TDatasetFieldType;
+    type: UsermetaDatasetFieldType;
 }
 
 /**

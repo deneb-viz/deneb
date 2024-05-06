@@ -8,7 +8,7 @@ import {
     TABLE_COLUMN_RESERVED_WORDS
 } from '../../constants';
 import { IDataTableWorkerTranslations } from './types';
-import { getPrunedObject } from '../../core/utils/json';
+import { getPrunedObject } from '../json-processing';
 import {
     getCrossHighlightFieldBaseMeasureName,
     getSanitisedTooltipValue,

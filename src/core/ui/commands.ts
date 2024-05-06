@@ -16,7 +16,7 @@ import {
 } from '../utils/properties';
 import { TSpecProvider, TSpecRenderMode } from '../vega';
 import { PROPERTY_DEFAULTS } from '../../../config';
-import { SelectionMode } from '../../features/interactivity';
+import { SelectionMode } from '@deneb-viz/core-dependencies';
 
 /**
  * Actual event handling logic for wrappers

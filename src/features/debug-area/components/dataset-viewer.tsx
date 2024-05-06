@@ -30,7 +30,7 @@ import {
 } from '../types';
 import { VegaViewServices } from '../../vega-extensibility';
 import { getDataTableWorker } from '../data-table-worker';
-import { getPrunedObject } from '../../../core/utils/json';
+import { getPrunedObject } from '../../json-processing';
 import { getHashValue } from '../../../utils';
 
 interface IDatasetViewerProps {

@@ -7,9 +7,9 @@ const EditorOperationContent: React.FC = () => {
     logRender('EditorOperationContent');
     return (
         <>
-            <EditorOperationContainer operation='spec' />
-            <EditorOperationContainer operation='config' />
-            <EditorOperationContainer operation='settings' />
+            <EditorOperationContainer operation='Spec' />
+            <EditorOperationContainer operation='Config' />
+            <EditorOperationContainer operation='Settings' />
         </>
     );
 };

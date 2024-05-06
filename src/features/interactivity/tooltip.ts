@@ -11,10 +11,7 @@ import pickBy from 'lodash/pickBy';
 import toNumber from 'lodash/toNumber';
 import toString from 'lodash/toString';
 
-import {
-    getJsonAsIndentedString,
-    stringifyPruned
-} from '../../core/utils/json';
+import { getObjectFormattedAsText, stringifyPruned } from '../json-processing';
 import { getVegaSettings, IVegaViewDatum } from '../../core/vega';
 import { powerBiFormatValue } from '../../utils';
 import {
@@ -109,7 +106,7 @@ const getFieldsEligibleForAutoFormat = (tooltip: object) =>
  */
 export const getSanitisedTooltipValue = (value: any) =>
     isObject(value) && !isDate(value)
-        ? getJsonAsIndentedString(getDeepRedactedTooltipItem(value), 'tooltip')
+        ? getObjectFormattedAsText(getDeepRedactedTooltipItem(value))
         : toString(value);
 
 /**

@@ -1,7 +1,5 @@
-import 'core-js/stable';
-import 'regenerator-runtime/runtime';
 import '../style/visual.less';
-import 'jsoneditor/dist/jsoneditor.css';
+import 'ace-builds';
 import powerbi from 'powerbi-visuals-api';
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
@@ -59,7 +57,6 @@ export class Deneb implements IVisual {
             VisualHostServices.bind(options);
             I18nServices.bind(options);
             VegaPatternFillServices.bind();
-            getState().initializeImportExport();
             const { element } = options;
             ReactDOM.render(React.createElement(App), element);
             element.oncontextmenu = (ev) => {
