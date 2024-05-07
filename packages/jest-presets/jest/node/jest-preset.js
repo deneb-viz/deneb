@@ -14,7 +14,10 @@ module.exports = {
     moduleNameMapper: {
         '@deneb-viz/template-usermeta-schema':
             '<rootDir>/../template-usermeta-schema/dist/deneb-template-usermeta.json',
-        '@deneb-viz/(.*)': '<rootDir>/../$1/dist'
+        // Not ideal, mitigates issues with powerbi-visuals-utils-formattingmodel import
+        '@deneb-viz/integration-powerbi':
+            '<rootDir>/../integration-powerbi/dist',
+        '@deneb-viz/(.*)': '<rootDir>/../$1/src'
     },
     preset: 'ts-jest',
     collectCoverage: true

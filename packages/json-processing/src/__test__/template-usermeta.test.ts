@@ -213,7 +213,8 @@ describe('getExportTemplate', () => {
         ...EXPECTED_METADATA_BASE,
         dataset: TEMPLATE_DATASET
     };
-    const MOCK_TOKENIZED_SPEC = '{"config": {}, "data": {"values": [] }, "mark": "bar"}';
+    const MOCK_TOKENIZED_SPEC =
+        '{"config": {}, "data": {"values": [] }, "mark": "bar"}';
 
     it('should return the expected JSONC formatted string with updated usermeta and schema', () => {
         const expectedJsonc = `{
@@ -267,7 +268,8 @@ describe('getExportTemplate', () => {
 }`;
 
         const result = getExportTemplate({
-            informationTranslationPlaceholders: MOCK_INFORMATION_TRANSLATION_PLACEHOLDERS,
+            informationTranslationPlaceholders:
+                MOCK_INFORMATION_TRANSLATION_PLACEHOLDERS,
             metadata: MOCK_METADATA,
             tokenizedSpec: MOCK_TOKENIZED_SPEC,
             trackedFields: TRACKED_FIELDS
@@ -320,7 +322,7 @@ describe('getNewTemplateMetadata', () => {
     });
 });
 
-describe('getPublishableUsermeta', () => {
+describe('getPublishableUsermeta ', () => {
     const MOCK_USERMETA: UsermetaTemplate = {
         ...EXPECTED_METADATA_BASE,
         dataset: TEMPLATE_DATASET
@@ -413,7 +415,10 @@ describe('getResolvedVisualMetadataToDatasetField', () => {
     const encodedName = 'encodedName';
 
     it('should return the expected UsermetaDatasetField object', () => {
-        const result = getResolvedVisualMetadataToDatasetField(metadata, encodedName);
+        const result = getResolvedVisualMetadataToDatasetField(
+            metadata,
+            encodedName
+        );
         expect(result).toEqual({
             key: metadata.queryName,
             name: encodedName,
@@ -431,19 +436,27 @@ describe('getResolvedVisualMetadataToDatasetField', () => {
             isMeasure: false,
             type: { bool: true }
         };
-        const result = getResolvedVisualMetadataToDatasetField(metadataWithoutMeasure, encodedName);
+        const result = getResolvedVisualMetadataToDatasetField(
+            metadataWithoutMeasure,
+            encodedName
+        );
         expect(result.kind).toEqual('column');
     });
 
     it('should return the resolved value descriptor type', () => {
-        const result = getResolvedVisualMetadataToDatasetField(metadata, encodedName);
+        const result = getResolvedVisualMetadataToDatasetField(
+            metadata,
+            encodedName
+        );
         expect(result.type).toEqual('bool');
     });
 });
 
 describe('getTemplateMetadata', () => {
     it('should return the expected template metadata object', () => {
-        const expectedMetadata = getJsoncStringAsObject(MOCK_TEMPLATE_METADATA_BASE).usermeta;
+        const expectedMetadata = getJsoncStringAsObject(
+            MOCK_TEMPLATE_METADATA_BASE
+        ).usermeta;
         const result = getTemplateMetadata(MOCK_TEMPLATE_METADATA_BASE);
         expect(result).toEqual(expectedMetadata);
     });
@@ -503,19 +516,29 @@ describe('getTemplateReplacedForDataset', () => {
         }
     ];
     it('should replace the placeholders in the spec with the corresponding dataset values', () => {
-        const expectedSpec = 'This is a sample spec with Date and $ Sales placeholders.';
+        const expectedSpec =
+            'This is a sample spec with Date and $ Sales placeholders.';
         const result = getTemplateReplacedForDataset(spec, dataset);
         expect(result).toEqual(expectedSpec);
     });
     it('should replace multiple occurrences of the same placeholder in the spec', () => {
-        const specWithDuplicatePlaceholder = 'This is a sample spec with __0__ and __0__ placeholders.';
-        const expectedSpec = 'This is a sample spec with Date and Date placeholders.';
-        const result = getTemplateReplacedForDataset(specWithDuplicatePlaceholder, dataset);
+        const specWithDuplicatePlaceholder =
+            'This is a sample spec with __0__ and __0__ placeholders.';
+        const expectedSpec =
+            'This is a sample spec with Date and Date placeholders.';
+        const result = getTemplateReplacedForDataset(
+            specWithDuplicatePlaceholder,
+            dataset
+        );
         expect(result).toEqual(expectedSpec);
     });
     it('should not modify the original spec if no placeholders are present', () => {
-        const specWithoutPlaceholders = 'This is a sample spec without any placeholders.';
-        const result = getTemplateReplacedForDataset(specWithoutPlaceholders, dataset);
+        const specWithoutPlaceholders =
+            'This is a sample spec without any placeholders.';
+        const result = getTemplateReplacedForDataset(
+            specWithoutPlaceholders,
+            dataset
+        );
         expect(result).toEqual(specWithoutPlaceholders);
     });
     it('should return the original spec if the dataset is empty', () => {
@@ -530,19 +553,29 @@ describe('getTemplateResolvedForLegacyConfig', () => {
     const templatePostConfig = `{ "usermeta": { "config": { "foo": "bar" } } }`;
     const tabSize = 2;
     it('should return the template with resolved legacy config in the usermeta object', () => {
-        const expectedTemplate = '{ "usermeta": {"config": "{\\n  \\"foo\\": \\"bar\\"\\n}" } }';
-        const result = getTemplateResolvedForLegacyConfig(templateLegacy, tabSize);
+        const expectedTemplate =
+            '{ "usermeta": {"config": "{\\n  \\"foo\\": \\"bar\\"\\n}" } }';
+        const result = getTemplateResolvedForLegacyConfig(
+            templateLegacy,
+            tabSize
+        );
         expect(result).toEqual(expectedTemplate);
     });
     it('should return the template as is if config is already present in usermeta', () => {
         const expectedTemplate = `{ "usermeta": { "config": { "foo": "bar" } } }`;
-        const result = getTemplateResolvedForLegacyConfig(templatePostConfig, tabSize);
+        const result = getTemplateResolvedForLegacyConfig(
+            templatePostConfig,
+            tabSize
+        );
         expect(result).toEqual(expectedTemplate);
     });
     it('should return the template as is if config is not present', () => {
         const templateWithoutConfig = `{ "usermeta": {} }`;
         const expectedTemplate = '{ "usermeta": {"config": "{}"} }';
-        const result = getTemplateResolvedForLegacyConfig(templateWithoutConfig, tabSize);
+        const result = getTemplateResolvedForLegacyConfig(
+            templateWithoutConfig,
+            tabSize
+        );
         expect(result).toEqual(expectedTemplate);
     });
 });
@@ -550,21 +583,30 @@ describe('getTemplateResolvedForLegacyConfig', () => {
 describe('getTemplateResolvedForLegacyVersions', () => {
     it('should return the correct legacy Vega version if providerVersion is missing', () => {
         const result = getJsoncStringAsObject(
-            getTemplateResolvedForLegacyVersions('vega', MOCK_TEMPLATE_METADATA_NO_PROVIDER_VERSION)
+            getTemplateResolvedForLegacyVersions(
+                'vega',
+                MOCK_TEMPLATE_METADATA_NO_PROVIDER_VERSION
+            )
         );
         const expected = PROVIDER_RESOURCES.vega.legacyVersion;
         expect(result.usermeta.deneb.providerVersion).toEqual(expected);
     });
     it('should return the correct legacy Vega-Lite version if providerVersion is missing', () => {
         const result = getJsoncStringAsObject(
-            getTemplateResolvedForLegacyVersions('vegaLite', MOCK_TEMPLATE_METADATA_NO_PROVIDER_VERSION)
+            getTemplateResolvedForLegacyVersions(
+                'vegaLite',
+                MOCK_TEMPLATE_METADATA_NO_PROVIDER_VERSION
+            )
         );
         const expected = PROVIDER_RESOURCES.vegaLite.legacyVersion;
         expect(result.usermeta.deneb.providerVersion).toEqual(expected);
     });
     it('should return the provderVersion from the template if supplied', () => {
         const result = getJsoncStringAsObject(
-            getTemplateResolvedForLegacyVersions('vegaLite', MOCK_TEMPLATE_METADATA_BASE)
+            getTemplateResolvedForLegacyVersions(
+                'vegaLite',
+                MOCK_TEMPLATE_METADATA_BASE
+            )
         );
         const expected = MOCK_PROVIDER_VERSION;
         expect(result.usermeta.deneb.providerVersion).toEqual(expected);
@@ -655,7 +697,10 @@ describe('getTemplateResolvedForPlaceholderAssignment', () => {
 }`,
             config: `{\n  // Config\n  "font": "Arial"\n}`
         };
-        const result = getTemplateResolvedForPlaceholderAssignment(template, tabSize);
+        const result = getTemplateResolvedForPlaceholderAssignment(
+            template,
+            tabSize
+        );
         expect(result).toEqual(expectedComponents);
     });
 
@@ -741,7 +786,10 @@ describe('getTemplateResolvedForPlaceholderAssignment', () => {
 }`,
             config: `{}`
         };
-        const resultWithoutConfig = getTemplateResolvedForPlaceholderAssignment(templateWithoutConfig, tabSize);
+        const resultWithoutConfig = getTemplateResolvedForPlaceholderAssignment(
+            templateWithoutConfig,
+            tabSize
+        );
         expect(resultWithoutConfig).toEqual(expectedComponents);
     });
 });
@@ -950,7 +998,8 @@ describe('getValidatedTemplate', () => {
                     {
                         key: '__1__',
                         name: 'Measure',
-                        description: "Measure to display along the bar chart's x-axis.",
+                        description:
+                            "Measure to display along the bar chart's x-axis.",
                         type: 'numeric',
                         kind: 'measure'
                     }
