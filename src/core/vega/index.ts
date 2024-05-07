@@ -1,7 +1,5 @@
 export {
     IVegaViewDatum,
-    TSpecProvider,
-    TSpecRenderMode,
     editorConfigOverLoad,
     getVegaProvider,
     getVegaProvideri18n,
@@ -15,6 +13,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import { getState } from '../../store';
 import { getI18nValue } from '../../features/i18n';
 import { PROVIDER_VERSIONS } from '../../../config';
+import { SpecProvider } from '@deneb-viz/core-dependencies';
 
 /**
  * Interface specifying a flexible key/value pair object, which is supplied from Vega's tooltip handler and usually casted as `any`.
@@ -22,16 +21,6 @@ import { PROVIDER_VERSIONS } from '../../../config';
 interface IVegaViewDatum {
     [key: string]: any;
 }
-
-/**
- * Valid providers for the visual.
- */
-type TSpecProvider = 'vega' | 'vegaLite';
-
-/**
- * Used to constrain Vega rendering to supported types.
- */
-type TSpecRenderMode = 'svg' | 'canvas';
 
 const editorConfigOverLoad = {
     background: null, // so we can defer to the Power BI background, if applied
@@ -41,12 +30,13 @@ const editorConfigOverLoad = {
 /**
  * Convenience function to get current Vega provider from persisted properties.
  */
-const getVegaProvider = () => <TSpecProvider>getVegaSettings().provider;
+const getVegaProvider = () =>
+    <SpecProvider>getVegaSettings().output.provider.value;
 
 /**
  * Get the Vega provider, resolved for i18n.
  */
-const getVegaProvideri18n = (provider?: TSpecProvider) => {
+const getVegaProvideri18n = (provider?: SpecProvider) => {
     const resolved = provider ?? getVegaProvider();
     return getI18nValue(
         resolved === 'vegaLite' ? 'Provider_VegaLite' : 'Provider_Vega'

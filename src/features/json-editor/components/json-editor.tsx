@@ -26,18 +26,20 @@ import {
     PREVIEW_PANE_TOOLBAR_BUTTON_PADDING,
     PREVIEW_PANE_TOOLBAR_MIN_SIZE
 } from '../../../constants';
-import { TSpecProvider } from '../../../core/vega';
 import { TokenTooltip } from './token-tooltip';
 import { getHoverResult } from '../hover';
 import {
     shouldPrioritizeJsonEditor,
     useInterfaceStyles
 } from '../../interface';
-import { PROPERTY_DEFAULTS } from '../../../../config';
 import { JsonEditorStatusBar } from './json-editor-status-bar';
 import { validateEditorJson } from '../validation';
 import { persistSpecification } from '../../specification';
-import { JsonContentType } from '@deneb-viz/core-dependencies';
+import {
+    JsonContentType,
+    PROPERTIES_DEFAULTS,
+    SpecProvider
+} from '@deneb-viz/core-dependencies';
 
 interface IJsonEditorProps {
     thisEditorRole: TEditorRole;
@@ -96,14 +98,17 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
             fields: state.dataset.fields,
             foldsConfig: state.editor.foldsConfig,
             foldsSpec: state.editor.foldsSpec,
-            fontSize: state.visualSettings.editor.fontSize,
+            fontSize: state.visualSettings.editor.json.fontSize.value,
             hasErrors: state.editor.hasErrors,
-            localCompletion: state.visualSettings.editor.localCompletion,
-            provider: state.visualSettings.vega.provider as TSpecProvider,
-            showGutter: state.visualSettings.editor.showGutter,
-            showLineNumbers: state.visualSettings.editor.showLineNumbers,
-            theme: state.visualSettings.editor.theme,
-            wordWrap: state.visualSettings.editor.wordWrap,
+            localCompletion:
+                state.visualSettings.editor.completion.localCompletion.value,
+            provider: state.visualSettings.vega.output.provider
+                .value as SpecProvider,
+            showGutter: state.visualSettings.editor.json.showGutter.value,
+            showLineNumbers:
+                state.visualSettings.editor.json.showLineNumbers.value,
+            theme: state.visualSettings.editor.interface.theme.value,
+            wordWrap: state.visualSettings.editor.json.wordWrap.value,
             setFolds: state.editor.setFolds,
             setHasErrors: state.editor.setHasErrors,
             updateChanges: state.editor.updateChanges
@@ -244,7 +249,9 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
                     useSvgGutterIcons: false,
                     showLineNumbers
                 }}
-                debounceChangePeriod={PROPERTY_DEFAULTS.editor.debounceInterval}
+                debounceChangePeriod={
+                    PROPERTIES_DEFAULTS.editor.debounceInterval
+                }
                 defaultValue={getDefaultValue(thisEditorRole)}
                 onCursorChange={onCursorChange}
                 onLoad={onLoadEditor}
@@ -258,7 +265,7 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
                 wrapEnabled={wordWrap}
                 showPrintMargin={false}
                 showGutter={showGutter}
-                tabSize={PROPERTY_DEFAULTS.editor.tabSize}
+                tabSize={PROPERTIES_DEFAULTS.editor.tabSize}
             />
             <JsonEditorStatusBar
                 clearTokenTooltip={clearTokenTooltip}
@@ -288,9 +295,9 @@ const getDefaultValue = (role: TEditorRole) => {
     } = getState();
     switch (role) {
         case 'Spec':
-            return stagedSpec ?? visualSettings.vega.jsonSpec;
+            return stagedSpec ?? visualSettings.vega.output.jsonSpec.value;
         case 'Config':
-            return stagedConfig ?? visualSettings.vega.jsonConfig;
+            return stagedConfig ?? visualSettings.vega.output.jsonConfig.value;
     }
 };
 
@@ -309,7 +316,7 @@ const getResolvedCursorPoint = (value?: any) => ({
  */
 const onMouseMove = (
     e: any,
-    provider: TSpecProvider,
+    provider: SpecProvider,
     currentEditor: TEditorRole
 ) => {
     logDebug('onMouseMove', e, provider, currentEditor);

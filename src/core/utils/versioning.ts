@@ -1,14 +1,14 @@
+import { SpecProvider } from '@deneb-viz/core-dependencies';
 import { APPLICATION_INFORMATION, PROVIDER_VERSIONS } from '../../../config';
 import { logDebug } from '../../features/logging';
 import { isUnversionedSpec } from '../../features/specification';
-import VisualSettings from '../../properties/visual-settings';
 import { getState } from '../../store';
-import { TSpecProvider } from '../vega';
 import {
     getDenebVersionProperty,
     resolveObjectProperties,
     updateObjectProperties
 } from './properties';
+import { VisualFormattingSettingsModel } from '@deneb-viz/integration-powerbi';
 
 /**
  * Structured version information that we can use for comparison or inspection purposes.
@@ -36,14 +36,18 @@ export type TVersionChange = 'decrease' | 'equal' | 'increase';
  * Current visual and provider information
  */
 const getCurrentVersionInfo = (
-    visualSettings: VisualSettings
+    visualSettings: VisualFormattingSettingsModel
 ): IVersionInformation => {
     const {
-        vega: { provider }
+        vega: {
+            output: {
+                provider: { value: provider }
+            }
+        }
     } = visualSettings;
     return {
         denebVersion: APPLICATION_INFORMATION.version,
-        provider,
+        provider: provider as SpecProvider,
         providerVersion: PROVIDER_VERSIONS[provider]
     };
 };
@@ -52,15 +56,24 @@ const getCurrentVersionInfo = (
  * Visual and provider information, according to visual properties (when changes were last persisted).
  */
 const getLastVersionInfo = (
-    visualSettings: VisualSettings
+    visualSettings: VisualFormattingSettingsModel
 ): IVersionInformation => {
     const {
-        developer: { version: denebVersion },
-        vega: { provider, version: providerVersion }
+        developer: {
+            versioning: {
+                version: { value: denebVersion }
+            }
+        },
+        vega: {
+            output: {
+                provider: { value: provider },
+                version: { value: providerVersion }
+            }
+        }
     } = visualSettings;
     return {
         denebVersion,
-        provider,
+        provider: provider as SpecProvider,
         providerVersion
     };
 };
@@ -69,7 +82,7 @@ const getLastVersionInfo = (
  * Get previous and current version information as a single object.
  */
 const getVersionComparatorInfo = (
-    visualSettings: VisualSettings
+    visualSettings: VisualFormattingSettingsModel
 ): IVersionComparator => ({
     current: getCurrentVersionInfo(visualSettings),
     previous: getLastVersionInfo(visualSettings)
@@ -109,9 +122,15 @@ const getVersionChangeDetail = (
  * For updates, we need to be able to manage property migration between versions as necessary, just in case we're editing
  * a visual that hasn't caught up with the functionality we need in v-latest.
  */
-export const handlePropertyMigration = (visualSettings: VisualSettings) => {
+export const handlePropertyMigration = (
+    visualSettings: VisualFormattingSettingsModel
+) => {
     const {
-        vega: { provider }
+        vega: {
+            output: {
+                provider: { value: provider }
+            }
+        }
     } = visualSettings;
     const {
         migration: { migrationCheckPerformed, updateMigrationDetails }
@@ -126,12 +145,12 @@ export const handlePropertyMigration = (visualSettings: VisualSettings) => {
         switch (true) {
             // No spec yet, or pre 1.1
             case isUnversionedSpec(): {
-                migrateUnversionedSpec(<TSpecProvider>provider);
+                migrateUnversionedSpec(<SpecProvider>provider);
                 break;
             }
             // general change
             case changeType !== 'equal': {
-                migrateWithNoChanges(<TSpecProvider>provider);
+                migrateWithNoChanges(<SpecProvider>provider);
                 break;
             }
             default:
@@ -162,7 +181,7 @@ const isNewerVersion = (oldVer: string, newVer: string) => {
 /**
  * Handles property migration from 1.0 to 1.1
  */
-const migrateUnversionedSpec = (provider: TSpecProvider) => {
+const migrateUnversionedSpec = (provider: SpecProvider) => {
     logDebug('Migrate: initial versions for tracking');
     updateObjectProperties(
         resolveObjectProperties([
@@ -188,7 +207,7 @@ const migrateUnversionedSpec = (provider: TSpecProvider) => {
  * the visual and provider versions, and re-flagging the "new version"
  * notification).
  */
-const migrateWithNoChanges = (provider: TSpecProvider) => {
+const migrateWithNoChanges = (provider: SpecProvider) => {
     logDebug('Migrate to current version (no changes)');
     updateObjectProperties(
         resolveObjectProperties([

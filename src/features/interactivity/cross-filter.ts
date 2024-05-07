@@ -23,7 +23,7 @@ import {
 import { logDebug } from '../logging';
 import { getI18nValue } from '../i18n';
 import { IVisualDatasetValueRow } from '../../core/data';
-import { PROPERTY_DEFAULTS } from '../../../config';
+import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
 
 /**
  * For the supplied list of identities, ensure that the selection manager is
@@ -67,7 +67,7 @@ export const clearSelection = (): ISelectionId[] => {
  */
 export const dispatchCrossFilterAbort = (
     status = false,
-    limit = PROPERTY_DEFAULTS.vega.selectionMaxDataPoints
+    limit = PROPERTIES_DEFAULTS.vega.selectionMaxDataPoints
 ) => {
     getState().updateDatasetSelectionAbortStatus({ status, limit });
 };
@@ -105,7 +105,11 @@ const getPotentialSelectionSize = (
  * menu event to the visual.
  */
 export const isCrossFilterPropSet = () => {
-    const { enableSelection } = getVegaSettings();
+    const {
+        interactivity: {
+            enableSelection: { value: enableSelection }
+        }
+    } = getVegaSettings();
     return (enableSelection && getVisualInteractionStatus()) || false;
 };
 
@@ -327,6 +331,10 @@ const isSimpleSelectionMode = (options?: CrossFilterOptions) =>
  * Retrieve the selection limit size from the options, or the default from the visual settings.
  */
 const getSelectionLimitSize = (options?: CrossFilterOptions) => {
-    const { selectionMaxDataPoints } = getVegaSettings();
+    const {
+        interactivity: {
+            selectionMaxDataPoints: { value: selectionMaxDataPoints }
+        }
+    } = getVegaSettings();
     return ((options && options.limit) || null) ?? selectionMaxDataPoints;
 };

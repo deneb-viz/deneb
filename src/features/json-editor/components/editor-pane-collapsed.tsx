@@ -7,18 +7,23 @@ import { getI18nValue } from '../../i18n';
 import { getEditorPaneStateIcon, useEditorPaneStyles } from '.';
 import { TooltipCustomMount } from '../../interface';
 import { handleToggleEditorPane } from '../../commands';
+import { TEditorPosition } from '../../../core/ui';
 
 export const EditorPaneCollapsed: React.FC = () => {
     const { editorPaneIsExpanded, position } = store(
         (state) => ({
             editorPaneIsExpanded: state.editorPaneIsExpanded,
-            position: state.visualSettings.editor.position
+            position: state.visualSettings.editor.json.position.value
         }),
         shallow
     );
     const classes = useEditorPaneStyles();
     const icon = useMemo(
-        () => getEditorPaneStateIcon(editorPaneIsExpanded, position),
+        () =>
+            getEditorPaneStateIcon(
+                editorPaneIsExpanded,
+                position as TEditorPosition
+            ),
         [editorPaneIsExpanded, position]
     );
     const buttonClass = useMemo(

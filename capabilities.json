@@ -28,25 +28,13 @@
             }
         },
         "developer": {
-            "displayNameKey": "Objects_Developer",
-            "descriptionKey": "Objects_Developer_Description",
-            "displayName": "Developer Options",
-            "description": "Developer Options description.",
             "properties": {
                 "version": {
-                    "displayNameKey": "Objects_Developer_Version",
-                    "descriptionKey": "Objects_Developer_Version_Description",
-                    "displayName": "Version",
-                    "description": "Version description",
                     "type": {
                         "text": true
                     }
                 },
                 "locale": {
-                    "displayNameKey": "Objects_Developer_Locale",
-                    "descriptionKey": "Objects_Developer_Locale_Description",
-                    "displayName": "Locale",
-                    "description": "Locale description.",
                     "type": {
                         "enumeration": [
                             {
@@ -75,34 +63,18 @@
             }
         },
         "display": {
-            "displayNameKey": "Objects_Display",
-            "descriptionKey": "Objects_Display_Description",
-            "displayName": "Display",
-            "description": "Display description.",
             "properties": {
                 "viewportHeight": {
-                    "displayNameKey": "Objects_Display_ViewportHeight",
-                    "descriptionKey": "Objects_Display_ViewportHeight_Description",
-                    "displayName": "Viewport Height",
-                    "description": "Viewport Height description.",
                     "type": {
                         "numeric": true
                     }
                 },
                 "viewportWidth": {
-                    "displayNameKey": "Objects_Display_ViewportWidth",
-                    "descriptionKey": "Objects_Display_ViewportWidth_Description",
-                    "displayName": "Viewport Width",
-                    "description": "Viewport Width description.",
                     "type": {
                         "numeric": true
                     }
                 },
                 "scrollbarColor": {
-                    "displayNameKey": "Objects_Display_ScrollbarColor",
-                    "descriptionKey": "Objects_Display_ScrollbarColor_Description",
-                    "displayName": "Scrollbar color",
-                    "description": "Scrollbar color description.",
                     "type": {
                         "fill": {
                             "solid": {
@@ -112,19 +84,11 @@
                     }
                 },
                 "scrollbarOpacity": {
-                    "displayNameKey": "Objects_Display_ScrollbarOpacity",
-                    "descriptionKey": "Objects_Display_ScrollbarOpacity_Description",
-                    "displayName": "Scrollbar opacity",
-                    "description": "Scrollbar opacity description.",
                     "type": {
                         "integer": true
                     }
                 },
                 "scrollbarRadius": {
-                    "displayNameKey": "Objects_Display_ScrollbarRadius",
-                    "descriptionKey": "Objects_Display_ScrollbarRadius_Description",
-                    "displayName": "Scrollbar radius",
-                    "description": "Scrollbar radius description.",
                     "type": {
                         "integer": true
                     }
@@ -132,36 +96,18 @@
             }
         },
         "vega": {
-            "displayNameKey": "Objects_Vega",
-            "descriptionKey": "Objects_Vega_Description",
-            "displayName": "Grammar",
-            "description": "Grammar description.",
             "properties": {
                 "jsonSpec": {
-                    "displayNameKey": "Objects_Vega_JsonSpec",
-                    "descriptionKey": "Objects_Vega_JsonSpec_Description",
-                    "displayName": "JSON Spec",
-                    "description": "JSON Spec description.",
-                    "placeHolderTextKey": "Objects_Vega_JsonSpec_Placeholder",
                     "type": {
                         "text": true
                     }
                 },
                 "jsonConfig": {
-                    "displayNameKey": "Objects_Vega_JsonConfig",
-                    "descriptionKey": "Objects_Vega_JsonConfig_Description",
-                    "displayName": "JSON Config",
-                    "description": "JSON Config description.",
-                    "placeHolderTextKey": "Objects_Vega_JsonConfig_Placeholder",
                     "type": {
                         "text": true
                     }
                 },
                 "provider": {
-                    "displayNameKey": "Objects_Vega_Provider",
-                    "descriptionKey": "Objects_Vega_Provider_Description",
-                    "displayName": "Provider",
-                    "description": "Provider description.",
                     "type": {
                         "enumeration": [
                             {
@@ -178,20 +124,11 @@
                     }
                 },
                 "version": {
-                    "displayNameKey": "Objects_Vega_Version",
-                    "descriptionKey": "Objects_Vega_Version_Description",
-                    "displayName": "Version",
-                    "description": "Version description",
-                    "placeHolderTextKey": "Objects_Vega_Version_Placeholder",
                     "type": {
                         "text": true
                     }
                 },
                 "logLevel": {
-                    "displayNameKey": "Objects_Vega_LogLevel",
-                    "descriptionKey": "Objects_Vega_LogLevel_Description",
-                    "displayName": "Log Level",
-                    "description": "Log Level description.",
                     "type": {
                         "enumeration": [
                             {
@@ -223,10 +160,6 @@
                     }
                 },
                 "renderMode": {
-                    "displayNameKey": "Objects_Vega_RenderMode",
-                    "descriptionKey": "Objects_Vega_RenderMode_Description",
-                    "displayName": "Render Mode",
-                    "description": "Render Mode description.",
                     "type": {
                         "enumeration": [
                             {
@@ -243,46 +176,26 @@
                     }
                 },
                 "enableTooltips": {
-                    "displayNameKey": "Objects_Vega_EnableTooltips",
-                    "descriptionKey": "Objects_Vega_EnableTooltips_Description",
-                    "displayName": "Tooltips",
-                    "description": "Tooltips description.",
                     "type": {
                         "bool": true
                     }
                 },
                 "enableContextMenu": {
-                    "displayNameKey": "Objects_Vega_EnableContextMenu",
-                    "descriptionKey": "Objects_Vega_EnableContextMenu_Description",
-                    "displayName": "Context Menu",
-                    "description": "Context Menu description.",
                     "type": {
                         "bool": true
                     }
                 },
                 "enableHighlight": {
-                    "displayNameKey": "Objects_Vega_EnableHighlight",
-                    "descriptionKey": "Objects_Vega_EnableHighlight_Description",
-                    "displayName": "Highlight",
-                    "description": "Highlight description.",
                     "type": {
                         "bool": true
                     }
                 },
                 "enableSelection": {
-                    "displayNameKey": "Objects_Vega_EnableSelection",
-                    "descriptionKey": "Objects_Vega_EnableSelection_Description",
-                    "displayName": "Selections",
-                    "description": "Selections description.",
                     "type": {
                         "bool": true
                     }
                 },
                 "selectionMode": {
-                    "displayNameKey": "Objects_Vega_SelectionMode",
-                    "descriptionKey": "Objects_Vega_SelectionMode_Description",
-                    "displayName": "Selection Mode",
-                    "description": "Selection Mode description.",
                     "type": {
                         "enumeration": [
                             {
@@ -299,28 +212,16 @@
                     }
                 },
                 "selectionMaxDataPoints": {
-                    "displayNameKey": "Objects_Vega_SelectionMaxDataPoints",
-                    "descriptionKey": "Objects_Vega_SelectionMaxDataPoints_Description",
-                    "displayName": "Max Points",
-                    "description": "Max Points description.",
                     "type": {
                         "numeric": true
                     }
                 },
                 "tooltipDelay": {
-                    "displayNameKey": "Objects_Vega_TooltipDelay",
-                    "descriptionKey": "Objects_Vega_TooltipDelay_Description",
-                    "displayName": "Tooltip Delay",
-                    "description": "Tooltip Delay description.",
                     "type": {
                         "numeric": true
                     }
                 },
                 "isNewDialogOpen": {
-                    "displayNameKey": "Objects_Vega_IsNewDialogOpen",
-                    "descriptionKey": "Objects_Vega_IsNewDialogOpen_Description",
-                    "displayName": "Show New Dialog?",
-                    "description": "Show New Dialog? description.",
                     "type": {
                         "bool": true
                     }
@@ -328,16 +229,8 @@
             }
         },
         "editor": {
-            "displayNameKey": "Objects_Editor",
-            "descriptionKey": "Objects_Editor_Description",
-            "displayName": "Editor Options",
-            "description": "Editor Options description.",
             "properties": {
                 "theme": {
-                    "displayNameKey": "Objects_Editor_Theme",
-                    "descriptionKey": "Objects_Editor_Theme_Description",
-                    "displayName": "Theme",
-                    "description": "Theme description.",
                     "type": {
                         "enumeration": [
                             {
@@ -354,19 +247,11 @@
                     }
                 },
                 "backgroundPassThrough": {
-                    "displayNameKey": "Objects_Editor_BackgroundPassThrough",
-                    "descriptionKey": "Objects_Editor_BackgroundPassThrough_Description",
-                    "displayName": "BG pass-through",
-                    "description": "BG pass-through description",
                     "type": {
                         "bool": true
                     }
                 },
                 "position": {
-                    "displayNameKey": "Objects_Editor_Position",
-                    "descriptionKey": "Objects_Editor_Position_Description",
-                    "displayName": "Position",
-                    "description": "Position description.",
                     "type": {
                         "enumeration": [
                             {
@@ -383,10 +268,6 @@
                     }
                 },
                 "fontSize": {
-                    "displayNameKey": "Objects_Editor_FontSize",
-                    "descriptionKey": "Objects_Editor_FontSize_Description",
-                    "displayName": "Font Size",
-                    "description": "Font Size description",
                     "type": {
                         "formatting": {
                             "fontSize": true
@@ -394,64 +275,36 @@
                     }
                 },
                 "wordWrap": {
-                    "displayNameKey": "Objects_Editor_WordWrap",
-                    "descriptionKey": "Objects_Editor_WordWrap_Description",
-                    "displayName": "Word Wrap",
-                    "description": "Word Wrap description",
                     "type": {
                         "bool": true
                     }
                 },
                 "showGutter": {
-                    "displayNameKey": "Objects_Editor_ShowGutter",
-                    "descriptionKey": "Objects_Editor_ShowGutter_Description",
-                    "displayName": "Show Gutter",
-                    "description": "Show Gutter description description",
                     "type": {
                         "bool": true
                     }
                 },
                 "showLineNumbers": {
-                    "displayNameKey": "Objects_Editor_ShowLineNumbers",
-                    "descriptionKey": "Objects_Editor_ShowLineNumbers_Description",
-                    "displayName": "Line Numbers",
-                    "description": "Line Numbers description",
                     "type": {
                         "bool": true
                     }
                 },
                 "showViewportMarker": {
-                    "displayNameKey": "Objects_Editor_ShowViewportMarker",
-                    "descriptionKey": "Objects_Editor_ShowViewportMarker_Description",
-                    "displayName": "Viewport Marker",
-                    "description": "Viewport Marker description",
                     "type": {
                         "bool": true
                     }
                 },
                 "previewScrollbars": {
-                    "displayNameKey": "Objects_Editor_PreviewScrollbars",
-                    "descriptionKey": "Objects_Editor_PreviewScrollbars_Description",
-                    "displayName": "Preview Scrollbars",
-                    "description": "Preview Scrollbars description",
                     "type": {
                         "bool": true
                     }
                 },
                 "debugTableRowsPerPage": {
-                    "displayNameKey": "Objects_Editor_DebugTableRowsPerPage",
-                    "descriptionKey": "Objects_Editor_DebugTableRowsPerPage_Description",
-                    "displayName": "Rows Per Page",
-                    "description": "Rows Per Page description",
                     "type": {
                         "numeric": true
                     }
                 },
                 "localCompletion": {
-                    "displayNameKey": "Objects_Editor_LocalCompletion",
-                    "descriptionKey": "Objects_Editor_LocalCompletion_Description",
-                    "displayName": "Local auto-completion",
-                    "description": "Local auto-completion description",
                     "type": {
                         "bool": true
                     }
@@ -459,16 +312,8 @@
             }
         },
         "theme": {
-            "displayNameKey": "Objects_Theme",
-            "descriptionKey": "Objects_Theme_Description",
-            "displayName": "Theme Options",
-            "description": "Theme Options description",
             "properties": {
                 "ordinalColorCount": {
-                    "displayNameKey": "Objects_Theme_OrdinalColorCount",
-                    "descriptionKey": "Objects_Theme_OrdinalColorCount_Description",
-                    "displayName": "Ordinal Color Count",
-                    "description": "Ordinal Color Count description",
                     "type": {
                         "integer": true
                     }
@@ -476,34 +321,13 @@
             }
         },
         "dataLimit": {
-            "displayNameKey": "Objects_DataLimit",
-            "descriptionKey": "Objects_DataLimit_Description",
-            "displayName": "Data Limit Options",
-            "description": "Data Limit Options description.",
             "properties": {
                 "override": {
-                    "displayNameKey": "Objects_DataLimit_Override",
-                    "descriptionKey": "Objects_DataLimit_Override_Description",
-                    "displayName": "Override Row Limit",
-                    "description": "Override Row Limit description.",
-                    "type": {
-                        "bool": true
-                    }
-                },
-                "showInfo": {
-                    "displayNameKey": "Objects_DataLimit_ShowProgress",
-                    "descriptionKey": "Objects_DataLimit_ShowProgress_Description",
-                    "displayName": "Show Loading Progress",
-                    "description": "Show loading progress description.",
                     "type": {
                         "bool": true
                     }
                 },
                 "showCustomVisualNotes": {
-                    "displayNameKey": "Objects_DataLimit_ShowCustomVisualNotes",
-                    "descriptionKey": "Objects_DataLimit_ShowCustomVisualNotes_Description",
-                    "displayName": "Show Data Loading Notes",
-                    "description": "Show Data Loading Notes description.",
                     "type": {
                         "bool": true
                     }

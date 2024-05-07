@@ -7,11 +7,11 @@ import { BaseData } from 'vega';
 
 import { getCombinedBase64ImageWithMime } from '../preview-image';
 import { THUMBNAIL_IMAGES } from './thumbnail-images';
-import { TSpecProvider } from '../../../core/vega';
 import { DATASET_NAME } from '../../../constants';
 import { getNewTemplateMetadata } from '@deneb-viz/json-processing';
 import { APPLICATION_INFORMATION, PROVIDER_VERSIONS } from '../../../../config';
 import {
+    SpecProvider,
     UsermetaInformation,
     UsermetaTemplate
 } from '@deneb-viz/core-dependencies';
@@ -41,7 +41,7 @@ const DENEB_TEMPLATE_AUTHOR_NAME = 'Deneb';
  * included template.
  */
 export const getNewIncludedTemplateMetadata = (
-    provider: TSpecProvider,
+    provider: SpecProvider,
     name: string,
     description: string = '',
     previewImageKey?: string

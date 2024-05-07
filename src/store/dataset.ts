@@ -24,7 +24,6 @@ import { getApplicationMode } from '../features/interface';
 import { ModalDialogRole } from '../features/modal-dialog/types';
 import { getOnboardingDialog } from '../features/modal-dialog';
 import { getHashValue } from '../utils';
-import { PROPERTY_DEFAULTS } from '../../config';
 import {
     areAllCreateDataRequirementsMet,
     areAllRemapDataRequirementsMet,
@@ -34,7 +33,8 @@ import {
     getUpdatedExportMetadata,
     isMappingDialogRequired
 } from '@deneb-viz/json-processing';
-import { IDataset } from '@deneb-viz/core-dependencies';
+import { IDataset, PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
+import { TEditorPosition } from '../core/ui';
 
 export interface IDatasetSlice {
     dataset: IDataset;
@@ -59,7 +59,7 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
         datasetHasHighlights: false,
         datasetHasSelectionAborted: false,
         datasetProcessingStage: 'Initial',
-        datasetSelectionLimit: PROPERTY_DEFAULTS.vega.selectionMaxDataPoints,
+        datasetSelectionLimit: PROPERTIES_DEFAULTS.vega.selectionMaxDataPoints,
         datasetViewObjects: {},
         updateDataset: (payload) =>
             set(
@@ -120,7 +120,7 @@ const handleUpdateDataset = (
     const { dataset } = payload;
     const { metadataAllDependenciesAssigned, metadataAllFieldsAssigned } =
         areAllCreateDataRequirementsMet(state.create.metadata);
-    const jsonSpec = state.visualSettings.vega.jsonSpec;
+    const jsonSpec = state.visualSettings.vega.output.jsonSpec.value;
     const mode = getApplicationMode({
         currentMode: state.interface.mode,
         dataset: payload.dataset,
@@ -197,7 +197,7 @@ const handleUpdateDataset = (
             state.editorPaneExpandedWidth,
             state.editorPaneIsExpanded,
             state.visualViewportCurrent,
-            state.visualSettings.editor.position
+            state.visualSettings.editor.json.position.value as TEditorPosition
         ),
         export: {
             ...state.export,

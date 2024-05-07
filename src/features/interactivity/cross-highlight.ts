@@ -41,7 +41,11 @@ export const isCrossHighlightField = (field: string) =>
  * Determine if conditions are right to expose highlight functionality.
  */
 export const isCrossHighlightPropSet = () => {
-    const { enableHighlight } = getVegaSettings();
+    const {
+        interactivity: {
+            enableHighlight: { value: enableHighlight }
+        }
+    } = getVegaSettings();
     return (getVisualInteractionStatus() && enableHighlight) || false;
 };
 

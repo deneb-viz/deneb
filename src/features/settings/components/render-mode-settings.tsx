@@ -9,21 +9,25 @@ import {
 
 import { updateRenderMode } from '../../../core/ui/commands';
 import store from '../../../store';
-import { TSpecRenderMode } from '../../../core/vega';
 import { useSettingsStyles } from '.';
 import { SettingsHeadingLabel } from './settings-heading-label';
 import { SettingsTextSection } from './settings-text-section';
 import { getI18nValue } from '../../i18n';
+import { SpecRenderMode } from '@deneb-viz/core-dependencies';
 
 export const RenderModeSettings: React.FC = () => {
     const {
         visualSettings: {
-            vega: { renderMode }
+            vega: {
+                output: {
+                    renderMode: { value: renderMode }
+                }
+            }
         }
     } = store((state) => state, shallow);
     const onChange = React.useCallback(
         (ev: React.FormEvent<HTMLDivElement>, data: RadioGroupOnChangeData) => {
-            updateRenderMode(data.value as TSpecRenderMode);
+            updateRenderMode(data.value as SpecRenderMode);
         },
         []
     );
@@ -39,7 +43,7 @@ export const RenderModeSettings: React.FC = () => {
                     layout='horizontal'
                     aria-labelledby={labelId}
                     onChange={onChange}
-                    value={renderMode}
+                    value={renderMode as SpecRenderMode}
                 >
                     <Radio
                         value='canvas'

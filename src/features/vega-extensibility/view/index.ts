@@ -94,7 +94,11 @@ export const handleNewView = (newView: View) => {
     const {
         interface: { generateRenderId },
         visualSettings: {
-            vega: { selectionMode }
+            vega: {
+                interactivity: {
+                    selectionMode: { value: selectionMode }
+                }
+            }
         }
     } = getState();
     newView.logger(new StoreVegaLoggerService());

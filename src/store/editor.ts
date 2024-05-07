@@ -30,6 +30,7 @@ import {
     getTokenizedSpec,
     getUpdatedExportMetadata
 } from '@deneb-viz/json-processing';
+import { TEditorPosition } from '../core/ui';
 
 export interface IEditorSlice {
     editor: {
@@ -297,8 +298,8 @@ const handleUpdateChanges = (
         role === 'Spec' ? state.editor.foldsSpec : state.editor.foldsConfig;
     const isDirty =
         (role === 'Spec'
-            ? state.visualSettings.vega.jsonSpec !== text
-            : state.visualSettings.vega.jsonConfig !== text) &&
+            ? state.visualSettings.vega.output.jsonSpec.value !== text
+            : state.visualSettings.vega.output.jsonConfig.value !== text) &&
         state.editor.applyMode !== 'Auto';
     const foldsConfig =
         role === 'Config' ? folds ?? state.editor.foldsConfig : existingFolds;
@@ -371,12 +372,12 @@ export interface IEditorPaneUpdatePayload {
 
 const handleToggleEditorPane = (state: TStoreState): Partial<TStoreState> => {
     const newExpansionState = !state.editorPaneIsExpanded;
-    const { position } = state.visualSettings.editor;
+    const { value: position } = state.visualSettings.editor.json.position;
     const newWidth = getResizablePaneSize(
         state.editorPaneExpandedWidth,
         newExpansionState,
         state.visualViewportCurrent,
-        position
+        position as TEditorPosition
     );
     return {
         editorPaneIsExpanded: newExpansionState,
@@ -384,7 +385,7 @@ const handleToggleEditorPane = (state: TStoreState): Partial<TStoreState> => {
         editorPreviewAreaWidth: getEditorPreviewAreaWidth(
             state.visualViewportCurrent.width,
             newWidth,
-            position
+            position as TEditorPosition
         )
     };
 };
@@ -412,14 +413,14 @@ const handleUpdateEditorPaneWidth = (
     payload: IEditorPaneUpdatePayload
 ): Partial<TStoreState> => {
     const { editorPaneWidth, editorPaneExpandedWidth } = payload;
-    const { position } = state.visualSettings.editor;
+    const { value: position } = state.visualSettings.editor.json.position;
     return {
         editorPaneWidth,
         editorPaneExpandedWidth,
         editorPreviewAreaWidth: getEditorPreviewAreaWidth(
             state.visualViewportCurrent.width,
             editorPaneWidth,
-            position
+            position as TEditorPosition
         )
     };
 };
@@ -442,7 +443,7 @@ const handleUpdateEditorPreviewAreaWidth = (
     editorPreviewAreaWidth: getEditorPreviewAreaWidth(
         state.visualViewportCurrent.width,
         state.editorPaneWidth,
-        state.visualSettings.editor.position
+        state.visualSettings.editor.json.position.value as TEditorPosition
     )
 });
 

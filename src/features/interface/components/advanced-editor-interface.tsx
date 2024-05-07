@@ -58,12 +58,12 @@ export const AdvancedEditorInterface: React.FC = () => {
     } = store(
         (state) => ({
             backgroundPassThrough:
-                state.visualSettings.editor.backgroundPassThrough,
+                state.visualSettings.editor.preview.backgroundPassThrough.value,
             editorPaneDefaultWidth: state.editorPaneDefaultWidth,
             editorPaneIsExpanded: state.editorPaneIsExpanded,
             editorPaneWidth: state.editorPaneWidth,
-            position: state.visualSettings.editor.position,
-            theme: state.visualSettings.editor.theme,
+            position: state.visualSettings.editor.json.position.value,
+            theme: state.visualSettings.editor.interface.theme.value,
             updateEditorPaneWidth: state.updateEditorPaneWidth
         }),
         shallow

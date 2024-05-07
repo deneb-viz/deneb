@@ -37,6 +37,7 @@
         "@deneb-viz/core-dependencies": "*",
         "@deneb-viz/eslint-config": "*",
         "@deneb-viz/jest-presets": "*",
-        "@deneb-viz/typescript-config": "*"
+        "@deneb-viz/typescript-config": "*",
+        "powerbi-visuals-utils-formattingmodel": "^6.0.2"
     }
 }

@@ -2,7 +2,6 @@ import capabilities from '../capabilities.json';
 import features from './features.json';
 import { devDependencies } from '../package.json';
 import { visual } from '../pbiviz.json';
-import { SelectionMode } from '@deneb-viz/core-dependencies';
 
 /**
  * This is an object that contains the visual's metadata. This is used to
@@ -15,16 +14,6 @@ export const APPLICATION_INFORMATION = visual;
  * This is an object that contains the capabilities of the visual.
  */
 export const CAPABILITIES = capabilities;
-
-/**
- * Specifies the limits (and step size) for handling cross-filtering.
- */
-export const CROSS_FILTER_LIMITS = {
-    minDataPointsValue: 1,
-    maxDataPointsValue: 250,
-    maxDataPointsAdvancedValue: 2500,
-    dataPointsStepValue: 1
-};
 
 /**
  * The primary set of feature switches for the packaged application. These are
@@ -127,16 +116,6 @@ export const KEY_BINDINGS = {
 };
 
 /**
- * Default values for the data table in the preview pane (AKA the debug pane).
- */
-export const PREVIEW_PANE_DATA_TABLE = {
-    rowsPerPage: {
-        default: 50,
-        values: [10, 25, 50, 100, 150, 200]
-    }
-};
-
-/**
  * Default configuration for the preview pane (AKA the debug pane).
  */
 export const PREVIEW_PANE_DEFAULTS = {
@@ -169,74 +148,6 @@ export const PREVIEW_PANE_DEFAULTS = {
             icon: 'Info'
         }
     ]
-};
-
-/**
- * Default values for the visual properties.
- */
-export const PROPERTY_DEFAULTS = {
-    dataLimit: {
-        override: false,
-        showCustomVisualNotes: true
-    },
-    developer: {
-        locale: 'en-US',
-        showVersionNotification: false
-    },
-    editor: {
-        backgroundPassThrough: true,
-        dataTableRowsPerPage: PREVIEW_PANE_DATA_TABLE.rowsPerPage.default,
-        debounceInterval: 200,
-        fontSize: {
-            default: 10,
-            min: 8,
-            max: 30
-        },
-        localCompletion: false,
-        maxLineLength: 40,
-        position: 'left',
-        previewScrollbars: false,
-        showGutter: true,
-        showLineNumbers: true,
-        showViewportMarker: true,
-        tabSize: 2,
-        theme: 'light',
-        wordWrap: true
-    },
-    vega: {
-        jsonSpec: null,
-        jsonConfig: '{}',
-        provider: 'vegaLite',
-        logLevel: 3,
-        renderMode: 'svg',
-        enableContextMenu: true,
-        enableTooltips: true,
-        enableSelection: false,
-        enableHighlight: false,
-        selectionMode: <SelectionMode>'simple',
-        selectionMaxDataPoints: 50,
-        tooltipDelay: 0,
-        isNewDialogOpen: true
-    },
-    theme: {
-        ordinalColorCount: {
-            default: 10,
-            min: 1,
-            max: 100
-        }
-    },
-    display: {
-        scrollbarColor: '#000000',
-        scrollbarOpacity: 20,
-        scrollbarRadius: {
-            min: 0,
-            max: 3,
-            default: 0
-        }
-    },
-    performance: {
-        enableResizeRecalc: false
-    }
 };
 
 /**

@@ -15,7 +15,7 @@ interface IInteractivityCheckboxProps {
 export const InteractivityCheckbox: React.FC<IInteractivityCheckboxProps> = ({
     type
 }) => {
-    const { vega } = store((state) => state.visualSettings);
+    const { interactivity } = store((state) => state.visualSettings.vega);
     const propertyName = useMemo(() => getPropertyName(type), [type]);
     const classes = useSettingsStyles();
     const handleToggle = React.useCallback(
@@ -40,7 +40,7 @@ export const InteractivityCheckbox: React.FC<IInteractivityCheckboxProps> = ({
         status && (
             <Checkbox
                 label={getI18nValue(geti18LabelKey(type))}
-                checked={vega[propertyName]}
+                checked={interactivity[propertyName]?.value || false}
                 onChange={handleToggle}
                 className={classes.sectionItem}
             />

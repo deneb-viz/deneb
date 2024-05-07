@@ -13,9 +13,8 @@ import {
     EDITOR_INDICATOR_TOOLTIP_NAME,
     EDITOR_INDICATOR_WARNING_NAME
 } from '../../constants';
-import { TSpecProvider } from '../../core/vega';
 import { getJsonDocumentValidationResults } from '@deneb-viz/json-processing';
-import { JsonContentType } from '@deneb-viz/core-dependencies';
+import { JsonContentType, SpecProvider } from '@deneb-viz/core-dependencies';
 
 /**
  * Clear down any existing validation markers before we (re) validate.
@@ -43,7 +42,7 @@ const clearCustomMarkers = (editor: Editor) => {
  */
 export const validateEditorJson = (
     editor: Editor,
-    provider: TSpecProvider,
+    provider: SpecProvider,
     editorRole: JsonContentType,
     content: string,
     currentlyHasErrors: boolean,

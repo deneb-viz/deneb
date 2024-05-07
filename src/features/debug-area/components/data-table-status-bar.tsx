@@ -15,7 +15,7 @@ import { StatusBarContainer } from '../../interface';
 import { DatasetViewerOptions } from './dataset-viewer-options';
 import { getI18nValue } from '../../i18n';
 import { DataTableNavigationButton } from './data-table-navigation-button';
-import { PREVIEW_PANE_DATA_TABLE } from '../../../../config';
+import { PREVIEW_PANE_DATA_TABLE } from '@deneb-viz/core-dependencies';
 import { setVisualProperty } from '../../commands';
 
 /**
@@ -33,14 +33,15 @@ export const DataTableStatusBar: React.FC<PaginationComponentProps> = ({
     const { rowsPerPageSetting, mode } = store(
         (state) => ({
             rowsPerPageSetting:
-                state.visualSettings.editor.debugTableRowsPerPage,
+                state.visualSettings.editor.debugPane.debugTableRowsPerPage
+                    .value.value,
             mode: state.editorPreviewAreaSelectedPivot
         }),
         shallow
     );
     useEffect(() => {
         if (rowsPerPage !== rowsPerPageSetting) {
-            onChangeRowsPerPage(rowsPerPageSetting, currentPage);
+            onChangeRowsPerPage(rowsPerPageSetting as number, currentPage);
         }
     }, [rowsPerPage, rowsPerPageSetting]);
     const handleFirstPageButtonClick = () => {
@@ -53,16 +54,19 @@ export const DataTableStatusBar: React.FC<PaginationComponentProps> = ({
         onChangePage(currentPage + 1, rowCount);
     };
     const handleLastPageButtonClick = () => {
-        onChangePage(Math.ceil(rowCount / rowsPerPageSetting), rowCount);
+        onChangePage(
+            Math.ceil(rowCount / (rowsPerPageSetting as number)),
+            rowCount
+        );
     };
     const handleChangeRowsPerPage: SelectProps['onChange'] = (event, data) => {
         const value = Number(data.value);
         onChangeRowsPerPage(value, currentPage);
         setVisualProperty([{ name: 'debugTableRowsPerPage', value }], 'editor');
     };
-    const numPages = getNumberOfPages(rowCount, rowsPerPageSetting);
-    const lastIndex = currentPage * rowsPerPageSetting;
-    const firstIndex = lastIndex - rowsPerPageSetting + 1;
+    const numPages = getNumberOfPages(rowCount, rowsPerPageSetting as number);
+    const lastIndex = currentPage * (rowsPerPageSetting as number);
+    const firstIndex = lastIndex - (rowsPerPageSetting as number) + 1;
     const range =
         currentPage === numPages
             ? `${firstIndex}-${rowCount} of ${rowCount}`

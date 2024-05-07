@@ -9,7 +9,6 @@ import Range = ace.Range;
 
 import { TextEdit } from 'vscode-json-languageservice';
 import { IVisualDatasetField, IVisualDatasetFields } from '../../core/data';
-import { TSpecProvider } from '../../core/vega';
 import { TEditorRole } from '.';
 import { logDebug } from '../logging';
 import { getI18nValue } from '../i18n';
@@ -19,6 +18,7 @@ import {
     getJsonTextDocument,
     getProviderSchema
 } from '@deneb-viz/json-processing';
+import { SpecProvider } from '@deneb-viz/core-dependencies';
 
 /**
  * For local completions, represents the word and distance from the current
@@ -61,7 +61,7 @@ const SPLIT_REGEX = /[^\w$\-\u00C0-\u1FFF\u2C00-\uD7FF\w]+/;
  */
 export const customCompleter = (
     fields: IVisualDatasetFields,
-    provider: TSpecProvider,
+    provider: SpecProvider,
     editorRole: TEditorRole,
     useLocalCompletions: boolean
 ): Completer => {
@@ -100,7 +100,7 @@ export const customCompleter = (
 const getCompletionResults = async (
     text: string,
     point: Point,
-    provider: TSpecProvider,
+    provider: SpecProvider,
     editorRole: TEditorRole
 ) => {
     const textDocument = getJsonTextDocument(text);
@@ -218,7 +218,7 @@ const getSnippetFieldMetadata = (field: IVisualDatasetField) => {
 const getVegaCompletions = async (
     editor: Ace.Editor,
     point: Ace.Point,
-    provider: TSpecProvider,
+    provider: SpecProvider,
     editorRole: TEditorRole
 ): Promise<Ace.Completion[]> =>
     await getCompletionResults(

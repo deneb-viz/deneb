@@ -4,13 +4,13 @@ import isEqual from 'lodash/isEqual';
 import store, { getState } from '../../../store';
 import { getLocale } from '../../i18n';
 import { logRender } from '../../logging';
-import { TSpecProvider, TSpecRenderMode } from '../../../core/vega';
 import { VegaRender } from './vega-render';
 import { useVegaStyles } from '..';
 import { mergeClasses } from '@griffel/core';
 import Scrollbars from 'react-custom-scrollbars-2';
 import { clearSelection, hidePowerBiTooltip } from '../../interactivity';
 import { VEGA_CONTAINER_ID } from '../../../constants';
+import { SpecProvider, SpecRenderMode } from '@deneb-viz/core-dependencies';
 
 /**
  * Master component for hosting Vega content. We will handle the workflow
@@ -40,18 +40,27 @@ export const VegaContainer: React.FC = () => {
     } = store(
         (state) => ({
             datasetHash: state.dataset.hashValue,
-            devLocale: state.visualSettings.developer.locale,
-            enableTooltips: state.visualSettings.vega.enableTooltips,
-            jsonConfig: state.visualSettings.vega.jsonConfig,
-            jsonSpec: state.visualSettings.vega.jsonSpec,
-            logLevel: state.visualSettings.vega.logLevel,
-            ordinalColorCount: state.visualSettings.theme.ordinalColorCount,
-            previewScrollbars: state.visualSettings.editor.previewScrollbars,
-            provider: state.visualSettings.vega.provider as TSpecProvider,
-            renderMode: state.visualSettings.vega.renderMode as TSpecRenderMode,
-            scrollbarColor: state.visualSettings.display.scrollbarColor,
-            scrollbarOpacity: state.visualSettings.display.scrollbarOpacity,
-            scrollbarRadius: state.visualSettings.display.scrollbarRadius,
+            devLocale: state.visualSettings.developer.localization.locale.value,
+            enableTooltips:
+                state.visualSettings.vega.interactivity.enableTooltips.value,
+            jsonConfig: state.visualSettings.vega.output.jsonConfig.value,
+            jsonSpec: state.visualSettings.vega.output.jsonSpec.value,
+            logLevel: state.visualSettings.vega.logging.logLevel.value,
+            ordinalColorCount:
+                state.visualSettings.theme.ordinal.ordinalColorCount.value,
+            previewScrollbars:
+                state.visualSettings.editor.preview.previewScrollbars.value,
+            provider: state.visualSettings.vega.output.provider
+                .value as SpecProvider,
+            renderMode: state.visualSettings.vega.output.renderMode
+                .value as SpecRenderMode,
+            scrollbarColor:
+                state.visualSettings.display.scrollbars.scrollbarColor.value
+                    .value,
+            scrollbarOpacity:
+                state.visualSettings.display.scrollbars.scrollbarOpacity.value,
+            scrollbarRadius:
+                state.visualSettings.display.scrollbars.scrollbarRadius.value,
             specification: state.specification,
             viewportHeight: state.visualViewportReport.height,
             viewportWidth: state.visualViewportReport.width,
@@ -85,7 +94,7 @@ export const VegaContainer: React.FC = () => {
             datasetHash={datasetHash}
             enableTooltips={enableTooltips}
             locale={locale}
-            logLevel={logLevel}
+            logLevel={logLevel as number}
             ordinalColorCount={ordinalColorCount}
             provider={provider}
             renderMode={renderMode}
@@ -148,8 +157,11 @@ const scrollbarThumbHorizontal = (props: any) =>
  */
 const getScrollBarThumb = (props: any, style: React.CSSProperties) => {
     const { scrollbarRadius, scrollbarColor, scrollbarOpacity } =
-        getState().visualSettings.display;
-    const backgroundColor = addAlpha(scrollbarColor, scrollbarOpacity / 100);
+        getState().visualSettings.display.scrollbars;
+    const backgroundColor = addAlpha(
+        scrollbarColor.value.value,
+        scrollbarOpacity.value / 100
+    );
     return (
         <div
             {...props}
@@ -157,7 +169,7 @@ const getScrollBarThumb = (props: any, style: React.CSSProperties) => {
             style={{
                 ...{
                     backgroundColor,
-                    borderRadius: scrollbarRadius
+                    borderRadius: scrollbarRadius.value
                 },
                 ...style
             }}

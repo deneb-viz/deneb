@@ -15,7 +15,7 @@ export class StoreVegaLoggerService implements Vega.LoggerInterface {
             // This is handled via visual props & store
             return this;
         } else {
-            return getVegaSettings().logLevel;
+            return getVegaSettings().logging.logLevel.value as number;
         }
     }
     info = (...args: any[]) => {

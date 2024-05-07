@@ -47,50 +47,57 @@ const customVisualNotes = () => {
     const { dataLimit } = getState().visualSettings;
     const classes = useStatusStyles();
     return (
-        (dataLimit.override && dataLimit.showCustomVisualNotes && (
-            <>
-                <StatusStackItem>
-                    <Title3>
-                        {getI18nValue('Fetching_Data_Developer_Notes')}
-                    </Title3>
-                </StatusStackItem>
-                <StatusStackItem>
-                    <Caption1>
-                        {getI18nValue('Fetching_Data_Assitive_01_Prefix')}
-                        <b>{getI18nValue('Objects_DataLimit_Override')}</b>
-                        {getI18nValue('Fetching_Data_Assitive_01_Suffix')}
-                    </Caption1>
-                    <Caption1>
-                        <p>
-                            <ul>
-                                <li className={classes.li}>
-                                    {getI18nValue(
-                                        'Fetching_Data_Assitive_02_Point_01'
-                                    )}
-                                </li>
-                                <li className={classes.li}>
-                                    {getI18nValue(
-                                        'Fetching_Data_Assitive_02_Point_02'
-                                    )}
-                                </li>
-                            </ul>
-                        </p>
-                        <p>
-                            {getI18nValue('Fetching_Data_Assitive_02_Suffix')}
-                        </p>
-                        <p>
-                            {getI18nValue('Fetching_Data_Assitive_03_Prefix')}
-                            <b>
+        (dataLimit.loading.override.value &&
+            dataLimit.loading.showCustomVisualNotes.value && (
+                <>
+                    <StatusStackItem>
+                        <Title3>
+                            {getI18nValue('Fetching_Data_Developer_Notes')}
+                        </Title3>
+                    </StatusStackItem>
+                    <StatusStackItem>
+                        <Caption1>
+                            {getI18nValue('Fetching_Data_Assitive_01_Prefix')}
+                            <b>{getI18nValue('Objects_DataLimit_Override')}</b>
+                            {getI18nValue('Fetching_Data_Assitive_01_Suffix')}
+                        </Caption1>
+                        <Caption1>
+                            <p>
+                                <ul>
+                                    <li className={classes.li}>
+                                        {getI18nValue(
+                                            'Fetching_Data_Assitive_02_Point_01'
+                                        )}
+                                    </li>
+                                    <li className={classes.li}>
+                                        {getI18nValue(
+                                            'Fetching_Data_Assitive_02_Point_02'
+                                        )}
+                                    </li>
+                                </ul>
+                            </p>
+                            <p>
                                 {getI18nValue(
-                                    'Objects_DataLimit_ShowCustomVisualNotes'
+                                    'Fetching_Data_Assitive_02_Suffix'
                                 )}
-                            </b>
-                            {getI18nValue('Fetching_Data_Assitive_03_Suffix')}
-                        </p>
-                    </Caption1>
-                </StatusStackItem>
-            </>
-        )) ||
+                            </p>
+                            <p>
+                                {getI18nValue(
+                                    'Fetching_Data_Assitive_03_Prefix'
+                                )}
+                                <b>
+                                    {getI18nValue(
+                                        'Objects_DataLimit_ShowCustomVisualNotes'
+                                    )}
+                                </b>
+                                {getI18nValue(
+                                    'Fetching_Data_Assitive_03_Suffix'
+                                )}
+                            </p>
+                        </Caption1>
+                    </StatusStackItem>
+                </>
+            )) ||
         null
     );
 };

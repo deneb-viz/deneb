@@ -21,7 +21,11 @@ export const getDatasetValueEntries = (
     categories: DataViewCategoryColumn[],
     values: DataViewValueColumns
 ) => {
-    const { enableHighlight } = getVegaSettings();
+    const {
+        interactivity: {
+            enableHighlight: { value: enableHighlight }
+        }
+    } = getVegaSettings();
     return [
         ...getCategoryEntries(categories),
         ...((enableHighlight && getHighlightEntries(values)) || []),

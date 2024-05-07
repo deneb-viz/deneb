@@ -171,7 +171,11 @@ const resolveTooltipContent =
                 autoFormatFields
             );
             const identities = getIdentitiesFromData(datum);
-            const { tooltipDelay } = getVegaSettings();
+            const {
+                interactivity: {
+                    tooltipDelay: { value: tooltipDelay }
+                }
+            } = getVegaSettings();
             const waitFor = (event.ctrlKey && tooltipDelay) || 0;
             const options = {
                 coordinates,

@@ -14,9 +14,12 @@ import {
     resolveObjectProperties,
     updateObjectProperties
 } from '../utils/properties';
-import { TSpecProvider, TSpecRenderMode } from '../vega';
-import { PROPERTY_DEFAULTS } from '../../../config';
-import { SelectionMode } from '@deneb-viz/core-dependencies';
+import {
+    SelectionMode,
+    PROPERTIES_DEFAULTS,
+    SpecProvider,
+    SpecRenderMode
+} from '@deneb-viz/core-dependencies';
 
 /**
  * Actual event handling logic for wrappers
@@ -40,7 +43,7 @@ const handlePersist = (
  * Reset the specified provider (Vega) visual property to its default value.
  */
 const resetProviderPropertyValue = (propertyKey: string) => {
-    const value: string = PROPERTY_DEFAULTS.vega?.[propertyKey];
+    const value: string = PROPERTIES_DEFAULTS.vega?.[propertyKey];
     handlePersist([{ name: propertyKey, value }]);
 };
 
@@ -58,7 +61,7 @@ const updateLogLevel = (value: string) => {
  * Handle the change in provider from one to the other and update necessary store dependencies and properties.
  */
 const updateProvider = (
-    provider: TSpecProvider,
+    provider: SpecProvider,
     currentSelectionMode: SelectionMode
 ) =>
     handlePersist([
@@ -75,7 +78,7 @@ const updateProvider = (
  */
 const updateSelectionMode = (
     selectionMode: SelectionMode,
-    provider: TSpecProvider
+    provider: SpecProvider
 ) =>
     handlePersist([
         {
@@ -93,5 +96,5 @@ const updateSelectionMaxDataPoints = (value: number) =>
 /**
  * Handle the change in render mode from one to the other and update necessary store dependencies and properties.
  */
-const updateRenderMode = (renderMode: TSpecRenderMode) =>
+const updateRenderMode = (renderMode: SpecRenderMode) =>
     handlePersist([{ name: 'renderMode', value: renderMode }]);
