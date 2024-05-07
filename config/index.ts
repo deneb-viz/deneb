@@ -61,6 +61,10 @@ export const KEY_BINDINGS = {
         combination: 'ctrl|alt|h',
         functionalArea: 'other'
     },
+    themeToggle: {
+        combination: 'ctrl|shift|alt|t',
+        functionalArea: 'other'
+    },
     navigateSpecification: {
         combination: 'ctrl|alt|1,ctrl|alt|num_1',
         functionalArea: 'other'

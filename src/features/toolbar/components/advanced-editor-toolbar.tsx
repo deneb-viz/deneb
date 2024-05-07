@@ -117,6 +117,10 @@ export const AdvancedEditorToolbar: React.FC = () => {
                     role='application'
                 />
                 <ToolbarDivider />
+                <ToolbarButtonStandard
+                    command='themeToggle'
+                    role='application'
+                />
                 <ToolbarButtonStandard command='helpSite' role='application' />
             </ToolbarGroup>
         </Toolbar>
