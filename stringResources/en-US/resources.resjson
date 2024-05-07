@@ -143,6 +143,8 @@
     "Button_See_More_MessageBar": "Read more",
     "Button_Create": "Create",
     "Button_Import": "Select JSON Template",
+    "Button_Theme_Dark": "Switch between dark and light mode (currently dark mode) [Ctrl+Shift+Alt+T]",
+    "Button_Theme_Light": "Switch between dark and light mode (currently light mode) [Ctrl+Shift+Alt+T]",
     "Button_ZoomOut": "Zoom preview out by 10% [Ctrl+Alt+-]",
     "Button_ZoomIn": "Zoom preview in by 10% [Ctrl+Alt+=]",
     "Button_ZoomReset": "Zoom preview to actual size (100%) [Ctrl+Alt+0]",

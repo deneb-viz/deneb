@@ -206,6 +206,25 @@ export const handleToggleEditorPane = () => {
 };
 
 /**
+ * Handle toggling the editor theme.
+ */
+export const handleToggleEditorTheme = () => {
+    executeCommand('themeToggle', () => {
+        const {
+            visualSettings: {
+                editor: {
+                    interface: {
+                        theme: { value: theme }
+                    }
+                }
+            }
+        } = getState();
+        const newValue = theme === 'dark' ? 'light' : 'dark';
+        setVisualProperty([{ name: 'theme', value: newValue }], 'editor');
+    });
+};
+
+/**
  * Fit the zoom level to the current preview area dimensions.
  */
 export const handleZoomFit = () =>

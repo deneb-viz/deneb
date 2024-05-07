@@ -14,6 +14,8 @@ import {
     ReplayRegular,
     ShareRegular,
     TextGrammarWandRegular,
+    WeatherMoonRegular,
+    WeatherSunnyRegular,
     ZoomFitRegular,
     ZoomInRegular,
     ZoomOutRegular
@@ -33,6 +35,7 @@ import {
     handleOpenRemapDialog,
     handleOpenWebsite,
     handleToggleDebugPane,
+    handleToggleEditorTheme,
     handleZoomFit,
     handleZoomIn,
     handleZoomOut
@@ -118,6 +121,8 @@ const resolveClick = (command: Command) => {
             return handleOpenWebsite;
         case 'newSpecification':
             return handleOpenCreateSpecificationDialog;
+        case 'themeToggle':
+            return handleToggleEditorTheme;
         case 'zoomFit':
             return handleZoomFit;
         case 'zoomIn':
@@ -132,7 +137,14 @@ const resolveClick = (command: Command) => {
 const resolveI18nKey = (command: Command) => {
     const {
         editorPreviewDebugIsExpanded,
-        editor: { applyMode }
+        editor: { applyMode },
+        visualSettings: {
+            editor: {
+                interface: {
+                    theme: { value: theme }
+                }
+            }
+        }
     } = getState();
     switch (command) {
         case 'applyChanges':
@@ -155,6 +167,10 @@ const resolveI18nKey = (command: Command) => {
             return 'Button_Help';
         case 'newSpecification':
             return 'Button_New';
+        case 'themeToggle':
+            return theme === 'dark'
+                ? 'Button_Theme_Dark'
+                : 'Button_Theme_Light';
         case 'zoomFit':
             return 'Button_ZoomFit';
         case 'zoomIn':
@@ -169,7 +185,16 @@ const resolveI18nKey = (command: Command) => {
 };
 
 const resolveIcon = (command: Command) => {
-    const { editorPreviewDebugIsExpanded } = getState();
+    const {
+        editorPreviewDebugIsExpanded,
+        visualSettings: {
+            editor: {
+                interface: {
+                    theme: { value: theme }
+                }
+            }
+        }
+    } = getState();
     switch (command) {
         case 'applyChanges':
             return <PlayRegular />;
@@ -191,6 +216,12 @@ const resolveIcon = (command: Command) => {
             return <QuestionRegular />;
         case 'newSpecification':
             return <DocumentRegular />;
+        case 'themeToggle':
+            return theme === 'dark' ? (
+                <WeatherMoonRegular />
+            ) : (
+                <WeatherSunnyRegular />
+            );
         case 'zoomFit':
             return <ZoomFitRegular />;
         case 'zoomIn':

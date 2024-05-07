@@ -39,6 +39,7 @@ import {
     handleOpenWebsite,
     handleToggleDebugPane,
     handleToggleEditorPane,
+    handleToggleEditorTheme,
     handleZoomFit,
     handleZoomIn,
     handleZoomOut,
@@ -83,6 +84,7 @@ export const AdvancedEditorInterface: React.FC = () => {
     hotkeyHandler('newSpecification', handleOpenCreateSpecificationDialog);
     hotkeyHandler('exportSpecification', handleExportSpecification);
     hotkeyHandler('fieldMappings', handleOpenRemapDialog);
+    hotkeyHandler('themeToggle', handleToggleEditorTheme);
     hotkeyHandler('helpSite', handleOpenWebsite);
     hotkeyHandler('navigateSpecification', handleEditorPaneSpecification);
     hotkeyHandler('navigateConfig', handleEditorPaneConfig);
