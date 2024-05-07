@@ -34,7 +34,10 @@ describe('getJsoncStringAsObject', () => {
 });
 
 describe('getJsonLanguageService', () => {
-    const schema = { type: 'object', properties: { name: { type: 'string' }, age: { type: 'number' } } };
+    const schema = {
+        type: 'object',
+        properties: { name: { type: 'string' }, age: { type: 'number' } }
+    };
     const jsonData = '{"name": "John", "age": 30}';
     it('should return the language service with the provided schema and validate', async () => {
         const languageService = getJsonLanguageService(schema);
@@ -166,7 +169,10 @@ describe('getParsedJsonWithResult', () => {
     });
     it('should return the parsed fallback JSON object and an empty error array if the content is not valid JSON and a fallback is provided (null fallback)', () => {
         const content = '{"name": "John", "age": 30,}';
-        const expected = { result: null, errors: ['Expected double-quoted property name in JSON at position 27'] };
+        const expected = {
+            result: null,
+            errors: ['Expected double-quoted property name in JSON at position 27']
+        };
         expect(getParsedJsonWithResult(content)).toEqual(expected);
     });
 });
