@@ -17,7 +17,7 @@ export const LogViewer: React.FC = () => {
     const { errors, logLevel, warns } = store(
         (state) => ({
             errors: state.specification.errors,
-            logLevel: state.visualSettings.vega.logLevel,
+            logLevel: state.visualSettings.vega.logging.logLevel.value,
             warns: state.specification.warns
         }),
         shallow
@@ -26,7 +26,7 @@ export const LogViewer: React.FC = () => {
     const levelId = useId();
     const levelLabel = useMemo(() => getI18nValue('Objects_Vega_LogLevel'), []);
     const logEntries = useMemo(
-        () => getLogEntries(warns, errors, logLevel),
+        () => getLogEntries(warns, errors, logLevel as number),
         [warns, errors, logLevel]
     );
     logRender('LogViewer');

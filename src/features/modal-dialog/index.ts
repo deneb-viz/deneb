@@ -1,5 +1,5 @@
+import { VisualFormattingSettingsModel } from '@deneb-viz/integration-powerbi';
 import { InterfaceMode } from '../interface';
-import { VisualSettings } from '../settings';
 import { ModalDialogRole } from './types';
 
 export { useModalDialogStyles } from './components';
@@ -14,10 +14,10 @@ export { isDialogOpen } from './utils';
  * should be displayed or the exsiting state continued to be used.
  */
 export const getOnboardingDialog = (
-    settings: VisualSettings,
+    settings: VisualFormattingSettingsModel,
     visualViewMode: InterfaceMode,
     currentDialogRole: ModalDialogRole
 ) =>
-    settings?.vega?.isNewDialogOpen && visualViewMode === 'Editor'
+    settings?.vega?.state?.isNewDialogOpen?.value && visualViewMode === 'Editor'
         ? 'Create'
         : currentDialogRole;

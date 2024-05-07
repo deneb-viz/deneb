@@ -14,9 +14,12 @@ import {
 } from '../../interactivity';
 import { getState } from '../../../store';
 import { getI18nValue } from '../../i18n';
-import { CROSS_FILTER_LIMITS, PROPERTY_DEFAULTS } from '../../../../config';
 import { handleCrossFilterEvent } from '../../interactivity/cross-filter';
 import { logDebug, logWarning } from '../../logging';
+import {
+    CROSS_FILTER_LIMITS,
+    PROPERTIES_DEFAULTS
+} from '@deneb-viz/core-dependencies';
 
 /**
  * A custom expression that should be added to the Vega view.
@@ -86,7 +89,11 @@ const pbiCrossFilterApply = (
     const {
         specification: { logWarn },
         visualSettings: {
-            vega: { selectionMode }
+            vega: {
+                interactivity: {
+                    selectionMode: { value: selectionMode }
+                }
+            }
         }
     } = getState();
     logDebug('[pbiCrossFilterApply] cross-filter event fired from view', {
@@ -183,7 +190,7 @@ const getResolvedCrossFilterOptions = (
     const baseOptions: CrossFilterOptions = {
         mode: expr ? 'advanced' : 'simple',
         filterExpr: expr,
-        limit: PROPERTY_DEFAULTS.vega.selectionMaxDataPoints,
+        limit: PROPERTIES_DEFAULTS.vega.selectionMaxDataPoints,
         multiSelect: ['ctrl', 'shift']
     };
     return { ...baseOptions, ...options };

@@ -4,7 +4,6 @@ import powerbi from 'powerbi-visuals-api';
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import IVisual = powerbi.extensibility.visual.IVisual;
-import DataView = powerbi.DataView;
 import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
 import FormattingModel = powerbi.visuals.FormattingModel;
 
@@ -12,7 +11,6 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
 import App from './components/App';
-import VisualSettings from './properties/visual-settings';
 
 import { getState } from './store';
 import { canFetchMoreFromDataview, getRowCount } from './core/data/dataView';
@@ -30,7 +28,11 @@ import {
     VegaExtensibilityServices,
     VegaPatternFillServices
 } from './features/vega-extensibility';
-import { I18nServices, getLocale } from './features/i18n';
+import {
+    I18nServices,
+    getLocale,
+    getLocalizationManager
+} from './features/i18n';
 import {
     VisualHostServices,
     getCategoricalDataViewFromOptions,
@@ -41,6 +43,12 @@ import {
     setRenderingStarted
 } from './features/visual-host';
 import { APPLICATION_INFORMATION, FEATURES } from '../config';
+import {
+    VisualFormattingSettingsModel,
+    VisualFormattingSettingsService,
+    getVisualFormattingModel,
+    getVisualFormattingService
+} from '@deneb-viz/integration-powerbi';
 
 /**
  * Run to indicate that the visual has started.
@@ -49,7 +57,7 @@ logHeading(`${APPLICATION_INFORMATION?.displayName}`);
 logHeading(`Version: ${APPLICATION_INFORMATION?.version}`, 12);
 
 export class Deneb implements IVisual {
-    private settings: VisualSettings;
+    private settings: VisualFormattingSettingsModel;
 
     constructor(options: VisualConstructorOptions) {
         logHost('Constructor has been called.', { options });
@@ -57,6 +65,7 @@ export class Deneb implements IVisual {
             VisualHostServices.bind(options);
             I18nServices.bind(options);
             VegaPatternFillServices.bind();
+            VisualFormattingSettingsService.bind(getLocalizationManager());
             const { element } = options;
             ReactDOM.render(React.createElement(App), element);
             element.oncontextmenu = (ev) => {
@@ -72,9 +81,8 @@ export class Deneb implements IVisual {
         try {
             logTimeStart('update');
             // Parse the settings for use in the visual
-            this.settings = Deneb.parseSettings(
-                options && options.dataViews && options.dataViews[0]
-            );
+            this.settings = getVisualFormattingModel(options?.dataViews?.[0]);
+            this.settings.resolveDeveloperSettings(FEATURES.developer_mode);
             // Handle the update options and dispatch to store as needed
             this.resolveUpdateOptions(options);
             logTimeEnd('update');
@@ -93,10 +101,12 @@ export class Deneb implements IVisual {
         setRenderingStarted();
         I18nServices.update(
             FEATURES.developer_mode
-                ? this.settings.developer.locale
+                ? (this.settings.developer.localization.locale.value as string)
                 : getLocale()
         );
-        VegaExtensibilityServices.bind(this.settings.theme.ordinalColorCount);
+        VegaExtensibilityServices.bind(
+            this.settings.theme.ordinal.ordinalColorCount.value
+        );
         const { setVisualUpdate, updateDataset, updateDatasetProcessingStage } =
             getState();
         // Manage persistent viewport sizing for view vs. editor
@@ -107,7 +117,14 @@ export class Deneb implements IVisual {
                     options.viewport,
                     options.viewMode,
                     options.editMode,
-                    this.settings.display
+                    {
+                        height: Number.parseFloat(
+                            this.settings.display.viewport.viewportHeight.value
+                        ),
+                        width: Number.parseFloat(
+                            this.settings.display.viewport.viewportWidth.value
+                        )
+                    }
                 );
             }
         }
@@ -174,43 +191,18 @@ export class Deneb implements IVisual {
         logTimeEnd('resolveUpdateOptions');
     }
 
-    private static parseSettings(dataView: DataView): VisualSettings {
-        return VisualSettings.parse(dataView);
-    }
-
     /**
-     * This function gets called for each of the objects defined in the
-     * capabilities files and allows you to select which of the objects and
-     * properties you want to expose to the users in the property pane.
+     * This function gets called for each of the objects defined in the capabilities files and allows you to select which of the objects
+     * and properties you want to expose to the users in the property pane.
      *
-     * This is the newer way of populating the properties pane, using the new-
-     * style formatting cards.
+     * This is the newer way of populating the properties pane, using the new-style formatting cards.
      */
     public getFormattingModel(): FormattingModel {
         logDebug('[start] getformattingModel');
-        try {
-            const { settings } = this;
-            const model = {
-                cards: [
-                    ...[
-                        settings.editor.getFormattingCard(),
-                        settings.theme.getFormattingCard(),
-                        settings.display.getFormattingCard(),
-                        settings.dataLimit.getFormattingCard()
-                    ],
-                    ...(FEATURES.developer_mode
-                        ? [
-                              settings.developer.getFormattingCard(),
-                              settings.vega.getFormattingCard()
-                          ]
-                        : [])
-                ]
-            };
-            logDebug('[return] getFormattingModel', { settings, model });
-            return model;
-        } catch (e) {
-            logDebug('[error] getFormattingModel', e);
-            return null;
-        }
+        const model = getVisualFormattingService().buildFormattingModel(
+            this.settings
+        );
+        logDebug('[return] getFormattingModel', { model });
+        return model;
     }
 }

@@ -61,6 +61,11 @@ export const getI18nValue = (key: string, tokens: (string | number)[] = []) =>
  */
 export const getLocale = () => locale;
 
+/**
+ * Get the localization manager for the visual.
+ */
+export const getLocalizationManager = () => i18n;
+
 const I18N_D3_LOCALES: ILocaleConfiguration = {
     default: 'en-US',
     format: {

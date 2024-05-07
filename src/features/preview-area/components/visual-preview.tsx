@@ -70,10 +70,15 @@ export const VisualPreview: React.FC = () => {
         (state) => ({
             editorPreviewAreaHeight: state.editorPreviewAreaHeight,
             editorZoomLevel: state.editorZoomLevel,
-            showViewportMarker: state.visualSettings.editor.showViewportMarker,
+            showViewportMarker:
+                state.visualSettings.editor.preview.showViewportMarker.value,
             status: state.specification.status,
-            viewportHeight: state.visualSettings.display.viewportHeight,
-            viewportWidth: state.visualSettings.display.viewportWidth,
+            viewportHeight: Number.parseFloat(
+                state.visualSettings.display.viewport.viewportHeight.value
+            ),
+            viewportWidth: Number.parseFloat(
+                state.visualSettings.display.viewport.viewportWidth.value
+            ),
             visual4d3d3d: state.visual4d3d3d
         }),
         shallow

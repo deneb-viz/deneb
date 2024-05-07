@@ -20,7 +20,8 @@ export const NotificationToaster: React.FC = () => {
             datasetHasSelectionAborted: state.datasetHasSelectionAborted,
             mode: state.interface.mode,
             selectionMaxDataPoints:
-                state.visualSettings.vega.selectionMaxDataPoints
+                state.visualSettings.vega.interactivity.selectionMaxDataPoints
+                    .value
         }),
         shallow
     );

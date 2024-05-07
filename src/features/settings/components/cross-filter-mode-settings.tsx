@@ -10,16 +10,22 @@ import {
 
 import { updateSelectionMode } from '../../../core/ui/commands';
 import store from '../../../store';
-import { TSpecProvider } from '../../../core/vega';
 import { getI18nValue } from '../../i18n';
-import { SelectionMode } from '@deneb-viz/core-dependencies';
+import { SelectionMode, SpecProvider } from '@deneb-viz/core-dependencies';
 import { getVisualSelectionManager } from '../../visual-host';
 import { useSettingsStyles } from '.';
 
 export const CrossFilterModeSettings: React.FC = () => {
     const {
         visualSettings: {
-            vega: { provider, selectionMode }
+            vega: {
+                output: {
+                    provider: { value: provider }
+                },
+                interactivity: {
+                    selectionMode: { value: selectionMode }
+                }
+            }
         }
     } = store((state) => state, shallow);
     const onChange = React.useCallback(
@@ -29,14 +35,17 @@ export const CrossFilterModeSettings: React.FC = () => {
             }
             updateSelectionMode(
                 data.value as SelectionMode,
-                provider as TSpecProvider
+                provider as SpecProvider
             );
         },
         []
     );
     return (
         <Field label={getI18nValue('Objects_Vega_SelectionMode')}>
-            <RadioGroup value={selectionMode} onChange={onChange}>
+            <RadioGroup
+                value={selectionMode as SelectionMode}
+                onChange={onChange}
+            >
                 <Radio
                     value='simple'
                     label={getRadioLabel(

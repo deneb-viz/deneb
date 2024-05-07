@@ -29,14 +29,17 @@ export const DataTableViewer: React.FC<TableProps<any>> = ({
     data,
     ...props
 }) => {
-    const { editorPreviewAreaHeight, viewportHeight, editorSettings } = store(
-        (state) => ({
-            editorPreviewAreaHeight: state.editorPreviewAreaHeight,
-            editorSettings: state.visualSettings.editor,
-            viewportHeight: state.visualViewportCurrent.height
-        }),
-        shallow
-    );
+    const { editorPreviewAreaHeight, viewportHeight, debugTableRowsPerPage } =
+        store(
+            (state) => ({
+                editorPreviewAreaHeight: state.editorPreviewAreaHeight,
+                debugTableRowsPerPage:
+                    state.visualSettings.editor.debugPane.debugTableRowsPerPage
+                        .value.value,
+                viewportHeight: state.visualViewportCurrent.height
+            }),
+            shallow
+        );
     const debugAreaHeight = useMemo(
         () =>
             viewportHeight -
@@ -57,7 +60,7 @@ export const DataTableViewer: React.FC<TableProps<any>> = ({
             defaultSortFieldId={columns[0].id}
             pagination
             paginationComponent={DataTableStatusBar}
-            paginationPerPage={editorSettings.debugTableRowsPerPage}
+            paginationPerPage={debugTableRowsPerPage as number}
             customStyles={{
                 head: {
                     style: {

@@ -2,9 +2,9 @@ import AceEditor from 'react-ace';
 import * as ace from 'ace-builds';
 import Ace = ace.Ace;
 import Point = Ace.Point;
-import { TSpecProvider } from '../../core/vega';
 import { MutableRefObject } from 'react';
 import { JSONPath } from 'jsonc-parser';
+import { SpecProvider } from '@deneb-viz/core-dependencies';
 
 /**
  * Whether the editor is in auto-apply mode or not.
@@ -46,7 +46,7 @@ export interface IEditorRefs {
  * based on provider.
  */
 export interface IEditorSchema {
-    provider: TSpecProvider;
+    provider: SpecProvider;
     role: TEditorRole;
     schema: object;
 }

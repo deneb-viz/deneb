@@ -67,24 +67,28 @@ describe('getJsonDocumentValidationResults', () => {
         const contentType = 'Spec';
         const content = '{"data": {"values": []}, "mark": "bar"}';
         const result: Diagnostic[] = [];
-        getJsonDocumentValidationResults(provider, contentType, content).then((res) => {
-            res.forEach((diagnostic) => {
-                result.push(diagnostic);
-            });
-            expect(result.length).toEqual(0);
-        });
+        getJsonDocumentValidationResults(provider, contentType, content).then(
+            (res) => {
+                res.forEach((diagnostic) => {
+                    result.push(diagnostic);
+                });
+                expect(result.length).toEqual(0);
+            }
+        );
     });
     it('should have results > 0 for an invalid Vega-Lite specification', () => {
         const provider = 'vegaLite' as SpecProvider;
         const contentType = 'Spec';
         const content = '{"mark": "invalid"}';
         const result: Diagnostic[] = [];
-        getJsonDocumentValidationResults(provider, contentType, content).then((res) => {
-            res.forEach((diagnostic) => {
-                result.push(diagnostic);
-            });
-            expect(result.length).toBeGreaterThan(0);
-        });
+        getJsonDocumentValidationResults(provider, contentType, content).then(
+            (res) => {
+                res.forEach((diagnostic) => {
+                    result.push(diagnostic);
+                });
+                expect(result.length).toBeGreaterThan(0);
+            }
+        );
     });
 });
 describe('getFriendlyValidationErrors', () => {

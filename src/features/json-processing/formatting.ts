@@ -4,8 +4,7 @@ import * as ace from 'ace-builds';
 import Ace = ace.Ace;
 import Editor = Ace.Editor;
 import Point = Ace.Point;
-
-import { PROPERTY_DEFAULTS } from '../../../config';
+import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
 
 /**
  * For the supplied editor, resolve the JSONPath, according to where the cursor
@@ -37,6 +36,6 @@ export const getJsonPathAtLocation = (
  */
 export const getObjectFormattedAsText = (obj: object) =>
     stringify(obj, {
-        maxLength: PROPERTY_DEFAULTS.editor.maxLineLength,
+        maxLength: PROPERTIES_DEFAULTS.editor.maxLineLength,
         indent: '\u2800'
     });

@@ -37,6 +37,10 @@ export const handleContextMenuEvent = (event: ScenegraphEvent, item: Item) => {
  * menu event to the visual.
  */
 const isContextMenuPropSet = () => {
-    const { enableContextMenu } = getVegaSettings();
+    const {
+        interactivity: {
+            enableContextMenu: { value: enableContextMenu }
+        }
+    } = getVegaSettings();
     return (enableContextMenu && getVisualInteractionStatus()) || false;
 };

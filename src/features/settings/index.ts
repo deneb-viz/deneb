@@ -1,7 +1,6 @@
-import VisualSettings from '../../properties/visual-settings';
+import { VisualFormattingSettingsModel } from '@deneb-viz/integration-powerbi';
 
 export { SettingsPane } from './components/settings-pane';
-export { VisualSettings };
 
 /**
  * Represents an enum member from capabilities.json
@@ -28,24 +27,29 @@ export interface ICapabilitiesEnumMember {
  *      there were more rows ot load, but we previously opted to ignore it)
  */
 export const isSettingsChangeVolatile = (
-    previous: VisualSettings,
-    current: VisualSettings
+    previous: VisualFormattingSettingsModel,
+    current: VisualFormattingSettingsModel
 ) => {
     if (!previous) return false;
     const selectionStatusChanged =
-        previous?.vega?.enableSelection !== current?.vega?.enableSelection;
+        previous?.vega?.interactivity?.enableSelection?.value !==
+        current?.vega?.interactivity?.enableSelection?.value;
     const selectionModeChanged =
-        previous?.vega?.selectionMode !== current?.vega?.selectionMode;
+        previous?.vega?.interactivity?.selectionMode?.value !==
+        current?.vega?.interactivity?.selectionMode?.value;
     const highlightStatusChanged =
-        previous?.vega?.enableHighlight !== current?.vega?.enableHighlight;
+        previous?.vega?.interactivity?.enableHighlight?.value !==
+        current?.vega?.interactivity?.enableHighlight?.value;
     const localeChanged =
-        previous?.developer?.locale !== current?.developer?.locale;
+        previous?.developer?.localization?.locale?.value !==
+        current?.developer?.localization?.locale?.value;
     // If we implement configurable window size (API 5.2) this will be needed.
     // const dataWindowStatusChanged =
     //     previous?.dataReductionCustomization?.categoryCount !==
     //     current?.dataReductionCustomization?.categoryCount;
     const dataLimitStatusChanged =
-        previous?.dataLimit?.override !== current?.dataLimit?.override;
+        previous?.dataLimit?.loading?.override?.value !==
+        current?.dataLimit?.loading?.override?.value;
     return (
         selectionStatusChanged ||
         selectionModeChanged ||

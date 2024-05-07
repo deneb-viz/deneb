@@ -2,7 +2,6 @@ import React, { memo, useCallback, useMemo } from 'react';
 import { createClassFromSpec, View } from 'react-vega';
 
 import { ISpecification } from '../../specification';
-import { TSpecProvider, TSpecRenderMode } from '../../../core/vega';
 import { logDebug, logRender, logTimeStart } from '../../logging';
 import {
     getVegaLoader,
@@ -14,6 +13,7 @@ import { getPowerBiTooltipHandler } from '../../interactivity';
 import { getD3FormatLocale, getD3TimeFormatLocale } from '../../i18n';
 import { getSpecificationForVisual } from '../../specification/logic';
 import { getVisualHost } from '../../visual-host';
+import { SpecProvider, SpecRenderMode } from '@deneb-viz/core-dependencies';
 
 interface IVegaRenderProps {
     datasetHash: string;
@@ -21,8 +21,8 @@ interface IVegaRenderProps {
     locale: string;
     logLevel: number;
     ordinalColorCount: number;
-    provider: TSpecProvider;
-    renderMode: TSpecRenderMode;
+    provider: SpecProvider;
+    renderMode: SpecRenderMode;
     specification: ISpecification;
     viewportHeight: number;
     viewportWidth: number;

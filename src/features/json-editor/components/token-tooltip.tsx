@@ -63,7 +63,9 @@ export const TokenTooltip: React.FC<ITokenTooltipProps> = ({
     };
     const handleMouseover = () => setVisible(true);
     const { theme } = store(
-        (state) => ({ theme: state.visualSettings.editor.theme }),
+        (state) => ({
+            theme: state.visualSettings.editor.interface.theme.value
+        }),
         shallow
     );
     const positionStyles: CSSProperties = {

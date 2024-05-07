@@ -7,7 +7,6 @@ import Range = ace.Range;
 
 import { logDebug } from '../logging';
 import { getEditorPointToPosition } from '../json-processing';
-import { TSpecProvider } from '../../core/vega';
 import { TEditorRole } from './types';
 import { EDITOR_INDICATOR_TOOLTIP_NAME } from '../../constants';
 import {
@@ -15,6 +14,7 @@ import {
     getJsonTextDocument,
     getProviderSchema
 } from '@deneb-viz/json-processing';
+import { SpecProvider } from '@deneb-viz/core-dependencies';
 
 /**
  * For a hover event in the editor, resolve it to get any relevant tooltip
@@ -23,7 +23,7 @@ import {
  */
 export const getHoverResult = async (
     event: any,
-    provider: TSpecProvider,
+    provider: SpecProvider,
     editorRole: TEditorRole
 ) => {
     const editor: Editor = event.editor;

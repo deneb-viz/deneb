@@ -12,17 +12,20 @@ import {
     TDataPointHighlightComparator,
     TDataPointHighlightStatus
 } from '../../features/interactivity';
-import { VisualSettings } from '../../features/settings';
+import { VisualFormattingSettingsModel } from '@deneb-viz/integration-powerbi';
 
 /**
  * Determines whether the visual can fetch more data, based on the feature switch and the corresponding flag in the store
  * (set by data processing methods).
  */
 export const canFetchMoreFromDataview = (
-    settings: VisualSettings,
+    settings: VisualFormattingSettingsModel,
     metadata: DataViewMetadata
 ) => {
-    return (metadata?.segment && settings.dataLimit.override) || false;
+    return (
+        (metadata?.segment && settings.dataLimit.loading.override.value) ||
+        false
+    );
 };
 
 /**

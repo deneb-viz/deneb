@@ -9,19 +9,27 @@ import {
 
 import { updateProvider } from '../../../core/ui/commands';
 import store from '../../../store';
-import { TSpecProvider } from '../../../core/vega';
 import { useSettingsStyles } from '.';
 import { SettingsHeadingLabel } from './settings-heading-label';
 import { SettingsTextSection } from './settings-text-section';
 import { getI18nValue } from '../../i18n';
+import { SelectionMode, SpecProvider } from '@deneb-viz/core-dependencies';
 
 export const ProviderSettings: React.FC = () => {
     const {
-        vega: { provider, selectionMode }
-    } = store((state) => state.visualSettings, shallow);
+        output: {
+            provider: { value: provider }
+        },
+        interactivity: {
+            selectionMode: { value: selectionMode }
+        }
+    } = store((state) => state.visualSettings.vega, shallow);
     const onChange = React.useCallback(
         (ev: React.FormEvent<HTMLDivElement>, data: RadioGroupOnChangeData) => {
-            updateProvider(data.value as TSpecProvider, selectionMode);
+            updateProvider(
+                data.value as SpecProvider,
+                selectionMode as SelectionMode
+            );
         },
         []
     );
@@ -37,7 +45,7 @@ export const ProviderSettings: React.FC = () => {
                     layout='horizontal'
                     aria-labelledby={labelId}
                     onChange={onChange}
-                    value={provider}
+                    value={provider as SpecProvider}
                 >
                     <Radio
                         value='vegaLite'

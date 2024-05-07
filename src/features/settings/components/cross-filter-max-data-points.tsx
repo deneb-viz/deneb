@@ -21,14 +21,21 @@ import { getI18nValue } from '../../i18n';
 import { useSettingsStyles } from '.';
 import { logDebug } from '../../logging';
 import { TooltipCustomMount } from '../../interface';
-import { CROSS_FILTER_LIMITS, PROPERTY_DEFAULTS } from '../../../../config';
+import {
+    CROSS_FILTER_LIMITS,
+    PROPERTIES_DEFAULTS
+} from '@deneb-viz/core-dependencies';
 
-const DEFAULT_VALUE = PROPERTY_DEFAULTS.vega.selectionMaxDataPoints;
+const DEFAULT_VALUE = PROPERTIES_DEFAULTS.vega.selectionMaxDataPoints;
 
 export const CrossFilterMaxDataPoints: React.FC = () => {
     const {
         visualSettings: {
-            vega: { selectionMaxDataPoints }
+            vega: {
+                interactivity: {
+                    selectionMaxDataPoints: { value: selectionMaxDataPoints }
+                }
+            }
         }
     } = store((state) => state, shallow);
     const onChange: SpinButtonProps['onChange'] = useCallback(

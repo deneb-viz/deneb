@@ -21,11 +21,11 @@ interface ILogLevelDropdownProps {
 export const LogLevelDropdown: React.FC<ILogLevelDropdownProps> = ({ id }) => {
     const { logLevel } = store(
         (state) => ({
-            logLevel: state.visualSettings.vega.logLevel
+            logLevel: state.visualSettings.vega.logging.logLevel.value
         }),
         shallow
     );
-    const items = useMemo(() => getFieldOptions(logLevel), []);
+    const items = useMemo(() => getFieldOptions(logLevel as number), []);
     const onChange: SelectProps['onChange'] = (
         event: React.ChangeEvent<HTMLSelectElement>,
         data

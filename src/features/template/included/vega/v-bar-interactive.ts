@@ -7,8 +7,10 @@ import {
 } from '.';
 import { getNewIncludedTemplateMetadata } from '..';
 import { DATASET_NAME, DATASET_SELECTED_NAME } from '../../../../constants';
-import { PROPERTY_DEFAULTS } from '../../../../../config';
-import { UsermetaDatasetField } from '@deneb-viz/core-dependencies';
+import {
+    PROPERTIES_DEFAULTS,
+    UsermetaDatasetField
+} from '@deneb-viz/core-dependencies';
 
 const dataset: UsermetaDatasetField[] = [
     {
@@ -150,7 +152,7 @@ export const vBarInteractive = (): Spec => ({
                 contextMenu: true,
                 highlight: true,
                 selection: true,
-                dataPointLimit: PROPERTY_DEFAULTS.vega.selectionMaxDataPoints
+                dataPointLimit: PROPERTIES_DEFAULTS.vega.selectionMaxDataPoints
             }
         }
     }

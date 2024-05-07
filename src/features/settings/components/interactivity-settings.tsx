@@ -15,10 +15,10 @@ import { FEATURES, PROVIDER_RESOURCES } from '../../../../config';
 import { launchUrl } from '../../visual-host';
 
 export const InteractivitySettings: React.FC = () => {
-    const { enableSelection, selectionMode } = store(
-        (state) => state.visualSettings.vega,
-        shallow
-    );
+    const {
+        enableSelection: { value: enableSelection },
+        selectionMode: { value: selectionMode }
+    } = store((state) => state.visualSettings.vega.interactivity, shallow);
     const openInteractivityLink = useCallback(() => {
         launchUrl(PROVIDER_RESOURCES.deneb.interactivityDocumentationUrl);
     }, []);

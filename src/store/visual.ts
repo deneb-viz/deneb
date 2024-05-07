@@ -6,7 +6,6 @@ import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import { StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
 import { TStoreState } from '.';
-import VisualSettings from '../properties/visual-settings';
 import {
     calculatePreviewMaximumHeight,
     getEditorPreviewAreaWidth,
@@ -18,7 +17,6 @@ import { getReportViewport } from '../core/ui/dom';
 import { IVisualUpdateSliceProperties } from './visual-update';
 import { getParsedSpec } from '../features/specification';
 import { getSpecificationParseOptions } from '../features/specification/logic';
-import { TSpecProvider } from '../core/vega';
 import { logDebug } from '../features/logging';
 import { isVisualUpdateVolatile } from '../features/visual-host';
 import {
@@ -37,9 +35,14 @@ import {
     isExportSpecCommandEnabled,
     IExportSpecCommandTestOptions
 } from '../features/commands';
-import { SpecProvider } from '@deneb-viz/core-dependencies';
+import { SelectionMode, SpecProvider } from '@deneb-viz/core-dependencies';
 import { getUpdatedExportMetadata } from '@deneb-viz/json-processing';
 import { PROVIDER_VERSIONS } from '../../config';
+import {
+    VisualFormattingSettingsModel,
+    getVisualFormattingModel
+} from '@deneb-viz/integration-powerbi';
+import { TEditorPosition } from '../core/ui';
 
 const defaultViewport = { width: 0, height: 0 };
 
@@ -47,7 +50,7 @@ const MAX_UPDATE_HISTORY_COUNT = 100;
 
 export interface IVisualSlice {
     visual4d3d3d: boolean;
-    visualSettings: VisualSettings;
+    visualSettings: VisualFormattingSettingsModel;
     visualUpdates: number;
     visualViewportCurrent: IViewport;
     visualViewportReport: IViewport;
@@ -58,7 +61,7 @@ export interface IVisualSlice {
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IVisualSlice>{
         visual4d3d3d: false,
-        visualSettings: <VisualSettings>VisualSettings.getDefault(),
+        visualSettings: getVisualFormattingModel(),
         visualUpdates: 0,
         visualViewportCurrent: defaultViewport,
         visualViewportReport: defaultViewport,
@@ -84,7 +87,7 @@ export const createVisualSlice: StateCreator<
 > = sliceStateInitializer;
 
 interface IVisualUpdatePayload {
-    settings: VisualSettings;
+    settings: VisualFormattingSettingsModel;
     options: VisualUpdateOptions;
 }
 
@@ -102,8 +105,11 @@ const handleSetVisualUpdate = (
 ): Partial<TStoreState> => {
     logDebug('setVisualUpdate', payload);
     const init = state.visualUpdates === 0;
-    const positionNew = payload.settings.editor.position;
-    const positionSwitch = positionNew !== state.visualSettings.editor.position;
+    const positionNew = <TEditorPosition>(
+        payload.settings.editor.json.position.value
+    );
+    const positionSwitch =
+        positionNew !== state.visualSettings.editor.json.position.value;
     const datasetViewObjects =
         payload.options.dataViews[0]?.metadata.objects || {};
     const editMode = payload.options.editMode;
@@ -114,7 +120,7 @@ const handleSetVisualUpdate = (
         dataset: state.dataset,
         editMode,
         isInFocus,
-        specification: payload.settings.vega.jsonSpec,
+        specification: payload.settings.vega.output.jsonSpec.value,
         updateType
     });
     const history: IVisualUpdateHistoryRecord[] = [
@@ -131,10 +137,14 @@ const handleSetVisualUpdate = (
     );
     const viewportCurrent = getCorrectViewport(history);
     payload.options.viewport;
-    const viewportReport = getReportViewport(
-        viewportCurrent,
-        payload.settings.display
-    );
+    const viewportReport = getReportViewport(viewportCurrent, {
+        height: Number.parseFloat(
+            payload.settings.display.viewport.viewportHeight.value
+        ),
+        width: Number.parseFloat(
+            payload.settings.display.viewport.viewportWidth.value
+        )
+    });
     const edPaneDefWidth = getEditPaneDefaultWidth(
         viewportCurrent,
         positionNew
@@ -179,10 +189,14 @@ const handleSetVisualUpdate = (
             ? getParsedSpec(state.specification, specOptions, {
                   ...specOptions,
                   ...{
-                      config: payload.settings.vega.jsonConfig,
-                      logLevel: payload.settings.vega.logLevel,
-                      provider: <TSpecProvider>payload.settings.vega.provider,
-                      spec: payload.settings.vega.jsonSpec,
+                      config: payload.settings.vega.output.jsonConfig.value,
+                      logLevel: <number>(
+                          payload.settings.vega.logging.logLevel.value
+                      ),
+                      provider: <SpecProvider>(
+                          payload.settings.vega.output.provider.value
+                      ),
+                      spec: payload.settings.vega.output.jsonSpec.value,
                       viewportHeight: viewportReport.height,
                       viewportWidth: viewportReport.width,
                       visualMode: mode
@@ -213,8 +227,10 @@ const handleSetVisualUpdate = (
     };
     const exportSpecCommandTest: IExportSpecCommandTestOptions = {
         editorIsDirty:
-            state.editor.stagedSpec !== payload.settings.vega.jsonSpec ||
-            state.editor.stagedConfig !== payload.settings.vega.jsonConfig,
+            state.editor.stagedSpec !==
+                payload.settings.vega.output.jsonSpec.value ||
+            state.editor.stagedConfig !==
+                payload.settings.vega.output.jsonConfig.value,
         specification: spec,
         interfaceMode: mode
     };
@@ -228,17 +244,23 @@ const handleSetVisualUpdate = (
     const exportMetadata = getUpdatedExportMetadata(state.export.metadata, {
         config:
             state.specification.status === 'valid'
-                ? payload.settings.vega.jsonConfig
+                ? payload.settings.vega.output.jsonConfig.value
                 : state.export.metadata.config,
-        provider: payload.settings.vega.provider as SpecProvider,
-        providerVersion: PROVIDER_VERSIONS[payload.settings.vega.provider],
+        provider: payload.settings.vega.output.provider.value as SpecProvider,
+        providerVersion:
+            PROVIDER_VERSIONS[payload.settings.vega.output.provider.value],
         interactivity: {
-            tooltip: payload.settings.vega.enableTooltips,
-            contextMenu: payload.settings.vega.enableContextMenu,
-            selection: payload.settings.vega.enableSelection,
-            selectionMode: payload.settings.vega.selectionMode,
-            highlight: payload.settings.vega.enableHighlight,
-            dataPointLimit: payload.settings.vega.selectionMaxDataPoints
+            tooltip: payload.settings.vega.interactivity.enableTooltips.value,
+            contextMenu:
+                payload.settings.vega.interactivity.enableContextMenu.value,
+            selection:
+                payload.settings.vega.interactivity.enableSelection.value,
+            selectionMode: payload.settings.vega.interactivity.selectionMode
+                .value as SelectionMode,
+            highlight:
+                payload.settings.vega.interactivity.enableHighlight.value,
+            dataPointLimit:
+                payload.settings.vega.interactivity.selectionMaxDataPoints.value
         }
     });
     return {
@@ -254,7 +276,8 @@ const handleSetVisualUpdate = (
         },
         datasetViewObjects,
         debug: { ...state.debug, logAttention: spec.errors.length > 0 },
-        editorIsNewDialogVisible: payload.settings.vega.isNewDialogOpen,
+        editorIsNewDialogVisible:
+            payload.settings.vega.state.isNewDialogOpen.value,
         editorPaneWidth: edPaneWidth,
         editorPaneDefaultWidth: edPaneDefWidth,
         editorPaneExpandedWidth: edPaneExpWidth,

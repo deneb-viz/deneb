@@ -13,12 +13,10 @@ import DataViewPropertyValue = powerbi.DataViewPropertyValue;
 import cloneDeep from 'lodash/cloneDeep';
 import reduce from 'lodash/reduce';
 
-import VisualSettings from '../../properties/visual-settings';
-
 import { getState } from '../../store';
-import { TSpecProvider } from '../vega';
 import { APPLICATION_INFORMATION, PROVIDER_VERSIONS } from '../../../config';
 import { getVisualHost } from '../../features/visual-host';
+import { SpecProvider } from '@deneb-viz/core-dependencies';
 
 /**
  * Handles resolution of object properties from the data view, either for persistence.
@@ -31,11 +29,7 @@ const resolveObjectProperties = (objects: IPersistenceObject[]) => {
         objects,
         (result, value, index) => {
             value.properties.forEach((p) => {
-                const defaultValue = <string>(
-                    VisualSettings.getDefault()[value.objectName][p.name]
-                );
-                result.replace[index].properties[p.name] =
-                    p.value ?? defaultValue;
+                result.replace[index].properties[p.name] = p.value;
             });
             return result;
         },
@@ -98,7 +92,7 @@ const getNewObjectInstanceToPersist = (): VisualObjectInstancesToPersist => ({
  * Return the version number for the supplied provider as a persistable property.
  */
 const getProviderVersionProperty = (
-    provider: TSpecProvider
+    provider: SpecProvider
 ): IPersistenceProperty => ({
     name: 'version',
     value: PROVIDER_VERSIONS[provider]

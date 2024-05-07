@@ -6,7 +6,7 @@ import merge from 'lodash/merge';
 import omit from 'lodash/omit';
 
 import { TStoreState, getState } from '../../store';
-import { getVegaSettings, TSpecProvider } from '../../core/vega';
+import { getVegaSettings } from '../../core/vega';
 import {
     resolveObjectProperties,
     updateObjectProperties
@@ -31,7 +31,7 @@ import { IVisualDatasetValueRow } from '../../core/data';
 import { DATASET_NAME } from '../../constants';
 import { getI18nValue } from '../i18n';
 import { getHashValue } from '../../utils';
-import { PROPERTY_DEFAULTS, PROVIDER_RESOURCES } from '../../../config';
+import { PROVIDER_RESOURCES } from '../../../config';
 import { IAceEditor } from 'react-ace/lib/types';
 import {
     getEditorFolds,
@@ -46,6 +46,10 @@ import {
     getProviderValidator,
     getTextFormattedAsJsonC
 } from '@deneb-viz/json-processing';
+import {
+    PROPERTIES_DEFAULTS,
+    SpecProvider
+} from '@deneb-viz/core-dependencies';
 
 /**
  * For a given operation and string input, ensure that it's trimmed and replaced with suitable defaults if empty.
@@ -58,9 +62,9 @@ const cleanJsonInputForPersistence = (
     if (clean === '') {
         switch (operation) {
             case 'Spec':
-                return PROPERTY_DEFAULTS.vega.jsonSpec;
+                return PROPERTIES_DEFAULTS.vega.jsonSpec;
             case 'Config':
-                return PROPERTY_DEFAULTS.vega.jsonConfig;
+                return PROPERTIES_DEFAULTS.vega.jsonConfig;
         }
     }
     return clean;
@@ -310,7 +314,7 @@ const getPatchedData = (spec: Vega.Spec, values: IVisualDatasetValueRow[]) => {
  */
 const getPatchedSpec = (
     content: string,
-    provider: TSpecProvider
+    provider: SpecProvider
 ): IContentPatchResult => {
     try {
         const parsedSpec = getParsedJsonWithResult(content);
@@ -422,7 +426,11 @@ export const getSpecificationForVisual = () => {
         dataset: { values },
         specification: { spec },
         visualSettings: {
-            vega: { provider }
+            vega: {
+                output: {
+                    provider: { value: provider }
+                }
+            }
         }
     } = getState();
     /**
@@ -452,11 +460,11 @@ export const getSpecificationForVisual = () => {
 export const getSpecificationParseOptions = (
     state: TStoreState
 ): ISpecificationParseOptions => ({
-    config: state.visualSettings.vega.jsonConfig,
+    config: state.visualSettings.vega.output.jsonConfig.value,
     datasetHash: state.dataset.hashValue,
-    logLevel: state.visualSettings.vega.logLevel,
-    provider: <TSpecProvider>state.visualSettings.vega.provider,
-    spec: state.visualSettings.vega.jsonSpec,
+    logLevel: state.visualSettings.vega.logging.logLevel.value as number,
+    provider: state.visualSettings.vega.output.provider.value as SpecProvider,
+    spec: state.visualSettings.vega.output.jsonSpec.value,
     viewportHeight: state.visualViewportReport.height,
     viewportWidth: state.visualViewportReport.width,
     visualMode: state.interface.mode
@@ -471,7 +479,12 @@ export const hasLiveSpecChanged = (
     specEditor: IAceEditor,
     configEditor: IAceEditor
 ) => {
-    const { jsonSpec, jsonConfig } = getVegaSettings(),
+    const {
+            output: {
+                jsonSpec: { value: jsonSpec },
+                jsonConfig: { value: jsonConfig }
+            }
+        } = getVegaSettings(),
         liveSpec = getCleanEditorJson('Spec', specEditor),
         liveConfig = getCleanEditorJson('Config', configEditor);
     return liveSpec != jsonSpec || liveConfig != jsonConfig;
@@ -497,8 +510,11 @@ export const isUnversionedSpec = () => !isNewSpec() && !isVersionedSpec();
  * In order to determine if our current spec/config is the same as the default properties, indicating that
  */
 const isNewSpec = () => {
-    const defaults = PROPERTY_DEFAULTS.vega;
-    const { jsonSpec, jsonConfig } = getVegaSettings();
+    const defaults = PROPERTIES_DEFAULTS.vega;
+    const {
+        jsonSpec: { value: jsonSpec },
+        jsonConfig: { value: jsonConfig }
+    } = getVegaSettings().output;
     return jsonSpec === defaults.jsonSpec && jsonConfig === defaults.jsonConfig;
 };
 
@@ -530,8 +546,16 @@ export const isSpecificationVolatile = (
 const isVersionedSpec = () => {
     const {
         visualSettings: {
-            developer: { version: denebVersion },
-            vega: { version: providerVersion }
+            developer: {
+                versioning: {
+                    version: { value: denebVersion }
+                }
+            },
+            vega: {
+                output: {
+                    version: { value: providerVersion }
+                }
+            }
         }
     } = getState();
     return (denebVersion && providerVersion) || false;
@@ -549,7 +573,12 @@ export const persistSpecification = (
     const {
         editor: { stagedConfig, stagedSpec, updateChanges },
         visualSettings: {
-            vega: { jsonConfig, jsonSpec }
+            vega: {
+                output: {
+                    jsonConfig: { value: jsonConfig },
+                    jsonSpec: { value: jsonSpec }
+                }
+            }
         }
     } = getState();
     const spec =
@@ -579,7 +608,7 @@ const tryFormatJson = (operation: TEditorRole, input: string): IFixStatus => {
             success: true,
             text: getTextFormattedAsJsonC(
                 input,
-                PROPERTY_DEFAULTS.editor.tabSize
+                PROPERTIES_DEFAULTS.editor.tabSize
             )
         };
     } catch (e) {

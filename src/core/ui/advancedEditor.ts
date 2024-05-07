@@ -81,7 +81,11 @@ export const calculateEditorPaneMaxWidth = () => {
         editorPaneWidth,
         editorPreviewAreaWidth,
         visualSettings: {
-            editor: { position }
+            editor: {
+                json: {
+                    position: { value: position }
+                }
+            }
         },
         visualViewportCurrent: { width }
     } = getState();
@@ -110,7 +114,7 @@ export const getResizablePaneMaxSize = () => {
     const { editor } = visualSettings;
     return (
         (editorPaneIsExpanded &&
-            (editor.position === 'right'
+            (editor.json.position.value === 'right'
                 ? visualViewportCurrent.width - EDITOR_PANE_SPLIT_MIN_SIZE
                 : visualViewportCurrent.width *
                   EDITOR_PANE_SPLIT_MAX_SIZE_PERCENT)) ||
@@ -126,11 +130,11 @@ export const getResizablePaneMinSize = () => {
         getState();
     const { editor } = visualSettings;
     const resolvedCollapsedSize =
-        editor.position === 'right'
+        editor.json.position.value === 'right'
             ? visualViewportCurrent.width - EDITOR_PANE_SPLIT_COLLAPSED_SIZE
             : EDITOR_PANE_SPLIT_COLLAPSED_SIZE;
     const resolvedMinSize =
-        editor.position === 'right'
+        editor.json.position.value === 'right'
             ? visualViewportCurrent.width *
               (1 - EDITOR_PANE_SPLIT_MAX_SIZE_PERCENT)
             : EDITOR_PANE_SPLIT_MIN_SIZE;

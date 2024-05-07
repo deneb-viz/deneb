@@ -1,7 +1,7 @@
 import * as Vega from 'vega';
 import * as VegaLite from 'vega-lite';
-import { TSpecProvider } from '../../core/vega';
 import { InterfaceMode } from '../interface';
+import { SpecProvider } from '@deneb-viz/core-dependencies';
 
 /**
  * Values for a spec's parse status.
@@ -35,7 +35,7 @@ export interface ISpecificationComparisonOptions {
     datasetHash: string;
     config: string;
     spec: string;
-    provider: TSpecProvider;
+    provider: SpecProvider;
     viewportHeight: number;
     viewportWidth: number;
 }
@@ -47,7 +47,7 @@ export interface ISpecificationParseOptions {
     config: string;
     datasetHash: string;
     logLevel: number;
-    provider: TSpecProvider;
+    provider: SpecProvider;
     spec: string;
     viewportHeight: number;
     viewportWidth: number;

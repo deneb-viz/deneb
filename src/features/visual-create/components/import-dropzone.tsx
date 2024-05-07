@@ -14,8 +14,10 @@ import store, { getState } from '../../../store';
 import { getI18nValue } from '../../i18n';
 import { logDebug, logRender } from '../../logging';
 import { getValidatedTemplate } from '@deneb-viz/json-processing';
-import { PROPERTY_DEFAULTS } from '../../../../config';
-import { DenebTemplateImportState } from '@deneb-viz/core-dependencies';
+import {
+    DenebTemplateImportState,
+    PROPERTIES_DEFAULTS
+} from '@deneb-viz/core-dependencies';
 
 /**
  * Base styling for dropzone.
@@ -204,7 +206,7 @@ const handleValidation = (content: string) => {
     setImportState({ importState: 'Validating', refresh: true });
     const validationResult = getValidatedTemplate(
         content,
-        PROPERTY_DEFAULTS.editor.tabSize
+        PROPERTIES_DEFAULTS.editor.tabSize
     );
     setImportFile(validationResult);
 };

@@ -3,7 +3,6 @@ import IViewport = powerbi.IViewport;
 import EditMode = powerbi.EditMode;
 import ViewMode = powerbi.ViewMode;
 
-import DisplaySettings from '../../properties/display-settings';
 import {
     resolveObjectProperties,
     updateObjectProperties
@@ -14,11 +13,10 @@ const viewportAdjust = 4;
 
 export const getReportViewport = (
     viewport: IViewport,
-    displaySettings: DisplaySettings
+    persistedViewport: IViewport
 ) => ({
-    height:
-        (displaySettings.viewportHeight || viewport.height) - viewportAdjust,
-    width: (displaySettings.viewportWidth || viewport.width) - viewportAdjust
+    height: (persistedViewport.height || viewport.height) - viewportAdjust,
+    width: (persistedViewport.width || viewport.width) - viewportAdjust
 });
 
 /**
@@ -34,13 +32,13 @@ export const resolveReportViewport = (
     viewport: IViewport,
     viewMode: ViewMode,
     editMode: EditMode,
-    displaySettings: DisplaySettings
+    newViewport: IViewport
 ) => {
     if (
         editMode === EditMode.Default &&
         viewMode === ViewMode.Edit &&
-        (displaySettings.viewportHeight !== viewport.height ||
-            displaySettings.viewportWidth !== viewport.width)
+        (newViewport.height !== viewport.height ||
+            newViewport.width !== viewport.width)
     ) {
         logDebug('Persisting viewport to properties...');
         updateObjectProperties(

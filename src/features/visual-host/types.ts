@@ -1,12 +1,12 @@
 import powerbi from 'powerbi-visuals-api';
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 
-import { VisualSettings } from '../settings';
+import { VisualFormattingSettingsModel } from '@deneb-viz/integration-powerbi';
 
 export interface IVisualUpdateComparisonOptions {
     currentProcessingFlag: boolean;
     previousOptions: VisualUpdateOptions;
     currentOptions: VisualUpdateOptions;
-    previousSettings: VisualSettings;
-    currentSettings: VisualSettings;
+    previousSettings: VisualFormattingSettingsModel;
+    currentSettings: VisualFormattingSettingsModel;
 }

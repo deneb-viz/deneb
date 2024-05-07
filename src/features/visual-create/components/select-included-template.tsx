@@ -18,16 +18,19 @@ import {
 } from '../../template';
 import { getState } from '../../../store';
 import { useCreateStyles } from './';
-import { getVegaProvideri18n, TSpecProvider } from '../../../core/vega';
+import { getVegaProvideri18n } from '../../../core/vega';
 import {
     getTemplateMetadata,
     getTemplateResolvedForPlaceholderAssignment
 } from '@deneb-viz/json-processing';
-import { PROPERTY_DEFAULTS } from '../../../../config';
-import { UsermetaTemplate } from '@deneb-viz/core-dependencies';
+import {
+    PROPERTIES_DEFAULTS,
+    SpecProvider,
+    UsermetaTemplate
+} from '@deneb-viz/core-dependencies';
 
 interface ISelectIncludedTemplateProps {
-    createMode: TSpecProvider;
+    createMode: SpecProvider;
 }
 
 /**
@@ -114,7 +117,7 @@ export const SelectIncludedTemplate: React.FC<ISelectIncludedTemplateProps> = ({
  * representations of their content, so that they can work with the JSONC APIs
  * downstream.
  */
-const dispatchSelectedTemplate = (createMode: TSpecProvider, name: string) => {
+const dispatchSelectedTemplate = (createMode: SpecProvider, name: string) => {
     const {
         create: { setTemplate }
     } = getState();
@@ -122,7 +125,7 @@ const dispatchSelectedTemplate = (createMode: TSpecProvider, name: string) => {
     const templateContent = JSON.stringify(template);
     const candidates = getTemplateResolvedForPlaceholderAssignment(
         templateContent,
-        PROPERTY_DEFAULTS.editor.tabSize
+        PROPERTIES_DEFAULTS.editor.tabSize
     );
     setTemplate({
         metadata: getTemplateMetadata(templateContent),
