@@ -139,10 +139,10 @@ const handleSetVisualUpdate = (
     payload.options.viewport;
     const viewportReport = getReportViewport(viewportCurrent, {
         height: Number.parseFloat(
-            payload.settings.display.viewport.viewportHeight.value
+            payload.settings.stateManagement.viewport.viewportHeight.value
         ),
         width: Number.parseFloat(
-            payload.settings.display.viewport.viewportWidth.value
+            payload.settings.stateManagement.viewport.viewportWidth.value
         )
     });
     const edPaneDefWidth = getEditPaneDefaultWidth(

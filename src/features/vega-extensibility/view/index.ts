@@ -6,6 +6,7 @@ import { getState } from '../../../store';
 import { VegaPatternFillServices } from '../pattern-fill';
 import { IVegaViewServices } from '../types';
 import { setRenderingFinished, setRenderingStarted } from '../../visual-host';
+import { getPowerBiSignalContainer } from '@deneb-viz/integration-powerbi';
 
 export { getVegaLoader } from './loader';
 
@@ -61,6 +62,16 @@ export const VegaViewServices: IVegaViewServices = {
      */
     getSignalByName: (name: string) => view?.signal(name),
     /**
+     * Set specified signal in view by name. f it does not exist, it will not be set.
+     */
+    setSignalByName: (name: string, value: any) => {
+        if (VegaViewServices.doesSignalNameExist(name)) {
+            console.log('Setting signal', name, value);
+            view?.signal(name, value);
+            view?.runAsync();
+        }
+    },
+    /**
      * Obtain the current Vega view.
      */
     getView: () => view
@@ -83,6 +94,21 @@ const bindContextMenuEvents = (view: View) => {
 const bindCrossFilterEvents = (view: View) => {
     logDebug('Binding cross-filter menu listener...');
     view.addEventListener('click', handleCrossFilterEvent);
+};
+
+/**
+ * For the supplied view, bind the custom container signals.
+ */
+const bindContainerSignals = (view: View) => {
+    const update = () => {
+        const container = view.container();
+        const signal = getPowerBiSignalContainer({ container });
+        VegaViewServices.setSignalByName(signal.name, signal.value);
+    };
+    update();
+    view.addResizeListener(() => {
+        update();
+    });
 };
 
 /**
@@ -112,6 +138,7 @@ export const handleNewView = (newView: View) => {
             signals: VegaViewServices.getAllSignals(),
             data: VegaViewServices.getAllData()
         });
+        bindContainerSignals(view);
         bindContextMenuEvents(view);
         selectionMode === 'simple' && bindCrossFilterEvents(view);
         generateRenderId();

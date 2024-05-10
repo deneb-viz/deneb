@@ -119,10 +119,12 @@ export class Deneb implements IVisual {
                     options.editMode,
                     {
                         height: Number.parseFloat(
-                            this.settings.display.viewport.viewportHeight.value
+                            this.settings.stateManagement.viewport
+                                .viewportHeight.value
                         ),
                         width: Number.parseFloat(
-                            this.settings.display.viewport.viewportWidth.value
+                            this.settings.stateManagement.viewport.viewportWidth
+                                .value
                         )
                     }
                 );

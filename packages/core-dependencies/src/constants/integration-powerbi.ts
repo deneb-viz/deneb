@@ -85,13 +85,13 @@ export const PROPERTIES_DEFAULTS = {
             default: 0
         },
         /**
-         * Persisted height of visual viewport in view mode (should preserve height on re-init).
+         * The time between throttling scroll events
          */
-        viewportHeight: null,
-        /**
-         * Persisted width of visual viewport in view mode (should preserve width on re-init)
-         */
-        viewportWidth: null
+        scrollEventThrottle: {
+            min: 0,
+            max: 1000,
+            default: 5
+        }
     },
     editor: {
         /**
@@ -155,6 +155,16 @@ export const PROPERTIES_DEFAULTS = {
          */
         wordWrap: true
     },
+    stateManagement: {
+        /**
+         * Persisted height of visual viewport in view mode (should preserve height on re-init).
+         */
+        viewportHeight: null,
+        /**
+         * Persisted width of visual viewport in view mode (should preserve width on re-init)
+         */
+        viewportWidth: null
+    },
     theme: {
         /**
          * Number of discrete colors to use when computing the `pbiColorOrdinal` scheme hues.
@@ -166,6 +176,7 @@ export const PROPERTIES_DEFAULTS = {
         }
     },
     unitSymbols: {
+        milliseconds: 'ms',
         percent: '%',
         pixels: 'px',
         pt: 'pt'
@@ -232,4 +243,11 @@ export const PROPERTIES_DEFAULTS = {
          */
         version: ''
     }
+};
+
+/**
+ * Signals that are patched to the Vega view for Power BI integration.
+ */
+export const SIGNALS_POWERBI = {
+    container: 'pbiContainer'
 };
