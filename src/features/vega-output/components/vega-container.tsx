@@ -7,10 +7,13 @@ import { logRender } from '../../logging';
 import { VegaRender } from './vega-render';
 import { useVegaStyles } from '..';
 import { mergeClasses } from '@griffel/core';
-import Scrollbars from 'react-custom-scrollbars-2';
+import Scrollbars, { positionValues } from 'react-custom-scrollbars-2';
 import { clearSelection, hidePowerBiTooltip } from '../../interactivity';
 import { VEGA_CONTAINER_ID } from '../../../constants';
 import { SpecProvider, SpecRenderMode } from '@deneb-viz/core-dependencies';
+import { VegaViewServices } from '../../vega-extensibility';
+import { throttle } from 'lodash';
+import { getPowerBiSignalContainer } from '@deneb-viz/integration-powerbi';
 
 /**
  * Master component for hosting Vega content. We will handle the workflow
@@ -33,6 +36,7 @@ export const VegaContainer: React.FC = () => {
         scrollbarColor,
         scrollbarOpacity,
         scrollbarRadius,
+        scrollEventThrottle,
         specification,
         viewportHeight,
         viewportWidth,
@@ -61,6 +65,9 @@ export const VegaContainer: React.FC = () => {
                 state.visualSettings.display.scrollbars.scrollbarOpacity.value,
             scrollbarRadius:
                 state.visualSettings.display.scrollbars.scrollbarRadius.value,
+            scrollEventThrottle:
+                state.visualSettings.display.scrollEvents.scrollEventThrottle
+                    .value,
             specification: state.specification,
             viewportHeight: state.visualViewportReport.height,
             viewportWidth: state.visualViewportReport.width,
@@ -132,6 +139,19 @@ export const VegaContainer: React.FC = () => {
             renderThumbVertical={scrollbarThumbVertical}
             onClick={clearSelection}
             onMouseOut={hidePowerBiTooltip}
+            onScrollFrame={throttle((e: positionValues) => {
+                const signal = getPowerBiSignalContainer({
+                    scroll: {
+                        height: e.scrollHeight,
+                        width: e.scrollWidth,
+                        scrollHeight: e.scrollHeight,
+                        scrollWidth: e.scrollWidth,
+                        scrollTop: e.scrollTop,
+                        scrollLeft: e.scrollLeft
+                    }
+                });
+                VegaViewServices.setSignalByName(signal.name, signal.value);
+            }, scrollEventThrottle)}
         >
             {vegaComponent}
         </Scrollbars>

@@ -64,16 +64,6 @@
         },
         "display": {
             "properties": {
-                "viewportHeight": {
-                    "type": {
-                        "numeric": true
-                    }
-                },
-                "viewportWidth": {
-                    "type": {
-                        "numeric": true
-                    }
-                },
                 "scrollbarColor": {
                     "type": {
                         "fill": {
@@ -91,6 +81,11 @@
                 "scrollbarRadius": {
                     "type": {
                         "integer": true
+                    }
+                },
+                "scrollEventThrottle": {
+                    "type": {
+                        "numeric": true
                     }
                 }
             }
@@ -330,6 +325,20 @@
                 "showCustomVisualNotes": {
                     "type": {
                         "bool": true
+                    }
+                }
+            }
+        },
+        "stateManagement": {
+            "properties": {
+                "viewportHeight": {
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "viewportWidth": {
+                    "type": {
+                        "numeric": true
                     }
                 }
             }

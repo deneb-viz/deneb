@@ -10,8 +10,10 @@ const CANCEL =
 export const FourD3D3D: React.FC = () => {
     const { height, width, logWarn, clearLog, setVisual4d3d3d } = store(
         (state) => ({
-            height: state.visualSettings.display.viewport.viewportHeight.value,
-            width: state.visualSettings.display.viewport.viewportWidth.value,
+            height: state.visualSettings.stateManagement.viewport.viewportHeight
+                .value,
+            width: state.visualSettings.stateManagement.viewport.viewportWidth
+                .value,
             clearLog: state.specification.clearLog,
             logWarn: state.specification.logWarn,
             setVisual4d3d3d: state.setVisual4d3d3d

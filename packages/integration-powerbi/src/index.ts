@@ -9,3 +9,4 @@ export {
     VisualFormattingSettingsModel,
     VisualFormattingSettingsService
 } from './properties';
+export { getPowerBiSignalContainer } from './signals';

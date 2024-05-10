@@ -66,5 +66,6 @@ export interface IVegaViewServices {
     getAllSignals: () => any;
     getDataByName: (name: string) => any[];
     getSignalByName: (name: string) => any;
+    setSignalByName: (name: string, value: any) => void;
     getView: () => View;
 }

@@ -75,7 +75,7 @@ export const SignalValue: React.FC<IDataTableCellSignalValueProps> = ({
      * Handler for signal listener events.
      */
     const signalListener = (name: string, value: any) => {
-        setSignalValue(value);
+        setSignalValue(() => value);
         logDebug(`[${renderId}] Signal value for ${name} has changed`, value);
     };
     const getSignalValue = () => {
@@ -105,7 +105,7 @@ export const SignalValue: React.FC<IDataTableCellSignalValueProps> = ({
         logDebug(
             `Signal name has changed from ${previousSignalName} to ${signalName}. Updating...`
         );
-        setSignalValue(getSignalValue());
+        setSignalValue(() => getSignalValue());
         cycleListeners();
         return () => {
             removeListener();
@@ -120,7 +120,7 @@ export const SignalValue: React.FC<IDataTableCellSignalValueProps> = ({
             `Initial value for signal ${signalName} has changed. Updating...`,
             { prev: signalValue, next: initialValue }
         );
-        setSignalValue(getSignalValue());
+        setSignalValue(() => getSignalValue());
     }, [initialValue]);
     logRender('DataTableCellSignalValue', {
         signalName,

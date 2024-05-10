@@ -44,7 +44,7 @@ export const resolveReportViewport = (
         updateObjectProperties(
             resolveObjectProperties([
                 {
-                    objectName: 'display',
+                    objectName: 'stateManagement',
                     properties: [
                         {
                             name: 'viewportHeight',

@@ -50,6 +50,7 @@ import {
     PROPERTIES_DEFAULTS,
     SpecProvider
 } from '@deneb-viz/core-dependencies';
+import { getPowerBiSignalContainer } from '@deneb-viz/integration-powerbi';
 
 /**
  * For a given operation and string input, ensure that it's trimmed and replaced with suitable defaults if empty.
@@ -344,7 +345,8 @@ const getPatchedVegaSpec = (spec: Vega.Spec): Vega.Spec => {
         width: spec['width'] ?? { signal: 'pbiContainerWidth' },
         signals: [
             ...(spec['signals'] || []),
-            ...(PROVIDER_RESOURCES?.vega?.patch?.signals || [])
+            ...(PROVIDER_RESOURCES?.vega?.patch?.signals || []),
+            getPowerBiSignalContainer()
         ]
     });
 };
@@ -383,7 +385,11 @@ const getPatchedVegaLiteSpec = (spec: VegaLite.TopLevelSpec) => {
             ? {}
             : {
                   height: spec['height'] ?? 'container',
-                  width: spec['width'] ?? 'container'
+                  width: spec['width'] ?? 'container',
+                  params: [
+                      ...(spec['params'] || []),
+                      getPowerBiSignalContainer()
+                  ]
               }
     );
 };
