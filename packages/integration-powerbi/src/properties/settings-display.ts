@@ -6,8 +6,8 @@ export class SettingsDisplay extends formattingSettings.CompositeCard {
     displayNameKey = 'Objects_Display';
     descriptionKey = 'Objects_Display_Description';
     scrollbars = new SettingsDisplayGroupScrollbars(Object());
-    viewport = new SettingsDisplayGroupViewport(Object());
-    groups = [this.scrollbars, this.viewport];
+    scrollEvents = new SettingDisplayGroupScrollEvents(Object());
+    groups = [this.scrollbars, this.scrollEvents];
 }
 
 class SettingsDisplayGroupScrollbars extends formattingSettings.Group {
@@ -56,20 +56,25 @@ class SettingsDisplayGroupScrollbars extends formattingSettings.Group {
     slices = [this.scrollbarColor, this.scrollbarOpacity, this.scrollbarRadius];
 }
 
-class SettingsDisplayGroupViewport extends formattingSettings.Group {
-    name = 'viewport';
-    displayNameKey = 'Objects_Display_Group_Viewport';
-    viewportHeight = new formattingSettings.ReadOnlyText({
-        name: 'viewportHeight',
-        displayNameKey: 'Objects_Display_ViewportHeight',
-        descriptionKey: 'Objects_Display_ViewportHeight_Description',
-        value: PROPERTIES_DEFAULTS.display.viewportHeight
+class SettingDisplayGroupScrollEvents extends formattingSettings.Group {
+    name = 'scrollEvents';
+    displayNameKey = 'Objects_Display_Group_ScrollEvents';
+    scrollEventThrottle = new formattingSettings.NumUpDown({
+        name: 'scrollEventThrottle',
+        displayNameKey: 'Objects_Display_ScrollEventThrottle',
+        descriptionKey: 'Objects_Display_ScrollEventThrottle_Description',
+        value: PROPERTIES_DEFAULTS.display.scrollEventThrottle.default,
+        options: {
+            minValue: {
+                value: PROPERTIES_DEFAULTS.display.scrollEventThrottle.min,
+                type: 0
+            },
+            maxValue: {
+                value: PROPERTIES_DEFAULTS.display.scrollEventThrottle.max,
+                type: 1
+            },
+            unitSymbol: PROPERTIES_DEFAULTS.unitSymbols.milliseconds
+        }
     });
-    viewportWidth = new formattingSettings.ReadOnlyText({
-        name: 'viewportWidth',
-        displayNameKey: 'Objects_Display_ViewportWidth',
-        descriptionKey: 'Objects_Display_ViewportWidth_Description',
-        value: PROPERTIES_DEFAULTS.display.viewportWidth
-    });
-    slices = [this.viewportHeight, this.viewportWidth];
+    slices = [this.scrollEventThrottle];
 }

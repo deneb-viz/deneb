@@ -7,6 +7,7 @@ import { SettingsGeneral } from './settings-general';
 import { SettingsTheme } from './settings-theme';
 import { SettingsVega } from './settings-vega';
 import { SettingsEditor } from './settings-editor';
+import { SettingsStateManagement } from './settings-state-management';
 
 /**
  * Master formatting model for the Power BI formatting pane.
@@ -18,12 +19,14 @@ export class VisualFormattingSettingsModel extends formattingSettings.Model {
     dataLimit = new SettingsDataLimit();
     display = new SettingsDisplay();
     vega = new SettingsVega();
+    stateManagement = new SettingsStateManagement();
     developer = new SettingsDeveloper();
     cards = [
         this.editor,
         this.theme,
         this.display,
         this.dataLimit,
+        this.stateManagement,
         this.vega,
         this.developer
     ];
@@ -34,6 +37,7 @@ export class VisualFormattingSettingsModel extends formattingSettings.Model {
         if (!developerMode) {
             this.developer.visible = false;
             this.vega.visible = false;
+            this.stateManagement.visible = false;
         }
     };
 }

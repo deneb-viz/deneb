@@ -74,10 +74,12 @@ export const VisualPreview: React.FC = () => {
                 state.visualSettings.editor.preview.showViewportMarker.value,
             status: state.specification.status,
             viewportHeight: Number.parseFloat(
-                state.visualSettings.display.viewport.viewportHeight.value
+                state.visualSettings.stateManagement.viewport.viewportHeight
+                    .value
             ),
             viewportWidth: Number.parseFloat(
-                state.visualSettings.display.viewport.viewportWidth.value
+                state.visualSettings.stateManagement.viewport.viewportWidth
+                    .value
             ),
             visual4d3d3d: state.visual4d3d3d
         }),
