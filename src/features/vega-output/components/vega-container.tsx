@@ -12,7 +12,7 @@ import { clearSelection, hidePowerBiTooltip } from '../../interactivity';
 import { VEGA_CONTAINER_ID } from '../../../constants';
 import { SpecProvider, SpecRenderMode } from '@deneb-viz/core-dependencies';
 import { VegaViewServices } from '../../vega-extensibility';
-import { throttle } from 'lodash';
+import throttle from 'lodash/throttle';
 import { getPowerBiSignalContainer } from '@deneb-viz/integration-powerbi';
 
 /**

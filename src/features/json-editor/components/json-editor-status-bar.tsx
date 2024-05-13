@@ -62,18 +62,18 @@ export const JsonEditorStatusBar: React.FC<IStatusBarProps> = ({
     return (
         <StatusBarContainer>
             <div className={classes.surround}>
-                <div className={classes.container}>
+                <div
+                    className={classes.container}
+                    onMouseEnter={clearTokenTooltip}
+                    onMouseMove={clearTokenTooltip}
+                >
                     <div className={classes.collapse}>
                         <ToolbarButtonStandard
                             command='editorPaneToggle'
                             role='debug'
                         />
                     </div>
-                    <div
-                        className={classes.status}
-                        onMouseEnter={clearTokenTooltip}
-                        onMouseMove={clearTokenTooltip}
-                    >
+                    <div className={classes.status}>
                         <div className='status-cursor'>
                             <Caption1>
                                 {getI18nValue('Text_Editor_Status_Bar_Line')}{' '}

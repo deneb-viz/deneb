@@ -54,7 +54,7 @@ interface IJsonEditorStatusState {
     selectedText: string;
 }
 
-const MOUSEMOVE_DEBOUNCE = 400;
+const MOUSEMOVE_DEBOUNCE = 200;
 
 /**
  * Represents an instance of Ace editor, responsible for maintaining either
