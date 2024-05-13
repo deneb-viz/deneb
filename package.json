@@ -92,7 +92,7 @@
         "vega": "5.28.0",
         "vega-lite": "5.18.0",
         "vscode-json-languageservice": "^5.3.7",
-        "zustand": "^4.3.7"
+        "zustand": "^4.5.2"
     },
     "overrides": {
         "vscode-uri": "3.0.7"

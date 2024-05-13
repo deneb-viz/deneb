@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import * as ace from 'ace-builds';
 import Ace = ace.Ace;
-import { Caption1, makeStyles, tokens } from '@fluentui/react-components';
+import {
+    Caption1,
+    Tooltip,
+    makeStyles,
+    tokens
+} from '@fluentui/react-components';
 
 import { logRender } from '../../logging';
-import { StatusBarContainer } from '../../interface';
+import { StatusBarContainer, TooltipCustomMount } from '../../interface';
 import { getI18nValue } from '../../i18n';
 import { ToolbarButtonStandard } from '../../toolbar/components/toolbar-button-standard';
 import { PREVIEW_PANE_TOOLBAR_MIN_SIZE } from '../../../constants';
@@ -58,6 +63,7 @@ export const JsonEditorStatusBar: React.FC<IStatusBarProps> = ({
     const classes = useStatusStyles();
     const row = position.row + 1;
     const column = position.column + 1;
+    const [tabRef, setTabRef] = useState<HTMLElement | null>();
     logRender('JsonEditorStatusBar');
     return (
         <StatusBarContainer>
@@ -83,15 +89,31 @@ export const JsonEditorStatusBar: React.FC<IStatusBarProps> = ({
                             </Caption1>
                         </div>
                         <div className='status-tabbing'>
-                            <Caption1>
-                                {escapeHatch
-                                    ? getI18nValue(
-                                          'Text_Editor_Status_Bar_Tab_Focus'
-                                      )
-                                    : getI18nValue(
-                                          'Text_Editor_Status_Bar_Tab_Edit'
-                                      )}{' '}
-                            </Caption1>
+                            <Tooltip
+                                content={
+                                    escapeHatch
+                                        ? getI18nValue(
+                                              'Text_Editor_Status_Bar_Tab_Focus_Tooltip'
+                                          )
+                                        : getI18nValue(
+                                              'Text_Editor_Status_Bar_Tab_Edit_Tooltip'
+                                          )
+                                }
+                                relationship='label'
+                                withArrow
+                                mountNode={tabRef}
+                            >
+                                <Caption1>
+                                    {escapeHatch
+                                        ? getI18nValue(
+                                              'Text_Editor_Status_Bar_Tab_Focus'
+                                          )
+                                        : getI18nValue(
+                                              'Text_Editor_Status_Bar_Tab_Edit'
+                                          )}{' '}
+                                </Caption1>
+                            </Tooltip>
+                            <TooltipCustomMount setRef={setTabRef} />
                         </div>
                         <div className='status-settings'></div>
                     </div>
