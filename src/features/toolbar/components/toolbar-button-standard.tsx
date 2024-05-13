@@ -141,7 +141,7 @@ const resolveClick = (command: Command) => {
 const resolveI18nKey = (command: Command) => {
     const {
         editorPreviewDebugIsExpanded,
-        editor: { applyMode },
+        editor: { applyMode, isDirty },
         visualSettings: {
             editor: {
                 interface: {
@@ -164,7 +164,7 @@ const resolveI18nKey = (command: Command) => {
         case 'editorPaneToggle':
             return 'Tooltip_Collapse_Editor_Pane';
         case 'exportSpecification':
-            return 'Button_Export';
+            return isDirty ? 'Button_Export_Dirty' : 'Button_Export';
         case 'fieldMappings':
             return 'Button_Map_Fields';
         case 'formatJson':

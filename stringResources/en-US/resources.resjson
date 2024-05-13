@@ -138,6 +138,7 @@
     "Font_Family": "Font Family",
     "Button_Help": "Open help site in a new tab [Ctrl+Alt+H]",
     "Button_Export": "Generate JSON template [Ctrl+Alt+T]",
+    "Button_Export_Dirty": "Save your changes first to ensure that your specification is eligible for export.",
     "Button_Map_Fields": "Edit specification field mapping [Ctrl+Alt+F]",
     "Button_New": "New specification [Ctrl+Alt+N]",
     "Button_Apply": "Apply changes [Ctrl+Enter]",
