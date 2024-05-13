@@ -3,7 +3,6 @@ import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { ChevronLeftRegular, ChevronRightRegular } from '@fluentui/react-icons';
 
 import { TEditorPosition } from '../../../core/ui';
-import { POPOVER_Z_INDEX } from '../../../constants';
 
 export const useEditorPaneStyles = makeStyles({
     buttonCollapsedLeft: {
@@ -13,10 +12,19 @@ export const useEditorPaneStyles = makeStyles({
         marginRight: '2px'
     },
     paneContainerCollapsed: {
+        width: '100%',
         height: '100%',
         backgroundColor: tokens.colorNeutralBackground1,
-        zindex: POPOVER_Z_INDEX,
+        position: 'absolute',
         ...shorthands.overflow('hidden')
+    },
+    paneContainerSurround: {
+        alignItems: 'end',
+        display: 'flex',
+        height: '100%',
+        justifyContent: 'center',
+        position: 'relative',
+        zIndex: 999
     },
     paneContainerExpanded: {
         backgroundColor: tokens.colorNeutralBackground1,

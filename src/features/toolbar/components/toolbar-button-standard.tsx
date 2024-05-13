@@ -7,6 +7,7 @@ import {
 import {
     ArrowShuffleRegular,
     ChevronDownRegular,
+    ChevronLeftRegular,
     ChevronUpRegular,
     DocumentRegular,
     PlayRegular,
@@ -35,6 +36,7 @@ import {
     handleOpenRemapDialog,
     handleOpenWebsite,
     handleToggleDebugPane,
+    handleToggleEditorPane,
     handleToggleEditorTheme,
     handleZoomFit,
     handleZoomIn,
@@ -111,6 +113,8 @@ const resolveClick = (command: Command) => {
             return handleAutoApplyChanges;
         case 'debugPaneToggle':
             return handleToggleDebugPane;
+        case 'editorPaneToggle':
+            return handleToggleEditorPane;
         case 'exportSpecification':
             return handleExportSpecification;
         case 'fieldMappings':
@@ -157,6 +161,8 @@ const resolveI18nKey = (command: Command) => {
             return editorPreviewDebugIsExpanded
                 ? 'Tooltip_Collapse_Debug_Pane'
                 : 'Tooltip_Expand_Debug_Pane';
+        case 'editorPaneToggle':
+            return 'Tooltip_Collapse_Editor_Pane';
         case 'exportSpecification':
             return 'Button_Export';
         case 'fieldMappings':
@@ -206,6 +212,8 @@ const resolveIcon = (command: Command) => {
             ) : (
                 <ChevronUpRegular />
             );
+        case 'editorPaneToggle':
+            return <ChevronLeftRegular />;
         case 'exportSpecification':
             return <ShareRegular />;
         case 'fieldMappings':

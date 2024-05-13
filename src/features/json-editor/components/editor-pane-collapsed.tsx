@@ -36,7 +36,7 @@ export const EditorPaneCollapsed: React.FC = () => {
     const [ref, setRef] = useState<HTMLElement | null>();
     return (
         <div id='editorPane' className={classes.paneContainerCollapsed}>
-            <>
+            <div className={classes.paneContainerSurround}>
                 <Tooltip
                     content={getI18nValue('Tooltip_Expand_Editor_Pane')}
                     relationship='label'
@@ -51,7 +51,7 @@ export const EditorPaneCollapsed: React.FC = () => {
                     />
                 </Tooltip>
                 <TooltipCustomMount setRef={setRef} />
-            </>
+            </div>
         </div>
     );
 };
