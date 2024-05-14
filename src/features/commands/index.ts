@@ -144,15 +144,6 @@ export const handleExportSpecification = () =>
     });
 
 /**
- * Set focus to the specification editor
- */
-export const handleFocusSpecificationEditor = () => {
-    executeCommand('editorFocusOut', () => {
-        document.getElementById('editor-pivot-spec').focus();
-    });
-};
-
-/**
  * Invokes JSON formatting.
  */
 export const handleFormatJson = (

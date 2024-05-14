@@ -32,7 +32,6 @@ import {
     handleEditorPaneSettings,
     handleEditorPaneSpecification,
     handleExportSpecification,
-    handleFocusSpecificationEditor,
     handleFormatJson,
     handleOpenCreateSpecificationDialog,
     handleOpenRemapDialog,
@@ -98,7 +97,6 @@ export const AdvancedEditorInterface: React.FC = () => {
     hotkeyHandler('debugPaneShowData', handleDebugPaneData);
     hotkeyHandler('debugPaneShowSignals', handleDebugPaneSignal);
     hotkeyHandler('debugPaneShowLogs', handleDebugPaneLog);
-    hotkeyHandler('editorFocusOut', handleFocusSpecificationEditor);
     const handleResize = (width: number) => {
         updateEditorPaneWidth({
             editorPaneWidth: width,

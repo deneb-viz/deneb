@@ -97,10 +97,6 @@ export const KEY_BINDINGS = {
         combination: 'ctrl|alt|9,ctrl|alt|num_9',
         functionalArea: 'other'
     },
-    editorFocusOut: {
-        combination: 'esc',
-        functionalArea: 'other'
-    },
     zoomIn: {
         combination: 'ctrl|alt|+,ctrl|alt|=',
         functionalArea: 'other'
