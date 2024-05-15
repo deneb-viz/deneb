@@ -21,10 +21,14 @@ import {
     IZoomOtherCommandTestOptions,
     IZoomLevelCommandTestOptions
 } from './types';
-import { EditorApplyMode, TEditorRole } from '../json-editor';
+import {
+    EditorApplyMode,
+    IEditorRefs,
+    TEditorRole,
+    setFocusToActiveEditor
+} from '../json-editor';
 import { APPLICATION_INFORMATION, VISUAL_PREVIEW_ZOOM } from '../../../config';
 import { launchUrl } from '../visual-host';
-import { IAceEditor } from 'react-ace/lib/types';
 
 export * from './types';
 
@@ -59,25 +63,24 @@ export const getNextApplyMode = (applyMode: EditorApplyMode): EditorApplyMode =>
 /**
  * Applies the changes to the specification.
  */
-export const handleApplyChanges = (
-    specEditor: IAceEditor,
-    configEditor: IAceEditor
-) =>
+export const handleApplyChanges = (editorRefs: IEditorRefs) => {
     executeCommand('applyChanges', () =>
-        persistSpecification(specEditor, configEditor)
+        persistSpecification(
+            editorRefs?.spec.current.editor,
+            editorRefs?.config.current.editor
+        )
     );
+    setFocusToActiveEditor(editorRefs);
+};
 
 /**
  * Toggles the auto-apply changes mode.
  */
-export const handleAutoApplyChanges = (
-    specEditor: IAceEditor,
-    configEditor: IAceEditor
-) => {
+export const handleAutoApplyChanges = (editorRefs: IEditorRefs) => {
     const {
         editor: { toggleApplyMode }
     } = getState();
-    handleApplyChanges(specEditor, configEditor);
+    handleApplyChanges(editorRefs);
     executeCommand('autoApplyToggle', toggleApplyMode);
 };
 
@@ -111,10 +114,11 @@ export const handleDebugPaneSignal = () => {
 /**
  * Sets editor to config.
  */
-export const handleEditorPaneConfig = () => {
+export const handleEditorPaneConfig = (editorRefs: IEditorRefs) => {
     executeCommand('navigateConfig', () => {
         setEditorPivotItem('Config');
     });
+    editorRefs.config?.current?.editor?.focus();
 };
 
 /**
@@ -129,10 +133,11 @@ export const handleEditorPaneSettings = () => {
 /**
  * Sets editor to specification.
  */
-export const handleEditorPaneSpecification = () => {
+export const handleEditorPaneSpecification = (editorRefs: IEditorRefs) => {
     executeCommand('navigateSpecification', () => {
         setEditorPivotItem('Spec');
     });
+    editorRefs.spec?.current?.editor?.focus();
 };
 
 /**
@@ -144,24 +149,17 @@ export const handleExportSpecification = () =>
     });
 
 /**
- * Set focus to the specification editor
- */
-export const handleFocusSpecificationEditor = () => {
-    executeCommand('editorFocusOut', () => {
-        document.getElementById('editor-pivot-spec').focus();
-    });
-};
-
-/**
  * Invokes JSON formatting.
  */
-export const handleFormatJson = (
-    specEditor: IAceEditor,
-    configEditor: IAceEditor
-) =>
+export const handleFormatJson = (editorRefs: IEditorRefs) => {
     executeCommand('formatJson', () =>
-        fixAndFormatSpecification(specEditor, configEditor)
+        fixAndFormatSpecification(
+            editorRefs?.spec.current.editor,
+            editorRefs?.config.current.editor
+        )
     );
+    setFocusToActiveEditor(editorRefs);
+};
 
 export const handleOpenCreateSpecificationDialog = () => {
     executeCommand('newSpecification', () => {

@@ -69,9 +69,8 @@ export const ToolbarButtonStandard: React.FC<IToolbarButtonProps> = ({
         role === 'debug' ? classes.buttonSmall : '',
         resolveClasses(command)
     );
-    const { spec, config } = useJsonEditorContext();
-    const handleClick = () =>
-        resolveClick(command)(spec?.current.editor, config?.current.editor);
+    const editorRefs = useJsonEditorContext();
+    const handleClick = () => resolveClick(command)(editorRefs);
     const [ref, setRef] = useState<HTMLElement | null>();
     return (
         <>

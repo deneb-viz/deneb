@@ -3,6 +3,7 @@ import { render } from 'react-dom';
 import { shallow } from 'zustand/shallow';
 import { IAceEditor, ICommand } from 'react-ace/lib/types';
 import debounce from 'lodash/debounce';
+import { useUncontrolledFocus } from '@fluentui/react-components';
 
 import * as ace from 'ace-builds';
 import Ace = ace.Ace;
@@ -115,6 +116,7 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
         }),
         shallow
     );
+    const attr = useUncontrolledFocus();
     const classes = useInterfaceStyles();
     const editorHeight = useMemo(
         () =>
@@ -234,8 +236,14 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
             ),
         [editorText, provider, current]
     );
+    // Ensure that focus is applied if we change the editor role.
+    useEffect(() => {
+        if (isActiveEditor) {
+            ref?.current?.editor?.focus();
+        }
+    }, [provider, current]);
     return (
-        <div style={{ display }} className={classes.editorContainer}>
+        <div style={{ display }} className={classes.editorContainer} {...attr}>
             <AceEditor
                 width={'100%'}
                 height={editorHeight}
