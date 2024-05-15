@@ -123,7 +123,7 @@ const pbiCrossFilterApply = (
         const item = clone(<Item>event['item']);
         const expr = getResolvedFilterExpressionForPlaceholder(
             filterExpr,
-            item.datum
+            item?.datum
         );
         if (expr) {
             parseExpression(expr);
@@ -169,14 +169,14 @@ const getResolvedFilterExpressionForPlaceholder = (
     datum: any
 ) =>
     filterExpr?.replace(/_{(.*?)}_/g, (m, m1) => {
-        const value = datum[m1];
+        const value = datum?.[m1];
         if (typeof value === 'number' || typeof value === 'boolean') {
             return `${value}`;
         }
         if (value instanceof Date) {
             return `toDate('${value}')`;
         }
-        return `'${datum[m1]}'`;
+        return `'${datum?.[m1]}'`;
     });
 
 /**

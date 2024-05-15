@@ -66,7 +66,6 @@ export const VegaViewServices: IVegaViewServices = {
      */
     setSignalByName: (name: string, value: any) => {
         if (VegaViewServices.doesSignalNameExist(name)) {
-            console.log('Setting signal', name, value);
             view?.signal(name, value);
             view?.runAsync();
         }
