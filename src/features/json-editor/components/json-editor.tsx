@@ -236,6 +236,12 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
             ),
         [editorText, provider, current]
     );
+    // Ensure that focus is applied if we change the editor role.
+    useEffect(() => {
+        if (isActiveEditor) {
+            ref?.current?.editor?.focus();
+        }
+    }, [provider, current]);
     return (
         <div style={{ display }} className={classes.editorContainer} {...attr}>
             <AceEditor

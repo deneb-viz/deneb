@@ -68,25 +68,21 @@ export const AdvancedEditorInterface: React.FC = () => {
         }),
         shallow
     );
-    const { spec, config } = useJsonEditorContext();
+    const editorRefs = useJsonEditorContext();
     const hotkeyHandler = (command: Command, callback: () => void) =>
         useHotkeys(getCommandKey(command), callback, HOTKEY_OPTIONS);
-    hotkeyHandler('applyChanges', () =>
-        handleApplyChanges(spec?.current.editor, config?.current.editor)
-    );
-    hotkeyHandler('autoApplyToggle', () =>
-        handleAutoApplyChanges(spec?.current.editor, config?.current.editor)
-    );
-    hotkeyHandler('formatJson', () =>
-        handleFormatJson(spec?.current.editor, config?.current.editor)
-    );
+    hotkeyHandler('applyChanges', () => handleApplyChanges(editorRefs));
+    hotkeyHandler('autoApplyToggle', () => handleAutoApplyChanges(editorRefs));
+    hotkeyHandler('formatJson', () => handleFormatJson(editorRefs));
     hotkeyHandler('newSpecification', handleOpenCreateSpecificationDialog);
     hotkeyHandler('exportSpecification', handleExportSpecification);
     hotkeyHandler('fieldMappings', handleOpenRemapDialog);
     hotkeyHandler('themeToggle', handleToggleEditorTheme);
     hotkeyHandler('helpSite', handleOpenWebsite);
-    hotkeyHandler('navigateSpecification', handleEditorPaneSpecification);
-    hotkeyHandler('navigateConfig', handleEditorPaneConfig);
+    hotkeyHandler('navigateSpecification', () =>
+        handleEditorPaneSpecification(editorRefs)
+    );
+    hotkeyHandler('navigateConfig', () => handleEditorPaneConfig(editorRefs));
     hotkeyHandler('navigateSettings', handleEditorPaneSettings);
     hotkeyHandler('zoomIn', handleZoomIn);
     hotkeyHandler('zoomOut', handleZoomOut);

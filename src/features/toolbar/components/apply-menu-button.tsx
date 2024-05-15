@@ -33,16 +33,16 @@ export const ApplyMenuButton: React.FC = () => {
         () => (applyMode === 'Manual' ? manualIcon : autoIcon),
         [applyMode]
     );
-    const { spec, config } = useJsonEditorContext();
+    const editorRefs = useJsonEditorContext();
     const onClick = useCallback(() => {
-        handleApplyChanges(spec?.current.editor, config?.current.editor);
+        handleApplyChanges(editorRefs);
     }, []);
     const onAutoSelect = useCallback(() => {
-        handleApplyChanges(spec?.current.editor, config?.current.editor);
+        handleApplyChanges(editorRefs);
         updateApplyMode('Auto');
     }, []);
     const onManualSelect = useCallback(() => {
-        handleApplyChanges(spec?.current.editor, config?.current.editor);
+        handleApplyChanges(editorRefs);
         updateApplyMode('Manual');
     }, []);
     const classes = useToolbarStyles();

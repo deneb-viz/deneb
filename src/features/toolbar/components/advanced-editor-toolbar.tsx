@@ -16,7 +16,7 @@ import { shallow } from 'zustand/shallow';
 
 import { getI18nValue } from '../../i18n';
 import store from '../../../store';
-import { TEditorRole } from '../../json-editor';
+import { TEditorRole, useJsonEditorContext } from '../../json-editor';
 import { ApplyMenuButton } from './apply-menu-button';
 import { ToolbarButtonStandard } from './toolbar-button-standard';
 import { useToolbarStyles } from '.';
@@ -32,6 +32,7 @@ export const AdvancedEditorToolbar: React.FC = () => {
         (state) => ({ editorSelectedOperation: state.editorSelectedOperation }),
         shallow
     );
+    const editorRefs = useJsonEditorContext();
     const classes = useToolbarStyles();
     const onPaneModeChange: ToolbarProps['onCheckedValueChange'] = (
         e,
@@ -40,10 +41,10 @@ export const AdvancedEditorToolbar: React.FC = () => {
         const role = checkedItems[0] as TEditorRole;
         switch (role) {
             case 'Spec':
-                handleEditorPaneSpecification();
+                handleEditorPaneSpecification(editorRefs);
                 break;
             case 'Config':
-                handleEditorPaneConfig();
+                handleEditorPaneConfig(editorRefs);
                 break;
             case 'Settings':
                 handleEditorPaneSettings();
