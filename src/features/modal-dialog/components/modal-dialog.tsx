@@ -21,6 +21,10 @@ import { logRender } from '../../logging';
 import { CreateButton, VisualCreatePane } from '../../visual-create';
 import { closeCreateDialog } from '../../../core/ui/commands';
 import { ExportButtons, VisualExportPane } from '../../visual-export';
+import {
+    setFocusToActiveEditor,
+    useJsonEditorContext
+} from '../../json-editor';
 
 export const ModalDialog: React.FC = () => {
     const { modalDialogRole, clearMigrationDialog, setModalDialogRole } = store(
@@ -31,6 +35,7 @@ export const ModalDialog: React.FC = () => {
         }),
         shallow
     );
+    const editorRefs = useJsonEditorContext();
     const classes = useModalDialogStyles();
     const dialogSurfaceClassName = useMemo(() => {
         switch (modalDialogRole) {
@@ -56,9 +61,11 @@ export const ModalDialog: React.FC = () => {
             closeCreateDialog();
         }
         setModalDialogRole('None');
+        setFocusToActiveEditor(editorRefs);
     };
     const onOpenChange: DialogProps['onOpenChange'] = useCallback(
         (event, data) => {
+            event.stopPropagation();
             if (!data.open) {
                 onClose();
             }
