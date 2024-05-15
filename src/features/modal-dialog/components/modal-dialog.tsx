@@ -65,10 +65,10 @@ export const ModalDialog: React.FC = () => {
     };
     const onOpenChange: DialogProps['onOpenChange'] = useCallback(
         (event, data) => {
-            event.stopPropagation();
             if (!data.open) {
                 onClose();
             }
+            event.stopPropagation();
         },
         []
     );
