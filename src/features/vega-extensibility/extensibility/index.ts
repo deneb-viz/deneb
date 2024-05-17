@@ -1,7 +1,7 @@
 import { registerCustomExpressions } from './expressions';
 import { registerCustomSchemes } from './schemes';
 
-export { getTemplateWithBasePowerBiTheme } from './powerbi-theme';
+export { powerbiTheme, powerBiThemeVega } from './powerbi-theme';
 
 /**
  * Use declare and initialize the service to ensure that it is available for

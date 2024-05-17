@@ -31,7 +31,6 @@ const dataset: UsermetaDatasetField[] = [
 export const vBarSimple = (): Spec => ({
     $schema: VEGA_SCHEMA_URL,
     data: getDenebTemplateVegaDatasetRef(),
-    config: { ...getDenebTemplateVegaSpecificConfig() },
     scales: [
         {
             name: 'yscale',
@@ -102,6 +101,6 @@ export const vBarSimple = (): Spec => ({
             'A simple bar chart for a category and a measure.',
             'vBarSimple'
         ),
-        ...{ dataset }
+        ...{ dataset, config: getDenebTemplateVegaSpecificConfig() }
     }
 });

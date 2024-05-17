@@ -30,7 +30,6 @@ const dataset: UsermetaDatasetField[] = [
 export const vlBarInteractive = (): TopLevelSpec => ({
     $schema: VEGA_LITE_SCHEMA_URL,
     data: getDenebTemplateDatasetRef(),
-    config: {},
     layer: [
         {
             mark: {

@@ -1,9 +1,9 @@
 /**
- * Vega-Lite templates that are included with Deneb.
+ * Vega templates that are included with Deneb.
  */
-import { Config } from 'vega';
 import { getDenebTemplateDatasetRef } from '..';
 import { PROVIDER_RESOURCES } from '../../../../../config';
+import { powerBiThemeVega } from '../../../vega-extensibility';
 
 /**
  * Schema URL for all templates.
@@ -21,9 +21,15 @@ export const getDenebTemplateVegaDatasetRef = () => [
 /**
  * For Vega, we need to add some extra configuration, so we'll do this here.
  */
-export const getDenebTemplateVegaSpecificConfig = (): Config => ({
-    autosize: { contains: 'padding', type: 'fit' }
-});
+export const getDenebTemplateVegaSpecificConfig = (includeTheme = false) =>
+    JSON.stringify(
+        {
+            autosize: { contains: 'padding', type: 'fit' },
+            ...(includeTheme && powerBiThemeVega())
+        },
+        null,
+        2
+    );
 
 import { vEmpty } from './v-empty';
 import { vEmptyConfig } from './v-empty-config';
