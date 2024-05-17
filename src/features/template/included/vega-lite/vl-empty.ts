@@ -6,7 +6,6 @@ import { getDenebTemplateDatasetRef, getNewIncludedTemplateMetadata } from '..';
 export const vlEmpty = (): TopLevelSpec => ({
     $schema: VEGA_LITE_SCHEMA_URL,
     data: getDenebTemplateDatasetRef(),
-    config: {},
     layer: [],
     usermeta: getNewIncludedTemplateMetadata(
         'vegaLite',

@@ -35,7 +35,6 @@ const dataset: UsermetaDatasetField[] = [
 export const vBarInteractive = (): Spec => ({
     $schema: VEGA_SCHEMA_URL,
     data: getDenebTemplateVegaDatasetRef(),
-    config: { ...getDenebTemplateVegaSpecificConfig() },
     scales: [
         {
             name: 'yscale',
@@ -153,7 +152,8 @@ export const vBarInteractive = (): Spec => ({
                 highlight: true,
                 selection: true,
                 dataPointLimit: PROPERTIES_DEFAULTS.vega.selectionMaxDataPoints
-            }
+            },
+            config: getDenebTemplateVegaSpecificConfig()
         }
     }
 });

@@ -1,6 +1,5 @@
-import { Config as VgConfig, Spec } from 'vega';
-import { Config as VlConfig, TopLevelSpec } from 'vega-lite';
-import merge from 'lodash/merge';
+import { Config as VgConfig } from 'vega';
+import { Config as VlConfig } from 'vega-lite';
 import { interpolateHcl, interpolateRgbBasis, quantize } from 'd3';
 
 import { ptToPx } from '../../../core/ui/dom';
@@ -89,13 +88,6 @@ export const powerBiThemeVega = () =>
             symbol: { strokeWidth: 1.5, size: 50 }
         }
     } as VgConfig);
-
-/**
- * Merge supplied template with base theme config
- */
-export const getTemplateWithBasePowerBiTheme = (
-    template: Spec | TopLevelSpec
-): Spec | TopLevelSpec => merge(template, { config: powerbiTheme() });
 
 /**
  * Helper function to extract palette color by (zero-based) index.

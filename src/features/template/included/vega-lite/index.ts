@@ -12,6 +12,7 @@ import { vlEmpty } from './vl-empty';
 import { vlEmptyConfig } from './vl-empty-config';
 import { vlBarSimple } from './vl-bar-simple';
 import { vlBarInteractive } from './vl-bar-interactive';
+import { powerbiTheme } from '../../../vega-extensibility';
 
 /**
  * Included Vega templates (for use in the create process).
@@ -22,3 +23,9 @@ export const VEGA_LITE_INCLUDED_TEMPLATES = [
     vlBarSimple,
     vlBarInteractive
 ];
+
+/**
+ * Adds the Power BI themeing for Vega-Lite as a formatted string to templates that need it.
+ */
+export const getTemplatePowerBiConfigVl = () =>
+    JSON.stringify(powerbiTheme(), null, 2);
