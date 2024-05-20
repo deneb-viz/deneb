@@ -194,10 +194,6 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
                 MOUSEMOVE_DEBOUNCE
             )
         );
-        editor.on('focus', () => {
-            setEditorTabBehavior(editor);
-            setEscapeHatch(false);
-        });
         editor.session.on('changeFold', () => {
             setFolds({
                 role: thisEditorRole,
@@ -371,12 +367,4 @@ const setCommandEnabled = (
             key = key[editor.commands['platform']];
         if (/backspace|delete/i.test(key)) editor.commands.bindKey(key, null);
     }
-};
-
-/**
- * Ensure that indent/outdent is (re)enabled when editor gets focus.
- */
-const setEditorTabBehavior = (editor: Ace.Editor) => {
-    setCommandEnabled(editor, 'indent', true);
-    setCommandEnabled(editor, 'outdent', true);
 };
