@@ -19,6 +19,7 @@ import {
     isVisualUpdateTypeResize,
     isVisualUpdateTypeResizeEnd
 } from '../visual-host';
+import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
 
 /**
  * UI theming utilities.
@@ -101,7 +102,10 @@ export const getApplicationMode = (
             return 'Editor';
         case !isEditor && datasetValid && !parameters.specification:
             return 'NoSpec';
-        case !isEditor && datasetValid && parameters.specification && true:
+        case !isEditor &&
+            datasetValid &&
+            parameters.specification != PROPERTIES_DEFAULTS.vega.jsonSpec &&
+            true:
             return 'View';
         default:
             return parameters.currentMode ?? 'Landing';
