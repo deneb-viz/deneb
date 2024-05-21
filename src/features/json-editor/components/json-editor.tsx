@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { render } from 'react-dom';
 import { shallow } from 'zustand/shallow';
 import { IAceEditor, ICommand } from 'react-ace/lib/types';
@@ -201,19 +201,20 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
             });
         });
     };
+    const toggleTabBehavior = useCallback((editor: Ace.Editor) => {
+        clearTokenTooltip();
+        setEscapeHatch((prevState) => {
+            setCommandEnabled(editor, 'indent', prevState);
+            setCommandEnabled(editor, 'outdent', prevState);
+            return !prevState;
+        });
+    }, []);
     const commands: ICommand[] = useMemo(
         () => [
             {
                 name: 'escape-hatch',
                 bindKey: { win: 'Ctrl-M', mac: 'Command-M' },
-                exec: (editor) => {
-                    clearTokenTooltip();
-                    setEscapeHatch((prevState) => {
-                        setCommandEnabled(editor, 'indent', prevState);
-                        setCommandEnabled(editor, 'outdent', prevState);
-                        return !prevState;
-                    });
-                }
+                exec: (editor) => toggleTabBehavior(editor)
             }
         ],
         []
@@ -273,6 +274,7 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
             />
             <JsonEditorStatusBar
                 clearTokenTooltip={clearTokenTooltip}
+                toggleTabBehavior={() => toggleTabBehavior(ref.current.editor)}
                 position={status.cursorPosition}
                 selectedText={status.selectedText}
                 escapeHatch={escapeHatch}
