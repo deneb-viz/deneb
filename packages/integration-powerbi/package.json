@@ -24,8 +24,8 @@
         "tls": false
     },
     "scripts": {
-        "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
-        "build": "tsup src/index.ts --format cjs,esm --dts",
+        "dev": "tsup-node src/index.ts --format cjs,esm --dts --watch",
+        "build": "tsup-node src/index.ts --format cjs,esm --dts",
         "test": "jest",
         "test:watch": "jest --watch",
         "eslint": "eslint . --max-warnings 0"
