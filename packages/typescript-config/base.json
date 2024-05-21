@@ -4,7 +4,6 @@
   "compilerOptions": {
     "declaration": true,
     "declarationMap": true,
-    "declarationDir": "./dist",
     "esModuleInterop": true,
     "incremental": false,
     "isolatedModules": true,

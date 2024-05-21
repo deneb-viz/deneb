@@ -24,7 +24,8 @@
         "format": [
             "cjs",
             "esm"
-        ]
+        ],
+        "onSuccess": "npx tsc --emitDeclarationOnly --declaration"
     },
     "scripts": {
         "dev": "tsup-node --watch",
