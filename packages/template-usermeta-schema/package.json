@@ -15,7 +15,7 @@
         "dist"
     ],
     "scripts": {
-        "dev": "npm exec turbowatch ./bin/turbowatch.ts",
+        "dev": "turbowatch ./bin/turbowatch.ts",
         "build": "npm run schemagen:template-usermeta-schema",
         "eslint": "eslint . --max-warnings 0",
         "schemagen:template-usermeta-schema": "typescript-json-schema ./src/schema.ts UsermetaTemplate -o ./dist/deneb-template-usermeta.json --required --topRef"

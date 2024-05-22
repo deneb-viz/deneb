@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { render } from 'react-dom';
 import { shallow } from 'zustand/shallow';
 import { IAceEditor, ICommand } from 'react-ace/lib/types';
@@ -194,10 +194,6 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
                 MOUSEMOVE_DEBOUNCE
             )
         );
-        editor.on('focus', () => {
-            setEditorTabBehavior(editor);
-            setEscapeHatch(false);
-        });
         editor.session.on('changeFold', () => {
             setFolds({
                 role: thisEditorRole,
@@ -205,19 +201,20 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
             });
         });
     };
+    const toggleTabBehavior = useCallback((editor: Ace.Editor) => {
+        clearTokenTooltip();
+        setEscapeHatch((prevState) => {
+            setCommandEnabled(editor, 'indent', prevState);
+            setCommandEnabled(editor, 'outdent', prevState);
+            return !prevState;
+        });
+    }, []);
     const commands: ICommand[] = useMemo(
         () => [
             {
                 name: 'escape-hatch',
                 bindKey: { win: 'Ctrl-M', mac: 'Command-M' },
-                exec: (editor) => {
-                    clearTokenTooltip();
-                    setEscapeHatch((prevState) => {
-                        setCommandEnabled(editor, 'indent', prevState);
-                        setCommandEnabled(editor, 'outdent', prevState);
-                        return !prevState;
-                    });
-                }
+                exec: (editor) => toggleTabBehavior(editor)
             }
         ],
         []
@@ -277,6 +274,7 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
             />
             <JsonEditorStatusBar
                 clearTokenTooltip={clearTokenTooltip}
+                toggleTabBehavior={() => toggleTabBehavior(ref.current.editor)}
                 position={status.cursorPosition}
                 selectedText={status.selectedText}
                 escapeHatch={escapeHatch}
@@ -371,12 +369,4 @@ const setCommandEnabled = (
             key = key[editor.commands['platform']];
         if (/backspace|delete/i.test(key)) editor.commands.bindKey(key, null);
     }
-};
-
-/**
- * Ensure that indent/outdent is (re)enabled when editor gets focus.
- */
-const setEditorTabBehavior = (editor: Ace.Editor) => {
-    setCommandEnabled(editor, 'indent', true);
-    setCommandEnabled(editor, 'outdent', true);
 };

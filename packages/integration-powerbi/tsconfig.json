@@ -1,7 +1,8 @@
 {
     "extends": "@deneb-viz/typescript-config/base.json",
     "compilerOptions": {
-        "outDir": "./dist"
+        "outDir": "./dist",
+        "declarationDir": "./dist"
     },
     "include": ["src"],
     "exclude": ["node_modules", "dist"]

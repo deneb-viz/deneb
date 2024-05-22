@@ -15,9 +15,20 @@
     "files": [
         "dist"
     ],
+    "tsup": {
+        "entry": [
+            "src/index.ts"
+        ],
+        "dts": true,
+        "format": [
+            "cjs",
+            "esm"
+        ],
+        "onSuccess": "npx tsc --emitDeclarationOnly --declaration"
+    },
     "scripts": {
-        "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
-        "build": "tsup src/index.ts --format cjs,esm --dts",
+        "dev": "tsup-node --watch",
+        "build": "tsup-node --dts",
         "test": "jest",
         "test:watch": "jest --watch",
         "eslint": "eslint . --max-warnings 0"

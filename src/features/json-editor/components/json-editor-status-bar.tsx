@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import * as ace from 'ace-builds';
 import Ace = ace.Ace;
 import {
+    Button,
     Caption1,
     Tooltip,
     makeStyles,
@@ -13,12 +14,14 @@ import { StatusBarContainer, TooltipCustomMount } from '../../interface';
 import { getI18nValue } from '../../i18n';
 import { ToolbarButtonStandard } from '../../toolbar/components/toolbar-button-standard';
 import { PREVIEW_PANE_TOOLBAR_MIN_SIZE } from '../../../constants';
+import { setFocusToActiveEditor, useJsonEditorContext } from '..';
 
 interface IStatusBarProps {
     position: Ace.Point;
     selectedText: string;
     escapeHatch: boolean;
     clearTokenTooltip?: () => Element;
+    toggleTabBehavior: () => void;
 }
 
 const useStatusStyles = makeStyles({
@@ -58,12 +61,18 @@ export const JsonEditorStatusBar: React.FC<IStatusBarProps> = ({
     position,
     selectedText,
     escapeHatch,
-    clearTokenTooltip
+    clearTokenTooltip,
+    toggleTabBehavior
 }) => {
+    const editorRefs = useJsonEditorContext();
     const classes = useStatusStyles();
     const row = position.row + 1;
     const column = position.column + 1;
     const [tabRef, setTabRef] = useState<HTMLElement | null>();
+    const onTabClick = useCallback(() => {
+        toggleTabBehavior();
+        setFocusToActiveEditor(editorRefs);
+    }, []);
     logRender('JsonEditorStatusBar');
     return (
         <StatusBarContainer>
@@ -103,7 +112,11 @@ export const JsonEditorStatusBar: React.FC<IStatusBarProps> = ({
                                 withArrow
                                 mountNode={tabRef}
                             >
-                                <Caption1>
+                                <Button
+                                    appearance='transparent'
+                                    size='small'
+                                    onClick={onTabClick}
+                                >
                                     {escapeHatch
                                         ? getI18nValue(
                                               'Text_Editor_Status_Bar_Tab_Focus'
@@ -111,7 +124,7 @@ export const JsonEditorStatusBar: React.FC<IStatusBarProps> = ({
                                         : getI18nValue(
                                               'Text_Editor_Status_Bar_Tab_Edit'
                                           )}{' '}
-                                </Caption1>
+                                </Button>
                             </Tooltip>
                             <TooltipCustomMount setRef={setTabRef} />
                         </div>

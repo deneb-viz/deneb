@@ -1,4 +1,4 @@
-import { getJsoncStringAsObject } from '@deneb-viz/json-processing';
+import { getJsoncStringAsObject } from '../processing';
 import {
     PROVIDER_RESOURCES,
     getExportTemplate,
