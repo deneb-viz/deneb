@@ -34,7 +34,10 @@ export const canFetchMoreFromDataview = (
 export const castPrimitiveValue = (
     field: IAugmentedMetadataField,
     value: PrimitiveValue
-) => (field?.column.type.dateTime ? new Date(value?.toString()) : value);
+) =>
+    field?.column.type.dateTime && value !== null
+        ? new Date(value?.toString())
+        : value;
 
 /**
  * Retrieve all `powerbi.DataViewCategoryColumn[]` entries from the visual's data view, which are available from Deneb's store.
