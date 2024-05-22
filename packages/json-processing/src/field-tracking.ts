@@ -62,6 +62,7 @@ export const doesExpressionContainField = (json: object, fieldName: string) => {
  * {@linkcode getTokenPatternsLiteral}.
  */
 const doesLiteralContainField = (literal: string, fieldName: string) => {
+    if (!isLiteralEligibleForTesting(literal)) return false;
     let found = false;
     if (literal === fieldName) return true;
     forEach(getTokenPatternsLiteral(fieldName), (pattern) => {
@@ -334,6 +335,7 @@ export const getTrackedFieldMapMerged = (
  * Tests the supplied string to see if it evaluates as a valid Vega expression.
  */
 export const isExpressionField = (detail: string) => {
+    if (!isLiteralEligibleForTesting(detail)) return false;
     try {
         const node = parseExpression(detail);
         return node?.type?.indexOf('Expression') > -1;
@@ -341,6 +343,12 @@ export const isExpressionField = (detail: string) => {
         return false;
     }
 };
+
+/**
+ * When processing JSON, we can waste valuable time/resources checking literals for fields that aren't eligible. This
+ * methods validates that the literal is worth checking further.
+ */
+const isLiteralEligibleForTesting = (value: string) => utils.isString(value) && value?.length > 0;
 
 /**
  * Test to see if the tracking information contains and fields that require mapping (which should trigger the mapping
