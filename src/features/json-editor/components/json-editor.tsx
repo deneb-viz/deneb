@@ -55,6 +55,7 @@ interface IJsonEditorStatusState {
     selectedText: string;
 }
 
+const CURSOR_DEBOUNCE = 20;
 const MOUSEMOVE_DEBOUNCE = 200;
 
 /**
@@ -262,7 +263,7 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
                 }}
                 debounceChangePeriod={debouncePeriod}
                 defaultValue={getDefaultValue(thisEditorRole)}
-                onCursorChange={onCursorChange}
+                onCursorChange={debounce(onCursorChange, CURSOR_DEBOUNCE)}
                 onLoad={onLoadEditor}
                 onChange={onChangeEditor}
                 focus
