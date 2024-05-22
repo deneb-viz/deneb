@@ -19,7 +19,7 @@ import {
     getParsedSpec,
     getSpecificationParseOptions
 } from '../features/specification/logic';
-import { logDebug } from '../features/logging';
+import { logDebug, logTimeEnd, logTimeStart } from '../features/logging';
 import { getApplicationMode } from '../features/interface';
 import { ModalDialogRole } from '../features/modal-dialog/types';
 import { getOnboardingDialog } from '../features/modal-dialog';
@@ -137,16 +137,23 @@ const handleUpdateDataset = (
             visualMode: mode
         }
     });
+    logTimeStart('dataset.updateDataset.getFieldsInUseFromSpecification');
     const tracking = getFieldsInUseFromSpecification({
         spec: jsonSpec,
         dataset,
         trackedFieldsCurrent: state.fieldUsage.dataset
     });
+    logTimeEnd('dataset.updateDataset.getFieldsInUseFromSpecification');
+    logTimeStart('dataset.updateDataset.getTokenizedSpec');
     const tokenizedSpec = getTokenizedSpec({
         textSpec: jsonSpec,
         trackedFields: tracking.trackedFields
     });
+    logTimeEnd('dataset.updateDataset.getTokenizedSpec');
+    logTimeStart('dataset.updateDataset.getRemapEligibleFields');
     const remapFields = getRemapEligibleFields(tracking.trackedFields);
+    logTimeEnd('dataset.updateDataset.getRemapEligibleFields');
+    logTimeStart('dataset.updateDataset.areAllRemapDataRequirementsMet');
     const {
         remapAllDependenciesAssigned,
         remapAllFieldsAssigned,
@@ -155,6 +162,8 @@ const handleUpdateDataset = (
         remapFields,
         drilldownProperties: tracking.trackedDrilldown
     });
+    logTimeEnd('dataset.updateDataset.areAllRemapDataRequirementsMet');
+    logTimeStart('dataset.updateDataset.getUpdatedExportMetadata');
     const exportMetadata = getUpdatedExportMetadata(state.export.metadata, {
         dataset: getDatasetTemplateFields(payload.dataset.fields).map((d) => {
             const match = state.export.metadata.dataset.find(
@@ -172,6 +181,7 @@ const handleUpdateDataset = (
             return d;
         })
     });
+    logTimeEnd('dataset.updateDataset.getUpdatedExportMetadata');
     const modalDialogRole: ModalDialogRole = isMappingDialogRequired({
         trackedFields: tracking.trackedFields,
         drilldownProperties: tracking.trackedDrilldown
