@@ -78,6 +78,7 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
     const {
         applyMode,
         current,
+        debouncePeriod,
         fields,
         foldsConfig,
         foldsSpec,
@@ -96,6 +97,8 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
         (state) => ({
             applyMode: state.editor.applyMode,
             current: state.editorSelectedOperation,
+            debouncePeriod:
+                state.visualSettings.editor.json.debouncePeriod.value,
             fields: state.dataset.fields,
             foldsConfig: state.editor.foldsConfig,
             foldsSpec: state.editor.foldsSpec,
@@ -242,6 +245,9 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
     return (
         <div style={{ display }} className={classes.editorContainer} {...attr}>
             <AceEditor
+                key={
+                    `editor${thisEditorRole}|${debouncePeriod}` /* securingsincity/react-ace#767 */
+                }
                 width={'100%'}
                 height={editorHeight}
                 ref={ref}
@@ -254,9 +260,7 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
                     useSvgGutterIcons: false,
                     showLineNumbers
                 }}
-                debounceChangePeriod={
-                    PROPERTIES_DEFAULTS.editor.debounceInterval
-                }
+                debounceChangePeriod={debouncePeriod}
                 defaultValue={getDefaultValue(thisEditorRole)}
                 onCursorChange={onCursorChange}
                 onLoad={onLoadEditor}

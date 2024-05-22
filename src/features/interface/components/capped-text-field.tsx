@@ -51,7 +51,7 @@ export const CappedTextField: React.FC<ICappedTextFieldProps> = (props) => {
                 selector: props.id,
                 value
             });
-        }, PROPERTIES_DEFAULTS.editor.debounceInterval),
+        }, PROPERTIES_DEFAULTS.editor.debouncePeriod.default),
         []
     );
     const onChange = (

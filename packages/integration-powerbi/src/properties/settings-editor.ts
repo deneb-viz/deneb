@@ -111,12 +111,30 @@ class SettingsEditorGroupJson extends formattingSettings.Group {
         descriptionKey: 'Objects_Editor_ShowLineNumbers_Description',
         value: PROPERTIES_DEFAULTS.editor.showLineNumbers
     });
+    debouncePeriod = new formattingSettings.NumUpDown({
+        name: 'debouncePeriod',
+        displayNameKey: 'Objects_Editor_DebouncePeriod',
+        descriptionKey: 'Objects_Editor_DebouncePeriod_Description',
+        options: {
+            minValue: {
+                value: PROPERTIES_DEFAULTS.editor.debouncePeriod.min,
+                type: 0
+            },
+            maxValue: {
+                value: PROPERTIES_DEFAULTS.editor.debouncePeriod.max,
+                type: 1
+            },
+            unitSymbol: PROPERTIES_DEFAULTS.unitSymbols.milliseconds
+        },
+        value: PROPERTIES_DEFAULTS.editor.debouncePeriod.default
+    });
     slices = [
         this.position,
         this.fontSize,
         this.wordWrap,
         this.showGutter,
-        this.showLineNumbers
+        this.showLineNumbers,
+        this.debouncePeriod
     ];
 }
 

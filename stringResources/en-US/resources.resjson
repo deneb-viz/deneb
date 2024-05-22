@@ -104,6 +104,8 @@
     "Objects_Editor_DebugTableRowsPerPage_Description": "The number of rows to show in the Data and Signals tables in the debug pane.",
     "Objects_Editor_LocalCompletion": "Show local items in list",
     "Objects_Editor_LocalCompletion_Description": "In the editor, when auto-completion is enabled, also show identified words from the specification, and not just language or data keywords.",
+    "Objects_Editor_DebouncePeriod": "Change event detect interval",
+    "Objects_Editor_DebouncePeriod_Description": "The interval at which to process change events in the editor. You can increase this to a longer interval if experiencing performance issues.",
     "Objects_Theme": "Report theme integration",
     "Objects_Theme_Group_Ordinal": "Ordinal scales",
     "Objects_Theme_Description": "Customise aspects of report theme integration with the Vega view.",

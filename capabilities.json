@@ -303,6 +303,11 @@
                     "type": {
                         "bool": true
                     }
+                },
+                "debouncePeriod": {
+                    "type": {
+                        "numeric": true
+                    }
                 }
             }
         },

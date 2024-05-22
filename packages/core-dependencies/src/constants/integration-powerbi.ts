@@ -105,7 +105,11 @@ export const PROPERTIES_DEFAULTS = {
         /**
          * Interval in milliseconds to debounce editor changes.
          */
-        debounceInterval: 200,
+        debouncePeriod: {
+            default: 200,
+            min: 0,
+            max: 1000
+        },
         /**
          * Font size for the JSON editor.
          */
