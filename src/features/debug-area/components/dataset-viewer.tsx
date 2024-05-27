@@ -22,16 +22,16 @@ import {
     DATASET_KEY_NAME,
     TABLE_VALUE_MAX_DEPTH
 } from '../../../constants';
-import {
-    IDataTableRow,
-    IDataTableWorkerMaxDisplayWidths,
-    IDataTableWorkerMessage,
-    IDataTableWorkerResponse
-} from '../types';
 import { VegaViewServices } from '../../vega-extensibility';
-import { getDataTableWorker } from '../data-table-worker';
 import { getPrunedObject } from '../../json-processing';
 import { getHashValue } from '../../../utils';
+import {
+    IWorkerDatasetViewerDataTableRow,
+    IWorkerDatasetViewerMaxDisplayWidths,
+    IWorkerDatasetViewerMessage,
+    IWorkerDatasetViewerResponse
+} from '@deneb-viz/core-dependencies';
+import { datasetViewerWorker } from '@deneb-viz/worker-common';
 
 interface IDatasetViewerProps {
     datasetName: string;
@@ -46,10 +46,10 @@ interface IDatasetRaw {
 }
 
 interface IDatasetState {
-    columns: TableColumn<IDataTableRow>[];
+    columns: TableColumn<IWorkerDatasetViewerDataTableRow>[];
     jobQueue: string[];
     processing: boolean;
-    values: IDataTableRow[];
+    values: IWorkerDatasetViewerDataTableRow[];
 }
 
 const DATA_LISTENER_DEBOUNCE_INTERVAL = 100;
@@ -76,7 +76,7 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
         processing: true,
         values: null
     });
-    const datasetWorker = useMemo(() => getDataTableWorker(), []);
+    const datasetWorker = useMemo(() => datasetViewerWorker, []);
     /**
      * When our dataset changes, we need to send it to our web worker for
      * processing.
@@ -97,7 +97,7 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
              * We have to fix/prune a dataset prior to sending to the worker,
              * as postMessage gets upset about cyclics and methods.
              */
-            const message: IDataTableWorkerMessage = {
+            const message: IWorkerDatasetViewerMessage = {
                 canvasFontCharWidth: getDataTableRenderedCharWidth(),
                 dataset: datasetRaw.values,
                 datasetKeyName: DATASET_KEY_NAME,
@@ -117,7 +117,7 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
         if (window.Worker) {
             datasetWorker.onmessage = (e) => {
                 const { jobId, values, maxWidths } =
-                    e.data as IDataTableWorkerResponse;
+                    e.data as IWorkerDatasetViewerResponse;
                 logDebug('DatasetViewer: worker response received', {
                     jobId,
                     values,
@@ -205,7 +205,10 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
             );
             const newDataset = getPrunedObject(value);
             const hashValue = getDataHash(newDataset);
-            setDatasetRaw(() => ({ hashValue, values: newDataset }));
+            setDatasetRaw(() => ({
+                hashValue,
+                values: newDataset
+            }));
         }, DATA_LISTENER_DEBOUNCE_INTERVAL),
         []
     );
@@ -254,7 +257,12 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
             if (!isEqual(latestHash, datasetRaw?.hashValue)) {
                 logDebug(
                     `DatasetViewer: change necessitates dataset update. Updating...`,
-                    { hashValue, datasetName, renderId, logAttention }
+                    {
+                        hashValue,
+                        datasetName,
+                        renderId,
+                        logAttention
+                    }
                 );
                 setDatasetRaw(() => latestDatasetRaw);
                 cycleListeners();
@@ -281,17 +289,15 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
     /**
      * Keep sort peristed across renders.
      */
-    const handleSort: TableProps<IDataTableRow[]>['onSort'] = (
-        column,
-        sortDirection
-    ) => {
-        logDebug('DatasetViewer: setting sort columns...', {
-            column,
-            sortDirection
-        });
-        setSortColumnId(column.id);
-        setSortAsc(() => sortDirection === 'asc');
-    };
+    const handleSort: TableProps<IWorkerDatasetViewerDataTableRow[]>['onSort'] =
+        (column, sortDirection) => {
+            logDebug('DatasetViewer: setting sort columns...', {
+                column,
+                sortDirection
+            });
+            setSortColumnId(column.id);
+            setSortAsc(() => sortDirection === 'asc');
+        };
     const classes = useDebugStyles();
     logRender('DatasetViewer', {
         datasetState,
@@ -354,9 +360,9 @@ const getDatasetValues = (datasetName: string, logAttention: boolean) => {
  * Provides the necessary structure and rendering logic for the table columns.
  */
 const getTableColumns = (
-    dataset: IDataTableRow[],
-    maxLengths: IDataTableWorkerMaxDisplayWidths
-): TableColumn<IDataTableRow>[] => {
+    dataset: IWorkerDatasetViewerDataTableRow[],
+    maxLengths: IWorkerDatasetViewerMaxDisplayWidths
+): TableColumn<IWorkerDatasetViewerDataTableRow>[] => {
     logDebug('DatasetViewer: calculating table columns...');
     return keys(dataset?.[0])
         ?.filter(

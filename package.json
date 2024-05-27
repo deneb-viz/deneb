@@ -40,6 +40,7 @@
         "@deneb-viz/integration-powerbi": "*",
         "@deneb-viz/json-processing": "*",
         "@deneb-viz/template-usermeta-schema": "*",
+        "@deneb-viz/worker-common": "*",
         "@fluentui/react-components": "^9.51.0",
         "@fluentui/react-icons": "^2.0.239",
         "@types/ace": "^0.0.44",
