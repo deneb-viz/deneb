@@ -27,7 +27,10 @@ self.onmessage = (e: MessageEvent<IWorkerDatasetViewerMessage>) => {
 /**
  * Calculate and memoize the display width of a display value.
  */
-const getDisplayWidth = (value: string, canvasFontCharWidth: number): number => {
+const getDisplayWidth = (
+    value: string,
+    canvasFontCharWidth: number
+): number => {
     const length = `${value}`.length || 0;
     if (length in WIDTH_CACHE) {
         return WIDTH_CACHE[length] ?? 0;
@@ -44,7 +47,10 @@ const getDisplayWidth = (value: string, canvasFontCharWidth: number): number => 
  * @privateRemarks This was previously mostly used to handle the 'redaction' internal values, but because this is
  * common to tooltips also, this is done in the main thread now (as we can't share the logic between the two).
  */
-const getFormattedValueForTableCell = (getValueType: WorkerDatasetViewerValueType, value: unknown): string => {
+const getFormattedValueForTableCell = (
+    getValueType: WorkerDatasetViewerValueType,
+    value: unknown
+): string => {
     switch (getValueType) {
         case 'date':
             return (<Date>value).toLocaleString();
@@ -60,20 +66,35 @@ const getFormattedValueForTableCell = (getValueType: WorkerDatasetViewerValueTyp
  *
  * @privateRemarks this was what was blocking the main thread and represents the lion's share of the work being done.
  */
-const getProcessedData = (data: IWorkerDatasetViewerMessage): IWorkerDatasetViewerResponse => {
+const getProcessedData = (
+    data: IWorkerDatasetViewerMessage
+): IWorkerDatasetViewerResponse => {
     const maxWidths: IWorkerDatasetViewerMaxDisplayWidths = {};
     const values: IWorkerDatasetViewerDataTableRow[] = data.dataset.map((d) => {
         // If our sanitized datum prior to sending is empty, we need to add a placeholder
-        const newDatum: Record<string, unknown> = Object.keys(d).length === 0 ? { datum: {} } : { ...d };
+        const newDatum: Record<string, unknown> =
+            Object.keys(d).length === 0 ? { datum: {} } : { ...d };
         const allKeys = Object.keys(newDatum);
-        return allKeys.reduce((acc, key) => {
+        const result = allKeys.reduce((acc, key) => {
             const value = newDatum[key];
             const valueType = getValueType(key, value, data.datasetKeyName);
-            const rawValue = getRawValueForTableCell(valueType, value, data.translations);
-            const formattedValue = getFormattedValueForTableCell(valueType, rawValue);
+            const rawValue = getRawValueForTableCell(
+                valueType,
+                value,
+                data.translations
+            );
+            const formattedValue = getFormattedValueForTableCell(
+                valueType,
+                rawValue
+            );
             const tooLong = `${formattedValue}`.length > data.valueMaxLength;
-            const displayValue = tooLong ? data.translations.placeholderTooLong : formattedValue;
-            const displayWidth = getDisplayWidth(displayValue, data.canvasFontCharWidth);
+            const displayValue = tooLong
+                ? data.translations.placeholderTooLong
+                : formattedValue;
+            const displayWidth = getDisplayWidth(
+                displayValue,
+                data.canvasFontCharWidth
+            );
             maxWidths[key] = Math.max(maxWidths[key] || 0, displayWidth);
             return {
                 ...acc,
@@ -87,6 +108,7 @@ const getProcessedData = (data: IWorkerDatasetViewerMessage): IWorkerDatasetView
                 }
             };
         }, <IWorkerDatasetViewerDataTableRow>{});
+        return result;
     });
     return {
         jobId: data.jobId,
@@ -120,7 +142,11 @@ const getRawValueForTableCell = (
 /**
  * We will need to handle specific types of values in the table, so this method will determine and flag as appropriate.
  */
-const getValueType = (key: string, value: unknown, datasetKeyName: string): WorkerDatasetViewerValueType => {
+const getValueType = (
+    key: string,
+    value: unknown,
+    datasetKeyName: string
+): WorkerDatasetViewerValueType => {
     switch (true) {
         case key === datasetKeyName:
             return 'key';
