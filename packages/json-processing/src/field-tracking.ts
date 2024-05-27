@@ -19,7 +19,9 @@ import reduce from 'lodash/reduce';
 import values from 'lodash/values';
 import { JSONPath } from 'jsonpath-plus';
 import { Dictionary } from 'lodash';
-import { areAllTemplateFieldsAssigned, getDatasetFieldsInclusive } from './template-dataset';
+import {
+    areAllTemplateFieldsAssigned
+} from './template-dataset';
 
 /**
  * Confirms that all requirements for field mapping have been met.
