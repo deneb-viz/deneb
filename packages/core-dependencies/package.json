@@ -40,9 +40,7 @@
         "@deneb-viz/eslint-config": "*",
         "@deneb-viz/jest-presets": "*",
         "@deneb-viz/typescript-config": "*",
-        "@types/uuid": "^9.0.7",
         "powerbi-visuals-api": "5.7.0",
-        "uuid": "^9.0.1",
         "vega": "5.28.0",
         "vega-lite": "5.18.0"
     }
