@@ -4,6 +4,6 @@
         "outDir": "./dist",
         "declarationDir": "./dist"
     },
-    "include": ["src", "tsup.config.ts"],
+    "include": ["src"],
     "exclude": ["node_modules", "dist"]
 }

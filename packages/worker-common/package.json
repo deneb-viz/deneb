@@ -15,8 +15,8 @@
         "dist"
     ],
     "scripts": {
-        "dev": "tsup --watch . --watch ../worker-dataset-viewer/dist/**",
-        "build": "tsup --clean",
+        "dev": "tsup --watch ./src --watch ../worker-dataset-viewer/dist/**",
+        "build": "tsup",
         "eslint": "eslint . --max-warnings 0"
     },
     "devDependencies": {
