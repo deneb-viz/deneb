@@ -81,7 +81,9 @@ const getCellHighlightComparatorStatus = (value: TDataPointHighlightStatus) => {
  * If the column/cell relates to a cross-highlight comparator, return a tooltip
  * value that is contextual for the displayed value.
  */
-const getCellHighlightComparatorTooltip = (value: TDataPointHighlightComparator) => {
+const getCellHighlightComparatorTooltip = (
+    value: TDataPointHighlightComparator
+) => {
     switch (value) {
         case 'eq':
             return getI18nValue('Pivot_Debug_HighlightComparatorEq');
@@ -120,7 +122,9 @@ export const getColumnHeaderTooltip = (column: string) => {
                 getI18nValue('Pivot_Debug_Refer_Documentation')
             ]);
         case isCrossHighlightField(column):
-            return getI18nValue('Pivot_Dataset_HighlightField', [getCrossHighlightFieldBaseMeasureName(column)]);
+            return getI18nValue('Pivot_Dataset_HighlightField', [
+                getCrossHighlightFieldBaseMeasureName(column)
+            ]);
         default:
             return column;
     }
@@ -142,7 +146,9 @@ export const getDataTableRenderedCharWidth = () => {
     const textToMeasure = '-'; // MS APIs strip whitespace
     if (typeof OffscreenCanvas !== 'undefined') {
         const canvas = new OffscreenCanvas(100, 10);
-        const ctx: OffscreenCanvasRenderingContext2D = <any>canvas.getContext('2d');
+        const ctx: OffscreenCanvasRenderingContext2D = <any>(
+            canvas.getContext('2d')
+        );
         ctx.font = `${DATA_TABLE_FONT_SIZE}px ${DATA_TABLE_FONT_FAMILY}`;
         return ctx.measureText(textToMeasure).width;
     } else {
@@ -158,15 +164,16 @@ export const getDataTableRenderedCharWidth = () => {
  * Perform all i18n translations for values that need to be assigned by the
  * data table worker.
  */
-export const getDataTableWorkerTranslations = (): IWorkerDatasetViewerTranslations => ({
-    placeholderInfinity: getI18nValue('Table_Placeholder_Infinity'),
-    placeholderNaN: getI18nValue('Table_Placeholder_NaN'),
-    placeholderTooLong: getI18nValue('Table_Placeholder_TooLong'),
-    selectedNeutral: getI18nValue('Pivot_Debug_SelectedNeutral'),
-    selectedOn: getI18nValue('Pivot_Debug_SelectedOn'),
-    selectedOff: getI18nValue('Pivot_Debug_SelectedOff'),
-    selectionKeywordPresent: getI18nValue('Selection_KW_Present')
-});
+export const getDataTableWorkerTranslations =
+    (): IWorkerDatasetViewerTranslations => ({
+        placeholderInfinity: getI18nValue('Table_Placeholder_Infinity'),
+        placeholderNaN: getI18nValue('Table_Placeholder_NaN'),
+        placeholderTooLong: getI18nValue('Table_Placeholder_TooLong'),
+        selectedNeutral: getI18nValue('Pivot_Debug_SelectedNeutral'),
+        selectedOn: getI18nValue('Pivot_Debug_SelectedOn'),
+        selectedOff: getI18nValue('Pivot_Debug_SelectedOff'),
+        selectionKeywordPresent: getI18nValue('Selection_KW_Present')
+    });
 
 /**
  * If a column name is a reserved word, then supply a suitable tooltip value.
@@ -230,4 +237,5 @@ const isValuePlaceholderComplex = (value: string) =>
  * For a given column value, determine if it's in the list of 'reserved' words
  * that should be processed differently.
  */
-const isTableColumnNameReserved = (value: string) => TABLE_COLUMN_RESERVED_WORDS.indexOf(value) > -1;
+const isTableColumnNameReserved = (value: string) =>
+    TABLE_COLUMN_RESERVED_WORDS.indexOf(value) > -1;
