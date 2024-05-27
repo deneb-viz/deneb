@@ -1,4 +1,4 @@
-import dataTable from '@deneb-viz/worker-dataset-viewer/dist/index.js';
+import dataTable from '@deneb-viz/worker-dataset-viewer';
 
 /**
  * Create a new worker from a raw file string.
