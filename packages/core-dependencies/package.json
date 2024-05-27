@@ -40,6 +40,7 @@
         "@deneb-viz/eslint-config": "*",
         "@deneb-viz/jest-presets": "*",
         "@deneb-viz/typescript-config": "*",
+        "lodash": "^4.17.21",
         "powerbi-visuals-api": "5.7.0",
         "vega": "5.28.0",
         "vega-lite": "5.18.0"

@@ -46,8 +46,3 @@ export const getTemplateDatasetFieldType = (type: powerbi.ValueTypeDescriptor): 
             return 'other';
     }
 };
-
-/**
- * For supplied fields, retrieve only those that should be from the data roles.
- */
-export const getDatasetFieldsInclusive = (fields: IDatasetFields) => pickBy(fields, (f) => !f.isExcludedFromTemplate);

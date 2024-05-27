@@ -103,7 +103,7 @@ export const getFieldsInUseFromSpecification = (options: {
     reset?: boolean;
 }) => {
     const { spec, dataset, trackedFieldsCurrent, reset = false } = options;
-    const datasetFields = getDatasetFieldsInclusive(dataset.fields);
+    const datasetFields = utils.getDatasetFieldsInclusive(dataset.fields);
     const trackedFields: TrackedFields = {};
     const trackedDrilldown: TrackedDrilldownProperties = {
         isCurrent: dataset.hasDrilldown,
