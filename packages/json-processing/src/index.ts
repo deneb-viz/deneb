@@ -18,7 +18,7 @@ export {
     getParsedJsonWithResult,
     getTextFormattedAsJsonC
 } from './processing';
-export { areAllCreateDataRequirementsMet, getDatasetFieldsInclusive } from './template-dataset';
+export { areAllCreateDataRequirementsMet } from './template-dataset';
 export {
     getExportTemplate,
     getNewCreateFromTemplateSliceProperties,
