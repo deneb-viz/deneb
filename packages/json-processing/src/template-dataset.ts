@@ -1,8 +1,6 @@
 import powerbi from 'powerbi-visuals-api';
-import pickBy from 'lodash/pickBy';
 import {
     ICreateSliceProperties,
-    IDatasetFields,
     UsermetaDatasetField,
     UsermetaDatasetFieldType,
     UsermetaTemplate
