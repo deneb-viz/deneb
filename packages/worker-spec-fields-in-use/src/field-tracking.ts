@@ -9,23 +9,39 @@ import {
     UsermetaDatasetField,
     utils
 } from '@deneb-viz/core-dependencies';
-import { getPowerBiTokenPatternsLiteral } from '@deneb-viz/integration-powerbi';
 import { visit } from 'jsonc-parser';
-import { Dictionary, forEach, map, merge, reduce, values } from 'lodash';
+import { Dictionary } from 'lodash';
+import forEach from 'lodash/forEach';
+import map from 'lodash/map';
+import merge from 'lodash/merge';
+import reduce from 'lodash/reduce';
+import values from 'lodash/values';
 import { parseExpression } from 'vega-expression';
 
 /**
  * For a Vega expression AST node, check if it has an occurrence of a field from the visual dataset.
  */
-export const doesExpressionContainField = (json: object, fieldName: string) => {
+export const doesExpressionContainField = (
+    json: object,
+    fieldName: string,
+    supplementaryPatterns: string[]
+) => {
     let found = false;
     JSON.stringify(json, (_, nestedValue) => {
         if (found) return;
         found =
             (nestedValue?.type === 'Identifier' &&
-                doesLiteralContainField(nestedValue?.value, fieldName)) ||
+                doesLiteralContainField(
+                    nestedValue?.value,
+                    fieldName,
+                    supplementaryPatterns
+                )) ||
             (nestedValue?.type === 'Literal' &&
-                doesLiteralContainField(nestedValue?.value, fieldName));
+                doesLiteralContainField(
+                    nestedValue?.value,
+                    fieldName,
+                    supplementaryPatterns
+                ));
         return nestedValue;
     });
     return found;
@@ -35,16 +51,23 @@ export const doesExpressionContainField = (json: object, fieldName: string) => {
  * dataset. This matches on an array of patterns that denote wehter a literal is a field or not - defined by
  * {@linkcode getTokenPatternsLiteral}.
  */
-const doesLiteralContainField = (literal: string, fieldName: string) => {
+const doesLiteralContainField = (
+    literal: string,
+    fieldName: string,
+    supplementaryPatterns: string[]
+) => {
     if (!isLiteralEligibleForTesting(literal)) return false;
     let found = false;
     if (literal === fieldName) return true;
-    forEach(getTokenPatternsLiteral(fieldName), (pattern) => {
-        const re = getFieldExpression(pattern);
-        if (re.test(literal)) {
-            found = true;
+    forEach(
+        getTokenPatternsLiteral(fieldName, supplementaryPatterns),
+        (pattern) => {
+            const re = new RegExp(pattern, 'g');
+            if (re.test(literal)) {
+                found = true;
+            }
         }
-    });
+    );
     return found;
 };
 
@@ -54,11 +77,6 @@ const doesLiteralContainField = (literal: string, fieldName: string) => {
  */
 export const getDrilldownFieldExpression = () =>
     new RegExp(`(__drilldown(_flat)?__)`);
-
-/**
- * Logic to create a global matching RegEx for a supplied string-based expression.
- */
-const getFieldExpression = (exp: string) => new RegExp(exp, 'g');
 
 /**
  * Consistently format a supplied identity into a suitable placeholder. Placeholders are used to represent dataset
@@ -76,9 +94,12 @@ export const getJsonPlaceholderKey = (i: number) =>
  * @privateRemarks
  * The Power BI-specific replacement should be injected as a dependency, but for now we will just import it directly.
  */
-const getTokenPatternsLiteral = (fieldName: string) => {
+const getTokenPatternsLiteral = (
+    fieldName: string,
+    supplementaryPatterns: string[]
+) => {
     const namePattern = utils.getEscapedReplacerPattern(fieldName);
-    return [`(^${namePattern}$)`, ...getPowerBiTokenPatternsLiteral(fieldName)];
+    return [`(^${namePattern}$)`, ...supplementaryPatterns];
 };
 
 /**
@@ -149,7 +170,13 @@ export const getTrackingDataFromSpecification = (
     options: IWorkerSpecFieldsInUseMessage
 ): IWorkerSpecFieldsInUseResponse => {
     console.time('getTrackingDataFromSpecification');
-    const { spec, dataset, trackedFieldsCurrent, reset } = options;
+    const {
+        spec,
+        dataset,
+        trackedFieldsCurrent,
+        reset,
+        supplementaryPatterns
+    } = options;
     const datasetFields = utils.getDatasetFieldsInclusive(dataset.fields);
     const trackedFields: TrackedFields = {};
     const trackedDrilldown: TrackedDrilldownProperties = {
@@ -186,26 +213,33 @@ export const getTrackingDataFromSpecification = (
                     templateMetadata,
                     templateMetadataOriginal
                 };
+                const sp = supplementaryPatterns[templateMetadata.name] || [];
+                const spOriginal =
+                    supplementaryPatterns[templateMetadataOriginal.name] || [];
                 const isExpression = isExpressionField(value);
                 const isLiteralMatch = doesLiteralContainField(
                     value,
-                    templateMetadata.name
+                    templateMetadata.name,
+                    sp
                 );
                 const isLiteralMatchOriginal = doesLiteralContainField(
                     value,
-                    templateMetadataOriginal.name
+                    templateMetadataOriginal.name,
+                    spOriginal
                 );
                 const isExpressionMatch =
                     isExpression &&
                     doesExpressionContainField(
                         parseExpression(value),
-                        templateMetadata.name
+                        templateMetadata.name,
+                        sp
                     );
                 const isExpressionMatchOriginal =
                     isExpression &&
                     doesExpressionContainField(
                         parseExpression(value),
-                        templateMetadataOriginal.name
+                        templateMetadataOriginal.name,
+                        spOriginal
                     );
                 if (
                     isLiteralMatch ||

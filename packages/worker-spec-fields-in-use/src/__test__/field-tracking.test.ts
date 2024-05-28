@@ -1,10 +1,15 @@
 import {
     IDataset,
+    IWorkerSpecFieldsInUseMessage,
     TrackedFieldCandidates,
     TrackedFields,
     UsermetaDatasetFieldKind,
     UsermetaDatasetFieldType
 } from '@deneb-viz/core-dependencies';
+import {
+    getPowerBiCrossHighlightRegExpAlternation,
+    getPowerBiTokenPatternsLiteral
+} from '@deneb-viz/integration-powerbi';
 import {
     doesExpressionContainField,
     getDrilldownFieldExpression,
@@ -13,6 +18,7 @@ import {
     getTrackingDataFromSpecification,
     isExpressionField
 } from '../field-tracking';
+import reduce from 'lodash/reduce';
 import { parseExpression } from 'vega-expression';
 
 const TRACKED_FIELDS_NO_REMAP_PENDING: TrackedFields = {
@@ -79,6 +85,22 @@ const TRACKED_FIELDS_NO_REMAP_PENDING: TrackedFields = {
     }
 };
 
+const TRACKED_FIELDS_SUPPLEMENTARY_PATTERNS: {
+    [key: string]: string[];
+} = reduce(
+    TRACKED_FIELDS_NO_REMAP_PENDING,
+    (result, value, key) => {
+        result[`${value.templateMetadata.name}`] =
+            getPowerBiTokenPatternsLiteral(value.templateMetadata.name);
+        return result;
+    },
+    <
+        {
+            [key: string]: string[];
+        }
+    >{}
+);
+
 describe('doesExpressionContainField', () => {
     const EXPRESSION_WITH_SIMPLE_FIELD = parseExpression(
         'datum["$ Sales"] === 300'
@@ -89,7 +111,11 @@ describe('doesExpressionContainField', () => {
     it('should return true if the field is present in the JSON object', () => {
         const fieldName = '$ Sales';
         expect(
-            doesExpressionContainField(EXPRESSION_WITH_SIMPLE_FIELD, fieldName)
+            doesExpressionContainField(
+                EXPRESSION_WITH_SIMPLE_FIELD,
+                fieldName,
+                getPowerBiTokenPatternsLiteral(fieldName)
+            )
         ).toBe(true);
     });
     it('should return true if the field is present in the JSON object with a highlight suffix', () => {
@@ -97,21 +123,32 @@ describe('doesExpressionContainField', () => {
         expect(
             doesExpressionContainField(
                 EXPRESSION_WITH_HIGHLIGHT_FIELD,
-                fieldName
+                fieldName,
+                getPowerBiTokenPatternsLiteral(fieldName)
             )
         ).toBe(true);
     });
     it('should return false if the field is not present in the JSON object', () => {
         const fieldName = 'qux';
         expect(
-            doesExpressionContainField(EXPRESSION_WITH_SIMPLE_FIELD, fieldName)
+            doesExpressionContainField(
+                EXPRESSION_WITH_SIMPLE_FIELD,
+                fieldName,
+                getPowerBiTokenPatternsLiteral(fieldName)
+            )
         ).toBe(false);
     });
 
     it('should return false if the JSON object is empty', () => {
         const json = {};
         const fieldName = '$ Sales';
-        expect(doesExpressionContainField(json, fieldName)).toBe(false);
+        expect(
+            doesExpressionContainField(
+                json,
+                fieldName,
+                getPowerBiTokenPatternsLiteral(fieldName)
+            )
+        ).toBe(false);
     });
 });
 
@@ -410,10 +447,11 @@ describe('getTrackingDataFromSpecification', () => {
         rowsLoaded: 0
     };
     it('should correctly track fields in use from the specification', () => {
-        const options = {
+        const options: IWorkerSpecFieldsInUseMessage = {
             spec: '{\n  "autosize": "fit",\n  "signals": [\n    {\n      "name": "pbiCrossFilterSelection",\n      "value": [],\n      "on": [\n        {\n          "events": {\n            "source": "scope",\n            "type": "mouseup",\n            "markname": "data-point"\n          },\n          "update": "pbiCrossFilterApply(event, \'datum[\\\\\'Date\\\\\'] >= _{Date}_\')"\n        },\n        {\n          "events": {\n            "source": "view",\n            "type": "mouseup",\n            "filter": [\n              "!event.item || event.item.mark.name != \'data-point\'"\n            ]\n          },\n          "update": "pbiCrossFilterClear()"\n        }\n      ]\n    }\n  ],\n  "data": [\n    {"name": "dataset"},\n    {\n      "name": "data_0",\n      "source": "dataset",\n      "transform": [\n        {"type": "formula", "expr": "toDate(datum[\\"Date\\"])", "as": "Date"},\n        {\n          "type": "filter",\n          "expr": "(isDate(datum[\\"Date\\"]) || (isValid(datum[\\"Date\\"]) && isFinite(+datum[\\"Date\\"]))) && isValid(datum[\\"$ Sales\\"]) && isFinite(+datum[\\"$ Sales\\"])"\n        }\n      ]\n    }\n  ],\n  "marks": [\n    {\n      "name": "data-point",\n      "type": "symbol",\n      "style": ["point"],\n      "from": {"data": "data_0"},\n      "encode": {\n        "update": {\n          "opacity": [\n            {"test": "datum[\'__selected__\'] != \'off\'", "value": 1},\n            {"value": 0.3}],\n          "fill": {"value": "blue"},\n          "stroke": {"value": "#4c78a8"},\n          "ariaRoleDescription": {"value": "point"},\n          "description": {\n            "signal": "\\"Date: \\" + (timeFormat(datum[\\"Date\\"], \'%b %d, %Y\')) + \\"; $ Sales: \\" + (format(datum[\\"$ Sales\\"], \\"\\"))"\n          },\n          "x": {"scale": "x", "field": "Date"},\n          "y": {"scale": "y", "field": "$ Sales"}\n        }\n      }\n    }\n  ],\n  "scales": [\n    {\n      "name": "x",\n      "type": "time",\n      "domain": {"data": "data_0", "field": "Date"},\n      "range": [0, {"signal": "width"}]\n    },\n    {\n      "name": "y",\n      "type": "linear",\n      "domain": {"data": "data_0", "field": "$ Sales"},\n      "range": [{"signal": "height"}, 0],\n      "nice": true,\n      "zero": true\n    }\n  ],\n  "axes": [\n    {\n      "scale": "x",\n      "orient": "bottom",\n      "gridScale": "y",\n      "grid": true,\n      "tickCount": {"signal": "ceil(width/40)"},\n      "domain": false,\n      "labels": false,\n      "aria": false,\n      "maxExtent": 0,\n      "minExtent": 0,\n      "ticks": false,\n      "zindex": 0\n    },\n    {\n      "scale": "y",\n      "orient": "left",\n      "gridScale": "x",\n      "grid": true,\n      "tickCount": {"signal": "ceil(height/40)"},\n      "domain": false,\n      "labels": false,\n      "aria": false,\n      "maxExtent": 0,\n      "minExtent": 0,\n      "ticks": false,\n      "zindex": 0\n    },\n    {\n      "scale": "x",\n      "orient": "bottom",\n      "grid": false,\n      "title": "Date",\n      "labelFlush": true,\n      "labelOverlap": true,\n      "tickCount": {"signal": "ceil(width/40)"},\n      "zindex": 0\n    },\n    {\n      "scale": "y",\n      "orient": "left",\n      "grid": false,\n      "title": "$ Sales",\n      "labelOverlap": true,\n      "tickCount": {"signal": "ceil(height/40)"},\n      "zindex": 0\n    }\n  ]\n}',
             dataset,
             trackedFieldsCurrent: TRACKED_FIELDS_NO_REMAP_PENDING,
+            supplementaryPatterns: TRACKED_FIELDS_SUPPLEMENTARY_PATTERNS,
             reset: false
         };
         const result = getTrackingDataFromSpecification(options);
@@ -424,10 +462,11 @@ describe('getTrackingDataFromSpecification', () => {
         });
     });
     it('should have no fields tracked if specification is empty', () => {
-        const options = {
+        const options: IWorkerSpecFieldsInUseMessage = {
             spec: '',
             dataset,
             trackedFieldsCurrent: TRACKED_FIELDS_NO_REMAP_PENDING,
+            supplementaryPatterns: TRACKED_FIELDS_SUPPLEMENTARY_PATTERNS,
             reset: false
         };
         const result = getTrackingDataFromSpecification(options);
