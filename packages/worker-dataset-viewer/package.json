@@ -26,7 +26,7 @@
     },
     "scripts": {
         "dev": "tsup --watch",
-        "build": "tsup --clean",
+        "build": "tsup --clean --minify",
         "eslint": "eslint . --max-warnings 0"
     },
     "devDependencies": {
