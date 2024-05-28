@@ -3,7 +3,6 @@ import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 import DataViewValueColumns = powerbi.DataViewValueColumns;
 
 import find from 'lodash/find';
-import pickBy from 'lodash/pickBy';
 import reduce from 'lodash/reduce';
 
 import { isCrossHighlightPropSet } from '../../features/interactivity';
@@ -19,7 +18,8 @@ import { logTimeEnd, logTimeStart } from '../../features/logging';
 import {
     DATASET_FIELD_FORMAT_STRING_SUFFIX,
     DATASET_FIELD_FORMATED_VALUE_SUFFIX,
-    UsermetaDatasetField
+    UsermetaDatasetField,
+    utils
 } from '@deneb-viz/core-dependencies';
 import { getResolvedVisualMetadataToDatasetField } from '@deneb-viz/json-processing';
 
@@ -100,15 +100,9 @@ export const getDatasetFields = (
  */
 export const getDatasetFieldByTemplateKey = (queryName: string) =>
     find(
-        getDatasetFieldsInclusive(getDataset().fields),
+        utils.getDatasetFieldsInclusive(getDataset().fields),
         (f) => f?.templateMetadata?.key === queryName
     ) || null;
-
-/**
- * For supplied fields, retrieve only those that should be from the data roles.
- */
-export const getDatasetFieldsInclusive = (fields: IVisualDatasetFields) =>
-    pickBy(fields, (f) => !f.isExcludedFromTemplate);
 
 /**
  * Get the eligible template fields from a supplied set of metadata.
@@ -117,7 +111,7 @@ export const getDatasetTemplateFields = (
     metadata: IVisualDatasetFields
 ): UsermetaDatasetField[] =>
     reduce(
-        getDatasetFieldsInclusive(metadata),
+        utils.getDatasetFieldsInclusive(metadata),
         (result, value) => result.concat(value.templateMetadata),
         <UsermetaDatasetField[]>[]
     );
