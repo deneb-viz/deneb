@@ -10,12 +10,11 @@ import reduce from 'lodash/reduce';
 import store, { getState } from '../../../store';
 import { TModalDialogType } from '../../modal-dialog';
 import { IVisualDatasetField, IVisualDatasetFields } from '../../../core/data';
-import { getDatasetFieldsInclusive } from '../../../core/data/fields';
 import { logDebug, logRender } from '../../logging';
 import { useTemplateStyles } from '.';
 import { getI18nValue } from '../../i18n';
 import { DataTypeIcon } from './data-type-icon';
-import { UsermetaDatasetField } from '@deneb-viz/core-dependencies';
+import { UsermetaDatasetField, utils } from '@deneb-viz/core-dependencies';
 
 interface IDatasetFieldAssignmentDropdownProps {
     datasetField: UsermetaDatasetField;
@@ -162,7 +161,7 @@ const getRoleToSlice = (role: TModalDialogType) => {
  */
 const getTemplateDatasetFields = (metadata: IVisualDatasetFields) =>
     reduce(
-        getDatasetFieldsInclusive(metadata),
+        utils.getDatasetFieldsInclusive(metadata),
         (result, value) => {
             return result.concat(value);
         },
