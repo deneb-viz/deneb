@@ -15,14 +15,15 @@
         "dist"
     ],
     "scripts": {
-        "dev": "tsup --watch ./src --watch ../worker-dataset-viewer/dist/**",
-        "build": "tsup",
+        "dev": "tsup --watch ./src --watch ../worker-dataset-viewer/dist/** --watch ../worker-spec-fields-in-use/dist/**",
+        "build": "tsup --clean",
         "eslint": "eslint . --max-warnings 0"
     },
     "devDependencies": {
         "@deneb-viz/core-dependencies": "*",
         "@deneb-viz/eslint-config": "*",
         "@deneb-viz/typescript-config": "*",
-        "@deneb-viz/worker-dataset-viewer": "*"
+        "@deneb-viz/worker-dataset-viewer": "*",
+        "@deneb-viz/worker-spec-fields-in-use": "*"
     }
 }

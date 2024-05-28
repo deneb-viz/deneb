@@ -1,7 +1,20 @@
 /**
- * Pre-computed i18n translations for the data table worker, as these cannot
- * be done dynamically (due to not being able to share methods between main
- * thread and worker).
+ * Represents the worker that processes the dataset for display in the debug pane.
+ */
+export interface IWorkerDatasetViewer
+    extends Omit<Worker, 'onmessage,postMessage'> {
+    onmessage:
+        | ((
+              this: Worker,
+              ev: MessageEvent<IWorkerDatasetViewerResponse>
+          ) => any)
+        | null;
+    postMessage(message: IWorkerDatasetViewerMessage): void;
+}
+
+/**
+ * Pre-computed i18n translations for the data table worker, as these cannot be done dynamically (due to not being
+ * able to share methods between main thread and worker).
  */
 export interface IWorkerDatasetViewerTranslations {
     placeholderInfinity: string;
@@ -14,8 +27,8 @@ export interface IWorkerDatasetViewerTranslations {
 }
 
 /**
- * Represents the message sent to the data table worker from the main thread,
- * whenever the displayed dataset in the table changes and needs re-processing.
+ * Represents the message sent to the data table worker from the main thread, whenever the displayed dataset in the
+ * table changes and needs re-processing.
  */
 export interface IWorkerDatasetViewerMessage {
     canvasFontCharWidth: number;
@@ -63,7 +76,14 @@ export interface IWorkerDatasetViewerDataTableFormattedValue {
 }
 
 /**
- * Represents the type of value in a debug area table cell. This is used to
- * determine how to format the value for display, or other additional logic.
+ * Represents the type of value in a debug area table cell. This is used to determine how to format the value for
+ * display, or other additional logic.
  */
-export type WorkerDatasetViewerValueType = 'invalid' | 'number' | 'date' | 'object' | 'string' | 'boolean' | 'key';
+export type WorkerDatasetViewerValueType =
+    | 'invalid'
+    | 'number'
+    | 'date'
+    | 'object'
+    | 'string'
+    | 'boolean'
+    | 'key';
