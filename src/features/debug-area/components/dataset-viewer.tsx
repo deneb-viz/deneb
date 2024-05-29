@@ -28,8 +28,7 @@ import { getHashValue } from '../../../utils';
 import {
     IWorkerDatasetViewerDataTableRow,
     IWorkerDatasetViewerMaxDisplayWidths,
-    IWorkerDatasetViewerMessage,
-    IWorkerDatasetViewerResponse
+    IWorkerDatasetViewerMessage
 } from '@deneb-viz/core-dependencies';
 import { datasetViewerWorker } from '@deneb-viz/worker-common';
 
@@ -116,8 +115,7 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
     useEffect(() => {
         if (window.Worker) {
             datasetWorker.onmessage = (e) => {
-                const { jobId, values, maxWidths } =
-                    e.data as IWorkerDatasetViewerResponse;
+                const { jobId, values, maxWidths } = e.data;
                 logDebug('DatasetViewer: worker response received', {
                     jobId,
                     values,
