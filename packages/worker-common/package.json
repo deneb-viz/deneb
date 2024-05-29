@@ -24,6 +24,7 @@
         "@deneb-viz/eslint-config": "*",
         "@deneb-viz/typescript-config": "*",
         "@deneb-viz/worker-dataset-viewer": "*",
-        "@deneb-viz/worker-spec-fields-in-use": "*"
+        "@deneb-viz/worker-spec-fields-in-use": "*",
+        "@deneb-viz/worker-spec-tokenizer": "*"
     }
 }

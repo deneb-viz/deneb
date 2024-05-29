@@ -1,9 +1,11 @@
 import {
     IWorkerDatasetViewer,
-    IWorkerSpecFieldsInUse
+    IWorkerSpecFieldsInUse,
+    IWorkerSpecTokenizer
 } from '@deneb-viz/core-dependencies';
 import dataTable from '@deneb-viz/worker-dataset-viewer';
 import fieldsInUse from '@deneb-viz/worker-spec-fields-in-use';
+import tokenizer from '@deneb-viz/worker-spec-tokenizer';
 
 /**
  * Create a new worker from a raw file string.
@@ -25,3 +27,9 @@ export const datasetViewerWorker: IWorkerDatasetViewer =
  */
 export const fieldsInUseWorker: IWorkerSpecFieldsInUse =
     getNewWorkerFromRawFile(fieldsInUse as string);
+
+/**
+ * Used for the replacement of field names with tokens in a dataset specification.
+ */
+export const specTokenizerWorker: IWorkerSpecTokenizer =
+    getNewWorkerFromRawFile(tokenizer as string);
