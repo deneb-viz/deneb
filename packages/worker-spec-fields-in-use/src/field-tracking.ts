@@ -2,6 +2,7 @@ import {
     IDatasetField,
     IWorkerSpecFieldsInUseMessage,
     IWorkerSpecFieldsInUseResponse,
+    JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER,
     TrackedDrilldownProperties,
     TrackedFieldCandidates,
     TrackedFieldProperties,
@@ -88,21 +89,6 @@ export const getJsonPlaceholderKey = (i: number) =>
     `__${Math.floor(Math.abs(i))}__`;
 
 /**
- * For a literal field name (i.e., an extracted property value from a JSON or Vega expression AST), returns an array of
- * RegEx patterns that can be used to test that the literal matches the given field name (allowing for field modifiers
- * such as highlights).
- * @privateRemarks
- * The Power BI-specific replacement should be injected as a dependency, but for now we will just import it directly.
- */
-const getTokenPatternsLiteral = (
-    fieldName: string,
-    supplementaryPatterns: string[]
-) => {
-    const namePattern = utils.getEscapedReplacerPattern(fieldName);
-    return [`(^${namePattern}$)`, ...supplementaryPatterns];
-};
-
-/**
  * Ensure that we keep track of the correct template metadata for a field so that we can verify whether it's changed.
  * The `reset` property should be set after mapping has occurred so that we track from the correct field.
  */
@@ -141,6 +127,22 @@ const getTrackedFieldMapCurrent = (
     );
 
 /**
+ * For a literal field name (i.e., an extracted property value from a JSON or Vega expression AST), returns an array of
+ * RegEx patterns that can be used to test that the literal matches the given field name (allowing for field modifiers
+ * such as highlights).
+ */
+const getTokenPatternsLiteral = (
+    fieldName: string,
+    supplementaryPatterns: string[]
+) => {
+    const namePattern = utils.getEscapedReplacerPattern(fieldName);
+    const replacers = supplementaryPatterns.map((p) =>
+        p.replaceAll(JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER, namePattern)
+    );
+    return [`(^${namePattern}$)`, ...replacers];
+};
+
+/**
  * For a `TrackedFields` object, return an array of all fields that are flagged as present in the specification. Flag
  * these as being in the specification previously also, so that we can identify them as being eligible for re-mapping
  * if they are subsequently not in the dataset.
@@ -169,7 +171,6 @@ const getTrackedFieldMapExisting = (
 export const getTrackingDataFromSpecification = (
     options: IWorkerSpecFieldsInUseMessage
 ): IWorkerSpecFieldsInUseResponse => {
-    console.time('getTrackingDataFromSpecification');
     const {
         spec,
         dataset,
@@ -213,33 +214,30 @@ export const getTrackingDataFromSpecification = (
                     templateMetadata,
                     templateMetadataOriginal
                 };
-                const sp = supplementaryPatterns[templateMetadata.name] || [];
-                const spOriginal =
-                    supplementaryPatterns[templateMetadataOriginal.name] || [];
                 const isExpression = isExpressionField(value);
                 const isLiteralMatch = doesLiteralContainField(
                     value,
                     templateMetadata.name,
-                    sp
+                    supplementaryPatterns
                 );
                 const isLiteralMatchOriginal = doesLiteralContainField(
                     value,
                     templateMetadataOriginal.name,
-                    spOriginal
+                    supplementaryPatterns
                 );
                 const isExpressionMatch =
                     isExpression &&
                     doesExpressionContainField(
                         parseExpression(value),
                         templateMetadata.name,
-                        sp
+                        supplementaryPatterns
                     );
                 const isExpressionMatchOriginal =
                     isExpression &&
                     doesExpressionContainField(
                         parseExpression(value),
                         templateMetadataOriginal.name,
-                        spOriginal
+                        supplementaryPatterns
                     );
                 if (
                     isLiteralMatch ||
@@ -269,12 +267,12 @@ export const getTrackingDataFromSpecification = (
                 false;
         }
     });
-    console.timeEnd('getTrackingDataFromSpecification');
     return {
         trackedFields,
         trackedDrilldown
     };
 };
+
 /**
  * Tests the supplied string to see if it evaluates as a valid Vega expression.
  */

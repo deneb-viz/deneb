@@ -85,21 +85,7 @@ const TRACKED_FIELDS_NO_REMAP_PENDING: TrackedFields = {
     }
 };
 
-const TRACKED_FIELDS_SUPPLEMENTARY_PATTERNS: {
-    [key: string]: string[];
-} = reduce(
-    TRACKED_FIELDS_NO_REMAP_PENDING,
-    (result, value, key) => {
-        result[`${value.templateMetadata.name}`] =
-            getPowerBiTokenPatternsLiteral(value.templateMetadata.name);
-        return result;
-    },
-    <
-        {
-            [key: string]: string[];
-        }
-    >{}
-);
+const TRACKED_FIELDS_SUPPLEMENTARY_PATTERNS = getPowerBiTokenPatternsLiteral();
 
 describe('doesExpressionContainField', () => {
     const EXPRESSION_WITH_SIMPLE_FIELD = parseExpression(

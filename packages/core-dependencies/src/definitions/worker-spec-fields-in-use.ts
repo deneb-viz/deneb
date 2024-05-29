@@ -22,9 +22,7 @@ export interface IWorkerSpecFieldsInUseMessage {
     spec: string;
     dataset: IDataset;
     trackedFieldsCurrent: TrackedFields;
-    supplementaryPatterns: {
-        [key: string]: string[];
-    };
+    supplementaryPatterns: string[];
     reset?: boolean;
 }
 

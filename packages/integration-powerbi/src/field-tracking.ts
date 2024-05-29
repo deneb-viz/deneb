@@ -1,4 +1,9 @@
-import { TokenPatternReplacer, utils } from '@deneb-viz/core-dependencies';
+import {
+    JSON_FIELD_TRACKING_METADATA_PLACEHOLDER,
+    JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER,
+    TokenPatternReplacer,
+    utils
+} from '@deneb-viz/core-dependencies';
 import { getCrossHighlightRegExpAlternation } from './cross-highlight';
 import { getNumberFormatRegExpAlternation } from './number-formatting';
 
@@ -7,11 +12,23 @@ import { getNumberFormatRegExpAlternation } from './number-formatting';
  * RegEx patterns that can be used to test that the literal matches the given field name (allowing for field modifiers
  * such as highlights and number formatting).
  */
-export const getPowerBiTokenPatternsLiteral = (fieldName: string): string[] => {
-    const namePattern = utils.getEscapedReplacerPattern(fieldName);
+export const getPowerBiTokenPatternsLiteral = (
+    fieldName?: string
+): string[] => {
+    const namePattern = utils.getEscapedReplacerPattern(
+        fieldName ?? JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER
+    );
     return [
-        ...getPowerBiTokenPatterns(namePattern, getCrossHighlightRegExpAlternation(), ''),
-        ...getPowerBiTokenPatterns(namePattern, getNumberFormatRegExpAlternation(), '')
+        ...getPowerBiTokenPatterns(
+            namePattern,
+            getCrossHighlightRegExpAlternation(),
+            ''
+        ),
+        ...getPowerBiTokenPatterns(
+            namePattern,
+            getNumberFormatRegExpAlternation(),
+            ''
+        )
     ].map((r) => r.pattern);
 };
 
@@ -19,13 +36,27 @@ export const getPowerBiTokenPatternsLiteral = (fieldName: string): string[] => {
  * Provide the Power BI-specific tokens that we may need to search for and replace when performing field remapping in a
  * specification.
  */
-export const getPowerBiTokenPatternsReplacement = (fieldName: string, placeholder: string): TokenPatternReplacer[] => {
-    const namePattern = utils.getEscapedReplacerPattern(fieldName);
-    const alternations = [getCrossHighlightRegExpAlternation(), getNumberFormatRegExpAlternation()];
+export const getPowerBiTokenPatternsReplacement = (
+    fieldName?: string,
+    placeholder?: string
+): TokenPatternReplacer[] => {
+    const namePattern = utils.getEscapedReplacerPattern(
+        fieldName ?? JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER
+    );
+    const alternations = [
+        getCrossHighlightRegExpAlternation(),
+        getNumberFormatRegExpAlternation()
+    ];
     const replacers: TokenPatternReplacer[] = [];
     for (let i = 0, n = alternations.length; i < n; i++) {
         const alternation = alternations[i] as string;
-        replacers.push(...getPowerBiTokenPatterns(namePattern, alternation, placeholder));
+        replacers.push(
+            ...getPowerBiTokenPatterns(
+                namePattern,
+                alternation,
+                placeholder ?? JSON_FIELD_TRACKING_METADATA_PLACEHOLDER
+            )
+        );
     }
     return replacers;
 };
