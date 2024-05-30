@@ -15,6 +15,7 @@ import { getI18nValue } from '../../i18n';
 import { ToolbarButtonStandard } from '../../toolbar/components/toolbar-button-standard';
 import { PREVIEW_PANE_TOOLBAR_MIN_SIZE } from '../../../constants';
 import { setFocusToActiveEditor, useJsonEditorContext } from '..';
+import { KeyboardTabRegular } from '@fluentui/react-icons';
 
 interface IStatusBarProps {
     position: Ace.Point;
@@ -113,8 +114,9 @@ export const JsonEditorStatusBar: React.FC<IStatusBarProps> = ({
                                 mountNode={tabRef}
                             >
                                 <Button
-                                    appearance='transparent'
+                                    appearance='subtle'
                                     size='small'
+                                    icon={<KeyboardTabRegular />}
                                     onClick={onTabClick}
                                 >
                                     {escapeHatch
