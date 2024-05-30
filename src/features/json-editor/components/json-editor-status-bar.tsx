@@ -8,6 +8,7 @@ import {
     makeStyles,
     tokens
 } from '@fluentui/react-components';
+import { KeyboardTabRegular } from '@fluentui/react-icons';
 
 import { logRender } from '../../logging';
 import { StatusBarContainer, TooltipCustomMount } from '../../interface';
@@ -15,7 +16,7 @@ import { getI18nValue } from '../../i18n';
 import { ToolbarButtonStandard } from '../../toolbar/components/toolbar-button-standard';
 import { PREVIEW_PANE_TOOLBAR_MIN_SIZE } from '../../../constants';
 import { setFocusToActiveEditor, useJsonEditorContext } from '..';
-import { KeyboardTabRegular } from '@fluentui/react-icons';
+import { ProviderDetail } from './provider-detail';
 
 interface IStatusBarProps {
     position: Ace.Point;
@@ -50,7 +51,7 @@ const useStatusStyles = makeStyles({
         flexGrow: 1,
         alignItems: 'center',
         justifyContent: 'flex-end',
-        columnGap: '20px',
+        columnGap: '10px',
         height: '100%'
     }
 });
@@ -89,6 +90,7 @@ export const JsonEditorStatusBar: React.FC<IStatusBarProps> = ({
                             role='debug'
                         />
                     </div>
+                    <ProviderDetail />
                     <div className={classes.status}>
                         <div className='status-cursor'>
                             <Caption1>

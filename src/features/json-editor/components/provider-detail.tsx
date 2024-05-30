@@ -12,7 +12,7 @@ export const ProviderDetail: React.FC = () => {
     const [ref, setRef] = useState<HTMLElement | null>();
     logRender('ProviderDetail');
     return (
-        <>
+        <div>
             <Tooltip
                 content={getI18nValue('Current_Provider_Tooltip')}
                 relationship='label'
@@ -24,6 +24,6 @@ export const ProviderDetail: React.FC = () => {
                 </Caption1>
             </Tooltip>
             <TooltipCustomMount setRef={setRef} />
-        </>
+        </div>
     );
 };

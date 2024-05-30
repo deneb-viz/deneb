@@ -15,7 +15,6 @@ import { shallow } from 'zustand/shallow';
 
 import store from '../../../store';
 import { TPreviewPivotRole } from '../../../core/ui/advancedEditor';
-import { ProviderDetail } from './provider-detail';
 import { LogErrorIndicator } from './log-error-indicator';
 import { useToolbarStyles } from '.';
 import { ToolbarButtonStandard } from './toolbar-button-standard';
@@ -90,7 +89,6 @@ export const DebugToolbar: React.FC = () => {
                 </ToolbarRadioButton>
             </ToolbarRadioGroup>
             <ToolbarGroup className={classes.toolbarGroupDebug}>
-                <ProviderDetail />
                 <ToolbarButtonStandard command='zoomOut' role='debug' />
                 <ZoomSlider />
                 <ToolbarButtonStandard command='zoomIn' role='debug' />
