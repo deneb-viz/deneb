@@ -125,6 +125,7 @@ export interface IFieldUsageSliceProperties {
     dataset: TrackedFields;
     drilldown: TrackedDrilldownProperties;
     editorShouldSkipRemap: boolean;
+    isProcessing: boolean;
     remapFields: UsermetaDatasetField[];
     remapAllDependenciesAssigned: boolean;
     remapAllFieldsAssigned: boolean;
@@ -132,6 +133,8 @@ export interface IFieldUsageSliceProperties {
     tokenizedSpec: string;
     applyFieldMapping: (payload: IFieldUsageSliceApplyFieldMapping) => void;
     setFieldAssignment: (payload: IFieldUsageSliceSetFieldAssignment) => void;
+    setProcessingEnd: () => void;
+    setProcessingStart: () => void;
 }
 
 /**

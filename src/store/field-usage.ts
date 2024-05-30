@@ -24,6 +24,7 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                 isMappingRequired: false
             },
             editorShouldSkipRemap: false,
+            isProcessing: false,
             remapFields: [],
             remapAllDependenciesAssigned: false,
             remapAllFieldsAssigned: false,
@@ -40,6 +41,18 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                     (state) => handleSetFieldAssignment(state, payload),
                     false,
                     'fieldUsage.setFieldAssignment'
+                ),
+            setProcessingEnd: () =>
+                set(
+                    (state) => handleSetProcessingEnd(state),
+                    false,
+                    'fieldUsage.setProcessingEnd'
+                ),
+            setProcessingStart: () =>
+                set(
+                    (state) => handleSetProcessingStart(state),
+                    false,
+                    'fieldUsage.setProcessingStart'
                 )
         }
     };
@@ -88,6 +101,19 @@ const handleApplyFieldMapping = (
         },
         interface: { ...state.interface, modalDialogRole }
     };
+};
+/**
+ * Updates the isProcessing flag to `false`, allowing the UI to update as needed.
+ */
+const handleSetProcessingEnd = (state: TStoreState): Partial<TStoreState> => {
+    return { fieldUsage: { ...state.fieldUsage, isProcessing: false } };
+};
+
+/**
+ * Updates the isProcessing flag to `true`, allowing the UI to update as needed.
+ */
+const handleSetProcessingStart = (state: TStoreState): Partial<TStoreState> => {
+    return { fieldUsage: { ...state.fieldUsage, isProcessing: true } };
 };
 
 /**
