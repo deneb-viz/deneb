@@ -99,11 +99,7 @@ export class Deneb implements IVisual {
         VisualHostServices.update(options);
         // Signal we've begun rendering
         setRenderingStarted();
-        I18nServices.update(
-            FEATURES.developer_mode
-                ? (this.settings.developer.localization.locale.value as string)
-                : getLocale()
-        );
+        this.resolveLocale();
         VegaExtensibilityServices.bind(
             this.settings.theme.ordinal.ordinalColorCount.value
         );
@@ -191,6 +187,18 @@ export class Deneb implements IVisual {
             setExplicitInitialize();
         }
         logTimeEnd('resolveUpdateOptions');
+    }
+
+    /**
+     * Resolve the locale for the visual update, based on the host or the overridden value in the developer settings.
+     */
+    private resolveLocale() {
+        logDebug('Resolving locale options...');
+        const locale = FEATURES.developer_mode
+            ? (this.settings.developer.localization.locale.value as string)
+            : getLocale();
+        logDebug('Locale resolved.', { locale });
+        I18nServices.update(locale);
     }
 
     /**
