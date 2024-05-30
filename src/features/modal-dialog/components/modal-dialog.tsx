@@ -70,7 +70,7 @@ export const ModalDialog: React.FC = () => {
             }
             event.stopPropagation();
         },
-        []
+        [modalDialogRole]
     );
     logRender('ModalDialog', { isOpen, modalDialogRole });
     return (
