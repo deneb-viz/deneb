@@ -100,32 +100,12 @@ export class Deneb implements IVisual {
         // Signal we've begun rendering
         setRenderingStarted();
         this.resolveLocale();
+        this.resolveViewport(options);
         VegaExtensibilityServices.bind(
             this.settings.theme.ordinal.ordinalColorCount.value
         );
         const { setVisualUpdate, updateDataset, updateDatasetProcessingStage } =
             getState();
-        // Manage persistent viewport sizing for view vs. editor
-        switch (true) {
-            case isVisualUpdateTypeVolatile(options):
-            case isVisualUpdateTypeResizeEnd(options.type): {
-                resolveReportViewport(
-                    options.viewport,
-                    options.viewMode,
-                    options.editMode,
-                    {
-                        height: Number.parseFloat(
-                            this.settings.stateManagement.viewport
-                                .viewportHeight.value
-                        ),
-                        width: Number.parseFloat(
-                            this.settings.stateManagement.viewport.viewportWidth
-                                .value
-                        )
-                    }
-                );
-            }
-        }
         // Provide intial update options to store
         setVisualUpdate({
             options,
@@ -199,6 +179,33 @@ export class Deneb implements IVisual {
             : getLocale();
         logDebug('Locale resolved.', { locale });
         I18nServices.update(locale);
+    }
+
+    /**
+     * Manage persistent viewport sizing for view vs. editor
+     */
+    private resolveViewport(options: VisualUpdateOptions) {
+        switch (true) {
+            case isVisualUpdateTypeVolatile(options):
+            case isVisualUpdateTypeResizeEnd(options.type): {
+                logDebug('Resolving viewport options...');
+                resolveReportViewport(
+                    options.viewport,
+                    options.viewMode,
+                    options.editMode,
+                    {
+                        height: Number.parseFloat(
+                            this.settings.stateManagement.viewport
+                                .viewportHeight.value
+                        ),
+                        width: Number.parseFloat(
+                            this.settings.stateManagement.viewport.viewportWidth
+                                .value
+                        )
+                    }
+                );
+            }
+        }
     }
 
     /**
