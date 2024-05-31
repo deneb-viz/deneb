@@ -104,9 +104,8 @@ export class Deneb implements IVisual {
         VegaExtensibilityServices.bind(
             this.settings.theme.ordinal.ordinalColorCount.value
         );
-        const { setVisualUpdate, updateDataset, updateDatasetProcessingStage } =
-            getState();
         // Provide intial update options to store
+        const { setVisualUpdate } = getState();
         setVisualUpdate({
             options,
             settings: this.settings
@@ -114,9 +113,26 @@ export class Deneb implements IVisual {
         // Perform any necessary property migrations
         handlePropertyMigration(this.settings);
         // Data change or re-processing required?
+        this.resolveDataset(options);
+        const {
+            interface: { isInitialized, setExplicitInitialize }
+        } = getState();
+        if (!isInitialized) {
+            logDebug('Visual has not been initialized yet. Setting...');
+            setExplicitInitialize();
+        }
+        logTimeEnd('resolveUpdateOptions');
+    }
+
+    /**
+     * Resolve the dataset for the visual update, based on the current state and the incoming options.
+     */
+    private resolveDataset(options: VisualUpdateOptions) {
         let fetchSuccess = false;
         const {
-            processing: { shouldProcessDataset }
+            processing: { shouldProcessDataset },
+            updateDataset,
+            updateDatasetProcessingStage
         } = getState();
         const categorical = getCategoricalDataViewFromOptions(options);
         if (shouldProcessDataset) {
@@ -159,14 +175,6 @@ export class Deneb implements IVisual {
         } else {
             logDebug('Visual dataset has not changed. No need to process.');
         }
-        const {
-            interface: { isInitialized, setExplicitInitialize }
-        } = getState();
-        if (!isInitialized) {
-            logDebug('Visual has not been initialized yet. Setting...');
-            setExplicitInitialize();
-        }
-        logTimeEnd('resolveUpdateOptions');
     }
 
     /**
