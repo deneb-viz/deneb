@@ -106,7 +106,7 @@ export const PROPERTIES_DEFAULTS = {
          * Interval in milliseconds to debounce editor changes.
          */
         debouncePeriod: {
-            default: 200,
+            default: 700,
             min: 0,
             max: 1000
         },
