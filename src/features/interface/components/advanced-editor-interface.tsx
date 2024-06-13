@@ -32,7 +32,6 @@ import {
     handleEditorPaneSettings,
     handleEditorPaneSpecification,
     handleExportSpecification,
-    handleFormatJson,
     handleOpenCreateSpecificationDialog,
     handleOpenRemapDialog,
     handleOpenWebsite,
@@ -73,7 +72,6 @@ export const AdvancedEditorInterface: React.FC = () => {
         useHotkeys(getCommandKey(command), callback, HOTKEY_OPTIONS);
     hotkeyHandler('applyChanges', () => handleApplyChanges(editorRefs));
     hotkeyHandler('autoApplyToggle', () => handleAutoApplyChanges(editorRefs));
-    hotkeyHandler('formatJson', () => handleFormatJson(editorRefs));
     hotkeyHandler('newSpecification', handleOpenCreateSpecificationDialog);
     hotkeyHandler('exportSpecification', handleExportSpecification);
     hotkeyHandler('fieldMappings', handleOpenRemapDialog);

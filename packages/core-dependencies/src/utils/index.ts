@@ -4,10 +4,7 @@ export {
     getBase64MimeType,
     isBase64Image
 } from './base64';
-export {
-    getDatasetFieldsInclusive,
-    getEscapedReplacerPattern
-} from './field-tracking';
+export * from './type-conversion';
 export * from './type-guards';
 
 /**

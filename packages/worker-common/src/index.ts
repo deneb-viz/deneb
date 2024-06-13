@@ -1,35 +1,75 @@
 import {
     IWorkerDatasetViewer,
-    IWorkerSpecFieldsInUse,
-    IWorkerSpecTokenizer
+    IDenebSpecJsonWorker,
+    IDenebJsonProcessingWorkerRequest,
+    IDenebJsonProcessingWorkerResponse
 } from '@deneb-viz/core-dependencies';
 import dataTable from '@deneb-viz/worker-dataset-viewer';
-import fieldsInUse from '@deneb-viz/worker-spec-fields-in-use';
-import tokenizer from '@deneb-viz/worker-spec-tokenizer';
+import denebSpecJson from '@deneb-viz/worker-spec-json-processing';
+import jsonWorker from '@deneb-viz/monaco-custom/dist/json.worker';
 
 /**
- * Create a new worker from a raw file string.
+ * Convert a raw file into a blob.
  */
-const getNewWorkerFromRawFile = (rawFile: string) => {
-    const workerBlob = new Blob([rawFile], { type: 'application/javascript' });
-    const workerURL = URL.createObjectURL(workerBlob);
-    return new Worker(workerURL);
-};
+const getBlobFromRawFile = (rawFile: string) =>
+    new Blob([rawFile], { type: 'application/javascript' });
+
+/**
+ * Convert a blob into a URL.
+ */
+const getUrlFromBlob = (blob: Blob) => URL.createObjectURL(blob);
+
+/**
+ * Create a new worker from a URL.
+ */
+const getWorkerFromUrl = (url: string) => new Worker(url);
 
 /**
  * Used for the calculation of display widths and formatted values for the dataset viewer in the debug table.
  */
-export const datasetViewerWorker: IWorkerDatasetViewer =
-    getNewWorkerFromRawFile(dataTable as string);
+export const datasetViewerWorker: IWorkerDatasetViewer = getWorkerFromUrl(
+    getUrlFromBlob(getBlobFromRawFile(dataTable as string))
+);
 
 /**
- * Used for the tracking of fields in use from a dataset specification.
+ * Used for asynchronous processing of JSON specifications.
  */
-export const fieldsInUseWorker: IWorkerSpecFieldsInUse =
-    getNewWorkerFromRawFile(fieldsInUse as string);
+export const denebSpecJsonWorker: IDenebSpecJsonWorker = getWorkerFromUrl(
+    getUrlFromBlob(getBlobFromRawFile(denebSpecJson as string))
+);
 
 /**
- * Used for the replacement of field names with tokens in a dataset specification.
+ * URL for the Monaco JSON worker. This will be used by Monaco to manually create the worker.
  */
-export const specTokenizerWorker: IWorkerSpecTokenizer =
-    getNewWorkerFromRawFile(tokenizer as string);
+export const monacoJsonWorkerUrl = getUrlFromBlob(
+    getBlobFromRawFile(jsonWorker as string)
+);
+
+/**
+ * Monaco worker for JSON processing.
+ */
+export const monacoJsonWorker: Worker = new Worker(monacoJsonWorkerUrl, {
+    name: 'json'
+});
+
+/**
+ * Asynchronously perform JSON manipulations for a spec via the Deneb spec JSON web worker.
+ */
+export const doDenebSpecJsonWorkerRequest = (
+    request: IDenebJsonProcessingWorkerRequest
+) =>
+    new Promise<IDenebJsonProcessingWorkerResponse>((resolve, reject) => {
+        try {
+            denebSpecJsonWorker.postMessage(request, [
+                request.payload.spec.buffer
+            ]);
+            denebSpecJsonWorker.onmessage = (e) => {
+                resolve(e.data);
+            };
+            denebSpecJsonWorker.onerror = (e) => {
+                reject(e);
+            };
+        } catch (e) {
+            reject(e);
+        }
+    });

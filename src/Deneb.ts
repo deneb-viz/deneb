@@ -1,5 +1,5 @@
 import '../style/visual.less';
-import 'ace-builds';
+import '@deneb-viz/monaco-custom/dist/index.css';
 import powerbi from 'powerbi-visuals-api';
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
@@ -49,6 +49,7 @@ import {
     getVisualFormattingModel,
     getVisualFormattingService
 } from '@deneb-viz/integration-powerbi';
+import { updateFieldTracking } from './features/json-processing';
 
 /**
  * Run to indicate that the visual has started.
@@ -170,6 +171,7 @@ export class Deneb implements IVisual {
                     categories: categorical?.categories,
                     dataset
                 });
+                this.updateTracking();
             }
             logTimeEnd('processDataset');
         } else {
@@ -214,6 +216,24 @@ export class Deneb implements IVisual {
                 );
             }
         }
+    }
+
+    /**'
+     * Perform the necessary tracking updates for the visual data and spec.
+     */
+    private async updateTracking() {
+        logDebug('[Visual Update] Updating tracking and tokens...');
+        const {
+            fieldUsage: { dataset: trackedFieldsCurrent },
+            visualSettings: {
+                vega: {
+                    output: {
+                        jsonSpec: { value: spec }
+                    }
+                }
+            }
+        } = getState();
+        updateFieldTracking(spec, trackedFieldsCurrent);
     }
 
     /**

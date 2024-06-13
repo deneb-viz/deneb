@@ -3,17 +3,21 @@ import { StateCreator } from 'zustand';
 
 import { TStoreState } from '.';
 import {
+    IFieldUsageSliceApplyTrackingChanges,
     IFieldUsageSliceApplyFieldMapping,
     IFieldUsageSliceSetFieldAssignment,
     IFieldUsageSliceState,
-    UsermetaDatasetField
+    UsermetaDatasetField,
+    IFieldUsageSliceApplyTokenizationChanges,
+    RemapState
 } from '@deneb-viz/core-dependencies';
 import {
     areAllRemapDataRequirementsMet,
     getRemapEligibleFields,
-    getTokenizedSpec
+    isMappingDialogRequired
 } from '@deneb-viz/json-processing';
 import { ModalDialogRole } from '../features/modal-dialog/types';
+import { getOnboardingDialog } from '../features/modal-dialog';
 
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IFieldUsageSliceState>{
@@ -24,7 +28,6 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                 isMappingRequired: false
             },
             editorShouldSkipRemap: false,
-            isProcessing: false,
             remapFields: [],
             remapAllDependenciesAssigned: false,
             remapAllFieldsAssigned: false,
@@ -36,23 +39,23 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                     false,
                     'fieldUsage.applyFieldMapping'
                 ),
+            applyTokenizationChanges: (payload) =>
+                set(
+                    (state) => handleApplyTokenizationChanges(state, payload),
+                    false,
+                    'fieldUsage.applyTokenizationChanges'
+                ),
+            applyTrackingChanges: (payload) =>
+                set(
+                    (state) => handleApplyTrackingChanges(state, payload),
+                    false,
+                    'fieldUsage.applyTrackingChanges'
+                ),
             setFieldAssignment: (payload) =>
                 set(
                     (state) => handleSetFieldAssignment(state, payload),
                     false,
                     'fieldUsage.setFieldAssignment'
-                ),
-            setProcessingEnd: () =>
-                set(
-                    (state) => handleSetProcessingEnd(state),
-                    false,
-                    'fieldUsage.setProcessingEnd'
-                ),
-            setProcessingStart: () =>
-                set(
-                    (state) => handleSetProcessingStart(state),
-                    false,
-                    'fieldUsage.setProcessingStart'
                 )
         }
     };
@@ -72,11 +75,6 @@ const handleApplyFieldMapping = (
     state: TStoreState,
     payload: IFieldUsageSliceApplyFieldMapping
 ): Partial<TStoreState> => {
-    const tokenizedSpec = getTokenizedSpec({
-        textSpec: payload.jsonSpec,
-        trackedFields: state.fieldUsage.dataset,
-        isRemap: true
-    });
     const remapFields = getRemapEligibleFields(payload.dataset);
     const {
         remapAllDependenciesAssigned = false,
@@ -86,7 +84,6 @@ const handleApplyFieldMapping = (
         remapFields,
         drilldownProperties: payload.drilldown
     });
-    const modalDialogRole: ModalDialogRole = 'None';
     return {
         fieldUsage: {
             ...state.fieldUsage,
@@ -96,24 +93,69 @@ const handleApplyFieldMapping = (
             remapFields,
             remapAllDependenciesAssigned,
             remapAllFieldsAssigned,
-            remapDrilldownAssigned,
-            tokenizedSpec
+            remapDrilldownAssigned
         },
-        interface: { ...state.interface, modalDialogRole }
+        interface: {
+            ...state.interface
+        }
     };
 };
-/**
- * Updates the isProcessing flag to `false`, allowing the UI to update as needed.
- */
-const handleSetProcessingEnd = (state: TStoreState): Partial<TStoreState> => {
-    return { fieldUsage: { ...state.fieldUsage, isProcessing: false } };
+
+const handleApplyTokenizationChanges = (
+    state: TStoreState,
+    payload: IFieldUsageSliceApplyTokenizationChanges
+): Partial<TStoreState> => {
+    return {
+        fieldUsage: {
+            ...state.fieldUsage,
+            tokenizedSpec: payload.tokenizedSpec
+        },
+        interface: { ...state.interface, isTokenizingSpec: false }
+    };
 };
 
-/**
- * Updates the isProcessing flag to `true`, allowing the UI to update as needed.
- */
-const handleSetProcessingStart = (state: TStoreState): Partial<TStoreState> => {
-    return { fieldUsage: { ...state.fieldUsage, isProcessing: true } };
+const handleApplyTrackingChanges = (
+    state: TStoreState,
+    payload: IFieldUsageSliceApplyTrackingChanges
+): Partial<TStoreState> => {
+    const { remapFields, trackedDrilldown, trackedFields } = payload;
+    const {
+        remapAllDependenciesAssigned,
+        remapAllFieldsAssigned,
+        remapDrilldownAssigned
+    } = areAllRemapDataRequirementsMet({
+        remapFields,
+        drilldownProperties: trackedDrilldown
+    });
+    const modalDialogRole: ModalDialogRole =
+        isMappingDialogRequired({
+            trackedFields,
+            drilldownProperties: trackedDrilldown
+        }) ||
+        (state.interface.modalDialogRole === 'Remap' &&
+            state.interface.remapState !== RemapState.Complete)
+            ? 'Remap'
+            : getOnboardingDialog(
+                  state.visualSettings,
+                  state.interface.mode,
+                  state.interface.modalDialogRole
+              );
+    return {
+        fieldUsage: {
+            ...state.fieldUsage,
+            dataset: trackedFields,
+            drilldown: trackedDrilldown,
+            remapFields,
+            remapAllDependenciesAssigned,
+            remapAllFieldsAssigned,
+            remapDrilldownAssigned
+        },
+        interface: {
+            ...state.interface,
+            isTrackingFields: false,
+            modalDialogRole
+        }
+    };
 };
 
 /**

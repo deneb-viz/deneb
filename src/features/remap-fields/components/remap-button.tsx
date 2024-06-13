@@ -6,51 +6,53 @@ import { getI18nValue } from '../../i18n';
 import store, { getState } from '../../../store';
 import { logDebug, logRender } from '../../logging';
 import { persistSpecification } from '../../specification';
-import { useJsonEditorContext } from '../../json-editor';
-import { IAceEditor } from 'react-ace/lib/types';
 import {
+    IEditorRefs,
+    setFocusToActiveEditor,
+    useJsonEditorContext
+} from '../../json-editor';
+import {
+    RemapState,
     TrackedFields,
     UsermetaDatasetField
 } from '@deneb-viz/core-dependencies';
 import {
-    getFieldsInUseFromSpecification,
+    updateFieldTokenization,
+    updateFieldTracking,
     getRemappedSpecification
-} from '@deneb-viz/json-processing';
+} from '../../json-processing';
 
 /**
  * Button for applying field mapping changes via the modal dialog.
  */
 export const RemapButton: React.FC = () => {
-    const { spec, config } = useJsonEditorContext();
+    const editorRefs = useJsonEditorContext();
     const {
         dataset,
+        jsonSpec,
         remapAllDependenciesAssigned,
         remapFields,
-        tokenizedSpec
+        remapState
     } = store(
         (state) => ({
             dataset: state.fieldUsage.dataset,
+            jsonSpec: state.visualSettings.vega.output.jsonSpec.value,
             remapAllDependenciesAssigned:
                 state.fieldUsage.remapAllDependenciesAssigned,
             remapFields: state.fieldUsage.remapFields,
-            tokenizedSpec: state.fieldUsage.tokenizedSpec
+            remapState: state.interface.remapState
         }),
         shallow
     );
-    spec.current.editor;
     const onRemap = () => {
-        applyRemappedFields(
-            tokenizedSpec,
-            remapFields,
-            dataset,
-            spec.current.editor,
-            config.current.editor
-        );
+        applyRemappedFields(jsonSpec, remapFields, dataset, editorRefs);
     };
     logRender('RemapButton');
     return (
         <Button
-            disabled={!remapAllDependenciesAssigned}
+            disabled={
+                !remapAllDependenciesAssigned || remapState !== RemapState.None
+            }
             appearance='primary'
             onClick={onRemap}
         >
@@ -63,43 +65,59 @@ export const RemapButton: React.FC = () => {
  * For the supplied tokenized specification and re-mapping information, traverse all re-mapping fields needed and
  * replace the placeholder with the supplied object name. When done, this is persisted to the store.
  */
-export const applyRemappedFields = (
+export const applyRemappedFields = async (
     specification: string,
     remapFields: UsermetaDatasetField[],
     trackedFields: TrackedFields,
-    specEditor: IAceEditor,
-    configEditor: IAceEditor
+    editorRefs: IEditorRefs
 ) => {
-    logDebug('applyRemappedFields', {
+    logDebug('[applyRemappedFields] called', {
         specification,
         remapFields,
         tracking: trackedFields
     });
-    const cursorPrev = specEditor.getCursorPosition();
+    const { spec, config } = editorRefs;
     const {
-        dataset,
-        fieldUsage: { applyFieldMapping }
+        fieldUsage: { applyFieldMapping },
+        interface: { setRemapState }
     } = getState();
-    const mappedSpec = getRemappedSpecification({
-        specification,
+    const cursorPrev = editorRefs?.spec?.current.getPosition();
+    setRemapState(RemapState.Tokenizing);
+    await updateFieldTokenization(specification, trackedFields);
+    const {
+        fieldUsage: { tokenizedSpec }
+    } = getState();
+    logDebug('[applyRemappedFields] tokenized spec', { tokenizedSpec });
+    setRemapState(RemapState.Replacing);
+    const mappedSpec = await getRemappedSpecification(
+        tokenizedSpec,
         remapFields,
         trackedFields
+    );
+    logDebug('[applyRemappedFields] mapped spec', {
+        trackedFields,
+        mappedSpec
     });
-    // Assign new spec and clear selection
-    specEditor?.setValue(mappedSpec);
-    specEditor?.clearSelection();
-    specEditor?.moveCursorToPosition(cursorPrev);
-    // Make sure that we get the new tracking data, but reset the original
-    const trackingUpdated = getFieldsInUseFromSpecification({
-        spec: mappedSpec,
+    setRemapState(RemapState.Tracking);
+    await updateFieldTracking(mappedSpec, trackedFields);
+    const {
+        fieldUsage: { dataset, drilldown }
+    } = getState();
+    logDebug('[applyRemappedFields] after updated tracking', {
         dataset,
-        trackedFieldsCurrent: trackedFields,
-        reset: true
+        drilldown,
+        mappedSpec
     });
     applyFieldMapping({
-        dataset: trackingUpdated.trackedFields,
-        drilldown: trackingUpdated.trackedDrilldown,
-        jsonSpec: specification
+        dataset,
+        drilldown
     });
-    persistSpecification(specEditor, configEditor);
+    // Assign new spec and clear selection
+    setRemapState(RemapState.UpdatingEditor);
+    spec?.current?.setValue(mappedSpec);
+    spec?.current?.setPosition(cursorPrev);
+    setFocusToActiveEditor(editorRefs);
+    setRemapState(RemapState.Complete);
+    persistSpecification(spec.current, config.current);
+    setRemapState(RemapState.None);
 };

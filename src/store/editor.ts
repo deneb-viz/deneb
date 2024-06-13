@@ -8,11 +8,7 @@ import {
     getResizablePaneSize,
     TPreviewPivotRole
 } from '../core/ui/advancedEditor';
-import {
-    EditorApplyMode,
-    IEditorFoldPosition,
-    TEditorRole
-} from '../features/json-editor';
+import { EditorApplyMode, TEditorRole } from '../features/json-editor';
 import { getApplicationMode } from '../features/interface';
 import {
     isExportSpecCommandEnabled,
@@ -25,36 +21,24 @@ import {
 } from '../features/commands';
 import { VISUAL_PREVIEW_ZOOM } from '../../config';
 import {
-    getFieldsInUseFromSpecification,
-    getRemapEligibleFields,
-    getTokenizedSpec,
+    // getFieldsInUseFromSpecification,
+    // getRemapEligibleFields,
+    // getTokenizedSpec,
     getUpdatedExportMetadata
 } from '@deneb-viz/json-processing';
 import { TEditorPosition } from '../core/ui';
+import { editor } from '@deneb-viz/monaco-custom';
+// import { logTimeEnd, logTimeStart } from '../features/logging';
 
 export interface IEditorSlice {
     editor: {
         applyMode: EditorApplyMode;
-        foldsConfig: IEditorFoldPosition[];
-        foldsSpec: IEditorFoldPosition[];
-        /**
-         * Tracks high-level error state of the editor. Essentially if either
-         * editor fails to parse as valid JSON (or JSONC) then we should prevent
-         * the ability to format the current content (potentially breaking it even
-         * further).
-         */
-        hasErrors: boolean;
         isDirty: boolean;
         stagedConfig: string;
         stagedSpec: string;
-        /**
-         * Set the fold information for the specified editor role.
-         */
-        setFolds: (payload: IEditorSliceSetFolds) => void;
-        /**
-         * Sets the high-level error state flag accordingly.
-         */
-        setHasErrors: (hasErrors: boolean) => void;
+        viewStateConfig: editor.ICodeEditorViewState;
+        viewStateSpec: editor.ICodeEditorViewState;
+        setViewState: (viewState: editor.ICodeEditorViewState) => void;
         toggleApplyMode: () => void;
         updateApplyMode: (applyMode: EditorApplyMode) => void;
         updateChanges: (payload: IEditorSliceUpdateChangesPayload) => void;
@@ -90,23 +74,14 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IEditorSlice>{
         editor: {
             applyMode: 'Manual',
-            foldsConfig: [],
-            foldsSpec: [],
-            hasErrors: false,
             isDirty: false,
             stagedConfig: null,
             stagedSpec: null,
-            setFolds: (payload) =>
+            setViewState: (viewState) =>
                 set(
-                    (state) => handleSetFolds(state, payload),
+                    (state) => handleSetViewState(state, viewState),
                     false,
-                    'editor.setFolds'
-                ),
-            setHasErrors: (hasErrors) =>
-                set(
-                    (state) => handleSetHasErrors(state, hasErrors),
-                    false,
-                    'editor.setHasErrors'
+                    'editor.setViewState'
                 ),
             toggleApplyMode: () =>
                 set(
@@ -211,17 +186,6 @@ export const createEditorSlice: StateCreator<
     IEditorSlice
 > = sliceStateInitializer;
 
-export interface IEditorSliceSetFolds {
-    /**
-     * The editor that the folds apply to.
-     */
-    role: TEditorRole;
-    /**
-     * Current fold data from the editor.
-     */
-    folds: IEditorFoldPosition[];
-}
-
 /**
  * Used to update the "staging" text for a JSON editor and ensure that it can
  * be restored (if navigating the UI), or persisted with a prompt, if the user
@@ -237,31 +201,19 @@ export interface IEditorSliceUpdateChangesPayload {
      */
     text: string;
     /**
-     * Current fold data from the editor. If omitted, will use the current fold
-     * data for that editor.
+     * Current view state from the editor. If omitted, will use the current view state for that editor.
      */
-    folds?: IEditorFoldPosition[];
+    viewState?: editor.ICodeEditorViewState;
 }
 
-/**
- * Sets which nodes in the editor are folded, for retrieval later.
- */
-const handleSetFolds = (
+const handleSetViewState = (
     state: TStoreState,
-    payload: IEditorSliceSetFolds
+    viewState: editor.ICodeEditorViewState
 ): Partial<TStoreState> => ({
-    editor: { ...state.editor, [`folds${payload.role}`]: payload.folds }
-});
-
-const handleSetHasErrors = (
-    state: TStoreState,
-    hasErrors: boolean
-): Partial<TStoreState> => ({
-    commands: {
-        ...state.commands,
-        formatJson: !hasErrors
-    },
-    editor: { ...state.editor, hasErrors }
+    editor: {
+        ...state.editor,
+        [`viewState${state.editorSelectedOperation}`]: viewState
+    }
 });
 
 const handleToggleApplyMode = (state: TStoreState): Partial<TStoreState> => {
@@ -293,36 +245,26 @@ const handleUpdateChanges = (
     state: TStoreState,
     payload: IEditorSliceUpdateChangesPayload
 ): Partial<TStoreState> => {
-    const { role, text, folds } = payload;
-    const existingFolds =
-        role === 'Spec' ? state.editor.foldsSpec : state.editor.foldsConfig;
+    const { role, text, viewState } = payload;
+    const existingViewState =
+        role === 'Spec'
+            ? state.editor.viewStateSpec
+            : state.editor.viewStateConfig;
     const isDirty =
         (role === 'Spec'
             ? state.visualSettings.vega.output.jsonSpec.value !== text
             : state.visualSettings.vega.output.jsonConfig.value !== text) &&
         state.editor.applyMode !== 'Auto';
-    const foldsConfig =
-        role === 'Config' ? folds ?? state.editor.foldsConfig : existingFolds;
-    const foldsSpec =
-        role === 'Spec' ? folds ?? state.editor.foldsSpec : existingFolds;
+    const viewStateConfig =
+        role === 'Config'
+            ? viewState ?? state.editor.viewStateConfig
+            : existingViewState;
+    const viewStateSpec =
+        role === 'Spec'
+            ? viewState ?? state.editor.viewStateSpec
+            : existingViewState;
     const stagedConfig = role === 'Config' ? text : state.editor.stagedConfig;
     const stagedSpec = role === 'Spec' ? text : state.editor.stagedSpec;
-    const {
-        fieldUsage: { dataset, drilldown, editorShouldSkipRemap, tokenizedSpec }
-    } = state;
-    const tracking = editorShouldSkipRemap
-        ? { trackedFields: dataset, trackedDrilldown: drilldown }
-        : getFieldsInUseFromSpecification({
-              spec: stagedSpec,
-              dataset: state.dataset,
-              trackedFieldsCurrent: dataset
-          });
-    const tokenizedSpecNew = editorShouldSkipRemap
-        ? tokenizedSpec
-        : getTokenizedSpec({
-              textSpec: stagedSpec,
-              trackedFields: tracking.trackedFields
-          });
     const exportMetadata = getUpdatedExportMetadata(state.export.metadata, {});
     return {
         commands: {
@@ -336,19 +278,15 @@ const handleUpdateChanges = (
         editor: {
             ...state.editor,
             isDirty,
-            foldsConfig,
-            foldsSpec,
+            viewStateConfig,
+            viewStateSpec,
             stagedConfig,
             stagedSpec
         },
         export: { ...state.export, metadata: exportMetadata },
         fieldUsage: {
             ...state.fieldUsage,
-            dataset: tracking.trackedFields,
-            drilldown: tracking.trackedDrilldown,
-            editorShouldSkipRemap: false,
-            remapFields: getRemapEligibleFields(tracking.trackedFields),
-            tokenizedSpec: tokenizedSpecNew
+            editorShouldSkipRemap: false
         },
         interface: {
             ...state.interface,

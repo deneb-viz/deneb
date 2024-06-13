@@ -1,19 +1,13 @@
 // istanbul ignore file
 export {
     areAllRemapDataRequirementsMet,
-    getFieldsInUseFromSpecification,
     getRemapEligibleFields,
-    getRemappedSpecification,
-    getTokenizedSpec,
     isMappingDialogRequired
 } from './field-tracking';
 export {
     getJsoncNodeValue,
     getJsoncStringAsObject,
     getJsoncTree,
-    getJsonLanguageService,
-    getJsonLocationAtPath,
-    getJsonTextDocument,
     getModifiedJsoncByPath,
     getParsedJsonWithResult,
     getTextFormattedAsJsonC
@@ -32,7 +26,6 @@ export {
 } from './template-usermeta';
 export {
     getFriendlyValidationErrors,
-    getJsonDocumentValidationResults,
     getProviderSchema,
     getProviderValidator
 } from './validation';

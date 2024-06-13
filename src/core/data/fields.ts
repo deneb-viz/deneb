@@ -19,7 +19,7 @@ import {
     DATASET_FIELD_FORMAT_STRING_SUFFIX,
     DATASET_FIELD_FORMATED_VALUE_SUFFIX,
     UsermetaDatasetField,
-    utils
+    dataset
 } from '@deneb-viz/core-dependencies';
 import { getResolvedVisualMetadataToDatasetField } from '@deneb-viz/json-processing';
 
@@ -100,7 +100,7 @@ export const getDatasetFields = (
  */
 export const getDatasetFieldByTemplateKey = (queryName: string) =>
     find(
-        utils.getDatasetFieldsInclusive(getDataset().fields),
+        dataset.getDatasetFieldsInclusive(getDataset().fields),
         (f) => f?.templateMetadata?.key === queryName
     ) || null;
 
@@ -111,7 +111,7 @@ export const getDatasetTemplateFields = (
     metadata: IVisualDatasetFields
 ): UsermetaDatasetField[] =>
     reduce(
-        utils.getDatasetFieldsInclusive(metadata),
+        dataset.getDatasetFieldsInclusive(metadata),
         (result, value) => result.concat(value.templateMetadata),
         <UsermetaDatasetField[]>[]
     );

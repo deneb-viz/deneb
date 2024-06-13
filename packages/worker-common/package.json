@@ -15,7 +15,7 @@
         "dist"
     ],
     "scripts": {
-        "dev": "tsup --watch ./src --watch ../worker-dataset-viewer/dist/** --watch ../worker-spec-fields-in-use/dist/**",
+        "dev": "tsup --watch ./src --watch ../worker-dataset-viewer/dist/** --watch ../worker-spec-json-processing/dist/** --watch ../monaco-custom/dist/**",
         "build": "tsup --clean",
         "eslint": "eslint . --max-warnings 0"
     },
@@ -23,8 +23,8 @@
         "@deneb-viz/core-dependencies": "*",
         "@deneb-viz/eslint-config": "*",
         "@deneb-viz/typescript-config": "*",
+        "@deneb-viz/monaco-custom": "*",
         "@deneb-viz/worker-dataset-viewer": "*",
-        "@deneb-viz/worker-spec-fields-in-use": "*",
-        "@deneb-viz/worker-spec-tokenizer": "*"
+        "@deneb-viz/worker-spec-json-processing": "*"
     }
 }

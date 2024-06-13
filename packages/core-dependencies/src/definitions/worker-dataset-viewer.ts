@@ -7,6 +7,7 @@ export interface IWorkerDatasetViewer
         | ((
               this: Worker,
               ev: MessageEvent<IWorkerDatasetViewerResponse>
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ) => any)
         | null;
     postMessage(message: IWorkerDatasetViewerMessage): void;

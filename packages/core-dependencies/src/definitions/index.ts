@@ -7,5 +7,4 @@ export * from './template';
 export * from './utils-base64';
 export * from './vega-integration';
 export * from './worker-dataset-viewer';
-export * from './worker-spec-fields-in-use';
-export * from './worker-spec-tokenizer';
+export * from './worker-spec-json-processing';

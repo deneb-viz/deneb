@@ -78,6 +78,7 @@ export const CappedTextField: React.FC<ICappedTextFieldProps> = (props) => {
                     onChange={onChange}
                     id={inputId}
                     placeholder={getI18nValue(props.i18nPlaceholder)}
+                    autoComplete='off'
                 />
             ) : (
                 <Input
@@ -85,6 +86,7 @@ export const CappedTextField: React.FC<ICappedTextFieldProps> = (props) => {
                     onChange={onChange}
                     id={inputId}
                     placeholder={getI18nValue(props.i18nPlaceholder)}
+                    autoComplete='off'
                 />
             )}
         </div>

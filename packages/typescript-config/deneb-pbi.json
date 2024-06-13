@@ -1,4 +1,5 @@
 {
+    "$schema": "https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/tsconfig.json",
     "compilerOptions": {
         "allowJs": false,
         "jsx": "react",
@@ -17,7 +18,8 @@
         "declaration": true,
         "lib": [
             "es2019",
-            "dom"
+            "dom",
+            "WebWorker"
         ],
         "alwaysStrict": true,
         "resolveJsonModule": true,

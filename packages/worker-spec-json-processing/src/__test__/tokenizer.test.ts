@@ -1,11 +1,10 @@
 import {
-    IWorkerSpecTokenizerMessage,
-    TokenPatternReplacer,
-    TrackedFields
+    IDenebTokenizationRequestPayload,
+    TrackedFields,
+    utils
 } from '@deneb-viz/core-dependencies';
 import { getPowerBiTokenPatternsReplacement } from '@deneb-viz/integration-powerbi';
 import { getTokenizedSpec } from '../tokenizer';
-import reduce from 'lodash/reduce';
 
 const TRACKED_FIELDS_NO_REMAP_PENDING: TrackedFields = {
     'Date.Date': {
@@ -169,14 +168,16 @@ describe('getTokenizedSpec', () => {
             undefined,
             undefined
         );
-        const options: IWorkerSpecTokenizerMessage = {
-            spec: specification,
+        const options: IDenebTokenizationRequestPayload = {
+            spec: utils.stringToUint8Array(specification),
             trackedFields: TRACKED_FIELDS_REMAP_PENDING,
             supplementaryReplacers,
             isRemap: true
         };
         const result = getTokenizedSpec(options);
-        expect(result).toEqual(expectedSpecification);
+        expect(utils.uint8ArrayToString(result.spec)).toEqual(
+            expectedSpecification
+        );
     });
 
     it('should replace placeholders with values for non-remap spec', () => {
@@ -184,22 +185,24 @@ describe('getTokenizedSpec', () => {
             undefined,
             undefined
         );
-        const options: IWorkerSpecTokenizerMessage = {
-            spec: specification,
+        const options: IDenebTokenizationRequestPayload = {
+            spec: utils.stringToUint8Array(specification),
             trackedFields: TRACKED_FIELDS_NO_REMAP_PENDING,
             supplementaryReplacers,
             isRemap: false
         };
         const result = getTokenizedSpec(options);
-        expect(result).toEqual(expectedSpecification);
+        expect(utils.uint8ArrayToString(result.spec)).toEqual(
+            expectedSpecification
+        );
     });
     it('should handle empty text spec (tracked fields will be empty also)', () => {
         const options = {
-            spec: '{}',
+            spec: utils.stringToUint8Array('{}'),
             trackedFields: {}
-        } as IWorkerSpecTokenizerMessage;
+        } as IDenebTokenizationRequestPayload;
         const expectedSpec = '{}';
         const result = getTokenizedSpec(options);
-        expect(result).toEqual(expectedSpec);
+        expect(utils.uint8ArrayToString(result.spec)).toEqual(expectedSpec);
     });
 });

@@ -43,7 +43,7 @@ import {
 import { logError, logTimeEnd, logTimeStart } from '../../features/logging';
 import { getHashValue } from '../../utils';
 import { getVisualSelectionManager } from '../../features/visual-host';
-import { IDataset, utils } from '@deneb-viz/core-dependencies';
+import { IDataset, dataset } from '@deneb-viz/core-dependencies';
 
 /**
  * For supplied data view field metadata, produce a suitable object
@@ -162,7 +162,7 @@ export const getMappedDataset = (
             });
             logTimeEnd('getMappedDataset hashValue');
             logTimeStart('getMappedDataset values');
-            const selectionFields = utils.getDatasetFieldsInclusive(fields);
+            const selectionFields = dataset.getDatasetFieldsInclusive(fields);
             const values: IVisualDatasetValueRow[] = range(rowsLoaded).map(
                 (r, ri) => {
                     const md = getDataRow(

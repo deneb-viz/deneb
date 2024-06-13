@@ -1,5 +1,5 @@
 {
-    "name": "@deneb-viz/worker-spec-fields-in-use",
+    "name": "@deneb-viz/monaco-custom",
     "version": "1.7.0",
     "license": "MIT",
     "publishConfig": {
@@ -16,7 +16,8 @@
     ],
     "tsup": {
         "entry": [
-            "src/index.ts"
+            "./src/index.ts",
+            "./src/json.worker.ts"
         ],
         "dts": true,
         "format": [
@@ -27,23 +28,10 @@
     },
     "scripts": {
         "dev": "tsup --watch",
-        "build": "tsup --clean --minify",
-        "test": "jest",
-        "test:watch": "jest --watch",
-        "eslint": "eslint . --max-warnings 0"
-    },
-    "jest": {
-        "preset": "@deneb-viz/jest-presets/jest/node"
+        "build": "tsup --clean --minify"
     },
     "devDependencies": {
-        "@deneb-viz/core-dependencies": "*",
-        "@deneb-viz/eslint-config": "*",
-        "@deneb-viz/integration-powerbi": "*",
-        "@deneb-viz/jest-presets": "*",
-        "@deneb-viz/json-processing": "*",
         "@deneb-viz/typescript-config": "*",
-        "jsonc-parser": "^3.2.1",
-        "lodash": "^4.17.21",
-        "vega-expression": "^5.1.0"
+        "monaco-editor": "^0.49.0"
     }
 }

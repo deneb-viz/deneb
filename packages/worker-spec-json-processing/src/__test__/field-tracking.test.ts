@@ -1,24 +1,21 @@
 import {
     IDataset,
-    IWorkerSpecFieldsInUseMessage,
+    IDenebTrackingRequestPayload,
     TrackedFieldCandidates,
     TrackedFields,
     UsermetaDatasetFieldKind,
     UsermetaDatasetFieldType
 } from '@deneb-viz/core-dependencies';
-import {
-    getPowerBiCrossHighlightRegExpAlternation,
-    getPowerBiTokenPatternsLiteral
-} from '@deneb-viz/integration-powerbi';
+import { getPowerBiTokenPatternsLiteral } from '@deneb-viz/integration-powerbi';
 import {
     doesExpressionContainField,
     getDrilldownFieldExpression,
-    getJsonPlaceholderKey,
     getTrackedFieldMapMerged,
     getTrackingDataFromSpecification,
-    isExpressionField
+    isExpensivePath,
+    isExpressionField,
+    shouldAvoidPath
 } from '../field-tracking';
-import reduce from 'lodash/reduce';
 import { parseExpression } from 'vega-expression';
 
 const TRACKED_FIELDS_NO_REMAP_PENDING: TrackedFields = {
@@ -143,21 +140,6 @@ describe('getDrilldownFieldExpression', () => {
         const regex = getDrilldownFieldExpression();
         expect(regex).toBeInstanceOf(RegExp);
         expect(regex.source).toBe('(__drilldown(_flat)?__)');
-    });
-});
-
-describe('getJsonPlaceholderKey', () => {
-    it('should return a placeholder key', () => {
-        expect(getJsonPlaceholderKey(0)).toBe('__0__');
-    });
-    it('should return a placeholder key with positive number', () => {
-        expect(getJsonPlaceholderKey(5)).toBe('__5__');
-    });
-    it('should return a placeholder key with negative number', () => {
-        expect(getJsonPlaceholderKey(-3)).toBe('__3__');
-    });
-    it('should return a placeholder key with decimal number floored down', () => {
-        expect(getJsonPlaceholderKey(2.5)).toBe('__2__');
     });
 });
 
@@ -433,9 +415,12 @@ describe('getTrackingDataFromSpecification', () => {
         rowsLoaded: 0
     };
     it('should correctly track fields in use from the specification', () => {
-        const options: IWorkerSpecFieldsInUseMessage = {
-            spec: '{\n  "autosize": "fit",\n  "signals": [\n    {\n      "name": "pbiCrossFilterSelection",\n      "value": [],\n      "on": [\n        {\n          "events": {\n            "source": "scope",\n            "type": "mouseup",\n            "markname": "data-point"\n          },\n          "update": "pbiCrossFilterApply(event, \'datum[\\\\\'Date\\\\\'] >= _{Date}_\')"\n        },\n        {\n          "events": {\n            "source": "view",\n            "type": "mouseup",\n            "filter": [\n              "!event.item || event.item.mark.name != \'data-point\'"\n            ]\n          },\n          "update": "pbiCrossFilterClear()"\n        }\n      ]\n    }\n  ],\n  "data": [\n    {"name": "dataset"},\n    {\n      "name": "data_0",\n      "source": "dataset",\n      "transform": [\n        {"type": "formula", "expr": "toDate(datum[\\"Date\\"])", "as": "Date"},\n        {\n          "type": "filter",\n          "expr": "(isDate(datum[\\"Date\\"]) || (isValid(datum[\\"Date\\"]) && isFinite(+datum[\\"Date\\"]))) && isValid(datum[\\"$ Sales\\"]) && isFinite(+datum[\\"$ Sales\\"])"\n        }\n      ]\n    }\n  ],\n  "marks": [\n    {\n      "name": "data-point",\n      "type": "symbol",\n      "style": ["point"],\n      "from": {"data": "data_0"},\n      "encode": {\n        "update": {\n          "opacity": [\n            {"test": "datum[\'__selected__\'] != \'off\'", "value": 1},\n            {"value": 0.3}],\n          "fill": {"value": "blue"},\n          "stroke": {"value": "#4c78a8"},\n          "ariaRoleDescription": {"value": "point"},\n          "description": {\n            "signal": "\\"Date: \\" + (timeFormat(datum[\\"Date\\"], \'%b %d, %Y\')) + \\"; $ Sales: \\" + (format(datum[\\"$ Sales\\"], \\"\\"))"\n          },\n          "x": {"scale": "x", "field": "Date"},\n          "y": {"scale": "y", "field": "$ Sales"}\n        }\n      }\n    }\n  ],\n  "scales": [\n    {\n      "name": "x",\n      "type": "time",\n      "domain": {"data": "data_0", "field": "Date"},\n      "range": [0, {"signal": "width"}]\n    },\n    {\n      "name": "y",\n      "type": "linear",\n      "domain": {"data": "data_0", "field": "$ Sales"},\n      "range": [{"signal": "height"}, 0],\n      "nice": true,\n      "zero": true\n    }\n  ],\n  "axes": [\n    {\n      "scale": "x",\n      "orient": "bottom",\n      "gridScale": "y",\n      "grid": true,\n      "tickCount": {"signal": "ceil(width/40)"},\n      "domain": false,\n      "labels": false,\n      "aria": false,\n      "maxExtent": 0,\n      "minExtent": 0,\n      "ticks": false,\n      "zindex": 0\n    },\n    {\n      "scale": "y",\n      "orient": "left",\n      "gridScale": "x",\n      "grid": true,\n      "tickCount": {"signal": "ceil(height/40)"},\n      "domain": false,\n      "labels": false,\n      "aria": false,\n      "maxExtent": 0,\n      "minExtent": 0,\n      "ticks": false,\n      "zindex": 0\n    },\n    {\n      "scale": "x",\n      "orient": "bottom",\n      "grid": false,\n      "title": "Date",\n      "labelFlush": true,\n      "labelOverlap": true,\n      "tickCount": {"signal": "ceil(width/40)"},\n      "zindex": 0\n    },\n    {\n      "scale": "y",\n      "orient": "left",\n      "grid": false,\n      "title": "$ Sales",\n      "labelOverlap": true,\n      "tickCount": {"signal": "ceil(height/40)"},\n      "zindex": 0\n    }\n  ]\n}',
-            dataset,
+        const options: IDenebTrackingRequestPayload = {
+            spec: new TextEncoder().encode(
+                '{\n  "autosize": "fit",\n  "signals": [\n    {\n      "name": "pbiCrossFilterSelection",\n      "value": [],\n      "on": [\n        {\n          "events": {\n            "source": "scope",\n            "type": "mouseup",\n            "markname": "data-point"\n          },\n          "update": "pbiCrossFilterApply(event, \'datum[\\\\\'Date\\\\\'] >= _{Date}_\')"\n        },\n        {\n          "events": {\n            "source": "view",\n            "type": "mouseup",\n            "filter": [\n              "!event.item || event.item.mark.name != \'data-point\'"\n            ]\n          },\n          "update": "pbiCrossFilterClear()"\n        }\n      ]\n    }\n  ],\n  "data": [\n    {"name": "dataset"},\n    {\n      "name": "data_0",\n      "source": "dataset",\n      "transform": [\n        {"type": "formula", "expr": "toDate(datum[\\"Date\\"])", "as": "Date"},\n        {\n          "type": "filter",\n          "expr": "(isDate(datum[\\"Date\\"]) || (isValid(datum[\\"Date\\"]) && isFinite(+datum[\\"Date\\"]))) && isValid(datum[\\"$ Sales\\"]) && isFinite(+datum[\\"$ Sales\\"])"\n        }\n      ]\n    }\n  ],\n  "marks": [\n    {\n      "name": "data-point",\n      "type": "symbol",\n      "style": ["point"],\n      "from": {"data": "data_0"},\n      "encode": {\n        "update": {\n          "opacity": [\n            {"test": "datum[\'__selected__\'] != \'off\'", "value": 1},\n            {"value": 0.3}],\n          "fill": {"value": "blue"},\n          "stroke": {"value": "#4c78a8"},\n          "ariaRoleDescription": {"value": "point"},\n          "description": {\n            "signal": "\\"Date: \\" + (timeFormat(datum[\\"Date\\"], \'%b %d, %Y\')) + \\"; $ Sales: \\" + (format(datum[\\"$ Sales\\"], \\"\\"))"\n          },\n          "x": {"scale": "x", "field": "Date"},\n          "y": {"scale": "y", "field": "$ Sales"}\n        }\n      }\n    }\n  ],\n  "scales": [\n    {\n      "name": "x",\n      "type": "time",\n      "domain": {"data": "data_0", "field": "Date"},\n      "range": [0, {"signal": "width"}]\n    },\n    {\n      "name": "y",\n      "type": "linear",\n      "domain": {"data": "data_0", "field": "$ Sales"},\n      "range": [{"signal": "height"}, 0],\n      "nice": true,\n      "zero": true\n    }\n  ],\n  "axes": [\n    {\n      "scale": "x",\n      "orient": "bottom",\n      "gridScale": "y",\n      "grid": true,\n      "tickCount": {"signal": "ceil(width/40)"},\n      "domain": false,\n      "labels": false,\n      "aria": false,\n      "maxExtent": 0,\n      "minExtent": 0,\n      "ticks": false,\n      "zindex": 0\n    },\n    {\n      "scale": "y",\n      "orient": "left",\n      "gridScale": "x",\n      "grid": true,\n      "tickCount": {"signal": "ceil(height/40)"},\n      "domain": false,\n      "labels": false,\n      "aria": false,\n      "maxExtent": 0,\n      "minExtent": 0,\n      "ticks": false,\n      "zindex": 0\n    },\n    {\n      "scale": "x",\n      "orient": "bottom",\n      "grid": false,\n      "title": "Date",\n      "labelFlush": true,\n      "labelOverlap": true,\n      "tickCount": {"signal": "ceil(width/40)"},\n      "zindex": 0\n    },\n    {\n      "scale": "y",\n      "orient": "left",\n      "grid": false,\n      "title": "$ Sales",\n      "labelOverlap": true,\n      "tickCount": {"signal": "ceil(height/40)"},\n      "zindex": 0\n    }\n  ]\n}'
+            ),
+            fields: dataset.fields,
+            hasDrilldown: dataset.hasDrilldown,
             trackedFieldsCurrent: TRACKED_FIELDS_NO_REMAP_PENDING,
             supplementaryPatterns: TRACKED_FIELDS_SUPPLEMENTARY_PATTERNS,
             reset: false
@@ -448,9 +433,10 @@ describe('getTrackingDataFromSpecification', () => {
         });
     });
     it('should have no fields tracked if specification is empty', () => {
-        const options: IWorkerSpecFieldsInUseMessage = {
-            spec: '',
-            dataset,
+        const options: IDenebTrackingRequestPayload = {
+            spec: new TextEncoder().encode(''),
+            fields: dataset.fields,
+            hasDrilldown: dataset.hasDrilldown,
             trackedFieldsCurrent: TRACKED_FIELDS_NO_REMAP_PENDING,
             supplementaryPatterns: TRACKED_FIELDS_SUPPLEMENTARY_PATTERNS,
             reset: false
@@ -481,5 +467,35 @@ describe('isExpressionField', () => {
         const detail = 'This is a text string';
         const result = isExpressionField(detail);
         expect(result).toBe(false);
+    });
+});
+
+describe('isExpensivePath', () => {
+    it('should return true for an expensive path', () => {
+        const path = ['data', '0', 'values'];
+        expect(isExpensivePath(path)).toBe(true);
+    });
+
+    it('should return false for a non-expensive path', () => {
+        const path = ['data', '0', 'transform', '0', 'expr'];
+        expect(isExpensivePath(path)).toBe(false);
+    });
+});
+
+describe('shouldAvoidPath', () => {
+    it('should return true if the path matches an expensive path', () => {
+        const path = ['data', '0', 'values', 'type'];
+        const expensivePaths = [['data', '0', 'values']];
+        expect(shouldAvoidPath(path, expensivePaths)).toBe(true);
+    });
+    it('should return true if the path is a Vega-Lite data/values array', () => {
+        const path = ['data', 'values', 0, 'a'];
+        const expensivePaths = [['data', 'values']];
+        expect(shouldAvoidPath(path, expensivePaths)).toBe(true);
+    });
+    it('should return false if the path does not match any expensive path', () => {
+        const path = ['data', '0', 'transform', '0', 'expr'];
+        const expensivePaths = [['data', '0', 'values']];
+        expect(shouldAvoidPath(path, expensivePaths)).toBe(false);
     });
 });

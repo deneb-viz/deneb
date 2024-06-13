@@ -14,7 +14,7 @@ import { logDebug, logRender } from '../../logging';
 import { useTemplateStyles } from '.';
 import { getI18nValue } from '../../i18n';
 import { DataTypeIcon } from './data-type-icon';
-import { UsermetaDatasetField, utils } from '@deneb-viz/core-dependencies';
+import { UsermetaDatasetField, dataset } from '@deneb-viz/core-dependencies';
 
 interface IDatasetFieldAssignmentDropdownProps {
     datasetField: UsermetaDatasetField;
@@ -161,7 +161,7 @@ const getRoleToSlice = (role: TModalDialogType) => {
  */
 const getTemplateDatasetFields = (metadata: IVisualDatasetFields) =>
     reduce(
-        utils.getDatasetFieldsInclusive(metadata),
+        dataset.getDatasetFieldsInclusive(metadata),
         (result, value) => {
             return result.concat(value);
         },

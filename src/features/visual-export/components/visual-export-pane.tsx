@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { shallow } from 'zustand/shallow';
 
 import { logRender } from '../../logging';
 import { getI18nValue } from '../../i18n';
@@ -7,12 +8,25 @@ import { TemplateDataset } from '../../template';
 import { VisualExportInformation } from './visual-export-information';
 import { Subtitle2 } from '@fluentui/react-components';
 import { TEMPLATE_PREVIEW_IMAGE_MAX_SIZE } from '../../../../config';
+import { StageProgressIndicator } from '../../modal-dialog';
+import store, { getState } from '../../../store';
+import { TemplateExportProcessingState } from '@deneb-viz/core-dependencies';
+import { updateFieldTokenization } from '../../json-processing';
 
 /**
  * Interface (pane) for exporting a existing visualization.
  */
 export const VisualExportPane: React.FC = () => {
     const classes = useModalDialogStyles();
+    const { exportProcessingState } = store(
+        (state) => ({
+            exportProcessingState: state.interface.exportProcessingState
+        }),
+        shallow
+    );
+    useEffect(() => {
+        handleProcessing();
+    }, []);
     logRender('VisualExportPane');
     return (
         <div className={classes.paneRoot}>
@@ -38,16 +52,55 @@ export const VisualExportPane: React.FC = () => {
             <div className={classes.paneContent}>
                 <div className={classes.paneContentScrollable}>
                     <VisualExportInformation />
-                    <div className={classes.paneContentSection}>
-                        <div className={classes.paneContentHeading}>
-                            <Subtitle2>
-                                {getI18nValue('Template_Export_Dataset')}
-                            </Subtitle2>
+                    {exportProcessingState ===
+                        TemplateExportProcessingState.Tokenizing && (
+                        <div className={classes.paneContentSection}>
+                            <StageProgressIndicator
+                                message={getI18nValue('Text_Export_Tokenizing')}
+                                isInProgress={
+                                    exportProcessingState ===
+                                    TemplateExportProcessingState.Tokenizing
+                                }
+                                isCompleted={
+                                    exportProcessingState >
+                                    TemplateExportProcessingState.Tokenizing
+                                }
+                            />
                         </div>
-                        <TemplateDataset datasetRole='export' />
-                    </div>
+                    )}
+                    {exportProcessingState ===
+                        TemplateExportProcessingState.Complete && (
+                        <div className={classes.paneContentSection}>
+                            <div className={classes.paneContentHeading}>
+                                <Subtitle2>
+                                    {getI18nValue('Template_Export_Dataset')}
+                                </Subtitle2>
+                            </div>
+                            <TemplateDataset datasetRole='export' />
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
     );
+};
+
+/**
+ * Do the necessary work to process the spec for the template fields when the dialog is loaded.
+ */
+const handleProcessing = async () => {
+    const {
+        fieldUsage: { dataset },
+        interface: { setExportProcessingState },
+        visualSettings: {
+            vega: {
+                output: {
+                    jsonSpec: { value: jsonSpec }
+                }
+            }
+        }
+    } = getState();
+    setExportProcessingState(TemplateExportProcessingState.Tokenizing);
+    await updateFieldTokenization(jsonSpec, dataset);
+    setExportProcessingState(TemplateExportProcessingState.Complete);
 };

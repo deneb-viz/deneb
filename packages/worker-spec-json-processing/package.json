@@ -1,5 +1,5 @@
 {
-    "name": "@deneb-viz/worker-spec-tokenizer",
+    "name": "@deneb-viz/worker-spec-json-processing",
     "version": "1.7.0",
     "license": "MIT",
     "publishConfig": {
@@ -43,6 +43,7 @@
         "@deneb-viz/json-processing": "*",
         "@deneb-viz/typescript-config": "*",
         "jsonc-parser": "^3.2.1",
-        "lodash": "^4.17.21"
+        "lodash": "^4.17.21",
+        "vega-expression": "^5.1.0"
     }
 }

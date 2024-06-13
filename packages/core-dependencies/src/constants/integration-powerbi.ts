@@ -119,10 +119,6 @@ export const PROPERTIES_DEFAULTS = {
             max: 30
         },
         /**
-         * Whether to perform local completion in the JSON editor.
-         */
-        localCompletion: false,
-        /**
          * Maximum line length for the JSON editor.
          */
         maxLineLength: 40,
@@ -134,10 +130,6 @@ export const PROPERTIES_DEFAULTS = {
          * Show scrollbars in advanced editor preview area.
          */
         previewScrollbars: false,
-        /**
-         * Show the gutter in the JSON editor.
-         */
-        showGutter: true,
         /**
          * Show line numbers in the JSON editor.
          */

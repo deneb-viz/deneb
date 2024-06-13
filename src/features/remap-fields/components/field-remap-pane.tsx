@@ -1,16 +1,26 @@
 import { Body1, Caption1 } from '@fluentui/react-components';
 import React from 'react';
+import { shallow } from 'zustand/shallow';
 
 import { logRender } from '../../logging';
 import { getI18nValue } from '../../i18n';
 import { useModalDialogStyles } from '../../modal-dialog';
 import { TemplateDataset } from '../../template';
+import store from '../../../store';
+import { FieldRemapPaneProgress } from './field-remap-pane-progress';
+import { RemapState } from '@deneb-viz/core-dependencies';
 
 /**
  * Interface (pane) for remapping visual fields.
  */
 export const FieldRemapPane: React.FC = () => {
     const classes = useModalDialogStyles();
+    const { remapState } = store(
+        (state) => ({
+            remapState: state.interface.remapState
+        }),
+        shallow
+    );
     logRender('FieldRemapPane');
     return (
         <div className={classes.paneRoot}>
@@ -34,9 +44,13 @@ export const FieldRemapPane: React.FC = () => {
                 </p>
             </div>
             <div className={classes.paneContent}>
-                <div className={classes.paneContentScrollable}>
-                    <TemplateDataset datasetRole='mapping' />
-                </div>
+                {remapState !== RemapState.None ? (
+                    <FieldRemapPaneProgress />
+                ) : (
+                    <div className={classes.paneContentScrollable}>
+                        <TemplateDataset datasetRole='mapping' />
+                    </div>
+                )}
             </div>
         </div>
     );

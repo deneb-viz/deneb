@@ -21,17 +21,10 @@ import {
 } from '../features/specification/logic';
 import { logDebug, logTimeEnd, logTimeStart } from '../features/logging';
 import { getApplicationMode } from '../features/interface';
-import { ModalDialogRole } from '../features/modal-dialog/types';
-import { getOnboardingDialog } from '../features/modal-dialog';
 import { getHashValue } from '../utils';
 import {
     areAllCreateDataRequirementsMet,
-    areAllRemapDataRequirementsMet,
-    getFieldsInUseFromSpecification,
-    getRemapEligibleFields,
-    getTokenizedSpec,
-    getUpdatedExportMetadata,
-    isMappingDialogRequired
+    getUpdatedExportMetadata
 } from '@deneb-viz/json-processing';
 import { IDataset, PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
 import { TEditorPosition } from '../core/ui';
@@ -123,7 +116,7 @@ const handleUpdateDataset = (
     const jsonSpec = state.visualSettings.vega.output.jsonSpec.value;
     const mode = getApplicationMode({
         currentMode: state.interface.mode,
-        dataset: payload.dataset,
+        dataset,
         editMode: state.visualUpdateOptions.editMode,
         isInFocus: state.visualUpdateOptions.isInFocus,
         specification: jsonSpec,
@@ -133,36 +126,10 @@ const handleUpdateDataset = (
     const spec = getParsedSpec(state.specification, specOptions, {
         ...specOptions,
         ...{
-            datasetHash: payload.dataset.hashValue,
+            datasetHash: dataset.hashValue,
             visualMode: mode
         }
     });
-    logTimeStart('dataset.updateDataset.getFieldsInUseFromSpecification');
-    const tracking = getFieldsInUseFromSpecification({
-        spec: jsonSpec,
-        dataset,
-        trackedFieldsCurrent: state.fieldUsage.dataset
-    });
-    logTimeEnd('dataset.updateDataset.getFieldsInUseFromSpecification');
-    logTimeStart('dataset.updateDataset.getTokenizedSpec');
-    const tokenizedSpec = getTokenizedSpec({
-        textSpec: jsonSpec,
-        trackedFields: tracking.trackedFields
-    });
-    logTimeEnd('dataset.updateDataset.getTokenizedSpec');
-    logTimeStart('dataset.updateDataset.getRemapEligibleFields');
-    const remapFields = getRemapEligibleFields(tracking.trackedFields);
-    logTimeEnd('dataset.updateDataset.getRemapEligibleFields');
-    logTimeStart('dataset.updateDataset.areAllRemapDataRequirementsMet');
-    const {
-        remapAllDependenciesAssigned,
-        remapAllFieldsAssigned,
-        remapDrilldownAssigned
-    } = areAllRemapDataRequirementsMet({
-        remapFields,
-        drilldownProperties: tracking.trackedDrilldown
-    });
-    logTimeEnd('dataset.updateDataset.areAllRemapDataRequirementsMet');
     logTimeStart('dataset.updateDataset.getUpdatedExportMetadata');
     const exportMetadata = getUpdatedExportMetadata(state.export.metadata, {
         dataset: getDatasetTemplateFields(payload.dataset.fields).map((d) => {
@@ -182,16 +149,6 @@ const handleUpdateDataset = (
         })
     });
     logTimeEnd('dataset.updateDataset.getUpdatedExportMetadata');
-    const modalDialogRole: ModalDialogRole = isMappingDialogRequired({
-        trackedFields: tracking.trackedFields,
-        drilldownProperties: tracking.trackedDrilldown
-    })
-        ? 'Remap'
-        : getOnboardingDialog(
-              state.visualSettings,
-              mode,
-              state.interface.modalDialogRole
-          );
     logDebug('dataset.updateDataset persisting to store...');
     return {
         create: {
@@ -199,7 +156,7 @@ const handleUpdateDataset = (
             metadataAllDependenciesAssigned,
             metadataAllFieldsAssigned
         },
-        dataset: payload.dataset,
+        dataset,
         datasetCategories,
         datasetProcessingStage: 'Processed',
         debug: { ...state.debug, logAttention: spec.errors.length > 0 },
@@ -213,19 +170,8 @@ const handleUpdateDataset = (
             ...state.export,
             metadata: exportMetadata
         },
-        fieldUsage: {
-            ...state.fieldUsage,
-            dataset: tracking.trackedFields,
-            drilldown: tracking.trackedDrilldown,
-            remapFields,
-            remapAllDependenciesAssigned,
-            remapAllFieldsAssigned,
-            remapDrilldownAssigned,
-            tokenizedSpec
-        },
         interface: {
             ...state.interface,
-            modalDialogRole,
             mode
         },
         processing: {

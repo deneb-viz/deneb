@@ -53,12 +53,3 @@ export interface ISpecificationParseOptions {
     viewportWidth: number;
     visualMode: InterfaceMode;
 }
-
-/**
- * Represents the status and additional metadata of a fix and repair against an individual specification or config component.
- */
-export interface IFixStatus {
-    success: boolean;
-    text: string;
-    error?: string;
-}

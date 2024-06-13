@@ -1,24 +1,26 @@
-import { Position } from 'vscode-json-languageservice';
-
 import cloneDeep from 'lodash/cloneDeep';
-import * as ace from 'ace-builds';
-import Ace = ace.Ace;
-import Point = Ace.Point;
 
 import { getI18nValue } from '../i18n';
 import { logTimeEnd, logTimeStart } from '../logging';
-import { JSON_MAX_PRUNE_DEPTH } from '@deneb-viz/core-dependencies';
+import {
+    IDenebJsonProcessingWorkerRequest,
+    IDenebRemapResponseMessage,
+    IDenebTokenizationResponseMessage,
+    IDenebTrackingResponseMessage,
+    JSON_MAX_PRUNE_DEPTH,
+    TrackedFields,
+    UsermetaDatasetField,
+    utils
+} from '@deneb-viz/core-dependencies';
+import { doDenebSpecJsonWorkerRequest } from '@deneb-viz/worker-common';
+import {
+    getPowerBiTokenPatternsLiteral,
+    getPowerBiTokenPatternsReplacement
+} from '@deneb-viz/integration-powerbi';
+import { getState } from '../../store';
+import { getRemapEligibleFields } from '@deneb-viz/json-processing';
 
 export { getObjectFormattedAsText } from './formatting';
-
-/**
- * Convert an Ace `Point` to a VS Code `Position`, for resolving content using
- * the language services.
- */
-export const getEditorPointToPosition = (point: Point): Position => ({
-    line: point.row,
-    character: point.column
-});
 
 /**
  * Prune an object at a specified level of depth.
@@ -34,6 +36,95 @@ export const getPrunedObject = (
     const pruned = JSON.parse(stringifyPruned(newObj, maxDepth));
     logTimeEnd('getPrunedObject prune');
     return pruned;
+};
+
+/**
+ * Take the current spec and tracked fields, and asynchronously update the tokenization info via another thread (using
+ * the necessary web worker).
+ */
+export const updateFieldTokenization = async (
+    specification: string,
+    trackedFieldsCurrent: TrackedFields,
+    isRemap = false
+) => {
+    const {
+        fieldUsage: { applyTokenizationChanges },
+        interface: { setIsTokenizingSpec }
+    } = getState();
+    setIsTokenizingSpec(true);
+    const request: IDenebJsonProcessingWorkerRequest = {
+        type: 'tokenization',
+        payload: {
+            spec: utils.stringToUint8Array(specification),
+            trackedFields: trackedFieldsCurrent,
+            supplementaryReplacers: getPowerBiTokenPatternsReplacement(),
+            isRemap
+        }
+    };
+    const tokenized = <IDenebTokenizationResponseMessage>(
+        await doDenebSpecJsonWorkerRequest(request)
+    );
+    const { spec } = tokenized.payload;
+    applyTokenizationChanges({ tokenizedSpec: utils.uint8ArrayToString(spec) });
+};
+
+/**
+ * Take the current spec and tracked fields, and asynchronously update the tracking info via another thread (using
+ * the necessary web worker).
+ */
+export const updateFieldTracking = async (
+    specification: string,
+    trackedFieldsCurrent: TrackedFields
+) => {
+    const {
+        dataset: { fields, hasDrilldown },
+        fieldUsage: { applyTrackingChanges },
+        interface: { setIsTrackingFields }
+    } = getState();
+    setIsTrackingFields(true);
+    const request: IDenebJsonProcessingWorkerRequest = {
+        type: 'tracking',
+        payload: {
+            spec: utils.stringToUint8Array(specification),
+            fields,
+            hasDrilldown,
+            trackedFieldsCurrent,
+            supplementaryPatterns: getPowerBiTokenPatternsLiteral()
+        }
+    };
+    const tracking = <IDenebTrackingResponseMessage>(
+        await doDenebSpecJsonWorkerRequest(request)
+    );
+    const { trackedFields, trackedDrilldown } = tracking.payload;
+    const remapFields = getRemapEligibleFields(trackedFields);
+    applyTrackingChanges({
+        trackedFields,
+        trackedDrilldown,
+        remapFields
+    });
+};
+
+/**
+ * Take a tokenized specification, tracked fields, and desired remapping information, and asynchronously update the
+ * specification via another thread (using the necessary web worker).
+ */
+export const getRemappedSpecification = async (
+    tokenizedSpecification: string,
+    remapFields: UsermetaDatasetField[],
+    trackedFields: TrackedFields
+) => {
+    const request: IDenebJsonProcessingWorkerRequest = {
+        type: 'remapping',
+        payload: {
+            spec: utils.stringToUint8Array(tokenizedSpecification),
+            remapFields,
+            trackedFields
+        }
+    };
+    const remapped = <IDenebRemapResponseMessage>(
+        await doDenebSpecJsonWorkerRequest(request)
+    );
+    return utils.uint8ArrayToString(remapped.payload.spec);
 };
 
 /**

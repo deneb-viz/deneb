@@ -1,46 +1,56 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { render } from 'react-dom';
 import { shallow } from 'zustand/shallow';
-import { IAceEditor, ICommand } from 'react-ace/lib/types';
 import debounce from 'lodash/debounce';
+import map from 'lodash/map';
 import { useUncontrolledFocus } from '@fluentui/react-components';
-
-import * as ace from 'ace-builds';
-import Ace = ace.Ace;
-import Point = Ace.Point;
-import langTools from 'ace-builds/src-noconflict/ext-language_tools';
-import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/ext-searchbox';
-import AceEditor from 'react-ace';
-
-import '../theme/theme-deneb-dark';
-import '../theme/theme-deneb-light';
+import Editor, { loader, OnChange, OnMount } from '@monaco-editor/react';
 
 import { TEditorRole } from '../types';
 import store, { getState } from '../../../store';
 import { logDebug } from '../../logging';
-import { customCompleter } from '../completion';
-import { getEditorFolds, toggleEditorFolds } from '../folding';
 import { useJsonEditorContext } from './json-editor-context-provider';
 import {
-    PORTAL_ROOT_ID,
     PREVIEW_PANE_TOOLBAR_BUTTON_PADDING,
     PREVIEW_PANE_TOOLBAR_MIN_SIZE
 } from '../../../constants';
-import { TokenTooltip } from './token-tooltip';
-import { getHoverResult } from '../hover';
-import {
-    shouldPrioritizeJsonEditor,
-    useInterfaceStyles
-} from '../../interface';
+import { useInterfaceStyles } from '../../interface';
 import { JsonEditorStatusBar } from './json-editor-status-bar';
-import { validateEditorJson } from '../validation';
 import { persistSpecification } from '../../specification';
 import {
-    JsonContentType,
     PROPERTIES_DEFAULTS,
     SpecProvider
 } from '@deneb-viz/core-dependencies';
+import { updateFieldTracking } from '../../json-processing';
+
+import monaco, {
+    editor,
+    KeyCode,
+    KeyMod,
+    Position
+} from '@deneb-viz/monaco-custom';
+import { ptToPx } from '../../../core/ui/dom';
+import { launchUrl } from '../../visual-host';
+import { getProviderSchema } from '@deneb-viz/json-processing';
+import { IVisualDatasetField } from '../../../core/data';
+import { getI18nValue } from '../../i18n';
+import { monacoJsonWorkerUrl } from '@deneb-viz/worker-common';
+
+self.MonacoEnvironment = {
+    getWorkerUrl: () => {
+        return monacoJsonWorkerUrl;
+    },
+    createTrustedTypesPolicy: () => null
+};
+loader.config({ monaco });
+
+/**
+ * One-time Monaco intialization tasks.
+ */
+loader.init().then(() => {
+    setMonacoCompletionProvider();
+    setMonacoDiagnosticsOptions();
+    setMonacoKeyBindingRules();
+});
 
 interface IJsonEditorProps {
     thisEditorRole: TEditorRole;
@@ -50,29 +60,14 @@ interface IJsonEditorProps {
  * Handles everything we need to manage for the status bar.
  */
 interface IJsonEditorStatusState {
-    cursorPosition: Point;
+    cursor: Position;
     role: TEditorRole;
     selectedText: string;
 }
 
-const CURSOR_DEBOUNCE = 20;
-const MOUSEMOVE_DEBOUNCE = 200;
-
 /**
  * Represents an instance of Ace editor, responsible for maintaining either
  * the JSON spec or the config for a Vega/Vega-Lite visualization.
- *
- * @privateRemarks
- * The useEffect hook is to handle situations where updating the editor text
- * (e.g., via create or format) does not refresh the component until a key is
- * pressed, or the editor is manually interacted with. We also do a
- * preventative validation to ensure that there are no artefacts from changing
- * schemas without recording a change to text.
- *
- * We can't use annotations and markers directly in the AceEditor component, as
- * they seem to depend on the worker being present, and its logic. Whilst it is
- * _possible_ to load this worker using a Blob URL, its logic overrides our
- * custom validation and as such, we'll take the hit.
  */
 //eslint-disable-next-line max-lines-per-function
 export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
@@ -80,19 +75,14 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
         applyMode,
         current,
         debouncePeriod,
-        fields,
-        foldsConfig,
-        foldsSpec,
         fontSize,
-        hasErrors,
-        localCompletion,
         provider,
-        showGutter,
         showLineNumbers,
         theme,
+        viewStateConfig,
+        viewStateSpec,
         wordWrap,
-        setFolds,
-        setHasErrors,
+        setViewState,
         updateChanges
     } = store(
         (state) => ({
@@ -100,22 +90,16 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
             current: state.editorSelectedOperation,
             debouncePeriod:
                 state.visualSettings.editor.json.debouncePeriod.value,
-            fields: state.dataset.fields,
-            foldsConfig: state.editor.foldsConfig,
-            foldsSpec: state.editor.foldsSpec,
             fontSize: state.visualSettings.editor.json.fontSize.value,
-            hasErrors: state.editor.hasErrors,
-            localCompletion:
-                state.visualSettings.editor.completion.localCompletion.value,
             provider: state.visualSettings.vega.output.provider
                 .value as SpecProvider,
-            showGutter: state.visualSettings.editor.json.showGutter.value,
             showLineNumbers:
                 state.visualSettings.editor.json.showLineNumbers.value,
             theme: state.visualSettings.editor.interface.theme.value,
+            viewStateConfig: state.editor.viewStateConfig,
+            viewStateSpec: state.editor.viewStateSpec,
             wordWrap: state.visualSettings.editor.json.wordWrap.value,
-            setFolds: state.editor.setFolds,
-            setHasErrors: state.editor.setHasErrors,
+            setViewState: state.editor.setViewState,
             updateChanges: state.editor.updateChanges
         }),
         shallow
@@ -137,163 +121,107 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
     );
     const { spec, config } = useJsonEditorContext();
     const ref = thisEditorRole === 'Spec' ? spec : config;
-    const [editorText, setEditorText] = useState(
-        ref?.current?.editor?.getValue()
-    );
-    const [escapeHatch, setEscapeHatch] = useState(false);
+    const viewState =
+        thisEditorRole === 'Spec' ? viewStateSpec : viewStateConfig;
+    const [editorText, setEditorText] = useState(ref?.current?.getValue());
     const [status, setStatus] = useState<IJsonEditorStatusState>({
-        cursorPosition: getResolvedCursorPoint(),
+        cursor: {
+            lineNumber: viewState?.cursorState?.[0]?.position?.lineNumber ?? 1,
+            column: viewState?.cursorState?.[0]?.position?.column ?? 1
+        } as Position,
         role: thisEditorRole,
         selectedText: ''
     });
+    const handleFocus = () => isActiveEditor && ref?.current?.focus();
+    // Ensure that we update key dependencies/events if we change the editor.
     useEffect(() => {
-        langTools.setCompleters([
-            customCompleter(fields, provider, current, localCompletion)
-        ]);
-    }, [fields, provider, current, localCompletion]);
-    const onChangeEditor = (value: string) => {
-        logDebug('onChangeEditor');
-        clearTokenTooltip();
-        setEditorText(() => value);
-        logDebug('Staging editor value', thisEditorRole);
-        const editor = ref?.current?.editor;
-        const folds = getEditorFolds(editor);
-        updateChanges({ role: thisEditorRole, text: value, folds });
-        if (applyMode === 'Auto') {
-            logDebug('Auto-apply changes');
-            persistSpecification(spec.current.editor, config.current.editor);
+        handleFocus();
+        addHyperlinkOverride(ref.current);
+    }, [provider, current]);
+    // Bootstrap the editor
+    const handleOnMount: OnMount = (editor) => {
+        ref.current = editor;
+        if (viewState) {
+            editor.restoreViewState(viewState);
         }
-    };
-    const onCursorChange = (value: any, event?: any) => {
-        logDebug('onCursorChange', value, event);
-        clearTokenTooltip();
-        const point: Ace.Point = getResolvedCursorPoint(value);
-        setStatus({
-            ...status,
-            cursorPosition: point,
-            selectedText: ref?.current?.editor?.getSelectedText() || ''
+        // Handle view state changes for folding
+        editor.onDidChangeHiddenAreas(() => {
+            setViewState(ref.current?.saveViewState());
         });
-    };
-    const onLoadEditor = (editor: Ace.Editor) => {
-        logDebug('onLoadEditor', thisEditorRole);
-        const text = editor.getValue();
-        setEditorText(() => text);
-        updateChanges({
-            role: thisEditorRole,
-            text,
-            folds: getEditorFolds(editor as IAceEditor)
-        });
-        const points =
-            thisEditorRole === 'Spec' ? foldsSpec : foldsConfig || [];
-        toggleEditorFolds(
-            editor,
-            points.map((p) => p.point)
-        );
-        editor.moveCursorToPosition(status.cursorPosition);
-        editor.scrollToLine(status.cursorPosition.row, true, true, () => null);
-        editor.on(
-            'mousemove',
-            debounce(
-                (e) => onMouseMove(e, provider, current),
-                MOUSEMOVE_DEBOUNCE
-            )
-        );
-        editor.session.on('changeFold', () => {
-            setFolds({
-                role: thisEditorRole,
-                folds: getEditorFolds(editor as IAceEditor)
+        // Tracking of cursor position for status bar
+        editor.onDidChangeCursorPosition((e) => {
+            setStatus({
+                ...status,
+                cursor: e.position,
+                selectedText:
+                    editor.getModel()?.getValueInRange(editor.getSelection()) ||
+                    ''
             });
         });
+        // Process context menu
+        editor.onContextMenu(() => removeContextMenuItems(editor));
+        addHyperlinkOverride(editor);
+        handleFocus();
     };
-    const toggleTabBehavior = useCallback((editor: Ace.Editor) => {
-        clearTokenTooltip();
-        setEscapeHatch((prevState) => {
-            setCommandEnabled(editor, 'indent', prevState);
-            setCommandEnabled(editor, 'outdent', prevState);
-            return !prevState;
-        });
-    }, []);
-    const commands: ICommand[] = useMemo(
-        () => [
-            {
-                name: 'escape-hatch',
-                bindKey: { win: 'Ctrl-M', mac: 'Command-M' },
-                exec: (editor) => toggleTabBehavior(editor)
+    // Handle change events within editor
+    const handleOnChange = useCallback<OnChange>(
+        debounce((value) => {
+            logDebug('onChangeEditor');
+            setEditorText(() => value);
+            logDebug('Staging editor value', thisEditorRole);
+            updateChanges({
+                role: thisEditorRole,
+                text: value,
+                viewState: ref.current?.saveViewState()
+            });
+            updateTracking(value, thisEditorRole);
+            if (applyMode === 'Auto') {
+                logDebug('Auto-apply changes');
+                persistSpecification(spec.current, config.current);
             }
-        ],
-        []
+        }, debouncePeriod),
+        [editorText]
     );
-    const editorTheme = `deneb-${theme}`;
-    // Handle validation - refer to privateRemarks above.
-    useEffect(
-        () =>
-            validateEditorJson(
-                ref?.current?.editor,
-                provider,
-                current as JsonContentType,
-                editorText,
-                hasErrors,
-                setHasErrors
-            ),
-        [editorText, provider, current]
-    );
-    // Ensure that focus is applied if we change the editor role.
-    useEffect(() => {
-        if (isActiveEditor) {
-            ref?.current?.editor?.focus();
-        }
-    }, [provider, current]);
     return (
         <div style={{ display }} className={classes.editorContainer} {...attr}>
-            <AceEditor
-                key={
-                    `editor${thisEditorRole}|${debouncePeriod}` /* securingsincity/react-ace#767 */
-                }
-                width={'100%'}
+            <Editor
+                onMount={handleOnMount}
+                onChange={handleOnChange}
+                width='100%'
                 height={editorHeight}
-                ref={ref}
-                mode='json'
-                theme={editorTheme}
-                name={`editor${thisEditorRole}`}
-                editorProps={{ $blockScrolling: true }}
-                setOptions={{
-                    useWorker: false,
-                    useSvgGutterIcons: false,
-                    showLineNumbers
-                }}
-                debounceChangePeriod={debouncePeriod}
+                defaultLanguage='json'
+                path={`deneb://${thisEditorRole}-${provider}.json`}
+                theme={theme === 'dark' ? 'vs-dark' : 'light'}
                 defaultValue={getDefaultValue(thisEditorRole)}
-                onCursorChange={debounce(onCursorChange, CURSOR_DEBOUNCE)}
-                onLoad={onLoadEditor}
-                onChange={onChangeEditor}
-                focus
-                commands={commands}
-                cursorStart={0}
-                fontSize={`${fontSize}pt`}
-                enableBasicAutocompletion
-                enableLiveAutocompletion
-                wrapEnabled={wordWrap}
-                showPrintMargin={false}
-                showGutter={showGutter}
-                tabSize={PROPERTIES_DEFAULTS.editor.tabSize}
+                options={{
+                    cursorBlinking: 'smooth',
+                    fixedOverflowWidgets: true,
+                    folding: true,
+                    fontSize: ptToPx(fontSize),
+                    lineNumbers: showLineNumbers ? 'on' : 'off',
+                    lineNumbersMinChars: 2,
+                    minimap: { enabled: false },
+                    quickSuggestions: true,
+                    scrollBeyondLastLine: false,
+                    tabSize: PROPERTIES_DEFAULTS.editor.tabSize,
+                    wordWrap: wordWrap ? 'on' : 'off'
+                }}
             />
             <JsonEditorStatusBar
-                clearTokenTooltip={clearTokenTooltip}
-                toggleTabBehavior={() => toggleTabBehavior(ref.current.editor)}
-                position={status.cursorPosition}
+                position={status.cursor}
                 selectedText={status.selectedText}
-                escapeHatch={escapeHatch}
             />
         </div>
     );
 };
 
 /**
- * We need to clear the token tooltip in loads of events, so this ensures that
- * the portal is cleared down.
+ * Intercept click events on markdown tooltips and delegate to the host.
  */
-const clearTokenTooltip = () =>
-    render(null, document.getElementById(PORTAL_ROOT_ID));
+const addHyperlinkOverride = (editor: editor.IStandaloneCodeEditor) => {
+    editor?.getDomNode()?.removeEventListener('click', onLinkClick);
+    editor?.getDomNode()?.addEventListener('click', onLinkClick);
+};
 
 /**
  * Resolve the default value when instantiated, either from settings or staging
@@ -313,65 +241,169 @@ const getDefaultValue = (role: TEditorRole) => {
 };
 
 /**
- * Common method to handle getting correct cursor position for the status bar
- * and state within the `JsonEditor` component.
+ * A very simple override of clicking link elements in the editor, to allow delegation of hyperlink handling to the
+ * host.
  */
-const getResolvedCursorPoint = (value?: any) => ({
-    row: value?.cursor?.row || 0,
-    column: value?.cursor?.column || 0
-});
-
-/**
- * Resolve hover events for the editor, and update the portal content as
- * needed.
- */
-const onMouseMove = (
-    e: any,
-    provider: SpecProvider,
-    currentEditor: TEditorRole
-) => {
-    logDebug('onMouseMove', e, provider, currentEditor);
-    clearTokenTooltip();
-    if (shouldPrioritizeJsonEditor()) {
-        getHoverResult(e, provider, currentEditor).then((result) => {
-            logDebug('onMouseMove - result', result);
-            const markdown = result?.hoverResult?.contents?.toString();
-            logDebug('onMouseMove - markdown', markdown);
-            if (markdown) {
-                render(
-                    <TokenTooltip event={e} markdown={markdown} />,
-                    document.getElementById('portal-root')
-                );
-            } else {
-                logDebug('onMouseMove - clearing token tooltip');
-                clearTokenTooltip();
-            }
-        });
+const onLinkClick = (e: MouseEvent) => {
+    if (
+        e.target instanceof HTMLAnchorElement &&
+        e.target.getAttribute('data-href')
+    ) {
+        e.preventDefault();
+        e.stopPropagation();
+        launchUrl(e.target.getAttribute('data-href'));
     }
 };
 
 /**
- * Provides a means to enable/disable commands against Ace Editor.
- * Taken from this handy SO answer: https://stackoverflow.com/a/24963811
+ * Because the Power BI vidsual sandbox disables the clipboard API, the standard Monaco context menu items for copy,
+ * cut and paste just throw errors. This function removes them from the context menu.
+ * @privateRemarks
+ * As Monaco doesn't have an API for this, it's a bit of a hack.
+ * This has been taken from https://github.com/microsoft/monaco-editor/issues/1567
  */
-const setCommandEnabled = (
-    editor: Ace.Editor,
-    name: string,
-    enabled: boolean
-) => {
-    const command = editor.commands.byName[name];
-    const bindKeyOriginal = 'bindKeyOriginal';
-    if (!command[bindKeyOriginal]) command[bindKeyOriginal] = command.bindKey;
-    command.bindKey = enabled ? command[bindKeyOriginal] : null;
-    editor.commands.addCommand(command);
-    /**
-     * special case for backspace and delete which will be called from
-     * textarea if not handled by main command binding
-     */
-    if (!enabled) {
-        let key = command[bindKeyOriginal];
-        if (key && typeof key == 'object')
-            key = key[editor.commands['platform']];
-        if (/backspace|delete/i.test(key)) editor.commands.bindKey(key, null);
+const removeContextMenuItems = (editor: editor.IStandaloneCodeEditor) => {
+    const contextmenu = editor.getContribution('editor.contrib.contextmenu');
+    const removableIds = [
+        'editor.action.clipboardCopyAction',
+        'editor.action.clipboardCutAction',
+        'editor.action.clipboardPasteAction'
+    ];
+    const realMethod = (contextmenu as any)._getMenuActions;
+    (contextmenu as any)._getMenuActions = (...args: any[]) => {
+        const items = realMethod.apply(contextmenu, args);
+        return items.filter((item: any) => {
+            return !removableIds.includes(item.id);
+        });
+    };
+};
+
+/**
+ * Set up the completion item provider for the Monaco editor. This will return fields from the dataset as snippets
+ * in the completion list, in addition to the Vega completers. This returns the disposable completion provider, so that
+ * it can be cleaned up when the component is unmounted.
+ * @privateRemarks
+ * If we want to call this more than once per editor setup, it will need to be disposed of, otherwise we'll end up
+ * with multiple entries for each list.
+ */
+const setMonacoCompletionProvider = () => {
+    return monaco.languages.registerCompletionItemProvider('json', {
+        provideCompletionItems: async (model, position) => {
+            const { editorSelectedOperation } = getState();
+            if (editorSelectedOperation !== 'Spec') {
+                return null;
+            }
+            const word = model.getWordUntilPosition(position);
+            const range = {
+                startLineNumber: position.lineNumber,
+                endLineNumber: position.lineNumber,
+                startColumn: word.startColumn,
+                endColumn: word.endColumn
+            };
+            const fields: monaco.languages.CompletionItem[] = map(
+                getState().dataset.fields,
+                (field) => ({
+                    label: field.displayName,
+                    insertText: field.displayName,
+                    detail: getSnippetFieldMetadata(field),
+                    kind: monaco.languages.CompletionItemKind.Method,
+                    range,
+                    sortText: `zzzzz__${field.displayName}`
+                })
+            );
+            return {
+                suggestions: fields
+            };
+        }
+    });
+};
+
+/**
+ * Set up the diagnostics options for the Monaco editor. This will allow us to provide schema-based validation for the
+ * JSON editor.
+ */
+const setMonacoDiagnosticsOptions = () => {
+    monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+        allowComments: true,
+        enableSchemaRequest: false,
+        schemas: [
+            {
+                schema: getProviderSchema({ provider: 'vegaLite' }),
+                uri: 'https://vega.github.io/schema/vega-lite/v5.json',
+                fileMatch: [
+                    monaco.Uri.parse('deneb://Spec-vegaLite.json').toString()
+                ]
+            },
+            {
+                schema: getProviderSchema({ provider: 'vega' }),
+                uri: 'https://vega.github.io/schema/vega/v5.json',
+                fileMatch: [
+                    monaco.Uri.parse('deneb://Spec-vega.json').toString()
+                ]
+            }
+        ]
+    });
+};
+
+/**
+ * Override the default key bindings for the Monaco editor that will clash with the Deneb hotkeys.
+ */
+const setMonacoKeyBindingRules = () => {
+    monaco.editor.addKeybindingRules([
+        {
+            keybinding: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.Enter,
+            command: null
+        },
+        {
+            keybinding: KeyMod.CtrlCmd | KeyCode.Enter,
+            command: null
+        }
+    ]);
+};
+
+/**
+ * For any data-based completers in the editor, provide a qualifier denoting
+ * whether it's a column, measure or something else.
+ */
+const getSnippetFieldMetadata = (field: IVisualDatasetField) => {
+    switch (true) {
+        case field.isHighlightComponent:
+            return getI18nValue('Text_AutoComplete_Meta_Highlight');
+        case field.isMeasure:
+            return getI18nValue('Text_AutoComplete_Meta_Measure');
+        case field.isColumn:
+            return getI18nValue('Text_AutoComplete_Meta_Column');
+        default:
+            return '';
     }
+};
+
+/**
+ * Do the necessary tests and then call the tracking /tokenization workers, if needed.
+ */
+const updateTracking = async (spec: string, editorRole: TEditorRole) => {
+    logDebug(
+        '[Spec Editor] Checking to see if tracking and tokenization is needed...'
+    );
+    const {
+        fieldUsage: { dataset: trackedFieldsCurrent, editorShouldSkipRemap },
+        visualSettings: {
+            vega: {
+                output: {
+                    jsonSpec: { value: jsonSpec }
+                }
+            }
+        }
+    } = getState();
+    if (
+        editorRole === 'Config' ||
+        (editorRole === 'Spec' && (spec === jsonSpec || editorShouldSkipRemap))
+    ) {
+        logDebug(
+            "[Spec Editor] Spec hasn't changed, skipping tracking and tokens..."
+        );
+        return;
+    }
+    logDebug('[Spec Editor] Updating tracking and tokens...');
+    updateFieldTracking(spec, trackedFieldsCurrent);
 };

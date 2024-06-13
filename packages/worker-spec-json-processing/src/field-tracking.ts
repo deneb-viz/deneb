@@ -1,16 +1,18 @@
 import {
     IDatasetField,
-    IWorkerSpecFieldsInUseMessage,
-    IWorkerSpecFieldsInUseResponse,
+    IDenebTrackingRequestPayload,
+    IDenebTrackingResponsePayload,
     JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER,
     TrackedDrilldownProperties,
     TrackedFieldCandidates,
     TrackedFieldProperties,
     TrackedFields,
     UsermetaDatasetField,
+    dataset,
+    json,
     utils
 } from '@deneb-viz/core-dependencies';
-import { visit } from 'jsonc-parser';
+import { JSONPath, visit } from 'jsonc-parser';
 import { Dictionary } from 'lodash';
 import forEach from 'lodash/forEach';
 import map from 'lodash/map';
@@ -47,6 +49,7 @@ export const doesExpressionContainField = (
     });
     return found;
 };
+
 /**
  * For a supplied literal from either a JSON AST or a Vega expression AST, check if it contains a field from the visual
  * dataset. This matches on an array of patterns that denote wehter a literal is a field or not - defined by
@@ -78,15 +81,6 @@ const doesLiteralContainField = (
  */
 export const getDrilldownFieldExpression = () =>
     new RegExp(`(__drilldown(_flat)?__)`);
-
-/**
- * Consistently format a supplied identity into a suitable placeholder. Placeholders are used to represent dataset
- * fields in the specification, so that they can be replaced with the actual values when the dataset is accessible.
- * - Decimal values are floored to the nearest integer.
- * - Negative values are converted to positive values.
- */
-export const getJsonPlaceholderKey = (i: number) =>
-    `__${Math.floor(Math.abs(i))}__`;
 
 /**
  * Ensure that we keep track of the correct template metadata for a field so that we can verify whether it's changed.
@@ -135,7 +129,7 @@ const getTokenPatternsLiteral = (
     fieldName: string,
     supplementaryPatterns: string[]
 ) => {
-    const namePattern = utils.getEscapedReplacerPattern(fieldName);
+    const namePattern = dataset.getEscapedReplacerPattern(fieldName);
     const replacers = supplementaryPatterns.map((p) =>
         p.replaceAll(JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER, namePattern)
     );
@@ -169,26 +163,46 @@ const getTrackedFieldMapExisting = (
 };
 
 export const getTrackingDataFromSpecification = (
-    options: IWorkerSpecFieldsInUseMessage
-): IWorkerSpecFieldsInUseResponse => {
+    options: IDenebTrackingRequestPayload
+): IDenebTrackingResponsePayload => {
+    const spec = utils.uint8ArrayToString(options.spec);
     const {
-        spec,
-        dataset,
+        hasDrilldown,
+        fields,
         trackedFieldsCurrent,
         reset,
         supplementaryPatterns
     } = options;
-    const datasetFields = utils.getDatasetFieldsInclusive(dataset.fields);
+    const datasetFields = dataset.getDatasetFieldsInclusive(fields);
     const trackedFields: TrackedFields = {};
     const trackedDrilldown: TrackedDrilldownProperties = {
-        isCurrent: dataset.hasDrilldown,
+        isCurrent: hasDrilldown,
         isMappingRequired: false
     };
     const fieldMapMerged = getTrackedFieldMapMerged(
         getTrackedFieldMapExisting(trackedFieldsCurrent),
         getTrackedFieldMapCurrent(datasetFields, trackedFieldsCurrent, reset)
     );
+    const pathsToAvoid: JSONPath[] = [];
     visit(spec || '', {
+        onArrayBegin(offset, length, startLine, startCharacter, pathSupplier) {
+            const path = pathSupplier();
+            if (shouldAvoidPath(path, pathsToAvoid)) {
+                return;
+            }
+            if (isExpensivePath(path)) {
+                pathsToAvoid.push(path);
+            }
+        },
+        onObjectBegin(offset, length, startLine, startCharacter, pathSupplier) {
+            const path = pathSupplier();
+            if (shouldAvoidPath(path, pathsToAvoid)) {
+                return;
+            }
+            if (isExpensivePath(path)) {
+                pathsToAvoid.push(path);
+            }
+        },
         onLiteralValue(
             value,
             offset,
@@ -197,8 +211,13 @@ export const getTrackingDataFromSpecification = (
             startCharacter,
             pathSupplier
         ) {
+            const path = pathSupplier();
+            if (shouldAvoidPath(path, pathsToAvoid)) {
+                return;
+            }
             // Dataset field tracking
             let fieldIndex = 0;
+            const isExpression = isExpressionField(value);
             map(fieldMapMerged, (f) => {
                 const templateMetadata =
                     f.templateMetadata as UsermetaDatasetField;
@@ -206,7 +225,7 @@ export const getTrackingDataFromSpecification = (
                     f.templateMetadataOriginal as UsermetaDatasetField;
                 const { key } = templateMetadata;
                 const tracking: TrackedFieldProperties = trackedFields[key] || {
-                    placeholder: getJsonPlaceholderKey(fieldIndex),
+                    placeholder: json.getJsonPlaceholderKey(fieldIndex),
                     paths: [],
                     isInDataset: f.isCurrent,
                     isInSpecification: false,
@@ -214,7 +233,6 @@ export const getTrackingDataFromSpecification = (
                     templateMetadata,
                     templateMetadataOriginal
                 };
-                const isExpression = isExpressionField(value);
                 const isLiteralMatch = doesLiteralContainField(
                     value,
                     templateMetadata.name,
@@ -274,6 +292,32 @@ export const getTrackingDataFromSpecification = (
 };
 
 /**
+ * A spec may contain known paterns that create a lot of JSON that doesn't need to be inspected for field tracking.
+ * An example might be where geojson is inlined. These can be massive objects, but we know that fields can't be
+ * included in their declaration, so we should avoid inspecting them. This method tests the path to see if it's a
+ * candidate for avoiding inspection, so that we can take note of it for later on.
+ */
+export const isExpensivePath = (path: JSONPath) => {
+    switch (true) {
+        // Vega data[]/values constructor
+        case path.length > 2 &&
+            path[path.length - 1] === 'values' &&
+            path[path.length - 3] === 'data':
+            return true;
+        // Vega-Lite data/values constructor
+        case path.length > 1 &&
+            path[path.length - 1] === 'values' &&
+            path[path.length - 2] === 'data':
+            return true;
+        // Vega-Lite datasets
+        case path.length > 0 && path[path.length - 1] === 'datasets':
+            return true;
+        default:
+            return false;
+    }
+};
+
+/**
  * Tests the supplied string to see if it evaluates as a valid Vega expression.
  */
 export const isExpressionField = (detail: string) => {
@@ -291,7 +335,7 @@ export const isExpressionField = (detail: string) => {
  * methods validates that the literal is worth checking further.
  */
 const isLiteralEligibleForTesting = (value: string) =>
-    utils.isString(value) && value?.length > 0;
+    utils.isString(value) && !utils.isBase64Image(value) && value?.length > 0;
 
 /**
  * For previous and current field candidate maps, get a merged object that should be used for testing against the
@@ -301,3 +345,10 @@ export const getTrackedFieldMapMerged = (
     fieldMapPrev: TrackedFieldCandidates,
     fieldMapCurrent: TrackedFieldCandidates
 ) => merge(fieldMapPrev, fieldMapCurrent);
+
+/**
+ * Test if a path should be avoided when inspecting a JSON object for field tracking. If a path being tested contains
+ * the same elements at the start of the path as an expensive path, then we should avoid inspecting it.
+ */
+export const shouldAvoidPath = (path: JSONPath, expensivePaths: JSONPath[]) =>
+    expensivePaths.some((p) => p.every((v, i) => v === path[i]));

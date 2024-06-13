@@ -15,7 +15,6 @@ export type Command =
     | 'discardChanges'
     | 'editorFocusOut'
     | 'editorPaneToggle'
-    | 'formatJson'
     | 'fieldMappings'
     | 'navigateConfig'
     | 'navigateSettings'

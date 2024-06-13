@@ -1,4 +1,4 @@
-import { getEscapedReplacerPattern } from '../field-tracking';
+import { getEscapedReplacerPattern } from '../fields';
 
 describe('getEscapedReplacerPattern', () => {
     it('should escape special characters in the input string', () => {

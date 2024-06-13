@@ -41,10 +41,6 @@ export const KEY_BINDINGS = {
         combination: 'ctrl|shift|enter',
         functionalArea: 'other'
     },
-    formatJson: {
-        combination: 'ctrl|alt|r',
-        functionalArea: 'other'
-    },
     exportSpecification: {
         combination: 'ctrl|alt|t',
         functionalArea: 'other'

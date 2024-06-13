@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@fluentui/react-components';
 import { shallow } from 'zustand/shallow';
-import { IAceEditor } from 'react-ace/lib/types';
+import { editor } from '@deneb-viz/monaco-custom';
 
 import { getI18nValue } from '../../i18n';
 import store, { getState } from '../../../store';
@@ -37,8 +37,8 @@ export const CreateButton: React.FC = () => {
         handleCreateFromTemplate(
             metadata,
             candidates,
-            spec?.current.editor,
-            config?.current.editor
+            spec?.current,
+            config?.current
         );
     };
     logRender('CreateButton');
@@ -60,8 +60,8 @@ export const CreateButton: React.FC = () => {
 const handleCreateFromTemplate = (
     metadata: UsermetaTemplate,
     candidates: IDenebTemplateAllocationComponents,
-    specEditor: IAceEditor,
-    configEditor: IAceEditor
+    specEditor: editor.IStandaloneCodeEditor,
+    configEditor: editor.IStandaloneCodeEditor
 ) => {
     logDebug('createFromTemplate', { metadata, candidates });
     const {
@@ -110,9 +110,7 @@ const handleCreateFromTemplate = (
         ])
     );
     specEditor.setValue(jsonSpec);
-    specEditor.moveCursorToPosition({ row: 0, column: 0 });
     configEditor.setValue(jsonConfig);
-    configEditor.moveCursorToPosition({ row: 0, column: 0 });
     specEditor.focus();
     createFromTemplate();
 };

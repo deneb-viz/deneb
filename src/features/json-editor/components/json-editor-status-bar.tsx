@@ -1,29 +1,18 @@
-import React, { useCallback, useState } from 'react';
-import * as ace from 'ace-builds';
-import Ace = ace.Ace;
-import {
-    Button,
-    Caption1,
-    Tooltip,
-    makeStyles,
-    tokens
-} from '@fluentui/react-components';
-import { KeyboardTabRegular } from '@fluentui/react-icons';
+import React from 'react';
+import { Caption1, makeStyles, tokens } from '@fluentui/react-components';
 
 import { logRender } from '../../logging';
-import { StatusBarContainer, TooltipCustomMount } from '../../interface';
+import { StatusBarContainer } from '../../interface';
 import { getI18nValue } from '../../i18n';
 import { ToolbarButtonStandard } from '../../toolbar/components/toolbar-button-standard';
 import { PREVIEW_PANE_TOOLBAR_MIN_SIZE } from '../../../constants';
-import { setFocusToActiveEditor, useJsonEditorContext } from '..';
 import { ProviderDetail } from './provider-detail';
+import { TrackingSyncStatus } from './tracking-sync-status';
+import { Position } from '@deneb-viz/monaco-custom';
 
 interface IStatusBarProps {
-    position: Ace.Point;
+    position: Position;
     selectedText: string;
-    escapeHatch: boolean;
-    clearTokenTooltip?: () => Element;
-    toggleTabBehavior: () => void;
 }
 
 const useStatusStyles = makeStyles({
@@ -53,6 +42,13 @@ const useStatusStyles = makeStyles({
         justifyContent: 'flex-end',
         columnGap: '10px',
         height: '100%'
+    },
+    cursorContainer: {
+        overflow: 'hidden',
+        textOverflow: 'ellipsis'
+    },
+    caption: {
+        whiteSpace: 'nowrap'
     }
 });
 
@@ -61,29 +57,16 @@ const useStatusStyles = makeStyles({
  */
 export const JsonEditorStatusBar: React.FC<IStatusBarProps> = ({
     position,
-    selectedText,
-    escapeHatch,
-    clearTokenTooltip,
-    toggleTabBehavior
+    selectedText
 }) => {
-    const editorRefs = useJsonEditorContext();
     const classes = useStatusStyles();
-    const row = position.row + 1;
-    const column = position.column + 1;
-    const [tabRef, setTabRef] = useState<HTMLElement | null>();
-    const onTabClick = useCallback(() => {
-        toggleTabBehavior();
-        setFocusToActiveEditor(editorRefs);
-    }, []);
+    const row = position.lineNumber;
+    const column = position.column;
     logRender('JsonEditorStatusBar');
     return (
         <StatusBarContainer>
             <div className={classes.surround}>
-                <div
-                    className={classes.container}
-                    onMouseEnter={clearTokenTooltip}
-                    onMouseMove={clearTokenTooltip}
-                >
+                <div className={classes.container}>
                     <div className={classes.collapse}>
                         <ToolbarButtonStandard
                             command='editorPaneToggle'
@@ -92,45 +75,14 @@ export const JsonEditorStatusBar: React.FC<IStatusBarProps> = ({
                     </div>
                     <ProviderDetail />
                     <div className={classes.status}>
-                        <div className='status-cursor'>
-                            <Caption1>
+                        <TrackingSyncStatus />
+                        <div className={classes.cursorContainer}>
+                            <Caption1 className={classes.caption}>
                                 {getI18nValue('Text_Editor_Status_Bar_Line')}{' '}
                                 {row}{' '}
                                 {getI18nValue('Text_Editor_Status_Bar_Column')}{' '}
                                 {column} {getSelectedTextMessage(selectedText)}
                             </Caption1>
-                        </div>
-                        <div className='status-tabbing'>
-                            <Tooltip
-                                content={
-                                    escapeHatch
-                                        ? getI18nValue(
-                                              'Text_Editor_Status_Bar_Tab_Focus_Tooltip'
-                                          )
-                                        : getI18nValue(
-                                              'Text_Editor_Status_Bar_Tab_Edit_Tooltip'
-                                          )
-                                }
-                                relationship='label'
-                                withArrow
-                                mountNode={tabRef}
-                            >
-                                <Button
-                                    appearance='subtle'
-                                    size='small'
-                                    icon={<KeyboardTabRegular />}
-                                    onClick={onTabClick}
-                                >
-                                    {escapeHatch
-                                        ? getI18nValue(
-                                              'Text_Editor_Status_Bar_Tab_Focus'
-                                          )
-                                        : getI18nValue(
-                                              'Text_Editor_Status_Bar_Tab_Edit'
-                                          )}{' '}
-                                </Button>
-                            </Tooltip>
-                            <TooltipCustomMount setRef={setTabRef} />
                         </div>
                         <div className='status-settings'></div>
                     </div>

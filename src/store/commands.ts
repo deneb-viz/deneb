@@ -25,7 +25,6 @@ const sliceStateInitializer = () =>
             editorPaneToggle: true,
             exportSpecification: true,
             fieldMappings: true,
-            formatJson: true,
             helpSite: true,
             navigateConfig: true,
             navigateSettings: true,

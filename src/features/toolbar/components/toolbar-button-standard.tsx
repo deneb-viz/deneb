@@ -14,7 +14,6 @@ import {
     QuestionRegular,
     ReplayRegular,
     ShareRegular,
-    TextGrammarWandRegular,
     WeatherMoonRegular,
     WeatherSunnyRegular,
     ZoomFitRegular,
@@ -31,7 +30,6 @@ import {
     handleApplyChanges,
     handleAutoApplyChanges,
     handleExportSpecification,
-    handleFormatJson,
     handleOpenCreateSpecificationDialog,
     handleOpenRemapDialog,
     handleOpenWebsite,
@@ -118,8 +116,6 @@ const resolveClick = (command: Command) => {
             return handleExportSpecification;
         case 'fieldMappings':
             return handleOpenRemapDialog;
-        case 'formatJson':
-            return handleFormatJson;
         case 'helpSite':
             return handleOpenWebsite;
         case 'newSpecification':
@@ -166,8 +162,6 @@ const resolveI18nKey = (command: Command) => {
             return isDirty ? 'Button_Export_Dirty' : 'Button_Export';
         case 'fieldMappings':
             return 'Button_Map_Fields';
-        case 'formatJson':
-            return 'Button_Format_Json';
         case 'helpSite':
             return 'Button_Help';
         case 'newSpecification':
@@ -217,8 +211,6 @@ const resolveIcon = (command: Command) => {
             return <ShareRegular />;
         case 'fieldMappings':
             return <ArrowShuffleRegular />;
-        case 'formatJson':
-            return <TextGrammarWandRegular />;
         case 'helpSite':
             return <QuestionRegular />;
         case 'newSpecification':

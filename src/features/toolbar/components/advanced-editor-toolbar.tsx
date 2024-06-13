@@ -17,19 +17,19 @@ import { shallow } from 'zustand/shallow';
 import { getI18nValue } from '../../i18n';
 import store from '../../../store';
 import { TEditorRole, useJsonEditorContext } from '../../json-editor';
-import { ApplyMenuButton } from './apply-menu-button';
-import { ToolbarButtonStandard } from './toolbar-button-standard';
+import { AdvancedEditorToolbarUpdateOperations } from './advanced-editor-toolbar-update-operations';
 import { useToolbarStyles } from '.';
 import {
     handleEditorPaneConfig,
     handleEditorPaneSettings,
     handleEditorPaneSpecification
 } from '../../commands';
-import { FEATURES } from '../../../../config';
 
 export const AdvancedEditorToolbar: React.FC = () => {
     const { editorSelectedOperation } = store(
-        (state) => ({ editorSelectedOperation: state.editorSelectedOperation }),
+        (state) => ({
+            editorSelectedOperation: state.editorSelectedOperation
+        }),
         shallow
     );
     const editorRefs = useJsonEditorContext();
@@ -87,43 +87,8 @@ export const AdvancedEditorToolbar: React.FC = () => {
                     </ToolbarRadioButton>
                 </ToolbarRadioGroup>
                 <ToolbarDivider />
-                {(FEATURES.combined_apply_button && <ApplyMenuButton />) || (
-                    <>
-                        <ToolbarButtonStandard
-                            command='applyChanges'
-                            role='application'
-                        />
-                        <ToolbarButtonStandard
-                            command='autoApplyToggle'
-                            role='application'
-                        />
-                    </>
-                )}
-                <ToolbarButtonStandard
-                    command='formatJson'
-                    role='application'
-                />
-                <ToolbarButtonStandard
-                    command='fieldMappings'
-                    role='application'
-                />
             </ToolbarGroup>
-            <ToolbarGroup className={classes.toolbarGroupAdvancedEditor}>
-                <ToolbarButtonStandard
-                    command='newSpecification'
-                    role='application'
-                />
-                <ToolbarButtonStandard
-                    command='exportSpecification'
-                    role='application'
-                />
-                <ToolbarDivider />
-                <ToolbarButtonStandard
-                    command='themeToggle'
-                    role='application'
-                />
-                <ToolbarButtonStandard command='helpSite' role='application' />
-            </ToolbarGroup>
+            <AdvancedEditorToolbarUpdateOperations />
         </Toolbar>
     );
 };

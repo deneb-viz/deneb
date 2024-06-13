@@ -1,9 +1,10 @@
 import {
-    IWorkerSpecTokenizerMessage,
-    IWorkerSpecTokenizerResponse,
+    IDenebTokenizationRequestPayload,
+    IDenebTokenizationResponsePayload,
     JSON_FIELD_TRACKING_METADATA_PLACEHOLDER,
     JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER,
     TokenPatternReplacer,
+    dataset,
     utils
 } from '@deneb-viz/core-dependencies';
 import {
@@ -21,14 +22,10 @@ import forEach from 'lodash/forEach';
  * placeholders. Returns the updated specification with placeholders based on the tracking information.
  */
 export const getTokenizedSpec = (
-    options: IWorkerSpecTokenizerMessage
-): IWorkerSpecTokenizerResponse => {
-    const {
-        spec,
-        trackedFields,
-        isRemap = false,
-        supplementaryReplacers
-    } = options;
+    options: IDenebTokenizationRequestPayload
+): IDenebTokenizationResponsePayload => {
+    const spec = utils.uint8ArrayToString(options.spec);
+    const { trackedFields, isRemap = false, supplementaryReplacers } = options;
     let updatedSpec = spec;
     forEach(trackedFields, (v) => {
         forEach(v.paths, (p) => {
@@ -53,7 +50,7 @@ export const getTokenizedSpec = (
             updatedSpec = applyEdits(updatedSpec, editResult);
         });
     });
-    return { spec: updatedSpec };
+    return { spec: utils.stringToUint8Array(updatedSpec) };
 };
 
 /**
@@ -66,7 +63,7 @@ const getTokenPatternsReplacement = (
     placeholder: string,
     supplementaryReplacers: TokenPatternReplacer[]
 ) => {
-    const namePattern = utils.getEscapedReplacerPattern(fieldName);
+    const namePattern = dataset.getEscapedReplacerPattern(fieldName);
     const replacers = supplementaryReplacers.map((r) => ({
         pattern: r.pattern.replaceAll(
             JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER,

@@ -10,11 +10,7 @@ import {
 } from '../../core/utils/properties';
 import { getState } from '../../store';
 import { InterfaceMode } from '../interface';
-import {
-    ISpecification,
-    fixAndFormatSpecification,
-    persistSpecification
-} from '../specification';
+import { ISpecification, persistSpecification } from '../specification';
 import {
     Command,
     IExportSpecCommandTestOptions,
@@ -66,8 +62,8 @@ export const getNextApplyMode = (applyMode: EditorApplyMode): EditorApplyMode =>
 export const handleApplyChanges = (editorRefs: IEditorRefs) => {
     executeCommand('applyChanges', () =>
         persistSpecification(
-            editorRefs?.spec.current.editor,
-            editorRefs?.config.current.editor
+            editorRefs?.spec.current,
+            editorRefs?.config.current
         )
     );
     setFocusToActiveEditor(editorRefs);
@@ -85,11 +81,12 @@ export const handleAutoApplyChanges = (editorRefs: IEditorRefs) => {
 };
 
 /**
- * Allows the UI to discard changes after exiting the editor.
+ * Allows the UI to discard changes after exiting the editor. As Monaco preserves state for the session, this will do
+ * nothing.
  */
 export const handleDiscardChanges = () => {
     executeCommand('discardChanges', () => {
-        getState().editor.updateIsDirty(false);
+        return;
     });
 };
 
@@ -118,7 +115,7 @@ export const handleEditorPaneConfig = (editorRefs: IEditorRefs) => {
     executeCommand('navigateConfig', () => {
         setEditorPivotItem('Config');
     });
-    editorRefs.config?.current?.editor?.focus();
+    editorRefs.config?.current?.focus();
 };
 
 /**
@@ -137,7 +134,7 @@ export const handleEditorPaneSpecification = (editorRefs: IEditorRefs) => {
     executeCommand('navigateSpecification', () => {
         setEditorPivotItem('Spec');
     });
-    editorRefs.spec?.current?.editor?.focus();
+    editorRefs.spec?.current?.focus();
 };
 
 /**
@@ -147,19 +144,6 @@ export const handleExportSpecification = () =>
     executeCommand('exportSpecification', () => {
         getState().interface.setModalDialogRole('Export');
     });
-
-/**
- * Invokes JSON formatting.
- */
-export const handleFormatJson = (editorRefs: IEditorRefs) => {
-    executeCommand('formatJson', () =>
-        fixAndFormatSpecification(
-            editorRefs?.spec.current.editor,
-            editorRefs?.config.current.editor
-        )
-    );
-    setFocusToActiveEditor(editorRefs);
-};
 
 export const handleOpenCreateSpecificationDialog = () => {
     executeCommand('newSpecification', () => {

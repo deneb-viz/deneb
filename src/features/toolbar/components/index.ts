@@ -57,6 +57,13 @@ export const useToolbarStyles = makeStyles({
         display: 'flex',
         justifyContent: 'space-between'
     },
+    toolbarAdvancedEditorGrow: {
+        backgroundColor: tokens.colorNeutralBackground1,
+        display: 'flex',
+        justifyContent: 'normal',
+        columnGap: tokens.spacingHorizontalXXS,
+        flexGrow: 1
+    },
     toolbarDebug: {
         display: 'flex',
         height: `${PREVIEW_PANE_TOOLBAR_MIN_SIZE}px`,
