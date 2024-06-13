@@ -57,8 +57,8 @@
         "jsonc-parser": "^3.2.1",
         "lodash": "^4.17.21",
         "powerbi-visuals-api": "5.7.0",
-        "vega": "5.28.0",
-        "vega-lite": "5.18.0",
+        "vega": "5.29.0",
+        "vega-lite": "5.18.1",
         "vscode-json-languageservice": "^5.3.7"
     }
 }

@@ -91,8 +91,8 @@
         "turbo": "^1.13.3",
         "typescript": "^5.4.5",
         "uuid": "^9.0.1",
-        "vega": "5.28.0",
-        "vega-lite": "5.18.0",
+        "vega": "5.29.0",
+        "vega-lite": "5.18.1",
         "vscode-json-languageservice": "^5.3.7",
         "zustand": "^4.5.2"
     },
