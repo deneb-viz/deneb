@@ -1,7 +1,6 @@
 import { IJsonParseResult } from '@deneb-viz/core-dependencies';
 import {
     applyEdits,
-    findNodeAtLocation,
     format,
     getNodeValue,
     modify,
@@ -9,45 +8,12 @@ import {
     stripComments,
     Node
 } from 'jsonc-parser';
-import { JSONPath, TextDocument, getLanguageService } from 'vscode-json-languageservice';
-
-/**
- * 'Filename' to use for validating editor JSON content using language services.
- */
-const JSON_INTERNAL_CONTENT_URI = 'deneb://spec.json';
-
-/**
- * URI/namespace to use for establishing language services for an editor spec.
- */
-const JSON_INTERNAL_SCHEMA_URI = 'deneb://schema.json';
+import { JSONPath } from 'vscode-json-languageservice';
 
 /**
  * When converting JSONC to JSON, this is the character to replace comments with.
  */
 const JSONC_TO_JSON_COMMENT_REPLACE_CHAR = ' ';
-
-/**
- * For the supplied schema, generate a VS Code `LanguageService` that can be used for autocompletion and hover events.
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const getJsonLanguageService = (schema: any) => {
-    const ls = getLanguageService({
-        schemaRequestService: () => Promise.resolve(JSON.stringify(schema))
-    });
-    ls.configure({
-        allowComments: false,
-        schemas: [{ fileMatch: ['*.json'], uri: JSON_INTERNAL_SCHEMA_URI }]
-    });
-    return ls;
-};
-
-/**
- * For the supplied content and path, return the JSON node at that location.
- */
-export const getJsonLocationAtPath = (content: string, path: JSONPath) => {
-    const parsed = parseTree(content);
-    return (parsed && findNodeAtLocation(parsed, path)) || undefined;
-};
 
 /**
  * For the supplied JSONC tree, return the JavaScript object value of the node.
@@ -91,16 +57,13 @@ export const getJsonPureString = (
 ) => stripComments(content || '{}', replaceCh);
 
 /**
- * For the supplied content, generate a VS Code `TextDocument`, with the necessary metadata for validation using
- * language services downstream.
- */
-export const getJsonTextDocument = (content: string) =>
-    TextDocument.create(JSON_INTERNAL_CONTENT_URI, 'json', 1, content);
-
-/**
  * For the supplied content, JSONPath, and value, return the modified JSONC string as of that location.
  */
-export const getModifiedJsoncByPath = (content: string, path: JSONPath, value: unknown) => {
+export const getModifiedJsoncByPath = (
+    content: string,
+    path: JSONPath,
+    value: unknown
+) => {
     const edits = modify(content, path, value, {});
     return applyEdits(content, edits);
 };
@@ -109,7 +72,10 @@ export const getModifiedJsoncByPath = (content: string, path: JSONPath, value: u
  * Intended to be used as a substitute for `JSON.parse`; will ensure that any supplied `content` is tested as JSONC.
  * Any parsing issues are included in the returned `errors` array.
  */
-export const getParsedJsonWithResult = (content: string, fallback?: string): IJsonParseResult => {
+export const getParsedJsonWithResult = (
+    content: string,
+    fallback?: string
+): IJsonParseResult => {
     try {
         return { result: JSON.parse(getJsonPureString(content)), errors: [] };
     } catch (e: unknown) {

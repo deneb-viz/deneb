@@ -6,7 +6,7 @@ import {
     TEMPLATE_USERMETA_VERSION,
     UsermetaDatasetField,
     UsermetaTemplate,
-    utils
+    getBase64ImagePngBlank
 } from '@deneb-viz/core-dependencies';
 import {
     areAllCreateDataRequirementsMet,
@@ -31,14 +31,17 @@ const COMPLETE_FIELD: UsermetaDatasetField[] = [
         suppliedObjectKey: 'Field1'
     }
 ];
-const PARTIALLY_COMPLETE_FIELDS: UsermetaDatasetField[] = [...INCOMPLETE_FIELD, ...COMPLETE_FIELD];
+const PARTIALLY_COMPLETE_FIELDS: UsermetaDatasetField[] = [
+    ...INCOMPLETE_FIELD,
+    ...COMPLETE_FIELD
+];
 
 const MOCK_BUILD_VERSION = '1.0.0';
 const MOCK_DATE = '2022-01-01T00:00:00.000Z';
 const MOCK_PROVIDER = 'vegaLite' as SpecProvider;
 const MOCK_PROVIDER_VERSION = '5.0.0';
 const MOCK_UUID = 'mock-uuid';
-const MOCK_BLANK_IMAGE_BASE64 = utils.getBase64ImagePngBlank();
+const MOCK_BLANK_IMAGE_BASE64 = getBase64ImagePngBlank();
 
 const MOCK_TEMPLATE_METADATA_BASE: UsermetaTemplate = {
     information: {
@@ -78,7 +81,9 @@ describe('areAllTemplateFieldsAssigned', () => {
         expect(areAllTemplateFieldsAssigned(INCOMPLETE_FIELD)).toBe(false);
     });
     it('should return false if some fields are not supplied', () => {
-        expect(areAllTemplateFieldsAssigned(PARTIALLY_COMPLETE_FIELDS)).toBe(false);
+        expect(areAllTemplateFieldsAssigned(PARTIALLY_COMPLETE_FIELDS)).toBe(
+            false
+        );
     });
 });
 

@@ -1,17 +1,17 @@
 import React, { createContext, createRef, useContext } from 'react';
+import { editor } from '@deneb-viz/monaco-custom';
 import { IEditorRefs } from '..';
-import ReactAce from 'react-ace/lib/ace';
 
 const JsonEditorContext = createContext<IEditorRefs>({} as IEditorRefs);
-const specEditorRef = createRef<ReactAce>();
-const configEditorRef = createRef<ReactAce>();
+const specEditorMonacoRef = createRef<editor.IStandaloneCodeEditor>();
+const configEditorMonacoRef = createRef<editor.IStandaloneCodeEditor>();
 
 export const JsonEditorContextProvider = (props) => {
     return (
         <JsonEditorContext.Provider
             value={{
-                spec: specEditorRef,
-                config: configEditorRef
+                spec: specEditorMonacoRef,
+                config: configEditorMonacoRef
             }}
         >
             {props.children}

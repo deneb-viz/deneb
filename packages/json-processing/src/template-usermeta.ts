@@ -2,7 +2,6 @@ import powerbi from 'powerbi-visuals-api';
 
 import omit from 'lodash/omit';
 import {
-    utils,
     SpecProvider,
     UsermetaInformation,
     UsermetaTemplate,
@@ -15,7 +14,11 @@ import {
     UsermetaInteractivity,
     DATASET_CORE_ROLE_NAME,
     TrackedFields,
-    UsermetaDatasetFieldType
+    UsermetaDatasetFieldType,
+    getEscapedReplacerPattern,
+    getJsonPlaceholderKey,
+    getNewUuid,
+    getBase64ImagePngBlank
 } from '@deneb-viz/core-dependencies';
 import {
     getJsoncNodeValue,
@@ -24,7 +27,6 @@ import {
     getModifiedJsoncByPath,
     getTextFormattedAsJsonC
 } from './processing';
-import { getFieldPattern } from './field-tracking';
 import { getProviderValidator } from './validation';
 import { applyEdits, modify } from 'jsonc-parser';
 
@@ -72,8 +74,16 @@ export const getExportTemplate = (options: {
     tokenizedSpec: string;
     trackedFields: TrackedFields;
 }) => {
-    const { informationTranslationPlaceholders, metadata, tokenizedSpec, trackedFields } = options;
-    const newMetadata = getPublishableUsermeta(metadata, { informationTranslationPlaceholders, trackedFields });
+    const {
+        informationTranslationPlaceholders,
+        metadata,
+        tokenizedSpec,
+        trackedFields
+    } = options;
+    const newMetadata = getPublishableUsermeta(metadata, {
+        informationTranslationPlaceholders,
+        trackedFields
+    });
     const withUsermeta = applyEdits(
         tokenizedSpec,
         modify(tokenizedSpec, ['usermeta'], newMetadata, {
@@ -82,27 +92,36 @@ export const getExportTemplate = (options: {
     );
     const withSchema = applyEdits(
         withUsermeta,
-        modify(withUsermeta, ['$schema'], PROVIDER_RESOURCES[newMetadata.deneb.provider].schemaUrl, {
-            getInsertionIndex: () => 0
-        })
+        modify(
+            withUsermeta,
+            ['$schema'],
+            PROVIDER_RESOURCES[newMetadata.deneb.provider].schemaUrl,
+            {
+                getInsertionIndex: () => 0
+            }
+        )
     );
     return getTextFormattedAsJsonC(withSchema, 2);
 };
+
+const getFieldPattern = (index: number) =>
+    new RegExp(getEscapedReplacerPattern(getJsonPlaceholderKey(index)), 'g');
 
 /**
  * When we initialize a new template for import (or when intializing the store), this provides the default values for
  * the create slice properties (except for methods).
  */
-export const getNewCreateFromTemplateSliceProperties = (): Partial<ICreateSliceProperties> => ({
-    candidates: null,
-    importFile: null,
-    importState: 'None',
-    metadata: null,
-    metadataAllDependenciesAssigned: false,
-    metadataAllFieldsAssigned: false,
-    metadataDrilldownAssigned: false,
-    mode: 'import'
-});
+export const getNewCreateFromTemplateSliceProperties =
+    (): Partial<ICreateSliceProperties> => ({
+        candidates: null,
+        importFile: null,
+        importState: 'None',
+        metadata: null,
+        metadataAllDependenciesAssigned: false,
+        metadataAllFieldsAssigned: false,
+        metadataDrilldownAssigned: false,
+        mode: 'import'
+    });
 
 /**
  * Base metadata for a new Deneb template. This gives you a starting point for spreading-in new metadata fields for
@@ -114,9 +133,9 @@ export const getNewTemplateMetadata = (options: {
     providerVersion: string;
 }): Partial<UsermetaTemplate> => ({
     information: <UsermetaInformation>{
-        uuid: utils.getNewUuid(),
+        uuid: getNewUuid(),
         generated: new Date().toISOString(),
-        previewImageBase64PNG: utils.getBase64ImagePngBlank(),
+        previewImageBase64PNG: getBase64ImagePngBlank(),
         name: '',
         description: '',
         author: ''
@@ -156,9 +175,15 @@ export const getPublishableUsermeta = (
         ...{
             information: {
                 ...usermeta.information,
-                name: usermeta.information.name || options.informationTranslationPlaceholders.name,
-                description: usermeta.information.description || options.informationTranslationPlaceholders.description,
-                author: usermeta.information.author || options.informationTranslationPlaceholders.author
+                name:
+                    usermeta.information.name ||
+                    options.informationTranslationPlaceholders.name,
+                description:
+                    usermeta.information.description ||
+                    options.informationTranslationPlaceholders.description,
+                author:
+                    usermeta.information.author ||
+                    options.informationTranslationPlaceholders.author
             },
             dataset: usermeta?.[DATASET_CORE_ROLE_NAME].map((d) => {
                 d.key = options.trackedFields?.[d.key]?.placeholder ?? d.key;
@@ -172,7 +197,9 @@ export const getPublishableUsermeta = (
  * For a given column or measure (or template placeholder), resolve its type
  * against the corresponding Power BI value descriptor.
  */
-export const getResolvedValueDescriptor = (type: powerbi.ValueTypeDescriptor): UsermetaDatasetFieldType => {
+export const getResolvedValueDescriptor = (
+    type: powerbi.ValueTypeDescriptor
+): UsermetaDatasetFieldType => {
     switch (true) {
         case type?.bool:
             return 'bool';
@@ -201,7 +228,9 @@ export const getResolvedVisualMetadataToDatasetField = (
         namePlaceholder: encodedName,
         description: '',
         kind: (metadata.isMeasure && 'measure') || 'column',
-        type: getResolvedValueDescriptor(metadata.type as powerbi.ValueTypeDescriptor)
+        type: getResolvedValueDescriptor(
+            metadata.type as powerbi.ValueTypeDescriptor
+        )
     };
 };
 
@@ -214,7 +243,10 @@ export const getTemplateProvider = (template: string): SpecProvider =>
 /**
  * For all supplied template fields, perform a replace on all tokens and return the new spec.
  */
-export const getTemplateReplacedForDataset = (spec: string, dataset: UsermetaDatasetField[]) =>
+export const getTemplateReplacedForDataset = (
+    spec: string,
+    dataset: UsermetaDatasetField[]
+) =>
     dataset.reduce((result, value, index) => {
         const pattern = getFieldPattern(index);
         return result.replace(pattern, value.suppliedObjectName as string);
@@ -226,13 +258,27 @@ export const getTemplateReplacedForDataset = (spec: string, dataset: UsermetaDat
  * longer possible. This function will take a legacy template and move the config content from the top-level spec to
  * the `usermeta` object, if it is not already present.
  */
-export const getTemplateResolvedForLegacyConfig = (template: string, tabSize: number) => {
+export const getTemplateResolvedForLegacyConfig = (
+    template: string,
+    tabSize: number
+) => {
     const { config } = getTemplateMetadata(template);
     if (!config) {
         const tree = getJsoncTree(template);
-        const newConfig = getTextFormattedAsJsonC(JSON.stringify(getJsoncNodeValue(tree)?.config || {}), tabSize);
-        const appliedConfig = getModifiedJsoncByPath(template, ['usermeta', 'config'], newConfig);
-        const removedConfig = getModifiedJsoncByPath(appliedConfig, ['config'], undefined);
+        const newConfig = getTextFormattedAsJsonC(
+            JSON.stringify(getJsoncNodeValue(tree)?.config || {}),
+            tabSize
+        );
+        const appliedConfig = getModifiedJsoncByPath(
+            template,
+            ['usermeta', 'config'],
+            newConfig
+        );
+        const removedConfig = getModifiedJsoncByPath(
+            appliedConfig,
+            ['config'],
+            undefined
+        );
         return removedConfig;
     }
     return template;
@@ -243,11 +289,18 @@ export const getTemplateResolvedForLegacyConfig = (template: string, tabSize: nu
  * Deneb, so here we check the template for a suitable `providerVersion` and patch it with a legacy version as
  * appropriate.
  */
-export const getTemplateResolvedForLegacyVersions = (provider: SpecProvider, template: string) => {
+export const getTemplateResolvedForLegacyVersions = (
+    provider: SpecProvider,
+    template: string
+) => {
     const { deneb } = getTemplateMetadata(template);
     const legacyVersion = PROVIDER_RESOURCES[provider].legacyVersion;
     const providerVersion = deneb.providerVersion ?? legacyVersion;
-    return getModifiedJsoncByPath(template, ['usermeta', 'deneb', 'providerVersion'], providerVersion);
+    return getModifiedJsoncByPath(
+        template,
+        ['usermeta', 'deneb', 'providerVersion'],
+        providerVersion
+    );
 };
 
 /**
@@ -261,7 +314,10 @@ export const getTemplateResolvedForPlaceholderAssignment = (
     const config = getTemplateMetadata(template)?.config || '{}';
     const keysToRemove = ['$schema', 'usermeta'];
     const spec = getTextFormattedAsJsonC(
-        keysToRemove.reduce((result, key) => getModifiedJsoncByPath(result, [key], undefined), template),
+        keysToRemove.reduce(
+            (result, key) => getModifiedJsoncByPath(result, [key], undefined),
+            template
+        ),
         tabSize
     );
     return {
@@ -289,7 +345,8 @@ export const getUpdatedExportMetadata = (
         providerVersion?: string;
     }
 ) => {
-    const { config, dataset, interactivity, provider, providerVersion } = options;
+    const { config, dataset, interactivity, provider, providerVersion } =
+        options;
     return {
         ...metadata,
         deneb: {
@@ -317,19 +374,31 @@ export const getUpdatedExportMetadata = (
  *      from the metadata, we need to move it there. Otherwise, we leave it alone and it will be present in the Spec
  *      editor as the original author intended.
  */
-export const getValidatedTemplate = (content: string, tabSize: number): ICreateSliceSetImportFile => {
+export const getValidatedTemplate = (
+    content: string,
+    tabSize: number
+): ICreateSliceSetImportFile => {
     try {
         if (!getJsoncStringAsObject(content)) return INVALID_TEMPLATE_OPTIONS;
         const provider = getTemplateProvider(content);
-        const templateResolvedLegacy = getTemplateResolvedForLegacyVersions(provider, content);
-        const templateResolvedLegacyConfig = getTemplateResolvedForLegacyConfig(templateResolvedLegacy, tabSize);
+        const templateResolvedLegacy = getTemplateResolvedForLegacyVersions(
+            provider,
+            content
+        );
+        const templateResolvedLegacyConfig = getTemplateResolvedForLegacyConfig(
+            templateResolvedLegacy,
+            tabSize
+        );
         const metadata = getTemplateMetadata(templateResolvedLegacyConfig);
         const validator = getProviderValidator({
             provider: 'denebUserMeta'
         });
         const valid = validator(metadata);
         if (valid) {
-            const candidates = getTemplateResolvedForPlaceholderAssignment(templateResolvedLegacyConfig, tabSize);
+            const candidates = getTemplateResolvedForPlaceholderAssignment(
+                templateResolvedLegacyConfig,
+                tabSize
+            );
             return {
                 candidates,
                 importFile: content,

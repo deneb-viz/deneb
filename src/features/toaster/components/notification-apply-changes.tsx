@@ -29,11 +29,7 @@ export const NotificationApplyChanges: React.FC<INotificationProps> = ({
     const { spec, config } = useJsonEditorContext();
     const handleApply = () => {
         dismissToast(toastId);
-        persistSpecification(
-            spec?.current.editor,
-            config?.current.editor,
-            false
-        );
+        persistSpecification(spec?.current, config?.current, false);
     };
     const handleDiscard = () => {
         dismissToast(toastId);
@@ -50,7 +46,7 @@ export const NotificationApplyChanges: React.FC<INotificationProps> = ({
                             {getI18nValue('Text_Toast_Action_Apply')}
                         </Link>
                         <Link onClick={handleDiscard}>
-                            {getI18nValue('Text_Toast_Action_Discard')}
+                            {getI18nValue('Text_Toast_Action_Dismiss')}
                         </Link>
                     </>
                 }

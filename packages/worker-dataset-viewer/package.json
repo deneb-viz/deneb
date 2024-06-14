@@ -1,0 +1,37 @@
+{
+    "name": "@deneb-viz/worker-dataset-viewer",
+    "version": "1.7.0",
+    "license": "MIT",
+    "publishConfig": {
+        "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/deneb-viz/sadr.git"
+    },
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "tsup": {
+        "entry": [
+            "src/index.ts"
+        ],
+        "dts": true,
+        "format": [
+            "cjs"
+        ],
+        "onSuccess": "npx tsc --emitDeclarationOnly --declaration"
+    },
+    "scripts": {
+        "dev": "tsup --watch",
+        "build": "tsup --clean --minify",
+        "eslint": "eslint . --max-warnings 0"
+    },
+    "devDependencies": {
+        "@deneb-viz/core-dependencies": "*",
+        "@deneb-viz/eslint-config": "*",
+        "@deneb-viz/typescript-config": "*"
+    }
+}

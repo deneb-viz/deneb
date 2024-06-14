@@ -30,6 +30,6 @@ const getActiveEditorRef = (editorRefs: IEditorRefs) => {
  */
 export const setFocusToActiveEditor = (editorRefs: IEditorRefs) => {
     if (shouldPrioritizeJsonEditor()) {
-        getActiveEditorRef(editorRefs)?.current.editor?.focus();
+        getActiveEditorRef(editorRefs)?.current?.focus();
     }
 };

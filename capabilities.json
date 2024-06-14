@@ -274,11 +274,6 @@
                         "bool": true
                     }
                 },
-                "showGutter": {
-                    "type": {
-                        "bool": true
-                    }
-                },
                 "showLineNumbers": {
                     "type": {
                         "bool": true
@@ -299,9 +294,9 @@
                         "numeric": true
                     }
                 },
-                "localCompletion": {
+                "debouncePeriod": {
                     "type": {
-                        "bool": true
+                        "numeric": true
                     }
                 }
             }

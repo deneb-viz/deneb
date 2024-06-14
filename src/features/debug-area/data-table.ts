@@ -7,7 +7,6 @@ import {
     DATASET_SELECTED_NAME,
     TABLE_COLUMN_RESERVED_WORDS
 } from '../../constants';
-import { IDataTableWorkerTranslations } from './types';
 import { getPrunedObject } from '../json-processing';
 import {
     getCrossHighlightFieldBaseMeasureName,
@@ -21,6 +20,7 @@ import {
 } from '../interactivity';
 import { DATA_TABLE_FONT_FAMILY, DATA_TABLE_FONT_SIZE } from '.';
 import { getI18nValue } from '../i18n';
+import { IWorkerDatasetViewerTranslations } from '@deneb-viz/core-dependencies';
 
 /**
  * If the column/cell relates to cross-filtering, return a tooltip value that
@@ -165,7 +165,7 @@ export const getDataTableRenderedCharWidth = () => {
  * data table worker.
  */
 export const getDataTableWorkerTranslations =
-    (): IDataTableWorkerTranslations => ({
+    (): IWorkerDatasetViewerTranslations => ({
         placeholderInfinity: getI18nValue('Table_Placeholder_Infinity'),
         placeholderNaN: getI18nValue('Table_Placeholder_NaN'),
         placeholderTooLong: getI18nValue('Table_Placeholder_TooLong'),

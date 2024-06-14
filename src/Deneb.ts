@@ -1,5 +1,5 @@
 import '../style/visual.less';
-import 'ace-builds';
+import '@deneb-viz/monaco-custom/dist/index.css';
 import powerbi from 'powerbi-visuals-api';
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
@@ -49,6 +49,7 @@ import {
     getVisualFormattingModel,
     getVisualFormattingService
 } from '@deneb-viz/integration-powerbi';
+import { updateFieldTracking } from './features/json-processing';
 
 /**
  * Run to indicate that the visual has started.
@@ -99,38 +100,13 @@ export class Deneb implements IVisual {
         VisualHostServices.update(options);
         // Signal we've begun rendering
         setRenderingStarted();
-        I18nServices.update(
-            FEATURES.developer_mode
-                ? (this.settings.developer.localization.locale.value as string)
-                : getLocale()
-        );
+        this.resolveLocale();
+        this.resolveViewport(options);
         VegaExtensibilityServices.bind(
             this.settings.theme.ordinal.ordinalColorCount.value
         );
-        const { setVisualUpdate, updateDataset, updateDatasetProcessingStage } =
-            getState();
-        // Manage persistent viewport sizing for view vs. editor
-        switch (true) {
-            case isVisualUpdateTypeVolatile(options):
-            case isVisualUpdateTypeResizeEnd(options.type): {
-                resolveReportViewport(
-                    options.viewport,
-                    options.viewMode,
-                    options.editMode,
-                    {
-                        height: Number.parseFloat(
-                            this.settings.stateManagement.viewport
-                                .viewportHeight.value
-                        ),
-                        width: Number.parseFloat(
-                            this.settings.stateManagement.viewport.viewportWidth
-                                .value
-                        )
-                    }
-                );
-            }
-        }
         // Provide intial update options to store
+        const { setVisualUpdate } = getState();
         setVisualUpdate({
             options,
             settings: this.settings
@@ -138,9 +114,26 @@ export class Deneb implements IVisual {
         // Perform any necessary property migrations
         handlePropertyMigration(this.settings);
         // Data change or re-processing required?
+        this.resolveDataset(options);
+        const {
+            interface: { isInitialized, setExplicitInitialize }
+        } = getState();
+        if (!isInitialized) {
+            logDebug('Visual has not been initialized yet. Setting...');
+            setExplicitInitialize();
+        }
+        logTimeEnd('resolveUpdateOptions');
+    }
+
+    /**
+     * Resolve the dataset for the visual update, based on the current state and the incoming options.
+     */
+    private resolveDataset(options: VisualUpdateOptions) {
         let fetchSuccess = false;
         const {
-            processing: { shouldProcessDataset }
+            processing: { shouldProcessDataset },
+            updateDataset,
+            updateDatasetProcessingStage
         } = getState();
         const categorical = getCategoricalDataViewFromOptions(options);
         if (shouldProcessDataset) {
@@ -178,19 +171,69 @@ export class Deneb implements IVisual {
                     categories: categorical?.categories,
                     dataset
                 });
+                this.updateTracking();
             }
             logTimeEnd('processDataset');
         } else {
             logDebug('Visual dataset has not changed. No need to process.');
         }
-        const {
-            interface: { isInitialized, setExplicitInitialize }
-        } = getState();
-        if (!isInitialized) {
-            logDebug('Visual has not been initialized yet. Setting...');
-            setExplicitInitialize();
+    }
+
+    /**
+     * Resolve the locale for the visual update, based on the host or the overridden value in the developer settings.
+     */
+    private resolveLocale() {
+        logDebug('Resolving locale options...');
+        const locale = FEATURES.developer_mode
+            ? (this.settings.developer.localization.locale.value as string)
+            : getLocale();
+        logDebug('Locale resolved.', { locale });
+        I18nServices.update(locale);
+    }
+
+    /**
+     * Manage persistent viewport sizing for view vs. editor
+     */
+    private resolveViewport(options: VisualUpdateOptions) {
+        switch (true) {
+            case isVisualUpdateTypeVolatile(options):
+            case isVisualUpdateTypeResizeEnd(options.type): {
+                logDebug('Resolving viewport options...');
+                resolveReportViewport(
+                    options.viewport,
+                    options.viewMode,
+                    options.editMode,
+                    {
+                        height: Number.parseFloat(
+                            this.settings.stateManagement.viewport
+                                .viewportHeight.value
+                        ),
+                        width: Number.parseFloat(
+                            this.settings.stateManagement.viewport.viewportWidth
+                                .value
+                        )
+                    }
+                );
+            }
         }
-        logTimeEnd('resolveUpdateOptions');
+    }
+
+    /**'
+     * Perform the necessary tracking updates for the visual data and spec.
+     */
+    private async updateTracking() {
+        logDebug('[Visual Update] Updating tracking and tokens...');
+        const {
+            fieldUsage: { dataset: trackedFieldsCurrent },
+            visualSettings: {
+                vega: {
+                    output: {
+                        jsonSpec: { value: spec }
+                    }
+                }
+            }
+        } = getState();
+        updateFieldTracking(spec, trackedFieldsCurrent);
     }
 
     /**

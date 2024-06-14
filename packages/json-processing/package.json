@@ -54,12 +54,11 @@
         "@types/lodash": "^4.14.202",
         "ajv": "^8.12.0",
         "ajv-formats": "^2.1.1",
-        "jsonc-parser": "^3.2.0",
-        "jsonpath-plus": "^8.1.0",
+        "jsonc-parser": "^3.2.1",
         "lodash": "^4.17.21",
         "powerbi-visuals-api": "5.7.0",
-        "vega": "5.28.0",
-        "vega-lite": "5.18.0",
+        "vega": "5.29.0",
+        "vega-lite": "5.18.1",
         "vscode-json-languageservice": "^5.3.7"
     }
 }

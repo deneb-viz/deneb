@@ -41,10 +41,6 @@ export const KEY_BINDINGS = {
         combination: 'ctrl|shift|enter',
         functionalArea: 'other'
     },
-    formatJson: {
-        combination: 'ctrl|alt|r',
-        functionalArea: 'other'
-    },
     exportSpecification: {
         combination: 'ctrl|alt|t',
         functionalArea: 'other'
@@ -201,7 +197,7 @@ export const PROVIDER_VERSIONS = {
  * Default values for the panes in the advanced editor.
  */
 export const SPLIT_PANE_DEFAULTS = {
-    minSize: 200,
+    minSize: 300,
     defaultSizePercent: 0.4,
     maxSizePercent: 0.5,
     collapsedSize: 36

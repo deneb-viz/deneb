@@ -9,13 +9,16 @@ import { logDebug, logRender } from '../../logging';
 import { TooltipCustomMount } from '../../interface';
 import { getVisualHost } from '../../visual-host';
 import { getExportTemplate } from '@deneb-viz/json-processing';
+import { TemplateExportProcessingState } from '@deneb-viz/core-dependencies';
 
 /**
  * Displays download and copy template to clipboard buttons.
  */
 export const ExportButtons: React.FC = () => {
-    const { templateName } = store(
+    const { exportProcessingState, templateName } = store(
         (state) => ({
+            exportProcessingState: state.interface.exportProcessingState,
+            isTrackingFields: state.interface.isTrackingFields,
             templateName: state.export?.metadata?.information?.name
         }),
         shallow
@@ -45,6 +48,8 @@ export const ExportButtons: React.FC = () => {
         document.execCommand('copy');
         document.body.removeChild(dummy);
     };
+    const isDisabled =
+        exportProcessingState !== TemplateExportProcessingState.Complete;
     logRender('ExportButtons');
     return (
         <>
@@ -58,6 +63,7 @@ export const ExportButtons: React.FC = () => {
                     onClick={handleDownload}
                     appearance='primary'
                     icon={<ArrowDownloadRegular />}
+                    disabled={isDisabled}
                 >
                     {getI18nValue('Text_Button_Download')}
                 </Button>
@@ -69,7 +75,11 @@ export const ExportButtons: React.FC = () => {
                 withArrow
                 mountNode={ttRefCopy}
             >
-                <Button onClick={handleCopy} icon={<CopyRegular />}>
+                <Button
+                    onClick={handleCopy}
+                    icon={<CopyRegular />}
+                    disabled={isDisabled}
+                >
                     {getI18nValue('Text_Button_Copy')}
                 </Button>
             </Tooltip>

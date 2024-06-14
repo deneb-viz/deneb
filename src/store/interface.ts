@@ -5,9 +5,19 @@ import { v4 as uuidv4 } from 'uuid';
 import { TStoreState } from '.';
 import { ModalDialogRole } from '../features/modal-dialog/types';
 import { InterfaceMode } from '../features/interface';
+import { isMappingDialogRequired } from '@deneb-viz/json-processing';
+import { getOnboardingDialog } from '../features/modal-dialog';
+import {
+    RemapState,
+    TemplateExportProcessingState
+} from '@deneb-viz/core-dependencies';
 
 export interface IInterfaceSlice {
     interface: {
+        /**
+         * The current state of the export processing.
+         */
+        exportProcessingState: TemplateExportProcessingState;
         /**
          * Whether the visual has initialized or not. The visual is regarded
          * as initialized once the very first attempt to check the dataset has
@@ -18,6 +28,16 @@ export interface IInterfaceSlice {
          */
         isInitialized: boolean;
         /**
+         * Whether the spec tokenization worker is currently processing. This is used to be able to update the
+         * interface accordingly when this is in progress.
+         */
+        isTokenizingSpec: boolean;
+        /**
+         * Whether the field tracking worker is currently processing fields. This is used to be able to update the
+         * interface accordingly when this is in progress.
+         */
+        isTrackingFields: boolean;
+        /**
          * The current application mode
          */
         mode: InterfaceMode;
@@ -27,12 +47,22 @@ export interface IInterfaceSlice {
          */
         modalDialogRole: ModalDialogRole;
         /**
+         * The current state of the remapping process.
+         */
+        remapState: RemapState;
+        /**
          * Unique ID representing the current render operation. Used to ensure
          * that we can trigger a re-render of the Vega view for specific
          * conditions that sit outside the obvious triggers (e.g. data
          * changes).
          */
         renderId: string;
+        /**
+         * Sets the export processing state.
+         */
+        setExportProcessingState: (
+            state: TemplateExportProcessingState
+        ) => void;
         /**
          * Signals that we should generate a new render ID for the current
          * specification.
@@ -45,18 +75,34 @@ export interface IInterfaceSlice {
          */
         setExplicitInitialize: () => void;
         /**
+         * Sets the tokenization state.
+         */
+        setIsTokenizingSpec: (isTokenizing: boolean) => void;
+        /**
+         * Sets the tracking field state.
+         */
+        setIsTrackingFields: (isTracking: boolean) => void;
+        /**
          * Sets the role of the modal dialog to display.
          */
         setModalDialogRole: (role: ModalDialogRole) => void;
+        /**
+         * Sets the remap state.
+         */
+        setRemapState: (state: RemapState) => void;
     };
 }
 
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IInterfaceSlice>{
         interface: {
+            exportProcessingState: TemplateExportProcessingState.None,
             isInitialized: false,
+            isTokenizingSpec: false,
+            isTrackingFields: false,
             mode: 'Initializing',
             modalDialogRole: 'None',
+            remapState: RemapState.None,
             renderId: uuidv4(),
             generateRenderId: () =>
                 set(
@@ -70,11 +116,41 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                     false,
                     'interface.setExplicitInitialize'
                 ),
+            setExportProcessingState: (
+                exportProcessingState: TemplateExportProcessingState
+            ) =>
+                set(
+                    (state) =>
+                        handleSetExportProcessingState(
+                            state,
+                            exportProcessingState
+                        ),
+                    false,
+                    'interface.setExportProcessingState'
+                ),
+            setIsTokenizingSpec: (isTokenizing: boolean) =>
+                set(
+                    (state) => handleSetIsTokenizingSpec(state, isTokenizing),
+                    false,
+                    'interface.setIsTokenizingSpec'
+                ),
+            setIsTrackingFields: (isTracking: boolean) =>
+                set(
+                    (state) => handleSetIsTrackingFields(state, isTracking),
+                    false,
+                    'interface.setIsTrackingFields'
+                ),
             setModalDialogRole: (role: ModalDialogRole) =>
                 set(
                     (state) => handleSetModalDialogRole(state, role),
                     false,
                     'interface.setModalDialogRole'
+                ),
+            setRemapState: (remapState: RemapState) =>
+                set(
+                    (state) => handleSetRemapState(state, remapState),
+                    false,
+                    'interface.setRemapState'
                 )
         }
     };
@@ -93,12 +169,62 @@ const handleGenerateRenderId = (state: TStoreState): Partial<TStoreState> => ({
     interface: { ...state.interface, renderId: uuidv4() }
 });
 
+const handleSetExportProcessingState = (
+    state: TStoreState,
+    exportProcessingState: TemplateExportProcessingState
+): Partial<TStoreState> => ({
+    interface: { ...state.interface, exportProcessingState }
+});
+
+const handleSetIsTokenizingSpec = (
+    state: TStoreState,
+    isTokenizing: boolean
+): Partial<TStoreState> => ({
+    interface: { ...state.interface, isTokenizingSpec: isTokenizing }
+});
+
+const handleSetIsTrackingFields = (
+    state: TStoreState,
+    isTracking: boolean
+): Partial<TStoreState> => ({
+    interface: { ...state.interface, isTrackingFields: isTracking }
+});
+
 const handleSetModalDialogRole = (
     state: TStoreState,
     role: ModalDialogRole
 ): Partial<TStoreState> => ({
     interface: { ...state.interface, modalDialogRole: role }
 });
+
+const handleSetRemapState = (
+    state: TStoreState,
+    remapState: RemapState
+): Partial<TStoreState> => {
+    const modalDialogRole: ModalDialogRole =
+        state.interface.modalDialogRole === 'Remap' &&
+        remapState === RemapState.None &&
+        state.interface.remapState > RemapState.None
+            ? 'None'
+            : isMappingDialogRequired({
+                  trackedFields: state.fieldUsage.dataset,
+                  drilldownProperties: state.fieldUsage.drilldown
+              })
+            ? 'Remap'
+            : getOnboardingDialog(
+                  state.visualSettings,
+                  state.interface.mode,
+                  state.interface.modalDialogRole
+              );
+    console.log('modalDialogRole', modalDialogRole);
+    return {
+        interface: {
+            ...state.interface,
+            modalDialogRole,
+            remapState
+        }
+    };
+};
 
 /**
  * Explicitly set the visual as initialized and set the mode to `Landing`.

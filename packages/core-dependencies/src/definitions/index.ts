@@ -6,3 +6,5 @@ export * from './template-usermeta-schema';
 export * from './template';
 export * from './utils-base64';
 export * from './vega-integration';
+export * from './worker-dataset-viewer';
+export * from './worker-spec-json-processing';

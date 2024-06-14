@@ -4,6 +4,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import isEqual from 'lodash/isEqual';
 import merge from 'lodash/merge';
 import omit from 'lodash/omit';
+import { editor } from '@deneb-viz/monaco-custom';
 
 import { TStoreState, getState } from '../../store';
 import { getVegaSettings } from '../../core/vega';
@@ -13,7 +14,6 @@ import {
 } from '../../core/utils/properties';
 import {
     IContentPatchResult,
-    IFixStatus,
     ISpecification,
     ISpecificationComparisonOptions,
     ISpecificationParseOptions,
@@ -23,7 +23,6 @@ import { TEditorRole } from '../json-editor';
 import {
     LocalVegaLoggerService,
     logDebug,
-    logError,
     logTimeEnd,
     logTimeStart
 } from '../logging';
@@ -32,25 +31,17 @@ import { DATASET_NAME } from '../../constants';
 import { getI18nValue } from '../i18n';
 import { getHashValue } from '../../utils';
 import { PROVIDER_RESOURCES } from '../../../config';
-import { IAceEditor } from 'react-ace/lib/types';
-import {
-    getEditorFolds,
-    getUpdatedEditorFolds,
-    toggleEditorFolds
-} from '../json-editor/folding';
-import { getJsonPathAtLocation } from '../json-processing/formatting';
 import {
     getFriendlyValidationErrors,
-    getJsonLocationAtPath,
     getParsedJsonWithResult,
-    getProviderValidator,
-    getTextFormattedAsJsonC
+    getProviderValidator
 } from '@deneb-viz/json-processing';
 import {
     PROPERTIES_DEFAULTS,
     SpecProvider
 } from '@deneb-viz/core-dependencies';
 import { getPowerBiSignalContainer } from '@deneb-viz/integration-powerbi';
+import { updateFieldTracking } from '../json-processing';
 
 /**
  * For a given operation and string input, ensure that it's trimmed and replaced with suitable defaults if empty.
@@ -72,54 +63,12 @@ const cleanJsonInputForPersistence = (
 };
 
 /**
- * For the specification and configuration in each editor, attempt to format
- * the JSON and update the editor contents accordingly.
- */
-export const fixAndFormatSpecification = (
-    specEditor: IAceEditor,
-    configEditor: IAceEditor
-) => {
-    try {
-        updateEditorFormatResults(specEditor, 'Spec');
-        updateEditorFormatResults(configEditor, 'Config');
-        persistSpecification(specEditor, configEditor);
-    } catch (e) {
-        logError('Format error', e);
-    }
-};
-
-/**
- * For the given editor and role, perform the formatting, restore folds, cursor
- * position, and update the store.
- */
-const updateEditorFormatResults = (editor: IAceEditor, role: TEditorRole) => {
-    const fixedSpec = tryFormatJson(role, editor.getValue());
-    const {
-        editor: { setFolds }
-    } = getState();
-    if (fixedSpec.success) {
-        const foldsPrev = getEditorFolds(editor);
-        const pathPrev = getJsonPathAtLocation(editor);
-        const offsetNew = getJsonLocationAtPath(fixedSpec.text, pathPrev);
-        editor.setValue(fixedSpec.text);
-        const foldsNew = getUpdatedEditorFolds(editor, foldsPrev);
-        const cursorNew = editor.session.doc.indexToPosition(
-            offsetNew.offset + (offsetNew.length || 0),
-            0
-        );
-        toggleEditorFolds(editor, foldsNew);
-        const folds = getEditorFolds(editor);
-        editor.clearSelection();
-        editor.moveCursorTo(cursorNew.row, cursorNew.column);
-        setFolds({ role, folds });
-    }
-};
-
-/**
  * Further abstracts the `cleanJsonInputForPersistence` workflow so that calling functions are easier to follow.
  */
-export const getCleanEditorJson = (role: TEditorRole, editor: IAceEditor) =>
-    cleanJsonInputForPersistence(role, editor?.getValue());
+export const getCleanEditorJson = (
+    role: TEditorRole,
+    editor: editor.IStandaloneCodeEditor
+) => cleanJsonInputForPersistence(role, editor?.getValue());
 
 /**
  * Borrowed from vega-editor
@@ -482,8 +431,8 @@ export const getSpecificationParseOptions = (
  * the `isDirty` flag in the store.
  */
 export const hasLiveSpecChanged = (
-    specEditor: IAceEditor,
-    configEditor: IAceEditor
+    specEditor: editor.IStandaloneCodeEditor,
+    configEditor: editor.IStandaloneCodeEditor
 ) => {
     const {
             output: {
@@ -572,12 +521,13 @@ const isVersionedSpec = () => {
  * resets the `isDirty` flag in the store.
  */
 export const persistSpecification = (
-    specEditor: IAceEditor,
-    configEditor: IAceEditor,
+    specEditor: editor.IStandaloneCodeEditor,
+    configEditor: editor.IStandaloneCodeEditor,
     stage = true
 ) => {
     const {
         editor: { stagedConfig, stagedSpec, updateChanges },
+        fieldUsage: { dataset: trackedFieldsCurrent },
         visualSettings: {
             vega: {
                 output: {
@@ -593,6 +543,7 @@ export const persistSpecification = (
     const config =
         (stage ? getCleanEditorJson('Config', configEditor) : stagedConfig) ??
         jsonConfig;
+    updateFieldTracking(spec, trackedFieldsCurrent);
     updateChanges({ role: 'Spec', text: spec });
     updateChanges({ role: 'Config', text: config });
     updateObjectProperties(
@@ -606,24 +557,4 @@ export const persistSpecification = (
             }
         ])
     );
-};
-
-const tryFormatJson = (operation: TEditorRole, input: string): IFixStatus => {
-    try {
-        return {
-            success: true,
-            text: getTextFormattedAsJsonC(
-                input,
-                PROPERTIES_DEFAULTS.editor.tabSize
-            )
-        };
-    } catch (e) {
-        return {
-            success: false,
-            text: input,
-            error: `${getI18nValue(
-                operation === 'Spec' ? 'Editor_Role_Spec' : 'Editor_Role_Config'
-            )} ${getI18nValue('Fix_Failed_Item')}`
-        };
-    }
 };

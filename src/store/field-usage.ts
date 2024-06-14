@@ -3,17 +3,22 @@ import { StateCreator } from 'zustand';
 
 import { TStoreState } from '.';
 import {
+    IFieldUsageSliceApplyTrackingChanges,
     IFieldUsageSliceApplyFieldMapping,
     IFieldUsageSliceSetFieldAssignment,
     IFieldUsageSliceState,
-    UsermetaDatasetField
+    UsermetaDatasetField,
+    IFieldUsageSliceApplyTokenizationChanges,
+    RemapState
 } from '@deneb-viz/core-dependencies';
 import {
     areAllRemapDataRequirementsMet,
     getRemapEligibleFields,
-    getTokenizedSpec
+    isMappingDialogRequired
 } from '@deneb-viz/json-processing';
 import { ModalDialogRole } from '../features/modal-dialog/types';
+import { getOnboardingDialog } from '../features/modal-dialog';
+import { isExportSpecCommandEnabled } from '../features/commands';
 
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IFieldUsageSliceState>{
@@ -34,6 +39,18 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                     (state) => handleApplyFieldMapping(state, payload),
                     false,
                     'fieldUsage.applyFieldMapping'
+                ),
+            applyTokenizationChanges: (payload) =>
+                set(
+                    (state) => handleApplyTokenizationChanges(state, payload),
+                    false,
+                    'fieldUsage.applyTokenizationChanges'
+                ),
+            applyTrackingChanges: (payload) =>
+                set(
+                    (state) => handleApplyTrackingChanges(state, payload),
+                    false,
+                    'fieldUsage.applyTrackingChanges'
                 ),
             setFieldAssignment: (payload) =>
                 set(
@@ -59,11 +76,6 @@ const handleApplyFieldMapping = (
     state: TStoreState,
     payload: IFieldUsageSliceApplyFieldMapping
 ): Partial<TStoreState> => {
-    const tokenizedSpec = getTokenizedSpec({
-        textSpec: payload.jsonSpec,
-        trackedFields: state.fieldUsage.dataset,
-        isRemap: true
-    });
     const remapFields = getRemapEligibleFields(payload.dataset);
     const {
         remapAllDependenciesAssigned = false,
@@ -73,7 +85,6 @@ const handleApplyFieldMapping = (
         remapFields,
         drilldownProperties: payload.drilldown
     });
-    const modalDialogRole: ModalDialogRole = 'None';
     return {
         fieldUsage: {
             ...state.fieldUsage,
@@ -83,10 +94,76 @@ const handleApplyFieldMapping = (
             remapFields,
             remapAllDependenciesAssigned,
             remapAllFieldsAssigned,
-            remapDrilldownAssigned,
-            tokenizedSpec
+            remapDrilldownAssigned
         },
-        interface: { ...state.interface, modalDialogRole }
+        interface: {
+            ...state.interface
+        }
+    };
+};
+
+const handleApplyTokenizationChanges = (
+    state: TStoreState,
+    payload: IFieldUsageSliceApplyTokenizationChanges
+): Partial<TStoreState> => {
+    return {
+        fieldUsage: {
+            ...state.fieldUsage,
+            tokenizedSpec: payload.tokenizedSpec
+        },
+        interface: { ...state.interface, isTokenizingSpec: false }
+    };
+};
+
+const handleApplyTrackingChanges = (
+    state: TStoreState,
+    payload: IFieldUsageSliceApplyTrackingChanges
+): Partial<TStoreState> => {
+    const { remapFields, trackedDrilldown, trackedFields } = payload;
+    const {
+        remapAllDependenciesAssigned,
+        remapAllFieldsAssigned,
+        remapDrilldownAssigned
+    } = areAllRemapDataRequirementsMet({
+        remapFields,
+        drilldownProperties: trackedDrilldown
+    });
+    const modalDialogRole: ModalDialogRole =
+        isMappingDialogRequired({
+            trackedFields,
+            drilldownProperties: trackedDrilldown
+        }) ||
+        (state.interface.modalDialogRole === 'Remap' &&
+            state.interface.remapState !== RemapState.Complete)
+            ? 'Remap'
+            : getOnboardingDialog(
+                  state.visualSettings,
+                  state.interface.mode,
+                  state.interface.modalDialogRole
+              );
+    return {
+        commands: {
+            ...state.commands,
+            exportSpecification: isExportSpecCommandEnabled({
+                editorIsDirty: state.editor.isDirty,
+                interfaceMode: state.interface.mode,
+                specification: state.specification
+            })
+        },
+        fieldUsage: {
+            ...state.fieldUsage,
+            dataset: trackedFields,
+            drilldown: trackedDrilldown,
+            remapFields,
+            remapAllDependenciesAssigned,
+            remapAllFieldsAssigned,
+            remapDrilldownAssigned
+        },
+        interface: {
+            ...state.interface,
+            isTrackingFields: false,
+            modalDialogRole
+        }
     };
 };
 

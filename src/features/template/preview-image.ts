@@ -3,7 +3,11 @@ import { TEMPLATE_PREVIEW_IMAGE_MAX_SIZE } from '../../../config';
 import { getState } from '../../store';
 import { VegaViewServices } from '../vega-extensibility';
 
-import { utils } from '@deneb-viz/core-dependencies';
+import {
+    getBase64DataUri,
+    getBase64ImagePngBlank,
+    getBase64MimeType
+} from '@deneb-viz/core-dependencies';
 
 /**
  * Encoding method used for preview images.
@@ -21,14 +25,14 @@ export const dispatchPreviewImage = (includePreviewImage: boolean) => {
     const img = new Image();
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    let previewImageBase64PNG = utils.getBase64ImagePngBlank();
+    let previewImageBase64PNG = getBase64ImagePngBlank();
     img.onload = () => {
         if (includePreviewImage) {
             canvas.height = img.height;
             canvas.width = img.width;
             ctx.drawImage(img, 0, 0);
             previewImageBase64PNG = canvas.toDataURL(
-                utils.getBase64MimeType(IMAGE_TYPE)
+                getBase64MimeType(IMAGE_TYPE)
             );
         }
         setPreviewImage({
@@ -46,7 +50,7 @@ export const dispatchPreviewImage = (includePreviewImage: boolean) => {
  * encoded image.
  */
 export const getCombinedBase64ImageWithMime = (base64: string) =>
-    `${utils.getBase64DataUri('png')}${base64?.trim() ?? ''}`;
+    `${getBase64DataUri('png')}${base64?.trim() ?? ''}`;
 
 /**
  * For the visual viewport dimensions, calculate the correct scaling to use for preview

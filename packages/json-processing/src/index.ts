@@ -1,24 +1,18 @@
 // istanbul ignore file
 export {
     areAllRemapDataRequirementsMet,
-    getFieldsInUseFromSpecification,
     getRemapEligibleFields,
-    getRemappedSpecification,
-    getTokenizedSpec,
     isMappingDialogRequired
 } from './field-tracking';
 export {
     getJsoncNodeValue,
     getJsoncStringAsObject,
     getJsoncTree,
-    getJsonLanguageService,
-    getJsonLocationAtPath,
-    getJsonTextDocument,
     getModifiedJsoncByPath,
     getParsedJsonWithResult,
     getTextFormattedAsJsonC
 } from './processing';
-export { areAllCreateDataRequirementsMet, getDatasetFieldsInclusive } from './template-dataset';
+export { areAllCreateDataRequirementsMet } from './template-dataset';
 export {
     getExportTemplate,
     getNewCreateFromTemplateSliceProperties,
@@ -32,7 +26,6 @@ export {
 } from './template-usermeta';
 export {
     getFriendlyValidationErrors,
-    getJsonDocumentValidationResults,
     getProviderSchema,
     getProviderValidator
 } from './validation';

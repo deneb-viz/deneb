@@ -25,12 +25,26 @@ import {
     setFocusToActiveEditor,
     useJsonEditorContext
 } from '../../json-editor';
+import {
+    RemapState,
+    TemplateExportProcessingState
+} from '@deneb-viz/core-dependencies';
 
 export const ModalDialog: React.FC = () => {
-    const { modalDialogRole, clearMigrationDialog, setModalDialogRole } = store(
+    const {
+        exportProcessingState,
+        modalDialogRole,
+        remapState,
+        clearMigrationDialog,
+        setExportProcessingState,
+        setModalDialogRole
+    } = store(
         (state) => ({
+            exportProcessingState: state.interface.exportProcessingState,
             modalDialogRole: state.interface.modalDialogRole,
+            remapState: state.interface.remapState,
             clearMigrationDialog: state.migration.clearMigrationDialog,
+            setExportProcessingState: state.interface.setExportProcessingState,
             setModalDialogRole: state.interface.setModalDialogRole
         }),
         shallow
@@ -60,21 +74,38 @@ export const ModalDialog: React.FC = () => {
         if (modalDialogRole === 'Create') {
             closeCreateDialog();
         }
+        if (modalDialogRole === 'Export') {
+            setExportProcessingState(TemplateExportProcessingState.None);
+        }
         setModalDialogRole('None');
         setFocusToActiveEditor(editorRefs);
     };
+    const shouldPreventClose = useMemo(
+        () =>
+            (modalDialogRole === 'Remap' && remapState !== RemapState.None) ||
+            (modalDialogRole === 'Export' &&
+                exportProcessingState !== TemplateExportProcessingState.None),
+        [modalDialogRole, remapState]
+    );
+    const dialogType: DialogProps['modalType'] = shouldPreventClose
+        ? 'alert'
+        : 'modal';
     const onOpenChange: DialogProps['onOpenChange'] = useCallback(
         (event, data) => {
-            if (!data.open) {
+            if (!data.open && !shouldPreventClose) {
                 onClose();
             }
             event.stopPropagation();
         },
-        []
+        [modalDialogRole]
     );
     logRender('ModalDialog', { isOpen, modalDialogRole });
     return (
-        <Dialog open={isOpen} onOpenChange={onOpenChange}>
+        <Dialog
+            open={isOpen}
+            onOpenChange={onOpenChange}
+            modalType={dialogType}
+        >
             <DialogSurface className={dialogSurfaceClassName}>
                 <DialogBody className={classes.dialogBody}>
                     <DialogTitle>{titleLabel}</DialogTitle>
@@ -85,7 +116,11 @@ export const ModalDialog: React.FC = () => {
                     </DialogContent>
                     <DialogActions>
                         {getDialogPrimaryButton(modalDialogRole)}
-                        <Button appearance='secondary' onClick={onClose}>
+                        <Button
+                            appearance='secondary'
+                            onClick={onClose}
+                            disabled={shouldPreventClose}
+                        >
                             {closeLabel}
                         </Button>
                     </DialogActions>

@@ -15,7 +15,6 @@ import {
     resolveHighlightStatus
 } from './dataView';
 import {
-    getDatasetFieldsInclusive,
     getDatasetFieldEntries,
     getDatasetFields,
     getEncodedFieldName
@@ -44,7 +43,10 @@ import {
 import { logError, logTimeEnd, logTimeStart } from '../../features/logging';
 import { getHashValue } from '../../utils';
 import { getVisualSelectionManager } from '../../features/visual-host';
-import { IDataset } from '@deneb-viz/core-dependencies';
+import {
+    IDataset,
+    getDatasetFieldsInclusive
+} from '@deneb-viz/core-dependencies';
 
 /**
  * For supplied data view field metadata, produce a suitable object

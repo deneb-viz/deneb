@@ -17,6 +17,18 @@ export type GetProviderValidatorOptions = {
 export type JsonContentType = 'Spec' | 'Config';
 
 /**
+ * Used to track the state of the JSON remapping process.
+ */
+export enum RemapState {
+    None = 0,
+    Tokenizing = 10,
+    Replacing = 20,
+    Tracking = 30,
+    UpdatingEditor = 40,
+    Complete = 100
+}
+
+/**
  * Valid provider types for JSON schemas used in Deneb.
  */
 export type SchemaProvider = 'vega' | 'vegaLite' | 'denebUserMeta';
@@ -43,6 +55,15 @@ export type SchemaProviderReference = {
 export interface IJsonParseResult {
     result: object | null;
     errors: string[];
+}
+
+/**
+ * Used to track the state of the template export process.
+ */
+export enum TemplateExportProcessingState {
+    None = 0,
+    Tokenizing = 10,
+    Complete = 100
 }
 
 /**

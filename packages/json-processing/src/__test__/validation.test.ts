@@ -1,13 +1,11 @@
 import { SpecProvider } from '@deneb-viz/core-dependencies';
 import {
     getFriendlyValidationErrors,
-    getJsonDocumentValidationResults,
     getProviderSchema,
     getProviderValidator,
     getSchemaWithMarkdownProps
 } from '../validation';
 import * as vegaSchema from 'vega/build/vega-schema.json';
-import { Diagnostic } from 'vscode-json-languageservice';
 import { ErrorObject } from 'ajv';
 
 describe('getProviderSchema', () => {
@@ -61,36 +59,6 @@ describe('getProviderValidator', () => {
     });
 });
 
-describe('getJsonDocumentValidationResults', () => {
-    it('should have results == 0 for an valid Vega-Lite specification', () => {
-        const provider = 'vegaLite' as SpecProvider;
-        const contentType = 'Spec';
-        const content = '{"data": {"values": []}, "mark": "bar"}';
-        const result: Diagnostic[] = [];
-        getJsonDocumentValidationResults(provider, contentType, content).then(
-            (res) => {
-                res.forEach((diagnostic) => {
-                    result.push(diagnostic);
-                });
-                expect(result.length).toEqual(0);
-            }
-        );
-    });
-    it('should have results > 0 for an invalid Vega-Lite specification', () => {
-        const provider = 'vegaLite' as SpecProvider;
-        const contentType = 'Spec';
-        const content = '{"mark": "invalid"}';
-        const result: Diagnostic[] = [];
-        getJsonDocumentValidationResults(provider, contentType, content).then(
-            (res) => {
-                res.forEach((diagnostic) => {
-                    result.push(diagnostic);
-                });
-                expect(result.length).toBeGreaterThan(0);
-            }
-        );
-    });
-});
 describe('getFriendlyValidationErrors', () => {
     it('should return an array of friendly validation errors', () => {
         const errors: ErrorObject[] = [

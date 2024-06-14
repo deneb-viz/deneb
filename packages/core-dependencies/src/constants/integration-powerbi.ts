@@ -105,7 +105,11 @@ export const PROPERTIES_DEFAULTS = {
         /**
          * Interval in milliseconds to debounce editor changes.
          */
-        debounceInterval: 200,
+        debouncePeriod: {
+            default: 700,
+            min: 0,
+            max: 1000
+        },
         /**
          * Font size for the JSON editor.
          */
@@ -114,10 +118,6 @@ export const PROPERTIES_DEFAULTS = {
             min: 8,
             max: 30
         },
-        /**
-         * Whether to perform local completion in the JSON editor.
-         */
-        localCompletion: false,
         /**
          * Maximum line length for the JSON editor.
          */
@@ -130,10 +130,6 @@ export const PROPERTIES_DEFAULTS = {
          * Show scrollbars in advanced editor preview area.
          */
         previewScrollbars: false,
-        /**
-         * Show the gutter in the JSON editor.
-         */
-        showGutter: true,
         /**
          * Show line numbers in the JSON editor.
          */

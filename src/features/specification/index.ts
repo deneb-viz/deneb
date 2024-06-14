@@ -1,5 +1,4 @@
 export {
-    fixAndFormatSpecification,
     getCleanEditorJson,
     getParsedSpec,
     hasLiveSpecChanged,

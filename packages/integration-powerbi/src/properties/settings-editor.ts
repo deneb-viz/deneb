@@ -13,18 +13,7 @@ export class SettingsEditor extends formattingSettings.CompositeCard {
     json = new SettingsEditorGroupJson(Object());
     completion = new SettingsEditorGroupCompletion(Object());
     debugPane = new SettingsEditorGroupDebugPane(Object());
-    groups = [
-        this.interface,
-        this.preview,
-        this.json,
-        this.completion,
-        this.debugPane
-    ];
-    onPreProcess(): void {
-        if (!this.json.showGutter.value) {
-            this.json.showLineNumbers.visible = false;
-        }
-    }
+    groups = [this.interface, this.preview, this.json, this.debugPane];
 }
 
 class SettingsEditorGroupInterface extends formattingSettings.Group {
@@ -99,37 +88,42 @@ class SettingsEditorGroupJson extends formattingSettings.Group {
         descriptionKey: 'Objects_Editor_WordWrap_Description',
         value: PROPERTIES_DEFAULTS.editor.wordWrap
     });
-    showGutter = new formattingSettings.ToggleSwitch({
-        name: 'showGutter',
-        displayNameKey: 'Objects_Editor_ShowGutter',
-        descriptionKey: 'Objects_Editor_ShowGutter_Description',
-        value: PROPERTIES_DEFAULTS.editor.showGutter
-    });
     showLineNumbers = new formattingSettings.ToggleSwitch({
         name: 'showLineNumbers',
         displayNameKey: 'Objects_Editor_ShowLineNumbers',
         descriptionKey: 'Objects_Editor_ShowLineNumbers_Description',
         value: PROPERTIES_DEFAULTS.editor.showLineNumbers
     });
+    debouncePeriod = new formattingSettings.NumUpDown({
+        name: 'debouncePeriod',
+        displayNameKey: 'Objects_Editor_DebouncePeriod',
+        descriptionKey: 'Objects_Editor_DebouncePeriod_Description',
+        options: {
+            minValue: {
+                value: PROPERTIES_DEFAULTS.editor.debouncePeriod.min,
+                type: 0
+            },
+            maxValue: {
+                value: PROPERTIES_DEFAULTS.editor.debouncePeriod.max,
+                type: 1
+            },
+            unitSymbol: PROPERTIES_DEFAULTS.unitSymbols.milliseconds
+        },
+        value: PROPERTIES_DEFAULTS.editor.debouncePeriod.default
+    });
     slices = [
         this.position,
         this.fontSize,
         this.wordWrap,
-        this.showGutter,
-        this.showLineNumbers
+        this.showLineNumbers,
+        this.debouncePeriod
     ];
 }
 
 class SettingsEditorGroupCompletion extends formattingSettings.Group {
     name = 'completion';
     displayNameKey = 'Objects_Editor_Group_Completion';
-    localCompletion = new formattingSettings.ToggleSwitch({
-        name: 'localCompletion',
-        displayNameKey: 'Objects_Editor_LocalCompletion',
-        descriptionKey: 'Objects_Editor_LocalCompletion_Description',
-        value: PROPERTIES_DEFAULTS.editor.localCompletion
-    });
-    slices = [this.localCompletion];
+    slices = [];
 }
 
 class SettingsEditorGroupDebugPane extends formattingSettings.Group {

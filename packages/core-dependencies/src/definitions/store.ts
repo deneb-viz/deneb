@@ -131,7 +131,29 @@ export interface IFieldUsageSliceProperties {
     remapDrilldownAssigned: boolean;
     tokenizedSpec: string;
     applyFieldMapping: (payload: IFieldUsageSliceApplyFieldMapping) => void;
+    applyTokenizationChanges: (
+        payload: IFieldUsageSliceApplyTokenizationChanges
+    ) => void;
+    applyTrackingChanges: (
+        payload: IFieldUsageSliceApplyTrackingChanges
+    ) => void;
     setFieldAssignment: (payload: IFieldUsageSliceSetFieldAssignment) => void;
+}
+
+/**
+ * Represents the payload for tokenization changes.
+ */
+export interface IFieldUsageSliceApplyTokenizationChanges {
+    tokenizedSpec: string;
+}
+
+/**
+ * Represents the payload for tracking changes.
+ */
+export interface IFieldUsageSliceApplyTrackingChanges {
+    trackedFields: TrackedFields;
+    trackedDrilldown: TrackedDrilldownProperties;
+    remapFields: UsermetaDatasetField[];
 }
 
 /**
@@ -140,7 +162,6 @@ export interface IFieldUsageSliceProperties {
 export interface IFieldUsageSliceApplyFieldMapping {
     dataset: TrackedFields;
     drilldown: TrackedDrilldownProperties;
-    jsonSpec: string;
 }
 
 /**
