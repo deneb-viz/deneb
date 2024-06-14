@@ -18,8 +18,8 @@ import { logTimeEnd, logTimeStart } from '../../features/logging';
 import {
     DATASET_FIELD_FORMAT_STRING_SUFFIX,
     DATASET_FIELD_FORMATED_VALUE_SUFFIX,
-    UsermetaDatasetField,
-    dataset
+    getDatasetFieldsInclusive,
+    UsermetaDatasetField
 } from '@deneb-viz/core-dependencies';
 import { getResolvedVisualMetadataToDatasetField } from '@deneb-viz/json-processing';
 
@@ -100,7 +100,7 @@ export const getDatasetFields = (
  */
 export const getDatasetFieldByTemplateKey = (queryName: string) =>
     find(
-        dataset.getDatasetFieldsInclusive(getDataset().fields),
+        getDatasetFieldsInclusive(getDataset().fields),
         (f) => f?.templateMetadata?.key === queryName
     ) || null;
 
@@ -111,7 +111,7 @@ export const getDatasetTemplateFields = (
     metadata: IVisualDatasetFields
 ): UsermetaDatasetField[] =>
     reduce(
-        dataset.getDatasetFieldsInclusive(metadata),
+        getDatasetFieldsInclusive(metadata),
         (result, value) => result.concat(value.templateMetadata),
         <UsermetaDatasetField[]>[]
     );

@@ -1,7 +1,8 @@
 import {
     IDenebTokenizationRequestPayload,
     TrackedFields,
-    utils
+    stringToUint8Array,
+    uint8ArrayToString
 } from '@deneb-viz/core-dependencies';
 import { getPowerBiTokenPatternsReplacement } from '@deneb-viz/integration-powerbi';
 import { getTokenizedSpec } from '../tokenizer';
@@ -169,15 +170,13 @@ describe('getTokenizedSpec', () => {
             undefined
         );
         const options: IDenebTokenizationRequestPayload = {
-            spec: utils.stringToUint8Array(specification),
+            spec: stringToUint8Array(specification),
             trackedFields: TRACKED_FIELDS_REMAP_PENDING,
             supplementaryReplacers,
             isRemap: true
         };
         const result = getTokenizedSpec(options);
-        expect(utils.uint8ArrayToString(result.spec)).toEqual(
-            expectedSpecification
-        );
+        expect(uint8ArrayToString(result.spec)).toEqual(expectedSpecification);
     });
 
     it('should replace placeholders with values for non-remap spec', () => {
@@ -186,23 +185,21 @@ describe('getTokenizedSpec', () => {
             undefined
         );
         const options: IDenebTokenizationRequestPayload = {
-            spec: utils.stringToUint8Array(specification),
+            spec: stringToUint8Array(specification),
             trackedFields: TRACKED_FIELDS_NO_REMAP_PENDING,
             supplementaryReplacers,
             isRemap: false
         };
         const result = getTokenizedSpec(options);
-        expect(utils.uint8ArrayToString(result.spec)).toEqual(
-            expectedSpecification
-        );
+        expect(uint8ArrayToString(result.spec)).toEqual(expectedSpecification);
     });
     it('should handle empty text spec (tracked fields will be empty also)', () => {
         const options = {
-            spec: utils.stringToUint8Array('{}'),
+            spec: stringToUint8Array('{}'),
             trackedFields: {}
         } as IDenebTokenizationRequestPayload;
         const expectedSpec = '{}';
         const result = getTokenizedSpec(options);
-        expect(utils.uint8ArrayToString(result.spec)).toEqual(expectedSpec);
+        expect(uint8ArrayToString(result.spec)).toEqual(expectedSpec);
     });
 });

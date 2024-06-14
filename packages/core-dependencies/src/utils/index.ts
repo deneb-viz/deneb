@@ -4,6 +4,7 @@ export {
     getBase64MimeType,
     isBase64Image
 } from './base64';
+export * from './object';
 export * from './type-conversion';
 export * from './type-guards';
 

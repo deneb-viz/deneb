@@ -4,8 +4,9 @@ import {
     JSON_FIELD_TRACKING_METADATA_PLACEHOLDER,
     JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER,
     TokenPatternReplacer,
-    dataset,
-    utils
+    getEscapedReplacerPattern,
+    stringToUint8Array,
+    uint8ArrayToString
 } from '@deneb-viz/core-dependencies';
 import {
     Node,
@@ -24,7 +25,7 @@ import forEach from 'lodash/forEach';
 export const getTokenizedSpec = (
     options: IDenebTokenizationRequestPayload
 ): IDenebTokenizationResponsePayload => {
-    const spec = utils.uint8ArrayToString(options.spec);
+    const spec = uint8ArrayToString(options.spec);
     const { trackedFields, isRemap = false, supplementaryReplacers } = options;
     let updatedSpec = spec;
     forEach(trackedFields, (v) => {
@@ -50,7 +51,7 @@ export const getTokenizedSpec = (
             updatedSpec = applyEdits(updatedSpec, editResult);
         });
     });
-    return { spec: utils.stringToUint8Array(updatedSpec) };
+    return { spec: stringToUint8Array(updatedSpec) };
 };
 
 /**
@@ -63,7 +64,7 @@ const getTokenPatternsReplacement = (
     placeholder: string,
     supplementaryReplacers: TokenPatternReplacer[]
 ) => {
-    const namePattern = dataset.getEscapedReplacerPattern(fieldName);
+    const namePattern = getEscapedReplacerPattern(fieldName);
     const replacers = supplementaryReplacers.map((r) => ({
         pattern: r.pattern.replaceAll(
             JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER,

@@ -10,7 +10,8 @@ import {
 import {
     IDenebRemapRequestPayload,
     IDenebRemapResponsePayload,
-    utils
+    stringToUint8Array,
+    uint8ArrayToString
 } from '@deneb-viz/core-dependencies';
 
 /**
@@ -20,7 +21,7 @@ import {
 export const getRemappedSpecification = (
     options: IDenebRemapRequestPayload
 ): IDenebRemapResponsePayload => {
-    let spec = utils.uint8ArrayToString(options.spec);
+    let spec = uint8ArrayToString(options.spec);
     const { remapFields, trackedFields } = options;
     forEach(remapFields, (field) => {
         const source = trackedFields[field.key];
@@ -36,5 +37,5 @@ export const getRemappedSpecification = (
             spec = applyEdits(spec, edit);
         });
     });
-    return { spec: utils.stringToUint8Array(spec) };
+    return { spec: stringToUint8Array(spec) };
 };

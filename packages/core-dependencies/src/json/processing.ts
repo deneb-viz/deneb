@@ -4,5 +4,6 @@
  * - Decimal values are floored to the nearest integer.
  * - Negative values are converted to positive values.
  */
-export const getJsonPlaceholderKey = (i: number) =>
-    `__${Math.floor(Math.abs(i))}__`;
+export function getJsonPlaceholderKey(i: number) {
+    return `__${Math.floor(Math.abs(i))}__`;
+}

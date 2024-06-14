@@ -9,7 +9,11 @@ import {
     IWorkerDatasetViewerResponse,
     IWorkerDatasetViewerTranslations,
     WorkerDatasetViewerValueType,
-    utils
+    isDate,
+    isNumber,
+    isObject,
+    isBoolean,
+    isString
 } from '@deneb-viz/core-dependencies';
 
 /**
@@ -150,15 +154,15 @@ const getValueType = (
     switch (true) {
         case key === datasetKeyName:
             return 'key';
-        case utils.isDate(value):
+        case isDate(value):
             return 'date';
-        case utils.isNumber(value):
+        case isNumber(value):
             return 'number';
-        case utils.isObject(value):
+        case isObject(value):
             return 'object';
-        case utils.isBoolean(value):
+        case isBoolean(value):
             return 'boolean';
-        case utils.isString(value):
+        case isString(value):
             return 'string';
         default:
             return 'invalid';

@@ -2,7 +2,6 @@ import powerbi from 'powerbi-visuals-api';
 
 import omit from 'lodash/omit';
 import {
-    utils,
     SpecProvider,
     UsermetaInformation,
     UsermetaTemplate,
@@ -16,8 +15,10 @@ import {
     DATASET_CORE_ROLE_NAME,
     TrackedFields,
     UsermetaDatasetFieldType,
-    dataset,
-    json
+    getEscapedReplacerPattern,
+    getJsonPlaceholderKey,
+    getNewUuid,
+    getBase64ImagePngBlank
 } from '@deneb-viz/core-dependencies';
 import {
     getJsoncNodeValue,
@@ -104,10 +105,7 @@ export const getExportTemplate = (options: {
 };
 
 const getFieldPattern = (index: number) =>
-    new RegExp(
-        dataset.getEscapedReplacerPattern(json.getJsonPlaceholderKey(index)),
-        'g'
-    );
+    new RegExp(getEscapedReplacerPattern(getJsonPlaceholderKey(index)), 'g');
 
 /**
  * When we initialize a new template for import (or when intializing the store), this provides the default values for
@@ -135,9 +133,9 @@ export const getNewTemplateMetadata = (options: {
     providerVersion: string;
 }): Partial<UsermetaTemplate> => ({
     information: <UsermetaInformation>{
-        uuid: utils.getNewUuid(),
+        uuid: getNewUuid(),
         generated: new Date().toISOString(),
-        previewImageBase64PNG: utils.getBase64ImagePngBlank(),
+        previewImageBase64PNG: getBase64ImagePngBlank(),
         name: '',
         description: '',
         author: ''

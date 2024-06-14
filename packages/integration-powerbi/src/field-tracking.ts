@@ -2,7 +2,7 @@ import {
     JSON_FIELD_TRACKING_METADATA_PLACEHOLDER,
     JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER,
     TokenPatternReplacer,
-    dataset
+    getEscapedReplacerPattern
 } from '@deneb-viz/core-dependencies';
 import { getCrossHighlightRegExpAlternation } from './cross-highlight';
 import { getNumberFormatRegExpAlternation } from './number-formatting';
@@ -15,7 +15,7 @@ import { getNumberFormatRegExpAlternation } from './number-formatting';
 export const getPowerBiTokenPatternsLiteral = (
     fieldName?: string
 ): string[] => {
-    const namePattern = dataset.getEscapedReplacerPattern(
+    const namePattern = getEscapedReplacerPattern(
         fieldName ?? JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER
     );
     return [
@@ -40,7 +40,7 @@ export const getPowerBiTokenPatternsReplacement = (
     fieldName?: string,
     placeholder?: string
 ): TokenPatternReplacer[] => {
-    const namePattern = dataset.getEscapedReplacerPattern(
+    const namePattern = getEscapedReplacerPattern(
         fieldName ?? JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER
     );
     const alternations = [

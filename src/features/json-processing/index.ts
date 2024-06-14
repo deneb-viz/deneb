@@ -10,7 +10,8 @@ import {
     JSON_MAX_PRUNE_DEPTH,
     TrackedFields,
     UsermetaDatasetField,
-    utils
+    stringToUint8Array,
+    uint8ArrayToString
 } from '@deneb-viz/core-dependencies';
 import { doDenebSpecJsonWorkerRequest } from '@deneb-viz/worker-common';
 import {
@@ -55,7 +56,7 @@ export const updateFieldTokenization = async (
     const request: IDenebJsonProcessingWorkerRequest = {
         type: 'tokenization',
         payload: {
-            spec: utils.stringToUint8Array(specification),
+            spec: stringToUint8Array(specification),
             trackedFields: trackedFieldsCurrent,
             supplementaryReplacers: getPowerBiTokenPatternsReplacement(),
             isRemap
@@ -65,7 +66,7 @@ export const updateFieldTokenization = async (
         await doDenebSpecJsonWorkerRequest(request)
     );
     const { spec } = tokenized.payload;
-    applyTokenizationChanges({ tokenizedSpec: utils.uint8ArrayToString(spec) });
+    applyTokenizationChanges({ tokenizedSpec: uint8ArrayToString(spec) });
 };
 
 /**
@@ -85,7 +86,7 @@ export const updateFieldTracking = async (
     const request: IDenebJsonProcessingWorkerRequest = {
         type: 'tracking',
         payload: {
-            spec: utils.stringToUint8Array(specification),
+            spec: stringToUint8Array(specification),
             fields,
             hasDrilldown,
             trackedFieldsCurrent,
@@ -116,7 +117,7 @@ export const getRemappedSpecification = async (
     const request: IDenebJsonProcessingWorkerRequest = {
         type: 'remapping',
         payload: {
-            spec: utils.stringToUint8Array(tokenizedSpecification),
+            spec: stringToUint8Array(tokenizedSpecification),
             remapFields,
             trackedFields
         }
@@ -124,7 +125,7 @@ export const getRemappedSpecification = async (
     const remapped = <IDenebRemapResponseMessage>(
         await doDenebSpecJsonWorkerRequest(request)
     );
-    return utils.uint8ArrayToString(remapped.payload.spec);
+    return uint8ArrayToString(remapped.payload.spec);
 };
 
 /**

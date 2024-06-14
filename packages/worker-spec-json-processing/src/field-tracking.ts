@@ -8,9 +8,12 @@ import {
     TrackedFieldProperties,
     TrackedFields,
     UsermetaDatasetField,
-    dataset,
-    json,
-    utils
+    getDatasetFieldsInclusive,
+    getEscapedReplacerPattern,
+    getJsonPlaceholderKey,
+    isBase64Image,
+    isString,
+    uint8ArrayToString
 } from '@deneb-viz/core-dependencies';
 import { JSONPath, visit } from 'jsonc-parser';
 import { Dictionary } from 'lodash';
@@ -129,7 +132,7 @@ const getTokenPatternsLiteral = (
     fieldName: string,
     supplementaryPatterns: string[]
 ) => {
-    const namePattern = dataset.getEscapedReplacerPattern(fieldName);
+    const namePattern = getEscapedReplacerPattern(fieldName);
     const replacers = supplementaryPatterns.map((p) =>
         p.replaceAll(JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER, namePattern)
     );
@@ -165,7 +168,7 @@ const getTrackedFieldMapExisting = (
 export const getTrackingDataFromSpecification = (
     options: IDenebTrackingRequestPayload
 ): IDenebTrackingResponsePayload => {
-    const spec = utils.uint8ArrayToString(options.spec);
+    const spec = uint8ArrayToString(options.spec);
     const {
         hasDrilldown,
         fields,
@@ -173,7 +176,9 @@ export const getTrackingDataFromSpecification = (
         reset,
         supplementaryPatterns
     } = options;
-    const datasetFields = dataset.getDatasetFieldsInclusive(fields);
+    const datasetFields = <Dictionary<IDatasetField>>(
+        getDatasetFieldsInclusive(fields)
+    );
     const trackedFields: TrackedFields = {};
     const trackedDrilldown: TrackedDrilldownProperties = {
         isCurrent: hasDrilldown,
@@ -225,7 +230,7 @@ export const getTrackingDataFromSpecification = (
                     f.templateMetadataOriginal as UsermetaDatasetField;
                 const { key } = templateMetadata;
                 const tracking: TrackedFieldProperties = trackedFields[key] || {
-                    placeholder: json.getJsonPlaceholderKey(fieldIndex),
+                    placeholder: getJsonPlaceholderKey(fieldIndex),
                     paths: [],
                     isInDataset: f.isCurrent,
                     isInSpecification: false,
@@ -335,7 +340,7 @@ export const isExpressionField = (detail: string) => {
  * methods validates that the literal is worth checking further.
  */
 const isLiteralEligibleForTesting = (value: string) =>
-    utils.isString(value) && !utils.isBase64Image(value) && value?.length > 0;
+    isString(value) && !isBase64Image(value) && value?.length > 0;
 
 /**
  * For previous and current field candidate maps, get a merged object that should be used for testing against the
