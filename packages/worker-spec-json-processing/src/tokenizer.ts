@@ -4,7 +4,6 @@ import {
     JSON_FIELD_TRACKING_METADATA_PLACEHOLDER,
     JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER,
     TokenPatternReplacer,
-    TrackedFieldProperties,
     getEscapedReplacerPattern,
     stringToUint8Array,
     uint8ArrayToString
@@ -28,8 +27,7 @@ export const getTokenizedSpec = (
     const spec = uint8ArrayToString(options.spec);
     const { trackedFields, isRemap = false, supplementaryReplacers } = options;
     let updatedSpec = spec;
-    const fields = Object.keys(trackedFields);
-    Object.entries(trackedFields).forEach(([f, v]) => {
+    Object.entries(trackedFields).forEach(([, v]) => {
         v.paths.forEach((p) => {
             const tree = <Node>parseTree(updatedSpec);
             const node = <Node>findNodeAtLocation(tree, p);

@@ -2,7 +2,7 @@
  * @privateRemarks
  * This file exists so that we have our own versions of lodash functions, which are tree-shakeable.
  */
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { isObject } from './type-guards';
 
 /**
@@ -13,7 +13,6 @@ type Predicate<T> = (value: T[keyof T], key: keyof T) => boolean;
 /**
  * Deep clone an object.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function merge<T extends Record<string, any>>(
     target: T,
     ...sources: any[]
@@ -43,7 +42,6 @@ export function merge<T extends Record<string, any>>(
 /**
  * Pick the properties of an object that satisfy a predicate.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function pickBy<T extends Record<string, any>>(
     object: T,
     predicate: Predicate<T>

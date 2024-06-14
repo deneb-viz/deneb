@@ -212,7 +212,7 @@ export const getTrackingDataFromSpecification = (
             // Dataset field tracking
             let fieldIndex = 0;
             const isExpression = isExpressionField(value);
-            Object.entries(fieldMapMerged).forEach(([k, f]) => {
+            Object.entries(fieldMapMerged).forEach(([, f]) => {
                 const templateMetadata =
                     f.templateMetadata as UsermetaDatasetField;
                 const templateMetadataOriginal =
