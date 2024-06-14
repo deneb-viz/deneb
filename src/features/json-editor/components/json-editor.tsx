@@ -180,7 +180,7 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
                 persistSpecification(spec.current, config.current);
             }
         }, debouncePeriod),
-        [editorText]
+        [editorText, applyMode]
     );
     return (
         <div style={{ display }} className={classes.editorContainer} {...attr}>
