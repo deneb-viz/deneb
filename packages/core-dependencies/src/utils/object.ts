@@ -11,6 +11,7 @@ type Predicate<T> = (value: T[keyof T], key: keyof T) => boolean;
 /**
  * Pick the properties of an object that satisfy a predicate.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function pickBy<T extends Record<string, any>>(
     object: T,
     predicate: Predicate<T>
