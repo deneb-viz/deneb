@@ -18,6 +18,7 @@ import {
 } from '@deneb-viz/json-processing';
 import { ModalDialogRole } from '../features/modal-dialog/types';
 import { getOnboardingDialog } from '../features/modal-dialog';
+import { isExportSpecCommandEnabled } from '../features/commands';
 
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IFieldUsageSliceState>{
@@ -141,6 +142,14 @@ const handleApplyTrackingChanges = (
                   state.interface.modalDialogRole
               );
     return {
+        commands: {
+            ...state.commands,
+            exportSpecification: isExportSpecCommandEnabled({
+                editorIsDirty: state.editor.isDirty,
+                interfaceMode: state.interface.mode,
+                specification: state.specification
+            })
+        },
         fieldUsage: {
             ...state.fieldUsage,
             dataset: trackedFields,

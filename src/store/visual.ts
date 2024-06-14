@@ -227,10 +227,12 @@ const handleSetVisualUpdate = (
     };
     const exportSpecCommandTest: IExportSpecCommandTestOptions = {
         editorIsDirty:
-            state.editor.stagedSpec !==
-                payload.settings.vega.output.jsonSpec.value ||
-            state.editor.stagedConfig !==
-                payload.settings.vega.output.jsonConfig.value,
+            (state.editor.stagedSpec !== null &&
+                state.editor.stagedSpec !==
+                    payload.settings.vega.output.jsonSpec.value) ||
+            (state.editor.stagedConfig !== null &&
+                state.editor.stagedConfig !==
+                    payload.settings.vega.output.jsonConfig.value),
         specification: spec,
         interfaceMode: mode
     };
