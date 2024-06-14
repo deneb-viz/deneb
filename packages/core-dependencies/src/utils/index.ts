@@ -11,4 +11,6 @@ export * from './type-guards';
 /**
  * Generate a new UUID.
  */
-export const getNewUuid = () => crypto.randomUUID();
+export function getNewUuid() {
+    return crypto.randomUUID();
+}

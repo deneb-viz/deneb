@@ -4,6 +4,7 @@ import {
     JSON_FIELD_TRACKING_METADATA_PLACEHOLDER,
     JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER,
     TokenPatternReplacer,
+    TrackedFieldProperties,
     getEscapedReplacerPattern,
     stringToUint8Array,
     uint8ArrayToString
@@ -16,7 +17,6 @@ import {
     modify,
     parseTree
 } from 'jsonc-parser';
-import forEach from 'lodash/forEach';
 
 /**
  * For the supplied text-based specification, process it as a JSON AST and traverse it, replacing all field names with
@@ -28,8 +28,9 @@ export const getTokenizedSpec = (
     const spec = uint8ArrayToString(options.spec);
     const { trackedFields, isRemap = false, supplementaryReplacers } = options;
     let updatedSpec = spec;
-    forEach(trackedFields, (v) => {
-        forEach(v.paths, (p) => {
+    const fields = Object.keys(trackedFields);
+    Object.entries(trackedFields).forEach(([f, v]) => {
+        v.paths.forEach((p) => {
             const tree = <Node>parseTree(updatedSpec);
             const node = <Node>findNodeAtLocation(tree, p);
             let value = getNodeValue(node);
@@ -41,7 +42,7 @@ export const getTokenizedSpec = (
                 v.placeholder,
                 supplementaryReplacers
             );
-            forEach(replacers, (r) => {
+            replacers.forEach((r) => {
                 value = value.replaceAll(
                     new RegExp(r.pattern, 'g'),
                     r.replacer

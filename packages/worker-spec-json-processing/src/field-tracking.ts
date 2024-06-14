@@ -13,15 +13,11 @@ import {
     getJsonPlaceholderKey,
     isBase64Image,
     isString,
+    merge,
     uint8ArrayToString
 } from '@deneb-viz/core-dependencies';
 import { JSONPath, visit } from 'jsonc-parser';
 import { Dictionary } from 'lodash';
-import forEach from 'lodash/forEach';
-import map from 'lodash/map';
-import merge from 'lodash/merge';
-import reduce from 'lodash/reduce';
-import values from 'lodash/values';
 import { parseExpression } from 'vega-expression';
 
 /**
@@ -66,8 +62,7 @@ const doesLiteralContainField = (
     if (!isLiteralEligibleForTesting(literal)) return false;
     let found = false;
     if (literal === fieldName) return true;
-    forEach(
-        getTokenPatternsLiteral(fieldName, supplementaryPatterns),
+    getTokenPatternsLiteral(fieldName, supplementaryPatterns).forEach(
         (pattern) => {
             const re = new RegExp(pattern, 'g');
             if (re.test(literal)) {
@@ -105,23 +100,19 @@ const getTrackedFieldMapCurrent = (
     trackedFields: TrackedFields,
     reset = false
 ): TrackedFieldCandidates =>
-    reduce(
-        values(datasetFields),
-        (acc, v) => {
-            const templateMetadata = v.templateMetadata as UsermetaDatasetField;
-            acc[templateMetadata.key] = {
-                isCurrent: true,
-                templateMetadata: v.templateMetadata,
-                templateMetadataOriginal: getTemplateMetadataOriginal(
-                    trackedFields,
-                    templateMetadata,
-                    reset
-                )
-            };
-            return acc;
-        },
-        <TrackedFieldCandidates>{}
-    );
+    Object.values(datasetFields).reduce((acc, v) => {
+        const templateMetadata = v.templateMetadata as UsermetaDatasetField;
+        acc[templateMetadata.key] = {
+            isCurrent: true,
+            templateMetadata: v.templateMetadata,
+            templateMetadataOriginal: getTemplateMetadataOriginal(
+                trackedFields,
+                templateMetadata,
+                reset
+            )
+        };
+        return acc;
+    }, <TrackedFieldCandidates>{});
 
 /**
  * For a literal field name (i.e., an extracted property value from a JSON or Vega expression AST), returns an array of
@@ -147,22 +138,20 @@ const getTokenPatternsLiteral = (
 const getTrackedFieldMapExisting = (
     trackedFields: TrackedFields
 ): TrackedFieldCandidates => {
-    const reduction = values(trackedFields).filter((v) => v.isInSpecification);
-    return reduce(
-        reduction,
-        (acc, v) => {
-            acc[v.templateMetadata.key] = {
-                isCurrent: false,
-                templateMetadata: v.templateMetadata,
-                templateMetadataOriginal: getTemplateMetadataOriginal(
-                    trackedFields,
-                    v.templateMetadata
-                )
-            };
-            return acc;
-        },
-        {} as TrackedFieldCandidates
+    const reduction = Object.values(trackedFields).filter(
+        (v) => v.isInSpecification
     );
+    return reduction.reduce((acc, v) => {
+        acc[v.templateMetadata.key] = {
+            isCurrent: false,
+            templateMetadata: v.templateMetadata,
+            templateMetadataOriginal: getTemplateMetadataOriginal(
+                trackedFields,
+                v.templateMetadata
+            )
+        };
+        return acc;
+    }, {} as TrackedFieldCandidates);
 };
 
 export const getTrackingDataFromSpecification = (
@@ -223,7 +212,7 @@ export const getTrackingDataFromSpecification = (
             // Dataset field tracking
             let fieldIndex = 0;
             const isExpression = isExpressionField(value);
-            map(fieldMapMerged, (f) => {
+            Object.entries(fieldMapMerged).forEach(([k, f]) => {
                 const templateMetadata =
                     f.templateMetadata as UsermetaDatasetField;
                 const templateMetadataOriginal =

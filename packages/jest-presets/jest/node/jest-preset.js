@@ -16,7 +16,7 @@ module.exports = {
             '<rootDir>/../template-usermeta-schema/dist/deneb-template-usermeta.json',
         // Not ideal, mitigates issues with powerbi-visuals-utils-formattingmodel import
         '@deneb-viz/integration-powerbi':
-            '<rootDir>/../integration-powerbi/dist',
+            '<rootDir>/../integration-powerbi/dist/index.cjs',
         '@deneb-viz/(.*)': '<rootDir>/../$1/src'
     },
     preset: 'ts-jest',
