@@ -24,9 +24,9 @@ import {
     TrackedFields,
     UsermetaDatasetField,
     UsermetaTemplate,
-    getBase64ImagePngBlank,
-    getNewUuid
+    getBase64ImagePngBlank
 } from '@deneb-viz/core-dependencies';
+import * as deps from '@deneb-viz/core-dependencies';
 
 const MOCK_BUILD_VERSION = '1.0.0';
 const MOCK_DATE = '2022-01-01T00:00:00.000Z';
@@ -303,7 +303,7 @@ describe('getNewTemplateMetadata', () => {
         providerVersion: MOCK_PROVIDER_VERSION
     };
     beforeEach(() => {
-        jest.fn(getNewUuid).mockReturnValue(MOCK_UUID);
+        jest.spyOn(deps, 'getNewUuid').mockReturnValue(MOCK_UUID);
         jest.spyOn(Date.prototype, 'toISOString').mockReturnValue(MOCK_DATE);
     });
     afterEach(() => {
@@ -315,7 +315,7 @@ describe('getNewTemplateMetadata', () => {
     });
     it('should call utils.getNewUuid to generate a new UUID', () => {
         getNewTemplateMetadata(MOCK_OPTIONS);
-        expect(getNewUuid).toHaveBeenCalled();
+        expect(deps.getNewUuid).toHaveBeenCalled();
     });
     it('should call Date.prototype.toISOString to get the current date and time', () => {
         getNewTemplateMetadata(MOCK_OPTIONS);
