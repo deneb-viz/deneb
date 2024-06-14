@@ -1,4 +1,3 @@
-import forEach from 'lodash/forEach';
 import {
     Node,
     applyEdits,
@@ -23,9 +22,9 @@ export const getRemappedSpecification = (
 ): IDenebRemapResponsePayload => {
     let spec = uint8ArrayToString(options.spec);
     const { remapFields, trackedFields } = options;
-    forEach(remapFields, (field) => {
+    Object.entries(remapFields).forEach(([, field]) => {
         const source = trackedFields[field.key];
-        forEach(source?.paths || [], (p) => {
+        (source?.paths ?? []).forEach((p) => {
             const tree = parseTree(spec) as Node;
             const node = findNodeAtLocation(tree, p) as Node;
             const value = getNodeValue(node);
