@@ -45,16 +45,13 @@
         "@fluentui/react-components": "^9.51.0",
         "@fluentui/react-icons": "^2.0.239",
         "@monaco-editor/react": "^4.6.0",
-        "@types/ace": "^0.0.44",
         "@types/d3": "^7.1.0",
-        "@types/jsoneditor": "^8.6.0",
         "@types/jsum": "^0.1.0",
         "@types/lodash": "^4.14.202",
         "@types/minimist": "^1.2.5",
         "@types/node": "^16.4.12",
         "@types/react": "^17.0.0",
         "@types/react-dom": "^17.0.0",
-        "@types/uuid": "^9.0.7",
         "@typescript-eslint/eslint-plugin": "^6.17.0",
         "@typescript-eslint/parser": "^6.17.0",
         "adm-zip": "^0.5.5",
@@ -90,13 +87,8 @@
         "tsup": "^8.0.2",
         "turbo": "^1.13.3",
         "typescript": "^5.4.5",
-        "uuid": "^9.0.1",
         "vega": "5.29.0",
         "vega-lite": "5.18.1",
-        "vscode-json-languageservice": "^5.3.7",
         "zustand": "^4.5.2"
-    },
-    "overrides": {
-        "vscode-uri": "3.0.7"
     }
 }

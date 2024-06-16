@@ -3,7 +3,6 @@ import { TableColumn, TableProps } from 'react-data-table-component';
 import debounce from 'lodash/debounce';
 import isEqual from 'lodash/isEqual';
 import keys from 'lodash/keys';
-import { v4 as uuidv4 } from 'uuid';
 
 import { useDebugStyles, DATA_TABLE_VALUE_MAX_LENGTH } from '..';
 import { DataTableViewer } from './data-table-viewer';
@@ -28,7 +27,8 @@ import { getHashValue } from '../../../utils';
 import {
     IWorkerDatasetViewerDataTableRow,
     IWorkerDatasetViewerMaxDisplayWidths,
-    IWorkerDatasetViewerMessage
+    IWorkerDatasetViewerMessage,
+    getNewUuid
 } from '@deneb-viz/core-dependencies';
 import { datasetViewerWorker } from '@deneb-viz/worker-common';
 
@@ -83,7 +83,7 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
     useEffect(() => {
         logDebug('DatasetViewer: updating dataset state...');
         if (window.Worker && datasetRaw) {
-            const jobId = uuidv4();
+            const jobId = getNewUuid();
             setDatasetState((datasetState) => ({
                 ...datasetState,
                 jobQueue: [...datasetState.jobQueue, jobId],
