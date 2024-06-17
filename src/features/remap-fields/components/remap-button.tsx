@@ -99,7 +99,8 @@ export const applyRemappedFields = async (
         mappedSpec
     });
     setRemapState(RemapState.Tracking);
-    await updateFieldTracking(mappedSpec, trackedFields);
+    // Make sure that we get the new tracking data, but reset the original (otherwise we'll loop)
+    await updateFieldTracking(mappedSpec, trackedFields, true);
     const {
         fieldUsage: { dataset, drilldown }
     } = getState();
