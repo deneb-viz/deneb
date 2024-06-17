@@ -1,3 +1,4 @@
+export * from './crypto';
 export {
     getBase64DataUri,
     getBase64ImagePngBlank,
@@ -7,10 +8,3 @@ export {
 export * from './object';
 export * from './type-conversion';
 export * from './type-guards';
-
-/**
- * Generate a new UUID.
- */
-export function getNewUuid() {
-    return crypto.randomUUID();
-}
