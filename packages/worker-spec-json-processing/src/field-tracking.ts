@@ -51,7 +51,7 @@ export const doesExpressionContainField = (
 
 /**
  * For a supplied literal from either a JSON AST or a Vega expression AST, check if it contains a field from the visual
- * dataset. This matches on an array of patterns that denote wehter a literal is a field or not - defined by
+ * dataset. This matches on an array of patterns that denote whether a literal is a field or not - defined by
  * {@linkcode getTokenPatternsLiteral}.
  */
 const doesLiteralContainField = (

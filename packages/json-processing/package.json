@@ -59,6 +59,6 @@
         "powerbi-visuals-api": "5.7.0",
         "vega": "5.29.0",
         "vega-lite": "5.18.1",
-        "vscode-json-languageservice": "^5.3.7"
+        "vscode-json-languageservice": "^5.3.11"
     }
 }

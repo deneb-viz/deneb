@@ -1,6 +1,5 @@
 import { StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
-import { v4 as uuidv4 } from 'uuid';
 
 import { TStoreState } from '.';
 import { ModalDialogRole } from '../features/modal-dialog/types';
@@ -9,7 +8,8 @@ import { isMappingDialogRequired } from '@deneb-viz/json-processing';
 import { getOnboardingDialog } from '../features/modal-dialog';
 import {
     RemapState,
-    TemplateExportProcessingState
+    TemplateExportProcessingState,
+    getNewUuid
 } from '@deneb-viz/core-dependencies';
 
 export interface IInterfaceSlice {
@@ -103,7 +103,7 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
             mode: 'Initializing',
             modalDialogRole: 'None',
             remapState: RemapState.None,
-            renderId: uuidv4(),
+            renderId: getNewUuid(),
             generateRenderId: () =>
                 set(
                     (state) => handleGenerateRenderId(state),
@@ -166,7 +166,7 @@ export const createInterfaceSlice: StateCreator<
  * Sets the rejection state for a cross-filtering operation attempt.
  */
 const handleGenerateRenderId = (state: TStoreState): Partial<TStoreState> => ({
-    interface: { ...state.interface, renderId: uuidv4() }
+    interface: { ...state.interface, renderId: getNewUuid() }
 });
 
 const handleSetExportProcessingState = (

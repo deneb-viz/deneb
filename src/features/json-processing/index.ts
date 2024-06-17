@@ -75,7 +75,8 @@ export const updateFieldTokenization = async (
  */
 export const updateFieldTracking = async (
     specification: string,
-    trackedFieldsCurrent: TrackedFields
+    trackedFieldsCurrent: TrackedFields,
+    reset = false
 ) => {
     const {
         dataset: { fields, hasDrilldown },
@@ -90,7 +91,8 @@ export const updateFieldTracking = async (
             fields,
             hasDrilldown,
             trackedFieldsCurrent,
-            supplementaryPatterns: getPowerBiTokenPatternsLiteral()
+            supplementaryPatterns: getPowerBiTokenPatternsLiteral(),
+            reset
         }
     };
     const tracking = <IDenebTrackingResponseMessage>(
