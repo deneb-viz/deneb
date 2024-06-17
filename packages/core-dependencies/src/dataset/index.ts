@@ -1,1 +1,1 @@
-export { getDatasetFieldsInclusive, getEscapedReplacerPattern } from './fields';
+export { getDatasetFieldsInclusive } from './fields';

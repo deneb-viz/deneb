@@ -64,7 +64,7 @@ const doesLiteralContainField = (
     if (literal === fieldName) return true;
     getTokenPatternsLiteral(fieldName, supplementaryPatterns).forEach(
         (pattern) => {
-            const re = new RegExp(pattern, 'g');
+            const re = new RegExp(getEscapedReplacerPattern(pattern), 'g');
             if (re.test(literal)) {
                 found = true;
             }
