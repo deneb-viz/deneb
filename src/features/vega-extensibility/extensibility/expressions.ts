@@ -18,7 +18,8 @@ import { handleCrossFilterEvent } from '../../interactivity/cross-filter';
 import { logDebug, logWarning } from '../../logging';
 import {
     CROSS_FILTER_LIMITS,
-    PROPERTIES_DEFAULTS
+    PROPERTIES_DEFAULTS,
+    isObject
 } from '@deneb-viz/core-dependencies';
 
 /**
@@ -41,6 +42,7 @@ export const registerCustomExpressions = () =>
 const expressionsRegistry = (): ICustomExpression[] => [
     { name: 'pbiColor', method: pbiColor },
     { name: 'pbiFormat', method: pbiFormat },
+    { name: 'pbiFormatAutoUnit', method: pbiFormatAutoUnit },
     { name: 'pbiPatternSVG', method: pbiPatternSvg },
     { name: 'pbiCrossFilterClear', method: pbiCrossFilterClear },
     { name: 'pbiCrossFilterApply', method: pbiCrossFilterApply }
@@ -62,9 +64,43 @@ const pbiColor = (value: string | number, shadePercent: number = 0) =>
  */
 const pbiFormat = (
     datum: any,
-    params: string,
+    params: string | ValueFormatterOptions,
     options: ValueFormatterOptions = {}
-) => powerBiFormatValue(datum, `${params}`, options);
+) => {
+    if (isObject(params)) {
+        return powerBiFormatValue(datum, null, <ValueFormatterOptions>params);
+    }
+    return powerBiFormatValue(
+        datum,
+        params === null ? null : `${params}`,
+        options
+    );
+};
+
+/**
+ * Convenience function that applies Power BI formatting to a number, but re-passes the value, invoking auto-
+ * formatting. This is analogous to the "Auto" option in the Power BI formatting pane.
+ */
+const pbiFormatAutoUnit = (
+    datum: any,
+    params: string | ValueFormatterOptions,
+    options: ValueFormatterOptions = {}
+) => {
+    if (isObject(params)) {
+        return pbiFormat(datum, null, <ValueFormatterOptions>{
+            ...(params as ValueFormatterOptions),
+            ...{ value: datum }
+        });
+    }
+    return powerBiFormatValue(
+        datum,
+        <string>params,
+        <ValueFormatterOptions>{
+            ...options,
+            ...{ value: datum }
+        }
+    );
+};
 
 /**
  * Obtain a dynamic version of a pre-defined pattern, with a custom foreground and background color.
