@@ -18,7 +18,8 @@ import { handleCrossFilterEvent } from '../../interactivity/cross-filter';
 import { logDebug, logWarning } from '../../logging';
 import {
     CROSS_FILTER_LIMITS,
-    PROPERTIES_DEFAULTS
+    PROPERTIES_DEFAULTS,
+    isObject
 } from '@deneb-viz/core-dependencies';
 
 /**
@@ -62,7 +63,18 @@ const pbiColor = (value: string | number, shadePercent: number = 0) =>
  */
 const pbiFormat = (
     datum: any,
-    params: string,
+    params: string | ValueFormatterOptions,
+    options: ValueFormatterOptions = {}
+) => {
+    if (isObject(params)) {
+        return powerBiFormatValue(datum, null, <ValueFormatterOptions>params);
+    }
+    return powerBiFormatValue(
+        datum,
+        params === null ? null : `${params}`,
+        options
+    );
+};
     options: ValueFormatterOptions = {}
 ) => powerBiFormatValue(datum, `${params}`, options);
 
