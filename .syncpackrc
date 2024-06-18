@@ -24,7 +24,7 @@
             "dependencyTypes": [
                 "dev"
             ],
-            "pinVersion": "5.29.0"
+            "pinVersion": "5.30.0"
         },
         {
             "label": "Vega-Lite should be specific version we wish to package",
@@ -34,7 +34,7 @@
             "dependencyTypes": [
                 "dev"
             ],
-            "pinVersion": "5.18.1"
+            "pinVersion": "5.19.0"
         },
         {
             "label": "Use wildcard when developing local packages",
