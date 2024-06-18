@@ -1,76 +1,76 @@
 {
-    "$schema": "https://turbo.build/schema.json",
-    "pipeline": {
-        "build": {
-            "dependsOn": [
-                "^build"
-            ],
-            "outputs": [
-                ".next/**",
-                "!.next/cache/**"
-            ]
-        },
-        "dev": {
-            "cache": false,
-            "persistent": true
-        },
-        "eslint": {
-            "dependsOn": [
-                "^eslint"
-            ]
-        },
-        "test": {
-            "outputs": [
-                "coverage/**"
-            ]
-        },
-        "test:ci": {},
-        "test:watch": {
-            "outputs": [
-                "coverage/**"
-            ],
-            "cache": false
-        },
-        "//#pbiviz:eslint": {
-            "dependsOn": [
-                "^eslint"
-            ]
-        },
-        "//#pbiviz:package": {
-            "dependsOn": [
-                "^build"
-            ],
-            "outputs": [
-                "dist/**"
-            ]
-        },
-        "//#pbiviz:package-standalone": {
-            "dependsOn": [
-                "^build"
-            ],
-            "outputs": [
-                "dist/**"
-            ]
-        },
-        "//#pbiviz:package-alpha": {
-            "dependsOn": [
-                "^build"
-            ],
-            "outputs": [
-                "dist/**"
-            ]
-        },
-        "//#pbiviz:package-beta": {
-            "dependsOn": [
-                "^build"
-            ],
-            "outputs": [
-                "dist/**"
-            ]
-        },
-        "//#pbiviz:start": {
-            "cache": false,
-            "persistent": true
-        }
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**"
+      ]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "eslint": {
+      "dependsOn": [
+        "^eslint"
+      ]
+    },
+    "test": {
+      "outputs": [
+        "coverage/**"
+      ]
+    },
+    "test:ci": {},
+    "test:watch": {
+      "outputs": [
+        "coverage/**"
+      ],
+      "cache": false
+    },
+    "//#pbiviz:eslint": {
+      "dependsOn": [
+        "^eslint"
+      ]
+    },
+    "//#pbiviz:package": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**"
+      ]
+    },
+    "//#pbiviz:package-standalone": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**"
+      ]
+    },
+    "//#pbiviz:package-alpha": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**"
+      ]
+    },
+    "//#pbiviz:package-beta": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**"
+      ]
+    },
+    "//#pbiviz:start": {
+      "cache": false,
+      "persistent": true
     }
+  }
 }
