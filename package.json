@@ -27,6 +27,7 @@
         "build": "turbo build",
         "prettier-check": "prettier --config .prettierrc {src,spec,style}/**/{*.ts*,*.css,*.less} --check",
         "prettier-format": "prettier --config .prettierrc {src,spec,style}/**/{*.ts*,*.css,*.less} --write",
+        "sync-packages": "syncpack fix-mismatches && npm i",
         "validate-config-for-commit": "ts-node -P tsconfig.build-scripts.json bin/validate-config-for-commit",
         "validate-packages-sync": "syncpack list-mismatches"
     },
@@ -77,7 +78,6 @@
         "react-hotkeys-hook": "^4.4.1",
         "react-konami-code": "^2.3.0",
         "react-markdown": "^8.0.7",
-        "react-monaco-editor": "^0.55.0",
         "react-split-pane": "^0.1.92",
         "react-vega": "7.6.0",
         "styled-components": "^6.0.0-rc.3",
@@ -85,10 +85,13 @@
         "ts-loader": "^9.2.5",
         "ts-node": "^10.9.2",
         "tsup": "^8.0.2",
-        "turbo": "^1.13.3",
+        "turbo": "^2.0.4",
         "typescript": "^5.4.5",
-        "vega": "5.29.0",
-        "vega-lite": "5.18.1",
+        "vega": "5.30.0",
+        "vega-lite": "5.19.0",
         "zustand": "^4.5.2"
+    },
+    "peerDependencies": {
+        "monaco-editor": "0.45.0"
     }
 }
