@@ -78,7 +78,6 @@
         "react-hotkeys-hook": "^4.4.1",
         "react-konami-code": "^2.3.0",
         "react-markdown": "^8.0.7",
-        "react-monaco-editor": "^0.55.0",
         "react-split-pane": "^0.1.92",
         "react-vega": "7.6.0",
         "styled-components": "^6.0.0-rc.3",
@@ -91,5 +90,8 @@
         "vega": "5.30.0",
         "vega-lite": "5.19.0",
         "zustand": "^4.5.2"
+    },
+    "peerDependencies": {
+        "monaco-editor": "0.45.0"
     }
 }
