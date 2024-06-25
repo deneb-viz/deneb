@@ -77,7 +77,6 @@
         "react-dropzone": "^14.2.3",
         "react-hotkeys-hook": "^4.4.1",
         "react-konami-code": "^2.3.0",
-        "react-markdown": "^8.0.7",
         "react-split-pane": "^0.1.92",
         "react-vega": "7.6.0",
         "styled-components": "^6.0.0-rc.3",
