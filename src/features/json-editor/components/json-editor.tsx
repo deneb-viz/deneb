@@ -265,7 +265,6 @@ const onLinkClick = (e: MouseEvent) => {
 const removeContextMenuItems = (editor: editor.IStandaloneCodeEditor) => {
     const contextmenu = editor.getContribution('editor.contrib.contextmenu');
     const removableIds = [
-        'editor.action.clipboardCopyAction',
         'editor.action.clipboardCutAction',
         'editor.action.clipboardPasteAction'
     ];
