@@ -356,6 +356,14 @@ const setMonacoKeyBindingRules = () => {
         {
             keybinding: KeyMod.CtrlCmd | KeyCode.Enter,
             command: null
+        },
+        {
+            keybinding: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.KeyR,
+            command: 'editor.action.formatDocument'
+        },
+        {
+            keybinding: KeyMod.CtrlCmd | KeyCode.F1,
+            command: 'editor.action.quickCommand'
         }
     ]);
 };
