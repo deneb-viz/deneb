@@ -1,6 +1,6 @@
 import { Config as VgConfig } from 'vega';
 import { Config as VlConfig } from 'vega-lite';
-import { interpolateHcl, interpolateRgbBasis, quantize } from 'd3';
+import { interpolateHcl, interpolateRgbBasis, quantize } from 'd3-interpolate';
 
 import { ptToPx } from '../../../core/ui/dom';
 import { getVisualHost } from '../../visual-host';
