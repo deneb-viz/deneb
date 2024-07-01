@@ -265,7 +265,6 @@ const onLinkClick = (e: MouseEvent) => {
 const removeContextMenuItems = (editor: editor.IStandaloneCodeEditor) => {
     const contextmenu = editor.getContribution('editor.contrib.contextmenu');
     const removableIds = [
-        'editor.action.clipboardCopyAction',
         'editor.action.clipboardCutAction',
         'editor.action.clipboardPasteAction'
     ];
@@ -357,6 +356,14 @@ const setMonacoKeyBindingRules = () => {
         {
             keybinding: KeyMod.CtrlCmd | KeyCode.Enter,
             command: null
+        },
+        {
+            keybinding: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.KeyR,
+            command: 'editor.action.formatDocument'
+        },
+        {
+            keybinding: KeyMod.CtrlCmd | KeyCode.F1,
+            command: 'editor.action.quickCommand'
         }
     ]);
 };

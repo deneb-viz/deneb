@@ -37,6 +37,17 @@
             "pinVersion": "5.19.0"
         },
         {
+            "label": "Monaco should be specific version we wish to package",
+            "dependencies": [
+                "monaco-editor"
+            ],
+            "dependencyTypes": [
+                "dev",
+                "peer"
+            ],
+            "pinVersion": "0.45.0"
+        },
+        {
             "label": "Use wildcard when developing local packages",
             "dependencies": [
                 "@deneb-viz/**"

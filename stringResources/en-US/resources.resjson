@@ -345,6 +345,7 @@
     "Text_Dialog_Title_Export": "Generate JSON template",
     "Text_Dialog_Title_Create": "Create or import new specification",
     "Text_Dialog_Title_Version": "Version has changed",
+    "Text_Dialog_Title_None": "",
     "Text_Editor_Status_Bar_Column": "Col",
     "Text_Editor_Status_Bar_Line": "Ln",
     "Text_Editor_Status_Bar_Selection": "({0} selected)",

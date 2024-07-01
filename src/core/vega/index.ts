@@ -1,14 +1,10 @@
 export {
     IVegaViewDatum,
-    editorConfigOverLoad,
     getVegaProvider,
     getVegaProvideri18n,
     getVegaSettings,
-    getVegaVersion,
-    getViewDataset
+    getVegaVersion
 };
-
-import cloneDeep from 'lodash/cloneDeep';
 
 import { getState } from '../../store';
 import { getI18nValue } from '../../features/i18n';
@@ -21,11 +17,6 @@ import { SpecProvider } from '@deneb-viz/core-dependencies';
 interface IVegaViewDatum {
     [key: string]: any;
 }
-
-const editorConfigOverLoad = {
-    background: null, // so we can defer to the Power BI background, if applied
-    customFormatTypes: true
-};
 
 /**
  * Convenience function to get current Vega provider from persisted properties.
@@ -52,10 +43,3 @@ const getVegaVersion = () => PROVIDER_VERSIONS[getVegaProvider()];
  * Convenience function to get current Vega/Spec settings from the visual objects (as we use this a lot).
  */
 const getVegaSettings = () => getState().visualSettings.vega;
-
-/**
- * Create the `data` object for the Vega view specification. Ensures that the dataset applied to the visual is a cloned, mutable copy of the store version.
- */
-const getViewDataset = () => ({
-    dataset: cloneDeep(getState().dataset?.values ?? [])
-});
