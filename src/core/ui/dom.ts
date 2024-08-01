@@ -34,12 +34,16 @@ export const resolveReportViewport = (
     editMode: EditMode,
     newViewport: IViewport
 ) => {
-    if (
+    const isEditEligible =
         editMode === EditMode.Default &&
         viewMode === ViewMode.Edit &&
         (newViewport.height !== viewport.height ||
-            newViewport.width !== viewport.width)
-    ) {
+            newViewport.width !== viewport.width);
+    const isViewEligible =
+        viewMode === ViewMode.View &&
+        (newViewport.height !== viewport.height ||
+            newViewport.width !== viewport.width);
+    if (isEditEligible || isViewEligible) {
         logDebug('Persisting viewport to properties...');
         updateObjectProperties(
             resolveObjectProperties([
