@@ -331,7 +331,12 @@ const getPatchedVegaLiteSpec = (spec: VegaLite.TopLevelSpec) => {
     return merge(
         spec,
         isNsl
-            ? {}
+            ? {
+                  params: [
+                      ...(spec['params'] || []),
+                      getPowerBiSignalContainer()
+                  ]
+              }
             : {
                   height: spec['height'] ?? 'container',
                   width: spec['width'] ?? 'container',
