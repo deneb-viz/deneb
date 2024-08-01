@@ -45,6 +45,6 @@
         "@deneb-viz/typescript-config": "*",
         "powerbi-visuals-api": "5.7.0",
         "vega": "5.30.0",
-        "vega-lite": "5.19.0"
+        "vega-lite": "5.20.1"
     }
 }
