@@ -34,7 +34,7 @@
             "dependencyTypes": [
                 "dev"
             ],
-            "pinVersion": "5.19.0"
+            "pinVersion": "5.20.1"
         },
         {
             "label": "Monaco should be specific version we wish to package",

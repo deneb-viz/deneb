@@ -97,8 +97,14 @@ const getFieldsEligibleForAutoFormat = (tooltip: object) =>
         const ttKeys = keys(tooltip);
         const fields = getDatasetFieldsBySelectionKeys(ttKeys);
         const mdKeys = keys(fields);
-        const isNumeric = fields[k]?.type?.numeric || false;
-        return indexOf(mdKeys, k) > -1 && isNumeric;
+        const isSourceFieldNumeric = fields[k]?.type?.numeric || false;
+        const isTooltipFieldNumeric =
+            isSourceFieldNumeric && typeof v === 'number';
+        const isEligible =
+            indexOf(mdKeys, k) > -1 &&
+            isSourceFieldNumeric &&
+            isTooltipFieldNumeric;
+        return isEligible;
     });
 
 /**

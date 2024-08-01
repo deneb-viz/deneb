@@ -140,12 +140,13 @@ export const VegaContainer: React.FC = () => {
             onClick={clearSelection}
             onMouseOut={hidePowerBiTooltip}
             onScrollFrame={throttle((e: positionValues) => {
+                const container = VegaViewServices.getView().container();
                 const signal = getPowerBiSignalContainer({
                     scroll: {
-                        height: e.scrollHeight,
-                        width: e.scrollWidth,
-                        scrollHeight: e.scrollHeight,
-                        scrollWidth: e.scrollWidth,
+                        height: container.clientHeight,
+                        width: container.clientWidth,
+                        scrollHeight: container.scrollHeight,
+                        scrollWidth: container.scrollWidth,
                         scrollTop: e.scrollTop,
                         scrollLeft: e.scrollLeft
                     }
