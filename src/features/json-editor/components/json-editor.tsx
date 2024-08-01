@@ -245,13 +245,13 @@ const getDefaultValue = (role: TEditorRole) => {
  * host.
  */
 const onLinkClick = (e: MouseEvent) => {
-    if (
-        e.target instanceof HTMLAnchorElement &&
-        e.target.getAttribute('data-href')
-    ) {
+    const url = (e.target as HTMLElement)
+        .closest('a')
+        ?.getAttribute('data-href');
+    if (url) {
         e.preventDefault();
         e.stopPropagation();
-        launchUrl(e.target.getAttribute('data-href'));
+        launchUrl(url);
     }
 };
 
