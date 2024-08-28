@@ -248,7 +248,7 @@ const onLinkClick = (e: MouseEvent) => {
     const url = (e.target as HTMLElement)
         .closest('a')
         ?.getAttribute('data-href');
-    if (url) {
+    if (url && url.match(/^(http|https):\/\//)) {
         e.preventDefault();
         e.stopPropagation();
         launchUrl(url);
