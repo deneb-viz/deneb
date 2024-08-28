@@ -25,6 +25,7 @@ describe('getNewUuid', () => {
     });
     it('should return a valid UUID when the crypto API is not available', () => {
         const crypto = global.crypto;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (global as any).crypto;
         const uuid = getNewUuid();
         expect(uuid).toMatch(UUID_REGEX);

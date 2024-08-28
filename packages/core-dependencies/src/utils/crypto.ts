@@ -37,6 +37,8 @@ export function getFallbackUUid() {
  */
 export function getRandomUuidSegment() {
     return (
-        '00000000000000000' + (Math.random() * 0xffffffffffffffff).toString(16)
+        '00000000000000000' +
+        // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+        (Math.random() * 0xffffffffffffffff).toString(16)
     ).slice(-16);
 }
