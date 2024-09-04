@@ -58,7 +58,7 @@
         "lodash": "^4.17.21",
         "powerbi-visuals-api": "5.7.0",
         "vega": "5.30.0",
-        "vega-lite": "5.21.0",
+        "vega-lite": "5.20.1",
         "vscode-json-languageservice": "^5.3.11"
     }
 }
