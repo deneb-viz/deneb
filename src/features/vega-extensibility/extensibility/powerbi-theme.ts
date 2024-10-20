@@ -173,7 +173,10 @@ const themeDivergentMed = () =>
  * spelling in case they ever fix it.
  */
 const themeDivergentMax = () =>
-    <string>getVisualHost()?.colorPalette?.['maximium' || 'maximum']?.value;
+    <string>(
+        (getVisualHost()?.colorPalette?.['maximium']?.value ??
+            getVisualHost()?.colorPalette?.['maximum']?.value)
+    );
 
 /**
  * Get negative sentiment color from the current theme.
