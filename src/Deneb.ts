@@ -59,6 +59,7 @@ logHeading(`Version: ${APPLICATION_INFORMATION?.version}`, 12);
 
 export class Deneb implements IVisual {
     private settings: VisualFormattingSettingsModel;
+    #applicationWrapper: HTMLElement;
 
     constructor(options: VisualConstructorOptions) {
         logHost('Constructor has been called.', { options });
@@ -68,7 +69,11 @@ export class Deneb implements IVisual {
             VegaPatternFillServices.bind();
             VisualFormattingSettingsService.bind(getLocalizationManager());
             const { element } = options;
-            ReactDOM.render(React.createElement(App), element);
+            this.#applicationWrapper = document.createElement('div');
+            this.#applicationWrapper.id = 'deneb-application-wrapper';
+            element.appendChild(this.#applicationWrapper);
+            this.handleSuppressOnObjectFormatting();
+            ReactDOM.render(React.createElement(App), this.#applicationWrapper);
             element.oncontextmenu = (ev) => {
                 ev.preventDefault();
             };
@@ -234,6 +239,18 @@ export class Deneb implements IVisual {
             }
         } = getState();
         updateFieldTracking(spec, trackedFieldsCurrent);
+    }
+
+    /**
+     * Ensure that double clicking on the application wrapper doesn't propagate to the host application (avoiding on-object formatting
+     * from triggering in Desktop).
+     */
+    private handleSuppressOnObjectFormatting() {
+        logDebug('Suppressing on object formatting...');
+        this.#applicationWrapper.ondblclick = (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+        };
     }
 
     /**
