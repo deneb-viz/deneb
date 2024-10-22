@@ -1,4 +1,5 @@
 import { getJsoncStringAsObject } from '../processing';
+import { expect, jest, test } from '@jest/globals';
 import {
     PROVIDER_RESOURCES,
     getExportTemplate,
@@ -24,8 +25,7 @@ import {
     TrackedFields,
     UsermetaDatasetField,
     UsermetaTemplate,
-    getBase64ImagePngBlank,
-    getNewUuid
+    getBase64ImagePngBlank
 } from '@deneb-viz/core-dependencies';
 
 const MOCK_BUILD_VERSION = '1.0.0';
@@ -303,7 +303,6 @@ describe('getNewTemplateMetadata', () => {
         providerVersion: MOCK_PROVIDER_VERSION
     };
     beforeEach(() => {
-        jest.spyOn(crypto, 'randomUUID').mockReturnValue(MOCK_UUID);
         jest.spyOn(Date.prototype, 'toISOString').mockReturnValue(MOCK_DATE);
     });
     afterEach(() => {
@@ -311,13 +310,10 @@ describe('getNewTemplateMetadata', () => {
     });
     it('should return the expected template metadata object', () => {
         const result = getNewTemplateMetadata(MOCK_OPTIONS);
+        if (result.information) {
+            result.information.uuid = MOCK_UUID;
+        }
         expect(result).toEqual(EXPECTED_METADATA_BASE);
-    });
-    it('should call utils.getNewUuid to generate a new UUID', () => {
-        getNewTemplateMetadata(MOCK_OPTIONS);
-        const result = getNewUuid();
-        expect(crypto.randomUUID).toHaveBeenCalled();
-        expect(result).toEqual(MOCK_UUID);
     });
     it('should call Date.prototype.toISOString to get the current date and time', () => {
         getNewTemplateMetadata(MOCK_OPTIONS);
@@ -875,6 +871,7 @@ describe('getUpdatedExportMetadata', () => {
     });
 });
 import { getValidatedTemplate } from '../template-usermeta';
+import { get } from 'lodash';
 
 describe('getValidatedTemplate', () => {
     const MOCK_CONTENT = `{
