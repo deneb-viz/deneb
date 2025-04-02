@@ -1,5 +1,5 @@
 import { getJsoncStringAsObject } from '../processing';
-import { expect, jest, test } from '@jest/globals';
+import { expect, jest } from '@jest/globals';
 import {
     PROVIDER_RESOURCES,
     getExportTemplate,
@@ -14,7 +14,8 @@ import {
     getTemplateResolvedForLegacyConfig,
     getTemplateResolvedForLegacyVersions,
     getTemplateResolvedForPlaceholderAssignment,
-    getUpdatedExportMetadata
+    getUpdatedExportMetadata,
+    getValidatedTemplate
 } from '../template-usermeta';
 import {
     IDenebTemplateAllocationComponents,
@@ -870,8 +871,6 @@ describe('getUpdatedExportMetadata', () => {
         expect(result).toEqual(expectedMetadata);
     });
 });
-import { getValidatedTemplate } from '../template-usermeta';
-import { get } from 'lodash';
 
 describe('getValidatedTemplate', () => {
     const MOCK_CONTENT = `{
