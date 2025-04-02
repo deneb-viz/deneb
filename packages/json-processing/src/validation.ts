@@ -13,8 +13,8 @@ import {
 /**
  * All schemas required for validation functions.
  */
-import * as vegaSchema from 'vega/build/vega-schema.json';
-import * as vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json';
+import * as vegaSchema from 'vega/vega-schema.json';
+import * as vegaLiteSchema from 'vega-lite/vega-lite-schema.json';
 import * as draft06Schema from 'ajv/lib/refs/json-schema-draft-06.json';
 import * as denebUserMetaSchema from '@deneb-viz/template-usermeta-schema';
 

@@ -1,4 +1,5 @@
-import { SelectionMode, SpecProvider } from '.';
+import { SelectionMode } from './integration-powerbi';
+import { SpecProvider } from './vega-integration';
 
 /**
  * The type of field that should ideally be applied to a placeholder.

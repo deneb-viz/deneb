@@ -22,9 +22,10 @@
                 "vega"
             ],
             "dependencyTypes": [
-                "dev"
+                "dev",
+                "prod"
             ],
-            "pinVersion": "5.30.0"
+            "pinVersion": "6.1.2"
         },
         {
             "label": "Vega-Lite should be specific version we wish to package",
@@ -32,9 +33,10 @@
                 "vega-lite"
             ],
             "dependencyTypes": [
-                "dev"
+                "dev",
+                "prod"
             ],
-            "pinVersion": "5.20.1"
+            "pinVersion": "6.1.0"
         },
         {
             "label": "Monaco should be specific version we wish to package",
