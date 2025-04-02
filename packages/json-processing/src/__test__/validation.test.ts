@@ -5,7 +5,7 @@ import {
     getProviderValidator,
     getSchemaWithMarkdownProps
 } from '../validation';
-import * as vegaSchema from 'vega/build/vega-schema.json';
+import * as vegaSchema from 'vega/vega-schema.json';
 import { ErrorObject } from 'ajv';
 
 describe('getProviderSchema', () => {

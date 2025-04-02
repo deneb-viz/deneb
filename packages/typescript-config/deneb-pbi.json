@@ -14,7 +14,7 @@
         "target": "es6",
         "sourceMap": true,
         "skipLibCheck": true,
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         "declaration": true,
         "lib": [
             "es2019",
