@@ -5,7 +5,6 @@ import {
     mergeClasses
 } from '@fluentui/react-components';
 import {
-    ArrowShuffleRegular,
     ChevronDownRegular,
     ChevronLeftRegular,
     ChevronUpRegular,
@@ -31,7 +30,6 @@ import {
     handleAutoApplyChanges,
     handleExportSpecification,
     handleOpenCreateSpecificationDialog,
-    handleOpenRemapDialog,
     handleOpenWebsite,
     handleToggleDebugPane,
     handleToggleEditorPane,
