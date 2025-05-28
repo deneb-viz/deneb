@@ -33,7 +33,6 @@ import {
     handleEditorPaneSpecification,
     handleExportSpecification,
     handleOpenCreateSpecificationDialog,
-    handleOpenRemapDialog,
     handleOpenWebsite,
     handleToggleDebugPane,
     handleToggleEditorPane,

@@ -389,6 +389,7 @@ const getSnippetFieldMetadata = (field: IVisualDatasetField) => {
 /**
  * Do the necessary tests and then call the tracking /tokenization workers, if needed.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const updateTracking = async (spec: string, editorRole: TEditorRole) => {
     logDebug(
         '[Spec Editor] Checking to see if tracking and tokenization is needed...'

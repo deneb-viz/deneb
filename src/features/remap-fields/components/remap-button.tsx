@@ -18,7 +18,6 @@ import {
 } from '@deneb-viz/core-dependencies';
 import {
     updateFieldTokenization,
-    updateFieldTracking,
     getRemappedSpecification
 } from '../../json-processing';
 

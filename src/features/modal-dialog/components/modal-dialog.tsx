@@ -16,7 +16,7 @@ import store from '../../../store';
 import { getI18nValue } from '../../i18n';
 import { ModalDialogRole } from '../types';
 import { VersionChangeContent } from './version-change-content';
-import { FieldRemapPane, RemapButton } from '../../remap-fields';
+import { FieldRemapPane } from '../../remap-fields';
 import { logRender } from '../../logging';
 import { CreateButton, VisualCreatePane } from '../../visual-create';
 import { closeCreateDialog } from '../../../core/ui/commands';
