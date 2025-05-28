@@ -174,7 +174,8 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
                 text: value,
                 viewState: ref.current?.saveViewState()
             });
-            updateTracking(value, thisEditorRole);
+            // Tracking is now only used for export (#486)
+            // updateTracking(value, thisEditorRole);
             if (applyMode === 'Auto') {
                 logDebug('Auto-apply changes');
                 persistSpecification(spec.current, config.current);

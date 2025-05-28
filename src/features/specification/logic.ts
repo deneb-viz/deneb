@@ -548,7 +548,8 @@ export const persistSpecification = (
     const config =
         (stage ? getCleanEditorJson('Config', configEditor) : stagedConfig) ??
         jsonConfig;
-    updateFieldTracking(spec, trackedFieldsCurrent);
+    // Tracking is now only used for export (#486)
+    // updateFieldTracking(spec, trackedFieldsCurrent);
     updateChanges({ role: 'Spec', text: spec });
     updateChanges({ role: 'Config', text: config });
     updateObjectProperties(

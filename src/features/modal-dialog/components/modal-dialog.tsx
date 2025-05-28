@@ -137,8 +137,9 @@ const getDialogPrimaryButton = (dialogRole: ModalDialogRole) => {
     switch (dialogRole) {
         case 'Create':
             return <CreateButton />;
-        case 'Remap':
-            return <RemapButton />;
+        // Tracking is now only used for export (#486)
+        // case 'Remap':
+        //     return <RemapButton />;
         case 'Export':
             return <ExportButtons />;
         default:

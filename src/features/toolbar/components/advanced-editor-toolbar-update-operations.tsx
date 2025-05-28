@@ -23,10 +23,11 @@ export const AdvancedEditorToolbarUpdateOperations: React.FC = () => {
                         />
                     </>
                 )}
-                <ToolbarButtonStandard
+                {/* Tracking is now only used for export (#486) */}
+                {/* <ToolbarButtonStandard
                     command='fieldMappings'
                     role='application'
-                />
+                /> */}
             </ToolbarGroup>
             <ToolbarGroup className={classes.toolbarGroupAdvancedEditor}>
                 <ToolbarButtonStandard

@@ -114,8 +114,9 @@ const resolveClick = (command: Command) => {
             return handleToggleEditorPane;
         case 'exportSpecification':
             return handleExportSpecification;
-        case 'fieldMappings':
-            return handleOpenRemapDialog;
+        // Tracking is now only used for export (#486)
+        // case 'fieldMappings':
+        //     return handleOpenRemapDialog;
         case 'helpSite':
             return handleOpenWebsite;
         case 'newSpecification':
@@ -160,8 +161,9 @@ const resolveI18nKey = (command: Command) => {
             return 'Tooltip_Collapse_Editor_Pane';
         case 'exportSpecification':
             return isDirty ? 'Button_Export_Dirty' : 'Button_Export';
-        case 'fieldMappings':
-            return 'Button_Map_Fields';
+        // Tracking is now only used for export (#486)
+        // case 'fieldMappings':
+        //     return 'Button_Map_Fields';
         case 'helpSite':
             return 'Button_Help';
         case 'newSpecification':
@@ -209,8 +211,9 @@ const resolveIcon = (command: Command) => {
             return <ChevronLeftRegular />;
         case 'exportSpecification':
             return <ShareRegular />;
-        case 'fieldMappings':
-            return <ArrowShuffleRegular />;
+        // Tracking is now only used for export (#486)
+        // case 'fieldMappings':
+        //     return <ArrowShuffleRegular />;
         case 'helpSite':
             return <QuestionRegular />;
         case 'newSpecification':
