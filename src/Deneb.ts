@@ -176,7 +176,8 @@ export class Deneb implements IVisual {
                     categories: categorical?.categories,
                     dataset
                 });
-                this.updateTracking();
+                // Tracking is now only used for export (#486)
+                // this.updateTracking();
             }
             logTimeEnd('processDataset');
         } else {

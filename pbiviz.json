@@ -4,7 +4,7 @@
         "displayName": "Deneb",
         "guid": "deneb7E15AEF80B9E4D4F8E12924291ECE89A",
         "visualClassName": "Deneb",
-        "version": "1.7.3.0",
+        "version": "1.8.0.0",
         "description": "Use the Vega or Vega-Lite languages to create bespoke visuals, directly inside Power BI.",
         "supportUrl": "https://deneb-viz.github.io/",
         "gitHubUrl": "https://github.com/deneb-viz/deneb"

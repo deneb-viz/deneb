@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { shallow } from 'zustand/shallow';
 
-import { logRender } from '../../logging';
+import { logDebug, logRender } from '../../logging';
 import { getI18nValue } from '../../i18n';
 import { useModalDialogStyles } from '../../modal-dialog';
 import { TemplateDataset } from '../../template';
@@ -11,7 +11,10 @@ import { TEMPLATE_PREVIEW_IMAGE_MAX_SIZE } from '../../../../config';
 import { StageProgressIndicator } from '../../modal-dialog';
 import store, { getState } from '../../../store';
 import { TemplateExportProcessingState } from '@deneb-viz/core-dependencies';
-import { updateFieldTokenization } from '../../json-processing';
+import {
+    updateFieldTokenization,
+    updateFieldTracking
+} from '../../json-processing';
 
 /**
  * Interface (pane) for exporting a existing visualization.
@@ -101,6 +104,14 @@ const handleProcessing = async () => {
         }
     } = getState();
     setExportProcessingState(TemplateExportProcessingState.Tokenizing);
-    await updateFieldTokenization(jsonSpec, dataset);
+    await updateFieldTracking(jsonSpec, dataset);
+    const {
+        fieldUsage: { dataset: trackedFieldsCurrent }
+    } = getState();
+    logDebug('[handleProcessing] trackedFieldsCurrent', {
+        trackedFieldsInitial: dataset,
+        trackedFieldsCurrent
+    });
+    await updateFieldTokenization(jsonSpec, trackedFieldsCurrent);
     setExportProcessingState(TemplateExportProcessingState.Complete);
 };

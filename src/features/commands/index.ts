@@ -155,9 +155,10 @@ export const handleOpenCreateSpecificationDialog = () => {
  * Handle opening the map fields dialog.
  */
 export const handleOpenRemapDialog = () => {
-    executeCommand('fieldMappings', () => {
-        getState().interface.setModalDialogRole('Remap');
-    });
+    // Tracking is now only used for export (#486)
+    // executeCommand('fieldMappings', () => {
+    //     getState().interface.setModalDialogRole('Remap');
+    // });
 };
 
 /**

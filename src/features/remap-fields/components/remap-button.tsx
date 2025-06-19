@@ -18,7 +18,6 @@ import {
 } from '@deneb-viz/core-dependencies';
 import {
     updateFieldTokenization,
-    updateFieldTracking,
     getRemappedSpecification
 } from '../../json-processing';
 
@@ -100,7 +99,8 @@ export const applyRemappedFields = async (
     });
     setRemapState(RemapState.Tracking);
     // Make sure that we get the new tracking data, but reset the original (otherwise we'll loop)
-    await updateFieldTracking(mappedSpec, trackedFields, true);
+    // Tracking is now only used for export (#486)
+    // await updateFieldTracking(mappedSpec, trackedFields, true);
     const {
         fieldUsage: { dataset, drilldown }
     } = getState();

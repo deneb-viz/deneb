@@ -41,7 +41,6 @@ import {
     SpecProvider
 } from '@deneb-viz/core-dependencies';
 import { getPowerBiSignalContainer } from '@deneb-viz/integration-powerbi';
-import { updateFieldTracking } from '../json-processing';
 
 /**
  * For a given operation and string input, ensure that it's trimmed and replaced with suitable defaults if empty.
@@ -532,6 +531,7 @@ export const persistSpecification = (
 ) => {
     const {
         editor: { stagedConfig, stagedSpec, updateChanges },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         fieldUsage: { dataset: trackedFieldsCurrent },
         visualSettings: {
             vega: {
@@ -548,7 +548,8 @@ export const persistSpecification = (
     const config =
         (stage ? getCleanEditorJson('Config', configEditor) : stagedConfig) ??
         jsonConfig;
-    updateFieldTracking(spec, trackedFieldsCurrent);
+    // Tracking is now only used for export (#486)
+    // updateFieldTracking(spec, trackedFieldsCurrent);
     updateChanges({ role: 'Spec', text: spec });
     updateChanges({ role: 'Config', text: config });
     updateObjectProperties(

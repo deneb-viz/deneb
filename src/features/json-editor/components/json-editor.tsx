@@ -174,7 +174,8 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
                 text: value,
                 viewState: ref.current?.saveViewState()
             });
-            updateTracking(value, thisEditorRole);
+            // Tracking is now only used for export (#486)
+            // updateTracking(value, thisEditorRole);
             if (applyMode === 'Auto') {
                 logDebug('Auto-apply changes');
                 persistSpecification(spec.current, config.current);
@@ -388,6 +389,7 @@ const getSnippetFieldMetadata = (field: IVisualDatasetField) => {
 /**
  * Do the necessary tests and then call the tracking /tokenization workers, if needed.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const updateTracking = async (spec: string, editorRole: TEditorRole) => {
     logDebug(
         '[Spec Editor] Checking to see if tracking and tokenization is needed...'

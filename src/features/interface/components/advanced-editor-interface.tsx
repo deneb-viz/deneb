@@ -33,7 +33,6 @@ import {
     handleEditorPaneSpecification,
     handleExportSpecification,
     handleOpenCreateSpecificationDialog,
-    handleOpenRemapDialog,
     handleOpenWebsite,
     handleToggleDebugPane,
     handleToggleEditorPane,
@@ -74,7 +73,8 @@ export const AdvancedEditorInterface: React.FC = () => {
     hotkeyHandler('autoApplyToggle', () => handleAutoApplyChanges(editorRefs));
     hotkeyHandler('newSpecification', handleOpenCreateSpecificationDialog);
     hotkeyHandler('exportSpecification', handleExportSpecification);
-    hotkeyHandler('fieldMappings', handleOpenRemapDialog);
+    // Tracking is now only used for export (#486)
+    // hotkeyHandler('fieldMappings', handleOpenRemapDialog);
     hotkeyHandler('themeToggle', handleToggleEditorTheme);
     hotkeyHandler('helpSite', handleOpenWebsite);
     hotkeyHandler('navigateSpecification', () =>
