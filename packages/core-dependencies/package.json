@@ -46,6 +46,6 @@
         "@deneb-viz/eslint-config": "*",
         "@deneb-viz/jest-presets": "*",
         "@deneb-viz/typescript-config": "*",
-        "powerbi-visuals-api": "5.7.0"
+        "powerbi-visuals-api": "5.11.0"
     }
 }
