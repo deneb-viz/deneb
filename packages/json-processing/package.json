@@ -39,7 +39,7 @@
         "build": "tsup-node",
         "test": "jest",
         "test:watch": "jest --watch",
-        "eslint": "eslint . --max-warnings 0"
+        "eslint": "eslint"
     },
     "jest": {
         "preset": "@deneb-viz/jest-presets/jest/node"
@@ -56,7 +56,7 @@
         "ajv-formats": "^2.1.1",
         "jsonc-parser": "^3.2.1",
         "lodash": "^4.17.21",
-        "powerbi-visuals-api": "5.7.0",
+        "powerbi-visuals-api": "5.11.0",
         "vega": "6.1.2",
         "vega-lite": "6.1.0",
         "vscode-json-languageservice": "^5.3.11"

@@ -14,7 +14,7 @@
             "dependencyTypes": [
                 "dev"
             ],
-            "pinVersion": "5.7.0"
+            "pinVersion": "5.11.0"
         },
         {
             "label": "Vega should be specific version we wish to package",

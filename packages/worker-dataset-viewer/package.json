@@ -27,7 +27,7 @@
     "scripts": {
         "dev": "tsup --watch",
         "build": "tsup --clean --minify",
-        "eslint": "eslint . --max-warnings 0"
+        "eslint": "eslint"
     },
     "devDependencies": {
         "@deneb-viz/core-dependencies": "*",

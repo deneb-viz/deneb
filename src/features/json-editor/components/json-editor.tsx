@@ -300,16 +300,18 @@ const setMonacoCompletionProvider = () => {
                 startColumn: word.startColumn,
                 endColumn: word.endColumn
             };
-            const fields: monaco.languages.CompletionItem[] = map(
-                getState().dataset.fields,
-                (field) => ({
-                    label: field.displayName,
-                    insertText: field.displayName,
-                    detail: getSnippetFieldMetadata(field),
-                    kind: monaco.languages.CompletionItemKind.Method,
-                    range,
-                    sortText: `zzzzz__${field.displayName}`
-                })
+            let fields: monaco.languages.CompletionItem[] = [];
+            Object.entries(getState().dataset.fields).forEach(
+                ([key, field]) => {
+                    fields.push({
+                        label: key,
+                        insertText: key,
+                        detail: getSnippetFieldMetadata(field),
+                        kind: monaco.languages.CompletionItemKind.Field,
+                        range,
+                        sortText: `zzzzz__${key}`
+                    });
+                }
             );
             return {
                 suggestions: fields
@@ -389,7 +391,6 @@ const getSnippetFieldMetadata = (field: IVisualDatasetField) => {
 /**
  * Do the necessary tests and then call the tracking /tokenization workers, if needed.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const updateTracking = async (spec: string, editorRole: TEditorRole) => {
     logDebug(
         '[Spec Editor] Checking to see if tracking and tokenization is needed...'

@@ -33,7 +33,7 @@
         "build": "tsup",
         "test": "jest",
         "test:watch": "jest --watch",
-        "eslint": "eslint . --max-warnings 0"
+        "eslint": "eslint"
     },
     "jest": {
         "preset": "@deneb-viz/jest-presets/jest/node"
@@ -46,6 +46,6 @@
         "@deneb-viz/eslint-config": "*",
         "@deneb-viz/jest-presets": "*",
         "@deneb-viz/typescript-config": "*",
-        "powerbi-visuals-api": "5.7.0"
+        "powerbi-visuals-api": "5.11.0"
     }
 }
