@@ -531,7 +531,6 @@ export const persistSpecification = (
 ) => {
     const {
         editor: { stagedConfig, stagedSpec, updateChanges },
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         fieldUsage: { dataset: trackedFieldsCurrent },
         visualSettings: {
             vega: {
