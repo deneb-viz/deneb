@@ -101,12 +101,19 @@ try {
         );
         writeFile(capabilitiesFile, capabilitiesFilePath, capabilitiesFileNew);
         console.log('Running pbiviz package with new options...');
-        runNpmScript('pbiviz package --all-locales', (err) => {
-            if (err) throw err;
-            console.log('Completed package process.');
-            cleanup();
-            exit(0);
-        });
+        runNpmScript(
+            `pbiviz package --all-locales ${
+                !featuresFileNew.enable_external_uri
+                    ? '--certification-fix'
+                    : ''
+            }`,
+            (err) => {
+                if (err) throw err;
+                console.log('Completed package process.');
+                cleanup();
+                exit(0);
+            }
+        );
     });
 } catch (e) {
     console.error(`[ERROR] ${e.message}`);
