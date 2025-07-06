@@ -17,7 +17,7 @@
     "scripts": {
         "dev": "tsup --watch ./src --watch ../worker-dataset-viewer/dist/** --watch ../worker-spec-json-processing/dist/** --watch ../monaco-custom/dist/**",
         "build": "tsup --clean",
-        "eslint": "eslint . --max-warnings 0"
+        "eslint": "eslint"
     },
     "devDependencies": {
         "@deneb-viz/core-dependencies": "*",
