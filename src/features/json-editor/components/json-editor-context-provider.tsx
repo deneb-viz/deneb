@@ -1,10 +1,10 @@
 import React, { createContext, createRef, useContext } from 'react';
-import { editor } from '@deneb-viz/monaco-custom';
+import { monaco } from '@deneb-viz/monaco-custom';
 import { IEditorRefs } from '..';
 
 const JsonEditorContext = createContext<IEditorRefs>({} as IEditorRefs);
-const specEditorMonacoRef = createRef<editor.IStandaloneCodeEditor>();
-const configEditorMonacoRef = createRef<editor.IStandaloneCodeEditor>();
+const specEditorMonacoRef = createRef<monaco.editor.IStandaloneCodeEditor>();
+const configEditorMonacoRef = createRef<monaco.editor.IStandaloneCodeEditor>();
 
 export const JsonEditorContextProvider = (props) => {
     return (

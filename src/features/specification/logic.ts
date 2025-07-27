@@ -4,7 +4,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import isEqual from 'lodash/isEqual';
 import merge from 'lodash/merge';
 import omit from 'lodash/omit';
-import { editor } from '@deneb-viz/monaco-custom';
+import { monaco } from '@deneb-viz/monaco-custom';
 
 import { TStoreState, getState } from '../../store';
 import { getVegaSettings } from '../../core/vega';
@@ -66,7 +66,7 @@ const cleanJsonInputForPersistence = (
  */
 export const getCleanEditorJson = (
     role: TEditorRole,
-    editor: editor.IStandaloneCodeEditor
+    editor: monaco.editor.IStandaloneCodeEditor
 ) => cleanJsonInputForPersistence(role, editor?.getValue());
 
 /**
@@ -435,8 +435,8 @@ export const getSpecificationParseOptions = (
  * the `isDirty` flag in the store.
  */
 export const hasLiveSpecChanged = (
-    specEditor: editor.IStandaloneCodeEditor,
-    configEditor: editor.IStandaloneCodeEditor
+    specEditor: monaco.editor.IStandaloneCodeEditor,
+    configEditor: monaco.editor.IStandaloneCodeEditor
 ) => {
     const {
             output: {
@@ -525,8 +525,8 @@ const isVersionedSpec = () => {
  * resets the `isDirty` flag in the store.
  */
 export const persistSpecification = (
-    specEditor: editor.IStandaloneCodeEditor,
-    configEditor: editor.IStandaloneCodeEditor,
+    specEditor: monaco.editor.IStandaloneCodeEditor,
+    configEditor: monaco.editor.IStandaloneCodeEditor,
     stage = true
 ) => {
     const {

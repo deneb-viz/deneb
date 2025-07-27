@@ -27,7 +27,7 @@ import {
     getUpdatedExportMetadata
 } from '@deneb-viz/json-processing';
 import { TEditorPosition } from '../core/ui';
-import { editor } from '@deneb-viz/monaco-custom';
+import { monaco } from '@deneb-viz/monaco-custom';
 // import { logTimeEnd, logTimeStart } from '../features/logging';
 
 export interface IEditorSlice {
@@ -36,9 +36,9 @@ export interface IEditorSlice {
         isDirty: boolean;
         stagedConfig: string;
         stagedSpec: string;
-        viewStateConfig: editor.ICodeEditorViewState;
-        viewStateSpec: editor.ICodeEditorViewState;
-        setViewState: (viewState: editor.ICodeEditorViewState) => void;
+        viewStateConfig: monaco.editor.ICodeEditorViewState;
+        viewStateSpec: monaco.editor.ICodeEditorViewState;
+        setViewState: (viewState: monaco.editor.ICodeEditorViewState) => void;
         toggleApplyMode: () => void;
         updateApplyMode: (applyMode: EditorApplyMode) => void;
         updateChanges: (payload: IEditorSliceUpdateChangesPayload) => void;
@@ -203,12 +203,12 @@ export interface IEditorSliceUpdateChangesPayload {
     /**
      * Current view state from the editor. If omitted, will use the current view state for that editor.
      */
-    viewState?: editor.ICodeEditorViewState;
+    viewState?: monaco.editor.ICodeEditorViewState;
 }
 
 const handleSetViewState = (
     state: TStoreState,
-    viewState: editor.ICodeEditorViewState
+    viewState: monaco.editor.ICodeEditorViewState
 ): Partial<TStoreState> => ({
     editor: {
         ...state.editor,

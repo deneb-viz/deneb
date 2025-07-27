@@ -22,12 +22,7 @@ import {
 } from '@deneb-viz/core-dependencies';
 import { updateFieldTracking } from '../../json-processing';
 
-import monaco, {
-    editor,
-    KeyCode,
-    KeyMod,
-    Position
-} from '@deneb-viz/monaco-custom';
+import { monaco } from '@deneb-viz/monaco-custom';
 import { ptToPx } from '../../../core/ui/dom';
 import { launchUrl } from '../../visual-host';
 import { getProviderSchema } from '@deneb-viz/json-processing';
@@ -60,7 +55,7 @@ interface IJsonEditorProps {
  * Handles everything we need to manage for the status bar.
  */
 interface IJsonEditorStatusState {
-    cursor: Position;
+    cursor: monaco.Position;
     role: TEditorRole;
     selectedText: string;
 }
@@ -128,7 +123,7 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
         cursor: {
             lineNumber: viewState?.cursorState?.[0]?.position?.lineNumber ?? 1,
             column: viewState?.cursorState?.[0]?.position?.column ?? 1
-        } as Position,
+        } as monaco.Position,
         role: thisEditorRole,
         selectedText: ''
     });
@@ -219,7 +214,7 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
 /**
  * Intercept click events on markdown tooltips and delegate to the host.
  */
-const addHyperlinkOverride = (editor: editor.IStandaloneCodeEditor) => {
+const addHyperlinkOverride = (editor: monaco.editor.IStandaloneCodeEditor) => {
     editor?.getDomNode()?.removeEventListener('click', onLinkClick);
     editor?.getDomNode()?.addEventListener('click', onLinkClick);
 };
@@ -263,7 +258,9 @@ const onLinkClick = (e: MouseEvent) => {
  * As Monaco doesn't have an API for this, it's a bit of a hack.
  * This has been taken from https://github.com/microsoft/monaco-editor/issues/1567
  */
-const removeContextMenuItems = (editor: editor.IStandaloneCodeEditor) => {
+const removeContextMenuItems = (
+    editor: monaco.editor.IStandaloneCodeEditor
+) => {
     const contextmenu = editor.getContribution('editor.contrib.contextmenu');
     const removableIds = [
         'editor.action.clipboardCutAction',
@@ -353,19 +350,23 @@ const setMonacoDiagnosticsOptions = () => {
 const setMonacoKeyBindingRules = () => {
     monaco.editor.addKeybindingRules([
         {
-            keybinding: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.Enter,
+            keybinding:
+                monaco.KeyMod.CtrlCmd |
+                monaco.KeyMod.Shift |
+                monaco.KeyCode.Enter,
             command: null
         },
         {
-            keybinding: KeyMod.CtrlCmd | KeyCode.Enter,
+            keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
             command: null
         },
         {
-            keybinding: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.KeyR,
+            keybinding:
+                monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyR,
             command: 'editor.action.formatDocument'
         },
         {
-            keybinding: KeyMod.CtrlCmd | KeyCode.F1,
+            keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.F1,
             command: 'editor.action.quickCommand'
         }
     ]);

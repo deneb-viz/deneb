@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@fluentui/react-components';
 import { shallow } from 'zustand/shallow';
-import { editor } from '@deneb-viz/monaco-custom';
+import { monaco } from '@deneb-viz/monaco-custom';
 
 import { getI18nValue } from '../../i18n';
 import store, { getState } from '../../../store';
@@ -60,8 +60,8 @@ export const CreateButton: React.FC = () => {
 const handleCreateFromTemplate = (
     metadata: UsermetaTemplate,
     candidates: IDenebTemplateAllocationComponents,
-    specEditor: editor.IStandaloneCodeEditor,
-    configEditor: editor.IStandaloneCodeEditor
+    specEditor: monaco.editor.IStandaloneCodeEditor,
+    configEditor: monaco.editor.IStandaloneCodeEditor
 ) => {
     logDebug('createFromTemplate', { metadata, candidates });
     const {

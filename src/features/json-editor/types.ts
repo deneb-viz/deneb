@@ -1,6 +1,6 @@
 import { MutableRefObject } from 'react';
 import { SpecProvider } from '@deneb-viz/core-dependencies';
-import { editor } from '@deneb-viz/monaco-custom';
+import { monaco } from '@deneb-viz/monaco-custom';
 
 /**
  * Whether the editor is in auto-apply mode or not.
@@ -23,8 +23,8 @@ export type TEditorRole = 'Spec' | 'Config' | 'Settings';
  * an interface to make this easier for forwarding refs.
  */
 export interface IEditorRefs {
-    spec: MutableRefObject<editor.IStandaloneCodeEditor>;
-    config: MutableRefObject<editor.IStandaloneCodeEditor>;
+    spec: MutableRefObject<monaco.editor.IStandaloneCodeEditor>;
+    config: MutableRefObject<monaco.editor.IStandaloneCodeEditor>;
 }
 
 /**
