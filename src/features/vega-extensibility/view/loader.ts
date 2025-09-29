@@ -65,7 +65,5 @@ const handleExternalResourceWarning = (href: string, externalUri: boolean) =>
  * Test that supplied URI matches the data: protocol and should be whitelisted
  * by the loader.
  */
-const isDataUri = (uri: string) =>
-    !!uri.match(
-        /^\s*data:([a-z]+\/[a-z]+(;[a-z-]+=[a-z-]+)?)?(;base64)?,[a-z0-9!$&',()*+,;=\-._~:@/?%\s]*\s*$/i
-    );
+const isDataUri = (uri: string): boolean =>
+    !!uri.match(/^data:([-\w]+\/[-+\w.]+)?(;?\w+=[-\w]+)*(;base64)?,.*$/gu);
