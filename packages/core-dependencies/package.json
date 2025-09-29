@@ -39,8 +39,8 @@
         "preset": "@deneb-viz/jest-presets/jest/node"
     },
     "dependencies": {
-        "vega": "6.1.2",
-        "vega-lite": "6.1.0"
+        "vega": "6.2.0",
+        "vega-lite": "6.4.1"
     },
     "devDependencies": {
         "@deneb-viz/eslint-config": "*",
