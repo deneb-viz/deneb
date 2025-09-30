@@ -204,7 +204,7 @@ const getPatchedConfig = (content: string): IContentPatchResult => {
     try {
         const parsedConfig = getParsedJsonWithResult(content);
         if (parsedConfig.errors.length > 0) return parsedConfig;
-        return {
+        const patched = {
             result: merge(
                 {
                     background: 'transparent', // defer to Power BI background, if applied
@@ -214,6 +214,20 @@ const getPatchedConfig = (content: string): IContentPatchResult => {
             ),
             errors: []
         };
+        // (#514, #525): we've seen issues with Vega-Lite where some folks are setting container width/height/autosize
+        // in the config and because we're patching the spec, it gets into a bit of a mess. To avoid confusion, we'll
+        // remove any such assignments here and the spec patching will handle them as they do currently. We'll do this
+        // better when we re-visit the patching in future.
+        if (patched.result['width'] === 'container') {
+            delete patched.result['width'];
+        }
+        if (patched.result['height'] === 'container') {
+            delete patched.result['height'];
+        }
+        if (patched.result['autosize'].resize === true) {
+            patched.result['autosize'].resize = false;
+        }
+        return patched;
     } catch (e) {
         return { result: null, errors: [e.message] };
     }
