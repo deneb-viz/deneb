@@ -224,7 +224,7 @@ const getPatchedConfig = (content: string): IContentPatchResult => {
         if (patched.result['height'] === 'container') {
             delete patched.result['height'];
         }
-        if (patched.result['autosize'].resize === true) {
+        if (patched.result['autosize']?.resize === true) {
             patched.result['autosize'].resize = false;
         }
         return patched;
