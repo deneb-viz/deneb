@@ -13,7 +13,6 @@ import toString from 'lodash/toString';
 
 import { getObjectFormattedAsText, stringifyPruned } from '../json-processing';
 import { getVegaSettings, IVegaViewDatum } from '../../core/vega';
-import { powerBiFormatValue } from '../../utils';
 import {
     getDatasetFieldsBySelectionKeys,
     getIdentitiesFromData,
@@ -22,6 +21,7 @@ import {
 import { DATASET_IDENTITY_NAME, DATASET_KEY_NAME } from '../../constants';
 import { getI18nValue } from '../i18n';
 import { getVisualHost } from '../visual-host';
+import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
 
 /**
  * Convenience constant for tooltip events, as it's required by Power BI.
@@ -49,7 +49,7 @@ const extractTooltipDataItemsFromObject = (
         displayName: `${k}`,
         value: `${
             (autoFormatMetadata[k] &&
-                powerBiFormatValue(
+                getFormattedValue(
                     (autoFormatMetadata[k].type.numeric && toNumber(v)) ||
                         (autoFormatMetadata[k].type.dateTime && v),
                     autoFormatMetadata[k].format

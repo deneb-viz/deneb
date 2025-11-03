@@ -8,8 +8,8 @@ import store, { getState } from '../../../store';
 import { StatusStackItem } from './status-stack-item';
 import { useStatusStyles } from '.';
 import { getI18nValue } from '../../i18n';
-import { powerBiFormatValue } from '../../../utils';
 import { Progress } from './progress';
+import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
 
 /**
  * Displays when the visual is fetching data from the data model, and provides
@@ -30,7 +30,7 @@ export const FetchingMessage: React.FC = () => {
                 <Progress
                     description={`${getI18nValue(
                         'Fetching_Data'
-                    )}. ${powerBiFormatValue(rowsLoaded, '#,0')} ${getI18nValue(
+                    )}. ${getFormattedValue(rowsLoaded, '#,0')} ${getI18nValue(
                         'Fetching_Data_Progress_Suffix'
                     )}`}
                 />

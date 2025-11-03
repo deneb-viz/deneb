@@ -1,8 +1,8 @@
 import powerbi from 'powerbi-visuals-api';
 import PrimitiveValue = powerbi.PrimitiveValue;
 
-import { powerBiFormatValue } from '../../utils';
 import { FEATURES } from '../../../config';
+import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
 
 /**
  * Convenience check for statis of Drilldown feature flag.
@@ -18,7 +18,7 @@ export const resolveDrilldownComponents = (
     value: PrimitiveValue,
     format: string
 ) => {
-    const formatted = powerBiFormatValue(value, format);
+    const formatted = getFormattedValue(value, format);
     return current ? [...current, formatted] : [formatted];
 };
 
@@ -31,6 +31,6 @@ export const resolveDrilldownFlat = (
     value: PrimitiveValue,
     format: string
 ) => {
-    const formatted = powerBiFormatValue(value, format);
+    const formatted = getFormattedValue(value, format);
     return current ? `${current} ${formatted}` : formatted;
 };

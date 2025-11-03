@@ -3,7 +3,6 @@ import { valueFormatter } from 'powerbi-visuals-utils-formattingutils';
 import ValueFormatterOptions = valueFormatter.ValueFormatterOptions;
 
 import { generateDynamicPatternFill } from '../pattern-fill';
-import { powerBiFormatValue } from '../../../utils';
 import { getThemeColorByIndex, getThemeColorByName } from './powerbi-theme';
 import { shadeColor } from '../utils';
 import { clone } from 'lodash';
@@ -21,6 +20,7 @@ import {
     PROPERTIES_DEFAULTS,
     isObject
 } from '@deneb-viz/core-dependencies';
+import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
 
 /**
  * A custom expression that should be added to the Vega view.
@@ -68,9 +68,9 @@ const pbiFormat = (
     options: ValueFormatterOptions = {}
 ) => {
     if (isObject(params)) {
-        return powerBiFormatValue(datum, null, <ValueFormatterOptions>params);
+        return getFormattedValue(datum, null, <ValueFormatterOptions>params);
     }
-    return powerBiFormatValue(
+    return getFormattedValue(
         datum,
         params === null ? null : `${params}`,
         options
@@ -92,7 +92,7 @@ const pbiFormatAutoUnit = (
             ...{ value: datum }
         });
     }
-    return powerBiFormatValue(
+    return getFormattedValue(
         datum,
         <string>params,
         <ValueFormatterOptions>{

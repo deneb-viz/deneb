@@ -1,0 +1,52 @@
+{
+    "name": "@deneb-viz/powerbi-compat",
+    "version": "0.1.0",
+    "private": false,
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/deneb-viz/deneb-2.git"
+    },
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com"
+    },
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./formatting": {
+            "types": "./dist/lib/formatting/index.d.ts",
+            "default": "./dist/lib/formatting/index.js"
+        },
+        "./theme": {
+            "types": "./dist/lib/theme/index.d.ts",
+            "default": "./dist/lib/theme/index.js"
+        }
+    },
+    "sideEffects": false,
+    "scripts": {
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "clean": "rimraf dist",
+        "typecheck": "tsc --noEmit",
+        "eslint": "eslint ."
+    },
+    "devDependencies": {
+        "@deneb-viz/eslint-config": "*",
+        "@deneb-viz/typescript-config": "*",
+        "@types/node": "^16.4.12",
+        "tsup": "^8.0.2",
+        "typescript": "^5.4.5",
+        "vitest": "^3.2.4"
+    },
+    "peerDependencies": {
+        "powerbi-visuals-api": "5.11.0"
+    },
+    "dependencies": {
+        "powerbi-visuals-utils-formattingutils": "^6.1.2"
+    }
+}

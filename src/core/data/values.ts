@@ -9,9 +9,9 @@ import reduce from 'lodash/reduce';
 import { isCrossHighlightPropSet } from '../../features/interactivity';
 import { getVegaSettings } from '../vega';
 import { getHighlightStatus } from './dataView';
-import { powerBiFormatValue } from '../../utils';
 import { isDataViewFieldEligibleForFormatting } from '../../features/dataset';
 import { logTimeEnd, logTimeStart } from '../../features/logging';
+import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
 
 /**
  * Enumerate all relevant areas of the data view to get an array of all
@@ -62,7 +62,7 @@ const getFormattingStringEntries = (
                     getFormatStringForValueByIndex(v, vvi)
                 );
                 const formattedValues = values.map((vv, vvi) =>
-                    powerBiFormatValue(vv, formatStrings[vvi])
+                    getFormattedValue(vv, formatStrings[vvi])
                 );
                 acc.push(formatStrings);
                 acc.push(formattedValues);
