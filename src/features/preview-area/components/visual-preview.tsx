@@ -1,6 +1,11 @@
 import React, { useMemo } from 'react';
 import { shallow } from 'zustand/shallow';
-import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
+import {
+    makeStyles,
+    shorthands,
+    tokens,
+    mergeClasses
+} from '@fluentui/react-components';
 
 import store from '../../../store';
 import { logRender } from '../../logging';
@@ -9,48 +14,41 @@ import { FourD3D3D } from './fourd3d3d';
 import { PREVIEW_PANE_DEFAULTS } from '../../../../config';
 
 /**
- * Preview area styles
+ * Preview area base styles (static). Dynamic sizing is applied via inline styles.
  */
-const usePreviewStyles = (
-    viewportWidth: number,
-    viewportHeight: number,
-    showViewportMarker: boolean,
-    editorZoomLevel: number
-) => {
-    const borderWidth = PREVIEW_PANE_DEFAULTS.viewportBorderSize;
-    const height = viewportHeight;
-    const width = viewportWidth;
-    const scale = editorZoomLevel / 100;
-    return makeStyles({
-        previewArea: {
-            ...shorthands.padding('2px'),
-            ...shorthands.overflow('overlay'),
-            boxSizing: 'border-box',
-            width: '100%',
-            height: '100%'
-        },
-        previewWrapper: {
-            height: `${(height + borderWidth) * scale}px`,
-            width: `${(width + borderWidth) * scale}px`,
-            ...shorthands.padding(`${borderWidth}px`),
-            ...shorthands.borderStyle('dashed'),
-            ...shorthands.borderWidth(`${borderWidth}px`),
-            ...shorthands.borderColor(
-                showViewportMarker ? tokens.colorNeutralStroke2 : 'transparent'
-            ),
-            ...shorthands.borderRadius('2px')
-        },
-        previewContainer: {
-            display: 'flex',
-            height: `${height}px`,
-            minHeight: `${height}px`,
-            width: `${width}px`,
-            minWidth: `${width}px`,
-            transform: `scale(${scale})`,
-            transformOrigin: '0% 0% 0px'
-        }
-    });
-};
+const usePreviewStyles = makeStyles({
+    previewArea: {
+        ...shorthands.padding('2px'),
+        ...shorthands.overflow('overlay'),
+        boxSizing: 'border-box',
+        width: '100%',
+        height: '100%'
+    },
+    previewWrapper: {
+        // dynamic height/width driven by CSS variables
+        height: 'calc((var(--vp-height) + var(--vp-border)) * var(--vp-scale))',
+        width: 'calc((var(--vp-width) + var(--vp-border)) * var(--vp-scale))',
+        ...shorthands.padding('var(--vp-border)'),
+        ...shorthands.borderStyle('dashed'),
+        ...shorthands.borderWidth('var(--vp-border)'),
+        ...shorthands.borderRadius('2px')
+    },
+    previewWrapperViewportMarker: {
+        ...shorthands.borderColor(tokens.colorNeutralStroke2)
+    },
+    previewWrapperNoMarker: {
+        ...shorthands.borderColor('transparent')
+    },
+    previewContainer: {
+        display: 'flex',
+        height: 'var(--vp-height)',
+        minHeight: 'var(--vp-height)',
+        width: 'var(--vp-width)',
+        minWidth: 'var(--vp-width)',
+        transform: 'scale(var(--vp-scale))',
+        transformOrigin: '0% 0% 0px'
+    }
+});
 
 /**
  * Dedicated container for the visual when in the advanced editor, that allows
@@ -85,20 +83,30 @@ export const VisualPreview: React.FC = () => {
         }),
         shallow
     );
-    const classes = usePreviewStyles(
-        viewportWidth,
-        viewportHeight,
-        showViewportMarker,
-        editorZoomLevel
-    )();
+    const classes = usePreviewStyles();
+    const borderWidth = PREVIEW_PANE_DEFAULTS.viewportBorderSize;
+    const scale = editorZoomLevel / 100;
+    const styleVars: React.CSSProperties = {
+        ['--vp-height' as unknown as keyof React.CSSProperties]: `${viewportHeight}px`,
+        ['--vp-width' as unknown as keyof React.CSSProperties]: `${viewportWidth}px`,
+        ['--vp-border' as unknown as keyof React.CSSProperties]: `${borderWidth}px`,
+        ['--vp-scale' as unknown as keyof React.CSSProperties]: String(scale)
+    };
     const out = useMemo(
         () => (visual4d3d3d ? <FourD3D3D /> : <VegaContainer />),
         [visual4d3d3d, editorZoomLevel]
     );
     logRender('VisualPreview', status, editorPreviewAreaHeight);
     return (
-        <div className={classes.previewArea}>
-            <div className={classes.previewWrapper}>
+        <div className={classes.previewArea} style={styleVars}>
+            <div
+                className={mergeClasses(
+                    classes.previewWrapper,
+                    showViewportMarker
+                        ? classes.previewWrapperViewportMarker
+                        : classes.previewWrapperNoMarker
+                )}
+            >
                 <div
                     id='deneb-visual-preview'
                     className={classes.previewContainer}

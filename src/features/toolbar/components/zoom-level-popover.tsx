@@ -41,6 +41,7 @@ export const ZoomLevelPopover: React.FC = () => {
         (): JSX.Element[] =>
             VISUAL_PREVIEW_ZOOM.customLevels.map((l) => (
                 <Radio
+                    key={`zoom-${l.value}`}
                     label={getI18nValue(
                         `Text_Radio_Group_ZoomLevel_${l.value}`
                     )}

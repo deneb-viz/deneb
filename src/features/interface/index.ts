@@ -35,45 +35,44 @@ export * from './types';
 
 export type InterfaceTheme = 'light' | 'dark';
 
-export const useInterfaceStyles = () =>
-    makeStyles({
-        container: {
-            boxSizing: 'border-box',
-            height: '100%',
-            width: '100%',
-            cursor: 'auto',
-            '& .editor-heading': {
-                cursor: 'pointer'
-            },
-            ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2)
+export const useInterfaceStyles = makeStyles({
+    container: {
+        boxSizing: 'border-box',
+        height: '100%',
+        width: '100%',
+        cursor: 'auto',
+        '& .editor-heading': {
+            cursor: 'pointer'
         },
-        editorContainer: {
-            height: '100%',
-            maxHeight: '100%',
-            maxWidth: '100%',
-            width: '100%',
-            ...shorthands.overflow('hidden')
-        },
-        statusBarContainer: {
-            boxSizing: 'border-box',
-            flexShrink: 0,
-            width: '100%',
-            height: `${PREVIEW_PANE_TOOLBAR_MIN_SIZE}px}`,
-            borderTopColor: tokens.colorNeutralStroke2,
-            borderTopStyle: 'solid',
-            borderTopWidth: '1px',
-            ...shorthands.overflow('hidden')
-        },
-        tooltipMount: {
-            zIndex: POPOVER_Z_INDEX
-        },
-        themeBackground: {
-            backgroundColor: tokens.colorNeutralBackground1
-        },
-        visualBackground: {
-            backgroundColor: 'transparent'
-        }
-    })();
+        ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2)
+    },
+    editorContainer: {
+        height: '100%',
+        maxHeight: '100%',
+        maxWidth: '100%',
+        width: '100%',
+        ...shorthands.overflow('hidden')
+    },
+    statusBarContainer: {
+        boxSizing: 'border-box',
+        flexShrink: 0,
+        width: '100%',
+        height: `${PREVIEW_PANE_TOOLBAR_MIN_SIZE}px}`,
+        borderTopColor: tokens.colorNeutralStroke2,
+        borderTopStyle: 'solid',
+        borderTopWidth: '1px',
+        ...shorthands.overflow('hidden')
+    },
+    tooltipMount: {
+        zIndex: POPOVER_Z_INDEX
+    },
+    themeBackground: {
+        backgroundColor: tokens.colorNeutralBackground1
+    },
+    visualBackground: {
+        backgroundColor: 'transparent'
+    }
+});
 
 /**
  * For the supplied parameters, resolve what the application mode should be.

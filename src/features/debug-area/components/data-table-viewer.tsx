@@ -3,6 +3,7 @@ import { shallow } from 'zustand/shallow';
 import { ArrowSortDown16Regular } from '@fluentui/react-icons';
 import { tokens } from '@fluentui/react-theme';
 import DataTable, { TableProps } from 'react-data-table-component';
+import { StyleSheetManager } from 'styled-components';
 
 import store from '../../../store';
 import { DataTableStatusBar } from './data-table-status-bar';
@@ -50,81 +51,85 @@ export const DataTableViewer: React.FC<TableProps<any>> = ({
         [editorPreviewAreaHeight, viewportHeight]
     );
     logRender('DataTableViewer', { debugAreaHeight });
+    // Filter compact prop that RDT passes to column cells but shouldn't reach DOM
+    const shouldForwardProp = (propName: string) => propName !== 'compact';
     return (
-        <DataTable
-            columns={columns}
-            data={data}
-            fixedHeader
-            fixedHeaderScrollHeight={`${debugAreaHeight}px`}
-            sortIcon={<ArrowSortDown16Regular />}
-            defaultSortFieldId={columns[0].id}
-            pagination
-            paginationComponent={DataTableStatusBar}
-            paginationPerPage={debugTableRowsPerPage as number}
-            customStyles={{
-                head: {
-                    style: {
-                        color: tokens.colorNeutralForeground1,
-                        fontWeight: 900
-                    }
-                },
-                headRow: {
-                    style: {
-                        backgroundColor: tokens.colorNeutralBackground1,
-                        borderBottomColor: tokens.colorNeutralStroke3,
-                        borderBottomStyle: 'solid',
-                        borderBottomWidth: '1px',
-                        paddingLeft: `${DATA_TABLE_ROW_PADDING_LEFT}px}`,
-                        minHeight: `${DATA_TABLE_ROW_HEIGHT}px`
-                    },
-                    denseStyle: {
-                        minHeight: `${DATA_TABLE_ROW_HEIGHT}px`
-                    }
-                },
-                rows: {
-                    style: {
-                        backgroundColor: tokens.colorNeutralBackground1,
-                        color: tokens.colorNeutralForeground2,
-                        paddingLeft: `${DATA_TABLE_ROW_PADDING_LEFT}px}`,
-                        borderBottomColor: tokens.colorNeutralStroke3,
-                        borderBottomStyle: 'solid',
-                        borderBottomWidth: '1px',
-                        minHeight: `${DATA_TABLE_ROW_HEIGHT}px`,
-                        '&:not(:last-of-type)': {
-                            borderBottomColor: tokens.colorNeutralStroke3,
-                            borderBottomStyle: 'solid',
-                            borderBottomWidth: '1px'
+        <StyleSheetManager shouldForwardProp={shouldForwardProp}>
+            <DataTable
+                columns={columns}
+                data={data}
+                fixedHeader
+                fixedHeaderScrollHeight={`${debugAreaHeight}px`}
+                sortIcon={<ArrowSortDown16Regular />}
+                defaultSortFieldId={columns[0].id}
+                pagination
+                paginationComponent={DataTableStatusBar}
+                paginationPerPage={debugTableRowsPerPage as number}
+                customStyles={{
+                    head: {
+                        style: {
+                            color: tokens.colorNeutralForeground1,
+                            fontWeight: 900
                         }
                     },
-                    denseStyle: {
-                        minHeight: `${DATA_TABLE_ROW_HEIGHT}px`
+                    headRow: {
+                        style: {
+                            backgroundColor: tokens.colorNeutralBackground1,
+                            borderBottomColor: tokens.colorNeutralStroke3,
+                            borderBottomStyle: 'solid',
+                            borderBottomWidth: '1px',
+                            paddingLeft: `${DATA_TABLE_ROW_PADDING_LEFT}px`,
+                            minHeight: `${DATA_TABLE_ROW_HEIGHT}px`
+                        },
+                        denseStyle: {
+                            minHeight: `${DATA_TABLE_ROW_HEIGHT}px`
+                        }
+                    },
+                    rows: {
+                        style: {
+                            backgroundColor: tokens.colorNeutralBackground1,
+                            color: tokens.colorNeutralForeground2,
+                            paddingLeft: `${DATA_TABLE_ROW_PADDING_LEFT}px`,
+                            borderBottomColor: tokens.colorNeutralStroke3,
+                            borderBottomStyle: 'solid',
+                            borderBottomWidth: '1px',
+                            minHeight: `${DATA_TABLE_ROW_HEIGHT}px`,
+                            '&:not(:last-of-type)': {
+                                borderBottomColor: tokens.colorNeutralStroke3,
+                                borderBottomStyle: 'solid',
+                                borderBottomWidth: '1px'
+                            }
+                        },
+                        denseStyle: {
+                            minHeight: `${DATA_TABLE_ROW_HEIGHT}px`
+                        }
+                    },
+                    cells: {
+                        style: { fontSize: `${DATA_TABLE_FONT_SIZE}px` }
+                    },
+                    table: {
+                        style: {
+                            backgroundColor: tokens.colorNeutralBackground1,
+                            fontFamily: DATA_TABLE_FONT_FAMILY,
+                            fontSize: `${DATA_TABLE_FONT_SIZE}px`
+                        }
+                    },
+                    tableWrapper: {
+                        style: {
+                            height: '100%',
+                            backgroundColor: tokens.colorNeutralBackground1
+                        }
+                    },
+                    responsiveWrapper: {
+                        style: {
+                            flexGrow: 1,
+                            overflow: 'overlay'
+                        }
                     }
-                },
-                cells: {
-                    style: { fontSize: `${DATA_TABLE_FONT_SIZE}px` }
-                },
-                table: {
-                    style: {
-                        backgroundColor: tokens.colorNeutralBackground1,
-                        fontFamily: DATA_TABLE_FONT_FAMILY,
-                        fontSize: `${DATA_TABLE_FONT_SIZE}px`
-                    }
-                },
-                tableWrapper: {
-                    style: {
-                        height: '100%',
-                        backgroundColor: tokens.colorNeutralBackground1
-                    }
-                },
-                responsiveWrapper: {
-                    style: {
-                        flexGrow: 1,
-                        overflow: 'overlay'
-                    }
-                }
-            }}
-            dense
-            {...props}
-        />
+                }}
+                dense
+                {...props}
+            />
+        </StyleSheetManager>
     );
 };

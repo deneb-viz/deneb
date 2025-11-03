@@ -72,7 +72,10 @@ const getTableFieldRows = (role: TModalDialogType) => {
     }
     logDebug('getTableFieldRows', { items });
     return items.map((item, index) => (
-        <TableRow className={classes.tableRow}>
+        <TableRow
+            key={`template-field-${item.key}-${index}`}
+            className={classes.tableRow}
+        >
             <TemplateDatasetRow item={item} role={role} index={index} />
         </TableRow>
     ));

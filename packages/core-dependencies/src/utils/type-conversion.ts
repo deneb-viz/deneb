@@ -8,6 +8,6 @@ export function stringToUint8Array(str: string): Uint8Array {
 /*
  * Converts a Uint8Array to a string.
  */
-export function uint8ArrayToString(arr: ArrayBuffer): string {
+export function uint8ArrayToString(arr: Uint8Array): string {
     return new TextDecoder().decode(arr);
 }

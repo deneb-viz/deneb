@@ -139,4 +139,8 @@ const getNumberOfPages = (rowCount: number, rowsPerPage: number) =>
     Math.ceil(rowCount / rowsPerPage);
 
 const getRowsPerPageValues = () =>
-    PREVIEW_PANE_DATA_TABLE.rowsPerPage.values.map((v) => <option>{v}</option>);
+    PREVIEW_PANE_DATA_TABLE.rowsPerPage.values.map((v) => (
+        <option key={`rows-${v}`} value={v}>
+            {v}
+        </option>
+    ));

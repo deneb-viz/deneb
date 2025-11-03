@@ -30,8 +30,13 @@ export const DatasetViewerOptions: React.FC = () => {
     const classes = useDebugStyles();
     const datasets = useMemo(() => getDatasetNames(), [renderId]);
     const datasetOptions = useMemo(
-        () => datasets.map((ds) => <option>{ds}</option>),
-        [datasets, renderId]
+        () =>
+            datasets.map((ds) => (
+                <option key={`dataset-${ds}`} value={ds}>
+                    {ds}
+                </option>
+            )),
+        [datasets]
     );
 
     /**

@@ -13,6 +13,21 @@ interface IStatuStackItemProps {
     children: React.ReactNode;
 }
 
+const useHighlightStyles = makeStyles({
+    item: {
+        display: 'block',
+        height: 'auto',
+        ...shorthands.padding('5px'),
+        ...shorthands.borderRadius('10px')
+    },
+    highlighted: {
+        backgroundColor: Themes.light.colorNeutralBackground5
+    },
+    normal: {
+        backgroundColor: 'none'
+    }
+});
+
 /**
  * This is a standard Fluent UI `StackItem`, but with some repeatable styles
  * that we need in our status pages.
@@ -25,19 +40,17 @@ export const StatusStackItem: React.FC<IStatuStackItemProps> = ({
     children
 }) => {
     const classes = useStatusStyles();
-    const highlight = makeStyles({
-        item: {
-            display: 'block',
-            height: 'auto',
-            ...shorthands.padding('5px'),
-            ...shorthands.borderRadius('10px'),
-            backgroundColor: shouldHighlight
-                ? Themes.light.colorNeutralBackground5
-                : 'none'
-        }
-    })();
+    const highlightClasses = useHighlightStyles();
     return (
-        <div className={mergeClasses(classes.flexItem, highlight.item)}>
+        <div
+            className={mergeClasses(
+                classes.flexItem,
+                highlightClasses.item,
+                shouldHighlight
+                    ? highlightClasses.highlighted
+                    : highlightClasses.normal
+            )}
+        >
             {children}
         </div>
     );
