@@ -74,3 +74,8 @@ webpack.statistics*.html
 
 # Turbo
 .turbo
+
+# Windows Shell Cache (created when dev server accesses icon files)
+# This folder is created because Node.js/PowerShell doesn't expand %SystemDrive%
+# properly when Windows Shell creates icon/thumbnail cache during pbiviz:start
+%SystemDrive%/
