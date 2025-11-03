@@ -46,7 +46,7 @@
         "@types/jsum": "^0.1.0",
         "@types/lodash": "^4.14.202",
         "@types/minimist": "^1.2.5",
-        "@types/node": "^16.4.12",
+        "@types/node": "^22.15.33",
         "@types/react": "^17.0.0",
         "@types/react-dom": "^17.0.0",
         "@types/simple-sha1": "^3.0.3",
