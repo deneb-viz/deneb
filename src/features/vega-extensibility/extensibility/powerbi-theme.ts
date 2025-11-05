@@ -2,7 +2,7 @@ import { Config as VgConfig } from 'vega';
 import { Config as VlConfig } from 'vega-lite';
 import { interpolateHcl, interpolateRgbBasis, quantize } from 'd3-interpolate';
 
-import { ptToPx } from '../../../core/ui/dom';
+import { ptToPx } from '@deneb-viz/utils/dom';
 import { getVisualHost } from '../../visual-host';
 
 type Config = VgConfig | VlConfig;
@@ -87,7 +87,7 @@ export const powerBiThemeVega = () =>
             shape: {},
             symbol: { strokeWidth: 1.5, size: 50 }
         }
-    } as VgConfig);
+    }) as VgConfig;
 
 /**
  * Helper function to extract palette color by (zero-based) index.

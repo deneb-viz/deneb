@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { shallow } from 'zustand/shallow';
 import debounce from 'lodash/debounce';
-import map from 'lodash/map';
 import { useUncontrolledFocus } from '@fluentui/react-components';
 import Editor, { loader, OnChange, OnMount } from '@monaco-editor/react';
 
@@ -23,7 +22,7 @@ import {
 import { updateFieldTracking } from '../../json-processing';
 
 import { monaco } from '@deneb-viz/monaco-custom';
-import { ptToPx } from '../../../core/ui/dom';
+import { ptToPx } from '@deneb-viz/utils/dom';
 import { launchUrl } from '../../visual-host';
 import { getProviderSchema } from '@deneb-viz/json-processing';
 import { IVisualDatasetField } from '../../../core/data';

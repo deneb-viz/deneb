@@ -20,11 +20,6 @@ export const getReportViewport = (
 });
 
 /**
- * Convert a value intended for pt to a px equivalent.
- */
-export const ptToPx = (value: number) => value * (1 / 3 + 1);
-
-/**
  * For suitable events, ensure that the visual viewport is correctly resolved and persisted. This will allow us to keep the
  * viewport upon re-initialisation (e.g. if swapping visuals out or reloading the dev visual).
  */
