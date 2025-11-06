@@ -68,7 +68,7 @@
         "powerbi-visuals-api": "5.11.0",
         "powerbi-visuals-tools": "^6.2.0",
         "powerbi-visuals-utils-formattingutils": "^6.1.2",
-        "prettier": "^2.2.1",
+        "prettier": "^3.3.3",
         "react": "^17.0.1",
         "react-custom-scrollbars-2": "^4.4.0",
         "react-data-table-component": "^7.7.0",
