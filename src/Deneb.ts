@@ -59,14 +59,17 @@ logHeading(`Version: ${APPLICATION_INFORMATION?.version}`, 12);
 
 export class Deneb implements IVisual {
     private settings: VisualFormattingSettingsModel;
+    #host: powerbi.extensibility.visual.IVisualHost;
     #applicationWrapper: HTMLElement;
 
     constructor(options: VisualConstructorOptions) {
         logHost('Constructor has been called.', { options });
         try {
+            this.#host = options.host;
             VisualHostServices.bind(options);
             I18nServices.bind(options);
             VegaPatternFillServices.bind();
+            VegaExtensibilityServices.bind(this.#host.colorPalette);
             VisualFormattingSettingsService.bind(getLocalizationManager());
             const { element } = options;
             this.#applicationWrapper = document.createElement('div');
@@ -107,9 +110,6 @@ export class Deneb implements IVisual {
         setRenderingStarted();
         this.resolveLocale();
         this.resolveViewport(options);
-        VegaExtensibilityServices.bind(
-            this.settings.theme.ordinal.ordinalColorCount.value
-        );
         // Provide intial update options to store
         const { setVisualUpdate } = getState();
         setVisualUpdate({

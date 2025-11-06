@@ -39,6 +39,7 @@
         "@deneb-viz/powerbi-compat": "*",
         "@deneb-viz/template-usermeta-schema": "*",
         "@deneb-viz/utils": "*",
+        "@deneb-viz/vega-runtime": "*",
         "@deneb-viz/worker-common": "*",
         "@fluentui/react-components": "^9.51.0",
         "@fluentui/react-icons": "^2.0.239",

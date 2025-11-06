@@ -3,7 +3,7 @@
  */
 import { getDenebTemplateDatasetRef } from '..';
 import { PROVIDER_RESOURCES } from '../../../../../config';
-import { powerBiThemeVega } from '../../../vega-extensibility';
+import { getPowerBiThemeVega } from '@deneb-viz/vega-runtime/extensibility';
 
 /**
  * Schema URL for all templates.
@@ -25,7 +25,7 @@ export const getDenebTemplateVegaSpecificConfig = (includeTheme = false) =>
     JSON.stringify(
         {
             autosize: { contains: 'padding', type: 'fit' },
-            ...(includeTheme && powerBiThemeVega())
+            ...(includeTheme && getPowerBiThemeVega())
         },
         null,
         2

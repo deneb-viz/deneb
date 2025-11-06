@@ -3,7 +3,6 @@ import { valueFormatter } from 'powerbi-visuals-utils-formattingutils';
 import ValueFormatterOptions = valueFormatter.ValueFormatterOptions;
 
 import { generateDynamicPatternFill } from '../pattern-fill';
-import { getThemeColorByIndex, getThemeColorByName } from './powerbi-theme';
 import { shadeColor } from '../utils';
 import { clone } from 'lodash';
 import {
@@ -21,6 +20,10 @@ import {
     isObject
 } from '@deneb-viz/core-dependencies';
 import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
+import {
+    getThemeColorByIndex,
+    getThemeColorByName
+} from '@deneb-viz/vega-runtime/extensibility';
 
 /**
  * A custom expression that should be added to the Vega view.
