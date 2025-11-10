@@ -38,7 +38,7 @@ export const ZoomLevelPopover: React.FC = () => {
     const caption = `${editorZoomLevel}%`;
     const classes = useToolbarStyles();
     const options = useMemo(
-        (): JSX.Element[] =>
+        (): React.ReactElement[] =>
             VISUAL_PREVIEW_ZOOM.customLevels.map((l) => (
                 <Radio
                     key={`zoom-${l.value}`}

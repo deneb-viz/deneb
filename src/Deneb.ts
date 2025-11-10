@@ -7,8 +7,8 @@ import IVisual = powerbi.extensibility.visual.IVisual;
 import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
 import FormattingModel = powerbi.visuals.FormattingModel;
 
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import { createElement } from 'react';
+import { createRoot } from 'react-dom/client';
 
 import App from './components/App';
 
@@ -61,6 +61,7 @@ export class Deneb implements IVisual {
     private settings: VisualFormattingSettingsModel;
     #host: powerbi.extensibility.visual.IVisualHost;
     #applicationWrapper: HTMLElement;
+    #root: ReturnType<typeof createRoot>;
 
     constructor(options: VisualConstructorOptions) {
         logHost('Constructor has been called.', { options });
@@ -76,7 +77,8 @@ export class Deneb implements IVisual {
             this.#applicationWrapper.id = 'deneb-application-wrapper';
             element.appendChild(this.#applicationWrapper);
             this.handleSuppressOnObjectFormatting();
-            ReactDOM.render(React.createElement(App), this.#applicationWrapper);
+            this.#root = createRoot(this.#applicationWrapper);
+            this.#root.render(createElement(App));
             element.oncontextmenu = (ev) => {
                 ev.preventDefault();
             };

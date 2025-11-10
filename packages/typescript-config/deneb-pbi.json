@@ -2,7 +2,7 @@
     "$schema": "https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/tsconfig.json",
     "compilerOptions": {
         "allowJs": false,
-        "jsx": "react",
+        "jsx": "react-jsx",
         "types": [
             "react",
             "react-dom"
