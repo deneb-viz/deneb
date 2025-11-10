@@ -54,7 +54,7 @@ const getFieldOptions = (logLevel: number) =>
         const selected = e.value === `${logLevel}`;
 
         return (
-            <option value={`${e.value}`} selected={selected}>
+            <option key={e.value} value={`${e.value}`} selected={selected}>
                 {getI18nValue(e.displayNameKey as string)}
             </option>
         );
