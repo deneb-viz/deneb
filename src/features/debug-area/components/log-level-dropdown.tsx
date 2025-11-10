@@ -25,7 +25,7 @@ export const LogLevelDropdown: React.FC<ILogLevelDropdownProps> = ({ id }) => {
         }),
         shallow
     );
-    const items = useMemo(() => getFieldOptions(logLevel as number), []);
+    const items = useMemo(() => getFieldOptions(), []);
     const onChange: SelectProps['onChange'] = (
         event: React.ChangeEvent<HTMLSelectElement>,
         data
@@ -38,6 +38,7 @@ export const LogLevelDropdown: React.FC<ILogLevelDropdownProps> = ({ id }) => {
         <Select
             className={classes.logLevelDropdown}
             aria-labelledby={id}
+            value={`${logLevel}`}
             onChange={onChange}
             size='small'
         >
@@ -49,12 +50,10 @@ export const LogLevelDropdown: React.FC<ILogLevelDropdownProps> = ({ id }) => {
 /**
  * Returns a list of `MenuItemRadio` components from the visual capabilities.
  */
-const getFieldOptions = (logLevel: number) =>
+const getFieldOptions = () =>
     getDebugLogLevels().map((e: ICapabilitiesEnumMember) => {
-        const selected = e.value === `${logLevel}`;
-
         return (
-            <option key={e.value} value={`${e.value}`} selected={selected}>
+            <option key={e.value} value={`${e.value}`}>
                 {getI18nValue(e.displayNameKey as string)}
             </option>
         );
