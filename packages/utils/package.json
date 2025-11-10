@@ -19,8 +19,8 @@
             "default": "./dist/index.js"
         },
         "./dom": {
-            "types": "./dist/lib/dom/index.d.ts",
-            "default": "./dist/lib/dom/index.js"
+            "types": "./dist/lib/dom.d.ts",
+            "default": "./dist/lib/dom.js"
         }
     },
     "sideEffects": false,
