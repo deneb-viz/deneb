@@ -4,10 +4,12 @@ import {
     JSON_FIELD_TRACKING_METADATA_PLACEHOLDER,
     JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER,
     TokenPatternReplacer,
-    getEscapedReplacerPattern,
-    stringToUint8Array,
-    uint8ArrayToString
+    getEscapedReplacerPattern
 } from '@deneb-viz/core-dependencies';
+import {
+    uint8ArrayToString,
+    stringToUint8Array
+} from '@deneb-viz/utils/type-conversion';
 import {
     Node,
     applyEdits,

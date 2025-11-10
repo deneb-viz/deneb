@@ -12,13 +12,13 @@ import {
     getEscapedReplacerPattern,
     getJsonPlaceholderKey,
     isBase64Image,
-    merge,
-    uint8ArrayToString
+    merge
 } from '@deneb-viz/core-dependencies';
 import { JSONPath, visit } from 'jsonc-parser';
 import { Dictionary } from 'lodash';
 import { parseExpression } from 'vega-expression';
 import { isString } from '@deneb-viz/utils/inspection';
+import { uint8ArrayToString } from '@deneb-viz/utils/type-conversion';
 
 /**
  * For a Vega expression AST node, check if it has an occurrence of a field from the visual dataset.

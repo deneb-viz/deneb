@@ -8,10 +8,12 @@ import {
 } from 'jsonc-parser';
 import {
     IDenebRemapRequestPayload,
-    IDenebRemapResponsePayload,
+    IDenebRemapResponsePayload
+} from '@deneb-viz/core-dependencies';
+import {
     stringToUint8Array,
     uint8ArrayToString
-} from '@deneb-viz/core-dependencies';
+} from '@deneb-viz/utils/type-conversion';
 
 /**
  * For the supplied tokenized specification and re-mapping information, traverse all re-mapping fields needed and

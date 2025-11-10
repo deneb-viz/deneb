@@ -26,6 +26,10 @@
             "types": "./dist/lib/inspection.d.ts",
             "default": "./dist/lib/inspection.js"
         },
+        "./type-conversion": {
+            "types": "./dist/lib/type-conversion.d.ts",
+            "default": "./dist/lib/type-conversion.js"
+        },
         "./worker": {
             "types": "./dist/lib/worker.d.ts",
             "default": "./dist/lib/worker.js"

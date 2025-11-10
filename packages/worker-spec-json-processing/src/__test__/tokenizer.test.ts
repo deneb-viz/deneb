@@ -1,9 +1,11 @@
 import {
     IDenebTokenizationRequestPayload,
-    TrackedFields,
+    TrackedFields
+} from '@deneb-viz/core-dependencies';
+import {
     stringToUint8Array,
     uint8ArrayToString
-} from '@deneb-viz/core-dependencies';
+} from '@deneb-viz/utils/type-conversion';
 import { getPowerBiTokenPatternsReplacement } from '@deneb-viz/integration-powerbi';
 import { getTokenizedSpec } from '../tokenizer';
 

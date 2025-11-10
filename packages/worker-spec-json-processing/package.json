@@ -23,7 +23,8 @@
             "cjs"
         ],
         "noExternal": [
-            "@deneb-viz/utils/inspection"
+            "@deneb-viz/utils/inspection",
+            "@deneb-viz/utils/type-conversion"
         ],
         "onSuccess": "npx tsc --emitDeclarationOnly --declaration",
         "treeshake": true

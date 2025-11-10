@@ -5,6 +5,7 @@ export default defineConfig({
         'src/index.ts',
         'src/lib/dom.ts',
         'src/lib/inspection.ts',
+        'src/lib/type-conversion.ts',
         'src/lib/worker.ts'
     ],
     clean: true,

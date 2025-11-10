@@ -9,10 +9,12 @@ import {
     IDenebTrackingResponseMessage,
     JSON_MAX_PRUNE_DEPTH,
     TrackedFields,
-    UsermetaDatasetField,
+    UsermetaDatasetField
+} from '@deneb-viz/core-dependencies';
+import {
     stringToUint8Array,
     uint8ArrayToString
-} from '@deneb-viz/core-dependencies';
+} from '@deneb-viz/utils/type-conversion';
 import { doDenebSpecJsonWorkerRequest } from '@deneb-viz/worker-common';
 import {
     getPowerBiTokenPatternsLiteral,
