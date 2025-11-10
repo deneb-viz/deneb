@@ -8,7 +8,7 @@ import { ToolbarButtonStandard } from '../../toolbar/components/toolbar-button-s
 import { PREVIEW_PANE_TOOLBAR_MIN_SIZE } from '../../../constants';
 import { ProviderDetail } from './provider-detail';
 import { TrackingSyncStatus } from './tracking-sync-status';
-import { monaco } from '@deneb-viz/monaco-custom';
+import { monaco } from '@deneb-viz/app-core';
 
 interface IStatusBarProps {
     position: monaco.Position;

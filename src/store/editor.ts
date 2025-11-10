@@ -27,7 +27,7 @@ import {
     getUpdatedExportMetadata
 } from '@deneb-viz/json-processing';
 import { TEditorPosition } from '../core/ui';
-import { monaco } from '@deneb-viz/monaco-custom';
+import { monaco } from '@deneb-viz/app-core';
 // import { logTimeEnd, logTimeStart } from '../features/logging';
 
 export interface IEditorSlice {
@@ -257,11 +257,11 @@ const handleUpdateChanges = (
         state.editor.applyMode !== 'Auto';
     const viewStateConfig =
         role === 'Config'
-            ? viewState ?? state.editor.viewStateConfig
+            ? (viewState ?? state.editor.viewStateConfig)
             : existingViewState;
     const viewStateSpec =
         role === 'Spec'
-            ? viewState ?? state.editor.viewStateSpec
+            ? (viewState ?? state.editor.viewStateSpec)
             : existingViewState;
     const stagedConfig = role === 'Config' ? text : state.editor.stagedConfig;
     const stagedSpec = role === 'Spec' ? text : state.editor.stagedSpec;
@@ -400,9 +400,9 @@ const handleTogglePreviewDebugPane = (
     const editorPreviewAreaHeight = prev
         ? state.editorPreviewAreaHeightMax
         : state.editorPreviewAreaHeightLatch ===
-          state.editorPreviewAreaHeightMax
-        ? getPreviewAreaHeightInitial(state.visualViewportCurrent.height)
-        : state.editorPreviewAreaHeightLatch;
+            state.editorPreviewAreaHeightMax
+          ? getPreviewAreaHeightInitial(state.visualViewportCurrent.height)
+          : state.editorPreviewAreaHeightLatch;
     const editorPreviewAreaHeightLatch = prev
         ? state.editorPreviewAreaHeightLatch
         : state.editorPreviewAreaHeight;

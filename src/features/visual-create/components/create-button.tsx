@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@fluentui/react-components';
 import { shallow } from 'zustand/shallow';
-import { monaco } from '@deneb-viz/monaco-custom';
+import { monaco } from '@deneb-viz/app-core';
 
 import { getI18nValue } from '../../i18n';
 import store, { getState } from '../../../store';

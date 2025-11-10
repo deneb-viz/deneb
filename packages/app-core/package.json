@@ -1,0 +1,60 @@
+{
+    "name": "@deneb-viz/app-core",
+    "version": "1.0.0",
+    "description": "Provides the core functionality for a Deneb application.",
+    "private": false,
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/deneb-viz/deneb-2.git"
+    },
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com"
+    },
+    "exports": {
+        ".": {
+            "types": "./dist/src/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./index.css": "./dist/index.css"
+    },
+    "types": "dist/src/index.d.ts",
+    "type": "module",
+    "scripts": {
+        "build": "npm run build:worker && npm run build:package",
+        "build:package": "tsup",
+        "build:worker": "tsup --config tsup.worker.config.ts",
+        "clean": "rimraf dist",
+        "dev": "concurrently \"npm run dev:worker\" \"npm run dev:package\"",
+        "dev:package": "tsup --watch --config tsup.config.ts",
+        "dev:worker": "tsup --watch --config tsup.worker.config.ts",
+        "prepack": "npm run build",
+        "typecheck": "tsc --noEmit",
+        "eslint": "eslint .",
+        "test": "vitest run",
+        "test:watch": "vitest"
+    },
+    "files": [
+        "dist/**"
+    ],
+    "sideEffects": false,
+    "devDependencies": {
+        "@deneb-viz/eslint-config": "*",
+        "@deneb-viz/typescript-config": "*",
+        "@types/node": "^22.15.33",
+        "@types/react": "^18.3.18",
+        "concurrently": "^9.1.2",
+        "tsup": "^8.5.0",
+        "tsx": "^4.20.3",
+        "typescript": "^5.6.2",
+        "vitest": "^3.2.4"
+    },
+    "dependencies": {
+        "@monaco-editor/react": "^4.6.0",
+        "monaco-editor": "0.45.0"
+    },
+    "peerDependencies": {
+        "react": "^19",
+        "react-dom": "^19"
+    }
+}

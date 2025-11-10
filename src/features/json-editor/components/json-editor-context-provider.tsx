@@ -1,5 +1,5 @@
 import React, { createContext, createRef, useContext } from 'react';
-import { monaco } from '@deneb-viz/monaco-custom';
+import { monaco } from '@deneb-viz/app-core';
 import { IEditorRefs } from '..';
 
 const JsonEditorContext = createContext<IEditorRefs>({} as IEditorRefs);

@@ -21,21 +21,12 @@ import {
 } from '@deneb-viz/core-dependencies';
 import { updateFieldTracking } from '../../json-processing';
 
-import { monaco } from '@deneb-viz/monaco-custom';
+import { monaco, setupMonacoWorker } from '@deneb-viz/app-core';
 import { ptToPx } from '@deneb-viz/utils/dom';
 import { launchUrl } from '../../visual-host';
 import { getProviderSchema } from '@deneb-viz/json-processing';
 import { IVisualDatasetField } from '../../../core/data';
 import { getI18nValue } from '../../i18n';
-import { monacoJsonWorkerUrl } from '@deneb-viz/worker-common';
-
-self.MonacoEnvironment = {
-    getWorkerUrl: () => {
-        return monacoJsonWorkerUrl;
-    },
-    createTrustedTypesPolicy: () => null
-};
-loader.config({ monaco });
 
 /**
  * One-time Monaco intialization tasks.
@@ -98,6 +89,10 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
         }),
         shallow
     );
+    // Override default Monaco worker lookup to use bundled worker
+    useEffect(() => {
+        setupMonacoWorker();
+    }, []);
     const attr = useUncontrolledFocus();
     const classes = useInterfaceStyles();
     const editorHeight = useMemo(

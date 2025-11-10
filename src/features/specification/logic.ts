@@ -4,7 +4,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import isEqual from 'lodash/isEqual';
 import merge from 'lodash/merge';
 import omit from 'lodash/omit';
-import { monaco } from '@deneb-viz/monaco-custom';
+import { monaco } from '@deneb-viz/app-core';
 
 import { TStoreState, getState } from '../../store';
 import { getVegaSettings } from '../../core/vega';

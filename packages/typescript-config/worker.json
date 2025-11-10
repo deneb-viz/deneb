@@ -3,6 +3,7 @@
   "extends": "./base.json",
   "compilerOptions": {
     "lib": [
+      "es2020",
       "WebWorker"
     ]
   }

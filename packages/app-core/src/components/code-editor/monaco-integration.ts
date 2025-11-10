@@ -89,7 +89,48 @@ import 'monaco-editor/esm/vs/editor/contrib/wordHighlighter/browser/wordHighligh
  * ============================================================================================================================
  * The language services that we wish to bundle. Note that as we only really need JSON support, we want to make sure that we don't import
  * superfluous ones.
+ *
+ * JSON language contribution registers a lazy dynamic import for jsonMode; in a single-file visual package
+ * the generated split chunk is not emitted, causing a runtime ChunkLoadError. We force eager inclusion by
+ * also statically importing the mode implementation so webpack keeps it in the main bundle.
  */
 import 'monaco-editor/esm/vs/language/json/monaco.contribution';
+import 'monaco-editor/esm/vs/language/json/jsonMode';
+
+/**
+ * ============================================================================================================================
+ *  Monaco loader setup
+ * ============================================================================================================================
+ * This should be done after we have set our defaults for the global Monaco instance, so that it is loaded into our editor components.
+ */
+import { loader } from '@monaco-editor/react';
+loader.config({ monaco });
+
+/**
+ * ============================================================================================================================
+ *  Custom worker setup
+ * ============================================================================================================================
+ * Monaco will typically lazy load the desired worker script, which is normally fine. However, because Deneb can run inside Power BI, we
+ * must ensure that the worker script (and the method to load it) as correctly overridden, otherwise we don't get the language features
+ * that we want.
+ */
+import {
+    getUrlFromBlob,
+    getWorkerAsBlobFromRawFile
+} from '@deneb-viz/utils/worker';
+import jsonWorkerScript from '../../../dist/worker/json-language.worker.js';
+const jsonWorkerBlob = getWorkerAsBlobFromRawFile(jsonWorkerScript);
+const jsonWorkerUrl = getUrlFromBlob(jsonWorkerBlob);
+
+/**
+ * Monaco environment override to use the custom worker URL rather than inbuilt.
+ */
+export const setupMonacoWorker = () => {
+    self.MonacoEnvironment = {
+        getWorker: () => {
+            return new Worker(jsonWorkerUrl);
+        }
+    };
+};
 
 export { monaco };

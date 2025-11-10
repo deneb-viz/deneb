@@ -1,6 +1,6 @@
 import { MutableRefObject } from 'react';
 import { SpecProvider } from '@deneb-viz/core-dependencies';
-import { monaco } from '@deneb-viz/monaco-custom';
+import { monaco } from '@deneb-viz/app-core';
 
 /**
  * Whether the editor is in auto-apply mode or not.

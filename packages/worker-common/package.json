@@ -26,7 +26,6 @@
         "@deneb-viz/core-dependencies": "*",
         "@deneb-viz/eslint-config": "*",
         "@deneb-viz/typescript-config": "*",
-        "@deneb-viz/monaco-custom": "*",
         "@deneb-viz/worker-dataset-viewer": "*",
         "@deneb-viz/worker-spec-json-processing": "*"
     }

@@ -11,7 +11,6 @@ import {
 } from '@deneb-viz/utils/worker';
 import dataTable from '@deneb-viz/worker-dataset-viewer';
 import denebSpecJson from '@deneb-viz/worker-spec-json-processing';
-import jsonWorker from '@deneb-viz/monaco-custom/json.worker';
 
 /**
  * Used for the calculation of display widths and formatted values for the dataset viewer in the debug table.
@@ -26,20 +25,6 @@ export const datasetViewerWorker: IWorkerDatasetViewer = getWorkerFromUrl(
 export const denebSpecJsonWorker: IDenebSpecJsonWorker = getWorkerFromUrl(
     getUrlFromBlob(getWorkerAsBlobFromRawFile(denebSpecJson as string))
 );
-
-/**
- * URL for the Monaco JSON worker. This will be used by Monaco to manually create the worker.
- */
-export const monacoJsonWorkerUrl = getUrlFromBlob(
-    getWorkerAsBlobFromRawFile(jsonWorker as string)
-);
-
-/**
- * Monaco worker for JSON processing.
- */
-export const monacoJsonWorker: Worker = new Worker(monacoJsonWorkerUrl, {
-    name: 'json'
-});
 
 /**
  * Asynchronously perform JSON manipulations for a spec via the Deneb spec JSON web worker.
