@@ -21,6 +21,10 @@
         "./dom": {
             "types": "./dist/lib/dom.d.ts",
             "default": "./dist/lib/dom.js"
+        },
+        "./worker": {
+            "types": "./dist/lib/worker.d.ts",
+            "default": "./dist/lib/worker.js"
         }
     },
     "sideEffects": false,

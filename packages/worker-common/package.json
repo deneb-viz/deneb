@@ -19,6 +19,9 @@
         "build": "tsup --clean",
         "eslint": "eslint"
     },
+    "dependencies": {
+        "@deneb-viz/utils": "*"
+    },
     "devDependencies": {
         "@deneb-viz/core-dependencies": "*",
         "@deneb-viz/eslint-config": "*",
