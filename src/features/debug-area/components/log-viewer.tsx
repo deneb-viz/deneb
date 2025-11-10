@@ -26,8 +26,8 @@ export const LogViewer: React.FC = () => {
     const levelId = useId();
     const levelLabel = useMemo(() => getI18nValue('Objects_Vega_LogLevel'), []);
     const logEntries = useMemo(
-        () => getLogEntries(warns, errors, logLevel as number),
-        [warns, errors, logLevel]
+        () => getLogEntries(warns, errors, logLevel as number, classes),
+        [warns, errors, logLevel, classes]
     );
     logRender('LogViewer');
     return (
@@ -50,17 +50,20 @@ export const LogViewer: React.FC = () => {
 /**
  * Get and format all log entries for display.
  */
-const getLogEntries = (warns: string[], errors: string[], logLevel: number) => {
-    const classes = useDebugStyles();
-    return getDebugLogEntriesForDisplay(warns, errors, logLevel).map((e) => (
-        <div>
+const getLogEntries = (
+    warns: string[],
+    errors: string[],
+    logLevel: number,
+    classes: ReturnType<typeof useDebugStyles>
+) =>
+    getDebugLogEntriesForDisplay(warns, errors, logLevel).map((e) => (
+        <div key={`${e.level}-${e.message}`}>
             <span className={classes[`logLevelEntry${e.level}`]}>
                 [{e.i18nLevel}]
             </span>{' '}
             {e.message}
         </div>
     ));
-};
 
 /**
  * Get all log entries, translate the level, and sort them for display, based
