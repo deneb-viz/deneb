@@ -6,7 +6,7 @@ import {
 } from '@deneb-viz/core-dependencies';
 import dataTable from '@deneb-viz/worker-dataset-viewer';
 import denebSpecJson from '@deneb-viz/worker-spec-json-processing';
-import jsonWorker from '@deneb-viz/monaco-custom/dist/json.worker';
+import jsonWorker from '@deneb-viz/monaco-custom/json.worker';
 
 /**
  * Convert a raw file into a blob.

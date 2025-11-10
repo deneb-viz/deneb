@@ -2,6 +2,8 @@ import { exit } from 'process';
 import { FEATURES, LOG_LEVEL } from '../config';
 
 console.log('Checking visual configuration is correct...\n');
+const MODE = process.env.DENEB_PACKAGE_MODE;
+const allowExternalUri = MODE === 'standalone';
 const errors: string[] = [];
 
 // Developer mode: Should not be set in committed code
@@ -20,8 +22,8 @@ if (FEATURES.visual_update_history_overlay) {
 if (LOG_LEVEL !== 0) {
     errors.push(`❌ logLevel is ${LOG_LEVEL}; this should be 0 (NONE).`);
 }
-// External URIs: Not permitted in certified visual, so needs to be disabled in committed code.
-if (FEATURES.enable_external_uri) {
+// External URIs: Not permitted in certified visual; allowed only for standalone packaging mode
+if (FEATURES.enable_external_uri && !allowExternalUri) {
     errors.push(
         '❌ FEATURES.enable_external_uri is true; this should be false.'
     );

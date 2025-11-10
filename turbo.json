@@ -8,12 +8,16 @@
       ],
       "outputs": [
         ".next/**",
-        "!.next/cache/**"
+        "!.next/cache/**",
+        "dist/**"
       ]
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "outputs": [
+        "dist/**"
+      ]
     },
     "eslint": {
       "dependsOn": [
@@ -32,46 +36,30 @@
       ],
       "cache": false
     },
-    "//#pbiviz:eslint": {
-      "dependsOn": [
-        "^eslint"
-      ]
-    },
-    "//#pbiviz:package": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "dist/**"
-      ]
-    },
-    "//#pbiviz:package-standalone": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "dist/**"
-      ]
-    },
-    "//#pbiviz:package-alpha": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "dist/**"
-      ]
-    },
-    "//#pbiviz:package-beta": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "dist/**"
-      ]
-    },
-    "//#pbiviz:start": {
+    "//#webpack:start": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "//#webpack:build": {
+      "cache": false,
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        ".tmp/**"
+      ]
+    },
+    "//#webpack:package": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**",
+        ".tmp/**"
+      ]
     }
   }
 }

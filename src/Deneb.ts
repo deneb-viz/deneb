@@ -1,5 +1,5 @@
 import '../style/visual.less';
-import '@deneb-viz/monaco-custom/dist/index.css';
+import '@deneb-viz/monaco-custom/index.css';
 import powerbi from 'powerbi-visuals-api';
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
@@ -98,6 +98,7 @@ export class Deneb implements IVisual {
             return;
         } catch (e) {
             // Signal that we've encountered an error
+            logDebug('Error during visual update.', { error: e });
             setRenderingFailed(e.message);
         }
     }

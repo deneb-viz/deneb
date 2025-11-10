@@ -11,6 +11,20 @@
     },
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./index.css": "./dist/index.css",
+        "./json.worker": {
+            "types": "./dist/json.worker.d.ts",
+            "default": "./dist/json.worker.js"
+        }
+    },
+    "sideEffects": [
+        "./dist/index.css"
+    ],
     "files": [
         "dist"
     ],

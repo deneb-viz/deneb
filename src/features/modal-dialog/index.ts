@@ -5,7 +5,7 @@ import { ModalDialogRole } from './types';
 export { useModalDialogStyles } from './components';
 export { ModalDialog } from './components/modal-dialog';
 export { StageProgressIndicator } from './components/stage-progress-indicator';
-export { TModalDialogType } from './types';
+export { type TModalDialogType } from './types';
 export { isDialogOpen } from './utils';
 
 /**
