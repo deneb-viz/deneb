@@ -51,6 +51,7 @@ export const SelectIncludedTemplate: React.FC<ISelectIncludedTemplateProps> = ({
         () =>
             templateMetadata.map(({ information }) => (
                 <Radio
+                    key={information.uuid}
                     value={information.name}
                     label={information.name}
                     className={classes.radioButton}
