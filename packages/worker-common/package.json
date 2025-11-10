@@ -15,7 +15,7 @@
         "dist"
     ],
     "scripts": {
-        "dev": "tsup --watch ./src --watch ../worker-dataset-viewer/dist/** --watch ../worker-spec-json-processing/dist/** --watch ../monaco-custom/dist/**",
+        "dev": "tsup --watch ./src --watch ../worker-spec-json-processing/dist/** ",
         "build": "tsup --clean",
         "eslint": "eslint"
     },
@@ -26,7 +26,6 @@
         "@deneb-viz/core-dependencies": "*",
         "@deneb-viz/eslint-config": "*",
         "@deneb-viz/typescript-config": "*",
-        "@deneb-viz/worker-dataset-viewer": "*",
         "@deneb-viz/worker-spec-json-processing": "*"
     }
 }

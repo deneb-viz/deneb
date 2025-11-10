@@ -8,4 +8,3 @@ export {
 export * from './object';
 export * from './string';
 export * from './type-conversion';
-export * from './type-guards';

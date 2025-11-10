@@ -20,7 +20,7 @@ import {
 } from '../interactivity';
 import { DATA_TABLE_FONT_FAMILY, DATA_TABLE_FONT_SIZE } from '.';
 import { getI18nValue } from '../i18n';
-import { IWorkerDatasetViewerTranslations } from '@deneb-viz/core-dependencies';
+import { type IWorkerDatasetViewerTranslations } from '@deneb-viz/app-core';
 
 /**
  * If the column/cell relates to cross-filtering, return a tooltip value that
@@ -194,8 +194,8 @@ const getReservedTableColumnTooltip = (field: string) => {
                     field === DATASET_ROW_NAME
                         ? 'RowIdentifier'
                         : field === DATASET_IDENTITY_NAME
-                        ? 'IdentityName'
-                        : 'Unknown'
+                          ? 'IdentityName'
+                          : 'Unknown'
                 }`,
                 [field]
             );
@@ -210,10 +210,10 @@ const formatNumberValueForTable = (value: number, tooltip = false) =>
     isNaN(value)
         ? getI18nValue('Table_Placeholder_NaN')
         : value === Number.POSITIVE_INFINITY
-        ? getI18nValue('Table_Placeholder_Infinity')
-        : value === Number.NEGATIVE_INFINITY
-        ? `-${getI18nValue('Table_Placeholder_Infinity')}`
-        : getStringifiedDisplayValue(value, tooltip);
+          ? getI18nValue('Table_Placeholder_Infinity')
+          : value === Number.NEGATIVE_INFINITY
+            ? `-${getI18nValue('Table_Placeholder_Infinity')}`
+            : getStringifiedDisplayValue(value, tooltip);
 
 /**
  * Handle the processing of a stringified value within a data table.

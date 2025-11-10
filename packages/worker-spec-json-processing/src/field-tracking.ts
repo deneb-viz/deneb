@@ -12,13 +12,13 @@ import {
     getEscapedReplacerPattern,
     getJsonPlaceholderKey,
     isBase64Image,
-    isString,
     merge,
     uint8ArrayToString
 } from '@deneb-viz/core-dependencies';
 import { JSONPath, visit } from 'jsonc-parser';
 import { Dictionary } from 'lodash';
 import { parseExpression } from 'vega-expression';
+import { isString } from '@deneb-viz/utils/inspection';
 
 /**
  * For a Vega expression AST node, check if it has an occurrence of a field from the visual dataset.
@@ -89,7 +89,9 @@ const getTemplateMetadataOriginal = (
     field: UsermetaDatasetField,
     reset = false
 ) =>
-    reset ? field : trackedFields[field.key]?.templateMetadataOriginal ?? field;
+    reset
+        ? field
+        : (trackedFields[field.key]?.templateMetadataOriginal ?? field);
 
 /**
  * For the current dataset fields, return an object that maps field names to a `TrackedFieldCandidate`, flagging that
@@ -100,19 +102,22 @@ const getTrackedFieldMapCurrent = (
     trackedFields: TrackedFields,
     reset = false
 ): TrackedFieldCandidates =>
-    Object.values(datasetFields).reduce((acc, v) => {
-        const templateMetadata = v.templateMetadata as UsermetaDatasetField;
-        acc[templateMetadata.key] = {
-            isCurrent: true,
-            templateMetadata: v.templateMetadata,
-            templateMetadataOriginal: getTemplateMetadataOriginal(
-                trackedFields,
-                templateMetadata,
-                reset
-            )
-        };
-        return acc;
-    }, <TrackedFieldCandidates>{});
+    Object.values(datasetFields).reduce(
+        (acc, v) => {
+            const templateMetadata = v.templateMetadata as UsermetaDatasetField;
+            acc[templateMetadata.key] = {
+                isCurrent: true,
+                templateMetadata: v.templateMetadata,
+                templateMetadataOriginal: getTemplateMetadataOriginal(
+                    trackedFields,
+                    templateMetadata,
+                    reset
+                )
+            };
+            return acc;
+        },
+        <TrackedFieldCandidates>{}
+    );
 
 /**
  * For a literal field name (i.e., an extracted property value from a JSON or Vega expression AST), returns an array of

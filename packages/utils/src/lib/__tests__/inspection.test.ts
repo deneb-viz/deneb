@@ -1,6 +1,7 @@
-import { isBoolean, isDate, isNumber, isObject, isString } from '../type-guards';
+import { isBoolean, isDate, isNumber, isObject, isString } from '../inspection';
+import { describe, it, expect } from 'vitest';
 
-describe('Type Guards', () => {
+describe('Inspection', () => {
     describe('isBoolean', () => {
         it('should return true for a boolean value', () => {
             expect(isBoolean(true)).toBe(true);

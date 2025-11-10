@@ -1,5 +1,4 @@
 import {
-    IWorkerDatasetViewer,
     IDenebSpecJsonWorker,
     IDenebJsonProcessingWorkerRequest,
     IDenebJsonProcessingWorkerResponse
@@ -9,15 +8,7 @@ import {
     getWorkerAsBlobFromRawFile,
     getWorkerFromUrl
 } from '@deneb-viz/utils/worker';
-import dataTable from '@deneb-viz/worker-dataset-viewer';
 import denebSpecJson from '@deneb-viz/worker-spec-json-processing';
-
-/**
- * Used for the calculation of display widths and formatted values for the dataset viewer in the debug table.
- */
-export const datasetViewerWorker: IWorkerDatasetViewer = getWorkerFromUrl(
-    getUrlFromBlob(getWorkerAsBlobFromRawFile(dataTable as string))
-);
 
 /**
  * Used for asynchronous processing of JSON specifications.

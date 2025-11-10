@@ -1,20 +1,18 @@
-/**
- * Web worker used to process dataset viewer table content in a separate thread, so that we don't block the main thread.
- */
-
-import {
+import type {
     IWorkerDatasetViewerDataTableRow,
     IWorkerDatasetViewerMaxDisplayWidths,
     IWorkerDatasetViewerMessage,
     IWorkerDatasetViewerResponse,
     IWorkerDatasetViewerTranslations,
-    WorkerDatasetViewerValueType,
+    WorkerDatasetViewerValueType
+} from './types';
+import {
     isDate,
     isNumber,
     isObject,
     isBoolean,
     isString
-} from '@deneb-viz/core-dependencies';
+} from '@deneb-viz/utils/inspection';
 
 /**
  * Used to memoize the calculated width of a given string, so that we don't have to re-compute each time.
@@ -79,39 +77,43 @@ const getProcessedData = (
         const newDatum: Record<string, unknown> =
             Object.keys(d).length === 0 ? { datum: {} } : { ...d };
         const allKeys = Object.keys(newDatum);
-        const result = allKeys.reduce((acc, key) => {
-            const value = newDatum[key];
-            const valueType = getValueType(key, value, data.datasetKeyName);
-            const rawValue = getRawValueForTableCell(
-                valueType,
-                value,
-                data.translations
-            );
-            const formattedValue = getFormattedValueForTableCell(
-                valueType,
-                rawValue
-            );
-            const tooLong = `${formattedValue}`.length > data.valueMaxLength;
-            const displayValue = tooLong
-                ? data.translations.placeholderTooLong
-                : formattedValue;
-            const displayWidth = getDisplayWidth(
-                displayValue,
-                data.canvasFontCharWidth
-            );
-            maxWidths[key] = Math.max(maxWidths[key] || 0, displayWidth);
-            return {
-                ...acc,
-                [key]: {
-                    rawValue,
+        const result = allKeys.reduce(
+            (acc, key) => {
+                const value = newDatum[key];
+                const valueType = getValueType(key, value, data.datasetKeyName);
+                const rawValue = getRawValueForTableCell(
+                    valueType,
+                    value,
+                    data.translations
+                );
+                const formattedValue = getFormattedValueForTableCell(
+                    valueType,
+                    rawValue
+                );
+                const tooLong =
+                    `${formattedValue}`.length > data.valueMaxLength;
+                const displayValue = tooLong
+                    ? data.translations.placeholderTooLong
+                    : formattedValue;
+                const displayWidth = getDisplayWidth(
                     displayValue,
-                    displayWidth,
-                    formattedValue,
-                    tooLong,
-                    valueType
-                }
-            };
-        }, <IWorkerDatasetViewerDataTableRow>{});
+                    data.canvasFontCharWidth
+                );
+                maxWidths[key] = Math.max(maxWidths[key] || 0, displayWidth);
+                return {
+                    ...acc,
+                    [key]: {
+                        rawValue,
+                        displayValue,
+                        displayWidth,
+                        formattedValue,
+                        tooLong,
+                        valueType
+                    }
+                };
+            },
+            <IWorkerDatasetViewerDataTableRow>{}
+        );
         return result;
     });
     return {

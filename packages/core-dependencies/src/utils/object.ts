@@ -3,7 +3,7 @@
  * This file exists so that we have our own versions of lodash functions, which are tree-shakeable.
  */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { isObject } from './type-guards';
+import { isObject } from '@deneb-viz/utils/inspection';
 
 /**
  * A predicate function that takes a value and a key, and returns a boolean.

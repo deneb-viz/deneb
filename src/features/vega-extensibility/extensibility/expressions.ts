@@ -16,14 +16,14 @@ import { handleCrossFilterEvent } from '../../interactivity/cross-filter';
 import { logDebug, logWarning } from '../../logging';
 import {
     CROSS_FILTER_LIMITS,
-    PROPERTIES_DEFAULTS,
-    isObject
+    PROPERTIES_DEFAULTS
 } from '@deneb-viz/core-dependencies';
 import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
 import {
     getThemeColorByIndex,
     getThemeColorByName
 } from '@deneb-viz/vega-runtime/extensibility';
+import { isObject } from '@deneb-viz/utils/inspection';
 
 /**
  * A custom expression that should be added to the Vega view.

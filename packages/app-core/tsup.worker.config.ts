@@ -4,6 +4,8 @@ export default defineConfig(() => [
     // Web worker entry points - build as IIFE and wrap in module export
     {
         entry: {
+            'data-viewer':
+                'src/components/data-viewer/workers/data-viewer.worker.ts',
             'json-language': 'src/components/code-editor/workers/json.worker.ts'
         },
         format: ['iife'], // IIFE for worker execution

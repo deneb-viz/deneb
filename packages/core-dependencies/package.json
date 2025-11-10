@@ -65,6 +65,7 @@
         "preset": "@deneb-viz/jest-presets/jest/node"
     },
     "dependencies": {
+        "@deneb-viz/utils": "*",
         "vega": "6.2.0",
         "vega-lite": "6.4.1"
     },

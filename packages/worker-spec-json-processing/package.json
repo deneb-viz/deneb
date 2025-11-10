@@ -22,6 +22,9 @@
         "format": [
             "cjs"
         ],
+        "noExternal": [
+            "@deneb-viz/utils/inspection"
+        ],
         "onSuccess": "npx tsc --emitDeclarationOnly --declaration",
         "treeshake": true
     },
@@ -40,6 +43,7 @@
         "@deneb-viz/eslint-config": "*",
         "@deneb-viz/integration-powerbi": "*",
         "@deneb-viz/jest-presets": "*",
+        "@deneb-viz/utils": "*",
         "@deneb-viz/typescript-config": "*",
         "jsonc-parser": "^3.2.1",
         "vega-expression": "^5.1.0"

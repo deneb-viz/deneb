@@ -22,6 +22,10 @@
             "types": "./dist/lib/dom.d.ts",
             "default": "./dist/lib/dom.js"
         },
+        "./inspection": {
+            "types": "./dist/lib/inspection.d.ts",
+            "default": "./dist/lib/inspection.js"
+        },
         "./worker": {
             "types": "./dist/lib/worker.d.ts",
             "default": "./dist/lib/worker.js"
@@ -33,7 +37,9 @@
         "dev": "tsup --watch",
         "clean": "rimraf dist",
         "typecheck": "tsc --noEmit",
-        "eslint": "eslint ."
+        "eslint": "eslint .",
+        "test": "vitest run",
+        "test:watch": "vitest"
     },
     "devDependencies": {
         "@deneb-viz/eslint-config": "*",

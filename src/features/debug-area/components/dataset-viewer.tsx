@@ -24,13 +24,13 @@ import {
 import { VegaViewServices } from '../../vega-extensibility';
 import { getPrunedObject } from '../../json-processing';
 import { getHashValue } from '../../../utils';
+import { getNewUuid } from '@deneb-viz/core-dependencies';
 import {
-    IWorkerDatasetViewerDataTableRow,
-    IWorkerDatasetViewerMaxDisplayWidths,
-    IWorkerDatasetViewerMessage,
-    getNewUuid
-} from '@deneb-viz/core-dependencies';
-import { datasetViewerWorker } from '@deneb-viz/worker-common';
+    datasetViewerWorker,
+    type IWorkerDatasetViewerDataTableRow,
+    type IWorkerDatasetViewerMaxDisplayWidths,
+    type IWorkerDatasetViewerMessage
+} from '@deneb-viz/app-core';
 
 interface IDatasetViewerProps {
     datasetName: string;
@@ -287,15 +287,16 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
     /**
      * Keep sort peristed across renders.
      */
-    const handleSort: TableProps<IWorkerDatasetViewerDataTableRow[]>['onSort'] =
-        (column, sortDirection) => {
-            logDebug('DatasetViewer: setting sort columns...', {
-                column,
-                sortDirection
-            });
-            setSortColumnId(column.id);
-            setSortAsc(() => sortDirection === 'asc');
-        };
+    const handleSort: TableProps<
+        IWorkerDatasetViewerDataTableRow[]
+    >['onSort'] = (column, sortDirection) => {
+        logDebug('DatasetViewer: setting sort columns...', {
+            column,
+            sortDirection
+        });
+        setSortColumnId(column.id);
+        setSortAsc(() => sortDirection === 'asc');
+    };
     const classes = useDebugStyles();
     logRender('DatasetViewer', {
         datasetState,
