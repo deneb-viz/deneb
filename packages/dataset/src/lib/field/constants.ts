@@ -1,4 +1,14 @@
 /**
+ * For a measure, this is suffixed to the column name to denote the format string.
+ */
+export const FORMAT_FIELD_SUFFIX = '__format';
+
+/**
+ * For a measure, this is suffixed to the column name to denote the formatted value.
+ */
+export const FORMATTED_FIELD_SUFFIX = '__formatted';
+
+/**
  * Denotes how we suffix fields in the dataset that contain highlight values.
  */
 export const HIGHLIGHT_FIELD_SUFFIX = '__highlight';

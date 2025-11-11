@@ -1,24 +1,43 @@
-import { getCrossHighlightRegExpAlternation } from '../cross-highlight';
 import {
-    getPowerBiTokenPatternsLiteral,
-    getPowerBiTokenPatternsReplacement
-} from '../field-tracking';
-import { getEscapedReplacerPattern } from '@deneb-viz/core-dependencies';
-import { getNumberFormatRegExpAlternation } from '../number-formatting';
+    getEscapedReplacerPattern,
+    getHighlightRegExpAlternation,
+    getNumberFormatRegExpAlternation,
+    getTokenPatternsLiteral,
+    getTokenPatternsReplacement
+} from '../tokenization';
+import { describe, it, expect } from 'vitest';
 
-describe('getPowerBiTokenPatternsLiteral', () => {
+describe('getEscapedReplacerPattern', () => {
+    it('should escape special characters in the input string', () => {
+        const input = '$ Sales.Current';
+        const expectedOutput = '\\$ Sales\\.Current';
+        expect(getEscapedReplacerPattern(input)).toBe(expectedOutput);
+    });
+
+    it('should leave underscores alone', () => {
+        const input = 'Sales_Current';
+        expect(getEscapedReplacerPattern(input)).toBe(input);
+    });
+
+    it('should return the same string if there are no special characters', () => {
+        const input = 'abc123';
+        expect(getEscapedReplacerPattern(input)).toBe(input);
+    });
+});
+
+describe('getTokenPatternsLiteral', () => {
     it('should return an array with the expected pattern', () => {
         const fieldName = '$ Sales';
-        const result = getPowerBiTokenPatternsLiteral(fieldName);
+        const result = getTokenPatternsLiteral(fieldName);
         const expectedPattern = [
-            `^(\\${fieldName})(${getCrossHighlightRegExpAlternation()})$`,
-            `(?<='.*datum)(.\\${fieldName})(${getCrossHighlightRegExpAlternation()})?(?=.*')`,
-            `(?<='.*datum\\[\\\\\\')(\\${fieldName})(${getCrossHighlightRegExpAlternation()})?(?=\\\\\\'\\].*')`,
-            `(?<=datum\\[\\\\")(\\${fieldName})(${getCrossHighlightRegExpAlternation()})?(?=\\\\"\\])`,
-            `(?<=datum)(.\\${fieldName})(${getCrossHighlightRegExpAlternation()})?(?=)`,
-            `(?<=datum\\[')(\\${fieldName})(${getCrossHighlightRegExpAlternation()})?(?='\\])`,
-            `(?<=datum\\[")(\\${fieldName})(${getCrossHighlightRegExpAlternation()})?(?="\\])`,
-            `(?<=_\\{)(\\${fieldName})(${getCrossHighlightRegExpAlternation()})?(?=\\}_)`,
+            `^(\\${fieldName})(${getHighlightRegExpAlternation()})$`,
+            `(?<='.*datum)(.\\${fieldName})(${getHighlightRegExpAlternation()})?(?=.*')`,
+            `(?<='.*datum\\[\\\\\\')(\\${fieldName})(${getHighlightRegExpAlternation()})?(?=\\\\\\'\\].*')`,
+            `(?<=datum\\[\\\\")(\\${fieldName})(${getHighlightRegExpAlternation()})?(?=\\\\"\\])`,
+            `(?<=datum)(.\\${fieldName})(${getHighlightRegExpAlternation()})?(?=)`,
+            `(?<=datum\\[')(\\${fieldName})(${getHighlightRegExpAlternation()})?(?='\\])`,
+            `(?<=datum\\[")(\\${fieldName})(${getHighlightRegExpAlternation()})?(?="\\])`,
+            `(?<=_\\{)(\\${fieldName})(${getHighlightRegExpAlternation()})?(?=\\}_)`,
             `^(\\${fieldName})(${getNumberFormatRegExpAlternation()})$`,
             `(?<='.*datum)(.\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?=.*')`,
             `(?<='.*datum\\[\\\\\\')(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?=\\\\\\'\\].*')`,
@@ -34,54 +53,54 @@ describe('getPowerBiTokenPatternsLiteral', () => {
 it('should return an array with the expected replacement patterns', () => {
     const fieldName = '$ Sales';
     const placeholder = 'placeholder';
-    const result = getPowerBiTokenPatternsReplacement(fieldName, placeholder);
+    const result = getTokenPatternsReplacement(fieldName, placeholder);
     const expectedPatterns = [
         {
             pattern: `^(${getEscapedReplacerPattern(
                 fieldName
-            )})(${getCrossHighlightRegExpAlternation()})$`,
+            )})(${getHighlightRegExpAlternation()})$`,
             replacer: `${placeholder}$2`
         },
         {
             pattern: `(?<='.*datum)(.${getEscapedReplacerPattern(
                 fieldName
-            )})(${getCrossHighlightRegExpAlternation()})?(?=.*')`,
+            )})(${getHighlightRegExpAlternation()})?(?=.*')`,
             replacer: `[\\'${placeholder}$2\\']`
         },
         {
             pattern: `(?<='.*datum\\[\\\\\\')(${getEscapedReplacerPattern(
                 fieldName
-            )})(${getCrossHighlightRegExpAlternation()})?(?=\\\\\\'\\].*')`,
+            )})(${getHighlightRegExpAlternation()})?(?=\\\\\\'\\].*')`,
             replacer: `${placeholder}$2`
         },
         {
             pattern: `(?<=datum\\[\\\\")(${getEscapedReplacerPattern(
                 fieldName
-            )})(${getCrossHighlightRegExpAlternation()})?(?=\\\\"\\])`,
+            )})(${getHighlightRegExpAlternation()})?(?=\\\\"\\])`,
             replacer: `${placeholder}$2`
         },
         {
             pattern: `(?<=datum)(.${getEscapedReplacerPattern(
                 fieldName
-            )})(${getCrossHighlightRegExpAlternation()})?(?=)`,
+            )})(${getHighlightRegExpAlternation()})?(?=)`,
             replacer: `['${placeholder}$2']`
         },
         {
             pattern: `(?<=datum\\[')(${getEscapedReplacerPattern(
                 fieldName
-            )})(${getCrossHighlightRegExpAlternation()})?(?='\\])`,
+            )})(${getHighlightRegExpAlternation()})?(?='\\])`,
             replacer: `${placeholder}$2`
         },
         {
             pattern: `(?<=datum\\[")(${getEscapedReplacerPattern(
                 fieldName
-            )})(${getCrossHighlightRegExpAlternation()})?(?="\\])`,
+            )})(${getHighlightRegExpAlternation()})?(?="\\])`,
             replacer: `${placeholder}$2`
         },
         {
             pattern: `(?<=_\\{)(${getEscapedReplacerPattern(
                 fieldName
-            )})(${getCrossHighlightRegExpAlternation()})?(?=\\}_)`,
+            )})(${getHighlightRegExpAlternation()})?(?=\\}_)`,
             replacer: `${placeholder}$2`
         },
         {

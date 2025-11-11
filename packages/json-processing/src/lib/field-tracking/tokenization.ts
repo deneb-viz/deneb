@@ -1,34 +1,49 @@
 import {
+    FORMATTED_FIELD_SUFFIX,
+    FORMAT_FIELD_SUFFIX,
+    HIGHLIGHT_COMPARATOR_SUFFIX,
+    HIGHLIGHT_FIELD_SUFFIX,
+    HIGHLIGHT_STATUS_SUFFIX
+} from '@deneb-viz/dataset/field';
+import type { TokenPatternReplacer } from './types';
+import {
     JSON_FIELD_TRACKING_METADATA_PLACEHOLDER,
-    JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER,
-    TokenPatternReplacer,
-    getEscapedReplacerPattern
-} from '@deneb-viz/core-dependencies';
-import { getCrossHighlightRegExpAlternation } from './cross-highlight';
-import { getNumberFormatRegExpAlternation } from './number-formatting';
+    JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER
+} from './constants';
+
+/**
+ * When performing placeholder replacements, we need to ensure that special characters used in regex qualifiers are
+ * suitably escaped so that we don't inadvertently mangle them. Returns escaped string, suitable for pattern matching
+ * if any special characters are used.
+ */
+export const getEscapedReplacerPattern = (value: string) => {
+    return (value ?? '').replace(/[-/\\^$*+?.()&|[\]{}]/g, '\\$&');
+};
+
+/**
+ * Provides all highlight field suffixes, suitable for a RegExp expression.
+ */
+export const getHighlightRegExpAlternation = () =>
+    `${HIGHLIGHT_COMPARATOR_SUFFIX}|${HIGHLIGHT_STATUS_SUFFIX}|${HIGHLIGHT_FIELD_SUFFIX}`;
+
+/**
+ * Provides all number formatting field suffixes, suitable for a RegExp expression.
+ */
+export const getNumberFormatRegExpAlternation = () =>
+    `${FORMAT_FIELD_SUFFIX}|${FORMATTED_FIELD_SUFFIX}`;
 
 /**
  * For a literal field name (i.e., an extracted property value from a JSON or Vega expression AST), returns an array of
  * RegEx patterns that can be used to test that the literal matches the given field name (allowing for field modifiers
  * such as highlights and number formatting).
  */
-export const getPowerBiTokenPatternsLiteral = (
-    fieldName?: string
-): string[] => {
+export const getTokenPatternsLiteral = (fieldName?: string): string[] => {
     const namePattern = getEscapedReplacerPattern(
         fieldName ?? JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER
     );
     return [
-        ...getPowerBiTokenPatterns(
-            namePattern,
-            getCrossHighlightRegExpAlternation(),
-            ''
-        ),
-        ...getPowerBiTokenPatterns(
-            namePattern,
-            getNumberFormatRegExpAlternation(),
-            ''
-        )
+        ...getTokenPatterns(namePattern, getHighlightRegExpAlternation(), ''),
+        ...getTokenPatterns(namePattern, getNumberFormatRegExpAlternation(), '')
     ].map((r) => r.pattern);
 };
 
@@ -36,7 +51,7 @@ export const getPowerBiTokenPatternsLiteral = (
  * Provide the Power BI-specific tokens that we may need to search for and replace when performing field remapping in a
  * specification.
  */
-export const getPowerBiTokenPatternsReplacement = (
+export const getTokenPatternsReplacement = (
     fieldName?: string,
     placeholder?: string
 ): TokenPatternReplacer[] => {
@@ -44,14 +59,14 @@ export const getPowerBiTokenPatternsReplacement = (
         fieldName ?? JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER
     );
     const alternations = [
-        getCrossHighlightRegExpAlternation(),
+        getHighlightRegExpAlternation(),
         getNumberFormatRegExpAlternation()
     ];
     const replacers: TokenPatternReplacer[] = [];
     for (let i = 0, n = alternations.length; i < n; i++) {
         const alternation = alternations[i] as string;
         replacers.push(
-            ...getPowerBiTokenPatterns(
+            ...getTokenPatterns(
                 namePattern,
                 alternation,
                 placeholder ?? JSON_FIELD_TRACKING_METADATA_PLACEHOLDER
@@ -62,10 +77,10 @@ export const getPowerBiTokenPatternsReplacement = (
 };
 
 /**
- * Standard find and replace patterns for dataset field names in Power BI. These are in order of precedence, with the
- * most specific patterns first.
+ * Standard find and replace patterns for dataset field names. These are in order of precedence, with the most specific
+ * patterns first.
  */
-const getPowerBiTokenPatterns = (
+const getTokenPatterns = (
     namePattern: string,
     alternation: string,
     placeholder: string

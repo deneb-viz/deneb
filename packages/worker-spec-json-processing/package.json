@@ -23,6 +23,7 @@
             "cjs"
         ],
         "noExternal": [
+            "@deneb-viz/json-processing/field-tracking",
             "@deneb-viz/utils/inspection",
             "@deneb-viz/utils/type-conversion"
         ],
@@ -42,6 +43,7 @@
     "devDependencies": {
         "@deneb-viz/core-dependencies": "*",
         "@deneb-viz/eslint-config": "*",
+        "@deneb-viz/json-processing": "*",
         "@deneb-viz/integration-powerbi": "*",
         "@deneb-viz/jest-presets": "*",
         "@deneb-viz/utils": "*",

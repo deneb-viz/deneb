@@ -2,14 +2,12 @@ import {
     IDatasetField,
     IDenebTrackingRequestPayload,
     IDenebTrackingResponsePayload,
-    JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER,
     TrackedDrilldownProperties,
     TrackedFieldCandidates,
     TrackedFieldProperties,
     TrackedFields,
     UsermetaDatasetField,
     getDatasetFieldsInclusive,
-    getEscapedReplacerPattern,
     getJsonPlaceholderKey,
     isBase64Image,
     merge
@@ -18,6 +16,10 @@ import { JSONPath, visit } from 'jsonc-parser';
 import { Dictionary } from 'lodash';
 import { parseExpression } from 'vega-expression';
 import { isString } from '@deneb-viz/utils/inspection';
+import {
+    getEscapedReplacerPattern,
+    JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER
+} from '@deneb-viz/json-processing/field-tracking';
 import { uint8ArrayToString } from '@deneb-viz/utils/type-conversion';
 
 /**

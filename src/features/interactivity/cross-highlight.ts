@@ -1,4 +1,3 @@
-import { getPowerBiCrossHighlightRegExpAlternation } from '@deneb-viz/integration-powerbi';
 import {
     HIGHLIGHT_COMPARATOR_SUFFIX,
     HIGHLIGHT_STATUS_SUFFIX,
@@ -6,6 +5,7 @@ import {
 } from '@deneb-viz/dataset/field';
 import { getVegaSettings } from '../../core/vega';
 import { getVisualInteractionStatus } from '../visual-host';
+import { getHighlightRegExpAlternation } from '@deneb-viz/json-processing/field-tracking';
 
 /**
  * Produces a simple RegExp pattern for matching highlight fields.
@@ -19,7 +19,7 @@ const getCrossHighlightFieldRegExp = (pattern: string) =>
  */
 export const getCrossHighlightFieldBaseMeasureName = (field: string) => {
     const pattern = getCrossHighlightFieldRegExp(
-        getPowerBiCrossHighlightRegExpAlternation()
+        getHighlightRegExpAlternation()
     );
     return field.match(pattern)?.[1] || field;
 };

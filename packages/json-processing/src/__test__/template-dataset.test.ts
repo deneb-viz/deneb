@@ -1,5 +1,5 @@
 import powerbi from 'powerbi-visuals-api';
-
+import { describe, expect, it } from 'vitest';
 import {
     PROPERTIES_DEFAULTS,
     SpecProvider,

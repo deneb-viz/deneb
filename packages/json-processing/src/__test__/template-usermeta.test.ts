@@ -1,5 +1,5 @@
 import { getJsoncStringAsObject } from '../processing';
-import { expect, jest } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
     PROVIDER_RESOURCES,
     getExportTemplate,
@@ -304,10 +304,10 @@ describe('getNewTemplateMetadata', () => {
         providerVersion: MOCK_PROVIDER_VERSION
     };
     beforeEach(() => {
-        jest.spyOn(Date.prototype, 'toISOString').mockReturnValue(MOCK_DATE);
+        vi.spyOn(Date.prototype, 'toISOString').mockReturnValue(MOCK_DATE);
     });
     afterEach(() => {
-        jest.restoreAllMocks();
+        vi.restoreAllMocks();
     });
     it('should return the expected template metadata object', () => {
         const result = getNewTemplateMetadata(MOCK_OPTIONS);

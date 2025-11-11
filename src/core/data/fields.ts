@@ -12,12 +12,14 @@ import {
     TDatasetValueSource
 } from '.';
 import { getDataset } from './dataset';
-import { HIGHLIGHT_FIELD_SUFFIX } from '@deneb-viz/dataset/field';
+import {
+    FORMAT_FIELD_SUFFIX,
+    FORMATTED_FIELD_SUFFIX,
+    HIGHLIGHT_FIELD_SUFFIX
+} from '@deneb-viz/dataset/field';
 import { isDataViewFieldEligibleForFormatting } from '../../features/dataset';
 import { logTimeEnd, logTimeStart } from '../../features/logging';
 import {
-    DATASET_FIELD_FORMAT_STRING_SUFFIX,
-    DATASET_FIELD_FORMATED_VALUE_SUFFIX,
     getDatasetFieldsInclusive,
     UsermetaDatasetField
 } from '@deneb-viz/core-dependencies';
@@ -179,7 +181,7 @@ const getMeasureFormatEntries = (
                         column: {
                             ...v.source,
                             ...{
-                                displayName: `${v.source.displayName}${DATASET_FIELD_FORMAT_STRING_SUFFIX}`,
+                                displayName: `${v.source.displayName}${FORMAT_FIELD_SUFFIX}`,
                                 index: -v.source.index
                             }
                         },
@@ -190,7 +192,7 @@ const getMeasureFormatEntries = (
                         column: {
                             ...v.source,
                             ...{
-                                displayName: `${v.source.displayName}${DATASET_FIELD_FORMATED_VALUE_SUFFIX}`,
+                                displayName: `${v.source.displayName}${FORMATTED_FIELD_SUFFIX}`,
                                 index: -v.source.index
                             }
                         },

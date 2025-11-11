@@ -5,5 +5,5 @@
         "declarationDir": "./dist"
     },
     "include": ["src"],
-    "exclude": ["node_modules", "dist"]
+    "exclude": ["dist", "node_modules", "**/*.test.*", "**/*.spec.*"]
 }

@@ -12,16 +12,6 @@ export const CROSS_FILTER_LIMITS = {
 };
 
 /**
- * For a measure, this is suffixed to the column name to denote the format string.
- */
-export const DATASET_FIELD_FORMAT_STRING_SUFFIX = '__format';
-
-/**
- * For a measure, this is suffixed to the column name to denote the formatted value.
- */
-export const DATASET_FIELD_FORMATED_VALUE_SUFFIX = '__formatted';
-
-/**
  * Default values for Deneb's persistable properties, matching the structure of the visual capabilities from the Power
  * BI custom visual.
  */

@@ -6,7 +6,7 @@ import {
     UsermetaDatasetFieldKind,
     UsermetaDatasetFieldType
 } from '@deneb-viz/core-dependencies';
-import { getPowerBiTokenPatternsLiteral } from '@deneb-viz/integration-powerbi';
+import { getTokenPatternsLiteral } from '@deneb-viz/json-processing/field-tracking';
 import {
     doesExpressionContainField,
     getDrilldownFieldExpression,
@@ -82,7 +82,7 @@ const TRACKED_FIELDS_NO_REMAP_PENDING: TrackedFields = {
     }
 };
 
-const TRACKED_FIELDS_SUPPLEMENTARY_PATTERNS = getPowerBiTokenPatternsLiteral();
+const TRACKED_FIELDS_SUPPLEMENTARY_PATTERNS = getTokenPatternsLiteral();
 
 describe('doesExpressionContainField', () => {
     const EXPRESSION_WITH_SIMPLE_FIELD = parseExpression(
@@ -97,7 +97,7 @@ describe('doesExpressionContainField', () => {
             doesExpressionContainField(
                 EXPRESSION_WITH_SIMPLE_FIELD,
                 fieldName,
-                getPowerBiTokenPatternsLiteral(fieldName)
+                getTokenPatternsLiteral(fieldName)
             )
         ).toBe(true);
     });
@@ -107,7 +107,7 @@ describe('doesExpressionContainField', () => {
             doesExpressionContainField(
                 EXPRESSION_WITH_HIGHLIGHT_FIELD,
                 fieldName,
-                getPowerBiTokenPatternsLiteral(fieldName)
+                getTokenPatternsLiteral(fieldName)
             )
         ).toBe(true);
     });
@@ -117,7 +117,7 @@ describe('doesExpressionContainField', () => {
             doesExpressionContainField(
                 EXPRESSION_WITH_SIMPLE_FIELD,
                 fieldName,
-                getPowerBiTokenPatternsLiteral(fieldName)
+                getTokenPatternsLiteral(fieldName)
             )
         ).toBe(false);
     });
@@ -129,7 +129,7 @@ describe('doesExpressionContainField', () => {
             doesExpressionContainField(
                 json,
                 fieldName,
-                getPowerBiTokenPatternsLiteral(fieldName)
+                getTokenPatternsLiteral(fieldName)
             )
         ).toBe(false);
     });

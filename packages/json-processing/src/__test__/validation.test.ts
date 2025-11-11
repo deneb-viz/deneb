@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import { SpecProvider } from '@deneb-viz/core-dependencies';
 import {
     getFriendlyValidationErrors,

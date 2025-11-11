@@ -13,7 +13,7 @@ import denebSpecJson from '@deneb-viz/worker-spec-json-processing';
 /**
  * Used for asynchronous processing of JSON specifications.
  */
-export const denebSpecJsonWorker: IDenebSpecJsonWorker = getWorkerFromUrl(
+const denebSpecJsonWorker: IDenebSpecJsonWorker = getWorkerFromUrl(
     getUrlFromBlob(getWorkerAsBlobFromRawFile(denebSpecJson as string))
 );
 

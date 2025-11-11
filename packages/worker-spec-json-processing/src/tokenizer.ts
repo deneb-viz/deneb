@@ -1,10 +1,6 @@
 import {
     IDenebTokenizationRequestPayload,
-    IDenebTokenizationResponsePayload,
-    JSON_FIELD_TRACKING_METADATA_PLACEHOLDER,
-    JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER,
-    TokenPatternReplacer,
-    getEscapedReplacerPattern
+    IDenebTokenizationResponsePayload
 } from '@deneb-viz/core-dependencies';
 import {
     uint8ArrayToString,
@@ -18,6 +14,12 @@ import {
     modify,
     parseTree
 } from 'jsonc-parser';
+import {
+    JSON_FIELD_TRACKING_METADATA_PLACEHOLDER,
+    JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER,
+    type TokenPatternReplacer,
+    getEscapedReplacerPattern
+} from '@deneb-viz/json-processing/field-tracking';
 
 /**
  * For the supplied text-based specification, process it as a JSON AST and traverse it, replacing all field names with

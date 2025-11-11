@@ -16,12 +16,12 @@ import {
     uint8ArrayToString
 } from '@deneb-viz/utils/type-conversion';
 import { doDenebSpecJsonWorkerRequest } from '@deneb-viz/worker-common';
-import {
-    getPowerBiTokenPatternsLiteral,
-    getPowerBiTokenPatternsReplacement
-} from '@deneb-viz/integration-powerbi';
 import { getState } from '../../store';
 import { getRemapEligibleFields } from '@deneb-viz/json-processing';
+import {
+    getTokenPatternsLiteral,
+    getTokenPatternsReplacement
+} from '@deneb-viz/json-processing/field-tracking';
 
 export { getObjectFormattedAsText } from './formatting';
 
@@ -60,7 +60,7 @@ export const updateFieldTokenization = async (
         payload: {
             spec: stringToUint8Array(specification),
             trackedFields: trackedFieldsCurrent,
-            supplementaryReplacers: getPowerBiTokenPatternsReplacement(),
+            supplementaryReplacers: getTokenPatternsReplacement(),
             isRemap
         }
     };
@@ -93,7 +93,7 @@ export const updateFieldTracking = async (
             fields,
             hasDrilldown,
             trackedFieldsCurrent,
-            supplementaryPatterns: getPowerBiTokenPatternsLiteral(),
+            supplementaryPatterns: getTokenPatternsLiteral(),
             reset
         }
     };

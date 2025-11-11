@@ -15,7 +15,6 @@ import {
     DATASET_CORE_ROLE_NAME,
     TrackedFields,
     UsermetaDatasetFieldType,
-    getEscapedReplacerPattern,
     getJsonPlaceholderKey,
     getNewUuid,
     getBase64ImagePngBlank
@@ -29,6 +28,7 @@ import {
 } from './processing';
 import { getProviderValidator } from './validation';
 import { applyEdits, modify } from 'jsonc-parser';
+import { getEscapedReplacerPattern } from './lib/field-tracking';
 
 /**
  * If we cannot resolve a provider, this is the default to assign.
