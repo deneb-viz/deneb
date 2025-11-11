@@ -1,4 +1,5 @@
-import { create } from 'zustand';
+import { createWithEqualityFn } from 'zustand/traditional';
+import { shallow } from 'zustand/vanilla/shallow';
 import { devtools } from 'zustand/middleware';
 import { ICommandsSlice, createCommandsSlice } from './commands';
 import { createCreateSlice } from './create';
@@ -34,7 +35,7 @@ export type TStoreState = ICommandsSlice &
     IVisualSlice &
     IVisualUpdateSlice;
 
-const store = create<TStoreState>()(
+const store = createWithEqualityFn<TStoreState>()(
     devtools(
         (...a) => ({
             ...createCommandsSlice(...a),
@@ -52,7 +53,8 @@ const store = create<TStoreState>()(
             ...createVisualUpdateSlice(...a)
         }),
         { enabled: FEATURES.developer_mode }
-    )
+    ),
+    shallow
 );
 
 const getState = () => store.getState();
