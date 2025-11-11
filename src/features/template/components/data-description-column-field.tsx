@@ -3,7 +3,7 @@ import { TableCell } from '@fluentui/react-components';
 
 import { CappedTextField } from '../../interface';
 import { TEMPLATE_DATASET_FIELD_PROPS } from '../fields';
-import { DATASET_NAME } from '../../../constants';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
 
 interface IDataNameColumnCellProps {
     index: number;
@@ -18,7 +18,7 @@ export const DataDescriptionColumnField: React.FC<IDataNameColumnCellProps> = ({
     return (
         <TableCell>
             <CappedTextField
-                id={`${DATASET_NAME}[${index}].description`}
+                id={`${DATASET_DEFAULT_NAME}[${index}].description`}
                 i18nLabel='Field Description'
                 i18nPlaceholder='Template_Description_Optional_Placeholder'
                 maxLength={TEMPLATE_DATASET_FIELD_PROPS.description.maxLength}

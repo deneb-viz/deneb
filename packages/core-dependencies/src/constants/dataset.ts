@@ -1,7 +1,3 @@
-/**
- * The name we assign to the main dataset across the application (also the master data role name in Power BI).
- */
-export const DATASET_CORE_ROLE_NAME = 'dataset';
 /***
  * The name we use to denote a data point's selection status within the
  * dataset.

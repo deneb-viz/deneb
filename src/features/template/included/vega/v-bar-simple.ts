@@ -6,8 +6,8 @@ import {
     VEGA_SCHEMA_URL
 } from '.';
 import { getNewIncludedTemplateMetadata } from '..';
-import { DATASET_NAME } from '../../../../constants';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
 
 const dataset: UsermetaDatasetField[] = [
     {
@@ -36,7 +36,7 @@ export const vBarSimple = (): Spec => ({
             name: 'yscale',
             type: 'band',
             domain: {
-                data: DATASET_NAME,
+                data: DATASET_DEFAULT_NAME,
                 field: '__0__'
             },
             range: 'height',
@@ -46,7 +46,7 @@ export const vBarSimple = (): Spec => ({
         {
             name: 'xscale',
             domain: {
-                data: DATASET_NAME,
+                data: DATASET_DEFAULT_NAME,
                 field: '__1__'
             },
             nice: true,
@@ -70,7 +70,7 @@ export const vBarSimple = (): Spec => ({
         {
             type: 'rect',
             from: {
-                data: DATASET_NAME
+                data: DATASET_DEFAULT_NAME
             },
             encode: {
                 enter: {

@@ -27,7 +27,6 @@ import {
     logTimeStart
 } from '../logging';
 import { IVisualDatasetValueRow } from '../../core/data';
-import { DATASET_NAME } from '../../constants';
 import { getI18nValue } from '../i18n';
 import { getHashValue } from '../../utils';
 import { PROVIDER_RESOURCES } from '../../../config';
@@ -41,6 +40,7 @@ import {
     SpecProvider
 } from '@deneb-viz/core-dependencies';
 import { getPowerBiSignalContainer } from '@deneb-viz/integration-powerbi';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
 
 /**
  * For a given operation and string input, ensure that it's trimmed and replaced with suitable defaults if empty.
@@ -238,7 +238,7 @@ const getPatchedConfig = (content: string): IContentPatchResult => {
  * dataset are in the correct place.
  */
 const getPatchedData = (spec: Vega.Spec, values: IVisualDatasetValueRow[]) => {
-    const name = DATASET_NAME;
+    const name = DATASET_DEFAULT_NAME;
     logDebug('getPatchedData', { spec, values });
     try {
         const newSpec = typeof spec === 'undefined' ? {} : spec;
@@ -376,7 +376,7 @@ const getPatchedVegaLiteSpecWithData = (
     logTimeStart('getPatchedVegaLiteSpecWithData');
     const datasets = {
         ...(spec?.datasets ?? {}),
-        [`${DATASET_NAME}`]: values
+        [`${DATASET_DEFAULT_NAME}`]: values
     };
     const merged = Object.assign(spec || {}, {
         datasets

@@ -7,7 +7,6 @@ import { BaseData } from 'vega';
 
 import { getCombinedBase64ImageWithMime } from '../preview-image';
 import { THUMBNAIL_IMAGES } from './thumbnail-images';
-import { DATASET_NAME } from '../../../constants';
 import { getNewTemplateMetadata } from '@deneb-viz/json-processing';
 import { APPLICATION_INFORMATION, PROVIDER_VERSIONS } from '../../../../config';
 import { SpecProvider } from '@deneb-viz/core-dependencies';
@@ -15,6 +14,7 @@ import {
     type UsermetaInformation,
     type UsermetaTemplate
 } from '@deneb-viz/template-usermeta';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
 
 /**
  * Included templates are exported using the provider shorthand, so that they
@@ -27,7 +27,7 @@ export { VEGA_LITE_INCLUDED_TEMPLATES as vegaLite } from './vega-lite';
  * Standard dataset binding for specifications.
  */
 export const getDenebTemplateDatasetRef = (): BaseData => ({
-    name: DATASET_NAME
+    name: DATASET_DEFAULT_NAME
 });
 
 /**

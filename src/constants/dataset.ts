@@ -1,12 +1,6 @@
 import { dataRoles } from '../../capabilities.json';
 
 /**
- * The name to use for the dataset in Deneb, bound from the data view, into the
- * Vega view as a named reference.
- */
-export const DATASET_NAME = dataRoles[0].name;
-
-/**
  * The name we use to denote a row in the datset, which is also used for
  * reconciliation of selectors.
  */

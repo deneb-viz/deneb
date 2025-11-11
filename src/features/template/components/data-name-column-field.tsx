@@ -4,8 +4,8 @@ import { TableCell } from '@fluentui/react-components';
 import { CappedTextField } from '../../interface';
 import { useTemplateStyles } from '.';
 import { TEMPLATE_DATASET_FIELD_PROPS } from '../fields';
-import { DATASET_NAME } from '../../../constants';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
 
 interface IDataNameColumnCellProps {
     item: UsermetaDatasetField;
@@ -23,7 +23,7 @@ export const DataNameColumnField: React.FC<IDataNameColumnCellProps> = ({
     return (
         <TableCell className={classes.datasetColumnName}>
             <CappedTextField
-                id={`${DATASET_NAME}[${index}].name`}
+                id={`${DATASET_DEFAULT_NAME}[${index}].name`}
                 i18nLabel={`${item.name}`}
                 i18nPlaceholder={`${item?.namePlaceholder}`}
                 maxLength={TEMPLATE_DATASET_FIELD_PROPS.name.maxLength}

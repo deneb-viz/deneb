@@ -28,7 +28,6 @@ import {
 } from '../../features/interactivity';
 import { getState } from '../../store';
 import {
-    DATASET_NAME,
     DATASET_ROLE_DRILLDOWN,
     DATASET_ROLE_DRILLDOWN_FLAT
 } from '../../constants';
@@ -46,7 +45,10 @@ import { logError, logTimeEnd, logTimeStart } from '../../features/logging';
 import { getHashValue } from '../../utils';
 import { getVisualSelectionManager } from '../../features/visual-host';
 import { IDataset } from '@deneb-viz/core-dependencies';
-import { getDatasetFieldsInclusive } from '@deneb-viz/dataset/data';
+import {
+    DATASET_DEFAULT_NAME,
+    getDatasetFieldsInclusive
+} from '@deneb-viz/dataset/data';
 
 /**
  * For supplied data view field metadata, produce a suitable object
@@ -65,7 +67,7 @@ const getDataRow = (
         (row, f, fi) => {
             const rawValue = castPrimitiveValue(f, values[fi][rowIndex]);
             const fieldName = getEncodedFieldName(f.column.displayName);
-            const isDataset = f?.column.roles?.[DATASET_NAME];
+            const isDataset = f?.column.roles?.[DATASET_DEFAULT_NAME];
             const isDrilldown =
                 hasDrilldown && f?.column?.roles?.[DATASET_ROLE_DRILLDOWN];
             if (isDataset) {

@@ -7,7 +7,6 @@ import {
     ICreateSliceSetImportFile,
     IDenebTemplateAllocationComponents,
     ICreateSliceProperties,
-    DATASET_CORE_ROLE_NAME,
     getNewUuid
 } from '@deneb-viz/core-dependencies';
 import {
@@ -33,6 +32,7 @@ import {
     type UsermetaTemplate
 } from '@deneb-viz/template-usermeta';
 import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
 
 /**
  * If we cannot resolve a provider, this is the default to assign.
@@ -189,7 +189,7 @@ export const getPublishableUsermeta = (
                     usermeta.information.author ||
                     options.informationTranslationPlaceholders.author
             },
-            dataset: usermeta?.[DATASET_CORE_ROLE_NAME].map((d) => {
+            dataset: usermeta?.[DATASET_DEFAULT_NAME].map((d) => {
                 d.key = options.trackedFields?.[d.key]?.placeholder ?? d.key;
                 return omit(d, ['namePlaceholder']);
             })
