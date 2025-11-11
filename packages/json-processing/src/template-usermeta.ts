@@ -5,7 +5,6 @@ import {
     SpecProvider,
     UsermetaInformation,
     UsermetaTemplate,
-    TEMPLATE_USERMETA_VERSION,
     PROPERTIES_DEFAULTS,
     ICreateSliceSetImportFile,
     IDenebTemplateAllocationComponents,
@@ -29,6 +28,7 @@ import {
 import { getProviderValidator } from './validation';
 import { applyEdits, modify } from 'jsonc-parser';
 import { getEscapedReplacerPattern } from './lib/field-tracking';
+import { TEMPLATE_USERMETA_VERSION } from '@deneb-viz/template-usermeta';
 
 /**
  * If we cannot resolve a provider, this is the default to assign.

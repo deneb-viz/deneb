@@ -94,28 +94,6 @@ node_modules/@deneb-viz/**/dist/**/*
 
 Snapshot `managedPaths` ensures linked workspace packages under `node_modules/@deneb-viz` are not treated as immutable.
 
-### Public import paths (avoid deep /src or /dist)
-
-All workspace packages expose built outputs via package export maps. Always use these public paths and avoid importing raw TypeScript sources or arbitrary deep `dist` files:
-
-| Package                               | Primary                               | Notable Subpaths                                       |
-| ------------------------------------- | ------------------------------------- | ------------------------------------------------------ |
-| `@deneb-viz/monaco-custom`            | `@deneb-viz/monaco-custom`            | `@deneb-viz/monaco-custom/index.css`                   |
-| `@deneb-viz/core-dependencies`        | `@deneb-viz/core-dependencies`        | `constants`, `dataset`, `definitions`, `json`, `utils` |
-| `@deneb-viz/powerbi-compat`           | `@deneb-viz/powerbi-compat`           | `formatting`, `theme`                                  |
-| `@deneb-viz/utils`                    | `@deneb-viz/utils`                    | `dom`                                                  |
-| `@deneb-viz/vega-runtime`             | `@deneb-viz/vega-runtime`             | `extensibility`                                        |
-| `@deneb-viz/template-usermeta-schema` | `@deneb-viz/template-usermeta-schema` | (JSON main export)                                     |
-
-Benefits:
-
-1. Prevents ts-loader from needing to compile `node_modules` workspace sources.
-2. Ensures consistent dev vs. prod builds (no accidental deep path drift).
-3. Unlocks easier future code splitting (imports target stable public surfaces).
-4. Reduces risk of breaking changes propagating via internal `/src` structure.
-
-Refactor any remaining deep imports to these forms before introducing new functionality.
-
 ## 6. Feature Flags
 
 Defined in `config/features.json` and optionally overridden in `config/package-custom.json` for custom builds (e.g., enabling external URIs in standalone variant).

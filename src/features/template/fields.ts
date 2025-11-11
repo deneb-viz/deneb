@@ -1,4 +1,4 @@
-import * as schema_v1 from '@deneb-viz/template-usermeta-schema';
+import * as schema_v1 from '@deneb-viz/template-usermeta/schema.deneb-template-usermeta.json';
 import { getI18nValue } from '../i18n';
 import { useTemplateStyles } from './components';
 import {

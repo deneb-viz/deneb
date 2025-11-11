@@ -51,7 +51,7 @@
         "@deneb-viz/core-dependencies": "*",
         "@deneb-viz/dataset": "*",
         "@deneb-viz/integration-powerbi": "*",
-        "@deneb-viz/template-usermeta-schema": "*",
+        "@deneb-viz/template-usermeta": "*",
         "@deneb-viz/utils": "*",
         "ajv": "^8.12.0",
         "ajv-formats": "^2.1.1",

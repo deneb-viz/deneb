@@ -1,7 +1,11 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-    entry: ['src/index.ts', 'src/lib/extensibility/index.ts'],
+    entry: [
+        'src/index.ts',
+        'src/lib/embed/index.ts',
+        'src/lib/extensibility/index.ts'
+    ],
     clean: true,
     target: 'es2022',
     format: ['esm'],

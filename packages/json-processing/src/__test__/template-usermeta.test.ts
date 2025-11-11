@@ -22,12 +22,12 @@ import {
     PROPERTIES_DEFAULTS,
     SelectionMode,
     SpecProvider,
-    TEMPLATE_USERMETA_VERSION,
     TrackedFields,
     UsermetaDatasetField,
     UsermetaTemplate,
     getBase64ImagePngBlank
 } from '@deneb-viz/core-dependencies';
+import { TEMPLATE_USERMETA_VERSION } from '@deneb-viz/template-usermeta';
 
 const MOCK_BUILD_VERSION = '1.0.0';
 const MOCK_DATE = '2022-01-01T00:00:00.000Z';

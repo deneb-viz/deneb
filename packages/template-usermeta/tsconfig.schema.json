@@ -1,0 +1,9 @@
+{
+    "extends": "@deneb-viz/typescript-config/base.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "noEmit": true,
+        "lib": ["ES2022", "DOM"]
+    },
+    "include": ["src/types.ts"]
+}
