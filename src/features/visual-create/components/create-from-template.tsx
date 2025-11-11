@@ -6,7 +6,7 @@ import { NoTemplateMessage } from './no-template-message';
 import { TemplateInformation } from './template-information';
 import { logRender } from '../../logging';
 import { useModalDialogStyles } from '../../modal-dialog';
-import { UsermetaTemplate } from '@deneb-viz/core-dependencies';
+import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 
 /**
  * Displays the content for creating a specification using the selected

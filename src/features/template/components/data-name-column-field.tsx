@@ -5,7 +5,7 @@ import { CappedTextField } from '../../interface';
 import { useTemplateStyles } from '.';
 import { TEMPLATE_DATASET_FIELD_PROPS } from '../fields';
 import { DATASET_NAME } from '../../../constants';
-import { UsermetaDatasetField } from '@deneb-viz/core-dependencies';
+import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 
 interface IDataNameColumnCellProps {
     item: UsermetaDatasetField;

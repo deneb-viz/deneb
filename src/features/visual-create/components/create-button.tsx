@@ -7,15 +7,13 @@ import { getI18nValue } from '../../i18n';
 import store, { getState } from '../../../store';
 import { logDebug, logRender } from '../../logging';
 import { useJsonEditorContext } from '../../json-editor';
-import {
-    IDenebTemplateAllocationComponents,
-    UsermetaTemplate
-} from '@deneb-viz/core-dependencies';
+import { IDenebTemplateAllocationComponents } from '@deneb-viz/core-dependencies';
 import { getTemplateReplacedForDataset } from '@deneb-viz/json-processing';
 import {
     resolveObjectProperties,
     updateObjectProperties
 } from '../../../core/utils/properties';
+import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 
 /**
  * Displays the content for creating a specification using the selected

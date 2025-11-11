@@ -7,7 +7,7 @@ import {
 } from '.';
 import { getNewIncludedTemplateMetadata } from '..';
 import { DATASET_NAME } from '../../../../constants';
-import { UsermetaDatasetField } from '@deneb-viz/core-dependencies';
+import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 
 const dataset: UsermetaDatasetField[] = [
     {

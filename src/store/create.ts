@@ -8,14 +8,16 @@ import {
     ICreateSliceSetImportFile,
     ICreateSliceSetImportState,
     ICreateSliceSetTemplate,
-    ICreateSliceState,
-    UsermetaDatasetField,
-    UsermetaTemplate
+    ICreateSliceState
 } from '@deneb-viz/core-dependencies';
 import {
     areAllCreateDataRequirementsMet,
     getNewCreateFromTemplateSliceProperties
 } from '@deneb-viz/json-processing';
+import {
+    type UsermetaDatasetField,
+    type UsermetaTemplate
+} from '@deneb-viz/template-usermeta';
 
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <ICreateSliceState>{

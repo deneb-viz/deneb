@@ -14,9 +14,9 @@ import { TModalDialogType } from '../../modal-dialog';
 import { logDebug } from '../../logging';
 import { useTemplateStyles } from '.';
 import {
-    UsermetaDatasetField,
-    UsermetaTemplate
-} from '@deneb-viz/core-dependencies';
+    type UsermetaDatasetField,
+    type UsermetaTemplate
+} from '@deneb-viz/template-usermeta';
 
 interface ITemplateDatasetProps {
     datasetRole: TModalDialogType;

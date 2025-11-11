@@ -29,7 +29,7 @@ import { IVisualDatasetField } from '../../../core/data';
 import { getI18nValue } from '../../i18n';
 
 /**
- * One-time Monaco intialization tasks.
+ * One-time Monaco initialization tasks.
  */
 loader.init().then(() => {
     setMonacoCompletionProvider();

@@ -3,7 +3,7 @@ import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import ISelectionId = powerbi.visuals.ISelectionId;
 
 import { TDataPointSelectionStatus } from '../../features/interactivity';
-import { UsermetaDatasetField } from '@deneb-viz/core-dependencies';
+import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 
 export * as dataset from './dataset';
 export * as dataView from './dataView';

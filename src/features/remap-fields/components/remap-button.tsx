@@ -11,11 +11,8 @@ import {
     setFocusToActiveEditor,
     useJsonEditorContext
 } from '../../json-editor';
-import {
-    RemapState,
-    TrackedFields,
-    UsermetaDatasetField
-} from '@deneb-viz/core-dependencies';
+import { RemapState, TrackedFields } from '@deneb-viz/core-dependencies';
+import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 import {
     updateFieldTokenization,
     getRemappedSpecification

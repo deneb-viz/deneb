@@ -9,7 +9,7 @@ import { useTemplateStyles } from '.';
 import { DataTypeIcon } from './data-type-icon';
 import { getDataTypeIconTitle } from '../fields';
 import { TooltipCustomMount } from '../../interface';
-import { UsermetaDatasetFieldType } from '@deneb-viz/core-dependencies';
+import { type UsermetaDatasetFieldType } from '@deneb-viz/template-usermeta';
 
 interface IDataTypeColumnCellProps {
     type: UsermetaDatasetFieldType;

@@ -3,10 +3,8 @@ import { TopLevelSpec } from 'vega-lite';
 import { VEGA_LITE_SCHEMA_URL } from '.';
 import { getDenebTemplateDatasetRef, getNewIncludedTemplateMetadata } from '..';
 import { DATASET_SELECTED_NAME } from '../../../../constants';
-import {
-    PROPERTIES_DEFAULTS,
-    UsermetaDatasetField
-} from '@deneb-viz/core-dependencies';
+import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
+import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 
 const dataset: UsermetaDatasetField[] = [
     {

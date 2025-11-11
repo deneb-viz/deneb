@@ -7,7 +7,6 @@ import {
     IFieldUsageSliceApplyFieldMapping,
     IFieldUsageSliceSetFieldAssignment,
     IFieldUsageSliceState,
-    UsermetaDatasetField,
     IFieldUsageSliceApplyTokenizationChanges,
     RemapState
 } from '@deneb-viz/core-dependencies';
@@ -19,6 +18,7 @@ import {
 import { ModalDialogRole } from '../features/modal-dialog/types';
 import { getOnboardingDialog } from '../features/modal-dialog';
 import { isExportSpecCommandEnabled } from '../features/commands';
+import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IFieldUsageSliceState>{

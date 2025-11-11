@@ -10,11 +10,11 @@ import { THUMBNAIL_IMAGES } from './thumbnail-images';
 import { DATASET_NAME } from '../../../constants';
 import { getNewTemplateMetadata } from '@deneb-viz/json-processing';
 import { APPLICATION_INFORMATION, PROVIDER_VERSIONS } from '../../../../config';
+import { SpecProvider } from '@deneb-viz/core-dependencies';
 import {
-    SpecProvider,
-    UsermetaInformation,
-    UsermetaTemplate
-} from '@deneb-viz/core-dependencies';
+    type UsermetaInformation,
+    type UsermetaTemplate
+} from '@deneb-viz/template-usermeta';
 
 /**
  * Included templates are exported using the provider shorthand, so that they

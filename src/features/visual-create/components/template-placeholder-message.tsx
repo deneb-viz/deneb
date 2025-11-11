@@ -5,7 +5,7 @@ import { shallow } from 'zustand/shallow';
 import { useCreateStyles } from './';
 import store from '../../../store';
 import { getI18nValue } from '../../i18n';
-import { UsermetaTemplate } from '@deneb-viz/core-dependencies';
+import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 
 /**
  * Displays correct message, depending on whether the template has

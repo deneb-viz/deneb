@@ -25,9 +25,9 @@ import {
 } from '@deneb-viz/json-processing';
 import {
     PROPERTIES_DEFAULTS,
-    SpecProvider,
-    UsermetaTemplate
+    SpecProvider
 } from '@deneb-viz/core-dependencies';
+import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 
 interface ISelectIncludedTemplateProps {
     createMode: SpecProvider;
