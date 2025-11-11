@@ -1,0 +1,5 @@
+export {
+    HIGHLIGHT_COMPARATOR_SUFFIX,
+    HIGHLIGHT_FIELD_SUFFIX,
+    HIGHLIGHT_STATUS_SUFFIX
+} from './constants';

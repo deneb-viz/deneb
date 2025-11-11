@@ -12,7 +12,7 @@ import {
     TDatasetValueSource
 } from '.';
 import { getDataset } from './dataset';
-import { HIGHLIGHT_FIELD_SUFFIX } from '../../constants';
+import { HIGHLIGHT_FIELD_SUFFIX } from '@deneb-viz/dataset/field';
 import { isDataViewFieldEligibleForFormatting } from '../../features/dataset';
 import { logTimeEnd, logTimeStart } from '../../features/logging';
 import {

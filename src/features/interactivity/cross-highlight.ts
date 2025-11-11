@@ -3,7 +3,7 @@ import {
     HIGHLIGHT_COMPARATOR_SUFFIX,
     HIGHLIGHT_STATUS_SUFFIX,
     HIGHLIGHT_FIELD_SUFFIX
-} from '../../constants';
+} from '@deneb-viz/dataset/field';
 import { getVegaSettings } from '../../core/vega';
 import { getVisualInteractionStatus } from '../visual-host';
 

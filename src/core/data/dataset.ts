@@ -30,11 +30,13 @@ import { getState } from '../../store';
 import {
     DATASET_NAME,
     DATASET_ROLE_DRILLDOWN,
-    DATASET_ROLE_DRILLDOWN_FLAT,
+    DATASET_ROLE_DRILLDOWN_FLAT
+} from '../../constants';
+import {
     HIGHLIGHT_COMPARATOR_SUFFIX,
     HIGHLIGHT_FIELD_SUFFIX,
     HIGHLIGHT_STATUS_SUFFIX
-} from '../../constants';
+} from '@deneb-viz/dataset/field';
 import {
     isDrilldownFeatureEnabled,
     resolveDrilldownComponents,

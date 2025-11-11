@@ -47,6 +47,9 @@
     "jest": {
         "preset": "@deneb-viz/jest-presets/jest/node"
     },
+    "dependencies": {
+        "@deneb-viz/dataset": "*"
+    },
     "devDependencies": {
         "@deneb-viz/core-dependencies": "*",
         "@deneb-viz/eslint-config": "*",
