@@ -1,10 +1,8 @@
 import * as schema_v1 from '@deneb-viz/template-usermeta/schema.deneb-template-usermeta.json';
 import { getI18nValue } from '../i18n';
 import { useTemplateStyles } from './components';
-import {
-    DenebTemplateDatasetColumnRole,
-    UsermetaDatasetFieldType
-} from '@deneb-viz/core-dependencies';
+import { DenebTemplateDatasetColumnRole } from '@deneb-viz/core-dependencies';
+import { type UsermetaDatasetFieldType } from '@deneb-viz/template-usermeta';
 
 /**
  * Used for validation of text field lengths vs. generated schema.

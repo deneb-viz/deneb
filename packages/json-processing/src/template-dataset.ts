@@ -1,18 +1,23 @@
 import powerbi from 'powerbi-visuals-api';
-import {
-    ICreateSliceProperties,
+import { ICreateSliceProperties } from '@deneb-viz/core-dependencies';
+import type {
     UsermetaDatasetField,
     UsermetaDatasetFieldType,
     UsermetaTemplate
-} from '@deneb-viz/core-dependencies';
+} from '@deneb-viz/template-usermeta';
 
 /**
  * Ensure that all requirements are tested and validated before we can create.
  */
-export const areAllCreateDataRequirementsMet = (metadata: UsermetaTemplate): Partial<ICreateSliceProperties> => {
-    const metadataAllFieldsAssigned = areAllTemplateFieldsAssigned(metadata?.dataset);
+export const areAllCreateDataRequirementsMet = (
+    metadata: UsermetaTemplate
+): Partial<ICreateSliceProperties> => {
+    const metadataAllFieldsAssigned = areAllTemplateFieldsAssigned(
+        metadata?.dataset
+    );
     const metadataDrilldownAssigned = true; // to be implemented when drilldown is implemented
-    const metadataAllDependenciesAssigned = metadataAllFieldsAssigned && metadataDrilldownAssigned;
+    const metadataAllDependenciesAssigned =
+        metadataAllFieldsAssigned && metadataDrilldownAssigned;
     return {
         metadataAllDependenciesAssigned,
         metadataAllFieldsAssigned,
@@ -24,13 +29,17 @@ export const areAllCreateDataRequirementsMet = (metadata: UsermetaTemplate): Par
  * For a given array of template dataset fields, confirm that they all have a field allocated for assignment later on.
  */
 export const areAllTemplateFieldsAssigned = (fields: UsermetaDatasetField[]) =>
-    fields?.length === 0 || fields?.filter((f) => !f.suppliedObjectKey)?.length === 0 || false;
+    fields?.length === 0 ||
+    fields?.filter((f) => !f.suppliedObjectKey)?.length === 0 ||
+    false;
 
 /**
  * For a given column or measure (or template placeholder), resolve its type against the corresponding Power BI value
  * descriptor.
  */
-export const getTemplateDatasetFieldType = (type: powerbi.ValueTypeDescriptor): UsermetaDatasetFieldType => {
+export const getTemplateDatasetFieldType = (
+    type: powerbi.ValueTypeDescriptor
+): UsermetaDatasetFieldType => {
     switch (true) {
         case type?.bool:
             return 'bool';

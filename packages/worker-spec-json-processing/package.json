@@ -46,6 +46,7 @@
         "@deneb-viz/json-processing": "*",
         "@deneb-viz/integration-powerbi": "*",
         "@deneb-viz/jest-presets": "*",
+        "@deneb-viz/template-usermeta": "*",
         "@deneb-viz/utils": "*",
         "@deneb-viz/typescript-config": "*",
         "jsonc-parser": "^3.2.1",

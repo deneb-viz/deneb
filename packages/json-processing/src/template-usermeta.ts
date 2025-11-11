@@ -3,17 +3,12 @@ import powerbi from 'powerbi-visuals-api';
 import omit from 'lodash/omit';
 import {
     SpecProvider,
-    UsermetaInformation,
-    UsermetaTemplate,
     PROPERTIES_DEFAULTS,
     ICreateSliceSetImportFile,
     IDenebTemplateAllocationComponents,
-    UsermetaDatasetField,
     ICreateSliceProperties,
-    UsermetaInteractivity,
     DATASET_CORE_ROLE_NAME,
     TrackedFields,
-    UsermetaDatasetFieldType,
     getJsonPlaceholderKey,
     getNewUuid,
     getBase64ImagePngBlank
@@ -28,7 +23,14 @@ import {
 import { getProviderValidator } from './validation';
 import { applyEdits, modify } from 'jsonc-parser';
 import { getEscapedReplacerPattern } from './lib/field-tracking';
-import { TEMPLATE_USERMETA_VERSION } from '@deneb-viz/template-usermeta';
+import {
+    TEMPLATE_USERMETA_VERSION,
+    type UsermetaDatasetField,
+    type UsermetaDatasetFieldType,
+    type UsermetaInformation,
+    type UsermetaInteractivity,
+    type UsermetaTemplate
+} from '@deneb-viz/template-usermeta';
 
 /**
  * If we cannot resolve a provider, this is the default to assign.

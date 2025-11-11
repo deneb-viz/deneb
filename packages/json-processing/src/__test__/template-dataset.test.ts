@@ -3,8 +3,6 @@ import { describe, expect, it } from 'vitest';
 import {
     PROPERTIES_DEFAULTS,
     SpecProvider,
-    UsermetaDatasetField,
-    UsermetaTemplate,
     getBase64ImagePngBlank
 } from '@deneb-viz/core-dependencies';
 import {
@@ -12,7 +10,11 @@ import {
     areAllTemplateFieldsAssigned,
     getTemplateDatasetFieldType
 } from '../template-dataset';
-import { TEMPLATE_USERMETA_VERSION } from '@deneb-viz/template-usermeta';
+import {
+    TEMPLATE_USERMETA_VERSION,
+    type UsermetaDatasetField,
+    type UsermetaTemplate
+} from '@deneb-viz/template-usermeta';
 
 const INCOMPLETE_FIELD: UsermetaDatasetField[] = [
     {

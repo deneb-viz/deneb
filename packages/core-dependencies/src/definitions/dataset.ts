@@ -4,9 +4,9 @@ import {
     DATASET_CROSS_FILTER_NAME,
     DATASET_IDENTITY_NAME,
     DATASET_KEY_NAME,
-    DATASET_ROW_NAME,
-    UsermetaDatasetField
+    DATASET_ROW_NAME
 } from '..';
+import { UsermetaDatasetField } from './template-usermeta-schema';
 
 /**
  * Indicates the internal selection state of a data point.

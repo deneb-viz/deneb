@@ -6,7 +6,6 @@ import {
     TrackedFieldCandidates,
     TrackedFieldProperties,
     TrackedFields,
-    UsermetaDatasetField,
     getDatasetFieldsInclusive,
     getJsonPlaceholderKey,
     isBase64Image,
@@ -21,6 +20,7 @@ import {
     JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER
 } from '@deneb-viz/json-processing/field-tracking';
 import { uint8ArrayToString } from '@deneb-viz/utils/type-conversion';
+import type { UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 
 /**
  * For a Vega expression AST node, check if it has an occurrence of a field from the visual dataset.

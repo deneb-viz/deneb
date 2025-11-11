@@ -1,12 +1,12 @@
 import {
     IFieldUsageSliceProperties,
     TrackedDrilldownProperties,
-    TrackedFields,
-    UsermetaDatasetField
+    TrackedFields
 } from '@deneb-viz/core-dependencies';
 import reduce from 'lodash/reduce';
 import values from 'lodash/values';
 import { areAllTemplateFieldsAssigned } from './template-dataset';
+import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 
 /**
  * Confirms that all requirements for field mapping have been met.

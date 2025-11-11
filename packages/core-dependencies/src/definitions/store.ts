@@ -3,10 +3,12 @@ import {
     DenebTemplateImportState,
     IDenebTemplateAllocationComponents,
     TrackedDrilldownProperties,
-    TrackedFields,
+    TrackedFields
+} from '.';
+import {
     UsermetaDatasetField,
     UsermetaTemplate
-} from '.';
+} from './template-usermeta-schema';
 
 /**
  * Represents the create slice in the visual store.

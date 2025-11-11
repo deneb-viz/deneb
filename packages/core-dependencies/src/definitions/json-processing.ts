@@ -1,5 +1,5 @@
 import { JSONPath } from 'jsonc-parser';
-import { UsermetaDatasetField } from '.';
+import { UsermetaDatasetField } from './template-usermeta-schema';
 
 /**
  * Options for resolving a provider schema validator.
