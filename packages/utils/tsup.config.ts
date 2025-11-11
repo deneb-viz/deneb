@@ -10,7 +10,7 @@ export default defineConfig({
         'src/lib/type-conversion.ts',
         'src/lib/worker.ts'
     ],
-    clean: true,
+    clean: false,
     target: 'es2022',
     format: ['esm'],
     dts: true,

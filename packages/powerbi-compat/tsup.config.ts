@@ -7,7 +7,7 @@ export default defineConfig({
         'src/lib/interactivity/index.ts',
         'src/lib/theme/index.ts'
     ],
-    clean: true,
+    clean: false,
     target: 'es2022',
     format: ['esm'],
     dts: true,

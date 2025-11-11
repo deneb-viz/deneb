@@ -6,7 +6,7 @@ export default defineConfig({
         'src/lib/embed/index.ts',
         'src/lib/extensibility/index.ts'
     ],
-    clean: true,
+    clean: false,
     target: 'es2022',
     format: ['esm'],
     dts: true,
