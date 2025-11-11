@@ -1,19 +1,19 @@
 import {
-    DATASET_ROW_NAME,
-    DATASET_IDENTITY_NAME,
-    DATASET_KEY_NAME,
-    DATASET_SELECTED_NAME
-} from './dataset';
+    ROW_IDENTITY_FIELD_NAME,
+    ROW_INDEX_FIELD_NAME,
+    ROW_KEY_FIELD_NAME,
+    SELECTED_ROW_FIELD_NAME
+} from '@deneb-viz/dataset/field';
 
 /**
  * List of reserved words for column headers that can benefit from specific
  * tooltips explaining their purpose
  */
 export const TABLE_COLUMN_RESERVED_WORDS = [
-    DATASET_ROW_NAME,
-    DATASET_IDENTITY_NAME,
-    DATASET_KEY_NAME,
-    DATASET_SELECTED_NAME
+    ROW_IDENTITY_FIELD_NAME,
+    ROW_INDEX_FIELD_NAME,
+    ROW_KEY_FIELD_NAME,
+    SELECTED_ROW_FIELD_NAME
 ];
 
 /**

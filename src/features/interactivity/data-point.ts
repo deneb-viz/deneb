@@ -16,10 +16,13 @@ import {
 } from '../../core/data';
 import { IVegaViewDatum } from '../../core/vega';
 import { getState } from '../../store';
-import { DATASET_IDENTITY_NAME, DATASET_ROW_NAME } from '../../constants';
 import { getDataset } from '../../core/data/dataset';
 import { getCategoryColumns } from '../../core/data/dataView';
 import { getVisualSelectionIdBuilder } from '../visual-host';
+import {
+    ROW_IDENTITY_FIELD_NAME,
+    ROW_INDEX_FIELD_NAME
+} from '@deneb-viz/dataset/field';
 
 /**
  * Confirm that each datum in a datset contains a reconcilable identifier for
@@ -27,7 +30,7 @@ import { getVisualSelectionIdBuilder } from '../visual-host';
  */
 const allDataHasIdentities = (data: IVegaViewDatum[]) =>
     data?.filter((d) =>
-        Object.prototype.hasOwnProperty.call(d, DATASET_ROW_NAME)
+        Object.prototype.hasOwnProperty.call(d, ROW_INDEX_FIELD_NAME)
     )?.length === data?.length;
 
 /**
@@ -88,10 +91,10 @@ export const getIdentitiesFromData = (
         case data?.length === 1 &&
             Object.prototype.hasOwnProperty.call(
                 data[0],
-                DATASET_IDENTITY_NAME
+                ROW_IDENTITY_FIELD_NAME
             ): {
             // Single, identifiable datum
-            return [<ISelectionId>data[0]?.[DATASET_IDENTITY_NAME]];
+            return [<ISelectionId>data[0]?.[ROW_IDENTITY_FIELD_NAME]];
         }
         case data?.length > 1 && allDataHasIdentities(data): {
             // Multiple data, and all can resolve to selectors
@@ -119,7 +122,7 @@ export const getIdentitiesFromData = (
  * Get array of all data row indices for a supplied dataset.
  */
 const getIdentityIndices = (data: IVegaViewDatum[]): number[] =>
-    data?.map((d) => d?.[DATASET_ROW_NAME]);
+    data?.map((d) => d?.[ROW_INDEX_FIELD_NAME]);
 
 /**
  * For the supplied (subset of) `fields` and `data`, attempt to find any
@@ -144,7 +147,7 @@ export const getSelectorsFromData = (
     data: IVegaViewDatum[] | IVisualDatasetValueRow[]
 ) =>
     getValuesByIndices(getIdentityIndices(data)).map(
-        (v) => v?.[DATASET_IDENTITY_NAME]
+        (v) => v?.[ROW_IDENTITY_FIELD_NAME]
     );
 
 /**
@@ -156,7 +159,7 @@ const getValues = () => getDataset().values;
  * Returns `getValues()`, but filtered for a supplied list `__row__` values.
  */
 const getValuesByIndices = (indices: number[]) =>
-    getValues().filter((v) => indices.indexOf(v?.[DATASET_ROW_NAME]) > -1);
+    getValues().filter((v) => indices.indexOf(v?.[ROW_INDEX_FIELD_NAME]) > -1);
 
 /**
  * For the supplied (subset of) `field` and `datum`, attempt to find the

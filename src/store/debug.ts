@@ -2,7 +2,7 @@ import { StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
 
 import { TStoreState } from '.';
-import { DEBUG_DEFAULT_DATASET_NAME } from '../constants';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
 
 export interface IDebugSlice {
     debug: {
@@ -24,7 +24,7 @@ export interface IDebugSlice {
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IDebugSlice>{
         debug: {
-            datasetName: DEBUG_DEFAULT_DATASET_NAME,
+            datasetName: DATASET_DEFAULT_NAME,
             logAttention: false,
             setDatasetName: (datasetName) =>
                 set(

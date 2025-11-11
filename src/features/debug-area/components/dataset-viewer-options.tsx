@@ -5,13 +5,11 @@ import keys from 'lodash/keys';
 
 import { useDebugStyles } from '..';
 import store from '../../../store';
-import {
-    DEBUG_DEFAULT_DATASET_NAME,
-    DEBUG_ROOT_DATASET_NAME
-} from '../../../constants';
+import { DEBUG_ROOT_DATASET_NAME } from '../../../constants';
 import { logRender } from '../../logging';
 import { VegaViewServices } from '../../vega-extensibility';
 import { getI18nValue } from '../../i18n';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
 
 /**
  * Provides the ability to select a dataset from the Vega view. If no datasets
@@ -45,7 +43,7 @@ export const DatasetViewerOptions: React.FC = () => {
      */
     useEffect(() => {
         if (datasets.length > 0 && !datasets.includes(datasetName)) {
-            setDataset(DEBUG_DEFAULT_DATASET_NAME);
+            setDataset(DATASET_DEFAULT_NAME);
         }
     }, [datasets]);
 
@@ -83,7 +81,7 @@ const getDatasetNames = () => {
     const datasets = keys(VegaViewServices.getAllData()).filter(
         (key) => key !== DEBUG_ROOT_DATASET_NAME
     );
-    return (
-        datasets.length === 0 ? [DEBUG_DEFAULT_DATASET_NAME] : datasets
-    ).map((key) => key);
+    return (datasets.length === 0 ? [DATASET_DEFAULT_NAME] : datasets).map(
+        (key) => key
+    );
 };

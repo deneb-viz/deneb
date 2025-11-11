@@ -16,11 +16,7 @@ import {
     getDataTableWorkerTranslations
 } from '../data-table';
 import { logDebug, logRender, logTimeEnd, logTimeStart } from '../../logging';
-import {
-    DATASET_IDENTITY_NAME,
-    DATASET_KEY_NAME,
-    TABLE_VALUE_MAX_DEPTH
-} from '../../../constants';
+import { TABLE_VALUE_MAX_DEPTH } from '../../../constants';
 import { VegaViewServices } from '../../vega-extensibility';
 import { getPrunedObject } from '../../json-processing';
 import { getHashValue } from '../../../utils';
@@ -31,6 +27,10 @@ import {
     type IWorkerDatasetViewerMaxDisplayWidths,
     type IWorkerDatasetViewerMessage
 } from '@deneb-viz/app-core';
+import {
+    ROW_IDENTITY_FIELD_NAME,
+    ROW_KEY_FIELD_NAME
+} from '@deneb-viz/dataset/field';
 
 interface IDatasetViewerProps {
     datasetName: string;
@@ -99,7 +99,7 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
             const message: IWorkerDatasetViewerMessage = {
                 canvasFontCharWidth: getDataTableRenderedCharWidth(),
                 dataset: datasetRaw.values,
-                datasetKeyName: DATASET_KEY_NAME,
+                datasetKeyName: ROW_KEY_FIELD_NAME,
                 jobId,
                 translations: getDataTableWorkerTranslations(),
                 valueMaxLength: DATA_TABLE_VALUE_MAX_LENGTH
@@ -365,7 +365,8 @@ const getTableColumns = (
     logDebug('DatasetViewer: calculating table columns...');
     return keys(dataset?.[0])
         ?.filter(
-            (c) => [DATASET_KEY_NAME, DATASET_IDENTITY_NAME].indexOf(c) === -1
+            (c) =>
+                [ROW_KEY_FIELD_NAME, ROW_IDENTITY_FIELD_NAME].indexOf(c) === -1
         )
         .map((c) => ({
             id: c,

@@ -1,12 +1,7 @@
 import { textMeasurementService } from 'powerbi-visuals-utils-formattingutils';
 import { isDate, isFunction, isNumber } from 'vega';
 
-import {
-    DATASET_IDENTITY_NAME,
-    DATASET_ROW_NAME,
-    DATASET_SELECTED_NAME,
-    TABLE_COLUMN_RESERVED_WORDS
-} from '../../constants';
+import { TABLE_COLUMN_RESERVED_WORDS } from '../../constants';
 import { getPrunedObject } from '../json-processing';
 import {
     getCrossHighlightFieldBaseMeasureName,
@@ -21,6 +16,11 @@ import {
 import { DATA_TABLE_FONT_FAMILY, DATA_TABLE_FONT_SIZE } from '.';
 import { getI18nValue } from '../i18n';
 import { type IWorkerDatasetViewerTranslations } from '@deneb-viz/app-core';
+import {
+    ROW_IDENTITY_FIELD_NAME,
+    ROW_INDEX_FIELD_NAME,
+    SELECTED_ROW_FIELD_NAME
+} from '@deneb-viz/dataset/field';
 
 /**
  * If the column/cell relates to cross-filtering, return a tooltip value that
@@ -43,7 +43,7 @@ const getCellCrossFilterTooltip = (value: TDataPointSelectionStatus) => {
  */
 export const getCellTooltip = (field: string, value: any) => {
     switch (true) {
-        case field === DATASET_SELECTED_NAME:
+        case field === SELECTED_ROW_FIELD_NAME:
             return getCellCrossFilterTooltip(value);
         case isCrossHighlightComparatorField(field):
             return getCellHighlightComparatorTooltip(value);
@@ -180,7 +180,7 @@ export const getDataTableWorkerTranslations =
  */
 const getReservedTableColumnTooltip = (field: string) => {
     switch (true) {
-        case field === DATASET_SELECTED_NAME:
+        case field === SELECTED_ROW_FIELD_NAME:
             return getI18nValue('Pivot_Dataset_SelectedName', [
                 field,
                 getI18nValue('Pivot_Debug_SelectedNeutral'),
@@ -191,9 +191,9 @@ const getReservedTableColumnTooltip = (field: string) => {
         default:
             return getI18nValue(
                 `Pivot_Dataset_${
-                    field === DATASET_ROW_NAME
+                    field === ROW_INDEX_FIELD_NAME
                         ? 'RowIdentifier'
-                        : field === DATASET_IDENTITY_NAME
+                        : field === ROW_IDENTITY_FIELD_NAME
                           ? 'IdentityName'
                           : 'Unknown'
                 }`,

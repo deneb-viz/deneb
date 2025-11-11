@@ -6,10 +6,10 @@ import {
     VEGA_SCHEMA_URL
 } from '.';
 import { getNewIncludedTemplateMetadata } from '..';
-import { DATASET_SELECTED_NAME } from '../../../../constants';
 import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
+import { SELECTED_ROW_FIELD_NAME } from '@deneb-viz/dataset/field';
 
 const dataset: UsermetaDatasetField[] = [
     {
@@ -128,7 +128,7 @@ export const vBarInteractive = (): Spec => ({
                     },
                     opacity: [
                         {
-                            test: `datum.${DATASET_SELECTED_NAME} == 'off'`,
+                            test: `datum.${SELECTED_ROW_FIELD_NAME} == 'off'`,
                             value: 0
                         }
                     ]

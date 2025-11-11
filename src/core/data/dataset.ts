@@ -28,10 +28,8 @@ import {
 } from '../../features/interactivity';
 import { getState } from '../../store';
 import {
-    DATASET_ROLE_DRILLDOWN,
-    DATASET_ROLE_DRILLDOWN_FLAT
-} from '../../constants';
-import {
+    DRILL_FIELD_FLAT,
+    DRILL_FIELD_NAME,
     HIGHLIGHT_COMPARATOR_SUFFIX,
     HIGHLIGHT_FIELD_SUFFIX,
     HIGHLIGHT_STATUS_SUFFIX
@@ -69,7 +67,7 @@ const getDataRow = (
             const fieldName = getEncodedFieldName(f.column.displayName);
             const isDataset = f?.column.roles?.[DATASET_DEFAULT_NAME];
             const isDrilldown =
-                hasDrilldown && f?.column?.roles?.[DATASET_ROLE_DRILLDOWN];
+                hasDrilldown && f?.column?.roles?.[DRILL_FIELD_NAME];
             if (isDataset) {
                 const fieldHighlight = `${fieldName}${HIGHLIGHT_FIELD_SUFFIX}`;
                 const fieldHighlightStatus = `${fieldName}${HIGHLIGHT_STATUS_SUFFIX}`;
@@ -91,13 +89,13 @@ const getDataRow = (
                 }
             }
             if (isDrilldown) {
-                row[DATASET_ROLE_DRILLDOWN] = resolveDrilldownComponents(
-                    row?.[DATASET_ROLE_DRILLDOWN],
+                row[DRILL_FIELD_NAME] = resolveDrilldownComponents(
+                    row?.[DRILL_FIELD_NAME],
                     rawValue,
                     f.column.format
                 );
-                row[DATASET_ROLE_DRILLDOWN_FLAT] = resolveDrilldownFlat(
-                    row?.[DATASET_ROLE_DRILLDOWN_FLAT],
+                row[DRILL_FIELD_FLAT] = resolveDrilldownFlat(
+                    row?.[DRILL_FIELD_FLAT],
                     rawValue,
                     f.column.format
                 );
@@ -147,7 +145,7 @@ export const getMappedDataset = (
             const columns = getDatasetFieldEntries(dvCategories, dvValues);
             const hasDrilldown =
                 isDrilldownFeatureEnabled() &&
-                columns.filter((c) => c.column.roles?.[DATASET_ROLE_DRILLDOWN])
+                columns.filter((c) => c.column.roles?.[DRILL_FIELD_NAME])
                     ?.length > 0;
             const fieldValues = getDatasetValueEntries(dvCategories, dvValues);
             const selections: ISelectionId[] = <ISelectionId[]>(

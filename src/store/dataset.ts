@@ -9,7 +9,6 @@ import { TStoreState } from '.';
 import { getEmptyDataset } from '../core/data/dataset';
 import { TDataProcessingStage } from '../core/data';
 import { getResizablePaneSize } from '../core/ui/advancedEditor';
-import { DATASET_IDENTITY_NAME } from '../constants';
 import {
     getDataPointCrossFilterStatus,
     isCrossFilterPropSet
@@ -28,6 +27,7 @@ import {
 } from '@deneb-viz/json-processing';
 import { IDataset, PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
 import { TEditorPosition } from '../core/ui';
+import { ROW_IDENTITY_FIELD_NAME } from '@deneb-viz/dataset/field';
 
 export interface IDatasetSlice {
     dataset: IDataset;
@@ -219,7 +219,7 @@ const handleUpdateDatasetSelectors = (
         ...v,
         ...(isCrossFilterPropSet() && {
             __selected__: getDataPointCrossFilterStatus(
-                v?.[DATASET_IDENTITY_NAME],
+                v?.[ROW_IDENTITY_FIELD_NAME],
                 selectors
             )
         })

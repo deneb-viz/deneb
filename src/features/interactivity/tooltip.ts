@@ -18,10 +18,13 @@ import {
     getIdentitiesFromData,
     resolveDataFromItem
 } from './data-point';
-import { DATASET_IDENTITY_NAME, DATASET_KEY_NAME } from '../../constants';
 import { getI18nValue } from '../i18n';
 import { getVisualHost } from '../visual-host';
 import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
+import {
+    ROW_IDENTITY_FIELD_NAME,
+    ROW_KEY_FIELD_NAME
+} from '@deneb-viz/dataset/field';
 
 /**
  * Convenience constant for tooltip events, as it's required by Power BI.
@@ -32,7 +35,7 @@ const IS_TOUCH_EVENT = true;
  * Array of reserved keywords used to handle selection IDs from the visual's
  * default data view.
  */
-const TOOLTIP_RESERVED_WORDS = [DATASET_IDENTITY_NAME, DATASET_KEY_NAME];
+const TOOLTIP_RESERVED_WORDS = [ROW_IDENTITY_FIELD_NAME, ROW_KEY_FIELD_NAME];
 
 /**
  * For a given Vega `tooltip` object (key-value pairs), extract any non-reserved keys, and structure suitably as an array of standard
@@ -75,13 +78,13 @@ const getDeepRedactedTooltipItem = (object: object) => {
     return Array.isArray(object)
         ? object.map(getDeepRedactedTooltipItem)
         : object && typeof object === 'object'
-        ? Object.fromEntries(
-              Object.entries(object).map(([k, v]) => [
-                  k,
-                  getCuratedTooltipItem(k, v)
-              ])
-          )
-        : object;
+          ? Object.fromEntries(
+                Object.entries(object).map(([k, v]) => [
+                    k,
+                    getCuratedTooltipItem(k, v)
+                ])
+            )
+          : object;
 };
 
 /**

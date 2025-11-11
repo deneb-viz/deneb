@@ -2,9 +2,9 @@ import { TopLevelSpec } from 'vega-lite';
 
 import { VEGA_LITE_SCHEMA_URL } from '.';
 import { getDenebTemplateDatasetRef, getNewIncludedTemplateMetadata } from '..';
-import { DATASET_SELECTED_NAME } from '../../../../constants';
 import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
+import { SELECTED_ROW_FIELD_NAME } from '@deneb-viz/dataset/field';
 
 const dataset: UsermetaDatasetField[] = [
     {
@@ -53,7 +53,7 @@ export const vlBarInteractive = (): TopLevelSpec => ({
                 opacity: {
                     condition: {
                         test: {
-                            field: DATASET_SELECTED_NAME,
+                            field: SELECTED_ROW_FIELD_NAME,
                             equal: 'off'
                         },
                         value: 0
