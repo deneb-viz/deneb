@@ -411,7 +411,7 @@ export const getValidatedTemplate = (
             };
         }
         return INVALID_TEMPLATE_OPTIONS;
-    } catch (e) {
+    } catch {
         return INVALID_TEMPLATE_OPTIONS;
     }
 };
