@@ -12,11 +12,13 @@ const powerbiApi = require('powerbi-visuals-api');
 
 // Load visual configuration
 const pbivizPath = './pbiviz.json';
-const pbivizFile = require(path.join(__dirname, pbivizPath));
+// Use literal requires to satisfy eslint rule powerbi-visuals/non-literal-require
+const pbivizFile = require('./pbiviz.json');
 
 // Load capabilities
 const capabilitiesPath = './capabilities.json';
-const capabilities = require(path.join(__dirname, capabilitiesPath));
+// Use literal requires to satisfy eslint rule powerbi-visuals/non-literal-require
+const capabilities = require('./capabilities.json');
 
 // Plugin and visual source locations
 const pluginLocation = './.tmp/precompile/visualPlugin.ts';

@@ -9,7 +9,7 @@
     "scripts": {
         "dev": "turbo run dev webpack:start --parallel --concurrency=25",
         "package": "turbo build webpack:package",
-        "eslint": "turbo eslint eslint:root --",
+        "eslint": "turbo run eslint -- && npm run -s eslint:root",
         "test": "turbo run test",
         "test:watch": "turbo run test:watch",
         "package-standalone": "npm run build && npm run package:standalone",
