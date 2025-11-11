@@ -1,10 +1,10 @@
-import { IDatasetFields } from './dataset';
 import {
-    TokenPatternReplacer,
-    TrackedDrilldownProperties,
-    TrackedFields
-} from './json-processing';
-import { UsermetaDatasetField } from './template-usermeta-schema';
+    type TrackedDrilldownProperties,
+    type TokenPatternReplacer,
+    type TrackedFields
+} from '../../field-tracking';
+import { type IDatasetFields } from '@deneb-viz/dataset/field';
+import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 
 /**
  * Represents the worker that processes the JSON in a specification. Because these are typically very expensive, we
@@ -46,40 +46,35 @@ export type IDenebJsonProcessingWorkerResponse =
     | IDenebRemapResponseMessage;
 
 /**
- * The message format for a request to get tracking information from a JSON specification, based on the current
- * dataset.
+ * The message format for a request to remap fields in a JSON specification.
  */
-export interface IDenebTrackingRequestMessage {
-    type: 'tracking';
-    payload: IDenebTrackingRequestPayload;
+export interface IDenebRemapRequestMessage {
+    type: 'remapping';
+    payload: IDenebRemapRequestPayload;
 }
 
 /**
- * The payload for a request to get tracking information from a JSON specification, based on the current dataset.
+ * The payload for a request to remap fields in a JSON specification.
  */
-export interface IDenebTrackingRequestPayload {
+export interface IDenebRemapRequestPayload {
     spec: Uint8Array;
-    fields: IDatasetFields;
-    hasDrilldown: boolean;
-    trackedFieldsCurrent: TrackedFields;
-    supplementaryPatterns: string[];
-    reset?: boolean;
-}
-
-/**
- * The message format for a response to a request to get tracking information from a JSON specification.
- */
-export interface IDenebTrackingResponseMessage {
-    type: 'tracking';
-    payload: IDenebTrackingResponsePayload;
-}
-
-/**
- * The payload for a response to a request to get tracking information from a JSON specification.
- */
-export interface IDenebTrackingResponsePayload {
+    remapFields: UsermetaDatasetField[];
     trackedFields: TrackedFields;
-    trackedDrilldown: TrackedDrilldownProperties;
+}
+
+/**
+ * The message format for a response to a request to remap fields in a JSON specification.
+ */
+export interface IDenebRemapResponseMessage {
+    type: 'remapping';
+    payload: IDenebRemapResponsePayload;
+}
+
+/**
+ * The payload for a response to a request to remap fields in a JSON specification.
+ */
+export interface IDenebRemapResponsePayload {
+    spec: Uint8Array;
 }
 
 /**
@@ -116,33 +111,38 @@ export interface IDenebTokenizationResponsePayload {
 }
 
 /**
- * The message format for a request to remap fields in a JSON specification.
+ * The message format for a request to get tracking information from a JSON specification, based on the current
+ * dataset.
  */
-export interface IDenebRemapRequestMessage {
-    type: 'remapping';
-    payload: IDenebRemapRequestPayload;
+export interface IDenebTrackingRequestMessage {
+    type: 'tracking';
+    payload: IDenebTrackingRequestPayload;
 }
 
 /**
- * The payload for a request to remap fields in a JSON specification.
+ * The payload for a request to get tracking information from a JSON specification, based on the current dataset.
  */
-export interface IDenebRemapRequestPayload {
+export interface IDenebTrackingRequestPayload {
     spec: Uint8Array;
-    remapFields: UsermetaDatasetField[];
+    fields: IDatasetFields;
+    hasDrilldown: boolean;
+    trackedFieldsCurrent: TrackedFields;
+    supplementaryPatterns: string[];
+    reset?: boolean;
+}
+
+/**
+ * The message format for a response to a request to get tracking information from a JSON specification.
+ */
+export interface IDenebTrackingResponseMessage {
+    type: 'tracking';
+    payload: IDenebTrackingResponsePayload;
+}
+
+/**
+ * The payload for a response to a request to get tracking information from a JSON specification.
+ */
+export interface IDenebTrackingResponsePayload {
     trackedFields: TrackedFields;
-}
-
-/**
- * The message format for a response to a request to remap fields in a JSON specification.
- */
-export interface IDenebRemapResponseMessage {
-    type: 'remapping';
-    payload: IDenebRemapResponsePayload;
-}
-
-/**
- * The payload for a response to a request to remap fields in a JSON specification.
- */
-export interface IDenebRemapResponsePayload {
-    spec: Uint8Array;
+    trackedDrilldown: TrackedDrilldownProperties;
 }

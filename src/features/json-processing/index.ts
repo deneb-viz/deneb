@@ -3,25 +3,27 @@ import cloneDeep from 'lodash/cloneDeep';
 import { getI18nValue } from '../i18n';
 import { logTimeEnd, logTimeStart } from '../logging';
 import {
-    IDenebJsonProcessingWorkerRequest,
-    IDenebRemapResponseMessage,
-    IDenebTokenizationResponseMessage,
-    IDenebTrackingResponseMessage,
     JSON_MAX_PRUNE_DEPTH,
-    TrackedFields,
-    UsermetaDatasetField
+    TrackedFields
 } from '@deneb-viz/core-dependencies';
 import {
     stringToUint8Array,
     uint8ArrayToString
 } from '@deneb-viz/utils/type-conversion';
-import { doDenebSpecJsonWorkerRequest } from '@deneb-viz/worker-common';
+import {
+    doDenebSpecJsonWorkerRequest,
+    type IDenebJsonProcessingWorkerRequest,
+    type IDenebRemapResponseMessage,
+    type IDenebTokenizationResponseMessage,
+    type IDenebTrackingResponseMessage
+} from '@deneb-viz/json-processing/spec-processing';
 import { getState } from '../../store';
 import { getRemapEligibleFields } from '@deneb-viz/json-processing';
 import {
     getTokenPatternsLiteral,
     getTokenPatternsReplacement
 } from '@deneb-viz/json-processing/field-tracking';
+import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 
 export { getObjectFormattedAsText } from './formatting';
 

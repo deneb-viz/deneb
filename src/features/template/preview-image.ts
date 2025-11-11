@@ -7,7 +7,7 @@ import {
     getBase64DataUri,
     getBase64ImagePngBlank,
     getBase64MimeType
-} from '@deneb-viz/core-dependencies';
+} from '@deneb-viz/utils/base64';
 
 /**
  * Encoding method used for preview images.

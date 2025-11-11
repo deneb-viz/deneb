@@ -1,5 +1,5 @@
-import { IDatasetFields } from '../definitions';
-import { pickBy } from '../utils';
+import { type IDatasetFields } from '../field';
+import { pickBy } from '@deneb-viz/utils/object';
 
 /**
  * For supplied fields, retrieve only those that should be from the data roles.

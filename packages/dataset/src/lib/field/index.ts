@@ -5,3 +5,4 @@ export {
     HIGHLIGHT_FIELD_SUFFIX,
     HIGHLIGHT_STATUS_SUFFIX
 } from './constants';
+export type * from './types';

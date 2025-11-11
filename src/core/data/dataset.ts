@@ -45,10 +45,8 @@ import {
 import { logError, logTimeEnd, logTimeStart } from '../../features/logging';
 import { getHashValue } from '../../utils';
 import { getVisualSelectionManager } from '../../features/visual-host';
-import {
-    IDataset,
-    getDatasetFieldsInclusive
-} from '@deneb-viz/core-dependencies';
+import { IDataset } from '@deneb-viz/core-dependencies';
+import { getDatasetFieldsInclusive } from '@deneb-viz/dataset/data';
 
 /**
  * For supplied data view field metadata, produce a suitable object

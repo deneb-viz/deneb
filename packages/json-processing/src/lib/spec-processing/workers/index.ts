@@ -1,14 +1,17 @@
 import {
-    IDenebSpecJsonWorker,
-    IDenebJsonProcessingWorkerRequest,
-    IDenebJsonProcessingWorkerResponse
-} from '@deneb-viz/core-dependencies';
-import {
     getUrlFromBlob,
     getWorkerAsBlobFromRawFile,
     getWorkerFromUrl
 } from '@deneb-viz/utils/worker';
-import denebSpecJson from '@deneb-viz/worker-spec-json-processing';
+import {
+    type IDenebJsonProcessingWorkerRequest,
+    type IDenebJsonProcessingWorkerResponse,
+    type IDenebRemapResponseMessage,
+    type IDenebTokenizationResponseMessage,
+    type IDenebTrackingResponseMessage,
+    type IDenebSpecJsonWorker
+} from './types';
+import denebSpecJson from '../../../../dist/worker/spec-processing.worker.js';
 
 /**
  * Used for asynchronous processing of JSON specifications.
@@ -38,3 +41,10 @@ export const doDenebSpecJsonWorkerRequest = (
             reject(e);
         }
     });
+
+export type {
+    IDenebJsonProcessingWorkerRequest,
+    IDenebRemapResponseMessage,
+    IDenebTokenizationResponseMessage,
+    IDenebTrackingResponseMessage
+};

@@ -3,6 +3,4 @@ export * from './integration-powerbi';
 export * from './json-processing';
 export * from './store';
 export * from './template';
-export * from './utils-base64';
 export * from './vega-integration';
-export * from './worker-spec-json-processing';

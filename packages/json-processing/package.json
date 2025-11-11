@@ -20,6 +20,10 @@
         "./field-tracking": {
             "types": "./dist/lib/field-tracking/index.d.ts",
             "default": "./dist/lib/field-tracking/index.js"
+        },
+        "./spec-processing": {
+            "types": "./dist/lib/spec-processing/index.d.ts",
+            "default": "./dist/lib/spec-processing/index.js"
         }
     },
     "sideEffects": false,
@@ -57,6 +61,7 @@
         "ajv-formats": "^2.1.1",
         "jsonc-parser": "^3.2.1",
         "lodash": "^4.17.21",
+        "mergician": "^2.0.2",
         "vega": "6.2.0",
         "vega-expression": "^5.1.1",
         "vega-lite": "6.4.1",

@@ -14,78 +14,74 @@ import { logDebug, logRender } from '../../logging';
 import { useTemplateStyles } from '.';
 import { getI18nValue } from '../../i18n';
 import { DataTypeIcon } from './data-type-icon';
-import {
-    UsermetaDatasetField,
-    getDatasetFieldsInclusive
-} from '@deneb-viz/core-dependencies';
+import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
+import { getDatasetFieldsInclusive } from '@deneb-viz/dataset/data';
 
 interface IDatasetFieldAssignmentDropdownProps {
     datasetField: UsermetaDatasetField;
     dialogType: TModalDialogType;
 }
 
-export const DataFieldDropDown: React.FC<IDatasetFieldAssignmentDropdownProps> =
-    ({ datasetField, dialogType }) => {
-        const classes = useTemplateStyles();
-        const {
-            dataset: { fields }
-        } = store((state) => state);
-        const selectedKeyDefault = getDefaultSelectedKey(datasetField, fields);
-        const [selectedKey, setSelectedKey] =
-            useState<string>(selectedKeyDefault);
-        const selectedField = getDatasetField(selectedKey, dialogType);
-        const options = getTemplateDatasetFields(fields);
-        const dropdownOptionElements = getFieldOptions(options);
-        const resolveSelectedKey = () => {
-            const intendedItem = selectedKey
-                ? selectedKey
-                : fields[datasetField.name]?.queryName || null;
-            intendedItem !== selectedKey && setSelectedKey(() => intendedItem);
-        };
-        const onOptionSelect: DropdownProps['onOptionSelect'] = (ev, data) => {
-            logDebug('onOptionSelect', { dialogType, data });
-            setSelectedKey(() => data.optionValue);
-        };
-        resolveSelectedKey();
-        useEffect(() => {
-            if (!selectedField) {
-                setSelectedKey(selectedKeyDefault);
-            }
-        }, [selectedField?.queryName]);
-        useEffect(() => {
-            const option = options.find((o) => o.queryName === selectedKey);
-            getFieldAssignmentReducer(dialogType)?.({
-                key: datasetField.key,
-                suppliedObjectKey: option?.queryName,
-                suppliedObjectName: option?.templateMetadata?.name
-            });
-        }, [selectedKey]);
-        const dropdownId = useId('dataset-field');
-        logRender(`DataFieldDropdown ${datasetField.key}`, {
-            datasetField,
-            dialogType,
-            fields,
-            selectedField,
-            selectedKey,
-            selectedKeyDefault,
-            options
-        });
-        return (
-            <Dropdown
-                id={dropdownId}
-                inlinePopup
-                defaultSelectedOptions={[selectedKey]}
-                className={classes.datasetAssignmentDropdown}
-                placeholder={getI18nValue(
-                    'Text_Placeholder_Create_Assigned_Field'
-                )}
-                onOptionSelect={onOptionSelect}
-                value={selectedField?.templateMetadata?.name || null}
-            >
-                {dropdownOptionElements}
-            </Dropdown>
-        );
+export const DataFieldDropDown: React.FC<
+    IDatasetFieldAssignmentDropdownProps
+> = ({ datasetField, dialogType }) => {
+    const classes = useTemplateStyles();
+    const {
+        dataset: { fields }
+    } = store((state) => state);
+    const selectedKeyDefault = getDefaultSelectedKey(datasetField, fields);
+    const [selectedKey, setSelectedKey] = useState<string>(selectedKeyDefault);
+    const selectedField = getDatasetField(selectedKey, dialogType);
+    const options = getTemplateDatasetFields(fields);
+    const dropdownOptionElements = getFieldOptions(options);
+    const resolveSelectedKey = () => {
+        const intendedItem = selectedKey
+            ? selectedKey
+            : fields[datasetField.name]?.queryName || null;
+        intendedItem !== selectedKey && setSelectedKey(() => intendedItem);
     };
+    const onOptionSelect: DropdownProps['onOptionSelect'] = (ev, data) => {
+        logDebug('onOptionSelect', { dialogType, data });
+        setSelectedKey(() => data.optionValue);
+    };
+    resolveSelectedKey();
+    useEffect(() => {
+        if (!selectedField) {
+            setSelectedKey(selectedKeyDefault);
+        }
+    }, [selectedField?.queryName]);
+    useEffect(() => {
+        const option = options.find((o) => o.queryName === selectedKey);
+        getFieldAssignmentReducer(dialogType)?.({
+            key: datasetField.key,
+            suppliedObjectKey: option?.queryName,
+            suppliedObjectName: option?.templateMetadata?.name
+        });
+    }, [selectedKey]);
+    const dropdownId = useId('dataset-field');
+    logRender(`DataFieldDropdown ${datasetField.key}`, {
+        datasetField,
+        dialogType,
+        fields,
+        selectedField,
+        selectedKey,
+        selectedKeyDefault,
+        options
+    });
+    return (
+        <Dropdown
+            id={dropdownId}
+            inlinePopup
+            defaultSelectedOptions={[selectedKey]}
+            className={classes.datasetAssignmentDropdown}
+            placeholder={getI18nValue('Text_Placeholder_Create_Assigned_Field')}
+            onOptionSelect={onOptionSelect}
+            value={selectedField?.templateMetadata?.name || null}
+        >
+            {dropdownOptionElements}
+        </Dropdown>
+    );
+};
 
 /**
  * For the supplied lookup name, returns the dataset field with the same name.

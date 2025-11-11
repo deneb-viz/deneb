@@ -18,6 +18,10 @@
             "types": "./dist/index.d.ts",
             "default": "./dist/index.js"
         },
+        "./base64": {
+            "types": "./dist/lib/base64.d.ts",
+            "default": "./dist/lib/base64.js"
+        },
         "./dom": {
             "types": "./dist/lib/dom.d.ts",
             "default": "./dist/lib/dom.js"
@@ -25,6 +29,10 @@
         "./inspection": {
             "types": "./dist/lib/inspection.d.ts",
             "default": "./dist/lib/inspection.js"
+        },
+        "./object": {
+            "types": "./dist/lib/object.d.ts",
+            "default": "./dist/lib/object.js"
         },
         "./type-conversion": {
             "types": "./dist/lib/type-conversion.d.ts",

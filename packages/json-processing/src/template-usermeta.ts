@@ -8,10 +8,7 @@ import {
     IDenebTemplateAllocationComponents,
     ICreateSliceProperties,
     DATASET_CORE_ROLE_NAME,
-    TrackedFields,
-    getJsonPlaceholderKey,
-    getNewUuid,
-    getBase64ImagePngBlank
+    getNewUuid
 } from '@deneb-viz/core-dependencies';
 import {
     getJsoncNodeValue,
@@ -22,7 +19,11 @@ import {
 } from './processing';
 import { getProviderValidator } from './validation';
 import { applyEdits, modify } from 'jsonc-parser';
-import { getEscapedReplacerPattern } from './lib/field-tracking';
+import {
+    getEscapedReplacerPattern,
+    getPlaceholderKey,
+    type TrackedFields
+} from './lib/field-tracking';
 import {
     TEMPLATE_USERMETA_VERSION,
     type UsermetaDatasetField,
@@ -31,6 +32,7 @@ import {
     type UsermetaInteractivity,
     type UsermetaTemplate
 } from '@deneb-viz/template-usermeta';
+import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
 
 /**
  * If we cannot resolve a provider, this is the default to assign.
@@ -107,7 +109,7 @@ export const getExportTemplate = (options: {
 };
 
 const getFieldPattern = (index: number) =>
-    new RegExp(getEscapedReplacerPattern(getJsonPlaceholderKey(index)), 'g');
+    new RegExp(getEscapedReplacerPattern(getPlaceholderKey(index)), 'g');
 
 /**
  * When we initialize a new template for import (or when intializing the store), this provides the default values for

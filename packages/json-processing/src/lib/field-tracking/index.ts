@@ -5,6 +5,7 @@ export {
 export {
     getEscapedReplacerPattern,
     getHighlightRegExpAlternation,
+    getPlaceholderKey,
     getTokenPatternsLiteral,
     getTokenPatternsReplacement
 } from './tokenization';

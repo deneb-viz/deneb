@@ -33,6 +33,16 @@ export const getNumberFormatRegExpAlternation = () =>
     `${FORMAT_FIELD_SUFFIX}|${FORMATTED_FIELD_SUFFIX}`;
 
 /**
+ * Consistently format a supplied identity into a suitable placeholder. Placeholders are used to represent dataset
+ * fields in the specification, so that they can be replaced with the actual values when the dataset is accessible.
+ * - Decimal values are floored to the nearest integer.
+ * - Negative values are converted to positive values.
+ */
+export const getPlaceholderKey = (i: number) => {
+    return `__${Math.floor(Math.abs(i))}__`;
+};
+
+/**
  * For a literal field name (i.e., an extracted property value from a JSON or Vega expression AST), returns an array of
  * RegEx patterns that can be used to test that the literal matches the given field name (allowing for field modifiers
  * such as highlights and number formatting).

@@ -6,8 +6,9 @@ import {
     stringToUint8Array,
     uint8ArrayToString
 } from '@deneb-viz/utils/type-conversion';
-import { getTokenPatternsReplacement } from '@deneb-viz/json-processing/field-tracking';
 import { getTokenizedSpec } from '../tokenizer';
+import { getTokenPatternsReplacement } from '../../../field-tracking';
+import { describe, expect, it } from 'vitest';
 
 const TRACKED_FIELDS_NO_REMAP_PENDING: TrackedFields = {
     'Date.Date': {

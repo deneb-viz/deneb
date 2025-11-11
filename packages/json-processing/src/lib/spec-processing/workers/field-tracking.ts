@@ -1,26 +1,27 @@
-import {
-    IDatasetField,
-    IDenebTrackingRequestPayload,
-    IDenebTrackingResponsePayload,
-    TrackedDrilldownProperties,
-    TrackedFieldCandidates,
-    TrackedFieldProperties,
-    TrackedFields,
-    getDatasetFieldsInclusive,
-    getJsonPlaceholderKey,
-    isBase64Image,
-    merge
-} from '@deneb-viz/core-dependencies';
 import { JSONPath, visit } from 'jsonc-parser';
 import { Dictionary } from 'lodash';
 import { parseExpression } from 'vega-expression';
+import { mergician } from 'mergician';
+
+import { isBase64Image } from '@deneb-viz/utils/base64';
 import { isString } from '@deneb-viz/utils/inspection';
-import {
-    getEscapedReplacerPattern,
-    JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER
-} from '@deneb-viz/json-processing/field-tracking';
 import { uint8ArrayToString } from '@deneb-viz/utils/type-conversion';
 import type { UsermetaDatasetField } from '@deneb-viz/template-usermeta';
+import {
+    getEscapedReplacerPattern,
+    JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER,
+    type TrackedDrilldownProperties,
+    type TrackedFieldProperties,
+    type TrackedFieldCandidates,
+    type TrackedFields,
+    getPlaceholderKey
+} from '../../field-tracking';
+import { type IDatasetField } from '@deneb-viz/dataset/field';
+import {
+    type IDenebTrackingRequestPayload,
+    type IDenebTrackingResponsePayload
+} from './types';
+import { getDatasetFieldsInclusive } from '@deneb-viz/dataset/data';
 
 /**
  * For a Vega expression AST node, check if it has an occurrence of a field from the visual dataset.
@@ -226,7 +227,7 @@ export const getTrackingDataFromSpecification = (
                     f.templateMetadataOriginal as UsermetaDatasetField;
                 const { key } = templateMetadata;
                 const tracking: TrackedFieldProperties = trackedFields[key] || {
-                    placeholder: getJsonPlaceholderKey(fieldIndex),
+                    placeholder: getPlaceholderKey(fieldIndex),
                     paths: [],
                     isInDataset: f.isCurrent,
                     isInSpecification: false,
@@ -345,7 +346,7 @@ const isLiteralEligibleForTesting = (value: string) =>
 export const getTrackedFieldMapMerged = (
     fieldMapPrev: TrackedFieldCandidates,
     fieldMapCurrent: TrackedFieldCandidates
-) => merge(fieldMapPrev, fieldMapCurrent);
+) => mergician(fieldMapPrev, fieldMapCurrent);
 
 /**
  * Test if a path should be avoided when inspecting a JSON object for field tracking. If a path being tested contains

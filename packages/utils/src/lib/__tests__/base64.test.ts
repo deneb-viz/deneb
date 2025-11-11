@@ -1,5 +1,11 @@
-import { BASE64_BLANK_IMAGE_PNG } from '../../constants';
-import { getBase64DataUri, getBase64ImagePngBlank, getBase64MimeType, isBase64Image } from '../base64';
+import { describe, expect, it } from 'vitest';
+import {
+    BASE64_BLANK_IMAGE_PNG,
+    getBase64DataUri,
+    getBase64ImagePngBlank,
+    getBase64MimeType,
+    isBase64Image
+} from '../base64';
 
 describe('getBase64DataUri', () => {
     it('should return the correct data URI', () => {

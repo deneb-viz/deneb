@@ -1,13 +1,14 @@
-import {
-    TrackedFields,
-    UsermetaDatasetFieldKind,
-    UsermetaDatasetFieldType
-} from '@deneb-viz/core-dependencies';
 import { getRemappedSpecification } from '../remapping';
+import { type TrackedFields } from '../../../field-tracking';
+import {
+    type UsermetaDatasetFieldKind,
+    type UsermetaDatasetFieldType
+} from '@deneb-viz/template-usermeta';
 import {
     stringToUint8Array,
     uint8ArrayToString
 } from '@deneb-viz/utils/type-conversion';
+import { describe, expect, it } from 'vitest';
 
 describe('getRemappedSpecification', () => {
     it('should replace placeholders in the specification with supplied object names', () => {

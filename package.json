@@ -46,7 +46,6 @@
         "@deneb-viz/template-usermeta": "*",
         "@deneb-viz/utils": "*",
         "@deneb-viz/vega-runtime": "*",
-        "@deneb-viz/worker-common": "*",
         "@fluentui/react-components": "^9.72.6",
         "@fluentui/react-icons": "^2.0.313",
         "@monaco-editor/react": "^4.6.0",

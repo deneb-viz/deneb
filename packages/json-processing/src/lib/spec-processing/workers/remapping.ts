@@ -7,13 +7,13 @@ import {
     parseTree
 } from 'jsonc-parser';
 import {
-    IDenebRemapRequestPayload,
-    IDenebRemapResponsePayload
-} from '@deneb-viz/core-dependencies';
-import {
     stringToUint8Array,
     uint8ArrayToString
 } from '@deneb-viz/utils/type-conversion';
+import {
+    type IDenebRemapRequestPayload,
+    type IDenebRemapResponsePayload
+} from './types';
 
 /**
  * For the supplied tokenized specification and re-mapping information, traverse all re-mapping fields needed and

@@ -1,5 +1,17 @@
-import { BASE64_BLANK_IMAGE_PNG, BASE64_MIME_TYPE_PNG } from '../constants';
-import { TBase64DataEncoding } from '../definitions';
+/**
+ * Supported encodings for base64
+ */
+export type TBase64DataEncoding = 'png';
+
+/**
+ * The base MIME-type used when creating images from data URLs.
+ */
+export const BASE64_MIME_TYPE_PNG = 'image/png';
+
+/**
+ * Blank image data URI; used to return placeholder images when remote URIs are supplied.
+ */
+export const BASE64_BLANK_IMAGE_PNG = `iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=`;
 
 /**
  * For the given data type, create a data URL prefix for base64 data.
@@ -33,7 +45,7 @@ export function isBase64Image(str: string) {
     try {
         const b64 = str.replace(prefix, '').trim();
         return btoa(atob(b64)) === b64 && str.trim().indexOf(prefix) === 0;
-    } catch (err) {
+    } catch {
         return false;
     }
 }

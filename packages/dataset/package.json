@@ -18,6 +18,10 @@
             "types": "./dist/index.d.ts",
             "default": "./dist/index.js"
         },
+        "./data": {
+            "types": "./dist/lib/data/index.d.ts",
+            "default": "./dist/lib/data/index.js"
+        },
         "./field": {
             "types": "./dist/lib/field/index.d.ts",
             "default": "./dist/lib/field/index.js"
@@ -38,5 +42,12 @@
         "tsup": "^8.5.0",
         "typescript": "^5.6.2",
         "vitest": "^3.2.4"
+    },
+    "dependencies": {
+        "@deneb-viz/template-usermeta": "*",
+        "@deneb-viz/utils": "*"
+    },
+    "peerDependencies": {
+        "powerbi-visuals-api": "5.11.0"
     }
 }

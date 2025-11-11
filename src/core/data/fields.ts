@@ -19,11 +19,9 @@ import {
 } from '@deneb-viz/dataset/field';
 import { isDataViewFieldEligibleForFormatting } from '../../features/dataset';
 import { logTimeEnd, logTimeStart } from '../../features/logging';
-import {
-    getDatasetFieldsInclusive,
-    UsermetaDatasetField
-} from '@deneb-viz/core-dependencies';
 import { getResolvedVisualMetadataToDatasetField } from '@deneb-viz/json-processing';
+import { getDatasetFieldsInclusive } from '@deneb-viz/dataset/data';
+import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 
 /**
  * Extract all categorical fields from the data view as suitable metadata.
