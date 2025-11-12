@@ -11,9 +11,10 @@ import {
 import { updateSelectionMode } from '../../../core/ui/commands';
 import store from '../../../store';
 import { getI18nValue } from '../../i18n';
-import { SelectionMode, SpecProvider } from '@deneb-viz/core-dependencies';
+import { SelectionMode } from '@deneb-viz/core-dependencies';
 import { getVisualSelectionManager } from '../../visual-host';
 import { useSettingsStyles } from '.';
+import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 
 export const CrossFilterModeSettings: React.FC = () => {
     const {

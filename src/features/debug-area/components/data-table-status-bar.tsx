@@ -15,8 +15,8 @@ import { StatusBarContainer } from '../../interface';
 import { DatasetViewerOptions } from './dataset-viewer-options';
 import { getI18nValue } from '../../i18n';
 import { DataTableNavigationButton } from './data-table-navigation-button';
-import { PREVIEW_PANE_DATA_TABLE } from '@deneb-viz/core-dependencies';
 import { setVisualProperty } from '../../commands';
+import { DATA_VIEWER_CONFIGURATION } from '@deneb-viz/app-core';
 
 /**
  * Displays at the footer of the data table, and used to control pagination
@@ -139,7 +139,7 @@ const getNumberOfPages = (rowCount: number, rowsPerPage: number) =>
     Math.ceil(rowCount / rowsPerPage);
 
 const getRowsPerPageValues = () =>
-    PREVIEW_PANE_DATA_TABLE.rowsPerPage.values.map((v) => (
+    DATA_VIEWER_CONFIGURATION.rowsPerPage.values.map((v) => (
         <option key={`rows-${v}`} value={v}>
             {v}
         </option>

@@ -57,6 +57,7 @@
         "@deneb-viz/integration-powerbi": "*",
         "@deneb-viz/template-usermeta": "*",
         "@deneb-viz/utils": "*",
+        "@deneb-viz/vega-runtime": "*",
         "ajv": "^8.12.0",
         "ajv-formats": "^2.1.1",
         "jsonc-parser": "^3.2.1",

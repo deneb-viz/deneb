@@ -13,7 +13,10 @@ import { getPowerBiTooltipHandler } from '../../interactivity';
 import { getD3FormatLocale, getD3TimeFormatLocale } from '../../i18n';
 import { getSpecificationForVisual } from '../../specification/logic';
 import { getVisualHost } from '../../visual-host';
-import { SpecProvider, SpecRenderMode } from '@deneb-viz/core-dependencies';
+import {
+    type SpecProvider,
+    type SpecRenderMode
+} from '@deneb-viz/vega-runtime/embed';
 
 interface IVegaRenderProps {
     datasetHash: string;

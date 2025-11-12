@@ -20,9 +20,7 @@ import {
 import {
     IDenebTemplateAllocationComponents,
     PROPERTIES_DEFAULTS,
-    SelectionMode,
-    SpecProvider,
-    TrackedFields
+    SelectionMode
 } from '@deneb-viz/core-dependencies';
 import {
     TEMPLATE_USERMETA_VERSION,
@@ -30,6 +28,8 @@ import {
     type UsermetaTemplate
 } from '@deneb-viz/template-usermeta';
 import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
+import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import { type TrackedFields } from '../lib/field-tracking';
 
 const MOCK_BUILD_VERSION = '1.0.0';
 const MOCK_DATE = '2022-01-01T00:00:00.000Z';

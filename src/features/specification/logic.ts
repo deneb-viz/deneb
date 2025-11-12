@@ -35,12 +35,10 @@ import {
     getParsedJsonWithResult,
     getProviderValidator
 } from '@deneb-viz/json-processing';
-import {
-    PROPERTIES_DEFAULTS,
-    SpecProvider
-} from '@deneb-viz/core-dependencies';
+import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
 import { getPowerBiSignalContainer } from '@deneb-viz/integration-powerbi';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
+import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 
 /**
  * For a given operation and string input, ensure that it's trimmed and replaced with suitable defaults if empty.

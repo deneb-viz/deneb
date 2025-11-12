@@ -1,7 +1,7 @@
 import * as Vega from 'vega';
 import * as VegaLite from 'vega-lite';
 import { InterfaceMode } from '../interface';
-import { SpecProvider } from '@deneb-viz/core-dependencies';
+import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 
 /**
  * Values for a spec's parse status.

@@ -1,5 +1,6 @@
 /**
  * Default values for the data table in the preview pane (AKA the debug pane).
+ * TODO: can remove after refactoring
  */
 export const PREVIEW_PANE_DATA_TABLE = {
     rowsPerPage: {

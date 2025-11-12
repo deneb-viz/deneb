@@ -2,10 +2,8 @@ import * as INCLUDED_TEMPLATES from './included';
 import { Spec } from 'vega';
 import { TopLevelSpec } from 'vega-lite';
 import { getTemplateMetadata } from '@deneb-viz/json-processing';
-import {
-    DenebTemplatesIncluded,
-    SpecProvider
-} from '@deneb-viz/core-dependencies';
+import { DenebTemplatesIncluded } from '@deneb-viz/core-dependencies';
+import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 
 export {
     TEMPLATE_DATASET_FIELD_PROPS,

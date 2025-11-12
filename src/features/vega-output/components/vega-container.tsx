@@ -10,7 +10,10 @@ import { mergeClasses } from '@griffel/core';
 import Scrollbars, { positionValues } from 'react-custom-scrollbars-2';
 import { clearSelection, hidePowerBiTooltip } from '../../interactivity';
 import { VEGA_CONTAINER_ID } from '../../../constants';
-import { SpecProvider, SpecRenderMode } from '@deneb-viz/core-dependencies';
+import {
+    type SpecProvider,
+    type SpecRenderMode
+} from '@deneb-viz/vega-runtime/embed';
 import { VegaViewServices } from '../../vega-extensibility';
 import throttle from 'lodash/throttle';
 import { getPowerBiSignalContainer } from '@deneb-viz/integration-powerbi';

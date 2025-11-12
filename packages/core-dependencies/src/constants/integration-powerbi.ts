@@ -1,4 +1,5 @@
-import { SelectionMode, SpecProvider, SpecRenderMode } from '../definitions';
+import { SelectionMode } from '../definitions';
+import { SpecProvider, SpecRenderMode } from '../definitions/vega-integration';
 import { PREVIEW_PANE_DATA_TABLE } from './debug-area';
 
 /**

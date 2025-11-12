@@ -1,14 +1,11 @@
 import Ajv, { ErrorObject, ValidateFunction } from 'ajv';
 import addFormats from 'ajv-formats';
 import merge from 'lodash/merge';
+import { VEGA_LITE_SCHEME_ADDITIONS } from '@deneb-viz/vega-runtime/extensibility';
 import {
-    GetProviderValidatorOptions,
-    SchemaProviderReference,
-    VEGA_SCHEME_POWERBI_DIVERGENT,
-    VEGA_SCHEME_POWERBI_LINEAR,
-    VEGA_SCHEME_POWERBI_NOMINAL,
-    VEGA_SCHEME_POWERBI_ORDINAL
-} from '@deneb-viz/core-dependencies';
+    type GetProviderValidatorOptions,
+    type SchemaProviderReference
+} from './lib/spec-processing';
 
 /**
  * All schemas required for validation functions.
@@ -40,20 +37,19 @@ const VEGA_LITE_SCHEMA_POWERBI = merge(vegaLiteSchema, {
         Categorical: {
             enum: [
                 ...vegaLiteSchema.definitions.Categorical.enum,
-                VEGA_SCHEME_POWERBI_NOMINAL,
-                VEGA_SCHEME_POWERBI_ORDINAL
+                ...VEGA_LITE_SCHEME_ADDITIONS.categorical
             ]
         },
         Diverging: {
             enum: [
                 ...vegaLiteSchema.definitions.Diverging.enum,
-                VEGA_SCHEME_POWERBI_DIVERGENT
+                ...VEGA_LITE_SCHEME_ADDITIONS.diverging
             ]
         },
         SequentialMultiHue: {
             enum: [
                 ...vegaLiteSchema.definitions.SequentialMultiHue.enum,
-                VEGA_SCHEME_POWERBI_LINEAR
+                ...VEGA_LITE_SCHEME_ADDITIONS.sequential
             ]
         }
     }

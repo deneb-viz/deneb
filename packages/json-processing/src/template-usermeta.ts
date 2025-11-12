@@ -2,7 +2,6 @@ import powerbi from 'powerbi-visuals-api';
 
 import omit from 'lodash/omit';
 import {
-    SpecProvider,
     PROPERTIES_DEFAULTS,
     ICreateSliceSetImportFile,
     IDenebTemplateAllocationComponents,
@@ -33,6 +32,7 @@ import {
 } from '@deneb-viz/template-usermeta';
 import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
+import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 
 /**
  * If we cannot resolve a provider, this is the default to assign.

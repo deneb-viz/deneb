@@ -9,6 +9,10 @@ export {
 };
 
 import {
+    type SpecProvider,
+    type SpecRenderMode
+} from '@deneb-viz/vega-runtime/embed';
+import {
     getProviderVersionProperty,
     IPersistenceProperty,
     resolveObjectProperties,
@@ -16,9 +20,7 @@ import {
 } from '../utils/properties';
 import {
     SelectionMode,
-    PROPERTIES_DEFAULTS,
-    SpecProvider,
-    SpecRenderMode
+    PROPERTIES_DEFAULTS
 } from '@deneb-viz/core-dependencies';
 
 /**

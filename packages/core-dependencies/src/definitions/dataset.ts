@@ -5,7 +5,7 @@ import {
     DATASET_IDENTITY_NAME,
     DATASET_KEY_NAME,
     DATASET_ROW_NAME
-} from '..';
+} from '../constants/dataset';
 import { UsermetaDatasetField } from './template-usermeta-schema';
 
 /**

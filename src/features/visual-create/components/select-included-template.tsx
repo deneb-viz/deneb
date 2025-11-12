@@ -23,11 +23,9 @@ import {
     getTemplateMetadata,
     getTemplateResolvedForPlaceholderAssignment
 } from '@deneb-viz/json-processing';
-import {
-    PROPERTIES_DEFAULTS,
-    SpecProvider
-} from '@deneb-viz/core-dependencies';
+import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
+import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 
 interface ISelectIncludedTemplateProps {
     createMode: SpecProvider;

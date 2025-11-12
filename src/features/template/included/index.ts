@@ -9,7 +9,7 @@ import { getCombinedBase64ImageWithMime } from '../preview-image';
 import { THUMBNAIL_IMAGES } from './thumbnail-images';
 import { getNewTemplateMetadata } from '@deneb-viz/json-processing';
 import { APPLICATION_INFORMATION, PROVIDER_VERSIONS } from '../../../../config';
-import { SpecProvider } from '@deneb-viz/core-dependencies';
+import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import {
     type UsermetaInformation,
     type UsermetaTemplate

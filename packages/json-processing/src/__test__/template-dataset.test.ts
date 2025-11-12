@@ -1,9 +1,6 @@
 import powerbi from 'powerbi-visuals-api';
 import { describe, expect, it } from 'vitest';
-import {
-    PROPERTIES_DEFAULTS,
-    SpecProvider
-} from '@deneb-viz/core-dependencies';
+import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
 import {
     areAllCreateDataRequirementsMet,
     areAllTemplateFieldsAssigned,
@@ -15,6 +12,7 @@ import {
     type UsermetaTemplate
 } from '@deneb-viz/template-usermeta';
 import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
+import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 
 const INCOMPLETE_FIELD: UsermetaDatasetField[] = [
     {

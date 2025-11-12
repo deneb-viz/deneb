@@ -3,10 +3,6 @@ import cloneDeep from 'lodash/cloneDeep';
 import { getI18nValue } from '../i18n';
 import { logTimeEnd, logTimeStart } from '../logging';
 import {
-    JSON_MAX_PRUNE_DEPTH,
-    TrackedFields
-} from '@deneb-viz/core-dependencies';
-import {
     stringToUint8Array,
     uint8ArrayToString
 } from '@deneb-viz/utils/type-conversion';
@@ -21,11 +17,17 @@ import { getState } from '../../store';
 import { getRemapEligibleFields } from '@deneb-viz/json-processing';
 import {
     getTokenPatternsLiteral,
-    getTokenPatternsReplacement
+    getTokenPatternsReplacement,
+    type TrackedFields
 } from '@deneb-viz/json-processing/field-tracking';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 
 export { getObjectFormattedAsText } from './formatting';
+
+/**
+ * When resolving JSON to readable strings, this is the default maximum level of depth to stop at.
+ */
+const JSON_MAX_PRUNE_DEPTH = 3;
 
 /**
  * Prune an object at a specified level of depth.

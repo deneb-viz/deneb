@@ -9,7 +9,7 @@ export {
 import { getState } from '../../store';
 import { getI18nValue } from '../../features/i18n';
 import { PROVIDER_VERSIONS } from '../../../config';
-import { SpecProvider } from '@deneb-viz/core-dependencies';
+import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 
 /**
  * Interface specifying a flexible key/value pair object, which is supplied from Vega's tooltip handler and usually casted as `any`.

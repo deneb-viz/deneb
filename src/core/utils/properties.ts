@@ -16,7 +16,7 @@ import reduce from 'lodash/reduce';
 import { getState } from '../../store';
 import { APPLICATION_INFORMATION, PROVIDER_VERSIONS } from '../../../config';
 import { getVisualHost } from '../../features/visual-host';
-import { SpecProvider } from '@deneb-viz/core-dependencies';
+import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 
 /**
  * Handles resolution of object properties from the data view, either for persistence.

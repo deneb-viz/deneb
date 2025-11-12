@@ -1,4 +1,4 @@
-import { SpecProvider } from '@deneb-viz/core-dependencies';
+import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { APPLICATION_INFORMATION, PROVIDER_VERSIONS } from '../../../config';
 import { logDebug } from '../../features/logging';
 import { isUnversionedSpec } from '../../features/specification';

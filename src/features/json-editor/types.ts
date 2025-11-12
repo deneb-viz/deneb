@@ -1,5 +1,5 @@
 import { MutableRefObject } from 'react';
-import { SpecProvider } from '@deneb-viz/core-dependencies';
+import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { monaco } from '@deneb-viz/app-core';
 
 /**

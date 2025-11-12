@@ -1,4 +1,3 @@
-import { IJsonParseResult } from '@deneb-viz/core-dependencies';
 import {
     applyEdits,
     format,
@@ -9,6 +8,7 @@ import {
     Node
 } from 'jsonc-parser';
 import { JSONPath } from 'vscode-json-languageservice';
+import { type IJsonParseResult } from './lib/spec-processing';
 
 /**
  * When converting JSONC to JSON, this is the character to replace comments with.
@@ -32,7 +32,7 @@ export const getJsoncNodeValue = (tree: Node) => getNodeValue(tree);
 export const getJsoncStringAsObject = (content: string): any => {
     try {
         return JSON.parse(getJsonPureString(content));
-    } catch (e) {
+    } catch {
         return null;
     }
 };
