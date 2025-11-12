@@ -17,10 +17,7 @@ import {
     getUpdatedExportMetadata,
     getValidatedTemplate
 } from '../template-usermeta';
-import {
-    PROPERTIES_DEFAULTS,
-    SelectionMode
-} from '@deneb-viz/core-dependencies';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import {
     TEMPLATE_USERMETA_VERSION,
     type UsermetaDatasetField,
@@ -30,6 +27,7 @@ import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { type TrackedFields } from '../lib/field-tracking';
 import { type DenebTemplateAllocationComponents } from '../lib/template-processing';
+import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 
 const MOCK_BUILD_VERSION = '1.0.0';
 const MOCK_DATE = '2022-01-01T00:00:00.000Z';
@@ -56,12 +54,12 @@ const MOCK_TEMPLATE_METADATA_BASE = `{
             "providerVersion": "${MOCK_PROVIDER_VERSION}"
         },
         "interactivity": {
-            "tooltip": ${PROPERTIES_DEFAULTS.vega.enableTooltips},
-            "contextMenu": ${PROPERTIES_DEFAULTS.vega.enableContextMenu},
-            "selection": ${PROPERTIES_DEFAULTS.vega.enableSelection},
-            "selectionMode": "${PROPERTIES_DEFAULTS.vega.selectionMode}",
-            "dataPointLimit": ${PROPERTIES_DEFAULTS.vega.selectionMaxDataPoints},
-            "highlight": ${PROPERTIES_DEFAULTS.vega.enableHighlight}
+            "tooltip": ${DEFAULTS.vega.enableTooltips},
+            "contextMenu": ${DEFAULTS.vega.enableContextMenu},
+            "selection": ${DEFAULTS.vega.enableSelection},
+            "selectionMode": "${DEFAULTS.vega.selectionMode}",
+            "dataPointLimit": ${DEFAULTS.vega.selectionMaxDataPoints},
+            "highlight": ${DEFAULTS.vega.enableHighlight}
         },
         "dataset": [],
         "config": "{}"
@@ -85,12 +83,12 @@ const MOCK_TEMPLATE_METADATA_NO_PROVIDER_VERSION = `{
             "provider": "${MOCK_PROVIDER}"
         },
         "interactivity": {
-            "tooltip": ${PROPERTIES_DEFAULTS.vega.enableTooltips},
-            "contextMenu": ${PROPERTIES_DEFAULTS.vega.enableContextMenu},
-            "selection": ${PROPERTIES_DEFAULTS.vega.enableSelection},
-            "selectionMode": "${PROPERTIES_DEFAULTS.vega.selectionMode}",
-            "dataPointLimit": ${PROPERTIES_DEFAULTS.vega.selectionMaxDataPoints},
-            "highlight": ${PROPERTIES_DEFAULTS.vega.enableHighlight}
+            "tooltip": ${DEFAULTS.vega.enableTooltips},
+            "contextMenu": ${DEFAULTS.vega.enableContextMenu},
+            "selection": ${DEFAULTS.vega.enableSelection},
+            "selectionMode": "${DEFAULTS.vega.selectionMode}",
+            "dataPointLimit": ${DEFAULTS.vega.selectionMaxDataPoints},
+            "highlight": ${DEFAULTS.vega.enableHighlight}
         },
         "dataset": [],
         "config": "{}"
@@ -113,12 +111,12 @@ const EXPECTED_METADATA_BASE = {
         providerVersion: MOCK_PROVIDER_VERSION
     },
     interactivity: {
-        tooltip: PROPERTIES_DEFAULTS.vega.enableTooltips,
-        contextMenu: PROPERTIES_DEFAULTS.vega.enableContextMenu,
-        selection: PROPERTIES_DEFAULTS.vega.enableSelection,
-        selectionMode: PROPERTIES_DEFAULTS.vega.selectionMode,
-        dataPointLimit: PROPERTIES_DEFAULTS.vega.selectionMaxDataPoints,
-        highlight: PROPERTIES_DEFAULTS.vega.enableHighlight
+        tooltip: DEFAULTS.vega.enableTooltips,
+        contextMenu: DEFAULTS.vega.enableContextMenu,
+        selection: DEFAULTS.vega.enableSelection,
+        selectionMode: DEFAULTS.vega.selectionMode,
+        dataPointLimit: DEFAULTS.vega.selectionMaxDataPoints,
+        highlight: DEFAULTS.vega.enableHighlight
     },
     dataset: [],
     config: '{}'
@@ -239,12 +237,12 @@ describe('getExportTemplate', () => {
       "providerVersion": "${MOCK_PROVIDER_VERSION}"
     },
     "interactivity": {
-      "tooltip": ${PROPERTIES_DEFAULTS.vega.enableTooltips},
-      "contextMenu": ${PROPERTIES_DEFAULTS.vega.enableContextMenu},
-      "selection": ${PROPERTIES_DEFAULTS.vega.enableSelection},
-      "selectionMode": "${PROPERTIES_DEFAULTS.vega.selectionMode}",
-      "dataPointLimit": ${PROPERTIES_DEFAULTS.vega.selectionMaxDataPoints},
-      "highlight": ${PROPERTIES_DEFAULTS.vega.enableHighlight}
+      "tooltip": ${DEFAULTS.vega.enableTooltips},
+      "contextMenu": ${DEFAULTS.vega.enableContextMenu},
+      "selection": ${DEFAULTS.vega.enableSelection},
+      "selectionMode": "${DEFAULTS.vega.selectionMode}",
+      "dataPointLimit": ${DEFAULTS.vega.selectionMaxDataPoints},
+      "highlight": ${DEFAULTS.vega.enableHighlight}
     },
     "dataset": [
       {

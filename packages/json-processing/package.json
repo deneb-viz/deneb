@@ -56,9 +56,8 @@
         "vitest": "^3.2.4"
     },
     "dependencies": {
-        "@deneb-viz/core-dependencies": "*",
         "@deneb-viz/dataset": "*",
-        "@deneb-viz/integration-powerbi": "*",
+        "@deneb-viz/powerbi-compat": "*",
         "@deneb-viz/template-usermeta": "*",
         "@deneb-viz/utils": "*",
         "@deneb-viz/vega-runtime": "*",

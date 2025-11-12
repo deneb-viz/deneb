@@ -16,7 +16,7 @@ import { DatasetViewerOptions } from './dataset-viewer-options';
 import { getI18nValue } from '../../i18n';
 import { DataTableNavigationButton } from './data-table-navigation-button';
 import { setVisualProperty } from '../../commands';
-import { DATA_VIEWER_CONFIGURATION } from '@deneb-viz/app-core';
+import { DATA_VIEWER_CONFIGURATION } from '@deneb-viz/configuration';
 
 /**
  * Displays at the footer of the data table, and used to control pagination

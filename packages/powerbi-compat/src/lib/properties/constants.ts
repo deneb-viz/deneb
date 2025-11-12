@@ -1,22 +1,11 @@
-import { SelectionMode } from '../definitions';
-import { SpecProvider, SpecRenderMode } from '../definitions/vega-integration';
-import { PREVIEW_PANE_DATA_TABLE } from './debug-area';
-
-/**
- * Specifies the limits (and step size) for handling cross-filtering.
- */
-export const CROSS_FILTER_LIMITS = {
-    minDataPointsValue: 1,
-    maxDataPointsValue: 250,
-    maxDataPointsAdvancedValue: 2500,
-    dataPointsStepValue: 1
-};
+import { type SelectionMode } from '../interactivity';
+import { DATA_VIEWER_CONFIGURATION } from '@deneb-viz/configuration';
 
 /**
  * Default values for Deneb's persistable properties, matching the structure of the visual capabilities from the Power
  * BI custom visual.
  */
-export const PROPERTIES_DEFAULTS = {
+export const DEFAULTS = {
     developer: {
         /**
          * Locale override for testing formatting and i18n
@@ -75,7 +64,7 @@ export const PROPERTIES_DEFAULTS = {
         /**
          * Number of rows to display in the debug table.
          */
-        dataTableRowsPerPage: PREVIEW_PANE_DATA_TABLE.rowsPerPage.default,
+        dataTableRowsPerPage: DATA_VIEWER_CONFIGURATION.rowsPerPage.default,
         /**
          * Interval in milliseconds to debounce editor changes.
          */
@@ -191,11 +180,11 @@ export const PROPERTIES_DEFAULTS = {
         /**
          * The Vega provider to use when parsing.
          */
-        provider: <SpecProvider>'vegaLite',
+        provider: 'vegaLite',
         /**
          * The default render mode.
          */
-        renderMode: <SpecRenderMode>'svg',
+        renderMode: 'svg',
         /**
          * Maximum number of data points to include when cross-filtering
          */

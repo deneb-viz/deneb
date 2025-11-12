@@ -1,5 +1,5 @@
 import stringify from 'json-stringify-pretty-compact';
-import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 
 /**
  * In order to create suitable output for tooltips and debugging tables.
@@ -9,6 +9,6 @@ import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
  */
 export const getObjectFormattedAsText = (obj: object) =>
     stringify(obj, {
-        maxLength: PROPERTIES_DEFAULTS.editor.maxLineLength,
+        maxLength: DEFAULTS.editor.maxLineLength,
         indent: '\u2800'
     });

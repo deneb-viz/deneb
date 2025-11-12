@@ -1,5 +1,5 @@
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { formattingSettings } from 'powerbi-visuals-utils-formattingmodel';
-import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
 
 export class SettingsDataLimit extends formattingSettings.CompositeCard {
     name = 'dataLimit';
@@ -21,13 +21,13 @@ class SettingsDataLimitGroupLoading extends formattingSettings.Group {
         name: 'override',
         displayNameKey: 'Objects_DataLimit_Override',
         descriptionKey: 'Objects_DataLimit_Override_Description',
-        value: PROPERTIES_DEFAULTS.dataLimit.override
+        value: DEFAULTS.dataLimit.override
     });
     showCustomVisualNotes = new formattingSettings.ToggleSwitch({
         name: 'showCustomVisualNotes',
         displayNameKey: 'Objects_DataLimit_ShowCustomVisualNotes',
         descriptionKey: 'Objects_DataLimit_ShowCustomVisualNotes_Description',
-        value: PROPERTIES_DEFAULTS.dataLimit.showCustomVisualNotes
+        value: DEFAULTS.dataLimit.showCustomVisualNotes
     });
     slices = [this.override, this.showCustomVisualNotes];
 }

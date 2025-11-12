@@ -1,14 +1,14 @@
 import {
-    IDenebTokenizationRequestPayload,
-    TrackedFields
-} from '@deneb-viz/core-dependencies';
-import {
     stringToUint8Array,
     uint8ArrayToString
 } from '@deneb-viz/utils/type-conversion';
 import { getTokenizedSpec } from '../tokenizer';
-import { getTokenPatternsReplacement } from '../../../field-tracking';
+import {
+    getTokenPatternsReplacement,
+    type TrackedFields
+} from '../../../field-tracking';
 import { describe, expect, it } from 'vitest';
+import { type IDenebTokenizationRequestPayload } from '../types';
 
 const TRACKED_FIELDS_NO_REMAP_PENDING: TrackedFields = {
     'Date.Date': {

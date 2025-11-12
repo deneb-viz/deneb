@@ -1,0 +1,38 @@
+{
+    "name": "@deneb-viz/configuration",
+    "version": "0.1.0",
+    "private": false,
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/deneb-viz/deneb.git"
+    },
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com"
+    },
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        }
+    },
+    "sideEffects": false,
+    "scripts": {
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "clean": "rimraf dist",
+        "typecheck": "tsc --noEmit",
+        "eslint": "eslint ."
+    },
+    "devDependencies": {
+        "@deneb-viz/eslint-config": "*",
+        "@deneb-viz/typescript-config": "*",
+        "@types/node": "^22.15.33",
+        "tsup": "^8.5.0",
+        "typescript": "^5.6.2",
+        "vitest": "^3.2.4"
+    }
+}

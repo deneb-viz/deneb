@@ -15,7 +15,7 @@ import {
 import { useInterfaceStyles } from '../../interface';
 import { JsonEditorStatusBar } from './json-editor-status-bar';
 import { persistSpecification } from '../../specification';
-import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { updateFieldTracking } from '../../json-processing';
 
 import { monaco, setupMonacoWorker } from '@deneb-viz/app-core';
@@ -191,7 +191,7 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
                     minimap: { enabled: false },
                     quickSuggestions: true,
                     scrollBeyondLastLine: false,
-                    tabSize: PROPERTIES_DEFAULTS.editor.tabSize,
+                    tabSize: DEFAULTS.editor.tabSize,
                     wordWrap: wordWrap ? 'on' : 'off'
                 }}
             />

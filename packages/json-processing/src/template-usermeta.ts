@@ -1,7 +1,7 @@
 import powerbi from 'powerbi-visuals-api';
 
 import omit from 'lodash/omit';
-import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import {
     getJsoncNodeValue,
     getJsoncStringAsObject,
@@ -151,12 +151,12 @@ export const getNewTemplateMetadata = (options: {
         providerVersion: options.providerVersion
     },
     interactivity: {
-        tooltip: PROPERTIES_DEFAULTS.vega.enableTooltips,
-        contextMenu: PROPERTIES_DEFAULTS.vega.enableContextMenu,
-        selection: PROPERTIES_DEFAULTS.vega.enableSelection,
-        selectionMode: PROPERTIES_DEFAULTS.vega.selectionMode,
-        dataPointLimit: PROPERTIES_DEFAULTS.vega.selectionMaxDataPoints,
-        highlight: PROPERTIES_DEFAULTS.vega.enableHighlight
+        tooltip: DEFAULTS.vega.enableTooltips,
+        contextMenu: DEFAULTS.vega.enableContextMenu,
+        selection: DEFAULTS.vega.enableSelection,
+        selectionMode: DEFAULTS.vega.selectionMode,
+        dataPointLimit: DEFAULTS.vega.selectionMaxDataPoints,
+        highlight: DEFAULTS.vega.enableHighlight
     },
     config: '{}',
     dataset: []

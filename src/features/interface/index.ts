@@ -19,7 +19,7 @@ import {
     isVisualUpdateTypeResize,
     isVisualUpdateTypeResizeEnd
 } from '../visual-host';
-import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 
 /**
  * UI theming utilities.
@@ -102,7 +102,7 @@ export const getApplicationMode = (
             return 'NoSpec';
         case !isEditor &&
             datasetValid &&
-            parameters.specification != PROPERTIES_DEFAULTS.vega.jsonSpec &&
+            parameters.specification != DEFAULTS.vega.jsonSpec &&
             true:
             return 'View';
         default:

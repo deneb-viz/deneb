@@ -26,6 +26,10 @@
             "types": "./dist/lib/interactivity/index.d.ts",
             "default": "./dist/lib/interactivity/index.js"
         },
+        "./properties": {
+            "types": "./dist/lib/properties/index.d.ts",
+            "default": "./dist/lib/properties/index.js"
+        },
         "./signals": {
             "types": "./dist/lib/signals/index.d.ts",
             "default": "./dist/lib/signals/index.js"
@@ -55,6 +59,7 @@
         "powerbi-visuals-api": "5.11.0"
     },
     "dependencies": {
+        "@deneb-viz/configuration": "*",
         "powerbi-visuals-utils-formattingutils": "^6.1.2"
     }
 }

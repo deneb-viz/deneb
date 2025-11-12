@@ -1,8 +1,6 @@
 import { formattingSettings } from 'powerbi-visuals-utils-formattingmodel';
-import {
-    CROSS_FILTER_LIMITS,
-    PROPERTIES_DEFAULTS
-} from '@deneb-viz/core-dependencies';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
+import { CROSS_FILTER_LIMITS } from '@deneb-viz/powerbi-compat/interactivity';
 
 export class SettingsVega extends formattingSettings.CompositeCard {
     name = 'vega';
@@ -22,33 +20,33 @@ class SettingsVegaGroupOutput extends formattingSettings.Group {
         name: 'provider',
         displayNameKey: 'Objects_Vega_Provider',
         descriptionKey: 'Objects_Vega_Provider_Description',
-        value: PROPERTIES_DEFAULTS.vega.provider
+        value: DEFAULTS.vega.provider
     });
     version = new formattingSettings.ReadOnlyText({
         name: 'version',
         displayNameKey: 'Objects_Vega_Version',
         descriptionKey: 'Objects_Vega_Version_Description',
-        value: PROPERTIES_DEFAULTS.vega.version
+        value: DEFAULTS.vega.version
     });
     jsonSpec = new formattingSettings.TextArea({
         name: 'jsonSpec',
         displayNameKey: 'Objects_Vega_JsonSpec',
         descriptionKey: 'Objects_Vega_JsonSpec_Description',
         placeholder: 'Specification JSON',
-        value: PROPERTIES_DEFAULTS.vega.jsonSpec
+        value: DEFAULTS.vega.jsonSpec
     });
     jsonConfig = new formattingSettings.TextArea({
         name: 'jsonConfig',
         displayNameKey: 'Objects_Vega_JsonConfig',
         descriptionKey: 'Objects_Vega_JsonConfig_Description',
         placeholder: 'Config JSON',
-        value: PROPERTIES_DEFAULTS.vega.jsonConfig
+        value: DEFAULTS.vega.jsonConfig
     });
     renderMode = new formattingSettings.AutoDropdown({
         name: 'renderMode',
         displayNameKey: 'Objects_Vega_RenderMode',
         descriptionKey: 'Objects_Vega_RenderMode_Description',
-        value: PROPERTIES_DEFAULTS.vega.renderMode
+        value: DEFAULTS.vega.renderMode
     });
     slices = [
         this.provider,
@@ -66,7 +64,7 @@ class SettingsVegaLoggingGroup extends formattingSettings.Group {
         name: 'logLevel',
         displayNameKey: 'Objects_Vega_LogLevel',
         descriptionKey: 'Objects_Vega_LogLevel_Description',
-        value: PROPERTIES_DEFAULTS.vega.logLevel
+        value: DEFAULTS.vega.logLevel
     });
     slices = [this.logLevel];
 }
@@ -78,7 +76,7 @@ class SettingsVegaInteractivityGroup extends formattingSettings.Group {
         name: 'enableTooltips',
         displayNameKey: 'Objects_Vega_EnableTooltips',
         descriptionKey: 'Objects_Vega_EnableTooltips_Description',
-        value: PROPERTIES_DEFAULTS.vega.enableTooltips
+        value: DEFAULTS.vega.enableTooltips
     });
     tooltipDelay = new formattingSettings.NumUpDown({
         name: 'tooltipDelay',
@@ -94,25 +92,25 @@ class SettingsVegaInteractivityGroup extends formattingSettings.Group {
                 type: 1
             }
         },
-        value: PROPERTIES_DEFAULTS.vega.tooltipDelay
+        value: DEFAULTS.vega.tooltipDelay
     });
     enableContextMenu = new formattingSettings.ToggleSwitch({
         name: 'enableContextMenu',
         displayNameKey: 'Objects_Vega_EnableContextMenu',
         descriptionKey: 'Objects_Vega_EnableContextMenu_Description',
-        value: PROPERTIES_DEFAULTS.vega.enableContextMenu
+        value: DEFAULTS.vega.enableContextMenu
     });
     enableSelection = new formattingSettings.ToggleSwitch({
         name: 'enableSelection',
         displayNameKey: 'Objects_Vega_EnableSelection',
         descriptionKey: 'Objects_Vega_EnableSelection_Description',
-        value: PROPERTIES_DEFAULTS.vega.enableSelection
+        value: DEFAULTS.vega.enableSelection
     });
     selectionMode = new formattingSettings.AutoDropdown({
         name: 'selectionMode',
         displayNameKey: 'Objects_Vega_SelectionMode',
         descriptionKey: 'Objects_Vega_SelectionMode_Description',
-        value: PROPERTIES_DEFAULTS.vega.selectionMode
+        value: DEFAULTS.vega.selectionMode
     });
     selectionMaxDataPoints = new formattingSettings.NumUpDown({
         name: 'selectionMaxDataPoints',
@@ -128,13 +126,13 @@ class SettingsVegaInteractivityGroup extends formattingSettings.Group {
                 type: 1
             }
         },
-        value: PROPERTIES_DEFAULTS.vega.selectionMaxDataPoints
+        value: DEFAULTS.vega.selectionMaxDataPoints
     });
     enableHighlight = new formattingSettings.ToggleSwitch({
         name: 'enableHighlight',
         displayNameKey: 'Objects_Vega_EnableHighlight',
         descriptionKey: 'Objects_Vega_EnableHighlight_Description',
-        value: PROPERTIES_DEFAULTS.vega.enableHighlight
+        value: DEFAULTS.vega.enableHighlight
     });
     slices = [
         this.enableTooltips,
@@ -154,7 +152,7 @@ class SettingsVegaStateGroup extends formattingSettings.Group {
         name: 'isNewDialogOpen',
         displayNameKey: 'Objects_Vega_IsNewDialogOpen',
         descriptionKey: 'Objects_Vega_IsNewDialogOpen_Description',
-        value: PROPERTIES_DEFAULTS.vega.isNewDialogOpen
+        value: DEFAULTS.vega.isNewDialogOpen
     });
     slices = [this.isNewDialogOpen];
 }

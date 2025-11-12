@@ -1,6 +1,6 @@
 import powerbi from 'powerbi-visuals-api';
 import ISelectionId = powerbi.visuals.ISelectionId;
-import { SelectionMode } from '@deneb-viz/core-dependencies';
+import { SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 
 /**
  * Optins that can be supplied for advanced cross-filtering behavior.

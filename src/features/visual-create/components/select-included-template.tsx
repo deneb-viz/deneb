@@ -23,7 +23,7 @@ import {
     getTemplateMetadata,
     getTemplateResolvedForPlaceholderAssignment
 } from '@deneb-viz/json-processing';
-import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 
@@ -124,7 +124,7 @@ const dispatchSelectedTemplate = (createMode: SpecProvider, name: string) => {
     const templateContent = JSON.stringify(template);
     const candidates = getTemplateResolvedForPlaceholderAssignment(
         templateContent,
-        PROPERTIES_DEFAULTS.editor.tabSize
+        DEFAULTS.editor.tabSize
     );
     setTemplate({
         metadata: getTemplateMetadata(templateContent),

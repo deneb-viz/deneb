@@ -25,7 +25,7 @@ import {
     areAllCreateDataRequirementsMet,
     getUpdatedExportMetadata
 } from '@deneb-viz/json-processing';
-import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { TEditorPosition } from '../core/ui';
 import { ROW_IDENTITY_FIELD_NAME } from '@deneb-viz/dataset/field';
 import { type IDataset } from '@deneb-viz/dataset/data';
@@ -53,7 +53,7 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
         datasetHasHighlights: false,
         datasetHasSelectionAborted: false,
         datasetProcessingStage: 'Initial',
-        datasetSelectionLimit: PROPERTIES_DEFAULTS.vega.selectionMaxDataPoints,
+        datasetSelectionLimit: DEFAULTS.vega.selectionMaxDataPoints,
         datasetViewObjects: {},
         updateDataset: (payload) =>
             set(

@@ -1,5 +1,5 @@
-import { SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
-import { SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
+import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 
 /**
  * The type of field that should ideally be applied to a placeholder.

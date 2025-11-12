@@ -6,7 +6,7 @@ import {
     VEGA_SCHEMA_URL
 } from '.';
 import { getNewIncludedTemplateMetadata } from '..';
-import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
 import { SELECTED_ROW_FIELD_NAME } from '@deneb-viz/dataset/field';
@@ -150,7 +150,7 @@ export const vBarInteractive = (): Spec => ({
                 contextMenu: true,
                 highlight: true,
                 selection: true,
-                dataPointLimit: PROPERTIES_DEFAULTS.vega.selectionMaxDataPoints
+                dataPointLimit: DEFAULTS.vega.selectionMaxDataPoints
             },
             config: getDenebTemplateVegaSpecificConfig()
         }

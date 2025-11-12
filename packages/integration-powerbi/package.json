@@ -48,10 +48,11 @@
         "preset": "@deneb-viz/jest-presets/jest/node"
     },
     "dependencies": {
-        "@deneb-viz/dataset": "*"
+        "@deneb-viz/dataset": "*",
+        "@deneb-viz/powerbi-compat": "*"
     },
     "devDependencies": {
-        "@deneb-viz/core-dependencies": "*",
+        "@deneb-viz/configuration": "*",
         "@deneb-viz/eslint-config": "*",
         "@deneb-viz/jest-presets": "*",
         "@deneb-viz/typescript-config": "*",

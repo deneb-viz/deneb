@@ -13,7 +13,7 @@ import { useSettingsStyles } from '.';
 import { SettingsHeadingLabel } from './settings-heading-label';
 import { SettingsTextSection } from './settings-text-section';
 import { getI18nValue } from '../../i18n';
-import { SelectionMode } from '@deneb-viz/core-dependencies';
+import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 
 export const ProviderSettings: React.FC = () => {

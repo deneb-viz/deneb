@@ -11,7 +11,7 @@ import {
 import { updateSelectionMode } from '../../../core/ui/commands';
 import store from '../../../store';
 import { getI18nValue } from '../../i18n';
-import { SelectionMode } from '@deneb-viz/core-dependencies';
+import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 import { getVisualSelectionManager } from '../../visual-host';
 import { useSettingsStyles } from '.';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';

@@ -21,12 +21,10 @@ import { getI18nValue } from '../../i18n';
 import { useSettingsStyles } from '.';
 import { logDebug } from '../../logging';
 import { TooltipCustomMount } from '../../interface';
-import {
-    CROSS_FILTER_LIMITS,
-    PROPERTIES_DEFAULTS
-} from '@deneb-viz/core-dependencies';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
+import { CROSS_FILTER_LIMITS } from '@deneb-viz/powerbi-compat/interactivity';
 
-const DEFAULT_VALUE = PROPERTIES_DEFAULTS.vega.selectionMaxDataPoints;
+const DEFAULT_VALUE = DEFAULTS.vega.selectionMaxDataPoints;
 
 export const CrossFilterMaxDataPoints: React.FC = () => {
     const {

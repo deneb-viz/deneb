@@ -3,7 +3,6 @@ export {
     monaco,
     setupMonacoWorker
 } from './components/code-editor/monaco-integration';
-export { DATA_VIEWER_CONFIGURATION } from './components/data-viewer/constants';
 export {
     datasetViewerWorker,
     type IWorkerDatasetViewerDataTableRow,

@@ -14,16 +14,14 @@ import { getState } from '../../../store';
 import { getI18nValue } from '../../i18n';
 import { handleCrossFilterEvent } from '../../interactivity/cross-filter';
 import { logDebug, logWarning } from '../../logging';
-import {
-    CROSS_FILTER_LIMITS,
-    PROPERTIES_DEFAULTS
-} from '@deneb-viz/core-dependencies';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
 import {
     getThemeColorByIndex,
     getThemeColorByName
 } from '@deneb-viz/vega-runtime/extensibility';
 import { isObject } from '@deneb-viz/utils/inspection';
+import { CROSS_FILTER_LIMITS } from '@deneb-viz/powerbi-compat/interactivity';
 
 /**
  * A custom expression that should be added to the Vega view.
@@ -229,7 +227,7 @@ const getResolvedCrossFilterOptions = (
     const baseOptions: CrossFilterOptions = {
         mode: expr ? 'advanced' : 'simple',
         filterExpr: expr,
-        limit: PROPERTIES_DEFAULTS.vega.selectionMaxDataPoints,
+        limit: DEFAULTS.vega.selectionMaxDataPoints,
         multiSelect: ['ctrl', 'shift']
     };
     return { ...baseOptions, ...options };

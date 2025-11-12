@@ -1,5 +1,5 @@
 import { formattingSettings } from 'powerbi-visuals-utils-formattingmodel';
-import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 
 export class SettingsStateManagement extends formattingSettings.CompositeCard {
     name = 'stateManagement';
@@ -16,13 +16,13 @@ class SettingsStateManagementGroupViewport extends formattingSettings.Group {
         name: 'viewportHeight',
         displayNameKey: 'Objects_StateManagement_ViewportHeight',
         descriptionKey: 'Objects_StateManagement_ViewportHeight_Description',
-        value: PROPERTIES_DEFAULTS.stateManagement.viewportHeight
+        value: DEFAULTS.stateManagement.viewportHeight
     });
     viewportWidth = new formattingSettings.ReadOnlyText({
         name: 'viewportWidth',
         displayNameKey: 'Objects_StateManagement_ViewportWidth',
         descriptionKey: 'Objects_StateManagement_ViewportWidth_Description',
-        value: PROPERTIES_DEFAULTS.stateManagement.viewportWidth
+        value: DEFAULTS.stateManagement.viewportWidth
     });
     slices = [this.viewportHeight, this.viewportWidth];
 }

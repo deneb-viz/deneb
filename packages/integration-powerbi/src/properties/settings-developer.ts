@@ -1,5 +1,5 @@
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { formattingSettings } from 'powerbi-visuals-utils-formattingmodel';
-import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
 
 export class SettingsDeveloper extends formattingSettings.CompositeCard {
     name = 'developer';
@@ -17,7 +17,7 @@ class SettingsDeveloperGroupVersioning extends formattingSettings.Group {
         name: 'version',
         displayNameKey: 'Objects_Developer_Version',
         descriptionKey: 'Objects_Developer_Version_Description',
-        value: PROPERTIES_DEFAULTS.developer.version
+        value: DEFAULTS.developer.version
     });
     slices = [this.version];
 }
@@ -29,7 +29,7 @@ class SettingsDeveloperGroupLocalization extends formattingSettings.Group {
         name: 'locale',
         displayNameKey: 'Objects_Developer_Locale',
         descriptionKey: 'Objects_Developer_Locale_Description',
-        value: PROPERTIES_DEFAULTS.developer.locale
+        value: DEFAULTS.developer.locale
     });
     slices = [this.locale];
 }

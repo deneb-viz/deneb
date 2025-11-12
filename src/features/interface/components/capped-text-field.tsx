@@ -16,7 +16,7 @@ import get from 'lodash/get';
 
 import store from '../../../store';
 import { getI18nValue } from '../../../features/i18n';
-import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 
 interface ICappedTextFieldProps {
     id: string;
@@ -51,7 +51,7 @@ export const CappedTextField: React.FC<ICappedTextFieldProps> = (props) => {
                 selector: props.id,
                 value
             });
-        }, PROPERTIES_DEFAULTS.editor.debouncePeriod.default),
+        }, DEFAULTS.editor.debouncePeriod.default),
         []
     );
     const onChange = (

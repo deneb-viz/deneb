@@ -1,5 +1,5 @@
 import { formattingSettings } from 'powerbi-visuals-utils-formattingmodel';
-import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 
 export class SettingsDisplay extends formattingSettings.CompositeCard {
     name = 'display';
@@ -17,40 +17,40 @@ class SettingsDisplayGroupScrollbars extends formattingSettings.Group {
         name: 'scrollbarColor',
         displayNameKey: 'Objects_Display_ScrollbarColor',
         descriptionKey: 'Objects_Display_ScrollbarColor_Description',
-        value: { value: PROPERTIES_DEFAULTS.display.scrollbarColor }
+        value: { value: DEFAULTS.display.scrollbarColor }
     });
     scrollbarOpacity = new formattingSettings.Slider({
         name: 'scrollbarOpacity',
         displayNameKey: 'Objects_Display_ScrollbarOpacity',
         descriptionKey: 'Objects_Display_ScrollbarOpacity_Description',
-        value: PROPERTIES_DEFAULTS.display.scrollbarOpacity.default,
+        value: DEFAULTS.display.scrollbarOpacity.default,
         options: {
             minValue: {
-                value: PROPERTIES_DEFAULTS.display.scrollbarOpacity.min,
+                value: DEFAULTS.display.scrollbarOpacity.min,
                 type: 0
             },
             maxValue: {
-                value: PROPERTIES_DEFAULTS.display.scrollbarOpacity.max,
+                value: DEFAULTS.display.scrollbarOpacity.max,
                 type: 1
             },
-            unitSymbol: PROPERTIES_DEFAULTS.unitSymbols.percent
+            unitSymbol: DEFAULTS.unitSymbols.percent
         }
     });
     scrollbarRadius = new formattingSettings.Slider({
         name: 'scrollbarRadius',
         displayNameKey: 'Objects_Display_ScrollbarRadius',
         descriptionKey: 'Objects_Display_ScrollbarRadius_Description',
-        value: PROPERTIES_DEFAULTS.display.scrollbarRadius.default,
+        value: DEFAULTS.display.scrollbarRadius.default,
         options: {
             minValue: {
-                value: PROPERTIES_DEFAULTS.display.scrollbarRadius.min,
+                value: DEFAULTS.display.scrollbarRadius.min,
                 type: 0
             },
             maxValue: {
-                value: PROPERTIES_DEFAULTS.display.scrollbarRadius.max,
+                value: DEFAULTS.display.scrollbarRadius.max,
                 type: 1
             },
-            unitSymbol: PROPERTIES_DEFAULTS.unitSymbols.pixels
+            unitSymbol: DEFAULTS.unitSymbols.pixels
         }
     });
     slices = [this.scrollbarColor, this.scrollbarOpacity, this.scrollbarRadius];
@@ -63,17 +63,17 @@ class SettingDisplayGroupScrollEvents extends formattingSettings.Group {
         name: 'scrollEventThrottle',
         displayNameKey: 'Objects_Display_ScrollEventThrottle',
         descriptionKey: 'Objects_Display_ScrollEventThrottle_Description',
-        value: PROPERTIES_DEFAULTS.display.scrollEventThrottle.default,
+        value: DEFAULTS.display.scrollEventThrottle.default,
         options: {
             minValue: {
-                value: PROPERTIES_DEFAULTS.display.scrollEventThrottle.min,
+                value: DEFAULTS.display.scrollEventThrottle.min,
                 type: 0
             },
             maxValue: {
-                value: PROPERTIES_DEFAULTS.display.scrollEventThrottle.max,
+                value: DEFAULTS.display.scrollEventThrottle.max,
                 type: 1
             },
-            unitSymbol: PROPERTIES_DEFAULTS.unitSymbols.milliseconds
+            unitSymbol: DEFAULTS.unitSymbols.milliseconds
         }
     });
     slices = [this.scrollEventThrottle];

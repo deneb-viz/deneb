@@ -14,7 +14,7 @@ import store, { getState } from '../../../store';
 import { getI18nValue } from '../../i18n';
 import { logDebug, logRender } from '../../logging';
 import { getValidatedTemplate } from '@deneb-viz/json-processing';
-import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { type DenebTemplateImportState } from '@deneb-viz/json-processing/template-processing';
 
 /**
@@ -204,7 +204,7 @@ const handleValidation = (content: string) => {
     setImportState({ importState: 'Validating', refresh: true });
     const validationResult = getValidatedTemplate(
         content,
-        PROPERTIES_DEFAULTS.editor.tabSize
+        DEFAULTS.editor.tabSize
     );
     setImportFile(validationResult);
 };

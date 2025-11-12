@@ -35,7 +35,7 @@ import {
     isExportSpecCommandEnabled,
     IExportSpecCommandTestOptions
 } from '../features/commands';
-import { SelectionMode } from '@deneb-viz/core-dependencies';
+import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { getUpdatedExportMetadata } from '@deneb-viz/json-processing';
 import { PROVIDER_VERSIONS } from '../../config';

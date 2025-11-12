@@ -23,7 +23,7 @@ import {
 import { logDebug } from '../logging';
 import { getI18nValue } from '../i18n';
 import { IVisualDatasetValueRow } from '../../core/data';
-import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 
 /**
  * For the supplied list of identities, ensure that the selection manager is
@@ -67,7 +67,7 @@ export const clearSelection = (): ISelectionId[] => {
  */
 export const dispatchCrossFilterAbort = (
     status = false,
-    limit = PROPERTIES_DEFAULTS.vega.selectionMaxDataPoints
+    limit = DEFAULTS.vega.selectionMaxDataPoints
 ) => {
     getState().updateDatasetSelectionAbortStatus({ status, limit });
 };

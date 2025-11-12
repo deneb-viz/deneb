@@ -18,10 +18,8 @@ import {
     resolveObjectProperties,
     updateObjectProperties
 } from '../utils/properties';
-import {
-    SelectionMode,
-    PROPERTIES_DEFAULTS
-} from '@deneb-viz/core-dependencies';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
+import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 
 /**
  * Actual event handling logic for wrappers
@@ -45,7 +43,7 @@ const handlePersist = (
  * Reset the specified provider (Vega) visual property to its default value.
  */
 const resetProviderPropertyValue = (propertyKey: string) => {
-    const value: string = PROPERTIES_DEFAULTS.vega?.[propertyKey];
+    const value: string = DEFAULTS.vega?.[propertyKey];
     handlePersist([{ name: propertyKey, value }]);
 };
 

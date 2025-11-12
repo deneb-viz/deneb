@@ -1,5 +1,5 @@
 import { formattingSettings } from 'powerbi-visuals-utils-formattingmodel';
-import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 
 export class SettingsTheme extends formattingSettings.CompositeCard {
     name = 'theme';
@@ -18,16 +18,16 @@ class SettingsThemeGroupOrdinal extends formattingSettings.Group {
         descriptionKey: 'Objects_Theme_OrdinalColorCount_Description',
         options: {
             minValue: {
-                value: PROPERTIES_DEFAULTS.theme.ordinalColorCount.min,
+                value: DEFAULTS.theme.ordinalColorCount.min,
                 type: 0
             },
             maxValue: {
-                value: PROPERTIES_DEFAULTS.theme.ordinalColorCount.max,
+                value: DEFAULTS.theme.ordinalColorCount.max,
                 type: 1
             }
         },
         instanceKind: 3 /* VisualEnumerationInstanceKinds.ConstantOrRule */,
-        value: PROPERTIES_DEFAULTS.theme.ordinalColorCount.default
+        value: DEFAULTS.theme.ordinalColorCount.default
     });
     slices = [this.ordinalColorCount];
 }
