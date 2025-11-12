@@ -36,7 +36,7 @@ import {
     getProviderValidator
 } from '@deneb-viz/json-processing';
 import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
-import { getPowerBiSignalContainer } from '@deneb-viz/integration-powerbi';
+import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 
@@ -306,7 +306,7 @@ const getPatchedVegaSpec = (spec: Vega.Spec): Vega.Spec => {
         signals: [
             ...(spec['signals'] || []),
             ...(PROVIDER_RESOURCES?.vega?.patch?.signals || []),
-            getPowerBiSignalContainer()
+            getSignalPbiContainer()
         ]
     });
 };
@@ -343,18 +343,12 @@ const getPatchedVegaLiteSpec = (spec: VegaLite.TopLevelSpec) => {
         spec,
         isNsl
             ? {
-                  params: [
-                      ...(spec['params'] || []),
-                      getPowerBiSignalContainer()
-                  ]
+                  params: [...(spec['params'] || []), getSignalPbiContainer()]
               }
             : {
                   height: spec['height'] ?? 'container',
                   width: spec['width'] ?? 'container',
-                  params: [
-                      ...(spec['params'] || []),
-                      getPowerBiSignalContainer()
-                  ]
+                  params: [...(spec['params'] || []), getSignalPbiContainer()]
               }
     );
 };

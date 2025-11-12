@@ -16,7 +16,7 @@ import {
 } from '@deneb-viz/vega-runtime/embed';
 import { VegaViewServices } from '../../vega-extensibility';
 import throttle from 'lodash/throttle';
-import { getPowerBiSignalContainer } from '@deneb-viz/integration-powerbi';
+import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
 
 /**
  * Master component for hosting Vega content. We will handle the workflow
@@ -144,7 +144,7 @@ export const VegaContainer: React.FC = () => {
             onMouseOut={hidePowerBiTooltip}
             onScrollFrame={throttle((e: positionValues) => {
                 const container = VegaViewServices.getView().container();
-                const signal = getPowerBiSignalContainer({
+                const signal = getSignalPbiContainer({
                     scroll: {
                         height: container.clientHeight,
                         width: container.clientWidth,

@@ -26,6 +26,10 @@
             "types": "./dist/lib/interactivity/index.d.ts",
             "default": "./dist/lib/interactivity/index.js"
         },
+        "./signals": {
+            "types": "./dist/lib/signals/index.d.ts",
+            "default": "./dist/lib/signals/index.js"
+        },
         "./theme": {
             "types": "./dist/lib/theme/index.d.ts",
             "default": "./dist/lib/theme/index.js"

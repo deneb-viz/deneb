@@ -1,13 +1,13 @@
+import { SIGNALS_POWERBI } from './constants';
 import {
-    PowerBIContainerSignal,
-    PowerBIContainerSignalSetterOptions,
-    SIGNALS_POWERBI
-} from '@deneb-viz/core-dependencies';
+    type PowerBIContainerSignal,
+    type PowerBIContainerSignalSetterOptions
+} from './types';
 
 /**
  * Get the PowerBI container signal from the provided options.
  */
-export const getPowerBiSignalContainer = (
+export const getSignalPbiContainer = (
     options?: PowerBIContainerSignalSetterOptions
 ): { name: string; value: PowerBIContainerSignal } => {
     return {

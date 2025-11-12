@@ -6,7 +6,7 @@ import { getState } from '../../../store';
 import { VegaPatternFillServices } from '../pattern-fill';
 import { IVegaViewServices } from '../types';
 import { setRenderingFinished, setRenderingStarted } from '../../visual-host';
-import { getPowerBiSignalContainer } from '@deneb-viz/integration-powerbi';
+import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
 
 export { getVegaLoader } from './loader';
 
@@ -101,7 +101,7 @@ const bindCrossFilterEvents = (view: View) => {
 const bindContainerSignals = (view: View) => {
     const update = () => {
         const container = view.container();
-        const signal = getPowerBiSignalContainer({ container });
+        const signal = getSignalPbiContainer({ container });
         VegaViewServices.setSignalByName(signal.name, signal.value);
     };
     update();

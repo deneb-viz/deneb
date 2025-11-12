@@ -5,6 +5,7 @@ export default defineConfig({
         'src/index.ts',
         'src/lib/formatting/index.ts',
         'src/lib/interactivity/index.ts',
+        'src/lib/signals/index.ts',
         'src/lib/theme/index.ts'
     ],
     clean: false,
