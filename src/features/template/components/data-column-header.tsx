@@ -2,7 +2,7 @@ import React from 'react';
 import { TableHeaderCell } from '@fluentui/react-components';
 
 import { getDataColumnClass, getDataColumnText } from '../fields';
-import { DenebTemplateDatasetColumnRole } from '@deneb-viz/core-dependencies';
+import { type DenebTemplateDatasetColumnRole } from '../types';
 
 interface IDataColumnHeaderProps {
     columnRole: DenebTemplateDatasetColumnRole;
