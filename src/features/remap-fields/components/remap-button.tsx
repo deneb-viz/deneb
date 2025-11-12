@@ -16,10 +16,7 @@ import {
     updateFieldTokenization,
     getRemappedSpecification
 } from '../../json-processing';
-import {
-    RemapState,
-    type TrackedFields
-} from '@deneb-viz/json-processing/field-tracking';
+import { type TrackedFields } from '@deneb-viz/json-processing/field-tracking';
 
 /**
  * Button for applying field mapping changes via the modal dialog.
@@ -49,9 +46,7 @@ export const RemapButton: React.FC = () => {
     logRender('RemapButton');
     return (
         <Button
-            disabled={
-                !remapAllDependenciesAssigned || remapState !== RemapState.None
-            }
+            disabled={!remapAllDependenciesAssigned || remapState !== 'None'}
             appearance='primary'
             onClick={onRemap}
         >
@@ -81,13 +76,13 @@ export const applyRemappedFields = async (
         interface: { setRemapState }
     } = getState();
     const cursorPrev = editorRefs?.spec?.current.getPosition();
-    setRemapState(RemapState.Tokenizing);
+    setRemapState('Tokenizing');
     await updateFieldTokenization(specification, trackedFields);
     const {
         fieldUsage: { tokenizedSpec }
     } = getState();
     logDebug('[applyRemappedFields] tokenized spec', { tokenizedSpec });
-    setRemapState(RemapState.Replacing);
+    setRemapState('Replacing');
     const mappedSpec = await getRemappedSpecification(
         tokenizedSpec,
         remapFields,
@@ -97,7 +92,7 @@ export const applyRemappedFields = async (
         trackedFields,
         mappedSpec
     });
-    setRemapState(RemapState.Tracking);
+    setRemapState('Tracking');
     // Make sure that we get the new tracking data, but reset the original (otherwise we'll loop)
     // Tracking is now only used for export (#486)
     // await updateFieldTracking(mappedSpec, trackedFields, true);
@@ -114,11 +109,11 @@ export const applyRemappedFields = async (
         drilldown
     });
     // Assign new spec and clear selection
-    setRemapState(RemapState.UpdatingEditor);
+    setRemapState('UpdatingEditor');
     spec?.current?.setValue(mappedSpec);
     spec?.current?.setPosition(cursorPrev);
     setFocusToActiveEditor(editorRefs);
-    setRemapState(RemapState.Complete);
+    setRemapState('Complete');
     persistSpecification(spec.current, config.current);
-    setRemapState(RemapState.None);
+    setRemapState('None');
 };

@@ -25,8 +25,6 @@ import {
     setFocusToActiveEditor,
     useJsonEditorContext
 } from '../../json-editor';
-import { TemplateExportProcessingState } from '@deneb-viz/json-processing/template-processing';
-import { RemapState } from '@deneb-viz/json-processing/field-tracking';
 
 export const ModalDialog: React.FC = () => {
     const {
@@ -73,16 +71,15 @@ export const ModalDialog: React.FC = () => {
             closeCreateDialog();
         }
         if (modalDialogRole === 'Export') {
-            setExportProcessingState(TemplateExportProcessingState.None);
+            setExportProcessingState('None');
         }
         setModalDialogRole('None');
         setFocusToActiveEditor(editorRefs);
     };
     const shouldPreventClose = useMemo(
         () =>
-            (modalDialogRole === 'Remap' && remapState !== RemapState.None) ||
-            (modalDialogRole === 'Export' &&
-                exportProcessingState !== TemplateExportProcessingState.None),
+            (modalDialogRole === 'Remap' && remapState !== 'None') ||
+            (modalDialogRole === 'Export' && exportProcessingState !== 'None'),
         [modalDialogRole, remapState]
     );
     const dialogType: DialogProps['modalType'] = shouldPreventClose

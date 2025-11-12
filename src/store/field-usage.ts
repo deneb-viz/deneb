@@ -18,7 +18,6 @@ import {
     type FieldUsageSliceSetFieldAssignment,
     type FieldUsageSliceState
 } from '@deneb-viz/state';
-import { RemapState } from '@deneb-viz/json-processing/field-tracking';
 
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <FieldUsageSliceState>{
@@ -134,7 +133,7 @@ const handleApplyTrackingChanges = (
             drilldownProperties: trackedDrilldown
         }) ||
         (state.interface.modalDialogRole === 'Remap' &&
-            state.interface.remapState !== RemapState.Complete)
+            state.interface.remapState !== 'Complete')
             ? 'Remap'
             : getOnboardingDialog(
                   state.visualSettings,

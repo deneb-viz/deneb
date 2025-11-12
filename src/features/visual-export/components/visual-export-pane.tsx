@@ -55,24 +55,20 @@ export const VisualExportPane: React.FC = () => {
             <div className={classes.paneContent}>
                 <div className={classes.paneContentScrollable}>
                     <VisualExportInformation />
-                    {exportProcessingState ===
-                        TemplateExportProcessingState.Tokenizing && (
+                    {exportProcessingState === 'Tokenizing' && (
                         <div className={classes.paneContentSection}>
                             <StageProgressIndicator
                                 message={getI18nValue('Text_Export_Tokenizing')}
                                 isInProgress={
-                                    exportProcessingState ===
-                                    TemplateExportProcessingState.Tokenizing
+                                    exportProcessingState === 'Tokenizing'
                                 }
                                 isCompleted={
-                                    exportProcessingState >
-                                    TemplateExportProcessingState.Tokenizing
+                                    exportProcessingState > 'Tokenizing'
                                 }
                             />
                         </div>
                     )}
-                    {exportProcessingState ===
-                        TemplateExportProcessingState.Complete && (
+                    {exportProcessingState === 'Complete' && (
                         <div className={classes.paneContentSection}>
                             <div className={classes.paneContentHeading}>
                                 <Subtitle2>
@@ -103,7 +99,7 @@ const handleProcessing = async () => {
             }
         }
     } = getState();
-    setExportProcessingState(TemplateExportProcessingState.Tokenizing);
+    setExportProcessingState('Tokenizing');
     await updateFieldTracking(jsonSpec, dataset);
     const {
         fieldUsage: { dataset: trackedFieldsCurrent }
@@ -113,5 +109,5 @@ const handleProcessing = async () => {
         trackedFieldsCurrent
     });
     await updateFieldTokenization(jsonSpec, trackedFieldsCurrent);
-    setExportProcessingState(TemplateExportProcessingState.Complete);
+    setExportProcessingState('Complete');
 };

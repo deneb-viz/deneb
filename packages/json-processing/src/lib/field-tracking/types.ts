@@ -4,14 +4,13 @@ import { type JSONPath } from 'jsonc-parser';
 /**
  * Used to track the state of the JSON remapping process.
  */
-export enum RemapState {
-    None = 0,
-    Tokenizing = 10,
-    Replacing = 20,
-    Tracking = 30,
-    UpdatingEditor = 40,
-    Complete = 100
-}
+export type RemapState =
+    | 'None'
+    | 'Tokenizing'
+    | 'Replacing'
+    | 'Tracking'
+    | 'UpdatingEditor'
+    | 'Complete';
 
 /**
  * When we parse the JSON to look for specific field types, these rely on specific patterns and replacements. This

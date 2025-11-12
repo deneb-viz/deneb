@@ -9,7 +9,6 @@ import { logDebug, logRender } from '../../logging';
 import { TooltipCustomMount } from '../../interface';
 import { getVisualHost } from '../../visual-host';
 import { getExportTemplate } from '@deneb-viz/json-processing';
-import { TemplateExportProcessingState } from '@deneb-viz/json-processing/template-processing';
 
 /**
  * Displays download and copy template to clipboard buttons.
@@ -48,8 +47,7 @@ export const ExportButtons: React.FC = () => {
         document.execCommand('copy');
         document.body.removeChild(dummy);
     };
-    const isDisabled =
-        exportProcessingState !== TemplateExportProcessingState.Complete;
+    const isDisabled = exportProcessingState !== 'Complete';
     logRender('ExportButtons');
     return (
         <>

@@ -63,8 +63,4 @@ export type DenebTemplatesIncluded = {
 /**
  * Used to track the state of the template export process.
  */
-export enum TemplateExportProcessingState {
-    None = 0,
-    Tokenizing = 10,
-    Complete = 100
-}
+export type TemplateExportProcessingState = 'None' | 'Tokenizing' | 'Complete';

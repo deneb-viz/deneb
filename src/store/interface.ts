@@ -8,7 +8,7 @@ import { isMappingDialogRequired } from '@deneb-viz/json-processing';
 import { getOnboardingDialog } from '../features/modal-dialog';
 import { getNewUuid } from '@deneb-viz/utils/crypto';
 import { TemplateExportProcessingState } from '@deneb-viz/json-processing/template-processing';
-import { RemapState } from '@deneb-viz/json-processing/field-tracking';
+import { type RemapState } from '@deneb-viz/json-processing/field-tracking';
 
 export interface IInterfaceSlice {
     interface: {
@@ -94,13 +94,13 @@ export interface IInterfaceSlice {
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <IInterfaceSlice>{
         interface: {
-            exportProcessingState: TemplateExportProcessingState.None,
+            exportProcessingState: 'None',
             isInitialized: false,
             isTokenizingSpec: false,
             isTrackingFields: false,
             mode: 'Initializing',
             modalDialogRole: 'None',
-            remapState: RemapState.None,
+            remapState: 'None',
             renderId: getNewUuid(),
             generateRenderId: () =>
                 set(
@@ -201,8 +201,8 @@ const handleSetRemapState = (
 ): Partial<TStoreState> => {
     const modalDialogRole: ModalDialogRole =
         state.interface.modalDialogRole === 'Remap' &&
-        remapState === RemapState.None &&
-        state.interface.remapState > RemapState.None
+        remapState === 'None' &&
+        state.interface.remapState > 'None'
             ? 'None'
             : isMappingDialogRequired({
                     trackedFields: state.fieldUsage.dataset,
