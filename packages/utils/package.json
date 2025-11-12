@@ -22,6 +22,10 @@
             "types": "./dist/lib/base64.d.ts",
             "default": "./dist/lib/base64.js"
         },
+        "./crypto": {
+            "types": "./dist/lib/crypto.d.ts",
+            "default": "./dist/lib/crypto.js"
+        },
         "./dom": {
             "types": "./dist/lib/dom.d.ts",
             "default": "./dist/lib/dom.js"

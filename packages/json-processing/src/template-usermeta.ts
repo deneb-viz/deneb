@@ -5,8 +5,7 @@ import {
     PROPERTIES_DEFAULTS,
     ICreateSliceSetImportFile,
     IDenebTemplateAllocationComponents,
-    ICreateSliceProperties,
-    getNewUuid
+    ICreateSliceProperties
 } from '@deneb-viz/core-dependencies';
 import {
     getJsoncNodeValue,
@@ -33,6 +32,7 @@ import {
 import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import { getNewUuid } from '@deneb-viz/utils/crypto';
 
 /**
  * If we cannot resolve a provider, this is the default to assign.

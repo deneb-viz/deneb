@@ -8,9 +8,9 @@ import { isMappingDialogRequired } from '@deneb-viz/json-processing';
 import { getOnboardingDialog } from '../features/modal-dialog';
 import {
     RemapState,
-    TemplateExportProcessingState,
-    getNewUuid
+    TemplateExportProcessingState
 } from '@deneb-viz/core-dependencies';
+import { getNewUuid } from '@deneb-viz/utils/crypto';
 
 export interface IInterfaceSlice {
     interface: {
@@ -207,15 +207,15 @@ const handleSetRemapState = (
         state.interface.remapState > RemapState.None
             ? 'None'
             : isMappingDialogRequired({
-                  trackedFields: state.fieldUsage.dataset,
-                  drilldownProperties: state.fieldUsage.drilldown
-              })
-            ? 'Remap'
-            : getOnboardingDialog(
-                  state.visualSettings,
-                  state.interface.mode,
-                  state.interface.modalDialogRole
-              );
+                    trackedFields: state.fieldUsage.dataset,
+                    drilldownProperties: state.fieldUsage.drilldown
+                })
+              ? 'Remap'
+              : getOnboardingDialog(
+                    state.visualSettings,
+                    state.interface.mode,
+                    state.interface.modalDialogRole
+                );
     console.log('modalDialogRole', modalDialogRole);
     return {
         interface: {

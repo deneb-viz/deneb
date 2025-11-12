@@ -20,7 +20,7 @@ import { TABLE_VALUE_MAX_DEPTH } from '../../../constants';
 import { VegaViewServices } from '../../vega-extensibility';
 import { getPrunedObject } from '../../json-processing';
 import { getHashValue } from '../../../utils';
-import { getNewUuid } from '@deneb-viz/core-dependencies';
+import { getNewUuid } from '@deneb-viz/utils/crypto';
 import {
     datasetViewerWorker,
     type IWorkerDatasetViewerDataTableRow,

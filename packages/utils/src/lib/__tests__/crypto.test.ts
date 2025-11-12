@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import { getNewUuid } from '../crypto';
 
 const UUID_REGEX =
