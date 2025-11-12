@@ -1,4 +1,3 @@
-export * from './dataset';
 export * from './integration-powerbi';
 export * from './json-processing';
 export * from './store';

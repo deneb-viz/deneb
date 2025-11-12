@@ -2,6 +2,7 @@ import { type IDatasetFields } from '../field';
 import { pickBy } from '@deneb-viz/utils/object';
 
 export { DATASET_DEFAULT_NAME } from './constants';
+export type * from './types';
 
 /**
  * For supplied fields, retrieve only those that should be from the data roles.

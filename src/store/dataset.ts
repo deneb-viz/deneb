@@ -25,9 +25,10 @@ import {
     areAllCreateDataRequirementsMet,
     getUpdatedExportMetadata
 } from '@deneb-viz/json-processing';
-import { IDataset, PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
+import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
 import { TEditorPosition } from '../core/ui';
 import { ROW_IDENTITY_FIELD_NAME } from '@deneb-viz/dataset/field';
+import { type IDataset } from '@deneb-viz/dataset/data';
 
 export interface IDatasetSlice {
     dataset: IDataset;

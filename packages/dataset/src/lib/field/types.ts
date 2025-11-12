@@ -2,6 +2,11 @@ import powerbi from 'powerbi-visuals-api';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 
 /**
+ * Indicates the internal selection state of a data point.
+ */
+export type DataPointCrossFilterStatus = 'off' | 'neutral' | 'on';
+
+/**
  * Metadata for dataset fields. This is based on the Power BI metadata and is enriched with other properties that we
  * need for Deneb.
  */

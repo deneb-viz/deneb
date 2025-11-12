@@ -22,6 +22,10 @@
             "types": "./dist/lib/data/index.d.ts",
             "default": "./dist/lib/data/index.js"
         },
+        "./datum": {
+            "types": "./dist/lib/datum/index.d.ts",
+            "default": "./dist/lib/datum/index.js"
+        },
         "./field": {
             "types": "./dist/lib/field/index.d.ts",
             "default": "./dist/lib/field/index.js"

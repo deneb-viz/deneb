@@ -4,7 +4,7 @@ import EditMode = powerbi.EditMode;
 import ViewMode = powerbi.ViewMode;
 import IViewport = powerbi.IViewport;
 
-import { IDataset } from '@deneb-viz/core-dependencies';
+import { type IDataset } from '@deneb-viz/dataset/data';
 
 /**
  * Available application modes. Used to represent current state of the application.

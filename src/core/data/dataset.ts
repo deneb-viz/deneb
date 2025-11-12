@@ -42,7 +42,7 @@ import {
 import { logError, logTimeEnd, logTimeStart } from '../../features/logging';
 import { getHashValue } from '../../utils';
 import { getVisualSelectionManager } from '../../features/visual-host';
-import { IDataset } from '@deneb-viz/core-dependencies';
+import { type IDataset } from '@deneb-viz/dataset/data';
 import {
     DATASET_DEFAULT_NAME,
     getDatasetFieldsInclusive
