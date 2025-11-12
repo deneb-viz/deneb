@@ -93,3 +93,17 @@ export interface TrackedFieldProperties {
 export type TrackedFields = {
     [key: string]: TrackedFieldProperties;
 };
+
+/**
+ * Represents the working properties for tracked fields.
+ */
+export type TrackedFieldWorkingProperties = {
+    dataset: TrackedFields;
+    drilldown: TrackedDrilldownProperties;
+    editorShouldSkipRemap: boolean;
+    remapFields: UsermetaDatasetField[];
+    remapAllDependenciesAssigned: boolean;
+    remapAllFieldsAssigned: boolean;
+    remapDrilldownAssigned: boolean;
+    tokenizedSpec: string;
+};

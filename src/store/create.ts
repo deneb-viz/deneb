@@ -3,13 +3,11 @@ import { NamedSet } from 'zustand/middleware';
 
 import { TStoreState } from '.';
 import {
-    CreateMode,
-    ICreateSliceSetFieldAssignment,
-    ICreateSliceSetImportFile,
-    ICreateSliceSetImportState,
-    ICreateSliceSetTemplate,
-    ICreateSliceState
-} from '@deneb-viz/core-dependencies';
+    type ICreateSliceSetFieldAssignment,
+    type ICreateSliceSetImportState,
+    type ICreateSliceSetTemplate,
+    type CreateSliceState
+} from '@deneb-viz/state';
 import {
     areAllCreateDataRequirementsMet,
     getNewCreateFromTemplateSliceProperties
@@ -18,9 +16,13 @@ import {
     type UsermetaDatasetField,
     type UsermetaTemplate
 } from '@deneb-viz/template-usermeta';
+import {
+    DenebTemplateSetImportFilePayload,
+    type DenebTemplateCreateMode
+} from '@deneb-viz/json-processing/template-processing';
 
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
-    <ICreateSliceState>{
+    <CreateSliceState>{
         create: {
             ...getNewCreateFromTemplateSliceProperties(),
             createFromTemplate: () =>
@@ -67,7 +69,7 @@ export const createCreateSlice: StateCreator<
     TStoreState,
     [['zustand/devtools', never]],
     [],
-    ICreateSliceState
+    CreateSliceState
 > = sliceStateInitializer;
 
 /**
@@ -129,7 +131,7 @@ const handleSetFieldAssignment = (
  */
 const handleSetImportFile = (
     state: TStoreState,
-    payload: ICreateSliceSetImportFile
+    payload: DenebTemplateSetImportFilePayload
 ): Partial<TStoreState> => {
     const { candidates, importFile, importState, metadata } = payload;
     const {
@@ -175,7 +177,7 @@ const handleSetImportState = (
  */
 const handleSetMode = (
     state: TStoreState,
-    mode: CreateMode
+    mode: DenebTemplateCreateMode
 ): Partial<TStoreState> => {
     return {
         create: {

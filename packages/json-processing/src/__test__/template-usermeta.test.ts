@@ -18,7 +18,6 @@ import {
     getValidatedTemplate
 } from '../template-usermeta';
 import {
-    IDenebTemplateAllocationComponents,
     PROPERTIES_DEFAULTS,
     SelectionMode
 } from '@deneb-viz/core-dependencies';
@@ -30,6 +29,7 @@ import {
 import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { type TrackedFields } from '../lib/field-tracking';
+import { type DenebTemplateAllocationComponents } from '../lib/template-processing';
 
 const MOCK_BUILD_VERSION = '1.0.0';
 const MOCK_DATE = '2022-01-01T00:00:00.000Z';
@@ -678,7 +678,7 @@ describe('getTemplateResolvedForPlaceholderAssignment', () => {
     }`;
     const tabSize = 2;
     it('should allocate the spec and config objects if config is in the usermeta object', () => {
-        const expectedComponents: IDenebTemplateAllocationComponents = {
+        const expectedComponents: DenebTemplateAllocationComponents = {
             spec: `{
   "data": {
     "values": []
@@ -767,7 +767,7 @@ describe('getTemplateResolvedForPlaceholderAssignment', () => {
             }
         }`;
 
-        const expectedComponents: IDenebTemplateAllocationComponents = {
+        const expectedComponents: DenebTemplateAllocationComponents = {
             spec: `{
   "data": {
     "values": []

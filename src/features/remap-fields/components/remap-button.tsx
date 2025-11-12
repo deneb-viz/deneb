@@ -11,12 +11,13 @@ import {
     setFocusToActiveEditor,
     useJsonEditorContext
 } from '../../json-editor';
-import { RemapState, TrackedFields } from '@deneb-viz/core-dependencies';
+import { RemapState } from '@deneb-viz/core-dependencies';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 import {
     updateFieldTokenization,
     getRemappedSpecification
 } from '../../json-processing';
+import { type TrackedFields } from '@deneb-viz/json-processing/field-tracking';
 
 /**
  * Button for applying field mapping changes via the modal dialog.

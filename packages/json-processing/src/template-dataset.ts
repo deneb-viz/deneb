@@ -1,17 +1,17 @@
 import powerbi from 'powerbi-visuals-api';
-import { ICreateSliceProperties } from '@deneb-viz/core-dependencies';
 import type {
     UsermetaDatasetField,
     UsermetaDatasetFieldType,
     UsermetaTemplate
 } from '@deneb-viz/template-usermeta';
+import { type DenebTemplateImportWorkingProperties } from './lib/template-processing';
 
 /**
  * Ensure that all requirements are tested and validated before we can create.
  */
 export const areAllCreateDataRequirementsMet = (
     metadata: UsermetaTemplate
-): Partial<ICreateSliceProperties> => {
+): Partial<DenebTemplateImportWorkingProperties> => {
     const metadataAllFieldsAssigned = areAllTemplateFieldsAssigned(
         metadata?.dataset
     );

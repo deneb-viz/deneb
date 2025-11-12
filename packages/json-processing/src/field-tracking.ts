@@ -1,12 +1,12 @@
-import {
-    IFieldUsageSliceProperties,
-    TrackedDrilldownProperties,
-    TrackedFields
-} from '@deneb-viz/core-dependencies';
 import reduce from 'lodash/reduce';
 import values from 'lodash/values';
 import { areAllTemplateFieldsAssigned } from './template-dataset';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
+import {
+    type TrackedFields,
+    type TrackedDrilldownProperties,
+    type TrackedFieldWorkingProperties
+} from './lib/field-tracking';
 
 /**
  * Confirms that all requirements for field mapping have been met.
@@ -14,7 +14,7 @@ import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 export const areAllRemapDataRequirementsMet = (options: {
     remapFields: UsermetaDatasetField[];
     drilldownProperties?: TrackedDrilldownProperties;
-}): Partial<IFieldUsageSliceProperties> => {
+}): Partial<TrackedFieldWorkingProperties> => {
     const remapAllFieldsAssigned = areAllTemplateFieldsAssigned(
         options.remapFields
     );

@@ -24,6 +24,10 @@
         "./spec-processing": {
             "types": "./dist/lib/spec-processing/index.d.ts",
             "default": "./dist/lib/spec-processing/index.js"
+        },
+        "./template-processing": {
+            "types": "./dist/lib/template-processing/index.d.ts",
+            "default": "./dist/lib/template-processing/index.js"
         }
     },
     "sideEffects": false,

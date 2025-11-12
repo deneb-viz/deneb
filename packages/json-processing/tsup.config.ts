@@ -5,7 +5,8 @@ export default defineConfig({
     entry: [
         'src/index.ts',
         'src/lib/field-tracking/index.ts',
-        'src/lib/spec-processing/index.ts'
+        'src/lib/spec-processing/index.ts',
+        'src/lib/template-processing/index.ts'
     ],
     clean: false,
     target: 'es2022',
@@ -14,6 +15,7 @@ export default defineConfig({
     sourcemap: true,
     treeshake: true,
     minify: false,
+    splitting: false,
     esbuildPlugins: [
         {
             // Ensure that workers are loaded as raw files.

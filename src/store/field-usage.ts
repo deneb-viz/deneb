@@ -2,14 +2,7 @@ import { NamedSet } from 'zustand/middleware';
 import { StateCreator } from 'zustand';
 
 import { TStoreState } from '.';
-import {
-    IFieldUsageSliceApplyTrackingChanges,
-    IFieldUsageSliceApplyFieldMapping,
-    IFieldUsageSliceSetFieldAssignment,
-    IFieldUsageSliceState,
-    IFieldUsageSliceApplyTokenizationChanges,
-    RemapState
-} from '@deneb-viz/core-dependencies';
+import { RemapState } from '@deneb-viz/core-dependencies';
 import {
     areAllRemapDataRequirementsMet,
     getRemapEligibleFields,
@@ -19,9 +12,16 @@ import { ModalDialogRole } from '../features/modal-dialog/types';
 import { getOnboardingDialog } from '../features/modal-dialog';
 import { isExportSpecCommandEnabled } from '../features/commands';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
+import {
+    type FieldUsageSliceApplyFieldMapping,
+    type FieldUsageSliceApplyTokenizationChanges,
+    type FieldUsageSliceApplyTrackingChanges,
+    type FieldUsageSliceSetFieldAssignment,
+    type FieldUsageSliceState
+} from '@deneb-viz/state';
 
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
-    <IFieldUsageSliceState>{
+    <FieldUsageSliceState>{
         fieldUsage: {
             dataset: {},
             drilldown: {
@@ -65,7 +65,7 @@ export const createFieldUsageSlice: StateCreator<
     TStoreState,
     [['zustand/devtools', never]],
     [],
-    IFieldUsageSliceState
+    FieldUsageSliceState
 > = sliceStateInitializer;
 
 /**
@@ -74,7 +74,7 @@ export const createFieldUsageSlice: StateCreator<
  */
 const handleApplyFieldMapping = (
     state: TStoreState,
-    payload: IFieldUsageSliceApplyFieldMapping
+    payload: FieldUsageSliceApplyFieldMapping
 ): Partial<TStoreState> => {
     const remapFields = getRemapEligibleFields(payload.dataset);
     const {
@@ -104,7 +104,7 @@ const handleApplyFieldMapping = (
 
 const handleApplyTokenizationChanges = (
     state: TStoreState,
-    payload: IFieldUsageSliceApplyTokenizationChanges
+    payload: FieldUsageSliceApplyTokenizationChanges
 ): Partial<TStoreState> => {
     return {
         fieldUsage: {
@@ -117,7 +117,7 @@ const handleApplyTokenizationChanges = (
 
 const handleApplyTrackingChanges = (
     state: TStoreState,
-    payload: IFieldUsageSliceApplyTrackingChanges
+    payload: FieldUsageSliceApplyTrackingChanges
 ): Partial<TStoreState> => {
     const { remapFields, trackedDrilldown, trackedFields } = payload;
     const {
@@ -172,7 +172,7 @@ const handleApplyTrackingChanges = (
  */
 const handleSetFieldAssignment = (
     state: TStoreState,
-    payload: IFieldUsageSliceSetFieldAssignment
+    payload: FieldUsageSliceSetFieldAssignment
 ): Partial<TStoreState> => {
     const { remapFields } = state.fieldUsage || {};
     if (remapFields) {

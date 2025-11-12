@@ -7,13 +7,13 @@ import { getI18nValue } from '../../i18n';
 import store, { getState } from '../../../store';
 import { logDebug, logRender } from '../../logging';
 import { useJsonEditorContext } from '../../json-editor';
-import { IDenebTemplateAllocationComponents } from '@deneb-viz/core-dependencies';
 import { getTemplateReplacedForDataset } from '@deneb-viz/json-processing';
 import {
     resolveObjectProperties,
     updateObjectProperties
 } from '../../../core/utils/properties';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
+import { type DenebTemplateAllocationComponents } from '@deneb-viz/json-processing/template-processing';
 
 /**
  * Displays the content for creating a specification using the selected
@@ -57,7 +57,7 @@ export const CreateButton: React.FC = () => {
  */
 const handleCreateFromTemplate = (
     metadata: UsermetaTemplate,
-    candidates: IDenebTemplateAllocationComponents,
+    candidates: DenebTemplateAllocationComponents,
     specEditor: monaco.editor.IStandaloneCodeEditor,
     configEditor: monaco.editor.IStandaloneCodeEditor
 ) => {

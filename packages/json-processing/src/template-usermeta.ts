@@ -1,12 +1,7 @@
 import powerbi from 'powerbi-visuals-api';
 
 import omit from 'lodash/omit';
-import {
-    PROPERTIES_DEFAULTS,
-    ICreateSliceSetImportFile,
-    IDenebTemplateAllocationComponents,
-    ICreateSliceProperties
-} from '@deneb-viz/core-dependencies';
+import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
 import {
     getJsoncNodeValue,
     getJsoncStringAsObject,
@@ -33,6 +28,11 @@ import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { getNewUuid } from '@deneb-viz/utils/crypto';
+import {
+    type DenebTemplateSetImportFilePayload,
+    type DenebTemplateAllocationComponents,
+    DenebTemplateImportWorkingProperties
+} from './lib/template-processing';
 
 /**
  * If we cannot resolve a provider, this is the default to assign.
@@ -42,7 +42,7 @@ const DEFAULT_PROVIDER: SpecProvider = 'vega';
 /**
  * If a template does not validate, this is the object to return.
  */
-const INVALID_TEMPLATE_OPTIONS: ICreateSliceSetImportFile = {
+const INVALID_TEMPLATE_OPTIONS: DenebTemplateSetImportFilePayload = {
     candidates: null,
     importFile: null,
     importState: 'Error',
@@ -116,7 +116,7 @@ const getFieldPattern = (index: number) =>
  * the create slice properties (except for methods).
  */
 export const getNewCreateFromTemplateSliceProperties =
-    (): Partial<ICreateSliceProperties> => ({
+    (): Partial<DenebTemplateImportWorkingProperties> => ({
         candidates: null,
         importFile: null,
         importState: 'None',
@@ -314,7 +314,7 @@ export const getTemplateResolvedForLegacyVersions = (
 export const getTemplateResolvedForPlaceholderAssignment = (
     template: string,
     tabSize: number
-): IDenebTemplateAllocationComponents => {
+): DenebTemplateAllocationComponents => {
     const config = getTemplateMetadata(template)?.config || '{}';
     const keysToRemove = ['$schema', 'usermeta'];
     const spec = getTextFormattedAsJsonC(
@@ -367,8 +367,8 @@ export const getUpdatedExportMetadata = (
 /**
  * Perform validation of the supplied content, which should be a Vega or Vega-Lite specification containing a valid
  * `usermeta` object confirming to the Deneb JSON schema. If valid, this will return a suitable
- * `ICreateSliceSetImportFile` object with the necessary content for the rest of the import process. If invalid, this
- * will return an `ICreateSliceSetImportFile` object sufficient to indicate that the template is invalid. Either result
+ * `DenebTemplateSetImportFilePayload` object with the necessary content for the rest of the import process. If invalid, this
+ * will return an `DenebTemplateSetImportFilePayload` object sufficient to indicate that the template is invalid. Either result
  * should be sufficient to pass to the application store.
  *
  * Throughout 1.x, we have some minor changes to the template structure, and these need to be managed:
@@ -381,7 +381,7 @@ export const getUpdatedExportMetadata = (
 export const getValidatedTemplate = (
     content: string,
     tabSize: number
-): ICreateSliceSetImportFile => {
+): DenebTemplateSetImportFilePayload => {
     try {
         if (!getJsoncStringAsObject(content)) return INVALID_TEMPLATE_OPTIONS;
         const provider = getTemplateProvider(content);

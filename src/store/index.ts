@@ -15,19 +15,19 @@ import { ISpecificationSlice, createSpecificationSlice } from './specification';
 import { IVisualSlice, createVisualSlice } from './visual';
 import { IVisualUpdateSlice, createVisualUpdateSlice } from './visual-update';
 import { FEATURES } from '../../config';
+import { IExportSliceState } from '@deneb-viz/core-dependencies';
 import {
-    ICreateSliceState,
-    IExportSliceState,
-    IFieldUsageSliceState
-} from '@deneb-viz/core-dependencies';
+    type CreateSliceState,
+    type FieldUsageSliceState
+} from '@deneb-viz/state';
 
 export type TStoreState = ICommandsSlice &
-    ICreateSliceState &
+    CreateSliceState &
     IDatasetSlice &
     IDebugSlice &
     IEditorSlice &
     IExportSliceState &
-    IFieldUsageSliceState &
+    FieldUsageSliceState &
     IInterfaceSlice &
     IMigrationSlice &
     IProcessingSlice &

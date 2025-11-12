@@ -14,10 +14,8 @@ import store, { getState } from '../../../store';
 import { getI18nValue } from '../../i18n';
 import { logDebug, logRender } from '../../logging';
 import { getValidatedTemplate } from '@deneb-viz/json-processing';
-import {
-    DenebTemplateImportState,
-    PROPERTIES_DEFAULTS
-} from '@deneb-viz/core-dependencies';
+import { PROPERTIES_DEFAULTS } from '@deneb-viz/core-dependencies';
+import { type DenebTemplateImportState } from '@deneb-viz/json-processing/template-processing';
 
 /**
  * Base styling for dropzone.
