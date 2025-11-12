@@ -2,6 +2,18 @@ import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 import { type JSONPath } from 'jsonc-parser';
 
 /**
+ * Used to track the state of the JSON remapping process.
+ */
+export enum RemapState {
+    None = 0,
+    Tokenizing = 10,
+    Replacing = 20,
+    Tracking = 30,
+    UpdatingEditor = 40,
+    Complete = 100
+}
+
+/**
  * When we parse the JSON to look for specific field types, these rely on specific patterns and replacements. This
  * interface provides the pattern and the replacement for a given field type.
  */

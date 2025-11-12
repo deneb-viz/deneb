@@ -1,36 +1,36 @@
-import { UsermetaTemplate } from './template-usermeta-schema';
+import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 
 /**
  * Represents the export slice in the visual store.
  */
-export interface IExportSliceState {
-    export: IExportSliceProperties;
-}
+export type ExportSliceState = {
+    export: ExportSliceProperties;
+};
 
 /**
  * Represents the export slice properties in the visual store.
  */
-export interface IExportSliceProperties {
+export type ExportSliceProperties = {
     includePreviewImage: boolean;
     metadata: UsermetaTemplate | null;
     setMetadataPropertyBySelector: (
-        payload: IExportSliceSetMetadataPropertyBySelector
+        payload: ExportSliceSetMetadataPropertyBySelector
     ) => void;
-    setPreviewImage: (payload: IExportSliceSetPreviewImage) => void;
-}
+    setPreviewImage: (payload: ExportSliceSetPreviewImage) => void;
+};
 
 /**
  * Represents the payload for a preview image assignment.
  */
-export interface IExportSliceSetPreviewImage {
+export type ExportSliceSetPreviewImage = {
     includePreviewImage: boolean;
     previewImageBase64PNG: string;
-}
+};
 
 /**
  * Represents the payload for an export metadata property assignment.
  */
-export interface IExportSliceSetMetadataPropertyBySelector {
+export type ExportSliceSetMetadataPropertyBySelector = {
     selector: string;
     value: string;
-}
+};

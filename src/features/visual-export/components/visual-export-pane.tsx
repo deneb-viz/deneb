@@ -10,7 +10,7 @@ import { Subtitle2 } from '@fluentui/react-components';
 import { TEMPLATE_PREVIEW_IMAGE_MAX_SIZE } from '../../../../config';
 import { StageProgressIndicator } from '../../modal-dialog';
 import store, { getState } from '../../../store';
-import { TemplateExportProcessingState } from '@deneb-viz/core-dependencies';
+import { TemplateExportProcessingState } from '@deneb-viz/json-processing/template-processing';
 import {
     updateFieldTokenization,
     updateFieldTracking

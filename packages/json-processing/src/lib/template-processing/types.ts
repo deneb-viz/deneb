@@ -1,4 +1,6 @@
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
+import { type Spec } from 'vega';
+import { type TopLevelSpec } from 'vega-lite';
 
 /**
  * Which mode we wish to use to instantiate our new specification.
@@ -49,3 +51,20 @@ export type DenebTemplateImportWorkingProperties = {
     metadataDrilldownAssigned: boolean;
     mode: DenebTemplateCreateMode;
 };
+
+/**
+ * Represents templates that are packaged in the .pbiviz for demo purposes.
+ */
+export type DenebTemplatesIncluded = {
+    vega: Spec[];
+    vegaLite: TopLevelSpec[];
+};
+
+/**
+ * Used to track the state of the template export process.
+ */
+export enum TemplateExportProcessingState {
+    None = 0,
+    Tokenizing = 10,
+    Complete = 100
+}

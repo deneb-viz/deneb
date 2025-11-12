@@ -8,7 +8,7 @@ import { useModalDialogStyles } from '../../modal-dialog';
 import { TemplateDataset } from '../../template';
 import store from '../../../store';
 import { FieldRemapPaneProgress } from './field-remap-pane-progress';
-import { RemapState } from '@deneb-viz/core-dependencies';
+import { RemapState } from '@deneb-viz/json-processing/field-tracking';
 
 /**
  * Interface (pane) for remapping visual fields.

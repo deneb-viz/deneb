@@ -25,10 +25,8 @@ import {
     setFocusToActiveEditor,
     useJsonEditorContext
 } from '../../json-editor';
-import {
-    RemapState,
-    TemplateExportProcessingState
-} from '@deneb-viz/core-dependencies';
+import { TemplateExportProcessingState } from '@deneb-viz/json-processing/template-processing';
+import { RemapState } from '@deneb-viz/json-processing/field-tracking';
 
 export const ModalDialog: React.FC = () => {
     const {

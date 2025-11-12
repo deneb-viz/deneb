@@ -6,11 +6,9 @@ import { ModalDialogRole } from '../features/modal-dialog/types';
 import { InterfaceMode } from '../features/interface';
 import { isMappingDialogRequired } from '@deneb-viz/json-processing';
 import { getOnboardingDialog } from '../features/modal-dialog';
-import {
-    RemapState,
-    TemplateExportProcessingState
-} from '@deneb-viz/core-dependencies';
 import { getNewUuid } from '@deneb-viz/utils/crypto';
+import { TemplateExportProcessingState } from '@deneb-viz/json-processing/template-processing';
+import { RemapState } from '@deneb-viz/json-processing/field-tracking';
 
 export interface IInterfaceSlice {
     interface: {

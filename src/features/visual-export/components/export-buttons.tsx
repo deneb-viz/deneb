@@ -9,7 +9,7 @@ import { logDebug, logRender } from '../../logging';
 import { TooltipCustomMount } from '../../interface';
 import { getVisualHost } from '../../visual-host';
 import { getExportTemplate } from '@deneb-viz/json-processing';
-import { TemplateExportProcessingState } from '@deneb-viz/core-dependencies';
+import { TemplateExportProcessingState } from '@deneb-viz/json-processing/template-processing';
 
 /**
  * Displays download and copy template to clipboard buttons.

@@ -6,7 +6,7 @@ import { logRender } from '../../logging';
 import { getI18nValue } from '../../i18n';
 import { useModalDialogStyles } from '../../modal-dialog';
 import store from '../../../store';
-import { RemapState } from '@deneb-viz/core-dependencies';
+import { RemapState } from '@deneb-viz/json-processing/field-tracking';
 import { StageProgressIndicator } from '../../modal-dialog';
 
 const useProgressStyles = makeStyles({

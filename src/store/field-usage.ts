@@ -2,7 +2,6 @@ import { NamedSet } from 'zustand/middleware';
 import { StateCreator } from 'zustand';
 
 import { TStoreState } from '.';
-import { RemapState } from '@deneb-viz/core-dependencies';
 import {
     areAllRemapDataRequirementsMet,
     getRemapEligibleFields,
@@ -19,6 +18,7 @@ import {
     type FieldUsageSliceSetFieldAssignment,
     type FieldUsageSliceState
 } from '@deneb-viz/state';
+import { RemapState } from '@deneb-viz/json-processing/field-tracking';
 
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <FieldUsageSliceState>{

@@ -15,8 +15,8 @@ import { ISpecificationSlice, createSpecificationSlice } from './specification';
 import { IVisualSlice, createVisualSlice } from './visual';
 import { IVisualUpdateSlice, createVisualUpdateSlice } from './visual-update';
 import { FEATURES } from '../../config';
-import { IExportSliceState } from '@deneb-viz/core-dependencies';
 import {
+    type ExportSliceState,
     type CreateSliceState,
     type FieldUsageSliceState
 } from '@deneb-viz/state';
@@ -26,7 +26,7 @@ export type TStoreState = ICommandsSlice &
     IDatasetSlice &
     IDebugSlice &
     IEditorSlice &
-    IExportSliceState &
+    ExportSliceState &
     FieldUsageSliceState &
     IInterfaceSlice &
     IMigrationSlice &
