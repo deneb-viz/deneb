@@ -19,7 +19,7 @@ import {
     type ExportSliceState,
     type CreateSliceState,
     type FieldUsageSliceState
-} from '@deneb-viz/state';
+} from '@deneb-viz/app-core';
 
 export type TStoreState = ICommandsSlice &
     CreateSliceState &

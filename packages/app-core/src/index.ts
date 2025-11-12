@@ -10,3 +10,4 @@ export {
     type IWorkerDatasetViewerMessage,
     type IWorkerDatasetViewerTranslations
 } from './components/data-viewer/workers';
+export type * from './state';

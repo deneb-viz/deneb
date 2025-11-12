@@ -10,7 +10,7 @@ import {
     type ExportSliceSetMetadataPropertyBySelector,
     type ExportSliceSetPreviewImage,
     type ExportSliceState
-} from '@deneb-viz/state';
+} from '@deneb-viz/app-core';
 
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <ExportSliceState>{

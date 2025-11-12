@@ -7,7 +7,7 @@ import {
     type ICreateSliceSetImportState,
     type ICreateSliceSetTemplate,
     type CreateSliceState
-} from '@deneb-viz/state';
+} from '@deneb-viz/app-core';
 import {
     areAllCreateDataRequirementsMet,
     getNewCreateFromTemplateSliceProperties

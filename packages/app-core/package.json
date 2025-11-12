@@ -49,10 +49,13 @@
         "vitest": "^3.2.4"
     },
     "dependencies": {
+        "@deneb-viz/json-processing": "*",
+        "@deneb-viz/template-usermeta": "*",
         "@monaco-editor/react": "^4.6.0",
         "monaco-editor": "0.45.0"
     },
     "peerDependencies": {
+        "powerbi-visuals-api": "5.11.0",
         "react": "^19",
         "react-dom": "^19"
     }

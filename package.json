@@ -43,7 +43,6 @@
         "@deneb-viz/integration-powerbi": "*",
         "@deneb-viz/json-processing": "*",
         "@deneb-viz/powerbi-compat": "*",
-        "@deneb-viz/state": "*",
         "@deneb-viz/template-usermeta": "*",
         "@deneb-viz/utils": "*",
         "@deneb-viz/vega-runtime": "*",

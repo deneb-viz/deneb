@@ -17,7 +17,7 @@ import {
     type FieldUsageSliceApplyTrackingChanges,
     type FieldUsageSliceSetFieldAssignment,
     type FieldUsageSliceState
-} from '@deneb-viz/state';
+} from '@deneb-viz/app-core';
 
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     <FieldUsageSliceState>{
