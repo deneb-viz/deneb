@@ -5,18 +5,7 @@ import ViewMode = powerbi.ViewMode;
 import IViewport = powerbi.IViewport;
 
 import { type IDataset } from '@deneb-viz/dataset/data';
-
-/**
- * Available application modes. Used to represent current state of the application.
- */
-export type InterfaceMode =
-    | 'Initializing'
-    | 'Landing'
-    | 'Fetching'
-    | 'NoSpec'
-    | 'Editor'
-    | 'EditorNoData'
-    | 'View';
+import { type InterfaceMode } from '@deneb-viz/app-core';
 
 /**
  * Parameters that allow us to calculate Deneb's application mode.

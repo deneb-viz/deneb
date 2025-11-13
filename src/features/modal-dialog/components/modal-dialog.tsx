@@ -14,7 +14,6 @@ import { shallow } from 'zustand/shallow';
 import { useModalDialogStyles } from './index';
 import store from '../../../store';
 import { getI18nValue } from '../../i18n';
-import { ModalDialogRole } from '../types';
 import { VersionChangeContent } from './version-change-content';
 import { FieldRemapPane } from '../../remap-fields';
 import { logRender } from '../../logging';
@@ -25,6 +24,7 @@ import {
     setFocusToActiveEditor,
     useJsonEditorContext
 } from '../../json-editor';
+import { type ModalDialogRole } from '@deneb-viz/app-core';
 
 export const ModalDialog: React.FC = () => {
     const {

@@ -1,7 +1,7 @@
 import * as Vega from 'vega';
 import * as VegaLite from 'vega-lite';
-import { InterfaceMode } from '../interface';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import { type InterfaceMode } from '@deneb-viz/app-core';
 
 /**
  * After parsing, we need to patch content. This represents the results of

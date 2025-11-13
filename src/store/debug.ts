@@ -3,26 +3,10 @@ import { NamedSet } from 'zustand/middleware';
 
 import { TStoreState } from '.';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
-
-export interface IDebugSlice {
-    debug: {
-        /**
-         * The currently specified dataset for the data viewer.
-         */
-        datasetName: string;
-        /**
-         * Whether the log pane should be in an attention state (due to errors).
-         */
-        logAttention: boolean;
-        /**
-         * Set the current dataset for the data viewer.
-         */
-        setDatasetName: (datasetName: string) => void;
-    };
-}
+import { type DebugSlice } from '@deneb-viz/app-core';
 
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
-    <IDebugSlice>{
+    <DebugSlice>{
         debug: {
             datasetName: DATASET_DEFAULT_NAME,
             logAttention: false,
@@ -39,7 +23,7 @@ export const createDebugSlice: StateCreator<
     TStoreState,
     [['zustand/devtools', never]],
     [],
-    IDebugSlice
+    DebugSlice
 > = sliceStateInitializer;
 
 /**

@@ -9,35 +9,18 @@ import {
     updateObjectProperties
 } from './properties';
 import { VisualFormattingSettingsModel } from '@deneb-viz/integration-powerbi';
-
-/**
- * Structured version information that we can use for comparison or inspection purposes.
- */
-export interface IVersionInformation {
-    denebVersion: string;
-    provider: string;
-    providerVersion: string;
-}
-
-/**
- * Holds both current and previous version information.
- */
-export interface IVersionComparator {
-    current: IVersionInformation;
-    previous: IVersionInformation;
-}
-
-/**
- * Denotes type of version change, that we can use for appropriate handling.
- */
-export type TVersionChange = 'decrease' | 'equal' | 'increase';
+import {
+    type VersionChangeDirection,
+    type VersionComparator,
+    type VersionInformation
+} from '@deneb-viz/utils/versioning';
 
 /**
  * Current visual and provider information
  */
 const getCurrentVersionInfo = (
     visualSettings: VisualFormattingSettingsModel
-): IVersionInformation => {
+): VersionInformation => {
     const {
         vega: {
             output: {
@@ -57,7 +40,7 @@ const getCurrentVersionInfo = (
  */
 const getLastVersionInfo = (
     visualSettings: VisualFormattingSettingsModel
-): IVersionInformation => {
+): VersionInformation => {
     const {
         developer: {
             versioning: {
@@ -83,7 +66,7 @@ const getLastVersionInfo = (
  */
 const getVersionComparatorInfo = (
     visualSettings: VisualFormattingSettingsModel
-): IVersionComparator => ({
+): VersionComparator => ({
     current: getCurrentVersionInfo(visualSettings),
     previous: getLastVersionInfo(visualSettings)
 });
@@ -92,8 +75,8 @@ const getVersionComparatorInfo = (
  * Determine if a change has occurred since last persist, and the direction.
  */
 const getVersionChangeDetail = (
-    comparatorInfo: IVersionComparator
-): TVersionChange => {
+    comparatorInfo: VersionComparator
+): VersionChangeDirection => {
     const { current, previous } = comparatorInfo;
     logDebug('getVersionChangeDetail', { current, previous });
     try {

@@ -9,6 +9,7 @@ export default defineConfig({
         'src/lib/inspection.ts',
         'src/lib/object.ts',
         'src/lib/type-conversion.ts',
+        'src/lib/versioning.ts',
         'src/lib/worker.ts'
     ],
     clean: false,

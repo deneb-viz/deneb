@@ -3,28 +3,13 @@ import { NamedSet } from 'zustand/middleware';
 
 import { TStoreState } from '.';
 import {
-    IVersionComparator,
-    IVersionInformation,
-    TVersionChange
-} from '../core/utils/versioning';
-import { ModalDialogRole } from '../features/modal-dialog/types';
-
-export interface IMigrationSliceProperties extends IVersionComparator {
-    changeType: TVersionChange;
-    migrationCheckPerformed: boolean;
-    showMigrationDialog: boolean;
-    clearMigrationDialog: () => void;
-    updateMigrationDetails: (
-        payload: IMigrationSliceUpdateMigrationDetailsPayload
-    ) => void;
-}
-
-export interface IMigrationSlice {
-    migration: IMigrationSliceProperties;
-}
+    type MigrationSliceUpdateMigrationDetailsPayload,
+    type MigrationSlice,
+    type ModalDialogRole
+} from '@deneb-viz/app-core';
 
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
-    <IMigrationSlice>{
+    <MigrationSlice>{
         migration: {
             current: null,
             previous: null,
@@ -50,14 +35,8 @@ export const createMigrationSlice: StateCreator<
     TStoreState,
     [['zustand/devtools', never]],
     [],
-    IMigrationSlice
+    MigrationSlice
 > = sliceStateInitializer;
-
-interface IMigrationSliceUpdateMigrationDetailsPayload {
-    changeType: TVersionChange;
-    current: IVersionInformation;
-    previous: IVersionInformation;
-}
 
 const handleClearMigrationDialog = (
     state: TStoreState
@@ -74,7 +53,7 @@ const handleClearMigrationDialog = (
 
 const handleUpdateMigrationDetails = (
     state: TStoreState,
-    payload: IMigrationSliceUpdateMigrationDetailsPayload
+    payload: MigrationSliceUpdateMigrationDetailsPayload
 ): Partial<TStoreState> => {
     const modalDialogRole: ModalDialogRole =
         payload.changeType !== 'equal'

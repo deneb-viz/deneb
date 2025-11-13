@@ -21,7 +21,6 @@ import { logDebug } from '../features/logging';
 import { isVisualUpdateVolatile } from '../features/visual-host';
 import {
     IVisualUpdateHistoryRecord,
-    InterfaceMode,
     getApplicationMode,
     getCorrectViewport
 } from '../features/interface';
@@ -44,6 +43,7 @@ import {
     getVisualFormattingModel
 } from '@deneb-viz/integration-powerbi';
 import { TEditorPosition } from '../core/ui';
+import { type InterfaceMode } from '@deneb-viz/app-core';
 
 const defaultViewport = { width: 0, height: 0 };
 

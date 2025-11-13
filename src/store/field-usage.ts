@@ -7,11 +7,11 @@ import {
     getRemapEligibleFields,
     isMappingDialogRequired
 } from '@deneb-viz/json-processing';
-import { ModalDialogRole } from '../features/modal-dialog/types';
 import { getOnboardingDialog } from '../features/modal-dialog';
 import { isExportSpecCommandEnabled } from '../features/commands';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 import {
+    type ModalDialogRole,
     type FieldUsageSliceApplyFieldMapping,
     type FieldUsageSliceApplyTokenizationChanges,
     type FieldUsageSliceApplyTrackingChanges,

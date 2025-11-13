@@ -10,8 +10,7 @@ import {
 
 import {
     IInterfaceModeResolutionParameters,
-    IVisualUpdateHistoryRecord,
-    InterfaceMode
+    IVisualUpdateHistoryRecord
 } from './types';
 import { logDebug } from '../logging';
 import { getState } from '../../store';
@@ -20,6 +19,7 @@ import {
     isVisualUpdateTypeResizeEnd
 } from '../visual-host';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
+import { type InterfaceMode } from '@deneb-viz/app-core';
 
 /**
  * UI theming utilities.

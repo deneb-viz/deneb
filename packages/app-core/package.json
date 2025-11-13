@@ -51,6 +51,7 @@
     "dependencies": {
         "@deneb-viz/json-processing": "*",
         "@deneb-viz/template-usermeta": "*",
+        "@deneb-viz/utils": "*",
         "@monaco-editor/react": "^4.6.0",
         "monaco-editor": "0.45.0"
     },

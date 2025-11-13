@@ -11,4 +11,5 @@ export {
     type IWorkerDatasetViewerTranslations
 } from './components/data-viewer/workers';
 export type * from './lib/commands';
+export type * from './lib/interface';
 export type * from './state';

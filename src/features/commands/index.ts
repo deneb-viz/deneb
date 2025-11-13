@@ -9,7 +9,6 @@ import {
     updateObjectProperties
 } from '../../core/utils/properties';
 import { getState } from '../../store';
-import { InterfaceMode } from '../interface';
 import { persistSpecification } from '../specification';
 import {
     IExportSpecCommandTestOptions,
@@ -25,7 +24,7 @@ import {
 import { APPLICATION_INFORMATION, VISUAL_PREVIEW_ZOOM } from '../../../config';
 import { launchUrl } from '../visual-host';
 import { type CompiledSpecification } from '@deneb-viz/json-processing/spec-processing';
-import { type Command } from '@deneb-viz/app-core';
+import { type InterfaceMode, type Command } from '@deneb-viz/app-core';
 
 export * from './types';
 

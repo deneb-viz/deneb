@@ -42,6 +42,10 @@
             "types": "./dist/lib/type-conversion.d.ts",
             "default": "./dist/lib/type-conversion.js"
         },
+        "./versioning": {
+            "types": "./dist/lib/versioning.d.ts",
+            "default": "./dist/lib/versioning.js"
+        },
         "./worker": {
             "types": "./dist/lib/worker.d.ts",
             "default": "./dist/lib/worker.js"

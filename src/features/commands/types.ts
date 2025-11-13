@@ -1,5 +1,5 @@
+import { type InterfaceMode } from '@deneb-viz/app-core';
 import { type CompiledSpecification } from '@deneb-viz/json-processing/spec-processing';
-import { InterfaceMode } from '../interface';
 
 export interface IExportSpecCommandTestOptions {
     editorIsDirty: boolean;
