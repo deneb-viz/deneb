@@ -1,36 +1,12 @@
 import { StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
-import isEqual from 'lodash/isEqual';
-import uniqWith from 'lodash/uniqWith';
 
 import { TStoreState } from '.';
-import { ISpecification } from '../features/specification';
-
-interface ISpecificationSliceProperties extends ISpecification {
-    /**
-     * Clear all current errors and warnings.
-     */
-    clearLog: () => void;
-    /**
-     * Record a new error message into the current array of errors.
-     */
-    logError: (error: string) => void;
-    /**
-     * Record a new warning message into the current array of warnings.
-     */
-    logWarn: (warn: string) => void;
-    /**
-     * Set the current specification and parse results.
-     */
-    setSpecificationParseResults: (spec: ISpecification) => void;
-}
-
-export interface ISpecificationSlice {
-    specification: ISpecificationSliceProperties;
-}
+import { type CompiledSpecification } from '@deneb-viz/json-processing/spec-processing';
+import { type SpecificationSlice } from '@deneb-viz/app-core';
 
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
-    <ISpecificationSlice>{
+    <SpecificationSlice>{
         specification: {
             errors: [],
             spec: null,
@@ -63,7 +39,7 @@ export const createSpecificationSlice: StateCreator<
     TStoreState,
     [['zustand/devtools', never]],
     [],
-    ISpecificationSlice
+    SpecificationSlice
 > = sliceStateInitializer;
 
 const handleClearLog = (state: TStoreState): Partial<TStoreState> => ({
@@ -80,7 +56,9 @@ const handleLogWarns = (
 ): Partial<TStoreState> => ({
     specification: {
         ...state.specification,
-        warns: uniqWith([...state.specification.warns, message], isEqual)
+        warns: Array.from(
+            new Set<string>([...state.specification.warns, message])
+        )
     }
 });
 
@@ -88,7 +66,9 @@ const handleLogErrors = (
     state: TStoreState,
     message: string
 ): Partial<TStoreState> => {
-    const errors = uniqWith([...state.specification.errors, message], isEqual);
+    const errors = Array.from(
+        new Set<string>([...state.specification.errors, message])
+    );
     return {
         debug: { ...state.debug, logAttention: errors.length > 0 },
         specification: {
@@ -101,7 +81,7 @@ const handleLogErrors = (
 
 const handleSetSpecificationParseResults = (
     state: TStoreState,
-    spec: ISpecification
+    spec: CompiledSpecification
 ): Partial<TStoreState> => ({
     debug: { ...state.debug, logAttention: spec.errors.length > 0 },
     specification: {

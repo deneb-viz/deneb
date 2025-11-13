@@ -10,7 +10,7 @@ import {
 } from '../../core/utils/properties';
 import { getState } from '../../store';
 import { InterfaceMode } from '../interface';
-import { ISpecification, persistSpecification } from '../specification';
+import { persistSpecification } from '../specification';
 import {
     Command,
     IExportSpecCommandTestOptions,
@@ -25,6 +25,7 @@ import {
 } from '../json-editor';
 import { APPLICATION_INFORMATION, VISUAL_PREVIEW_ZOOM } from '../../../config';
 import { launchUrl } from '../visual-host';
+import { type CompiledSpecification } from '@deneb-viz/json-processing/spec-processing';
 
 export * from './types';
 
@@ -53,8 +54,9 @@ const executeCommand = (command: Command, callback: () => void) => {
 /**
  * For the current apply mode, determine what the new one should be.
  */
-export const getNextApplyMode = (applyMode: EditorApplyMode): EditorApplyMode =>
-    applyMode === 'Auto' ? 'Manual' : 'Auto';
+export const getNextApplyMode = (
+    applyMode: EditorApplyMode
+): EditorApplyMode => (applyMode === 'Auto' ? 'Manual' : 'Auto');
 
 /**
  * Applies the changes to the specification.
@@ -294,7 +296,7 @@ const isInterfaceModeValid = (mode: InterfaceMode) => mode === 'Editor';
 /**
  * Confirms whether the specification is valid. A condition for many commands.
  */
-const isSpecificationValid = (specification: ISpecification) =>
+const isSpecificationValid = (specification: CompiledSpecification) =>
     specification.status === 'valid';
 
 /**

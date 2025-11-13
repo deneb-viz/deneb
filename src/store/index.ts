@@ -11,14 +11,15 @@ import { createFieldUsageSlice } from './field-usage';
 import { IInterfaceSlice, createInterfaceSlice } from './interface';
 import { IMigrationSlice, createMigrationSlice } from './migration';
 import { IProcessingSlice, createProcessingSlice } from './processing';
-import { ISpecificationSlice, createSpecificationSlice } from './specification';
+import { createSpecificationSlice } from './specification';
 import { IVisualSlice, createVisualSlice } from './visual';
 import { IVisualUpdateSlice, createVisualUpdateSlice } from './visual-update';
 import { FEATURES } from '../../config';
 import {
     type ExportSliceState,
     type CreateSliceState,
-    type FieldUsageSliceState
+    type FieldUsageSliceState,
+    type SpecificationSlice
 } from '@deneb-viz/app-core';
 
 export type TStoreState = ICommandsSlice &
@@ -31,7 +32,7 @@ export type TStoreState = ICommandsSlice &
     IInterfaceSlice &
     IMigrationSlice &
     IProcessingSlice &
-    ISpecificationSlice &
+    SpecificationSlice &
     IVisualSlice &
     IVisualUpdateSlice;
 

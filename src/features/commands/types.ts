@@ -1,5 +1,5 @@
+import { type CompiledSpecification } from '@deneb-viz/json-processing/spec-processing';
 import { InterfaceMode } from '../interface';
-import { ISpecification } from '../specification';
 
 /**
  * Denotes the command a toolbar button invokes, which allows us to drive the
@@ -31,7 +31,7 @@ export type Command =
 
 export interface IExportSpecCommandTestOptions {
     editorIsDirty: boolean;
-    specification: ISpecification;
+    specification: CompiledSpecification;
     interfaceMode: InterfaceMode;
 }
 
@@ -39,7 +39,7 @@ export interface IExportSpecCommandTestOptions {
  * For other zoom commands, these are the things we need to test.
  */
 export interface IZoomOtherCommandTestOptions {
-    specification: ISpecification;
+    specification: CompiledSpecification;
     interfaceMode: InterfaceMode;
 }
 
@@ -48,6 +48,6 @@ export interface IZoomOtherCommandTestOptions {
  */
 export interface IZoomLevelCommandTestOptions {
     value: number;
-    specification: ISpecification;
+    specification: CompiledSpecification;
     interfaceMode: InterfaceMode;
 }

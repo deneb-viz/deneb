@@ -1,7 +1,6 @@
 import React, { memo, useCallback, useMemo } from 'react';
 import { createClassFromSpec, View } from 'react-vega';
 
-import { ISpecification } from '../../specification';
 import { logDebug, logRender, logTimeStart } from '../../logging';
 import {
     getVegaLoader,
@@ -17,6 +16,7 @@ import {
     type SpecProvider,
     type SpecRenderMode
 } from '@deneb-viz/vega-runtime/embed';
+import { type CompiledSpecification } from '@deneb-viz/json-processing/spec-processing';
 
 interface IVegaRenderProps {
     datasetHash: string;
@@ -26,7 +26,7 @@ interface IVegaRenderProps {
     ordinalColorCount: number;
     provider: SpecProvider;
     renderMode: SpecRenderMode;
-    specification: ISpecification;
+    specification: CompiledSpecification;
     viewportHeight: number;
     viewportWidth: number;
 }

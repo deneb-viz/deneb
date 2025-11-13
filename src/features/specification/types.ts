@@ -4,28 +4,12 @@ import { InterfaceMode } from '../interface';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 
 /**
- * Values for a spec's parse status.
- */
-export type TSpecStatus = 'valid' | 'error' | 'new';
-
-/**
  * After parsing, we need to patch content. This represents the results of
  * that operation.
  */
 export interface IContentPatchResult {
     result: Vega.Spec | VegaLite.TopLevelSpec | null;
     errors: string[];
-}
-
-/**
- * Represents a parsed and validated specification.
- */
-export interface ISpecification {
-    errors: string[];
-    spec: object | null;
-    status: TSpecStatus;
-    warns: string[];
-    hashValue: string;
 }
 
 /**

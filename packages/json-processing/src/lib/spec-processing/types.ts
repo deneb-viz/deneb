@@ -35,3 +35,19 @@ export interface IJsonParseResult {
     result: object | null;
     errors: string[];
 }
+
+/**
+ * Represents a parsed and validated specification.
+ */
+export type CompiledSpecification = {
+    errors: string[];
+    spec: object | null;
+    status: CompileStatus;
+    warns: string[];
+    hashValue: string;
+};
+
+/**
+ * Values for a spec's parse status.
+ */
+export type CompileStatus = 'valid' | 'error' | 'new';

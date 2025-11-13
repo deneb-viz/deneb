@@ -14,10 +14,8 @@ import {
 } from '../../core/utils/properties';
 import {
     IContentPatchResult,
-    ISpecification,
     ISpecificationComparisonOptions,
-    ISpecificationParseOptions,
-    TSpecStatus
+    ISpecificationParseOptions
 } from './types';
 import { TEditorRole } from '../json-editor';
 import {
@@ -39,6 +37,10 @@ import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import {
+    CompiledSpecification,
+    CompileStatus
+} from '@deneb-viz/json-processing/spec-processing';
 
 /**
  * For a given operation and string input, ensure that it's trimmed and replaced with suitable defaults if empty.
@@ -101,10 +103,10 @@ const getErrorLine = (code: string, error: string) => {
  * Handle parsing of the JSON from the spec editor.
  */
 export const getParsedSpec = (
-    currentSpec: ISpecification,
+    currentSpec: CompiledSpecification,
     prevOptions: ISpecificationParseOptions,
     nextOptions: ISpecificationParseOptions
-): ISpecification => {
+): CompiledSpecification => {
     logTimeStart('getParsedSpec');
     logDebug('getParsedSpec starting', {
         currentSpec,
@@ -125,7 +127,7 @@ export const getParsedSpec = (
     const patchedConfig = getPatchedConfig(config);
     const warns: string[] = [];
     const errors: string[] = [];
-    let status: TSpecStatus = 'new';
+    let status: CompileStatus = 'new';
     const specHasErrors = patchedSpec.errors.length > 0;
     const configHasErrors = patchedConfig.errors.length > 0;
     if (specHasErrors) {
