@@ -1,15 +1,10 @@
 import { StateCreator } from 'zustand';
 
 import { TStoreState } from '.';
-
-export interface IProcessingSlice {
-    processing: {
-        shouldProcessDataset: boolean;
-    };
-}
+import { type ProcessingSlice } from '@deneb-viz/app-core';
 
 const sliceStateInitializer = () =>
-    <IProcessingSlice>{
+    <ProcessingSlice>{
         processing: {
             shouldProcessDataset: false
         }
@@ -19,5 +14,5 @@ export const createProcessingSlice: StateCreator<
     TStoreState,
     [['zustand/devtools', never]],
     [],
-    IProcessingSlice
+    ProcessingSlice
 > = sliceStateInitializer;

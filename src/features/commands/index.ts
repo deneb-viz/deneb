@@ -12,7 +12,6 @@ import { getState } from '../../store';
 import { InterfaceMode } from '../interface';
 import { persistSpecification } from '../specification';
 import {
-    Command,
     IExportSpecCommandTestOptions,
     IZoomOtherCommandTestOptions,
     IZoomLevelCommandTestOptions
@@ -26,6 +25,7 @@ import {
 import { APPLICATION_INFORMATION, VISUAL_PREVIEW_ZOOM } from '../../../config';
 import { launchUrl } from '../visual-host';
 import { type CompiledSpecification } from '@deneb-viz/json-processing/spec-processing';
+import { type Command } from '@deneb-viz/app-core';
 
 export * from './types';
 

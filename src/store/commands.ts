@@ -1,18 +1,10 @@
 import { StateCreator } from 'zustand';
 
 import { TStoreState } from '.';
-import { Command } from '../features/commands';
-
-type ICommandsSliceProperties = {
-    [command in Command]: boolean;
-};
-
-export interface ICommandsSlice {
-    commands: ICommandsSliceProperties;
-}
+import { type CommandsSlice } from '@deneb-viz/app-core';
 
 const sliceStateInitializer = () =>
-    <ICommandsSlice>{
+    <CommandsSlice>{
         commands: {
             applyChanges: true,
             autoApplyToggle: true,
@@ -43,5 +35,5 @@ export const createCommandsSlice: StateCreator<
     TStoreState,
     [['zustand/devtools', never]],
     [],
-    ICommandsSlice
+    CommandsSlice
 > = sliceStateInitializer;

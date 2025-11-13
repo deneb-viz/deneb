@@ -25,7 +25,6 @@ import store, { getState } from '../../../store';
 import { useToolbarStyles } from '.';
 import { getI18nValue } from '../../i18n';
 import {
-    Command,
     handleApplyChanges,
     handleAutoApplyChanges,
     handleExportSpecification,
@@ -41,6 +40,7 @@ import {
 import { ToolbarRole } from '../types';
 import { TooltipCustomMount } from '../../interface';
 import { useJsonEditorContext } from '../../json-editor';
+import { type Command } from '@deneb-viz/app-core';
 
 interface IToolbarButtonProps {
     command: Command;

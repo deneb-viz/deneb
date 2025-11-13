@@ -1,7 +1,7 @@
 import { createWithEqualityFn } from 'zustand/traditional';
 import { shallow } from 'zustand/vanilla/shallow';
 import { devtools } from 'zustand/middleware';
-import { ICommandsSlice, createCommandsSlice } from './commands';
+import { createCommandsSlice } from './commands';
 import { createCreateSlice } from './create';
 import { IDatasetSlice, createDatasetSlice } from './dataset';
 import { IDebugSlice, createDebugSlice } from './debug';
@@ -10,19 +10,21 @@ import { createExportSlice } from './export';
 import { createFieldUsageSlice } from './field-usage';
 import { IInterfaceSlice, createInterfaceSlice } from './interface';
 import { IMigrationSlice, createMigrationSlice } from './migration';
-import { IProcessingSlice, createProcessingSlice } from './processing';
+import { createProcessingSlice } from './processing';
 import { createSpecificationSlice } from './specification';
 import { IVisualSlice, createVisualSlice } from './visual';
 import { IVisualUpdateSlice, createVisualUpdateSlice } from './visual-update';
 import { FEATURES } from '../../config';
 import {
-    type ExportSliceState,
+    type CommandsSlice,
     type CreateSliceState,
+    type ExportSliceState,
     type FieldUsageSliceState,
+    type ProcessingSlice,
     type SpecificationSlice
 } from '@deneb-viz/app-core';
 
-export type TStoreState = ICommandsSlice &
+export type TStoreState = CommandsSlice &
     CreateSliceState &
     IDatasetSlice &
     IDebugSlice &
@@ -31,7 +33,7 @@ export type TStoreState = ICommandsSlice &
     FieldUsageSliceState &
     IInterfaceSlice &
     IMigrationSlice &
-    IProcessingSlice &
+    ProcessingSlice &
     SpecificationSlice &
     IVisualSlice &
     IVisualUpdateSlice;

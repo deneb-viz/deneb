@@ -21,7 +21,6 @@ import { ADVANCED_EDITOR_TOOLBAR_HEIGHT } from '../../../constants';
 import { PortalRoot } from './portal-root';
 import { KEY_BINDINGS } from '../../../../config';
 import {
-    Command,
     HOTKEY_OPTIONS,
     handleApplyChanges,
     handleAutoApplyChanges,
@@ -42,6 +41,7 @@ import {
     handleZoomOut,
     handleZoomReset
 } from '../../commands';
+import { type Command } from '@deneb-viz/app-core';
 
 //eslint-disable-next-line max-lines-per-function
 export const AdvancedEditorInterface: React.FC = () => {
