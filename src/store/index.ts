@@ -3,7 +3,7 @@ import { shallow } from 'zustand/vanilla/shallow';
 import { devtools } from 'zustand/middleware';
 import { createCommandsSlice } from './commands';
 import { createCreateSlice } from './create';
-import { IDatasetSlice, createDatasetSlice } from './dataset';
+import { createDatasetSlice } from './dataset';
 import { createDebugSlice } from './debug';
 import { IEditorSlice, createEditorSlice } from './editor';
 import { createExportSlice } from './export';
@@ -12,24 +12,26 @@ import { createInterfaceSlice } from './interface';
 import { createMigrationSlice } from './migration';
 import { createProcessingSlice } from './processing';
 import { createSpecificationSlice } from './specification';
-import { IVisualSlice, createVisualSlice } from './visual';
+import { createVisualSlice } from './visual';
 import { IVisualUpdateSlice, createVisualUpdateSlice } from './visual-update';
 import { FEATURES } from '../../config';
 import {
     type DebugSlice,
     type CommandsSlice,
     type CreateSliceState,
+    type DatasetSlice,
     type ExportSliceState,
     type FieldUsageSliceState,
+    type InterfaceSlice,
     type MigrationSlice,
     type ProcessingSlice,
     type SpecificationSlice,
-    InterfaceSlice
+    type VisualSlice
 } from '@deneb-viz/app-core';
 
 export type TStoreState = CommandsSlice &
     CreateSliceState &
-    IDatasetSlice & //
+    DatasetSlice &
     DebugSlice &
     IEditorSlice & //
     ExportSliceState &
@@ -38,7 +40,7 @@ export type TStoreState = CommandsSlice &
     MigrationSlice &
     ProcessingSlice &
     SpecificationSlice &
-    IVisualSlice & //
+    VisualSlice &
     IVisualUpdateSlice; //
 
 const store = createWithEqualityFn<TStoreState>()(

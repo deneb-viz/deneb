@@ -1,4 +1,4 @@
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
+import { DEFAULTS } from './constants';
 import { formattingSettings } from 'powerbi-visuals-utils-formattingmodel';
 
 export class SettingsDataLimit extends formattingSettings.CompositeCard {

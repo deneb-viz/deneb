@@ -1,6 +1,6 @@
 import { formattingSettings } from 'powerbi-visuals-utils-formattingmodel';
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
-import { CROSS_FILTER_LIMITS } from '@deneb-viz/powerbi-compat/interactivity';
+import { DEFAULTS } from './constants';
+import { CROSS_FILTER_LIMITS } from '../interactivity';
 
 export class SettingsVega extends formattingSettings.CompositeCard {
     name = 'vega';

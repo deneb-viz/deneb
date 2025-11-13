@@ -12,7 +12,7 @@ import {
     TDataPointHighlightComparator,
     TDataPointHighlightStatus
 } from '../../features/interactivity';
-import { VisualFormattingSettingsModel } from '@deneb-viz/integration-powerbi';
+import { VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/properties';
 
 /**
  * Determines whether the visual can fetch more data, based on the feature switch and the corresponding flag in the store

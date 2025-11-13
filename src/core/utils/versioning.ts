@@ -8,7 +8,7 @@ import {
     resolveObjectProperties,
     updateObjectProperties
 } from './properties';
-import { VisualFormattingSettingsModel } from '@deneb-viz/integration-powerbi';
+import { VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/properties';
 import {
     type VersionChangeDirection,
     type VersionComparator,

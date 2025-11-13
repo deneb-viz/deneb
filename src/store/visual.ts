@@ -41,26 +41,16 @@ import { PROVIDER_VERSIONS } from '../../config';
 import {
     VisualFormattingSettingsModel,
     getVisualFormattingModel
-} from '@deneb-viz/integration-powerbi';
+} from '@deneb-viz/powerbi-compat/properties';
 import { TEditorPosition } from '../core/ui';
-import { type InterfaceMode } from '@deneb-viz/app-core';
+import { type VisualSlice, type InterfaceMode } from '@deneb-viz/app-core';
 
 const defaultViewport = { width: 0, height: 0 };
 
 const MAX_UPDATE_HISTORY_COUNT = 100;
 
-export interface IVisualSlice {
-    visual4d3d3d: boolean;
-    visualSettings: VisualFormattingSettingsModel;
-    visualUpdates: number;
-    visualViewportCurrent: IViewport;
-    visualViewportReport: IViewport;
-    setVisual4d3d3d: (status: boolean) => void;
-    setVisualUpdate: (payload: IVisualUpdatePayload) => void;
-}
-
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
-    <IVisualSlice>{
+    <VisualSlice>{
         visual4d3d3d: false,
         visualSettings: getVisualFormattingModel(),
         visualUpdates: 0,
@@ -84,7 +74,7 @@ export const createVisualSlice: StateCreator<
     TStoreState,
     [['zustand/devtools', never]],
     [],
-    IVisualSlice
+    VisualSlice
 > = sliceStateInitializer;
 
 interface IVisualUpdatePayload {

@@ -1,13 +1,10 @@
 import powerbi from 'powerbi-visuals-api';
-import DataViewObjects = powerbi.DataViewObjects;
-import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 import ISelectionId = powerbi.visuals.ISelectionId;
 
 import { StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
 import { TStoreState } from '.';
 import { getEmptyDataset } from '../core/data/dataset';
-import { TDataProcessingStage } from '../core/data';
 import { getResizablePaneSize } from '../core/ui/advancedEditor';
 import {
     getDataPointCrossFilterStatus,
@@ -28,26 +25,15 @@ import {
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { TEditorPosition } from '../core/ui';
 import { ROW_IDENTITY_FIELD_NAME } from '@deneb-viz/dataset/field';
-import { type IDataset } from '@deneb-viz/dataset/data';
-
-export interface IDatasetSlice {
-    dataset: IDataset;
-    datasetCategories: DataViewCategoryColumn[];
-    datasetHasHighlights: boolean;
-    datasetHasSelectionAborted: boolean;
-    datasetProcessingStage: TDataProcessingStage;
-    datasetSelectionLimit: number;
-    datasetViewObjects: DataViewObjects;
-    updateDataset: (payload: IVisualDatasetUpdatePayload) => void;
-    updateDatasetProcessingStage: (payload: IDatasetProcessingPayload) => void;
-    updateDatasetSelectors: (selectors: ISelectionId[]) => void;
-    updateDatasetSelectionAbortStatus: (
-        payload: IVisualDatasetAbortPayload
-    ) => void;
-}
+import {
+    DatasetProcessingPayload,
+    VisualDatasetAbortPayload,
+    VisualDatasetUpdatePayload,
+    type DatasetSlice
+} from '@deneb-viz/app-core';
 
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
-    <IDatasetSlice>{
+    <DatasetSlice>{
         dataset: getEmptyDataset(),
         datasetCategories: [],
         datasetHasHighlights: false,
@@ -86,28 +72,13 @@ export const createDatasetSlice: StateCreator<
     TStoreState,
     [['zustand/devtools', never]],
     [],
-    IDatasetSlice
+    DatasetSlice
 > = sliceStateInitializer;
-
-interface IDatasetProcessingPayload {
-    dataProcessingStage: TDataProcessingStage;
-    rowsLoaded: number;
-}
-
-interface IVisualDatasetUpdatePayload {
-    categories: DataViewCategoryColumn[];
-    dataset: IDataset;
-}
-
-interface IVisualDatasetAbortPayload {
-    status: boolean;
-    limit: number;
-}
 
 // eslint-disable-next-line max-lines-per-function
 const handleUpdateDataset = (
     state: TStoreState,
-    payload: IVisualDatasetUpdatePayload
+    payload: VisualDatasetUpdatePayload
 ): Partial<TStoreState> => {
     logDebug('dataset.updateDataset', payload);
     const datasetCategories = payload.categories || [];
@@ -188,7 +159,7 @@ const handleUpdateDataset = (
 
 const handleUpdateDatasetProcessingStage = (
     state: TStoreState,
-    payload: IDatasetProcessingPayload
+    payload: DatasetProcessingPayload
 ): Partial<TStoreState> => {
     const { dataProcessingStage, rowsLoaded } = payload;
     const mode = getApplicationMode({
@@ -252,7 +223,7 @@ const handleUpdateDatasetSelectors = (
 
 const handleUpdateDatasetSelectionAbortStatus = (
     state: TStoreState,
-    payload: IVisualDatasetAbortPayload
+    payload: VisualDatasetAbortPayload
 ): Partial<TStoreState> => ({
     datasetHasSelectionAborted: payload.status,
     datasetSelectionLimit: payload.limit

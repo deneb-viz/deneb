@@ -1,5 +1,6 @@
 export type * from './commands';
 export type * from './create';
+export type * from './dataset';
 export type * from './debug';
 export type * from './export';
 export type * from './field-usage';
@@ -7,3 +8,4 @@ export type * from './interface';
 export type * from './processing';
 export type * from './specification';
 export type * from './versioning';
+export type * from './visual';

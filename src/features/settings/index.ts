@@ -1,4 +1,4 @@
-import { VisualFormattingSettingsModel } from '@deneb-viz/integration-powerbi';
+import { VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/properties';
 
 export { SettingsPane } from './components/settings-pane';
 

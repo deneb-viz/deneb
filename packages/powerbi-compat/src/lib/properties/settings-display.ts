@@ -1,5 +1,5 @@
+import { DEFAULTS } from './constants';
 import { formattingSettings } from 'powerbi-visuals-utils-formattingmodel';
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 
 export class SettingsDisplay extends formattingSettings.CompositeCard {
     name = 'display';

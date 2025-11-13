@@ -1,4 +1,4 @@
-import { VisualFormattingSettingsModel } from '@deneb-viz/integration-powerbi';
+import { VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/properties';
 import { type InterfaceMode, type ModalDialogRole } from '@deneb-viz/app-core';
 
 export { useModalDialogStyles } from './components';

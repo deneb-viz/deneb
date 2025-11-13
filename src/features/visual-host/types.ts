@@ -1,7 +1,7 @@
 import powerbi from 'powerbi-visuals-api';
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 
-import { VisualFormattingSettingsModel } from '@deneb-viz/integration-powerbi';
+import { VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/properties';
 
 export interface IVisualUpdateComparisonOptions {
     currentProcessingFlag: boolean;

@@ -72,16 +72,6 @@ export interface IVisualDatasetValueRow {
 }
 
 /**
- * Stages to within the store when processing data, and therefore give us some
- * UI hooks for the end-user.
- */
-export type TDataProcessingStage =
-    | 'Initial'
-    | 'Fetching'
-    | 'Processing'
-    | 'Processed';
-
-/**
  * Indicates where in the data view we obtain a value from.
  */
 export type TDatasetValueSource =

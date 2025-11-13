@@ -47,7 +47,7 @@ import {
     VisualFormattingSettingsService,
     getVisualFormattingModel,
     getVisualFormattingService
-} from '@deneb-viz/integration-powerbi';
+} from '@deneb-viz/powerbi-compat/properties';
 import { updateFieldTracking } from './features/json-processing';
 
 /**
