@@ -4,7 +4,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import isEqual from 'lodash/isEqual';
 import merge from 'lodash/merge';
 import omit from 'lodash/omit';
-import { monaco } from '@deneb-viz/app-core';
+import { EditorPaneRole, monaco } from '@deneb-viz/app-core';
 
 import { TStoreState, getState } from '../../store';
 import { getVegaSettings } from '../../core/vega';
@@ -17,7 +17,6 @@ import {
     ISpecificationComparisonOptions,
     ISpecificationParseOptions
 } from './types';
-import { TEditorRole } from '../json-editor';
 import {
     LocalVegaLoggerService,
     logDebug,
@@ -46,7 +45,7 @@ import {
  * For a given operation and string input, ensure that it's trimmed and replaced with suitable defaults if empty.
  */
 const cleanJsonInputForPersistence = (
-    operation: TEditorRole,
+    operation: EditorPaneRole,
     input: string
 ): string => {
     const clean = input?.trim() || '';
@@ -65,7 +64,7 @@ const cleanJsonInputForPersistence = (
  * Further abstracts the `cleanJsonInputForPersistence` workflow so that calling functions are easier to follow.
  */
 export const getCleanEditorJson = (
-    role: TEditorRole,
+    role: EditorPaneRole,
     editor: monaco.editor.IStandaloneCodeEditor
 ) => cleanJsonInputForPersistence(role, editor?.getValue());
 

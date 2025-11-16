@@ -71,8 +71,6 @@ export const resizerVerticalStyles: CSSProperties = {
     }
 };
 
-export type TPreviewPivotRole = 'log' | 'data' | 'signal';
-
 /**
  * Calculate a width that ensures the editor pane caps and makes the pivot overflow as needed
  */

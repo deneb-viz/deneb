@@ -1,8 +1,5 @@
 import { Options } from 'react-hotkeys-hook';
-import {
-    TPreviewPivotRole,
-    getZoomToFitScale
-} from '../../core/ui/advancedEditor';
+import { getZoomToFitScale } from '../../core/ui/advancedEditor';
 import {
     IPersistenceProperty,
     resolveObjectProperties,
@@ -15,16 +12,17 @@ import {
     IZoomOtherCommandTestOptions,
     IZoomLevelCommandTestOptions
 } from './types';
-import {
-    EditorApplyMode,
-    IEditorRefs,
-    TEditorRole,
-    setFocusToActiveEditor
-} from '../json-editor';
+import { IEditorRefs, setFocusToActiveEditor } from '../json-editor';
 import { APPLICATION_INFORMATION, VISUAL_PREVIEW_ZOOM } from '../../../config';
 import { launchUrl } from '../visual-host';
 import { type CompiledSpecification } from '@deneb-viz/json-processing/spec-processing';
-import { type InterfaceMode, type Command } from '@deneb-viz/app-core';
+import {
+    type InterfaceMode,
+    type Command,
+    type EditorApplyMode,
+    type EditorPaneRole,
+    type DebugPaneRole
+} from '@deneb-viz/app-core';
 
 export * from './types';
 
@@ -301,14 +299,14 @@ const isSpecificationValid = (specification: CompiledSpecification) =>
 /**
  * Open a specific pivot item in the debug pane.
  */
-const setDebugPivotItem = (role: TPreviewPivotRole) => {
+const setDebugPivotItem = (role: DebugPaneRole) => {
     getState().updateEditorSelectedPreviewRole(role);
 };
 
 /**
  * Open a specific pivot item from the editor.
  */
-const setEditorPivotItem = (operation: TEditorRole) =>
+const setEditorPivotItem = (operation: EditorPaneRole) =>
     getState().updateEditorSelectedOperation(operation);
 
 /**

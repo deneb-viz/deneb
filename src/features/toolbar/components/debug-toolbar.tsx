@@ -14,7 +14,6 @@ import {
 import { shallow } from 'zustand/shallow';
 
 import store from '../../../store';
-import { TPreviewPivotRole } from '../../../core/ui/advancedEditor';
 import { LogErrorIndicator } from './log-error-indicator';
 import { useToolbarStyles } from '.';
 import { ToolbarButtonStandard } from './toolbar-button-standard';
@@ -25,6 +24,7 @@ import {
     handleDebugPaneLog,
     handleDebugPaneSignal
 } from '../../commands';
+import { type DebugPaneRole } from '@deneb-viz/app-core';
 
 export const DebugToolbar: React.FC = () => {
     const { editorPreviewAreaSelectedPivot } = store(
@@ -38,7 +38,7 @@ export const DebugToolbar: React.FC = () => {
         e,
         { checkedItems }
     ) => {
-        const role = checkedItems[0] as TPreviewPivotRole;
+        const role = checkedItems[0] as DebugPaneRole;
         switch (role) {
             case 'data':
                 handleDebugPaneData();

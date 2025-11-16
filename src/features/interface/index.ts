@@ -8,10 +8,7 @@ import {
     PREVIEW_PANE_TOOLBAR_MIN_SIZE
 } from '../../constants';
 
-import {
-    IInterfaceModeResolutionParameters,
-    IVisualUpdateHistoryRecord
-} from './types';
+import { IInterfaceModeResolutionParameters } from './types';
 import { logDebug } from '../logging';
 import { getState } from '../../store';
 import {
@@ -19,7 +16,10 @@ import {
     isVisualUpdateTypeResizeEnd
 } from '../visual-host';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
-import { type InterfaceMode } from '@deneb-viz/app-core';
+import {
+    type VisualUpdateHistoryRecord,
+    type InterfaceMode
+} from '@deneb-viz/app-core';
 
 /**
  * UI theming utilities.
@@ -116,7 +116,7 @@ export const getApplicationMode = (
  * This does the necessary checks against the update history and retrieves the
  * correct dimensions as necessary.
  */
-export const getCorrectViewport = (history: IVisualUpdateHistoryRecord[]) => {
+export const getCorrectViewport = (history: VisualUpdateHistoryRecord[]) => {
     if (
         isVisualUpdateTypeResize(history?.[0]?.type) &&
         isVisualUpdateTypeResizeEnd(history?.[1]?.type) &&

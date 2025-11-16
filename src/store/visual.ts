@@ -14,16 +14,11 @@ import {
     getResizablePaneSize
 } from '../core/ui/advancedEditor';
 import { getReportViewport } from '../core/ui/dom';
-import { IVisualUpdateSliceProperties } from './visual-update';
 import { getParsedSpec } from '../features/specification';
 import { getSpecificationParseOptions } from '../features/specification/logic';
 import { logDebug } from '../features/logging';
 import { isVisualUpdateVolatile } from '../features/visual-host';
-import {
-    IVisualUpdateHistoryRecord,
-    getApplicationMode,
-    getCorrectViewport
-} from '../features/interface';
+import { getApplicationMode, getCorrectViewport } from '../features/interface';
 import { getOnboardingDialog } from '../features/modal-dialog';
 import {
     IZoomOtherCommandTestOptions,
@@ -43,7 +38,12 @@ import {
     getVisualFormattingModel
 } from '@deneb-viz/powerbi-compat/properties';
 import { TEditorPosition } from '../core/ui';
-import { type VisualSlice, type InterfaceMode } from '@deneb-viz/app-core';
+import {
+    type InterfaceMode,
+    type VisualSlice,
+    type VisualUpdateSliceProperties,
+    type VisualUpdateHistoryRecord
+} from '@deneb-viz/app-core';
 
 const defaultViewport = { width: 0, height: 0 };
 
@@ -114,7 +114,7 @@ const handleSetVisualUpdate = (
         specification: payload.settings.vega.output.jsonSpec.value,
         updateType
     });
-    const history: IVisualUpdateHistoryRecord[] = [
+    const history: VisualUpdateHistoryRecord[] = [
         {
             editMode,
             interfaceMode: mode,
@@ -227,7 +227,7 @@ const handleSetVisualUpdate = (
         specification: spec,
         interfaceMode: mode
     };
-    const visualUpdateOptions: IVisualUpdateSliceProperties = {
+    const visualUpdateOptions: VisualUpdateSliceProperties = {
         ...payload.options,
         ...{
             history,

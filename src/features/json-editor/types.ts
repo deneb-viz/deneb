@@ -1,22 +1,11 @@
 import { MutableRefObject } from 'react';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import { monaco } from '@deneb-viz/app-core';
-
-/**
- * Whether the editor is in auto-apply mode or not.
- */
-export type EditorApplyMode = 'Auto' | 'Manual';
+import { type EditorPaneRole, monaco } from '@deneb-viz/app-core';
 
 /**
  * Available providers for the JSON editor in the editor pane.
  */
 export type TEditorProvider = 'jsoneditor';
-
-/**
- * Used to specify the types of operatons we should have within the pivot
- * control in the editor pane.
- */
-export type TEditorRole = 'Spec' | 'Config' | 'Settings';
 
 /**
  * We need to be able to access the editors across components, so this provides
@@ -33,15 +22,15 @@ export interface IEditorRefs {
  */
 export interface IEditorSchema {
     provider: SpecProvider;
-    role: TEditorRole;
+    role: EditorPaneRole;
     schema: object;
 }
 
 /**
  * Properties for the `Editor` React component.
  *
- *  - `role`: assigned `TEditorRole`.
+ *  - `role`: assigned `EditorPaneRole`.
  */
 export interface IVisualEditorProps {
-    role: TEditorRole;
+    role: EditorPaneRole;
 }

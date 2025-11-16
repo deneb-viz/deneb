@@ -4,7 +4,6 @@ import debounce from 'lodash/debounce';
 import { useUncontrolledFocus } from '@fluentui/react-components';
 import Editor, { loader, OnChange, OnMount } from '@monaco-editor/react';
 
-import { TEditorRole } from '../types';
 import store, { getState } from '../../../store';
 import { logDebug } from '../../logging';
 import { useJsonEditorContext } from './json-editor-context-provider';
@@ -18,7 +17,11 @@ import { persistSpecification } from '../../specification';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { updateFieldTracking } from '../../json-processing';
 
-import { monaco, setupMonacoWorker } from '@deneb-viz/app-core';
+import {
+    type EditorPaneRole,
+    monaco,
+    setupMonacoWorker
+} from '@deneb-viz/app-core';
 import { ptToPx } from '@deneb-viz/utils/dom';
 import { launchUrl } from '../../visual-host';
 import { getProviderSchema } from '@deneb-viz/json-processing';
@@ -36,7 +39,7 @@ loader.init().then(() => {
 });
 
 interface IJsonEditorProps {
-    thisEditorRole: TEditorRole;
+    thisEditorRole: EditorPaneRole;
 }
 
 /**
@@ -44,7 +47,7 @@ interface IJsonEditorProps {
  */
 interface IJsonEditorStatusState {
     cursor: monaco.Position;
-    role: TEditorRole;
+    role: EditorPaneRole;
     selectedText: string;
 }
 
@@ -215,7 +218,7 @@ const addHyperlinkOverride = (editor: monaco.editor.IStandaloneCodeEditor) => {
  * Resolve the default value when instantiated, either from settings or staging
  * as needed.
  */
-const getDefaultValue = (role: TEditorRole) => {
+const getDefaultValue = (role: EditorPaneRole) => {
     const {
         editor: { stagedConfig, stagedSpec },
         visualSettings
@@ -384,7 +387,7 @@ const getSnippetFieldMetadata = (field: IVisualDatasetField) => {
 /**
  * Do the necessary tests and then call the tracking /tokenization workers, if needed.
  */
-const updateTracking = async (spec: string, editorRole: TEditorRole) => {
+const updateTracking = async (spec: string, editorRole: EditorPaneRole) => {
     logDebug(
         '[Spec Editor] Checking to see if tracking and tokenization is needed...'
     );

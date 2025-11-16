@@ -5,7 +5,7 @@ import { createCommandsSlice } from './commands';
 import { createCreateSlice } from './create';
 import { createDatasetSlice } from './dataset';
 import { createDebugSlice } from './debug';
-import { IEditorSlice, createEditorSlice } from './editor';
+import { createEditorSlice } from './editor';
 import { createExportSlice } from './export';
 import { createFieldUsageSlice } from './field-usage';
 import { createInterfaceSlice } from './interface';
@@ -13,27 +13,29 @@ import { createMigrationSlice } from './migration';
 import { createProcessingSlice } from './processing';
 import { createSpecificationSlice } from './specification';
 import { createVisualSlice } from './visual';
-import { IVisualUpdateSlice, createVisualUpdateSlice } from './visual-update';
+import { createVisualUpdateSlice } from './visual-update';
 import { FEATURES } from '../../config';
 import {
     type DebugSlice,
     type CommandsSlice,
     type CreateSliceState,
     type DatasetSlice,
+    type EditorSlice,
     type ExportSliceState,
     type FieldUsageSliceState,
     type InterfaceSlice,
     type MigrationSlice,
     type ProcessingSlice,
     type SpecificationSlice,
-    type VisualSlice
+    type VisualSlice,
+    type VisualUpdateSlice
 } from '@deneb-viz/app-core';
 
 export type TStoreState = CommandsSlice &
     CreateSliceState &
     DatasetSlice &
     DebugSlice &
-    IEditorSlice & //
+    EditorSlice &
     ExportSliceState &
     FieldUsageSliceState &
     InterfaceSlice &
@@ -41,7 +43,7 @@ export type TStoreState = CommandsSlice &
     ProcessingSlice &
     SpecificationSlice &
     VisualSlice &
-    IVisualUpdateSlice; //
+    VisualUpdateSlice;
 
 const store = createWithEqualityFn<TStoreState>()(
     devtools(

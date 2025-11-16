@@ -16,7 +16,7 @@ import { shallow } from 'zustand/shallow';
 
 import { getI18nValue } from '../../i18n';
 import store from '../../../store';
-import { TEditorRole, useJsonEditorContext } from '../../json-editor';
+import { useJsonEditorContext } from '../../json-editor';
 import { AdvancedEditorToolbarUpdateOperations } from './advanced-editor-toolbar-update-operations';
 import { useToolbarStyles } from '.';
 import {
@@ -24,6 +24,7 @@ import {
     handleEditorPaneSettings,
     handleEditorPaneSpecification
 } from '../../commands';
+import { type EditorPaneRole } from '@deneb-viz/app-core';
 
 export const AdvancedEditorToolbar: React.FC = () => {
     const { editorSelectedOperation } = store(
@@ -38,7 +39,7 @@ export const AdvancedEditorToolbar: React.FC = () => {
         e,
         { checkedItems }
     ) => {
-        const role = checkedItems[0] as TEditorRole;
+        const role = checkedItems[0] as EditorPaneRole;
         switch (role) {
             case 'Spec':
                 handleEditorPaneSpecification(editorRefs);

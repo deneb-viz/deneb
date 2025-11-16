@@ -5,10 +5,8 @@ import { TStoreState } from '.';
 import {
     getEditorPreviewAreaWidth,
     getPreviewAreaHeightInitial,
-    getResizablePaneSize,
-    TPreviewPivotRole
+    getResizablePaneSize
 } from '../core/ui/advancedEditor';
-import { EditorApplyMode, TEditorRole } from '../features/json-editor';
 import { getApplicationMode } from '../features/interface';
 import {
     isExportSpecCommandEnabled,
@@ -27,51 +25,20 @@ import {
     getUpdatedExportMetadata
 } from '@deneb-viz/json-processing';
 import { TEditorPosition } from '../core/ui';
-import { monaco } from '@deneb-viz/app-core';
+import {
+    type DebugPaneRole,
+    type EditorApplyMode,
+    type EditorPaneRole,
+    type EditorPaneUpdatePayload,
+    type EditorSlice,
+    type EditorSliceUpdateChangesPayload,
+    monaco
+} from '@deneb-viz/app-core';
 // import { logTimeEnd, logTimeStart } from '../features/logging';
-
-export interface IEditorSlice {
-    editor: {
-        applyMode: EditorApplyMode;
-        isDirty: boolean;
-        stagedConfig: string;
-        stagedSpec: string;
-        viewStateConfig: monaco.editor.ICodeEditorViewState;
-        viewStateSpec: monaco.editor.ICodeEditorViewState;
-        setViewState: (viewState: monaco.editor.ICodeEditorViewState) => void;
-        toggleApplyMode: () => void;
-        updateApplyMode: (applyMode: EditorApplyMode) => void;
-        updateChanges: (payload: IEditorSliceUpdateChangesPayload) => void;
-        updateIsDirty: (isDirty: boolean) => void;
-    };
-    editorIsExportDialogVisible: boolean;
-    editorIsNewDialogVisible: boolean;
-    editorPaneIsExpanded: boolean;
-    editorPreviewAreaHeight: number;
-    editorPreviewAreaHeightLatch: number;
-    editorPreviewAreaHeightMax: number;
-    editorPreviewAreaSelectedPivot: TPreviewPivotRole;
-    editorPreviewAreaWidth: number;
-    editorPreviewDebugIsExpanded: boolean;
-    editorPaneDefaultWidth: number;
-    editorPaneExpandedWidth: number;
-    editorPaneWidth: number;
-    editorSelectedOperation: TEditorRole;
-    editorZoomLevel: number;
-    toggleEditorPane: () => void;
-    togglePreviewDebugPane: () => void;
-    updateEditorPreviewDebugIsExpanded: (value: boolean) => void;
-    updateEditorPaneWidth: (payload: IEditorPaneUpdatePayload) => void;
-    updateEditorPreviewAreaHeight: (height: number) => void;
-    updateEditorPreviewAreaWidth: () => void;
-    updateEditorSelectedOperation: (role: TEditorRole) => void;
-    updateEditorSelectedPreviewRole: (role: TPreviewPivotRole) => void;
-    updateEditorZoomLevel: (zoomLevel: number) => void;
-}
 
 // eslint-disable-next-line max-lines-per-function
 const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
-    <IEditorSlice>{
+    <EditorSlice>{
         editor: {
             applyMode: 'Manual',
             isDirty: false,
@@ -183,28 +150,8 @@ export const createEditorSlice: StateCreator<
     TStoreState,
     [['zustand/devtools', never]],
     [],
-    IEditorSlice
+    EditorSlice
 > = sliceStateInitializer;
-
-/**
- * Used to update the "staging" text for a JSON editor and ensure that it can
- * be restored (if navigating the UI), or persisted with a prompt, if the user
- * exits without saving changes.
- */
-export interface IEditorSliceUpdateChangesPayload {
-    /**
-     * The editor that the text applies to.
-     */
-    role: TEditorRole;
-    /**
-     * The editor text value to stage into the store
-     */
-    text: string;
-    /**
-     * Current view state from the editor. If omitted, will use the current view state for that editor.
-     */
-    viewState?: monaco.editor.ICodeEditorViewState;
-}
 
 const handleSetViewState = (
     state: TStoreState,
@@ -243,7 +190,7 @@ const handleUpdateApplyMode = (
 
 const handleUpdateChanges = (
     state: TStoreState,
-    payload: IEditorSliceUpdateChangesPayload
+    payload: EditorSliceUpdateChangesPayload
 ): Partial<TStoreState> => {
     const { role, text, viewState } = payload;
     const existingViewState =
@@ -303,11 +250,6 @@ const handleUpdateChanges = (
     };
 };
 
-export interface IEditorPaneUpdatePayload {
-    editorPaneWidth: number;
-    editorPaneExpandedWidth: number;
-}
-
 const handleToggleEditorPane = (state: TStoreState): Partial<TStoreState> => {
     const newExpansionState = !state.editorPaneIsExpanded;
     const { value: position } = state.visualSettings.editor.json.position;
@@ -348,7 +290,7 @@ const handleUpdateIsDirty = (
 
 const handleUpdateEditorPaneWidth = (
     state: TStoreState,
-    payload: IEditorPaneUpdatePayload
+    payload: EditorPaneUpdatePayload
 ): Partial<TStoreState> => {
     const { editorPaneWidth, editorPaneExpandedWidth } = payload;
     const { value: position } = state.visualSettings.editor.json.position;
@@ -415,14 +357,14 @@ const handleTogglePreviewDebugPane = (
 
 const handleUpdateEditorSelectedOperation = (
     state: TStoreState,
-    role: TEditorRole
+    role: EditorPaneRole
 ): Partial<TStoreState> => ({
     editorSelectedOperation: role
 });
 
 const handleUpdateEditorSelectedPreviewRole = (
     state: TStoreState,
-    role: TPreviewPivotRole
+    role: DebugPaneRole
 ): Partial<TStoreState> => {
     const expand = state.editorPreviewDebugIsExpanded;
     const editorPreviewAreaHeight = !expand
