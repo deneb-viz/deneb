@@ -4,9 +4,13 @@ import cloneDeep from 'lodash/cloneDeep';
 import isEqual from 'lodash/isEqual';
 import merge from 'lodash/merge';
 import omit from 'lodash/omit';
-import { EditorPaneRole, monaco } from '@deneb-viz/app-core';
 
-import { TStoreState, getState } from '../../store';
+import {
+    type EditorPaneRole,
+    monaco,
+    type StoreState
+} from '@deneb-viz/app-core';
+import { getState } from '../../store';
 import { getVegaSettings } from '../../core/vega';
 import {
     resolveObjectProperties,
@@ -424,7 +428,7 @@ export const getSpecificationForVisual = () => {
  * store.
  */
 export const getSpecificationParseOptions = (
-    state: TStoreState
+    state: StoreState
 ): ISpecificationParseOptions => ({
     config: state.visualSettings.vega.output.jsonConfig.value,
     datasetHash: state.dataset.hashValue,

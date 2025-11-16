@@ -5,7 +5,6 @@ import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 
 import { StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
-import { TStoreState } from '.';
 import {
     calculatePreviewMaximumHeight,
     getEditorPreviewAreaWidth,
@@ -42,14 +41,15 @@ import {
     type InterfaceMode,
     type VisualSlice,
     type VisualUpdateSliceProperties,
-    type VisualUpdateHistoryRecord
+    type VisualUpdateHistoryRecord,
+    type StoreState
 } from '@deneb-viz/app-core';
 
 const defaultViewport = { width: 0, height: 0 };
 
 const MAX_UPDATE_HISTORY_COUNT = 100;
 
-const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
+const sliceStateInitializer = (set: NamedSet<StoreState>) =>
     <VisualSlice>{
         visual4d3d3d: false,
         visualSettings: getVisualFormattingModel(),
@@ -71,7 +71,7 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     };
 
 export const createVisualSlice: StateCreator<
-    TStoreState,
+    StoreState,
     [['zustand/devtools', never]],
     [],
     VisualSlice
@@ -83,17 +83,17 @@ interface IVisualUpdatePayload {
 }
 
 const handleSetVisual4d3d3d = (
-    state: TStoreState,
+    state: StoreState,
     status: boolean
-): Partial<TStoreState> => ({
+): Partial<StoreState> => ({
     visual4d3d3d: status
 });
 
 // eslint-disable-next-line max-lines-per-function
 const handleSetVisualUpdate = (
-    state: TStoreState,
+    state: StoreState,
     payload: IVisualUpdatePayload
-): Partial<TStoreState> => {
+): Partial<StoreState> => {
     logDebug('setVisualUpdate', payload);
     const init = state.visualUpdates === 0;
     const positionNew = <TEditorPosition>(

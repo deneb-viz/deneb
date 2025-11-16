@@ -1,7 +1,6 @@
 import { NamedSet } from 'zustand/middleware';
 import { StateCreator } from 'zustand';
 
-import { TStoreState } from '.';
 import {
     areAllRemapDataRequirementsMet,
     getRemapEligibleFields,
@@ -16,10 +15,11 @@ import {
     type FieldUsageSliceApplyTokenizationChanges,
     type FieldUsageSliceApplyTrackingChanges,
     type FieldUsageSliceSetFieldAssignment,
-    type FieldUsageSliceState
+    type FieldUsageSliceState,
+    type StoreState
 } from '@deneb-viz/app-core';
 
-const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
+const sliceStateInitializer = (set: NamedSet<StoreState>) =>
     <FieldUsageSliceState>{
         fieldUsage: {
             dataset: {},
@@ -61,7 +61,7 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     };
 
 export const createFieldUsageSlice: StateCreator<
-    TStoreState,
+    StoreState,
     [['zustand/devtools', never]],
     [],
     FieldUsageSliceState
@@ -72,9 +72,9 @@ export const createFieldUsageSlice: StateCreator<
  * dialog has been dismissed.
  */
 const handleApplyFieldMapping = (
-    state: TStoreState,
+    state: StoreState,
     payload: FieldUsageSliceApplyFieldMapping
-): Partial<TStoreState> => {
+): Partial<StoreState> => {
     const remapFields = getRemapEligibleFields(payload.dataset);
     const {
         remapAllDependenciesAssigned = false,
@@ -102,9 +102,9 @@ const handleApplyFieldMapping = (
 };
 
 const handleApplyTokenizationChanges = (
-    state: TStoreState,
+    state: StoreState,
     payload: FieldUsageSliceApplyTokenizationChanges
-): Partial<TStoreState> => {
+): Partial<StoreState> => {
     return {
         fieldUsage: {
             ...state.fieldUsage,
@@ -115,9 +115,9 @@ const handleApplyTokenizationChanges = (
 };
 
 const handleApplyTrackingChanges = (
-    state: TStoreState,
+    state: StoreState,
     payload: FieldUsageSliceApplyTrackingChanges
-): Partial<TStoreState> => {
+): Partial<StoreState> => {
     const { remapFields, trackedDrilldown, trackedFields } = payload;
     const {
         remapAllDependenciesAssigned,
@@ -170,9 +170,9 @@ const handleApplyTrackingChanges = (
  * For the given key, set its placeholder value to match the supplied dataset field.
  */
 const handleSetFieldAssignment = (
-    state: TStoreState,
+    state: StoreState,
     payload: FieldUsageSliceSetFieldAssignment
-): Partial<TStoreState> => {
+): Partial<StoreState> => {
     const { remapFields } = state.fieldUsage || {};
     if (remapFields) {
         const fieldIndex =

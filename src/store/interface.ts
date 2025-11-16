@@ -1,15 +1,18 @@
 import { StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
 
-import { TStoreState } from '.';
 import { isMappingDialogRequired } from '@deneb-viz/json-processing';
 import { getOnboardingDialog } from '../features/modal-dialog';
 import { getNewUuid } from '@deneb-viz/utils/crypto';
 import { TemplateExportProcessingState } from '@deneb-viz/json-processing/template-processing';
 import { type RemapState } from '@deneb-viz/json-processing/field-tracking';
-import { type ModalDialogRole, type InterfaceSlice } from '@deneb-viz/app-core';
+import {
+    type ModalDialogRole,
+    type InterfaceSlice,
+    type StoreState
+} from '@deneb-viz/app-core';
 
-const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
+const sliceStateInitializer = (set: NamedSet<StoreState>) =>
     <InterfaceSlice>{
         interface: {
             exportProcessingState: 'None',
@@ -72,7 +75,7 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     };
 
 export const createInterfaceSlice: StateCreator<
-    TStoreState,
+    StoreState,
     [['zustand/devtools', never]],
     [],
     InterfaceSlice
@@ -81,42 +84,42 @@ export const createInterfaceSlice: StateCreator<
 /**
  * Sets the rejection state for a cross-filtering operation attempt.
  */
-const handleGenerateRenderId = (state: TStoreState): Partial<TStoreState> => ({
+const handleGenerateRenderId = (state: StoreState): Partial<StoreState> => ({
     interface: { ...state.interface, renderId: getNewUuid() }
 });
 
 const handleSetExportProcessingState = (
-    state: TStoreState,
+    state: StoreState,
     exportProcessingState: TemplateExportProcessingState
-): Partial<TStoreState> => ({
+): Partial<StoreState> => ({
     interface: { ...state.interface, exportProcessingState }
 });
 
 const handleSetIsTokenizingSpec = (
-    state: TStoreState,
+    state: StoreState,
     isTokenizing: boolean
-): Partial<TStoreState> => ({
+): Partial<StoreState> => ({
     interface: { ...state.interface, isTokenizingSpec: isTokenizing }
 });
 
 const handleSetIsTrackingFields = (
-    state: TStoreState,
+    state: StoreState,
     isTracking: boolean
-): Partial<TStoreState> => ({
+): Partial<StoreState> => ({
     interface: { ...state.interface, isTrackingFields: isTracking }
 });
 
 const handleSetModalDialogRole = (
-    state: TStoreState,
+    state: StoreState,
     role: ModalDialogRole
-): Partial<TStoreState> => ({
+): Partial<StoreState> => ({
     interface: { ...state.interface, modalDialogRole: role }
 });
 
 const handleSetRemapState = (
-    state: TStoreState,
+    state: StoreState,
     remapState: RemapState
-): Partial<TStoreState> => {
+): Partial<StoreState> => {
     const modalDialogRole: ModalDialogRole =
         state.interface.modalDialogRole === 'Remap' &&
         remapState === 'None' &&
@@ -146,8 +149,8 @@ const handleSetRemapState = (
  * Explicitly set the visual as initialized and set the mode to `Landing`.
  */
 const handleSetExplicitInitialize = (
-    state: TStoreState
-): TStoreState | Partial<TStoreState> => ({
+    state: StoreState
+): StoreState | Partial<StoreState> => ({
     interface: {
         ...state.interface,
         isInitialized: true,

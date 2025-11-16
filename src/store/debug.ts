@@ -1,11 +1,10 @@
 import { StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
 
-import { TStoreState } from '.';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
-import { type DebugSlice } from '@deneb-viz/app-core';
+import { type StoreState, type DebugSlice } from '@deneb-viz/app-core';
 
-const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
+const sliceStateInitializer = (set: NamedSet<StoreState>) =>
     <DebugSlice>{
         debug: {
             datasetName: DATASET_DEFAULT_NAME,
@@ -20,7 +19,7 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     };
 
 export const createDebugSlice: StateCreator<
-    TStoreState,
+    StoreState,
     [['zustand/devtools', never]],
     [],
     DebugSlice
@@ -30,8 +29,8 @@ export const createDebugSlice: StateCreator<
  * Sets the debug dataset for the data viewer.
  */
 const handleSetDatasetName = (
-    state: TStoreState,
+    state: StoreState,
     datasetName: string
-): Partial<TStoreState> => ({
+): Partial<StoreState> => ({
     debug: { ...state.debug, datasetName }
 });

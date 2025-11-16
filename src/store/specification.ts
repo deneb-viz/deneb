@@ -1,11 +1,10 @@
 import { StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
 
-import { TStoreState } from '.';
 import { type CompiledSpecification } from '@deneb-viz/json-processing/spec-processing';
-import { type SpecificationSlice } from '@deneb-viz/app-core';
+import { type StoreState, type SpecificationSlice } from '@deneb-viz/app-core';
 
-const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
+const sliceStateInitializer = (set: NamedSet<StoreState>) =>
     <SpecificationSlice>{
         specification: {
             errors: [],
@@ -36,13 +35,13 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     };
 
 export const createSpecificationSlice: StateCreator<
-    TStoreState,
+    StoreState,
     [['zustand/devtools', never]],
     [],
     SpecificationSlice
 > = sliceStateInitializer;
 
-const handleClearLog = (state: TStoreState): Partial<TStoreState> => ({
+const handleClearLog = (state: StoreState): Partial<StoreState> => ({
     specification: {
         ...state.specification,
         errors: [],
@@ -51,9 +50,9 @@ const handleClearLog = (state: TStoreState): Partial<TStoreState> => ({
 });
 
 const handleLogWarns = (
-    state: TStoreState,
+    state: StoreState,
     message: string
-): Partial<TStoreState> => ({
+): Partial<StoreState> => ({
     specification: {
         ...state.specification,
         warns: Array.from(
@@ -63,9 +62,9 @@ const handleLogWarns = (
 });
 
 const handleLogErrors = (
-    state: TStoreState,
+    state: StoreState,
     message: string
-): Partial<TStoreState> => {
+): Partial<StoreState> => {
     const errors = Array.from(
         new Set<string>([...state.specification.errors, message])
     );
@@ -80,9 +79,9 @@ const handleLogErrors = (
 };
 
 const handleSetSpecificationParseResults = (
-    state: TStoreState,
+    state: StoreState,
     spec: CompiledSpecification
-): Partial<TStoreState> => ({
+): Partial<StoreState> => ({
     debug: { ...state.debug, logAttention: spec.errors.length > 0 },
     specification: {
         ...state.specification,

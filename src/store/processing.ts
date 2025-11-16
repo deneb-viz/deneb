@@ -1,7 +1,6 @@
 import { StateCreator } from 'zustand';
 
-import { TStoreState } from '.';
-import { type ProcessingSlice } from '@deneb-viz/app-core';
+import { type StoreState, type ProcessingSlice } from '@deneb-viz/app-core';
 
 const sliceStateInitializer = () =>
     <ProcessingSlice>{
@@ -11,7 +10,7 @@ const sliceStateInitializer = () =>
     };
 
 export const createProcessingSlice: StateCreator<
-    TStoreState,
+    StoreState,
     [['zustand/devtools', never]],
     [],
     ProcessingSlice

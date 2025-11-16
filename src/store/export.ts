@@ -3,16 +3,16 @@ import { NamedSet } from 'zustand/middleware';
 import cloneDeep from 'lodash/cloneDeep';
 import set from 'lodash/set';
 
-import { TStoreState } from '.';
 import { getNewTemplateMetadata } from '@deneb-viz/json-processing';
 import { APPLICATION_INFORMATION } from '../../config';
 import {
+    type StoreState,
     type ExportSliceSetMetadataPropertyBySelector,
     type ExportSliceSetPreviewImage,
     type ExportSliceState
 } from '@deneb-viz/app-core';
 
-const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
+const sliceStateInitializer = (set: NamedSet<StoreState>) =>
     <ExportSliceState>{
         export: {
             includePreviewImage: false,
@@ -39,16 +39,16 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     };
 
 export const createExportSlice: StateCreator<
-    TStoreState,
+    StoreState,
     [['zustand/devtools', never]],
     [],
     ExportSliceState
 > = sliceStateInitializer;
 
 const handleSetMetadataPropertyBySelector = (
-    state: TStoreState,
+    state: StoreState,
     payload: ExportSliceSetMetadataPropertyBySelector
-): Partial<TStoreState> => ({
+): Partial<StoreState> => ({
     export: {
         ...state.export,
         metadata: set(
@@ -60,9 +60,9 @@ const handleSetMetadataPropertyBySelector = (
 });
 
 const handleSetPreviewImage = (
-    state: TStoreState,
+    state: StoreState,
     payload: ExportSliceSetPreviewImage
-): Partial<TStoreState> => ({
+): Partial<StoreState> => ({
     export: {
         ...state.export,
         includePreviewImage: payload.includePreviewImage,

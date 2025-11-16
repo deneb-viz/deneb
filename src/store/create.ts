@@ -1,12 +1,12 @@
 import { StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
 
-import { TStoreState } from '.';
 import {
     type ICreateSliceSetFieldAssignment,
     type ICreateSliceSetImportState,
     type ICreateSliceSetTemplate,
-    type CreateSliceState
+    type CreateSliceState,
+    type StoreState
 } from '@deneb-viz/app-core';
 import {
     areAllCreateDataRequirementsMet,
@@ -21,7 +21,7 @@ import {
     type DenebTemplateCreateMode
 } from '@deneb-viz/json-processing/template-processing';
 
-const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
+const sliceStateInitializer = (set: NamedSet<StoreState>) =>
     <CreateSliceState>{
         create: {
             ...getNewCreateFromTemplateSliceProperties(),
@@ -33,7 +33,7 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
                 ),
             setFieldAssignment: (payload: ICreateSliceSetFieldAssignment) =>
                 set(
-                    (state: TStoreState) =>
+                    (state: StoreState) =>
                         handleSetFieldAssignment(state, payload),
                     false,
                     'create.setFieldAssignment'
@@ -66,7 +66,7 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     };
 
 export const createCreateSlice: StateCreator<
-    TStoreState,
+    StoreState,
     [['zustand/devtools', never]],
     [],
     CreateSliceState
@@ -75,7 +75,7 @@ export const createCreateSlice: StateCreator<
 /**
  * Take the supplied template and process it ready for creation.
  */
-const handleCreateFromTemplate = (state: TStoreState): Partial<TStoreState> => {
+const handleCreateFromTemplate = (state: StoreState): Partial<StoreState> => {
     const modalDialogRole = 'None';
     return {
         editorSelectedOperation: 'Spec',
@@ -88,9 +88,9 @@ const handleCreateFromTemplate = (state: TStoreState): Partial<TStoreState> => {
  * field.
  */
 const handleSetFieldAssignment = (
-    state: TStoreState,
+    state: StoreState,
     payload: ICreateSliceSetFieldAssignment
-): Partial<TStoreState> => {
+): Partial<StoreState> => {
     const { dataset } = state.create?.metadata || {};
     if (dataset) {
         const phIndex =
@@ -130,9 +130,9 @@ const handleSetFieldAssignment = (
  * Updates the dataset and related properties, after this has been processed.
  */
 const handleSetImportFile = (
-    state: TStoreState,
+    state: StoreState,
     payload: DenebTemplateSetImportFilePayload
-): Partial<TStoreState> => {
+): Partial<StoreState> => {
     const { candidates, importFile, importState, metadata } = payload;
     const {
         metadataAllDependenciesAssigned = false,
@@ -157,9 +157,9 @@ const handleSetImportFile = (
  * Updates the current state of import file processing (for the UI).
  */
 const handleSetImportState = (
-    state: TStoreState,
+    state: StoreState,
     payload: ICreateSliceSetImportState
-): Partial<TStoreState> => {
+): Partial<StoreState> => {
     const { importState, refresh } = payload;
     return refresh
         ? {
@@ -176,9 +176,9 @@ const handleSetImportState = (
  * Updates the dataset and related properties, after this has been processed.
  */
 const handleSetMode = (
-    state: TStoreState,
+    state: StoreState,
     mode: DenebTemplateCreateMode
-): Partial<TStoreState> => {
+): Partial<StoreState> => {
     return {
         create: {
             ...state.create,
@@ -197,9 +197,9 @@ const handleSetMode = (
  * Sets the template specification and metadata from the UI.
  */
 const handleSetTemplate = (
-    state: TStoreState,
+    state: StoreState,
     payload: ICreateSliceSetTemplate
-): Partial<TStoreState> => {
+): Partial<StoreState> => {
     const { metadata, candidates } = payload;
     const {
         metadataAllDependenciesAssigned = false,

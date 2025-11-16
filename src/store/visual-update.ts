@@ -1,7 +1,6 @@
 import { StateCreator } from 'zustand';
 
-import { TStoreState } from '.';
-import { type VisualUpdateSlice } from '@deneb-viz/app-core';
+import { type StoreState, type VisualUpdateSlice } from '@deneb-viz/app-core';
 
 const sliceStateInitializer = () =>
     <VisualUpdateSlice>{
@@ -12,7 +11,7 @@ const sliceStateInitializer = () =>
     };
 
 export const createVisualUpdateSlice: StateCreator<
-    TStoreState,
+    StoreState,
     [['zustand/devtools', never]],
     [],
     VisualUpdateSlice

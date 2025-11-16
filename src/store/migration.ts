@@ -1,14 +1,14 @@
 import { StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
 
-import { TStoreState } from '.';
 import {
     type MigrationSliceUpdateMigrationDetailsPayload,
     type MigrationSlice,
-    type ModalDialogRole
+    type ModalDialogRole,
+    type StoreState
 } from '@deneb-viz/app-core';
 
-const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
+const sliceStateInitializer = (set: NamedSet<StoreState>) =>
     <MigrationSlice>{
         migration: {
             current: null,
@@ -32,15 +32,15 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     };
 
 export const createMigrationSlice: StateCreator<
-    TStoreState,
+    StoreState,
     [['zustand/devtools', never]],
     [],
     MigrationSlice
 > = sliceStateInitializer;
 
 const handleClearMigrationDialog = (
-    state: TStoreState
-): Partial<TStoreState> => ({
+    state: StoreState
+): Partial<StoreState> => ({
     interface: {
         ...state.interface,
         modalDialogRole: 'None'
@@ -52,9 +52,9 @@ const handleClearMigrationDialog = (
 });
 
 const handleUpdateMigrationDetails = (
-    state: TStoreState,
+    state: StoreState,
     payload: MigrationSliceUpdateMigrationDetailsPayload
-): Partial<TStoreState> => {
+): Partial<StoreState> => {
     const modalDialogRole: ModalDialogRole =
         payload.changeType !== 'equal'
             ? 'Version'

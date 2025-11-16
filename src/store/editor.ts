@@ -1,7 +1,6 @@
 import { StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
 
-import { TStoreState } from '.';
 import {
     getEditorPreviewAreaWidth,
     getPreviewAreaHeightInitial,
@@ -32,12 +31,13 @@ import {
     type EditorPaneUpdatePayload,
     type EditorSlice,
     type EditorSliceUpdateChangesPayload,
-    monaco
+    monaco,
+    type StoreState
 } from '@deneb-viz/app-core';
 // import { logTimeEnd, logTimeStart } from '../features/logging';
 
 // eslint-disable-next-line max-lines-per-function
-const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
+const sliceStateInitializer = (set: NamedSet<StoreState>) =>
     <EditorSlice>{
         editor: {
             applyMode: 'Manual',
@@ -147,23 +147,23 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     };
 
 export const createEditorSlice: StateCreator<
-    TStoreState,
+    StoreState,
     [['zustand/devtools', never]],
     [],
     EditorSlice
 > = sliceStateInitializer;
 
 const handleSetViewState = (
-    state: TStoreState,
+    state: StoreState,
     viewState: monaco.editor.ICodeEditorViewState
-): Partial<TStoreState> => ({
+): Partial<StoreState> => ({
     editor: {
         ...state.editor,
         [`viewState${state.editorSelectedOperation}`]: viewState
     }
 });
 
-const handleToggleApplyMode = (state: TStoreState): Partial<TStoreState> => {
+const handleToggleApplyMode = (state: StoreState): Partial<StoreState> => {
     const { applyMode } = state.editor;
     const nextApplyMode = getNextApplyMode(applyMode);
     return {
@@ -179,9 +179,9 @@ const handleToggleApplyMode = (state: TStoreState): Partial<TStoreState> => {
 };
 
 const handleUpdateApplyMode = (
-    state: TStoreState,
+    state: StoreState,
     applyMode: EditorApplyMode
-): Partial<TStoreState> => ({
+): Partial<StoreState> => ({
     editor: {
         ...state.editor,
         applyMode
@@ -189,9 +189,9 @@ const handleUpdateApplyMode = (
 });
 
 const handleUpdateChanges = (
-    state: TStoreState,
+    state: StoreState,
     payload: EditorSliceUpdateChangesPayload
-): Partial<TStoreState> => {
+): Partial<StoreState> => {
     const { role, text, viewState } = payload;
     const existingViewState =
         role === 'Spec'
@@ -250,7 +250,7 @@ const handleUpdateChanges = (
     };
 };
 
-const handleToggleEditorPane = (state: TStoreState): Partial<TStoreState> => {
+const handleToggleEditorPane = (state: StoreState): Partial<StoreState> => {
     const newExpansionState = !state.editorPaneIsExpanded;
     const { value: position } = state.visualSettings.editor.json.position;
     const newWidth = getResizablePaneSize(
@@ -271,9 +271,9 @@ const handleToggleEditorPane = (state: TStoreState): Partial<TStoreState> => {
 };
 
 const handleUpdateIsDirty = (
-    state: TStoreState,
+    state: StoreState,
     isDirty: boolean
-): Partial<TStoreState> => ({
+): Partial<StoreState> => ({
     commands: {
         ...state.commands,
         exportSpecification: isExportSpecCommandEnabled({
@@ -289,9 +289,9 @@ const handleUpdateIsDirty = (
 });
 
 const handleUpdateEditorPaneWidth = (
-    state: TStoreState,
+    state: StoreState,
     payload: EditorPaneUpdatePayload
-): Partial<TStoreState> => {
+): Partial<StoreState> => {
     const { editorPaneWidth, editorPaneExpandedWidth } = payload;
     const { value: position } = state.visualSettings.editor.json.position;
     return {
@@ -306,9 +306,9 @@ const handleUpdateEditorPaneWidth = (
 };
 
 const handleUpdateEditorPreviewAreaHeight = (
-    state: TStoreState,
+    state: StoreState,
     height: number
-): Partial<TStoreState> => {
+): Partial<StoreState> => {
     return {
         editorPreviewDebugIsExpanded:
             height !== state.editorPreviewAreaHeightMax,
@@ -318,8 +318,8 @@ const handleUpdateEditorPreviewAreaHeight = (
 };
 
 const handleUpdateEditorPreviewAreaWidth = (
-    state: TStoreState
-): Partial<TStoreState> => ({
+    state: StoreState
+): Partial<StoreState> => ({
     editorPreviewAreaWidth: getEditorPreviewAreaWidth(
         state.visualViewportCurrent.width,
         state.editorPaneWidth,
@@ -328,15 +328,15 @@ const handleUpdateEditorPreviewAreaWidth = (
 });
 
 const handleUpdateEditorPreviewDebugIsExpanded = (
-    state: TStoreState,
+    state: StoreState,
     value: boolean
-): Partial<TStoreState> => ({
+): Partial<StoreState> => ({
     editorPreviewDebugIsExpanded: value
 });
 
 const handleTogglePreviewDebugPane = (
-    state: TStoreState
-): Partial<TStoreState> => {
+    state: StoreState
+): Partial<StoreState> => {
     const prev = state.editorPreviewDebugIsExpanded;
     const next = !prev;
     const editorPreviewAreaHeight = prev
@@ -356,16 +356,16 @@ const handleTogglePreviewDebugPane = (
 };
 
 const handleUpdateEditorSelectedOperation = (
-    state: TStoreState,
+    state: StoreState,
     role: EditorPaneRole
-): Partial<TStoreState> => ({
+): Partial<StoreState> => ({
     editorSelectedOperation: role
 });
 
 const handleUpdateEditorSelectedPreviewRole = (
-    state: TStoreState,
+    state: StoreState,
     role: DebugPaneRole
-): Partial<TStoreState> => {
+): Partial<StoreState> => {
     const expand = state.editorPreviewDebugIsExpanded;
     const editorPreviewAreaHeight = !expand
         ? state.editorPreviewAreaHeightLatch
@@ -378,9 +378,9 @@ const handleUpdateEditorSelectedPreviewRole = (
 };
 
 const handleupdateEditorZoomLevel = (
-    state: TStoreState,
+    state: StoreState,
     zoomLevel: number
-): Partial<TStoreState> => {
+): Partial<StoreState> => {
     const zoomOtherCommandTest: IZoomOtherCommandTestOptions = {
         specification: state.specification,
         interfaceMode: state.interface.mode

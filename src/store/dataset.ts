@@ -3,7 +3,7 @@ import ISelectionId = powerbi.visuals.ISelectionId;
 
 import { StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
-import { TStoreState } from '.';
+
 import { getEmptyDataset } from '../core/data/dataset';
 import { getResizablePaneSize } from '../core/ui/advancedEditor';
 import {
@@ -26,13 +26,14 @@ import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { TEditorPosition } from '../core/ui';
 import { ROW_IDENTITY_FIELD_NAME } from '@deneb-viz/dataset/field';
 import {
-    DatasetProcessingPayload,
-    VisualDatasetAbortPayload,
-    VisualDatasetUpdatePayload,
+    type DatasetProcessingPayload,
+    type StoreState,
+    type VisualDatasetAbortPayload,
+    type VisualDatasetUpdatePayload,
     type DatasetSlice
 } from '@deneb-viz/app-core';
 
-const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
+const sliceStateInitializer = (set: NamedSet<StoreState>) =>
     <DatasetSlice>{
         dataset: getEmptyDataset(),
         datasetCategories: [],
@@ -69,7 +70,7 @@ const sliceStateInitializer = (set: NamedSet<TStoreState>) =>
     };
 
 export const createDatasetSlice: StateCreator<
-    TStoreState,
+    StoreState,
     [['zustand/devtools', never]],
     [],
     DatasetSlice
@@ -77,9 +78,9 @@ export const createDatasetSlice: StateCreator<
 
 // eslint-disable-next-line max-lines-per-function
 const handleUpdateDataset = (
-    state: TStoreState,
+    state: StoreState,
     payload: VisualDatasetUpdatePayload
-): Partial<TStoreState> => {
+): Partial<StoreState> => {
     logDebug('dataset.updateDataset', payload);
     const datasetCategories = payload.categories || [];
     const { dataset } = payload;
@@ -158,9 +159,9 @@ const handleUpdateDataset = (
 };
 
 const handleUpdateDatasetProcessingStage = (
-    state: TStoreState,
+    state: StoreState,
     payload: DatasetProcessingPayload
-): Partial<TStoreState> => {
+): Partial<StoreState> => {
     const { dataProcessingStage, rowsLoaded } = payload;
     const mode = getApplicationMode({
         invokeMode:
@@ -183,9 +184,9 @@ const handleUpdateDatasetProcessingStage = (
 };
 
 const handleUpdateDatasetSelectors = (
-    state: TStoreState,
+    state: StoreState,
     selectors: ISelectionId[]
-): Partial<TStoreState> => {
+): Partial<StoreState> => {
     logDebug('dataset.updateDatasetSelectors', selectors);
     const values = state.dataset.values.slice().map((v) => ({
         ...v,
@@ -222,9 +223,9 @@ const handleUpdateDatasetSelectors = (
 };
 
 const handleUpdateDatasetSelectionAbortStatus = (
-    state: TStoreState,
+    state: StoreState,
     payload: VisualDatasetAbortPayload
-): Partial<TStoreState> => ({
+): Partial<StoreState> => ({
     datasetHasSelectionAborted: payload.status,
     datasetSelectionLimit: payload.limit
 });

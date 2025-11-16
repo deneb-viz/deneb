@@ -15,37 +15,9 @@ import { createSpecificationSlice } from './specification';
 import { createVisualSlice } from './visual';
 import { createVisualUpdateSlice } from './visual-update';
 import { FEATURES } from '../../config';
-import {
-    type DebugSlice,
-    type CommandsSlice,
-    type CreateSliceState,
-    type DatasetSlice,
-    type EditorSlice,
-    type ExportSliceState,
-    type FieldUsageSliceState,
-    type InterfaceSlice,
-    type MigrationSlice,
-    type ProcessingSlice,
-    type SpecificationSlice,
-    type VisualSlice,
-    type VisualUpdateSlice
-} from '@deneb-viz/app-core';
+import { type StoreState } from '@deneb-viz/app-core';
 
-export type TStoreState = CommandsSlice &
-    CreateSliceState &
-    DatasetSlice &
-    DebugSlice &
-    EditorSlice &
-    ExportSliceState &
-    FieldUsageSliceState &
-    InterfaceSlice &
-    MigrationSlice &
-    ProcessingSlice &
-    SpecificationSlice &
-    VisualSlice &
-    VisualUpdateSlice;
-
-const store = createWithEqualityFn<TStoreState>()(
+const store = createWithEqualityFn<StoreState>()(
     devtools(
         (...a) => ({
             ...createCommandsSlice(...a),
