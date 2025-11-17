@@ -198,7 +198,7 @@ const handleSetVisualUpdate = (
         currentProcessingFlag: state.processing.shouldProcessDataset,
         currentOptions: payload.options,
         currentSettings: payload.settings,
-        previousOptions: state.visualUpdateOptions,
+        previousOptions: state.visualUpdateOptions as VisualUpdateOptions,
         previousSettings: state.visualSettings
     });
     // Check to see if onboarding dialog should be shown

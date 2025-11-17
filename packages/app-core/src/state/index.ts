@@ -1,4 +1,6 @@
+export { createCommandsSlice } from './commands';
 export type * from './commands';
+export { createCreateSlice } from './create';
 export type * from './create';
 export type * from './dataset';
 export type * from './debug';
@@ -11,4 +13,5 @@ export type * from './specification';
 export type * from './state';
 export type * from './versioning';
 export type * from './visual';
+export { createVisualUpdateSlice } from './visual-update';
 export type * from './visual-update';

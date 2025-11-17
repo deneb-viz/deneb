@@ -53,7 +53,8 @@
         "@deneb-viz/template-usermeta": "*",
         "@deneb-viz/utils": "*",
         "@monaco-editor/react": "^4.6.0",
-        "monaco-editor": "0.45.0"
+        "monaco-editor": "0.45.0",
+        "zustand": "^4.5.5"
     },
     "peerDependencies": {
         "powerbi-visuals-api": "5.11.0",

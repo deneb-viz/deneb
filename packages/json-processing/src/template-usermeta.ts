@@ -116,7 +116,7 @@ const getFieldPattern = (index: number) =>
  * the create slice properties (except for methods).
  */
 export const getNewCreateFromTemplateSliceProperties =
-    (): Partial<DenebTemplateImportWorkingProperties> => ({
+    (): DenebTemplateImportWorkingProperties => ({
         candidates: null,
         importFile: null,
         importState: 'None',

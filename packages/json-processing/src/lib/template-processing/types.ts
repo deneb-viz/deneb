@@ -42,10 +42,10 @@ export type DenebTemplateSetImportFilePayload = {
  * Represents the properties needed to manage a template import process.
  */
 export type DenebTemplateImportWorkingProperties = {
-    candidates: DenebTemplateAllocationComponents | null;
+    candidates: DenebTemplateAllocationComponents | null | undefined;
     importFile: string | null;
     importState: DenebTemplateImportState;
-    metadata: UsermetaTemplate | null;
+    metadata: UsermetaTemplate | null | undefined;
     metadataAllDependenciesAssigned: boolean;
     metadataAllFieldsAssigned: boolean;
     metadataDrilldownAssigned: boolean;

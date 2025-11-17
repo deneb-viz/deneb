@@ -1,8 +1,6 @@
 import { createWithEqualityFn } from 'zustand/traditional';
 import { shallow } from 'zustand/vanilla/shallow';
 import { devtools } from 'zustand/middleware';
-import { createCommandsSlice } from './commands';
-import { createCreateSlice } from './create';
 import { createDatasetSlice } from './dataset';
 import { createDebugSlice } from './debug';
 import { createEditorSlice } from './editor';
@@ -13,15 +11,19 @@ import { createMigrationSlice } from './migration';
 import { createProcessingSlice } from './processing';
 import { createSpecificationSlice } from './specification';
 import { createVisualSlice } from './visual';
-import { createVisualUpdateSlice } from './visual-update';
 import { FEATURES } from '../../config';
-import { type StoreState } from '@deneb-viz/app-core';
+import {
+    createCommandsSlice,
+    createCreateSlice,
+    createVisualUpdateSlice,
+    type StoreState
+} from '@deneb-viz/app-core';
 
 const store = createWithEqualityFn<StoreState>()(
     devtools(
         (...a) => ({
-            ...createCommandsSlice(...a),
-            ...createCreateSlice(...a),
+            ...createCommandsSlice()(...a),
+            ...createCreateSlice()(...a),
             ...createDatasetSlice(...a),
             ...createDebugSlice(...a),
             ...createEditorSlice(...a),
@@ -32,7 +34,7 @@ const store = createWithEqualityFn<StoreState>()(
             ...createProcessingSlice(...a),
             ...createSpecificationSlice(...a),
             ...createVisualSlice(...a),
-            ...createVisualUpdateSlice(...a)
+            ...createVisualUpdateSlice()(...a)
         }),
         { enabled: FEATURES.developer_mode }
     ),

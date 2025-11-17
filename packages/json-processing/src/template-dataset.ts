@@ -10,10 +10,10 @@ import { type DenebTemplateImportWorkingProperties } from './lib/template-proces
  * Ensure that all requirements are tested and validated before we can create.
  */
 export const areAllCreateDataRequirementsMet = (
-    metadata: UsermetaTemplate
+    metadata: Partial<UsermetaTemplate> | null | undefined
 ): Partial<DenebTemplateImportWorkingProperties> => {
     const metadataAllFieldsAssigned = areAllTemplateFieldsAssigned(
-        metadata?.dataset
+        metadata?.dataset ?? []
     );
     const metadataDrilldownAssigned = true; // to be implemented when drilldown is implemented
     const metadataAllDependenciesAssigned =

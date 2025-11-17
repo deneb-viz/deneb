@@ -12,4 +12,5 @@ export {
 } from './components/data-viewer/workers';
 export type * from './lib/commands';
 export type * from './lib/interface';
+export * from './state';
 export type * from './state';
