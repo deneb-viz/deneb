@@ -14,6 +14,7 @@ export { createMigrationSlice } from './migration';
 export type * from './migration';
 export { createProcessingSlice } from './processing';
 export type * from './processing';
+export { createSpecificationSlice } from './specification';
 export type * from './specification';
 export type * from './state';
 export type * from './visual';

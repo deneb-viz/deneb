@@ -44,7 +44,7 @@ export type CompiledSpecification = {
     spec: object | null;
     status: CompileStatus;
     warns: string[];
-    hashValue: string;
+    hashValue: string | null;
 };
 
 /**

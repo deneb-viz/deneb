@@ -5,7 +5,6 @@ import { createDatasetSlice } from './dataset';
 import { createEditorSlice } from './editor';
 import { createExportSlice } from './export';
 import { createFieldUsageSlice } from './field-usage';
-import { createSpecificationSlice } from './specification';
 import { createVisualSlice } from './visual';
 import { FEATURES } from '../../config';
 import {
@@ -15,6 +14,7 @@ import {
     createInterfaceSlice,
     createMigrationSlice,
     createProcessingSlice,
+    createSpecificationSlice,
     createVisualUpdateSlice,
     type StoreState
 } from '@deneb-viz/app-core';
@@ -32,7 +32,7 @@ const store = createWithEqualityFn<StoreState>()(
             ...createInterfaceSlice()(...a),
             ...createMigrationSlice()(...a),
             ...createProcessingSlice()(...a),
-            ...createSpecificationSlice(...a),
+            ...createSpecificationSlice()(...a),
             ...createVisualSlice(...a),
             ...createVisualUpdateSlice()(...a)
         }),
