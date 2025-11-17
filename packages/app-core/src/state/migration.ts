@@ -1,15 +1,41 @@
-import { StateCreator } from 'zustand';
-import { NamedSet } from 'zustand/middleware';
+import { type StateCreator } from 'zustand';
 
 import {
-    type MigrationSliceUpdateMigrationDetailsPayload,
-    type MigrationSlice,
-    type ModalDialogRole,
-    type StoreState
-} from '@deneb-viz/app-core';
+    type VersionChangeDirection,
+    type VersionComparator,
+    type VersionInformation
+} from '@deneb-viz/utils/versioning';
+import { type StoreState } from './state';
+import { type ModalDialogRole } from '../lib';
 
-const sliceStateInitializer = (set: NamedSet<StoreState>) =>
-    <MigrationSlice>{
+export type MigrationSliceProperties = VersionComparator & {
+    changeType: VersionChangeDirection;
+    migrationCheckPerformed: boolean;
+    showMigrationDialog: boolean;
+    clearMigrationDialog: () => void;
+    updateMigrationDetails: (
+        payload: MigrationSliceUpdateMigrationDetailsPayload
+    ) => void;
+};
+
+export type MigrationSlice = {
+    migration: MigrationSliceProperties;
+};
+
+export type MigrationSliceUpdateMigrationDetailsPayload = {
+    changeType: VersionChangeDirection;
+    current: VersionInformation;
+    previous: VersionInformation;
+};
+
+export const createMigrationSlice =
+    (): StateCreator<
+        StoreState,
+        [['zustand/devtools', never]],
+        [],
+        MigrationSlice
+    > =>
+    (set) => ({
         migration: {
             current: null,
             previous: null,
@@ -29,14 +55,7 @@ const sliceStateInitializer = (set: NamedSet<StoreState>) =>
                     'migration.updateMigrationDetails'
                 )
         }
-    };
-
-export const createMigrationSlice: StateCreator<
-    StoreState,
-    [['zustand/devtools', never]],
-    [],
-    MigrationSlice
-> = sliceStateInitializer;
+    });
 
 const handleClearMigrationDialog = (
     state: StoreState

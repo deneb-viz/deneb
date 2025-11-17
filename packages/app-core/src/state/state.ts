@@ -8,9 +8,9 @@ import { type EditorSlice } from './editor';
 import { type ExportSliceState } from './export';
 import { type FieldUsageSliceState } from './field-usage';
 import { type InterfaceSlice } from './interface';
+import { type MigrationSlice } from './migration';
 import { type ProcessingSlice } from './processing';
 import { type SpecificationSlice } from './specification';
-import { type MigrationSlice } from './versioning';
 import { type VisualSlice } from './visual';
 import { type VisualUpdateSlice } from './visual-update';
 

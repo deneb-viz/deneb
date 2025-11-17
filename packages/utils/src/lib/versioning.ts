@@ -11,8 +11,8 @@ export type VersionInformation = {
  * Holds both current and previous version information.
  */
 export type VersionComparator = {
-    current: VersionInformation;
-    previous: VersionInformation;
+    current: VersionInformation | null;
+    previous: VersionInformation | null;
 };
 
 /**

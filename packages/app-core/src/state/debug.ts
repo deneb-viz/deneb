@@ -1,5 +1,5 @@
-import { StateCreator } from 'zustand';
-import { StoreState } from './state';
+import { type StateCreator } from 'zustand';
+import { type StoreState } from './state';
 
 export type DebugSliceProperties = {
     /**
