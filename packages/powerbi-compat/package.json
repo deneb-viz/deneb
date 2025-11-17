@@ -37,12 +37,16 @@
         "./theme": {
             "types": "./dist/lib/theme/index.d.ts",
             "default": "./dist/lib/theme/index.js"
+        },
+        "./visual-host": {
+            "types": "./dist/lib/visual-host/index.d.ts",
+            "default": "./dist/lib/visual-host/index.js"
         }
     },
     "sideEffects": false,
     "scripts": {
-        "build": "tsup",
-        "dev": "tsup --watch",
+        "build": "npm run clean && tsc -p tsconfig.json",
+        "dev": "tsc -p tsconfig.json --watch",
         "clean": "rimraf dist",
         "typecheck": "tsc --noEmit",
         "eslint": "eslint ."
@@ -51,7 +55,7 @@
         "@deneb-viz/eslint-config": "*",
         "@deneb-viz/typescript-config": "*",
         "@types/node": "^22.15.33",
-        "tsup": "^8.5.0",
+        "powerbi-visuals-api": "5.11.0",
         "typescript": "^5.6.2",
         "vitest": "^3.2.4"
     },

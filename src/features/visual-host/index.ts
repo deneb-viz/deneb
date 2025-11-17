@@ -1,7 +1,6 @@
 import powerbi from 'powerbi-visuals-api';
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
-import VisualUpdateType = powerbi.VisualUpdateType;
 import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
 import ISelectionManager = powerbi.extensibility.ISelectionManager;
 import ISelectionIdBuilder = powerbi.visuals.ISelectionIdBuilder;
@@ -12,6 +11,7 @@ import isEqual from 'lodash/isEqual';
 import { isSettingsChangeVolatile } from '../settings';
 import { IVisualUpdateComparisonOptions } from './types';
 import { logDebug, logHost, logTimeEnd, logTimeStart } from '../logging';
+import { isVisualUpdateTypeVolatile } from '@deneb-viz/powerbi-compat/visual-host';
 
 export * from './types';
 
@@ -130,30 +130,6 @@ export const isVisualUpdateVolatile = (
 export const getCategoricalDataViewFromOptions = (
     options: VisualUpdateOptions
 ) => options?.dataViews?.[0]?.categorical || {};
-
-/**
- * Checks if a visual update type is a resize event.
- */
-export const isVisualUpdateTypeResize = (type: VisualUpdateType) =>
-    VisualUpdateType.Resize === (type & VisualUpdateType.Resize);
-
-/**
- * Checks if a visual has finished resizing.
- */
-export const isVisualUpdateTypeResizeEnd = (type: VisualUpdateType) =>
-    VisualUpdateType.ResizeEnd === (type & VisualUpdateType.ResizeEnd);
-
-/**
- * Checks if a visual update type is view mode change.
- */
-export const isVisualUpdateTypeViewMode = (type: VisualUpdateType) =>
-    VisualUpdateType.ViewMode === (type & VisualUpdateType.ViewMode);
-
-/**
- * Check the visual update type to see if it is volatile.
- */
-export const isVisualUpdateTypeVolatile = (options: VisualUpdateOptions) =>
-    VisualUpdateType.Data === (options.type & VisualUpdateType.Data);
 
 /**
  * Signal rendering has failed for visual host events.

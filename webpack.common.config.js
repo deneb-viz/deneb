@@ -52,17 +52,24 @@ function getCommonConfig(options = {}) {
         `[webpack] certificationFix=${certificationFix} (mode=${mode ?? 'unset'})`
     );
     return {
+        context: __dirname,
         entry: {
             'visual.js': pluginLocation
         },
         target: 'web',
         node: false,
-        externals: isProduction ? { 'powerbi-visuals-api': 'null' } : {},
         resolve: {
             extensions: ['.tsx', '.ts', '.jsx', '.js', '.css', '.less'],
-            modules: ['node_modules', path.resolve(__dirname, 'node_modules')],
+            modules: [
+                'node_modules',
+                path.resolve(__dirname, 'node_modules'),
+                path.resolve(__dirname, 'src')
+            ],
             symlinks: false
         },
+        // No externals for powerbi-visuals-api. TypeScript (via ts-loader) inlines const enums,
+        // and we avoid runtime reads from the package. Keeping it non-external prevents confusing nulls.
+        externals: {},
         module: {
             rules: [
                 {
@@ -84,11 +91,10 @@ function getCommonConfig(options = {}) {
                         {
                             loader: 'ts-loader',
                             options: {
-                                // Keep fast transpilation; const enums will still inline
-                                // and type-only imports will be removed at emit.
-                                transpileOnly: !isProduction,
+                                transpileOnly: false,
                                 experimentalWatchApi: !isProduction,
-                                configFile: 'tsconfig.json'
+                                configFile: 'tsconfig.webpack.json',
+                                context: __dirname
                             }
                         }
                     ]

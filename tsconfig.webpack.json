@@ -1,0 +1,9 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        // moduleResolution and skipLibCheck are already inherited from deneb-pbi.json
+        "noEmit": false
+    },
+    "include": ["src/**/*", ".tmp/**/*"],
+    "exclude": ["node_modules", "dist", ".tmp/drop"]
+}

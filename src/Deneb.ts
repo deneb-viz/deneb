@@ -36,8 +36,6 @@ import {
     VisualHostServices,
     getCategoricalDataViewFromOptions,
     getVisualHost,
-    isVisualUpdateTypeResizeEnd,
-    isVisualUpdateTypeVolatile,
     setRenderingFailed,
     setRenderingStarted
 } from './features/visual-host';
@@ -49,6 +47,10 @@ import {
     getVisualFormattingService
 } from '@deneb-viz/powerbi-compat/properties';
 import { updateFieldTracking } from './features/json-processing';
+import {
+    isVisualUpdateTypeResizeEnd,
+    isVisualUpdateTypeVolatile
+} from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Run to indicate that the visual has started.

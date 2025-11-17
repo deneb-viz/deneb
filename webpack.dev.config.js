@@ -21,16 +21,9 @@ module.exports = merge(
         snapshot: {
             managedPaths: [/node_modules\/(?!@deneb-viz)/]
         },
-        resolve: {
-            alias: {
-                // Provide a shim so runtime enum property access does not fault; enums are numeric constants.
-                'powerbi-visuals-api': path.resolve(
-                    __dirname,
-                    'webpack.powerbi-api.dev-shim.js'
-                )
-            }
-        },
-        devtool: 'cheap-module-source-map', // Fast source maps without eval (fixes powerbi-visuals-api external)
+        // No alias tweaks required.
+        resolve: { alias: {} },
+        devtool: 'cheap-module-source-map',
 
         cache: {
             type: 'filesystem',

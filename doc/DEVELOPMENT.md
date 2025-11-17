@@ -66,21 +66,23 @@ Typical cycle:
 
 Files:
 
-- `webpack.common.config.js`: Shared base (entry, loaders, plugin, externals strategy, library naming `_DEBUG` in dev)
-- `webpack.dev.config.js`: Dev-specific (filesystem cache, shim alias for enums, watch configuration, disabled WDS client)
+- `webpack.common.config.js`: Shared base (entry, loaders, plugin, library naming `_DEBUG` in dev)
+- `webpack.dev.config.js`: Dev-specific (filesystem cache, watch configuration, disabled WDS client)
 - `webpack.prod.config.js`: Production (Terser minification, bundle analyzer, type checking via ts-loader `transpileOnly=false`)
-- `webpack.powerbi-api.dev-shim.js`: Provides minimal runtime objects preventing enum property access failures.
 
 Key points:
 
 - Source maps: `cheap-module-source-map` in dev (Power BI sandbox safe), full `source-map` in production.
-- Enums: `powerbi-visuals-api` provides types only; we avoid externals in dev and rely on const enum inlining + shim.
+- Const enums: TypeScript inlines const enum values (e.g., `VisualUpdateType`) at compile time via ts-loader. No runtime dependencies on `powerbi-visuals-api` are created; numeric literals are emitted directly.
+- No externals: `powerbi-visuals-api` is **not** externalized. This allows TypeScript to access the package during compilation for const enum inlining and type checking.
 - Library name: `_DEBUG` suffix required for constructor invocation in dev.
 - Polyfills: `ProvidePlugin` injects `Buffer` and `process` for dependencies expecting Node-like globals.
 
 ## 5. Monorepo & Turbo Integration
 
 `turbo.json` wires visual tasks to build dependency graph. Package dev tasks (tsup watchers) emit to `packages/**/dist/**`. Webpack dev server watches these outputs, enabling near-immediate refresh when shared libraries change.
+
+**Exception: `@deneb-viz/powerbi-compat`** — This package builds with TypeScript (`tsc`) instead of tsup to ensure proper const enum inlining. The TypeScript compiler accesses `powerbi-visuals-api` as a devDependency during build and inlines const enum values (like `VisualUpdateType.Data` → `2`) as numeric literals. This eliminates runtime dependencies on the API package and avoids bundling its entire codebase (which would add ~126KB).
 
 Watch scope (dev):
 
@@ -228,27 +230,27 @@ Refer to `bin/package-custom.ts` for the authoritative implementation details.
 
 ## 9. Performance & Optimization Tips
 
-| Tip                                | Benefit                               |
-| ---------------------------------- | ------------------------------------- |
-| Keep dev server running            | Avoid cold cache penalty              |
-| Avoid unnecessary cache clears     | Preserve module build artifacts       |
-| Limit watch scope if CPU high      | Reduce rebuild triggers               |
-| Prefer const enums                 | Emit numeric literals, faster runtime |
-| Use ts-loader transpileOnly in dev | Faster iteration (IDE handles types)  |
+| Tip                                | Benefit                                |
+| ---------------------------------- | -------------------------------------- |
+| Keep dev server running            | Avoid cold cache penalty               |
+| Avoid unnecessary cache clears     | Preserve module build artifacts        |
+| Limit watch scope if CPU high      | Reduce rebuild triggers                |
+| Prefer const enums                 | TypeScript inlines to numeric literals |
+| Use ts-loader transpileOnly in dev | Faster iteration (IDE handles types)   |
 
 If watch misses changes on certain filesystems (WSL/network drives), enable polling in `webpack.dev.config.js` `watchFiles.options.usePolling=true`.
 
 ## 10. Troubleshooting & Known Issues
 
-| Symptom                   | Cause                                     | Resolution                                                  |
-| ------------------------- | ----------------------------------------- | ----------------------------------------------------------- |
-| Constructor not firing    | Missing `_DEBUG` suffix                   | Confirm library name in `webpack.common.config.js` dev mode |
-| Enum undefined errors     | Externalized `powerbi-visuals-api` in dev | Keep externals blank in dev + shim alias                    |
-| WebSocket sandbox errors  | WDS client injecting in iframe            | `client: false` in dev server settings (already)            |
-| Slow first build          | Cache warm-up                             | Subsequent builds accelerate via filesystem cache           |
-| Type errors unnoticed     | `transpileOnly` skip check                | Run `webpack:package` or `npx tsc --noEmit`                 |
-| Port 8080 conflict        | Port in use                               | Change `devServer.port`                                     |
-| Missing dependency errors | Implicit loader/plugin usage              | Audit devDependencies (see section 11)                      |
+| Symptom                   | Cause                                    | Resolution                                                  |
+| ------------------------- | ---------------------------------------- | ----------------------------------------------------------- |
+| Constructor not firing    | Missing `_DEBUG` suffix                  | Confirm library name in `webpack.common.config.js` dev mode |
+| Enum undefined errors     | Missing `powerbi-visuals-api` dependency | Ensure package is in root devDependencies                   |
+| WebSocket sandbox errors  | WDS client injecting in iframe           | `client: false` in dev server settings (already)            |
+| Slow first build          | Cache warm-up                            | Subsequent builds accelerate via filesystem cache           |
+| Type errors unnoticed     | `transpileOnly` skip check               | Run `webpack:package` or `npx tsc --noEmit`                 |
+| Port 8080 conflict        | Port in use                              | Change `devServer.port`                                     |
+| Missing dependency errors | Implicit loader/plugin usage             | Audit devDependencies (see section 11)                      |
 
 ## 11. Dependency Audit Summary
 

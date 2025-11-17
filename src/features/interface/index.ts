@@ -10,11 +10,11 @@ import {
 
 import { logDebug } from '../logging';
 import { getState } from '../../store';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import {
     isVisualUpdateTypeResize,
     isVisualUpdateTypeResizeEnd
-} from '../visual-host';
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
+} from '@deneb-viz/powerbi-compat/visual-host';
 import {
     type VisualUpdateHistoryRecord,
     type InterfaceMode,

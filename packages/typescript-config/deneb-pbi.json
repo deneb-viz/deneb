@@ -23,6 +23,7 @@
         ],
         "alwaysStrict": true,
         "resolveJsonModule": true,
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "preserveConstEnums": false
     }
 }
