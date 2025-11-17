@@ -8,7 +8,6 @@ import {
     PREVIEW_PANE_TOOLBAR_MIN_SIZE
 } from '../../constants';
 
-import { IInterfaceModeResolutionParameters } from './types';
 import { logDebug } from '../logging';
 import { getState } from '../../store';
 import {
@@ -18,7 +17,8 @@ import {
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import {
     type VisualUpdateHistoryRecord,
-    type InterfaceMode
+    type InterfaceMode,
+    type InterfaceModeResolutionParameters
 } from '@deneb-viz/app-core';
 
 /**
@@ -31,7 +31,6 @@ export { Hyperlink } from './components/hyperlink';
 export { StatusBarContainer } from './components/status-bar-container';
 export { TooltipCustomMount } from './components/tooltip-custom-mount';
 export { VisualInterface } from './components/visual-interface';
-export * from './types';
 
 export type InterfaceTheme = 'light' | 'dark';
 
@@ -83,7 +82,7 @@ export const useInterfaceStyles = makeStyles({
  * be presented for further customization (`Edit`).
  */
 export const getApplicationMode = (
-    parameters: IInterfaceModeResolutionParameters
+    parameters: InterfaceModeResolutionParameters
 ): InterfaceMode => {
     logDebug('getApplicationMode', parameters);
     if (parameters.invokeMode !== undefined) {
@@ -133,9 +132,7 @@ export const getCorrectViewport = (history: VisualUpdateHistoryRecord[]) => {
  * Tests that for the supplied parameters, that the editor interface should be
  * displayed for the user.
  */
-const isEligibleForEditor = (
-    parameters: IInterfaceModeResolutionParameters
-) => {
+const isEligibleForEditor = (parameters: InterfaceModeResolutionParameters) => {
     try {
         switch (true) {
             /**
@@ -186,7 +183,7 @@ const isEligibleForEditor = (
  * Test that the supplied parameters mean that the visual host has the visual
  * in a suitable state to display the editor interface.
  */
-const isEditorViewport = (parameters: IInterfaceModeResolutionParameters) =>
+const isEditorViewport = (parameters: InterfaceModeResolutionParameters) =>
     parameters.editMode === EditMode.Advanced && parameters.isInFocus;
 
 /**

@@ -1,3 +1,4 @@
+import { IDataset } from '@deneb-viz/dataset/data';
 import powerbi from 'powerbi-visuals-api';
 
 export type DebugPaneRole = 'log' | 'data' | 'signal';
@@ -8,8 +9,7 @@ export type DebugPaneRole = 'log' | 'data' | 'signal';
 export type EditorApplyMode = 'Auto' | 'Manual';
 
 /**
- * Used to specify the types of operatons we should have within the pivot
- * control in the editor pane.
+ * Used to specify the types of operations we should have within the pivot control in the editor pane.
  */
 export type EditorPaneRole = 'Spec' | 'Config' | 'Settings';
 
@@ -24,6 +24,40 @@ export type InterfaceMode =
     | 'Editor'
     | 'EditorNoData'
     | 'View';
+
+/**
+ * Parameters that allow us to calculate Deneb's application mode.
+ */
+export type InterfaceModeResolutionParameters = {
+    /**
+     * The current mode (from state). Can be used as a fallback.
+     */
+    currentMode?: InterfaceMode;
+    /**
+     * Either the current data view (indicating presence of data to be processed), or the processed dataset.
+     */
+    dataset?: IDataset;
+    /**
+     * Power BI's current edit mode, according to the visual host.
+     */
+    editMode?: powerbi.EditMode;
+    /**
+     * If supplied, specifies the highest order of precedence when resolving application mode.
+     */
+    invokeMode?: InterfaceMode;
+    /**
+     * Whether the visual is currently in focus mode (full-screen).
+     */
+    isInFocus?: boolean;
+    /**
+     * The specification from the editor, if available.
+     */
+    specification?: string;
+    /**
+     * The current visual update type from the visual host, if needed.
+     */
+    updateType?: powerbi.VisualUpdateType;
+};
 
 /**
  * Represents modal dialog display state.
