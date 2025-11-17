@@ -1,5 +1,4 @@
 import { type StateCreator } from 'zustand';
-import type {} from 'zustand/middleware';
 
 import { type Command } from '../lib/commands';
 import { type StoreState } from './state';

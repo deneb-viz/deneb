@@ -1,5 +1,4 @@
 import powerbi from 'powerbi-visuals-api';
-import IViewport = powerbi.IViewport;
 import EditMode = powerbi.EditMode;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 
@@ -18,7 +17,6 @@ import { getSpecificationParseOptions } from '../features/specification/logic';
 import { logDebug } from '../features/logging';
 import { isVisualUpdateVolatile } from '../features/visual-host';
 import { getApplicationMode, getCorrectViewport } from '../features/interface';
-import { getOnboardingDialog } from '../features/modal-dialog';
 import {
     IZoomOtherCommandTestOptions,
     IZoomLevelCommandTestOptions,
@@ -42,7 +40,8 @@ import {
     type VisualSlice,
     type VisualUpdateSliceProperties,
     type VisualUpdateHistoryRecord,
-    type StoreState
+    type StoreState,
+    getModalDialogRole
 } from '@deneb-viz/app-core';
 
 const defaultViewport = { width: 0, height: 0 };
@@ -202,7 +201,7 @@ const handleSetVisualUpdate = (
         previousSettings: state.visualSettings
     });
     // Check to see if onboarding dialog should be shown
-    const modalDialogRole = getOnboardingDialog(
+    const modalDialogRole = getModalDialogRole(
         payload.settings,
         mode,
         state.interface.modalDialogRole

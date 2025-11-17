@@ -6,7 +6,6 @@ import {
     getRemapEligibleFields,
     isMappingDialogRequired
 } from '@deneb-viz/json-processing';
-import { getOnboardingDialog } from '../features/modal-dialog';
 import { isExportSpecCommandEnabled } from '../features/commands';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 import {
@@ -16,7 +15,8 @@ import {
     type FieldUsageSliceApplyTrackingChanges,
     type FieldUsageSliceSetFieldAssignment,
     type FieldUsageSliceState,
-    type StoreState
+    type StoreState,
+    getModalDialogRole
 } from '@deneb-viz/app-core';
 
 const sliceStateInitializer = (set: NamedSet<StoreState>) =>
@@ -135,7 +135,7 @@ const handleApplyTrackingChanges = (
         (state.interface.modalDialogRole === 'Remap' &&
             state.interface.remapState !== 'Complete')
             ? 'Remap'
-            : getOnboardingDialog(
+            : getModalDialogRole(
                   state.visualSettings,
                   state.interface.mode,
                   state.interface.modalDialogRole

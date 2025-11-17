@@ -1,3 +1,5 @@
+import type {} from 'zustand/middleware';
+
 import { type CommandsSlice } from './commands';
 import { type CreateSliceState } from './create';
 import { type DatasetSlice } from './dataset';
