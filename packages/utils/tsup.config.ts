@@ -7,6 +7,7 @@ export default defineConfig({
         'src/lib/crypto.ts',
         'src/lib/dom.ts',
         'src/lib/inspection.ts',
+        'src/lib/logging.ts',
         'src/lib/object.ts',
         'src/lib/type-conversion.ts',
         'src/lib/versioning.ts',

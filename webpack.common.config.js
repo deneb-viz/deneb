@@ -6,6 +6,17 @@ const {
     PowerBICustomVisualsWebpackPlugin
 } = require('powerbi-visuals-webpack-plugin');
 const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
+// Load environment variables from .env at the repo root for build-time injection
+try {
+    const { config: dotenvx } = require('@dotenvx/dotenvx');
+    dotenvx({
+        path: path.join(__dirname, '.env'),
+        override: true,
+        quiet: true
+    });
+} catch (e) {
+    // dotenvx is optional; proceed if not installed
+}
 
 // Import powerbi-visuals-api for schema definitions
 const powerbiApi = require('powerbi-visuals-api');
@@ -129,6 +140,15 @@ function getCommonConfig(options = {}) {
             new webpack.ProvidePlugin({
                 Buffer: ['buffer', 'Buffer'],
                 process: 'process/browser'
+            }),
+            // Inline selected environment variables for use in the browser bundle
+            new webpack.DefinePlugin({
+                'process.env.LOG_LEVEL': JSON.stringify(
+                    process.env.LOG_LEVEL ?? ''
+                ),
+                'process.env.ZUSTAND_DEV_TOOLS': JSON.stringify(
+                    process.env.ZUSTAND_DEV_TOOLS ?? ''
+                )
             }),
             new MiniCssExtractPlugin({
                 filename: 'visual.css',

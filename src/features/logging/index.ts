@@ -1,4 +1,15 @@
-import { LOG_LEVEL } from '../../../config';
+import {
+    logDebug as dbLogDebug,
+    logError as dbLogError,
+    logInfo as dbLogInfo,
+    logHost as dbLogHost,
+    logRender as dbLogRender,
+    logHook as dbLogHook,
+    logTimeStart as dbLogTimeStart,
+    logTimeEnd as dbLogTimeEnd,
+    logWarning as dbLogWarning,
+    logHeading as dbLogHeading
+} from '@deneb-viz/utils/logging';
 
 /**
  * Represents values used for logging to the console. The `logLevel`
@@ -13,140 +24,51 @@ import { LOG_LEVEL } from '../../../config';
  */
 export { StoreVegaLoggerService, LocalVegaLoggerService } from './vega';
 
-export enum ELogLevel {
-    NONE = 0,
-    ERROR = 1,
-    WARN = 2,
-    INFO = 3,
-    HOST = 10,
-    RENDER = 11,
-    HOOK = 12,
-    DEBUG = 50,
-    TIMING = 51
-}
-
-/**
- * Resolved log level, from configuration.
- */
-const CONFIG_LOG_LEVEL: ELogLevel = LOG_LEVEL ?? ELogLevel.NONE;
-
-/**
- * Padding for the `importance` portion of log output.
- */
-const LOG_IMPORTANCE_PAD = 10;
-
-/**
- * Return the correct log method for the supplied level.
- */
-const getLog = (level: ELogLevel): ((...args: any[]) => void) => {
-    switch (true) {
-        case level === ELogLevel.ERROR:
-            return console.error;
-        case level === ELogLevel.WARN:
-            return console.warn;
-        case level >= ELogLevel.INFO && level < ELogLevel.HOST:
-            return console.info;
-        default:
-            return console.debug;
-    }
-};
-
-/**
- * General purpose log function; curried by the public log functions below.
- */
-const _log =
-    (level: ELogLevel) =>
-    (...args: any[]) => {
-        const enabled = CONFIG_LOG_LEVEL >= level;
-        if (!enabled) return;
-        const importance = getPaddedImportance(level);
-        getLog(level)?.(`${importance}`, ...args);
-    };
-
-/**
- * Start a timer for debug-level logging.
- */
-const _logTimeStart =
-    (level: ELogLevel = ELogLevel.TIMING) =>
-    (label: string) => {
-        const enabled = CONFIG_LOG_LEVEL >= level;
-        if (!enabled) return;
-        const importance = getPaddedImportance(level);
-        const newLabel = `${importance} ${label}`;
-        console.time?.(newLabel);
-    };
-
-/**
- * End a timer for debug-level logging.
- */
-const _logTimeEnd =
-    (level: ELogLevel = ELogLevel.TIMING) =>
-    (label: string) => {
-        const enabled = CONFIG_LOG_LEVEL >= level;
-        if (!enabled) return;
-        const importance = getPaddedImportance(level);
-        const newLabel = `${importance} ${label}`;
-        console.timeEnd?.(newLabel);
-    };
-
-/**
- * Get the importance string for the log entry.
- */
-const getPaddedImportance = (level: ELogLevel) => {
-    const importance = <string>ELogLevel[level];
-    return importance.padEnd(LOG_IMPORTANCE_PAD);
-};
-
 /**
  * Special method to provide decorated log entries in the console.
  */
-export const logHeading = (message: string, size: number = 20) =>
-    console.info(
-        `%c${message}`,
-        `font-family: Segoe UI; font-size:${size}px; font-weight:600`
-    );
-
+export const logHeading = dbLogHeading;
 /**
  * Debug-level logging to the console.
  */
-export const logDebug = _log(ELogLevel.DEBUG);
+export const logDebug = dbLogDebug;
 
 /**
  * Error-level logging to the console.
  */
-export const logError = _log(ELogLevel.ERROR);
+export const logError = dbLogError;
 
 /**
  * Info-level logging to the console.
  */
-export const logInfo = _log(ELogLevel.INFO);
+export const logInfo = dbLogInfo;
 
 /**
  * Host-level logging to the console.
  */
-export const logHost = _log(ELogLevel.HOST);
+export const logHost = dbLogHost;
 
 /**
  * Render-level logging to the console.
  */
-export const logRender = _log(ELogLevel.RENDER);
+export const logRender = dbLogRender;
 
 /**
  * Hook-level logging to the console.
  */
-export const logHook = _log(ELogLevel.HOOK);
+export const logHook = dbLogHook;
 
 /**
  * For debug-level logging, start a timer.
  */
-export const logTimeStart = _logTimeStart();
+export const logTimeStart = dbLogTimeStart;
 
 /**
  * For debug-level logging, end a timer.
  */
-export const logTimeEnd = _logTimeEnd();
+export const logTimeEnd = dbLogTimeEnd;
 
 /**
  * Warn-level logging to the console.
  */
-export const logWarning = _log(ELogLevel.WARN);
+export const logWarning = dbLogWarning;

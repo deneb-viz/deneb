@@ -1,6 +1,10 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "stream",
+  "globalEnv": [
+    "LOG_LEVEL",
+    "ZUSTAND_DEV_TOOLS"
+  ],
   "tasks": {
     "build": {
       "dependsOn": [

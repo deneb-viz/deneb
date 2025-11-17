@@ -34,6 +34,10 @@
             "types": "./dist/lib/inspection.d.ts",
             "default": "./dist/lib/inspection.js"
         },
+        "./logging": {
+            "types": "./dist/lib/logging.d.ts",
+            "default": "./dist/lib/logging.js"
+        },
         "./object": {
             "types": "./dist/lib/object.d.ts",
             "default": "./dist/lib/object.js"
