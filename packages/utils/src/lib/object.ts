@@ -18,3 +18,26 @@ export function pickBy<T extends Record<string, unknown>>(
     }
     return result;
 }
+
+/**
+ * Set a value at a given path within an object. Creates nested objects as needed.
+ * Overwrites non-object values (primitives, arrays, null) with objects when needed.
+ */
+export function set(obj: any, path: string | string[], value: any) {
+    const keys = Array.isArray(path) ? path : path.split('.');
+    const lastKey = keys.pop()!;
+    const target = keys.reduce((acc, key) => {
+        // Replace the value if it's not a plain object (undefined, null, primitive, or array)
+        if (
+            acc[key] === null ||
+            acc[key] === undefined ||
+            typeof acc[key] !== 'object' ||
+            Array.isArray(acc[key])
+        ) {
+            acc[key] = {};
+        }
+        return acc[key];
+    }, obj);
+    target[lastKey] = value;
+    return obj;
+}
