@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pickBy } from '../object';
-import { set } from '../object';
+import { pickBy, updateDeep } from '../object';
 
 describe('pickBy', () => {
     it('should pick properties that satisfy the predicate', () => {
@@ -34,47 +33,33 @@ describe('pickBy', () => {
         expect(result).toEqual({});
     });
 
-    describe('set', () => {
-        it('should set a value at a top-level key', () => {
-            const obj: any = {};
-            set(obj, 'a', 1);
-            expect(obj).toEqual({ a: 1 });
+    describe('updateDeep', () => {
+        it('should update a nested value', () => {
+            const obj = { a: { b: { c: 1 } } };
+            const updated = updateDeep(obj, ['a', 'b', 'c'], 99);
+            expect(updated).toEqual({ a: { b: { c: 99 } } });
+            expect(obj.a.b.c).toBe(1); // original object not mutated
         });
 
-        it('should set a value at a nested path (dot notation)', () => {
-            const obj: any = {};
-            set(obj, 'a.b.c', 42);
-            expect(obj).toEqual({ a: { b: { c: 42 } } });
+        it('should add a new nested value', () => {
+            const obj = { a: {} };
+            const updated = updateDeep(obj, ['a', 'x', 'y'], 5);
+            expect(updated).toEqual({ a: { x: { y: 5 } } });
         });
 
-        it('should set a value at a nested path (array notation)', () => {
-            const obj: any = {};
-            set(obj, ['x', 'y', 'z'], 'test');
-            expect(obj).toEqual({ x: { y: { z: 'test' } } });
+        it('should update array values', () => {
+            const obj = { arr: [1, 2, 3] };
+            const updated = updateDeep(obj, ['arr', 1], 42);
+            expect(updated).toEqual({ arr: [1, 42, 3] });
         });
 
-        it('should overwrite existing value at path', () => {
-            const obj: any = { a: { b: { c: 1 } } };
-            set(obj, 'a.b.c', 99);
-            expect(obj).toEqual({ a: { b: { c: 99 } } });
+        it('should return value if path is empty', () => {
+            expect(updateDeep({ a: 1 }, [], 123)).toBe(123);
         });
 
-        it('should create intermediate objects if they do not exist', () => {
-            const obj: any = {};
-            set(obj, 'foo.bar.baz', 'value');
-            expect(obj).toEqual({ foo: { bar: { baz: 'value' } } });
-        });
-
-        it('should handle setting value on existing non-object property', () => {
-            const obj: any = { a: 5 };
-            set(obj, 'a.b', 10);
-            expect(obj).toEqual({ a: { b: 10 } });
-        });
-
-        it('should return the original object', () => {
-            const obj: any = {};
-            const result = set(obj, 'key', 'val');
-            expect(result).toBe(obj);
+        it('should return original object for invalid key', () => {
+            const obj = { a: 1 };
+            expect(updateDeep(obj, [undefined as any], 2)).toEqual(obj);
         });
     });
 });

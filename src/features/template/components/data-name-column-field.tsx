@@ -23,7 +23,7 @@ export const DataNameColumnField: React.FC<IDataNameColumnCellProps> = ({
     return (
         <TableCell className={classes.datasetColumnName}>
             <CappedTextField
-                id={`${DATASET_DEFAULT_NAME}[${index}].name`}
+                id={`${DATASET_DEFAULT_NAME}.${index}.name`}
                 i18nLabel={`${item.name}`}
                 i18nPlaceholder={`${item?.namePlaceholder}`}
                 maxLength={TEMPLATE_DATASET_FIELD_PROPS.name.maxLength}

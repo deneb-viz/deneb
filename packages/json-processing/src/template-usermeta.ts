@@ -189,7 +189,7 @@ export const getPublishableUsermeta = (
                     usermeta.information.author ||
                     options.informationTranslationPlaceholders.author
             },
-            dataset: usermeta?.[DATASET_DEFAULT_NAME].map((d) => {
+            dataset: (usermeta?.[DATASET_DEFAULT_NAME] ?? []).map((d) => {
                 d.key = options.trackedFields?.[d.key]?.placeholder ?? d.key;
                 return omit(d, ['namePlaceholder']);
             })

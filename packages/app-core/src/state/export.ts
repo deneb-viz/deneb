@@ -1,7 +1,7 @@
 import { type StateCreator } from 'zustand';
 
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
-import { set } from '@deneb-viz/utils/object';
+import { updateDeep } from '@deneb-viz/utils/object';
 import { StateDependencies, type StoreState } from './state';
 import { getNewTemplateMetadata } from '@deneb-viz/json-processing';
 
@@ -81,9 +81,12 @@ const handleSetMetadataPropertyBySelector = (
 ): Partial<StoreState> => ({
     export: {
         ...state.export,
-        metadata: set(
+        metadata: updateDeep(
             structuredClone(state.export.metadata),
-            payload.selector,
+            // TODO: make the id/selector system better to avoid this hack
+            payload.selector
+                .split('.')
+                .map((key) => (/^\d+$/.test(key) ? Number(key) : key)),
             payload.value
         )
     }
