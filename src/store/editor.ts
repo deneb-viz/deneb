@@ -6,7 +6,6 @@ import {
     getPreviewAreaHeightInitial,
     getResizablePaneSize
 } from '../core/ui/advancedEditor';
-import { getApplicationMode } from '../features/interface';
 import {
     isExportSpecCommandEnabled,
     isZoomOtherCommandEnabled,
@@ -31,6 +30,7 @@ import {
     type EditorPaneUpdatePayload,
     type EditorSlice,
     type EditorSliceUpdateChangesPayload,
+    getApplicationMode,
     monaco,
     type StoreState
 } from '@deneb-viz/app-core';
@@ -242,8 +242,11 @@ const handleUpdateChanges = (
                 dataset: state.dataset,
                 editMode: state.visualUpdateOptions.editMode,
                 isInFocus: state.visualUpdateOptions.isInFocus,
+                prevMode: state.interface.mode,
+                prevUpdateType: state.visualUpdateOptions.type,
                 specification: state.editor.stagedSpec,
-                updateType: state.visualUpdateOptions.type
+                updateType: state.visualUpdateOptions.type,
+                visualUpdates: state.visualUpdates
             })
         },
         visual4d3d3d: false

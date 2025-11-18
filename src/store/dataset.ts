@@ -16,7 +16,6 @@ import {
     getSpecificationParseOptions
 } from '../features/specification/logic';
 import { logDebug, logTimeEnd, logTimeStart } from '../features/logging';
-import { getApplicationMode } from '../features/interface';
 import { getHashValue } from '../utils';
 import {
     areAllCreateDataRequirementsMet,
@@ -30,7 +29,8 @@ import {
     type StoreState,
     type VisualDatasetAbortPayload,
     type VisualDatasetUpdatePayload,
-    type DatasetSlice
+    type DatasetSlice,
+    getApplicationMode
 } from '@deneb-viz/app-core';
 
 const sliceStateInitializer = (set: NamedSet<StoreState>) =>
@@ -92,8 +92,11 @@ const handleUpdateDataset = (
         dataset,
         editMode: state.visualUpdateOptions.editMode,
         isInFocus: state.visualUpdateOptions.isInFocus,
+        prevMode: state.interface.mode,
+        prevUpdateType: state.visualUpdateOptions.type,
         specification: jsonSpec,
-        updateType: state.visualUpdateOptions.type
+        updateType: state.visualUpdateOptions.type,
+        visualUpdates: state.visualUpdates
     });
     const specOptions = getSpecificationParseOptions(state);
     const spec = getParsedSpec(state.specification, specOptions, {

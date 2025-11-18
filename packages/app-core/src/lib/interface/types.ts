@@ -50,6 +50,14 @@ export type InterfaceModeResolutionParameters = {
      */
     isInFocus?: boolean;
     /**
+     * The previous application mode from state, if needed.
+     */
+    prevMode?: InterfaceMode;
+    /**
+     * The previous visual update type from the visual host, if needed.
+     */
+    prevUpdateType?: powerbi.VisualUpdateType;
+    /**
      * The specification from the editor, if available.
      */
     specification?: string;
@@ -57,6 +65,10 @@ export type InterfaceModeResolutionParameters = {
      * The current visual update type from the visual host, if needed.
      */
     updateType?: powerbi.VisualUpdateType;
+    /**
+     * The number of visual updates received so far. Useful for determining first-run state.
+     */
+    visualUpdates?: number;
 };
 
 /**

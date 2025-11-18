@@ -1,4 +1,6 @@
 export {
+    isAdvancedEditor,
+    isVisualUpdateTypeData,
     isVisualUpdateTypeResize,
     isVisualUpdateTypeResizeEnd,
     isVisualUpdateTypeViewMode,

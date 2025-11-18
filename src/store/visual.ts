@@ -16,7 +16,7 @@ import { getParsedSpec } from '../features/specification';
 import { getSpecificationParseOptions } from '../features/specification/logic';
 import { logDebug } from '../features/logging';
 import { isVisualUpdateVolatile } from '../features/visual-host';
-import { getApplicationMode, getCorrectViewport } from '../features/interface';
+import { getCorrectViewport } from '../features/interface';
 import {
     IZoomOtherCommandTestOptions,
     IZoomLevelCommandTestOptions,
@@ -41,7 +41,8 @@ import {
     type VisualUpdateSliceProperties,
     type VisualUpdateHistoryRecord,
     type StoreState,
-    getModalDialogRole
+    getModalDialogRole,
+    getApplicationMode
 } from '@deneb-viz/app-core';
 
 const defaultViewport = { width: 0, height: 0 };
@@ -110,8 +111,11 @@ const handleSetVisualUpdate = (
         dataset: state.dataset,
         editMode,
         isInFocus,
+        prevMode: state.interface.mode,
+        prevUpdateType: state.visualUpdateOptions.type,
         specification: payload.settings.vega.output.jsonSpec.value,
-        updateType
+        updateType,
+        visualUpdates: state.visualUpdates
     });
     const history: VisualUpdateHistoryRecord[] = [
         {
