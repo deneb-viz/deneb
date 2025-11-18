@@ -27,3 +27,7 @@ export type StoreState = CommandsSlice &
     SpecificationSlice &
     VisualSlice &
     VisualUpdateSlice;
+
+export type StateDependencies = {
+    applicationVersion: string;
+};

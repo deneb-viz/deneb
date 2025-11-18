@@ -12,6 +12,5 @@ describe('getNewUuid', () => {
     it('should return a valid UUID ', () => {
         const uuid = getNewUuid();
         expect(uuid).toMatch(UUID_REGEX);
-        global.crypto = crypto;
     });
 });

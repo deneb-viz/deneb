@@ -29,9 +29,7 @@
         "dev:worker": "tsup --watch --config tsup.worker.config.ts",
         "prepack": "npm run build",
         "typecheck": "tsc --noEmit",
-        "eslint": "eslint .",
-        "test": "vitest run",
-        "test:watch": "vitest"
+        "eslint": "eslint ."
     },
     "files": [
         "dist/**"
