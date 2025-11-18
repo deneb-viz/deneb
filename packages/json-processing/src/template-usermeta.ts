@@ -133,8 +133,8 @@ export const getNewCreateFromTemplateSliceProperties =
  */
 export const getNewTemplateMetadata = (options: {
     buildVersion: string;
-    provider: SpecProvider;
-    providerVersion: string;
+    provider: SpecProvider | null;
+    providerVersion: string | null;
 }): Partial<UsermetaTemplate> => ({
     information: <UsermetaInformation>{
         uuid: getNewUuid(),
@@ -147,8 +147,8 @@ export const getNewTemplateMetadata = (options: {
     deneb: {
         build: options.buildVersion,
         metaVersion: TEMPLATE_USERMETA_VERSION,
-        provider: options.provider,
-        providerVersion: options.providerVersion
+        provider: options.provider ?? DEFAULT_PROVIDER,
+        providerVersion: options.providerVersion ?? ''
     },
     interactivity: {
         tooltip: DEFAULTS.vega.enableTooltips,

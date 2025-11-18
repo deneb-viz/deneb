@@ -6,6 +6,7 @@ export type * from './dataset';
 export { createDebugSlice } from './debug';
 export type * from './debug';
 export type * from './editor';
+export { createExportSlice } from './export';
 export type * from './export';
 export { createFieldUsageSlice } from './field-usage';
 export type * from './field-usage';

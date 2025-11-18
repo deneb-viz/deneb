@@ -1,4 +1,9 @@
+import { type StateCreator } from 'zustand';
+
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
+import { set } from '@deneb-viz/utils/object';
+import { StateDependencies, type StoreState } from './state';
+import { getNewTemplateMetadata } from '@deneb-viz/json-processing';
 
 /**
  * Represents the export slice in the visual store.
@@ -12,7 +17,7 @@ export type ExportSliceState = {
  */
 export type ExportSliceProperties = {
     includePreviewImage: boolean;
-    metadata: UsermetaTemplate | null;
+    metadata: UsermetaTemplate | null | undefined;
     setMetadataPropertyBySelector: (
         payload: ExportSliceSetMetadataPropertyBySelector
     ) => void;
@@ -34,3 +39,69 @@ export type ExportSliceSetMetadataPropertyBySelector = {
     selector: string;
     value: string;
 };
+
+export const createExportSlice =
+    (
+        dependencies: StateDependencies
+    ): StateCreator<
+        StoreState,
+        [['zustand/devtools', never]],
+        [],
+        ExportSliceState
+    > =>
+    (set) =>
+        <ExportSliceState>{
+            export: {
+                includePreviewImage: false,
+                metadata: getNewTemplateMetadata({
+                    buildVersion: dependencies.applicationVersion,
+                    provider: null,
+                    providerVersion: null
+                }),
+                setMetadataPropertyBySelector(payload) {
+                    set(
+                        (state) =>
+                            handleSetMetadataPropertyBySelector(state, payload),
+                        false,
+                        'export.setMetadataPropertyBySelector'
+                    );
+                },
+                setPreviewImage: (payload) =>
+                    set(
+                        (state) => handleSetPreviewImage(state, payload),
+                        false,
+                        'export.setPreviewImage'
+                    )
+            }
+        };
+
+const handleSetMetadataPropertyBySelector = (
+    state: StoreState,
+    payload: ExportSliceSetMetadataPropertyBySelector
+): Partial<StoreState> => ({
+    export: {
+        ...state.export,
+        metadata: set(
+            structuredClone(state.export.metadata),
+            payload.selector,
+            payload.value
+        )
+    }
+});
+
+const handleSetPreviewImage = (
+    state: StoreState,
+    payload: ExportSliceSetPreviewImage
+): Partial<StoreState> => ({
+    export: {
+        ...state.export,
+        includePreviewImage: payload.includePreviewImage,
+        metadata: {
+            ...state.export.metadata,
+            information: {
+                ...state?.export?.metadata?.information,
+                previewImageBase64PNG: payload.previewImageBase64PNG
+            }
+        } as UsermetaTemplate
+    }
+});

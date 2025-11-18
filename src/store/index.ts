@@ -3,21 +3,26 @@ import { shallow } from 'zustand/vanilla/shallow';
 import { devtools } from 'zustand/middleware';
 import { createDatasetSlice } from './dataset';
 import { createEditorSlice } from './editor';
-import { createExportSlice } from './export';
 import { createVisualSlice } from './visual';
-import { FEATURES } from '../../config';
+import { APPLICATION_INFORMATION, FEATURES } from '../../config';
 import {
     createCommandsSlice,
     createCreateSlice,
     createDebugSlice,
+    createExportSlice,
     createFieldUsageSlice,
     createInterfaceSlice,
     createMigrationSlice,
     createProcessingSlice,
     createSpecificationSlice,
     createVisualUpdateSlice,
+    StateDependencies,
     type StoreState
 } from '@deneb-viz/app-core';
+
+const dependencies: StateDependencies = {
+    applicationVersion: APPLICATION_INFORMATION.version
+};
 
 const store = createWithEqualityFn<StoreState>()(
     devtools(
@@ -27,7 +32,7 @@ const store = createWithEqualityFn<StoreState>()(
             ...createDatasetSlice(...a),
             ...createDebugSlice()(...a),
             ...createEditorSlice(...a),
-            ...createExportSlice(...a),
+            ...createExportSlice(dependencies)(...a),
             ...createFieldUsageSlice()(...a),
             ...createInterfaceSlice()(...a),
             ...createMigrationSlice()(...a),
