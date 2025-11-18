@@ -61,14 +61,19 @@ async function main() {
     let pbivizVersionShort: string | undefined;
     if (FIELDS.includes('version')) {
         try {
-            const pbivizRaw = await readJson(path.join(ROOT, 'pbiviz.json')) as any;
+            const pbivizRaw = (await readJson(
+                path.join(ROOT, 'pbiviz.json')
+            )) as any;
             const fullVersion: string | undefined = pbivizRaw?.visual?.version;
             if (fullVersion) {
                 const segments = fullVersion.split('.');
                 pbivizVersionShort = segments.slice(0, 3).join('.');
             }
         } catch (e) {
-            console.warn('[sync] Unable to read pbiviz.json for version field:', (e as Error).message);
+            console.warn(
+                '[sync] Unable to read pbiviz.json for version field:',
+                (e as Error).message
+            );
         }
     }
 
@@ -87,9 +92,10 @@ async function main() {
             for (const field of FIELDS) {
                 const canonicalRoot = (rootPkg as any)[field];
                 // Special handling: version comes from pbiviz.json, not root package.json
-                const effectiveCanonical = field === 'version'
-                    ? (pbivizVersionShort ?? canonicalRoot)
-                    : canonicalRoot;
+                const effectiveCanonical =
+                    field === 'version'
+                        ? (pbivizVersionShort ?? canonicalRoot)
+                        : canonicalRoot;
                 if (effectiveCanonical === undefined) continue; // nothing to sync
                 if (differ(pkg[field], effectiveCanonical)) {
                     (pkg as any)[field] = effectiveCanonical;
