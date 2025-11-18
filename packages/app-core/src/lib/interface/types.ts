@@ -43,6 +43,10 @@ export type InterfaceModeResolutionParameters = {
      */
     dataset?: IDataset;
     /**
+     * Power BI's current view mode, according to the visual host.
+     */
+    viewMode?: powerbi.ViewMode;
+    /**
      * Power BI's current edit mode, according to the visual host.
      */
     editMode?: powerbi.EditMode;

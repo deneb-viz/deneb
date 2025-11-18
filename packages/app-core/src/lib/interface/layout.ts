@@ -3,10 +3,13 @@ import powerbi from 'powerbi-visuals-api';
 import {
     EDITOR_PANE_SPLIT_COLLAPSED_SIZE,
     EDITOR_PANE_SPLIT_DEFAULT_SIZE_PERCENT,
+    EDITOR_TOOLBAR_HEIGHT,
     PREVIEW_PANE_TOOLBAR_DEFAULT_SIZE_PERCENT,
+    PREVIEW_PANE_TOOLBAR_MIN_SIZE,
     SPLIT_PANE_HANDLE_SIZE
 } from './constants';
 import { type EditorPanePosition } from './types';
+import { DEBUG_PANE_CONFIGURATION } from '@deneb-viz/configuration';
 
 /**
  * Calculate the default size of the resizable pane (in px) based on current viewport size and config defaults.
@@ -41,6 +44,13 @@ export const getPreviewAreaHeightInitial = (
 ) => {
     return currentHeight || getToolbarInitialHeight(viewportHeight);
 };
+
+export const getPreviewAreaHeightMaximum = (height: number) =>
+    height -
+    EDITOR_TOOLBAR_HEIGHT -
+    PREVIEW_PANE_TOOLBAR_MIN_SIZE -
+    SPLIT_PANE_HANDLE_SIZE -
+    DEBUG_PANE_CONFIGURATION.viewportBorderSize * 2;
 
 /**
  * Based on the current state of the resizable pane, resolve its actual width on the screen.

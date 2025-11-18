@@ -14,11 +14,11 @@ import {
     DATA_TABLE_ROW_PADDING_LEFT
 } from '..';
 import { logRender } from '../../logging';
+import { PREVIEW_PANE_AREA_PADDING } from '../../../constants';
 import {
-    ADVANCED_EDITOR_TOOLBAR_HEIGHT,
-    PREVIEW_PANE_AREA_PADDING,
+    EDITOR_TOOLBAR_HEIGHT,
     PREVIEW_PANE_TOOLBAR_MIN_SIZE
-} from '../../../constants';
+} from '@deneb-viz/app-core';
 
 /**
  * Displays a table of data, either for a dataset or the signals in the Vega
@@ -44,7 +44,7 @@ export const DataTableViewer: React.FC<TableProps<any>> = ({
     const debugAreaHeight = useMemo(
         () =>
             viewportHeight -
-            ADVANCED_EDITOR_TOOLBAR_HEIGHT -
+            EDITOR_TOOLBAR_HEIGHT -
             editorPreviewAreaHeight -
             PREVIEW_PANE_TOOLBAR_MIN_SIZE * 2 -
             PREVIEW_PANE_AREA_PADDING * 2,

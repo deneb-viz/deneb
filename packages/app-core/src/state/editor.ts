@@ -6,14 +6,14 @@ import {
     isZoomInCommandEnabled,
     isZoomOtherCommandsEnabled,
     isZoomOutCommandEnabled,
-    ZoomLevelCommandTestOptions,
-    ZoomOtherCommandTestOptions
+    type ZoomLevelCommandTestOptions,
+    type ZoomOtherCommandTestOptions
 } from '../lib';
 import {
-    DebugPaneRole,
-    EditorApplyMode,
-    EditorPanePosition,
-    EditorPaneRole,
+    type DebugPaneRole,
+    type EditorApplyMode,
+    type EditorPanePosition,
+    type EditorPaneRole,
     getApplicationMode,
     getEditorPreviewAreaWidth,
     getPreviewAreaHeightInitial,
@@ -297,6 +297,7 @@ const handleUpdateChanges = (
             mode: getApplicationMode({
                 currentMode: state.interface.mode,
                 dataset: state.dataset,
+                viewMode: state.visualUpdateOptions.viewMode,
                 editMode: state.visualUpdateOptions.editMode,
                 isInFocus: state.visualUpdateOptions.isInFocus,
                 prevMode: state.interface.mode,

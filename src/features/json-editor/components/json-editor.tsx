@@ -7,10 +7,7 @@ import Editor, { loader, OnChange, OnMount } from '@monaco-editor/react';
 import store, { getState } from '../../../store';
 import { logDebug } from '../../logging';
 import { useJsonEditorContext } from './json-editor-context-provider';
-import {
-    PREVIEW_PANE_TOOLBAR_BUTTON_PADDING,
-    PREVIEW_PANE_TOOLBAR_MIN_SIZE
-} from '../../../constants';
+import { PREVIEW_PANE_TOOLBAR_BUTTON_PADDING } from '../../../constants';
 import { useInterfaceStyles } from '../../interface';
 import { JsonEditorStatusBar } from './json-editor-status-bar';
 import { persistSpecification } from '../../specification';
@@ -20,6 +17,7 @@ import { updateFieldTracking } from '../../json-processing';
 import {
     type EditorPaneRole,
     monaco,
+    PREVIEW_PANE_TOOLBAR_MIN_SIZE,
     setupMonacoWorker
 } from '@deneb-viz/app-core';
 import { ptToPx } from '@deneb-viz/utils/dom';

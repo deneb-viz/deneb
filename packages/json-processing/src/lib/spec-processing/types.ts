@@ -1,3 +1,5 @@
+import { SpecProvider } from '@deneb-viz/vega-runtime/embed';
+
 /**
  * Options for resolving a provider schema validator.
  */
@@ -51,3 +53,17 @@ export type CompiledSpecification = {
  * Values for a spec's parse status.
  */
 export type CompileStatus = 'valid' | 'error' | 'new';
+
+/**
+ * Options for parsing the specification.
+ */
+export type SpecificationParseOptions = {
+    config: string;
+    datasetHash: string;
+    logLevel: number;
+    provider: SpecProvider;
+    spec: string;
+    viewportHeight: number;
+    viewportWidth: number;
+    validateSchema: boolean;
+};

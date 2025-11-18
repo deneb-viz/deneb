@@ -5,6 +5,7 @@ import powerbi from 'powerbi-visuals-api';
  * interface.
  */
 export const isAdvancedEditor = (
+    viewMode: powerbi.ViewMode | undefined,
     editMode: powerbi.EditMode | undefined,
     isInFocus: boolean
 ) => (editMode === powerbi.EditMode.Advanced && isInFocus) || false;

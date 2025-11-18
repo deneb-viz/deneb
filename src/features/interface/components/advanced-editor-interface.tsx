@@ -17,7 +17,6 @@ import { ModalDialog } from '../../modal-dialog';
 import { Themes, useInterfaceStyles } from '..';
 import { logRender } from '../../logging';
 import { AdvancedEditorToolbar } from '../../toolbar';
-import { ADVANCED_EDITOR_TOOLBAR_HEIGHT } from '../../../constants';
 import { PortalRoot } from './portal-root';
 import { KEY_BINDINGS } from '../../../../config';
 import {
@@ -41,7 +40,7 @@ import {
     handleZoomOut,
     handleZoomReset
 } from '../../commands';
-import { type Command } from '@deneb-viz/app-core';
+import { EDITOR_TOOLBAR_HEIGHT, type Command } from '@deneb-viz/app-core';
 
 //eslint-disable-next-line max-lines-per-function
 export const AdvancedEditorInterface: React.FC = () => {
@@ -126,9 +125,7 @@ export const AdvancedEditorInterface: React.FC = () => {
             <AdvancedEditorToolbar />
             <SplitPane
                 style={{
-                    height: `calc(100% - ${
-                        ADVANCED_EDITOR_TOOLBAR_HEIGHT + 1
-                    }px)`
+                    height: `calc(100% - ${EDITOR_TOOLBAR_HEIGHT + 1}px)`
                 }}
                 split='vertical'
                 minSize={getResizablePaneMinSize()}

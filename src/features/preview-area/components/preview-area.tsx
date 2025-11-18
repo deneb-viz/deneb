@@ -4,13 +4,11 @@ import { shallow } from 'zustand/shallow';
 
 import store from '../../../store';
 import { VisualPreview } from './visual-preview';
-import {
-    calculatePreviewMaximumHeight,
-    resizerHorizontalStyles
-} from '../../../core/ui/advancedEditor';
+import { resizerHorizontalStyles } from '../../../core/ui/advancedEditor';
 import { PREVIEW_PANE_AREA_MIN_SIZE } from '../../../constants';
 import { DebugAreaContent } from '../../debug-area';
 import { logRender } from '../../logging';
+import { getPreviewAreaHeightMaximum } from '@deneb-viz/app-core';
 
 export const PreviewArea: React.FC = () => {
     const {
@@ -26,7 +24,7 @@ export const PreviewArea: React.FC = () => {
         shallow
     );
     const maxSize = useMemo(
-        () => calculatePreviewMaximumHeight(height),
+        () => getPreviewAreaHeightMaximum(height),
         [height]
     );
     const handleResize = (size: number) => updateEditorPreviewAreaHeight(size);

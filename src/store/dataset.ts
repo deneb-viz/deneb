@@ -10,10 +10,7 @@ import {
     isCrossFilterPropSet
 } from '../features/interactivity';
 import { getDatasetTemplateFields } from '../core/data/fields';
-import {
-    getParsedSpec,
-    getSpecificationParseOptions
-} from '../features/specification/logic';
+import { getParsedSpec } from '../features/specification/logic';
 import { logDebug, logTimeEnd, logTimeStart } from '../features/logging';
 import { getHashValue } from '../utils';
 import {
@@ -30,7 +27,8 @@ import {
     type VisualDatasetAbortPayload,
     type VisualDatasetUpdatePayload,
     getApplicationMode,
-    getResizablePaneSize
+    getResizablePaneSize,
+    getSpecificationParseOptions
 } from '@deneb-viz/app-core';
 
 const sliceStateInitializer = (set: NamedSet<StoreState>) =>
@@ -96,6 +94,7 @@ const handleUpdateDataset = (
         prevUpdateType: state.visualUpdateOptions.type,
         specification: jsonSpec,
         updateType: state.visualUpdateOptions.type,
+        viewMode: state.visualUpdateOptions.viewMode,
         visualUpdates: state.visualUpdates
     });
     const specOptions = getSpecificationParseOptions(state);

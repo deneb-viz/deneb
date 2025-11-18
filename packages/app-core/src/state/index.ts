@@ -23,3 +23,5 @@ export type * from './state';
 export type * from './visual';
 export { createVisualUpdateSlice } from './visual-update';
 export type * from './visual-update';
+// TODO: remove as external API once state has been migrated
+export { getSpecificationParseOptions } from './helpers';

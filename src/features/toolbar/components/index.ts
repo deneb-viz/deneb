@@ -1,9 +1,9 @@
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import {
     POPOVER_Z_INDEX,
-    PREVIEW_PANE_TOOLBAR_BUTTON_PADDING,
-    PREVIEW_PANE_TOOLBAR_MIN_SIZE
+    PREVIEW_PANE_TOOLBAR_BUTTON_PADDING
 } from '../../../constants';
+import { PREVIEW_PANE_TOOLBAR_MIN_SIZE } from '@deneb-viz/app-core';
 
 export const useToolbarStyles = makeStyles({
     buttonSmall: {

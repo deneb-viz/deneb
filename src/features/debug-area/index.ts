@@ -1,6 +1,8 @@
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
-import { PREVIEW_PANE_TOOLBAR_MIN_SIZE } from '../../constants';
-import { SPLIT_PANE_HANDLE_SIZE } from '@deneb-viz/app-core';
+import {
+    PREVIEW_PANE_TOOLBAR_MIN_SIZE,
+    SPLIT_PANE_HANDLE_SIZE
+} from '@deneb-viz/app-core';
 
 export { DebugAreaContent } from './components/debug-area-content';
 

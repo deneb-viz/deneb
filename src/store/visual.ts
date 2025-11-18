@@ -4,17 +4,14 @@ import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 
 import { StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
-import { calculatePreviewMaximumHeight } from '../core/ui/advancedEditor';
-import { getReportViewport } from '../core/ui/dom';
+
 import { getParsedSpec } from '../features/specification';
-import { getSpecificationParseOptions } from '../features/specification/logic';
-import { logDebug } from '../features/logging';
 import { isVisualUpdateVolatile } from '../features/visual-host';
-import { getCorrectViewport } from '../features/interface';
+import { PROVIDER_VERSIONS } from '../../config';
+
 import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { getUpdatedExportMetadata } from '@deneb-viz/json-processing';
-import { PROVIDER_VERSIONS } from '../../config';
 import {
     VisualFormattingSettingsModel,
     getVisualFormattingModel
@@ -38,8 +35,13 @@ import {
     getEditorPreviewAreaWidth,
     getPreviewAreaHeightInitial,
     getEditPaneDefaultWidth,
-    getResizablePaneSize
+    getResizablePaneSize,
+    getPreviewAreaHeightMaximum,
+    getCorrectViewport,
+    getReportViewport,
+    getSpecificationParseOptions
 } from '@deneb-viz/app-core';
+import { logDebug } from '@deneb-viz/utils/logging';
 
 const defaultViewport = { width: 0, height: 0 };
 
@@ -111,6 +113,7 @@ const handleSetVisualUpdate = (
         prevUpdateType: state.visualUpdateOptions.type,
         specification: payload.settings.vega.output.jsonSpec.value,
         updateType,
+        viewMode: payload.options.viewMode,
         visualUpdates: state.visualUpdates
     });
     const history: VisualUpdateHistoryRecord[] = [
@@ -165,7 +168,7 @@ const handleSetVisualUpdate = (
           )
         : state.editorPreviewAreaHeight;
     const edPrevAreaHeightMax = shouldUpdateHeight(mode, editMode, init)
-        ? calculatePreviewMaximumHeight(viewportCurrent.height)
+        ? getPreviewAreaHeightMaximum(viewportCurrent.height)
         : state.editorPreviewAreaHeightMax;
     const isExpanded = shouldUpdateHeight(mode, editMode, init)
         ? edPrevAreaHeight !== edPrevAreaHeightMax

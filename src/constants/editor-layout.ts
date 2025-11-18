@@ -4,11 +4,6 @@ import {
 } from '@deneb-viz/configuration';
 
 /**
- * HOw much vertical space to reserve for the main toolbar.
- */
-export const ADVANCED_EDITOR_TOOLBAR_HEIGHT = 40;
-
-/**
  * The maximum horizontal space (in percent) that the editor pane should be
  * permitted to occupy.
  */
@@ -37,20 +32,6 @@ export const PREVIEW_PANE_AREA_MIN_SIZE = DEBUG_PANE_CONFIGURATION.areaMinSize;
  * The amount of padding to apply around the preview area.
  */
 export const PREVIEW_PANE_AREA_PADDING = 5;
-
-/**
- * How much vertical space (in percent) that the preview toolbar/debug pane
- * should occupy when initialized/reset to default.
- */
-export const PREVIEW_PANE_TOOLBAR_DEFAULT_SIZE_PERCENT =
-    DEBUG_PANE_CONFIGURATION.toolbarInitialPercent;
-
-/**
- * The minimum vertical space that the preview toolbar/debug pane should be
- * permitted to occupy (also used for collapsed size).
- */
-export const PREVIEW_PANE_TOOLBAR_MIN_SIZE =
-    DEBUG_PANE_CONFIGURATION.toolbarMinSize;
 
 /**
  * The amount of padding to apply around the preview area toolbar/debug pane.

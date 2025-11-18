@@ -11,6 +11,7 @@ import {
 import { logDebug } from '@deneb-viz/utils/logging';
 import {
     InterfaceModeResolutionParameters,
+    VisualUpdateHistoryRecord,
     type InterfaceMode,
     type ModalDialogRole
 } from './types';
@@ -50,6 +51,26 @@ export const getApplicationMode = (
 };
 
 /**
+ * When moving our visual from the canvas to the advanced editor, the visual viewport gets out of sequence and can
+ * cause issues with our UI calculations. This does the necessary checks against the update history and retrieves the
+ * correct dimensions as necessary.
+ */
+export const getCorrectViewport = (history: VisualUpdateHistoryRecord[]) => {
+    if (
+        isVisualUpdateTypeResize(history?.[0]?.type) &&
+        isVisualUpdateTypeResizeEnd(history?.[1]?.type) &&
+        isAdvancedEditor(
+            history[0].viewMode,
+            history[0].editMode,
+            history[0].isInFocus
+        )
+    ) {
+        return history[1].viewport;
+    }
+    return history[0].viewport;
+};
+
+/**
  * We need to ensure that the editor's 'Create' dialog role is set/checked in a few places, so that we can ensure the
  * dialog is displayed to onboard the user when necessary. This handles the common logic for assessing whether it
  * should be displayed or the existing state continued to be used.
@@ -63,6 +84,17 @@ export const getModalDialogRole = (
         ? 'Create'
         : currentDialogRole;
 
+export const getReportViewport = (
+    viewport: powerbi.IViewport,
+    persistedViewport: powerbi.IViewport
+) => {
+    const viewportAdjust = 4;
+    return {
+        height: (persistedViewport.height || viewport.height) - viewportAdjust,
+        width: (persistedViewport.width || viewport.width) - viewportAdjust
+    };
+};
+
 /**
  * Confirms whether the interface mode is valid for the editor. A condition for many commands.
  */
@@ -75,8 +107,12 @@ export const isEditorInterface = (mode: InterfaceMode) => mode === 'Editor';
 const isEligibleForEditor = (parameters: InterfaceModeResolutionParameters) => {
     try {
         logDebug('isEligibleForEditor parameters', parameters);
-        const { editMode, isInFocus = false } = parameters;
-        const isEditorViewport = isAdvancedEditor(editMode, isInFocus);
+        const { viewMode, editMode, isInFocus = false } = parameters;
+        const isEditorViewport = isAdvancedEditor(
+            viewMode,
+            editMode,
+            isInFocus
+        );
         logDebug('isEligibleForEditor isEditorViewport', isEditorViewport);
         switch (true) {
             /**

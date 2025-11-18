@@ -5,11 +5,7 @@ import isEqual from 'lodash/isEqual';
 import merge from 'lodash/merge';
 import omit from 'lodash/omit';
 
-import {
-    type EditorPaneRole,
-    monaco,
-    type StoreState
-} from '@deneb-viz/app-core';
+import { type EditorPaneRole, monaco } from '@deneb-viz/app-core';
 import { getState } from '../../store';
 import { getVegaSettings } from '../../core/vega';
 import {
@@ -42,7 +38,8 @@ import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import {
     CompiledSpecification,
-    CompileStatus
+    CompileStatus,
+    SpecificationParseOptions
 } from '@deneb-viz/json-processing/spec-processing';
 
 /**
@@ -107,8 +104,8 @@ const getErrorLine = (code: string, error: string) => {
  */
 export const getParsedSpec = (
     currentSpec: CompiledSpecification,
-    prevOptions: ISpecificationParseOptions,
-    nextOptions: ISpecificationParseOptions
+    prevOptions: SpecificationParseOptions,
+    nextOptions: SpecificationParseOptions
 ): CompiledSpecification => {
     logTimeStart('getParsedSpec');
     logDebug('getParsedSpec starting', {
@@ -152,7 +149,7 @@ export const getParsedSpec = (
             : null;
         logDebug('Spec size: ', JSON.stringify(specToParse).length);
         try {
-            if (nextOptions.visualMode === 'Editor') {
+            if (nextOptions.validateSchema) {
                 logTimeStart('schema validation');
                 const validator = getProviderValidator({ provider });
                 const valid = validator(specToParse);
@@ -422,23 +419,6 @@ export const getSpecificationForVisual = () => {
             );
     }
 };
-
-/**
- * Get the options for parsing the specification and configuration from the
- * store.
- */
-export const getSpecificationParseOptions = (
-    state: StoreState
-): ISpecificationParseOptions => ({
-    config: state.visualSettings.vega.output.jsonConfig.value,
-    datasetHash: state.dataset.hashValue,
-    logLevel: state.visualSettings.vega.logging.logLevel.value as number,
-    provider: state.visualSettings.vega.output.provider.value as SpecProvider,
-    spec: state.visualSettings.vega.output.jsonSpec.value,
-    viewportHeight: state.visualViewportReport.height,
-    viewportWidth: state.visualViewportReport.width,
-    visualMode: state.interface.mode
-});
 
 /**
  * Looks at the active specification and config in the visual editors and

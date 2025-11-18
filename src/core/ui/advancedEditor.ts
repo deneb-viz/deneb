@@ -1,21 +1,16 @@
 import { getState } from '../../store';
 import { CSSProperties } from 'react';
 import {
-    ADVANCED_EDITOR_TOOLBAR_HEIGHT,
     EDITOR_PANE_SPLIT_MAX_SIZE_PERCENT,
     EDITOR_PANE_SPLIT_MIN_SIZE,
-    PREVIEW_PANE_AREA_PADDING,
-    PREVIEW_PANE_TOOLBAR_MIN_SIZE
+    PREVIEW_PANE_AREA_PADDING
 } from '../../constants';
 import { tokens } from '@fluentui/react-components';
 import {
     EDITOR_PANE_SPLIT_COLLAPSED_SIZE,
     SPLIT_PANE_HANDLE_SIZE
 } from '@deneb-viz/app-core';
-import {
-    DEBUG_PANE_CONFIGURATION,
-    VISUAL_PREVIEW_ZOOM_CONFIGURATION
-} from '@deneb-viz/configuration';
+import { VISUAL_PREVIEW_ZOOM_CONFIGURATION } from '@deneb-viz/configuration';
 
 /**
  * How many pixels to apply to the preview area calculations as a "safety"
@@ -128,13 +123,6 @@ export const getResizablePaneMinSize = () => {
         (editorPaneIsExpanded && resolvedMinSize) || resolvedCollapsedSize;
     return resolvedSize;
 };
-
-export const calculatePreviewMaximumHeight = (height: number) =>
-    height -
-    ADVANCED_EDITOR_TOOLBAR_HEIGHT -
-    PREVIEW_PANE_TOOLBAR_MIN_SIZE -
-    SPLIT_PANE_HANDLE_SIZE -
-    DEBUG_PANE_CONFIGURATION.viewportBorderSize * 2;
 
 /**
  * Derive suitable scale to apply to visual preview if wishing to fit to preview area.
