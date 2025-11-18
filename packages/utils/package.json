@@ -1,15 +1,14 @@
 {
     "name": "@deneb-viz/utils",
-    "version": "0.1.0",
-    "private": false,
+    "version": "1.9.0",
+    "author": "Deneb contributors",
+    "private": true,
     "license": "MIT",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/deneb-viz/deneb.git"
     },
-    "publishConfig": {
-        "registry": "https://npm.pkg.github.com"
-    },
+    "packageManager": "npm@10.3.0",
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",

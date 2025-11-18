@@ -1,6 +1,6 @@
 {
     "name": "@deneb-viz/jest-presets",
-    "version": "0.0.0",
+    "version": "1.9.0",
     "private": true,
     "license": "MIT",
     "devDependencies": {
@@ -9,5 +9,11 @@
         "jest": "^29.7.0",
         "jest-environment-jsdom": "^29.7.0",
         "ts-jest": "^29.1.1"
-    }
+    },
+    "packageManager": "npm@10.3.0",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/deneb-viz/deneb.git"
+    },
+    "author": "Deneb contributors"
 }

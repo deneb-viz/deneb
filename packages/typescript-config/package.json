@@ -1,9 +1,12 @@
 {
     "name": "@deneb-viz/typescript-config",
-    "version": "0.0.0",
+    "version": "1.9.0",
+    "author": "Deneb contributors",
     "private": true,
     "license": "MIT",
-    "publishConfig": {
-        "access": "public"
-    }
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/deneb-viz/deneb.git"
+    },
+    "packageManager": "npm@10.3.0"
 }
