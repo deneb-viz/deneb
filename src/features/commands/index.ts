@@ -7,24 +7,19 @@ import {
 } from '../../core/utils/properties';
 import { getState } from '../../store';
 import { persistSpecification } from '../specification';
-import {
-    IExportSpecCommandTestOptions,
-    IZoomOtherCommandTestOptions,
-    IZoomLevelCommandTestOptions
-} from './types';
 import { IEditorRefs, setFocusToActiveEditor } from '../json-editor';
 import { APPLICATION_INFORMATION, VISUAL_PREVIEW_ZOOM } from '../../../config';
 import { launchUrl } from '../visual-host';
-import { type CompiledSpecification } from '@deneb-viz/json-processing/spec-processing';
+import { isSpecificationValid } from '@deneb-viz/json-processing/spec-processing';
 import {
-    type InterfaceMode,
     type Command,
+    type DebugPaneRole,
     type EditorApplyMode,
     type EditorPaneRole,
-    type DebugPaneRole
+    type ZoomLevelCommandTestOptions,
+    type ZoomOtherCommandTestOptions,
+    isEditorInterface
 } from '@deneb-viz/app-core';
-
-export * from './types';
 
 /**
  * Specifies `react-hotkeys-hook` bindings for particular HTML elements.
@@ -249,52 +244,29 @@ export const handleZoomReset = () =>
     });
 
 /**
- * Tests whether the export specification command is enabled.
- */
-export const isExportSpecCommandEnabled = (
-    options: IExportSpecCommandTestOptions
-) =>
-    !options.editorIsDirty &&
-    isSpecificationValid(options.specification) &&
-    isInterfaceModeValid(options.interfaceMode);
-
-/**
  * Tests whether other zoom commands are enabled.
  */
 export const isZoomOtherCommandEnabled = (
-    options: IZoomOtherCommandTestOptions
+    options: ZoomOtherCommandTestOptions
 ) =>
     isSpecificationValid(options.specification) &&
-    isInterfaceModeValid(options.interfaceMode);
+    isEditorInterface(options.interfaceMode);
 
 /**
  * Tests whether the zoom in command is enabled.
  */
-export const isZoomInCommandEnabled = (options: IZoomLevelCommandTestOptions) =>
+export const isZoomInCommandEnabled = (options: ZoomLevelCommandTestOptions) =>
     options.value !== VISUAL_PREVIEW_ZOOM.max &&
     isSpecificationValid(options.specification) &&
-    isInterfaceModeValid(options.interfaceMode);
+    isEditorInterface(options.interfaceMode);
 
 /**
  * Tests whether the zoom out command is enabled.
  */
-export const isZoomOutCommandEnabled = (
-    options: IZoomLevelCommandTestOptions
-) =>
+export const isZoomOutCommandEnabled = (options: ZoomLevelCommandTestOptions) =>
     options.value !== VISUAL_PREVIEW_ZOOM.min &&
     isSpecificationValid(options.specification) &&
-    isInterfaceModeValid(options.interfaceMode);
-
-/**
- * Confirms whether the interface mode is valid. A condition for many commands.
- */
-const isInterfaceModeValid = (mode: InterfaceMode) => mode === 'Editor';
-
-/**
- * Confirms whether the specification is valid. A condition for many commands.
- */
-const isSpecificationValid = (specification: CompiledSpecification) =>
-    specification.status === 'valid';
+    isEditorInterface(options.interfaceMode);
 
 /**
  * Open a specific pivot item in the debug pane.

@@ -7,6 +7,7 @@ export { createDebugSlice } from './debug';
 export type * from './debug';
 export type * from './editor';
 export type * from './export';
+export { createFieldUsageSlice } from './field-usage';
 export type * from './field-usage';
 export { createInterfaceSlice } from './interface';
 export type * from './interface';

@@ -7,12 +7,9 @@ import {
     getResizablePaneSize
 } from '../core/ui/advancedEditor';
 import {
-    isExportSpecCommandEnabled,
     isZoomOtherCommandEnabled,
     isZoomInCommandEnabled,
     isZoomOutCommandEnabled,
-    IZoomOtherCommandTestOptions,
-    IZoomLevelCommandTestOptions,
     getNextApplyMode
 } from '../features/commands';
 import { VISUAL_PREVIEW_ZOOM } from '../../config';
@@ -31,8 +28,11 @@ import {
     type EditorSlice,
     type EditorSliceUpdateChangesPayload,
     getApplicationMode,
+    isExportSpecCommandEnabled,
     monaco,
-    type StoreState
+    type StoreState,
+    type ZoomLevelCommandTestOptions,
+    type ZoomOtherCommandTestOptions
 } from '@deneb-viz/app-core';
 // import { logTimeEnd, logTimeStart } from '../features/logging';
 
@@ -384,11 +384,11 @@ const handleupdateEditorZoomLevel = (
     state: StoreState,
     zoomLevel: number
 ): Partial<StoreState> => {
-    const zoomOtherCommandTest: IZoomOtherCommandTestOptions = {
+    const zoomOtherCommandTest: ZoomOtherCommandTestOptions = {
         specification: state.specification,
         interfaceMode: state.interface.mode
     };
-    const zoomLevelCommandTest: IZoomLevelCommandTestOptions = {
+    const zoomLevelCommandTest: ZoomLevelCommandTestOptions = {
         value: zoomLevel,
         specification: state.specification,
         interfaceMode: state.interface.mode

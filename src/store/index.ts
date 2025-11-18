@@ -4,13 +4,13 @@ import { devtools } from 'zustand/middleware';
 import { createDatasetSlice } from './dataset';
 import { createEditorSlice } from './editor';
 import { createExportSlice } from './export';
-import { createFieldUsageSlice } from './field-usage';
 import { createVisualSlice } from './visual';
 import { FEATURES } from '../../config';
 import {
     createCommandsSlice,
     createCreateSlice,
     createDebugSlice,
+    createFieldUsageSlice,
     createInterfaceSlice,
     createMigrationSlice,
     createProcessingSlice,
@@ -28,7 +28,7 @@ const store = createWithEqualityFn<StoreState>()(
             ...createDebugSlice()(...a),
             ...createEditorSlice(...a),
             ...createExportSlice(...a),
-            ...createFieldUsageSlice(...a),
+            ...createFieldUsageSlice()(...a),
             ...createInterfaceSlice()(...a),
             ...createMigrationSlice()(...a),
             ...createProcessingSlice()(...a),

@@ -18,13 +18,9 @@ import { logDebug } from '../features/logging';
 import { isVisualUpdateVolatile } from '../features/visual-host';
 import { getCorrectViewport } from '../features/interface';
 import {
-    IZoomOtherCommandTestOptions,
-    IZoomLevelCommandTestOptions,
     isZoomOtherCommandEnabled,
     isZoomInCommandEnabled,
-    isZoomOutCommandEnabled,
-    isExportSpecCommandEnabled,
-    IExportSpecCommandTestOptions
+    isZoomOutCommandEnabled
 } from '../features/commands';
 import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
@@ -36,13 +32,17 @@ import {
 } from '@deneb-viz/powerbi-compat/properties';
 import { TEditorPosition } from '../core/ui';
 import {
+    type ExportSpecCommandTestOptions,
     type InterfaceMode,
+    type StoreState,
     type VisualSlice,
     type VisualUpdateSliceProperties,
     type VisualUpdateHistoryRecord,
-    type StoreState,
+    type ZoomLevelCommandTestOptions,
+    type ZoomOtherCommandTestOptions,
     getModalDialogRole,
-    getApplicationMode
+    getApplicationMode,
+    isExportSpecCommandEnabled
 } from '@deneb-viz/app-core';
 
 const defaultViewport = { width: 0, height: 0 };
@@ -210,16 +210,16 @@ const handleSetVisualUpdate = (
         mode,
         state.interface.modalDialogRole
     );
-    const zoomOtherCommandTest: IZoomOtherCommandTestOptions = {
+    const zoomOtherCommandTest: ZoomOtherCommandTestOptions = {
         specification: spec,
         interfaceMode: mode
     };
-    const zoomLevelCommandTest: IZoomLevelCommandTestOptions = {
+    const zoomLevelCommandTest: ZoomLevelCommandTestOptions = {
         value: state.editorZoomLevel,
         specification: spec,
         interfaceMode: mode
     };
-    const exportSpecCommandTest: IExportSpecCommandTestOptions = {
+    const exportSpecCommandTest: ExportSpecCommandTestOptions = {
         editorIsDirty:
             (state.editor.stagedSpec !== null &&
                 state.editor.stagedSpec !==

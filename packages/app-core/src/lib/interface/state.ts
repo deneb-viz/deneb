@@ -64,6 +64,11 @@ export const getModalDialogRole = (
         : currentDialogRole;
 
 /**
+ * Confirms whether the interface mode is valid for the editor. A condition for many commands.
+ */
+export const isEditorInterface = (mode: InterfaceMode) => mode === 'Editor';
+
+/**
  * Tests that for the supplied parameters, that the editor interface should be
  * displayed for the user.
  */

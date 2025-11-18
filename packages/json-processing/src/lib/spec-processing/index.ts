@@ -6,4 +6,5 @@ export {
     type IDenebTokenizationResponseMessage,
     type IDenebTrackingResponseMessage
 } from './workers';
+export { isSpecificationValid } from './validation';
 export type * from './types';

@@ -116,5 +116,5 @@ export type TrackedFieldWorkingProperties = {
     remapAllDependenciesAssigned: boolean;
     remapAllFieldsAssigned: boolean;
     remapDrilldownAssigned: boolean;
-    tokenizedSpec: string;
+    tokenizedSpec: string | null;
 };
