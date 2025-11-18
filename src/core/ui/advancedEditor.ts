@@ -1,22 +1,21 @@
-import powerbi from 'powerbi-visuals-api';
-import IViewport = powerbi.IViewport;
-
 import { getState } from '../../store';
-import { TEditorPosition } from '.';
 import { CSSProperties } from 'react';
 import {
     ADVANCED_EDITOR_TOOLBAR_HEIGHT,
-    EDITOR_PANE_SPLIT_COLLAPSED_SIZE,
-    EDITOR_PANE_SPLIT_DEFAULT_SIZE_PERCENT,
     EDITOR_PANE_SPLIT_MAX_SIZE_PERCENT,
     EDITOR_PANE_SPLIT_MIN_SIZE,
     PREVIEW_PANE_AREA_PADDING,
-    PREVIEW_PANE_TOOLBAR_DEFAULT_SIZE_PERCENT,
-    PREVIEW_PANE_TOOLBAR_MIN_SIZE,
-    SPLIT_PANE_RESIZER_SIZE
+    PREVIEW_PANE_TOOLBAR_MIN_SIZE
 } from '../../constants';
 import { tokens } from '@fluentui/react-components';
-import { PREVIEW_PANE_DEFAULTS, VISUAL_PREVIEW_ZOOM } from '../../../config';
+import {
+    EDITOR_PANE_SPLIT_COLLAPSED_SIZE,
+    SPLIT_PANE_HANDLE_SIZE
+} from '@deneb-viz/app-core';
+import {
+    DEBUG_PANE_CONFIGURATION,
+    VISUAL_PREVIEW_ZOOM_CONFIGURATION
+} from '@deneb-viz/configuration';
 
 /**
  * How many pixels to apply to the preview area calculations as a "safety"
@@ -56,8 +55,8 @@ export const resizerPaneVerticalStyles: CSSProperties = {
 export const resizerHorizontalStyles: CSSProperties = {
     ...resizerStyles,
     ...{
-        height: SPLIT_PANE_RESIZER_SIZE,
-        minHeight: SPLIT_PANE_RESIZER_SIZE,
+        height: SPLIT_PANE_HANDLE_SIZE,
+        minHeight: SPLIT_PANE_HANDLE_SIZE,
         cursor: 'row-resize'
     }
 };
@@ -65,8 +64,8 @@ export const resizerHorizontalStyles: CSSProperties = {
 export const resizerVerticalStyles: CSSProperties = {
     ...resizerStyles,
     ...{
-        width: SPLIT_PANE_RESIZER_SIZE,
-        minWidth: SPLIT_PANE_RESIZER_SIZE,
+        width: SPLIT_PANE_HANDLE_SIZE,
+        minWidth: SPLIT_PANE_HANDLE_SIZE,
         cursor: 'col-resize'
     }
 };
@@ -91,17 +90,6 @@ export const calculateEditorPaneMaxWidth = () => {
         ? editorPaneWidth
         : width - editorPreviewAreaWidth;
 };
-
-/**
- * Work out the explicit width of the preview area, relative to the settings and editor pane.
- */
-export const getEditorPreviewAreaWidth = (
-    viewportWidth: number,
-    paneWidth: number,
-    position: TEditorPosition
-) =>
-    (position === 'right' ? paneWidth : viewportWidth - paneWidth) -
-    SPLIT_PANE_RESIZER_SIZE;
 
 /**
  * Work out what the maximum size of the resizable pane should be (in px), based on the persisted visual (store) state.
@@ -141,59 +129,12 @@ export const getResizablePaneMinSize = () => {
     return resolvedSize;
 };
 
-/**
- * Calculate the default size of the resizable pane (in px) based on current viewport size and config defaults.
- */
-export const getEditPaneDefaultWidth = (
-    viewport: IViewport,
-    position: TEditorPosition
-) => {
-    if (position === 'right') {
-        return viewport.width * (1 - EDITOR_PANE_SPLIT_DEFAULT_SIZE_PERCENT);
-    }
-    return viewport.width * EDITOR_PANE_SPLIT_DEFAULT_SIZE_PERCENT;
-};
-
-/**
- * Based on the current state of the resizable pane, resolve its actual width on the screen.
- */
-export const getResizablePaneSize = (
-    paneExpandedWidth: number,
-    editorPaneIsExpanded: boolean,
-    viewport: IViewport,
-    position: TEditorPosition
-) => {
-    const collapsedSize =
-            position === 'right'
-                ? viewport.width - EDITOR_PANE_SPLIT_COLLAPSED_SIZE
-                : EDITOR_PANE_SPLIT_COLLAPSED_SIZE,
-        resolvedWidth =
-            (editorPaneIsExpanded && paneExpandedWidth) ||
-            (editorPaneIsExpanded &&
-                getEditPaneDefaultWidth(viewport, position)) ||
-            collapsedSize;
-    return resolvedWidth;
-};
-
-/**
- * Calculate an height for the preview area, so that we can use this to work out fit zoom functions.
- */
-export const getPreviewAreaHeightInitial = (
-    viewportHeight: number,
-    currentHeight?: number
-) => {
-    return currentHeight || calculateToolbarInitialHeight(viewportHeight);
-};
-
 export const calculatePreviewMaximumHeight = (height: number) =>
     height -
     ADVANCED_EDITOR_TOOLBAR_HEIGHT -
     PREVIEW_PANE_TOOLBAR_MIN_SIZE -
-    SPLIT_PANE_RESIZER_SIZE -
-    PREVIEW_PANE_DEFAULTS.viewportBorderSize * 2;
-
-export const calculateToolbarInitialHeight = (height: number) =>
-    height - height * (PREVIEW_PANE_TOOLBAR_DEFAULT_SIZE_PERCENT / 100);
+    SPLIT_PANE_HANDLE_SIZE -
+    DEBUG_PANE_CONFIGURATION.viewportBorderSize * 2;
 
 /**
  * Derive suitable scale to apply to visual preview if wishing to fit to preview area.
@@ -217,7 +158,7 @@ export const getZoomToFitScale = () => {
         scaleFactorHeight = Math.floor(
             100 / (height / (previewHeight - ZOOM_FIT_BUFFER))
         ),
-        { default: zDefault, max } = VISUAL_PREVIEW_ZOOM;
+        { default: zDefault, max } = VISUAL_PREVIEW_ZOOM_CONFIGURATION;
     switch (true) {
         case willScaledDimensionFit(width, scaleFactorWidth, previewWidth) &&
             willScaledDimensionFit(height, scaleFactorWidth, previewHeight):

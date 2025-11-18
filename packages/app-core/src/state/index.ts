@@ -5,6 +5,7 @@ export type * from './create';
 export type * from './dataset';
 export { createDebugSlice } from './debug';
 export type * from './debug';
+export { createEditorSlice } from './editor';
 export type * from './editor';
 export { createExportSlice } from './export';
 export type * from './export';

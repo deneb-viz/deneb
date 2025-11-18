@@ -11,7 +11,7 @@ import store from '../../../store';
 import { logRender } from '../../logging';
 import { VegaContainer } from '../../vega-output';
 import { FourD3D3D } from './fourd3d3d';
-import { PREVIEW_PANE_DEFAULTS } from '../../../../config';
+import { DEBUG_PANE_CONFIGURATION } from '@deneb-viz/configuration';
 
 /**
  * Preview area base styles (static). Dynamic sizing is applied via inline styles.
@@ -84,7 +84,7 @@ export const VisualPreview: React.FC = () => {
         shallow
     );
     const classes = usePreviewStyles();
-    const borderWidth = PREVIEW_PANE_DEFAULTS.viewportBorderSize;
+    const borderWidth = DEBUG_PANE_CONFIGURATION.viewportBorderSize;
     const scale = editorZoomLevel / 100;
     const styleVars: React.CSSProperties = {
         ['--vp-height' as unknown as keyof React.CSSProperties]: `${viewportHeight}px`,

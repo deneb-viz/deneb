@@ -1,8 +1,6 @@
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
-import {
-    PREVIEW_PANE_TOOLBAR_MIN_SIZE,
-    SPLIT_PANE_RESIZER_SIZE
-} from '../../constants';
+import { PREVIEW_PANE_TOOLBAR_MIN_SIZE } from '../../constants';
+import { SPLIT_PANE_HANDLE_SIZE } from '@deneb-viz/app-core';
 
 export { DebugAreaContent } from './components/debug-area-content';
 
@@ -46,7 +44,7 @@ export const useDebugStyles = makeStyles({
     },
     container: {
         height: `calc(100% - ${PREVIEW_PANE_TOOLBAR_MIN_SIZE}px - ${
-            SPLIT_PANE_RESIZER_SIZE / 2
+            SPLIT_PANE_HANDLE_SIZE / 2
         }px)`
     },
     contentWrapper: {

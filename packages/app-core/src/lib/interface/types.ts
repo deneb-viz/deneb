@@ -9,6 +9,11 @@ export type DebugPaneRole = 'log' | 'data' | 'signal';
 export type EditorApplyMode = 'Auto' | 'Manual';
 
 /**
+ * Positioning options for the editor pane within the interface.
+ */
+export type EditorPanePosition = 'left' | 'right';
+
+/**
  * Used to specify the types of operations we should have within the pivot control in the editor pane.
  */
 export type EditorPaneRole = 'Spec' | 'Config' | 'Settings';

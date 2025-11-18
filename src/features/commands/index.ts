@@ -8,7 +8,7 @@ import {
 import { getState } from '../../store';
 import { persistSpecification } from '../specification';
 import { IEditorRefs, setFocusToActiveEditor } from '../json-editor';
-import { APPLICATION_INFORMATION, VISUAL_PREVIEW_ZOOM } from '../../../config';
+import { APPLICATION_INFORMATION } from '../../../config';
 import { launchUrl } from '../visual-host';
 import { isSpecificationValid } from '@deneb-viz/json-processing/spec-processing';
 import {
@@ -20,6 +20,7 @@ import {
     type ZoomOtherCommandTestOptions,
     isEditorInterface
 } from '@deneb-viz/app-core';
+import { VISUAL_PREVIEW_ZOOM_CONFIGURATION } from '@deneb-viz/configuration';
 
 /**
  * Specifies `react-hotkeys-hook` bindings for particular HTML elements.
@@ -42,13 +43,6 @@ const executeCommand = (command: Command, callback: () => void) => {
     } = getState();
     mode === 'Editor' && commands[command] && callback();
 };
-
-/**
- * For the current apply mode, determine what the new one should be.
- */
-export const getNextApplyMode = (
-    applyMode: EditorApplyMode
-): EditorApplyMode => (applyMode === 'Auto' ? 'Manual' : 'Auto');
 
 /**
  * Applies the changes to the specification.
@@ -216,7 +210,7 @@ export const handleZoomFit = () =>
 export const handleZoomIn = () =>
     executeCommand('zoomIn', () => {
         const value = getState().editorZoomLevel;
-        const { step, max } = VISUAL_PREVIEW_ZOOM,
+        const { step, max } = VISUAL_PREVIEW_ZOOM_CONFIGURATION,
             level = Math.min(max, Math.floor((value + step) / 10) * 10);
         const zoomLevel = (value < max && level) || level;
         getState().updateEditorZoomLevel(zoomLevel);
@@ -229,7 +223,7 @@ export const handleZoomIn = () =>
 export const handleZoomOut = () =>
     executeCommand('zoomOut', () => {
         const value = getState().editorZoomLevel;
-        const { step, min } = VISUAL_PREVIEW_ZOOM,
+        const { step, min } = VISUAL_PREVIEW_ZOOM_CONFIGURATION,
             level = Math.max(min, Math.ceil((value - step) / 10) * 10);
         const zoomLevel = (value > min && level) || level;
         getState().updateEditorZoomLevel(zoomLevel);
@@ -240,33 +234,10 @@ export const handleZoomOut = () =>
  */
 export const handleZoomReset = () =>
     executeCommand('zoomReset', () => {
-        getState().updateEditorZoomLevel(VISUAL_PREVIEW_ZOOM.default);
+        getState().updateEditorZoomLevel(
+            VISUAL_PREVIEW_ZOOM_CONFIGURATION.default
+        );
     });
-
-/**
- * Tests whether other zoom commands are enabled.
- */
-export const isZoomOtherCommandEnabled = (
-    options: ZoomOtherCommandTestOptions
-) =>
-    isSpecificationValid(options.specification) &&
-    isEditorInterface(options.interfaceMode);
-
-/**
- * Tests whether the zoom in command is enabled.
- */
-export const isZoomInCommandEnabled = (options: ZoomLevelCommandTestOptions) =>
-    options.value !== VISUAL_PREVIEW_ZOOM.max &&
-    isSpecificationValid(options.specification) &&
-    isEditorInterface(options.interfaceMode);
-
-/**
- * Tests whether the zoom out command is enabled.
- */
-export const isZoomOutCommandEnabled = (options: ZoomLevelCommandTestOptions) =>
-    options.value !== VISUAL_PREVIEW_ZOOM.min &&
-    isSpecificationValid(options.specification) &&
-    isEditorInterface(options.interfaceMode);
 
 /**
  * Open a specific pivot item in the debug pane.

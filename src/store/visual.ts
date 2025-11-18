@@ -4,24 +4,13 @@ import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 
 import { StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
-import {
-    calculatePreviewMaximumHeight,
-    getEditorPreviewAreaWidth,
-    getPreviewAreaHeightInitial,
-    getEditPaneDefaultWidth,
-    getResizablePaneSize
-} from '../core/ui/advancedEditor';
+import { calculatePreviewMaximumHeight } from '../core/ui/advancedEditor';
 import { getReportViewport } from '../core/ui/dom';
 import { getParsedSpec } from '../features/specification';
 import { getSpecificationParseOptions } from '../features/specification/logic';
 import { logDebug } from '../features/logging';
 import { isVisualUpdateVolatile } from '../features/visual-host';
 import { getCorrectViewport } from '../features/interface';
-import {
-    isZoomOtherCommandEnabled,
-    isZoomInCommandEnabled,
-    isZoomOutCommandEnabled
-} from '../features/commands';
 import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { getUpdatedExportMetadata } from '@deneb-viz/json-processing';
@@ -30,8 +19,8 @@ import {
     VisualFormattingSettingsModel,
     getVisualFormattingModel
 } from '@deneb-viz/powerbi-compat/properties';
-import { TEditorPosition } from '../core/ui';
 import {
+    type EditorPanePosition,
     type ExportSpecCommandTestOptions,
     type InterfaceMode,
     type StoreState,
@@ -42,7 +31,14 @@ import {
     type ZoomOtherCommandTestOptions,
     getModalDialogRole,
     getApplicationMode,
-    isExportSpecCommandEnabled
+    isExportSpecCommandEnabled,
+    isZoomOtherCommandsEnabled,
+    isZoomInCommandEnabled,
+    isZoomOutCommandEnabled,
+    getEditorPreviewAreaWidth,
+    getPreviewAreaHeightInitial,
+    getEditPaneDefaultWidth,
+    getResizablePaneSize
 } from '@deneb-viz/app-core';
 
 const defaultViewport = { width: 0, height: 0 };
@@ -96,7 +92,7 @@ const handleSetVisualUpdate = (
 ): Partial<StoreState> => {
     logDebug('setVisualUpdate', payload);
     const init = state.visualUpdates === 0;
-    const positionNew = <TEditorPosition>(
+    const positionNew = <EditorPanePosition>(
         payload.settings.editor.json.position.value
     );
     const positionSwitch =
@@ -265,10 +261,10 @@ const handleSetVisualUpdate = (
             exportSpecification: isExportSpecCommandEnabled(
                 exportSpecCommandTest
             ),
-            zoomFit: isZoomOtherCommandEnabled(zoomOtherCommandTest),
+            zoomFit: isZoomOtherCommandsEnabled(zoomOtherCommandTest),
             zoomIn: isZoomInCommandEnabled(zoomLevelCommandTest),
             zoomOut: isZoomOutCommandEnabled(zoomLevelCommandTest),
-            zoomReset: isZoomOtherCommandEnabled(zoomLevelCommandTest)
+            zoomReset: isZoomOtherCommandsEnabled(zoomLevelCommandTest)
         },
         datasetViewObjects,
         debug: { ...state.debug, logAttention: spec.errors.length > 0 },

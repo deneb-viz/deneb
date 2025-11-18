@@ -7,7 +7,7 @@ import { logRender } from '../../logging';
 import { getI18nValue } from '../../i18n';
 import { useToolbarStyles } from '.';
 import { TooltipCustomMount } from '../../interface';
-import { VISUAL_PREVIEW_ZOOM } from '../../../../config';
+import { VISUAL_PREVIEW_ZOOM_CONFIGURATION } from '@deneb-viz/configuration';
 
 export const ZoomSlider: React.FC = () => {
     const classes = useToolbarStyles();
@@ -34,9 +34,9 @@ export const ZoomSlider: React.FC = () => {
             >
                 <Slider
                     className={classes.slider}
-                    min={VISUAL_PREVIEW_ZOOM.min}
-                    max={VISUAL_PREVIEW_ZOOM.max}
-                    step={VISUAL_PREVIEW_ZOOM.step}
+                    min={VISUAL_PREVIEW_ZOOM_CONFIGURATION.min}
+                    max={VISUAL_PREVIEW_ZOOM_CONFIGURATION.max}
+                    step={VISUAL_PREVIEW_ZOOM_CONFIGURATION.step}
                     value={editorZoomLevel}
                     size='small'
                     onChange={onChange}

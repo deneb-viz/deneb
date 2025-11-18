@@ -5,7 +5,6 @@ import { StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
 
 import { getEmptyDataset } from '../core/data/dataset';
-import { getResizablePaneSize } from '../core/ui/advancedEditor';
 import {
     getDataPointCrossFilterStatus,
     isCrossFilterPropSet
@@ -22,15 +21,16 @@ import {
     getUpdatedExportMetadata
 } from '@deneb-viz/json-processing';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
-import { TEditorPosition } from '../core/ui';
 import { ROW_IDENTITY_FIELD_NAME } from '@deneb-viz/dataset/field';
 import {
     type DatasetProcessingPayload,
+    type DatasetSlice,
+    type EditorPanePosition,
     type StoreState,
     type VisualDatasetAbortPayload,
     type VisualDatasetUpdatePayload,
-    type DatasetSlice,
-    getApplicationMode
+    getApplicationMode,
+    getResizablePaneSize
 } from '@deneb-viz/app-core';
 
 const sliceStateInitializer = (set: NamedSet<StoreState>) =>
@@ -140,7 +140,8 @@ const handleUpdateDataset = (
             state.editorPaneExpandedWidth,
             state.editorPaneIsExpanded,
             state.visualViewportCurrent,
-            state.visualSettings.editor.json.position.value as TEditorPosition
+            state.visualSettings.editor.json.position
+                .value as EditorPanePosition
         ),
         export: {
             ...state.export,

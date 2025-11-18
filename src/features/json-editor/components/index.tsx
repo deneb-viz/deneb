@@ -1,8 +1,7 @@
 import React from 'react';
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { ChevronLeftRegular, ChevronRightRegular } from '@fluentui/react-icons';
-
-import { TEditorPosition } from '../../../core/ui';
+import { type EditorPanePosition } from '@deneb-viz/app-core';
 
 export const useEditorPaneStyles = makeStyles({
     buttonCollapsedLeft: {
@@ -35,7 +34,7 @@ export const useEditorPaneStyles = makeStyles({
 
 export const getEditorPaneStateIcon = (
     expanded: boolean,
-    position: TEditorPosition
+    position: EditorPanePosition
 ) =>
     (position === 'left' && expanded) || (position === 'right' && !expanded) ? (
         <ChevronLeftRegular />

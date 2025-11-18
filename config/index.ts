@@ -112,41 +112,6 @@ export const KEY_BINDINGS = {
 };
 
 /**
- * Default configuration for the preview pane (AKA the debug pane).
- */
-export const PREVIEW_PANE_DEFAULTS = {
-    areaMinSize: 100,
-    toolbarMinSize: 28,
-    toolbarInitialPercent: 40,
-    viewportBorderSize: 2,
-    logLevels: [
-        {
-            level: 0,
-            i18n: 'Enum_LogLevel_None',
-            color: 'black'
-        },
-        {
-            level: 1,
-            i18n: 'Enum_LogLevel_Error',
-            color: 'redDark',
-            icon: 'ErrorBadge'
-        },
-        {
-            level: 2,
-            i18n: 'Enum_LogLevel_Warn',
-            color: 'themeDark',
-            icon: 'Warning'
-        },
-        {
-            level: 3,
-            i18n: 'Enum_LogLevel_Info',
-            color: 'greenDark',
-            icon: 'Info'
-        }
-    ]
-};
-
-/**
  * Additional resources neede for each provider in the application (Vega,
  * Vega-Lite and Deneb). These are used to provide links to documentation,
  * examples, other resouces, and patching of specifications.
@@ -194,16 +159,6 @@ export const PROVIDER_VERSIONS = {
 };
 
 /**
- * Default values for the panes in the advanced editor.
- */
-export const SPLIT_PANE_DEFAULTS = {
-    minSize: 300,
-    defaultSizePercent: 0.4,
-    maxSizePercent: 0.5,
-    collapsedSize: 36
-};
-
-/**
  * Current major version of the template metadata. This is used to ensure that
  * we can handle migrations between versions, and that we can handle different
  * versions of the template metadata if needed.
@@ -215,47 +170,3 @@ export const TEMPLATE_METADATA_VERSION = 1;
  * API.
  */
 export const TEMPLATE_PREVIEW_IMAGE_MAX_SIZE = 150;
-
-/**
- * Configuration for the zoom controls in the visual preview pane.
- */
-export const VISUAL_PREVIEW_ZOOM = {
-    min: 10,
-    max: 400,
-    step: 10,
-    default: 100,
-    customLevels: [
-        {
-            value: '400',
-            isLevel: true
-        },
-        {
-            value: '200',
-            isLevel: true
-        },
-        {
-            value: '100',
-            isLevel: true
-        },
-        {
-            value: '66',
-            isLevel: true
-        },
-        {
-            value: '50',
-            isLevel: true
-        },
-        {
-            value: '33',
-            isLevel: true
-        },
-        {
-            value: 'Fit',
-            isFit: true
-        },
-        {
-            value: 'Custom',
-            isCustom: true
-        }
-    ]
-};

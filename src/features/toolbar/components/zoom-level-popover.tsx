@@ -22,7 +22,7 @@ import { getZoomToFitScale } from '../../../core/ui/advancedEditor';
 import { getI18nValue } from '../../i18n';
 import { useToolbarStyles } from '.';
 import { TooltipCustomMount } from '../../interface';
-import { VISUAL_PREVIEW_ZOOM } from '../../../../config';
+import { VISUAL_PREVIEW_ZOOM_CONFIGURATION } from '@deneb-viz/configuration';
 
 // eslint-disable-next-line max-lines-per-function
 export const ZoomLevelPopover: React.FC = () => {
@@ -39,7 +39,7 @@ export const ZoomLevelPopover: React.FC = () => {
     const classes = useToolbarStyles();
     const options = useMemo(
         (): React.ReactElement[] =>
-            VISUAL_PREVIEW_ZOOM.customLevels.map((l) => (
+            VISUAL_PREVIEW_ZOOM_CONFIGURATION.customLevels.map((l) => (
                 <Radio
                     key={`zoom-${l.value}`}
                     label={getI18nValue(
@@ -61,8 +61,8 @@ export const ZoomLevelPopover: React.FC = () => {
     const handleCustomZoomLevelChange = useCallback(
         (value: number) => {
             const level = Math.max(
-                Math.min(value, VISUAL_PREVIEW_ZOOM.max),
-                VISUAL_PREVIEW_ZOOM.min
+                Math.min(value, VISUAL_PREVIEW_ZOOM_CONFIGURATION.max),
+                VISUAL_PREVIEW_ZOOM_CONFIGURATION.min
             );
             setCustomZoomLevel(level);
             updateEditorZoomLevel(level);
@@ -147,8 +147,8 @@ export const ZoomLevelPopover: React.FC = () => {
                             displayValue={`${customZoomLevel}%`}
                             onChange={updateSpinSettingValue}
                             id={id}
-                            min={VISUAL_PREVIEW_ZOOM.min}
-                            max={VISUAL_PREVIEW_ZOOM.max}
+                            min={VISUAL_PREVIEW_ZOOM_CONFIGURATION.min}
+                            max={VISUAL_PREVIEW_ZOOM_CONFIGURATION.max}
                         />
                     </div>
                 </div>
