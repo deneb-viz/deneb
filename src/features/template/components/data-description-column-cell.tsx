@@ -10,14 +10,15 @@ interface IDataDescriptionColumnCell {
 /**
  * Displays the name of a template dataset field.
  */
-export const DataDescriptionColumnCell: React.FC<IDataDescriptionColumnCell> =
-    ({ text }) => {
-        const classes = useTemplateStyles();
-        return (
-            <TableCell>
-                <div className={classes.datasetDescriptionField}>
-                    <Caption1>{text}</Caption1>
-                </div>
-            </TableCell>
-        );
-    };
+export const DataDescriptionColumnCell: React.FC<
+    IDataDescriptionColumnCell
+> = ({ text }) => {
+    const classes = useTemplateStyles();
+    return (
+        <TableCell>
+            <div className={classes.datasetDescriptionField}>
+                <Caption1>{text}</Caption1>
+            </div>
+        </TableCell>
+    );
+};

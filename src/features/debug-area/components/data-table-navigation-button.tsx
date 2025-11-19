@@ -17,30 +17,31 @@ interface IDataTableNavigationButtonProps {
     onClick: () => void;
 }
 
-export const DataTableNavigationButton: React.FC<IDataTableNavigationButtonProps> =
-    ({ disabled, type, onClick }) => {
-        const [ref, setRef] = useState<HTMLElement | null>();
-        const icon = useMemo(() => getNavigationIcon(type), [type]);
-        const i18nKey = useMemo(() => getI18nValue(geti18nKey(type)), [type]);
-        return (
-            <div>
-                <Tooltip
-                    content={i18nKey}
-                    relationship='label'
-                    withArrow
-                    mountNode={ref}
-                >
-                    <Button
-                        appearance='subtle'
-                        disabled={disabled}
-                        icon={icon}
-                        onClick={onClick}
-                    />
-                </Tooltip>
-                <TooltipCustomMount setRef={setRef} />
-            </div>
-        );
-    };
+export const DataTableNavigationButton: React.FC<
+    IDataTableNavigationButtonProps
+> = ({ disabled, type, onClick }) => {
+    const [ref, setRef] = useState<HTMLElement | null>();
+    const icon = useMemo(() => getNavigationIcon(type), [type]);
+    const i18nKey = useMemo(() => getI18nValue(geti18nKey(type)), [type]);
+    return (
+        <div>
+            <Tooltip
+                content={i18nKey}
+                relationship='label'
+                withArrow
+                mountNode={ref}
+            >
+                <Button
+                    appearance='subtle'
+                    disabled={disabled}
+                    icon={icon}
+                    onClick={onClick}
+                />
+            </Tooltip>
+            <TooltipCustomMount setRef={setRef} />
+        </div>
+    );
+};
 
 export const getNavigationIcon = (type: DataTableNavigationType) => {
     switch (type) {
