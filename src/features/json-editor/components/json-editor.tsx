@@ -21,11 +21,11 @@ import {
     setupMonacoWorker
 } from '@deneb-viz/app-core';
 import { ptToPx } from '@deneb-viz/utils/dom';
-import { launchUrl } from '../../visual-host';
 import { getProviderSchema } from '@deneb-viz/json-processing';
 import { IVisualDatasetField } from '../../../core/data';
 import { getI18nValue } from '../../i18n';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import { launchUrl } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * One-time Monaco initialization tasks.

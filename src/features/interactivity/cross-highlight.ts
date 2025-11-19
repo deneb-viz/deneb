@@ -4,8 +4,8 @@ import {
     HIGHLIGHT_FIELD_SUFFIX
 } from '@deneb-viz/dataset/field';
 import { getVegaSettings } from '../../core/vega';
-import { getVisualInteractionStatus } from '../visual-host';
 import { getHighlightRegExpAlternation } from '@deneb-viz/json-processing/field-tracking';
+import { getVisualInteractionStatus } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Produces a simple RegExp pattern for matching highlight fields.

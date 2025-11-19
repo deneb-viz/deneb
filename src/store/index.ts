@@ -1,11 +1,11 @@
 import { createWithEqualityFn } from 'zustand/traditional';
 import { shallow } from 'zustand/vanilla/shallow';
 import { devtools } from 'zustand/middleware';
-import { createDatasetSlice } from './dataset';
 import { APPLICATION_INFORMATION, FEATURES } from '../../config';
 import {
     createCommandsSlice,
     createCreateSlice,
+    createDatasetSlice,
     createDebugSlice,
     createEditorSlice,
     createExportSlice,
@@ -29,7 +29,7 @@ const store = createWithEqualityFn<StoreState>()(
         (...a) => ({
             ...createCommandsSlice()(...a),
             ...createCreateSlice()(...a),
-            ...createDatasetSlice(...a),
+            ...createDatasetSlice()(...a),
             ...createDebugSlice()(...a),
             ...createEditorSlice()(...a),
             ...createExportSlice(dependencies)(...a),

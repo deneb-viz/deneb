@@ -1,4 +1,15 @@
 export {
+    VisualHostServices,
+    getVisualHost,
+    getVisualInteractionStatus,
+    getVisualSelectionIdBuilder,
+    getVisualSelectionManager,
+    launchUrl,
+    setRenderingFailed,
+    setRenderingFinished,
+    setRenderingStarted
+} from './host';
+export {
     I18nServices,
     getI18nValue,
     getLocale,

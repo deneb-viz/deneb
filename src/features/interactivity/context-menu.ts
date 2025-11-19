@@ -5,7 +5,7 @@ import { getIdentitiesFromData, resolveDataFromItem } from './data-point';
 import {
     getVisualInteractionStatus,
     getVisualSelectionManager
-} from '../visual-host';
+} from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * If a context menu event is fired over the visual, attempt to retrieve any

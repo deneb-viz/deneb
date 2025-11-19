@@ -9,3 +9,7 @@ export type VisualUpdateComparisonOptions = {
     previousSettings: VisualFormattingSettingsModel;
     currentSettings: VisualFormattingSettingsModel;
 };
+
+export type CrossFilterPropCheckOptions = {
+    enableSelection: boolean;
+};

@@ -27,12 +27,6 @@ import {
     VegaExtensibilityServices,
     VegaPatternFillServices
 } from './features/vega-extensibility';
-import {
-    VisualHostServices,
-    getVisualHost,
-    setRenderingFailed,
-    setRenderingStarted
-} from './features/visual-host';
 import { APPLICATION_INFORMATION, FEATURES } from '../config';
 import {
     VisualFormattingSettingsModel,
@@ -45,9 +39,13 @@ import {
     getCategoricalDataViewFromOptions,
     getLocale,
     getLocalizationManager,
+    getVisualHost,
     I18nServices,
     isVisualUpdateTypeResizeEnd,
-    isVisualUpdateTypeVolatile
+    isVisualUpdateTypeVolatile,
+    setRenderingFailed,
+    setRenderingStarted,
+    VisualHostServices
 } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
@@ -139,6 +137,13 @@ export class Deneb implements IVisual {
         let fetchSuccess = false;
         const {
             processing: { shouldProcessDataset },
+            visualSettings: {
+                vega: {
+                    interactivity: {
+                        enableSelection: { value: enableSelection }
+                    }
+                }
+            },
             updateDataset,
             updateDatasetProcessingStage
         } = getState();
@@ -173,7 +178,7 @@ export class Deneb implements IVisual {
                     dataProcessingStage: 'Processing',
                     rowsLoaded
                 });
-                const dataset = getMappedDataset(categorical);
+                const dataset = getMappedDataset(categorical, enableSelection);
                 updateDataset({
                     categories: categorical?.categories,
                     dataset

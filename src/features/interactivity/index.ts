@@ -1,9 +1,4 @@
-export {
-    clearSelection,
-    dispatchCrossFilterAbort,
-    getDataPointCrossFilterStatus,
-    isCrossFilterPropSet
-} from './cross-filter';
+export { clearSelection, dispatchCrossFilterAbort } from './cross-filter';
 export {
     getCrossHighlightFieldBaseMeasureName,
     isCrossHighlightField,

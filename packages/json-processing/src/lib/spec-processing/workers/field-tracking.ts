@@ -21,7 +21,7 @@ import {
     type IDenebTrackingRequestPayload,
     type IDenebTrackingResponsePayload
 } from './types';
-import { getDatasetFieldsInclusive } from '@deneb-viz/dataset/data';
+import { getDatasetFieldsInclusive } from '@deneb-viz/dataset/field';
 
 /**
  * For a Vega expression AST node, check if it has an occurrence of a field from the visual dataset.

@@ -9,18 +9,13 @@ import { getState } from '../../store';
 import { persistSpecification } from '../specification';
 import { IEditorRefs, setFocusToActiveEditor } from '../json-editor';
 import { APPLICATION_INFORMATION } from '../../../config';
-import { launchUrl } from '../visual-host';
-import { isSpecificationValid } from '@deneb-viz/json-processing/spec-processing';
 import {
     type Command,
     type DebugPaneRole,
-    type EditorApplyMode,
-    type EditorPaneRole,
-    type ZoomLevelCommandTestOptions,
-    type ZoomOtherCommandTestOptions,
-    isEditorInterface
+    type EditorPaneRole
 } from '@deneb-viz/app-core';
 import { VISUAL_PREVIEW_ZOOM_CONFIGURATION } from '@deneb-viz/configuration';
+import { launchUrl } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Specifies `react-hotkeys-hook` bindings for particular HTML elements.

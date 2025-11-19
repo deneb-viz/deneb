@@ -11,12 +11,12 @@ import { useVegaStyles } from '..';
 import { getPowerBiTooltipHandler } from '../../interactivity';
 import { getD3FormatLocale, getD3TimeFormatLocale } from '../../i18n';
 import { getSpecificationForVisual } from '../../specification/logic';
-import { getVisualHost } from '../../visual-host';
 import {
     type SpecProvider,
     type SpecRenderMode
 } from '@deneb-viz/vega-runtime/embed';
 import { type CompiledSpecification } from '@deneb-viz/json-processing/spec-processing';
+import { getVisualHost } from '@deneb-viz/powerbi-compat/visual-host';
 
 interface IVegaRenderProps {
     datasetHash: string;

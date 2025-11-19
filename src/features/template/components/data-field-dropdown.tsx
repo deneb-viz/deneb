@@ -15,7 +15,7 @@ import { useTemplateStyles } from '.';
 import { getI18nValue } from '../../i18n';
 import { DataTypeIcon } from './data-type-icon';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
-import { getDatasetFieldsInclusive } from '@deneb-viz/dataset/data';
+import { getDatasetFieldsInclusive } from '@deneb-viz/dataset/field';
 
 interface IDatasetFieldAssignmentDropdownProps {
     datasetField: UsermetaDatasetField;

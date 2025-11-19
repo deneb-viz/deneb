@@ -12,15 +12,12 @@ import {
     resolveDataFromItem
 } from './data-point';
 import { CrossFilterOptions, CrossFilterResult } from './types';
-import {
-    getVisualInteractionStatus,
-    getVisualSelectionManager
-} from '../visual-host';
 import { logDebug } from '../logging';
 import { getI18nValue } from '../i18n';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
-import { type DataPointSelectionStatus } from '@deneb-viz/powerbi-compat/interactivity';
 import { type DatasetValueRow } from '@deneb-viz/dataset/datum';
+import { getVisualSelectionManager } from '@deneb-viz/powerbi-compat/visual-host';
+import { isCrossFilterPropSet } from '@deneb-viz/powerbi-compat/interactivity';
 
 /**
  * For the supplied list of identities, ensure that the selection manager is
@@ -70,19 +67,6 @@ export const dispatchCrossFilterAbort = (
 };
 
 /**
- * For the given `ISelectionId`, confirm whether it is present in the supplied
- * `ISelectionId[]`. Typically used to confirm against the visual's selection
- * manager
- */
-export const getDataPointCrossFilterStatus = (
-    id: ISelectionId,
-    selection: ISelectionId[]
-): DataPointSelectionStatus =>
-    (selection.find((sid) => sid.equals(id)) && 'on') ||
-    (selection.length === 0 && 'neutral') ||
-    'off';
-
-/**
  * Because existing identities are known to the visual host, we need to combine
  * this quantity and the identities that we're looking to add to this. If this
  * exceeds the maximum, then we should refuse it.
@@ -96,20 +80,6 @@ const getPotentialSelectionSize = (
     (isMultiSelect(event, options)
         ? getVisualSelectionManager().getSelectionIds()?.length || 0
         : 0);
-
-/**
- * Allows us to validate for all key pre-requisites before we can bind a context
- * menu event to the visual.
- */
-export const isCrossFilterPropSet = () => {
-    const {
-        interactivity: {
-            enableSelection: { value: enableSelection }
-        }
-    } = getVegaSettings();
-    return (enableSelection && getVisualInteractionStatus()) || false;
-};
-
 /**
  * If a click event is fired over the visual, attempt to retrieve any datum and
  * associated identity, before applying selection/cross-filtering.
@@ -121,7 +91,16 @@ export const handleCrossFilterEvent = (
 ): CrossFilterResult => {
     event.stopPropagation();
     event.preventDefault();
-    if (isCrossFilterPropSet()) {
+    const {
+        visualSettings: {
+            vega: {
+                interactivity: {
+                    enableSelection: { value: enableSelection }
+                }
+            }
+        }
+    } = getState();
+    if (isCrossFilterPropSet({ enableSelection })) {
         try {
             hidePowerBiTooltip();
             const resolved = isSimpleSelectionMode(options)

@@ -2,6 +2,7 @@ export { createCommandsSlice } from './commands';
 export type * from './commands';
 export { createCreateSlice } from './create';
 export type * from './create';
+export { createDatasetSlice } from './dataset';
 export type * from './dataset';
 export { createDebugSlice } from './debug';
 export type * from './debug';
@@ -24,5 +25,3 @@ export { createVisualSlice } from './visual';
 export type * from './visual';
 export { createVisualUpdateSlice } from './visual-update';
 export type * from './visual-update';
-// TODO: remove as external API once state has been migrated
-export { getSpecificationParseOptions } from './helpers';

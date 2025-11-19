@@ -12,8 +12,8 @@ import store from '../../../store';
 import { getI18nValue } from '../../i18n';
 import { useSettingsStyles } from '.';
 import { FEATURES } from '../../../../config';
-import { launchUrl } from '../../visual-host';
 import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
+import { launchUrl } from '@deneb-viz/powerbi-compat/visual-host';
 
 export const InteractivitySettings: React.FC = () => {
     const {

@@ -20,7 +20,7 @@ import {
 import { isDataViewFieldEligibleForFormatting } from '../../features/dataset';
 import { logTimeEnd, logTimeStart } from '../../features/logging';
 import { getResolvedVisualMetadataToDatasetField } from '@deneb-viz/json-processing';
-import { getDatasetFieldsInclusive } from '@deneb-viz/dataset/data';
+import { getDatasetFieldsInclusive } from '@deneb-viz/dataset/field';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 
 /**
@@ -103,18 +103,6 @@ export const getDatasetFieldByTemplateKey = (queryName: string) =>
         getDatasetFieldsInclusive(getDataset().fields),
         (f) => f?.templateMetadata?.key === queryName
     ) || null;
-
-/**
- * Get the eligible template fields from a supplied set of metadata.
- */
-export const getDatasetTemplateFields = (
-    metadata: IVisualDatasetFields
-): UsermetaDatasetField[] =>
-    reduce(
-        getDatasetFieldsInclusive(metadata),
-        (result, value) => result.concat(value.templateMetadata),
-        <UsermetaDatasetField[]>[]
-    );
 
 /**
  * If a Power BI column or measure contains characters that create problems in

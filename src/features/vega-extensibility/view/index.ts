@@ -5,7 +5,10 @@ import { logDebug, logTimeEnd, StoreVegaLoggerService } from '../../logging';
 import { getState } from '../../../store';
 import { VegaPatternFillServices } from '../pattern-fill';
 import { IVegaViewServices } from '../types';
-import { setRenderingFinished, setRenderingStarted } from '../../visual-host';
+import {
+    setRenderingFinished,
+    setRenderingStarted
+} from '@deneb-viz/powerbi-compat/visual-host';
 import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
 
 export { getVegaLoader } from './loader';

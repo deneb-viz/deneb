@@ -14,12 +14,12 @@ import { IVegaViewDatum } from '../../core/vega';
 import { getState } from '../../store';
 import { getDataset } from '../../core/data/dataset';
 import { getCategoryColumns } from '../../core/data/dataView';
-import { getVisualSelectionIdBuilder } from '../visual-host';
 import {
     ROW_IDENTITY_FIELD_NAME,
     ROW_INDEX_FIELD_NAME
 } from '@deneb-viz/dataset/field';
 import { type DatasetValueRow } from '@deneb-viz/dataset/datum';
+import { getVisualSelectionIdBuilder } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Confirm that each datum in a datset contains a reconcilable identifier for

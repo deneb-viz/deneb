@@ -36,9 +36,9 @@ import { getSpecificationParseOptions } from './helpers';
 import { type StoreState } from './state';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { PROVIDER_VERSION_CONFIGURATION } from '@deneb-viz/configuration';
-import { UsermetaTemplate } from '@deneb-viz/template-usermeta';
-import { SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
-import { StateCreator } from 'zustand';
+import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
+import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
+import { type StateCreator } from 'zustand';
 
 const MAX_UPDATE_HISTORY_COUNT = 100;
 const DEFAULT_VIEWPORT = { width: 0, height: 0 };

@@ -15,9 +15,9 @@ import reduce from 'lodash/reduce';
 
 import { getState } from '../../store';
 import { APPLICATION_INFORMATION } from '../../../config';
-import { getVisualHost } from '../../features/visual-host';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { PROVIDER_VERSION_CONFIGURATION } from '@deneb-viz/configuration';
+import { getVisualHost } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Handles resolution of object properties from the data view, either for persistence.

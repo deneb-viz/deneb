@@ -11,4 +11,8 @@ export {
     ROW_KEY_FIELD_NAME,
     SELECTED_ROW_FIELD_NAME
 } from './constants';
+export {
+    getDatasetFieldsInclusive,
+    getDatasetTemplateFieldsFromMetadata
+} from './processing';
 export type * from './types';

@@ -22,8 +22,6 @@ import {
 import { getDatasetValueEntries } from './values';
 import {
     createSelectionIds,
-    getDataPointCrossFilterStatus,
-    isCrossFilterPropSet,
     isCrossHighlightPropSet
 } from '../../features/interactivity';
 import { getState } from '../../store';
@@ -40,14 +38,19 @@ import {
     resolveDrilldownFlat
 } from '../../features/dataset';
 import { logError, logTimeEnd, logTimeStart } from '../../features/logging';
-import { getHashValue } from '../../utils';
-import { getVisualSelectionManager } from '../../features/visual-host';
-import { type IDataset } from '@deneb-viz/dataset/data';
 import {
     DATASET_DEFAULT_NAME,
-    getDatasetFieldsInclusive
+    getEmptyDataset,
+    type IDataset
 } from '@deneb-viz/dataset/data';
+import { getDatasetFieldsInclusive } from '@deneb-viz/dataset/field';
 import { type DatasetValueRow } from '@deneb-viz/dataset/datum';
+import { getHashValue } from '@deneb-viz/utils/crypto';
+import {
+    getDataPointCrossFilterStatus,
+    isCrossFilterPropSet
+} from '@deneb-viz/powerbi-compat/interactivity';
+import { getVisualSelectionManager } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * For supplied data view field metadata, produce a suitable object
@@ -113,23 +116,12 @@ const getDataRow = (
 export const getDataset = (): IDataset => getState().dataset;
 
 /**
- * Ensures an empty dataset is made available.
- */
-export const getEmptyDataset = (): IDataset => ({
-    fields: {},
-    hashValue: getHashValue({}),
-    values: [],
-    hasDrilldown: false,
-    hasHighlights: false,
-    rowsLoaded: 0
-});
-
-/**
  * Processes the data in the visual's data view into an object suitable for the
  * visual's API.
  */
 export const getMappedDataset = (
-    categorical: DataViewCategorical
+    categorical: DataViewCategorical,
+    enableSelection: boolean
 ): IDataset => {
     const rowsLoaded = getRowCount(categorical);
     const empty = getEmptyDataset();
@@ -141,7 +133,7 @@ export const getMappedDataset = (
     } else {
         try {
             logTimeStart('getMappedDataset');
-            const isCrossFilter = isCrossFilterPropSet();
+            const isCrossFilter = isCrossFilterPropSet({ enableSelection });
             const hasHighlights = getHighlightStatus(dvValues);
             const columns = getDatasetFieldEntries(dvCategories, dvValues);
             const hasDrilldown =

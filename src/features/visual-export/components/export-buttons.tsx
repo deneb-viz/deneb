@@ -7,8 +7,8 @@ import { getI18nValue } from '../../i18n';
 import store, { getState } from '../../../store';
 import { logDebug, logRender } from '../../logging';
 import { TooltipCustomMount } from '../../interface';
-import { getVisualHost } from '../../visual-host';
 import { getExportTemplate } from '@deneb-viz/json-processing';
+import { getVisualHost } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Displays download and copy template to clipboard buttons.
