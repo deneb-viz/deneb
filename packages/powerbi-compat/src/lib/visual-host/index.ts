@@ -1,8 +1,17 @@
 export {
+    I18nServices,
+    getI18nValue,
+    getLocale,
+    getLocalizationManager
+} from './i18n';
+export {
+    getCategoricalDataViewFromOptions,
     isAdvancedEditor,
+    isVisualUpdateEventVolatile,
     isVisualUpdateTypeData,
     isVisualUpdateTypeResize,
     isVisualUpdateTypeResizeEnd,
     isVisualUpdateTypeViewMode,
     isVisualUpdateTypeVolatile
 } from './update';
+export type * from './types';

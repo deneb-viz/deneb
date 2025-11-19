@@ -5,8 +5,8 @@ import store from '../../../store';
 import { getI18nValue } from '../../i18n';
 import { getVegaProvideri18n } from '../../../core/vega';
 import { Link } from '@fluentui/react-components';
-import { PROVIDER_RESOURCES } from '../../../../config';
 import { launchUrl } from '../../visual-host';
+import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
 
 export const VersionChangeContent: React.FC = () => {
     const { changeType, current, previous, showMigrationDialog } = store(
@@ -64,7 +64,9 @@ export const VersionChangeContent: React.FC = () => {
         }
     }, [showMigrationDialog]);
     const openLink = () => {
-        launchUrl(PROVIDER_RESOURCES.deneb.changelogDocumentationUrl);
+        launchUrl(
+            PROVIDER_RESOURCE_CONFIGURATION.deneb.changelogDocumentationUrl
+        );
     };
     return (
         <div>

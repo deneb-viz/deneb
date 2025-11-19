@@ -9,11 +9,7 @@ import pick from 'lodash/pick';
 import pickBy from 'lodash/pickBy';
 import reduce from 'lodash/reduce';
 
-import {
-    IVisualDatasetField,
-    IVisualDatasetFields,
-    IVisualDatasetValueRow
-} from '../../core/data';
+import { IVisualDatasetField, IVisualDatasetFields } from '../../core/data';
 import { IVegaViewDatum } from '../../core/vega';
 import { getState } from '../../store';
 import { getDataset } from '../../core/data/dataset';
@@ -23,6 +19,7 @@ import {
     ROW_IDENTITY_FIELD_NAME,
     ROW_INDEX_FIELD_NAME
 } from '@deneb-viz/dataset/field';
+import { type DatasetValueRow } from '@deneb-viz/dataset/datum';
 
 /**
  * Confirm that each datum in a datset contains a reconcilable identifier for
@@ -131,7 +128,7 @@ const getIdentityIndices = (data: IVegaViewDatum[]): number[] =>
 const getMatchedValues = (
     fields: IVisualDatasetFields,
     data: IVegaViewDatum[]
-): IVisualDatasetValueRow[] => {
+): DatasetValueRow[] => {
     const resolvedMd = resolveDatumForFields(fields, data?.[0]);
     const matchedRows = getValues().filter(matches(resolvedMd));
     if (matchedRows.length > 0) {
@@ -144,7 +141,7 @@ const getMatchedValues = (
  * For the supplied data, extract all `SelectionId`s into an array.
  */
 export const getSelectorsFromData = (
-    data: IVegaViewDatum[] | IVisualDatasetValueRow[]
+    data: IVegaViewDatum[] | DatasetValueRow[]
 ) =>
     getValuesByIndices(getIdentityIndices(data)).map(
         (v) => v?.[ROW_IDENTITY_FIELD_NAME]
@@ -174,7 +171,7 @@ const getValuesByIndices = (indices: number[]) =>
 const getValuesForField = (
     field: IVisualDatasetFields,
     data: IVegaViewDatum[]
-): IVisualDatasetValueRow[] => {
+): DatasetValueRow[] => {
     const matches = getMatchedValues(field, data);
     if (matches?.length > 0) {
         return matches;
@@ -194,15 +191,14 @@ const resolveDatumForFields = (
     fields: IVisualDatasetFields,
     datum: IVegaViewDatum
 ) => {
-    const reducedDatum =
-        <IVisualDatasetValueRow>pick(datum, keys(fields)) || null;
+    const reducedDatum = <DatasetValueRow>pick(datum, keys(fields)) || null;
     return reduce(
         reducedDatum,
         (result, value, key) => {
             result[key] = resolveValueForField(fields[key], value);
             return result;
         },
-        <IVisualDatasetValueRow>{}
+        <DatasetValueRow>{}
     );
 };
 

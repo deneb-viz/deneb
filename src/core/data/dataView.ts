@@ -8,11 +8,9 @@ import DataViewMetadata = powerbi.DataViewMetadata;
 
 import { getState } from '../../store';
 import { IAugmentedMetadataField } from '.';
-import {
-    TDataPointHighlightComparator,
-    TDataPointHighlightStatus
-} from '../../features/interactivity';
+import { TDataPointHighlightComparator } from '../../features/interactivity';
 import { VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/properties';
+import { type DataPointSelectionStatus } from '@deneb-viz/powerbi-compat/interactivity';
 
 /**
  * Determines whether the visual can fetch more data, based on the feature switch and the corresponding flag in the store
@@ -71,7 +69,7 @@ export const resolveHighlightStatus = (
     hasHighlights: boolean,
     fieldValue: PrimitiveValue,
     comparatorValue: PrimitiveValue
-): TDataPointHighlightStatus => {
+): DataPointSelectionStatus => {
     switch (true) {
         case !hasHighlights:
             return 'neutral';

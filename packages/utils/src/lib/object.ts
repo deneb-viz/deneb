@@ -27,6 +27,29 @@ export type DeepUpdate<T, Path, Value> = Path extends [infer Key, ...infer Rest]
 type Predicate<T> = (value: T[keyof T], key: keyof T) => boolean;
 
 /**
+ * Lightweight replacement for lodash.omit (top-level only).
+ * Returns a shallow clone of obj without the specified keys.
+ * If obj is null/undefined, returns an empty object.
+ */
+export function omit<
+    T extends Record<string, unknown>,
+    K extends readonly (keyof T | string)[]
+>(obj: T, keys: K): Omit<T, Extract<K[number], keyof T>> {
+    if (obj == null) return {} as Omit<T, Extract<K[number], keyof T>>;
+    const exclude = new Set<string>(keys.map(String));
+    const result: Partial<T> = {};
+    for (const key in obj) {
+        if (
+            Object.prototype.hasOwnProperty.call(obj, key) &&
+            !exclude.has(key)
+        ) {
+            result[key as keyof T] = obj[key];
+        }
+    }
+    return result as Omit<T, Extract<K[number], keyof T>>;
+}
+
+/**
  * Pick the properties of an object that satisfy a predicate.
  */
 export function pickBy<T extends Record<string, unknown>>(

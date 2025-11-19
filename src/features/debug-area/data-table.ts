@@ -9,9 +9,7 @@ import {
     isCrossHighlightComparatorField,
     isCrossHighlightField,
     isCrossHighlightStatusField,
-    TDataPointHighlightComparator,
-    TDataPointHighlightStatus,
-    TDataPointSelectionStatus
+    TDataPointHighlightComparator
 } from '../interactivity';
 import { DATA_TABLE_FONT_FAMILY, DATA_TABLE_FONT_SIZE } from '.';
 import { getI18nValue } from '../i18n';
@@ -21,12 +19,13 @@ import {
     ROW_INDEX_FIELD_NAME,
     SELECTED_ROW_FIELD_NAME
 } from '@deneb-viz/dataset/field';
+import { type DataPointSelectionStatus } from '@deneb-viz/powerbi-compat/interactivity';
 
 /**
  * If the column/cell relates to cross-filtering, return a tooltip value that
  * is contextual for the displayed value.
  */
-const getCellCrossFilterTooltip = (value: TDataPointSelectionStatus) => {
+const getCellCrossFilterTooltip = (value: DataPointSelectionStatus) => {
     switch (value) {
         case 'neutral':
             return getI18nValue('Pivot_Debug_SelectedNeutral');
@@ -66,7 +65,7 @@ export const getCellTooltip = (field: string, value: any) => {
  * If the column/cell relates to a cross-highlight status, return a tooltip
  * value that is contextual for the displayed value.
  */
-const getCellHighlightComparatorStatus = (value: TDataPointHighlightStatus) => {
+const getCellHighlightComparatorStatus = (value: DataPointSelectionStatus) => {
     switch (value) {
         case 'neutral':
             return getI18nValue('Pivot_Debug_HighlightStatusNeutral');

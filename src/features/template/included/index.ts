@@ -8,13 +8,14 @@ import { BaseData } from 'vega';
 import { getCombinedBase64ImageWithMime } from '../preview-image';
 import { THUMBNAIL_IMAGES } from './thumbnail-images';
 import { getNewTemplateMetadata } from '@deneb-viz/json-processing';
-import { APPLICATION_INFORMATION, PROVIDER_VERSIONS } from '../../../../config';
+import { APPLICATION_INFORMATION } from '../../../../config';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import {
     type UsermetaInformation,
     type UsermetaTemplate
 } from '@deneb-viz/template-usermeta';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
+import { PROVIDER_VERSION_CONFIGURATION } from '@deneb-viz/configuration';
 
 /**
  * Included templates are exported using the provider shorthand, so that they
@@ -49,7 +50,7 @@ export const getNewIncludedTemplateMetadata = (
     const metadata = getNewTemplateMetadata({
         buildVersion: APPLICATION_INFORMATION.version,
         provider,
-        providerVersion: PROVIDER_VERSIONS[provider]
+        providerVersion: PROVIDER_VERSION_CONFIGURATION[provider]
     });
     return {
         ...metadata,

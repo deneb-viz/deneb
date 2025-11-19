@@ -11,8 +11,9 @@ import { CrossFilterModeSettings } from './cross-filter-mode-settings';
 import store from '../../../store';
 import { getI18nValue } from '../../i18n';
 import { useSettingsStyles } from '.';
-import { FEATURES, PROVIDER_RESOURCES } from '../../../../config';
+import { FEATURES } from '../../../../config';
 import { launchUrl } from '../../visual-host';
+import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
 
 export const InteractivitySettings: React.FC = () => {
     const {
@@ -20,7 +21,9 @@ export const InteractivitySettings: React.FC = () => {
         selectionMode: { value: selectionMode }
     } = store((state) => state.visualSettings.vega.interactivity, shallow);
     const openInteractivityLink = useCallback(() => {
-        launchUrl(PROVIDER_RESOURCES.deneb.interactivityDocumentationUrl);
+        launchUrl(
+            PROVIDER_RESOURCE_CONFIGURATION.deneb.interactivityDocumentationUrl
+        );
     }, []);
     const classes = useSettingsStyles();
     return (

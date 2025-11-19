@@ -22,7 +22,7 @@ import {
  * the Power BI visual iframe does not allow the React tools to be attached for
  * more detailed debugging, unfortunately).
  */
-export { StoreVegaLoggerService, LocalVegaLoggerService } from './vega';
+export { StoreVegaLoggerService } from './vega';
 
 /**
  * Special method to provide decorated log entries in the console.

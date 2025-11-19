@@ -1,18 +1,19 @@
 /**
  * Vega-Lite templates that are included with Deneb.
  */
-import { PROVIDER_RESOURCES } from '../../../../../config';
+import { getPowerBiThemeBase } from '@deneb-viz/vega-runtime/extensibility';
+import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
 
 /**
  * Schema URL for all templates.
  */
-export const VEGA_LITE_SCHEMA_URL = PROVIDER_RESOURCES.vegaLite.schemaUrl;
+export const VEGA_LITE_SCHEMA_URL =
+    PROVIDER_RESOURCE_CONFIGURATION.vegaLite.schemaUrl;
 
 import { vlEmpty } from './vl-empty';
 import { vlEmptyConfig } from './vl-empty-config';
 import { vlBarSimple } from './vl-bar-simple';
 import { vlBarInteractive } from './vl-bar-interactive';
-import { getPowerBiThemeBase } from '@deneb-viz/vega-runtime/extensibility';
 
 /**
  * Included Vega templates (for use in the create process).

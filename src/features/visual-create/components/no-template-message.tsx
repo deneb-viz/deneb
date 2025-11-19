@@ -4,7 +4,7 @@ import { Body1, Divider } from '@fluentui/react-components';
 import { useCreateStyles } from './';
 import { getI18nValue } from '../../i18n';
 import { Hyperlink } from '../../interface';
-import { PROVIDER_RESOURCES } from '../../../../config';
+import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
 
 export const NoTemplateMessage: React.FC = () => {
     const classes = useCreateStyles();
@@ -20,7 +20,10 @@ export const NoTemplateMessage: React.FC = () => {
                     <ul>
                         <li>
                             <Hyperlink
-                                href={PROVIDER_RESOURCES.deneb.examplesUrl}
+                                href={
+                                    PROVIDER_RESOURCE_CONFIGURATION.deneb
+                                        .examplesUrl
+                                }
                             >
                                 {getI18nValue(
                                     'Text_Link_Create_Deneb_Community'
@@ -29,14 +32,20 @@ export const NoTemplateMessage: React.FC = () => {
                         </li>
                         <li>
                             <Hyperlink
-                                href={PROVIDER_RESOURCES.vega.examplesUrl}
+                                href={
+                                    PROVIDER_RESOURCE_CONFIGURATION.vega
+                                        .examplesUrl
+                                }
                             >
                                 {getI18nValue('Text_Link_Create_Vega_Examples')}
                             </Hyperlink>
                         </li>
                         <li>
                             <Hyperlink
-                                href={PROVIDER_RESOURCES.vegaLite.examplesUrl}
+                                href={
+                                    PROVIDER_RESOURCE_CONFIGURATION.vegaLite
+                                        .examplesUrl
+                                }
                             >
                                 {getI18nValue(
                                     'Text_Link_Create_VegaLite_Examples'

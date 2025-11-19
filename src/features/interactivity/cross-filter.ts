@@ -11,19 +11,16 @@ import {
     getSelectorsFromData,
     resolveDataFromItem
 } from './data-point';
-import {
-    CrossFilterOptions,
-    CrossFilterResult,
-    TDataPointSelectionStatus
-} from './types';
+import { CrossFilterOptions, CrossFilterResult } from './types';
 import {
     getVisualInteractionStatus,
     getVisualSelectionManager
 } from '../visual-host';
 import { logDebug } from '../logging';
 import { getI18nValue } from '../i18n';
-import { IVisualDatasetValueRow } from '../../core/data';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
+import { type DataPointSelectionStatus } from '@deneb-viz/powerbi-compat/interactivity';
+import { type DatasetValueRow } from '@deneb-viz/dataset/datum';
 
 /**
  * For the supplied list of identities, ensure that the selection manager is
@@ -80,7 +77,7 @@ export const dispatchCrossFilterAbort = (
 export const getDataPointCrossFilterStatus = (
     id: ISelectionId,
     selection: ISelectionId[]
-): TDataPointSelectionStatus =>
+): DataPointSelectionStatus =>
     (selection.find((sid) => sid.equals(id)) && 'on') ||
     (selection.length === 0 && 'neutral') ||
     'off';
@@ -226,7 +223,7 @@ const getCrossFilterIdentitiesAdvanced = (
             '[pbiCrossFilterApply] performing headless validation of cross-filter options...',
             { event, item, options, headlessSpec, signals }
         );
-        const filteredData: IVisualDatasetValueRow[] = new Vega.View(
+        const filteredData: DatasetValueRow[] = new Vega.View(
             Vega.parse(headlessSpec)
         )
             .logLevel(Vega.Warn)

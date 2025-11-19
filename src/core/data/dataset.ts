@@ -6,7 +6,7 @@ import PrimitiveValue = powerbi.PrimitiveValue;
 import range from 'lodash/range';
 import reduce from 'lodash/reduce';
 
-import { IAugmentedMetadataField, IVisualDatasetValueRow } from '.';
+import { IAugmentedMetadataField } from '.';
 import {
     castPrimitiveValue,
     getHighlightStatus,
@@ -47,6 +47,7 @@ import {
     DATASET_DEFAULT_NAME,
     getDatasetFieldsInclusive
 } from '@deneb-viz/dataset/data';
+import { type DatasetValueRow } from '@deneb-viz/dataset/datum';
 
 /**
  * For supplied data view field metadata, produce a suitable object
@@ -102,7 +103,7 @@ const getDataRow = (
             }
             return row;
         },
-        <IVisualDatasetValueRow>{}
+        <DatasetValueRow>{}
     );
 };
 
@@ -166,36 +167,34 @@ export const getMappedDataset = (
             logTimeEnd('getMappedDataset hashValue');
             logTimeStart('getMappedDataset values');
             const selectionFields = getDatasetFieldsInclusive(fields);
-            const values: IVisualDatasetValueRow[] = range(rowsLoaded).map(
-                (r, ri) => {
-                    const md = getDataRow(
-                        columns,
-                        fieldValues,
-                        ri,
-                        hasHighlights,
-                        hasDrilldown
-                    );
-                    const identity = createSelectionIds(
-                        selectionFields,
-                        dvCategories,
-                        [r]
-                    )[0];
-                    return {
-                        ...{
-                            __row__: r,
-                            __identity__: identity,
-                            __key__: getSidString(identity)
-                        },
-                        ...(isCrossFilter && {
-                            __selected__: getDataPointCrossFilterStatus(
-                                identity,
-                                selections
-                            )
-                        }),
-                        ...md
-                    };
-                }
-            );
+            const values: DatasetValueRow[] = range(rowsLoaded).map((r, ri) => {
+                const md = getDataRow(
+                    columns,
+                    fieldValues,
+                    ri,
+                    hasHighlights,
+                    hasDrilldown
+                );
+                const identity = createSelectionIds(
+                    selectionFields,
+                    dvCategories,
+                    [r]
+                )[0];
+                return {
+                    ...{
+                        __row__: r,
+                        __identity__: identity,
+                        __key__: getSidString(identity)
+                    },
+                    ...(isCrossFilter && {
+                        __selected__: getDataPointCrossFilterStatus(
+                            identity,
+                            selections
+                        )
+                    }),
+                    ...md
+                };
+            });
             logTimeEnd('getMappedDataset values');
             logTimeEnd('getMappedDataset');
             return {

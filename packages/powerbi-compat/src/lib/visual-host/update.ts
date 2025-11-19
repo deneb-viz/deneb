@@ -1,4 +1,8 @@
 import powerbi from 'powerbi-visuals-api';
+import { VisualUpdateComparisonOptions } from './types';
+import { logDebug, logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
+import { deepEqual } from 'fast-equals';
+import { isSettingsChangeVolatile } from '../properties';
 
 /**
  * Test that the supplied parameters mean that the visual host has the visual in a suitable state to display the editor
@@ -8,7 +12,64 @@ export const isAdvancedEditor = (
     viewMode: powerbi.ViewMode | undefined,
     editMode: powerbi.EditMode | undefined,
     isInFocus: boolean
-) => (editMode === powerbi.EditMode.Advanced && isInFocus) || false;
+) =>
+    (editMode === powerbi.EditMode.Advanced &&
+        viewMode === powerbi.ViewMode.Edit &&
+        isInFocus) ||
+    false;
+
+/**
+ * Gets the categorical data view from the visual update options.
+ */
+export const getCategoricalDataViewFromOptions = (
+    options: powerbi.extensibility.visual.VisualUpdateOptions
+) => options?.dataViews?.[0]?.categorical || {};
+
+/**
+ * Confirms if the visual update options contain what we consider a volatile change to the visual and its data.
+ *
+ * @param options - The visual update options to check for volatility.
+ * @returns True if the visual update options contain a volatile change, false otherwise.
+ */
+export const isVisualUpdateEventVolatile = (
+    options: VisualUpdateComparisonOptions
+) => {
+    logTimeStart('isVisualUpdateEventVolatile');
+    const {
+        currentProcessingFlag,
+        currentOptions,
+        currentSettings,
+        previousOptions,
+        previousSettings
+    } = options;
+    const categoricalPrevious =
+        getCategoricalDataViewFromOptions(previousOptions);
+    const categoricalCurrent =
+        getCategoricalDataViewFromOptions(currentOptions);
+    const typeIsVolatile = isVisualUpdateTypeVolatile(currentOptions);
+    const settingsAreVolatile = isSettingsChangeVolatile(
+        previousSettings,
+        currentSettings
+    );
+    const operationIsAppend =
+        currentOptions.operationKind ===
+        powerbi.VisualDataChangeOperationKind.Append;
+    const dataViewIsEqual = deepEqual(categoricalPrevious, categoricalCurrent);
+    const hasChanged =
+        (typeIsVolatile && !dataViewIsEqual) || settingsAreVolatile;
+    logDebug('isVisualUpdateEventVolatile', {
+        previous: categoricalPrevious,
+        current: categoricalCurrent,
+        type: currentOptions.type,
+        typeIsVolatile,
+        settingsAreVolatile,
+        operationIsAppend,
+        dataViewIsEqual,
+        hasChanged
+    });
+    logTimeEnd('isVisualUpdateEventVolatile');
+    return currentProcessingFlag || hasChanged;
+};
 
 /**
  * Checks if a visual update type is data-related.

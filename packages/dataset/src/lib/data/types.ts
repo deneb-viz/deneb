@@ -1,4 +1,4 @@
-import { type IDatasetValueRow } from '../datum';
+import { type DatasetValueRow } from '../datum';
 import { type IDatasetFields } from '../field';
 
 /**
@@ -28,5 +28,5 @@ export interface IDataset {
     /**
      * Processed values, pointing to field metadata, as well as any dedicated row-related fields.
      */
-    values: IDatasetValueRow[];
+    values: DatasetValueRow[];
 }

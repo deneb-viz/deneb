@@ -14,9 +14,10 @@ import cloneDeep from 'lodash/cloneDeep';
 import reduce from 'lodash/reduce';
 
 import { getState } from '../../store';
-import { APPLICATION_INFORMATION, PROVIDER_VERSIONS } from '../../../config';
+import { APPLICATION_INFORMATION } from '../../../config';
 import { getVisualHost } from '../../features/visual-host';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import { PROVIDER_VERSION_CONFIGURATION } from '@deneb-viz/configuration';
 
 /**
  * Handles resolution of object properties from the data view, either for persistence.
@@ -95,7 +96,7 @@ const getProviderVersionProperty = (
     provider: SpecProvider
 ): IPersistenceProperty => ({
     name: 'version',
-    value: PROVIDER_VERSIONS[provider]
+    value: PROVIDER_VERSION_CONFIGURATION[provider]
 });
 
 /**

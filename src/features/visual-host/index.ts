@@ -1,19 +1,11 @@
 import powerbi from 'powerbi-visuals-api';
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
-import VisualDataChangeOperationKind = powerbi.VisualDataChangeOperationKind;
 import ISelectionManager = powerbi.extensibility.ISelectionManager;
 import ISelectionIdBuilder = powerbi.visuals.ISelectionIdBuilder;
 import IVisualEventService = powerbi.extensibility.IVisualEventService;
 
-import isEqual from 'lodash/isEqual';
-
-import { isSettingsChangeVolatile } from '../settings';
-import { IVisualUpdateComparisonOptions } from './types';
-import { logDebug, logHost, logTimeEnd, logTimeStart } from '../logging';
-import { isVisualUpdateTypeVolatile } from '@deneb-viz/powerbi-compat/visual-host';
-
-export * from './types';
+import { logHost } from '../logging';
 
 let services: VisualConstructorOptions;
 let events: IVisualEventService;
@@ -78,51 +70,6 @@ export const getVisualUpdateOptions = () => visualUpdateOptions;
  * provides a wrapper around the Power BI visual host's `launchUrl` method.
  */
 export const launchUrl = (url: string) => getVisualHost()?.launchUrl(url);
-
-/**
- * Confirms if the visual update options contain what we consider a volatile
- * change to the visual and its data.
- * @param options - The visual update options to check for volatility.
- * @returns True if the visual update options contain a volatile change, false otherwise.
- */
-export const isVisualUpdateVolatile = (
-    options: IVisualUpdateComparisonOptions
-) => {
-    logTimeStart('isVisualUpdateVolatile');
-    const {
-        currentProcessingFlag,
-        currentOptions,
-        currentSettings,
-        previousOptions,
-        previousSettings
-    } = options;
-    const categoricalPrevious =
-        getCategoricalDataViewFromOptions(previousOptions);
-    const categoricalCurrent =
-        getCategoricalDataViewFromOptions(currentOptions);
-    const typeIsVolatile = isVisualUpdateTypeVolatile(currentOptions);
-    const settingsAreVolatile = isSettingsChangeVolatile(
-        previousSettings,
-        currentSettings
-    );
-    const operationIsAppend =
-        currentOptions.operationKind === VisualDataChangeOperationKind.Append;
-    const dataViewIsEqual = isEqual(categoricalPrevious, categoricalCurrent);
-    const hasChanged =
-        (typeIsVolatile && !dataViewIsEqual) || settingsAreVolatile;
-    logDebug('isDatasetVolatile', {
-        previous: categoricalPrevious,
-        current: categoricalCurrent,
-        type: currentOptions.type,
-        typeIsVolatile,
-        settingsAreVolatile,
-        operationIsAppend,
-        dataViewIsEqual,
-        hasChanged
-    });
-    logTimeEnd('isVisualUpdateVolatile');
-    return currentProcessingFlag || hasChanged;
-};
 
 /**
  * Gets the categorical data view from the visual update options.

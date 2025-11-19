@@ -28,13 +28,7 @@ import {
     VegaPatternFillServices
 } from './features/vega-extensibility';
 import {
-    I18nServices,
-    getLocale,
-    getLocalizationManager
-} from './features/i18n';
-import {
     VisualHostServices,
-    getCategoricalDataViewFromOptions,
     getVisualHost,
     setRenderingFailed,
     setRenderingStarted
@@ -48,6 +42,10 @@ import {
 } from '@deneb-viz/powerbi-compat/properties';
 import { updateFieldTracking } from './features/json-processing';
 import {
+    getCategoricalDataViewFromOptions,
+    getLocale,
+    getLocalizationManager,
+    I18nServices,
     isVisualUpdateTypeResizeEnd,
     isVisualUpdateTypeVolatile
 } from '@deneb-viz/powerbi-compat/visual-host';

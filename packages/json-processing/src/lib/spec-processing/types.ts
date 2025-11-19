@@ -1,4 +1,15 @@
+import { type Spec } from 'vega';
+import { type TopLevelSpec } from 'vega-lite';
 import { SpecProvider } from '@deneb-viz/vega-runtime/embed';
+
+/**
+ * After parsing, we need to patch content. This represents the results of
+ * that operation.
+ */
+export type ContentPatchResult = {
+    result: Spec | TopLevelSpec | null;
+    errors: string[];
+};
 
 /**
  * Options for resolving a provider schema validator.
@@ -53,6 +64,18 @@ export type CompiledSpecification = {
  * Values for a spec's parse status.
  */
 export type CompileStatus = 'valid' | 'error' | 'new';
+
+/**
+ * Items we need to compare whether a specification has changed or not.
+ */
+export type SpecificationComparisonOptions = {
+    datasetHash: string;
+    config: string;
+    spec: string;
+    provider: SpecProvider;
+    viewportHeight: number;
+    viewportWidth: number;
+};
 
 /**
  * Options for parsing the specification.

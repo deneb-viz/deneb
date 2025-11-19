@@ -4,10 +4,8 @@ import { Caption1 } from '@fluentui/react-components';
 import { useStatusStyles } from '.';
 import { getI18nValue } from '../../i18n';
 import { Hyperlink } from '../../interface';
-import {
-    APPLICATION_INFORMATION,
-    PROVIDER_RESOURCES
-} from '../../../../config';
+import { APPLICATION_INFORMATION } from '../../../../config';
+import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
 
 /**
  * Provides the hyperlinks to associated documentation for the landing page.
@@ -27,7 +25,12 @@ export const LandingPageLearnMore: React.FC = () => {
                     </Hyperlink>
                 </li>
                 <li className={classes.landingLi}>
-                    <Hyperlink href={PROVIDER_RESOURCES.vega.documentationUrl}>
+                    <Hyperlink
+                        href={
+                            PROVIDER_RESOURCE_CONFIGURATION.vega
+                                .documentationUrl
+                        }
+                    >
                         <Caption1>{`${getI18nValue(
                             'Link_Vega_Doc'
                         )} ${getI18nValue(
@@ -37,7 +40,10 @@ export const LandingPageLearnMore: React.FC = () => {
                 </li>
                 <li className={classes.landingLi}>
                     <Hyperlink
-                        href={PROVIDER_RESOURCES.vegaLite.documentationUrl}
+                        href={
+                            PROVIDER_RESOURCE_CONFIGURATION.vegaLite
+                                .documentationUrl
+                        }
                     >
                         <Caption1>{`${getI18nValue(
                             'Link_VegaLite_Doc'

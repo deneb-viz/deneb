@@ -1,4 +1,6 @@
 // TEMPORARY API WHILE WE MIGRATE
+export { getParsedSpec } from './logic';
+export { isSpecificationValid } from './validation';
 export {
     doDenebSpecJsonWorkerRequest,
     type IDenebJsonProcessingWorkerRequest,
@@ -6,5 +8,4 @@ export {
     type IDenebTokenizationResponseMessage,
     type IDenebTrackingResponseMessage
 } from './workers';
-export { isSpecificationValid } from './validation';
 export type * from './types';

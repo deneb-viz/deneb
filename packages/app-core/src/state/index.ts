@@ -20,6 +20,7 @@ export type * from './processing';
 export { createSpecificationSlice } from './specification';
 export type * from './specification';
 export type * from './state';
+export { createVisualSlice } from './visual';
 export type * from './visual';
 export { createVisualUpdateSlice } from './visual-update';
 export type * from './visual-update';

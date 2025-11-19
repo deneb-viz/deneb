@@ -1,31 +1,7 @@
-import powerbi from 'powerbi-visuals-api';
-import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
-import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
-import reduce from 'lodash/reduce';
-
+import { getI18nValue as pbiGetI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { ILocaleConfiguration } from './types';
 
 export * from './types';
-
-let i18n: ILocalizationManager;
-let locale: string;
-
-/**
- * Use to bind the visual Localization manager to this API for use in the
- * application lifecyle.
- *
- * I18N SERVICES WILL NOT BE ACCESSIBLE UNLESS THIS IS BOUND.
- */
-export const I18nServices = {
-    bind: (service: VisualConstructorOptions) => {
-        i18n = service.host.createLocalizationManager();
-        locale = service.host.locale;
-    },
-    update: (newLocale: string) => {
-        locale = newLocale;
-    }
-};
-Object.freeze(I18nServices);
 
 /**
  * Resolve the D3 number format specifier, based on locale settings.
@@ -42,29 +18,9 @@ export const getD3TimeFormatLocale = () =>
     I18N_D3_LOCALES.timeFormat[I18N_D3_LOCALES.default];
 
 /**
- * Convenience function allows i18n value lookup by key using host services.
- * Will tokenise the optional array of values matching {i} pattern.
+ * Pass-through of migrated method, to avoid excessive refactoring.
  */
-export const getI18nValue = (key: string, tokens: (string | number)[] = []) =>
-    reduce(
-        tokens,
-        (prev, value, idx) => {
-            return prev.replace(`{${idx}}`, `${value}`);
-        },
-        i18n.getDisplayName(key)
-    );
-
-/**
- * Get the resolved local for the visual. If using debugging, this will
- * resolve from the properties pane, otherwise it will resolve from the
- * visual host (as expected).
- */
-export const getLocale = () => locale;
-
-/**
- * Get the localization manager for the visual.
- */
-export const getLocalizationManager = () => i18n;
+export const getI18nValue = pbiGetI18nValue;
 
 const I18N_D3_LOCALES: ILocaleConfiguration = {
     default: 'en-US',
@@ -224,3 +180,4 @@ import * as t_tr_TR from 'd3-time-format/locale/tr-TR.json';
 import * as t_uk_UA from 'd3-time-format/locale/uk-UA.json';
 import * as t_zh_CN from 'd3-time-format/locale/zh-CN.json';
 import * as t_zh_TW from 'd3-time-format/locale/zh-TW.json';
+import { getLocale } from '@deneb-viz/powerbi-compat/visual-host';

@@ -2,8 +2,8 @@ import powerbi from 'powerbi-visuals-api';
 import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import ISelectionId = powerbi.visuals.ISelectionId;
 
-import { TDataPointSelectionStatus } from '../../features/interactivity';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
+import { type DataPointSelectionStatus } from '@deneb-viz/powerbi-compat/interactivity';
 
 export * as dataset from './dataset';
 export * as dataView from './dataView';
@@ -56,19 +56,6 @@ export interface IVisualDatasetField extends DataViewMetadataColumn {
      * present for `isExcludedFromTemplate === true`.
      */
     templateMetadata?: UsermetaDatasetField;
-}
-
-export interface IVisualDatasetValueRow {
-    // Identity index (from dataView; for dynamic selectors).
-    __row__: number;
-    // Selection status (for selection manager).
-    __selected__?: TDataPointSelectionStatus;
-    // Selection ID for row
-    __identity__: ISelectionId;
-    // String representation of Selection ID.
-    __key__: string;
-    // Flexible fields from data view (keys as as per IVisualDatasetFields).
-    [key: string]: any;
 }
 
 /**

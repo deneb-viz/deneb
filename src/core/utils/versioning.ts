@@ -1,5 +1,5 @@
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import { APPLICATION_INFORMATION, PROVIDER_VERSIONS } from '../../../config';
+import { APPLICATION_INFORMATION } from '../../../config';
 import { logDebug } from '../../features/logging';
 import { isUnversionedSpec } from '../../features/specification';
 import { getState } from '../../store';
@@ -14,6 +14,7 @@ import {
     type VersionComparator,
     type VersionInformation
 } from '@deneb-viz/utils/versioning';
+import { PROVIDER_VERSION_CONFIGURATION } from '@deneb-viz/configuration';
 
 /**
  * Current visual and provider information
@@ -31,7 +32,7 @@ const getCurrentVersionInfo = (
     return {
         denebVersion: APPLICATION_INFORMATION.version,
         provider: provider as SpecProvider,
-        providerVersion: PROVIDER_VERSIONS[provider]
+        providerVersion: PROVIDER_VERSION_CONFIGURATION[provider]
     };
 };
 
@@ -177,7 +178,7 @@ const migrateUnversionedSpec = (provider: SpecProvider) => {
                 properties: [
                     {
                         name: 'version',
-                        value: PROVIDER_VERSIONS[provider]
+                        value: PROVIDER_VERSION_CONFIGURATION[provider]
                     }
                 ]
             }
@@ -203,7 +204,7 @@ const migrateWithNoChanges = (provider: SpecProvider) => {
                 properties: [
                     {
                         name: 'version',
-                        value: PROVIDER_VERSIONS[provider]
+                        value: PROVIDER_VERSION_CONFIGURATION[provider]
                     }
                 ]
             }

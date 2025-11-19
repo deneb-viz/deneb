@@ -1,5 +1,77 @@
 import { describe, expect, it } from 'vitest';
-import { pickBy, updateDeep } from '../object';
+import { omit, pickBy, updateDeep } from '../object';
+
+describe('omit', () => {
+    it('should omit specified keys from an object', () => {
+        const obj = {
+            a: 1,
+            b: 2,
+            c: 3,
+            d: 4
+        };
+        const result = omit(obj, ['b', 'd']);
+        expect(result).toEqual({ a: 1, c: 3 });
+    });
+
+    it('should handle empty omit list', () => {
+        const obj = { a: 1, b: 2 };
+        const result = omit(obj, []);
+        expect(result).toEqual({ a: 1, b: 2 });
+    });
+
+    it('should handle omitting all keys', () => {
+        const obj = { a: 1, b: 2 };
+        const result = omit(obj, ['a', 'b']);
+        expect(result).toEqual({});
+    });
+
+    it('should handle non-existent keys', () => {
+        const obj = { a: 1, b: 2 };
+        const result = omit(obj, ['c', 'd']);
+        expect(result).toEqual({ a: 1, b: 2 });
+    });
+
+    it('should handle null input', () => {
+        const result = omit(null as any, ['a', 'b']);
+        expect(result).toEqual({});
+    });
+
+    it('should handle undefined input', () => {
+        const result = omit(undefined as any, ['a', 'b']);
+        expect(result).toEqual({});
+    });
+
+    it('should not mutate the original object', () => {
+        const obj = { a: 1, b: 2, c: 3 };
+        const result = omit(obj, ['b']);
+        expect(result).toEqual({ a: 1, c: 3 });
+        expect(obj).toEqual({ a: 1, b: 2, c: 3 });
+    });
+
+    it('should handle mixed value types', () => {
+        const obj = {
+            str: 'hello',
+            num: 42,
+            bool: true,
+            arr: [1, 2, 3],
+            obj: { nested: 'value' }
+        };
+        const result = omit(obj, ['num', 'bool']);
+        expect(result).toEqual({
+            str: 'hello',
+            arr: [1, 2, 3],
+            obj: { nested: 'value' }
+        });
+    });
+
+    it('should only omit own properties', () => {
+        const proto = { inherited: 'value' };
+        const obj = Object.create(proto);
+        obj.own = 'property';
+        const result = omit(obj, ['inherited']);
+        expect(result).toEqual({ own: 'property' });
+    });
+});
 
 describe('pickBy', () => {
     it('should pick properties that satisfy the predicate', () => {

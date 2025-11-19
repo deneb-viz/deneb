@@ -63,6 +63,8 @@
     },
     "dependencies": {
         "@deneb-viz/configuration": "*",
+        "@deneb-viz/utils": "*",
+        "fast-equals": "^5.3.3",
         "powerbi-visuals-utils-formattingmodel": "^6.2.2",
         "powerbi-visuals-utils-formattingutils": "^6.1.2"
     }
