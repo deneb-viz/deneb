@@ -3,7 +3,8 @@
   "ui": "stream",
   "globalEnv": [
     "LOG_LEVEL",
-    "ZUSTAND_DEV_TOOLS"
+    "ZUSTAND_DEV_TOOLS",
+    "PBIVIZ_DEV_MODE"
   ],
   "tasks": {
     "build": {

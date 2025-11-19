@@ -34,7 +34,7 @@ const NAME_TO_LEVEL: Record<string, LogLevel> = {
     SILENT: LogLevel.NONE
 };
 
-const parseLogLevel = (input: unknown, fallback: LogLevel): LogLevel => {
+export const parseLogLevel = (input: unknown, fallback: LogLevel): LogLevel => {
     if (typeof input === 'number' && Number.isFinite(input)) {
         return input as LogLevel;
     }

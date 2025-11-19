@@ -27,7 +27,6 @@ import {
     VegaExtensibilityServices,
     VegaPatternFillServices
 } from './features/vega-extensibility';
-import { FEATURES } from '../config';
 import {
     VisualFormattingSettingsModel,
     VisualFormattingSettingsService,
@@ -48,12 +47,19 @@ import {
     VisualHostServices
 } from '@deneb-viz/powerbi-compat/visual-host';
 import { APPLICATION_INFORMATION_CONFIGURATION } from '@deneb-viz/configuration';
+import { toBoolean } from '@deneb-viz/utils/type-conversion';
 
 /**
  * Run to indicate that the visual has started.
  */
 logHeading(`${APPLICATION_INFORMATION_CONFIGURATION?.displayName}`);
 logHeading(`Version: ${APPLICATION_INFORMATION_CONFIGURATION?.version}`, 12);
+
+/**
+ * Centralize/report developer mode from environment.
+ */
+const IS_DEVELOPER_MODE = toBoolean(process.env.PBIVIZ_DEV_MODE);
+logDebug(`Developer Mode: ${IS_DEVELOPER_MODE}`);
 
 export class Deneb implements IVisual {
     private settings: VisualFormattingSettingsModel;
@@ -91,7 +97,7 @@ export class Deneb implements IVisual {
             logTimeStart('update');
             // Parse the settings for use in the visual
             this.settings = getVisualFormattingModel(options?.dataViews?.[0]);
-            this.settings.resolveDeveloperSettings(FEATURES.developer_mode);
+            this.settings.resolveDeveloperSettings(IS_DEVELOPER_MODE);
             // Handle the update options and dispatch to store as needed
             this.resolveUpdateOptions(options);
             logTimeEnd('update');
@@ -198,7 +204,7 @@ export class Deneb implements IVisual {
      */
     private resolveLocale() {
         logDebug('Resolving locale options...');
-        const locale = FEATURES.developer_mode
+        const locale = IS_DEVELOPER_MODE
             ? (this.settings.developer.localization.locale.value as string)
             : getLocale();
         logDebug('Locale resolved.', { locale });

@@ -27,7 +27,17 @@ Deneb uses a custom Webpack 5 toolchain (replacing pbiviz CLI) for: faster rebui
 
 ## 2. Local Development Workflow
 
-Primary development command:
+### First-time setup
+
+copy `.env.example` to `.env` (see “.env Setup” below) so local dev toggles like `LOG_LEVEL` are picked up.
+
+Initial assets: due to limitations in the Power BI webpack plugin, some assets required for development are only produced by the full packaging step and might mean that your visual won't load correctly if running in development mode. Run this once after cloning to prime all packages and the visual:
+
+```powershell
+npm run package
+```
+
+### Typical development
 
 ```
 npm run dev
@@ -44,7 +54,7 @@ Typical cycle:
 1. Run `npm run dev`
 2. Open report with the visual pointing at `https://localhost:8080/assets/visual.js`
 3. Edit code in packages or `src/`
-4. Wait for quick rebuild (<3–8s cached) and automatic iframe reload
+4. Wait for rebuild and reload iframe
 5. Verify changes
 
 ## 3. Scripts Reference
@@ -61,6 +71,28 @@ Typical cycle:
 | `pbiviz:package*`            | Legacy / custom packaging modes                        |
 | `install-cert`               | Install / trust Power BI test certificates             |
 | `validate-config-for-commit` | Feature flag + config guardrail before packaging       |
+
+### .env Setup (recommended)
+
+An `.env.example` is provided at the repo root. Copy it to `.env` to get started and adjust values as needed. The `.env` file is loaded automatically by `@dotenvx/dotenvx` for local scripts (e.g., validation and packaging).
+
+PowerShell (only create if missing):
+
+```powershell
+if (-not (Test-Path .env)) { Copy-Item -Path .env.example -Destination .env }
+```
+
+Key toggles you'll likely set in `.env`:
+
+- `LOG_LEVEL`: numeric logging level used during dev/validation.
+- `ZUSTAND_DEV_TOOLS`: enable Redux/Zustand devtools if you have the extension.
+- `PBIVIZ_DEV_MODE`: enable developer-specific visual behaviors.
+
+Validate your setup any time with:
+
+```powershell
+npm run validate-config-for-commit
+```
 
 ## 4. Webpack Architecture
 
@@ -118,6 +150,20 @@ Snapshot `managedPaths` ensures linked workspace packages under `node_modules/@d
 
 Defined in `config/features.json` and optionally overridden in `config/package-custom.json` for custom builds (e.g., enabling external URIs in standalone variant).
 
+In addition to JSON feature flags, we also use a small set of developer-focused environment toggles in a local `.env` file (loaded via `@dotenvx/dotenvx`). These are not persisted in the packaged visual; they influence local development and packaging scripts:
+
+- `ZUSTAND_DEV_TOOLS`:
+    - Enables Redux/Zustand debugging if you have the browser extension installed.
+    - Accepts typical truthy/falsey values (e.g., `true/false`, `1/0`).
+- `PBIVIZ_DEV_MODE`:
+    - Enables developer-specific features for the Power BI visual.
+    - Accepts typical truthy/falsey values.
+- `LOG_LEVEL`:
+    - Sets the logging level for development and packaging validation (replaces the prior hard-coded const; behavior is unchanged, see levels below).
+    - Accepts a numeric level as described in the Logging section.
+
+These `.env` values are validated by `bin/validate-config-for-commit.ts` to prevent committing with unintended developer modes or elevated logging.
+
 Usage:
 
 ```ts
@@ -131,7 +177,7 @@ Retention policy: Remove stale flags + tests in the next minor/major release aft
 
 ## 7. Logging & Diagnostics
 
-Logging utilities live under `src/features/logging`. Controlled by `LOG_LEVEL` exported via `config/index.ts` using numeric thresholds (see table below). In packaged visuals, level is forced to `None` to avoid telemetry noise.
+Logging utilities live under `src/features/logging`. The active log level is set via the `LOG_LEVEL` environment variable in your local `.env` (loaded by `@dotenvx/dotenvx`) using numeric thresholds (see table below). In packaged/certified visuals, the level is forced to `None` to avoid telemetry noise and is guarded by the commit validation script.
 
 | Level | Name   | Typical Use                                             |
 | ----- | ------ | ------------------------------------------------------- |
@@ -146,6 +192,17 @@ Logging utilities live under `src/features/logging`. Controlled by `LOG_LEVEL` e
 | 51    | Timing | `logTimeStart` / `logTimeEnd` wrappers                  |
 
 Performance measurement: use timing level to bracket expensive operations to guide optimization / caching.
+
+Quick usage:
+
+```env
+# .env (local only; not committed)
+LOG_LEVEL=51            # Timing/Debug
+ZUSTAND_DEV_TOOLS=true  # Enable Redux/Zustand devtools integration
+PBIVIZ_DEV_MODE=false   # Disable PBIVIZ developer-only behaviors
+```
+
+Validation: `npm run validate-config-for-commit` loads `.env` and fails if `LOG_LEVEL` is non-zero for committed baselines or if dev-only toggles are enabled in non-standalone packaging.
 
 ## 8. Production Packaging
 
@@ -309,7 +366,6 @@ Feature flags are stored in `config/features.json` and take the simple form of u
 
 ```json
 {
-    "developer_mode": false,
     "combined_apply_button": false,
     "data_drilldown": false,
     "enable_external_uri": false,
@@ -327,7 +383,7 @@ features are exported as `const FEATURES` in `config/index.ts` and this is the i
 import { FEATURES } from '../config';
 
 // test for flag and do necessary logic
-if (FEATURES.developer_mode) {
+if (FEATURES.enable_external_uri) {
     ...
 }
 ```
@@ -353,33 +409,3 @@ You can refer to the `standalone.features` object in this file for an example of
 - For some features, we may need to update the `capabilities.json` file to suit what we want. There currently isn't a process for this, and we will need to come up with a suitable way of modifying this based on a specific flag or its desired behavior.
 
 - For CI purposes, feature validation is currently done in an ad-hoc manner in `bin/validate-config-for-commit.ts`. We should ideally have a slightly better process for feature whitelisting and validation, but this works _reasonably_ well at present.
-
-### Logging (Detailed Reference)
-
-This is a common debugging practice and Deneb has a set of functions to help manage and present this more consistently, found in `src/features/logging`.
-
-The exported `const LOG_LEVEL` in `config/index.ts` drives the behavior of these functions and you can set this level to help with logging output consistently throughout your methods.
-
-### Log Levels
-
-Logging is govered using a number and anything lower than this number if output to the console. Levels are specified in the `ELogLevel` enum, but a more detailed breakdown of their purpose is as follows:
-
-| Level | Name     | Description                                                                                                                                      | Methods                        |
-| ----- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ |
-| 0     | `None`\* | No logging (mandated for merge to `main`).                                                                                                       | N/A                            |
-| 1     | `Error`  | Used for logging error-level events.                                                                                                             | `logError`                     |
-| 2     | `Warn`   | Used for logging warning-level events.                                                                                                           | `logWarning`                   |
-| 3     | `Info`   | Used for logging info-level events.                                                                                                              | `logInfo`                      |
-| 10    | `Host`   | Used for logging events that the Power BI visual host carries out and is intended to help separate this level of the stack from the application. | `logHost`                      |
-| 11    | `Render` | Used for logging render events within React components (if wanting to be able to see these as their own type).                                   | `logRender`                    |
-| 12    | `Hook`   | Used for logging hook-based logic within React components (if wanting to be able to see these as their own type).                                | `logRender`                    |
-| 50    | `Debug`  | Any other verbose logging that does not fit under the above categories.                                                                          | `logDebug`                     |
-| 51    | `Timing` | Use a specified identity to start and stop timing, which can help to track performance of methods.                                               | `logTimeStart` \| `logTimeEnd` |
-
-\* We use `None` for the submitted/packaged visual, because if `Error`-level output is logged to the console, this gets scooped up by Microsoft's telemetry and we get notified about it. For trappable errors, we aren't worried about this and it means that if anything occurs that we didn't plan for, this is still captured and sent on for us to look at (when they get around to it).
-
-### Current Logging Process Limitations
-
-- The standard levels (`Error`, `Warn` and `Info` use their corresponding) levels in the browser console. Everything else goes under the `Verbose` level, so check that you have this enabled if you aren't seeing the expected output in the console.
-
-- This process can result in methods being less 'pure' and may blur their purpose, so it is recommended that you try to balance this as much as possible so that methods are suitably traceable when logging it enabled vs. making them too verbose and therefore hard to understand and maintain.

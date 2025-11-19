@@ -14,13 +14,6 @@ export const CAPABILITIES = capabilities;
 export const FEATURES = features;
 
 /**
- * The log level is used to provide debug-level logging throughout whilst
- * developing. This should be set to `0 (NONE)` for production builds. For more
- * information, see the `src/features/logging` directory.
- */
-export const LOG_LEVEL: number = 0;
-
-/**
  * Keyboard shortcuts for the application.
  */
 export const KEY_BINDINGS = {

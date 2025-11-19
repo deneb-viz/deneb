@@ -1,31 +1,42 @@
+import '@dotenvx/dotenvx/config';
 import { exit } from 'process';
-import { FEATURES, LOG_LEVEL } from '../config';
+import { FEATURES } from '../config';
+import { parseLogLevel } from '@deneb-viz/utils/logging';
+import { toBoolean } from '@deneb-viz/utils/type-conversion';
 
 console.log('Checking visual configuration is correct...\n');
 const MODE = process.env.DENEB_PACKAGE_MODE;
+const LOG_LEVEL = parseLogLevel(process.env.LOG_LEVEL, 0);
+const REDUX_DEV_TOOLS = toBoolean(process.env.ZUSTAND_DEV_TOOLS);
+const PBIVIZ_DEV_MODE = toBoolean(process.env.PBIVIZ_DEV_MODE);
 const allowExternalUri = MODE === 'standalone';
 const errors: string[] = [];
 
-// Developer mode: Should not be set in committed code
-if (FEATURES.developer_mode) {
+// Redux dev tools: Should not be set in committed code
+if (REDUX_DEV_TOOLS) {
     errors.push(
-        '❌ FEATURES.developer_mode flag is true; this should be false.'
+        '❌ .env ZUSTAND_DEV_TOOLS flag is true; this should be false.'
+    );
+}
+// PBI Developer mode: Should not be set in committed code
+if (PBIVIZ_DEV_MODE) {
+    errors.push('❌ .env PBIVIZ_DEV_MODE flag is true; this should be false.');
+}
+
+// Log level: should be 0 (NONE) in committed code
+if (LOG_LEVEL !== 0) {
+    errors.push(`❌ .env LOG_LEVEL is ${LOG_LEVEL}; this should be 0 (NONE).`);
+}
+// External URIs: Not permitted in certified visual; allowed only for standalone packaging mode
+if (FEATURES.enable_external_uri && !allowExternalUri) {
+    errors.push(
+        '❌ FEATURES.enable_external_uri is true; this should be false.'
     );
 }
 // Visual update history overlay: Should not be set in committed code
 if (FEATURES.visual_update_history_overlay) {
     errors.push(
         '❌ FEATURES.visual_update_history_overlay flag is true; this should be false.'
-    );
-}
-// Log level: should be 0 (NONE) in committed code
-if (LOG_LEVEL !== 0) {
-    errors.push(`❌ logLevel is ${LOG_LEVEL}; this should be 0 (NONE).`);
-}
-// External URIs: Not permitted in certified visual; allowed only for standalone packaging mode
-if (FEATURES.enable_external_uri && !allowExternalUri) {
-    errors.push(
-        '❌ FEATURES.enable_external_uri is true; this should be false.'
     );
 }
 

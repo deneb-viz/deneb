@@ -154,6 +154,9 @@ function getCommonConfig(options = {}) {
                 ),
                 'process.env.ZUSTAND_DEV_TOOLS': JSON.stringify(
                     process.env.ZUSTAND_DEV_TOOLS ?? ''
+                ),
+                'process.env.PBIVIZ_DEV_MODE': JSON.stringify(
+                    process.env.PBIVIZ_DEV_MODE ?? ''
                 )
             }),
             new MiniCssExtractPlugin({
