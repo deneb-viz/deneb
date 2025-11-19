@@ -10,5 +10,7 @@ export default defineConfig({
     dts: true,
     sourcemap: true,
     treeshake: true,
-    minify: false
+    minify: false,
+    // Externalize powerbi-compat to keep a single instance.
+    external: ['@deneb-viz/powerbi-compat', '@deneb-viz/powerbi-compat/*']
 });

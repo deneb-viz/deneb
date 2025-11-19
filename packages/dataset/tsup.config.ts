@@ -14,5 +14,7 @@ export default defineConfig({
     sourcemap: true,
     treeshake: true,
     minify: false,
-    splitting: false
+    splitting: false,
+    // Ensure shared runtime instance; avoid bundling powerbi-compat.
+    external: ['@deneb-viz/powerbi-compat', '@deneb-viz/powerbi-compat/*']
 });

@@ -60,7 +60,6 @@
     "dependencies": {
         "@deneb-viz/configuration": "*",
         "@deneb-viz/dataset": "*",
-        "@deneb-viz/powerbi-compat": "*",
         "@deneb-viz/template-usermeta": "*",
         "@deneb-viz/utils": "*",
         "@deneb-viz/vega-runtime": "*",
@@ -76,6 +75,7 @@
         "vscode-json-languageservice": "^5.3.11"
     },
     "peerDependencies": {
+        "@deneb-viz/powerbi-compat": "*",
         "powerbi-visuals-api": "5.11.0"
     }
 }

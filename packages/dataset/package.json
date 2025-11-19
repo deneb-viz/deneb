@@ -51,6 +51,7 @@
         "@deneb-viz/utils": "*"
     },
     "peerDependencies": {
+        "@deneb-viz/powerbi-compat": "*",
         "powerbi-visuals-api": "5.11.0"
     }
 }

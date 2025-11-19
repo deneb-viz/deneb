@@ -16,6 +16,11 @@ export default defineConfig({
     treeshake: true,
     minify: false,
     splitting: false,
+    // Ensure shared runtime instance; avoid bundling powerbi-compat.
+    external: [
+        '@deneb-viz/powerbi-compat',
+        '@deneb-viz/powerbi-compat/*'
+    ],
     esbuildPlugins: [
         {
             // Ensure that workers are loaded as raw files.

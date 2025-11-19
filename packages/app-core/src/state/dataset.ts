@@ -1,6 +1,8 @@
 import powerbi from 'powerbi-visuals-api';
+import { type StateCreator } from 'zustand';
+
 import { getEmptyDataset, type IDataset } from '@deneb-viz/dataset/data';
-import { StoreState } from './state';
+import { type StoreState } from './state';
 import { getParsedSpec } from '@deneb-viz/json-processing/spec-processing';
 import { getSpecificationParseOptions } from './helpers';
 import { getHashValue } from '@deneb-viz/utils/crypto';
@@ -14,7 +16,7 @@ import {
 } from '@deneb-viz/powerbi-compat/interactivity';
 import { logDebug, logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
 import {
-    EditorPanePosition,
+    type EditorPanePosition,
     getApplicationMode,
     getResizablePaneSize
 } from '../lib';
@@ -22,8 +24,7 @@ import {
     areAllCreateDataRequirementsMet,
     getUpdatedExportMetadata
 } from '@deneb-viz/json-processing';
-import { UsermetaTemplate } from '@deneb-viz/template-usermeta';
-import { StateCreator } from 'zustand';
+import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 
 /**
@@ -107,8 +108,6 @@ export const createDatasetSlice =
                 'updateDatasetSelectionAbortStatus'
             )
     });
-
-////
 
 // eslint-disable-next-line max-lines-per-function
 const handleUpdateDataset = (
@@ -234,18 +233,28 @@ const handleUpdateDatasetSelectors = (
     selectors: powerbi.visuals.ISelectionId[]
 ): Partial<StoreState> => {
     logDebug('dataset.updateDatasetSelectors', selectors);
-    const values = state.dataset.values.slice().map((v) => ({
-        ...v,
-        ...(isCrossFilterPropSet({
+    const values = state.dataset.values.slice().map((v) => {
+        const isCrossFilterEligible = isCrossFilterPropSet({
             enableSelection:
                 state.visualSettings.vega.interactivity.enableSelection.value
-        }) && {
-            __selected__: getDataPointCrossFilterStatus(
-                v?.[ROW_IDENTITY_FIELD_NAME],
-                selectors
-            )
-        })
-    }));
+        });
+        logDebug(
+            'dataset.updateDatasetSelectors isCrossFilterEligible',
+            v,
+            isCrossFilterEligible
+        );
+        return {
+            ...v,
+            ...(isCrossFilterEligible &&
+                {} && {
+                    __selected__: getDataPointCrossFilterStatus(
+                        v?.[ROW_IDENTITY_FIELD_NAME],
+                        selectors
+                    )
+                })
+        };
+    });
+    logDebug('dataset.updateDatasetSelectors values', values);
     const hashValue = getHashValue({ fields: state.dataset.fields, values });
     const specOptions = getSpecificationParseOptions(state);
     const spec = getParsedSpec(state.specification, specOptions, {

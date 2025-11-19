@@ -54,6 +54,7 @@
         "zustand": "^4.5.5"
     },
     "peerDependencies": {
+        "@deneb-viz/powerbi-compat": "*",
         "powerbi-visuals-api": "5.11.0",
         "react": "^19.2.0",
         "react-dom": "^19.2.0"

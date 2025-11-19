@@ -13,7 +13,7 @@
     ],
     "scripts": {
         "dev": "turbo run dev webpack:start --parallel --concurrency=25",
-        "package": "turbo build webpack:package",
+        "package": "npm run validate-config-for-commit && turbo build webpack:package",
         "eslint": "turbo run eslint -- && npm run -s eslint:root",
         "test": "turbo run test",
         "test:watch": "turbo run test:watch",
@@ -24,7 +24,7 @@
         "eslint:root": "npx eslint .",
         "webpack:start": "cross-env NODE_ENV=development webpack serve --config webpack.dev.config.js",
         "webpack:build": "cross-env NODE_ENV=development webpack --config webpack.dev.config.js",
-        "webpack:package": "npm run validate-config-for-commit && cross-env NODE_ENV=production webpack --config webpack.prod.config.js",
+        "webpack:package": "cross-env NODE_ENV=production webpack --config webpack.prod.config.js",
         "webpack:analyze": "cross-env NODE_ENV=production webpack --config webpack.prod.config.js --profile --json > webpack-stats.json",
         "package:standalone": "ts-node -P tsconfig.build-scripts.json bin/package-custom --mode standalone",
         "package:alpha": "ts-node -P tsconfig.build-scripts.json bin/package-custom --mode alpha",

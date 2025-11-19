@@ -8,6 +8,12 @@ export default defineConfig((options: Options) => ({
     define: {
         global: 'globalThis'
     },
+    // Do not inline powerbi-compat so that a single runtime instance is shared.
+    external: [
+        // Wildcard ensures ALL subpath imports (e.g. /visual-host, /signals, /theme) are externalized.
+        '@deneb-viz/powerbi-compat',
+        '@deneb-viz/powerbi-compat/*'
+    ],
     sourcemap: true,
     splitting: false,
     outDir: 'dist',

@@ -84,6 +84,27 @@ Key points:
 
 **Exception: `@deneb-viz/powerbi-compat`** — This package builds with TypeScript (`tsc`) instead of tsup to ensure proper const enum inlining. The TypeScript compiler accesses `powerbi-visuals-api` as a devDependency during build and inlines const enum values (like `VisualUpdateType.Data` → `2`) as numeric literals. This eliminates runtime dependencies on the API package and avoids bundling its entire codebase (which would add ~126KB).
 
+### Shared singleton packages (important)
+
+When a package exposes a singleton runtime instance (for example `@deneb-viz/powerbi-compat` exposes `VisualHostServices`), it's important to ensure the singleton isn't accidentally duplicated in different bundles.
+
+Rules to follow:
+
+- All packages that import `@deneb-viz/powerbi-compat` should add it to `peerDependencies` in `package.json` (ex: `"@deneb-viz/powerbi-compat": "*"`). This ensures the host workspace provides the package at runtime and prevents multiple versions from being pulled into nested node_modules.
+- In their `tsup.config.ts`, add the `external` flag to prevent the package being bundled into their distributions. Example:
+
+```ts
+// tsup.config.ts
+external: [
+    '@deneb-viz/powerbi-compat',
+    '@deneb-viz/powerbi-compat/*'
+]
+```
+
+- The root (visual) package should supply `@deneb-viz/powerbi-compat` in its `devDependencies` or final bundle. This allows the visual to provide the single runtime instance consumed by packages with `peerDependencies`.
+
+This pattern preserves a shared runtime instance so singletons like `VisualHostServices` remain truly singletons and aren't duplicated across package boundaries.
+
 Watch scope (dev):
 
 ```
@@ -257,6 +278,7 @@ If watch misses changes on certain filesystems (WSL/network drives), enable poll
 Explicit devDependencies added for transparency:
 
 - Core: `webpack`, `webpack-cli`, `webpack-dev-server`
+ - Shared singletons: `@deneb-viz/powerbi-compat` (used across packages like `@deneb-viz/app-core`, `@deneb-viz/json-processing`, `@deneb-viz/vega-runtime`, `@deneb-viz/template-usermeta`, `@deneb-viz/dataset`). These packages should list `@deneb-viz/powerbi-compat` in `peerDependencies` and add it to their `tsup` `external` setting so that a single runtime instance is provided by the packaging root.
 - Composition: `webpack-merge`
 - Loaders: `ts-loader`, `css-loader`, `less`, `less-loader`, `json-loader`
 - Plugins: `mini-css-extract-plugin`, `terser-webpack-plugin`, `webpack-bundle-analyzer`, `extra-watch-webpack-plugin`, `powerbi-visuals-webpack-plugin`

@@ -43,7 +43,6 @@
         "vitest": "^3.2.4"
     },
     "dependencies": {
-        "@deneb-viz/powerbi-compat": "*",
         "@deneb-viz/utils": "*",
         "d3-interpolate": "^3.0.1",
         "mergician": "^2.0.2",
@@ -52,6 +51,7 @@
         "vega-lite": "6.4.1"
     },
     "peerDependencies": {
+        "@deneb-viz/powerbi-compat": "*",
         "powerbi-visuals-api": "5.11.0"
     }
 }

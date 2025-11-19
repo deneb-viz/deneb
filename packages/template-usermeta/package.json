@@ -42,7 +42,9 @@
         "vitest": "^3.2.4"
     },
     "dependencies": {
-        "@deneb-viz/powerbi-compat": "*",
         "@deneb-viz/vega-runtime": "*"
+    },
+    "peerDependencies": {
+        "@deneb-viz/powerbi-compat": "*"
     }
 }
