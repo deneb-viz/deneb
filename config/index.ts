@@ -1,14 +1,5 @@
 import capabilities from '../capabilities.json';
 import features from './features.json';
-import { devDependencies } from '../package.json';
-import { visual } from '../pbiviz.json';
-
-/**
- * This is an object that contains the visual's metadata. This is used to
- * handle places we need to display this information in the UI, as well as
- * for versioning and other purposes.
- */
-export const APPLICATION_INFORMATION = visual;
 
 /**
  * This is an object that contains the capabilities of the visual.

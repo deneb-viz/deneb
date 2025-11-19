@@ -27,7 +27,7 @@ import {
     VegaExtensibilityServices,
     VegaPatternFillServices
 } from './features/vega-extensibility';
-import { APPLICATION_INFORMATION, FEATURES } from '../config';
+import { FEATURES } from '../config';
 import {
     VisualFormattingSettingsModel,
     VisualFormattingSettingsService,
@@ -47,12 +47,13 @@ import {
     setRenderingStarted,
     VisualHostServices
 } from '@deneb-viz/powerbi-compat/visual-host';
+import { APPLICATION_INFORMATION_CONFIGURATION } from '@deneb-viz/configuration';
 
 /**
  * Run to indicate that the visual has started.
  */
-logHeading(`${APPLICATION_INFORMATION?.displayName}`);
-logHeading(`Version: ${APPLICATION_INFORMATION?.version}`, 12);
+logHeading(`${APPLICATION_INFORMATION_CONFIGURATION?.displayName}`);
+logHeading(`Version: ${APPLICATION_INFORMATION_CONFIGURATION?.version}`, 12);
 
 export class Deneb implements IVisual {
     private settings: VisualFormattingSettingsModel;

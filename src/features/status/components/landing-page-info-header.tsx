@@ -8,7 +8,7 @@ import React from 'react';
 
 import { useStatusStyles } from '.';
 import { StatusStackItem } from './status-stack-item';
-import { APPLICATION_INFORMATION } from '../../../../config';
+import { APPLICATION_INFORMATION_CONFIGURATION } from '@deneb-viz/configuration';
 
 /**
  * Displays the visual metadata as part of the landing status page.
@@ -32,15 +32,17 @@ export const LandingPageInfoHeader = () => {
                                     color: '#7a7170'
                                 }}
                             >
-                                {APPLICATION_INFORMATION.displayName}{' '}
+                                {
+                                    APPLICATION_INFORMATION_CONFIGURATION.displayName
+                                }{' '}
                             </span>
                             <Caption2>
-                                {APPLICATION_INFORMATION.version}
+                                {APPLICATION_INFORMATION_CONFIGURATION.version}
                             </Caption2>
                         </Title2>
                         <br />
                         <Caption1>
-                            {APPLICATION_INFORMATION.description}
+                            {APPLICATION_INFORMATION_CONFIGURATION.description}
                         </Caption1>
                     </div>
                 </div>

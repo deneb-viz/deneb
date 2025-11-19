@@ -1,52 +1,8 @@
-import { createWithEqualityFn } from 'zustand/traditional';
-import { shallow } from 'zustand/vanilla/shallow';
-import { devtools } from 'zustand/middleware';
-import { APPLICATION_INFORMATION, FEATURES } from '../../config';
-import {
-    createCommandsSlice,
-    createCreateSlice,
-    createDatasetSlice,
-    createDebugSlice,
-    createEditorSlice,
-    createExportSlice,
-    createFieldUsageSlice,
-    createInterfaceSlice,
-    createMigrationSlice,
-    createProcessingSlice,
-    createSpecificationSlice,
-    createVisualSlice,
-    createVisualUpdateSlice,
-    StateDependencies,
-    type StoreState
-} from '@deneb-viz/app-core';
+import { getState as appGetState, useState } from '@deneb-viz/app-core';
 
-const dependencies: StateDependencies = {
-    applicationVersion: APPLICATION_INFORMATION.version
-};
-
-const store = createWithEqualityFn<StoreState>()(
-    devtools(
-        (...a) => ({
-            ...createCommandsSlice()(...a),
-            ...createCreateSlice()(...a),
-            ...createDatasetSlice()(...a),
-            ...createDebugSlice()(...a),
-            ...createEditorSlice()(...a),
-            ...createExportSlice(dependencies)(...a),
-            ...createFieldUsageSlice()(...a),
-            ...createInterfaceSlice()(...a),
-            ...createMigrationSlice()(...a),
-            ...createProcessingSlice()(...a),
-            ...createSpecificationSlice()(...a),
-            ...createVisualSlice()(...a),
-            ...createVisualUpdateSlice()(...a)
-        }),
-        { enabled: FEATURES.developer_mode }
-    ),
-    shallow
-);
-
-const getState = () => store.getState();
+// Provide wrappers around migrated store, while we transition codebase.
+const store = useState;
+const getState = appGetState;
 
 export default store;
 export { getState };

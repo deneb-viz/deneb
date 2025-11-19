@@ -1,4 +1,13 @@
 import { devDependencies } from '../../../package.json';
+import { visual } from '../../../pbiviz.json';
+
+/**
+ * This is an object that contains the visual's metadata. This is used to handle places we need to display this
+ * information in the UI, as well as for versioning and other purposes.
+ * @remarks
+ * POTENTIAL TECH DEBT
+ */
+export const APPLICATION_INFORMATION_CONFIGURATION = visual;
 
 /**
  * Default values for the data table in the debug pane.

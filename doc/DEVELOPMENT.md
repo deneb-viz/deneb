@@ -95,10 +95,7 @@ Rules to follow:
 
 ```ts
 // tsup.config.ts
-external: [
-    '@deneb-viz/powerbi-compat',
-    '@deneb-viz/powerbi-compat/*'
-]
+external: ['@deneb-viz/powerbi-compat', '@deneb-viz/powerbi-compat/*'];
 ```
 
 - The root (visual) package should supply `@deneb-viz/powerbi-compat` in its `devDependencies` or final bundle. This allows the visual to provide the single runtime instance consumed by packages with `peerDependencies`.
@@ -278,7 +275,7 @@ If watch misses changes on certain filesystems (WSL/network drives), enable poll
 Explicit devDependencies added for transparency:
 
 - Core: `webpack`, `webpack-cli`, `webpack-dev-server`
- - Shared singletons: `@deneb-viz/powerbi-compat` (used across packages like `@deneb-viz/app-core`, `@deneb-viz/json-processing`, `@deneb-viz/vega-runtime`, `@deneb-viz/template-usermeta`, `@deneb-viz/dataset`). These packages should list `@deneb-viz/powerbi-compat` in `peerDependencies` and add it to their `tsup` `external` setting so that a single runtime instance is provided by the packaging root.
+- Shared singletons: `@deneb-viz/powerbi-compat` (used across packages like `@deneb-viz/app-core`, `@deneb-viz/json-processing`, `@deneb-viz/vega-runtime`, `@deneb-viz/template-usermeta`, `@deneb-viz/dataset`). These packages should list `@deneb-viz/powerbi-compat` in `peerDependencies` and add it to their `tsup` `external` setting so that a single runtime instance is provided by the packaging root.
 - Composition: `webpack-merge`
 - Loaders: `ts-loader`, `css-loader`, `less`, `less-loader`, `json-loader`
 - Plugins: `mini-css-extract-plugin`, `terser-webpack-plugin`, `webpack-bundle-analyzer`, `extra-watch-webpack-plugin`, `powerbi-visuals-webpack-plugin`

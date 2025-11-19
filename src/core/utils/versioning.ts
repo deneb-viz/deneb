@@ -1,5 +1,4 @@
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import { APPLICATION_INFORMATION } from '../../../config';
 import { logDebug } from '../../features/logging';
 import { isUnversionedSpec } from '../../features/specification';
 import { getState } from '../../store';
@@ -14,7 +13,10 @@ import {
     type VersionComparator,
     type VersionInformation
 } from '@deneb-viz/utils/versioning';
-import { PROVIDER_VERSION_CONFIGURATION } from '@deneb-viz/configuration';
+import {
+    APPLICATION_INFORMATION_CONFIGURATION,
+    PROVIDER_VERSION_CONFIGURATION
+} from '@deneb-viz/configuration';
 
 /**
  * Current visual and provider information
@@ -30,7 +32,7 @@ const getCurrentVersionInfo = (
         }
     } = visualSettings;
     return {
-        denebVersion: APPLICATION_INFORMATION.version,
+        denebVersion: APPLICATION_INFORMATION_CONFIGURATION.version,
         provider: provider as SpecProvider,
         providerVersion: PROVIDER_VERSION_CONFIGURATION[provider]
     };

@@ -8,13 +8,15 @@ import {
 import { getState } from '../../store';
 import { persistSpecification } from '../specification';
 import { IEditorRefs, setFocusToActiveEditor } from '../json-editor';
-import { APPLICATION_INFORMATION } from '../../../config';
 import {
     type Command,
     type DebugPaneRole,
     type EditorPaneRole
 } from '@deneb-viz/app-core';
-import { VISUAL_PREVIEW_ZOOM_CONFIGURATION } from '@deneb-viz/configuration';
+import {
+    APPLICATION_INFORMATION_CONFIGURATION,
+    VISUAL_PREVIEW_ZOOM_CONFIGURATION
+} from '@deneb-viz/configuration';
 import { launchUrl } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
@@ -149,7 +151,7 @@ export const handleOpenRemapDialog = () => {
  */
 export const handleOpenWebsite = () => {
     executeCommand('helpSite', () => {
-        launchUrl(APPLICATION_INFORMATION.supportUrl);
+        launchUrl(APPLICATION_INFORMATION_CONFIGURATION.supportUrl);
     });
 };
 

@@ -4,8 +4,10 @@ import { Caption1 } from '@fluentui/react-components';
 import { useStatusStyles } from '.';
 import { getI18nValue } from '../../i18n';
 import { Hyperlink } from '../../interface';
-import { APPLICATION_INFORMATION } from '../../../../config';
-import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
+import {
+    APPLICATION_INFORMATION_CONFIGURATION,
+    PROVIDER_RESOURCE_CONFIGURATION
+} from '@deneb-viz/configuration';
 
 /**
  * Provides the hyperlinks to associated documentation for the landing page.
@@ -16,7 +18,9 @@ export const LandingPageLearnMore: React.FC = () => {
         <div>
             <ul className={classes.landingUl}>
                 <li className={classes.landingLi}>
-                    <Hyperlink href={APPLICATION_INFORMATION.supportUrl}>
+                    <Hyperlink
+                        href={APPLICATION_INFORMATION_CONFIGURATION.supportUrl}
+                    >
                         <Caption1>{`${getI18nValue(
                             'Text_Landing_Resources_Deneb'
                         )} ${getI18nValue(
