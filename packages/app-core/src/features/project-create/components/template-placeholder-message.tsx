@@ -1,24 +1,30 @@
 import React from 'react';
-import { Caption1 } from '@fluentui/react-components';
+import { Caption1, makeStyles, tokens } from '@fluentui/react-components';
 import { shallow } from 'zustand/shallow';
 
-import { useCreateStyles } from './';
-import store from '../../../store';
-import { getI18nValue } from '../../i18n';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
+import { useDenebState } from '../../../state';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+
+export const useTemplatePlaceholderMessageStyles = makeStyles({
+    templatePlaceholderMessage: {
+        paddingTop: tokens.spacingVerticalL,
+        paddingBottom: tokens.spacingVerticalL
+    }
+});
 
 /**
  * Displays correct message, depending on whether the template has
  * placeholders or not.
  */
-export const TemplatePlaceholderMessage: React.FC = () => {
-    const { metadata } = store(
+export const TemplatePlaceholderMessage = () => {
+    const { metadata } = useDenebState(
         (state) => ({
             metadata: state.create.metadata
         }),
         shallow
     );
-    const classes = useCreateStyles();
+    const classes = useTemplatePlaceholderMessageStyles();
     const hasPlaceholders = templateHasPlaceholders(metadata);
     const message = getI18nValue(
         hasPlaceholders
@@ -37,5 +43,6 @@ export const TemplatePlaceholderMessage: React.FC = () => {
  * Confirms that the supplied template metadata contains dataset entries, and
  * that placeholders are needed to populate them.
  */
-const templateHasPlaceholders = (template: UsermetaTemplate) =>
-    template?.dataset?.length > 0;
+const templateHasPlaceholders = (
+    template: UsermetaTemplate | undefined | null
+) => (template?.dataset?.length ?? 0) > 0;

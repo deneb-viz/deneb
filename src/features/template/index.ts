@@ -13,7 +13,6 @@ export {
     dispatchPreviewImage,
     getCombinedBase64ImageWithMime
 } from './preview-image';
-export { PreviewImage } from './components/preview-image';
 export { TemplateDataset } from './components/template-dataset';
 
 /**

@@ -10,6 +10,7 @@ export {
     type IWorkerDatasetViewerMessage,
     type IWorkerDatasetViewerTranslations
 } from './components/data-viewer/workers';
+export * from './components/template';
 export { Hyperlink } from './components/ui';
 export * from './features/project-create';
 export * from './lib/commands';

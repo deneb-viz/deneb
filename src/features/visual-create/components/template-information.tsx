@@ -6,9 +6,9 @@ import { useCreateStyles } from './';
 import store from '../../../store';
 import { logDebug, logRender } from '../../logging';
 import { getI18nValue } from '../../i18n';
-import { PreviewImage, TemplateDataset } from '../../template';
-import { TemplatePlaceholderMessage } from './template-placeholder-message';
+import { TemplateDataset } from '../../template';
 import { isBase64Image } from '@deneb-viz/utils/base64';
+import { PreviewImage, TemplatePlaceholderMessage } from '@deneb-viz/app-core';
 
 /**
  * Displays the information and placeholders for a template.

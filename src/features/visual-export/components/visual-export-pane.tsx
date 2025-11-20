@@ -7,14 +7,13 @@ import { useModalDialogStyles } from '../../modal-dialog';
 import { TemplateDataset } from '../../template';
 import { VisualExportInformation } from './visual-export-information';
 import { Subtitle2 } from '@fluentui/react-components';
-import { TEMPLATE_PREVIEW_IMAGE_MAX_SIZE } from '../../../../config';
 import { StageProgressIndicator } from '../../modal-dialog';
 import store, { getState } from '../../../store';
-import { TemplateExportProcessingState } from '@deneb-viz/json-processing/template-processing';
 import {
     updateFieldTokenization,
     updateFieldTracking
 } from '../../json-processing';
+import { TEMPLATE_PREVIEW_IMAGE_MAX_SIZE } from '@deneb-viz/configuration';
 
 /**
  * Interface (pane) for exporting a existing visualization.

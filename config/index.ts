@@ -101,9 +101,3 @@ export const KEY_BINDINGS = {
  * versions of the template metadata if needed.
  */
 export const TEMPLATE_METADATA_VERSION = 1;
-
-/**
- * Represents the max cap for any preview images generated from the Vega View
- * API.
- */
-export const TEMPLATE_PREVIEW_IMAGE_MAX_SIZE = 150;

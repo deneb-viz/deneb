@@ -1,5 +1,4 @@
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
-import { TEMPLATE_PREVIEW_IMAGE_MAX_SIZE } from '../../../../config';
 
 export const useTemplateStyles = makeStyles({
     datasetDataType: {
@@ -24,13 +23,6 @@ export const useTemplateStyles = makeStyles({
     },
     additionalAssignmentFulfilled: {
         color: tokens.colorPaletteGreenForeground1
-    },
-    previewImage: {
-        minWidth: `${TEMPLATE_PREVIEW_IMAGE_MAX_SIZE}px`,
-        minHeight: `${TEMPLATE_PREVIEW_IMAGE_MAX_SIZE}px`,
-        width: `${TEMPLATE_PREVIEW_IMAGE_MAX_SIZE}px`,
-        height: `${TEMPLATE_PREVIEW_IMAGE_MAX_SIZE}px`,
-        ...shorthands.margin('5px')
     },
     tableRow: {
         alignItems: 'start'

@@ -1,5 +1,4 @@
-import { TEMPLATE_PREVIEW_IMAGE_MAX_SIZE } from '../../../config';
-
+import { TEMPLATE_PREVIEW_IMAGE_MAX_SIZE } from '@deneb-viz/configuration';
 import { getState } from '../../store';
 import { VegaViewServices } from '../vega-extensibility';
 

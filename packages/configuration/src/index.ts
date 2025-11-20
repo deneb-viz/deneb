@@ -112,6 +112,11 @@ export const SPLIT_PANE_CONFIGURATION = {
 };
 
 /**
+ * Represents the max cap for any preview images generated from the Vega View API.
+ */
+export const TEMPLATE_PREVIEW_IMAGE_MAX_SIZE = 150;
+
+/**
  * Configuration for the zoom controls in the visual preview pane.
  */
 export const VISUAL_PREVIEW_ZOOM_CONFIGURATION = {

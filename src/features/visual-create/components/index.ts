@@ -16,9 +16,5 @@ export const useCreateStyles = makeStyles({
     templatePreviewImageContainer: { marginLeft: '10px', marginRight: '10px' },
     templateTitle: {
         paddingBottom: '1em'
-    },
-    templatePlaceholderMessage: {
-        paddingTop: '1em',
-        paddingBottom: '1em'
     }
 });
