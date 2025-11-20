@@ -3,8 +3,8 @@ import { Body1, Divider } from '@fluentui/react-components';
 
 import { useCreateStyles } from './';
 import { getI18nValue } from '../../i18n';
-import { Hyperlink } from '../../interface';
 import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
+import { Hyperlink } from '@deneb-viz/app-core';
 
 export const NoTemplateMessage: React.FC = () => {
     const classes = useCreateStyles();

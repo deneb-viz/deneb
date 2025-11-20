@@ -3,11 +3,11 @@ import { Caption1 } from '@fluentui/react-components';
 
 import { useStatusStyles } from '.';
 import { getI18nValue } from '../../i18n';
-import { Hyperlink } from '../../interface';
 import {
     APPLICATION_INFORMATION_CONFIGURATION,
     PROVIDER_RESOURCE_CONFIGURATION
 } from '@deneb-viz/configuration';
+import { Hyperlink } from '@deneb-viz/app-core';
 
 /**
  * Provides the hyperlinks to associated documentation for the landing page.

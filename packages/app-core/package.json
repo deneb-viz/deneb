@@ -49,6 +49,8 @@
         "@deneb-viz/json-processing": "*",
         "@deneb-viz/template-usermeta": "*",
         "@deneb-viz/utils": "*",
+        "@fluentui/react-components": "^9.72.6",
+        "@fluentui/react-icons": "^2.0.313",
         "@monaco-editor/react": "^4.6.0",
         "monaco-editor": "0.45.0",
         "zustand": "^4.5.5"

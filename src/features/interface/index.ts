@@ -1,22 +1,9 @@
 import powerbi from 'powerbi-visuals-api';
-import EditMode = powerbi.EditMode;
-import ViewMode = powerbi.ViewMode;
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { POPOVER_Z_INDEX } from '../../constants';
 
-import { logDebug } from '../logging';
 import { getState } from '../../store';
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
-import {
-    isVisualUpdateTypeResize,
-    isVisualUpdateTypeResizeEnd
-} from '@deneb-viz/powerbi-compat/visual-host';
-import {
-    type VisualUpdateHistoryRecord,
-    type InterfaceMode,
-    type InterfaceModeResolutionParameters,
-    PREVIEW_PANE_TOOLBAR_MIN_SIZE
-} from '@deneb-viz/app-core';
+import { PREVIEW_PANE_TOOLBAR_MIN_SIZE } from '@deneb-viz/app-core';
 
 /**
  * UI theming utilities.
@@ -24,7 +11,6 @@ import {
 export * as Themes from './theme';
 export { AdvancedEditor } from './components/advanced-editor';
 export { CappedTextField } from './components/capped-text-field';
-export { Hyperlink } from './components/hyperlink';
 export { StatusBarContainer } from './components/status-bar-container';
 export { TooltipCustomMount } from './components/tooltip-custom-mount';
 export { VisualInterface } from './components/visual-interface';
