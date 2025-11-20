@@ -16,9 +16,6 @@ import { useDenebState } from '../../../state';
 import { logRender } from '@deneb-viz/utils/logging';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
-/**
- * Create pane styles
- */
 const useCreateMethodStyles = makeStyles({
     radioGroup: {
         padding: tokens.spacingVerticalMNudge,

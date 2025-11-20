@@ -1,13 +1,26 @@
 import React from 'react';
-import { Body1, Divider } from '@fluentui/react-components';
+import { Body1, Divider, makeStyles, tokens } from '@fluentui/react-components';
 
-import { useCreateStyles } from './';
-import { getI18nValue } from '../../i18n';
 import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
 import { Hyperlink } from '@deneb-viz/app-core';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
-export const NoTemplateMessage: React.FC = () => {
-    const classes = useCreateStyles();
+export const useNoTemplateMessage = makeStyles({
+    additionalResourcesMessage: {
+        height: '25%',
+        margin: tokens.spacingVerticalXXL
+    },
+    noTemplateMessage: {
+        display: 'flex',
+        alignItems: 'center',
+        height: '25%',
+        fontStyle: 'italic',
+        marginLeft: tokens.spacingHorizontalXXL
+    }
+});
+
+export const NoTemplateMessage = () => {
+    const classes = useNoTemplateMessage();
     return (
         <>
             <div className={classes.noTemplateMessage}>
