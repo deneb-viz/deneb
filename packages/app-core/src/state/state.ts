@@ -76,7 +76,7 @@ const dependencies: StateDependencies = {
     applicationVersion: APPLICATION_INFORMATION_CONFIGURATION.version
 };
 
-const useState = createDenebState(dependencies);
-const getState = () => useState.getState();
+const useDenebState = createDenebState(dependencies);
+const getDenebState = () => useDenebState.getState();
 
-export { getState, useState };
+export { getDenebState, useDenebState };

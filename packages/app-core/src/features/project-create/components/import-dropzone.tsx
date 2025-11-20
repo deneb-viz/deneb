@@ -10,12 +10,12 @@ import {
 import { shallow } from 'zustand/shallow';
 import { useDropzone, FileWithPath } from 'react-dropzone';
 
-import store, { getState } from '../../../store';
-import { getI18nValue } from '../../i18n';
-import { logDebug, logRender } from '../../logging';
 import { getValidatedTemplate } from '@deneb-viz/json-processing';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { type DenebTemplateImportState } from '@deneb-viz/json-processing/template-processing';
+import { getDenebState, useDenebState } from '../../../state';
+import { logDebug, logRender } from '@deneb-viz/utils/logging';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Base styling for dropzone.
@@ -69,7 +69,7 @@ const useStatusStyles = makeStyles({
  * is processed and will be rejected if not a valid template.
  */
 export const ImportDropzone: React.FC = () => {
-    const createImportState = store(
+    const createImportState = useDenebState(
         (state) => state.create.importState,
         shallow
     );
@@ -83,13 +83,19 @@ export const ImportDropzone: React.FC = () => {
                 return handleValidation(text);
             }
             logDebug('Attempting file-based import...');
-            const items = cbEvent?.clipboardData?.items || {};
-            Object.keys(items).forEach((key) => {
-                const item = items[key];
-                if (item.kind === 'file') {
-                    handleFileLoad(item.getAsFile());
-                }
-            });
+            const items: DataTransferItemList | undefined =
+                cbEvent?.clipboardData?.items;
+            if (items) {
+                Object.keys(items).forEach((key) => {
+                    const item = items[key as unknown as number];
+                    if (item.kind === 'file') {
+                        const file = item.getAsFile();
+                        if (file) {
+                            handleFileLoad(file);
+                        }
+                    }
+                });
+            }
         };
         window.addEventListener('paste', onPaste);
         return () => {
@@ -183,12 +189,12 @@ const getValidationContent = (state: DenebTemplateImportState) => {
 const handleFileLoad = (file: FileWithPath | File) => {
     const {
         create: { setImportState }
-    } = getState();
+    } = getDenebState();
     setImportState({ importState: 'Loading', refresh: true });
     const reader = new FileReader();
     if (file) {
         reader.onload = (event) =>
-            handleValidation(event.target.result.toString());
+            handleValidation(event.target?.result?.toString() ?? '');
         reader.readAsText(file);
     }
 };
@@ -200,7 +206,7 @@ const handleFileLoad = (file: FileWithPath | File) => {
 const handleValidation = (content: string) => {
     const {
         create: { setImportFile, setImportState }
-    } = getState();
+    } = getDenebState();
     setImportState({ importState: 'Validating', refresh: true });
     const validationResult = getValidatedTemplate(
         content,
