@@ -3,13 +3,12 @@ import { shallow } from 'zustand/shallow';
 
 import store from '../../../store';
 import { logRender } from '../../logging';
-import { CreateMethod } from './create-method';
 import { SelectIncludedTemplate } from './select-included-template';
 import { CreateFromTemplate } from './create-from-template';
 import { getI18nValue } from '../../i18n';
 import { useModalDialogStyles } from '../../modal-dialog';
 import { type DenebTemplateCreateMode } from '@deneb-viz/json-processing/template-processing';
-import { ImportDropzone } from '@deneb-viz/app-core';
+import { CreateMethod, ImportDropzone } from '@deneb-viz/app-core';
 
 /**
  * Interface (pane) for creating a new visualization.

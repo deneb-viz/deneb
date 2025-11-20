@@ -68,7 +68,7 @@ const useStatusStyles = makeStyles({
  * Also provides a clipboard listener for handling pasted files or text. Input
  * is processed and will be rejected if not a valid template.
  */
-export const ImportDropzone: React.FC = () => {
+export const ImportDropzone = () => {
     const createImportState = useDenebState(
         (state) => state.create.importState,
         shallow

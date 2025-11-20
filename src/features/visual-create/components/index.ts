@@ -8,10 +8,6 @@ export const useCreateStyles = makeStyles({
         height: '25%',
         ...shorthands.margin('25px')
     },
-    importRadioGroup: {
-        ...shorthands.padding('10px'),
-        paddingLeft: '0px'
-    },
     radioButton: {
         marginLeft: '2px'
     },
