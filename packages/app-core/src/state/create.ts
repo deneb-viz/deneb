@@ -49,8 +49,8 @@ export type CreateSliceCreateFromTemplate = {
  */
 export type CreateSliceSetFieldAssignment = {
     key: string;
-    suppliedObjectKey: string;
-    suppliedObjectName: string;
+    suppliedObjectKey: string | undefined;
+    suppliedObjectName: string | undefined;
 };
 
 /**

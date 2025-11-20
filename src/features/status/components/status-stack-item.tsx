@@ -5,8 +5,8 @@ import {
     shorthands
 } from '@fluentui/react-components';
 
-import { Themes } from '../../interface';
 import { useStatusStyles } from '.';
+import { getDenebTheme, THEME_DEFAULT } from '@deneb-viz/app-core';
 
 interface IStatuStackItemProps {
     shouldHighlight?: boolean;
@@ -21,7 +21,7 @@ const useHighlightStyles = makeStyles({
         ...shorthands.borderRadius('10px')
     },
     highlighted: {
-        backgroundColor: Themes.light.colorNeutralBackground5
+        backgroundColor: getDenebTheme(THEME_DEFAULT).colorNeutralBackground5
     },
     normal: {
         backgroundColor: 'none'

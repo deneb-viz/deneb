@@ -5,9 +5,11 @@ import { Button, Tooltip } from '@fluentui/react-components';
 import store from '../../../store';
 import { getI18nValue } from '../../i18n';
 import { getEditorPaneStateIcon, useEditorPaneStyles } from '.';
-import { TooltipCustomMount } from '../../interface';
 import { handleToggleEditorPane } from '../../commands';
-import { type EditorPanePosition } from '@deneb-viz/app-core';
+import {
+    TooltipCustomMount,
+    type EditorPanePosition
+} from '@deneb-viz/app-core';
 
 export const EditorPaneCollapsed: React.FC = () => {
     const { editorPaneIsExpanded, position } = store(

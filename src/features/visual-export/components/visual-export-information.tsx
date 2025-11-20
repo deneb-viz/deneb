@@ -6,13 +6,15 @@ import store from '../../../store';
 import { logRender } from '../../logging';
 import { getI18nValue } from '../../i18n';
 import { useVisualExportStyles } from '.';
-import { useModalDialogStyles } from '../../modal-dialog';
 import {
     TEMPLATE_INFORMATION_PROPS,
     dispatchPreviewImage
 } from '../../template';
-import { CappedTextField } from '../../interface';
-import { PreviewImage } from '@deneb-viz/app-core';
+import {
+    CappedTextField,
+    PreviewImage,
+    useModalDialogStyles
+} from '@deneb-viz/app-core';
 
 /**
  * Interface (pane) for exporting a existing visualization.

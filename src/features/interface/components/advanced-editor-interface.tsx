@@ -14,10 +14,9 @@ import {
     resizerVerticalStyles
 } from '../../../core/ui/advancedEditor';
 import { ModalDialog } from '../../modal-dialog';
-import { Themes, useInterfaceStyles } from '..';
+import { useInterfaceStyles } from '..';
 import { logRender } from '../../logging';
 import { AdvancedEditorToolbar } from '../../toolbar';
-import { PortalRoot } from './portal-root';
 import { KEY_BINDINGS } from '../../../../config';
 import {
     HOTKEY_OPTIONS,
@@ -40,7 +39,13 @@ import {
     handleZoomOut,
     handleZoomReset
 } from '../../commands';
-import { EDITOR_TOOLBAR_HEIGHT, type Command } from '@deneb-viz/app-core';
+import {
+    type DenebTheme,
+    EDITOR_TOOLBAR_HEIGHT,
+    getDenebTheme,
+    PortalRoot,
+    type Command
+} from '@deneb-viz/app-core';
 
 //eslint-disable-next-line max-lines-per-function
 export const AdvancedEditorInterface: React.FC = () => {
@@ -60,7 +65,8 @@ export const AdvancedEditorInterface: React.FC = () => {
             editorPaneIsExpanded: state.editorPaneIsExpanded,
             editorPaneWidth: state.editorPaneWidth,
             position: state.visualSettings.editor.json.position.value,
-            theme: state.visualSettings.editor.interface.theme.value,
+            theme: state.visualSettings.editor.interface.theme
+                .value as DenebTheme,
             updateEditorPaneWidth: state.updateEditorPaneWidth
         }),
         shallow
@@ -104,7 +110,7 @@ export const AdvancedEditorInterface: React.FC = () => {
     };
     const editorPane = <EditorPane isExpanded={editorPaneIsExpanded} />;
     const classes = useInterfaceStyles();
-    const resolvedTheme = useMemo(() => Themes[theme], [theme]);
+    const resolvedTheme = useMemo(() => getDenebTheme(theme), [theme]);
     const className = useMemo(
         () =>
             mergeClasses(

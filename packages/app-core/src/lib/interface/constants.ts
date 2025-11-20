@@ -38,3 +38,8 @@ export const PREVIEW_PANE_TOOLBAR_MIN_SIZE =
  * How many pixels to reserve/calculate for displaying a resizable 'handle' on any split panes.
  */
 export const SPLIT_PANE_HANDLE_SIZE = 4;
+
+/**
+ * The z-index to apply to popover elements, as we are having to render them inline.
+ */
+export const POPOVER_Z_INDEX = 1000;

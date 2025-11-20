@@ -4,6 +4,11 @@ import powerbi from 'powerbi-visuals-api';
 export type DebugPaneRole = 'log' | 'data' | 'signal';
 
 /**
+ * Deneb theming variants.
+ */
+export type DenebTheme = 'light' | 'dark';
+
+/**
  * Whether the editor is in auto-apply mode or not.
  */
 export type EditorApplyMode = 'Auto' | 'Manual';

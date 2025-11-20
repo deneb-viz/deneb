@@ -18,7 +18,6 @@ import {
 } from '../../template';
 import { getState } from '../../../store';
 import { useCreateStyles } from './';
-import { getVegaProvideri18n } from '../../../core/vega';
 import {
     getTemplateMetadata,
     getTemplateResolvedForPlaceholderAssignment
@@ -26,6 +25,7 @@ import {
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import { getVegaProviderI18n } from '@deneb-viz/app-core';
 
 interface ISelectIncludedTemplateProps {
     createMode: SpecProvider;
@@ -85,7 +85,7 @@ export const SelectIncludedTemplate: React.FC<ISelectIncludedTemplateProps> = ({
     const subtitle = useMemo(
         () =>
             getI18nValue('Text_Radio_Group_Select_Template', [
-                getVegaProvideri18n(createMode)
+                getVegaProviderI18n(createMode)
             ]),
         [createMode]
     );

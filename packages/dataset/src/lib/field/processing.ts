@@ -5,7 +5,10 @@ import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 /**
  * For supplied fields, retrieve only those that should be from the data roles.
  */
-export function getDatasetFieldsInclusive(fields: IDatasetFields) {
+export function getDatasetFieldsInclusive(fields: IDatasetFields | undefined) {
+    if (!fields) {
+        return {};
+    }
     return pickBy(fields, (f) => !f.isExcludedFromTemplate);
 }
 
@@ -13,7 +16,7 @@ export function getDatasetFieldsInclusive(fields: IDatasetFields) {
  * Get the eligible template fields from a supplied set of metadata.
  */
 export const getDatasetTemplateFieldsFromMetadata = (
-    metadata: IDatasetFields
+    metadata: IDatasetFields | undefined
 ): UsermetaDatasetField[] =>
     Object.values(getDatasetFieldsInclusive(metadata)).reduce(
         (result, value) => {

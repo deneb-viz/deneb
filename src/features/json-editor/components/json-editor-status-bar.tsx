@@ -5,9 +5,12 @@ import { logRender } from '../../logging';
 import { StatusBarContainer } from '../../interface';
 import { getI18nValue } from '../../i18n';
 import { ToolbarButtonStandard } from '../../toolbar/components/toolbar-button-standard';
-import { ProviderDetail } from './provider-detail';
 import { TrackingSyncStatus } from './tracking-sync-status';
-import { monaco, PREVIEW_PANE_TOOLBAR_MIN_SIZE } from '@deneb-viz/app-core';
+import {
+    monaco,
+    PREVIEW_PANE_TOOLBAR_MIN_SIZE,
+    ProviderDetail
+} from '@deneb-viz/app-core';
 
 interface IStatusBarProps {
     position: monaco.Position;

@@ -3,7 +3,6 @@ import { shallow } from 'zustand/shallow';
 
 import { FluentProvider, Toaster, useId } from '@fluentui/react-components';
 import store from '../../../store';
-import { Themes } from '../../interface';
 import {
     TOASTER_ID,
     TOAST_OFFSET_HORIZONTAL_EDITOR,
@@ -13,6 +12,7 @@ import {
 } from '../../../constants';
 import { NotificationApplyChanges } from './notification-apply-changes';
 import { NotificationCrossFilterExceeded } from './notification-cross-filter-exceeded';
+import { getDenebTheme, THEME_DEFAULT } from '@deneb-viz/app-core';
 
 export const NotificationToaster: React.FC = () => {
     const { mode } = store(
@@ -27,7 +27,7 @@ export const NotificationToaster: React.FC = () => {
     );
     const toasterId = useId(TOASTER_ID);
     return (
-        <FluentProvider theme={Themes.light}>
+        <FluentProvider theme={getDenebTheme(THEME_DEFAULT)}>
             <>
                 <Toaster
                     toasterId={toasterId}

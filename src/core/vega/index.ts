@@ -1,15 +1,6 @@
-export {
-    IVegaViewDatum,
-    getVegaProvider,
-    getVegaProvideri18n,
-    getVegaSettings,
-    getVegaVersion
-};
+export { IVegaViewDatum, getVegaSettings };
 
 import { getState } from '../../store';
-import { getI18nValue } from '../../features/i18n';
-import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import { PROVIDER_VERSION_CONFIGURATION } from '@deneb-viz/configuration';
 
 /**
  * Interface specifying a flexible key/value pair object, which is supplied from Vega's tooltip handler and usually casted as `any`.
@@ -17,27 +8,6 @@ import { PROVIDER_VERSION_CONFIGURATION } from '@deneb-viz/configuration';
 interface IVegaViewDatum {
     [key: string]: any;
 }
-
-/**
- * Convenience function to get current Vega provider from persisted properties.
- */
-const getVegaProvider = () =>
-    <SpecProvider>getVegaSettings().output.provider.value;
-
-/**
- * Get the Vega provider, resolved for i18n.
- */
-const getVegaProvideri18n = (provider?: SpecProvider) => {
-    const resolved = provider ?? getVegaProvider();
-    return getI18nValue(
-        resolved === 'vegaLite' ? 'Provider_VegaLite' : 'Provider_Vega'
-    );
-};
-
-/**
- * For the current provider, get the version from our package configuration.
- */
-const getVegaVersion = () => PROVIDER_VERSION_CONFIGURATION[getVegaProvider()];
 
 /**
  * Convenience function to get current Vega/Spec settings from the visual objects (as we use this a lot).

@@ -19,12 +19,12 @@ import {
 import { getI18nValue } from '../../i18n';
 import { useSettingsStyles } from '.';
 import { logDebug } from '../../logging';
-import { TooltipCustomMount } from '../../interface';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import {
     CROSS_FILTER_LIMITS,
     isCrossFilterPropSet
 } from '@deneb-viz/powerbi-compat/interactivity';
+import { TooltipCustomMount } from '@deneb-viz/app-core';
 
 const DEFAULT_VALUE = DEFAULTS.vega.selectionMaxDataPoints;
 

@@ -9,7 +9,7 @@ import {
 
 import { DataTableNavigationType } from '../types';
 import { getI18nValue } from '../../i18n';
-import { TooltipCustomMount } from '../../interface';
+import { TooltipCustomMount } from '@deneb-viz/app-core';
 
 interface IDataTableNavigationButtonProps {
     disabled: boolean;

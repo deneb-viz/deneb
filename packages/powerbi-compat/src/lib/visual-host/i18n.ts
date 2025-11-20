@@ -28,10 +28,13 @@ Object.freeze(I18nServices);
  * values matching {i} pattern.
  */
 export const getI18nValue = (
-    key: string,
-    tokens?: string | number | (string | number)[]
+    key: string | undefined,
+    tokens?: string | number | undefined | (string | number | undefined)[]
 ) => {
-    const list: (string | number)[] =
+    if (key === undefined || i18n === undefined) {
+        return '';
+    }
+    const list: (string | number | undefined)[] =
         tokens == null ? [] : Array.isArray(tokens) ? tokens : [tokens];
 
     return list.reduce<string>(

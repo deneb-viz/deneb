@@ -13,7 +13,6 @@ export {
     dispatchPreviewImage,
     getCombinedBase64ImageWithMime
 } from './preview-image';
-export { TemplateDataset } from './components/template-dataset';
 
 /**
  * Provides a list of included templates for the specified provider.

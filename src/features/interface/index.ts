@@ -8,14 +8,9 @@ import { PREVIEW_PANE_TOOLBAR_MIN_SIZE } from '@deneb-viz/app-core';
 /**
  * UI theming utilities.
  */
-export * as Themes from './theme';
 export { AdvancedEditor } from './components/advanced-editor';
-export { CappedTextField } from './components/capped-text-field';
 export { StatusBarContainer } from './components/status-bar-container';
-export { TooltipCustomMount } from './components/tooltip-custom-mount';
 export { VisualInterface } from './components/visual-interface';
-
-export type InterfaceTheme = 'light' | 'dark';
 
 export const useInterfaceStyles = makeStyles({
     container: {

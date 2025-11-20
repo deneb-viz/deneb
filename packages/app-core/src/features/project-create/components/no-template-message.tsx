@@ -2,8 +2,8 @@ import React from 'react';
 import { Body1, Divider, makeStyles, tokens } from '@fluentui/react-components';
 
 import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
-import { Hyperlink } from '@deneb-viz/app-core';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import { Hyperlink } from '../../../components/ui';
 
 export const useNoTemplateMessage = makeStyles({
     additionalResourcesMessage: {

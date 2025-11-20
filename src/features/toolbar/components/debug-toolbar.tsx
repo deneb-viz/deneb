@@ -18,13 +18,12 @@ import { LogErrorIndicator } from './log-error-indicator';
 import { useToolbarStyles } from '.';
 import { ToolbarButtonStandard } from './toolbar-button-standard';
 import { ZoomLevelPopover } from './zoom-level-popover';
-import { ZoomSlider } from './zoom-slider';
 import {
     handleDebugPaneData,
     handleDebugPaneLog,
     handleDebugPaneSignal
 } from '../../commands';
-import { type DebugPaneRole } from '@deneb-viz/app-core';
+import { ZoomSlider, type DebugPaneRole } from '@deneb-viz/app-core';
 
 export const DebugToolbar: React.FC = () => {
     const { editorPreviewAreaSelectedPivot } = store(

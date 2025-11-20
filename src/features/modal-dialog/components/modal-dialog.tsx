@@ -11,11 +11,8 @@ import {
 } from '@fluentui/react-components';
 import { shallow } from 'zustand/shallow';
 
-import { useModalDialogStyles } from './index';
 import store from '../../../store';
 import { getI18nValue } from '../../i18n';
-import { VersionChangeContent } from './version-change-content';
-import { FieldRemapPane } from '../../remap-fields';
 import { logRender } from '../../logging';
 import { CreateButton, VisualCreatePane } from '../../visual-create';
 import { closeCreateDialog } from '../../../core/ui/commands';
@@ -24,7 +21,12 @@ import {
     setFocusToActiveEditor,
     useJsonEditorContext
 } from '../../json-editor';
-import { type ModalDialogRole } from '@deneb-viz/app-core';
+import {
+    FieldRemapPane,
+    useModalDialogStyles,
+    VersionChangeContent,
+    type ModalDialogRole
+} from '@deneb-viz/app-core';
 
 export const ModalDialog: React.FC = () => {
     const {

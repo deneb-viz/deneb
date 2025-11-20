@@ -16,8 +16,8 @@ import store from '../../../store';
 import { PlayRegular, ReplayRegular } from '@fluentui/react-icons';
 import { useToolbarStyles } from '.';
 import { handleApplyChanges } from '../../commands';
-import { TooltipCustomMount } from '../../interface';
 import { useJsonEditorContext } from '../../json-editor';
+import { TooltipCustomMount } from '@deneb-viz/app-core';
 
 export const ApplyMenuButton: React.FC = () => {
     const { applyMode, updateApplyMode } = store(

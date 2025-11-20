@@ -6,9 +6,9 @@ import { shallow } from 'zustand/shallow';
 import { getI18nValue } from '../../i18n';
 import store, { getState } from '../../../store';
 import { logDebug, logRender } from '../../logging';
-import { TooltipCustomMount } from '../../interface';
 import { getExportTemplate } from '@deneb-viz/json-processing';
 import { getVisualHost } from '@deneb-viz/powerbi-compat/visual-host';
+import { TooltipCustomMount } from '@deneb-viz/app-core';
 
 /**
  * Displays download and copy template to clipboard buttons.

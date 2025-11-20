@@ -38,9 +38,8 @@ import {
     handleZoomOut
 } from '../../commands';
 import { ToolbarRole } from '../types';
-import { TooltipCustomMount } from '../../interface';
 import { useJsonEditorContext } from '../../json-editor';
-import { type Command } from '@deneb-viz/app-core';
+import { TooltipCustomMount, type Command } from '@deneb-viz/app-core';
 
 interface IToolbarButtonProps {
     command: Command;

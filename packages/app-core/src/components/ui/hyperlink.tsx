@@ -2,10 +2,10 @@ import React from 'react';
 import { launchUrl } from '@deneb-viz/powerbi-compat/visual-host';
 import { Link, makeStyles } from '@fluentui/react-components';
 
-interface IHyperlinkProps {
+type HyperlinkProps = {
     href: string;
     children: React.ReactNode;
-}
+};
 
 const useLinkStyles = makeStyles({
     root: {}
@@ -15,7 +15,7 @@ const useLinkStyles = makeStyles({
  * Provides a suitable hyperlink component that uses the Fluent UI Link
  * component as a base, but will ensure that the visual host will .
  */
-export const Hyperlink: React.FC<IHyperlinkProps> = ({ href, children }) => {
+export const Hyperlink = ({ href, children }: HyperlinkProps) => {
     const handleClick = (
         event: React.MouseEvent<
             HTMLAnchorElement | HTMLElement | HTMLButtonElement,

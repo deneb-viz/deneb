@@ -9,8 +9,8 @@ import { shallow } from 'zustand/shallow';
 
 import { logRender } from '../../logging';
 import { getI18nValue } from '../../i18n';
-import { TooltipCustomMount } from '../../interface';
 import store from '../../../store';
+import { TooltipCustomMount } from '@deneb-viz/app-core';
 
 const useTokenizerStyles = makeStyles({
     root: {

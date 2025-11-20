@@ -114,8 +114,8 @@ export type FieldUsageSliceApplyFieldMapping = {
  */
 export type FieldUsageSliceSetFieldAssignment = {
     key: string;
-    suppliedObjectKey: string;
-    suppliedObjectName: string;
+    suppliedObjectKey: string | undefined;
+    suppliedObjectName: string | undefined;
 };
 
 /**

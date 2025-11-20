@@ -21,8 +21,8 @@ import { logDebug, logRender } from '../../logging';
 import { getZoomToFitScale } from '../../../core/ui/advancedEditor';
 import { getI18nValue } from '../../i18n';
 import { useToolbarStyles } from '.';
-import { TooltipCustomMount } from '../../interface';
 import { VISUAL_PREVIEW_ZOOM_CONFIGURATION } from '@deneb-viz/configuration';
+import { TooltipCustomMount } from '@deneb-viz/app-core';
 
 // eslint-disable-next-line max-lines-per-function
 export const ZoomLevelPopover: React.FC = () => {

@@ -38,13 +38,6 @@ export const useToolbarStyles = makeStyles({
         maxWidth: '155px',
         zIndex: POPOVER_Z_INDEX
     },
-    slider: {
-        minWidth: '75px',
-        width: '75px',
-        height: '100%',
-        ...shorthands.margin('0px', '5px'),
-        '& div::before': { backgroundImage: 'none' }
-    },
     popoverZoomLevel: {
         zIndex: POPOVER_Z_INDEX
     },

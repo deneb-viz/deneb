@@ -3,17 +3,19 @@ import { shallow } from 'zustand/shallow';
 
 import { logDebug, logRender } from '../../logging';
 import { getI18nValue } from '../../i18n';
-import { useModalDialogStyles } from '../../modal-dialog';
-import { TemplateDataset } from '../../template';
 import { VisualExportInformation } from './visual-export-information';
 import { Subtitle2 } from '@fluentui/react-components';
-import { StageProgressIndicator } from '../../modal-dialog';
 import store, { getState } from '../../../store';
 import {
     updateFieldTokenization,
     updateFieldTracking
 } from '../../json-processing';
 import { TEMPLATE_PREVIEW_IMAGE_MAX_SIZE } from '@deneb-viz/configuration';
+import {
+    StageProgressIndicator,
+    TemplateDataset,
+    useModalDialogStyles
+} from '@deneb-viz/app-core';
 
 /**
  * Interface (pane) for exporting a existing visualization.

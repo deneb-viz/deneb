@@ -43,6 +43,7 @@
         "vitest": "^3.2.4"
     },
     "dependencies": {
+        "@deneb-viz/configuration": "*",
         "@deneb-viz/utils": "*",
         "d3-interpolate": "^3.0.1",
         "mergician": "^2.0.2",
