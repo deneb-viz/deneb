@@ -7,11 +7,12 @@ import {
 } from '../../core/utils/properties';
 import { getState } from '../../store';
 import { persistSpecification } from '../specification';
-import { IEditorRefs, setFocusToActiveEditor } from '../json-editor';
+import { setFocusToActiveEditor } from '../json-editor';
 import {
     type Command,
     type DebugPaneRole,
-    type EditorPaneRole
+    type EditorPaneRole,
+    type SpecificationEditorRefs
 } from '@deneb-viz/app-core';
 import {
     APPLICATION_INFORMATION_CONFIGURATION,
@@ -44,7 +45,7 @@ const executeCommand = (command: Command, callback: () => void) => {
 /**
  * Applies the changes to the specification.
  */
-export const handleApplyChanges = (editorRefs: IEditorRefs) => {
+export const handleApplyChanges = (editorRefs: SpecificationEditorRefs) => {
     executeCommand('applyChanges', () =>
         persistSpecification(
             editorRefs?.spec.current,
@@ -57,7 +58,7 @@ export const handleApplyChanges = (editorRefs: IEditorRefs) => {
 /**
  * Toggles the auto-apply changes mode.
  */
-export const handleAutoApplyChanges = (editorRefs: IEditorRefs) => {
+export const handleAutoApplyChanges = (editorRefs: SpecificationEditorRefs) => {
     const {
         editor: { toggleApplyMode }
     } = getState();
@@ -96,7 +97,7 @@ export const handleDebugPaneSignal = () => {
 /**
  * Sets editor to config.
  */
-export const handleEditorPaneConfig = (editorRefs: IEditorRefs) => {
+export const handleEditorPaneConfig = (editorRefs: SpecificationEditorRefs) => {
     executeCommand('navigateConfig', () => {
         setEditorPivotItem('Config');
     });
@@ -115,7 +116,9 @@ export const handleEditorPaneSettings = () => {
 /**
  * Sets editor to specification.
  */
-export const handleEditorPaneSpecification = (editorRefs: IEditorRefs) => {
+export const handleEditorPaneSpecification = (
+    editorRefs: SpecificationEditorRefs
+) => {
     executeCommand('navigateSpecification', () => {
         setEditorPivotItem('Spec');
     });

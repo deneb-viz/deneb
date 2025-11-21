@@ -38,8 +38,11 @@ import {
     handleZoomOut
 } from '../../commands';
 import { ToolbarRole } from '../types';
-import { useJsonEditorContext } from '../../json-editor';
-import { TooltipCustomMount, type Command } from '@deneb-viz/app-core';
+import {
+    TooltipCustomMount,
+    useSpecificationEditor,
+    type Command
+} from '@deneb-viz/app-core';
 
 interface IToolbarButtonProps {
     command: Command;
@@ -64,7 +67,7 @@ export const ToolbarButtonStandard: React.FC<IToolbarButtonProps> = ({
         role === 'debug' ? classes.buttonSmall : '',
         resolveClasses(command)
     );
-    const editorRefs = useJsonEditorContext();
+    const editorRefs = useSpecificationEditor();
     const handleClick = () => resolveClick(command)(editorRefs);
     const [ref, setRef] = useState<HTMLElement | null>();
     return (

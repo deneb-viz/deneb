@@ -1,12 +1,11 @@
 import React from 'react';
 import { Button } from '@fluentui/react-components';
 import { shallow } from 'zustand/shallow';
-import { monaco } from '@deneb-viz/app-core';
+import { monaco, useSpecificationEditor } from '@deneb-viz/app-core';
 
 import { getI18nValue } from '../../i18n';
 import store, { getState } from '../../../store';
 import { logDebug, logRender } from '../../logging';
-import { useJsonEditorContext } from '../../json-editor';
 import { getTemplateReplacedForDataset } from '@deneb-viz/json-processing';
 import {
     resolveObjectProperties,
@@ -29,7 +28,7 @@ export const CreateButton: React.FC = () => {
         }),
         shallow
     );
-    const { spec, config } = useJsonEditorContext();
+    const { spec, config } = useSpecificationEditor();
     const onCreate = () => {
         logDebug('Creating from template...');
         handleCreateFromTemplate(

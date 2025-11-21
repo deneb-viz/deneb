@@ -17,13 +17,11 @@ import { logRender } from '../../logging';
 import { CreateButton, VisualCreatePane } from '../../visual-create';
 import { closeCreateDialog } from '../../../core/ui/commands';
 import { ExportButtons, VisualExportPane } from '../../visual-export';
-import {
-    setFocusToActiveEditor,
-    useJsonEditorContext
-} from '../../json-editor';
+import { setFocusToActiveEditor } from '../../json-editor';
 import {
     FieldRemapPane,
     useModalDialogStyles,
+    useSpecificationEditor,
     VersionChangeContent,
     type ModalDialogRole
 } from '@deneb-viz/app-core';
@@ -47,7 +45,7 @@ export const ModalDialog: React.FC = () => {
         }),
         shallow
     );
-    const editorRefs = useJsonEditorContext();
+    const editorRefs = useSpecificationEditor();
     const classes = useModalDialogStyles();
     const dialogSurfaceClassName = useMemo(() => {
         switch (modalDialogRole) {

@@ -16,7 +16,6 @@ import { shallow } from 'zustand/shallow';
 
 import { getI18nValue } from '../../i18n';
 import store from '../../../store';
-import { useJsonEditorContext } from '../../json-editor';
 import { AdvancedEditorToolbarUpdateOperations } from './advanced-editor-toolbar-update-operations';
 import { useToolbarStyles } from '.';
 import {
@@ -24,7 +23,10 @@ import {
     handleEditorPaneSettings,
     handleEditorPaneSpecification
 } from '../../commands';
-import { type EditorPaneRole } from '@deneb-viz/app-core';
+import {
+    useSpecificationEditor,
+    type EditorPaneRole
+} from '@deneb-viz/app-core';
 
 export const AdvancedEditorToolbar: React.FC = () => {
     const { editorSelectedOperation } = store(
@@ -33,7 +35,7 @@ export const AdvancedEditorToolbar: React.FC = () => {
         }),
         shallow
     );
-    const editorRefs = useJsonEditorContext();
+    const editorRefs = useSpecificationEditor();
     const classes = useToolbarStyles();
     const onPaneModeChange: ToolbarProps['onCheckedValueChange'] = (
         e,

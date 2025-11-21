@@ -6,7 +6,6 @@ import Editor, { loader, OnChange, OnMount } from '@monaco-editor/react';
 
 import store, { getState } from '../../../store';
 import { logDebug } from '../../logging';
-import { useJsonEditorContext } from './json-editor-context-provider';
 import { PREVIEW_PANE_TOOLBAR_BUTTON_PADDING } from '../../../constants';
 import { useInterfaceStyles } from '../../interface';
 import { JsonEditorStatusBar } from './json-editor-status-bar';
@@ -18,7 +17,8 @@ import {
     type EditorPaneRole,
     monaco,
     PREVIEW_PANE_TOOLBAR_MIN_SIZE,
-    setupMonacoWorker
+    setupMonacoWorker,
+    useSpecificationEditor
 } from '@deneb-viz/app-core';
 import { ptToPx } from '@deneb-viz/utils/dom';
 import { getProviderSchema } from '@deneb-viz/json-processing';
@@ -107,7 +107,7 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
         () => (isActiveEditor ? 'inline' : 'none'),
         [isActiveEditor]
     );
-    const { spec, config } = useJsonEditorContext();
+    const { spec, config } = useSpecificationEditor();
     const ref = thisEditorRole === 'Spec' ? spec : config;
     const viewState =
         thisEditorRole === 'Spec' ? viewStateSpec : viewStateConfig;

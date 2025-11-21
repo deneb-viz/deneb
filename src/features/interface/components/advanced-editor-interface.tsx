@@ -5,7 +5,7 @@ import { shallow } from 'zustand/shallow';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 import store from '../../../store';
-import { EditorPane, useJsonEditorContext } from '../../json-editor';
+import { EditorPane } from '../../json-editor';
 import { PreviewArea } from '../../preview-area';
 import {
     getResizablePaneMaxSize,
@@ -44,7 +44,8 @@ import {
     EDITOR_TOOLBAR_HEIGHT,
     getDenebTheme,
     PortalRoot,
-    type Command
+    type Command,
+    useSpecificationEditor
 } from '@deneb-viz/app-core';
 
 //eslint-disable-next-line max-lines-per-function
@@ -71,7 +72,7 @@ export const AdvancedEditorInterface: React.FC = () => {
         }),
         shallow
     );
-    const editorRefs = useJsonEditorContext();
+    const editorRefs = useSpecificationEditor();
     const hotkeyHandler = (command: Command, callback: () => void) =>
         useHotkeys(getCommandKey(command), callback, HOTKEY_OPTIONS);
     hotkeyHandler('applyChanges', () => handleApplyChanges(editorRefs));

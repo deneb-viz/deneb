@@ -16,8 +16,10 @@ import store from '../../../store';
 import { PlayRegular, ReplayRegular } from '@fluentui/react-icons';
 import { useToolbarStyles } from '.';
 import { handleApplyChanges } from '../../commands';
-import { useJsonEditorContext } from '../../json-editor';
-import { TooltipCustomMount } from '@deneb-viz/app-core';
+import {
+    TooltipCustomMount,
+    useSpecificationEditor
+} from '@deneb-viz/app-core';
 
 export const ApplyMenuButton: React.FC = () => {
     const { applyMode, updateApplyMode } = store(
@@ -33,7 +35,7 @@ export const ApplyMenuButton: React.FC = () => {
         () => (applyMode === 'Manual' ? manualIcon : autoIcon),
         [applyMode]
     );
-    const editorRefs = useJsonEditorContext();
+    const editorRefs = useSpecificationEditor();
     const onClick = useCallback(() => {
         handleApplyChanges(editorRefs);
     }, []);

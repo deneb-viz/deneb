@@ -6,23 +6,23 @@ import { getI18nValue } from '../../i18n';
 import store, { getState } from '../../../store';
 import { logDebug, logRender } from '../../logging';
 import { persistSpecification } from '../../specification';
-import {
-    IEditorRefs,
-    setFocusToActiveEditor,
-    useJsonEditorContext
-} from '../../json-editor';
+import { setFocusToActiveEditor } from '../../json-editor';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 import {
     updateFieldTokenization,
     getRemappedSpecification
 } from '../../json-processing';
 import { type TrackedFields } from '@deneb-viz/json-processing/field-tracking';
+import {
+    type SpecificationEditorRefs,
+    useSpecificationEditor
+} from '@deneb-viz/app-core';
 
 /**
  * Button for applying field mapping changes via the modal dialog.
  */
 export const RemapButton: React.FC = () => {
-    const editorRefs = useJsonEditorContext();
+    const editorRefs = useSpecificationEditor();
     const {
         dataset,
         jsonSpec,
@@ -63,7 +63,7 @@ export const applyRemappedFields = async (
     specification: string,
     remapFields: UsermetaDatasetField[],
     trackedFields: TrackedFields,
-    editorRefs: IEditorRefs
+    editorRefs: SpecificationEditorRefs
 ) => {
     logDebug('[applyRemappedFields] called', {
         specification,
