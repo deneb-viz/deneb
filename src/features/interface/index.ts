@@ -1,15 +1,12 @@
-import powerbi from 'powerbi-visuals-api';
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { POPOVER_Z_INDEX } from '../../constants';
 
 import { getState } from '../../store';
-import { PREVIEW_PANE_TOOLBAR_MIN_SIZE } from '@deneb-viz/app-core';
 
 /**
  * UI theming utilities.
  */
 export { AdvancedEditor } from './components/advanced-editor';
-export { StatusBarContainer } from './components/status-bar-container';
 export { VisualInterface } from './components/visual-interface';
 
 export const useInterfaceStyles = makeStyles({
@@ -28,16 +25,6 @@ export const useInterfaceStyles = makeStyles({
         maxHeight: '100%',
         maxWidth: '100%',
         width: '100%',
-        ...shorthands.overflow('hidden')
-    },
-    statusBarContainer: {
-        boxSizing: 'border-box',
-        flexShrink: 0,
-        width: '100%',
-        height: `${PREVIEW_PANE_TOOLBAR_MIN_SIZE}px}`,
-        borderTopColor: tokens.colorNeutralStroke2,
-        borderTopStyle: 'solid',
-        borderTopWidth: '1px',
         ...shorthands.overflow('hidden')
     },
     tooltipMount: {

@@ -9,9 +9,9 @@ import { useDebugStyles } from '..';
 import { ILogEntry, ILogEntryDisplay } from '../types';
 import { ICapabilitiesEnumMember } from '../../settings';
 import { getDebugLogLevels } from '../logging';
-import { StatusBarContainer } from '../../interface';
 import { LogLevelDropdown } from './log-level-dropdown';
 import { getI18nValue } from '../../i18n';
+import { StatusBarContainer } from '@deneb-viz/app-core';
 
 export const LogViewer: React.FC = () => {
     const { errors, logLevel, warns } = store(
