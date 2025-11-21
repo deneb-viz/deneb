@@ -1,21 +1,22 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { shallow } from 'zustand/shallow';
 
-import store from '../../../store';
-import { TemplateInformation } from './template-information';
-import { logRender } from '../../logging';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
-import { NoTemplateMessage, useModalDialogStyles } from '@deneb-viz/app-core';
+import { useModalDialogStyles } from '../../../components/ui';
+import { useDenebState } from '../../../state';
+import { logRender } from '@deneb-viz/utils/logging';
+import { NoTemplateMessage } from './no-template-message';
+import { TemplateInformation } from './template-information';
 
 /**
  * Displays the content for creating a specification using the selected
  * template.
  */
-export const CreateFromTemplate: React.FC = () => {
+export const CreateFromTemplate = () => {
     const classes = useModalDialogStyles();
-    const metadata = store((state) => state.create.metadata, shallow);
+    const metadata = useDenebState((state) => state.create.metadata, shallow);
     const content = useMemo(
-        () => routeInformationContent(metadata),
+        () => routeInformationContent(metadata as UsermetaTemplate),
         [metadata]
     );
     logRender('CreateFromTemplate');

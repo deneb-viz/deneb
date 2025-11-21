@@ -4,12 +4,12 @@ import { Caption1, makeStyles, tokens } from '@fluentui/react-components';
 import { logRender } from '../../logging';
 import { getI18nValue } from '../../i18n';
 import { ToolbarButtonStandard } from '../../toolbar/components/toolbar-button-standard';
-import { TrackingSyncStatus } from './tracking-sync-status';
 import {
     monaco,
     PREVIEW_PANE_TOOLBAR_MIN_SIZE,
     ProviderDetail,
-    StatusBarContainer
+    StatusBarContainer,
+    TrackingSyncStatus
 } from '@deneb-viz/app-core';
 
 interface IStatusBarProps {

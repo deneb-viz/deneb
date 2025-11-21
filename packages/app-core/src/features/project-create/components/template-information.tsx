@@ -1,30 +1,40 @@
-import { Body1, Caption1, Subtitle2 } from '@fluentui/react-components';
-import React from 'react';
-import { shallow } from 'zustand/shallow';
+import {
+    Body1,
+    Caption1,
+    makeStyles,
+    Subtitle2
+} from '@fluentui/react-components';
 
-import { useCreateStyles } from './';
-import store from '../../../store';
-import { logDebug, logRender } from '../../logging';
-import { getI18nValue } from '../../i18n';
 import { isBase64Image } from '@deneb-viz/utils/base64';
+import { logDebug, logRender } from '@deneb-viz/utils/logging';
+import { TemplatePlaceholderMessage } from './template-placeholder-message';
 import {
     PreviewImage,
-    TemplateDataset,
-    TemplatePlaceholderMessage
-} from '@deneb-viz/app-core';
+    TemplateDataset
+} from '../../../components/template-metadata';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import { useDenebState } from '../../../state';
+
+export const useTemplateInformationStyles = makeStyles({
+    header: {
+        display: 'flex',
+        flexDirection: 'row',
+        width: '100%'
+    },
+    content: { flexGrow: 1 },
+    previewImageContainer: { marginLeft: '10px', marginRight: '10px' },
+    title: {
+        paddingBottom: '1em'
+    }
+});
 
 /**
  * Displays the information and placeholders for a template.
  */
-export const TemplateInformation: React.FC = () => {
-    const { metadata } = store(
-        (state) => ({
-            metadata: state.create.metadata
-        }),
-        shallow
-    );
+export const TemplateInformation = () => {
+    const metadata = useDenebState((state) => state.create.metadata);
     if (!metadata) return null;
-    const classes = useCreateStyles();
+    const classes = useTemplateInformationStyles();
     const { previewImageBase64PNG } = metadata?.information || {};
     const isValid =
         (previewImageBase64PNG && isBase64Image(previewImageBase64PNG)) ||
@@ -34,9 +44,9 @@ export const TemplateInformation: React.FC = () => {
     logRender('TemplateInformation');
     return (
         <>
-            <div className={classes.templateInformationHeader}>
-                <div className={classes.templateInformationContent}>
-                    <div className={classes.templateTitle}>
+            <div className={classes.header}>
+                <div className={classes.content}>
+                    <div className={classes.title}>
                         <Subtitle2>{metadata.information.name}</Subtitle2>{' '}
                         <Caption1>
                             {getI18nValue('Text_Template_By')}{' '}
@@ -52,8 +62,10 @@ export const TemplateInformation: React.FC = () => {
                     </div>
                     <TemplatePlaceholderMessage />
                 </div>
-                <div className={classes.templatePreviewImageContainer}>
-                    <PreviewImage isValid={isValid} dataUri={dataUri} />
+                <div className={classes.previewImageContainer}>
+                    {dataUri && (
+                        <PreviewImage isValid={isValid} dataUri={dataUri} />
+                    )}
                 </div>
             </div>
             <TemplateDataset

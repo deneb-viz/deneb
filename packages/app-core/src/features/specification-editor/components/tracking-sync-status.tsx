@@ -1,16 +1,15 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
     Field,
     ProgressBar,
     Tooltip,
     makeStyles
 } from '@fluentui/react-components';
-import { shallow } from 'zustand/shallow';
 
-import { logRender } from '../../logging';
-import { getI18nValue } from '../../i18n';
-import store from '../../../store';
-import { TooltipCustomMount } from '@deneb-viz/app-core';
+import { useDenebState } from '../../../state';
+import { TooltipCustomMount } from '../../../components/ui';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import { logRender } from '@deneb-viz/utils/logging';
 
 const useTokenizerStyles = makeStyles({
     root: {
@@ -25,13 +24,10 @@ const useTokenizerStyles = makeStyles({
     }
 });
 
-export const TrackingSyncStatus: React.FC = () => {
+export const TrackingSyncStatus = () => {
     const [ref, setRef] = useState<HTMLElement | null>();
-    const { isTrackingFields } = store(
-        (state) => ({
-            isTrackingFields: state.interface.isTrackingFields
-        }),
-        shallow
+    const isTrackingFields = useDenebState(
+        (state) => state.interface.isTrackingFields
     );
     const classes = useTokenizerStyles();
     logRender('TrackingSyncStatus');

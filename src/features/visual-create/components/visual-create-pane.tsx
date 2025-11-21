@@ -4,10 +4,10 @@ import { shallow } from 'zustand/shallow';
 import store from '../../../store';
 import { logRender } from '../../logging';
 import { SelectIncludedTemplate } from './select-included-template';
-import { CreateFromTemplate } from './create-from-template';
 import { getI18nValue } from '../../i18n';
 import { type DenebTemplateCreateMode } from '@deneb-viz/json-processing/template-processing';
 import {
+    CreateFromTemplate,
     CreateMethod,
     ImportDropzone,
     useModalDialogStyles
