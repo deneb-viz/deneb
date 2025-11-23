@@ -1,8 +1,9 @@
-import { logInfo } from '@deneb-viz/utils/logging';
+import { logDebug, logInfo } from '@deneb-viz/utils/logging';
 import {
     Info as vInfo,
     Warn as vWarn,
     Debug as vDebug,
+    Error as vError,
     type LoggerInterface
 } from 'vega';
 
@@ -48,5 +49,52 @@ export class LocalVegaLoggerService implements LoggerInterface {
     error = (...args: unknown[]) => {
         logInfo('[VEGA ERROR]', args[0]);
         throw new Error(...(args as never[]));
+    };
+}
+
+export class DispatchingVegaLoggerService implements LoggerInterface {
+    level(_: number): this;
+    level(): number;
+    level(_?: number) {
+        if (_ !== undefined) {
+            return this;
+        } else {
+            return this._level;
+        }
+    }
+    constructor(
+        private _level: number,
+        private warningDispatcher: (message: string) => void,
+        private errorDispatcher: (message: string) => void
+    ) {
+        logDebug('DispatchingVegaLoggerService created');
+    }
+    info = (...args: unknown[]) => {
+        if (this.level() >= vInfo) {
+            logInfo('[VEGA INFO]', args[0]);
+            // Currently handle info output manually;
+        }
+        return this;
+    };
+    warn = (...args: unknown[]) => {
+        if (this.level() >= vWarn) {
+            logInfo('[VEGA WARN]', args[0]);
+            this.warningDispatcher(args.map(String).join(' '));
+        }
+        return this;
+    };
+    error = (...args: unknown[]) => {
+        if (this.level() >= vError) {
+            logInfo('[VEGA ERROR]', args[0]);
+            this.errorDispatcher(args.map(String).join(' '));
+        }
+        return this;
+    };
+    debug = (...args: unknown[]) => {
+        if (this.level() >= vDebug) {
+            logInfo('[VEGA DEBUG]', args[0]);
+            // Currently won't log debug output to UI
+        }
+        return this;
     };
 }

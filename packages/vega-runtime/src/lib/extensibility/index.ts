@@ -1,4 +1,7 @@
-export { LocalVegaLoggerService } from './logging';
+export {
+    DispatchingVegaLoggerService,
+    LocalVegaLoggerService
+} from './logging';
 export {
     registerVegaExtensions,
     type VegaExtensibilityConfiguration,

@@ -1,7 +1,7 @@
 import { falsy, truthy, View } from 'vega';
 import { handleContextMenuEvent } from '../../interactivity/context-menu';
 import { handleCrossFilterEvent } from '../../interactivity/cross-filter';
-import { logDebug, logTimeEnd, StoreVegaLoggerService } from '../../logging';
+import { logDebug, logTimeEnd } from '../../logging';
 import { getState } from '../../../store';
 import { VegaPatternFillServices } from '../pattern-fill';
 import { IVegaViewServices } from '../types';
@@ -10,6 +10,7 @@ import {
     setRenderingStarted
 } from '@deneb-viz/powerbi-compat/visual-host';
 import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
+import { DispatchingVegaLoggerService } from '@deneb-viz/vega-runtime/extensibility';
 
 export { getVegaLoader } from './loader';
 
@@ -120,16 +121,22 @@ export const handleNewView = (newView: View) => {
     logDebug('Vega view initialized.');
     setRenderingStarted();
     const {
+        specification: { logError, logWarn },
         interface: { generateRenderId },
         visualSettings: {
             vega: {
+                logging: {
+                    logLevel: { value: logLevel }
+                },
                 interactivity: {
                     selectionMode: { value: selectionMode }
                 }
             }
         }
     } = getState();
-    newView.logger(new StoreVegaLoggerService());
+    newView.logger(
+        new DispatchingVegaLoggerService(logLevel as number, logWarn, logError)
+    );
     newView.runAfter((view) => {
         logDebug('Running post-Vega view logic...', view);
         logDebug('Binding view services...');

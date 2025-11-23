@@ -12,19 +12,6 @@ import {
 } from '@deneb-viz/utils/logging';
 
 /**
- * Represents values used for logging to the console. The `logLevel`
- * configuration property will determine which log levels are actually output
- * to the browser console.
- *
- * Lower levels are, with anything above `3` (`INFO`)
- * providing different granularities of `DEBUG`-level logging (as it can
- * sometimes be handy to just look at component render events, for example, and
- * the Power BI visual iframe does not allow the React tools to be attached for
- * more detailed debugging, unfortunately).
- */
-export { StoreVegaLoggerService } from './vega';
-
-/**
  * Special method to provide decorated log entries in the console.
  */
 export const logHeading = dbLogHeading;
