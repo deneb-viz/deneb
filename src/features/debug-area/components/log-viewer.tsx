@@ -4,14 +4,14 @@ import { shallow } from 'zustand/shallow';
 import { Error, Info, Warn } from 'vega';
 
 import store from '../../../store';
-import { logRender } from '../../logging';
 import { useDebugStyles } from '..';
 import { ILogEntry, ILogEntryDisplay } from '../types';
 import { ICapabilitiesEnumMember } from '../../settings';
 import { getDebugLogLevels } from '../logging';
 import { LogLevelDropdown } from './log-level-dropdown';
-import { getI18nValue } from '../../i18n';
 import { StatusBarContainer } from '@deneb-viz/app-core';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import { logRender } from '@deneb-viz/utils/logging';
 
 export const LogViewer: React.FC = () => {
     const { errors, logLevel, warns } = store(

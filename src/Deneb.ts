@@ -17,13 +17,6 @@ import { getMappedDataset } from './core/data/dataset';
 import { handlePropertyMigration } from './core/utils/versioning';
 import { resolveReportViewport } from './core/ui/dom';
 import {
-    logDebug,
-    logHeading,
-    logHost,
-    logTimeEnd,
-    logTimeStart
-} from './features/logging';
-import {
     VegaExtensibilityServices,
     VegaPatternFillServices
 } from './features/vega-extensibility';
@@ -48,6 +41,13 @@ import {
 } from '@deneb-viz/powerbi-compat/visual-host';
 import { APPLICATION_INFORMATION_CONFIGURATION } from '@deneb-viz/configuration';
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
+import {
+    logDebug,
+    logHeading,
+    logHost,
+    logTimeEnd,
+    logTimeStart
+} from '@deneb-viz/utils/logging';
 
 /**
  * Run to indicate that the visual has started.

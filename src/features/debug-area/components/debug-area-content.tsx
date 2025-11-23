@@ -6,10 +6,10 @@ import { LogViewer } from './log-viewer';
 import { DatasetViewer } from './dataset-viewer';
 import { SignalViewer } from './signal-viewer';
 import { useDebugStyles } from '..';
-import { logRender } from '../../logging';
 import { DebugToolbar } from '../../toolbar';
-import { getI18nValue } from '../../i18n';
 import { Caption1 } from '@fluentui/react-components';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import { logRender } from '@deneb-viz/utils/logging';
 
 // eslint-disable-next-line max-lines-per-function
 export const DebugAreaContent: React.FC = () => {

@@ -18,13 +18,15 @@ import {
     getIdentitiesFromData,
     resolveDataFromItem
 } from './data-point';
-import { getI18nValue } from '../i18n';
 import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
 import {
     ROW_IDENTITY_FIELD_NAME,
     ROW_KEY_FIELD_NAME
 } from '@deneb-viz/dataset/field';
-import { getVisualHost } from '@deneb-viz/powerbi-compat/visual-host';
+import {
+    getI18nValue,
+    getVisualHost
+} from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Convenience constant for tooltip events, as it's required by Power BI.

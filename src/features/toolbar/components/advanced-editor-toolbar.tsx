@@ -14,7 +14,6 @@ import {
 } from '@fluentui/react-icons';
 import { shallow } from 'zustand/shallow';
 
-import { getI18nValue } from '../../i18n';
 import store from '../../../store';
 import { AdvancedEditorToolbarUpdateOperations } from './advanced-editor-toolbar-update-operations';
 import { useToolbarStyles } from '.';
@@ -27,6 +26,7 @@ import {
     useSpecificationEditor,
     type EditorPaneRole
 } from '@deneb-viz/app-core';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 export const AdvancedEditorToolbar: React.FC = () => {
     const { editorSelectedOperation } = store(

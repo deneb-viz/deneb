@@ -12,8 +12,6 @@ import {
 import { shallow } from 'zustand/shallow';
 
 import store from '../../../store';
-import { getI18nValue } from '../../i18n';
-import { logRender } from '../../logging';
 import { CreateButton, VisualCreatePane } from '../../visual-create';
 import { closeCreateDialog } from '../../../core/ui/commands';
 import { ExportButtons, VisualExportPane } from '../../visual-export';
@@ -25,6 +23,8 @@ import {
     VersionChangeContent,
     type ModalDialogRole
 } from '@deneb-viz/app-core';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import { logRender } from '@deneb-viz/utils/logging';
 
 export const ModalDialog: React.FC = () => {
     const {

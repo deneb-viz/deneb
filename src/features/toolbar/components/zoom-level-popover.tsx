@@ -17,12 +17,12 @@ import {
 } from '@fluentui/react-components';
 
 import store from '../../../store';
-import { logDebug, logRender } from '../../logging';
 import { getZoomToFitScale } from '../../../core/ui/advancedEditor';
-import { getI18nValue } from '../../i18n';
 import { useToolbarStyles } from '.';
 import { VISUAL_PREVIEW_ZOOM_CONFIGURATION } from '@deneb-viz/configuration';
 import { TooltipCustomMount } from '@deneb-viz/app-core';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import { logDebug, logRender } from '@deneb-viz/utils/logging';
 
 // eslint-disable-next-line max-lines-per-function
 export const ZoomLevelPopover: React.FC = () => {

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { shallow } from 'zustand/shallow';
 
 import { AdvancedEditor } from '../../interface';
@@ -6,9 +6,9 @@ import store from '../../../store';
 import { ReportViewRouter } from './report-view-router';
 import { FetchingMessage, SplashInitial } from '../../status';
 import { NotificationToaster } from '../../toaster';
-import { logRender } from '../../logging';
 import { LandingPage } from '../../status';
 import { VisualUpdateHistoryOverlay } from './visual-update-history-overlay';
+import { logRender } from '@deneb-viz/utils/logging';
 
 export const VisualInterface = () => {
     const { mode } = store(

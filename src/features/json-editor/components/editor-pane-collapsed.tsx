@@ -3,13 +3,13 @@ import { shallow } from 'zustand/shallow';
 import { Button, Tooltip } from '@fluentui/react-components';
 
 import store from '../../../store';
-import { getI18nValue } from '../../i18n';
 import { getEditorPaneStateIcon, useEditorPaneStyles } from '.';
 import { handleToggleEditorPane } from '../../commands';
 import {
     TooltipCustomMount,
     type EditorPanePosition
 } from '@deneb-viz/app-core';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 export const EditorPaneCollapsed: React.FC = () => {
     const { editorPaneIsExpanded, position } = store(

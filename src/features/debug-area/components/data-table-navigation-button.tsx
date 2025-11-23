@@ -8,8 +8,8 @@ import {
 } from '@fluentui/react-icons';
 
 import { DataTableNavigationType } from '../types';
-import { getI18nValue } from '../../i18n';
 import { TooltipCustomMount } from '@deneb-viz/app-core';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 interface IDataTableNavigationButtonProps {
     disabled: boolean;

@@ -16,15 +16,15 @@ import {
     resetProviderPropertyValue,
     updateSelectionMaxDataPoints
 } from '../../../core/ui/commands';
-import { getI18nValue } from '../../i18n';
 import { useSettingsStyles } from '.';
-import { logDebug } from '../../logging';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import {
     CROSS_FILTER_LIMITS,
     isCrossFilterPropSet
 } from '@deneb-viz/powerbi-compat/interactivity';
 import { TooltipCustomMount } from '@deneb-viz/app-core';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import { logDebug } from '@deneb-viz/utils/logging';
 
 const DEFAULT_VALUE = DEFAULTS.vega.selectionMaxDataPoints;
 

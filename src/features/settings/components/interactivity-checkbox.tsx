@@ -4,9 +4,11 @@ import { Checkbox, CheckboxOnChangeData } from '@fluentui/react-components';
 import store from '../../../store';
 import { updateBooleanProperty } from '../../../core/ui/commands';
 import { TInteractivityType } from '../../interactivity/types';
-import { getI18nValue } from '../../i18n';
 import { useSettingsStyles } from '.';
-import { getVisualSelectionManager } from '@deneb-viz/powerbi-compat/visual-host';
+import {
+    getI18nValue,
+    getVisualSelectionManager
+} from '@deneb-viz/powerbi-compat/visual-host';
 
 interface IInteractivityCheckboxProps {
     type: TInteractivityType;

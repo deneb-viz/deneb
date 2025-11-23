@@ -7,7 +7,7 @@ import {
     Subtitle2
 } from '@fluentui/react-components';
 import { useStatusStyles } from '.';
-import { getI18nValue } from '../../i18n';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 interface ILandingPageCardProps {
     i18nHeader: string;

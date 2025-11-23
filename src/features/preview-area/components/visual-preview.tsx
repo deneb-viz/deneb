@@ -8,10 +8,10 @@ import {
 } from '@fluentui/react-components';
 
 import store from '../../../store';
-import { logRender } from '../../logging';
 import { VegaContainer } from '../../vega-output';
 import { FourD3D3D } from './fourd3d3d';
 import { DEBUG_PANE_CONFIGURATION } from '@deneb-viz/configuration';
+import { logRender } from '@deneb-viz/utils/logging';
 
 /**
  * Preview area base styles (static). Dynamic sizing is applied via inline styles.

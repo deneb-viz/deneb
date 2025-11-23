@@ -3,13 +3,13 @@ import { shallow } from 'zustand/shallow';
 import { Caption1, Title3 } from '@fluentui/react-components';
 
 import { StatusContainer } from './status-container';
-import { logRender } from '../../logging';
 import store, { getState } from '../../../store';
 import { StatusStackItem } from './status-stack-item';
 import { useStatusStyles } from '.';
-import { getI18nValue } from '../../i18n';
 import { Progress } from './progress';
 import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import { logRender } from '@deneb-viz/utils/logging';
 
 /**
  * Displays when the visual is fetching data from the data model, and provides

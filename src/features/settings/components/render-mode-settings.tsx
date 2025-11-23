@@ -12,8 +12,8 @@ import store from '../../../store';
 import { useSettingsStyles } from '.';
 import { SettingsHeadingLabel } from './settings-heading-label';
 import { SettingsTextSection } from './settings-text-section';
-import { getI18nValue } from '../../i18n';
 import { type SpecRenderMode } from '@deneb-viz/vega-runtime/embed';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 export const RenderModeSettings: React.FC = () => {
     const {

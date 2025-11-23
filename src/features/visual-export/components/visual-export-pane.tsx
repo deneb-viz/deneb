@@ -1,10 +1,8 @@
 import React, { useEffect } from 'react';
 import { shallow } from 'zustand/shallow';
-
-import { logDebug, logRender } from '../../logging';
-import { getI18nValue } from '../../i18n';
-import { VisualExportInformation } from './visual-export-information';
 import { Subtitle2 } from '@fluentui/react-components';
+
+import { VisualExportInformation } from './visual-export-information';
 import store, { getState } from '../../../store';
 import {
     updateFieldTokenization,
@@ -16,6 +14,8 @@ import {
     TemplateDataset,
     useModalDialogStyles
 } from '@deneb-viz/app-core';
+import { logDebug, logRender } from '@deneb-viz/utils/logging';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Interface (pane) for exporting a existing visualization.

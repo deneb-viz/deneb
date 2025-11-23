@@ -37,7 +37,6 @@ import {
     resolveDrilldownComponents,
     resolveDrilldownFlat
 } from '../../features/dataset';
-import { logError, logTimeEnd, logTimeStart } from '../../features/logging';
 import {
     DATASET_DEFAULT_NAME,
     getEmptyDataset,
@@ -51,6 +50,7 @@ import {
     isCrossFilterPropSet
 } from '@deneb-viz/powerbi-compat/interactivity';
 import { getVisualSelectionManager } from '@deneb-viz/powerbi-compat/visual-host';
+import { logError, logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
 
 /**
  * For supplied data view field metadata, produce a suitable object

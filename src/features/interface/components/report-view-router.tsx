@@ -4,8 +4,8 @@ import { shallow } from 'zustand/shallow';
 import { VegaContainer } from '../../vega-output';
 import { FetchingMessage, SplashInitial } from '../../status';
 import store from '../../../store';
-import { logRender } from '../../logging';
-import { getI18nValue } from '../../i18n';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import { logRender } from '@deneb-viz/utils/logging';
 
 /**
  * Handles routing of the main visual display, when in report view.

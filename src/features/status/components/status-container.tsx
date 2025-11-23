@@ -1,8 +1,8 @@
 import React from 'react';
-import { logRender } from '../../logging';
 import { FluentProvider } from '@fluentui/react-components';
 import { useStatusStyles } from '.';
 import { getDenebTheme, THEME_DEFAULT } from '@deneb-viz/app-core';
+import { logRender } from '@deneb-viz/utils/logging';
 
 type StatusContainerProps = {
     children: React.ReactNode;

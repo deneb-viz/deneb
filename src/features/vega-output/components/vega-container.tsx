@@ -2,7 +2,6 @@ import React, { useEffect, useMemo } from 'react';
 import isEqual from 'lodash/isEqual';
 
 import store, { getState } from '../../../store';
-import { logRender } from '../../logging';
 import { VegaRender } from './vega-render';
 import { useVegaStyles } from '..';
 import { mergeClasses } from '@griffel/core';
@@ -17,6 +16,7 @@ import { VegaViewServices } from '../../vega-extensibility';
 import throttle from 'lodash/throttle';
 import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
 import { getLocale } from '@deneb-viz/powerbi-compat/visual-host';
+import { logRender } from '@deneb-viz/utils/logging';
 
 /**
  * Master component for hosting Vega content. We will handle the workflow

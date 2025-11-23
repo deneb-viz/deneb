@@ -2,9 +2,9 @@ import React from 'react';
 import { shallow } from 'zustand/shallow';
 import { useDebugStyles } from '..';
 import store from '../../../store';
-import { getI18nValue } from '../../i18n';
 import { DatasetViewerOptions } from './dataset-viewer-options';
 import { StatusBarContainer } from '@deneb-viz/app-core';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Displays when no data is available in the data table.

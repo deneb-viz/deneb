@@ -12,7 +12,6 @@ import {
     TDataPointHighlightComparator
 } from '../interactivity';
 import { DATA_TABLE_FONT_FAMILY, DATA_TABLE_FONT_SIZE } from '.';
-import { getI18nValue } from '../i18n';
 import { type IWorkerDatasetViewerTranslations } from '@deneb-viz/app-core';
 import {
     ROW_IDENTITY_FIELD_NAME,
@@ -20,6 +19,7 @@ import {
     SELECTED_ROW_FIELD_NAME
 } from '@deneb-viz/dataset/field';
 import { type DataPointSelectionStatus } from '@deneb-viz/powerbi-compat/interactivity';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * If the column/cell relates to cross-filtering, return a tooltip value that

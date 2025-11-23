@@ -7,7 +7,7 @@ import {
     resolveObjectProperties,
     updateObjectProperties
 } from '../utils/properties';
-import { logDebug } from '../../features/logging';
+import { logDebug } from '@deneb-viz/utils/logging';
 
 /**
  * For suitable events, ensure that the visual viewport is correctly resolved and persisted. This will allow us to keep the

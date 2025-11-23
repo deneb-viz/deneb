@@ -2,9 +2,9 @@ import React from 'react';
 
 import store from '../../../store';
 import { JsonEditor } from './json-editor';
-import { logRender } from '../../logging';
 import { SettingsPane } from '../../settings';
 import { EditorPaneRole } from '@deneb-viz/app-core';
+import { logRender } from '@deneb-viz/utils/logging';
 
 interface IEditorOperationContainerProps {
     operation: EditorPaneRole;

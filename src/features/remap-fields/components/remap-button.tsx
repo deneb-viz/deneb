@@ -2,9 +2,7 @@ import React from 'react';
 import { Button } from '@fluentui/react-components';
 import { shallow } from 'zustand/shallow';
 
-import { getI18nValue } from '../../i18n';
 import store, { getState } from '../../../store';
-import { logDebug, logRender } from '../../logging';
 import { persistSpecification } from '../../specification';
 import { setFocusToActiveEditor } from '../../json-editor';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
@@ -17,6 +15,8 @@ import {
     type SpecificationEditorRefs,
     useSpecificationEditor
 } from '@deneb-viz/app-core';
+import { logDebug, logRender } from '@deneb-viz/utils/logging';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Button for applying field mapping changes via the modal dialog.

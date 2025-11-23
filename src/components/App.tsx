@@ -1,7 +1,5 @@
-import React from 'react';
-
 import { VisualInterface } from '../features/interface';
-import { logRender } from '../features/logging';
+import { logRender } from '@deneb-viz/utils/logging';
 
 const App = () => {
     logRender('App');

@@ -10,8 +10,6 @@ import {
     useId
 } from '@fluentui/react-components';
 
-import { logRender } from '../../logging';
-import { getI18nValue } from '../../i18n';
 import {
     getIncludedTemplates,
     getTemplateByProviderandName
@@ -26,6 +24,8 @@ import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { getVegaProviderI18n } from '@deneb-viz/app-core';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import { logRender } from '@deneb-viz/utils/logging';
 
 interface ISelectIncludedTemplateProps {
     createMode: SpecProvider;

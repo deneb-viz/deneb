@@ -3,7 +3,6 @@ import { shallow } from 'zustand/shallow';
 import { Link, useId, useToastController } from '@fluentui/react-components';
 
 import store from '../../../store';
-import { getI18nValue } from '../../i18n';
 import {
     TOAST_NOTIFICATION_ID_APPLY_CHANGES,
     TOAST_NOTIFICATION_TIMEOUT
@@ -13,6 +12,7 @@ import { INotificationProps } from '.';
 import { persistSpecification } from '../../specification';
 import { handleDiscardChanges } from '../../commands';
 import { useSpecificationEditor } from '@deneb-viz/app-core';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 export const NotificationApplyChanges: React.FC<INotificationProps> = ({
     toasterId

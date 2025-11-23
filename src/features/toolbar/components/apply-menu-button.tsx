@@ -11,7 +11,6 @@ import {
 } from '@fluentui/react-components';
 import { shallow } from 'zustand/shallow';
 
-import { getI18nValue } from '../../i18n';
 import store from '../../../store';
 import { PlayRegular, ReplayRegular } from '@fluentui/react-icons';
 import { useToolbarStyles } from '.';
@@ -20,6 +19,7 @@ import {
     TooltipCustomMount,
     useSpecificationEditor
 } from '@deneb-viz/app-core';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 export const ApplyMenuButton: React.FC = () => {
     const { applyMode, updateApplyMode } = store(

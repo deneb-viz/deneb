@@ -12,12 +12,14 @@ import {
     resolveDataFromItem
 } from './data-point';
 import { CrossFilterOptions, CrossFilterResult } from './types';
-import { logDebug } from '../logging';
-import { getI18nValue } from '../i18n';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { type DatasetValueRow } from '@deneb-viz/dataset/datum';
-import { getVisualSelectionManager } from '@deneb-viz/powerbi-compat/visual-host';
+import {
+    getI18nValue,
+    getVisualSelectionManager
+} from '@deneb-viz/powerbi-compat/visual-host';
 import { isCrossFilterPropSet } from '@deneb-viz/powerbi-compat/interactivity';
+import { logDebug } from '@deneb-viz/utils/logging';
 
 /**
  * For the supplied list of identities, ensure that the selection manager is

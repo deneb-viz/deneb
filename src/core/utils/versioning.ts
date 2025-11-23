@@ -1,5 +1,4 @@
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import { logDebug } from '../../features/logging';
 import { isUnversionedSpec } from '../../features/specification';
 import { getState } from '../../store';
 import {
@@ -17,6 +16,7 @@ import {
     APPLICATION_INFORMATION_CONFIGURATION,
     PROVIDER_VERSION_CONFIGURATION
 } from '@deneb-viz/configuration';
+import { logDebug } from '@deneb-viz/utils/logging';
 
 /**
  * Current visual and provider information

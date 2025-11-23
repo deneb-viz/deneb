@@ -1,7 +1,6 @@
 import { falsy, truthy, View } from 'vega';
 import { handleContextMenuEvent } from '../../interactivity/context-menu';
 import { handleCrossFilterEvent } from '../../interactivity/cross-filter';
-import { logDebug, logTimeEnd } from '../../logging';
 import { getState } from '../../../store';
 import { VegaPatternFillServices } from '../pattern-fill';
 import { IVegaViewServices } from '../types';
@@ -11,6 +10,7 @@ import {
 } from '@deneb-viz/powerbi-compat/visual-host';
 import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
 import { DispatchingVegaLoggerService } from '@deneb-viz/vega-runtime/extensibility';
+import { logDebug, logTimeEnd } from '@deneb-viz/utils/logging';
 
 export { getVegaLoader } from './loader';
 

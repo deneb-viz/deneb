@@ -11,9 +11,7 @@ import {
     clearSelection
 } from '../../interactivity';
 import { getState } from '../../../store';
-import { getI18nValue } from '../../i18n';
 import { handleCrossFilterEvent } from '../../interactivity/cross-filter';
-import { logDebug, logWarning } from '../../logging';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
 import {
@@ -22,6 +20,8 @@ import {
 } from '@deneb-viz/vega-runtime/extensibility';
 import { isObject } from '@deneb-viz/utils/inspection';
 import { CROSS_FILTER_LIMITS } from '@deneb-viz/powerbi-compat/interactivity';
+import { logDebug, logWarning } from '@deneb-viz/utils/logging';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * A custom expression that should be added to the Vega view.

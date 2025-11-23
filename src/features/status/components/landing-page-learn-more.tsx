@@ -2,12 +2,12 @@ import React from 'react';
 import { Caption1 } from '@fluentui/react-components';
 
 import { useStatusStyles } from '.';
-import { getI18nValue } from '../../i18n';
 import {
     APPLICATION_INFORMATION_CONFIGURATION,
     PROVIDER_RESOURCE_CONFIGURATION
 } from '@deneb-viz/configuration';
 import { Hyperlink } from '@deneb-viz/app-core';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Provides the hyperlinks to associated documentation for the landing page.

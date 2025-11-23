@@ -4,11 +4,11 @@ import { shallow } from 'zustand/shallow';
 
 import { useDebugStyles } from '..';
 import store from '../../../store';
-import { logRender } from '../../logging';
 import { getDebugLogLevels } from '../logging';
 import { ICapabilitiesEnumMember } from '../../settings';
 import { updateLogLevel } from '../../../core/ui/commands';
-import { getI18nValue } from '../../i18n';
+import { logRender } from '@deneb-viz/utils/logging';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 interface ILogLevelDropdownProps {
     id: string;

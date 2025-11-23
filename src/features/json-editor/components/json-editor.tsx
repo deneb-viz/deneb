@@ -5,7 +5,6 @@ import { useUncontrolledFocus } from '@fluentui/react-components';
 import Editor, { loader, OnChange, OnMount } from '@monaco-editor/react';
 
 import store, { getState } from '../../../store';
-import { logDebug } from '../../logging';
 import { PREVIEW_PANE_TOOLBAR_BUTTON_PADDING } from '../../../constants';
 import { useInterfaceStyles } from '../../interface';
 import { JsonEditorStatusBar } from './json-editor-status-bar';
@@ -23,9 +22,9 @@ import {
 import { ptToPx } from '@deneb-viz/utils/dom';
 import { getProviderSchema } from '@deneb-viz/json-processing';
 import { IVisualDatasetField } from '../../../core/data';
-import { getI18nValue } from '../../i18n';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import { launchUrl } from '@deneb-viz/powerbi-compat/visual-host';
+import { getI18nValue, launchUrl } from '@deneb-viz/powerbi-compat/visual-host';
+import { logDebug } from '@deneb-viz/utils/logging';
 
 /**
  * One-time Monaco initialization tasks.

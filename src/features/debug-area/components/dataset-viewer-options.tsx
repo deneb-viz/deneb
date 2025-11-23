@@ -6,10 +6,10 @@ import keys from 'lodash/keys';
 import { useDebugStyles } from '..';
 import store from '../../../store';
 import { DEBUG_ROOT_DATASET_NAME } from '../../../constants';
-import { logRender } from '../../logging';
 import { VegaViewServices } from '../../vega-extensibility';
-import { getI18nValue } from '../../i18n';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import { logRender } from '@deneb-viz/utils/logging';
 
 /**
  * Provides the ability to select a dataset from the Vega view. If no datasets

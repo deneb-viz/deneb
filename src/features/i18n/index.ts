@@ -17,11 +17,6 @@ export const getD3TimeFormatLocale = () =>
     I18N_D3_LOCALES.timeFormat[getLocale()] ||
     I18N_D3_LOCALES.timeFormat[I18N_D3_LOCALES.default];
 
-/**
- * Pass-through of migrated method, to avoid excessive refactoring.
- */
-export const getI18nValue = pbiGetI18nValue;
-
 const I18N_D3_LOCALES: ILocaleConfiguration = {
     default: 'en-US',
     format: {

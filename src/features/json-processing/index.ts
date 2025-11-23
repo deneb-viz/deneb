@@ -1,7 +1,5 @@
 import cloneDeep from 'lodash/cloneDeep';
 
-import { getI18nValue } from '../i18n';
-import { logTimeEnd, logTimeStart } from '../logging';
 import {
     stringToUint8Array,
     uint8ArrayToString
@@ -21,6 +19,8 @@ import {
     type TrackedFields
 } from '@deneb-viz/json-processing/field-tracking';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
+import { logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 export { getObjectFormattedAsText } from './formatting';
 

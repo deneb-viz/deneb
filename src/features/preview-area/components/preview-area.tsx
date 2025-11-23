@@ -7,8 +7,8 @@ import { VisualPreview } from './visual-preview';
 import { resizerHorizontalStyles } from '../../../core/ui/advancedEditor';
 import { PREVIEW_PANE_AREA_MIN_SIZE } from '../../../constants';
 import { DebugAreaContent } from '../../debug-area';
-import { logRender } from '../../logging';
 import { getPreviewAreaHeightMaximum } from '@deneb-viz/app-core';
+import { logRender } from '@deneb-viz/utils/logging';
 
 export const PreviewArea: React.FC = () => {
     const {

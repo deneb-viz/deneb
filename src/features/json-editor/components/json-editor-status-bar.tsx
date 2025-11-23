@@ -1,8 +1,6 @@
 import React from 'react';
 import { Caption1, makeStyles, tokens } from '@fluentui/react-components';
 
-import { logRender } from '../../logging';
-import { getI18nValue } from '../../i18n';
 import { ToolbarButtonStandard } from '../../toolbar/components/toolbar-button-standard';
 import {
     monaco,
@@ -11,6 +9,8 @@ import {
     StatusBarContainer,
     TrackingSyncStatus
 } from '@deneb-viz/app-core';
+import { logRender } from '@deneb-viz/utils/logging';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 interface IStatusBarProps {
     position: monaco.Position;

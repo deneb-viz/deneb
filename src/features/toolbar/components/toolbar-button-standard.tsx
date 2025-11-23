@@ -23,7 +23,6 @@ import { shallow } from 'zustand/shallow';
 
 import store, { getState } from '../../../store';
 import { useToolbarStyles } from '.';
-import { getI18nValue } from '../../i18n';
 import {
     handleApplyChanges,
     handleAutoApplyChanges,
@@ -43,6 +42,7 @@ import {
     useSpecificationEditor,
     type Command
 } from '@deneb-viz/app-core';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 interface IToolbarButtonProps {
     command: Command;

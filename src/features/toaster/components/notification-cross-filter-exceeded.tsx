@@ -9,13 +9,13 @@ import {
 
 import store from '../../../store';
 import { clearSelection, dispatchCrossFilterAbort } from '../../interactivity';
-import { getI18nValue } from '../../i18n';
 import {
     TOAST_NOTIFICATION_ID_CROSS_FILTER_EXCEEDED,
     TOAST_NOTIFICATION_TIMEOUT
 } from '../../../constants';
 import { NotificationToast } from './notification-toast';
 import { INotificationProps } from '.';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 export const NotificationCrossFilterExceeded: React.FC<INotificationProps> = ({
     toasterId

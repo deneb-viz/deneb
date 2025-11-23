@@ -13,12 +13,12 @@ import {
     DATA_TABLE_ROW_HEIGHT,
     DATA_TABLE_ROW_PADDING_LEFT
 } from '..';
-import { logRender } from '../../logging';
 import { PREVIEW_PANE_AREA_PADDING } from '../../../constants';
 import {
     EDITOR_TOOLBAR_HEIGHT,
     PREVIEW_PANE_TOOLBAR_MIN_SIZE
 } from '@deneb-viz/app-core';
+import { logRender } from '@deneb-viz/utils/logging';
 
 /**
  * Displays a table of data, either for a dataset or the signals in the Vega

@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { EditorOperationContainer } from './editor-operation-container';
-import { logRender } from '../../logging';
+import { logRender } from '@deneb-viz/utils/logging';
 
 const EditorOperationContent: React.FC = () => {
     logRender('EditorOperationContent');

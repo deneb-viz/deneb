@@ -2,8 +2,8 @@ import React from 'react';
 import { Spinner } from '@fluentui/react-components';
 
 import { useDebugStyles } from '..';
-import { getI18nValue } from '../../i18n';
 import { StatusBarContainer } from '@deneb-viz/app-core';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Displays when a dataset in the data table is being processed.

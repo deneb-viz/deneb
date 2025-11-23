@@ -10,8 +10,8 @@ import { isCrossHighlightPropSet } from '../../features/interactivity';
 import { getVegaSettings } from '../vega';
 import { getHighlightStatus } from './dataView';
 import { isDataViewFieldEligibleForFormatting } from '../../features/dataset';
-import { logTimeEnd, logTimeStart } from '../../features/logging';
 import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
+import { logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
 
 /**
  * Enumerate all relevant areas of the data view to get an array of all

@@ -1,7 +1,6 @@
 import React, { memo, useCallback, useMemo } from 'react';
 import { createClassFromSpec, View } from 'react-vega';
 
-import { logDebug, logRender, logTimeStart } from '../../logging';
 import {
     getVegaLoader,
     handleNewView,
@@ -17,6 +16,7 @@ import {
 } from '@deneb-viz/vega-runtime/embed';
 import { type CompiledSpecification } from '@deneb-viz/json-processing/spec-processing';
 import { getVisualHost } from '@deneb-viz/powerbi-compat/visual-host';
+import { logDebug, logRender, logTimeStart } from '@deneb-viz/utils/logging';
 
 interface IVegaRenderProps {
     datasetHash: string;

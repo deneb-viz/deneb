@@ -1,9 +1,9 @@
 import * as Vega from 'vega';
 import { Loader } from 'vega';
-import { getI18nValue } from '../../i18n';
 import { FEATURES } from '../../../../config';
 import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
 import {
+    getI18nValue,
     getVisualHost,
     launchUrl
 } from '@deneb-viz/powerbi-compat/visual-host';

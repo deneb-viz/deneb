@@ -5,8 +5,8 @@ import { DataTableCell } from './data-table-cell';
 import { DATA_TABLE_VALUE_MAX_LENGTH } from '..';
 import { VegaViewServices } from '../../vega-extensibility';
 import { stringifyPruned } from '../../json-processing';
-import { logDebug, logRender } from '../../logging';
-import { getI18nValue } from '../../i18n';
+import { logDebug, logRender } from '@deneb-viz/utils/logging';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 interface IDataTableCellSignalValueProps {
     signalName: string;

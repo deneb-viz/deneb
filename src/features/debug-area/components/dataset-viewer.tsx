@@ -15,7 +15,6 @@ import {
     getDataTableRenderedCharWidth,
     getDataTableWorkerTranslations
 } from '../data-table';
-import { logDebug, logRender, logTimeEnd, logTimeStart } from '../../logging';
 import { TABLE_VALUE_MAX_DEPTH } from '../../../constants';
 import { VegaViewServices } from '../../vega-extensibility';
 import { getPrunedObject } from '../../json-processing';
@@ -30,6 +29,12 @@ import {
     ROW_IDENTITY_FIELD_NAME,
     ROW_KEY_FIELD_NAME
 } from '@deneb-viz/dataset/field';
+import {
+    logDebug,
+    logRender,
+    logTimeEnd,
+    logTimeStart
+} from '@deneb-viz/utils/logging';
 
 interface IDatasetViewerProps {
     datasetName: string;

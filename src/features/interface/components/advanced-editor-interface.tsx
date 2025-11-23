@@ -15,7 +15,6 @@ import {
 } from '../../../core/ui/advancedEditor';
 import { ModalDialog } from '../../modal-dialog';
 import { useInterfaceStyles } from '..';
-import { logRender } from '../../logging';
 import { AdvancedEditorToolbar } from '../../toolbar';
 import { KEY_BINDINGS } from '../../../../config';
 import {
@@ -47,6 +46,7 @@ import {
     type Command,
     useSpecificationEditor
 } from '@deneb-viz/app-core';
+import { logRender } from '@deneb-viz/utils/logging';
 
 //eslint-disable-next-line max-lines-per-function
 export const AdvancedEditorInterface: React.FC = () => {

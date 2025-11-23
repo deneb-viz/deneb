@@ -3,9 +3,7 @@ import { Button } from '@fluentui/react-components';
 import { shallow } from 'zustand/shallow';
 import { monaco, useSpecificationEditor } from '@deneb-viz/app-core';
 
-import { getI18nValue } from '../../i18n';
 import store, { getState } from '../../../store';
-import { logDebug, logRender } from '../../logging';
 import { getTemplateReplacedForDataset } from '@deneb-viz/json-processing';
 import {
     resolveObjectProperties,
@@ -13,6 +11,8 @@ import {
 } from '../../../core/utils/properties';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { type DenebTemplateAllocationComponents } from '@deneb-viz/json-processing/template-processing';
+import { logDebug, logRender } from '@deneb-viz/utils/logging';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Displays the content for creating a specification using the selected

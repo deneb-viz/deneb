@@ -2,10 +2,8 @@ import React from 'react';
 
 import { StatusContainer } from './status-container';
 import { LandingPageInfoHeader } from './landing-page-info-header';
-import { logRender } from '../../logging';
 import { LandingPageCard } from './landing-page-card';
 import { LandingPageLearnMore } from './landing-page-learn-more';
-import { getI18nValue } from '../../i18n';
 import { Caption1 } from '@fluentui/react-components';
 import { useStatusStyles } from '.';
 import {
@@ -14,6 +12,8 @@ import {
     QuestionCircle24Regular,
     TableAdd24Regular
 } from '@fluentui/react-icons';
+import { logRender } from '@deneb-viz/utils/logging';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Provides the landing page for cases where the visual does not have data or a

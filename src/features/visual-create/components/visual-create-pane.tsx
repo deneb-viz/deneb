@@ -2,9 +2,7 @@ import React from 'react';
 import { shallow } from 'zustand/shallow';
 
 import store from '../../../store';
-import { logRender } from '../../logging';
 import { SelectIncludedTemplate } from './select-included-template';
-import { getI18nValue } from '../../i18n';
 import { type DenebTemplateCreateMode } from '@deneb-viz/json-processing/template-processing';
 import {
     CreateFromTemplate,
@@ -12,6 +10,8 @@ import {
     ImportDropzone,
     useModalDialogStyles
 } from '@deneb-viz/app-core';
+import { logRender } from '@deneb-viz/utils/logging';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Interface (pane) for creating a new visualization.
