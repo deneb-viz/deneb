@@ -14,9 +14,10 @@ import { shallow } from 'zustand/shallow';
 import store from '../../../store';
 import { CreateButton, VisualCreatePane } from '../../visual-create';
 import { closeCreateDialog } from '../../../core/ui/commands';
-import { ExportButtons, VisualExportPane } from '../../visual-export';
+import { VisualExportPane } from '../../visual-export';
 import { setFocusToActiveEditor } from '../../json-editor';
 import {
+    ExportButtons,
     FieldRemapPane,
     useModalDialogStyles,
     useSpecificationEditor,

@@ -1,53 +1,72 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button, Tooltip } from '@fluentui/react-components';
 import { ArrowDownloadRegular, CopyRegular } from '@fluentui/react-icons';
-import { shallow } from 'zustand/shallow';
 
-import store, { getState } from '../../../store';
 import { getExportTemplate } from '@deneb-viz/json-processing';
 import {
     getI18nValue,
     getVisualHost
 } from '@deneb-viz/powerbi-compat/visual-host';
-import { TooltipCustomMount } from '@deneb-viz/app-core';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
+import { useDenebState } from '../../../state';
+import { TooltipCustomMount } from '../../../components/ui';
+import { UsermetaTemplate } from '@deneb-viz/template-usermeta';
+import { TrackedFields } from '@deneb-viz/json-processing/field-tracking';
 
 /**
  * Displays download and copy template to clipboard buttons.
  */
-export const ExportButtons: React.FC = () => {
-    const { exportProcessingState, templateName } = store(
-        (state) => ({
-            exportProcessingState: state.interface.exportProcessingState,
-            isTrackingFields: state.interface.isTrackingFields,
-            templateName: state.export?.metadata?.information?.name
-        }),
-        shallow
-    );
+export const ExportButtons = () => {
+    const {
+        exportMetadata,
+        exportProcessingState,
+        templateName,
+        tokenizedSpec,
+        trackedFields
+    } = useDenebState((state) => ({
+        exportMetadata: state.export?.metadata,
+        exportProcessingState: state.interface.exportProcessingState,
+        isTrackingFields: state.interface.isTrackingFields,
+        templateName: state.export?.metadata?.information?.name,
+        tokenizedSpec: state.fieldUsage.tokenizedSpec,
+        trackedFields: state.fieldUsage.dataset
+    }));
     const [ttRefDownload, setTtRefDownload] = useState<HTMLElement | null>();
     const [ttRefCopy, setTtRefCopy] = useState<HTMLElement | null>();
     const resolvedName =
         templateName ||
         getI18nValue('Template_Export_Information_Name_Placeholder');
     const handleDownload = () => {
-        getVisualHost()
-            .downloadService.exportVisualsContentExtended(
-                getProcessedExportTemplate(),
-                `${resolvedName}.deneb.json`,
-                'json',
-                getI18nValue('Template_Export_Json_File_Description')
-            )
-            .then((result) => {
-                logDebug('handleDownload result', result);
-            });
+        if (exportMetadata && tokenizedSpec && trackedFields) {
+            getVisualHost()
+                .downloadService.exportVisualsContentExtended(
+                    getProcessedExportTemplate(
+                        exportMetadata,
+                        tokenizedSpec,
+                        trackedFields
+                    ),
+                    `${resolvedName}.deneb.json`,
+                    'json',
+                    getI18nValue('Template_Export_Json_File_Description')
+                )
+                .then((result) => {
+                    logDebug('handleDownload result', result);
+                });
+        }
     };
     const handleCopy = () => {
-        const dummy = document.createElement('textarea');
-        document.body.appendChild(dummy);
-        dummy.value = getProcessedExportTemplate();
-        dummy.select();
-        document.execCommand('copy');
-        document.body.removeChild(dummy);
+        if (exportMetadata && tokenizedSpec && trackedFields) {
+            const dummy = document.createElement('textarea');
+            document.body.appendChild(dummy);
+            dummy.value = getProcessedExportTemplate(
+                exportMetadata,
+                tokenizedSpec,
+                trackedFields
+            );
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+        }
     };
     const isDisabled = exportProcessingState !== 'Complete';
     logRender('ExportButtons');
@@ -88,11 +107,11 @@ export const ExportButtons: React.FC = () => {
     );
 };
 
-const getProcessedExportTemplate = () => {
-    const {
-        export: { metadata },
-        fieldUsage: { dataset: trackedFields, tokenizedSpec }
-    } = getState();
+const getProcessedExportTemplate = (
+    metadata: UsermetaTemplate,
+    tokenizedSpec: string,
+    trackedFields: TrackedFields
+) => {
     const informationTranslationPlaceholders = {
         name: getI18nValue('Template_Export_Information_Name_Empty'),
         description: getI18nValue(
