@@ -1,5 +1,4 @@
 import { Options } from 'react-hotkeys-hook';
-import { getZoomToFitScale } from '../../core/ui/advancedEditor';
 import { getState } from '../../store';
 import { persistSpecification } from '../specification';
 import { setFocusToActiveEditor } from '../json-editor';
@@ -184,14 +183,6 @@ export const handleToggleEditorTheme = () => {
         setVisualProperty([{ name: 'theme', value: newValue }], 'editor');
     });
 };
-
-/**
- * Fit the zoom level to the current preview area dimensions.
- */
-export const handleZoomFit = () =>
-    executeCommand('zoomFit', () => {
-        getState().updateEditorZoomLevel(getZoomToFitScale());
-    });
 
 /**
  * Manages the decrease of zoom level in the visual editor by decreasing it by

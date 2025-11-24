@@ -2,23 +2,13 @@ import { getState } from '../../store';
 import { CSSProperties } from 'react';
 import {
     EDITOR_PANE_SPLIT_MAX_SIZE_PERCENT,
-    EDITOR_PANE_SPLIT_MIN_SIZE,
-    PREVIEW_PANE_AREA_PADDING
+    EDITOR_PANE_SPLIT_MIN_SIZE
 } from '../../constants';
 import { tokens } from '@fluentui/react-components';
 import {
     EDITOR_PANE_SPLIT_COLLAPSED_SIZE,
     SPLIT_PANE_HANDLE_SIZE
 } from '@deneb-viz/app-core';
-import { VISUAL_PREVIEW_ZOOM_CONFIGURATION } from '@deneb-viz/configuration';
-
-/**
- * How many pixels to apply to the preview area calculations as a "safety"
- * margin. On occasion, the calculation results in a slightly higher than
- * desirable scaling result and this helps to err on the lower-side of things
- * so that the preview will definitely fit.
- */
-const ZOOM_FIT_BUFFER = 15;
 
 const resizerBoxSizing = 'border-box';
 const resizerBackgroundClip = 'padding-box';
@@ -124,53 +114,9 @@ export const getResizablePaneMinSize = () => {
     return resolvedSize;
 };
 
-/**
- * Derive suitable scale to apply to visual preview if wishing to fit to preview area.
- */
-export const getZoomToFitScale = () => {
-    const {
-            editorPreviewAreaWidth,
-            editorPreviewAreaHeight,
-            visualViewportReport
-        } = getState(),
-        { height, width } = visualViewportReport,
-        previewWidth = getAdjustedPreviewAreaWidthForPadding(
-            editorPreviewAreaWidth
-        ),
-        previewHeight = getAdjustedPreviewAreaHeightForPadding(
-            editorPreviewAreaHeight
-        ),
-        scaleFactorWidth = Math.floor(
-            100 / (width / (previewWidth - ZOOM_FIT_BUFFER))
-        ),
-        scaleFactorHeight = Math.floor(
-            100 / (height / (previewHeight - ZOOM_FIT_BUFFER))
-        ),
-        { default: zDefault, max } = VISUAL_PREVIEW_ZOOM_CONFIGURATION;
-    switch (true) {
-        case willScaledDimensionFit(width, scaleFactorWidth, previewWidth) &&
-            willScaledDimensionFit(height, scaleFactorWidth, previewHeight):
-            return Math.min(scaleFactorWidth, max);
-        case willScaledDimensionFit(width, scaleFactorHeight, previewWidth) &&
-            willScaledDimensionFit(height, scaleFactorHeight, previewHeight):
-            return Math.min(scaleFactorHeight, max);
-        default:
-            zDefault;
-    }
-};
-
 export const isPreviewDebugPaneExpanded = (
     areaHeight: number,
     maxHeight: number
 ) => {
     return areaHeight < maxHeight || false;
 };
-
-const getAdjustedPreviewAreaWidthForPadding = (size: number) =>
-    size - PREVIEW_PANE_AREA_PADDING * 4;
-
-const getAdjustedPreviewAreaHeightForPadding = (size: number) =>
-    size - PREVIEW_PANE_AREA_PADDING * 2 - PREVIEW_PANE_AREA_PADDING * 4;
-
-const willScaledDimensionFit = (size: number, scale: number, limit: number) =>
-    Math.floor(size * (scale / 100)) <= limit;

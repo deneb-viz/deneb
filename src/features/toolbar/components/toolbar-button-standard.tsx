@@ -32,12 +32,12 @@ import {
     handleToggleDebugPane,
     handleToggleEditorPane,
     handleToggleEditorTheme,
-    handleZoomFit,
     handleZoomIn,
     handleZoomOut
 } from '../../commands';
 import { ToolbarRole } from '../types';
 import {
+    handleZoomFit,
     TooltipCustomMount,
     useSpecificationEditor,
     type Command

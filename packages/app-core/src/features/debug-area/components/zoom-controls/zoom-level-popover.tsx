@@ -1,4 +1,10 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import {
+    type FormEvent,
+    type ReactElement,
+    useCallback,
+    useMemo,
+    useState
+} from 'react';
 import { shallow } from 'zustand/shallow';
 import {
     Label,
@@ -7,38 +13,67 @@ import {
     PopoverTrigger,
     Radio,
     RadioGroup,
-    RadioGroupOnChangeData,
+    type RadioGroupOnChangeData,
     SpinButton,
-    SpinButtonProps,
+    type SpinButtonChangeEvent,
+    type SpinButtonOnChangeData,
     ToolbarButton,
     Tooltip,
+    makeStyles,
     mergeClasses,
+    tokens,
     useId
 } from '@fluentui/react-components';
 
-import store from '../../../store';
-import { getZoomToFitScale } from '../../../core/ui/advancedEditor';
-import { useToolbarStyles } from '.';
 import { VISUAL_PREVIEW_ZOOM_CONFIGURATION } from '@deneb-viz/configuration';
-import { TooltipCustomMount } from '@deneb-viz/app-core';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
+import {
+    getZoomToFitScale,
+    POPOVER_Z_INDEX,
+    PREVIEW_PANE_TOOLBAR_BUTTON_PADDING
+} from '../../../../lib';
+import { useDenebState } from '../../../../state';
+import { TooltipCustomMount } from '../../../../components/ui';
+
+const useToolbarStyles = makeStyles({
+    buttonSmall: {
+        padding: `${PREVIEW_PANE_TOOLBAR_BUTTON_PADDING}px`
+    },
+    buttonZoomLevel: { minWidth: '50px' },
+    controlBaseZoomLevel: {
+        display: 'flex',
+        flexBasis: '100%',
+        flexDirection: 'column',
+        '> label': {
+            marginBottom: tokens.spacingVerticalXXS
+        }
+    },
+    popoverZoomLevel: {
+        zIndex: POPOVER_Z_INDEX
+    },
+    spinButtonZoomCustom: {
+        marginLeft: '40px',
+        width: '80px'
+    }
+});
 
 // eslint-disable-next-line max-lines-per-function
-export const ZoomLevelPopover: React.FC = () => {
-    const { editorZoomLevel, zoomFitEnabled, updateEditorZoomLevel } = store(
-        (state) => ({
-            editorZoomLevel: state.editorZoomLevel,
-            zoomFitEnabled: state.commands.zoomFit,
-            updateEditorZoomLevel: state.updateEditorZoomLevel
-        }),
-        shallow
-    );
+export const ZoomLevelPopover = () => {
+    const { editorZoomLevel, zoomFitEnabled, updateEditorZoomLevel } =
+        useDenebState(
+            (state) => ({
+                editorZoomLevel: state.editorZoomLevel,
+                zoomFitEnabled: state.commands.zoomFit,
+                updateEditorZoomLevel: state.updateEditorZoomLevel
+            }),
+            shallow
+        );
     const id = useId();
     const caption = `${editorZoomLevel}%`;
     const classes = useToolbarStyles();
     const options = useMemo(
-        (): React.ReactElement[] =>
+        (): ReactElement[] =>
             VISUAL_PREVIEW_ZOOM_CONFIGURATION.customLevels.map((l) => (
                 <Radio
                     key={`zoom-${l.value}`}
@@ -69,10 +104,10 @@ export const ZoomLevelPopover: React.FC = () => {
         },
         [editorZoomLevel]
     );
-    const updateSpinSettingValue: SpinButtonProps['onChange'] = useCallback(
-        (_ev, data) => {
+    const updateSpinSettingValue = useCallback(
+        (ev: SpinButtonChangeEvent, data: SpinButtonOnChangeData) => {
             if (data.value !== undefined) {
-                handleCustomZoomLevelChange(data.value);
+                handleCustomZoomLevelChange(data.value as number);
             } else if (data.displayValue !== undefined) {
                 const newValue = parseFloat(data.displayValue);
                 if (!Number.isNaN(newValue)) {
@@ -87,7 +122,7 @@ export const ZoomLevelPopover: React.FC = () => {
         [setCustomZoomLevel]
     );
     const onChange = (
-        ev: React.FormEvent<HTMLDivElement>,
+        ev: FormEvent<HTMLDivElement>,
         data: RadioGroupOnChangeData
     ) => {
         setZoomValue(data.value);

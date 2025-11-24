@@ -3,7 +3,8 @@ export {
     getEditorPreviewAreaWidth,
     getPreviewAreaHeightInitial,
     getPreviewAreaHeightMaximum,
-    getResizablePaneSize
+    getResizablePaneSize,
+    getZoomToFitScale
 } from './layout';
 export {
     getApplicationMode,

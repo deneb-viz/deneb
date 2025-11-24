@@ -33,7 +33,6 @@ import {
     handleToggleDebugPane,
     handleToggleEditorPane,
     handleToggleEditorTheme,
-    handleZoomFit,
     handleZoomIn,
     handleZoomOut,
     handleZoomReset
@@ -44,7 +43,8 @@ import {
     getDenebTheme,
     PortalRoot,
     type Command,
-    useSpecificationEditor
+    useSpecificationEditor,
+    handleZoomFit
 } from '@deneb-viz/app-core';
 import { logRender } from '@deneb-viz/utils/logging';
 

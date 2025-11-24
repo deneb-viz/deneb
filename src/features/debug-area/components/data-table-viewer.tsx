@@ -13,9 +13,9 @@ import {
     DATA_TABLE_ROW_HEIGHT,
     DATA_TABLE_ROW_PADDING_LEFT
 } from '..';
-import { PREVIEW_PANE_AREA_PADDING } from '../../../constants';
 import {
     EDITOR_TOOLBAR_HEIGHT,
+    PREVIEW_PANE_AREA_PADDING,
     PREVIEW_PANE_TOOLBAR_MIN_SIZE
 } from '@deneb-viz/app-core';
 import { logRender } from '@deneb-viz/utils/logging';

@@ -29,11 +29,6 @@ export const POPOVER_Z_INDEX = 1000;
 export const PREVIEW_PANE_AREA_MIN_SIZE = DEBUG_PANE_CONFIGURATION.areaMinSize;
 
 /**
- * The amount of padding to apply around the preview area.
- */
-export const PREVIEW_PANE_AREA_PADDING = 5;
-
-/**
  * The amount of padding to apply around the preview area toolbar/debug pane.
  */
 export const PREVIEW_PANE_TOOLBAR_PADDING = 5;

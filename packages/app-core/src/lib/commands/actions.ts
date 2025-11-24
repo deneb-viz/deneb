@@ -1,4 +1,5 @@
 import { getDenebState } from '../../state';
+import { getZoomToFitScale } from '../interface';
 import { type Command } from './types';
 
 /**
@@ -26,3 +27,11 @@ export const handleDiscardChanges = () => {
         return;
     });
 };
+
+/**
+ * Fit the zoom level to the current preview area dimensions.
+ */
+export const handleZoomFit = () =>
+    executeCommand('zoomFit', () => {
+        getDenebState().updateEditorZoomLevel(getZoomToFitScale());
+    });
