@@ -11,7 +11,7 @@ import pickBy from 'lodash/pickBy';
 import toNumber from 'lodash/toNumber';
 import toString from 'lodash/toString';
 
-import { getObjectFormattedAsText, stringifyPruned } from '../json-processing';
+import { getObjectFormattedAsText } from '../json-processing';
 import { getVegaSettings, IVegaViewDatum } from '../../core/vega';
 import {
     getDatasetFieldsBySelectionKeys,
@@ -27,6 +27,7 @@ import {
     getI18nValue,
     getVisualHost
 } from '@deneb-viz/powerbi-compat/visual-host';
+import { stringifyPruned } from '@deneb-viz/utils/object';
 
 /**
  * Convenience constant for tooltip events, as it's required by Power BI.

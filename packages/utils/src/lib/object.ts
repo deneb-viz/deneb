@@ -27,6 +27,103 @@ export type DeepUpdate<T, Path, Value> = Path extends [infer Key, ...infer Rest]
 type Predicate<T> = (value: T[keyof T], key: keyof T) => boolean;
 
 /**
+ * Options for stringifying objects.
+ */
+export type StringifyOptions = {
+    maxDepth?: number;
+    spaces?: number;
+    whitespaceChar?: string;
+};
+
+/**
+ * Default maximum depth for pruning deep objects. This is used to prevent excessive recursion
+ * and potential performance issues when dealing with deeply nested objects.
+ */
+const DEFAULT_MAX_PRUNE_DEPTH = 3;
+
+/**
+ * Default spacing for stringify operations
+ */
+const DEFAULT_SPACING = 0;
+
+/**
+ * Default whitespace character for stringify operations
+ */
+const DEFAULT_WHITESPACE_CHAR = ' ';
+
+/**
+ * Prune an object at a specified level of depth.
+ */
+export const getPrunedObject = (
+    json: object,
+    options: StringifyOptions = {}
+) => {
+    const {
+        maxDepth = DEFAULT_MAX_PRUNE_DEPTH,
+        spaces = DEFAULT_SPACING,
+        whitespaceChar = DEFAULT_WHITESPACE_CHAR
+    } = options;
+    const pruned = JSON.parse(
+        stringifyPruned(json, { maxDepth, spaces, whitespaceChar })
+    );
+    return pruned;
+};
+/**
+ * Create a stringified representation of an object, pruned at a specified level of depth.
+ */
+export const stringifyPruned = (
+    json: object,
+    options: StringifyOptions = {}
+) => {
+    const {
+        maxDepth = DEFAULT_MAX_PRUNE_DEPTH,
+        spaces = DEFAULT_SPACING,
+        whitespaceChar = DEFAULT_WHITESPACE_CHAR
+    } = options;
+    const ch =
+        whitespaceChar && whitespaceChar.length > 0
+            ? (whitespaceChar[0] ?? '')
+            : ' ';
+    const indent = spaces > 0 ? ch.repeat(Math.min(spaces, 10)) : 0;
+    return JSON.stringify(json, prune(maxDepth), indent);
+};
+
+/**
+ * For a given object, prune at the specified level of depth. Borrowed and adapted from vega-tooltip.
+ */
+const prune = (maxDepth = DEFAULT_MAX_PRUNE_DEPTH) => {
+    const stack: unknown[] = [];
+    return function (this: unknown, key: string, value: unknown) {
+        if (value === undefined) {
+            return 'undefined';
+        }
+        if (value === null) {
+            return 'null';
+        }
+        if (typeof value !== 'object') {
+            return value;
+        }
+        const pos = stack.indexOf(this) + 1;
+        stack.length = pos;
+        /**
+         * We're hitting memory limits when we try to stringify the dataflow, as it contains the scenegraph (#352). We manually remove this
+         * from our object to avoid this.
+         */
+        if (key === 'dataflow') {
+            delete (value as { _scenegraph?: unknown })._scenegraph;
+        }
+        if (stack.length > maxDepth) {
+            return '[OBJECT]';
+        }
+        if (stack.indexOf(value) >= 0) {
+            return '[CIRCULAR]';
+        }
+        stack.push(value);
+        return value;
+    };
+};
+
+/**
  * Lightweight replacement for lodash.omit (top-level only).
  * Returns a shallow clone of obj without the specified keys.
  * If obj is null/undefined, returns an empty object.

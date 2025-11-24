@@ -4,6 +4,7 @@ export {
     monaco,
     setupMonacoWorker
 } from './components/code-editor/monaco-integration';
+export * from './components/data-viewer';
 export {
     datasetViewerWorker,
     type IWorkerDatasetViewerDataTableRow,

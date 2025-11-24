@@ -4,9 +4,9 @@ import { usePrevious } from '../../../hooks';
 import { DataTableCell } from './data-table-cell';
 import { DATA_TABLE_VALUE_MAX_LENGTH } from '..';
 import { VegaViewServices } from '../../vega-extensibility';
-import { stringifyPruned } from '../../json-processing';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import { stringifyPruned } from '@deneb-viz/utils/object';
 
 interface IDataTableCellSignalValueProps {
     signalName: string;
@@ -78,6 +78,7 @@ export const SignalValue: React.FC<IDataTableCellSignalValueProps> = ({
         setSignalValue(() => value);
         logDebug(`[${renderId}] Signal value for ${name} has changed`, value);
     };
+    SignalValue;
     const getSignalValue = () => {
         const value = stringifyPruned(
             VegaViewServices.getSignalByName(signalName)

@@ -8,7 +8,6 @@ import { useDebugStyles, DATA_TABLE_VALUE_MAX_LENGTH } from '..';
 import { DataTableViewer } from './data-table-viewer';
 import { getState } from '../../../store';
 import { NoDataMessage } from './no-data-message';
-import { ProcessingDataMessage } from './processing-data-message';
 import { DataTableCell } from './data-table-cell';
 import {
     getColumnHeaderTooltip,
@@ -17,10 +16,11 @@ import {
 } from '../data-table';
 import { TABLE_VALUE_MAX_DEPTH } from '../../../constants';
 import { VegaViewServices } from '../../vega-extensibility';
-import { getPrunedObject } from '../../json-processing';
+
 import { getHashValue, getNewUuid } from '@deneb-viz/utils/crypto';
 import {
     datasetViewerWorker,
+    ProcessingDataMessage,
     type IWorkerDatasetViewerDataTableRow,
     type IWorkerDatasetViewerMaxDisplayWidths,
     type IWorkerDatasetViewerMessage
@@ -35,6 +35,7 @@ import {
     logTimeEnd,
     logTimeStart
 } from '@deneb-viz/utils/logging';
+import { getPrunedObject } from '@deneb-viz/utils/object';
 
 interface IDatasetViewerProps {
     datasetName: string;
@@ -227,10 +228,9 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
                 `DatasetViewer: dataset from view (${datasetName})`,
                 datasetView
             );
-            const datasetForHash = getPrunedObject(
-                datasetView,
-                TABLE_VALUE_MAX_DEPTH
-            );
+            const datasetForHash = getPrunedObject(datasetView, {
+                maxDepth: TABLE_VALUE_MAX_DEPTH
+            });
             logDebug(
                 `DatasetViewer: latest dataset retrieved (${datasetName})`,
                 {

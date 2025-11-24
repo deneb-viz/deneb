@@ -1,5 +1,3 @@
-import cloneDeep from 'lodash/cloneDeep';
-
 import {
     stringToUint8Array,
     uint8ArrayToString
@@ -19,31 +17,8 @@ import {
     type TrackedFields
 } from '@deneb-viz/json-processing/field-tracking';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
-import { logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 export { getObjectFormattedAsText } from './formatting';
-
-/**
- * When resolving JSON to readable strings, this is the default maximum level of depth to stop at.
- */
-const JSON_MAX_PRUNE_DEPTH = 3;
-
-/**
- * Prune an object at a specified level of depth.
- */
-export const getPrunedObject = (
-    json: object,
-    maxDepth = JSON_MAX_PRUNE_DEPTH
-) => {
-    logTimeStart('getPrunedObject clone');
-    const newObj = cloneDeep(json);
-    logTimeEnd('getPrunedObject clone');
-    logTimeStart('getPrunedObject prune');
-    const pruned = JSON.parse(stringifyPruned(newObj, maxDepth));
-    logTimeEnd('getPrunedObject prune');
-    return pruned;
-};
 
 /**
  * Take the current spec and tracked fields, and asynchronously update the tokenization info via another thread (using
@@ -134,50 +109,4 @@ export const getRemappedSpecification = async (
         await doDenebSpecJsonWorkerRequest(request)
     );
     return uint8ArrayToString(remapped.payload.spec);
-};
-
-/**
- * Create a stringified representation of an object, pruned at a specified
- * level of depth.
- */
-export const stringifyPruned = (
-    json: object,
-    maxDepth = JSON_MAX_PRUNE_DEPTH
-) => JSON.stringify(json, prune(maxDepth));
-
-/**
- * For a given object, prune at the specified level of depth. Borrowed and
- * adapted from vega-tooltip.
- */
-const prune = (maxDepth = JSON_MAX_PRUNE_DEPTH) => {
-    const stack: any[] = [];
-    return function (this: any, key: string, value: any) {
-        if (value === undefined) {
-            return 'undefined';
-        }
-        if (value === null) {
-            return 'null';
-        }
-        if (typeof value !== 'object') {
-            return value;
-        }
-        const pos = stack.indexOf(this) + 1;
-        stack.length = pos;
-        /**
-         * We're hitting memory limits when we try to stringify the dataflow,
-         * as it contains the scenegraph (#352). We manually remove this from
-         * our object to avoid this.
-         */
-        if (key === 'dataflow') {
-            delete value._scenegraph;
-        }
-        if (stack.length > maxDepth) {
-            return getI18nValue('Table_Placeholder_Object');
-        }
-        if (stack.indexOf(value) >= 0) {
-            return getI18nValue('Table_Placeholder_Circular');
-        }
-        stack.push(value);
-        return value;
-    };
 };

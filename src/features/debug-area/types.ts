@@ -21,12 +21,6 @@ export interface ITableFormattedValue {
 }
 
 /**
- * Specifes navigation operations on the data table. We can use this as a
- * property in a generic component to handle repetitive code.
- */
-export type DataTableNavigationType = 'first' | 'last' | 'next' | 'previous';
-
-/**
  * Represents a row of data in the table for presenting signals and values.
  */
 export interface ISignalTableDataRow {

@@ -2,7 +2,6 @@ import { textMeasurementService } from 'powerbi-visuals-utils-formattingutils';
 import { isDate, isFunction, isNumber } from 'vega';
 
 import { TABLE_COLUMN_RESERVED_WORDS } from '../../constants';
-import { getPrunedObject } from '../json-processing';
 import {
     getCrossHighlightFieldBaseMeasureName,
     getSanitisedTooltipValue,
@@ -20,6 +19,7 @@ import {
 } from '@deneb-viz/dataset/field';
 import { type DataPointSelectionStatus } from '@deneb-viz/powerbi-compat/interactivity';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import { getPrunedObject } from '@deneb-viz/utils/object';
 
 /**
  * If the column/cell relates to cross-filtering, return a tooltip value that
