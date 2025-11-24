@@ -5,14 +5,14 @@ import { monaco, useSpecificationEditor } from '@deneb-viz/app-core';
 
 import store, { getState } from '../../../store';
 import { getTemplateReplacedForDataset } from '@deneb-viz/json-processing';
-import {
-    resolveObjectProperties,
-    updateObjectProperties
-} from '../../../core/utils/properties';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { type DenebTemplateAllocationComponents } from '@deneb-viz/json-processing/template-processing';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import {
+    getI18nValue,
+    persistProperties,
+    resolveObjectProperties
+} from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Displays the content for creating a specification using the selected
@@ -73,7 +73,7 @@ const handleCreateFromTemplate = (
         jsonSpec,
         jsonConfig
     });
-    updateObjectProperties(
+    persistProperties(
         resolveObjectProperties([
             {
                 objectName: 'vega',

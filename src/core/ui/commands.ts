@@ -12,14 +12,14 @@ import {
     type SpecProvider,
     type SpecRenderMode
 } from '@deneb-viz/vega-runtime/embed';
-import {
-    getProviderVersionProperty,
-    IPersistenceProperty,
-    resolveObjectProperties,
-    updateObjectProperties
-} from '../utils/properties';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
+import {
+    type PersistenceProperty,
+    persistProperties,
+    resolveObjectProperties
+} from '@deneb-viz/powerbi-compat/visual-host';
+import { PROVIDER_VERSION_CONFIGURATION } from '@deneb-viz/configuration';
 
 /**
  * Actual event handling logic for wrappers
@@ -32,12 +32,9 @@ export const closeCreateDialog = () =>
  * Manages persistence of a properties object to the store from an operation.
  */
 const handlePersist = (
-    properties: IPersistenceProperty[],
+    properties: PersistenceProperty[],
     objectName = 'vega'
-) =>
-    updateObjectProperties(
-        resolveObjectProperties([{ objectName, properties }])
-    );
+) => persistProperties(resolveObjectProperties([{ objectName, properties }]));
 
 /**
  * Reset the specified provider (Vega) visual property to its default value.
@@ -70,7 +67,10 @@ const updateProvider = (
             name: 'selectionMode',
             value: provider === 'vegaLite' ? 'simple' : currentSelectionMode
         },
-        getProviderVersionProperty(provider)
+        {
+            name: 'version',
+            value: PROVIDER_VERSION_CONFIGURATION[provider]
+        }
     ]);
 
 /**

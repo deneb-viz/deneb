@@ -15,6 +15,7 @@ export {
     getLocale,
     getLocalizationManager
 } from './i18n';
+export { persistProperties, resolveObjectProperties } from './persistence';
 export {
     getCategoricalDataViewFromOptions,
     isAdvancedEditor,

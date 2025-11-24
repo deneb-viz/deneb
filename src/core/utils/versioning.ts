@@ -1,11 +1,6 @@
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { isUnversionedSpec } from '../../features/specification';
 import { getState } from '../../store';
-import {
-    getDenebVersionProperty,
-    resolveObjectProperties,
-    updateObjectProperties
-} from './properties';
 import { VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/properties';
 import {
     type VersionChangeDirection,
@@ -17,6 +12,11 @@ import {
     PROVIDER_VERSION_CONFIGURATION
 } from '@deneb-viz/configuration';
 import { logDebug } from '@deneb-viz/utils/logging';
+import {
+    type PersistenceProperty,
+    persistProperties,
+    resolveObjectProperties
+} from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Current visual and provider information
@@ -169,7 +169,7 @@ const isNewerVersion = (oldVer: string, newVer: string) => {
  */
 const migrateUnversionedSpec = (provider: SpecProvider) => {
     logDebug('Migrate: initial versions for tracking');
-    updateObjectProperties(
+    persistProperties(
         resolveObjectProperties([
             {
                 objectName: 'developer',
@@ -195,7 +195,7 @@ const migrateUnversionedSpec = (provider: SpecProvider) => {
  */
 const migrateWithNoChanges = (provider: SpecProvider) => {
     logDebug('Migrate to current version (no changes)');
-    updateObjectProperties(
+    persistProperties(
         resolveObjectProperties([
             {
                 objectName: 'developer',
@@ -213,3 +213,11 @@ const migrateWithNoChanges = (provider: SpecProvider) => {
         ])
     );
 };
+
+/**
+ * Return the version number for Deneb as a persistable property.
+ */
+const getDenebVersionProperty = (): PersistenceProperty => ({
+    name: 'version',
+    value: APPLICATION_INFORMATION_CONFIGURATION.version
+});

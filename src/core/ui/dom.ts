@@ -3,11 +3,11 @@ import IViewport = powerbi.IViewport;
 import EditMode = powerbi.EditMode;
 import ViewMode = powerbi.ViewMode;
 
-import {
-    resolveObjectProperties,
-    updateObjectProperties
-} from '../utils/properties';
 import { logDebug } from '@deneb-viz/utils/logging';
+import {
+    persistProperties,
+    resolveObjectProperties
+} from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * For suitable events, ensure that the visual viewport is correctly resolved and persisted. This will allow us to keep the
@@ -30,7 +30,7 @@ export const resolveReportViewport = (
             newViewport.width !== viewport.width);
     if (isEditEligible || isViewEligible) {
         logDebug('Persisting viewport to properties...');
-        updateObjectProperties(
+        persistProperties(
             resolveObjectProperties([
                 {
                     objectName: 'stateManagement',

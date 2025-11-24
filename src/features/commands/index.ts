@@ -1,10 +1,5 @@
 import { Options } from 'react-hotkeys-hook';
 import { getZoomToFitScale } from '../../core/ui/advancedEditor';
-import {
-    IPersistenceProperty,
-    resolveObjectProperties,
-    updateObjectProperties
-} from '../../core/utils/properties';
 import { getState } from '../../store';
 import { persistSpecification } from '../specification';
 import { setFocusToActiveEditor } from '../json-editor';
@@ -18,7 +13,12 @@ import {
     APPLICATION_INFORMATION_CONFIGURATION,
     VISUAL_PREVIEW_ZOOM_CONFIGURATION
 } from '@deneb-viz/configuration';
-import { launchUrl } from '@deneb-viz/powerbi-compat/visual-host';
+import {
+    launchUrl,
+    type PersistenceProperty,
+    persistProperties,
+    resolveObjectProperties
+} from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Specifies `react-hotkeys-hook` bindings for particular HTML elements.
@@ -256,9 +256,6 @@ const setEditorPivotItem = (operation: EditorPaneRole) =>
  * Manages persistence of a properties object to the store from an operation.
  */
 export const setVisualProperty = (
-    properties: IPersistenceProperty[],
+    properties: PersistenceProperty[],
     objectName = 'vega'
-) =>
-    updateObjectProperties(
-        resolveObjectProperties([{ objectName, properties }])
-    );
+) => persistProperties(resolveObjectProperties([{ objectName, properties }]));

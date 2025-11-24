@@ -40,6 +40,12 @@ export const getVisualInteractionStatus = () =>
     services?.host?.hostCapabilities?.allowInteractions || false;
 
 /**
+ * Get the current visual data view's persistence objects.
+ */
+export const getVisualObjects = () =>
+    visualUpdateOptions?.dataViews?.[0]?.metadata?.objects;
+
+/**
  * The visual host's selection ID builder.
  */
 export const getVisualSelectionIdBuilder = () => selectionIdBuilder();

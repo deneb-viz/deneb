@@ -6,10 +6,6 @@ import omit from 'lodash/omit';
 
 import { getState } from '../../store';
 import { getVegaSettings } from '../../core/vega';
-import {
-    resolveObjectProperties,
-    updateObjectProperties
-} from '../../core/utils/properties';
 
 import { type EditorPaneRole, monaco } from '@deneb-viz/app-core';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
@@ -17,6 +13,10 @@ import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
 import { SpecificationComparisonOptions } from '@deneb-viz/json-processing/spec-processing';
 import { type DatasetValueRow } from '@deneb-viz/dataset/datum';
 import { logDebug, logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
+import {
+    persistProperties,
+    resolveObjectProperties
+} from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * For a given operation and string input, ensure that it's trimmed and replaced with suitable defaults if empty.
@@ -272,7 +272,7 @@ export const persistSpecification = (
     // updateFieldTracking(spec, trackedFieldsCurrent);
     updateChanges({ role: 'Spec', text: spec });
     updateChanges({ role: 'Config', text: config });
-    updateObjectProperties(
+    persistProperties(
         resolveObjectProperties([
             {
                 objectName: 'vega',
