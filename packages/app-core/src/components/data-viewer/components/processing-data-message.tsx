@@ -1,11 +1,11 @@
 import { makeStyles, Spinner, tokens } from '@fluentui/react-components';
 
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import {
     PREVIEW_PANE_TOOLBAR_MIN_SIZE,
-    SPLIT_PANE_HANDLE_SIZE,
-    StatusBarContainer
-} from '@deneb-viz/app-core';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+    SPLIT_PANE_HANDLE_SIZE
+} from '../../../lib';
+import { StatusBarContainer } from '../../ui';
 
 const useProcessingDataMessageStyles = makeStyles({
     container: {

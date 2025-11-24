@@ -1,23 +1,18 @@
-import React from 'react';
-import { shallow } from 'zustand/shallow';
-
-import store from '../../../store';
-import { SelectIncludedTemplate } from './select-included-template';
 import { type DenebTemplateCreateMode } from '@deneb-viz/json-processing/template-processing';
-import {
-    CreateFromTemplate,
-    CreateMethod,
-    ImportDropzone,
-    useModalDialogStyles
-} from '@deneb-viz/app-core';
 import { logRender } from '@deneb-viz/utils/logging';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import { useModalDialogStyles } from '../../../components/ui';
+import { CreateMethod } from './create-method';
+import { CreateFromTemplate } from './create-from-template';
+import { ImportDropzone } from './import-dropzone';
+import { SelectIncludedTemplate } from './select-included-template';
+import { useDenebState } from '../../../state';
 
 /**
  * Interface (pane) for creating a new visualization.
  */
-export const VisualCreatePane: React.FC = () => {
-    const mode = store((state) => state.create.mode, shallow);
+export const VisualCreatePane = () => {
+    const mode = useDenebState((state) => state.create.mode);
     const classes = useModalDialogStyles();
     logRender('VisualCreatePane');
     return (

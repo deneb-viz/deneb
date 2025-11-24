@@ -31,6 +31,12 @@ export function getBase64MimeType(type: TBase64DataEncoding) {
 }
 
 /**
+ * Prepends the desired data URI & MIME-type to the base64 portion of an encoded image.
+ */
+export const getBase64ImageWithMime = (base64: string) =>
+    `${getBase64DataUri('png')}${base64?.trim() ?? ''}`;
+
+/**
  * Return a base64-encoded PNG image data URI that represents a blank image.
  */
 export function getBase64ImagePngBlank() {

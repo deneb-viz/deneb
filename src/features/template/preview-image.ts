@@ -3,7 +3,6 @@ import { getState } from '../../store';
 import { VegaViewServices } from '../vega-extensibility';
 
 import {
-    getBase64DataUri,
     getBase64ImagePngBlank,
     getBase64MimeType
 } from '@deneb-viz/utils/base64';
@@ -43,13 +42,6 @@ export const dispatchPreviewImage = (includePreviewImage: boolean) => {
         ?.toImageURL(IMAGE_TYPE, getResizeScale())
         .then((i) => (img.src = i));
 };
-
-/**
- * Prepends the desired data URI & MIME-type to the base64 portion of an
- * encoded image.
- */
-export const getCombinedBase64ImageWithMime = (base64: string) =>
-    `${getBase64DataUri('png')}${base64?.trim() ?? ''}`;
 
 /**
  * For the visual viewport dimensions, calculate the correct scaling to use for preview

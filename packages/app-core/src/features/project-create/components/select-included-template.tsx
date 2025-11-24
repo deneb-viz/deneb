@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { type FormEvent, useEffect, useMemo, useState } from 'react';
 import { TopLevelSpec } from 'vega-lite';
 import { Spec } from 'vega';
 import {
     Label,
+    makeStyles,
     Radio,
     RadioGroup,
     RadioGroupOnChangeData,
@@ -12,10 +13,8 @@ import {
 
 import {
     getIncludedTemplates,
-    getTemplateByProviderandName
-} from '../../template';
-import { getState } from '../../../store';
-import { useCreateStyles } from './';
+    getTemplateByProviderAndName
+} from '../../../catalog';
 import {
     getTemplateMetadata,
     getTemplateResolvedForPlaceholderAssignment
@@ -23,23 +22,31 @@ import {
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import { getVegaProviderI18n } from '@deneb-viz/app-core';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logRender } from '@deneb-viz/utils/logging';
+import { getVegaProviderI18n } from '../../../lib/vega';
+import { useDenebState } from '../../../state';
 
-interface ISelectIncludedTemplateProps {
+type SelectIncludedTemplateProps = {
     createMode: SpecProvider;
-}
+};
+
+const useSelectIncludedTemplateStyles = makeStyles({
+    radioButton: {
+        marginLeft: '2px'
+    }
+});
 
 /**
  * Handles the selection of included templates for the specified create mode
  * (provider), and the dispatch of the correct information to the store for
  * subsequent components that rely upon it.
  */
-export const SelectIncludedTemplate: React.FC<ISelectIncludedTemplateProps> = ({
+export const SelectIncludedTemplate = ({
     createMode
-}) => {
-    const classes = useCreateStyles();
+}: SelectIncludedTemplateProps) => {
+    const setTemplate = useDenebState((state) => state.create.setTemplate);
+    const classes = useSelectIncludedTemplateStyles();
     const templates = useMemo(() => getIncludedTemplates(), []);
     const templateList = templates[createMode];
     const templateMetadata = templateList.map(
@@ -64,10 +71,31 @@ export const SelectIncludedTemplate: React.FC<ISelectIncludedTemplateProps> = ({
     const [radioValue, setRadioValue] = useState(
         selectedTemplate?.information?.name
     );
-    const onTemplateSelect = (name: string) =>
+    const onTemplateSelect = (name: string) => {
         dispatchSelectedTemplate(createMode, name);
+    };
+    /**
+     * Ensure that the selected template is pre-processed into candiate string
+     * representations of their content, so that they can work with the JSONC APIs
+     * downstream.
+     */
+    const dispatchSelectedTemplate = (
+        createMode: SpecProvider,
+        name: string
+    ) => {
+        const template = getTemplateByProviderAndName(createMode, name);
+        const templateContent = JSON.stringify(template);
+        const candidates = getTemplateResolvedForPlaceholderAssignment(
+            templateContent,
+            DEFAULTS.editor.tabSize
+        );
+        setTemplate({
+            metadata: getTemplateMetadata(templateContent),
+            candidates
+        });
+    };
     const onChange = (
-        ev: React.FormEvent<HTMLDivElement>,
+        ev: FormEvent<HTMLDivElement>,
         data: RadioGroupOnChangeData
     ) => {
         setRadioValue(data.value);
@@ -109,25 +137,4 @@ export const SelectIncludedTemplate: React.FC<ISelectIncludedTemplateProps> = ({
             </RadioGroup>
         </div>
     );
-};
-
-/**
- * Ensure that the selected template is pre-processed into candiate string
- * representations of their content, so that they can work with the JSONC APIs
- * downstream.
- */
-const dispatchSelectedTemplate = (createMode: SpecProvider, name: string) => {
-    const {
-        create: { setTemplate }
-    } = getState();
-    const template = getTemplateByProviderandName(createMode, name);
-    const templateContent = JSON.stringify(template);
-    const candidates = getTemplateResolvedForPlaceholderAssignment(
-        templateContent,
-        DEFAULTS.editor.tabSize
-    );
-    setTemplate({
-        metadata: getTemplateMetadata(templateContent),
-        candidates
-    });
 };

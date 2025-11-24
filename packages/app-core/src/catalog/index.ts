@@ -1,13 +1,11 @@
-/**
- * Templates included with Deneb, and used to create from the appropriate
- * language provider's menu in the dialog.
- */
+import { type BaseData, type Spec } from 'vega';
+import { type TopLevelSpec } from 'vega-lite';
 
-import { BaseData } from 'vega';
-
-import { getCombinedBase64ImageWithMime } from '../preview-image';
 import { THUMBNAIL_IMAGES } from './thumbnail-images';
-import { getNewTemplateMetadata } from '@deneb-viz/json-processing';
+import {
+    getNewTemplateMetadata,
+    getTemplateMetadata
+} from '@deneb-viz/json-processing';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import {
     type UsermetaInformation,
@@ -18,13 +16,10 @@ import {
     APPLICATION_INFORMATION_CONFIGURATION,
     PROVIDER_VERSION_CONFIGURATION
 } from '@deneb-viz/configuration';
-
-/**
- * Included templates are exported using the provider shorthand, so that they
- * can be looked-up by provider name in the UI.
- */
-export { VEGA_INCLUDED_TEMPLATES as vega } from './vega';
-export { VEGA_LITE_INCLUDED_TEMPLATES as vegaLite } from './vega-lite';
+import { getBase64ImageWithMime } from '@deneb-viz/utils/base64';
+import { type DenebTemplateCatalog } from './types';
+import { VEGA_INCLUDED_TEMPLATES } from './vega';
+import { VEGA_LITE_INCLUDED_TEMPLATES } from './vega-lite';
 
 /**
  * Standard dataset binding for specifications.
@@ -47,7 +42,7 @@ export const getNewIncludedTemplateMetadata = (
     provider: SpecProvider,
     name: string,
     description: string = '',
-    previewImageKey?: string
+    previewImageKey?: keyof typeof THUMBNAIL_IMAGES
 ): Partial<UsermetaTemplate> => {
     const metadata = getNewTemplateMetadata({
         buildVersion: APPLICATION_INFORMATION_CONFIGURATION.version,
@@ -63,10 +58,33 @@ export const getNewIncludedTemplateMetadata = (
             author: DENEB_TEMPLATE_AUTHOR_NAME,
             previewImageBase64PNG:
                 (previewImageKey &&
-                    getCombinedBase64ImageWithMime(
+                    getBase64ImageWithMime(
                         THUMBNAIL_IMAGES[previewImageKey]
                     )) ||
                 undefined
         }
     };
+};
+
+/**
+ * Provides a list of included templates for the specified provider.
+ */
+export const getIncludedTemplates = (): DenebTemplateCatalog => ({
+    vega: VEGA_INCLUDED_TEMPLATES.map((t) => t()),
+    vegaLite: VEGA_LITE_INCLUDED_TEMPLATES.map((t) => t())
+});
+
+/**
+ * For a supplied provider and name, extract the template from the included
+ * lists of templates.
+ */
+export const getTemplateByProviderAndName = (
+    provider: SpecProvider,
+    name: string
+): Spec | TopLevelSpec | undefined => {
+    const templates = <Spec[]>getIncludedTemplates()[provider];
+    return templates?.find(
+        (t) =>
+            getTemplateMetadata(JSON.stringify(t))?.information?.name === name
+    );
 };

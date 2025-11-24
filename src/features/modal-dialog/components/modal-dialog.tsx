@@ -12,16 +12,17 @@ import {
 import { shallow } from 'zustand/shallow';
 
 import store from '../../../store';
-import { CreateButton, VisualCreatePane } from '../../visual-create';
 import { closeCreateDialog } from '../../../core/ui/commands';
 import { VisualExportPane } from '../../visual-export';
 import { setFocusToActiveEditor } from '../../json-editor';
 import {
+    CreateButton,
     ExportButtons,
     FieldRemapPane,
     useModalDialogStyles,
     useSpecificationEditor,
     VersionChangeContent,
+    VisualCreatePane,
     type ModalDialogRole
 } from '@deneb-viz/app-core';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';

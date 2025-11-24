@@ -1,5 +1,2 @@
-export { CreateFromTemplate } from './components/create-from-template';
-export { CreateMethod } from './components/create-method';
-export { ImportDropzone } from './components/import-dropzone';
-export { NoTemplateMessage } from './components/no-template-message';
-export { TemplateInformation } from './components/template-information';
+export { CreateButton } from './components/create-button';
+export { VisualCreatePane } from './components/visual-create-pane';

@@ -4,13 +4,11 @@ import { shallow } from 'zustand/shallow';
 
 import store from '../../../store';
 import { useVisualExportStyles } from '.';
-import {
-    TEMPLATE_INFORMATION_PROPS,
-    dispatchPreviewImage
-} from '../../template';
+import { dispatchPreviewImage } from '../../template';
 import {
     CappedTextField,
     PreviewImage,
+    TEMPLATE_INFORMATION_PROPS,
     useModalDialogStyles
 } from '@deneb-viz/app-core';
 import { logRender } from '@deneb-viz/utils/logging';
