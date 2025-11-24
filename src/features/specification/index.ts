@@ -1,6 +1,1 @@
-export {
-    getCleanEditorJson,
-    hasLiveSpecChanged,
-    isUnversionedSpec,
-    persistSpecification
-} from './logic';
+export { isUnversionedSpec } from './logic';

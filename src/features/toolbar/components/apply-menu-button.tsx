@@ -14,8 +14,8 @@ import { shallow } from 'zustand/shallow';
 import store from '../../../store';
 import { PlayRegular, ReplayRegular } from '@fluentui/react-icons';
 import { useToolbarStyles } from '.';
-import { handleApplyChanges } from '../../commands';
 import {
+    handleApplyChanges,
     TooltipCustomMount,
     useSpecificationEditor
 } from '@deneb-viz/app-core';

@@ -16,6 +16,8 @@ import {
     resolveObjectProperties
 } from '@deneb-viz/powerbi-compat/visual-host';
 import { type SpecificationEditorRefs } from '../../features/specification-editor';
+import { monaco } from '../../components/code-editor/monaco-integration';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 
 /**
  * Executes a command if:
@@ -31,6 +33,65 @@ const executeCommand = (command: Command, callback: () => void) => {
     if (mode === 'Editor' && commands[command]) {
         callback();
     }
+};
+
+/**
+ * Ensure that we have the correct ref for an Ace editor, based on the current editor role in the store. This will
+ * allow us to access the editor instance from other components.
+ */
+const getActiveEditorRef = (editorRefs: SpecificationEditorRefs) => {
+    const { editorSelectedOperation } = getDenebState();
+    switch (editorSelectedOperation) {
+        case 'Spec':
+            return editorRefs.spec;
+        case 'Config':
+            return editorRefs.config;
+        default:
+            return null;
+    }
+};
+
+/**
+ * For a given operation and string input, ensure that it's trimmed and replaced with suitable defaults if empty.
+ */
+const getCleanJsonInputForPersistence = (
+    operation: EditorPaneRole,
+    input: string
+): string => {
+    const clean = input?.trim() || '';
+    if (clean === '') {
+        switch (operation) {
+            case 'Spec':
+                return DEFAULTS.vega.jsonSpec;
+            case 'Config':
+                return DEFAULTS.vega.jsonConfig;
+        }
+    }
+    return clean;
+};
+
+/**
+ * Applies the changes to the specification.
+ */
+export const handleApplyChanges = (editorRefs: SpecificationEditorRefs) => {
+    executeCommand('applyChanges', () =>
+        handlePersistSpecification(
+            editorRefs?.spec.current,
+            editorRefs?.config.current
+        )
+    );
+    handleSetFocusToActiveEditor(editorRefs);
+};
+
+/**
+ * Toggles the auto-apply changes mode.
+ */
+export const handleAutoApplyChanges = (editorRefs: SpecificationEditorRefs) => {
+    const {
+        editor: { toggleApplyMode }
+    } = getDenebState();
+    handleApplyChanges(editorRefs);
+    executeCommand('autoApplyToggle', toggleApplyMode);
 };
 
 export const handleDataTableRowsPerPageChange = (value: number) => {
@@ -130,6 +191,66 @@ export const handleOpenWebsite = () => {
     executeCommand('helpSite', () => {
         launchUrl(APPLICATION_INFORMATION_CONFIGURATION.supportUrl);
     });
+};
+
+/**
+ * Resolve the spec/config and use the `properties` API for persistence. Also
+ * resets the `isDirty` flag in the store.
+ */
+export const handlePersistSpecification = (
+    specEditor: monaco.editor.IStandaloneCodeEditor | null,
+    configEditor: monaco.editor.IStandaloneCodeEditor | null,
+    stage = true
+) => {
+    if (!specEditor || !configEditor) {
+        return;
+    }
+    const {
+        editor: { stagedConfig, stagedSpec, updateChanges },
+        fieldUsage: { dataset: trackedFieldsCurrent },
+        visualSettings: {
+            vega: {
+                output: {
+                    jsonConfig: { value: jsonConfig },
+                    jsonSpec: { value: jsonSpec }
+                }
+            }
+        }
+    } = getDenebState();
+    const spec =
+        (stage
+            ? getCleanJsonInputForPersistence('Spec', specEditor.getValue())
+            : stagedSpec) ?? jsonSpec;
+    const config =
+        (stage
+            ? getCleanJsonInputForPersistence('Config', configEditor.getValue())
+            : stagedConfig) ?? jsonConfig;
+    // Tracking is now only used for export (#486)
+    // updateFieldTracking(spec, trackedFieldsCurrent);
+    updateChanges({ role: 'Spec', text: spec });
+    updateChanges({ role: 'Config', text: config });
+    persistProperties(
+        resolveObjectProperties([
+            {
+                objectName: 'vega',
+                properties: [
+                    { name: 'jsonSpec', value: spec },
+                    { name: 'jsonConfig', value: config }
+                ]
+            }
+        ])
+    );
+};
+
+/**
+ * Set focus to the active editor, based on the current editor role in the store.
+ */
+export const handleSetFocusToActiveEditor = (
+    editorRefs: SpecificationEditorRefs
+) => {
+    if (shouldPrioritizeJsonEditor()) {
+        getActiveEditorRef(editorRefs)?.current?.focus();
+    }
 };
 
 /**
@@ -233,3 +354,15 @@ const setVisualProperty = (
     properties: PersistenceProperty[],
     objectName = 'vega'
 ) => persistProperties(resolveObjectProperties([{ objectName, properties }]));
+
+/**
+ * Confirms that specified events are not occurring in the advanced editor UI
+ * and the JSON editor can have focus set to it (or other similar actions).
+ */
+const shouldPrioritizeJsonEditor = () => {
+    const {
+        interface: { modalDialogRole }
+    } = getDenebState();
+    const isPopover = modalDialogRole !== 'None';
+    return !isPopover;
+};

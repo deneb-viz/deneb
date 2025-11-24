@@ -1,8 +1,6 @@
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { POPOVER_Z_INDEX } from '../../constants';
 
-import { getState } from '../../store';
-
 /**
  * UI theming utilities.
  */
@@ -37,15 +35,3 @@ export const useInterfaceStyles = makeStyles({
         backgroundColor: 'transparent'
     }
 });
-
-/**
- * Confirms that specified events are not occurring in the advanced editor UI
- * and the JSON editor can have focus set to it (or other similar actions).
- */
-export const shouldPrioritizeJsonEditor = () => {
-    const {
-        interface: { modalDialogRole }
-    } = getState();
-    const isPopover = modalDialogRole !== 'None';
-    return !isPopover;
-};

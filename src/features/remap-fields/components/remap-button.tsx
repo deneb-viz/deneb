@@ -3,8 +3,6 @@ import { Button } from '@fluentui/react-components';
 import { shallow } from 'zustand/shallow';
 
 import store, { getState } from '../../../store';
-import { persistSpecification } from '../../specification';
-import { setFocusToActiveEditor } from '../../json-editor';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 import {
     updateFieldTokenization,
@@ -12,6 +10,8 @@ import {
 } from '../../json-processing';
 import { type TrackedFields } from '@deneb-viz/json-processing/field-tracking';
 import {
+    handlePersistSpecification,
+    handleSetFocusToActiveEditor,
     type SpecificationEditorRefs,
     useSpecificationEditor
 } from '@deneb-viz/app-core';
@@ -112,8 +112,8 @@ export const applyRemappedFields = async (
     setRemapState('UpdatingEditor');
     spec?.current?.setValue(mappedSpec);
     spec?.current?.setPosition(cursorPrev);
-    setFocusToActiveEditor(editorRefs);
+    handleSetFocusToActiveEditor(editorRefs);
     setRemapState('Complete');
-    persistSpecification(spec.current, config.current);
+    handlePersistSpecification(spec.current, config.current);
     setRemapState('None');
 };

@@ -3,9 +3,9 @@ import { shallow } from 'zustand/shallow';
 import { Link, useId, useToastController } from '@fluentui/react-components';
 
 import store from '../../../store';
-import { persistSpecification } from '../../specification';
 import {
     handleDiscardChanges,
+    handlePersistSpecification,
     type NotificationProps,
     NotificationToast,
     TOAST_NOTIFICATION_ID_APPLY_CHANGES,
@@ -27,7 +27,7 @@ export const NotificationApplyChanges = ({ toasterId }: NotificationProps) => {
     const { spec, config } = useSpecificationEditor();
     const handleApply = () => {
         dismissToast(toastId);
-        persistSpecification(spec?.current, config?.current, false);
+        handlePersistSpecification(spec?.current, config?.current, false);
     };
     const handleDiscard = () => {
         dismissToast(toastId);

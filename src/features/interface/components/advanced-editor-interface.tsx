@@ -17,11 +17,7 @@ import { ModalDialog } from '../../modal-dialog';
 import { useInterfaceStyles } from '..';
 import { AdvancedEditorToolbar } from '../../toolbar';
 import { KEY_BINDINGS } from '../../../../config';
-import {
-    HOTKEY_OPTIONS,
-    handleApplyChanges,
-    handleAutoApplyChanges
-} from '../../commands';
+import { HOTKEY_OPTIONS } from '../../commands';
 import {
     type DenebTheme,
     EDITOR_TOOLBAR_HEIGHT,
@@ -44,7 +40,9 @@ import {
     handleEditorPaneConfig,
     handleEditorPaneSettings,
     handleToggleEditorTheme,
-    handleOpenCreateSpecificationDialog
+    handleOpenCreateSpecificationDialog,
+    handleApplyChanges,
+    handleAutoApplyChanges
 } from '@deneb-viz/app-core';
 import { logRender } from '@deneb-viz/utils/logging';
 

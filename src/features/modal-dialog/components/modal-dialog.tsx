@@ -14,11 +14,11 @@ import { shallow } from 'zustand/shallow';
 import store from '../../../store';
 import { closeCreateDialog } from '../../../core/ui/commands';
 import { VisualExportPane } from '../../visual-export';
-import { setFocusToActiveEditor } from '../../json-editor';
 import {
     CreateButton,
     ExportButtons,
     FieldRemapPane,
+    handleSetFocusToActiveEditor,
     useModalDialogStyles,
     useSpecificationEditor,
     VersionChangeContent,
@@ -76,7 +76,7 @@ export const ModalDialog: React.FC = () => {
             setExportProcessingState('None');
         }
         setModalDialogRole('None');
-        setFocusToActiveEditor(editorRefs);
+        handleSetFocusToActiveEditor(editorRefs);
     };
     const shouldPreventClose = useMemo(
         () =>

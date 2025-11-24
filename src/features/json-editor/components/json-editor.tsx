@@ -8,12 +8,12 @@ import store, { getState } from '../../../store';
 import { PREVIEW_PANE_TOOLBAR_BUTTON_PADDING } from '../../../constants';
 import { useInterfaceStyles } from '../../interface';
 import { JsonEditorStatusBar } from './json-editor-status-bar';
-import { persistSpecification } from '../../specification';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { updateFieldTracking } from '../../json-processing';
 
 import {
     type EditorPaneRole,
+    handlePersistSpecification,
     monaco,
     PREVIEW_PANE_TOOLBAR_MIN_SIZE,
     setupMonacoWorker,
@@ -165,7 +165,7 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
             // updateTracking(value, thisEditorRole);
             if (applyMode === 'Auto') {
                 logDebug('Auto-apply changes');
-                persistSpecification(spec.current, config.current);
+                handlePersistSpecification(spec.current, config.current);
             }
         }, debouncePeriod),
         [editorText, applyMode]

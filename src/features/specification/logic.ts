@@ -7,43 +7,11 @@ import omit from 'lodash/omit';
 import { getState } from '../../store';
 import { getVegaSettings } from '../../core/vega';
 
-import { type EditorPaneRole, monaco } from '@deneb-viz/app-core';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
 import { SpecificationComparisonOptions } from '@deneb-viz/json-processing/spec-processing';
 import { type DatasetValueRow } from '@deneb-viz/dataset/datum';
 import { logDebug, logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
-import {
-    persistProperties,
-    resolveObjectProperties
-} from '@deneb-viz/powerbi-compat/visual-host';
-
-/**
- * For a given operation and string input, ensure that it's trimmed and replaced with suitable defaults if empty.
- */
-const cleanJsonInputForPersistence = (
-    operation: EditorPaneRole,
-    input: string
-): string => {
-    const clean = input?.trim() || '';
-    if (clean === '') {
-        switch (operation) {
-            case 'Spec':
-                return DEFAULTS.vega.jsonSpec;
-            case 'Config':
-                return DEFAULTS.vega.jsonConfig;
-        }
-    }
-    return clean;
-};
-
-/**
- * Further abstracts the `cleanJsonInputForPersistence` workflow so that calling functions are easier to follow.
- */
-export const getCleanEditorJson = (
-    role: EditorPaneRole,
-    editor: monaco.editor.IStandaloneCodeEditor
-) => cleanJsonInputForPersistence(role, editor?.getValue());
 
 /**
  * Patch the data array in a spec to ensure that values from the visual
@@ -161,26 +129,6 @@ export const getSpecificationForVisual = () => {
 };
 
 /**
- * Looks at the active specification and config in the visual editors and
- * compares with persisted values in the visual properties. Used to set
- * the `isDirty` flag in the store.
- */
-export const hasLiveSpecChanged = (
-    specEditor: monaco.editor.IStandaloneCodeEditor,
-    configEditor: monaco.editor.IStandaloneCodeEditor
-) => {
-    const {
-            output: {
-                jsonSpec: { value: jsonSpec },
-                jsonConfig: { value: jsonConfig }
-            }
-        } = getVegaSettings(),
-        liveSpec = getCleanEditorJson('Spec', specEditor),
-        liveConfig = getCleanEditorJson('Config', configEditor);
-    return liveSpec != jsonSpec || liveConfig != jsonConfig;
-};
-
-/**
  * Determine if the current spec is 'unversioned', meaning that it's the same
  * as the default properties.
  */
@@ -239,48 +187,4 @@ const isVersionedSpec = () => {
         }
     } = getState();
     return (denebVersion && providerVersion) || false;
-};
-
-/**
- * Resolve the spec/config and use the `properties` API for persistence. Also
- * resets the `isDirty` flag in the store.
- */
-export const persistSpecification = (
-    specEditor: monaco.editor.IStandaloneCodeEditor,
-    configEditor: monaco.editor.IStandaloneCodeEditor,
-    stage = true
-) => {
-    const {
-        editor: { stagedConfig, stagedSpec, updateChanges },
-        fieldUsage: { dataset: trackedFieldsCurrent },
-        visualSettings: {
-            vega: {
-                output: {
-                    jsonConfig: { value: jsonConfig },
-                    jsonSpec: { value: jsonSpec }
-                }
-            }
-        }
-    } = getState();
-    const spec =
-        (stage ? getCleanEditorJson('Spec', specEditor) : stagedSpec) ??
-        jsonSpec;
-    const config =
-        (stage ? getCleanEditorJson('Config', configEditor) : stagedConfig) ??
-        jsonConfig;
-    // Tracking is now only used for export (#486)
-    // updateFieldTracking(spec, trackedFieldsCurrent);
-    updateChanges({ role: 'Spec', text: spec });
-    updateChanges({ role: 'Config', text: config });
-    persistProperties(
-        resolveObjectProperties([
-            {
-                objectName: 'vega',
-                properties: [
-                    { name: 'jsonSpec', value: spec },
-                    { name: 'jsonConfig', value: config }
-                ]
-            }
-        ])
-    );
 };
