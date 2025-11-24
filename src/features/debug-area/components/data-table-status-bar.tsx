@@ -12,10 +12,10 @@ import { shallow } from 'zustand/shallow';
 import { useDebugStyles } from '..';
 import store from '../../../store';
 import { DatasetViewerOptions } from './dataset-viewer-options';
-import { setVisualProperty } from '../../commands';
 import { DATA_VIEWER_CONFIGURATION } from '@deneb-viz/configuration';
 import {
     DataTableNavigationButton,
+    handleDataTableRowsPerPageChange,
     StatusBarContainer
 } from '@deneb-viz/app-core';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
@@ -64,7 +64,7 @@ export const DataTableStatusBar: React.FC<PaginationComponentProps> = ({
     const handleChangeRowsPerPage: SelectProps['onChange'] = (event, data) => {
         const value = Number(data.value);
         onChangeRowsPerPage(value, currentPage);
-        setVisualProperty([{ name: 'debugTableRowsPerPage', value }], 'editor');
+        handleDataTableRowsPerPageChange(value);
     };
     const numPages = getNumberOfPages(rowCount, rowsPerPageSetting as number);
     const lastIndex = currentPage * (rowsPerPageSetting as number);

@@ -20,9 +20,7 @@ import { KEY_BINDINGS } from '../../../../config';
 import {
     HOTKEY_OPTIONS,
     handleApplyChanges,
-    handleAutoApplyChanges,
-    handleOpenCreateSpecificationDialog,
-    handleToggleEditorTheme
+    handleAutoApplyChanges
 } from '../../commands';
 import {
     type DenebTheme,
@@ -44,7 +42,9 @@ import {
     handleDebugPaneLog,
     handleEditorPaneSpecification,
     handleEditorPaneConfig,
-    handleEditorPaneSettings
+    handleEditorPaneSettings,
+    handleToggleEditorTheme,
+    handleOpenCreateSpecificationDialog
 } from '@deneb-viz/app-core';
 import { logRender } from '@deneb-viz/utils/logging';
 

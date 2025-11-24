@@ -23,12 +23,7 @@ import { shallow } from 'zustand/shallow';
 
 import store, { getState } from '../../../store';
 import { useToolbarStyles } from '.';
-import {
-    handleApplyChanges,
-    handleAutoApplyChanges,
-    handleOpenCreateSpecificationDialog,
-    handleToggleEditorTheme
-} from '../../commands';
+import { handleApplyChanges, handleAutoApplyChanges } from '../../commands';
 import {
     handleZoomFit,
     type ToolbarRole,
@@ -40,7 +35,9 @@ import {
     handleZoomIn,
     handleZoomOut,
     handleToggleDebugPane,
-    handleOpenWebsite
+    handleOpenWebsite,
+    handleToggleEditorTheme,
+    handleOpenCreateSpecificationDialog
 } from '@deneb-viz/app-core';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 

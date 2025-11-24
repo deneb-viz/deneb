@@ -9,7 +9,12 @@ import {
     getZoomToFitScale
 } from '../interface';
 import { type Command } from './types';
-import { launchUrl } from '@deneb-viz/powerbi-compat/visual-host';
+import {
+    launchUrl,
+    type PersistenceProperty,
+    persistProperties,
+    resolveObjectProperties
+} from '@deneb-viz/powerbi-compat/visual-host';
 import { type SpecificationEditorRefs } from '../../features/specification-editor';
 
 /**
@@ -26,6 +31,13 @@ const executeCommand = (command: Command, callback: () => void) => {
     if (mode === 'Editor' && commands[command]) {
         callback();
     }
+};
+
+export const handleDataTableRowsPerPageChange = (value: number) => {
+    setVisualProperty(
+        [{ name: 'debugTableRowsPerPage', value: `${value}` }],
+        'editor'
+    );
 };
 
 export const handleDebugPaneData = () => {
@@ -95,6 +107,12 @@ export const handleExportSpecification = () =>
         getDenebState().interface.setModalDialogRole('Export');
     });
 
+export const handleOpenCreateSpecificationDialog = () => {
+    executeCommand('newSpecification', () => {
+        setVisualProperty([{ name: 'isNewDialogOpen', value: true }]);
+    });
+};
+
 /**
  * Handle opening the map fields dialog.
  */
@@ -129,6 +147,25 @@ export const handleToggleDebugPane = () => {
 export const handleToggleEditorPane = () => {
     executeCommand('editorPaneToggle', () => {
         getDenebState().toggleEditorPane();
+    });
+};
+
+/**
+ * Handle toggling the editor theme.
+ */
+export const handleToggleEditorTheme = () => {
+    executeCommand('themeToggle', () => {
+        const {
+            visualSettings: {
+                editor: {
+                    interface: {
+                        theme: { value: theme }
+                    }
+                }
+            }
+        } = getDenebState();
+        const newValue = theme === 'dark' ? 'light' : 'dark';
+        setVisualProperty([{ name: 'theme', value: newValue }], 'editor');
     });
 };
 
@@ -188,3 +225,11 @@ const setDebugPivotItem = (role: DebugPaneRole) => {
  */
 const setEditorPivotItem = (operation: EditorPaneRole) =>
     getDenebState().updateEditorSelectedOperation(operation);
+
+/**
+ * Manages persistence of a properties object to the store from an operation.
+ */
+const setVisualProperty = (
+    properties: PersistenceProperty[],
+    objectName = 'vega'
+) => persistProperties(resolveObjectProperties([{ objectName, properties }]));
