@@ -21,21 +21,8 @@ import {
     HOTKEY_OPTIONS,
     handleApplyChanges,
     handleAutoApplyChanges,
-    handleDebugPaneData,
-    handleDebugPaneLog,
-    handleDebugPaneSignal,
-    handleEditorPaneConfig,
-    handleEditorPaneSettings,
-    handleEditorPaneSpecification,
-    handleExportSpecification,
     handleOpenCreateSpecificationDialog,
-    handleOpenWebsite,
-    handleToggleDebugPane,
-    handleToggleEditorPane,
-    handleToggleEditorTheme,
-    handleZoomIn,
-    handleZoomOut,
-    handleZoomReset
+    handleToggleEditorTheme
 } from '../../commands';
 import {
     type DenebTheme,
@@ -44,7 +31,20 @@ import {
     PortalRoot,
     type Command,
     useSpecificationEditor,
-    handleZoomFit
+    handleZoomFit,
+    handleExportSpecification,
+    handleToggleEditorPane,
+    handleZoomIn,
+    handleZoomOut,
+    handleZoomReset,
+    handleOpenWebsite,
+    handleToggleDebugPane,
+    handleDebugPaneData,
+    handleDebugPaneSignal,
+    handleDebugPaneLog,
+    handleEditorPaneSpecification,
+    handleEditorPaneConfig,
+    handleEditorPaneSettings
 } from '@deneb-viz/app-core';
 import { logRender } from '@deneb-viz/utils/logging';
 

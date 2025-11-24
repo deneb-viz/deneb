@@ -3,5 +3,6 @@ export { Hyperlink } from './hyperlink';
 export * from './modal-dialog';
 export { StageProgressIndicator } from './modal-dialog/stage-progress-indicator';
 export { StatusBarContainer } from './status-bar-container';
+export * from './toolbar';
 export { TooltipCustomMount } from './tooltip-custom-mount';
 export { VersionChangeContent } from './modal-dialog/version-change-content';

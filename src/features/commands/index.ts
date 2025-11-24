@@ -4,16 +4,9 @@ import { persistSpecification } from '../specification';
 import { setFocusToActiveEditor } from '../json-editor';
 import {
     type Command,
-    type DebugPaneRole,
-    type EditorPaneRole,
     type SpecificationEditorRefs
 } from '@deneb-viz/app-core';
 import {
-    APPLICATION_INFORMATION_CONFIGURATION,
-    VISUAL_PREVIEW_ZOOM_CONFIGURATION
-} from '@deneb-viz/configuration';
-import {
-    launchUrl,
     type PersistenceProperty,
     persistProperties,
     resolveObjectProperties
@@ -65,103 +58,9 @@ export const handleAutoApplyChanges = (editorRefs: SpecificationEditorRefs) => {
     executeCommand('autoApplyToggle', toggleApplyMode);
 };
 
-export const handleDebugPaneData = () => {
-    executeCommand('debugPaneShowData', () => {
-        setDebugPivotItem('data');
-    });
-};
-
-export const handleDebugPaneLog = () => {
-    executeCommand('debugPaneShowLogs', () => {
-        setDebugPivotItem('log');
-    });
-};
-
-export const handleDebugPaneSignal = () => {
-    executeCommand('debugPaneShowSignals', () => {
-        setDebugPivotItem('signal');
-    });
-};
-
-/**
- * Sets editor to config.
- */
-export const handleEditorPaneConfig = (editorRefs: SpecificationEditorRefs) => {
-    executeCommand('navigateConfig', () => {
-        setEditorPivotItem('Config');
-    });
-    editorRefs.config?.current?.focus();
-};
-
-/**
- * Sets editor pane content to settings.
- */
-export const handleEditorPaneSettings = () => {
-    executeCommand('navigateSettings', () => {
-        setEditorPivotItem('Settings');
-    });
-};
-
-/**
- * Sets editor to specification.
- */
-export const handleEditorPaneSpecification = (
-    editorRefs: SpecificationEditorRefs
-) => {
-    executeCommand('navigateSpecification', () => {
-        setEditorPivotItem('Spec');
-    });
-    editorRefs.spec?.current?.focus();
-};
-
-/**
- * Displays the export specification dialog.
- */
-export const handleExportSpecification = () =>
-    executeCommand('exportSpecification', () => {
-        getState().interface.setModalDialogRole('Export');
-    });
-
 export const handleOpenCreateSpecificationDialog = () => {
     executeCommand('newSpecification', () => {
         setVisualProperty([{ name: 'isNewDialogOpen', value: true }]);
-    });
-};
-
-/**
- * Handle opening the map fields dialog.
- */
-export const handleOpenRemapDialog = () => {
-    // Tracking is now only used for export (#486)
-    // executeCommand('fieldMappings', () => {
-    //     getState().interface.setModalDialogRole('Remap');
-    // });
-};
-
-/**
- * Handle opening the Deneb website.
- */
-export const handleOpenWebsite = () => {
-    executeCommand('helpSite', () => {
-        launchUrl(APPLICATION_INFORMATION_CONFIGURATION.supportUrl);
-    });
-};
-
-/**
- * Handle toggling the debug pane.
- */
-export const handleToggleDebugPane = () => {
-    executeCommand('debugPaneToggle', () => {
-        getState().togglePreviewDebugPane();
-    });
-};
-
-/**
- * Handle toggling the editor pane.
- */
-export const handleToggleEditorPane = () => {
-    executeCommand('editorPaneToggle', () => {
-        getState().toggleEditorPane();
     });
 };
 
@@ -183,55 +82,6 @@ export const handleToggleEditorTheme = () => {
         setVisualProperty([{ name: 'theme', value: newValue }], 'editor');
     });
 };
-
-/**
- * Manages the decrease of zoom level in the visual editor by decreasing it by
- * step value.
- */
-export const handleZoomIn = () =>
-    executeCommand('zoomIn', () => {
-        const value = getState().editorZoomLevel;
-        const { step, max } = VISUAL_PREVIEW_ZOOM_CONFIGURATION,
-            level = Math.min(max, Math.floor((value + step) / 10) * 10);
-        const zoomLevel = (value < max && level) || level;
-        getState().updateEditorZoomLevel(zoomLevel);
-    });
-
-/**
- * Manages the decrease of zoom level in the visual editor by decreasing it by
- * step value.
- */
-export const handleZoomOut = () =>
-    executeCommand('zoomOut', () => {
-        const value = getState().editorZoomLevel;
-        const { step, min } = VISUAL_PREVIEW_ZOOM_CONFIGURATION,
-            level = Math.max(min, Math.ceil((value - step) / 10) * 10);
-        const zoomLevel = (value > min && level) || level;
-        getState().updateEditorZoomLevel(zoomLevel);
-    });
-
-/**
- * Resets the zoom level to the default value.
- */
-export const handleZoomReset = () =>
-    executeCommand('zoomReset', () => {
-        getState().updateEditorZoomLevel(
-            VISUAL_PREVIEW_ZOOM_CONFIGURATION.default
-        );
-    });
-
-/**
- * Open a specific pivot item in the debug pane.
- */
-const setDebugPivotItem = (role: DebugPaneRole) => {
-    getState().updateEditorSelectedPreviewRole(role);
-};
-
-/**
- * Open a specific pivot item from the editor.
- */
-const setEditorPivotItem = (operation: EditorPaneRole) =>
-    getState().updateEditorSelectedOperation(operation);
 
 /**
  * Manages persistence of a properties object to the store from an operation.

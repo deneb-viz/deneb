@@ -4,8 +4,8 @@ import { Button, Tooltip } from '@fluentui/react-components';
 
 import store from '../../../store';
 import { getEditorPaneStateIcon, useEditorPaneStyles } from '.';
-import { handleToggleEditorPane } from '../../commands';
 import {
+    handleToggleEditorPane,
     TooltipCustomMount,
     type EditorPanePosition
 } from '@deneb-viz/app-core';

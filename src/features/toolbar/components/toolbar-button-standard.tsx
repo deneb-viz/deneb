@@ -26,21 +26,21 @@ import { useToolbarStyles } from '.';
 import {
     handleApplyChanges,
     handleAutoApplyChanges,
-    handleExportSpecification,
     handleOpenCreateSpecificationDialog,
-    handleOpenWebsite,
-    handleToggleDebugPane,
-    handleToggleEditorPane,
-    handleToggleEditorTheme,
-    handleZoomIn,
-    handleZoomOut
+    handleToggleEditorTheme
 } from '../../commands';
-import { ToolbarRole } from '../types';
 import {
     handleZoomFit,
+    type ToolbarRole,
     TooltipCustomMount,
     useSpecificationEditor,
-    type Command
+    type Command,
+    handleExportSpecification,
+    handleToggleEditorPane,
+    handleZoomIn,
+    handleZoomOut,
+    handleToggleDebugPane,
+    handleOpenWebsite
 } from '@deneb-viz/app-core';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 

@@ -20,9 +20,7 @@ import { useToolbarStyles } from '.';
 import {
     handleEditorPaneConfig,
     handleEditorPaneSettings,
-    handleEditorPaneSpecification
-} from '../../commands';
-import {
+    handleEditorPaneSpecification,
     useSpecificationEditor,
     type EditorPaneRole
 } from '@deneb-viz/app-core';

@@ -20,9 +20,7 @@ import { ToolbarButtonStandard } from './toolbar-button-standard';
 import {
     handleDebugPaneData,
     handleDebugPaneLog,
-    handleDebugPaneSignal
-} from '../../commands';
-import {
+    handleDebugPaneSignal,
     ZoomLevelPopover,
     ZoomSlider,
     type DebugPaneRole
