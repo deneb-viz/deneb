@@ -1,22 +1,20 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { shallow } from 'zustand/shallow';
 import { Link, useId, useToastController } from '@fluentui/react-components';
 
 import store from '../../../store';
-import {
-    TOAST_NOTIFICATION_ID_APPLY_CHANGES,
-    TOAST_NOTIFICATION_TIMEOUT
-} from '../../../constants';
-import { NotificationToast } from './notification-toast';
-import { INotificationProps } from '.';
 import { persistSpecification } from '../../specification';
-import { handleDiscardChanges } from '../../commands';
-import { useSpecificationEditor } from '@deneb-viz/app-core';
+import {
+    handleDiscardChanges,
+    type NotificationProps,
+    NotificationToast,
+    TOAST_NOTIFICATION_ID_APPLY_CHANGES,
+    TOAST_NOTIFICATION_TIMEOUT,
+    useSpecificationEditor
+} from '@deneb-viz/app-core';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
-export const NotificationApplyChanges: React.FC<INotificationProps> = ({
-    toasterId
-}) => {
+export const NotificationApplyChanges = ({ toasterId }: NotificationProps) => {
     const { isDirty, mode } = store(
         (state) => ({
             isDirty: state.editor.isDirty,

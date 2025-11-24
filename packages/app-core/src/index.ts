@@ -19,6 +19,7 @@ export * from './features/project-create';
 export * from './features/project-export';
 export * from './features/remap-fields';
 export * from './features/specification-editor';
+export * from './features/toaster';
 export * from './lib/commands';
 export * from './lib/interface';
 export * from './lib/vega';

@@ -66,16 +66,6 @@ export const handleAutoApplyChanges = (editorRefs: SpecificationEditorRefs) => {
     executeCommand('autoApplyToggle', toggleApplyMode);
 };
 
-/**
- * Allows the UI to discard changes after exiting the editor. As Monaco preserves state for the session, this will do
- * nothing.
- */
-export const handleDiscardChanges = () => {
-    executeCommand('discardChanges', () => {
-        return;
-    });
-};
-
 export const handleDebugPaneData = () => {
     executeCommand('debugPaneShowData', () => {
         setDebugPivotItem('data');

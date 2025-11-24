@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { shallow } from 'zustand/shallow';
 import {
     Link,
@@ -9,17 +9,17 @@ import {
 
 import store from '../../../store';
 import { clearSelection, dispatchCrossFilterAbort } from '../../interactivity';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import {
+    NotificationProps,
+    NotificationToast,
     TOAST_NOTIFICATION_ID_CROSS_FILTER_EXCEEDED,
     TOAST_NOTIFICATION_TIMEOUT
-} from '../../../constants';
-import { NotificationToast } from './notification-toast';
-import { INotificationProps } from '.';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+} from '@deneb-viz/app-core';
 
-export const NotificationCrossFilterExceeded: React.FC<INotificationProps> = ({
+export const NotificationCrossFilterExceeded = ({
     toasterId
-}) => {
+}: NotificationProps) => {
     const { datasetHasSelectionAborted, datasetSelectionLimit } = store(
         (state) => ({
             datasetHasSelectionAborted: state.datasetHasSelectionAborted,
