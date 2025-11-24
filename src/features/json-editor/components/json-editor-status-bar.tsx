@@ -1,12 +1,12 @@
 import React from 'react';
 import { Caption1, makeStyles, tokens } from '@fluentui/react-components';
 
-import { ToolbarButtonStandard } from '../../toolbar/components/toolbar-button-standard';
 import {
     monaco,
     PREVIEW_PANE_TOOLBAR_MIN_SIZE,
     ProviderDetail,
     StatusBarContainer,
+    ToolbarButtonStandard,
     TrackingSyncStatus
 } from '@deneb-viz/app-core';
 import { logRender } from '@deneb-viz/utils/logging';

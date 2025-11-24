@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
     ToolbarButton,
     Tooltip,
-    mergeClasses
+    makeStyles,
+    mergeClasses,
+    tokens
 } from '@fluentui/react-components';
 import {
     ChevronDownRegular,
@@ -21,43 +23,55 @@ import {
 } from '@fluentui/react-icons';
 import { shallow } from 'zustand/shallow';
 
-import store, { getState } from '../../../store';
-import { useToolbarStyles } from '.';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import {
-    handleZoomFit,
-    type ToolbarRole,
-    TooltipCustomMount,
-    useSpecificationEditor,
-    type Command,
+    handleApplyChanges,
+    handleAutoApplyChanges,
     handleExportSpecification,
+    handleOpenCreateSpecificationDialog,
+    handleOpenWebsite,
+    handleToggleDebugPane,
     handleToggleEditorPane,
+    handleToggleEditorTheme,
+    handleZoomFit,
     handleZoomIn,
     handleZoomOut,
-    handleToggleDebugPane,
-    handleOpenWebsite,
-    handleToggleEditorTheme,
-    handleOpenCreateSpecificationDialog,
-    handleApplyChanges,
-    handleAutoApplyChanges
-} from '@deneb-viz/app-core';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+    PREVIEW_PANE_TOOLBAR_BUTTON_PADDING,
+    type Command
+} from '../../../lib';
+import { type ToolbarRole } from './types';
+import { getDenebState, useDenebState } from '../../../state';
+import { useSpecificationEditor } from '../../../features/specification-editor';
+import { TooltipCustomMount } from '../tooltip-custom-mount';
 
-interface IToolbarButtonProps {
+type ToolbarButtonStandardProps = {
     command: Command;
     role: ToolbarRole;
-}
+};
 
-export const ToolbarButtonStandard: React.FC<IToolbarButtonProps> = ({
+const useToolbarButtonStandardStyles = makeStyles({
+    buttonSmall: {
+        padding: `${PREVIEW_PANE_TOOLBAR_BUTTON_PADDING}px}`
+    },
+    buttonAutoApplyEnabled: {
+        backgroundColor: tokens.colorNeutralBackground1Selected,
+        color: tokens.colorBrandForeground1
+    },
+    buttonZoomIn: { marginLeft: '-8px' },
+    buttonZoomOut: { marginRight: '-8px' }
+});
+
+export const ToolbarButtonStandard = ({
     command,
     role
-}) => {
-    const { commands } = store(
+}: ToolbarButtonStandardProps) => {
+    const { commands } = useDenebState(
         (state) => ({
             commands: state.commands
         }),
         shallow
     );
-    const classes = useToolbarStyles();
+    const classes = useToolbarButtonStandardStyles();
     const i18nKey = getI18nValue(resolveI18nKey(command));
     const icon = resolveIcon(command);
     const caption = resolveCaption(command);
@@ -66,7 +80,7 @@ export const ToolbarButtonStandard: React.FC<IToolbarButtonProps> = ({
         resolveClasses(command)
     );
     const editorRefs = useSpecificationEditor();
-    const handleClick = () => resolveClick(command)(editorRefs);
+    const handleClick = () => resolveClick(command)?.(editorRefs);
     const [ref, setRef] = useState<HTMLElement | null>();
     return (
         <>
@@ -91,7 +105,7 @@ export const ToolbarButtonStandard: React.FC<IToolbarButtonProps> = ({
 };
 
 const resolveCaption = (command: Command) => {
-    const { editorZoomLevel } = getState();
+    const { editorZoomLevel } = getDenebState();
     switch (command) {
         case 'zoomLevel':
             return `${editorZoomLevel}%`;
@@ -143,7 +157,7 @@ const resolveI18nKey = (command: Command) => {
                 }
             }
         }
-    } = getState();
+    } = getDenebState();
     switch (command) {
         case 'applyChanges':
             return 'Button_Apply';
@@ -193,7 +207,7 @@ const resolveIcon = (command: Command) => {
                 }
             }
         }
-    } = getState();
+    } = getDenebState();
     switch (command) {
         case 'applyChanges':
             return <PlayRegular />;
@@ -236,8 +250,8 @@ const resolveIcon = (command: Command) => {
 const resolveClasses = (command: Command) => {
     const {
         editor: { applyMode }
-    } = getState();
-    const classes = useToolbarStyles();
+    } = getDenebState();
+    const classes = useToolbarButtonStandardStyles();
     switch (command) {
         case 'autoApplyToggle':
             return applyMode === 'Auto' ? classes.buttonAutoApplyEnabled : '';

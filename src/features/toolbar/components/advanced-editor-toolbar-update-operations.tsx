@@ -2,9 +2,9 @@ import React from 'react';
 import { ToolbarDivider, ToolbarGroup } from '@fluentui/react-components';
 
 import { ApplyMenuButton } from './apply-menu-button';
-import { ToolbarButtonStandard } from './toolbar-button-standard';
 import { useToolbarStyles } from '.';
 import { FEATURES } from '../../../../config';
+import { ToolbarButtonStandard } from '@deneb-viz/app-core';
 
 export const AdvancedEditorToolbarUpdateOperations: React.FC = () => {
     const classes = useToolbarStyles();

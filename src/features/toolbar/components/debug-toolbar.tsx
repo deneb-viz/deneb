@@ -16,11 +16,11 @@ import { shallow } from 'zustand/shallow';
 import store from '../../../store';
 import { LogErrorIndicator } from './log-error-indicator';
 import { useToolbarStyles } from '.';
-import { ToolbarButtonStandard } from './toolbar-button-standard';
 import {
     handleDebugPaneData,
     handleDebugPaneLog,
     handleDebugPaneSignal,
+    ToolbarButtonStandard,
     ZoomLevelPopover,
     ZoomSlider,
     type DebugPaneRole
