@@ -9,6 +9,7 @@ const MODE = process.env.DENEB_PACKAGE_MODE;
 const LOG_LEVEL = parseLogLevel(process.env.LOG_LEVEL, 0);
 const REDUX_DEV_TOOLS = toBoolean(process.env.ZUSTAND_DEV_TOOLS);
 const PBIVIZ_DEV_MODE = toBoolean(process.env.PBIVIZ_DEV_MODE);
+const ALLOW_EXTERNAL_URI = toBoolean(process.env.ALLOW_EXTERNAL_URI);
 const allowExternalUri = MODE === 'standalone';
 const errors: string[] = [];
 
@@ -28,9 +29,9 @@ if (LOG_LEVEL !== 0) {
     errors.push(`❌ .env LOG_LEVEL is ${LOG_LEVEL}; this should be 0 (NONE).`);
 }
 // External URIs: Not permitted in certified visual; allowed only for standalone packaging mode
-if (FEATURES.enable_external_uri && !allowExternalUri) {
+if (ALLOW_EXTERNAL_URI && !allowExternalUri) {
     errors.push(
-        '❌ FEATURES.enable_external_uri is true; this should be false.'
+        '❌ .env ALLOW_EXTERNAL_URI flag is true; this should be false.'
     );
 }
 // Visual update history overlay: Should not be set in committed code

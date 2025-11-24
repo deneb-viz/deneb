@@ -12,8 +12,6 @@ import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
 import { DispatchingVegaLoggerService } from '@deneb-viz/vega-runtime/extensibility';
 import { logDebug, logTimeEnd } from '@deneb-viz/utils/logging';
 
-export { getVegaLoader } from './loader';
-
 let view: View | null;
 
 /**

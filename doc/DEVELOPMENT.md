@@ -148,9 +148,9 @@ Snapshot `managedPaths` ensures linked workspace packages under `node_modules/@d
 
 ## 6. Feature Flags
 
-Defined in `config/features.json` and optionally overridden in `config/package-custom.json` for custom builds (e.g., enabling external URIs in standalone variant).
+JSON feature flags are defined in `config/features.json` and can be overridden in `config/package-custom.json` for custom builds. These are primarily used to gate visual behaviors that must remain stable and off by default in the certified build.
 
-In addition to JSON feature flags, we also use a small set of developer-focused environment toggles in a local `.env` file (loaded via `@dotenvx/dotenvx`). These are not persisted in the packaged visual; they influence local development and packaging scripts:
+In addition to JSON feature flags, we also use a small set of developer-focused environment toggles in a local `.env` file (loaded via `@dotenvx/dotenvx`). These are not persisted in the packaged visual; they influence local development and packaging scripts and, in one case, the runtime behavior of the standalone build:
 
 - `ZUSTAND_DEV_TOOLS`:
     - Enables Redux/Zustand debugging if you have the browser extension installed.
@@ -161,17 +161,13 @@ In addition to JSON feature flags, we also use a small set of developer-focused 
 - `LOG_LEVEL`:
     - Sets the logging level for development and packaging validation (replaces the prior hard-coded const; behavior is unchanged, see levels below).
     - Accepts a numeric level as described in the Logging section.
+- `ALLOW_EXTERNAL_URI`:
+    - Controls whether the Vega runtime permits external (non-`data:`) URIs.
+    - Read at bundle-build time and inlined into the visual via Webpack `DefinePlugin`.
+    - For certified/alpha/beta builds this must remain `false` in `.env`.
+    - For standalone builds, `npm run package-standalone` uses `.env.standalone`, where this is set to `true`.
 
-These `.env` values are validated by `bin/validate-config-for-commit.ts` to prevent committing with unintended developer modes or elevated logging.
-
-Usage:
-
-```ts
-import { FEATURES } from '../config';
-if (FEATURES.developer_mode) {
-    /* gated logic */
-}
-```
+These `.env` values are validated by `bin/validate-config-for-commit.ts` to prevent committing with unintended developer modes, elevated logging, or an unsafe `ALLOW_EXTERNAL_URI` value for certified builds.
 
 Retention policy: Remove stale flags + tests in the next minor/major release after certified submission if stable.
 
@@ -224,12 +220,12 @@ Size limits enforced (`~1MB` entry). Console logs preserved (Power BI telemetry 
 
 We support distinct packaging modes to serve different audiences:
 
-| Mode       | Script                       | Purpose / Audience                            | certificationFix | External URIs (`enable_external_uri`) | Privileges Patch             |
-| ---------- | ---------------------------- | --------------------------------------------- | ---------------- | ------------------------------------- | ---------------------------- |
-| Certified  | `npm run package`            | Primary, submitted to Microsoft AppSource     | `true`           | `false` (blocked)                     | None                         |
-| Alpha      | `npm run package:alpha`      | Early internal validation (no external URIs)  | `true`           | `false`                               | None                         |
-| Beta       | `npm run package:beta`       | Wider pre-release testing                     | `true`           | `false`                               | None                         |
-| Standalone | `npm run package:standalone` | Developer-only, enables remote spec/resources | `false`          | `true`                                | `ExportContent`, `WebAccess` |
+| Mode       | Script                       | Purpose / Audience                            | certificationFix | External URIs (`ALLOW_EXTERNAL_URI`) | Privileges Patch             |
+| ---------- | ---------------------------- | --------------------------------------------- | ---------------- | ------------------------------------ | ---------------------------- |
+| Certified  | `npm run package`            | Primary, submitted to Microsoft AppSource     | `true`           | `false` (blocked)                    | None                         |
+| Alpha      | `npm run package:alpha`      | Early internal validation (no external URIs)  | `true`           | `false`                              | None                         |
+| Beta       | `npm run package:beta`       | Wider pre-release testing                     | `true`           | `false`                              | None                         |
+| Standalone | `npm run package:standalone` | Developer-only, enables remote spec/resources | `false`          | `true`                               | `ExportContent`, `WebAccess` |
 
 Internally all of these invoke the custom script `bin/package-custom.ts` which:
 
@@ -271,7 +267,14 @@ npm run package
 
 ### External URI Allowance (Standalone Only)
 
-The `enable_external_uri` feature flag is forcibly set to `true` only in `standalone` mode via `config/package-custom.json`. The validation script (`bin/validate-config-for-commit.ts`) permits this override exclusively when `DENEB_PACKAGE_MODE=standalone`; otherwise it will fail the build to protect certified variants.
+External URI behavior is now controlled by the `ALLOW_EXTERNAL_URI` environment variable, which is read and inlined at build time by Webpack and consumed by the Vega runtime loader (`@deneb-viz/vega-runtime`).
+
+- Certified / alpha / beta builds:
+    - Use `.env`, where `ALLOW_EXTERNAL_URI=false`.
+    - `bin/validate-config-for-commit.ts` enforces that this remains `false` for these modes.
+- Standalone builds:
+    - Use `.env.standalone`, where `ALLOW_EXTERNAL_URI=true`.
+    - `npm run package-standalone` sets `DOTENVX_ENV=.env.standalone` so that Webpack inlines the correct value.
 
 This opens remote specification loading / resource access that is NOT permitted for a certified visual. Use strictly for local development or experimentation.
 

@@ -4,7 +4,8 @@
   "globalEnv": [
     "LOG_LEVEL",
     "ZUSTAND_DEV_TOOLS",
-    "PBIVIZ_DEV_MODE"
+    "PBIVIZ_DEV_MODE",
+    "ALLOW_EXTERNAL_URI"
   ],
   "tasks": {
     "build": {

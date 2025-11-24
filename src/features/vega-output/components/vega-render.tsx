@@ -1,16 +1,13 @@
 import React, { memo, useCallback, useMemo } from 'react';
 import { createClassFromSpec, View } from 'react-vega';
 
-import {
-    getVegaLoader,
-    handleNewView,
-    handleViewError
-} from '../../vega-extensibility';
+import { handleNewView, handleViewError } from '../../vega-extensibility';
 import { useVegaStyles } from '..';
 import { getPowerBiTooltipHandler } from '../../interactivity';
 import { getD3FormatLocale, getD3TimeFormatLocale } from '../../i18n';
 import { getSpecificationForVisual } from '../../specification/logic';
 import {
+    getVegaLoader,
     type SpecProvider,
     type SpecRenderMode
 } from '@deneb-viz/vega-runtime/embed';

@@ -17,7 +17,7 @@
         "eslint": "turbo run eslint -- && npm run -s eslint:root",
         "test": "turbo run test",
         "test:watch": "turbo run test:watch",
-        "package-standalone": "npm run build && npm run package:standalone",
+        "package-standalone": "cross-env DOTENVX_ENV=.env.standalone npm run build && cross-env DOTENVX_ENV=.env.standalone npm run package:standalone",
         "package-alpha": "npm run build && npm run package:alpha",
         "package-beta": "npm run build && npm run package:beta",
         "install-cert": "pbiviz install-cert",

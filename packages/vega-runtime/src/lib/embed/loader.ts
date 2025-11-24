@@ -1,33 +1,36 @@
-import * as Vega from 'vega';
-import { Loader } from 'vega';
-import { FEATURES } from '../../../../config';
+import { loader, type Loader } from 'vega';
 import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
 import {
     getI18nValue,
     getVisualHost,
     launchUrl
 } from '@deneb-viz/powerbi-compat/visual-host';
+import { toBoolean } from '@deneb-viz/utils/type-conversion';
+import { logDebug } from '@deneb-viz/utils/logging';
 
 /**
  * Custom Vega loader for Power BI.
  */
 export const getVegaLoader = (): Loader => {
-    const loader = Vega.loader();
-    const externalUri = FEATURES.enable_external_uri;
+    const thisLoader = loader();
+    const externalUri = toBoolean(process.env.ALLOW_EXTERNAL_URI) ?? false;
+    logDebug('Vega Runtime: Initializing custom Vega loader for Power BI.', {
+        externalUri
+    });
 
     // Handle regular load requests. If we're blocking external URIs then only
     // permit this if it's a valid data URI. We avoid overriding the default
     // loader logic otherwise.
     if (!externalUri) {
-        loader.load = (uri) => {
-            const href = (isDataUri(uri) && uri) || null;
+        thisLoader.load = (uri) => {
+            const href = (isDataUri(uri) && uri) || '';
             handleExternalResourceWarning(href, externalUri);
             return Promise.resolve(href);
         };
     }
 
     // Handle regular requests for images and hyperlinks.
-    loader.sanitize = (uri, options) => {
+    thisLoader.sanitize = (uri, options) => {
         switch (options?.context) {
             // Hyperlinks will be delegated to the visual host
             case 'href': {
@@ -49,14 +52,17 @@ export const getVegaLoader = (): Loader => {
         }
     };
 
-    return loader;
+    return thisLoader;
 };
 
 /**
  * Displays an alert about external resources in the warning area of the
  * visual header, if they are disabled.
  */
-const handleExternalResourceWarning = (href: string, externalUri: boolean) =>
+const handleExternalResourceWarning = (
+    href: string | null,
+    externalUri: boolean
+) =>
     !href &&
     !externalUri &&
     getVisualHost().displayWarningIcon(

@@ -6,11 +6,15 @@ const {
     PowerBICustomVisualsWebpackPlugin
 } = require('powerbi-visuals-webpack-plugin');
 const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
-// Load environment variables from .env at the repo root for build-time injection
+// Load environment variables for build-time injection. If DOTENVX_ENV is set
+// (e.g., via npm scripts), prefer that file; otherwise fall back to .env.
 try {
     const { config: dotenvx } = require('@dotenvx/dotenvx');
+    const envPath = process.env.DOTENVX_ENV
+        ? path.resolve(__dirname, process.env.DOTENVX_ENV)
+        : path.join(__dirname, '.env');
     dotenvx({
-        path: path.join(__dirname, '.env'),
+        path: envPath,
         override: true,
         quiet: true
     });
@@ -157,6 +161,9 @@ function getCommonConfig(options = {}) {
                 ),
                 'process.env.PBIVIZ_DEV_MODE': JSON.stringify(
                     process.env.PBIVIZ_DEV_MODE ?? ''
+                ),
+                'process.env.ALLOW_EXTERNAL_URI': JSON.stringify(
+                    process.env.ALLOW_EXTERNAL_URI ?? ''
                 )
             }),
             new MiniCssExtractPlugin({

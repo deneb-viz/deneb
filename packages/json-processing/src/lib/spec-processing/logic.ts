@@ -1,5 +1,5 @@
-import * as Vega from 'vega';
-import * as VegaLite from 'vega-lite';
+import { parse, type Spec } from 'vega';
+import { compile, normalize, type TopLevelSpec } from 'vega-lite';
 import { deepEqual } from 'fast-equals';
 
 import { logDebug, logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
@@ -94,7 +94,7 @@ export const getParsedSpec = (
         errors.push(getI18nValue('Text_Debug_Error_Config_Parse'));
         errors.push(...patchedConfig.errors);
     }
-    let specToParse: Vega.Spec | VegaLite.TopLevelSpec | null = null;
+    let specToParse: Spec | TopLevelSpec | null = null;
     if (!specHasErrors && !configHasErrors) {
         logDebug('Spec and config are valid. Attempting to parse...', {
             patchedSpec,
@@ -121,9 +121,9 @@ export const getParsedSpec = (
             }
             logTimeStart('vega/vega-lite compile');
             if (provider === 'vegaLite') {
-                VegaLite.compile(<VegaLite.TopLevelSpec>specToParse);
+                compile(<TopLevelSpec>specToParse);
             } else {
-                Vega.parse(<Vega.Spec>specToParse);
+                parse(<Spec>specToParse);
             }
             logTimeEnd('vega/vega-lite compile');
             status = 'valid';
@@ -200,7 +200,7 @@ const getPatchedConfig = (content: string): ContentPatchResult => {
 /**
  * Patch the data array in a spec to ensure that values from the visual dataset are in the correct place.
  */
-const getPatchedData = (spec: Vega.Spec, values: DatasetValueRow[]) => {
+const getPatchedData = (spec: Spec, values: DatasetValueRow[]) => {
     const name = DATASET_DEFAULT_NAME;
     logDebug('getPatchedData', { spec, values });
     try {
@@ -248,10 +248,8 @@ const getPatchedSpec = (
         return {
             result:
                 provider === 'vegaLite'
-                    ? getPatchedVegaLiteSpec(
-                          <VegaLite.TopLevelSpec>parsedSpec.result
-                      )
-                    : getPatchedVegaSpec(<Vega.Spec>parsedSpec.result),
+                    ? getPatchedVegaLiteSpec(<TopLevelSpec>parsedSpec.result)
+                    : getPatchedVegaSpec(<Spec>parsedSpec.result),
             errors: []
         };
     } catch (e) {
@@ -267,7 +265,7 @@ const getPatchedSpec = (
  * specific signals that we don't necessarily want the creator to worry about,
  * but will ensure that the visual functions as expected.
  */
-const getPatchedVegaSpec = (spec: Vega.Spec): Vega.Spec => {
+const getPatchedVegaSpec = (spec: Spec): Spec => {
     return mergician(spec, {
         height: spec['height'] ?? { signal: 'pbiContainerHeight' },
         width: spec['width'] ?? { signal: 'pbiContainerWidth' },
@@ -287,9 +285,9 @@ const getPatchedVegaSpec = (spec: Vega.Spec): Vega.Spec => {
  * parsing the spec.
  */
 const getPatchedVegaSpecWithData = (
-    spec: Vega.Spec,
+    spec: Spec,
     values: DatasetValueRow[]
-): Vega.Spec => {
+): Spec => {
     logTimeStart('getPatchedVegaSpecWithData');
     logDebug('getPatchedVegaSpecWithData', { spec, values });
     const merged = mergician(spec || {}, {
@@ -303,9 +301,7 @@ const getPatchedVegaSpecWithData = (
  * Apply specific patching operations to a supplied Vega-Lite spec. This applies any specific signals that we don't
  * necessarily want the creator to worry about, but will ensure that the visual functions as expected.
  */
-const getPatchedVegaLiteSpec = (
-    spec: VegaLite.TopLevelSpec
-): VegaLite.TopLevelSpec => {
+const getPatchedVegaLiteSpec = (spec: TopLevelSpec): TopLevelSpec => {
     const isNsl = isVegaLiteSpecNonStandardLayout(spec);
     return mergician(
         spec,
@@ -315,16 +311,14 @@ const getPatchedVegaLiteSpec = (
               }
             : {
                   height:
-                      (spec as ReturnType<typeof VegaLite.normalize>)[
-                          'height'
-                      ] ?? 'container',
+                      (spec as ReturnType<typeof normalize>)['height'] ??
+                      'container',
                   width:
-                      (spec as ReturnType<typeof VegaLite.normalize>)[
-                          'width'
-                      ] ?? 'container',
+                      (spec as ReturnType<typeof normalize>)['width'] ??
+                      'container',
                   params: [...(spec['params'] || []), getSignalPbiContainer()]
               }
-    ) as VegaLite.TopLevelSpec;
+    ) as TopLevelSpec;
 };
 
 /**
@@ -335,9 +329,9 @@ const getPatchedVegaLiteSpec = (
  * parsing the spec.
  */
 const getPatchedVegaLiteSpecWithData = (
-    spec: VegaLite.TopLevelSpec,
+    spec: TopLevelSpec,
     values: DatasetValueRow[]
-): VegaLite.TopLevelSpec => {
+): TopLevelSpec => {
     logTimeStart('getPatchedVegaLiteSpecWithData');
     const datasets = {
         ...(spec?.datasets ?? {}),
@@ -345,7 +339,7 @@ const getPatchedVegaLiteSpecWithData = (
     };
     const merged = mergician(spec || {}, {
         datasets
-    }) as VegaLite.TopLevelSpec;
+    }) as TopLevelSpec;
     logTimeEnd('getPatchedVegaLiteSpecWithData');
     return merged;
 };
@@ -385,5 +379,5 @@ export const isSpecificationVolatile = (
  * viewport dimensions. This is because the spec is not the top-level spec, but a child of the facet/vconcat/hconcat
  * spec. We'll need to look at the spec and determine if it's a non-standard layout.
  */
-const isVegaLiteSpecNonStandardLayout = (spec: VegaLite.TopLevelSpec) =>
+const isVegaLiteSpecNonStandardLayout = (spec: TopLevelSpec) =>
     'facet' in spec || 'hconcat' in spec || 'vconcat' in spec;

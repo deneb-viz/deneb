@@ -35,9 +35,6 @@
                 "icon": "assets/icon_standalone.png"
             }
         },
-        "features": {
-            "enable_external_uri": true
-        },
         "capabilities": {
             "privileges": [
                 {
