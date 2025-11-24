@@ -21,6 +21,10 @@
             "types": "./dist/lib/base64.d.ts",
             "default": "./dist/lib/base64.js"
         },
+        "./color": {
+            "types": "./dist/lib/color.d.ts",
+            "default": "./dist/lib/color.js"
+        },
         "./crypto": {
             "types": "./dist/lib/crypto.d.ts",
             "default": "./dist/lib/crypto.js"

@@ -16,10 +16,7 @@ import { canFetchMoreFromDataview, getRowCount } from './core/data/dataView';
 import { getMappedDataset } from './core/data/dataset';
 import { handlePropertyMigration } from './core/utils/versioning';
 import { resolveReportViewport } from './core/ui/dom';
-import {
-    VegaExtensibilityServices,
-    VegaPatternFillServices
-} from './features/vega-extensibility';
+import { VegaExtensibilityServices } from './features/vega-extensibility';
 import {
     VisualFormattingSettingsModel,
     VisualFormattingSettingsService,
@@ -48,6 +45,7 @@ import {
     logTimeEnd,
     logTimeStart
 } from '@deneb-viz/utils/logging';
+import { VegaPatternFillServices } from '@deneb-viz/vega-runtime/pattern-fill';
 
 /**
  * Run to indicate that the visual has started.

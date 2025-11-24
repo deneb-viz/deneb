@@ -1,6 +1,6 @@
 import { select, Selection, BaseType } from 'd3-selection';
 
-import { IPatternFillDefinition } from '../types';
+import { type PatternFillResolved } from './types';
 
 /**
  * Create and bind a pattern element with correct identifying attributes and
@@ -9,7 +9,7 @@ import { IPatternFillDefinition } from '../types';
 export const bindPatternAttrs = (
     selection: Selection<
         SVGPatternElement,
-        IPatternFillDefinition,
+        PatternFillResolved,
         BaseType,
         unknown
     >
@@ -19,9 +19,12 @@ export const bindPatternAttrs = (
         .attr('patternUnits', 'userSpaceOnUse')
         .attr('width', (d) => d.size)
         .attr('height', (d) => d.size)
-        .each((d, i, e) =>
-            d.generator(select<SVGPatternElement, IPatternFillDefinition>(e[i]))
-        );
+        .each((d, i, e) => {
+            const el = e[i];
+            if (el) {
+                d.generator(select<SVGPatternElement, PatternFillResolved>(el));
+            }
+        });
 };
 
 /**
@@ -30,7 +33,7 @@ export const bindPatternAttrs = (
 const bindPatternBoundingRect = (
     selection: Selection<
         SVGPatternElement,
-        IPatternFillDefinition,
+        PatternFillResolved,
         BaseType,
         unknown
     >
@@ -48,7 +51,7 @@ const bindPatternBoundingRect = (
 export const generateDiagonalStripe = (
     selection: Selection<
         SVGPatternElement,
-        IPatternFillDefinition,
+        PatternFillResolved,
         BaseType,
         unknown
     >
@@ -75,7 +78,7 @@ export const generateDiagonalStripe = (
 export const generateHorizontalStripe = (
     selection: Selection<
         SVGPatternElement,
-        IPatternFillDefinition,
+        PatternFillResolved,
         BaseType,
         unknown
     >
@@ -96,7 +99,7 @@ export const generateHorizontalStripe = (
 export const generateVerticalStripe = (
     selection: Selection<
         SVGPatternElement,
-        IPatternFillDefinition,
+        PatternFillResolved,
         BaseType,
         unknown
     >
@@ -117,7 +120,7 @@ export const generateVerticalStripe = (
 export const generateCircles = (
     selection: Selection<
         SVGPatternElement,
-        IPatternFillDefinition,
+        PatternFillResolved,
         BaseType,
         unknown
     >
@@ -138,7 +141,7 @@ export const generateCircles = (
 export const generateDots = (
     selection: Selection<
         SVGPatternElement,
-        IPatternFillDefinition,
+        PatternFillResolved,
         BaseType,
         unknown
     >
@@ -159,7 +162,7 @@ export const generateDots = (
 export const generateCrosshatch = (
     selection: Selection<
         SVGPatternElement,
-        IPatternFillDefinition,
+        PatternFillResolved,
         BaseType,
         unknown
     >
@@ -178,7 +181,7 @@ export const generateCrosshatch = (
 export const generateHoundstooth = (
     selection: Selection<
         SVGPatternElement,
-        IPatternFillDefinition,
+        PatternFillResolved,
         BaseType,
         unknown
     >

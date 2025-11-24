@@ -1,13 +1,6 @@
 import reduce from 'lodash/reduce';
 
 import {
-    PATTERN_FILL_DEFAULT_FILL_COLOR,
-    PATTERN_FILL_DEFAULT_SIZE,
-    PATTERN_FILL_DEFAULT_STROKE_COLOR,
-    PATTERN_FILL_DEFAULT_STROKE_WIDTH
-} from '.';
-import { shadeColor } from '../utils';
-import {
     generateCircles,
     generateCrosshatch,
     generateDiagonalStripe,
@@ -16,12 +9,24 @@ import {
     generateHoundstooth,
     generateVerticalStripe
 } from './bindings';
-import { IPatternFillDefinition, IPatternFillModifier } from '../types';
+import {
+    type PatternFillDefinition,
+    type PatternFillModifier,
+    type PatternFillResolved
+} from './types';
+import {
+    PATTERN_FILL_DEFAULT_FILL_COLOR,
+    PATTERN_FILL_DEFAULT_OFFSET_PERCENT,
+    PATTERN_FILL_DEFAULT_SIZE,
+    PATTERN_FILL_DEFAULT_STROKE_COLOR,
+    PATTERN_FILL_DEFAULT_STROKE_WIDTH
+} from './constants';
+import { shadeColor } from '@deneb-viz/utils/color';
 
 /**
  * All default fill patterns.
  */
-const PATTERN_FILL_DEFINITIONS: IPatternFillDefinition[] = [
+const PATTERN_FILL_DEFINITIONS: PatternFillDefinition[] = [
     {
         id: 'diagonal-stripe-1',
         group: 'diagonal-stripe',
@@ -266,7 +271,7 @@ const PATTERN_FILL_DEFINITIONS: IPatternFillDefinition[] = [
 ];
 
 // Modifiers to standard fill patterns, that effectively cross-joins the registry to provide alternative shades of grey
-const PATTERN_FILL_MODIFIERS: IPatternFillModifier[] = [
+const PATTERN_FILL_MODIFIERS: PatternFillModifier[] = [
     { suffix: '10', fgColorPercent: 0.1 },
     { suffix: '20', fgColorPercent: 0.2 },
     { suffix: '25', fgColorPercent: 0.25 },
@@ -284,7 +289,7 @@ const PATTERN_FILL_MODIFIERS: IPatternFillModifier[] = [
  * Resolve all definitions for their defaults, ready for inclusion in the
  * registry.
  */
-export const getPackagedFillPatternDefs = () => {
+export const getPackagedFillPatternDefs = (): PatternFillResolved[] => {
     const stdDefs = PATTERN_FILL_DEFINITIONS.map((def) =>
         resolveFillPatternDefValues(def)
     );
@@ -294,14 +299,17 @@ export const getPackagedFillPatternDefs = () => {
             PATTERN_FILL_MODIFIERS,
             (result, pfm) => {
                 stdDefs.forEach((def) => {
-                    const pfMod: IPatternFillDefinition =
+                    const pfMod: PatternFillResolved =
                         resolveFillPatternDefValues({
                             ...def,
                             ...{
                                 id: `${def.id}-${pfm.suffix}`,
                                 fgColor: shadeColor(
-                                    def.fgColor,
-                                    1 - pfm.fgColorPercent
+                                    def.fgColor ??
+                                        PATTERN_FILL_DEFAULT_STROKE_COLOR,
+                                    1 -
+                                        (pfm.fgColorPercent ??
+                                            PATTERN_FILL_DEFAULT_OFFSET_PERCENT)
                                 )
                             }
                         });
@@ -309,7 +317,7 @@ export const getPackagedFillPatternDefs = () => {
                 });
                 return result;
             },
-            <IPatternFillDefinition[]>[]
+            <PatternFillResolved[]>[]
         )
     ];
 };
@@ -318,8 +326,8 @@ export const getPackagedFillPatternDefs = () => {
  * Applies all logic to resolve and handle fill pattern values, if omitted or incorrect
  */
 export const resolveFillPatternDefValues = (
-    def: IPatternFillDefinition
-): IPatternFillDefinition => ({
+    def: PatternFillDefinition
+): PatternFillResolved => ({
     ...def,
     ...{
         fgColor: def.fgColor ?? PATTERN_FILL_DEFAULT_STROKE_COLOR,

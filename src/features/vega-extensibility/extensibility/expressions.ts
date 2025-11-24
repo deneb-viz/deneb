@@ -2,9 +2,6 @@ import { Item, expressionFunction, parseExpression } from 'vega';
 import { valueFormatter } from 'powerbi-visuals-utils-formattingutils';
 import ValueFormatterOptions = valueFormatter.ValueFormatterOptions;
 
-import { generateDynamicPatternFill } from '../pattern-fill';
-import { shadeColor } from '../utils';
-import { clone } from 'lodash';
 import {
     CrossFilterOptions,
     CrossFilterResult,
@@ -22,6 +19,8 @@ import { isObject } from '@deneb-viz/utils/inspection';
 import { CROSS_FILTER_LIMITS } from '@deneb-viz/powerbi-compat/interactivity';
 import { logDebug, logWarning } from '@deneb-viz/utils/logging';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import { generateDynamicPatternFill } from '@deneb-viz/vega-runtime/pattern-fill';
+import { shadeColor } from '@deneb-viz/utils/color';
 
 /**
  * A custom expression that should be added to the Vega view.
@@ -157,7 +156,7 @@ const pbiCrossFilterApply = (
                 getI18nValue('Text_Warning_Invalid_Cross_Filter_Missing_Filter')
             );
         }
-        const item = clone(<Item>event['item']);
+        const item = structuredClone(<Item>event['item']);
         const expr = getResolvedFilterExpressionForPlaceholder(
             filterExpr,
             item?.datum

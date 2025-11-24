@@ -4,7 +4,8 @@ export default defineConfig({
     entry: [
         'src/index.ts',
         'src/lib/embed/index.ts',
-        'src/lib/extensibility/index.ts'
+        'src/lib/extensibility/index.ts',
+        'src/lib/pattern-fill/index.ts'
     ],
     clean: false,
     target: 'es2022',

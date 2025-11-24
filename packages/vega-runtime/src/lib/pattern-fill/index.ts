@@ -1,19 +1,19 @@
-import { IPatternFillDefinition } from '../types';
 import { select, Selection } from 'd3-selection';
+
+import { PatternFillResolved } from './types';
 import { bindPatternAttrs } from './bindings';
 import {
     getPackagedFillPatternDefs,
     resolveFillPatternDefValues
 } from './registry';
+import {
+    PATTERN_FILL_CONTAINER_ID,
+    PATTERN_FILL_DEFAULT_FILL_COLOR,
+    PATTERN_FILL_DEFAULT_STROKE_COLOR
+} from './constants';
 
 let defsContainer: Selection<SVGDefsElement, unknown, HTMLElement, any>;
-let defsRegistry: IPatternFillDefinition[] = [];
-
-const PATTERN_FILL_CONTAINER_ID = 'denebFillPatterns';
-export const PATTERN_FILL_DEFAULT_STROKE_COLOR = '#000000';
-export const PATTERN_FILL_DEFAULT_FILL_COLOR = 'transparent';
-export const PATTERN_FILL_DEFAULT_STROKE_WIDTH = 1;
-export const PATTERN_FILL_DEFAULT_SIZE = 10;
+let defsRegistry: PatternFillResolved[] = [];
 
 /**
  * Use to bind the fill pattern services to this API for use in the application
@@ -36,7 +36,7 @@ Object.freeze(VegaPatternFillServices);
 /**
  * Adds a pattern fill definition to the registry.
  */
-const addPatternFillDefinition = (def: IPatternFillDefinition) =>
+const addPatternFillDefinition = (def: PatternFillResolved) =>
     defsRegistry.push(def);
 
 /**

@@ -4,6 +4,7 @@ export default defineConfig({
     entry: [
         'src/index.ts',
         'src/lib/base64.ts',
+        'src/lib/color.ts',
         'src/lib/crypto.ts',
         'src/lib/dom.ts',
         'src/lib/inspection.ts',

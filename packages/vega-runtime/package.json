@@ -24,6 +24,10 @@
         "./extensibility": {
             "types": "./dist/lib/extensibility/index.d.ts",
             "default": "./dist/lib/extensibility/index.js"
+        },
+        "./pattern-fill": {
+            "types": "./dist/lib/pattern-fill/index.d.ts",
+            "default": "./dist/lib/pattern-fill/index.js"
         }
     },
     "sideEffects": false,
@@ -46,6 +50,7 @@
         "@deneb-viz/configuration": "*",
         "@deneb-viz/utils": "*",
         "d3-interpolate": "^3.0.1",
+        "d3-selection": "^3.0.0",
         "mergician": "^2.0.2",
         "powerbi-visuals-utils-formattingutils": "^6.1.2",
         "vega": "6.2.0",

@@ -1,6 +1,5 @@
 /**
- * Adjust a specified hex color in a similar way that Power BI does it to its
- * own themes.
+ * Adjust a specified hex color in a similar way that Power BI does it to its own themes.
  */
 export const shadeColor = (color: string, percent: number) => {
     const f = parseInt(color.slice(1), 16);
