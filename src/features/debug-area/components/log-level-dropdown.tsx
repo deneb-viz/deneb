@@ -6,9 +6,9 @@ import { useDebugStyles } from '..';
 import store from '../../../store';
 import { getDebugLogLevels } from '../logging';
 import { ICapabilitiesEnumMember } from '../../settings';
-import { updateLogLevel } from '../../../core/ui/commands';
 import { logRender } from '@deneb-viz/utils/logging';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import { handleVegaLogLevel } from '@deneb-viz/app-core';
 
 interface ILogLevelDropdownProps {
     id: string;
@@ -30,7 +30,7 @@ export const LogLevelDropdown: React.FC<ILogLevelDropdownProps> = ({ id }) => {
         event: React.ChangeEvent<HTMLSelectElement>,
         data
     ) => {
-        updateLogLevel(data.value);
+        handleVegaLogLevel(data.value);
     };
     const classes = useDebugStyles();
     logRender('LogLevelDropdown');

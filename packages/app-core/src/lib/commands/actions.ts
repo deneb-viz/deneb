@@ -1,5 +1,6 @@
 import {
     APPLICATION_INFORMATION_CONFIGURATION,
+    PROVIDER_VERSION_CONFIGURATION,
     VISUAL_PREVIEW_ZOOM_CONFIGURATION
 } from '@deneb-viz/configuration';
 import { getDenebState } from '../../state';
@@ -18,7 +19,11 @@ import {
 import { type SpecificationEditorRefs } from '../../features/specification-editor';
 import { monaco } from '../../components/code-editor/monaco-integration';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
-import { logDebug } from '@deneb-viz/utils/logging';
+import {
+    SpecProvider,
+    type SpecRenderMode
+} from '@deneb-viz/vega-runtime/embed';
+import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 
 /**
  * Executes a command if:
@@ -94,6 +99,9 @@ export const handleAutoApplyChanges = (editorRefs: SpecificationEditorRefs) => {
     handleApplyChanges(editorRefs);
     executeCommand('autoApplyToggle', toggleApplyMode);
 };
+
+export const handleCloseCreateDialog = () =>
+    setVisualProperty([{ name: 'isNewDialogOpen', value: false }]);
 
 export const handleDataTableRowsPerPageChange = (value: number) => {
     setVisualProperty(
@@ -195,6 +203,12 @@ export const handleOpenWebsite = () => {
 };
 
 /**
+ * Generic handler for a boolean (checkbox) property in the settings pane.
+ */
+export const handlePersistBooleanProperty = (name: string, value: boolean) =>
+    setVisualProperty([{ name, value }]);
+
+/**
  * Resolve the spec/config and use the `properties` API for persistence. Also
  * resets the `isDirty` flag in the store.
  */
@@ -239,6 +253,36 @@ export const handlePersistSpecification = (
         ])
     );
 };
+
+/**
+ * Reset the specified provider (Vega) visual property to its default value.
+ */
+export const handleResetVegaProperty = (
+    propertyKey: keyof typeof DEFAULTS.vega
+) => {
+    const value = DEFAULTS.vega[propertyKey];
+    setVisualProperty([{ name: propertyKey, value }]);
+};
+
+/**
+ * Handle the change in maximum permitted underlying data points for selection.
+ */
+export const handleSelectionMaxDataPoints = (value: number) =>
+    setVisualProperty([{ name: 'selectionMaxDataPoints', value }]);
+
+/**
+ * Handle the change in selection mode from one to the other and update necessary store dependencies and properties.
+ */
+export const handleSelectionMode = (
+    selectionMode: SelectionMode,
+    provider: SpecProvider
+) =>
+    setVisualProperty([
+        {
+            name: 'selectionMode',
+            value: provider === 'vegaLite' ? 'simple' : selectionMode.toString()
+        }
+    ]);
 
 /**
  * Set focus to the active editor, based on the current editor role in the store.
@@ -287,6 +331,35 @@ export const handleToggleEditorTheme = () => {
         setVisualProperty([{ name: 'theme', value: newValue }], 'editor');
     });
 };
+
+export const handleVegaLogLevel = (value: string) => {
+    setVisualProperty([{ name: 'logLevel', value: value.toString() }]);
+};
+
+/**
+ * Handle the change in provider from one to the other and update necessary store dependencies and properties.
+ */
+export const handleVegaProvider = (
+    provider: SpecProvider,
+    currentSelectionMode: SelectionMode
+) =>
+    setVisualProperty([
+        { name: 'provider', value: provider },
+        {
+            name: 'selectionMode',
+            value: provider === 'vegaLite' ? 'simple' : currentSelectionMode
+        },
+        {
+            name: 'version',
+            value: PROVIDER_VERSION_CONFIGURATION[provider]
+        }
+    ]);
+
+/**
+ * Handle the change in render mode from one to the other and update necessary store dependencies and properties.
+ */
+export const handleVegaRenderMode = (renderMode: SpecRenderMode) =>
+    setVisualProperty([{ name: 'renderMode', value: renderMode }]);
 
 /**
  * Fit the zoom level to the current preview area dimensions.

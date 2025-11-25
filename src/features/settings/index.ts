@@ -1,6 +1,6 @@
 import { VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/properties';
 
-export { SettingsPane } from './components/settings-pane';
+export { InteractivitySettings } from './components/interactivity-settings';
 
 /**
  * Represents an enum member from capabilities.json

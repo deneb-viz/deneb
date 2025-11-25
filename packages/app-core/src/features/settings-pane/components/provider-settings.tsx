@@ -1,5 +1,4 @@
-import * as React from 'react';
-import { shallow } from 'zustand/shallow';
+import { type FormEvent, useCallback } from 'react';
 import {
     Radio,
     RadioGroup,
@@ -7,34 +6,29 @@ import {
     useId
 } from '@fluentui/react-components';
 
-import { updateProvider } from '../../../core/ui/commands';
-import store from '../../../store';
-import { useSettingsStyles } from '.';
 import { SettingsHeadingLabel } from './settings-heading-label';
 import { SettingsTextSection } from './settings-text-section';
 import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import { handleVegaProvider } from '../../../lib';
+import { useDenebState } from '../../../state';
+import { useSettingsPaneStyles } from '../styles';
 
-export const ProviderSettings: React.FC = () => {
-    const {
-        output: {
-            provider: { value: provider }
-        },
-        interactivity: {
-            selectionMode: { value: selectionMode }
-        }
-    } = store((state) => state.visualSettings.vega, shallow);
-    const onChange = React.useCallback(
-        (ev: React.FormEvent<HTMLDivElement>, data: RadioGroupOnChangeData) => {
-            updateProvider(
-                data.value as SpecProvider,
-                selectionMode as SelectionMode
-            );
+export const ProviderSettings = () => {
+    const { provider, selectionMode } = useDenebState((state) => ({
+        provider: state.visualSettings.vega.output.provider
+            .value as SpecProvider,
+        selectionMode: state.visualSettings.vega.interactivity.selectionMode
+            .value as SelectionMode
+    }));
+    const onChange = useCallback(
+        (ev: FormEvent<HTMLDivElement>, data: RadioGroupOnChangeData) => {
+            handleVegaProvider(data.value as SpecProvider, selectionMode);
         },
         []
     );
-    const classes = useSettingsStyles();
+    const classes = useSettingsPaneStyles();
     const labelId = useId('label');
     return (
         <div className={classes.sectionContainer}>
@@ -46,7 +40,7 @@ export const ProviderSettings: React.FC = () => {
                     layout='horizontal'
                     aria-labelledby={labelId}
                     onChange={onChange}
-                    value={provider as SpecProvider}
+                    value={provider}
                 >
                     <Radio
                         value='vegaLite'

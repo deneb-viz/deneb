@@ -1,5 +1,4 @@
-import * as React from 'react';
-import { shallow } from 'zustand/shallow';
+import { type FormEvent, useCallback } from 'react';
 import {
     Field,
     Radio,
@@ -8,35 +7,28 @@ import {
     Text
 } from '@fluentui/react-components';
 
-import { updateSelectionMode } from '../../../core/ui/commands';
-import store from '../../../store';
 import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
-import { useSettingsStyles } from '.';
+import { useSettingsStyles } from '../styles';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import {
     getI18nValue,
     getVisualSelectionManager
 } from '@deneb-viz/powerbi-compat/visual-host';
+import { handleSelectionMode, useDenebState } from '@deneb-viz/app-core';
 
-export const CrossFilterModeSettings: React.FC = () => {
-    const {
-        visualSettings: {
-            vega: {
-                output: {
-                    provider: { value: provider }
-                },
-                interactivity: {
-                    selectionMode: { value: selectionMode }
-                }
-            }
-        }
-    } = store((state) => state, shallow);
-    const onChange = React.useCallback(
-        (ev: React.FormEvent<HTMLDivElement>, data: RadioGroupOnChangeData) => {
+export const CrossFilterModeSettings = () => {
+    const { provider, selectionMode } = useDenebState((state) => ({
+        provider: state.visualSettings.vega.output.provider
+            .value as SpecProvider,
+        selectionMode: state.visualSettings.vega.interactivity.selectionMode
+            .value as SelectionMode
+    }));
+    const onChange = useCallback(
+        (ev: FormEvent<HTMLDivElement>, data: RadioGroupOnChangeData) => {
             if (getVisualSelectionManager().hasSelection()) {
                 getVisualSelectionManager().clear();
             }
-            updateSelectionMode(
+            handleSelectionMode(
                 data.value as SelectionMode,
                 provider as SpecProvider
             );

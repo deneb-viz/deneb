@@ -6,31 +6,14 @@ import {
 } from '@fluentui/react-components';
 
 export const useSettingsStyles = makeStyles({
-    headingContainer: {
-        display: 'flex',
-        ...shorthands.padding('5px', '0px')
-    },
     interactivityLink: {
         ...typographyStyles.caption1
-    },
-    paneContainer: {
-        ...shorthands.overflow('overlay'),
-        ...shorthands.padding('5px')
-    },
-    radioGroupHorizontal: {
-        display: 'grid',
-        gridRowGap: tokens.spacingVerticalS
     },
     radioGroupLabel: {
         userSelect: 'none',
         msUserSelect: 'none',
         WebkitUserSelect: 'none',
         MozUserSelect: 'none'
-    },
-    sectionContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-        ...shorthands.padding('10px', '0px')
     },
     sectionItem: {
         display: 'flex'
@@ -47,13 +30,5 @@ export const useSettingsStyles = makeStyles({
     },
     spinButtonControl: {
         width: '80px'
-    },
-    textSectionContainer: {
-        display: 'flex',
-        userSelect: 'none',
-        msUserSelect: 'none',
-        WebkitUserSelect: 'none',
-        MozUserSelect: 'none',
-        ...shorthands.padding('10px', '5px')
     }
 });

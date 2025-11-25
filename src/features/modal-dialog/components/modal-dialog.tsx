@@ -12,12 +12,12 @@ import {
 import { shallow } from 'zustand/shallow';
 
 import store from '../../../store';
-import { closeCreateDialog } from '../../../core/ui/commands';
 import { VisualExportPane } from '../../visual-export';
 import {
     CreateButton,
     ExportButtons,
     FieldRemapPane,
+    handleCloseCreateDialog,
     handleSetFocusToActiveEditor,
     useModalDialogStyles,
     useSpecificationEditor,
@@ -70,7 +70,7 @@ export const ModalDialog: React.FC = () => {
             clearMigrationDialog();
         }
         if (modalDialogRole === 'Create') {
-            closeCreateDialog();
+            handleCloseCreateDialog();
         }
         if (modalDialogRole === 'Export') {
             setExportProcessingState('None');

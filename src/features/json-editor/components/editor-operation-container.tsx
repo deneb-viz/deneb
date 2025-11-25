@@ -2,9 +2,9 @@ import React from 'react';
 
 import store from '../../../store';
 import { JsonEditor } from './json-editor';
-import { SettingsPane } from '../../settings';
-import { EditorPaneRole } from '@deneb-viz/app-core';
+import { EditorPaneRole, SettingsPane } from '@deneb-viz/app-core';
 import { logRender } from '@deneb-viz/utils/logging';
+import { InteractivitySettings } from '../../settings';
 
 interface IEditorOperationContainerProps {
     operation: EditorPaneRole;
@@ -29,7 +29,7 @@ export const EditorOperationContainer: React.FC<
             {editorPane ? (
                 <JsonEditor thisEditorRole={operation} />
             ) : (
-                <SettingsPane />
+                <SettingsPane platformSettings={<InteractivitySettings />} />
             )}
         </div>
     );

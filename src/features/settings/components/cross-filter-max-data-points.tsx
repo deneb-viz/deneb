@@ -1,5 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { shallow } from 'zustand/shallow';
+import { useCallback, useMemo, useState } from 'react';
 import {
     Button,
     Label,
@@ -11,38 +10,37 @@ import {
 } from '@fluentui/react-components';
 import { ArrowResetRegular } from '@fluentui/react-icons';
 
-import store from '../../../store';
-import {
-    resetProviderPropertyValue,
-    updateSelectionMaxDataPoints
-} from '../../../core/ui/commands';
-import { useSettingsStyles } from '.';
+import { useSettingsStyles } from '../styles';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import {
     CROSS_FILTER_LIMITS,
     isCrossFilterPropSet
 } from '@deneb-viz/powerbi-compat/interactivity';
-import { TooltipCustomMount } from '@deneb-viz/app-core';
+import {
+    handleResetVegaProperty,
+    handleSelectionMaxDataPoints,
+    TooltipCustomMount,
+    useDenebState
+} from '@deneb-viz/app-core';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logDebug } from '@deneb-viz/utils/logging';
 
 const DEFAULT_VALUE = DEFAULTS.vega.selectionMaxDataPoints;
 
-export const CrossFilterMaxDataPoints: React.FC = () => {
-    const { enableSelection, selectionMaxDataPoints } = store(
+export const CrossFilterMaxDataPoints = () => {
+    const { enableSelection, selectionMaxDataPoints } = useDenebState(
         (state) => ({
             enableSelection:
                 state.visualSettings.vega.interactivity.enableSelection.value,
             selectionMaxDataPoints:
                 state.visualSettings.vega.interactivity.selectionMaxDataPoints
                     .value
-        }),
-        shallow
+        })
     );
     const onChange: SpinButtonProps['onChange'] = useCallback(
         (event, data): void => {
             const resolvedValue = getResolvedValue(data);
-            updateSelectionMaxDataPoints(
+            handleSelectionMaxDataPoints(
                 Math.min(
                     Math.max(
                         resolvedValue,
@@ -55,7 +53,7 @@ export const CrossFilterMaxDataPoints: React.FC = () => {
         []
     );
     const onReset = useCallback(() => {
-        resetProviderPropertyValue('selectionMaxDataPoints');
+        handleResetVegaProperty('selectionMaxDataPoints');
     }, []);
     const id = useId();
     const classes = useSettingsStyles();

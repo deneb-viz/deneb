@@ -1,28 +1,30 @@
-import React, { useMemo } from 'react';
+import { ChangeEvent, useCallback, useMemo } from 'react';
 import { Checkbox, CheckboxOnChangeData } from '@fluentui/react-components';
 
-import store from '../../../store';
-import { updateBooleanProperty } from '../../../core/ui/commands';
 import { TInteractivityType } from '../../interactivity/types';
-import { useSettingsStyles } from '.';
+import { useSettingsStyles } from '../styles';
 import {
     getI18nValue,
     getVisualSelectionManager
 } from '@deneb-viz/powerbi-compat/visual-host';
+import {
+    handlePersistBooleanProperty,
+    useDenebState
+} from '@deneb-viz/app-core';
 
-interface IInteractivityCheckboxProps {
+type InteractivityCheckboxProps = {
     type: TInteractivityType;
-}
+};
 
-export const InteractivityCheckbox: React.FC<IInteractivityCheckboxProps> = ({
-    type
-}) => {
-    const { interactivity } = store((state) => state.visualSettings.vega);
+export const InteractivityCheckbox = ({ type }: InteractivityCheckboxProps) => {
+    const { interactivity } = useDenebState(
+        (state) => state.visualSettings.vega
+    );
     const propertyName = useMemo(() => getPropertyName(type), [type]);
     const classes = useSettingsStyles();
-    const handleToggle = React.useCallback(
+    const handleToggle = useCallback(
         (
-            ev: React.ChangeEvent<HTMLInputElement>,
+            ev: ChangeEvent<HTMLInputElement>,
             data: CheckboxOnChangeData
         ): void => {
             const value = !!data.checked;
@@ -33,7 +35,7 @@ export const InteractivityCheckbox: React.FC<IInteractivityCheckboxProps> = ({
             ) {
                 getVisualSelectionManager().clear();
             }
-            updateBooleanProperty(propertyName, value);
+            handlePersistBooleanProperty(propertyName, value);
         },
         []
     );

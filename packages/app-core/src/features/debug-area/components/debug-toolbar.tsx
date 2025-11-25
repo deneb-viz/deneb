@@ -1,5 +1,6 @@
-import React from 'react';
 import {
+    makeStyles,
+    tokens,
     Toolbar,
     ToolbarGroup,
     ToolbarProps,
@@ -11,28 +12,40 @@ import {
     Notebook16Regular,
     Table16Regular
 } from '@fluentui/react-icons';
-import { shallow } from 'zustand/shallow';
 
-import store from '../../../store';
-import { LogErrorIndicator } from './log-error-indicator';
-import { useToolbarStyles } from '.';
+import { useDenebState } from '../../../state';
 import {
     handleDebugPaneData,
     handleDebugPaneLog,
     handleDebugPaneSignal,
-    ToolbarButtonStandard,
-    ZoomLevelPopover,
-    ZoomSlider,
+    PREVIEW_PANE_TOOLBAR_MIN_SIZE,
     type DebugPaneRole
-} from '@deneb-viz/app-core';
+} from '../../../lib';
+import { LogErrorIndicator } from './log-viewer/log-error-indicator';
+import { ToolbarButtonStandard } from '../../../components/ui';
+import { ZoomSlider } from './zoom-controls/zoom-slider';
+import { ZoomLevelPopover } from './zoom-controls/zoom-level-popover';
 
-export const DebugToolbar: React.FC = () => {
-    const { editorPreviewAreaSelectedPivot } = store(
-        (state) => ({
-            editorPreviewAreaSelectedPivot: state.editorPreviewAreaSelectedPivot
-        }),
-        shallow
-    );
+const useToolbarStyles = makeStyles({
+    root: {
+        display: 'flex',
+        height: `${PREVIEW_PANE_TOOLBAR_MIN_SIZE}px`,
+        justifyContent: 'space-between',
+        paddingBottom: tokens.spacingVerticalNone,
+        paddingTop: tokens.spacingVerticalNone,
+        borderBottom: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke2}`
+    },
+    group: {
+        alignItems: 'center',
+        columnGap: tokens.spacingHorizontalXXS,
+        display: 'flex'
+    }
+});
+
+export const DebugToolbar = () => {
+    const { editorPreviewAreaSelectedPivot } = useDenebState((state) => ({
+        editorPreviewAreaSelectedPivot: state.editorPreviewAreaSelectedPivot
+    }));
     const classes = useToolbarStyles();
     const onDebugModeChange: ToolbarProps['onCheckedValueChange'] = (
         e,
@@ -54,11 +67,11 @@ export const DebugToolbar: React.FC = () => {
     return (
         <Toolbar
             size='small'
-            className={classes.toolbarDebug}
+            className={classes.root}
             onCheckedValueChange={onDebugModeChange}
             checkedValues={{ debugMode: [editorPreviewAreaSelectedPivot] }}
         >
-            <ToolbarRadioGroup className={classes.toolbarGroupDebug}>
+            <ToolbarRadioGroup className={classes.group}>
                 <ToolbarRadioButton
                     name='debugMode'
                     value='data'
@@ -88,7 +101,7 @@ export const DebugToolbar: React.FC = () => {
                     <LogErrorIndicator />
                 </ToolbarRadioButton>
             </ToolbarRadioGroup>
-            <ToolbarGroup className={classes.toolbarGroupDebug}>
+            <ToolbarGroup className={classes.group}>
                 <ToolbarButtonStandard command='zoomOut' role='debug' />
                 <ZoomSlider />
                 <ToolbarButtonStandard command='zoomIn' role='debug' />

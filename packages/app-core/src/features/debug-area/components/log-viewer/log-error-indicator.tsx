@@ -1,14 +1,14 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { shallow } from 'zustand/shallow';
-
-import store from '../../../store';
 import { Warning20Filled, Warning20Regular } from '@fluentui/react-icons';
 import { tokens } from '@fluentui/tokens';
 
+import { useDenebState } from '../../../../state';
+
 const MODIFIER = '%F0%9F%A6%89';
 
-export const LogErrorIndicator: React.FC = () => {
-    const { errors, fourd3d3d, warns } = store(
+export const LogErrorIndicator = () => {
+    const { errors, fourd3d3d, warns } = useDenebState(
         (state) => ({
             errors: state.specification.errors,
             fourd3d3d: state.visual4d3d3d,
