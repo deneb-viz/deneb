@@ -3,7 +3,20 @@
     "compilerOptions": {
         "outDir": "./dist",
         "noEmit": true,
-        "lib": ["ES2022", "DOM"]
+        "lib": ["ES2022", "DOM"],
+        "baseUrl": ".",
+        // Disable isolatedModules for schema generation so type-only path remaps are allowed.
+        "isolatedModules": false,
+        // Narrow path remaps to only the type definition files required for schema generation.
+        // This avoids pulling in runtime code (e.g. loaders) with additional transitive dependencies.
+        "paths": {
+            "@deneb-viz/powerbi-compat/interactivity": [
+                "../powerbi-compat/src/lib/interactivity/types.ts"
+            ],
+            "@deneb-viz/vega-runtime/embed": [
+                "../vega-runtime/src/lib/embed/types.ts"
+            ]
+        }
     },
     "include": ["src/types.ts"]
 }
