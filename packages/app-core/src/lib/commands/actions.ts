@@ -18,6 +18,7 @@ import {
 import { type SpecificationEditorRefs } from '../../features/specification-editor';
 import { monaco } from '../../components/code-editor/monaco-integration';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
+import { logDebug } from '@deneb-viz/utils/logging';
 
 /**
  * Executes a command if:
@@ -202,9 +203,6 @@ export const handlePersistSpecification = (
     configEditor: monaco.editor.IStandaloneCodeEditor | null,
     stage = true
 ) => {
-    if (!specEditor || !configEditor) {
-        return;
-    }
     const {
         editor: { stagedConfig, stagedSpec, updateChanges },
         fieldUsage: { dataset: trackedFieldsCurrent },
@@ -218,11 +216,11 @@ export const handlePersistSpecification = (
         }
     } = getDenebState();
     const spec =
-        (stage
+        (stage && specEditor
             ? getCleanJsonInputForPersistence('Spec', specEditor.getValue())
             : stagedSpec) ?? jsonSpec;
     const config =
-        (stage
+        (stage && configEditor
             ? getCleanJsonInputForPersistence('Config', configEditor.getValue())
             : stagedConfig) ?? jsonConfig;
     // Tracking is now only used for export (#486)

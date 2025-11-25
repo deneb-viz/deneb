@@ -15,6 +15,7 @@ export {
 export * from './components/template-metadata';
 export * from './components/ui';
 export * from './features/debug-area';
+export * from './features/editor-area';
 export * from './features/project-create';
 export * from './features/project-export';
 export * from './features/remap-fields';
