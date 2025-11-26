@@ -47,7 +47,7 @@ export const resolveObjectProperties = (objects: PersistenceObject[]) => {
     objects.forEach((value, index) => {
         value.properties.forEach((p) => {
             if (
-                changes.replace?.[index]?.properties?.[p.name] !== undefined &&
+                changes.replace?.[index]?.properties !== undefined &&
                 p.value !== undefined
             ) {
                 changes.replace[index].properties[p.name] = p.value;
