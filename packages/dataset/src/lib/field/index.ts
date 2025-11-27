@@ -12,6 +12,13 @@ export {
     SELECTED_ROW_FIELD_NAME
 } from './constants';
 export {
+    getCrossHighlightFieldBaseMeasureName,
+    getHighlightRegExpAlternation,
+    isCrossHighlightComparatorField,
+    isCrossHighlightField,
+    isCrossHighlightStatusField
+} from './highlight';
+export {
     getDatasetFieldsInclusive,
     getDatasetTemplateFieldsFromMetadata
 } from './processing';

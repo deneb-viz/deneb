@@ -1,4 +1,10 @@
 /**
+ * Indicates how a cross-highlight value compares with its original (base)
+ * value.
+ */
+export type DataPointHighlightComparator = 'lt' | 'eq' | 'gt' | 'neq';
+
+/**
  * Indicates the internal selection state of a data point.
  */
 export type DataPointSelectionStatus = 'off' | 'neutral' | 'on';

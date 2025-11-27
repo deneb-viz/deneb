@@ -1,9 +1,7 @@
 import {
     FORMATTED_FIELD_SUFFIX,
     FORMAT_FIELD_SUFFIX,
-    HIGHLIGHT_COMPARATOR_SUFFIX,
-    HIGHLIGHT_FIELD_SUFFIX,
-    HIGHLIGHT_STATUS_SUFFIX
+    getHighlightRegExpAlternation
 } from '@deneb-viz/dataset/field';
 import type { TokenPatternReplacer } from './types';
 import {
@@ -19,12 +17,6 @@ import {
 export const getEscapedReplacerPattern = (value: string) => {
     return (value ?? '').replace(/[-/\\^$*+?.()&|[\]{}]/g, '\\$&');
 };
-
-/**
- * Provides all highlight field suffixes, suitable for a RegExp expression.
- */
-export const getHighlightRegExpAlternation = () =>
-    `${HIGHLIGHT_COMPARATOR_SUFFIX}|${HIGHLIGHT_STATUS_SUFFIX}|${HIGHLIGHT_FIELD_SUFFIX}`;
 
 /**
  * Provides all number formatting field suffixes, suitable for a RegExp expression.

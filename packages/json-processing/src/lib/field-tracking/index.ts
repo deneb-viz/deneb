@@ -4,7 +4,6 @@ export {
 } from './constants';
 export {
     getEscapedReplacerPattern,
-    getHighlightRegExpAlternation,
     getPlaceholderKey,
     getTokenPatternsLiteral,
     getTokenPatternsReplacement

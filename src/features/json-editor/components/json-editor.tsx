@@ -21,10 +21,10 @@ import {
 } from '@deneb-viz/app-core';
 import { ptToPx } from '@deneb-viz/utils/dom';
 import { getProviderSchema } from '@deneb-viz/json-processing';
-import { IVisualDatasetField } from '../../../core/data';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { getI18nValue, launchUrl } from '@deneb-viz/powerbi-compat/visual-host';
 import { logDebug } from '@deneb-viz/utils/logging';
+import { type IDatasetField } from '@deneb-viz/dataset/field';
 
 /**
  * One-time Monaco initialization tasks.
@@ -368,7 +368,7 @@ const setMonacoKeyBindingRules = () => {
  * For any data-based completers in the editor, provide a qualifier denoting
  * whether it's a column, measure or something else.
  */
-const getSnippetFieldMetadata = (field: IVisualDatasetField) => {
+const getSnippetFieldMetadata = (field: IDatasetField) => {
     switch (true) {
         case field.isHighlightComponent:
             return getI18nValue('Text_AutoComplete_Meta_Highlight');

@@ -5,31 +5,29 @@ import DataViewValueColumns = powerbi.DataViewValueColumns;
 import find from 'lodash/find';
 import reduce from 'lodash/reduce';
 
-import { isCrossHighlightPropSet } from '../../features/interactivity';
-import {
-    IAugmentedMetadataField,
-    IVisualDatasetFields,
-    TDatasetValueSource
-} from '.';
 import { getDataset } from './dataset';
 import {
+    type AugmentedMetadataField,
+    type DatasetFieldValueSource,
     FORMAT_FIELD_SUFFIX,
     FORMATTED_FIELD_SUFFIX,
-    HIGHLIGHT_FIELD_SUFFIX
+    HIGHLIGHT_FIELD_SUFFIX,
+    type IDatasetFields
 } from '@deneb-viz/dataset/field';
 import { isDataViewFieldEligibleForFormatting } from '../../features/dataset';
 import { getResolvedVisualMetadataToDatasetField } from '@deneb-viz/json-processing';
 import { getDatasetFieldsInclusive } from '@deneb-viz/dataset/field';
 import { logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
+import { isCrossHighlightPropSet } from '@deneb-viz/powerbi-compat/interactivity';
 
 /**
  * Extract all categorical fields from the data view as suitable metadata.
  */
 const getCategoryFieldEntries = (
     categories: DataViewCategoryColumn[]
-): IAugmentedMetadataField[] =>
+): AugmentedMetadataField[] =>
     categories?.map(
-        (c, ci): IAugmentedMetadataField => ({
+        (c, ci): AugmentedMetadataField => ({
             column: c.source,
             source: 'categories',
             sourceIndex: ci
@@ -42,12 +40,13 @@ const getCategoryFieldEntries = (
  */
 export const getDatasetFieldEntries = (
     categories: DataViewCategoryColumn[],
-    values: DataViewValueColumns
+    values: DataViewValueColumns,
+    enableHighlight: boolean
 ) => {
     logTimeStart('getDatasetFieldEntries');
     const fieldEntries = [
         ...getCategoryFieldEntries(categories),
-        ...getHighlightFieldEntries(values),
+        ...getHighlightFieldEntries(values, enableHighlight),
         ...getMeasureFieldEntries(values),
         ...getMeasureFormatEntries(values)
     ];
@@ -62,9 +61,10 @@ export const getDatasetFieldEntries = (
  */
 export const getDatasetFields = (
     categories: DataViewCategoryColumn[],
-    values: DataViewValueColumns
-): IVisualDatasetFields => {
-    const fields = getDatasetFieldEntries(categories, values);
+    values: DataViewValueColumns,
+    enableHighlight: boolean
+): IDatasetFields => {
+    const fields = getDatasetFieldEntries(categories, values, enableHighlight);
     return reduce(
         fields,
         (result, c) => {
@@ -79,7 +79,7 @@ export const getDatasetFields = (
                     isHighlightComponent: c.source === 'highlights',
                     isExcludedFromTemplate,
                     sourceIndex: c.sourceIndex,
-                    source: <TDatasetValueSource>c.source,
+                    source: <DatasetFieldValueSource>c.source,
                     templateMetadata: isExcludedFromTemplate
                         ? undefined
                         : getResolvedVisualMetadataToDatasetField(
@@ -90,7 +90,7 @@ export const getDatasetFields = (
             };
             return result;
         },
-        <IVisualDatasetFields>{}
+        <IDatasetFields>{}
     );
 };
 
@@ -119,10 +119,13 @@ export const getEncodedFieldName = (displayName: string) =>
  * Get artificial array of values first (if needed) as we'll need them when
  * working out highlights later on.
  */
-const getHighlightFieldEntries = (values: DataViewValueColumns) =>
-    (isCrossHighlightPropSet() &&
+const getHighlightFieldEntries = (
+    values: DataViewValueColumns,
+    enableHighlight: boolean
+) =>
+    (isCrossHighlightPropSet({ enableHighlight }) &&
         values?.map(
-            (v, vi): IAugmentedMetadataField => ({
+            (v, vi): AugmentedMetadataField => ({
                 column: {
                     ...v.source,
                     ...{
@@ -141,7 +144,7 @@ const getHighlightFieldEntries = (values: DataViewValueColumns) =>
  */
 const getMeasureFieldEntries = (values: DataViewValueColumns) =>
     values?.map(
-        (v, vi): IAugmentedMetadataField => ({
+        (v, vi): AugmentedMetadataField => ({
             column: v.source,
             source: 'values',
             sourceIndex: vi
@@ -156,7 +159,7 @@ const getMeasureFieldEntries = (values: DataViewValueColumns) =>
  */
 const getMeasureFormatEntries = (
     values: DataViewValueColumns
-): IAugmentedMetadataField[] => {
+): AugmentedMetadataField[] => {
     return reduce(
         values,
         (result, v, vi) => {
@@ -188,12 +191,12 @@ const getMeasureFormatEntries = (
             }
             return result;
         },
-        <IAugmentedMetadataField[]>[]
+        <AugmentedMetadataField[]>[]
     );
 };
 
 /**
  * Allows us to test that a field is excluded from templating activities.
  */
-const isSourceExcludedFromTemplate = (source: TDatasetValueSource) =>
+const isSourceExcludedFromTemplate = (source: DatasetFieldValueSource) =>
     ['highlights', 'formatting'].includes(source);

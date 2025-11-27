@@ -1,11 +1,8 @@
 import {
     HIGHLIGHT_COMPARATOR_SUFFIX,
-    HIGHLIGHT_STATUS_SUFFIX,
-    HIGHLIGHT_FIELD_SUFFIX
-} from '@deneb-viz/dataset/field';
-import { getVegaSettings } from '../../core/vega';
-import { getHighlightRegExpAlternation } from '@deneb-viz/json-processing/field-tracking';
-import { getVisualInteractionStatus } from '@deneb-viz/powerbi-compat/visual-host';
+    HIGHLIGHT_FIELD_SUFFIX,
+    HIGHLIGHT_STATUS_SUFFIX
+} from './constants';
 
 /**
  * Produces a simple RegExp pattern for matching highlight fields.
@@ -25,6 +22,12 @@ export const getCrossHighlightFieldBaseMeasureName = (field: string) => {
 };
 
 /**
+ * Provides all highlight field suffixes, suitable for a RegExp expression.
+ */
+export const getHighlightRegExpAlternation = () =>
+    `${HIGHLIGHT_COMPARATOR_SUFFIX}|${HIGHLIGHT_STATUS_SUFFIX}|${HIGHLIGHT_FIELD_SUFFIX}`;
+
+/**
  * Confirms whether the supplied field name is a cross-highlight comparator.
  */
 export const isCrossHighlightComparatorField = (field: string) =>
@@ -36,18 +39,6 @@ export const isCrossHighlightComparatorField = (field: string) =>
  */
 export const isCrossHighlightField = (field: string) =>
     getCrossHighlightFieldRegExp(HIGHLIGHT_FIELD_SUFFIX).test(field);
-
-/**
- * Determine if conditions are right to expose highlight functionality.
- */
-export const isCrossHighlightPropSet = () => {
-    const {
-        interactivity: {
-            enableHighlight: { value: enableHighlight }
-        }
-    } = getVegaSettings();
-    return (getVisualInteractionStatus() && enableHighlight) || false;
-};
 
 /**
  * Confirms whether the supplied field name is a cross-highlight status.

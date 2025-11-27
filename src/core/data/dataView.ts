@@ -7,10 +7,12 @@ import PrimitiveValue = powerbi.PrimitiveValue;
 import DataViewMetadata = powerbi.DataViewMetadata;
 
 import { getState } from '../../store';
-import { IAugmentedMetadataField } from '.';
-import { TDataPointHighlightComparator } from '../../features/interactivity';
 import { VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/properties';
-import { type DataPointSelectionStatus } from '@deneb-viz/powerbi-compat/interactivity';
+import {
+    type DataPointHighlightComparator,
+    type DataPointSelectionStatus
+} from '@deneb-viz/powerbi-compat/interactivity';
+import { type AugmentedMetadataField } from '@deneb-viz/dataset/field';
 
 /**
  * Determines whether the visual can fetch more data, based on the feature switch and the corresponding flag in the store
@@ -30,7 +32,7 @@ export const canFetchMoreFromDataview = (
  * For a Power BI primitive, apply any data type-specific logic before returning a value that can work with the visual dataset.
  */
 export const castPrimitiveValue = (
-    field: IAugmentedMetadataField,
+    field: AugmentedMetadataField,
     value: PrimitiveValue
 ) =>
     field?.column.type.dateTime && value !== null
@@ -86,7 +88,7 @@ export const resolveHighlightStatus = (
 export const resolveHighlightComparator = (
     fieldValue: PrimitiveValue,
     comparatorValue: PrimitiveValue
-): TDataPointHighlightComparator => {
+): DataPointHighlightComparator => {
     switch (true) {
         case fieldValue == comparatorValue:
             return 'eq';

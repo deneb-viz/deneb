@@ -6,12 +6,12 @@ import PrimitiveValue = powerbi.PrimitiveValue;
 
 import reduce from 'lodash/reduce';
 
-import { isCrossHighlightPropSet } from '../../features/interactivity';
 import { getVegaSettings } from '../vega';
 import { getHighlightStatus } from './dataView';
 import { isDataViewFieldEligibleForFormatting } from '../../features/dataset';
 import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
 import { logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
+import { isCrossHighlightPropSet } from '@deneb-viz/powerbi-compat/interactivity';
 
 /**
  * Enumerate all relevant areas of the data view to get an array of all
@@ -19,17 +19,14 @@ import { logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
  */
 export const getDatasetValueEntries = (
     categories: DataViewCategoryColumn[],
-    values: DataViewValueColumns
+    values: DataViewValueColumns,
+    enableHighlight: boolean
 ) => {
-    const {
-        interactivity: {
-            enableHighlight: { value: enableHighlight }
-        }
-    } = getVegaSettings();
     return [
         ...getCategoryEntries(categories),
-        ...((enableHighlight && getHighlightEntries(values)) || []),
-        ...getValueEntries(values),
+        ...((enableHighlight && getHighlightEntries(values, enableHighlight)) ||
+            []),
+        ...getValueEntries(values, enableHighlight),
         ...getFormattingStringEntries(values)
     ];
 };
@@ -95,12 +92,14 @@ const getFormatStringForValueByIndex = (
  * in the regular values so that any logic is correctly preserved.
  */
 const getHighlightEntries = (
-    values: DataViewValueColumns
+    values: DataViewValueColumns,
+    enableHighlight: boolean
 ): PrimitiveValue[][] => {
     logTimeStart('getHighlightEntries');
     const entries =
         (values || [])?.map((v: DataViewValueColumn) =>
-            isCrossHighlightPropSet() && getHighlightStatus(values)
+            isCrossHighlightPropSet({ enableHighlight }) &&
+            getHighlightStatus(values)
                 ? v.highlights
                 : v.values
         ) || [];
@@ -114,11 +113,15 @@ const getHighlightEntries = (
  * using the cross-filter interaction on the visual by substituting the
  * highlight values passed in by Power BI
  */
-const getValueEntries = (values: DataViewValueColumns): PrimitiveValue[][] => {
+const getValueEntries = (
+    values: DataViewValueColumns,
+    enableHighlight: boolean
+): PrimitiveValue[][] => {
     logTimeStart('getValueEntries');
     const entries = (values || [])?.map((v: DataViewValueColumn) => {
         const useHighlights =
-            getHighlightStatus(values) && !isCrossHighlightPropSet();
+            getHighlightStatus(values) &&
+            !isCrossHighlightPropSet({ enableHighlight });
         return useHighlights ? v.highlights : v.values;
     });
     logTimeEnd('getValueEntries');

@@ -45,12 +45,6 @@ export type CrossFilterResult = {
 };
 
 /**
- * Indicates how a cross-highlight value compares with its original (base)
- * value.
- */
-export type TDataPointHighlightComparator = 'lt' | 'eq' | 'gt' | 'neq';
-
-/**
  * Define which keys should invoke multi-select behavior (for advanced cross-filtering).
  */
 export type MultiSelectKey = 'ctrl' | 'shift' | 'alt';

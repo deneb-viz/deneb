@@ -9,12 +9,13 @@ import pick from 'lodash/pick';
 import pickBy from 'lodash/pickBy';
 import reduce from 'lodash/reduce';
 
-import { IVisualDatasetField, IVisualDatasetFields } from '../../core/data';
 import { IVegaViewDatum } from '../../core/vega';
 import { getState } from '../../store';
 import { getDataset } from '../../core/data/dataset';
 import { getCategoryColumns } from '../../core/data/dataView';
 import {
+    type IDatasetField,
+    type IDatasetFields,
     ROW_IDENTITY_FIELD_NAME,
     ROW_INDEX_FIELD_NAME
 } from '@deneb-viz/dataset/field';
@@ -36,7 +37,7 @@ const allDataHasIdentities = (data: IVegaViewDatum[]) =>
  *  `powerbi.visuals.ISelectionId`.
  */
 export const createSelectionIds = (
-    fields: IVisualDatasetFields,
+    fields: IDatasetFields,
     categories: DataViewCategoryColumn[],
     rowIndices: number[]
 ) => {
@@ -126,7 +127,7 @@ const getIdentityIndices = (data: IVegaViewDatum[]): number[] =>
  * matching rows in the visual's processed dataset for this combination.
  */
 const getMatchedValues = (
-    fields: IVisualDatasetFields,
+    fields: IDatasetFields,
     data: IVegaViewDatum[]
 ): DatasetValueRow[] => {
     const resolvedMd = resolveDatumForFields(fields, data?.[0]);
@@ -169,7 +170,7 @@ const getValuesByIndices = (indices: number[]) =>
  * ourselves. I'll leave this here as a reminder to think about it.
  */
 const getValuesForField = (
-    field: IVisualDatasetFields,
+    field: IDatasetFields,
     data: IVegaViewDatum[]
 ): DatasetValueRow[] => {
     const matches = getMatchedValues(field, data);
@@ -188,7 +189,7 @@ const getValuesForField = (
  * metadata.
  */
 const resolveDatumForFields = (
-    fields: IVisualDatasetFields,
+    fields: IDatasetFields,
     datum: IVegaViewDatum
 ) => {
     const reducedDatum = <DatasetValueRow>pick(datum, keys(fields)) || null;
@@ -223,7 +224,7 @@ export const resolveDataFromItem = (item: any): IVegaViewDatum[] => {
  * so that we can try to use its value to reconcile against the visual's dataset
  * in order to resolve selection IDs.
  */
-const resolveValueForField = (field: IVisualDatasetField, value: any) => {
+const resolveValueForField = (field: IDatasetField, value: any) => {
     switch (true) {
         case field.type.dateTime: {
             return new Date(value);

@@ -2,6 +2,18 @@ import powerbi from 'powerbi-visuals-api';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 
 /**
+ * Used to store interim data whilst the data view is being processed
+ */
+export type AugmentedMetadataField = {
+    // Power BI data view metadata.
+    column: powerbi.DataViewMetadataColumn;
+    // Where we have derived the metadata from.
+    source: DatasetFieldValueSource;
+    // Array index we can use to re-point to the data view (if needed).
+    sourceIndex: number;
+};
+
+/**
  * Metadata for dataset fields. This is based on the Power BI metadata and is enriched with other properties that we
  * need for Deneb.
  */
@@ -36,3 +48,13 @@ export interface IDatasetField extends powerbi.DataViewMetadataColumn {
 export interface IDatasetFields {
     [key: string]: IDatasetField;
 }
+
+/**
+ * Indicates where in the data view we obtain a value from.
+ */
+export type DatasetFieldValueSource =
+    | 'categories'
+    | 'values'
+    | 'highlights'
+    | 'formatting'
+    | 'none';

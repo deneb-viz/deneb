@@ -6,7 +6,6 @@ import PrimitiveValue = powerbi.PrimitiveValue;
 import range from 'lodash/range';
 import reduce from 'lodash/reduce';
 
-import { IAugmentedMetadataField } from '.';
 import {
     castPrimitiveValue,
     getHighlightStatus,
@@ -20,12 +19,10 @@ import {
     getEncodedFieldName
 } from './fields';
 import { getDatasetValueEntries } from './values';
-import {
-    createSelectionIds,
-    isCrossHighlightPropSet
-} from '../../features/interactivity';
+import { createSelectionIds } from '../../features/interactivity';
 import { getState } from '../../store';
 import {
+    type AugmentedMetadataField,
     DRILL_FIELD_FLAT,
     DRILL_FIELD_NAME,
     HIGHLIGHT_COMPARATOR_SUFFIX,
@@ -47,7 +44,8 @@ import { type DatasetValueRow } from '@deneb-viz/dataset/datum';
 import { getHashValue } from '@deneb-viz/utils/crypto';
 import {
     getDataPointCrossFilterStatus,
-    isCrossFilterPropSet
+    isCrossFilterPropSet,
+    isCrossHighlightPropSet
 } from '@deneb-viz/powerbi-compat/interactivity';
 import { getVisualSelectionManager } from '@deneb-viz/powerbi-compat/visual-host';
 import { logError, logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
@@ -57,13 +55,16 @@ import { logError, logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
  * representation of the row that corresponds with the dataset metadata.
  */
 const getDataRow = (
-    fields: IAugmentedMetadataField[],
+    fields: AugmentedMetadataField[],
     values: PrimitiveValue[][],
     rowIndex: number,
     hasHighlights: boolean,
-    hasDrilldown: boolean
+    hasDrilldown: boolean,
+    enableHighlight: boolean
 ) => {
-    const isCrossHighlight = isCrossHighlightPropSet();
+    const isCrossHighlight = isCrossHighlightPropSet({
+        enableHighlight
+    });
     return reduce(
         fields,
         (row, f, fi) => {
@@ -121,7 +122,8 @@ export const getDataset = (): IDataset => getState().dataset;
  */
 export const getMappedDataset = (
     categorical: DataViewCategorical,
-    enableSelection: boolean
+    enableSelection: boolean,
+    enableHighlight: boolean
 ): IDataset => {
     const rowsLoaded = getRowCount(categorical);
     const empty = getEmptyDataset();
@@ -135,16 +137,28 @@ export const getMappedDataset = (
             logTimeStart('getMappedDataset');
             const isCrossFilter = isCrossFilterPropSet({ enableSelection });
             const hasHighlights = getHighlightStatus(dvValues);
-            const columns = getDatasetFieldEntries(dvCategories, dvValues);
+            const columns = getDatasetFieldEntries(
+                dvCategories,
+                dvValues,
+                enableHighlight
+            );
             const hasDrilldown =
                 isDrilldownFeatureEnabled() &&
                 columns.filter((c) => c.column.roles?.[DRILL_FIELD_NAME])
                     ?.length > 0;
-            const fieldValues = getDatasetValueEntries(dvCategories, dvValues);
+            const fieldValues = getDatasetValueEntries(
+                dvCategories,
+                dvValues,
+                enableHighlight
+            );
             const selections: ISelectionId[] = <ISelectionId[]>(
                 getVisualSelectionManager().getSelectionIds()
             );
-            const fields = getDatasetFields(dvCategories, dvValues);
+            const fields = getDatasetFields(
+                dvCategories,
+                dvValues,
+                enableHighlight
+            );
             /**
              * #357, #396 the selection IDs massively degrade performance when
              * hashing, so we has a copy of the values without the selection
@@ -165,7 +179,8 @@ export const getMappedDataset = (
                     fieldValues,
                     ri,
                     hasHighlights,
-                    hasDrilldown
+                    hasDrilldown,
+                    enableHighlight
                 );
                 const identity = createSelectionIds(
                     selectionFields,

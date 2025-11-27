@@ -2,22 +2,22 @@ import { textMeasurementService } from 'powerbi-visuals-utils-formattingutils';
 import { isDate, isFunction, isNumber } from 'vega';
 
 import { TABLE_COLUMN_RESERVED_WORDS } from '../../constants';
-import {
-    getCrossHighlightFieldBaseMeasureName,
-    getSanitisedTooltipValue,
-    isCrossHighlightComparatorField,
-    isCrossHighlightField,
-    isCrossHighlightStatusField,
-    TDataPointHighlightComparator
-} from '../interactivity';
+import { getSanitisedTooltipValue } from '../interactivity';
 import { DATA_TABLE_FONT_FAMILY, DATA_TABLE_FONT_SIZE } from '.';
 import { type IWorkerDatasetViewerTranslations } from '@deneb-viz/app-core';
 import {
+    getCrossHighlightFieldBaseMeasureName,
+    isCrossHighlightComparatorField,
+    isCrossHighlightField,
+    isCrossHighlightStatusField,
     ROW_IDENTITY_FIELD_NAME,
     ROW_INDEX_FIELD_NAME,
     SELECTED_ROW_FIELD_NAME
 } from '@deneb-viz/dataset/field';
-import { type DataPointSelectionStatus } from '@deneb-viz/powerbi-compat/interactivity';
+import {
+    type DataPointHighlightComparator,
+    type DataPointSelectionStatus
+} from '@deneb-viz/powerbi-compat/interactivity';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { getPrunedObject } from '@deneb-viz/utils/object';
 
@@ -81,7 +81,7 @@ const getCellHighlightComparatorStatus = (value: DataPointSelectionStatus) => {
  * value that is contextual for the displayed value.
  */
 const getCellHighlightComparatorTooltip = (
-    value: TDataPointHighlightComparator
+    value: DataPointHighlightComparator
 ) => {
     switch (value) {
         case 'eq':

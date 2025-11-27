@@ -144,6 +144,7 @@ export class Deneb implements IVisual {
             visualSettings: {
                 vega: {
                     interactivity: {
+                        enableHighlight: { value: enableHighlight },
                         enableSelection: { value: enableSelection }
                     }
                 }
@@ -182,7 +183,11 @@ export class Deneb implements IVisual {
                     dataProcessingStage: 'Processing',
                     rowsLoaded
                 });
-                const dataset = getMappedDataset(categorical, enableSelection);
+                const dataset = getMappedDataset(
+                    categorical,
+                    enableSelection,
+                    enableHighlight
+                );
                 updateDataset({
                     categories: categorical?.categories,
                     dataset

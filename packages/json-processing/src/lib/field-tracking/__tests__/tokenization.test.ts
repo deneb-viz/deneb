@@ -1,6 +1,6 @@
+import { getHighlightRegExpAlternation } from '@deneb-viz/dataset/field';
 import {
     getEscapedReplacerPattern,
-    getHighlightRegExpAlternation,
     getNumberFormatRegExpAlternation,
     getPlaceholderKey,
     getTokenPatternsLiteral,
