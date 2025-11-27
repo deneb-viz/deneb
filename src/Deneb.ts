@@ -15,7 +15,6 @@ import { getState } from './store';
 import { canFetchMoreFromDataview, getRowCount } from './core/data/dataView';
 import { getMappedDataset } from './core/data/dataset';
 import { handlePropertyMigration } from './core/utils/versioning';
-import { resolveReportViewport } from './core/ui/dom';
 import { VegaExtensibilityServices } from './features/vega-extensibility';
 import {
     VisualFormattingSettingsModel,
@@ -30,8 +29,7 @@ import {
     getLocalizationManager,
     getVisualHost,
     I18nServices,
-    isVisualUpdateTypeResizeEnd,
-    isVisualUpdateTypeVolatile,
+    resolveAndPersistReportViewport,
     setRenderingFailed,
     setRenderingStarted,
     VisualHostServices
@@ -114,7 +112,7 @@ export class Deneb implements IVisual {
         // Signal we've begun rendering
         setRenderingStarted();
         this.resolveLocale();
-        this.resolveViewport(options);
+        resolveAndPersistReportViewport(options, this.settings);
         // Provide intial update options to store
         const { setVisualUpdate } = getState();
         setVisualUpdate({
@@ -207,33 +205,6 @@ export class Deneb implements IVisual {
             : getLocale();
         logDebug('Locale resolved.', { locale });
         I18nServices.update(locale);
-    }
-
-    /**
-     * Manage persistent viewport sizing for view vs. editor
-     */
-    private resolveViewport(options: VisualUpdateOptions) {
-        switch (true) {
-            case isVisualUpdateTypeVolatile(options):
-            case isVisualUpdateTypeResizeEnd(options.type): {
-                logDebug('Resolving viewport options...');
-                resolveReportViewport(
-                    options.viewport,
-                    options.viewMode,
-                    options.editMode,
-                    {
-                        height: Number.parseFloat(
-                            this.settings.stateManagement.viewport
-                                .viewportHeight.value
-                        ),
-                        width: Number.parseFloat(
-                            this.settings.stateManagement.viewport.viewportWidth
-                                .value
-                        )
-                    }
-                );
-            }
-        }
     }
 
     /**'

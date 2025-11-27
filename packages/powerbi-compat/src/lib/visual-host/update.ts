@@ -1,8 +1,13 @@
 import powerbi from 'powerbi-visuals-api';
+import { deepEqual } from 'fast-equals';
+
 import { VisualUpdateComparisonOptions } from './types';
 import { logDebug, logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
-import { deepEqual } from 'fast-equals';
-import { isSettingsChangeVolatile } from '../properties';
+import {
+    isSettingsChangeVolatile,
+    VisualFormattingSettingsModel
+} from '../properties';
+import { persistProperties, resolveObjectProperties } from './persistence';
 
 /**
  * Test that the supplied parameters mean that the visual host has the visual in a suitable state to display the editor
@@ -117,3 +122,56 @@ export const isVisualUpdateTypeViewMode = (type: powerbi.VisualUpdateType) =>
 export const isVisualUpdateTypeVolatile = (
     options: powerbi.extensibility.visual.VisualUpdateOptions
 ) => isVisualUpdateTypeData(options.type);
+
+/**
+ * For suitable events, ensure that the visual viewport is correctly resolved and persisted. This will allow us to keep
+ * the viewport upon re-initialisation (e.g. if swapping visuals out or reloading the dev visual).
+ */
+export const resolveAndPersistReportViewport = (
+    options: powerbi.extensibility.visual.VisualUpdateOptions,
+    settings: VisualFormattingSettingsModel
+) => {
+    const { editMode, type, viewMode, viewport } = options;
+    if (
+        isVisualUpdateTypeVolatile(options) ||
+        isVisualUpdateTypeResizeEnd(type)
+    ) {
+        const newViewport: powerbi.IViewport = {
+            height: Number.parseFloat(
+                settings.stateManagement.viewport.viewportHeight.value
+            ),
+            width: Number.parseFloat(
+                settings.stateManagement.viewport.viewportWidth.value
+            )
+        };
+        const isEditEligible =
+            editMode === powerbi.EditMode.Default &&
+            viewMode === powerbi.ViewMode.Edit &&
+            (newViewport.height !== viewport.height ||
+                newViewport.width !== viewport.width);
+        const isViewEligible =
+            viewMode === powerbi.ViewMode.View &&
+            (newViewport.height !== viewport.height ||
+                newViewport.width !== viewport.width);
+        if (isEditEligible || isViewEligible) {
+            logDebug('Persisting viewport to properties...');
+            persistProperties(
+                resolveObjectProperties([
+                    {
+                        objectName: 'stateManagement',
+                        properties: [
+                            {
+                                name: 'viewportHeight',
+                                value: viewport.height
+                            },
+                            {
+                                name: 'viewportWidth',
+                                value: viewport.width
+                            }
+                        ]
+                    }
+                ])
+            );
+        }
+    }
+};

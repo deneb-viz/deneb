@@ -24,6 +24,7 @@ export {
     isVisualUpdateTypeResize,
     isVisualUpdateTypeResizeEnd,
     isVisualUpdateTypeViewMode,
-    isVisualUpdateTypeVolatile
+    isVisualUpdateTypeVolatile,
+    resolveAndPersistReportViewport
 } from './update';
 export type * from './types';
