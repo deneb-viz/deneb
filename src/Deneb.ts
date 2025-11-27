@@ -46,15 +46,16 @@ import {
 import { VegaPatternFillServices } from '@deneb-viz/vega-runtime/pattern-fill';
 
 /**
- * Run to indicate that the visual has started.
- */
-logHeading(`${APPLICATION_INFORMATION_CONFIGURATION?.displayName}`);
-logHeading(`Version: ${APPLICATION_INFORMATION_CONFIGURATION?.version}`, 12);
-
-/**
  * Centralize/report developer mode from environment.
  */
 const IS_DEVELOPER_MODE = toBoolean(process.env.PBIVIZ_DEV_MODE);
+
+/**
+ * Run to indicate that the visual has started.
+ */
+IS_DEVELOPER_MODE && console.clear();
+logHeading(`${APPLICATION_INFORMATION_CONFIGURATION?.displayName}`);
+logHeading(`Version: ${APPLICATION_INFORMATION_CONFIGURATION?.version}`, 12);
 logDebug(`Developer Mode: ${IS_DEVELOPER_MODE}`);
 
 export class Deneb implements IVisual {
