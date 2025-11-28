@@ -1,4 +1,5 @@
 export * from './actions';
+export { HOTKEY_OPTIONS } from './constants';
 export {
     getNextApplyMode,
     isExportSpecCommandEnabled,

@@ -24,6 +24,7 @@ import {
     type SpecRenderMode
 } from '@deneb-viz/vega-runtime/embed';
 import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
+import { HOTKEY_BINDINGS } from './constants';
 
 /**
  * Executes a command if:
@@ -75,6 +76,12 @@ const getCleanJsonInputForPersistence = (
     }
     return clean;
 };
+
+/**
+ * Convenience method to get key binding details from configuration for the specified command.
+ */
+export const getCommandKey = (command: Command): string =>
+    HOTKEY_BINDINGS[command as keyof typeof HOTKEY_BINDINGS]?.combination || '';
 
 /**
  * Applies the changes to the specification.

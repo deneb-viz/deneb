@@ -53,6 +53,7 @@
         "@fluentui/react-icons": "^2.0.313",
         "@monaco-editor/react": "^4.6.0",
         "@uidotdev/usehooks": "^2.4.1",
+        "react-hotkeys-hook": "^5.2.0",
         "monaco-editor": "0.45.0",
         "react-dropzone": "^14.2.3",
         "zustand": "^4.5.5"

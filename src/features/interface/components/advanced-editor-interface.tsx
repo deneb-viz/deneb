@@ -16,12 +16,11 @@ import {
 import { ModalDialog } from '../../modal-dialog';
 import { useInterfaceStyles } from '..';
 import { AdvancedEditorToolbar } from '../../toolbar';
-import { KEY_BINDINGS } from '../../../../config';
-import { HOTKEY_OPTIONS } from '../../commands';
 import {
     type DenebTheme,
     EDITOR_TOOLBAR_HEIGHT,
     getDenebTheme,
+    HOTKEY_OPTIONS,
     PortalRoot,
     type Command,
     useSpecificationEditor,
@@ -42,7 +41,8 @@ import {
     handleToggleEditorTheme,
     handleOpenCreateSpecificationDialog,
     handleApplyChanges,
-    handleAutoApplyChanges
+    handleAutoApplyChanges,
+    getCommandKey
 } from '@deneb-viz/app-core';
 import { logRender } from '@deneb-viz/utils/logging';
 
@@ -150,9 +150,3 @@ export const AdvancedEditorInterface: React.FC = () => {
         </FluentProvider>
     );
 };
-
-/**
- * Convenience method to get key binding details from configuration for the specified command.
- */
-const getCommandKey = (command: Command): string =>
-    KEY_BINDINGS?.[command]?.combination || '';
