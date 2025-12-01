@@ -24,6 +24,13 @@ export const canFetchMoreFromDataview = (
 };
 
 /**
+ * Process the data view values to determine if any of them have a highlights array.
+ */
+export const doesDataViewHaveHighlights = (
+    values: powerbi.DataViewValueColumns
+) => values?.filter((v) => v.highlights).length > 0;
+
+/**
  * Test that the supplied parameters mean that the visual host has the visual in a suitable state to display the editor
  * interface.
  */

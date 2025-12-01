@@ -1,8 +1,14 @@
+import powerbi from 'powerbi-visuals-api';
+
 import {
     HIGHLIGHT_COMPARATOR_SUFFIX,
     HIGHLIGHT_FIELD_SUFFIX,
     HIGHLIGHT_STATUS_SUFFIX
 } from './constants';
+import {
+    type DataPointSelectionStatus,
+    type DataPointHighlightComparator
+} from '@deneb-viz/powerbi-compat/interactivity';
 
 /**
  * Produces a simple RegExp pattern for matching highlight fields.
@@ -19,6 +25,43 @@ export const getCrossHighlightFieldBaseMeasureName = (field: string) => {
         getHighlightRegExpAlternation()
     );
     return field.match(pattern)?.[1] || field;
+};
+
+/**
+ * For a field, determine its comparator value for highlight purposes.
+ */
+export const getHighlightComparatorValue = (
+    fieldValue: powerbi.PrimitiveValue,
+    comparatorValue: powerbi.PrimitiveValue
+): DataPointHighlightComparator => {
+    switch (true) {
+        case fieldValue == comparatorValue:
+            return 'eq';
+        case comparatorValue < fieldValue:
+            return 'lt';
+        case comparatorValue > fieldValue:
+            return 'gt';
+        default:
+            return 'neq';
+    }
+};
+
+/**
+ * For a field, determine if a highlight has been explicitly applied or not (similar to selection)
+ */
+export const getHighlightStatusValue = (
+    hasHighlights: boolean,
+    fieldValue: powerbi.PrimitiveValue,
+    comparatorValue: powerbi.PrimitiveValue
+): DataPointSelectionStatus => {
+    switch (true) {
+        case !hasHighlights:
+            return 'neutral';
+        case hasHighlights && fieldValue === null && comparatorValue !== null:
+            return 'off';
+        default:
+            return 'on';
+    }
 };
 
 /**

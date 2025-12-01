@@ -13,13 +13,17 @@ export {
 } from './constants';
 export {
     getCrossHighlightFieldBaseMeasureName,
+    getHighlightComparatorValue,
+    getHighlightStatusValue,
     getHighlightRegExpAlternation,
     isCrossHighlightComparatorField,
     isCrossHighlightField,
     isCrossHighlightStatusField
 } from './highlight';
 export {
+    getCastedPrimitiveValue,
     getDatasetFieldsInclusive,
-    getDatasetTemplateFieldsFromMetadata
+    getDatasetTemplateFieldsFromMetadata,
+    isFieldEligibleForFormatting
 } from './processing';
 export type * from './types';

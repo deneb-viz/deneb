@@ -12,9 +12,9 @@ import {
     FORMAT_FIELD_SUFFIX,
     FORMATTED_FIELD_SUFFIX,
     HIGHLIGHT_FIELD_SUFFIX,
-    type IDatasetFields
+    type IDatasetFields,
+    isFieldEligibleForFormatting
 } from '@deneb-viz/dataset/field';
-import { isDataViewFieldEligibleForFormatting } from '../../features/dataset';
 import { getResolvedVisualMetadataToDatasetField } from '@deneb-viz/json-processing';
 import { getDatasetFieldsInclusive } from '@deneb-viz/dataset/field';
 import { logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
@@ -163,7 +163,7 @@ const getMeasureFormatEntries = (
     return reduce(
         values,
         (result, v, vi) => {
-            if (isDataViewFieldEligibleForFormatting(v)) {
+            if (isFieldEligibleForFormatting(v)) {
                 result = result.concat([
                     {
                         column: {

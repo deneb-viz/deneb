@@ -18,6 +18,7 @@ export {
 export { persistProperties, resolveObjectProperties } from './persistence';
 export {
     canFetchMoreFromDataview,
+    doesDataViewHaveHighlights,
     getCategoricalDataViewFromOptions,
     getCategoricalRowCount,
     isAdvancedEditor,

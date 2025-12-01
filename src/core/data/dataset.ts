@@ -7,12 +7,6 @@ import range from 'lodash/range';
 import reduce from 'lodash/reduce';
 
 import {
-    castPrimitiveValue,
-    getHighlightStatus,
-    resolveHighlightComparator,
-    resolveHighlightStatus
-} from './dataView';
-import {
     getDatasetFieldEntries,
     getDatasetFields,
     getEncodedFieldName
@@ -24,6 +18,9 @@ import {
     type AugmentedMetadataField,
     DRILL_FIELD_FLAT,
     DRILL_FIELD_NAME,
+    getCastedPrimitiveValue,
+    getHighlightComparatorValue,
+    getHighlightStatusValue,
     HIGHLIGHT_COMPARATOR_SUFFIX,
     HIGHLIGHT_FIELD_SUFFIX,
     HIGHLIGHT_STATUS_SUFFIX
@@ -47,6 +44,7 @@ import {
     isCrossHighlightPropSet,
 } from '@deneb-viz/powerbi-compat/interactivity';
 import {
+    doesDataViewHaveHighlights,
     getCategoricalRowCount,
     getVisualSelectionManager
 } from '@deneb-viz/powerbi-compat/visual-host';
@@ -70,7 +68,7 @@ const getDataRow = (
     return reduce(
         fields,
         (row, f, fi) => {
-            const rawValue = castPrimitiveValue(f, values[fi][rowIndex]);
+            const rawValue = getCastedPrimitiveValue(f, values[fi][rowIndex]);
             const fieldName = getEncodedFieldName(f.column.displayName);
             const isDataset = f?.column.roles?.[DATASET_DEFAULT_NAME];
             const isDrilldown =
@@ -84,12 +82,12 @@ const getDataRow = (
                     isCrossHighlight && f.source === 'values';
                 row[fieldName] = rawValue;
                 if (shouldHighlight) {
-                    row[fieldHighlightStatus] = resolveHighlightStatus(
+                    row[fieldHighlightStatus] = getHighlightStatusValue(
                         hasHighlights,
                         rawValue,
                         rawValueOriginal
                     );
-                    row[fieldHighlightComparator] = resolveHighlightComparator(
+                    row[fieldHighlightComparator] = getHighlightComparatorValue(
                         rawValue,
                         rawValueOriginal
                     );
@@ -138,7 +136,7 @@ export const getMappedDataset = (
         try {
             logTimeStart('getMappedDataset');
             const isCrossFilter = isCrossFilterPropSet({ enableSelection });
-            const hasHighlights = getHighlightStatus(dvValues);
+            const hasHighlights = doesDataViewHaveHighlights(dvValues);
             const columns = getDatasetFieldEntries(
                 dvCategories,
                 dvValues,

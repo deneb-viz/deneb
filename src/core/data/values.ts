@@ -6,12 +6,11 @@ import PrimitiveValue = powerbi.PrimitiveValue;
 
 import reduce from 'lodash/reduce';
 
-import { getVegaSettings } from '../vega';
-import { getHighlightStatus } from './dataView';
-import { isDataViewFieldEligibleForFormatting } from '../../features/dataset';
 import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
 import { logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
 import { isCrossHighlightPropSet } from '@deneb-viz/powerbi-compat/interactivity';
+import { doesDataViewHaveHighlights } from '@deneb-viz/powerbi-compat/visual-host';
+import { isFieldEligibleForFormatting } from '@deneb-viz/dataset/field';
 
 /**
  * Enumerate all relevant areas of the data view to get an array of all
@@ -53,7 +52,7 @@ const getFormattingStringEntries = (
     const entries = reduce(
         values || [],
         (acc, v: DataViewValueColumn) => {
-            if (isDataViewFieldEligibleForFormatting(v)) {
+            if (isFieldEligibleForFormatting(v)) {
                 const values = v.values;
                 const formatStrings = values.map((vv, vvi) =>
                     getFormatStringForValueByIndex(v, vvi)
@@ -99,7 +98,7 @@ const getHighlightEntries = (
     const entries =
         (values || [])?.map((v: DataViewValueColumn) =>
             isCrossHighlightPropSet({ enableHighlight }) &&
-            getHighlightStatus(values)
+            doesDataViewHaveHighlights(values)
                 ? v.highlights
                 : v.values
         ) || [];
@@ -120,7 +119,7 @@ const getValueEntries = (
     logTimeStart('getValueEntries');
     const entries = (values || [])?.map((v: DataViewValueColumn) => {
         const useHighlights =
-            getHighlightStatus(values) &&
+            doesDataViewHaveHighlights(values) &&
             !isCrossHighlightPropSet({ enableHighlight });
         return useHighlights ? v.highlights : v.values;
     });
