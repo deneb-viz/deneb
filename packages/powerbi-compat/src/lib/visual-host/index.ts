@@ -17,7 +17,9 @@ export {
 } from './i18n';
 export { persistProperties, resolveObjectProperties } from './persistence';
 export {
+    canFetchMoreFromDataview,
     getCategoricalDataViewFromOptions,
+    getCategoricalRowCount,
     isAdvancedEditor,
     isVisualUpdateEventVolatile,
     isVisualUpdateTypeData,

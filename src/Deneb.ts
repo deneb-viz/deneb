@@ -12,7 +12,6 @@ import { createRoot } from 'react-dom/client';
 import App from './components/App';
 
 import { getState } from './store';
-import { canFetchMoreFromDataview, getRowCount } from './core/data/dataView';
 import { getMappedDataset } from './core/data/dataset';
 import { handlePropertyMigration } from './core/utils/versioning';
 import { VegaExtensibilityServices } from './features/vega-extensibility';
@@ -24,7 +23,9 @@ import {
 } from '@deneb-viz/powerbi-compat/properties';
 import { updateFieldTracking } from './features/json-processing';
 import {
+    canFetchMoreFromDataview,
     getCategoricalDataViewFromOptions,
+    getCategoricalRowCount,
     getLocale,
     getLocalizationManager,
     getVisualHost,
@@ -160,7 +161,7 @@ export class Deneb implements IVisual {
                 this.settings,
                 options?.dataViews?.[0]?.metadata
             );
-            const rowsLoaded = getRowCount(categorical);
+            const rowsLoaded = getCategoricalRowCount(categorical);
             // If first segment, we test and set state accordingly for user feedback
             if (
                 options.operationKind === VisualDataChangeOperationKind.Create

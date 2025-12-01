@@ -10,6 +10,20 @@ import {
 import { persistProperties, resolveObjectProperties } from './persistence';
 
 /**
+ * Determines whether the visual can fetch more data, based on the feature switch and the corresponding flag in the store
+ * (set by data processing methods).
+ */
+export const canFetchMoreFromDataview = (
+    settings: VisualFormattingSettingsModel,
+    metadata: powerbi.DataViewMetadata
+) => {
+    return (
+        (metadata?.segment && settings.dataLimit.loading.override.value) ||
+        false
+    );
+};
+
+/**
  * Test that the supplied parameters mean that the visual host has the visual in a suitable state to display the editor
  * interface.
  */
@@ -29,6 +43,16 @@ export const isAdvancedEditor = (
 export const getCategoricalDataViewFromOptions = (
     options: powerbi.extensibility.visual.VisualUpdateOptions
 ) => options?.dataViews?.[0]?.categorical || {};
+
+/**
+ * Checks for valid `categorical` dataview and provides count of values.
+ */
+export const getCategoricalRowCount = (
+    categorical: powerbi.DataViewCategorical
+) =>
+    categorical?.categories?.[0]?.values?.length ||
+    categorical?.values?.[0]?.values?.length ||
+    0;
 
 /**
  * Confirms if the visual update options contain what we consider a volatile change to the visual and its data.

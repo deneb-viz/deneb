@@ -9,7 +9,6 @@ import reduce from 'lodash/reduce';
 import {
     castPrimitiveValue,
     getHighlightStatus,
-    getRowCount,
     resolveHighlightComparator,
     resolveHighlightStatus
 } from './dataView';
@@ -45,9 +44,12 @@ import { getHashValue } from '@deneb-viz/utils/crypto';
 import {
     getDataPointCrossFilterStatus,
     isCrossFilterPropSet,
-    isCrossHighlightPropSet
+    isCrossHighlightPropSet,
 } from '@deneb-viz/powerbi-compat/interactivity';
-import { getVisualSelectionManager } from '@deneb-viz/powerbi-compat/visual-host';
+import {
+    getCategoricalRowCount,
+    getVisualSelectionManager
+} from '@deneb-viz/powerbi-compat/visual-host';
 import { logError, logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
 
 /**
@@ -125,7 +127,7 @@ export const getMappedDataset = (
     enableSelection: boolean,
     enableHighlight: boolean
 ): IDataset => {
-    const rowsLoaded = getRowCount(categorical);
+    const rowsLoaded = getCategoricalRowCount(categorical);
     const empty = getEmptyDataset();
     const dvCategories = categorical?.categories;
     const dvValues = categorical?.values;
