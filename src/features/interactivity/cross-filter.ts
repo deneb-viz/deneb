@@ -6,11 +6,7 @@ import * as Vega from 'vega';
 import { getVegaSettings } from '../../core/vega';
 import { hidePowerBiTooltip } from './tooltip';
 import { getState } from '../../store';
-import {
-    getIdentitiesFromData,
-    getSelectorsFromData,
-    resolveDataFromItem
-} from './data-point';
+import { getIdentitiesFromData, getSelectorsFromData } from './data-point';
 import { CrossFilterOptions, CrossFilterResult } from './types';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { type DatasetValueRow } from '@deneb-viz/dataset/datum';
@@ -20,6 +16,7 @@ import {
 } from '@deneb-viz/powerbi-compat/visual-host';
 import { isCrossFilterPropSet } from '@deneb-viz/powerbi-compat/interactivity';
 import { logDebug } from '@deneb-viz/utils/logging';
+import { resolveDatumFromItem } from '@deneb-viz/vega-runtime/provenance';
 
 /**
  * For the supplied list of identities, ensure that the selection manager is
@@ -241,7 +238,7 @@ const getCrossFilterIdentitiesSimple = (
         '[pbiCrossFilterApply] deriving identities for simple cross-filtering...'
     );
     try {
-        const data = resolveDataFromItem(item);
+        const data = resolveDatumFromItem(item);
         const identities = getIdentitiesFromData(data);
         logDebug('[pbiCrossFilterApply] simple cross-filtering identities', {
             data,

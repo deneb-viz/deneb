@@ -9,7 +9,6 @@ import pick from 'lodash/pick';
 import pickBy from 'lodash/pickBy';
 import reduce from 'lodash/reduce';
 
-import { IVegaViewDatum } from '../../core/vega';
 import { getState } from '../../store';
 import { getDataset } from '../../core/data/dataset';
 import { getCategoryColumns } from '../../core/data/dataView';
@@ -21,12 +20,13 @@ import {
 } from '@deneb-viz/dataset/field';
 import { type DatasetValueRow } from '@deneb-viz/dataset/datum';
 import { getVisualSelectionIdBuilder } from '@deneb-viz/powerbi-compat/visual-host';
+import { type VegaDatum } from '@deneb-viz/vega-runtime/provenance';
 
 /**
  * Confirm that each datum in a datset contains a reconcilable identifier for
  * selection purposes.
  */
-const allDataHasIdentities = (data: IVegaViewDatum[]) =>
+const allDataHasIdentities = (data: VegaDatum[]) =>
     data?.filter((d) =>
         Object.prototype.hasOwnProperty.call(d, ROW_INDEX_FIELD_NAME)
     )?.length === data?.length;
@@ -77,9 +77,7 @@ export const getDatasetFieldsBySelectionKeys = (keys: string[] = []) =>
  * Returns single item array containing valid `ISelectionId` (or `null` if a
  * selection ID cannot be resolved).
  */
-export const getIdentitiesFromData = (
-    data: IVegaViewDatum[]
-): ISelectionId[] => {
+export const getIdentitiesFromData = (data: VegaDatum[]): ISelectionId[] => {
     const { dataset } = getState();
     switch (true) {
         case !data: {
@@ -119,7 +117,7 @@ export const getIdentitiesFromData = (
 /**
  * Get array of all data row indices for a supplied dataset.
  */
-const getIdentityIndices = (data: IVegaViewDatum[]): number[] =>
+const getIdentityIndices = (data: VegaDatum[]): number[] =>
     data?.map((d) => d?.[ROW_INDEX_FIELD_NAME]);
 
 /**
@@ -128,7 +126,7 @@ const getIdentityIndices = (data: IVegaViewDatum[]): number[] =>
  */
 const getMatchedValues = (
     fields: IDatasetFields,
-    data: IVegaViewDatum[]
+    data: VegaDatum[]
 ): DatasetValueRow[] => {
     const resolvedMd = resolveDatumForFields(fields, data?.[0]);
     const matchedRows = getValues().filter(matches(resolvedMd));
@@ -141,9 +139,7 @@ const getMatchedValues = (
 /**
  * For the supplied data, extract all `SelectionId`s into an array.
  */
-export const getSelectorsFromData = (
-    data: IVegaViewDatum[] | DatasetValueRow[]
-) =>
+export const getSelectorsFromData = (data: VegaDatum[] | DatasetValueRow[]) =>
     getValuesByIndices(getIdentityIndices(data)).map(
         (v) => v?.[ROW_IDENTITY_FIELD_NAME]
     );
@@ -171,7 +167,7 @@ const getValuesByIndices = (indices: number[]) =>
  */
 const getValuesForField = (
     field: IDatasetFields,
-    data: IVegaViewDatum[]
+    data: VegaDatum[]
 ): DatasetValueRow[] => {
     const matches = getMatchedValues(field, data);
     if (matches?.length > 0) {
@@ -188,10 +184,7 @@ const getValuesForField = (
  * the datum that do not match our desired fields, so we're left with their
  * metadata.
  */
-const resolveDatumForFields = (
-    fields: IDatasetFields,
-    datum: IVegaViewDatum
-) => {
+const resolveDatumForFields = (fields: IDatasetFields, datum: VegaDatum) => {
     const reducedDatum = <DatasetValueRow>pick(datum, keys(fields)) || null;
     return reduce(
         reducedDatum,
@@ -201,21 +194,6 @@ const resolveDatumForFields = (
         },
         <DatasetValueRow>{}
     );
-};
-
-/**
- * Take an item from a Vega event and attempt to resolve data that we can use
- * to attempt to apply interactivity to.
- */
-export const resolveDataFromItem = (item: any): IVegaViewDatum[] => {
-    switch (true) {
-        case item === undefined:
-            return null;
-        case item?.context?.data?.facet?.values?.value:
-            return item?.context?.data?.facet?.values?.value?.slice();
-        default:
-            return [{ ...item?.datum }];
-    }
 };
 
 /**

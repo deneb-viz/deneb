@@ -12,11 +12,10 @@ import toNumber from 'lodash/toNumber';
 import toString from 'lodash/toString';
 
 import { getObjectFormattedAsText } from '../json-processing';
-import { getVegaSettings, IVegaViewDatum } from '../../core/vega';
+import { getVegaSettings } from '../../core/vega';
 import {
     getDatasetFieldsBySelectionKeys,
-    getIdentitiesFromData,
-    resolveDataFromItem
+    getIdentitiesFromData
 } from './data-point';
 import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
 import {
@@ -28,6 +27,10 @@ import {
     getVisualHost
 } from '@deneb-viz/powerbi-compat/visual-host';
 import { stringifyPruned } from '@deneb-viz/utils/object';
+import {
+    resolveDatumFromItem,
+    type VegaDatum
+} from '@deneb-viz/vega-runtime/provenance';
 
 /**
  * Convenience constant for tooltip events, as it's required by Power BI.
@@ -46,7 +49,7 @@ const TOOLTIP_RESERVED_WORDS = [ROW_IDENTITY_FIELD_NAME, ROW_KEY_FIELD_NAME];
  */
 const extractTooltipDataItemsFromObject = (
     tooltip: object,
-    autoFormatFields: IVegaViewDatum
+    autoFormatFields: VegaDatum
 ): VisualTooltipDataItem[] => {
     const autoFormatMetadata = getDatasetFieldsBySelectionKeys(
         keys(autoFormatFields)
@@ -160,7 +163,7 @@ export const resolveCoordinates = (event: MouseEvent): [number, number] => [
  * For a given datum, resolve it to an array of keys and values. Additionally, we can (optionally) ensure that the
  * `interactivityReservedWords` are stripped out so that we can get actual fields and values assigned to a datum.
  */
-const resolveDatumToArray = (obj: IVegaViewDatum, filterReserved = true) =>
+const resolveDatumToArray = (obj: VegaDatum, filterReserved = true) =>
     Object.entries({ ...obj }).filter(
         ([k]) => (filterReserved && !isTooltipReservedWord(k)) || k
     );
@@ -175,7 +178,7 @@ const resolveTooltipContent =
     (handler: any, event: MouseEvent, item: any) => {
         const coordinates = resolveCoordinates(event);
         if (item && item.tooltip) {
-            const datum = resolveDataFromItem(item);
+            const datum = resolveDatumFromItem(item);
             const tooltip = resolveTooltipItem(item.tooltip);
             const autoFormatFields = getFieldsEligibleForAutoFormat(tooltip);
             const dataItems = extractTooltipDataItemsFromObject(
