@@ -5,13 +5,13 @@ import isEqual from 'lodash/isEqual';
 import omit from 'lodash/omit';
 
 import { getState } from '../../store';
-import { getVegaSettings } from '../../core/vega';
 
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
 import { SpecificationComparisonOptions } from '@deneb-viz/json-processing/spec-processing';
 import { type DatasetValueRow } from '@deneb-viz/dataset/datum';
 import { logDebug, logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
+import { getVisualSettings } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Patch the data array in a spec to ensure that values from the visual
@@ -140,9 +140,13 @@ export const isUnversionedSpec = () => !isNewSpec() && !isVersionedSpec();
 const isNewSpec = () => {
     const defaults = DEFAULTS.vega;
     const {
-        jsonSpec: { value: jsonSpec },
-        jsonConfig: { value: jsonConfig }
-    } = getVegaSettings().output;
+        vega: {
+            output: {
+                jsonSpec: { value: jsonSpec },
+                jsonConfig: { value: jsonConfig }
+            }
+        }
+    } = getVisualSettings();
     return jsonSpec === defaults.jsonSpec && jsonConfig === defaults.jsonConfig;
 };
 

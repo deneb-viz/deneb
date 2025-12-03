@@ -1,10 +1,10 @@
 import { ScenegraphEvent, Item } from 'vega';
 
-import { getVegaSettings } from '../../core/vega';
 import { getIdentitiesFromData } from './data-point';
 import {
     getVisualInteractionStatus,
-    getVisualSelectionManager
+    getVisualSelectionManager,
+    getVisualSettings
 } from '@deneb-viz/powerbi-compat/visual-host';
 import { resolveDatumFromItem } from '@deneb-viz/vega-runtime/provenance';
 
@@ -39,9 +39,11 @@ export const handleContextMenuEvent = (event: ScenegraphEvent, item: Item) => {
  */
 const isContextMenuPropSet = () => {
     const {
-        interactivity: {
-            enableContextMenu: { value: enableContextMenu }
+        vega: {
+            interactivity: {
+                enableContextMenu: { value: enableContextMenu }
+            }
         }
-    } = getVegaSettings();
+    } = getVisualSettings();
     return (enableContextMenu && getVisualInteractionStatus()) || false;
 };

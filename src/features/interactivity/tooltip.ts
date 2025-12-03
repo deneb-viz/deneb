@@ -12,7 +12,6 @@ import toNumber from 'lodash/toNumber';
 import toString from 'lodash/toString';
 
 import { getObjectFormattedAsText } from '../json-processing';
-import { getVegaSettings } from '../../core/vega';
 import {
     getDatasetFieldsBySelectionKeys,
     getIdentitiesFromData
@@ -24,7 +23,8 @@ import {
 } from '@deneb-viz/dataset/field';
 import {
     getI18nValue,
-    getVisualHost
+    getVisualHost,
+    getVisualSettings
 } from '@deneb-viz/powerbi-compat/visual-host';
 import { stringifyPruned } from '@deneb-viz/utils/object';
 import {
@@ -187,10 +187,12 @@ const resolveTooltipContent =
             );
             const identities = getIdentitiesFromData(datum);
             const {
-                interactivity: {
-                    tooltipDelay: { value: tooltipDelay }
+                vega: {
+                    interactivity: {
+                        tooltipDelay: { value: tooltipDelay }
+                    }
                 }
-            } = getVegaSettings();
+            } = getVisualSettings();
             const waitFor = (event.ctrlKey && tooltipDelay) || 0;
             const options = {
                 coordinates,

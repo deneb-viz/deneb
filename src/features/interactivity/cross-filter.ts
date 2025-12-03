@@ -3,7 +3,6 @@ import ISelectionId = powerbi.visuals.ISelectionId;
 
 import * as Vega from 'vega';
 
-import { getVegaSettings } from '../../core/vega';
 import { hidePowerBiTooltip } from './tooltip';
 import { getState } from '../../store';
 import { getIdentitiesFromData, getSelectorsFromData } from './data-point';
@@ -12,7 +11,8 @@ import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { type DatasetValueRow } from '@deneb-viz/dataset/datum';
 import {
     getI18nValue,
-    getVisualSelectionManager
+    getVisualSelectionManager,
+    getVisualSettings
 } from '@deneb-viz/powerbi-compat/visual-host';
 import { isCrossFilterPropSet } from '@deneb-viz/powerbi-compat/interactivity';
 import { logDebug } from '@deneb-viz/utils/logging';
@@ -307,9 +307,11 @@ const isSimpleSelectionMode = (options?: CrossFilterOptions) =>
  */
 const getSelectionLimitSize = (options?: CrossFilterOptions) => {
     const {
-        interactivity: {
-            selectionMaxDataPoints: { value: selectionMaxDataPoints }
+        vega: {
+            interactivity: {
+                selectionMaxDataPoints: { value: selectionMaxDataPoints }
+            }
         }
-    } = getVegaSettings();
+    } = getVisualSettings();
     return ((options && options.limit) || null) ?? selectionMaxDataPoints;
 };
