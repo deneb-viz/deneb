@@ -1,14 +1,11 @@
 import * as Vega from 'vega';
 import * as VegaLite from 'vega-lite';
 import cloneDeep from 'lodash/cloneDeep';
-import isEqual from 'lodash/isEqual';
-import omit from 'lodash/omit';
 
 import { getState } from '../../store';
 
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
-import { SpecificationComparisonOptions } from '@deneb-viz/json-processing/spec-processing';
 import { type DatasetValueRow } from '@deneb-viz/dataset/datum';
 import { logDebug, logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
 import { getVisualSettings } from '@deneb-viz/powerbi-compat/visual-host';
@@ -112,7 +109,7 @@ export const getSpecificationForVisual = () => {
      * #369: if we don't clone values to a unique object, they get mutated in
      * the store and this breaks the dataset until we re-initialize.
      */
-    const specValues = cloneDeep(values);
+    const specValues = cloneDeep(values); // structuredClone doesn't work as intended here, so investigate later once we have sorted selectors out
     switch (provider) {
         case 'vega':
             return <Vega.Spec>(
@@ -148,28 +145,6 @@ const isNewSpec = () => {
         }
     } = getVisualSettings();
     return jsonSpec === defaults.jsonSpec && jsonConfig === defaults.jsonConfig;
-};
-
-/**
- * We only need to parse a specification if key information changes between
- * events. This is a simple equality check against that key information.
- *
- * @privateRemarks current events where a spec may need to be checked and re-
- * parsed if necessary are:
- *  - dataset updated (in dataset slice)
- *  - dataset selectors updated (in dataset slice)
- *  - visual properties change during update (spec, config, provider, viewport)
- *      and dataset has been processed
- */
-export const isSpecificationVolatile = (
-    prev: SpecificationComparisonOptions,
-    next: SpecificationComparisonOptions
-) => {
-    const omitList = ['datasetHash', 'values'];
-    const newPrev = omit(prev, omitList);
-    const newNext = omit(next, omitList);
-    logDebug('isSpecificationVolatile', { newPrev, newNext });
-    return !isEqual(newPrev, newNext);
 };
 
 /**
