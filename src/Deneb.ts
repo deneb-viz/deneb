@@ -16,9 +16,7 @@ import { getMappedDataset } from './core/data/dataset';
 import { handlePropertyMigration } from './core/utils/versioning';
 import { VegaExtensibilityServices } from './features/vega-extensibility';
 import {
-    VisualFormattingSettingsModel,
     VisualFormattingSettingsService,
-    getVisualFormattingModel,
     getVisualFormattingService
 } from '@deneb-viz/powerbi-compat/properties';
 import { updateFieldTracking } from './features/json-processing';
@@ -29,6 +27,7 @@ import {
     getLocale,
     getLocalizationManager,
     getVisualHost,
+    getVisualSettings,
     I18nServices,
     resolveAndPersistReportViewport,
     setRenderingFailed,
@@ -60,7 +59,6 @@ logHeading(`Version: ${APPLICATION_INFORMATION_CONFIGURATION?.version}`, 12);
 logDebug(`Developer Mode: ${IS_DEVELOPER_MODE}`);
 
 export class Deneb implements IVisual {
-    private settings: VisualFormattingSettingsModel;
     #host: powerbi.extensibility.visual.IVisualHost;
     #applicationWrapper: HTMLElement;
     #root: ReturnType<typeof createRoot>;
@@ -93,10 +91,6 @@ export class Deneb implements IVisual {
         // Handle main update flow
         try {
             logTimeStart('update');
-            // Parse the settings for use in the visual
-            this.settings = getVisualFormattingModel(options?.dataViews?.[0]);
-            this.settings.resolveDeveloperSettings(IS_DEVELOPER_MODE);
-            // Handle the update options and dispatch to store as needed
             this.resolveUpdateOptions(options);
             logTimeEnd('update');
             return;
@@ -110,19 +104,19 @@ export class Deneb implements IVisual {
     private resolveUpdateOptions(options: VisualUpdateOptions) {
         logDebug('Resolving update options...', { options });
         logTimeStart('resolveUpdateOptions');
-        VisualHostServices.update(options);
+        VisualHostServices.update(options, IS_DEVELOPER_MODE);
         // Signal we've begun rendering
         setRenderingStarted();
         this.resolveLocale();
-        resolveAndPersistReportViewport(options, this.settings);
         // Provide intial update options to store
         const { setVisualUpdate } = getState();
+        const settings = getVisualSettings();
         setVisualUpdate({
             options,
-            settings: this.settings
+            settings
         });
         // Perform any necessary property migrations
-        handlePropertyMigration(this.settings);
+        handlePropertyMigration(settings);
         // Data change or re-processing required?
         this.resolveDataset(options);
         const {
@@ -140,16 +134,17 @@ export class Deneb implements IVisual {
      */
     private resolveDataset(options: VisualUpdateOptions) {
         let fetchSuccess = false;
+        const settings = getVisualSettings();
+        const {
+            vega: {
+                interactivity: {
+                    enableHighlight: { value: enableHighlight },
+                    enableSelection: { value: enableSelection }
+                }
+            }
+        } = settings;
         const {
             processing: { shouldProcessDataset },
-            visualSettings: {
-                vega: {
-                    interactivity: {
-                        enableHighlight: { value: enableHighlight },
-                        enableSelection: { value: enableSelection }
-                    }
-                }
-            },
             updateDataset,
             updateDatasetProcessingStage
         } = getState();
@@ -158,7 +153,7 @@ export class Deneb implements IVisual {
             logDebug('Visual dataset has changed and should be re-processed.');
             logTimeStart('processDataset');
             const canFetchMore = canFetchMoreFromDataview(
-                this.settings,
+                settings,
                 options?.dataViews?.[0]?.metadata
             );
             const rowsLoaded = getCategoricalRowCount(categorical);
@@ -207,8 +202,9 @@ export class Deneb implements IVisual {
      */
     private resolveLocale() {
         logDebug('Resolving locale options...');
+        const settings = getVisualSettings();
         const locale = IS_DEVELOPER_MODE
-            ? (this.settings.developer.localization.locale.value as string)
+            ? (settings.developer.localization.locale.value as string)
             : getLocale();
         logDebug('Locale resolved.', { locale });
         I18nServices.update(locale);
@@ -219,15 +215,16 @@ export class Deneb implements IVisual {
      */
     private async updateTracking() {
         logDebug('[Visual Update] Updating tracking and tokens...');
+        const settings = getVisualSettings();
         const {
-            fieldUsage: { dataset: trackedFieldsCurrent },
-            visualSettings: {
-                vega: {
-                    output: {
-                        jsonSpec: { value: spec }
-                    }
+            vega: {
+                output: {
+                    jsonSpec: { value: spec }
                 }
             }
+        } = settings;
+        const {
+            fieldUsage: { dataset: trackedFieldsCurrent }
         } = getState();
         updateFieldTracking(spec, trackedFieldsCurrent);
     }
@@ -252,9 +249,9 @@ export class Deneb implements IVisual {
      */
     public getFormattingModel(): FormattingModel {
         logDebug('[start] getformattingModel');
-        const model = getVisualFormattingService().buildFormattingModel(
-            this.settings
-        );
+        const settings = getVisualSettings();
+        const model =
+            getVisualFormattingService().buildFormattingModel(settings);
         logDebug('[return] getFormattingModel', { model });
         return model;
     }

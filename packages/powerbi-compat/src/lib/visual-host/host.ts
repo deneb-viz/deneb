@@ -1,11 +1,17 @@
 import { logHost } from '@deneb-viz/utils/logging';
 import powerbi from 'powerbi-visuals-api';
+import {
+    getVisualFormattingModel,
+    VisualFormattingSettingsModel
+} from '../properties';
+import { resolveAndPersistReportViewport } from './update';
 
 let services: powerbi.extensibility.visual.VisualConstructorOptions;
 let events: powerbi.extensibility.IVisualEventService;
 let selectionIdBuilder: () => powerbi.visuals.ISelectionIdBuilder;
 let selectionManager: powerbi.extensibility.ISelectionManager;
 let visualUpdateOptions: powerbi.extensibility.visual.VisualUpdateOptions;
+let settings: VisualFormattingSettingsModel;
 
 /**
  * Use to bind the visual host services to this API for use in the application lifecycle.
@@ -23,8 +29,14 @@ export const VisualHostServices = {
         selectionIdBuilder = service.host.createSelectionIdBuilder;
         selectionManager = service.host.createSelectionManager();
     },
-    update: (options: powerbi.extensibility.visual.VisualUpdateOptions) => {
+    update: (
+        options: powerbi.extensibility.visual.VisualUpdateOptions,
+        isDeveloperMode = false
+    ) => {
         visualUpdateOptions = options;
+        settings = getVisualFormattingModel(options?.dataViews?.[0]);
+        settings.resolveDeveloperSettings(isDeveloperMode);
+        resolveAndPersistReportViewport(options, settings);
     }
 };
 
@@ -44,6 +56,11 @@ export const getVisualInteractionStatus = () =>
  */
 export const getVisualObjects = () =>
     visualUpdateOptions?.dataViews?.[0]?.metadata?.objects;
+
+/**
+ * Get the current visual settings as resolved from the data view.
+ */
+export const getVisualSettings = () => settings;
 
 /**
  * The visual host's selection ID builder.

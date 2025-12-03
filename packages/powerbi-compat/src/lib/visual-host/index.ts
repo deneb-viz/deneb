@@ -4,6 +4,7 @@ export {
     getVisualInteractionStatus,
     getVisualSelectionIdBuilder,
     getVisualSelectionManager,
+    getVisualSettings,
     launchUrl,
     setRenderingFailed,
     setRenderingFinished,
