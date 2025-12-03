@@ -7,7 +7,6 @@ import Editor, { loader, OnChange, OnMount } from '@monaco-editor/react';
 import store, { getState } from '../../../store';
 import { PREVIEW_PANE_TOOLBAR_BUTTON_PADDING } from '../../../constants';
 import { useInterfaceStyles } from '../../interface';
-import { JsonEditorStatusBar } from './json-editor-status-bar';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { updateFieldTracking } from '../../json-processing';
 
@@ -17,6 +16,7 @@ import {
     monaco,
     PREVIEW_PANE_TOOLBAR_MIN_SIZE,
     setupMonacoWorker,
+    SpecificationEditorStatusBar,
     useSpecificationEditor
 } from '@deneb-viz/app-core';
 import { ptToPx } from '@deneb-viz/utils/dom';
@@ -195,7 +195,7 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
                     wordWrap: wordWrap ? 'on' : 'off'
                 }}
             />
-            <JsonEditorStatusBar
+            <SpecificationEditorStatusBar
                 position={status.cursor}
                 selectedText={status.selectedText}
             />

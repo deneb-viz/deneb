@@ -1,18 +1,14 @@
-import React from 'react';
 import { Caption1, makeStyles, tokens } from '@fluentui/react-components';
 
-import {
-    monaco,
-    PREVIEW_PANE_TOOLBAR_MIN_SIZE,
-    ProviderDetail,
-    StatusBarContainer,
-    ToolbarButtonStandard,
-    TrackingSyncStatus
-} from '@deneb-viz/app-core';
 import { logRender } from '@deneb-viz/utils/logging';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import { monaco } from '../../../components/code-editor/monaco-integration';
+import { PREVIEW_PANE_TOOLBAR_MIN_SIZE } from '../../../lib';
+import { StatusBarContainer, ToolbarButtonStandard } from '../../../components/ui';
+import { ProviderDetail } from './provider-detail';
+import { TrackingSyncStatus } from './tracking-sync-status';
 
-interface IStatusBarProps {
+type SpecificationEditorStatusBarProps = {
     position: monaco.Position;
     selectedText: string;
 }
@@ -57,10 +53,10 @@ const useStatusStyles = makeStyles({
 /**
  * Represents the status bar at the bottom of the editor.
  */
-export const JsonEditorStatusBar: React.FC<IStatusBarProps> = ({
+export const SpecificationEditorStatusBar = ({
     position,
     selectedText
-}) => {
+}: SpecificationEditorStatusBarProps) => {
     const classes = useStatusStyles();
     const row = position.lineNumber;
     const column = position.column;
