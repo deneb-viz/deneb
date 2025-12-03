@@ -87,6 +87,7 @@ Key toggles you'll likely set in `.env`:
 - `LOG_LEVEL`: numeric logging level used during dev/validation.
 - `ZUSTAND_DEV_TOOLS`: enable Redux/Zustand devtools if you have the extension.
 - `PBIVIZ_DEV_MODE`: enable developer-specific visual behaviors.
+- `PBIVIZ_DEV_OVERLAY`: enable debugging overlay to view most recent visual update information (typically used for quick debugging of this info in Power BI Desktop, where developer tools are unavailable).
 
 Validate your setup any time with:
 

@@ -1,71 +1,47 @@
 {
-  "$schema": "https://turbo.build/schema.json",
-  "ui": "stream",
-  "globalEnv": [
-    "LOG_LEVEL",
-    "ZUSTAND_DEV_TOOLS",
-    "PBIVIZ_DEV_MODE",
-    "ALLOW_EXTERNAL_URI"
-  ],
-  "tasks": {
-    "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**",
-        "dist/**"
-      ]
-    },
-    "dev": {
-      "cache": false,
-      "persistent": true,
-      "outputs": [
-        "dist/**"
-      ]
-    },
-    "eslint": {
-      "dependsOn": [
-        "^eslint"
-      ]
-    },
-    "test": {
-      "outputs": [
-        "coverage/**"
-      ]
-    },
-    "test:ci": {},
-    "test:watch": {
-      "outputs": [
-        "coverage/**"
-      ],
-      "cache": false
-    },
-    "//#webpack:start": {
-      "cache": false,
-      "persistent": true,
-      "dependsOn": [
-        "^build"
-      ]
-    },
-    "//#webpack:build": {
-      "cache": false,
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        ".tmp/**"
-      ]
-    },
-    "//#webpack:package": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "dist/**",
-        ".tmp/**"
-      ]
+    "$schema": "https://turbo.build/schema.json",
+    "ui": "stream",
+    "globalEnv": [
+        "LOG_LEVEL",
+        "ZUSTAND_DEV_TOOLS",
+        "PBIVIZ_DEV_MODE",
+        "PBIVIZ_DEV_OVERLAY",
+        "ALLOW_EXTERNAL_URI"
+    ],
+    "tasks": {
+        "build": {
+            "dependsOn": ["^build"],
+            "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+        },
+        "dev": {
+            "cache": false,
+            "persistent": true,
+            "outputs": ["dist/**"]
+        },
+        "eslint": {
+            "dependsOn": ["^eslint"]
+        },
+        "test": {
+            "outputs": ["coverage/**"]
+        },
+        "test:ci": {},
+        "test:watch": {
+            "outputs": ["coverage/**"],
+            "cache": false
+        },
+        "//#webpack:start": {
+            "cache": false,
+            "persistent": true,
+            "dependsOn": ["^build"]
+        },
+        "//#webpack:build": {
+            "cache": false,
+            "dependsOn": ["^build"],
+            "outputs": [".tmp/**"]
+        },
+        "//#webpack:package": {
+            "dependsOn": ["^build"],
+            "outputs": ["dist/**", ".tmp/**"]
+        }
     }
-  }
 }

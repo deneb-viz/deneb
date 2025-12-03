@@ -162,6 +162,9 @@ function getCommonConfig(options = {}) {
                 'process.env.PBIVIZ_DEV_MODE': JSON.stringify(
                     process.env.PBIVIZ_DEV_MODE ?? ''
                 ),
+                'process.env.PBIVIZ_DEV_OVERLAY': JSON.stringify(
+                    process.env.PBIVIZ_DEV_OVERLAY ?? ''
+                ),
                 'process.env.ALLOW_EXTERNAL_URI': JSON.stringify(
                     process.env.ALLOW_EXTERNAL_URI ?? ''
                 )

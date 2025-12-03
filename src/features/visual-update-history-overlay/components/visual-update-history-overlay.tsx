@@ -1,21 +1,18 @@
-import React from 'react';
-import { shallow } from 'zustand/shallow';
-import store from '../../../store';
-import { FEATURES } from '../../../../config';
+import { toBoolean } from '@deneb-viz/utils/type-conversion';
+import { useDenebState } from '@deneb-viz/app-core';
+
+const IS_OVERLAY_ENABLED = toBoolean(process.env.PBIVIZ_DEV_OVERLAY);
 
 /**
  * Provides a simple textarea that we can view the visual update history from
  * the store. Is intended for debugging status changes based on the update
  * options from the Power BI visual host.
  */
-export const VisualUpdateHistoryOverlay: React.FC = () => {
-    const { history } = store(
-        (state) => ({
-            history: state.visualUpdateOptions.history
-        }),
-        shallow
+export const VisualUpdateHistoryOverlay = () => {
+    const history = useDenebState(
+        (state) => state.visualUpdateOptions.history
     );
-    return FEATURES.visual_update_history_overlay ? (
+    return IS_OVERLAY_ENABLED ? (
         <textarea
             style={{
                 position: 'absolute',

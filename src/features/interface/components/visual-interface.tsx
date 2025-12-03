@@ -7,8 +7,8 @@ import { ReportViewRouter } from './report-view-router';
 import { FetchingMessage, SplashInitial } from '../../status';
 import { NotificationToaster } from '../../toaster';
 import { LandingPage } from '../../status';
-import { VisualUpdateHistoryOverlay } from './visual-update-history-overlay';
 import { logRender } from '@deneb-viz/utils/logging';
+import { VisualUpdateHistoryOverlay } from '../../visual-update-history-overlay';
 
 export const VisualInterface = () => {
     const { mode } = store(
