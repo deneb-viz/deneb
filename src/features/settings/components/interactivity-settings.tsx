@@ -50,9 +50,7 @@ export const InteractivitySettings = () => {
             </SettingsTextSection>
             {(enableSelection && (
                 <>
-                    {FEATURES.advanced_cross_filtering && (
-                        <CrossFilterModeSettings />
-                    )}
+                    <CrossFilterModeSettings />
                     {selectionMode === 'simple' && (
                         <>
                             <CrossFilterMaxDataPoints />

@@ -287,7 +287,7 @@ export const handleSelectionMode = (
     setVisualProperty([
         {
             name: 'selectionMode',
-            value: provider === 'vegaLite' ? 'simple' : selectionMode.toString()
+            value: provider === 'vegaLite' ? 'simple' : selectionMode
         }
     ]);
 
