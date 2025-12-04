@@ -1,9 +1,7 @@
 import React from 'react';
 import { ToolbarDivider, ToolbarGroup } from '@fluentui/react-components';
 
-import { ApplyMenuButton } from './apply-menu-button';
 import { useToolbarStyles } from '.';
-import { FEATURES } from '../../../../config';
 import { ToolbarButtonStandard } from '@deneb-viz/app-core';
 
 export const AdvancedEditorToolbarUpdateOperations: React.FC = () => {
@@ -11,18 +9,16 @@ export const AdvancedEditorToolbarUpdateOperations: React.FC = () => {
     return (
         <>
             <ToolbarGroup className={classes.toolbarAdvancedEditorGrow}>
-                {(FEATURES.combined_apply_button && <ApplyMenuButton />) || (
-                    <>
-                        <ToolbarButtonStandard
-                            command='applyChanges'
-                            role='application'
-                        />
-                        <ToolbarButtonStandard
-                            command='autoApplyToggle'
-                            role='application'
-                        />
-                    </>
-                )}
+                <>
+                    <ToolbarButtonStandard
+                        command='applyChanges'
+                        role='application'
+                    />
+                    <ToolbarButtonStandard
+                        command='autoApplyToggle'
+                        role='application'
+                    />
+                </>
                 {/* Tracking is now only used for export (#486) */}
                 {/* <ToolbarButtonStandard
                     command='fieldMappings'

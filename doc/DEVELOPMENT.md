@@ -370,10 +370,7 @@ Feature flags are stored in `config/features.json` and take the simple form of u
 
 ```json
 {
-    "combined_apply_button": false,
-    "data_drilldown": false,
-    "enable_external_uri": false,
-    "visual_update_history_overlay": false
+    "data_drilldown": false
 }
 ```
 
