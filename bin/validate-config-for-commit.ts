@@ -1,6 +1,5 @@
 import '@dotenvx/dotenvx/config';
 import { exit } from 'process';
-import { FEATURES } from '../config';
 import { parseLogLevel } from '@deneb-viz/utils/logging';
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
 
@@ -38,12 +37,6 @@ if (LOG_LEVEL !== 0) {
 if (ALLOW_EXTERNAL_URI && !allowExternalUri) {
     errors.push(
         '❌ .env ALLOW_EXTERNAL_URI flag is true; this should be false.'
-    );
-}
-// Visual update history overlay: Should not be set in committed code
-if (FEATURES.visual_update_history_overlay) {
-    errors.push(
-        '❌ FEATURES.visual_update_history_overlay flag is true; this should be false.'
     );
 }
 
