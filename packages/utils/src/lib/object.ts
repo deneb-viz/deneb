@@ -1,3 +1,5 @@
+import stringify from 'json-stringify-pretty-compact';
+
 /**
  * Path for a nested object. Each element in the array is a key to access the next level of the object.
  */
@@ -31,8 +33,8 @@ type Predicate<T> = (value: T[keyof T], key: keyof T) => boolean;
  */
 export type StringifyOptions = {
     maxDepth?: number;
-    spaces?: number;
     whitespaceChar?: string;
+    maxLength?: number;
 };
 
 /**
@@ -42,14 +44,14 @@ export type StringifyOptions = {
 const DEFAULT_MAX_PRUNE_DEPTH = 3;
 
 /**
- * Default spacing for stringify operations
- */
-const DEFAULT_SPACING = 0;
-
-/**
- * Default whitespace character for stringify operations
+ * Default whitespace character for stringify operations.
  */
 const DEFAULT_WHITESPACE_CHAR = ' ';
+
+/**
+ * Default maximum line length for stringify operations.
+ */
+const DEFAULT_LINE_LENGTH = 40;
 
 /**
  * Prune an object at a specified level of depth.
@@ -60,14 +62,17 @@ export const getPrunedObject = (
 ) => {
     const {
         maxDepth = DEFAULT_MAX_PRUNE_DEPTH,
-        spaces = DEFAULT_SPACING,
-        whitespaceChar = DEFAULT_WHITESPACE_CHAR
+        whitespaceChar = DEFAULT_WHITESPACE_CHAR,
+        maxLength = DEFAULT_LINE_LENGTH
     } = options;
-    const pruned = JSON.parse(
-        stringifyPruned(json, { maxDepth, spaces, whitespaceChar })
-    );
-    return pruned;
+    const pruned = stringifyPruned(json, {
+        maxDepth,
+        whitespaceChar,
+        maxLength
+    });
+    return JSON.parse(pruned);
 };
+
 /**
  * Create a stringified representation of an object, pruned at a specified level of depth.
  */
@@ -77,21 +82,20 @@ export const stringifyPruned = (
 ) => {
     const {
         maxDepth = DEFAULT_MAX_PRUNE_DEPTH,
-        spaces = DEFAULT_SPACING,
-        whitespaceChar = DEFAULT_WHITESPACE_CHAR
+        whitespaceChar = DEFAULT_WHITESPACE_CHAR,
+        maxLength = DEFAULT_LINE_LENGTH
     } = options;
-    const ch =
-        whitespaceChar && whitespaceChar.length > 0
-            ? (whitespaceChar[0] ?? '')
-            : ' ';
-    const indent = spaces > 0 ? ch.repeat(Math.min(spaces, 10)) : 0;
-    return JSON.stringify(json, prune(maxDepth), indent);
+    return stringify(json, {
+        maxLength,
+        indent: whitespaceChar,
+        replacer: prune(maxDepth)
+    });
 };
 
 /**
  * For a given object, prune at the specified level of depth. Borrowed and adapted from vega-tooltip.
  */
-const prune = (maxDepth = DEFAULT_MAX_PRUNE_DEPTH) => {
+export const prune = (maxDepth = DEFAULT_MAX_PRUNE_DEPTH) => {
     const stack: unknown[] = [];
     return function (this: unknown, key: string, value: unknown) {
         if (value === undefined) {

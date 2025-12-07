@@ -11,7 +11,6 @@ import pickBy from 'lodash/pickBy';
 import toNumber from 'lodash/toNumber';
 import toString from 'lodash/toString';
 
-import { getObjectFormattedAsText } from '../json-processing';
 import {
     getDatasetFieldsBySelectionKeys,
     getIdentitiesFromData
@@ -31,6 +30,13 @@ import {
     resolveDatumFromItem,
     type VegaDatum
 } from '@deneb-viz/vega-runtime/provenance';
+
+/**
+ * In order to create suitable output for tooltips and debugging tables. Because Power BI tooltips suppress standard
+ * whitespace, we're substituting a unicode character that is visually similar to a space, but is not caught by the
+ * tooltip handler.
+ */
+const TOOLTIP_WHITESPACE_CHAR = '\u2800';
 
 /**
  * Convenience constant for tooltip events, as it's required by Power BI.
@@ -121,7 +127,9 @@ const getFieldsEligibleForAutoFormat = (tooltip: object) =>
  */
 export const getSanitisedTooltipValue = (value: any) =>
     isObject(value) && !isDate(value)
-        ? getObjectFormattedAsText(getDeepRedactedTooltipItem(value))
+        ? stringifyPruned(getDeepRedactedTooltipItem(value), {
+              whitespaceChar: TOOLTIP_WHITESPACE_CHAR
+          })
         : toString(value);
 
 /**

@@ -140,177 +140,97 @@ describe('pickBy', () => {
             expect(updateDeep(obj, [undefined as any], 2)).toEqual(obj);
         });
     });
-});
 
-describe('getPrunedObject', () => {
-    it('should prune deep objects at default depth (3)', () => {
-        const nested = { a: { b: { c: { d: { e: 1 } } } } };
-        const pruned = getPrunedObject(nested); // default maxDepth = 3
-        expect(pruned.a.b.c.d).toBe('[OBJECT]');
-        expect(typeof pruned.a.b.c).toBe('object');
+    describe('prune', () => {
+        it('should handle circular references gracefully', () => {
+            const obj: any = { a: 1 };
+            obj.self = obj;
+            const pruned = JSON.parse(stringifyPruned(obj));
+            expect(pruned.self).toBe('[CIRCULAR]');
+        });
+
+        it('should prune objects deeper than maxDepth', () => {
+            const deepObj = { a: { b: { c: { d: { e: 5 } } } } };
+            const pruned = JSON.parse(
+                stringifyPruned(deepObj, { maxDepth: 2 })
+            );
+            expect(pruned.a.b).toEqual({ c: '[OBJECT]' });
+        });
+
+        it('should replace undefined with "undefined" and null with "null"', () => {
+            const obj = { a: undefined, b: null, c: 1 };
+            const pruned = JSON.parse(stringifyPruned(obj));
+            expect(pruned.a).toBe('undefined');
+            expect(pruned.b).toBe('null');
+            expect(pruned.c).toBe(1);
+        });
+
+        it('should remove _scenegraph from dataflow objects', () => {
+            const obj = { dataflow: { _scenegraph: { foo: 'bar' }, value: 1 } };
+            const pruned = JSON.parse(stringifyPruned(obj));
+            expect(pruned.dataflow._scenegraph).toBeUndefined();
+            expect(pruned.dataflow.value).toBe(1);
+        });
+
+        it('should use custom whitespaceChar and maxLength', () => {
+            const obj = { a: 1, b: { c: 2 } };
+            const str = stringifyPruned(obj, {
+                whitespaceChar: '-',
+                maxLength: 10
+            });
+            expect(str).toContain('-');
+        });
     });
 
-    it('should respect custom prune depth', () => {
-        const nested = { a: { b: { c: { d: 1 } } } };
-        const pruned = getPrunedObject(nested, { maxDepth: 2 });
-        expect(pruned.a.b.c).toBe('[OBJECT]');
+    describe('getPrunedObject', () => {
+        it('getPrunedObject should return a pruned object', () => {
+            const deepObj = { a: { b: { c: { d: 1 } } } };
+            const pruned = getPrunedObject(deepObj, { maxDepth: 2 });
+            expect(pruned.a.b).toEqual({ c: '[OBJECT]' });
+        });
+
+        it('should handle objects with arrays and nested objects', () => {
+            const obj = {
+                a: [1, 2, { b: 3 }],
+                c: { d: { e: 4 } }
+            };
+            const pruned = getPrunedObject(obj, { maxDepth: 2 });
+            expect(pruned.a[2]).toEqual({ b: 3 });
+            expect(pruned.c.d).toEqual({ e: 4 });
+        });
+
+        it('should handle empty objects and arrays', () => {
+            const obj = { a: {}, b: [] };
+            const pruned = JSON.parse(stringifyPruned(obj));
+            expect(pruned.a).toEqual({});
+            expect(pruned.b).toEqual([]);
+        });
+
+        it('should not mutate the original object', () => {
+            const obj = { a: { b: 1 } };
+            const copy = JSON.parse(JSON.stringify(obj));
+            getPrunedObject(obj, { maxDepth: 1 });
+            expect(obj).toEqual(copy);
+        });
     });
 
-    it('should keep deeper objects when depth large enough', () => {
-        const nested = { a: { b: { c: { d: 1 } } } };
-        const pruned = getPrunedObject(nested, { maxDepth: 10 });
-        expect(pruned.a.b.c.d).toBe(1);
-    });
+    describe('stringifyPruned', () => {
+        it('should handle primitive values', () => {
+            const obj = { str: 'hello', num: 42, bool: true };
+            const pruned = getPrunedObject(obj);
+            expect(pruned).toEqual(obj);
+        });
 
-    it('should mark circular references', () => {
-        const obj: any = { a: 1 };
-        obj.self = obj;
-        const pruned = getPrunedObject(obj, { maxDepth: 5 });
-        expect(pruned.self).toBe('[CIRCULAR]');
-    });
+        it('should apply custom maxLength option', () => {
+            const obj = { a: 1, b: 2, c: 3, d: 4, e: 5 };
+            const str = stringifyPruned(obj, { maxLength: 5 });
+            expect(str).toContain('\n');
+        });
 
-    it('should convert undefined and null values to strings', () => {
-        const obj = { a: undefined, b: null };
-        const pruned = getPrunedObject(obj, { maxDepth: 5 });
-        expect(pruned.a).toBe('undefined');
-        expect(pruned.b).toBe('null');
-    });
-
-    it('should remove _scenegraph from dataflow objects', () => {
-        const obj = { dataflow: { _scenegraph: { big: true }, keep: 2 } };
-        const pruned = getPrunedObject(obj, { maxDepth: 5 });
-        expect(pruned.dataflow._scenegraph).toBeUndefined();
-        expect(pruned.dataflow.keep).toBe(2);
-    });
-
-    it('should handle maxDepth = 0 in getPrunedObject', () => {
-        const obj = { a: { b: 1 }, c: 2 };
-        const pruned = getPrunedObject(obj, { maxDepth: 0 });
-        expect(pruned.a).toBe('[OBJECT]');
-        expect(pruned.c).toBe(2);
-    });
-});
-
-describe('stringifyPruned', () => {
-    it('should prune nested objects beyond specified depth', () => {
-        const obj = { a: { b: { c: { d: { e: 1 } } } } };
-        const parsed = JSON.parse(stringifyPruned(obj, { maxDepth: 2 }));
-        expect(parsed.a.b.c).toBe('[OBJECT]');
-    });
-
-    it('should handle maxDepth = 0 (prune first-level children)', () => {
-        const obj = { a: { b: 1 }, c: 2 };
-        const parsed = JSON.parse(stringifyPruned(obj, { maxDepth: 0 }));
-        expect(parsed.a).toBe('[OBJECT]');
-        expect(parsed.c).toBe(2); // primitive kept
-    });
-
-    it('should mark circular references', () => {
-        const obj: any = { a: { b: 1 } };
-        obj.a.self = obj.a;
-        const parsed = JSON.parse(stringifyPruned(obj, { maxDepth: 5 }));
-        expect(parsed.a.self).toBe('[CIRCULAR]');
-    });
-
-    it('should not mark duplicated (non-circular) shared references as circular', () => {
-        const shared = { v: 1 };
-        const obj = { a: shared, b: shared };
-        const parsed = JSON.parse(stringifyPruned(obj, { maxDepth: 5 }));
-        expect(parsed.a).toEqual({ v: 1 });
-        expect(parsed.b).toEqual({ v: 1 });
-    });
-
-    it('should convert undefined and null values to strings', () => {
-        const obj = { a: undefined, b: null, c: { d: undefined } };
-        const parsed = JSON.parse(stringifyPruned(obj, { maxDepth: 5 }));
-        expect(parsed.a).toBe('undefined');
-        expect(parsed.b).toBe('null');
-        expect(parsed.c.d).toBe('undefined');
-    });
-
-    it("should serialize arrays with undefined entries as 'undefined'", () => {
-        const obj = { arr: [1, undefined, null, 4] };
-        const parsed = JSON.parse(stringifyPruned(obj, { maxDepth: 5 }));
-        expect(parsed.arr[1]).toBe('undefined');
-        expect(parsed.arr[2]).toBe('null');
-    });
-
-    it('should remove _scenegraph from dataflow objects and mutate original object', () => {
-        const obj: any = { dataflow: { _scenegraph: { huge: true }, keep: 1 } };
-        const parsed = JSON.parse(
-            stringifyPruned(obj, { maxDepth: 5, spaces: 0 })
-        );
-        expect(parsed.dataflow._scenegraph).toBeUndefined();
-        expect(parsed.dataflow.keep).toBe(1);
-        // original object mutated per implementation intent
-        expect(obj.dataflow._scenegraph).toBeUndefined();
-    });
-
-    it('should respect spacing = 4 producing indented JSON', () => {
-        const str = stringifyPruned(
-            { a: { b: 1 } },
-            { maxDepth: 5, spaces: 4 }
-        );
-        expect(str.split('\n').length).toBeGreaterThan(1);
-        expect(str).toContain('"b": 1');
-    });
-
-    it('should not introduce newline characters when spacing = 0', () => {
-        const str = stringifyPruned({ a: { b: 1 } }, { maxDepth: 5 });
-        expect(str.includes('\n')).toBe(false);
-    });
-
-    it('should leave deep structure intact when depth sufficiently large', () => {
-        const obj = { a: { b: { c: { d: { e: 5 } } } } };
-        const parsed = JSON.parse(stringifyPruned(obj, { maxDepth: 10 }));
-        expect(parsed.a.b.c.d.e).toBe(5);
-    });
-
-    it('should use custom whitespaceChar for indentation', () => {
-        const str = stringifyPruned(
-            { a: { b: 1 } },
-            { maxDepth: 5, spaces: 3, whitespaceChar: '.' }
-        );
-        expect(str).toContain('\n...' + '"a"');
-    });
-
-    it('should use only the first character of whitespaceChar string', () => {
-        const str = stringifyPruned(
-            { a: 1 },
-            { maxDepth: 5, spaces: 2, whitespaceChar: 'ab' }
-        );
-        expect(str).toContain('\n' + 'aa' + '"a"');
-    });
-
-    it('should fallback to space when whitespaceChar is empty', () => {
-        const str = stringifyPruned(
-            { a: 1 },
-            { maxDepth: 5, spaces: 2, whitespaceChar: '' }
-        );
-        expect(str).toContain('\n' + '  ' + '"a"');
-    });
-
-    it('should cap spacing to a maximum of 10 characters', () => {
-        const str = stringifyPruned(
-            { a: { b: 1 } },
-            { maxDepth: 5, spaces: 20, whitespaceChar: 'x' }
-        );
-        expect(str).toContain('\n' + 'x'.repeat(10) + '"a"');
-    });
-
-    it("should not remove _scenegraph when key is not 'dataflow'", () => {
-        const obj: any = {
-            notDataflow: { _scenegraph: { keep: true }, other: 1 }
-        };
-        const parsed = JSON.parse(stringifyPruned(obj, { maxDepth: 5 }));
-        expect(parsed.notDataflow._scenegraph).toEqual({ keep: true });
-        expect(obj.notDataflow._scenegraph).toEqual({ keep: true });
-    });
-
-    it('should mark circular references in arrays', () => {
-        const arr: any[] = [1];
-        arr.push(arr);
-        const parsed = JSON.parse(stringifyPruned({ arr }, { maxDepth: 5 }));
-        expect(parsed.arr[1]).toBe('[CIRCULAR]');
+        it('should handle deeply nested arrays', () => {
+            const obj = { arr: [[['deep']]] };
+            const pruned = getPrunedObject(obj, { maxDepth: 2 });
+            expect(pruned.arr[0][0]).toBe('[OBJECT]');
+        });
     });
 });

@@ -18,8 +18,6 @@ import {
 } from '@deneb-viz/json-processing/field-tracking';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 
-export { getObjectFormattedAsText } from './formatting';
-
 /**
  * Take the current spec and tracked fields, and asynchronously update the tokenization info via another thread (using
  * the necessary web worker).
