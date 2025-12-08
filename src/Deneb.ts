@@ -29,7 +29,6 @@ import {
     getVisualHost,
     getVisualSettings,
     I18nServices,
-    resolveAndPersistReportViewport,
     setRenderingFailed,
     setRenderingStarted,
     VisualHostServices
