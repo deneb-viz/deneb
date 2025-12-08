@@ -10,7 +10,6 @@ import pickBy from 'lodash/pickBy';
 import reduce from 'lodash/reduce';
 
 import { getState } from '../../store';
-import { getDataset } from '../../core/data/dataset';
 import { getCategoryColumns } from '../../core/data/dataView';
 import {
     type IDatasetField,
@@ -65,7 +64,7 @@ export const createSelectionIds = (
  * store.
  */
 export const getDatasetFieldsBySelectionKeys = (keys: string[] = []) =>
-    pick(getDataset().fields, keys);
+    pick(getState().dataset.fields, keys);
 
 /**
  * For a resolved `data` object from a Vega tooltip handler, attempt to identify
@@ -147,7 +146,7 @@ export const getSelectorsFromData = (data: VegaDatum[] | DatasetValueRow[]) =>
 /**
  * Get all values (excluding metadata) for current processed dataset from Deneb's store.
  */
-const getValues = () => getDataset().values;
+const getValues = () => getState().dataset.values;
 
 /**
  * Returns `getValues()`, but filtered for a supplied list `__row__` values.

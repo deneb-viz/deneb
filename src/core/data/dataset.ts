@@ -6,14 +6,12 @@ import PrimitiveValue = powerbi.PrimitiveValue;
 import range from 'lodash/range';
 import reduce from 'lodash/reduce';
 
-import {
-    getDatasetFieldEntries,
-    getDatasetFields,
-    getEncodedFieldName
-} from './fields';
-import { getDatasetValueEntries } from './values';
 import { createSelectionIds } from '../../features/interactivity';
-import { getState } from '../../store';
+import {
+    isDrilldownFeatureEnabled,
+    resolveDrilldownComponents,
+    resolveDrilldownFlat
+} from '../../features/dataset';
 import {
     type AugmentedMetadataField,
     DRILL_FIELD_FLAT,
@@ -26,22 +24,23 @@ import {
     HIGHLIGHT_STATUS_SUFFIX
 } from '@deneb-viz/dataset/field';
 import {
-    isDrilldownFeatureEnabled,
-    resolveDrilldownComponents,
-    resolveDrilldownFlat
-} from '../../features/dataset';
-import {
     DATASET_DEFAULT_NAME,
     getEmptyDataset,
     type IDataset
 } from '@deneb-viz/dataset/data';
 import { getDatasetFieldsInclusive } from '@deneb-viz/dataset/field';
-import { type DatasetValueRow } from '@deneb-viz/dataset/datum';
+import {
+    getDatumFieldMetadataFromDataView,
+    getDatumFieldsFromMetadata,
+    getDatumValueEntriesFromDataview,
+    getEncodedFieldName,
+    type DatasetValueRow
+} from '@deneb-viz/dataset/datum';
 import { getHashValue } from '@deneb-viz/utils/crypto';
 import {
     getDataPointCrossFilterStatus,
     isCrossFilterPropSet,
-    isCrossHighlightPropSet,
+    isCrossHighlightPropSet
 } from '@deneb-viz/powerbi-compat/interactivity';
 import {
     doesDataViewHaveHighlights,
@@ -112,11 +111,6 @@ const getDataRow = (
 };
 
 /**
- * Get current processed dataset (metadata and values) from Deneb's store.
- */
-export const getDataset = (): IDataset => getState().dataset;
-
-/**
  * Processes the data in the visual's data view into an object suitable for the
  * visual's API.
  */
@@ -137,7 +131,7 @@ export const getMappedDataset = (
             logTimeStart('getMappedDataset');
             const isCrossFilter = isCrossFilterPropSet({ enableSelection });
             const hasHighlights = doesDataViewHaveHighlights(dvValues);
-            const columns = getDatasetFieldEntries(
+            const columns = getDatumFieldMetadataFromDataView(
                 dvCategories,
                 dvValues,
                 enableHighlight
@@ -146,7 +140,7 @@ export const getMappedDataset = (
                 isDrilldownFeatureEnabled() &&
                 columns.filter((c) => c.column.roles?.[DRILL_FIELD_NAME])
                     ?.length > 0;
-            const fieldValues = getDatasetValueEntries(
+            const fieldValues = getDatumValueEntriesFromDataview(
                 dvCategories,
                 dvValues,
                 enableHighlight
@@ -154,11 +148,7 @@ export const getMappedDataset = (
             const selections: ISelectionId[] = <ISelectionId[]>(
                 getVisualSelectionManager().getSelectionIds()
             );
-            const fields = getDatasetFields(
-                dvCategories,
-                dvValues,
-                enableHighlight
-            );
+            const fields = getDatumFieldsFromMetadata(columns);
             /**
              * #357, #396 the selection IDs massively degrade performance when
              * hashing, so we has a copy of the values without the selection
