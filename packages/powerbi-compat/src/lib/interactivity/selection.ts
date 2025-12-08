@@ -4,7 +4,6 @@ import {
     type CrossFilterPropCheckOptions,
     getVisualInteractionStatus
 } from '../visual-host';
-import { logDebug } from '@deneb-viz/utils/logging';
 
 /**
  * For the given `ISelectionId`, confirm whether it is present in the supplied `ISelectionId[]`. Typically used to
@@ -14,7 +13,7 @@ export const getDataPointCrossFilterStatus = (
     id: powerbi.visuals.ISelectionId,
     selection: powerbi.visuals.ISelectionId[]
 ): DataPointSelectionStatus => {
-    logDebug('getDataPointCrossFilterStatus', { id, selection });
+    /* logDebug('getDataPointCrossFilterStatus', { id, selection }); */
     return (
         (selection.find((sid) => sid.equals(id)) && 'on') ||
         (selection.length === 0 && 'neutral') ||
@@ -29,10 +28,10 @@ export const isCrossFilterPropSet = (options: CrossFilterPropCheckOptions) => {
     const { enableSelection } = options;
     const interactionStatus = getVisualInteractionStatus();
     const isSet = enableSelection && interactionStatus;
-    logDebug('isCrossFilterPropSet', {
+    /*     logDebug('isCrossFilterPropSet', {
         enableSelection,
         interactionStatus,
         isSet
-    });
+    }); */
     return isSet;
 };
