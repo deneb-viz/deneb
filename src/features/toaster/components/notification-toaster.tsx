@@ -3,16 +3,15 @@ import { FluentProvider, Toaster, useId } from '@fluentui/react-components';
 
 import store from '../../../store';
 import { NotificationCrossFilterExceeded } from './notification-cross-filter-exceeded';
+import { getDenebTheme, THEME_DEFAULT } from '@deneb-viz/app-core';
 import {
-    getDenebTheme,
-    NotificationApplyChanges,
-    THEME_DEFAULT,
     TOAST_OFFSET_HORIZONTAL_EDITOR,
     TOAST_OFFSET_HORIZONTAL_VISUAL,
     TOAST_OFFSET_VERTICAL_EDITOR,
     TOAST_OFFSET_VERTICAL_VISUAL,
     TOASTER_ID
-} from '@deneb-viz/app-core';
+} from '../constants';
+import { NotificationApplyChanges } from './notification-apply-changes';
 
 export const NotificationToaster = () => {
     const { mode } = store(

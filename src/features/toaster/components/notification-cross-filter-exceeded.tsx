@@ -8,13 +8,13 @@ import {
 
 import { useDenebVisualState } from '../../../store';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import { InteractivityManager } from '@deneb-viz/powerbi-compat/interactivity';
+import { type NotificationProps } from '../types';
+import { NotificationToast } from './notification-toast';
 import {
-    NotificationProps,
-    NotificationToast,
     TOAST_NOTIFICATION_ID_CROSS_FILTER_EXCEEDED,
     TOAST_NOTIFICATION_TIMEOUT
-} from '@deneb-viz/app-core';
-import { InteractivityManager } from '@deneb-viz/powerbi-compat/interactivity';
+} from '../constants';
 
 export const NotificationCrossFilterExceeded = ({
     toasterId

@@ -4,14 +4,17 @@ import { Link, useId, useToastController } from '@fluentui/react-components';
 
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { type NotificationProps } from '../types';
-import { useDenebState } from '../../../state';
 import {
     TOAST_NOTIFICATION_ID_APPLY_CHANGES,
     TOAST_NOTIFICATION_TIMEOUT
 } from '../constants';
-import { useSpecificationEditor } from '../../specification-editor';
 import { NotificationToast } from './notification-toast';
-import { handleDiscardChanges, handlePersistSpecification } from '../../../lib';
+import {
+    handleDiscardChanges,
+    handlePersistSpecification,
+    useDenebState,
+    useSpecificationEditor
+} from '@deneb-viz/app-core';
 
 export const NotificationApplyChanges = ({ toasterId }: NotificationProps) => {
     const { isDirty, mode } = useDenebState(
