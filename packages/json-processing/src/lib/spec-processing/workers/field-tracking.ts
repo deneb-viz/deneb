@@ -16,12 +16,14 @@ import {
     type TrackedFields,
     getPlaceholderKey
 } from '../../field-tracking';
-import { type IDatasetField } from '@deneb-viz/dataset/field';
+import {
+    getDatasetFieldsInclusive,
+    type IDatasetField
+} from '@deneb-viz/powerbi-compat/dataset';
 import {
     type IDenebTrackingRequestPayload,
     type IDenebTrackingResponsePayload
 } from './types';
-import { getDatasetFieldsInclusive } from '@deneb-viz/dataset/field';
 
 /**
  * For a Vega expression AST node, check if it has an occurrence of a field from the visual dataset.

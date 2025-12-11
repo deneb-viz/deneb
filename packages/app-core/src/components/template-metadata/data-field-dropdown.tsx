@@ -10,9 +10,9 @@ import {
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 import {
     getDatasetFieldsInclusive,
-    IDatasetField,
-    IDatasetFields
-} from '@deneb-viz/dataset/field';
+    type IDatasetField,
+    type IDatasetFields
+} from '@deneb-viz/powerbi-compat/dataset';
 import { type ModalDialogType } from '../ui';
 import { DataTypeIcon } from './data-type-icon';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';

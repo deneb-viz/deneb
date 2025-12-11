@@ -34,7 +34,6 @@ export interface IWorkerDatasetViewerTranslations {
 export interface IWorkerDatasetViewerMessage {
     canvasFontCharWidth: number;
     dataset: Record<string, unknown>[];
-    datasetKeyName: string;
     jobId: string;
     translations: IWorkerDatasetViewerTranslations;
     valueMaxLength: number;

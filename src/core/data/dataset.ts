@@ -3,10 +3,6 @@ import DataViewCategorical = powerbi.DataViewCategorical;
 import ISelectionId = powerbi.visuals.ISelectionId;
 import PrimitiveValue = powerbi.PrimitiveValue;
 
-import range from 'lodash/range';
-import reduce from 'lodash/reduce';
-
-import { createSelectionIds } from '../../features/interactivity';
 import {
     isDrilldownFeatureEnabled,
     resolveDrilldownComponents,
@@ -21,31 +17,26 @@ import {
     getHighlightStatusValue,
     HIGHLIGHT_COMPARATOR_SUFFIX,
     HIGHLIGHT_FIELD_SUFFIX,
-    HIGHLIGHT_STATUS_SUFFIX
-} from '@deneb-viz/dataset/field';
-import {
+    HIGHLIGHT_STATUS_SUFFIX,
     DATASET_DEFAULT_NAME,
     getEmptyDataset,
-    type IDataset
-} from '@deneb-viz/dataset/data';
-import { getDatasetFieldsInclusive } from '@deneb-viz/dataset/field';
-import {
+    type IDataset,
     getDatumFieldMetadataFromDataView,
     getDatumFieldsFromMetadata,
     getDatumValueEntriesFromDataview,
     getEncodedFieldName,
     type DatasetValueRow
-} from '@deneb-viz/dataset/datum';
-import { getHashValue } from '@deneb-viz/utils/crypto';
+} from '@deneb-viz/powerbi-compat/dataset';
 import {
-    getDataPointCrossFilterStatus,
+    InteractivityManager,
     isCrossFilterPropSet,
-    isCrossHighlightPropSet
+    isCrossHighlightPropSet,
+    type SelectionIdQueueEntry,
+    type SelectionIdQueue
 } from '@deneb-viz/powerbi-compat/interactivity';
 import {
     doesDataViewHaveHighlights,
-    getCategoricalRowCount,
-    getVisualSelectionManager
+    getCategoricalRowCount
 } from '@deneb-viz/powerbi-compat/visual-host';
 import { logError, logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
 
@@ -59,55 +50,53 @@ const getDataRow = (
     rowIndex: number,
     hasHighlights: boolean,
     hasDrilldown: boolean,
-    enableHighlight: boolean
+    isCrossHighlight: boolean
 ) => {
-    const isCrossHighlight = isCrossHighlightPropSet({
-        enableHighlight
-    });
-    return reduce(
-        fields,
-        (row, f, fi) => {
-            const rawValue = getCastedPrimitiveValue(f, values[fi][rowIndex]);
-            const fieldName = getEncodedFieldName(f.column.displayName);
-            const isDataset = f?.column.roles?.[DATASET_DEFAULT_NAME];
-            const isDrilldown =
-                hasDrilldown && f?.column?.roles?.[DRILL_FIELD_NAME];
-            if (isDataset) {
-                const fieldHighlight = `${fieldName}${HIGHLIGHT_FIELD_SUFFIX}`;
-                const fieldHighlightStatus = `${fieldName}${HIGHLIGHT_STATUS_SUFFIX}`;
-                const fieldHighlightComparator = `${fieldName}${HIGHLIGHT_COMPARATOR_SUFFIX}`;
-                const rawValueOriginal: PrimitiveValue = row[fieldHighlight];
-                const shouldHighlight =
-                    isCrossHighlight && f.source === 'values';
-                row[fieldName] = rawValue;
-                if (shouldHighlight) {
-                    row[fieldHighlightStatus] = getHighlightStatusValue(
-                        hasHighlights,
-                        rawValue,
-                        rawValueOriginal
-                    );
-                    row[fieldHighlightComparator] = getHighlightComparatorValue(
-                        rawValue,
-                        rawValueOriginal
-                    );
-                }
-            }
-            if (isDrilldown) {
-                row[DRILL_FIELD_NAME] = resolveDrilldownComponents(
-                    row?.[DRILL_FIELD_NAME],
+    const row = <DatasetValueRow>{};
+    for (let fi = 0; fi < fields.length; fi++) {
+        const f = fields[fi];
+        const rawValue = getCastedPrimitiveValue(f, values[fi][rowIndex]);
+        const fieldName =
+            f.encodedName ?? getEncodedFieldName(f.column.displayName);
+        const isDatasetField = f?.column.roles?.[DATASET_DEFAULT_NAME];
+        const isDrilldownField =
+            hasDrilldown && f?.column?.roles?.[DRILL_FIELD_NAME];
+
+        if (isDatasetField) {
+            const fieldHighlight = `${fieldName}${HIGHLIGHT_FIELD_SUFFIX}`;
+            const fieldHighlightStatus = `${fieldName}${HIGHLIGHT_STATUS_SUFFIX}`;
+            const fieldHighlightComparator = `${fieldName}${HIGHLIGHT_COMPARATOR_SUFFIX}`;
+            const rawValueOriginal: PrimitiveValue = row[fieldHighlight];
+            const shouldHighlight = isCrossHighlight && f.source === 'values';
+
+            row[fieldName] = rawValue;
+            if (shouldHighlight) {
+                row[fieldHighlightStatus] = getHighlightStatusValue(
+                    hasHighlights,
                     rawValue,
-                    f.column.format
+                    rawValueOriginal
                 );
-                row[DRILL_FIELD_FLAT] = resolveDrilldownFlat(
-                    row?.[DRILL_FIELD_FLAT],
+                row[fieldHighlightComparator] = getHighlightComparatorValue(
                     rawValue,
-                    f.column.format
+                    rawValueOriginal
                 );
             }
-            return row;
-        },
-        <DatasetValueRow>{}
-    );
+        }
+
+        if (isDrilldownField) {
+            row[DRILL_FIELD_NAME] = resolveDrilldownComponents(
+                row?.[DRILL_FIELD_NAME],
+                rawValue,
+                f.column.format
+            );
+            row[DRILL_FIELD_FLAT] = resolveDrilldownFlat(
+                row?.[DRILL_FIELD_FLAT],
+                rawValue,
+                f.column.format
+            );
+        }
+    }
+    return row;
 };
 
 /**
@@ -121,6 +110,7 @@ export const getMappedDataset = (
 ): IDataset => {
     const rowsLoaded = getCategoricalRowCount(categorical);
     const empty = getEmptyDataset();
+    InteractivityManager.clearSelectors();
     const dvCategories = categorical?.categories;
     const dvValues = categorical?.values;
     const hasDataView = (dvCategories || dvValues) && true;
@@ -129,6 +119,9 @@ export const getMappedDataset = (
     } else {
         try {
             logTimeStart('getMappedDataset');
+            const isCrossHighlight = isCrossHighlightPropSet({
+                enableHighlight
+            });
             const isCrossFilter = isCrossFilterPropSet({ enableSelection });
             const hasHighlights = doesDataViewHaveHighlights(dvValues);
             const columns = getDatumFieldMetadataFromDataView(
@@ -145,53 +138,67 @@ export const getMappedDataset = (
                 dvValues,
                 enableHighlight
             );
-            const selections: ISelectionId[] = <ISelectionId[]>(
-                getVisualSelectionManager().getSelectionIds()
-            );
             const fields = getDatumFieldsFromMetadata(columns);
             /**
-             * #357, #396 the selection IDs massively degrade performance when
-             * hashing, so we has a copy of the values without the selection
-             * IDs present.
+             * Fast change detection: instead of hashing all values, create a lightweight
+             * fingerprint from row count, field names, and first/last row samples.
+             * This is orders of magnitude faster than SHA1 hashing for large datasets.
              */
+            // TODO: see how we go before this is 'done'.
             logTimeStart('getMappedDataset hashValue');
-            const hashValue = getHashValue({
-                fields,
-                fieldValues,
-                isCrossFilter
-            });
+            const fieldNames = Object.keys(fields).sort().join(',');
+            const hashValue = `${rowsLoaded}:${fieldNames}:${
+                fieldValues.length > 0
+                    ? `${fieldValues[0]?.[0]}-${fieldValues[0]?.[rowsLoaded - 1]}`
+                    : ''
+            }:${isCrossFilter}`;
             logTimeEnd('getMappedDataset hashValue');
             logTimeStart('getMappedDataset values');
-            const selectionFields = getDatasetFieldsInclusive(fields);
-            const values: DatasetValueRow[] = range(rowsLoaded).map((r, ri) => {
+
+            // Build selection queue template once (outside the row loop)
+            // Doing this here this adds up a lot when processing large datasets
+            const selectionQueueBase: SelectionIdQueueEntry[] = [];
+            for (const key in fields) {
+                const f = fields[key];
+                if (f && !f.isExcludedFromTemplate) {
+                    if (f.isMeasure) {
+                        selectionQueueBase.push({
+                            type: 'measure',
+                            queryName: f.queryName
+                        });
+                    } else {
+                        selectionQueueBase.push({
+                            type: 'category',
+                            column: dvCategories[f.sourceIndex]
+                        });
+                    }
+                }
+            }
+            const selectionQueue: SelectionIdQueue = {
+                entries: selectionQueueBase,
+                rowNumber: 0
+            };
+
+            const values: DatasetValueRow[] = [];
+            for (let r = 0; r < rowsLoaded; r++) {
                 const md = getDataRow(
                     columns,
                     fieldValues,
-                    ri,
+                    r,
                     hasHighlights,
                     hasDrilldown,
-                    enableHighlight
+                    isCrossHighlight
                 );
-                const identity = createSelectionIds(
-                    selectionFields,
-                    dvCategories,
-                    [r]
-                )[0];
-                return {
-                    ...{
-                        __row__: r,
-                        __identity__: identity,
-                        __key__: getSidString(identity)
-                    },
-                    ...(isCrossFilter && {
-                        __selected__: getDataPointCrossFilterStatus(
-                            identity,
-                            selections
-                        )
-                    }),
-                    ...md
-                };
-            });
+                selectionQueue.rowNumber = r;
+                const selector =
+                    InteractivityManager.addRowSelector(selectionQueue);
+                md.__row__ = r;
+                if (isCrossFilter) {
+                    md.__selected__ = selector?.status;
+                }
+
+                values.push(md);
+            }
             logTimeEnd('getMappedDataset values');
             logTimeEnd('getMappedDataset');
             return {

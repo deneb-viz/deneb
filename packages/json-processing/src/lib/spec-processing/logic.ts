@@ -17,8 +17,10 @@ import {
 } from '../../validation';
 import { getParsedJsonWithResult } from '../../processing';
 import { omit } from '@deneb-viz/utils/object';
-import { DatasetValueRow } from '@deneb-viz/dataset/datum';
-import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
+import {
+    DATASET_DEFAULT_NAME,
+    DatasetValueRow
+} from '@deneb-viz/powerbi-compat/dataset';
 import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
 import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
 import { SpecProvider } from '@deneb-viz/vega-runtime/embed';

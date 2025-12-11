@@ -1,16 +1,19 @@
 import { ChangeEvent, useCallback, useMemo } from 'react';
 import { Checkbox, CheckboxOnChangeData } from '@fluentui/react-components';
 
-import { TInteractivityType } from '../../interactivity/types';
 import { useSettingsStyles } from '../styles';
-import {
-    getI18nValue,
-    getVisualSelectionManager
-} from '@deneb-viz/powerbi-compat/visual-host';
+import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import {
     handlePersistBooleanProperty,
     useDenebState
 } from '@deneb-viz/app-core';
+import { InteractivityManager } from '@deneb-viz/powerbi-compat/interactivity';
+
+/**
+ * Used to denote supported interactivity types within Deneb. These can be used
+ * to flag any contextual methods for any particular functionality.
+ */
+type TInteractivityType = 'tooltip' | 'highlight' | 'select' | 'context';
 
 type InteractivityCheckboxProps = {
     type: TInteractivityType;
@@ -31,9 +34,9 @@ export const InteractivityCheckbox = ({ type }: InteractivityCheckboxProps) => {
             if (
                 type === 'select' &&
                 !value &&
-                getVisualSelectionManager().hasSelection()
+                InteractivityManager.hasSelection()
             ) {
-                getVisualSelectionManager().clear();
+                InteractivityManager.crossFilter();
             }
             handlePersistBooleanProperty(propertyName, value);
         },

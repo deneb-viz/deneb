@@ -80,7 +80,7 @@ const getProcessedData = (
         const result = allKeys.reduce(
             (acc, key) => {
                 const value = newDatum[key];
-                const valueType = getValueType(key, value, data.datasetKeyName);
+                const valueType = getValueType(value);
                 const rawValue = getRawValueForTableCell(
                     valueType,
                     value,
@@ -148,14 +148,8 @@ const getRawValueForTableCell = (
 /**
  * We will need to handle specific types of values in the table, so this method will determine and flag as appropriate.
  */
-const getValueType = (
-    key: string,
-    value: unknown,
-    datasetKeyName: string
-): WorkerDatasetViewerValueType => {
+const getValueType = (value: unknown): WorkerDatasetViewerValueType => {
     switch (true) {
-        case key === datasetKeyName:
-            return 'key';
         case isDate(value):
             return 'date';
         case isNumber(value):

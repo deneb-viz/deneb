@@ -6,8 +6,6 @@ import {
     getNewCreateFromTemplateSliceProperties,
     getNewTemplateMetadata,
     getPublishableUsermeta,
-    getResolvedValueDescriptor,
-    getResolvedVisualMetadataToDatasetField,
     getTemplateMetadata,
     getTemplateProvider,
     getTemplateReplacedForDataset,
@@ -19,6 +17,7 @@ import {
 } from '../template-usermeta';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import {
+    type SelectionMode,
     TEMPLATE_USERMETA_VERSION,
     type UsermetaDatasetField,
     type UsermetaTemplate
@@ -27,7 +26,6 @@ import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { type TrackedFields } from '../lib/field-tracking';
 import { type DenebTemplateAllocationComponents } from '../lib/template-processing';
-import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 
 const MOCK_BUILD_VERSION = '1.0.0';
 const MOCK_DATE = '2022-01-01T00:00:00.000Z';
@@ -370,85 +368,6 @@ describe('getPublishableUsermeta ', () => {
     it('should not modify the original usermeta object', () => {
         const result = getPublishableUsermeta(MOCK_USERMETA, MOCK_OPTIONS);
         expect(result).not.toBe(MOCK_USERMETA);
-    });
-});
-
-describe('getResolvedValueDescriptor', () => {
-    it('should return "bool" when type is a boolean', () => {
-        const type: powerbi.ValueTypeDescriptor = { bool: true };
-        const result = getResolvedValueDescriptor(type);
-        expect(result).toEqual('bool');
-    });
-
-    it('should return "text" when type is a text', () => {
-        const type: powerbi.ValueTypeDescriptor = { text: true };
-        const result = getResolvedValueDescriptor(type);
-        expect(result).toEqual('text');
-    });
-
-    it('should return "numeric" when type is numeric', () => {
-        const type: powerbi.ValueTypeDescriptor = { numeric: true };
-        const result = getResolvedValueDescriptor(type);
-        expect(result).toEqual('numeric');
-    });
-
-    it('should return "dateTime" when type is a dateTime', () => {
-        const type: powerbi.ValueTypeDescriptor = { dateTime: true };
-        const result = getResolvedValueDescriptor(type);
-        expect(result).toEqual('dateTime');
-    });
-
-    it('should return "other" when type is not recognized', () => {
-        const type: powerbi.ValueTypeDescriptor = {};
-        const result = getResolvedValueDescriptor(type);
-        expect(result).toEqual('other');
-    });
-});
-
-describe('getResolvedVisualMetadataToDatasetField', () => {
-    const metadata: powerbi.DataViewMetadataColumn = {
-        queryName: 'queryName',
-        displayName: 'displayName',
-        isMeasure: true,
-        type: { bool: true }
-    };
-    const encodedName = 'encodedName';
-
-    it('should return the expected UsermetaDatasetField object', () => {
-        const result = getResolvedVisualMetadataToDatasetField(
-            metadata,
-            encodedName
-        );
-        expect(result).toEqual({
-            key: metadata.queryName,
-            name: encodedName,
-            namePlaceholder: encodedName,
-            description: '',
-            kind: 'measure',
-            type: 'bool'
-        });
-    });
-
-    it('should return "column" as the kind if metadata.isMeasure is false', () => {
-        const metadataWithoutMeasure: powerbi.DataViewMetadataColumn = {
-            queryName: 'queryName',
-            displayName: 'displayName',
-            isMeasure: false,
-            type: { bool: true }
-        };
-        const result = getResolvedVisualMetadataToDatasetField(
-            metadataWithoutMeasure,
-            encodedName
-        );
-        expect(result.kind).toEqual('column');
-    });
-
-    it('should return the resolved value descriptor type', () => {
-        const result = getResolvedVisualMetadataToDatasetField(
-            metadata,
-            encodedName
-        );
-        expect(result.type).toEqual('bool');
     });
 });
 

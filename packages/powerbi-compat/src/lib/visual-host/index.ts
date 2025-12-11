@@ -2,8 +2,6 @@ export {
     VisualHostServices,
     getVisualHost,
     getVisualInteractionStatus,
-    getVisualSelectionIdBuilder,
-    getVisualSelectionManager,
     getVisualSettings,
     launchUrl,
     setRenderingFailed,

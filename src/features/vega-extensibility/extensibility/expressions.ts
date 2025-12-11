@@ -2,13 +2,7 @@ import { Item, expressionFunction, parseExpression } from 'vega';
 import { valueFormatter } from 'powerbi-visuals-utils-formattingutils';
 import ValueFormatterOptions = valueFormatter.ValueFormatterOptions;
 
-import {
-    CrossFilterOptions,
-    CrossFilterResult,
-    clearSelection
-} from '../../interactivity';
 import { getState } from '../../../store';
-import { handleCrossFilterEvent } from '../../interactivity/cross-filter';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
 import {
@@ -16,7 +10,13 @@ import {
     getThemeColorByName
 } from '@deneb-viz/vega-runtime/extensibility';
 import { isObject } from '@deneb-viz/utils/inspection';
-import { CROSS_FILTER_LIMITS } from '@deneb-viz/powerbi-compat/interactivity';
+import {
+    CROSS_FILTER_LIMITS,
+    crossFilterHandler,
+    type CrossFilterSelectionDirective,
+    type CrossFilterOptions,
+    InteractivityManager
+} from '@deneb-viz/powerbi-compat/interactivity';
 import { logDebug, logWarning } from '@deneb-viz/utils/logging';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { generateDynamicPatternFill } from '@deneb-viz/vega-runtime/pattern-fill';
@@ -112,7 +112,7 @@ const pbiPatternSvg = (id: string, fgColor: string, bgColor: string) => {
 /**
  * Explicitly request the visual host to clear any selection that has been applied to the visual.
  */
-const pbiCrossFilterClear = () => clearSelection();
+const pbiCrossFilterClear = () => InteractivityManager.crossFilter();
 
 /**
  * Take supplied criteria and attempt to apply a cross-filter to the visual host based upon it.
@@ -123,6 +123,7 @@ const pbiCrossFilterApply = (
     fOptions: CrossFilterOptions
 ) => {
     const {
+        dataset: { fields, values },
         specification: { logWarn },
         visualSettings: {
             vega: {
@@ -179,7 +180,10 @@ const pbiCrossFilterApply = (
             item,
             options
         });
-        const result = handleCrossFilterEvent(event, item, options);
+        const result = crossFilterHandler({ fields, values }, options)(
+            event,
+            item
+        );
         if (result.warning) {
             throw new Error(result.warning);
         }
@@ -192,7 +196,10 @@ const pbiCrossFilterApply = (
             ])
         );
         logWarning('[pbiCrossFilterApply] error', e.message);
-        return <CrossFilterResult>{ warning: e.message, identities: [] };
+        return <CrossFilterSelectionDirective>{
+            warning: e.message,
+            rowNumbers: []
+        };
     }
 };
 

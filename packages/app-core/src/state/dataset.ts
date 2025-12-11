@@ -1,18 +1,21 @@
 import powerbi from 'powerbi-visuals-api';
 import { type StateCreator } from 'zustand';
 
-import { getEmptyDataset, type IDataset } from '@deneb-viz/dataset/data';
+import {
+    getEmptyDataset,
+    type IDataset
+} from '@deneb-viz/powerbi-compat/dataset';
 import { type StoreState } from './state';
 import { getParsedSpec } from '@deneb-viz/json-processing/spec-processing';
 import { getSpecificationParseOptions } from './helpers';
 import { getHashValue } from '@deneb-viz/utils/crypto';
 import {
     getDatasetTemplateFieldsFromMetadata,
-    ROW_IDENTITY_FIELD_NAME
-} from '@deneb-viz/dataset/field';
+    ROW_INDEX_FIELD_NAME
+} from '@deneb-viz/powerbi-compat/dataset';
 import {
-    getDataPointCrossFilterStatus,
-    isCrossFilterPropSet
+    isCrossFilterPropSet,
+    type SelectorStatus
 } from '@deneb-viz/powerbi-compat/interactivity';
 import { logDebug, logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
 import {
@@ -25,7 +28,6 @@ import {
     getUpdatedExportMetadata
 } from '@deneb-viz/json-processing';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 
 /**
  * Stages to within the store when processing data, and therefore give us some UI hooks for the end-user.
@@ -43,28 +45,16 @@ export type DatasetProcessingPayload = {
 
 export type DatasetSlice = {
     dataset: IDataset;
-    datasetCategories: powerbi.DataViewCategoryColumn[];
     datasetHasHighlights: boolean;
-    datasetHasSelectionAborted: boolean;
     datasetProcessingStage: DataProcessingStage;
-    datasetSelectionLimit: number;
     datasetViewObjects: powerbi.DataViewObjects;
     updateDataset: (payload: VisualDatasetUpdatePayload) => void;
     updateDatasetProcessingStage: (payload: DatasetProcessingPayload) => void;
-    updateDatasetSelectors: (selectors: powerbi.visuals.ISelectionId[]) => void;
-    updateDatasetSelectionAbortStatus: (
-        payload: VisualDatasetAbortPayload
-    ) => void;
+    updateDatasetSelectors: (selectorMap: SelectorStatus) => Promise<void>;
 };
 
 export type VisualDatasetUpdatePayload = {
-    categories: powerbi.DataViewCategoryColumn[];
     dataset: IDataset;
-};
-
-export type VisualDatasetAbortPayload = {
-    status: boolean;
-    limit: number;
 };
 
 export const createDatasetSlice =
@@ -76,11 +66,8 @@ export const createDatasetSlice =
     > =>
     (set) => ({
         dataset: getEmptyDataset(),
-        datasetCategories: [],
         datasetHasHighlights: false,
-        datasetHasSelectionAborted: false,
         datasetProcessingStage: 'Initial',
-        datasetSelectionLimit: DEFAULTS.vega.selectionMaxDataPoints,
         datasetViewObjects: {},
         updateDataset: (payload) =>
             set(
@@ -94,18 +81,11 @@ export const createDatasetSlice =
                 false,
                 'updateDatasetProcessingStage'
             ),
-        updateDatasetSelectors: (selectors) =>
+        updateDatasetSelectors: async (selectorMap) =>
             set(
-                (state) => handleUpdateDatasetSelectors(state, selectors),
+                (state) => handleUpdateDatasetSelectors(state, selectorMap),
                 false,
                 'updateDatasetSelectors'
-            ),
-        updateDatasetSelectionAbortStatus: (payload) =>
-            set(
-                (state) =>
-                    handleUpdateDatasetSelectionAbortStatus(state, payload),
-                false,
-                'updateDatasetSelectionAbortStatus'
             )
     });
 
@@ -115,7 +95,6 @@ const handleUpdateDataset = (
     payload: VisualDatasetUpdatePayload
 ): Partial<StoreState> => {
     logDebug('dataset.updateDataset', payload);
-    const datasetCategories = payload.categories || [];
     const { dataset } = payload;
     const {
         metadataAllDependenciesAssigned = false,
@@ -174,7 +153,6 @@ const handleUpdateDataset = (
             metadataAllFieldsAssigned
         },
         dataset,
-        datasetCategories,
         datasetProcessingStage: 'Processed',
         debug: { ...state.debug, logAttention: spec.errors.length > 0 },
         editorPaneWidth: getResizablePaneSize(
@@ -230,27 +208,20 @@ const handleUpdateDatasetProcessingStage = (
 
 const handleUpdateDatasetSelectors = (
     state: StoreState,
-    selectors: powerbi.visuals.ISelectionId[]
+    selectorMap: SelectorStatus
 ): Partial<StoreState> => {
-    logDebug('dataset.updateDatasetSelectors', selectors);
+    logDebug('dataset.updateDatasetSelectors', selectorMap);
     const values = state.dataset.values.slice().map((v) => {
         const isCrossFilterEligible = isCrossFilterPropSet({
             enableSelection:
                 state.visualSettings.vega.interactivity.enableSelection.value
         });
-        logDebug(
-            'dataset.updateDatasetSelectors isCrossFilterEligible',
-            v,
-            isCrossFilterEligible
-        );
         return {
             ...v,
             ...(isCrossFilterEligible &&
                 {} && {
-                    __selected__: getDataPointCrossFilterStatus(
-                        v?.[ROW_IDENTITY_FIELD_NAME],
-                        selectors
-                    )
+                    __selected__:
+                        selectorMap.get(v[ROW_INDEX_FIELD_NAME]) || 'neutral'
                 })
         };
     });
@@ -265,7 +236,6 @@ const handleUpdateDatasetSelectors = (
         }
     });
     return {
-        datasetHasSelectionAborted: false,
         dataset: {
             ...state.dataset,
             ...{
@@ -279,11 +249,3 @@ const handleUpdateDatasetSelectors = (
         }
     };
 };
-
-const handleUpdateDatasetSelectionAbortStatus = (
-    state: StoreState,
-    payload: VisualDatasetAbortPayload
-): Partial<StoreState> => ({
-    datasetHasSelectionAborted: payload.status,
-    datasetSelectionLimit: payload.limit
-});

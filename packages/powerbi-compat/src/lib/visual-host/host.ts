@@ -8,8 +8,6 @@ import { resolveAndPersistReportViewport } from './update';
 
 let services: powerbi.extensibility.visual.VisualConstructorOptions;
 let events: powerbi.extensibility.IVisualEventService;
-let selectionIdBuilder: () => powerbi.visuals.ISelectionIdBuilder;
-let selectionManager: powerbi.extensibility.ISelectionManager;
 let visualUpdateOptions: powerbi.extensibility.visual.VisualUpdateOptions;
 let settings: VisualFormattingSettingsModel;
 
@@ -26,8 +24,6 @@ export const VisualHostServices = {
     bind: (service: powerbi.extensibility.visual.VisualConstructorOptions) => {
         services = service;
         events = service.host.eventService;
-        selectionIdBuilder = service.host.createSelectionIdBuilder;
-        selectionManager = service.host.createSelectionManager();
     },
     update: (
         options: powerbi.extensibility.visual.VisualUpdateOptions,
@@ -46,7 +42,7 @@ export const VisualHostServices = {
 export const getVisualHost = () => services?.host;
 
 /**
- * Whether or not the visual host has determined that interations are allowed.
+ * Whether or not the visual host has determined that interactions are allowed.
  */
 export const getVisualInteractionStatus = () =>
     services?.host?.hostCapabilities?.allowInteractions || false;
@@ -61,16 +57,6 @@ export const getVisualObjects = () =>
  * Get the current visual settings as resolved from the data view.
  */
 export const getVisualSettings = () => settings;
-
-/**
- * The visual host's selection ID builder.
- */
-export const getVisualSelectionIdBuilder = () => selectionIdBuilder();
-
-/**
- * The visual host's selection manager, used for interactivity purposes, such as tooltips and cross-filtering.
- */
-export const getVisualSelectionManager = () => selectionManager;
 
 /**
  * Hyperlinks to external sites need to be managed by the visual host, in order to ensure that they are opened with

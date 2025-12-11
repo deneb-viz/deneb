@@ -28,10 +28,6 @@
         "./pattern-fill": {
             "types": "./dist/lib/pattern-fill/index.d.ts",
             "default": "./dist/lib/pattern-fill/index.js"
-        },
-        "./provenance": {
-            "types": "./dist/lib/provenance/index.d.ts",
-            "default": "./dist/lib/provenance/index.js"
         }
     },
     "sideEffects": false,

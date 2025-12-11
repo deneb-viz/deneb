@@ -45,7 +45,6 @@
         "@babel/runtime-corejs3": "^7.28.4",
         "@deneb-viz/app-core": "*",
         "@deneb-viz/configuration": "*",
-        "@deneb-viz/dataset": "*",
         "@deneb-viz/json-processing": "*",
         "@deneb-viz/powerbi-compat": "*",
         "@deneb-viz/template-usermeta": "*",

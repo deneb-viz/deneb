@@ -9,9 +9,12 @@ import {
     type AugmentedMetadataField,
     type IDatasetFields
 } from '../field';
-import { isCrossHighlightPropSet } from '@deneb-viz/powerbi-compat/interactivity';
 import { logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
-import { getResolvedVisualMetadataToDatasetField } from '@deneb-viz/json-processing';
+import {
+    UsermetaDatasetField,
+    UsermetaDatasetFieldType
+} from '@deneb-viz/template-usermeta';
+import { isCrossHighlightPropSet } from '../../interactivity';
 
 const UNKNOWN_CATEGORY_INDEX = Infinity;
 
@@ -25,7 +28,8 @@ const getCategoryFieldEntries = (
         (c, ci): AugmentedMetadataField => ({
             column: c.source,
             source: 'categories',
-            sourceIndex: ci
+            sourceIndex: ci,
+            encodedName: getEncodedFieldName(c.source.displayName)
         })
     ) || [];
 
@@ -57,7 +61,8 @@ export const getDatumFieldsFromMetadata = (
     fields: AugmentedMetadataField[]
 ): IDatasetFields => {
     return fields.reduce<IDatasetFields>((result, c) => {
-        const encodedName = getEncodedFieldName(c.column.displayName);
+        const encodedName =
+            c.encodedName ?? getEncodedFieldName(c.column.displayName);
         const isExcludedFromTemplate = isSourceExcludedFromTemplate(c.source);
         result[`${encodedName}`] = {
             ...c.column,
@@ -99,17 +104,21 @@ const getHighlightFieldEntries = (
 ) =>
     (isCrossHighlightPropSet({ enableHighlight }) &&
         values?.map(
-            (v, vi): AugmentedMetadataField => ({
-                column: {
-                    ...v.source,
-                    ...{
-                        displayName: `${v.source.displayName}${HIGHLIGHT_FIELD_SUFFIX}`,
-                        index: getResolvedArtificialIndex(v?.source?.index)
-                    }
-                },
-                source: 'highlights',
-                sourceIndex: vi
-            })
+            (v, vi): AugmentedMetadataField => {
+                const displayName = `${v.source.displayName}${HIGHLIGHT_FIELD_SUFFIX}`;
+                return {
+                    column: {
+                        ...v.source,
+                        ...{
+                            displayName,
+                            index: getResolvedArtificialIndex(v?.source?.index)
+                        }
+                    },
+                    source: 'highlights',
+                    sourceIndex: vi,
+                    encodedName: getEncodedFieldName(displayName)
+                };
+            }
         )) ||
     [];
 
@@ -121,7 +130,8 @@ const getMeasureFieldEntries = (values: powerbi.DataViewValueColumns) =>
         (v, vi): AugmentedMetadataField => ({
             column: v.source,
             source: 'values',
-            sourceIndex: vi
+            sourceIndex: vi,
+            encodedName: getEncodedFieldName(v.source.displayName)
         })
     ) || [];
 
@@ -135,28 +145,32 @@ const getMeasureFormatEntries = (
 ): AugmentedMetadataField[] => {
     return (values || []).reduce<AugmentedMetadataField[]>((result, v, vi) => {
         if (isFieldEligibleForFormatting(v)) {
+            const formatDisplayName = `${v.source.displayName}${FORMAT_FIELD_SUFFIX}`;
+            const formattedDisplayName = `${v.source.displayName}${FORMATTED_FIELD_SUFFIX}`;
             result = result.concat([
                 {
                     column: {
                         ...v.source,
                         ...{
-                            displayName: `${v.source.displayName}${FORMAT_FIELD_SUFFIX}`,
+                            displayName: formatDisplayName,
                             index: getResolvedArtificialIndex(v?.source?.index)
                         }
                     },
                     source: 'formatting',
-                    sourceIndex: vi
+                    sourceIndex: vi,
+                    encodedName: getEncodedFieldName(formatDisplayName)
                 },
                 {
                     column: {
                         ...v.source,
                         ...{
-                            displayName: `${v.source.displayName}${FORMATTED_FIELD_SUFFIX}`,
+                            displayName: formattedDisplayName,
                             index: getResolvedArtificialIndex(v?.source?.index)
                         }
                     },
                     source: 'formatting',
-                    sourceIndex: vi
+                    sourceIndex: vi,
+                    encodedName: getEncodedFieldName(formattedDisplayName)
                 }
             ]);
         }
@@ -166,6 +180,47 @@ const getMeasureFormatEntries = (
 
 const getResolvedArtificialIndex = (index: number | undefined) =>
     -(index ?? UNKNOWN_CATEGORY_INDEX);
+
+/**
+ * For a given column or measure (or template placeholder), resolve its type
+ * against the corresponding Power BI value descriptor.
+ */
+export const getResolvedValueDescriptor = (
+    type: powerbi.ValueTypeDescriptor
+): UsermetaDatasetFieldType => {
+    switch (true) {
+        case type?.bool:
+            return 'bool';
+        case type?.text:
+            return 'text';
+        case type?.numeric:
+            return 'numeric';
+        case type?.dateTime:
+            return 'dateTime';
+        default:
+            return 'other';
+    }
+};
+
+/**
+ * For a given `DataViewMetadataColumn`, and its encoded name produces a new
+ * `ITemplateDatasetField` object that can be used for templating purposes.
+ */
+export const getResolvedVisualMetadataToDatasetField = (
+    metadata: powerbi.DataViewMetadataColumn,
+    encodedName: string
+): UsermetaDatasetField => {
+    return {
+        key: metadata.queryName ?? metadata.displayName ?? '',
+        name: encodedName,
+        namePlaceholder: encodedName,
+        description: '',
+        kind: (metadata.isMeasure && 'measure') || 'column',
+        type: getResolvedValueDescriptor(
+            metadata.type as powerbi.ValueTypeDescriptor
+        )
+    };
+};
 
 /**
  * Allows us to test that a field is excluded from templating activities.

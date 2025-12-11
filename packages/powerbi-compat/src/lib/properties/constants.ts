@@ -1,4 +1,4 @@
-import { type SelectionMode } from '../interactivity';
+import { type SelectionMode } from '@deneb-viz/template-usermeta';
 import { DATA_VIEWER_CONFIGURATION } from '@deneb-viz/configuration';
 
 /**

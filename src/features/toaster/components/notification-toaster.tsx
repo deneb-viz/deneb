@@ -17,11 +17,7 @@ import {
 export const NotificationToaster = () => {
     const { mode } = store(
         (state) => ({
-            datasetHasSelectionAborted: state.datasetHasSelectionAborted,
-            mode: state.interface.mode,
-            selectionMaxDataPoints:
-                state.visualSettings.vega.interactivity.selectionMaxDataPoints
-                    .value
+            mode: state.interface.mode
         }),
         shallow
     );

@@ -8,7 +8,7 @@ import {
 import {
     type DataPointSelectionStatus,
     type DataPointHighlightComparator
-} from '@deneb-viz/powerbi-compat/interactivity';
+} from '../../interactivity';
 
 /**
  * Produces a simple RegExp pattern for matching highlight fields.

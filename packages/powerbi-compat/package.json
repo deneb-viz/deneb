@@ -17,6 +17,10 @@
             "types": "./dist/index.d.ts",
             "default": "./dist/index.js"
         },
+        "./dataset": {
+            "types": "./dist/lib/dataset/index.d.ts",
+            "default": "./dist/lib/dataset/index.js"
+        },
         "./formatting": {
             "types": "./dist/lib/formatting/index.d.ts",
             "default": "./dist/lib/formatting/index.js"
@@ -63,6 +67,7 @@
     },
     "dependencies": {
         "@deneb-viz/configuration": "*",
+        "@deneb-viz/template-usermeta": "*",
         "@deneb-viz/utils": "*",
         "fast-equals": "^5.3.3",
         "powerbi-visuals-utils-formattingmodel": "^6.2.2",

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
     getPrunedObject,
+    matchesObjectKeyValues,
     omit,
     pickBy,
     stringifyPruned,
@@ -231,6 +232,62 @@ describe('pickBy', () => {
             const obj = { arr: [[['deep']]] };
             const pruned = getPrunedObject(obj, { maxDepth: 2 });
             expect(pruned.arr[0][0]).toBe('[OBJECT]');
+        });
+
+        describe('matchesObjectKeyValues', () => {
+            it('should return true when object matches all source key-value pairs', () => {
+                const source = { a: 1, b: 2 };
+                const object = { a: 1, b: 2, c: 3 };
+                const matcher = matchesObjectKeyValues(source);
+                expect(matcher(object)).toBe(true);
+            });
+
+            it('should return false when object does not match source', () => {
+                const source = { a: 1, b: 2 };
+                const object = { a: 1, b: 3 };
+                const matcher = matchesObjectKeyValues(source);
+                expect(matcher(object)).toBe(false);
+            });
+
+            it('should return true for empty source object', () => {
+                const source = {};
+                const object = { a: 1, b: 2 };
+                const matcher = matchesObjectKeyValues(source);
+                expect(matcher(object)).toBe(true);
+            });
+
+            it('should return false when object is missing required keys', () => {
+                const source = { a: 1, b: 2 };
+                const object = { a: 1 };
+                const matcher = matchesObjectKeyValues(source);
+                expect(matcher(object)).toBe(false);
+            });
+
+            it('should handle objects with different value types', () => {
+                const source = { str: 'hello', num: 42, bool: true };
+                const object = {
+                    str: 'hello',
+                    num: 42,
+                    bool: true,
+                    extra: 'value'
+                };
+                const matcher = matchesObjectKeyValues(source);
+                expect(matcher(object)).toBe(true);
+            });
+
+            it('should use strict equality for comparison', () => {
+                const source = { a: 1 };
+                const object = { a: '1' };
+                const matcher = matchesObjectKeyValues(source);
+                expect(matcher(object)).toBe(false);
+            });
+
+            it('should handle null and undefined values', () => {
+                const source = { a: null, b: undefined };
+                const object = { a: null, b: undefined };
+                const matcher = matchesObjectKeyValues(source);
+                expect(matcher(object)).toBe(true);
+            });
         });
     });
 });

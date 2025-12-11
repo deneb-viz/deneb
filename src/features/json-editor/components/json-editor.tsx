@@ -24,7 +24,7 @@ import { getProviderSchema } from '@deneb-viz/json-processing';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { getI18nValue, launchUrl } from '@deneb-viz/powerbi-compat/visual-host';
 import { logDebug } from '@deneb-viz/utils/logging';
-import { type IDatasetField } from '@deneb-viz/dataset/field';
+import { type IDatasetField } from '@deneb-viz/powerbi-compat/dataset';
 
 /**
  * One-time Monaco initialization tasks.

@@ -74,6 +74,20 @@ export const getPrunedObject = (
 };
 
 /**
+ * Checks if an object matches all key-value pairs in the source object.
+ */
+export const matchesObjectKeyValues =
+    (source: Record<string, unknown>) =>
+    (object: Record<string, unknown>): boolean => {
+        for (const [key, value] of Object.entries(source)) {
+            if (object[key] !== value) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+/**
  * Create a stringified representation of an object, pruned at a specified level of depth.
  */
 export const stringifyPruned = (

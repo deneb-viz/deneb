@@ -17,7 +17,6 @@ export {
     getExportTemplate,
     getNewCreateFromTemplateSliceProperties,
     getNewTemplateMetadata,
-    getResolvedVisualMetadataToDatasetField,
     getTemplateMetadata,
     getTemplateReplacedForDataset,
     getTemplateResolvedForPlaceholderAssignment,

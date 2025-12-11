@@ -1,5 +1,3 @@
-import powerbi from 'powerbi-visuals-api';
-
 import omit from 'lodash/omit';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import {
@@ -19,13 +17,12 @@ import {
 import {
     TEMPLATE_USERMETA_VERSION,
     type UsermetaDatasetField,
-    type UsermetaDatasetFieldType,
     type UsermetaInformation,
     type UsermetaInteractivity,
     type UsermetaTemplate
 } from '@deneb-viz/template-usermeta';
 import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
-import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/powerbi-compat/dataset';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { getNewUuid } from '@deneb-viz/utils/crypto';
 import {
@@ -194,47 +191,6 @@ export const getPublishableUsermeta = (
                 return omit(d, ['namePlaceholder']);
             })
         }
-    };
-};
-
-/**
- * For a given column or measure (or template placeholder), resolve its type
- * against the corresponding Power BI value descriptor.
- */
-export const getResolvedValueDescriptor = (
-    type: powerbi.ValueTypeDescriptor
-): UsermetaDatasetFieldType => {
-    switch (true) {
-        case type?.bool:
-            return 'bool';
-        case type?.text:
-            return 'text';
-        case type?.numeric:
-            return 'numeric';
-        case type?.dateTime:
-            return 'dateTime';
-        default:
-            return 'other';
-    }
-};
-
-/**
- * For a given `DataViewMetadataColumn`, and its encoded name produces a new
- * `ITemplateDatasetField` object that can be used for templating purposes.
- */
-export const getResolvedVisualMetadataToDatasetField = (
-    metadata: powerbi.DataViewMetadataColumn,
-    encodedName: string
-): UsermetaDatasetField => {
-    return {
-        key: metadata.queryName ?? metadata.displayName ?? '',
-        name: encodedName,
-        namePlaceholder: encodedName,
-        description: '',
-        kind: (metadata.isMeasure && 'measure') || 'column',
-        type: getResolvedValueDescriptor(
-            metadata.type as powerbi.ValueTypeDescriptor
-        )
     };
 };
 

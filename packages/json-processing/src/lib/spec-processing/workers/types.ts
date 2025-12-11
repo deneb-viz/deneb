@@ -3,7 +3,7 @@ import {
     type TokenPatternReplacer,
     type TrackedFields
 } from '../../field-tracking';
-import { type IDatasetFields } from '@deneb-viz/dataset/field';
+import { type IDatasetFields } from '@deneb-viz/powerbi-compat/dataset';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 
 /**

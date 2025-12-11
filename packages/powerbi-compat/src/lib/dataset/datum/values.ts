@@ -1,10 +1,10 @@
 import powerbi from 'powerbi-visuals-api';
 
-import { isCrossHighlightPropSet } from '@deneb-viz/powerbi-compat/interactivity';
-import { doesDataViewHaveHighlights } from '@deneb-viz/powerbi-compat/visual-host';
 import { logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
 import { isFieldEligibleForFormatting } from '../field';
-import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
+import { getFormattedValue } from '../../formatting';
+import { isCrossHighlightPropSet } from '../../interactivity';
+import { doesDataViewHaveHighlights } from '../../visual-host';
 
 /**
  * Extract all categorical field value arrays from the data view.

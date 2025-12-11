@@ -8,7 +8,7 @@ import {
 
 import { SettingsHeadingLabel } from './settings-heading-label';
 import { SettingsTextSection } from './settings-text-section';
-import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
+import { type SelectionMode } from '@deneb-viz/template-usermeta';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { handleVegaProvider } from '../../../lib';

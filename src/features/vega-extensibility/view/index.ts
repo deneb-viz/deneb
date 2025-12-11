@@ -1,6 +1,4 @@
 import { falsy, truthy, View } from 'vega';
-import { handleContextMenuEvent } from '../../interactivity/context-menu';
-import { handleCrossFilterEvent } from '../../interactivity/cross-filter';
 import { getState } from '../../../store';
 import { IVegaViewServices } from '../types';
 import {
@@ -11,6 +9,11 @@ import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
 import { DispatchingVegaLoggerService } from '@deneb-viz/vega-runtime/extensibility';
 import { logDebug, logTimeEnd } from '@deneb-viz/utils/logging';
 import { VegaPatternFillServices } from '@deneb-viz/vega-runtime/pattern-fill';
+import {
+    contextMenuHandler,
+    crossFilterHandler,
+    type InteractivityLookupDataset
+} from '@deneb-viz/powerbi-compat/interactivity';
 
 let view: View | null;
 
@@ -83,18 +86,24 @@ Object.freeze(VegaViewServices);
  * For the supplied View, check conditions for context menu binding, and
  * apply/remove as necessary.
  */
-const bindContextMenuEvents = (view: View) => {
+const bindContextMenuEvents = (
+    view: View,
+    dataset: InteractivityLookupDataset
+) => {
     logDebug('Binding context menu listener...');
-    view.addEventListener('contextmenu', handleContextMenuEvent);
+    view.addEventListener('contextmenu', contextMenuHandler(dataset));
 };
 
 /**
  * For the supplied View, check conditions for data point selection binding,
  * and apply/remove as necessary.
  */
-const bindCrossFilterEvents = (view: View) => {
-    logDebug('Binding cross-filter menu listener...');
-    view.addEventListener('click', handleCrossFilterEvent);
+const bindCrossFilterEvents = (
+    view: View,
+    dataset: InteractivityLookupDataset
+) => {
+    logDebug('Binding cross-filter listener...');
+    view.addEventListener('click', crossFilterHandler(dataset));
 };
 
 /**
@@ -115,7 +124,10 @@ const bindContainerSignals = (view: View) => {
 /**
  * Any logic that we need to apply to a new Vega view.
  */
-export const handleNewView = (newView: View) => {
+export const handleNewView = (
+    newView: View,
+    dataset: InteractivityLookupDataset
+) => {
     logDebug('Vega view initialized.');
     setRenderingStarted();
     const {
@@ -146,8 +158,8 @@ export const handleNewView = (newView: View) => {
             data: VegaViewServices.getAllData()
         });
         bindContainerSignals(view);
-        bindContextMenuEvents(view);
-        selectionMode === 'simple' && bindCrossFilterEvents(view);
+        bindContextMenuEvents(view, dataset);
+        selectionMode === 'simple' && bindCrossFilterEvents(view, dataset);
         generateRenderId();
         logTimeEnd('VegaRender');
         setRenderingFinished();

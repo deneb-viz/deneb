@@ -2,7 +2,7 @@ import {
     FORMATTED_FIELD_SUFFIX,
     FORMAT_FIELD_SUFFIX,
     getHighlightRegExpAlternation
-} from '@deneb-viz/dataset/field';
+} from '@deneb-viz/powerbi-compat/dataset';
 import type { TokenPatternReplacer } from './types';
 import {
     JSON_FIELD_TRACKING_METADATA_PLACEHOLDER,

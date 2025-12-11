@@ -7,7 +7,7 @@ import { useDebugStyles } from '..';
 import store from '../../../store';
 import { DEBUG_ROOT_DATASET_NAME } from '../../../constants';
 import { VegaViewServices } from '../../vega-extensibility';
-import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/powerbi-compat/dataset';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logRender } from '@deneb-viz/utils/logging';
 

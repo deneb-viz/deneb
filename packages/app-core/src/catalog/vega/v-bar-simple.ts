@@ -7,7 +7,7 @@ import {
 } from '.';
 import { getNewIncludedTemplateMetadata } from '..';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
-import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/powerbi-compat/dataset';
 
 const dataset: UsermetaDatasetField[] = [
     {

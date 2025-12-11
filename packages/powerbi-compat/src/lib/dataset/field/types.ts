@@ -11,6 +11,8 @@ export type AugmentedMetadataField = {
     source: DatasetFieldValueSource;
     // Array index we can use to re-point to the data view (if needed).
     sourceIndex: number;
+    // Pre-encoded field name to avoid repeated computation during row mapping.
+    encodedName?: string;
 };
 
 /**

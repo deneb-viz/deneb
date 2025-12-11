@@ -42,15 +42,9 @@ export const HIGHLIGHT_COMPARATOR_SUFFIX = `${HIGHLIGHT_FIELD_SUFFIX}Comparator`
 export const ROW_IDENTITY_FIELD_NAME = '__identity__';
 
 /**
- * The name we use to denote a row in the datset, which is also used for reconciliation of selectors.
+ * The name we use to denote a row in the dataset, which is also used for reconciliation of selectors.
  */
 export const ROW_INDEX_FIELD_NAME = '__row__';
-
-/**
- * The name we use to denote a field in the dataset used to hold the stringified representation of the identity, and
- * therefore use for comparison operations and suchlike.
- */
-export const ROW_KEY_FIELD_NAME = '__key__';
 
 /**
  * The name we use to denote a data point's selection status within the dataset.

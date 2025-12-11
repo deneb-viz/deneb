@@ -5,8 +5,10 @@ import cloneDeep from 'lodash/cloneDeep';
 import { getState } from '../../store';
 
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
-import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
-import { type DatasetValueRow } from '@deneb-viz/dataset/datum';
+import {
+    DATASET_DEFAULT_NAME,
+    type DatasetValueRow
+} from '@deneb-viz/powerbi-compat/dataset';
 import { logDebug, logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
 import { getVisualSettings } from '@deneb-viz/powerbi-compat/visual-host';
 

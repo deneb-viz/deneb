@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { shallow } from 'zustand/shallow';
 import {
     Link,
     ToastTrigger,
@@ -7,8 +6,7 @@ import {
     useToastController
 } from '@fluentui/react-components';
 
-import store from '../../../store';
-import { clearSelection, dispatchCrossFilterAbort } from '../../interactivity';
+import { useDenebVisualState } from '../../../store';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import {
     NotificationProps,
@@ -16,22 +14,26 @@ import {
     TOAST_NOTIFICATION_ID_CROSS_FILTER_EXCEEDED,
     TOAST_NOTIFICATION_TIMEOUT
 } from '@deneb-viz/app-core';
+import { InteractivityManager } from '@deneb-viz/powerbi-compat/interactivity';
 
 export const NotificationCrossFilterExceeded = ({
     toasterId
 }: NotificationProps) => {
-    const { datasetHasSelectionAborted, datasetSelectionLimit } = store(
-        (state) => ({
-            datasetHasSelectionAborted: state.datasetHasSelectionAborted,
-            datasetSelectionLimit: state.datasetSelectionLimit
-        }),
-        shallow
-    );
+    const {
+        selectionLimit,
+        selectionLimitExceeded,
+        setSelectionLimitExceeded
+    } = useDenebVisualState((state) => ({
+        selectionLimit:
+            state.settings.vega.interactivity.selectionMaxDataPoints.value,
+        selectionLimitExceeded: state.interactivity.selectionLimitExceeded,
+        setSelectionLimitExceeded: state.interactivity.setSelectionLimitExceeded
+    }));
     const toastId = useId(TOAST_NOTIFICATION_ID_CROSS_FILTER_EXCEEDED);
     const { dispatchToast, dismissToast } = useToastController(toasterId);
     const handleClearSelection = () => {
         dismissToast(toastId);
-        clearSelection();
+        InteractivityManager.crossFilter();
     };
     const notify = () =>
         dispatchToast(
@@ -44,7 +46,7 @@ export const NotificationCrossFilterExceeded = ({
                 )}
                 body={getI18nValue(
                     'Text_Toast_Body_Cross_Filter_Limit_Reached',
-                    [datasetSelectionLimit]
+                    [selectionLimit]
                 )}
                 footer={
                     <>
@@ -66,18 +68,18 @@ export const NotificationCrossFilterExceeded = ({
                 intent: 'warning',
                 onStatusChange: (e, { status: toastStatus }) => {
                     if (toastStatus === 'dismissed') {
-                        dispatchCrossFilterAbort(false, datasetSelectionLimit);
+                        setSelectionLimitExceeded(false);
                     }
                 },
                 timeout: TOAST_NOTIFICATION_TIMEOUT
             }
         );
     useEffect(() => {
-        if (datasetHasSelectionAborted) {
+        if (selectionLimitExceeded) {
             notify();
         } else {
             dismissToast(toastId);
         }
-    }, [datasetHasSelectionAborted]);
+    }, [selectionLimitExceeded]);
     return <></>;
 };

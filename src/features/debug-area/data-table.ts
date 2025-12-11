@@ -2,7 +2,6 @@ import { textMeasurementService } from 'powerbi-visuals-utils-formattingutils';
 import { isDate, isFunction, isNumber } from 'vega';
 
 import { TABLE_COLUMN_RESERVED_WORDS } from '../../constants';
-import { getSanitisedTooltipValue } from '../interactivity';
 import { DATA_TABLE_FONT_FAMILY, DATA_TABLE_FONT_SIZE } from '.';
 import { type IWorkerDatasetViewerTranslations } from '@deneb-viz/app-core';
 import {
@@ -10,11 +9,11 @@ import {
     isCrossHighlightComparatorField,
     isCrossHighlightField,
     isCrossHighlightStatusField,
-    ROW_IDENTITY_FIELD_NAME,
     ROW_INDEX_FIELD_NAME,
     SELECTED_ROW_FIELD_NAME
-} from '@deneb-viz/dataset/field';
+} from '@deneb-viz/powerbi-compat/dataset';
 import {
+    getSanitizedTooltipValue,
     type DataPointHighlightComparator,
     type DataPointSelectionStatus
 } from '@deneb-viz/powerbi-compat/interactivity';
@@ -57,7 +56,7 @@ export const getCellTooltip = (field: string, value: any) => {
         case isFunction(value):
             return value.toString();
         default:
-            return getSanitisedTooltipValue(value);
+            return getSanitizedTooltipValue(value);
     }
 };
 
@@ -190,11 +189,7 @@ const getReservedTableColumnTooltip = (field: string) => {
         default:
             return getI18nValue(
                 `Pivot_Dataset_${
-                    field === ROW_INDEX_FIELD_NAME
-                        ? 'RowIdentifier'
-                        : field === ROW_IDENTITY_FIELD_NAME
-                          ? 'IdentityName'
-                          : 'Unknown'
+                    field === ROW_INDEX_FIELD_NAME ? 'RowIdentifier' : 'Unknown'
                 }`,
                 [field]
             );
@@ -219,7 +214,7 @@ const formatNumberValueForTable = (value: number, tooltip = false) =>
  */
 const getStringifiedDisplayValue = (value: any, tooltip = false) => {
     const pruned = getPrunedObject(value);
-    return tooltip ? getSanitisedTooltipValue(pruned) : pruned;
+    return tooltip ? getSanitizedTooltipValue(pruned) : pruned;
 };
 
 /**

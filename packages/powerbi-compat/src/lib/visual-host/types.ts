@@ -10,14 +10,6 @@ export type VisualUpdateComparisonOptions = {
     currentSettings: VisualFormattingSettingsModel;
 };
 
-export type CrossHighlightPropCheckOptions = {
-    enableHighlight: boolean;
-};
-
-export type CrossFilterPropCheckOptions = {
-    enableSelection: boolean;
-};
-
 /**
  * An object for persisting to the data view.
  */

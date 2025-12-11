@@ -8,8 +8,10 @@ import {
 import { getNewIncludedTemplateMetadata } from '..';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
-import { DATASET_DEFAULT_NAME } from '@deneb-viz/dataset/data';
-import { SELECTED_ROW_FIELD_NAME } from '@deneb-viz/dataset/field';
+import {
+    DATASET_DEFAULT_NAME,
+    SELECTED_ROW_FIELD_NAME
+} from '@deneb-viz/powerbi-compat/dataset';
 
 const dataset: UsermetaDatasetField[] = [
     {

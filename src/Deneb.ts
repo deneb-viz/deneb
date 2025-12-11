@@ -11,7 +11,7 @@ import { createRoot } from 'react-dom/client';
 
 import App from './components/App';
 
-import { getState } from './store';
+import { getDenebVisualState, getState } from './store';
 import { getMappedDataset } from './core/data/dataset';
 import { handlePropertyMigration } from './core/utils/versioning';
 import { VegaExtensibilityServices } from './features/vega-extensibility';
@@ -43,6 +43,8 @@ import {
     logTimeStart
 } from '@deneb-viz/utils/logging';
 import { VegaPatternFillServices } from '@deneb-viz/vega-runtime/pattern-fill';
+import { InteractivityManager } from '@deneb-viz/powerbi-compat/interactivity';
+import { getDenebState } from '@deneb-viz/app-core';
 
 /**
  * Centralize/report developer mode from environment.
@@ -58,18 +60,25 @@ logHeading(`Version: ${APPLICATION_INFORMATION_CONFIGURATION?.version}`, 12);
 logDebug(`Developer Mode: ${IS_DEVELOPER_MODE}`);
 
 export class Deneb implements IVisual {
-    #host: powerbi.extensibility.visual.IVisualHost;
     #applicationWrapper: HTMLElement;
     #root: ReturnType<typeof createRoot>;
 
     constructor(options: VisualConstructorOptions) {
         logHost('Constructor has been called.', { options });
         try {
-            this.#host = options.host;
+            const { host } = options;
+            const { setSelectionLimitExceeded } =
+                getDenebVisualState().interactivity;
+            const { updateDatasetSelectors } = getDenebState();
             VisualHostServices.bind(options);
+            InteractivityManager.bind({
+                host,
+                limitExceededCallback: setSelectionLimitExceeded,
+                selectorUpdateCallback: updateDatasetSelectors
+            });
             I18nServices.bind(options);
             VegaPatternFillServices.bind();
-            VegaExtensibilityServices.bind(this.#host.colorPalette);
+            VegaExtensibilityServices.bind(host.colorPalette);
             VisualFormattingSettingsService.bind(getLocalizationManager());
             const { element } = options;
             this.#applicationWrapper = document.createElement('div');
@@ -110,6 +119,9 @@ export class Deneb implements IVisual {
         // Provide intial update options to store
         const { setVisualUpdate } = getState();
         const settings = getVisualSettings();
+        const { setVisualSettings } = getDenebVisualState().settings;
+        setVisualSettings(settings);
+        // TODO: likely migrate to visual store action and add as dependency to main app
         setVisualUpdate({
             options,
             settings
@@ -184,7 +196,6 @@ export class Deneb implements IVisual {
                     enableHighlight
                 );
                 updateDataset({
-                    categories: categorical?.categories,
                     dataset
                 });
                 // Tracking is now only used for export (#486)

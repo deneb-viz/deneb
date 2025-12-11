@@ -3,7 +3,6 @@ import { createClassFromSpec, View } from 'react-vega';
 
 import { handleNewView, handleViewError } from '../../vega-extensibility';
 import { useVegaStyles } from '..';
-import { getPowerBiTooltipHandler } from '../../interactivity';
 import { getD3FormatLocale, getD3TimeFormatLocale } from '../../i18n';
 import { getSpecificationForVisual } from '../../specification/logic';
 import {
@@ -12,15 +11,16 @@ import {
     type SpecRenderMode
 } from '@deneb-viz/vega-runtime/embed';
 import { type CompiledSpecification } from '@deneb-viz/json-processing/spec-processing';
-import { getVisualHost } from '@deneb-viz/powerbi-compat/visual-host';
+import { tooltipHandler } from '@deneb-viz/powerbi-compat/interactivity';
 import { logDebug, logRender, logTimeStart } from '@deneb-viz/utils/logging';
+import { useDenebState } from '@deneb-viz/app-core';
 
 interface IVegaRenderProps {
     datasetHash: string;
     enableTooltips: boolean;
+    multiSelectDelay: number;
     locale: string;
     logLevel: number;
-    ordinalColorCount: number;
     provider: SpecProvider;
     renderMode: SpecRenderMode;
     specification: CompiledSpecification;
@@ -48,8 +48,6 @@ const arePropsEqual = (
         prevProps.viewportWidth == nextProps.viewportWidth;
     const isLogLevelEqual = prevProps.logLevel == nextProps.logLevel;
     const isLocaleEqual = prevProps.locale == nextProps.locale;
-    const isOrdinalColorCountEqual =
-        prevProps.ordinalColorCount == nextProps.ordinalColorCount;
     const isSame =
         isSpecEqual &&
         isProviderEqual &&
@@ -58,8 +56,7 @@ const arePropsEqual = (
         isViewportEqual &&
         isDatasetEqual &&
         isLocaleEqual &&
-        isLogLevelEqual &&
-        isOrdinalColorCountEqual;
+        isLogLevelEqual;
     logDebug('VegaRender: arePropsEqual', {
         isSame,
         isSpecEqual,
@@ -82,6 +79,7 @@ const arePropsEqual = (
 export const VegaRender: React.FC<IVegaRenderProps> = memo(
     ({
         enableTooltips,
+        multiSelectDelay,
         locale,
         logLevel,
         provider,
@@ -92,25 +90,32 @@ export const VegaRender: React.FC<IVegaRenderProps> = memo(
     }) => {
         const loader = useMemo(() => getVegaLoader(), []);
         const classes = useVegaStyles();
-        const tooltipHandler = useMemo(
+        const fields = useDenebState((state) => state.dataset.fields);
+        const values = useDenebState((state) => state.dataset.values);
+        const ttHandler = useMemo(
             () =>
-                getPowerBiTooltipHandler(
-                    enableTooltips,
-                    getVisualHost().tooltipService
-                ),
-            [enableTooltips]
+                tooltipHandler({
+                    enabled: enableTooltips,
+                    fields,
+                    multiSelectDelay,
+                    values
+                }),
+            [enableTooltips, fields, multiSelectDelay, values]
         );
         const numberFormatLocale = useMemo(() => getD3FormatLocale(), [locale]);
         const timeFormatLocale = useMemo(
             () => getD3TimeFormatLocale(),
             [locale]
         );
-        const onNewView = useCallback((view: View) => {
-            logDebug('New Vega view', {
-                hashValue: specification.hashValue
-            });
-            handleNewView(view);
-        }, []);
+        const onNewView = useCallback(
+            (view: View) => {
+                logDebug('New Vega view', {
+                    hashValue: specification.hashValue
+                });
+                handleNewView(view, { fields, values });
+            },
+            [fields, values]
+        );
         const onError = useCallback((error: Error) => {
             handleViewError(error);
         }, []);
@@ -149,7 +154,7 @@ export const VegaRender: React.FC<IVegaRenderProps> = memo(
                 actions={false}
                 renderer={renderMode}
                 loader={loader}
-                tooltip={tooltipHandler}
+                tooltip={ttHandler}
                 logLevel={logLevel}
                 formatLocale={numberFormatLocale}
                 timeFormatLocale={timeFormatLocale}

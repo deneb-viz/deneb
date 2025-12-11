@@ -26,10 +26,6 @@ import {
     type IWorkerDatasetViewerMessage
 } from '@deneb-viz/app-core';
 import {
-    ROW_IDENTITY_FIELD_NAME,
-    ROW_KEY_FIELD_NAME
-} from '@deneb-viz/dataset/field';
-import {
     logDebug,
     logRender,
     logTimeEnd,
@@ -104,7 +100,6 @@ export const DatasetViewer: React.FC<IDatasetViewerProps> = ({
             const message: IWorkerDatasetViewerMessage = {
                 canvasFontCharWidth: getDataTableRenderedCharWidth(),
                 dataset: datasetRaw.values,
-                datasetKeyName: ROW_KEY_FIELD_NAME,
                 jobId,
                 translations: getDataTableWorkerTranslations(),
                 valueMaxLength: DATA_TABLE_VALUE_MAX_LENGTH
@@ -367,38 +362,33 @@ const getTableColumns = (
     maxLengths: IWorkerDatasetViewerMaxDisplayWidths
 ): TableColumn<IWorkerDatasetViewerDataTableRow>[] => {
     logDebug('DatasetViewer: calculating table columns...');
-    return keys(dataset?.[0])
-        ?.filter(
-            (c) =>
-                [ROW_KEY_FIELD_NAME, ROW_IDENTITY_FIELD_NAME].indexOf(c) === -1
-        )
-        .map((c) => ({
-            id: c,
-            name: <span title={getColumnHeaderTooltip(c)}>{c}</span>,
-            cell: (row) => (
-                <DataTableCell
-                    displayValue={row[c]?.displayValue}
-                    field={c}
-                    rawValue={row[c]?.rawValue}
-                />
-            ),
-            sortable: true,
-            selector: (row) => row[c]?.displayValue,
-            reorder: true,
-            compact: true,
-            width: `${calculateMaxWidth(c, maxLengths[c])}px`,
-            sortFunction: (rowA, rowB) => {
-                const a = rowA[c]?.rawValue;
-                const b = rowB[c]?.rawValue;
-                if (a < b) {
-                    return -1;
-                }
-                if (a > b) {
-                    return 1;
-                }
-                return 0;
+    return keys(dataset?.[0])?.map((c) => ({
+        id: c,
+        name: <span title={getColumnHeaderTooltip(c)}>{c}</span>,
+        cell: (row) => (
+            <DataTableCell
+                displayValue={row[c]?.displayValue}
+                field={c}
+                rawValue={row[c]?.rawValue}
+            />
+        ),
+        sortable: true,
+        selector: (row) => row[c]?.displayValue,
+        reorder: true,
+        compact: true,
+        width: `${calculateMaxWidth(c, maxLengths[c])}px`,
+        sortFunction: (rowA, rowB) => {
+            const a = rowA[c]?.rawValue;
+            const b = rowB[c]?.rawValue;
+            if (a < b) {
+                return -1;
             }
-        }));
+            if (a > b) {
+                return 1;
+            }
+            return 0;
+        }
+    }));
 };
 
 /**

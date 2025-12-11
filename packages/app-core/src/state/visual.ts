@@ -36,8 +36,10 @@ import { getSpecificationParseOptions } from './helpers';
 import { type StoreState } from './state';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { PROVIDER_VERSION_CONFIGURATION } from '@deneb-viz/configuration';
-import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
-import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
+import {
+    type SelectionMode,
+    type UsermetaTemplate
+} from '@deneb-viz/template-usermeta';
 import { type StateCreator } from 'zustand';
 
 const MAX_UPDATE_HISTORY_COUNT = 100;

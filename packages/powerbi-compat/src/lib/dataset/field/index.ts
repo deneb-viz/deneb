@@ -8,7 +8,6 @@ export {
     HIGHLIGHT_STATUS_SUFFIX,
     ROW_IDENTITY_FIELD_NAME,
     ROW_INDEX_FIELD_NAME,
-    ROW_KEY_FIELD_NAME,
     SELECTED_ROW_FIELD_NAME
 } from './constants';
 export {

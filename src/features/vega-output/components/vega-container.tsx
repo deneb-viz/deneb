@@ -6,7 +6,6 @@ import { VegaRender } from './vega-render';
 import { useVegaStyles } from '..';
 import { mergeClasses } from '@griffel/core';
 import Scrollbars, { positionValues } from 'react-custom-scrollbars-2';
-import { clearSelection, hidePowerBiTooltip } from '../../interactivity';
 import { VEGA_CONTAINER_ID } from '../../../constants';
 import {
     type SpecProvider,
@@ -17,6 +16,7 @@ import throttle from 'lodash/throttle';
 import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
 import { getLocale } from '@deneb-viz/powerbi-compat/visual-host';
 import { logRender } from '@deneb-viz/utils/logging';
+import { InteractivityManager } from '@deneb-viz/powerbi-compat/interactivity';
 
 /**
  * Master component for hosting Vega content. We will handle the workflow
@@ -32,7 +32,7 @@ export const VegaContainer: React.FC = () => {
         jsonConfig,
         jsonSpec,
         logLevel,
-        ordinalColorCount,
+        multiSelectDelay,
         previewScrollbars,
         provider,
         renderMode,
@@ -53,8 +53,8 @@ export const VegaContainer: React.FC = () => {
             jsonConfig: state.visualSettings.vega.output.jsonConfig.value,
             jsonSpec: state.visualSettings.vega.output.jsonSpec.value,
             logLevel: state.visualSettings.vega.logging.logLevel.value,
-            ordinalColorCount:
-                state.visualSettings.theme.ordinal.ordinalColorCount.value,
+            multiSelectDelay:
+                state.visualSettings.vega.interactivity.tooltipDelay.value,
             previewScrollbars:
                 state.visualSettings.editor.preview.previewScrollbars.value,
             provider: state.visualSettings.vega.output.provider
@@ -105,7 +105,7 @@ export const VegaContainer: React.FC = () => {
             enableTooltips={enableTooltips}
             locale={locale}
             logLevel={logLevel as number}
-            ordinalColorCount={ordinalColorCount}
+            multiSelectDelay={multiSelectDelay}
             provider={provider}
             renderMode={renderMode}
             specification={specification}
@@ -140,8 +140,7 @@ export const VegaContainer: React.FC = () => {
             className={containerClassName}
             renderThumbHorizontal={scrollbarThumbHorizontal}
             renderThumbVertical={scrollbarThumbVertical}
-            onClick={clearSelection}
-            onMouseOut={hidePowerBiTooltip}
+            onClick={() => InteractivityManager.crossFilter()}
             onScrollFrame={throttle((e: positionValues) => {
                 const container = VegaViewServices.getView().container();
                 const signal = getSignalPbiContainer({

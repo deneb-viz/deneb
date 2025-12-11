@@ -23,7 +23,7 @@ import {
     SpecProvider,
     type SpecRenderMode
 } from '@deneb-viz/vega-runtime/embed';
-import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
+import { type SelectionMode } from '@deneb-viz/template-usermeta';
 import { HOTKEY_BINDINGS } from './constants';
 
 /**

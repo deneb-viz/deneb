@@ -1,4 +1,4 @@
-import { getHighlightRegExpAlternation } from '@deneb-viz/dataset/field';
+import { getHighlightRegExpAlternation } from '@deneb-viz/powerbi-compat/dataset';
 import {
     getEscapedReplacerPattern,
     getNumberFormatRegExpAlternation,

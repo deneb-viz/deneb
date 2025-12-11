@@ -1,4 +1,4 @@
-import { IDataset } from '@deneb-viz/dataset/data';
+import { type IDataset } from '@deneb-viz/powerbi-compat/dataset';
 import powerbi from 'powerbi-visuals-api';
 
 export type DebugPaneRole = 'log' | 'data' | 'signal';
