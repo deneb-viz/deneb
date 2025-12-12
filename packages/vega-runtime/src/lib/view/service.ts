@@ -1,19 +1,19 @@
 import { falsy, truthy, View } from 'vega';
-import { getState } from '../../../store';
-import { IVegaViewServices } from '../types';
 import {
     setRenderingFinished,
     setRenderingStarted
 } from '@deneb-viz/powerbi-compat/visual-host';
 import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
-import { DispatchingVegaLoggerService } from '@deneb-viz/vega-runtime/extensibility';
 import { logDebug, logTimeEnd } from '@deneb-viz/utils/logging';
-import { VegaPatternFillServices } from '@deneb-viz/vega-runtime/pattern-fill';
 import {
     contextMenuHandler,
     crossFilterHandler,
+    VegaDatum,
     type InteractivityLookupDataset
 } from '@deneb-viz/powerbi-compat/interactivity';
+import { VegaPatternFillServices } from '../pattern-fill';
+import { DispatchingVegaLoggerService } from '../extensibility';
+import { HandleNewViewOptions, HandleViewErrorOptions } from './types';
 
 let view: View | null;
 
@@ -24,7 +24,7 @@ let view: View | null;
  * debugging. As such, any dependent components need to factor this into their
  * rendering logic.
  */
-export const VegaViewServices: IVegaViewServices = {
+export const VegaViewServices = {
     bind: (v: View) => {
         view = v;
     },
@@ -61,7 +61,7 @@ export const VegaViewServices: IVegaViewServices = {
     /**
      * Get specified data stream from view by name.
      */
-    getDataByName: (name: string) => view?.data(name),
+    getDataByName: (name: string): VegaDatum[] | undefined => view?.data(name),
     /**
      * Get specified signal from view by name.
      */
@@ -69,6 +69,7 @@ export const VegaViewServices: IVegaViewServices = {
     /**
      * Set specified signal in view by name. f it does not exist, it will not be set.
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setSignalByName: (name: string, value: any) => {
         if (VegaViewServices.doesSignalNameExist(name)) {
             view?.signal(name, value);
@@ -112,8 +113,10 @@ const bindCrossFilterEvents = (
 const bindContainerSignals = (view: View) => {
     const update = () => {
         const container = view.container();
-        const signal = getSignalPbiContainer({ container });
-        VegaViewServices.setSignalByName(signal.name, signal.value);
+        if (container) {
+            const signal = getSignalPbiContainer({ container });
+            VegaViewServices.setSignalByName(signal.name, signal.value);
+        }
     };
     update();
     view.addResizeListener(() => {
@@ -124,28 +127,19 @@ const bindContainerSignals = (view: View) => {
 /**
  * Any logic that we need to apply to a new Vega view.
  */
-export const handleNewView = (
-    newView: View,
-    dataset: InteractivityLookupDataset
-) => {
+export const handleNewView = (newView: View, options: HandleNewViewOptions) => {
     logDebug('Vega view initialized.');
     setRenderingStarted();
     const {
-        specification: { logError, logWarn },
-        interface: { generateRenderId },
-        visualSettings: {
-            vega: {
-                logging: {
-                    logLevel: { value: logLevel }
-                },
-                interactivity: {
-                    selectionMode: { value: selectionMode }
-                }
-            }
-        }
-    } = getState();
+        dataset,
+        generateRenderId,
+        logError,
+        logWarn,
+        logLevel,
+        selectionMode
+    } = options;
     newView.logger(
-        new DispatchingVegaLoggerService(logLevel as number, logWarn, logError)
+        new DispatchingVegaLoggerService(logLevel, logWarn, logError)
     );
     newView.runAfter((view) => {
         logDebug('Running post-Vega view logic...', view);
@@ -159,7 +153,9 @@ export const handleNewView = (
         });
         bindContainerSignals(view);
         bindContextMenuEvents(view, dataset);
-        selectionMode === 'simple' && bindCrossFilterEvents(view, dataset);
+        if (selectionMode === 'simple') {
+            bindCrossFilterEvents(view, dataset);
+        }
         generateRenderId();
         logTimeEnd('VegaRender');
         setRenderingFinished();
@@ -169,13 +165,13 @@ export const handleNewView = (
 /**
  * Any logic that we need to apply when the view errors.
  */
-export const handleViewError = (error: Error) => {
+export const handleViewError = (
+    error: Error,
+    options: HandleViewErrorOptions
+) => {
     logDebug('Vega view error.', error);
+    const { generateRenderId, logError } = options;
     logDebug('Clearing view...');
-    const {
-        interface: { generateRenderId },
-        specification: { logError }
-    } = getState();
     VegaViewServices.clearView();
     logDebug('View services', {
         view: VegaViewServices.getView(),

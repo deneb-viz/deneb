@@ -7,12 +7,12 @@ import { useDebugStyles } from '..';
 import { SignalValue } from './signal-value';
 import { DataTableViewer } from './data-table-viewer';
 import { NoDataMessage } from './no-data-message';
-import { VegaViewServices } from '../../vega-extensibility';
 import { ISignalTableDataRow } from '../types';
 import { DataTableCell } from './data-table-cell';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logRender } from '@deneb-viz/utils/logging';
 import { stringifyPruned } from '@deneb-viz/utils/object';
+import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 
 interface ISignalViewerProps {
     renderId: string;

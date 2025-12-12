@@ -183,7 +183,7 @@ const pbiCrossFilterApply = (
         const result = crossFilterHandler({ fields, values }, options)(
             event,
             item
-        );
+        ) as unknown as CrossFilterSelectionDirective;
         if (result.warning) {
             throw new Error(result.warning);
         }

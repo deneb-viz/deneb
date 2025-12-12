@@ -1,4 +1,4 @@
-import { type ScenegraphEvent, type Item } from 'vega';
+import { type EventListenerHandler } from 'vega';
 
 import { getResolvedRowIdentities, resolveDatumFromItem } from './data-point';
 import { InteractivityManager } from './interactivity-manager';
@@ -15,8 +15,10 @@ import { type InteractivityLookupDataset } from './types';
  * This is currently observed in Charticulator and it looks like the core visuals avoid this situation, so we'll try to
  * do the same for now.
  */
-export const contextMenuHandler = (dataset: InteractivityLookupDataset) => {
-    return (event: ScenegraphEvent, item: Item) => {
+export const contextMenuHandler = (
+    dataset: InteractivityLookupDataset
+): EventListenerHandler => {
+    return (event, item) => {
         event.stopPropagation();
         const coordinates = resolveCoordinates(event as MouseEvent);
         const data = resolveDatumFromItem(item);

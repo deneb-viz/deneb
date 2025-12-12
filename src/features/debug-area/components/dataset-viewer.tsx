@@ -15,7 +15,6 @@ import {
     getDataTableWorkerTranslations
 } from '../data-table';
 import { TABLE_VALUE_MAX_DEPTH } from '../../../constants';
-import { VegaViewServices } from '../../vega-extensibility';
 
 import { getHashValue, getNewUuid } from '@deneb-viz/utils/crypto';
 import {
@@ -32,6 +31,7 @@ import {
     logTimeStart
 } from '@deneb-viz/utils/logging';
 import { getPrunedObject } from '@deneb-viz/utils/object';
+import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 
 interface IDatasetViewerProps {
     datasetName: string;

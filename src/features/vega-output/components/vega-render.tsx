@@ -1,7 +1,6 @@
 import React, { memo, useCallback, useMemo } from 'react';
 import { createClassFromSpec, View } from 'react-vega';
 
-import { handleNewView, handleViewError } from '../../vega-extensibility';
 import { useVegaStyles } from '..';
 import { getD3FormatLocale, getD3TimeFormatLocale } from '../../i18n';
 import { getSpecificationForVisual } from '../../specification/logic';
@@ -14,6 +13,8 @@ import { type CompiledSpecification } from '@deneb-viz/json-processing/spec-proc
 import { tooltipHandler } from '@deneb-viz/powerbi-compat/interactivity';
 import { logDebug, logRender, logTimeStart } from '@deneb-viz/utils/logging';
 import { useDenebState } from '@deneb-viz/app-core';
+import { handleNewView, handleViewError } from '@deneb-viz/vega-runtime/view';
+import { SelectionMode } from '@deneb-viz/template-usermeta';
 
 interface IVegaRenderProps {
     datasetHash: string;
@@ -92,6 +93,14 @@ export const VegaRender: React.FC<IVegaRenderProps> = memo(
         const classes = useVegaStyles();
         const fields = useDenebState((state) => state.dataset.fields);
         const values = useDenebState((state) => state.dataset.values);
+        const { selectionMode, generateRenderId, logWarn, logError } =
+            useDenebState((state) => ({
+                selectionMode: state.visualSettings.vega.interactivity
+                    .selectionMode.value as SelectionMode,
+                generateRenderId: state.interface.generateRenderId,
+                logWarn: state.specification.logWarn,
+                logError: state.specification.logError
+            }));
         const ttHandler = useMemo(
             () =>
                 tooltipHandler({
@@ -112,12 +121,19 @@ export const VegaRender: React.FC<IVegaRenderProps> = memo(
                 logDebug('New Vega view', {
                     hashValue: specification.hashValue
                 });
-                handleNewView(view, { fields, values });
+                handleNewView(view, {
+                    dataset: { fields, values },
+                    logLevel,
+                    selectionMode,
+                    generateRenderId,
+                    logError,
+                    logWarn
+                });
             },
             [fields, values]
         );
         const onError = useCallback((error: Error) => {
-            handleViewError(error);
+            handleViewError(error, { generateRenderId, logError });
         }, []);
         const resolvedProvider = useMemo(
             () => (provider === 'vegaLite' ? 'vega-lite' : provider),

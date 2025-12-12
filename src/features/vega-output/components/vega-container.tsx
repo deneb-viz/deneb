@@ -11,12 +11,12 @@ import {
     type SpecProvider,
     type SpecRenderMode
 } from '@deneb-viz/vega-runtime/embed';
-import { VegaViewServices } from '../../vega-extensibility';
 import throttle from 'lodash/throttle';
 import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
 import { getLocale } from '@deneb-viz/powerbi-compat/visual-host';
 import { logRender } from '@deneb-viz/utils/logging';
 import { InteractivityManager } from '@deneb-viz/powerbi-compat/interactivity';
+import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 
 /**
  * Master component for hosting Vega content. We will handle the workflow

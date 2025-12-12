@@ -4,7 +4,6 @@ import { shallow } from 'zustand/shallow';
 
 import store from '../../../store';
 import { useVisualExportStyles } from '.';
-import { VegaViewServices } from '../../vega-extensibility';
 import {
     CappedTextField,
     PreviewImage,
@@ -18,6 +17,7 @@ import {
     getBase64MimeType
 } from '@deneb-viz/utils/base64';
 import { TEMPLATE_PREVIEW_IMAGE_MAX_SIZE } from '@deneb-viz/configuration';
+import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 
 const IMAGE_TYPE = 'png';
 

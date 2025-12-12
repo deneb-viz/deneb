@@ -5,7 +5,8 @@ import {
     View,
     Warn,
     type Item,
-    type ScenegraphEvent
+    type ScenegraphEvent,
+    EventListenerHandler
 } from 'vega';
 
 import {
@@ -39,13 +40,13 @@ const LOG_PREFIX = '[crossFilterHandler]';
 export const crossFilterHandler = (
     dataset: InteractivityLookupDataset,
     crossFilterOptions?: CrossFilterOptions
-) => {
-    return (event: ScenegraphEvent, item: Item) => {
+): EventListenerHandler => {
+    return (event, item) => {
         event.stopPropagation();
         event.preventDefault();
         const result = getResolvedCrossFilterResult(
             event,
-            item,
+            item ?? ({} as Item),
             dataset,
             crossFilterOptions
         );

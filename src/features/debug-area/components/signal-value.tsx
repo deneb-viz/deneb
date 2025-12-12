@@ -3,10 +3,10 @@ import React, { useEffect, useState } from 'react';
 import { usePrevious } from '../../../hooks';
 import { DataTableCell } from './data-table-cell';
 import { DATA_TABLE_VALUE_MAX_LENGTH } from '..';
-import { VegaViewServices } from '../../vega-extensibility';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { stringifyPruned } from '@deneb-viz/utils/object';
+import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 
 interface IDataTableCellSignalValueProps {
     signalName: string;
