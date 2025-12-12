@@ -4,17 +4,16 @@ export {
     monaco,
     setupMonacoWorker
 } from './components/code-editor/monaco-integration';
-export * from './components/data-viewer';
+export * from './components/template-metadata';
+export * from './components/ui';
+export * from './features/debug-area';
 export {
     datasetViewerWorker,
     type IWorkerDatasetViewerDataTableRow,
     type IWorkerDatasetViewerMaxDisplayWidths,
     type IWorkerDatasetViewerMessage,
     type IWorkerDatasetViewerTranslations
-} from './components/data-viewer/workers';
-export * from './components/template-metadata';
-export * from './components/ui';
-export * from './features/debug-area';
+} from './features/debug-area/workers';
 export * from './features/editor-area';
 export * from './features/project-create';
 export * from './features/project-export';

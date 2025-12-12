@@ -4,8 +4,8 @@ import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import {
     PREVIEW_PANE_TOOLBAR_MIN_SIZE,
     SPLIT_PANE_HANDLE_SIZE
-} from '../../../lib';
-import { StatusBarContainer } from '../../ui';
+} from '../../../../lib';
+import { StatusBarContainer } from '../../../../components/ui';
 
 const useProcessingDataMessageStyles = makeStyles({
     container: {

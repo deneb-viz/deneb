@@ -8,7 +8,7 @@ import {
 } from '@fluentui/react-icons';
 
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
-import { TooltipCustomMount } from '../../ui';
+import { TooltipCustomMount } from '../../../../components/ui';
 
 /**
  * Specifies navigation operations on the data table. We can use this as a property in a generic component to handle

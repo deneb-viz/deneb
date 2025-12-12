@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { usePrevious } from '@uidotdev/usehooks';
 
-import {
-    DATA_TABLE_VALUE_MAX_LENGTH,
-    DataTableCell
-} from '../../../../components/data-viewer';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { stringifyPruned } from '@deneb-viz/utils/object';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
+import { DATA_TABLE_VALUE_MAX_LENGTH } from '../../constants';
+import { DataTableCell } from '../data-table/data-table-cell';
 
 interface IDataTableCellSignalValueProps {
     signalName: string;

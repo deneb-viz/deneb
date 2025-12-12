@@ -5,7 +5,7 @@ export default defineConfig(() => [
     {
         entry: {
             'data-viewer':
-                'src/components/data-viewer/workers/data-viewer.worker.ts',
+                'src/features/debug-area/workers/data-viewer.worker.ts',
             'json-language': 'src/components/code-editor/workers/json.worker.ts'
         },
         format: ['iife'], // IIFE for worker execution
