@@ -2,7 +2,6 @@ import React, { memo, useCallback, useMemo } from 'react';
 import { createClassFromSpec, View } from 'react-vega';
 
 import { useVegaStyles } from '..';
-import { getD3FormatLocale, getD3TimeFormatLocale } from '../../i18n';
 import { getSpecificationForVisual } from '../../specification/logic';
 import {
     getVegaLoader,
@@ -12,9 +11,13 @@ import {
 import { type CompiledSpecification } from '@deneb-viz/json-processing/spec-processing';
 import { tooltipHandler } from '@deneb-viz/powerbi-compat/interactivity';
 import { logDebug, logRender, logTimeStart } from '@deneb-viz/utils/logging';
-import { useDenebState } from '@deneb-viz/app-core';
+import {
+    getD3FormatLocale,
+    getD3TimeFormatLocale,
+    useDenebState
+} from '@deneb-viz/app-core';
 import { handleNewView, handleViewError } from '@deneb-viz/vega-runtime/view';
-import { SelectionMode } from '@deneb-viz/template-usermeta';
+import { type SelectionMode } from '@deneb-viz/template-usermeta';
 
 interface IVegaRenderProps {
     datasetHash: string;

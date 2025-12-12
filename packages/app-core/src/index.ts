@@ -22,6 +22,7 @@ export * from './features/remap-fields';
 export * from './features/settings-pane';
 export * from './features/specification-editor';
 export * from './lib/commands';
+export * from './lib/i18n';
 export * from './lib/interface';
 export * from './lib/vega';
 export * from './state';

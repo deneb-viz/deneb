@@ -1,7 +1,5 @@
-import { getI18nValue as pbiGetI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
-import { ILocaleConfiguration } from './types';
-
-export * from './types';
+import { LocaleConfiguration } from './types';
+import { getLocale } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Resolve the D3 number format specifier, based on locale settings.
@@ -17,7 +15,7 @@ export const getD3TimeFormatLocale = () =>
     I18N_D3_LOCALES.timeFormat[getLocale()] ||
     I18N_D3_LOCALES.timeFormat[I18N_D3_LOCALES.default];
 
-const I18N_D3_LOCALES: ILocaleConfiguration = {
+const I18N_D3_LOCALES: LocaleConfiguration = {
     default: 'en-US',
     format: {
         'ar-SA': f_ar_SA,
@@ -175,4 +173,3 @@ import * as t_tr_TR from 'd3-time-format/locale/tr-TR.json';
 import * as t_uk_UA from 'd3-time-format/locale/uk-UA.json';
 import * as t_zh_CN from 'd3-time-format/locale/zh-CN.json';
 import * as t_zh_TW from 'd3-time-format/locale/zh-TW.json';
-import { getLocale } from '@deneb-viz/powerbi-compat/visual-host';
