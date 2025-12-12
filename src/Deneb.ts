@@ -14,7 +14,6 @@ import App from './components/App';
 import { getDenebVisualState, getState } from './store';
 import { getMappedDataset } from './core/data/dataset';
 import { handlePropertyMigration } from './core/utils/versioning';
-import { VegaExtensibilityServices } from './features/vega-extensibility';
 import {
     VisualFormattingSettingsService,
     getVisualFormattingService
@@ -45,6 +44,8 @@ import {
 import { VegaPatternFillServices } from '@deneb-viz/vega-runtime/pattern-fill';
 import { InteractivityManager } from '@deneb-viz/powerbi-compat/interactivity';
 import { getDenebState } from '@deneb-viz/app-core';
+import { VegaExtensibilityServices } from '@deneb-viz/vega-runtime/extensibility';
+import { type SelectionMode } from '@deneb-viz/template-usermeta';
 
 /**
  * Centralize/report developer mode from environment.
@@ -150,12 +151,14 @@ export class Deneb implements IVisual {
             vega: {
                 interactivity: {
                     enableHighlight: { value: enableHighlight },
-                    enableSelection: { value: enableSelection }
+                    enableSelection: { value: enableSelection },
+                    selectionMode: { value: selectionMode }
                 }
             }
         } = settings;
         const {
             processing: { shouldProcessDataset },
+            specification: { logWarn },
             updateDataset,
             updateDatasetProcessingStage
         } = getState();
@@ -200,6 +203,14 @@ export class Deneb implements IVisual {
                 });
                 // Tracking is now only used for export (#486)
                 // this.updateTracking();
+                VegaExtensibilityServices.update({
+                    dataset: {
+                        fields: dataset.fields,
+                        values: dataset.values
+                    },
+                    selectionMode: selectionMode as SelectionMode,
+                    logWarn
+                });
             }
             logTimeEnd('processDataset');
         } else {

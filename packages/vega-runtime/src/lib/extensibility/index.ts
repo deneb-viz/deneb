@@ -2,11 +2,7 @@ export {
     DispatchingVegaLoggerService,
     LocalVegaLoggerService
 } from './logging';
-export {
-    registerVegaExtensions,
-    type VegaExtensibilityConfiguration,
-    type VegaExtensibilityInput
-} from './runtime';
+export { VegaExtensibilityServices } from './service';
 export {
     VEGA_LITE_SCHEME_ADDITIONS,
     getPowerBiThemeBase,

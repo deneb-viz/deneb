@@ -1,139 +1,35 @@
-import { Item, expressionFunction, parseExpression } from 'vega';
-import { valueFormatter } from 'powerbi-visuals-utils-formattingutils';
-import ValueFormatterOptions = valueFormatter.ValueFormatterOptions;
+import { type Item, parseExpression } from 'vega';
 
-import { getState } from '../../../store';
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
-import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
-import {
-    getThemeColorByIndex,
-    getThemeColorByName
-} from '@deneb-viz/vega-runtime/extensibility';
-import { isObject } from '@deneb-viz/utils/inspection';
 import {
     CROSS_FILTER_LIMITS,
     crossFilterHandler,
-    type CrossFilterSelectionDirective,
     type CrossFilterOptions,
+    type CrossFilterSelectionDirective,
     InteractivityManager
 } from '@deneb-viz/powerbi-compat/interactivity';
-import { logDebug, logWarning } from '@deneb-viz/utils/logging';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
-import { generateDynamicPatternFill } from '@deneb-viz/vega-runtime/pattern-fill';
-import { shadeColor } from '@deneb-viz/utils/color';
-
-/**
- * A custom expression that should be added to the Vega view.
- */
-interface ICustomExpression {
-    name: string;
-    method: any;
-}
-
-/**
- * Apply any custom expressions that we have written (e.g. formatting) to the specification prior to rendering.
- */
-export const registerCustomExpressions = () =>
-    expressionsRegistry().forEach((e) => expressionFunction(e.name, e.method));
-
-/**
- * Registry of custom Power BI expressions to apply to the Vega view.
- */
-const expressionsRegistry = (): ICustomExpression[] => [
-    { name: 'pbiColor', method: pbiColor },
-    { name: 'pbiFormat', method: pbiFormat },
-    { name: 'pbiFormatAutoUnit', method: pbiFormatAutoUnit },
-    { name: 'pbiPatternSVG', method: pbiPatternSvg },
-    { name: 'pbiCrossFilterClear', method: pbiCrossFilterClear },
-    { name: 'pbiCrossFilterApply', method: pbiCrossFilterApply }
-];
-
-/**
- * Access a color from the Power BI theme by zero-based index, or its internal name, and (optionally) adjust its shade
- * by a percentage.
- */
-const pbiColor = (value: string | number, shadePercent: number = 0) =>
-    shadeColor(
-        getThemeColorByName(`${value}`) ||
-            getThemeColorByIndex(parseInt(`${value}`) || 0),
-        shadePercent
-    );
-
-/**
- * For the supplied value, and format string, apply Power BI-specific formatting to it.
- */
-const pbiFormat = (
-    datum: any,
-    params: string | ValueFormatterOptions,
-    options: ValueFormatterOptions = {}
-) => {
-    if (isObject(params)) {
-        return getFormattedValue(datum, null, <ValueFormatterOptions>params);
-    }
-    return getFormattedValue(
-        datum,
-        params === null ? null : `${params}`,
-        options
-    );
-};
-
-/**
- * Convenience function that applies Power BI formatting to a number, but re-passes the value, invoking auto-
- * formatting. This is analogous to the "Auto" option in the Power BI formatting pane.
- */
-const pbiFormatAutoUnit = (
-    datum: any,
-    params: string | ValueFormatterOptions,
-    options: ValueFormatterOptions = {}
-) => {
-    if (isObject(params)) {
-        return pbiFormat(datum, null, <ValueFormatterOptions>{
-            ...(params as ValueFormatterOptions),
-            ...{ value: datum }
-        });
-    }
-    return getFormattedValue(
-        datum,
-        <string>params,
-        <ValueFormatterOptions>{
-            ...options,
-            ...{ value: datum }
-        }
-    );
-};
-
-/**
- * Obtain a dynamic version of a pre-defined pattern, with a custom foreground and background color.
- */
-const pbiPatternSvg = (id: string, fgColor: string, bgColor: string) => {
-    return generateDynamicPatternFill(id, fgColor, bgColor);
-};
+import { logDebug, logWarning } from '@deneb-viz/utils/logging';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
+import { VegaExtensibilityServices } from '../service';
 
 /**
  * Explicitly request the visual host to clear any selection that has been applied to the visual.
  */
-const pbiCrossFilterClear = () => InteractivityManager.crossFilter();
+export const pbiCrossFilterClear = () => InteractivityManager.crossFilter();
 
 /**
  * Take supplied criteria and attempt to apply a cross-filter to the visual host based upon it.
  */
-const pbiCrossFilterApply = (
+export const pbiCrossFilterApply = (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     event: any,
     filterExpr: string,
     fOptions: CrossFilterOptions
 ) => {
-    const {
-        dataset: { fields, values },
-        specification: { logWarn },
-        visualSettings: {
-            vega: {
-                interactivity: {
-                    selectionMode: { value: selectionMode }
-                }
-            }
-        }
-    } = getState();
-    logDebug('[pbiCrossFilterApply] cross-filter event fired from view', {
+    const LOG_PREFIX = '[pbiCrossFilterApply]';
+    const { dataset, selectionMode, logWarn } =
+        VegaExtensibilityServices.getOptions();
+    logDebug(`${LOG_PREFIX} cross-filter event fired from view`, {
         event,
         expr: filterExpr
     });
@@ -180,7 +76,7 @@ const pbiCrossFilterApply = (
             item,
             options
         });
-        const result = crossFilterHandler({ fields, values }, options)(
+        const result = crossFilterHandler(dataset, options)(
             event,
             item
         ) as unknown as CrossFilterSelectionDirective;
@@ -192,12 +88,12 @@ const pbiCrossFilterApply = (
         logWarn(getI18nValue('Text_Warning_Invalid_Cross_Filter_Not_Applied'));
         logWarn(
             getI18nValue('Text_Warning_Invalid_Cross_Filter_General_Error', [
-                e.message
+                (e as Error).message
             ])
         );
-        logWarning('[pbiCrossFilterApply] error', e.message);
+        logWarning(`${LOG_PREFIX} error`, (e as Error).message);
         return <CrossFilterSelectionDirective>{
-            warning: e.message,
+            warning: (e as Error).message,
             rowNumbers: []
         };
     }
@@ -209,6 +105,7 @@ const pbiCrossFilterApply = (
  */
 const getResolvedFilterExpressionForPlaceholder = (
     filterExpr: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     datum: any
 ) =>
     filterExpr?.replace(/_{(.*?)}_/g, (m, m1) => {
@@ -242,6 +139,7 @@ const getResolvedCrossFilterOptions = (
 /**
  * Confirm that the author provided a valid event object for cross-filtering.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isEventPresent = (event: any) => event && event instanceof Event;
 
 /**
