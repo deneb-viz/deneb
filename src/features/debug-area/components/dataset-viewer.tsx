@@ -4,11 +4,9 @@ import debounce from 'lodash/debounce';
 import isEqual from 'lodash/isEqual';
 import keys from 'lodash/keys';
 
-import { useDebugStyles, DATA_TABLE_VALUE_MAX_LENGTH } from '..';
+import { useDebugStyles } from '..';
 import { DataTableViewer } from './data-table-viewer';
 import { getState } from '../../../store';
-import { NoDataMessage } from './no-data-message';
-import { DataTableCell } from './data-table-cell';
 import {
     getColumnHeaderTooltip,
     getDataTableRenderedCharWidth,
@@ -18,7 +16,10 @@ import { TABLE_VALUE_MAX_DEPTH } from '../../../constants';
 
 import { getHashValue, getNewUuid } from '@deneb-viz/utils/crypto';
 import {
+    DATA_TABLE_VALUE_MAX_LENGTH,
     datasetViewerWorker,
+    DataTableCell,
+    NoDataMessage,
     ProcessingDataMessage,
     type IWorkerDatasetViewerDataTableRow,
     type IWorkerDatasetViewerMaxDisplayWidths,

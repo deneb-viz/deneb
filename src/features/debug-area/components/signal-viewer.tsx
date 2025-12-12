@@ -4,15 +4,13 @@ import isObjectLike from 'lodash/isObjectLike';
 import { TableColumn } from 'react-data-table-component';
 
 import { useDebugStyles } from '..';
-import { SignalValue } from './signal-value';
 import { DataTableViewer } from './data-table-viewer';
-import { NoDataMessage } from './no-data-message';
 import { ISignalTableDataRow } from '../types';
-import { DataTableCell } from './data-table-cell';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logRender } from '@deneb-viz/utils/logging';
 import { stringifyPruned } from '@deneb-viz/utils/object';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
+import { DataTableCell, NoDataMessage, SignalValue } from '@deneb-viz/app-core';
 
 interface ISignalViewerProps {
     renderId: string;

@@ -67,14 +67,14 @@
         "jsonc-parser": "^3.2.1",
         "lodash": "^4.17.21",
         "mergician": "^2.0.2",
-        "vega": "6.2.0",
         "vega-expression": "^5.1.1",
-        "vega-lite": "6.4.1",
         "vscode-json-languageservice": "^5.3.11"
     },
     "peerDependencies": {
         "@deneb-viz/powerbi-compat": "*",
         "@deneb-viz/vega-runtime": "*",
-        "powerbi-visuals-api": "5.11.0"
+        "powerbi-visuals-api": "5.11.0",
+        "vega": "6.2.0",
+        "vega-lite": "6.4.1"
     }
 }

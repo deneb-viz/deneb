@@ -11,9 +11,9 @@ import { shallow } from 'zustand/shallow';
 
 import { useDebugStyles } from '..';
 import store from '../../../store';
-import { DatasetViewerOptions } from './dataset-viewer-options';
 import { DATA_VIEWER_CONFIGURATION } from '@deneb-viz/configuration';
 import {
+    DatasetSelect,
     DataTableNavigationButton,
     handleDataTableRowsPerPageChange,
     StatusBarContainer
@@ -79,7 +79,7 @@ export const DataTableStatusBar: React.FC<PaginationComponentProps> = ({
     const optionComponent = useMemo(() => {
         switch (mode) {
             case 'data':
-                return <DatasetViewerOptions />;
+                return <DatasetSelect />;
             default:
                 return null;
         }

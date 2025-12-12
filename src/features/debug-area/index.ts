@@ -30,12 +30,6 @@ export const DATA_TABLE_ROW_HEIGHT = 24;
 export const DATA_TABLE_ROW_PADDING_LEFT = 10;
 
 /**
- * The maximum permitted length of a value for a table cell before 'truncating'
- * it for display.
- */
-export const DATA_TABLE_VALUE_MAX_LENGTH = 100;
-
-/**
  * Styles used for debugging features.
  */
 export const useDebugStyles = makeStyles({
@@ -59,14 +53,6 @@ export const useDebugStyles = makeStyles({
         display: 'flex',
         flexDirection: 'column',
         flexGrow: 1,
-        ...shorthands.overflow('auto')
-    },
-    dataTableNoDataMessage: {
-        display: 'flex',
-        flexDirection: 'column',
-        flexGrow: 1,
-        flexShrink: 1000,
-        ...shorthands.margin('5px'),
         ...shorthands.overflow('auto')
     },
     logDetails: {
@@ -109,13 +95,6 @@ export const useDebugStyles = makeStyles({
         columnGap: '10px',
         height: '100%',
         ...shorthands.margin('0px', '10px')
-    },
-    statusBarOptions: {
-        display: 'flex',
-        justifyContent: 'flex-start',
-        alignItems: 'center',
-        columnGap: '10px',
-        height: '100%'
     },
     statusBarTable: {
         display: 'flex',

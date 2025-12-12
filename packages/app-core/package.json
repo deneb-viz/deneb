@@ -63,6 +63,8 @@
         "@deneb-viz/vega-runtime": "*",
         "powerbi-visuals-api": "5.11.0",
         "react": "^19.2.0",
-        "react-dom": "^19.2.0"
+        "react-dom": "^19.2.0",
+        "vega": "6.2.0",
+        "vega-lite": "6.4.1"
     }
 }

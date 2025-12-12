@@ -1,31 +1,47 @@
-import { Label, useId, Select, SelectProps } from '@fluentui/react-components';
-import React, { useEffect, useMemo } from 'react';
-import { shallow } from 'zustand/shallow';
-import keys from 'lodash/keys';
+import { useEffect, useMemo } from 'react';
+import {
+    Label,
+    useId,
+    Select,
+    SelectProps,
+    makeStyles,
+    tokens
+} from '@fluentui/react-components';
 
-import { useDebugStyles } from '..';
-import store from '../../../store';
-import { DEBUG_ROOT_DATASET_NAME } from '../../../constants';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/powerbi-compat/dataset';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logRender } from '@deneb-viz/utils/logging';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
+import { useDenebState } from '../../../../state';
+
+/**
+ * The name of the root dataset that Vega generates, to filter out when
+ * deriving from the view.
+ */
+const DEBUG_ROOT_DATASET_NAME = 'root';
+
+const useDatasetSelectStyles = makeStyles({
+    statusBar: {
+        display: 'flex',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        columnGap: tokens.spacingHorizontalMNudge,
+        height: '100%'
+    }
+});
 
 /**
  * Provides the ability to select a dataset from the Vega view. If no datasets
  * are available, then will default to and read from the visual.store dataset.
  */
-export const DatasetViewerOptions: React.FC = () => {
-    const { renderId, datasetName, setDataset } = store(
-        (state) => ({
-            renderId: state.interface.renderId,
-            datasetName: state.debug.datasetName,
-            setDataset: state.debug.setDatasetName
-        }),
-        shallow
-    );
+export const DatasetSelect = () => {
+    const { renderId, datasetName, setDataset } = useDenebState((state) => ({
+        renderId: state.interface.renderId,
+        datasetName: state.debug.datasetName,
+        setDataset: state.debug.setDatasetName
+    }));
     const datasetSelectId = useId();
-    const classes = useDebugStyles();
+    const classes = useDatasetSelectStyles();
     const datasets = useMemo(() => getDatasetNames(), [renderId]);
     const datasetOptions = useMemo(
         () =>
@@ -52,7 +68,7 @@ export const DatasetViewerOptions: React.FC = () => {
 
     logRender('DatasetViewerOptions', { renderId });
     return (
-        <div className={classes.statusBarOptions}>
+        <div className={classes.statusBar}>
             <div>
                 <Label htmlFor={datasetSelectId} size='small'>
                     {getI18nValue('Text_Data_Table_Dataset_Label')}
@@ -78,7 +94,7 @@ export const DatasetViewerOptions: React.FC = () => {
  * been removed, then we return the default dataset name.
  */
 const getDatasetNames = () => {
-    const datasets = keys(VegaViewServices.getAllData()).filter(
+    const datasets = Object.keys(VegaViewServices.getAllData()).filter(
         (key) => key !== DEBUG_ROOT_DATASET_NAME
     );
     return (datasets.length === 0 ? [DATASET_DEFAULT_NAME] : datasets).map(

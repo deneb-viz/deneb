@@ -8,11 +8,15 @@ export default defineConfig((options: Options) => ({
     define: {
         global: 'globalThis'
     },
-    // Do not inline powerbi-compat so that a single runtime instance is shared.
+    // Do not inline powerbi-compat and vega-runtime so that single runtime instances are shared.
     external: [
         // Wildcard ensures ALL subpath imports (e.g. /visual-host, /signals, /theme) are externalized.
         '@deneb-viz/powerbi-compat',
-        '@deneb-viz/powerbi-compat/*'
+        '@deneb-viz/powerbi-compat/*',
+        '@deneb-viz/vega-runtime',
+        '@deneb-viz/vega-runtime/*',
+        '@deneb-viz/json-processing',
+        '@deneb-viz/json-processing/*'
     ],
     sourcemap: true,
     splitting: false,

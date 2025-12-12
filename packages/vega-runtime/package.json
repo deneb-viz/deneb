@@ -56,12 +56,12 @@
         "d3-interpolate": "^3.0.1",
         "d3-selection": "^3.0.0",
         "mergician": "^2.0.2",
-        "powerbi-visuals-utils-formattingutils": "^6.1.2",
-        "vega": "6.2.0",
-        "vega-lite": "6.4.1"
+        "powerbi-visuals-utils-formattingutils": "^6.1.2"
     },
     "peerDependencies": {
         "@deneb-viz/powerbi-compat": "*",
-        "powerbi-visuals-api": "5.11.0"
+        "powerbi-visuals-api": "5.11.0",
+        "vega": "6.2.0",
+        "vega-lite": "6.4.1"
     }
 }

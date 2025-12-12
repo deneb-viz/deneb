@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { usePrevious } from '@uidotdev/usehooks';
 
-import { usePrevious } from '../../../hooks';
-import { DataTableCell } from './data-table-cell';
-import { DATA_TABLE_VALUE_MAX_LENGTH } from '..';
+import {
+    DATA_TABLE_VALUE_MAX_LENGTH,
+    DataTableCell
+} from '../../../../components/data-viewer';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { stringifyPruned } from '@deneb-viz/utils/object';
@@ -36,6 +38,7 @@ export const SignalValue: React.FC<IDataTableCellSignalValueProps> = ({
     renderId
 }) => {
     const previousSignalName = usePrevious(signalName);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [signalValue, setSignalValue] = useState<any>(initialValue);
     /**
      * Attempt to add specified signal listener to the Vega view.
@@ -46,7 +49,7 @@ export const SignalValue: React.FC<IDataTableCellSignalValueProps> = ({
                 signalName,
                 signalListener
             );
-        } catch (e) {
+        } catch {
             logDebug(`Listener for signal ${signalName} could not be added.`);
         }
     };
@@ -59,7 +62,7 @@ export const SignalValue: React.FC<IDataTableCellSignalValueProps> = ({
                 signalName,
                 signalListener
             );
-        } catch (e) {
+        } catch {
             logDebug(`Listener for signal ${signalName} could not be removed.`);
         }
     };
@@ -74,11 +77,11 @@ export const SignalValue: React.FC<IDataTableCellSignalValueProps> = ({
     /**
      * Handler for signal listener events.
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const signalListener = (name: string, value: any) => {
         setSignalValue(() => value);
         logDebug(`[${renderId}] Signal value for ${name} has changed`, value);
     };
-    SignalValue;
     const getSignalValue = () => {
         const value = stringifyPruned(
             VegaViewServices.getSignalByName(signalName)
