@@ -157,7 +157,7 @@ const pbiCrossFilterApply = (
                 getI18nValue('Text_Warning_Invalid_Cross_Filter_Missing_Filter')
             );
         }
-        const item = structuredClone(<Item>event['item']);
+        const item = <Item>event['item'];
         const expr = getResolvedFilterExpressionForPlaceholder(
             filterExpr,
             item?.datum
