@@ -69,7 +69,9 @@ function getCommonConfig(options = {}) {
                 path.resolve(__dirname, 'node_modules'),
                 path.resolve(__dirname, 'src')
             ],
-            symlinks: false
+            symlinks: false,
+            // Prefer ESM over CJS for packages that provide both
+            mainFields: ['module', 'browser', 'main']
         },
         // No externals for powerbi-visuals-api. TypeScript (via ts-loader) inlines const enums,
         // and we avoid runtime reads from the package. Keeping it non-external prevents confusing nulls.

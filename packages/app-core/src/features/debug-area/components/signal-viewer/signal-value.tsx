@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePrevious } from '@uidotdev/usehooks';
 
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
@@ -8,11 +8,11 @@ import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 import { DATA_TABLE_VALUE_MAX_LENGTH } from '../../constants';
 import { DataTableCell } from '../data-table/data-table-cell';
 
-interface IDataTableCellSignalValueProps {
+type DataTableCellSignalValueProps = {
     signalName: string;
     initialValue: string;
     renderId?: string;
-}
+};
 
 /**
  * Renders similar output as a `DataTableCell`, but instead will bind to the
@@ -30,11 +30,11 @@ interface IDataTableCellSignalValueProps {
  * acceptable risk for now.
  */
 // eslint-disable-next-line max-lines-per-function
-export const SignalValue: React.FC<IDataTableCellSignalValueProps> = ({
+export const SignalValue = ({
     signalName,
     initialValue,
     renderId
-}) => {
+}: DataTableCellSignalValueProps) => {
     const previousSignalName = usePrevious(signalName);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [signalValue, setSignalValue] = useState<any>(initialValue);

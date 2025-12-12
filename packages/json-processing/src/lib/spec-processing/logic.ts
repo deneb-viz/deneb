@@ -3,12 +3,13 @@ import { compile, normalize, type TopLevelSpec } from 'vega-lite';
 import { deepEqual } from 'fast-equals';
 
 import { logDebug, logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
-import {
+import type {
     ContentPatchResult,
+    GetSpecificationForVisualOptions,
     SpecificationComparisonOptions,
-    type CompiledSpecification,
-    type CompileStatus,
-    type SpecificationParseOptions
+    CompiledSpecification,
+    CompileStatus,
+    SpecificationParseOptions
 } from './types';
 import { mergician } from 'mergician';
 import {
@@ -352,6 +353,23 @@ const getPatchedVegaLiteSpecWithData = (
  */
 const getRedactedError = (message: string) => {
     return message.replace(/(Invalid specification) (\{.*\})/g, '$1');
+};
+
+export const getSpecificationForVisual = (
+    options: GetSpecificationForVisualOptions
+) => {
+    const { provider, spec, values } = options;
+    /**
+     * #369: if we don't clone values to a unique object, they get mutated in
+     * the store and this breaks the dataset until we re-initialize.
+     */
+    const specValues = structuredClone(values);
+    if (provider === 'vega') {
+        return <Spec>getPatchedVegaSpecWithData(<Spec>spec, specValues);
+    }
+    return <TopLevelSpec>(
+        getPatchedVegaLiteSpecWithData(<TopLevelSpec>spec, specValues)
+    );
 };
 
 /**

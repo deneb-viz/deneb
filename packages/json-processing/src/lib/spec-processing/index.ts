@@ -1,5 +1,5 @@
 // TEMPORARY API WHILE WE MIGRATE
-export { getParsedSpec } from './logic';
+export { getParsedSpec, getSpecificationForVisual } from './logic';
 export { isSpecificationValid } from './validation';
 export {
     doDenebSpecJsonWorkerRequest,

@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
 import { shallow } from 'zustand/shallow';
 
-import { VegaContainer } from '../../vega-output';
 import { FetchingMessage, SplashInitial } from '../../status';
 import store from '../../../store';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logRender } from '@deneb-viz/utils/logging';
+import { VisualViewer } from '@deneb-viz/app-core';
 
 /**
  * Handles routing of the main visual display, when in report view.
@@ -34,7 +34,7 @@ export const ReportViewRouter: React.FC = () => {
                 );
             }
             case 'Processed': {
-                return <VegaContainer />;
+                return <VisualViewer />;
             }
         }
     }, [datasetProcessingStage]);

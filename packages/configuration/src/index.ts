@@ -1,5 +1,6 @@
 import { devDependencies } from '../../../package.json';
 import { visual } from '../../../pbiviz.json';
+import capabilities from '../../../capabilities.json';
 
 /**
  * This is an object that contains the visual's metadata. This is used to handle places we need to display this
@@ -8,6 +9,14 @@ import { visual } from '../../../pbiviz.json';
  * POTENTIAL TECH DEBT
  */
 export const APPLICATION_INFORMATION_CONFIGURATION = visual;
+
+/**
+ * This is an object that contains the capabilities of Power BI.
+ * @remarks
+ * POTENTIAL TECH DEBT
+ */
+// TODO: drive capabilities configuration from centralized configuration here when we get a chance.
+export const POWERBI_CAPABILITIES = capabilities;
 
 /**
  * Default values for the data table in the debug pane.

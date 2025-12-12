@@ -37,15 +37,6 @@ export const resizerPaneVerticalStyles: CSSProperties = {
     }
 };
 
-export const resizerHorizontalStyles: CSSProperties = {
-    ...resizerStyles,
-    ...{
-        height: SPLIT_PANE_HANDLE_SIZE,
-        minHeight: SPLIT_PANE_HANDLE_SIZE,
-        cursor: 'row-resize'
-    }
-};
-
 export const resizerVerticalStyles: CSSProperties = {
     ...resizerStyles,
     ...{

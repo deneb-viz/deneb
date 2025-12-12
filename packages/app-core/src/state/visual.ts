@@ -46,12 +46,10 @@ const MAX_UPDATE_HISTORY_COUNT = 100;
 const DEFAULT_VIEWPORT = { width: 0, height: 0 };
 
 export type VisualSlice = {
-    visual4d3d3d: boolean;
     visualSettings: VisualFormattingSettingsModel;
     visualUpdates: number;
     visualViewportCurrent: powerbi.IViewport;
     visualViewportReport: powerbi.IViewport;
-    setVisual4d3d3d: (status: boolean) => void;
     setVisualUpdate: (payload: VisualUpdatePayload) => void;
 };
 
@@ -68,17 +66,10 @@ export const createVisualSlice =
         VisualSlice
     > =>
     (set) => ({
-        visual4d3d3d: false,
         visualSettings: getVisualFormattingModel(),
         visualUpdates: 0,
         visualViewportCurrent: DEFAULT_VIEWPORT,
         visualViewportReport: DEFAULT_VIEWPORT,
-        setVisual4d3d3d: (status) =>
-            set(
-                (state) => handleSetVisual4d3d3d(state, status),
-                false,
-                'setVisual4d3d3d'
-            ),
         setVisualUpdate: (payload) =>
             set(
                 (state) => handleSetVisualUpdate(state, payload),
@@ -86,13 +77,6 @@ export const createVisualSlice =
                 'setVisualUpdate'
             )
     });
-
-const handleSetVisual4d3d3d = (
-    state: StoreState,
-    status: boolean
-): Partial<StoreState> => ({
-    visual4d3d3d: status
-});
 
 // eslint-disable-next-line max-lines-per-function
 const handleSetVisualUpdate = (

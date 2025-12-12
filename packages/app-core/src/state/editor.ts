@@ -306,8 +306,7 @@ const handleUpdateChanges = (
                 updateType: state.visualUpdateOptions.type,
                 visualUpdates: state.visualUpdates
             })
-        },
-        visual4d3d3d: false
+        }
     };
 };
 

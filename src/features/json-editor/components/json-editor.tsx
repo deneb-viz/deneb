@@ -8,7 +8,6 @@ import store, { getState } from '../../../store';
 import { PREVIEW_PANE_TOOLBAR_BUTTON_PADDING } from '../../../constants';
 import { useInterfaceStyles } from '../../interface';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
-import { updateFieldTracking } from '../../json-processing';
 
 import {
     type EditorPaneRole,
@@ -17,6 +16,7 @@ import {
     PREVIEW_PANE_TOOLBAR_MIN_SIZE,
     setupMonacoWorker,
     SpecificationEditorStatusBar,
+    updateFieldTracking,
     useSpecificationEditor
 } from '@deneb-viz/app-core';
 import { ptToPx } from '@deneb-viz/utils/dom';

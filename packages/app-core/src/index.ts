@@ -1,4 +1,5 @@
 // TEMPORARY API WHILE WE HOIST APP OUT OF POWER BI
+export { SplitPaneOutput } from './app/editor/split-pane-output';
 export { PortalRoot } from './app/editor/portal-root';
 export {
     monaco,
@@ -6,22 +7,16 @@ export {
 } from './components/code-editor/monaco-integration';
 export * from './components/template-metadata';
 export * from './components/ui';
+export * from './components/visual-viewer';
+export * from './features/command-bar';
 export * from './features/debug-area';
-export {
-    datasetViewerWorker,
-    type IWorkerDatasetViewerDataTableRow,
-    type IWorkerDatasetViewerMaxDisplayWidths,
-    type IWorkerDatasetViewerMessage,
-    type IWorkerDatasetViewerTranslations
-} from './features/debug-area/workers';
 export * from './features/editor-area';
-export * from './features/project-create';
-export * from './features/project-export';
+export * from './features/preview-area';
 export * from './features/remap-fields';
 export * from './features/settings-pane';
 export * from './features/specification-editor';
 export * from './lib/commands';
-export * from './lib/i18n';
+export * from './lib/field-processing';
 export * from './lib/interface';
 export * from './lib/vega';
 export * from './state';

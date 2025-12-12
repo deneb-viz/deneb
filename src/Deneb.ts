@@ -18,7 +18,6 @@ import {
     VisualFormattingSettingsService,
     getVisualFormattingService
 } from '@deneb-viz/powerbi-compat/properties';
-import { updateFieldTracking } from './features/json-processing';
 import {
     canFetchMoreFromDataview,
     getCategoricalDataViewFromOptions,
@@ -43,7 +42,7 @@ import {
 } from '@deneb-viz/utils/logging';
 import { VegaPatternFillServices } from '@deneb-viz/vega-runtime/pattern-fill';
 import { InteractivityManager } from '@deneb-viz/powerbi-compat/interactivity';
-import { getDenebState } from '@deneb-viz/app-core';
+import { getDenebState, updateFieldTracking } from '@deneb-viz/app-core';
 import { VegaExtensibilityServices } from '@deneb-viz/vega-runtime/extensibility';
 import { type SelectionMode } from '@deneb-viz/template-usermeta';
 

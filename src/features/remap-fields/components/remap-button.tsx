@@ -4,15 +4,13 @@ import { shallow } from 'zustand/shallow';
 
 import store, { getState } from '../../../store';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
-import {
-    updateFieldTokenization,
-    getRemappedSpecification
-} from '../../json-processing';
+import { getRemappedSpecification } from '../../json-processing';
 import { type TrackedFields } from '@deneb-viz/json-processing/field-tracking';
 import {
     handlePersistSpecification,
     handleSetFocusToActiveEditor,
     type SpecificationEditorRefs,
+    updateFieldTokenization,
     useSpecificationEditor
 } from '@deneb-viz/app-core';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';

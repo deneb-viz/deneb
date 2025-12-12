@@ -1,7 +1,4 @@
-import {
-    DEBUG_PANE_CONFIGURATION,
-    SPLIT_PANE_CONFIGURATION
-} from '@deneb-viz/configuration';
+import { SPLIT_PANE_CONFIGURATION } from '@deneb-viz/configuration';
 
 /**
  * The maximum horizontal space (in percent) that the editor pane should be
@@ -21,17 +18,6 @@ export const EDITOR_PANE_SPLIT_MIN_SIZE = SPLIT_PANE_CONFIGURATION.minSize;
  * inline.
  */
 export const POPOVER_Z_INDEX = 1000;
-
-/**
- * The minimum vertical space that the preview area should be permitted to
- * occupy, and prevent the toolbar/debug pane from using all available space.
- */
-export const PREVIEW_PANE_AREA_MIN_SIZE = DEBUG_PANE_CONFIGURATION.areaMinSize;
-
-/**
- * The amount of padding to apply around the preview area toolbar/debug pane.
- */
-export const PREVIEW_PANE_TOOLBAR_PADDING = 5;
 
 /**
  * The amount of padding to apply to the smaller buttons in the preview/debug

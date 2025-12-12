@@ -6,16 +6,13 @@ import { useHotkeys } from 'react-hotkeys-hook';
 
 import store from '../../../store';
 import { EditorPane } from '../../json-editor';
-import { PreviewArea } from '../../preview-area';
 import {
     getResizablePaneMaxSize,
     getResizablePaneMinSize,
     resizerPaneVerticalStyles,
     resizerVerticalStyles
 } from '../../../core/ui/advancedEditor';
-import { ModalDialog } from '../../modal-dialog';
 import { useInterfaceStyles } from '..';
-import { AdvancedEditorToolbar } from '../../toolbar';
 import {
     type DenebTheme,
     EDITOR_TOOLBAR_HEIGHT,
@@ -42,7 +39,10 @@ import {
     handleOpenCreateSpecificationDialog,
     handleApplyChanges,
     handleAutoApplyChanges,
-    getCommandKey
+    getCommandKey,
+    CommandBar,
+    SplitPaneOutput,
+    ModalDialog
 } from '@deneb-viz/app-core';
 import { logRender } from '@deneb-viz/utils/logging';
 
@@ -127,7 +127,7 @@ export const AdvancedEditorInterface: React.FC = () => {
             className={className}
             id='visualEditor'
         >
-            <AdvancedEditorToolbar />
+            <CommandBar />
             <SplitPane
                 style={{
                     height: `calc(100% - ${EDITOR_TOOLBAR_HEIGHT + 1}px)`
@@ -142,8 +142,8 @@ export const AdvancedEditorInterface: React.FC = () => {
                 resizerStyle={resizerVerticalStyles}
                 paneStyle={resizerPaneVerticalStyles}
             >
-                {position === 'left' ? editorPane : <PreviewArea />}
-                {position === 'left' ? <PreviewArea /> : editorPane}
+                {position === 'left' ? editorPane : <SplitPaneOutput />}
+                {position === 'left' ? <SplitPaneOutput /> : editorPane}
             </SplitPane>
             <ModalDialog />
             <PortalRoot />

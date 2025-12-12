@@ -94,8 +94,7 @@ const handleLogErrors = (
         specification: {
             ...state.specification,
             errors
-        },
-        visual4d3d3d: false
+        }
     };
 };
 
@@ -107,6 +106,5 @@ const handleSetSpecificationParseResults = (
     specification: {
         ...state.specification,
         ...spec
-    },
-    visual4d3d3d: false
+    }
 });
