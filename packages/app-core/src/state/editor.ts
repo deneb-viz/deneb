@@ -31,7 +31,9 @@ type EditorSliceProperties = {
     stagedSpec: string | undefined;
     viewStateConfig: monaco.editor.ICodeEditorViewState | undefined;
     viewStateSpec: monaco.editor.ICodeEditorViewState | undefined;
-    setViewState: (viewState: monaco.editor.ICodeEditorViewState) => void;
+    setViewState: (
+        viewState: monaco.editor.ICodeEditorViewState | undefined | null
+    ) => void;
     toggleApplyMode: () => void;
     updateApplyMode: (applyMode: EditorApplyMode) => void;
     updateChanges: (payload: EditorSliceUpdateChangesPayload) => void;
@@ -82,7 +84,7 @@ export type EditorSliceUpdateChangesPayload = {
     /**
      * Current view state from the editor. If omitted, will use the current view state for that editor.
      */
-    viewState?: monaco.editor.ICodeEditorViewState;
+    viewState?: monaco.editor.ICodeEditorViewState | undefined | null;
 };
 
 export type EditorPaneUpdatePayload = {
@@ -209,7 +211,7 @@ export const createEditorSlice =
 
 const handleSetViewState = (
     state: StoreState,
-    viewState: monaco.editor.ICodeEditorViewState
+    viewState: monaco.editor.ICodeEditorViewState | undefined | null
 ): Partial<StoreState> => ({
     editor: {
         ...state.editor,

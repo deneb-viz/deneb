@@ -1,30 +1,29 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { shallow } from 'zustand/shallow';
 import debounce from 'lodash/debounce';
-import { useUncontrolledFocus } from '@fluentui/react-components';
+import { makeStyles, useUncontrolledFocus } from '@fluentui/react-components';
 import Editor, { loader, OnChange, OnMount } from '@monaco-editor/react';
 
-import store, { getState } from '../../../store';
-import { PREVIEW_PANE_TOOLBAR_BUTTON_PADDING } from '../../../constants';
-import { useInterfaceStyles } from '../../interface';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
-
-import {
-    type EditorPaneRole,
-    handlePersistSpecification,
-    monaco,
-    PREVIEW_PANE_TOOLBAR_MIN_SIZE,
-    setupMonacoWorker,
-    SpecificationEditorStatusBar,
-    updateFieldTracking,
-    useSpecificationEditor
-} from '@deneb-viz/app-core';
 import { ptToPx } from '@deneb-viz/utils/dom';
 import { getProviderSchema } from '@deneb-viz/json-processing';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { getI18nValue, launchUrl } from '@deneb-viz/powerbi-compat/visual-host';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { type IDatasetField } from '@deneb-viz/powerbi-compat/dataset';
+import {
+    handlePersistSpecification,
+    PREVIEW_PANE_TOOLBAR_BUTTON_PADDING,
+    PREVIEW_PANE_TOOLBAR_MIN_SIZE,
+    type EditorPaneRole
+} from '../../../lib';
+import {
+    monaco,
+    setupMonacoWorker
+} from '../../../components/code-editor/monaco-integration';
+import { getDenebState, useDenebState } from '../../../state';
+import { useSpecificationEditor } from '../hooks/use-specification-editor';
+import { SpecificationEditorStatusBar } from './specification-editor-status-bar';
+import { updateFieldTracking } from '../../../lib/field-processing';
 
 /**
  * One-time Monaco initialization tasks.
@@ -35,25 +34,37 @@ loader.init().then(() => {
     setMonacoKeyBindingRules();
 });
 
-interface IJsonEditorProps {
+type JsonEditorProps = {
     thisEditorRole: EditorPaneRole;
-}
+};
 
 /**
  * Handles everything we need to manage for the status bar.
  */
-interface IJsonEditorStatusState {
+type JsonEditorStatusState = {
     cursor: monaco.Position;
     role: EditorPaneRole;
     selectedText: string;
-}
+};
+
+const useSpecificationJsonEditorStyles = makeStyles({
+    container: {
+        height: '100%',
+        maxHeight: '100%',
+        maxWidth: '100%',
+        width: '100%',
+        overflow: 'hidden'
+    }
+});
 
 /**
- * Represents an instance of Ace editor, responsible for maintaining either
- * the JSON spec or the config for a Vega/Vega-Lite visualization.
+ * Represents an instance of Ace editor, responsible for maintaining either the JSON spec or the config for a Vega/
+ * Vega-Lite visualization.
  */
 //eslint-disable-next-line max-lines-per-function
-export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
+export const SpecificationJsonEditor = ({
+    thisEditorRole
+}: JsonEditorProps) => {
     const {
         applyMode,
         current,
@@ -67,32 +78,27 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
         wordWrap,
         setViewState,
         updateChanges
-    } = store(
-        (state) => ({
-            applyMode: state.editor.applyMode,
-            current: state.editorSelectedOperation,
-            debouncePeriod:
-                state.visualSettings.editor.json.debouncePeriod.value,
-            fontSize: state.visualSettings.editor.json.fontSize.value,
-            provider: state.visualSettings.vega.output.provider
-                .value as SpecProvider,
-            showLineNumbers:
-                state.visualSettings.editor.json.showLineNumbers.value,
-            theme: state.visualSettings.editor.interface.theme.value,
-            viewStateConfig: state.editor.viewStateConfig,
-            viewStateSpec: state.editor.viewStateSpec,
-            wordWrap: state.visualSettings.editor.json.wordWrap.value,
-            setViewState: state.editor.setViewState,
-            updateChanges: state.editor.updateChanges
-        }),
-        shallow
-    );
+    } = useDenebState((state) => ({
+        applyMode: state.editor.applyMode,
+        current: state.editorSelectedOperation,
+        debouncePeriod: state.visualSettings.editor.json.debouncePeriod.value,
+        fontSize: state.visualSettings.editor.json.fontSize.value,
+        provider: state.visualSettings.vega.output.provider
+            .value as SpecProvider,
+        showLineNumbers: state.visualSettings.editor.json.showLineNumbers.value,
+        theme: state.visualSettings.editor.interface.theme.value,
+        viewStateConfig: state.editor.viewStateConfig,
+        viewStateSpec: state.editor.viewStateSpec,
+        wordWrap: state.visualSettings.editor.json.wordWrap.value,
+        setViewState: state.editor.setViewState,
+        updateChanges: state.editor.updateChanges
+    }));
     // Override default Monaco worker lookup to use bundled worker
     useEffect(() => {
         setupMonacoWorker();
     }, []);
     const attr = useUncontrolledFocus();
-    const classes = useInterfaceStyles();
+    const classes = useSpecificationJsonEditorStyles();
     const editorHeight = useMemo(
         () =>
             `calc(100% - ${
@@ -111,7 +117,7 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
     const viewState =
         thisEditorRole === 'Spec' ? viewStateSpec : viewStateConfig;
     const [editorText, setEditorText] = useState(ref?.current?.getValue());
-    const [status, setStatus] = useState<IJsonEditorStatusState>({
+    const [status, setStatus] = useState<JsonEditorStatusState>({
         cursor: {
             lineNumber: viewState?.cursorState?.[0]?.position?.lineNumber ?? 1,
             column: viewState?.cursorState?.[0]?.position?.column ?? 1
@@ -137,12 +143,12 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
         });
         // Tracking of cursor position for status bar
         editor.onDidChangeCursorPosition((e) => {
+            const range = editor.getSelection();
             setStatus({
                 ...status,
                 cursor: e.position,
                 selectedText:
-                    editor.getModel()?.getValueInRange(editor.getSelection()) ||
-                    ''
+                    (range && editor.getModel()?.getValueInRange(range)) || ''
             });
         });
         // Process context menu
@@ -171,7 +177,7 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
         [editorText, applyMode]
     );
     return (
-        <div style={{ display }} className={classes.editorContainer} {...attr}>
+        <div style={{ display }} className={classes.container} {...attr}>
             <Editor
                 onMount={handleOnMount}
                 onChange={handleOnChange}
@@ -206,20 +212,21 @@ export const JsonEditor: React.FC<IJsonEditorProps> = ({ thisEditorRole }) => {
 /**
  * Intercept click events on markdown tooltips and delegate to the host.
  */
-const addHyperlinkOverride = (editor: monaco.editor.IStandaloneCodeEditor) => {
+const addHyperlinkOverride = (
+    editor: monaco.editor.IStandaloneCodeEditor | null
+) => {
     editor?.getDomNode()?.removeEventListener('click', onLinkClick);
     editor?.getDomNode()?.addEventListener('click', onLinkClick);
 };
 
 /**
- * Resolve the default value when instantiated, either from settings or staging
- * as needed.
+ * Resolve the default value when instantiated, either from settings or staging as needed.
  */
 const getDefaultValue = (role: EditorPaneRole) => {
     const {
         editor: { stagedConfig, stagedSpec },
         visualSettings
-    } = getState();
+    } = getDenebState();
     switch (role) {
         case 'Spec':
             return stagedSpec ?? visualSettings.vega.output.jsonSpec.value;
@@ -244,7 +251,7 @@ const onLinkClick = (e: MouseEvent) => {
 };
 
 /**
- * Because the Power BI vidsual sandbox disables the clipboard API, the standard Monaco context menu items for copy,
+ * Because the Power BI visual sandbox disables the clipboard API, the standard Monaco context menu items for copy,
  * cut and paste just throw errors. This function removes them from the context menu.
  * @privateRemarks
  * As Monaco doesn't have an API for this, it's a bit of a hack.
@@ -278,7 +285,7 @@ const removeContextMenuItems = (
 const setMonacoCompletionProvider = () => {
     return monaco.languages.registerCompletionItemProvider('json', {
         provideCompletionItems: async (model, position) => {
-            const { editorSelectedOperation } = getState();
+            const { editorSelectedOperation } = getDenebState();
             if (editorSelectedOperation !== 'Spec') {
                 return null;
             }
@@ -289,8 +296,8 @@ const setMonacoCompletionProvider = () => {
                 startColumn: word.startColumn,
                 endColumn: word.endColumn
             };
-            let fields: monaco.languages.CompletionItem[] = [];
-            Object.entries(getState().dataset.fields).forEach(
+            const fields: monaco.languages.CompletionItem[] = [];
+            Object.entries(getDenebState().dataset.fields).forEach(
                 ([key, field]) => {
                     fields.push({
                         label: key,
@@ -365,8 +372,8 @@ const setMonacoKeyBindingRules = () => {
 };
 
 /**
- * For any data-based completers in the editor, provide a qualifier denoting
- * whether it's a column, measure or something else.
+ * For any data-based completers in the editor, provide a qualifier denoting whether it's a column, measure or
+ * something else.
  */
 const getSnippetFieldMetadata = (field: IDatasetField) => {
     switch (true) {
@@ -384,6 +391,7 @@ const getSnippetFieldMetadata = (field: IDatasetField) => {
 /**
  * Do the necessary tests and then call the tracking /tokenization workers, if needed.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const updateTracking = async (spec: string, editorRole: EditorPaneRole) => {
     logDebug(
         '[Spec Editor] Checking to see if tracking and tokenization is needed...'
@@ -397,7 +405,7 @@ const updateTracking = async (spec: string, editorRole: EditorPaneRole) => {
                 }
             }
         }
-    } = getState();
+    } = getDenebState();
     if (
         editorRole === 'Config' ||
         (editorRole === 'Spec' && (spec === jsonSpec || editorShouldSkipRemap))

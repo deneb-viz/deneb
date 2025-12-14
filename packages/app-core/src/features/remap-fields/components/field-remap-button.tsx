@@ -1,25 +1,26 @@
 import React from 'react';
 import { Button } from '@fluentui/react-components';
-import { shallow } from 'zustand/shallow';
 
-import store, { getState } from '../../../store';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
-import { getRemappedSpecification } from '../../json-processing';
 import { type TrackedFields } from '@deneb-viz/json-processing/field-tracking';
-import {
-    handlePersistSpecification,
-    handleSetFocusToActiveEditor,
-    type SpecificationEditorRefs,
-    updateFieldTokenization,
-    useSpecificationEditor
-} from '@deneb-viz/app-core';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import {
+    type SpecificationEditorRefs,
+    useSpecificationEditor
+} from '../../specification-editor';
+import { getDenebState, useDenebState } from '../../../state';
+import { updateFieldTokenization } from '../../../lib/field-processing';
+import { getRemappedSpecification } from '../../../lib/field-processing/tokenization';
+import {
+    handlePersistSpecification,
+    handleSetFocusToActiveEditor
+} from '../../../lib';
 
 /**
  * Button for applying field mapping changes via the modal dialog.
  */
-export const RemapButton: React.FC = () => {
+export const FieldRemapButton = () => {
     const editorRefs = useSpecificationEditor();
     const {
         dataset,
@@ -27,17 +28,14 @@ export const RemapButton: React.FC = () => {
         remapAllDependenciesAssigned,
         remapFields,
         remapState
-    } = store(
-        (state) => ({
-            dataset: state.fieldUsage.dataset,
-            jsonSpec: state.visualSettings.vega.output.jsonSpec.value,
-            remapAllDependenciesAssigned:
-                state.fieldUsage.remapAllDependenciesAssigned,
-            remapFields: state.fieldUsage.remapFields,
-            remapState: state.interface.remapState
-        }),
-        shallow
-    );
+    } = useDenebState((state) => ({
+        dataset: state.fieldUsage.dataset,
+        jsonSpec: state.visualSettings.vega.output.jsonSpec.value,
+        remapAllDependenciesAssigned:
+            state.fieldUsage.remapAllDependenciesAssigned,
+        remapFields: state.fieldUsage.remapFields,
+        remapState: state.interface.remapState
+    }));
     const onRemap = () => {
         applyRemappedFields(jsonSpec, remapFields, dataset, editorRefs);
     };
@@ -72,13 +70,13 @@ export const applyRemappedFields = async (
     const {
         fieldUsage: { applyFieldMapping },
         interface: { setRemapState }
-    } = getState();
-    const cursorPrev = editorRefs?.spec?.current.getPosition();
+    } = getDenebState();
+    const cursorPrev = editorRefs?.spec?.current?.getPosition();
     setRemapState('Tokenizing');
     await updateFieldTokenization(specification, trackedFields);
     const {
         fieldUsage: { tokenizedSpec }
-    } = getState();
+    } = getDenebState();
     logDebug('[applyRemappedFields] tokenized spec', { tokenizedSpec });
     setRemapState('Replacing');
     const mappedSpec = await getRemappedSpecification(
@@ -96,7 +94,7 @@ export const applyRemappedFields = async (
     // await updateFieldTracking(mappedSpec, trackedFields, true);
     const {
         fieldUsage: { dataset, drilldown }
-    } = getState();
+    } = getDenebState();
     logDebug('[applyRemappedFields] after updated tracking', {
         dataset,
         drilldown,
@@ -109,7 +107,9 @@ export const applyRemappedFields = async (
     // Assign new spec and clear selection
     setRemapState('UpdatingEditor');
     spec?.current?.setValue(mappedSpec);
-    spec?.current?.setPosition(cursorPrev);
+    if (cursorPrev) {
+        spec?.current?.setPosition(cursorPrev);
+    }
     handleSetFocusToActiveEditor(editorRefs);
     setRemapState('Complete');
     handlePersistSpecification(spec.current, config.current);

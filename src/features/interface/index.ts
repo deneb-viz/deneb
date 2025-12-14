@@ -18,13 +18,6 @@ export const useInterfaceStyles = makeStyles({
         },
         ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2)
     },
-    editorContainer: {
-        height: '100%',
-        maxHeight: '100%',
-        maxWidth: '100%',
-        width: '100%',
-        ...shorthands.overflow('hidden')
-    },
     tooltipMount: {
         zIndex: POPOVER_Z_INDEX
     },
