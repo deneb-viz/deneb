@@ -1,9 +1,10 @@
 import { type StateCreator } from 'zustand';
 
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
-import { updateDeep } from '@deneb-viz/utils/object';
+import { type DeepPath, updateDeep } from '@deneb-viz/utils/object';
 import { StateDependencies, type StoreState } from './state';
 import { getNewTemplateMetadata } from '@deneb-viz/json-processing';
+import { logDebug } from '@deneb-viz/utils/logging';
 
 /**
  * Represents the export slice in the visual store.
@@ -78,19 +79,26 @@ export const createExportSlice =
 const handleSetMetadataPropertyBySelector = (
     state: StoreState,
     payload: ExportSliceSetMetadataPropertyBySelector
-): Partial<StoreState> => ({
-    export: {
-        ...state.export,
-        metadata: updateDeep(
-            structuredClone(state.export.metadata),
-            // TODO: make the id/selector system better to avoid this hack
-            payload.selector
-                .split('.')
-                .map((key) => (/^\d+$/.test(key) ? Number(key) : key)),
-            payload.value
-        )
-    }
-});
+): Partial<StoreState> => {
+    // TODO: make the id/selector system better to avoid this hack
+    const path: DeepPath = payload.selector
+        .split('.')
+        .map((key) => (/^\d+$/.test(key) ? Number(key) : key));
+    logDebug('Export slice - setting metadata property', {
+        path,
+        value: payload.value
+    });
+    return {
+        export: {
+            ...state.export,
+            metadata: updateDeep(
+                structuredClone(state.export.metadata),
+                path,
+                payload.value
+            )
+        }
+    };
+};
 
 const handleSetPreviewImage = (
     state: StoreState,

@@ -17,7 +17,7 @@ export const DataDescriptionColumnField = ({
     return (
         <TableCell>
             <CappedTextField
-                id={`${DATASET_DEFAULT_NAME}[${index}].description`}
+                id={`${DATASET_DEFAULT_NAME}.${index}.description`}
                 i18nLabel='Field Description'
                 i18nPlaceholder='Template_Description_Optional_Placeholder'
                 maxLength={TEMPLATE_DATASET_FIELD_PROPS.description.maxLength}
