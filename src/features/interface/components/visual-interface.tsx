@@ -9,6 +9,8 @@ import { NotificationToaster } from '../../toaster';
 import { LandingPage } from '../../status';
 import { logRender } from '@deneb-viz/utils/logging';
 import { VisualUpdateHistoryOverlay } from '../../visual-update-history-overlay';
+import { DenebProvider } from '@deneb-viz/app-core';
+import { InteractivitySettings } from '../../settings';
 
 export const VisualInterface = () => {
     const { mode } = store(
@@ -35,10 +37,14 @@ export const VisualInterface = () => {
     }, [mode]);
     logRender('VisualInterface', mode);
     return (
-        <>
+        <DenebProvider
+            platformProvider={{
+                settingsPanePlatformComponent: <InteractivitySettings />
+            }}
+        >
             {mainComponent}
             <NotificationToaster />
             <VisualUpdateHistoryOverlay />
-        </>
+        </DenebProvider>
     );
 };

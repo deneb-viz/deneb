@@ -1,3 +1,6 @@
+export { DenebProvider } from './app';
+export { useDenebPlatformProvider } from './components/deneb-platform';
+
 // TEMPORARY API WHILE WE HOIST APP OUT OF POWER BI
 export { SplitPaneOutput } from './app/editor/split-pane-output';
 export { PortalRoot } from './app/editor/portal-root';

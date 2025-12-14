@@ -1,12 +1,8 @@
-import { type ReactNode } from 'react';
 import { Divider, makeStyles, tokens } from '@fluentui/react-components';
 
 import { ProviderSettings } from './provider-settings';
 import { RenderModeSettings } from './render-mode-settings';
-
-type SettingsPaneProps = {
-    platformSettings?: ReactNode;
-};
+import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 
 const useSettingsPaneStyles = makeStyles({
     root: {
@@ -15,17 +11,18 @@ const useSettingsPaneStyles = makeStyles({
     }
 });
 
-export const SettingsPane = ({ platformSettings }: SettingsPaneProps) => {
+export const SettingsPane = () => {
     const classes = useSettingsPaneStyles();
+    const { settingsPanePlatformComponent } = useDenebPlatformProvider();
     return (
         <div className={classes.root}>
             <ProviderSettings />
             <Divider />
             <RenderModeSettings />
-            {platformSettings ? (
+            {settingsPanePlatformComponent ? (
                 <>
                     <Divider />
-                    {platformSettings}
+                    {settingsPanePlatformComponent}
                 </>
             ) : null}
         </div>
