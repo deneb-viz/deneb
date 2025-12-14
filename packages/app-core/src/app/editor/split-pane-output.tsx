@@ -7,7 +7,7 @@ import { DEBUG_PANE_CONFIGURATION } from '@deneb-viz/configuration';
 import { RESIZER_HORIZONTAL_STYLES } from './styles';
 import { PreviewArea } from '../../features/preview-area';
 import { DebugArea } from '../../features/debug-area';
-import { getPreviewAreaHeightMaximum } from '../../lib';
+import { getPreviewAreaHeightMaximum } from '../../lib/interface/layout';
 
 /**
  * The minimum vertical space that the preview area should be permitted to

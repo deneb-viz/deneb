@@ -1,24 +1,18 @@
 import { useMemo } from 'react';
-import { shallow } from 'zustand/shallow';
 
-import { AdvancedEditor } from '../../interface';
-import store from '../../../store';
 import { ReportViewRouter } from './report-view-router';
 import { FetchingMessage, SplashInitial } from '../../status';
 import { NotificationToaster } from '../../toaster';
 import { LandingPage } from '../../status';
 import { logRender } from '@deneb-viz/utils/logging';
 import { VisualUpdateHistoryOverlay } from '../../visual-update-history-overlay';
-import { DenebProvider } from '@deneb-viz/app-core';
+import { DenebProvider, Editor, useDenebState } from '@deneb-viz/app-core';
 import { InteractivitySettings } from '../../settings';
 
 export const VisualInterface = () => {
-    const { mode } = store(
-        (state) => ({
-            mode: state.interface.mode
-        }),
-        shallow
-    );
+    const { mode } = useDenebState((state) => ({
+        mode: state.interface.mode
+    }));
     const mainComponent = useMemo(() => {
         switch (mode) {
             case 'Initializing':
@@ -30,7 +24,7 @@ export const VisualInterface = () => {
             case 'EditorNoData':
                 return <LandingPage />;
             case 'Editor':
-                return <AdvancedEditor />;
+                return <Editor />;
             case 'View':
                 return <ReportViewRouter />;
         }

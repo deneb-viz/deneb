@@ -6,15 +6,6 @@ import {
 import {
     type EditorPanePosition,
     type ExportSpecCommandTestOptions,
-    getApplicationMode,
-    getCorrectViewport,
-    getEditorPreviewAreaWidth,
-    getEditPaneDefaultWidth,
-    getModalDialogRole,
-    getPreviewAreaHeightInitial,
-    getPreviewAreaHeightMaximum,
-    getReportViewport,
-    getResizablePaneSize,
     type InterfaceMode,
     isExportSpecCommandEnabled,
     isZoomInCommandEnabled,
@@ -41,6 +32,19 @@ import {
     type UsermetaTemplate
 } from '@deneb-viz/template-usermeta';
 import { type StateCreator } from 'zustand';
+import {
+    getEditorPreviewAreaWidth,
+    getEditPaneDefaultWidth,
+    getPreviewAreaHeightInitial,
+    getPreviewAreaHeightMaximum,
+    getResizablePaneSize
+} from '../lib/interface/layout';
+import {
+    getApplicationMode,
+    getCorrectViewport,
+    getModalDialogRole,
+    getReportViewport
+} from '../lib/interface/state';
 
 const MAX_UPDATE_HISTORY_COUNT = 100;
 const DEFAULT_VIEWPORT = { width: 0, height: 0 };

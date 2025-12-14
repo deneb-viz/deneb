@@ -1,6 +1,5 @@
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { isUnversionedSpec } from '../../features/specification';
-import { getState } from '../../store';
 import { VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/properties';
 import {
     type VersionChangeDirection,
@@ -17,6 +16,7 @@ import {
     persistProperties,
     resolveObjectProperties
 } from '@deneb-viz/powerbi-compat/visual-host';
+import { getDenebState } from '@deneb-viz/app-core';
 
 /**
  * Current visual and provider information
@@ -120,7 +120,7 @@ export const handlePropertyMigration = (
     } = visualSettings;
     const {
         migration: { migrationCheckPerformed, updateMigrationDetails }
-    } = getState();
+    } = getDenebState();
     if (!migrationCheckPerformed) {
         const versionComparator = getVersionComparatorInfo(visualSettings);
         const changeType = getVersionChangeDetail(versionComparator);

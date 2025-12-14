@@ -18,16 +18,14 @@ import {
     type SelectorStatus
 } from '@deneb-viz/powerbi-compat/interactivity';
 import { logDebug, logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
-import {
-    type EditorPanePosition,
-    getApplicationMode,
-    getResizablePaneSize
-} from '../lib';
+import { type EditorPanePosition } from '../lib';
 import {
     areAllCreateDataRequirementsMet,
     getUpdatedExportMetadata
 } from '@deneb-viz/json-processing';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
+import { getResizablePaneSize } from '../lib/interface/layout';
+import { getApplicationMode } from '../lib/interface/state';
 
 /**
  * Stages to within the store when processing data, and therefore give us some UI hooks for the end-user.

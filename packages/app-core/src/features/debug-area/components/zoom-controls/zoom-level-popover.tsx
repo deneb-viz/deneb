@@ -29,12 +29,12 @@ import { VISUAL_PREVIEW_ZOOM_CONFIGURATION } from '@deneb-viz/configuration';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
 import {
-    getZoomToFitScale,
     POPOVER_Z_INDEX,
     PREVIEW_PANE_TOOLBAR_BUTTON_PADDING
 } from '../../../../lib';
 import { useDenebState } from '../../../../state';
 import { TooltipCustomMount } from '../../../../components/ui';
+import { getZoomToFitScale } from '../../../../lib/interface/layout';
 
 const useToolbarStyles = makeStyles({
     buttonSmall: {

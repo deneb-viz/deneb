@@ -5,7 +5,8 @@ import {
     type ZoomLevelCommandTestOptions,
     type ZoomOtherCommandTestOptions
 } from './types';
-import { type EditorApplyMode, isEditorInterface } from '../interface';
+import { type EditorApplyMode } from '../interface';
+import { isEditorInterface } from '../interface/state';
 
 /**
  * For the current apply mode, determine what the new one should be.

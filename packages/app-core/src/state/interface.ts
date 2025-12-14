@@ -1,14 +1,11 @@
 import { type TemplateExportProcessingState } from '@deneb-viz/json-processing/template-processing';
-import {
-    getModalDialogRole,
-    type InterfaceMode,
-    type ModalDialogRole
-} from '../lib/interface';
+import { type InterfaceMode, type ModalDialogRole } from '../lib/interface';
 import { type RemapState } from '@deneb-viz/json-processing/field-tracking';
 import { StoreState } from './state';
 import { isMappingDialogRequired } from '@deneb-viz/json-processing';
 import { getNewUuid } from '@deneb-viz/utils/crypto';
 import { StateCreator } from 'zustand';
+import { getModalDialogRole } from '../lib/interface/state';
 
 export type InterfaceSliceProperties = {
     /**

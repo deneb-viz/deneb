@@ -13,16 +13,18 @@ import {
     type DebugPaneRole,
     type EditorApplyMode,
     type EditorPanePosition,
-    type EditorPaneRole,
-    getApplicationMode,
-    getEditorPreviewAreaWidth,
-    getPreviewAreaHeightInitial,
-    getResizablePaneSize
+    type EditorPaneRole
 } from '../lib/interface';
 import { StoreState } from './state';
 import { StateCreator } from 'zustand';
 import { VISUAL_PREVIEW_ZOOM_CONFIGURATION } from '@deneb-viz/configuration';
 import { UsermetaTemplate } from '@deneb-viz/template-usermeta';
+import {
+    getEditorPreviewAreaWidth,
+    getPreviewAreaHeightInitial,
+    getResizablePaneSize
+} from '../lib/interface/layout';
+import { getApplicationMode } from '../lib/interface/state';
 
 type EditorSliceProperties = {
     applyMode: EditorApplyMode;

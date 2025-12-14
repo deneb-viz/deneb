@@ -4,11 +4,7 @@ import {
     VISUAL_PREVIEW_ZOOM_CONFIGURATION
 } from '@deneb-viz/configuration';
 import { getDenebState } from '../../state';
-import {
-    type DebugPaneRole,
-    type EditorPaneRole,
-    getZoomToFitScale
-} from '../interface';
+import { type DebugPaneRole, type EditorPaneRole } from '../interface';
 import { type Command } from './types';
 import {
     launchUrl,
@@ -25,6 +21,7 @@ import {
 } from '@deneb-viz/vega-runtime/embed';
 import { type SelectionMode } from '@deneb-viz/template-usermeta';
 import { HOTKEY_BINDINGS } from './constants';
+import { getZoomToFitScale } from '../interface/layout';
 
 /**
  * Executes a command if:

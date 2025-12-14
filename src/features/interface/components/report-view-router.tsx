@@ -1,23 +1,18 @@
-import React, { useMemo } from 'react';
-import { shallow } from 'zustand/shallow';
+import { useMemo } from 'react';
 
 import { FetchingMessage, SplashInitial } from '../../status';
-import store from '../../../store';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logRender } from '@deneb-viz/utils/logging';
-import { VisualViewer } from '@deneb-viz/app-core';
+import { useDenebState, Viewer } from '@deneb-viz/app-core';
 
 /**
  * Handles routing of the main visual display, when in report view.
  */
-export const ReportViewRouter: React.FC = () => {
-    const { datasetProcessingStage, mode } = store(
-        (state) => ({
-            datasetProcessingStage: state.datasetProcessingStage,
-            mode: state.interface.mode
-        }),
-        shallow
-    );
+export const ReportViewRouter = () => {
+    const { datasetProcessingStage, mode } = useDenebState((state) => ({
+        datasetProcessingStage: state.datasetProcessingStage,
+        mode: state.interface.mode
+    }));
     const component = useMemo(() => {
         switch (datasetProcessingStage) {
             case 'Initial': {
@@ -34,7 +29,7 @@ export const ReportViewRouter: React.FC = () => {
                 );
             }
             case 'Processed': {
-                return <VisualViewer />;
+                return <Viewer />;
             }
         }
     }, [datasetProcessingStage]);

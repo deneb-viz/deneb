@@ -1,5 +1,4 @@
-import { getState } from '../../store';
-
+import { getDenebState } from '@deneb-viz/app-core';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { getVisualSettings } from '@deneb-viz/powerbi-compat/visual-host';
 
@@ -42,6 +41,6 @@ const isVersionedSpec = () => {
                 }
             }
         }
-    } = getState();
+    } = getDenebState();
     return (denebVersion && providerVersion) || false;
 };

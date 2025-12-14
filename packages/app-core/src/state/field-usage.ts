@@ -10,12 +10,9 @@ import {
 } from '@deneb-viz/json-processing/field-tracking';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 import { StoreState } from './state';
-import {
-    getModalDialogRole,
-    isExportSpecCommandEnabled,
-    ModalDialogRole
-} from '../lib';
+import { isExportSpecCommandEnabled, ModalDialogRole } from '../lib';
 import { StateCreator } from 'zustand';
+import { getModalDialogRole } from '../lib/interface/state';
 
 /**
  * Represents the create slice in the visual store.

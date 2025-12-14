@@ -6,7 +6,6 @@ import { InteractivityCheckbox } from './interactivity-checkbox';
 import { CrossFilterMaxDataPoints } from './cross-filter-max-data-points';
 import { CrossFilterModeSettings } from './cross-filter-mode-settings';
 import { useSettingsStyles } from '../styles';
-import { FEATURES } from '../../../../config';
 import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
 import { getI18nValue, launchUrl } from '@deneb-viz/powerbi-compat/visual-host';
 import {

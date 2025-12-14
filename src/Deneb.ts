@@ -11,7 +11,7 @@ import { createRoot } from 'react-dom/client';
 
 import App from './components/App';
 
-import { getDenebVisualState, getState } from './store';
+import { getDenebVisualState } from './store';
 import { getMappedDataset } from './core/data/dataset';
 import { handlePropertyMigration } from './core/utils/versioning';
 import {
@@ -117,7 +117,7 @@ export class Deneb implements IVisual {
         setRenderingStarted();
         this.resolveLocale();
         // Provide intial update options to store
-        const { setVisualUpdate } = getState();
+        const { setVisualUpdate } = getDenebState();
         const settings = getVisualSettings();
         const { setVisualSettings } = getDenebVisualState().settings;
         setVisualSettings(settings);
@@ -132,7 +132,7 @@ export class Deneb implements IVisual {
         this.resolveDataset(options);
         const {
             interface: { isInitialized, setExplicitInitialize }
-        } = getState();
+        } = getDenebState();
         if (!isInitialized) {
             logDebug('Visual has not been initialized yet. Setting...');
             setExplicitInitialize();
@@ -160,7 +160,7 @@ export class Deneb implements IVisual {
             specification: { logWarn },
             updateDataset,
             updateDatasetProcessingStage
-        } = getState();
+        } = getDenebState();
         const categorical = getCategoricalDataViewFromOptions(options);
         if (shouldProcessDataset) {
             logDebug('Visual dataset has changed and should be re-processed.');
@@ -245,7 +245,7 @@ export class Deneb implements IVisual {
         } = settings;
         const {
             fieldUsage: { dataset: trackedFieldsCurrent }
-        } = getState();
+        } = getDenebState();
         updateFieldTracking(spec, trackedFieldsCurrent);
     }
 

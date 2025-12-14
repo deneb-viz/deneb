@@ -21,6 +21,17 @@ export const EDITOR_PANE_SPLIT_DEFAULT_SIZE_PERCENT =
     SPLIT_PANE_CONFIGURATION.defaultSizePercent;
 
 /**
+ * The maximum horizontal space that the editor pane should be permitted to occupy when expanded.
+ */
+export const EDITOR_PANE_SPLIT_MIN_SIZE = SPLIT_PANE_CONFIGURATION.minSize;
+
+/**
+ * The maximum horizontal space (in percent) that the editor pane should be permitted to occupy.
+ */
+export const EDITOR_PANE_SPLIT_MAX_SIZE_PERCENT =
+    SPLIT_PANE_CONFIGURATION.maxSizePercent;
+
+/**
  * The amount of padding to apply around the preview area.
  */
 export const PREVIEW_PANE_AREA_PADDING = 5;

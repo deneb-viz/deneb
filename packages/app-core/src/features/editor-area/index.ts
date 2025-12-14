@@ -1,1 +1,1 @@
-export { EditorPaneCollapsed } from './components/editor-pane-collapsed';
+export { EditorArea } from './components/editor-area';

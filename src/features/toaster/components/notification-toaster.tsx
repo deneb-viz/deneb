@@ -1,9 +1,11 @@
-import { shallow } from 'zustand/shallow';
 import { FluentProvider, Toaster, useId } from '@fluentui/react-components';
 
-import store from '../../../store';
 import { NotificationCrossFilterExceeded } from './notification-cross-filter-exceeded';
-import { getDenebTheme, THEME_DEFAULT } from '@deneb-viz/app-core';
+import {
+    getDenebTheme,
+    THEME_DEFAULT,
+    useDenebState
+} from '@deneb-viz/app-core';
 import {
     TOAST_OFFSET_HORIZONTAL_EDITOR,
     TOAST_OFFSET_HORIZONTAL_VISUAL,
@@ -14,12 +16,7 @@ import {
 import { NotificationApplyChanges } from './notification-apply-changes';
 
 export const NotificationToaster = () => {
-    const { mode } = store(
-        (state) => ({
-            mode: state.interface.mode
-        }),
-        shallow
-    );
+    const mode = useDenebState((state) => state.interface.mode);
     const toasterId = useId(TOASTER_ID);
     return (
         <FluentProvider theme={getDenebTheme(THEME_DEFAULT)}>

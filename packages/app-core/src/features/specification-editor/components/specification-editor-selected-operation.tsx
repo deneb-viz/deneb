@@ -1,22 +1,17 @@
-import React from 'react';
-
-import store from '../../../store';
-import {
-    EditorPaneRole,
-    SettingsPane,
-    SpecificationJsonEditor
-} from '@deneb-viz/app-core';
 import { logRender } from '@deneb-viz/utils/logging';
-import { InteractivitySettings } from '../../settings';
+import { type EditorPaneRole } from '../../../lib';
+import { useDenebState } from '../../../state';
+import { SpecificationJsonEditor } from './specification-json-editor';
+import { SettingsPane } from '../../settings-pane';
 
-interface IEditorOperationContainerProps {
+type IEditorOperationContainerProps = {
     operation: EditorPaneRole;
-}
+};
 
-export const EditorOperationContainer: React.FC<
-    IEditorOperationContainerProps
-> = ({ operation }) => {
-    const { editorSelectedOperation } = store((state) => state);
+export const SpecificationEditorSelectedOperation = ({
+    operation
+}: IEditorOperationContainerProps) => {
+    const { editorSelectedOperation } = useDenebState((state) => state);
     const visible = editorSelectedOperation === operation;
     const editorPane = operation !== 'Settings';
     logRender('EditorOperationContainer', operation);
@@ -32,7 +27,7 @@ export const EditorOperationContainer: React.FC<
             {editorPane ? (
                 <SpecificationJsonEditor thisEditorRole={operation} />
             ) : (
-                <SettingsPane platformSettings={<InteractivitySettings />} />
+                <SettingsPane />
             )}
         </div>
     );
