@@ -1,5 +1,3 @@
-import reduce from 'lodash/reduce';
-
 import {
     generateCircles,
     generateCrosshatch,
@@ -293,33 +291,28 @@ export const getPackagedFillPatternDefs = (): PatternFillResolved[] => {
     const stdDefs = PATTERN_FILL_DEFINITIONS.map((def) =>
         resolveFillPatternDefValues(def)
     );
-    return [
-        ...stdDefs,
-        ...reduce(
-            PATTERN_FILL_MODIFIERS,
-            (result, pfm) => {
-                stdDefs.forEach((def) => {
-                    const pfMod: PatternFillResolved =
-                        resolveFillPatternDefValues({
-                            ...def,
-                            ...{
-                                id: `${def.id}-${pfm.suffix}`,
-                                fgColor: shadeColor(
-                                    def.fgColor ??
-                                        PATTERN_FILL_DEFAULT_STROKE_COLOR,
-                                    1 -
-                                        (pfm.fgColorPercent ??
-                                            PATTERN_FILL_DEFAULT_OFFSET_PERCENT)
-                                )
-                            }
-                        });
-                    result.push(pfMod);
+    const modifierDefs = PATTERN_FILL_MODIFIERS.reduce<PatternFillResolved[]>(
+        (result, pfm) => {
+            stdDefs.forEach((def) => {
+                const pfMod: PatternFillResolved = resolveFillPatternDefValues({
+                    ...def,
+                    ...{
+                        id: `${def.id}-${pfm.suffix}`,
+                        fgColor: shadeColor(
+                            def.fgColor ?? PATTERN_FILL_DEFAULT_STROKE_COLOR,
+                            1 -
+                                (pfm.fgColorPercent ??
+                                    PATTERN_FILL_DEFAULT_OFFSET_PERCENT)
+                        )
+                    }
                 });
-                return result;
-            },
-            <PatternFillResolved[]>[]
-        )
-    ];
+                result.push(pfMod);
+            });
+            return result;
+        },
+        []
+    );
+    return [...stdDefs, ...modifierDefs];
 };
 
 /**

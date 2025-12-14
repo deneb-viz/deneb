@@ -1,6 +1,6 @@
 import Ajv, { ErrorObject, ValidateFunction } from 'ajv';
+import { mergician } from 'mergician';
 import addFormats from 'ajv-formats';
-import merge from 'lodash/merge';
 import { VEGA_LITE_SCHEME_ADDITIONS } from '@deneb-viz/vega-runtime/extensibility';
 import {
     type GetProviderValidatorOptions,
@@ -32,7 +32,10 @@ const CURRENT_VERSION = 'current';
 /**
  * Add custom schemes to Vega-Lite schema.
  */
-const VEGA_LITE_SCHEMA_POWERBI = merge(vegaLiteSchema, {
+const vegaLiteSchemaClone: typeof vegaLiteSchema =
+    structuredClone(vegaLiteSchema);
+
+const VEGA_LITE_SCHEMA_POWERBI = mergician(vegaLiteSchemaClone, {
     definitions: {
         Categorical: {
             enum: [

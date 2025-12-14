@@ -1,5 +1,3 @@
-import reduce from 'lodash/reduce';
-import values from 'lodash/values';
 import { areAllTemplateFieldsAssigned } from './template-dataset';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 import {
@@ -35,24 +33,27 @@ export const areAllRemapDataRequirementsMet = (options: {
 export const getRemapEligibleFields = (
     fields: TrackedFields
 ): UsermetaDatasetField[] =>
-    reduce(
-        fields,
-        (result, value) =>
-            value.isInSpecification
-                ? result.concat({
-                      ...value.templateMetadata,
-                      name: value.templateMetadataOriginal.name,
-                      namePlaceholder: value.templateMetadataOriginal.name,
-                      suppliedObjectKey: value.isMappingRequired
-                          ? undefined
-                          : value.templateMetadata.key,
-                      suppliedObjectName: value.isMappingRequired
-                          ? undefined
-                          : value.templateMetadata.name
-                  })
-                : result,
-        <UsermetaDatasetField[]>[]
-    ).sort((a, b) => (a.name?.toLowerCase() < b.name?.toLowerCase() ? -1 : 1));
+    Object.values(fields)
+        .reduce<UsermetaDatasetField[]>(
+            (result, value) =>
+                value.isInSpecification
+                    ? result.concat({
+                          ...value.templateMetadata,
+                          name: value.templateMetadataOriginal.name,
+                          namePlaceholder: value.templateMetadataOriginal.name,
+                          suppliedObjectKey: value.isMappingRequired
+                              ? undefined
+                              : value.templateMetadata.key,
+                          suppliedObjectName: value.isMappingRequired
+                              ? undefined
+                              : value.templateMetadata.name
+                      })
+                    : result,
+            []
+        )
+        .sort((a, b) =>
+            a.name?.toLowerCase() < b.name?.toLowerCase() ? -1 : 1
+        );
 
 /**
  * Test to see if the tracking information contains and fields that require mapping (which should trigger the mapping
@@ -62,5 +63,5 @@ export const isMappingDialogRequired = (options: {
     trackedFields: TrackedFields;
     drilldownProperties?: TrackedDrilldownProperties;
 }) =>
-    values(options.trackedFields).filter((v) => v.isMappingRequired).length >
-        0 || options.drilldownProperties?.isMappingRequired;
+    Object.values(options.trackedFields).filter((v) => v.isMappingRequired)
+        .length > 0 || options.drilldownProperties?.isMappingRequired;

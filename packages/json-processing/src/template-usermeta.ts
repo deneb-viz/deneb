@@ -1,4 +1,3 @@
-import omit from 'lodash/omit';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import {
     getJsoncNodeValue,
@@ -30,6 +29,7 @@ import {
     type DenebTemplateAllocationComponents,
     DenebTemplateImportWorkingProperties
 } from './lib/template-processing';
+import { omit } from '@deneb-viz/utils/object';
 
 /**
  * If we cannot resolve a provider, this is the default to assign.
@@ -188,7 +188,9 @@ export const getPublishableUsermeta = (
             },
             dataset: (usermeta?.[DATASET_DEFAULT_NAME] ?? []).map((d) => {
                 d.key = options.trackedFields?.[d.key]?.placeholder ?? d.key;
-                return omit(d, ['namePlaceholder']);
+                return omit(d as unknown as Record<string, unknown>, [
+                    'namePlaceholder'
+                ]) as Omit<UsermetaDatasetField, 'namePlaceholder'>;
             })
         }
     };

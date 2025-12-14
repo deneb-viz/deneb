@@ -50,7 +50,6 @@
     "devDependencies": {
         "@deneb-viz/eslint-config": "*",
         "@deneb-viz/typescript-config": "*",
-        "@types/lodash": "^4.14.202",
         "@types/node": "^22.15.33",
         "concurrently": "^9.1.2",
         "tsup": "^8.5.0",
@@ -65,7 +64,6 @@
         "ajv-formats": "^2.1.1",
         "fast-equals": "^5.3.3",
         "jsonc-parser": "^3.2.1",
-        "lodash": "^4.17.21",
         "mergician": "^2.0.2",
         "vega-expression": "^5.1.1",
         "vscode-json-languageservice": "^5.3.11"

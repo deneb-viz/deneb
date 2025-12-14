@@ -1,5 +1,4 @@
 import { JSONPath, visit } from 'jsonc-parser';
-import { Dictionary } from 'lodash';
 import { parseExpression } from 'vega-expression';
 import { mergician } from 'mergician';
 
@@ -103,7 +102,7 @@ const getTemplateMetadataOriginal = (
  * they are in the current dataset.
  */
 const getTrackedFieldMapCurrent = (
-    datasetFields: Dictionary<IDatasetField>,
+    datasetFields: Record<string, IDatasetField>,
     trackedFields: TrackedFields,
     reset = false
 ): TrackedFieldCandidates =>
@@ -175,7 +174,7 @@ export const getTrackingDataFromSpecification = (
         reset,
         supplementaryPatterns
     } = options;
-    const datasetFields = <Dictionary<IDatasetField>>(
+    const datasetFields = <Record<string, IDatasetField>>(
         getDatasetFieldsInclusive(fields)
     );
     const trackedFields: TrackedFields = {};

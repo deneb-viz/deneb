@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import debounce from 'lodash/debounce';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useDebounce } from '@uidotdev/usehooks';
 import { makeStyles, useUncontrolledFocus } from '@fluentui/react-components';
 import Editor, { loader, OnChange, OnMount } from '@monaco-editor/react';
 
@@ -117,6 +117,8 @@ export const SpecificationJsonEditor = ({
     const viewState =
         thisEditorRole === 'Spec' ? viewStateSpec : viewStateConfig;
     const [editorText, setEditorText] = useState(ref?.current?.getValue());
+    const debouncedEditorText = useDebounce(editorText, debouncePeriod);
+    const isFirstDebounce = useRef(true);
     const [status, setStatus] = useState<JsonEditorStatusState>({
         cursor: {
             lineNumber: viewState?.cursorState?.[0]?.position?.lineNumber ?? 1,
@@ -157,25 +159,38 @@ export const SpecificationJsonEditor = ({
         handleFocus();
     };
     // Handle change events within editor
-    const handleOnChange = useCallback<OnChange>(
-        debounce((value) => {
-            logDebug('onChangeEditor');
-            setEditorText(() => value);
-            logDebug('Staging editor value', thisEditorRole);
-            updateChanges({
-                role: thisEditorRole,
-                text: value,
-                viewState: ref.current?.saveViewState()
-            });
-            // Tracking is now only used for export (#486)
-            // updateTracking(value, thisEditorRole);
-            if (applyMode === 'Auto') {
-                logDebug('Auto-apply changes');
-                handlePersistSpecification(spec.current, config.current);
-            }
-        }, debouncePeriod),
-        [editorText, applyMode]
-    );
+    const handleOnChange = useCallback<OnChange>((value) => {
+        setEditorText(() => value);
+    }, []);
+
+    useEffect(() => {
+        if (isFirstDebounce.current) {
+            isFirstDebounce.current = false;
+            return;
+        }
+        if (debouncedEditorText === undefined) return;
+        logDebug('onChangeEditor');
+        logDebug('Staging editor value', thisEditorRole);
+        updateChanges({
+            role: thisEditorRole,
+            text: debouncedEditorText,
+            viewState: ref.current?.saveViewState()
+        });
+        // Tracking is now only used for export (#486)
+        // updateTracking(debouncedEditorText, thisEditorRole);
+        if (applyMode === 'Auto') {
+            logDebug('Auto-apply changes');
+            handlePersistSpecification(spec.current, config.current);
+        }
+    }, [
+        applyMode,
+        config,
+        debouncedEditorText,
+        ref,
+        spec,
+        thisEditorRole,
+        updateChanges
+    ]);
     return (
         <div style={{ display }} className={classes.container} {...attr}>
             <Editor
