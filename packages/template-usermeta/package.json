@@ -40,9 +40,5 @@
         "tsx": "^4.20.3",
         "typescript": "^5.6.2",
         "vitest": "^3.2.4"
-    },
-    "peerDependencies": {
-        "@deneb-viz/powerbi-compat": "*",
-        "@deneb-viz/vega-runtime": "*"
     }
 }

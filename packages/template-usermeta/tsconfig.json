@@ -1,19 +1,11 @@
 {
-  "extends": "@deneb-viz/typescript-config/base.json",
-  "compilerOptions": {
-    // Allow type-only imports that resolve outside of src/ without TS6059 rootDir errors.
-    // rootDir removed so declaration build can include mapped type definition files.
-    "outDir": "dist/src",
-    "baseUrl": ".",
-    "paths": {
-      "@deneb-viz/powerbi-compat/interactivity": [
-        "../powerbi-compat/src/lib/interactivity/types.ts"
-      ],
-      "@deneb-viz/vega-runtime/embed": [
-        "../vega-runtime/src/lib/embed/types.ts"
-      ]
-    }
-  },
-  "include": ["src/**/*"],
-  "exclude": ["dist", "node_modules", "**/*.test.*", "**/*.spec.*"]
+    "extends": "@deneb-viz/typescript-config/base.json",
+    "compilerOptions": {
+        // Allow type-only imports that resolve outside of src/ without TS6059 rootDir errors.
+        // rootDir removed so declaration build can include mapped type definition files.
+        "outDir": "dist/src",
+        "baseUrl": "."
+    },
+    "include": ["src/**/*"],
+    "exclude": ["dist", "node_modules", "**/*.test.*", "**/*.spec.*"]
 }

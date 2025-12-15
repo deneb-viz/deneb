@@ -1,4 +1,8 @@
-import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
+/**
+ * Specifies the provider type for the template specification.
+ */
+// TODO: removes circular dependency by duplicating type here temporarily.
+export type SpecProvider = 'vega' | 'vegaLite';
 
 /**
  * Indicates the type of selection mode that is currently active.

@@ -5,10 +5,6 @@
   ],
   "tasks": {
     "build": {
-      "dependsOn": [
-        "@deneb-viz/powerbi-compat#build",
-        "@deneb-viz/vega-runtime#build"
-      ],
       "outputs": [
         "dist/**"
       ]
