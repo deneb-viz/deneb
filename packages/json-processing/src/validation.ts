@@ -17,46 +17,60 @@ import * as denebUserMetaSchema from '@deneb-viz/template-usermeta/schema.deneb-
 
 /**
  * Create a common validator, with the necessary schema support for Vega/
- * Vega-Lite.
+ * Vega-Lite. Lazy initialized on first use.
  */
-const BASE_VALIDATOR = new Ajv({
-    strict: false
-});
-addFormats(BASE_VALIDATOR);
-BASE_VALIDATOR.addMetaSchema(draft06Schema);
-// istanbul ignore next
-BASE_VALIDATOR.addFormat('color-hex', () => true);
+let BASE_VALIDATOR: Ajv | null = null;
+const getBaseValidator = () => {
+    if (!BASE_VALIDATOR) {
+        BASE_VALIDATOR = new Ajv({
+            strict: false
+        });
+        addFormats(BASE_VALIDATOR);
+        BASE_VALIDATOR.addMetaSchema(draft06Schema);
+        // istanbul ignore next
+        BASE_VALIDATOR.addFormat('color-hex', () => true);
+    }
+    return BASE_VALIDATOR;
+};
 
 const CURRENT_VERSION = 'current';
 
 /**
- * Add custom schemes to Vega-Lite schema.
+ * Add custom schemes to Vega-Lite schema. Lazy initialized on first use.
  */
-const vegaLiteSchemaClone: typeof vegaLiteSchema =
-    structuredClone(vegaLiteSchema);
-
-const VEGA_LITE_SCHEMA_POWERBI = mergician(vegaLiteSchemaClone, {
-    definitions: {
-        Categorical: {
-            enum: [
-                ...vegaLiteSchema.definitions.Categorical.enum,
-                ...VEGA_LITE_SCHEME_ADDITIONS.categorical
-            ]
-        },
-        Diverging: {
-            enum: [
-                ...vegaLiteSchema.definitions.Diverging.enum,
-                ...VEGA_LITE_SCHEME_ADDITIONS.diverging
-            ]
-        },
-        SequentialMultiHue: {
-            enum: [
-                ...vegaLiteSchema.definitions.SequentialMultiHue.enum,
-                ...VEGA_LITE_SCHEME_ADDITIONS.sequential
-            ]
-        }
+let VEGA_LITE_SCHEMA_POWERBI: any = null;
+const getVegaLiteSchemaWithPowerBI = () => {
+    if (!VEGA_LITE_SCHEMA_POWERBI) {
+        const vegaLiteSchemaClone: typeof vegaLiteSchema =
+            structuredClone(vegaLiteSchema);
+        VEGA_LITE_SCHEMA_POWERBI = mergician(vegaLiteSchemaClone, {
+            definitions: {
+                Categorical: {
+                    enum: [
+                        ...vegaLiteSchema.definitions.Categorical.enum,
+                        ...VEGA_LITE_SCHEME_ADDITIONS.categorical
+                    ]
+                },
+                Diverging: {
+                    enum: [
+                        ...vegaLiteSchema.definitions.Diverging.enum,
+                        ...VEGA_LITE_SCHEME_ADDITIONS.diverging
+                    ]
+                },
+                SequentialMultiHue: {
+                    enum: [
+                        ...vegaLiteSchema.definitions.SequentialMultiHue.enum,
+                        ...VEGA_LITE_SCHEME_ADDITIONS.sequential
+                    ]
+                }
+            }
+        });
+        console.timeEnd(
+            '[validation] Vega-Lite schema merge with Power BI additions (lazy)'
+        );
     }
-});
+    return VEGA_LITE_SCHEMA_POWERBI;
+};
 
 /**
  * Borrowed from vega-editor.
@@ -96,18 +110,26 @@ export const getSchemaWithMarkdownProps = (schema: any) =>
     addMarkdownProps(structuredClone(schema));
 
 /**
- * Mapping of schema providers to their versions.
+ * Mapping of schema providers to their versions. Lazy initialized on first access.
  */
-const SCHEMA_MAPPING: SchemaProviderReference = {
-    vega: {
-        current: getSchemaWithMarkdownProps(vegaSchema)
-    },
-    vegaLite: {
-        current: getSchemaWithMarkdownProps(VEGA_LITE_SCHEMA_POWERBI)
-    },
-    denebUserMeta: {
-        current: denebUserMetaSchema
+let SCHEMA_MAPPING: SchemaProviderReference | null = null;
+const getSchemaMapping = () => {
+    if (!SCHEMA_MAPPING) {
+        SCHEMA_MAPPING = {
+            vega: {
+                current: getSchemaWithMarkdownProps(vegaSchema)
+            },
+            vegaLite: {
+                current: getSchemaWithMarkdownProps(
+                    getVegaLiteSchemaWithPowerBI()
+                )
+            },
+            denebUserMeta: {
+                current: denebUserMetaSchema
+            }
+        };
     }
+    return SCHEMA_MAPPING;
 };
 
 /**
@@ -119,7 +141,7 @@ export const getProviderSchema = ({
     isConfig = false
 }: GetProviderValidatorOptions) => {
     if (isConfig) return {};
-    return SCHEMA_MAPPING[provider][version];
+    return getSchemaMapping()[provider][version];
 };
 
 /**
@@ -130,4 +152,6 @@ export const getProviderValidator = ({
     version = 'current',
     isConfig = false
 }: GetProviderValidatorOptions): ValidateFunction =>
-    BASE_VALIDATOR.compile(getProviderSchema({ provider, version, isConfig }));
+    getBaseValidator().compile(
+        getProviderSchema({ provider, version, isConfig })
+    );

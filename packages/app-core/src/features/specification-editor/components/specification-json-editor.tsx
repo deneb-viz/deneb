@@ -26,13 +26,22 @@ import { SpecificationEditorStatusBar } from './specification-editor-status-bar'
 import { updateFieldTracking } from '../../../lib/field-processing';
 
 /**
- * One-time Monaco initialization tasks.
+ * Initialize Monaco editor on first mount. This is deferred from module load time
+ * to only run when the editor is actually needed (Editor mode).
  */
-loader.init().then(() => {
-    setMonacoCompletionProvider();
-    setMonacoDiagnosticsOptions();
-    setMonacoKeyBindingRules();
-});
+let monacoInitialized = false;
+const initializeMonaco = () => {
+    if (monacoInitialized) return;
+    monacoInitialized = true;
+    console.time('[editor] Monaco initialization');
+    loader.init().then(() => {
+        logDebug('Monaco Editor initialized');
+        setMonacoCompletionProvider();
+        setMonacoDiagnosticsOptions();
+        setMonacoKeyBindingRules();
+        console.timeEnd('[editor] Monaco initialization');
+    });
+};
 
 type JsonEditorProps = {
     thisEditorRole: EditorPaneRole;
@@ -96,6 +105,10 @@ export const SpecificationJsonEditor = ({
     // Override default Monaco worker lookup to use bundled worker
     useEffect(() => {
         setupMonacoWorker();
+    }, []);
+    // Initialize Monaco editor on first mount (deferred from module load)
+    useEffect(() => {
+        initializeMonaco();
     }, []);
     const attr = useUncontrolledFocus();
     const classes = useSpecificationJsonEditorStyles();
