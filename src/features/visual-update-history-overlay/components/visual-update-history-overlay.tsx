@@ -9,9 +9,7 @@ const IS_OVERLAY_ENABLED = toBoolean(process.env.PBIVIZ_DEV_OVERLAY);
  * options from the Power BI visual host.
  */
 export const VisualUpdateHistoryOverlay = () => {
-    const history = useDenebState(
-        (state) => state.visualUpdateOptions.history
-    );
+    const history = useDenebState((state) => state.visualUpdateOptions.history);
     return IS_OVERLAY_ENABLED ? (
         <textarea
             style={{
