@@ -12,7 +12,6 @@ import { createRoot } from 'react-dom/client';
 import { App } from './app';
 
 import { getDenebVisualState } from './store';
-import { getMappedDataset } from './core/data/dataset';
 import { handlePropertyMigration } from './lib/persistence';
 import {
     VisualFormattingSettingsService,
@@ -45,6 +44,7 @@ import { InteractivityManager } from '@deneb-viz/powerbi-compat/interactivity';
 import { getDenebState, updateFieldTracking } from '@deneb-viz/app-core';
 import { VegaExtensibilityServices } from '@deneb-viz/vega-runtime/extensibility';
 import { type SelectionMode } from '@deneb-viz/template-usermeta';
+import { getMappedDataset } from './lib/dataset';
 
 /**
  * Centralize/report developer mode from environment.

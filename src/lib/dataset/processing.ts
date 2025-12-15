@@ -1,13 +1,12 @@
 import powerbi from 'powerbi-visuals-api';
 import DataViewCategorical = powerbi.DataViewCategorical;
-import ISelectionId = powerbi.visuals.ISelectionId;
 import PrimitiveValue = powerbi.PrimitiveValue;
 
 import {
     isDrilldownFeatureEnabled,
     resolveDrilldownComponents,
     resolveDrilldownFlat
-} from '../../features/dataset';
+} from './drilldown';
 import {
     type AugmentedMetadataField,
     DRILL_FIELD_FLAT,
@@ -41,8 +40,8 @@ import {
 import { logError, logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
 
 /**
- * For supplied data view field metadata, produce a suitable object
- * representation of the row that corresponds with the dataset metadata.
+ * For supplied data view field metadata, produce a suitable object representation of the row that corresponds with the
+ * dataset metadata.
  */
 const getDataRow = (
     fields: AugmentedMetadataField[],
@@ -100,8 +99,7 @@ const getDataRow = (
 };
 
 /**
- * Processes the data in the visual's data view into an object suitable for the
- * visual's API.
+ * Processes the data in the visual's data view into an object suitable for the visual's API.
  */
 export const getMappedDataset = (
     categorical: DataViewCategorical,
@@ -140,8 +138,8 @@ export const getMappedDataset = (
             );
             const fields = getDatumFieldsFromMetadata(columns);
             /**
-             * Fast change detection: instead of hashing all values, create a lightweight
-             * fingerprint from row count, field names, and first/last row samples.
+             * Fast change detection: instead of hashing all values, create a lightweight fingerprint from row count,
+             * field names, and first/last row samples.
              * This is orders of magnitude faster than SHA1 hashing for large datasets.
              */
             // TODO: see how we go before this is 'done'.
@@ -181,22 +179,21 @@ export const getMappedDataset = (
 
             const values: DatasetValueRow[] = [];
             for (let r = 0; r < rowsLoaded; r++) {
-                const md = getDataRow(
-                    columns,
-                    fieldValues,
-                    r,
-                    hasHighlights,
-                    hasDrilldown,
-                    isCrossHighlight
-                );
                 selectionQueue.rowNumber = r;
                 const selector =
                     InteractivityManager.addRowSelector(selectionQueue);
-                md.__row__ = r;
-                if (isCrossFilter) {
-                    md.__selected__ = selector?.status;
-                }
-
+                const md: DatasetValueRow = {
+                    __row__: r,
+                    ...(isCrossFilter && { __selected__: selector?.status }),
+                    ...getDataRow(
+                        columns,
+                        fieldValues,
+                        r,
+                        hasHighlights,
+                        hasDrilldown,
+                        isCrossHighlight
+                    )
+                };
                 values.push(md);
             }
             logTimeEnd('getMappedDataset values');
@@ -215,12 +212,3 @@ export const getMappedDataset = (
         }
     }
 };
-
-/**
- * We have some compatibility issues between `powerbi.extensibility.ISelectionId`
- * and `powerbi.visuals.ISelectionId`, as well as needing to coerce Selection
- * IDs to strings so that we can set initial selections for Vega-Lite (as objects
- * aren't supported). This consolidates the logic we're using to resolve a
- * Selection ID to a string representation suitable for use across the visual.
- */
-const getSidString = (id: ISelectionId) => JSON.stringify(id.getSelector());
