@@ -44,6 +44,7 @@
         "clean": "rimraf dist",
         "typecheck": "tsc --noEmit",
         "eslint": "eslint .",
+        "pretest": "node scripts/patch-powerbi-utils.mjs",
         "test": "vitest run",
         "test:watch": "vitest"
     },
