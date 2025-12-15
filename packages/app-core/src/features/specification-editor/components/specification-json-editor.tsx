@@ -26,20 +26,18 @@ import { SpecificationEditorStatusBar } from './specification-editor-status-bar'
 import { updateFieldTracking } from '../../../lib/field-processing';
 
 /**
- * Initialize Monaco editor on first mount. This is deferred from module load time
- * to only run when the editor is actually needed (Editor mode).
+ * Initialize Monaco editor on first mount. This is deferred from module load time to only run when the editor is
+ * actually needed (Editor mode).
  */
 let monacoInitialized = false;
 const initializeMonaco = () => {
     if (monacoInitialized) return;
     monacoInitialized = true;
-    console.time('[editor] Monaco initialization');
     loader.init().then(() => {
         logDebug('Monaco Editor initialized');
         setMonacoCompletionProvider();
         setMonacoDiagnosticsOptions();
         setMonacoKeyBindingRules();
-        console.timeEnd('[editor] Monaco initialization');
     });
 };
 
