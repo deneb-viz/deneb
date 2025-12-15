@@ -9,6 +9,24 @@ export type DebugPaneRole = 'log' | 'data' | 'signal';
 export type DenebTheme = 'light' | 'dark';
 
 /**
+ * Visual container dimensions
+ */
+export type ContainerViewport = {
+    /**
+     * The width of the container viewport in pixels.
+     */
+    width: number;
+    /**
+     * The height of the container viewport in pixels.
+     */
+    height: number;
+    /**
+     * The current scale factor applied to the container viewport (if known).
+     */
+    scale?: number;
+};
+
+/**
  * Whether the editor is in auto-apply mode or not.
  */
 export type EditorApplyMode = 'Auto' | 'Manual';

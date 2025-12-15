@@ -5,9 +5,7 @@ import {
     VisualFormattingSettingsModel
 } from '@deneb-viz/powerbi-compat/properties';
 
-export type SettingsSlice = VisualFormattingSettingsModel & {
-    setVisualSettings: (settings: VisualFormattingSettingsModel) => void;
-};
+export type SettingsSlice = VisualFormattingSettingsModel & {};
 
 export const createSettingsSlice = (): StateCreator<
     DenebVisualStoreState,
@@ -15,20 +13,7 @@ export const createSettingsSlice = (): StateCreator<
     [],
     SettingsSlice
 > => {
-    return (set) => ({
-        ...getVisualFormattingModel(),
-        setVisualSettings: (settings) =>
-            set(
-                (state) => {
-                    return {
-                        settings: {
-                            ...state.settings,
-                            ...settings
-                        }
-                    };
-                },
-                false,
-                'settings.setVisualSettings'
-            )
+    return () => ({
+        ...getVisualFormattingModel()
     });
 };

@@ -1,15 +1,14 @@
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
-import { useDenebState } from '@deneb-viz/app-core';
+import { useDenebVisualState } from '../../../state';
 
 const IS_OVERLAY_ENABLED = toBoolean(process.env.PBIVIZ_DEV_OVERLAY);
 
 /**
- * Provides a simple textarea that we can view the visual update history from
- * the store. Is intended for debugging status changes based on the update
- * options from the Power BI visual host.
+ * Provides a simple textarea that we can view the visual update history from the store. Is intended for debugging
+ * status changes based on the update options from the Power BI visual host.
  */
 export const VisualUpdateHistoryOverlay = () => {
-    const history = useDenebState((state) => state.visualUpdateOptions.history);
+    const history = useDenebVisualState((state) => state.updates.history);
     return IS_OVERLAY_ENABLED ? (
         <textarea
             style={{

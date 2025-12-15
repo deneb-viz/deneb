@@ -7,11 +7,15 @@ import {
     type InteractivitySlice
 } from './interactivity';
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
-import { createSettingsSlice, SettingsSlice } from './settings';
+import { createSettingsSlice, type SettingsSlice } from './settings';
+import { createInterfaceSlice, type InterfaceSlice } from './interface';
+import { createUpdatesSlice, type UpdatesSlice } from './updates';
 
 export type DenebVisualStoreState = {
     interactivity: InteractivitySlice;
+    interface: InterfaceSlice;
     settings: SettingsSlice;
+    updates: UpdatesSlice;
 };
 
 export type DenebVisualStateDependencies = {};
@@ -20,7 +24,9 @@ const useDenebVisualState = createWithEqualityFn<DenebVisualStoreState>()(
     devtools(
         (...a) => ({
             interactivity: createInteractivitySlice()(...a),
-            settings: createSettingsSlice()(...a)
+            interface: createInterfaceSlice()(...a),
+            settings: createSettingsSlice()(...a),
+            updates: createUpdatesSlice()(...a)
         }),
         {
             name: 'DenebVisualStore',

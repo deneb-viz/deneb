@@ -11,7 +11,7 @@ import { createRoot } from 'react-dom/client';
 
 import { App } from './app';
 
-import { getDenebVisualState } from './state';
+import { getDenebVisualState, useDenebVisualState } from './state';
 import { handlePropertyMigration } from './lib/persistence';
 import {
     VisualFormattingSettingsService,
@@ -113,15 +113,18 @@ export class Deneb implements IVisual {
         logDebug('Resolving update options...', { options });
         logTimeStart('resolveUpdateOptions');
         VisualHostServices.update(options, IS_DEVELOPER_MODE);
+        this.resolveLocale();
+        // Provide initial update options to store
+        // TODO: we're side-loading these for now until we can refactor the Deneb app store and app to be less reliant
+        const {
+            updates: { setVisualUpdateOptions }
+        } = useDenebVisualState.getState();
+        const settings = getVisualSettings();
+        setVisualUpdateOptions({ options, settings });
         // Signal we've begun rendering
         setRenderingStarted();
-        this.resolveLocale();
-        // Provide intial update options to store
-        const { setVisualUpdate } = getDenebState();
-        const settings = getVisualSettings();
-        const { setVisualSettings } = getDenebVisualState().settings;
-        setVisualSettings(settings);
         // TODO: likely migrate to visual store action and add as dependency to main app
+        const { setVisualUpdate } = getDenebState();
         setVisualUpdate({
             options,
             settings
