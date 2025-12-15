@@ -1,15 +1,18 @@
 import { useMemo } from 'react';
 
-import { ReportViewRouter } from './report-view-router';
-import { FetchingMessage, SplashInitial } from '../../status';
-import { NotificationToaster } from '../../toaster';
-import { LandingPage } from '../../status';
 import { logRender } from '@deneb-viz/utils/logging';
-import { VisualUpdateHistoryOverlay } from '../../visual-update-history-overlay';
+import { ReportViewRouter } from './report-view-router';
 import { DenebProvider, Editor, useDenebState } from '@deneb-viz/app-core';
-import { InteractivitySettings } from '../../settings';
+import {
+    FetchingMessage,
+    LandingPage,
+    SplashInitial
+} from '../features/status';
+import { InteractivitySettings } from '../features/settings';
+import { NotificationToaster } from '../features/toaster';
+import { VisualUpdateHistoryOverlay } from '../features/visual-update-history-overlay';
 
-export const VisualInterface = () => {
+export const DenebPowerbi = () => {
     const { mode } = useDenebState((state) => ({
         mode: state.interface.mode
     }));

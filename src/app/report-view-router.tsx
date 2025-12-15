@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { FetchingMessage, SplashInitial } from '../../status';
+import { FetchingMessage, SplashInitial } from '../features/status';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logRender } from '@deneb-viz/utils/logging';
 import { useDenebState, Viewer } from '@deneb-viz/app-core';

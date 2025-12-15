@@ -9,7 +9,7 @@ import FormattingModel = powerbi.visuals.FormattingModel;
 import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 
-import App from './components/App';
+import { App } from './app';
 
 import { getDenebVisualState } from './store';
 import { getMappedDataset } from './core/data/dataset';
