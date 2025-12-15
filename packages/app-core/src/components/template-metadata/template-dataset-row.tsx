@@ -47,7 +47,7 @@ export const TemplateDatasetRow = ({
             return (
                 <>
                     <DataTypeColumnCell type={item.type} />
-                    <DataNameColumnCell name={item.name} />
+                    <DataNameColumnCell name={item.namePlaceholder || ''} />
                     <DataNameColumnField item={item} index={index} />
                     <DataDescriptionColumnField index={index} />
                 </>

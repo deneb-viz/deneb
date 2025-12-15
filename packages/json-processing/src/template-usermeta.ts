@@ -27,7 +27,8 @@ import { getNewUuid } from '@deneb-viz/utils/crypto';
 import {
     type DenebTemplateSetImportFilePayload,
     type DenebTemplateAllocationComponents,
-    DenebTemplateImportWorkingProperties
+    type DenebTemplateImportWorkingProperties,
+    getFieldNameForExport
 } from './lib/template-processing';
 import { omit } from '@deneb-viz/utils/object';
 
@@ -188,6 +189,7 @@ export const getPublishableUsermeta = (
             },
             dataset: (usermeta?.[DATASET_DEFAULT_NAME] ?? []).map((d) => {
                 d.key = options.trackedFields?.[d.key]?.placeholder ?? d.key;
+                d.name = getFieldNameForExport(d);
                 return omit(d as unknown as Record<string, unknown>, [
                     'namePlaceholder'
                 ]) as Omit<UsermetaDatasetField, 'namePlaceholder'>;
