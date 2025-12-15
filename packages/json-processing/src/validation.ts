@@ -65,9 +65,6 @@ const getVegaLiteSchemaWithPowerBI = () => {
                 }
             }
         });
-        console.timeEnd(
-            '[validation] Vega-Lite schema merge with Power BI additions (lazy)'
-        );
     }
     return VEGA_LITE_SCHEMA_POWERBI;
 };

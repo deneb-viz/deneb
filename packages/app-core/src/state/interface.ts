@@ -210,7 +210,6 @@ const handleSetRemapState = (
                     state.interface.mode,
                     state.interface.modalDialogRole
                 );
-    console.log('modalDialogRole', modalDialogRole);
     return {
         interface: {
             ...state.interface,
