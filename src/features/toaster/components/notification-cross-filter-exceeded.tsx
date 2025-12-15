@@ -6,7 +6,7 @@ import {
     useToastController
 } from '@fluentui/react-components';
 
-import { useDenebVisualState } from '../../../store';
+import { useDenebVisualState } from '../../../state';
 import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { InteractivityManager } from '@deneb-viz/powerbi-compat/interactivity';
 import { type NotificationProps } from '../types';

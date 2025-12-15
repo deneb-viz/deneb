@@ -11,7 +11,7 @@ import { createRoot } from 'react-dom/client';
 
 import { App } from './app';
 
-import { getDenebVisualState } from './store';
+import { getDenebVisualState } from './state';
 import { handlePropertyMigration } from './lib/persistence';
 import {
     VisualFormattingSettingsService,
