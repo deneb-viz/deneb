@@ -1,1 +1,0 @@
-export { isUnversionedSpec } from './logic';

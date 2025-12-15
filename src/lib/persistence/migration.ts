@@ -1,6 +1,8 @@
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import { isUnversionedSpec } from '../../features/specification';
-import { VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/properties';
+import {
+    DEFAULTS,
+    VisualFormattingSettingsModel
+} from '@deneb-viz/powerbi-compat/properties';
 import {
     type VersionChangeDirection,
     type VersionComparator,
@@ -12,6 +14,7 @@ import {
 } from '@deneb-viz/configuration';
 import { logDebug } from '@deneb-viz/utils/logging';
 import {
+    getVisualSettings,
     type PersistenceProperty,
     persistProperties,
     resolveObjectProperties
@@ -146,6 +149,22 @@ export const handlePropertyMigration = (
 };
 
 /**
+ * In order to determine if our current spec/config is the same as the default properties, indicating that
+ */
+const isNewSpec = () => {
+    const defaults = DEFAULTS.vega;
+    const {
+        vega: {
+            output: {
+                jsonSpec: { value: jsonSpec },
+                jsonConfig: { value: jsonConfig }
+            }
+        }
+    } = getVisualSettings();
+    return jsonSpec === defaults.jsonSpec && jsonConfig === defaults.jsonConfig;
+};
+
+/**
  * Allows comparison of versions, so that we can determine if there are any actions that need to be taken in the event
  * of a change in Deneb version or the Vega versions. We'd normally use semver for this, but AppSource version numbering
  * isn't 100% compatible with semver, so we're managing this with a good enough function here.
@@ -162,6 +181,32 @@ const isNewerVersion = (oldVer: string, newVer: string) => {
     }
     // istanbul ignore next
     return false;
+};
+
+/**
+ * Determine if the current spec is 'unversioned', meaning that it's the same as the default properties.
+ */
+const isUnversionedSpec = () => !isNewSpec() && !isVersionedSpec();
+
+/**
+ * Determine if a visual is 'versioned' based on persisted properties.
+ */
+const isVersionedSpec = () => {
+    const {
+        visualSettings: {
+            developer: {
+                versioning: {
+                    version: { value: denebVersion }
+                }
+            },
+            vega: {
+                output: {
+                    version: { value: providerVersion }
+                }
+            }
+        }
+    } = getDenebState();
+    return (denebVersion && providerVersion) || false;
 };
 
 /**

@@ -1,0 +1,1 @@
+export { handlePropertyMigration } from './migration';

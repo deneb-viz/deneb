@@ -13,7 +13,7 @@ import { App } from './app';
 
 import { getDenebVisualState } from './store';
 import { getMappedDataset } from './core/data/dataset';
-import { handlePropertyMigration } from './core/utils/versioning';
+import { handlePropertyMigration } from './lib/persistence';
 import {
     VisualFormattingSettingsService,
     getVisualFormattingService
