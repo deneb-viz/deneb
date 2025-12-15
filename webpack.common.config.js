@@ -37,7 +37,7 @@ const capabilities = require('./capabilities.json');
 
 // Plugin and visual source locations
 const pluginLocation = './.tmp/precompile/visualPlugin.ts';
-const visualSourceLocation = '../../src/Deneb';
+const visualSourceLocation = '../../src';
 
 /**
  * Common webpack configuration shared between dev and prod
