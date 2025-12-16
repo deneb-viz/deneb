@@ -3,9 +3,9 @@ import { type Loader } from 'vega';
 
 export type DenebPlatformProviderProps = {
     /**
-     * How the action of launching a URL should be handled.
+     * Whether the host application allows downloading of files.
      */
-    launchUrl?: (url: string) => void;
+    isDownloadPermitted?: boolean;
     /**
      * A component to display and manage platform-specific settings, that will be added to the Settings pane.
      */
@@ -14,4 +14,17 @@ export type DenebPlatformProviderProps = {
      * A custom Vega Loader instance to use within Deneb.
      */
     vegaLoader?: Loader | null;
+    /**
+     * Function to handle the download of a JSON file from the application, if a host environment has a custom download
+     * API.
+     */
+    downloadJsonFile?: (
+        content: string,
+        filename: string,
+        description: string
+    ) => void;
+    /**
+     * How the action of launching a URL should be handled.
+     */
+    launchUrl?: (url: string) => void;
 };

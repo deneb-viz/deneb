@@ -1,5 +1,5 @@
 import powerbi from 'powerbi-visuals-api';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { logRender } from '@deneb-viz/utils/logging';
 import { ReportViewRouter } from './report-view-router';
@@ -19,6 +19,9 @@ type AppProps = {
 };
 
 export const App = ({ host }: AppProps) => {
+    const [isDownloadPermitted, setIsDownloadPermitted] = useState<
+        boolean | undefined
+    >(undefined);
     const { mode, translate } = useDenebState((state) => ({
         mode: state.interface.mode,
         translate: state.i18n.translate
@@ -35,6 +38,18 @@ export const App = ({ host }: AppProps) => {
             }
         });
     }, [translate]);
+
+    // Ensure that download permissions are evaluated against the current tenant and sent to the core app
+    useEffect(() => {
+        if (host) {
+            host.downloadService.exportStatus().then((status) => {
+                const isDownloadPermitted =
+                    status === powerbi.PrivilegeStatus.Allowed;
+                setIsDownloadPermitted(isDownloadPermitted);
+            });
+        }
+    }, [host]);
+
     const mainComponent = useMemo(() => {
         switch (mode) {
             case 'Initializing':
@@ -55,9 +70,18 @@ export const App = ({ host }: AppProps) => {
     return (
         <DenebProvider
             platformProvider={{
-                launchUrl,
+                isDownloadPermitted,
                 settingsPanePlatformComponent: <InteractivitySettings />,
-                vegaLoader
+                vegaLoader,
+                launchUrl,
+                downloadJsonFile: (content, filename, description) => {
+                    host.downloadService.exportVisualsContentExtended(
+                        content,
+                        filename,
+                        'json',
+                        description
+                    );
+                }
             }}
         >
             {mainComponent}
