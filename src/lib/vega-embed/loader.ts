@@ -1,6 +1,5 @@
 import { loader, type Loader } from 'vega';
 import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
-import { getVisualHost } from '@deneb-viz/powerbi-compat/visual-host';
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { LoaderInitializationOptions } from './types';
@@ -9,7 +8,6 @@ import { LoaderInitializationOptions } from './types';
  * Custom Vega loader for Power BI.
  */
 export const getVegaLoader = (options: LoaderInitializationOptions): Loader => {
-    const { launchUrl, translations } = options;
     const thisLoader = loader();
     const externalUri = toBoolean(process.env.ALLOW_EXTERNAL_URI) ?? false;
     logDebug('Vega Runtime: Initializing custom Vega loader for Power BI.', {
@@ -22,7 +20,7 @@ export const getVegaLoader = (options: LoaderInitializationOptions): Loader => {
     if (!externalUri) {
         thisLoader.load = (uri) => {
             const href = (isDataUri(uri) && uri) || '';
-            handleExternalResourceWarning(href, externalUri, translations);
+            handleExternalResourceWarning(href, externalUri, options);
             return Promise.resolve(href);
         };
     }
@@ -32,7 +30,7 @@ export const getVegaLoader = (options: LoaderInitializationOptions): Loader => {
         switch (sanitizeOptions?.context) {
             // Hyperlinks will be delegated to the visual host
             case 'href': {
-                launchUrl(uri);
+                options.host.launchUrl(uri);
                 return Promise.reject({ href: uri });
             }
             // Default assumes we're loading images. If we're blocking
@@ -42,11 +40,7 @@ export const getVegaLoader = (options: LoaderInitializationOptions): Loader => {
                     ? uri
                     : (isDataUri(uri) && uri) || null;
                 const href = sanitized || getBase64ImagePngBlank();
-                handleExternalResourceWarning(
-                    sanitized,
-                    externalUri,
-                    translations
-                );
+                handleExternalResourceWarning(sanitized, externalUri, options);
                 return Promise.resolve({
                     href
                 });
@@ -64,13 +58,13 @@ export const getVegaLoader = (options: LoaderInitializationOptions): Loader => {
 const handleExternalResourceWarning = (
     href: string | null,
     externalUri: boolean,
-    translations: LoaderInitializationOptions['translations']
+    options: LoaderInitializationOptions
 ) =>
     !href &&
     !externalUri &&
-    getVisualHost().displayWarningIcon(
-        translations.hoverText,
-        translations.detailedText
+    options.host.displayWarningIcon(
+        options.translations.hoverText,
+        options.translations.detailedText
     );
 
 /**

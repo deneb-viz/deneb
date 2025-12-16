@@ -1,5 +1,5 @@
 export type LoaderInitializationOptions = {
-    launchUrl: (url: string) => void;
+    host: powerbi.extensibility.visual.IVisualHost;
     translations: LoaderTranslations;
 };
 

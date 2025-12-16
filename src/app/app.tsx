@@ -29,7 +29,7 @@ export const App = ({ host }: AppProps) => {
     const { launchUrl } = host;
     const vegaLoader = useMemo(() => {
         return getVegaLoader({
-            launchUrl,
+            host,
             translations: {
                 hoverText: translate('PowerBI_Vega_Loader_Warning_HoverText'),
                 detailedText: translate(
@@ -37,7 +37,7 @@ export const App = ({ host }: AppProps) => {
                 )
             }
         });
-    }, [translate]);
+    }, [translate, host]);
 
     // Ensure that download permissions are evaluated against the current tenant and sent to the core app
     useEffect(() => {
