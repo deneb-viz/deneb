@@ -7,10 +7,10 @@ import { CrossFilterMaxDataPoints } from './cross-filter-max-data-points';
 import { CrossFilterModeSettings } from './cross-filter-mode-settings';
 import { useSettingsStyles } from '../styles';
 import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
-import { launchUrl } from '@deneb-viz/powerbi-compat/visual-host';
 import {
     SettingsHeadingLabel,
     SettingsTextSection,
+    useDenebPlatformProvider,
     useDenebState,
     useSettingsPaneStyles
 } from '@deneb-viz/app-core';
@@ -25,6 +25,7 @@ export const InteractivitySettings = () => {
             translate: state.i18n.translate
         })
     );
+    const { launchUrl } = useDenebPlatformProvider();
     const openInteractivityLink = useCallback(() => {
         launchUrl(
             PROVIDER_RESOURCE_CONFIGURATION.deneb.interactivityDocumentationUrl

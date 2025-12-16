@@ -52,6 +52,7 @@ import {
     RESIZER_PANE_VERTICAL_STYLES,
     RESIZER_VERTICAL_STYLES
 } from './styles';
+import { useDenebPlatformProvider } from '../../components/deneb-platform';
 
 const useInterfaceStyles = makeStyles({
     container: {
@@ -102,6 +103,7 @@ export const EditorContent = () => {
         }),
         shallow
     );
+    const { launchUrl } = useDenebPlatformProvider();
     const editorRefs = useSpecificationEditor();
     const hotkeyHandler = (command: Command, callback: () => void) =>
         useHotkeys(getCommandKey(command), callback, HOTKEY_OPTIONS);
@@ -112,7 +114,7 @@ export const EditorContent = () => {
     // Tracking is now only used for export (#486)
     // hotkeyHandler('fieldMappings', handleOpenRemapDialog);
     hotkeyHandler('themeToggle', handleToggleEditorTheme);
-    hotkeyHandler('helpSite', handleOpenWebsite);
+    hotkeyHandler('helpSite', () => handleOpenWebsite(launchUrl));
     hotkeyHandler('navigateSpecification', () =>
         handleEditorPaneSpecification(editorRefs)
     );

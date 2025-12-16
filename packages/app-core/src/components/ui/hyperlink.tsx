@@ -1,6 +1,6 @@
 import React from 'react';
-import { launchUrl } from '@deneb-viz/powerbi-compat/visual-host';
 import { Link, makeStyles } from '@fluentui/react-components';
+import { useDenebPlatformProvider } from '../deneb-platform';
 
 type HyperlinkProps = {
     href: string;
@@ -16,6 +16,7 @@ const useLinkStyles = makeStyles({
  * component as a base, but will ensure that the visual host will .
  */
 export const Hyperlink = ({ href, children }: HyperlinkProps) => {
+    const { launchUrl } = useDenebPlatformProvider();
     const handleClick = (
         event: React.MouseEvent<
             HTMLAnchorElement | HTMLElement | HTMLButtonElement,

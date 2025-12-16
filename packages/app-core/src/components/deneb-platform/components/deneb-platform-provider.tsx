@@ -2,20 +2,24 @@ import { createContext, useMemo, type ReactNode } from 'react';
 
 import { type DenebPlatformProviderProps } from '../types';
 
+type DenebPlatformProviderContextProps = Required<DenebPlatformProviderProps>;
+
 export const DenebPlatformProviderContext =
-    createContext<DenebPlatformProviderProps | null>(null);
+    createContext<DenebPlatformProviderContextProps | null>(null);
 
 export const DenebPlatformProvider = ({
+    launchUrl = launchUrlDefault,
     settingsPanePlatformComponent = <></>,
-    vegaLoader,
+    vegaLoader = null,
     children
 }: DenebPlatformProviderProps & { children: ReactNode }) => {
-    const platformContext = useMemo<DenebPlatformProviderProps>(
+    const platformContext = useMemo<DenebPlatformProviderContextProps>(
         () => ({
+            launchUrl,
             settingsPanePlatformComponent,
             vegaLoader
         }),
-        [settingsPanePlatformComponent, vegaLoader]
+        [launchUrl, settingsPanePlatformComponent, vegaLoader]
     );
 
     return (
@@ -23,4 +27,11 @@ export const DenebPlatformProvider = ({
             {children}
         </DenebPlatformProviderContext.Provider>
     );
+};
+
+/**
+ * Default function to handle launching a URL in a new tab.
+ */
+const launchUrlDefault = (url: string) => {
+    window.open(url, '_blank');
 };

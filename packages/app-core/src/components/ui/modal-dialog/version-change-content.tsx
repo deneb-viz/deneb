@@ -2,10 +2,10 @@ import { useMemo } from 'react';
 
 import { Link } from '@fluentui/react-components';
 import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
-import { launchUrl } from '@deneb-viz/powerbi-compat/visual-host';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { useDenebState } from '../../../state';
 import { getVegaProviderI18n } from '../../../lib/vega';
+import { useDenebPlatformProvider } from '../../deneb-platform';
 
 export const VersionChangeContent = () => {
     const {
@@ -24,6 +24,7 @@ export const VersionChangeContent = () => {
             .value as SpecProvider,
         translate: state.i18n.translate
     }));
+    const { launchUrl } = useDenebPlatformProvider();
     const providerName = getVegaProviderI18n(vegaProvider);
     const items = useMemo(
         () => (

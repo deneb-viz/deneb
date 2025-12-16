@@ -59,12 +59,6 @@ export const getVisualObjects = () =>
 export const getVisualSettings = () => settings;
 
 /**
- * Hyperlinks to external sites need to be managed by the visual host, in order to ensure that they are opened with
- * consent from the user. This method provides a wrapper around the Power BI visual host's `launchUrl` method.
- */
-export const launchUrl = (url: string) => getVisualHost()?.launchUrl(url);
-
-/**
  * Signal rendering has failed for visual host events.
  */
 export const setRenderingFailed = (reason?: string) => {

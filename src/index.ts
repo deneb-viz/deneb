@@ -97,7 +97,7 @@ export class Deneb implements IVisual {
             element.appendChild(this.#applicationWrapper);
             this.handleSuppressOnObjectFormatting();
             this.#root = createRoot(this.#applicationWrapper);
-            this.#root.render(createElement(App));
+            this.#root.render(createElement(App, { host }));
             element.oncontextmenu = (ev) => {
                 ev.preventDefault();
             };

@@ -7,7 +7,6 @@ import { getDenebState } from '../../state';
 import { type DebugPaneRole, type EditorPaneRole } from '../interface';
 import { type Command } from './types';
 import {
-    launchUrl,
     type PersistenceProperty,
     persistProperties,
     resolveObjectProperties
@@ -200,7 +199,7 @@ export const handleOpenRemapDialog = () => {
 /**
  * Handle opening the Deneb website.
  */
-export const handleOpenWebsite = () => {
+export const handleOpenWebsite = (launchUrl: (url: string) => void) => {
     executeCommand('helpSite', () => {
         launchUrl(APPLICATION_INFORMATION_CONFIGURATION.supportUrl);
     });

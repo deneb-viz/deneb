@@ -7,7 +7,6 @@ import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { ptToPx } from '@deneb-viz/utils/dom';
 import { getProviderSchema } from '@deneb-viz/json-processing';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import { launchUrl } from '@deneb-viz/powerbi-compat/visual-host';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { type IDatasetField } from '@deneb-viz/powerbi-compat/dataset';
 import {
@@ -24,6 +23,7 @@ import { getDenebState, useDenebState } from '../../../state';
 import { useSpecificationEditor } from '../hooks/use-specification-editor';
 import { SpecificationEditorStatusBar } from './specification-editor-status-bar';
 import { updateFieldTracking } from '../../../lib/field-processing';
+import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 
 /**
  * Initialize Monaco editor on first mount. This is deferred from module load time to only run when the editor is
@@ -100,6 +100,7 @@ export const SpecificationJsonEditor = ({
         setViewState: state.editor.setViewState,
         updateChanges: state.editor.updateChanges
     }));
+    const { launchUrl } = useDenebPlatformProvider();
     // Override default Monaco worker lookup to use bundled worker
     useEffect(() => {
         setupMonacoWorker();
@@ -142,7 +143,7 @@ export const SpecificationJsonEditor = ({
     // Ensure that we update key dependencies/events if we change the editor.
     useEffect(() => {
         handleFocus();
-        addHyperlinkOverride(ref.current);
+        addHyperlinkOverride(ref.current, launchUrl);
     }, [provider, current]);
     // Bootstrap the editor
     const handleOnMount: OnMount = (editor) => {
@@ -166,7 +167,7 @@ export const SpecificationJsonEditor = ({
         });
         // Process context menu
         editor.onContextMenu(() => removeContextMenuItems(editor));
-        addHyperlinkOverride(editor);
+        addHyperlinkOverride(editor, launchUrl);
         handleFocus();
     };
     // Handle change events within editor
@@ -239,10 +240,11 @@ export const SpecificationJsonEditor = ({
  * Intercept click events on markdown tooltips and delegate to the host.
  */
 const addHyperlinkOverride = (
-    editor: monaco.editor.IStandaloneCodeEditor | null
+    editor: monaco.editor.IStandaloneCodeEditor | null,
+    launchUrl: (url: string) => void
 ) => {
-    editor?.getDomNode()?.removeEventListener('click', onLinkClick);
-    editor?.getDomNode()?.addEventListener('click', onLinkClick);
+    editor?.getDomNode()?.removeEventListener('click', onLinkClick(launchUrl));
+    editor?.getDomNode()?.addEventListener('click', onLinkClick(launchUrl));
 };
 
 /**
@@ -265,7 +267,7 @@ const getDefaultValue = (role: EditorPaneRole) => {
  * A very simple override of clicking link elements in the editor, to allow delegation of hyperlink handling to the
  * host.
  */
-const onLinkClick = (e: MouseEvent) => {
+const onLinkClick = (launchUrl: (url: string) => void) => (e: MouseEvent) => {
     const url = (e.target as HTMLElement)
         .closest('a')
         ?.getAttribute('data-href');

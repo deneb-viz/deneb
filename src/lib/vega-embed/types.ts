@@ -1,4 +1,5 @@
 export type LoaderInitializationOptions = {
+    launchUrl: (url: string) => void;
     translations: LoaderTranslations;
 };
 

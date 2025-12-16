@@ -1,9 +1,6 @@
 import { loader, type Loader } from 'vega';
 import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
-import {
-    getVisualHost,
-    launchUrl
-} from '@deneb-viz/powerbi-compat/visual-host';
+import { getVisualHost } from '@deneb-viz/powerbi-compat/visual-host';
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { LoaderInitializationOptions } from './types';
@@ -12,7 +9,7 @@ import { LoaderInitializationOptions } from './types';
  * Custom Vega loader for Power BI.
  */
 export const getVegaLoader = (options: LoaderInitializationOptions): Loader => {
-    const { translations } = options;
+    const { launchUrl, translations } = options;
     const thisLoader = loader();
     const externalUri = toBoolean(process.env.ALLOW_EXTERNAL_URI) ?? false;
     logDebug('Vega Runtime: Initializing custom Vega loader for Power BI.', {

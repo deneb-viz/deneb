@@ -3,7 +3,6 @@ export {
     getVisualHost,
     getVisualInteractionStatus,
     getVisualSettings,
-    launchUrl,
     setRenderingFailed,
     setRenderingFinished,
     setRenderingStarted

@@ -41,6 +41,7 @@ import { type ToolbarRole } from './types';
 import { getDenebState, useDenebState } from '../../../state';
 import { useSpecificationEditor } from '../../../features/specification-editor';
 import { TooltipCustomMount } from '../tooltip-custom-mount';
+import { useDenebPlatformProvider } from '../../deneb-platform';
 
 type ToolbarButtonStandardProps = {
     command: Command;
@@ -67,6 +68,7 @@ export const ToolbarButtonStandard = ({
         commands: state.commands,
         translate: state.i18n.translate
     }));
+    const { launchUrl } = useDenebPlatformProvider();
     const classes = useToolbarButtonStandardStyles();
     const i18nKey = translate(resolveI18nKey(command));
     const icon = resolveIcon(command);
@@ -76,7 +78,7 @@ export const ToolbarButtonStandard = ({
         resolveClasses(command)
     );
     const editorRefs = useSpecificationEditor();
-    const handleClick = () => resolveClick(command)?.(editorRefs);
+    const handleClick = () => resolveClick(command, launchUrl)?.(editorRefs);
     const [ref, setRef] = useState<HTMLElement | null>();
     return (
         <>
@@ -110,7 +112,7 @@ const resolveCaption = (command: Command) => {
     }
 };
 
-const resolveClick = (command: Command) => {
+const resolveClick = (command: Command, launchUrl: (url: string) => void) => {
     switch (command) {
         case 'applyChanges':
             return handleApplyChanges;
@@ -126,7 +128,7 @@ const resolveClick = (command: Command) => {
         // case 'fieldMappings':
         //     return handleOpenRemapDialog;
         case 'helpSite':
-            return handleOpenWebsite;
+            return () => handleOpenWebsite(launchUrl);
         case 'newSpecification':
             return handleOpenCreateSpecificationDialog;
         case 'themeToggle':
