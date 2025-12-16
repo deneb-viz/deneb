@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { TableColumn } from 'react-data-table-component';
 
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logRender } from '@deneb-viz/utils/logging';
 import { stringifyPruned } from '@deneb-viz/utils/object';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
@@ -14,6 +13,7 @@ import { DataTableViewer } from '../data-table/data-table';
 import { NoDataMessage } from '../no-data-message';
 import { DataTableCell } from '../data-table/data-table-cell';
 import { SignalValue } from './signal-value';
+import { getDenebState } from '../../../../state';
 
 type SignalViewerProps = {
     renderId: string;
@@ -93,32 +93,35 @@ const getSignalTableValues = () => {
  */
 const getTableColumns = (
     renderId: string
-): TableColumn<SignalTableDataRow>[] => [
-    {
-        name: getI18nValue('Pivot_Signals_KeyColumn'),
-        id: 'key',
-        selector: (row) => row.key,
-        sortable: true,
-        grow: 2,
-        cell: (row) => (
-            <DataTableCell
-                displayValue={row.key}
-                field={row.key}
-                rawValue={row.key}
-            />
-        )
-    },
-    {
-        name: getI18nValue('Pivot_Signals_ValueColumn'),
-        id: 'value',
-        grow: 5,
-        selector: (row) => row.value,
-        cell: (row) => (
-            <SignalValue
-                signalName={row.key}
-                initialValue={row.value}
-                renderId={renderId}
-            />
-        )
-    }
-];
+): TableColumn<SignalTableDataRow>[] => {
+    const { translate } = getDenebState().i18n;
+    return [
+        {
+            name: translate('Pivot_Signals_KeyColumn'),
+            id: 'key',
+            selector: (row) => row.key,
+            sortable: true,
+            grow: 2,
+            cell: (row) => (
+                <DataTableCell
+                    displayValue={row.key}
+                    field={row.key}
+                    rawValue={row.key}
+                />
+            )
+        },
+        {
+            name: translate('Pivot_Signals_ValueColumn'),
+            id: 'value',
+            grow: 5,
+            selector: (row) => row.value,
+            cell: (row) => (
+                <SignalValue
+                    signalName={row.key}
+                    initialValue={row.value}
+                    renderId={renderId}
+                />
+            )
+        }
+    ];
+};

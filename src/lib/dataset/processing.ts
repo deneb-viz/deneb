@@ -103,6 +103,7 @@ const getDataRow = (
  */
 export const getMappedDataset = (
     categorical: DataViewCategorical,
+    locale: string,
     enableSelection: boolean,
     enableHighlight: boolean
 ): IDataset => {
@@ -134,6 +135,7 @@ export const getMappedDataset = (
             const fieldValues = getDatumValueEntriesFromDataview(
                 dvCategories,
                 dvValues,
+                locale,
                 enableHighlight
             );
             const fields = getDatumFieldsFromMetadata(columns);

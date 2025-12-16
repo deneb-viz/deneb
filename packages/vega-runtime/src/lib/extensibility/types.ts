@@ -1,4 +1,7 @@
-import { InteractivityLookupDataset } from '@deneb-viz/powerbi-compat/interactivity';
+import {
+    type CrossFilterTranslate,
+    type InteractivityLookupDataset
+} from '@deneb-viz/powerbi-compat/interactivity';
 import { SelectionMode } from '@deneb-viz/template-usermeta';
 
 /**
@@ -9,4 +12,5 @@ export type ExtensibilityServicesUpdateOptions = {
     dataset: InteractivityLookupDataset;
     selectionMode: SelectionMode;
     logWarn: (warning: string) => void;
+    translate: CrossFilterTranslate;
 };

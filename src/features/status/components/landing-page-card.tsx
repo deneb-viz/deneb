@@ -7,7 +7,7 @@ import {
     Subtitle2
 } from '@fluentui/react-components';
 import { useStatusStyles } from '.';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import { useDenebState } from '@deneb-viz/app-core';
 
 interface ILandingPageCardProps {
     i18nHeader: string;
@@ -22,6 +22,7 @@ export const LandingPageCard: React.FC<ILandingPageCardProps> = ({
     image,
     children
 }) => {
+    const translate = useDenebState((state) => state.i18n.translate);
     const classes = useStatusStyles();
     return (
         <section className={classes.cardSection}>
@@ -30,13 +31,13 @@ export const LandingPageCard: React.FC<ILandingPageCardProps> = ({
                     image={image}
                     header={
                         <Subtitle2 className={classes.cardTitle}>
-                            {getI18nValue(i18nHeader)}
+                            {translate(i18nHeader)}
                         </Subtitle2>
                     }
                     description={
                         (i18nSubtitle && (
                             <Caption1 className={classes.cardCaption}>
-                                {getI18nValue(i18nSubtitle)}
+                                {translate(i18nSubtitle)}
                             </Caption1>
                         )) ||
                         null

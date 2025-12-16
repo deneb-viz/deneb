@@ -7,13 +7,15 @@ export const DenebPlatformProviderContext =
 
 export const DenebPlatformProvider = ({
     settingsPanePlatformComponent = <></>,
+    vegaLoader,
     children
 }: DenebPlatformProviderProps & { children: ReactNode }) => {
     const platformContext = useMemo<DenebPlatformProviderProps>(
         () => ({
-            settingsPanePlatformComponent
+            settingsPanePlatformComponent,
+            vegaLoader
         }),
-        [settingsPanePlatformComponent]
+        [settingsPanePlatformComponent, vegaLoader]
     );
 
     return (

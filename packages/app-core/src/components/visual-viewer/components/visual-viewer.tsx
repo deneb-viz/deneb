@@ -14,7 +14,6 @@ import {
     type SpecRenderMode
 } from '@deneb-viz/vega-runtime/embed';
 import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
-import { getLocale } from '@deneb-viz/powerbi-compat/visual-host';
 import { logRender } from '@deneb-viz/utils/logging';
 import { InteractivityManager } from '@deneb-viz/powerbi-compat/interactivity';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
@@ -46,10 +45,10 @@ const useVisualViewerStyles = makeStyles({
 export const VisualViewer = () => {
     const {
         datasetHash,
-        devLocale,
         enableTooltips,
         jsonConfig,
         jsonSpec,
+        locale,
         logLevel,
         multiSelectDelay,
         previewScrollbars,
@@ -65,11 +64,11 @@ export const VisualViewer = () => {
         visualMode
     } = useDenebState((state) => ({
         datasetHash: state.dataset.hashValue,
-        devLocale: state.visualSettings.developer.localization.locale.value,
         enableTooltips:
             state.visualSettings.vega.interactivity.enableTooltips.value,
         jsonConfig: state.visualSettings.vega.output.jsonConfig.value,
         jsonSpec: state.visualSettings.vega.output.jsonSpec.value,
+        locale: state.i18n.locale,
         logLevel: state.visualSettings.vega.logging.logLevel.value,
         multiSelectDelay:
             state.visualSettings.vega.interactivity.tooltipDelay.value,
@@ -92,10 +91,6 @@ export const VisualViewer = () => {
         viewportWidth: state.visualViewportReport.width,
         visualMode: state.interface.mode
     }));
-    const locale = useMemo(
-        () => getLocale(),
-        [jsonConfig, jsonSpec, devLocale]
-    );
     const useScrollbars = useMemo(
         () => visualMode === 'View' || previewScrollbars,
         [

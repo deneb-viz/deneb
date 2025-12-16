@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Caption1, Tooltip, makeStyles } from '@fluentui/react-components';
 
 import {
@@ -6,7 +6,6 @@ import {
     type SpecProvider
 } from '@deneb-viz/vega-runtime/embed';
 import { logRender } from '@deneb-viz/utils/logging';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { TooltipCustomMount } from '../../../components/ui';
 import { useDenebState } from '../../../state';
 import { getVegaProviderI18n } from '../../../lib/vega';
@@ -22,11 +21,12 @@ const useProviderStyles = makeStyles({
 });
 
 export const ProviderDetail = () => {
-    const vegaProvider = useDenebState(
-        (state) =>
-            state.visualSettings.vega.output.provider.value as SpecProvider
-    );
-    const provider = getI18nValue(getVegaProviderI18n(vegaProvider));
+    const { vegaProvider, translate } = useDenebState((state) => ({
+        vegaProvider: state.visualSettings.vega.output.provider
+            .value as SpecProvider,
+        translate: state.i18n.translate
+    }));
+    const provider = translate(getVegaProviderI18n(vegaProvider));
     const version = getVegaVersion(vegaProvider);
     const classes = useProviderStyles();
     const [ref, setRef] = useState<HTMLElement | null>(null);
@@ -34,7 +34,7 @@ export const ProviderDetail = () => {
     return (
         <div className={classes.root}>
             <Tooltip
-                content={getI18nValue('Current_Provider_Tooltip')}
+                content={translate('Tooltip_Current_Provider')}
                 relationship='label'
                 withArrow
                 mountNode={ref}

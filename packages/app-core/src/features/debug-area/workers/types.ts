@@ -21,7 +21,6 @@ export interface IWorkerDatasetViewerTranslations {
     placeholderInfinity: string;
     placeholderNaN: string;
     placeholderTooLong: string;
-    selectionKeywordPresent: string;
     selectedNeutral: string;
     selectedOn: string;
     selectedOff: string;

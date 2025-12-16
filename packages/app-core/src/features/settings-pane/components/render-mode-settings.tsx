@@ -7,7 +7,6 @@ import {
 } from '@fluentui/react-components';
 
 import { type SpecRenderMode } from '@deneb-viz/vega-runtime/embed';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { useDenebState } from '../../../state';
 import { handleVegaRenderMode } from '../../../lib';
 import { useSettingsPaneStyles } from '../styles';
@@ -15,10 +14,11 @@ import { SettingsHeadingLabel } from './settings-heading-label';
 import { SettingsTextSection } from './settings-text-section';
 
 export const RenderModeSettings = () => {
-    const renderMode = useDenebState(
-        (state) =>
-            state.visualSettings.vega.output.renderMode.value as SpecRenderMode
-    );
+    const { renderMode, translate } = useDenebState((state) => ({
+        renderMode: state.visualSettings.vega.output.renderMode
+            .value as SpecRenderMode,
+        translate: state.i18n.translate
+    }));
     const onChange = useCallback(
         (ev: React.FormEvent<HTMLDivElement>, data: RadioGroupOnChangeData) => {
             handleVegaRenderMode(data.value as SpecRenderMode);
@@ -30,7 +30,7 @@ export const RenderModeSettings = () => {
     return (
         <div className={classes.sectionContainer}>
             <SettingsHeadingLabel>
-                {getI18nValue('Objects_Vega_RenderMode')}
+                {translate('Text_Vega_RenderMode')}
             </SettingsHeadingLabel>
             <div className={classes.radioGroupHorizontal}>
                 <RadioGroup
@@ -41,16 +41,16 @@ export const RenderModeSettings = () => {
                 >
                     <Radio
                         value='canvas'
-                        label={getI18nValue('Enum_Grammar_RenderMode_Canvas')}
+                        label={translate('Enum_Grammar_RenderMode_Canvas')}
                     />
                     <Radio
                         value='svg'
-                        label={getI18nValue('Enum_Grammar_RenderMode_Svg')}
+                        label={translate('Enum_Grammar_RenderMode_Svg')}
                     />
                 </RadioGroup>
             </div>
             <SettingsTextSection>
-                {getI18nValue('Assistive_Text_RenderMode')}
+                {translate('Assistive_Text_RenderMode')}
             </SettingsTextSection>
         </div>
     );

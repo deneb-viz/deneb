@@ -41,7 +41,6 @@ import {
     ROW_INDEX_FIELD_NAME,
     SELECTED_ROW_FIELD_NAME
 } from '@deneb-viz/powerbi-compat/dataset';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { makeStyles } from '@fluentui/react-components';
 import {
     PREVIEW_PANE_TOOLBAR_MIN_SIZE,
@@ -458,28 +457,29 @@ const calculateMaxWidth = (fieldName: string, fieldDataMaxWidth: number) => {
  * customized tooltip for the column header.
  */
 const getColumnHeaderTooltip = (column: string) => {
+    const { translate } = getDenebState().i18n;
     switch (true) {
         case isTableColumnNameReserved(column):
             return getReservedTableColumnTooltip(column);
         case isCrossHighlightComparatorField(column):
-            return getI18nValue('Pivot_Dataset_HighlightComparatorField', [
+            return translate('Pivot_Dataset_HighlightComparatorField', [
                 getCrossHighlightFieldBaseMeasureName(column),
-                getI18nValue('Pivot_Debug_HighlightComparatorEq'),
-                getI18nValue('Pivot_Debug_HighlightComparatorLt'),
-                getI18nValue('Pivot_Debug_HighlightComparatorGt'),
-                getI18nValue('Pivot_Debug_HighlightComparatorNeq'),
-                getI18nValue('Pivot_Debug_Refer_Documentation')
+                translate('Pivot_Debug_HighlightComparatorEq'),
+                translate('Pivot_Debug_HighlightComparatorLt'),
+                translate('Pivot_Debug_HighlightComparatorGt'),
+                translate('Pivot_Debug_HighlightComparatorNeq'),
+                translate('Pivot_Debug_Refer_Documentation')
             ]);
         case isCrossHighlightStatusField(column):
-            return getI18nValue('Pivot_Dataset_HighlightStatusField', [
+            return translate('Pivot_Dataset_HighlightStatusField', [
                 getCrossHighlightFieldBaseMeasureName(column),
-                getI18nValue('Pivot_Debug_HighlightStatusNeutral'),
-                getI18nValue('Pivot_Debug_HighlightStatusOn'),
-                getI18nValue('Pivot_Debug_HighlightStatusOff'),
-                getI18nValue('Pivot_Debug_Refer_Documentation')
+                translate('Pivot_Debug_HighlightStatusNeutral'),
+                translate('Pivot_Debug_HighlightStatusOn'),
+                translate('Pivot_Debug_HighlightStatusOff'),
+                translate('Pivot_Debug_Refer_Documentation')
             ]);
         case isCrossHighlightField(column):
-            return getI18nValue('Pivot_Dataset_HighlightField', [
+            return translate('Pivot_Dataset_HighlightField', [
                 getCrossHighlightFieldBaseMeasureName(column)
             ]);
         default:
@@ -527,32 +527,34 @@ const getDataTableRenderedCharWidth = () => {
 /**
  * Perform all i18n translations for values that need to be assigned by the data table worker.
  */
-const getDataTableWorkerTranslations =
-    (): IWorkerDatasetViewerTranslations => ({
-        placeholderInfinity: getI18nValue('Table_Placeholder_Infinity'),
-        placeholderNaN: getI18nValue('Table_Placeholder_NaN'),
-        placeholderTooLong: getI18nValue('Table_Placeholder_TooLong'),
-        selectedNeutral: getI18nValue('Pivot_Debug_SelectedNeutral'),
-        selectedOn: getI18nValue('Pivot_Debug_SelectedOn'),
-        selectedOff: getI18nValue('Pivot_Debug_SelectedOff'),
-        selectionKeywordPresent: getI18nValue('Selection_KW_Present')
-    });
+const getDataTableWorkerTranslations = (): IWorkerDatasetViewerTranslations => {
+    const { translate } = getDenebState().i18n;
+    return {
+        placeholderInfinity: translate('Table_Placeholder_Infinity'),
+        placeholderNaN: translate('Table_Placeholder_NaN'),
+        placeholderTooLong: translate('Table_Placeholder_TooLong'),
+        selectedNeutral: translate('Pivot_Debug_SelectedNeutral'),
+        selectedOn: translate('Pivot_Debug_SelectedOn'),
+        selectedOff: translate('Pivot_Debug_SelectedOff')
+    };
+};
 
 /**
  * If a column name is a reserved word, then supply a suitable tooltip value.
  */
 const getReservedTableColumnTooltip = (field: string) => {
+    const { translate } = getDenebState().i18n;
     switch (true) {
         case field === SELECTED_ROW_FIELD_NAME:
-            return getI18nValue('Pivot_Dataset_SelectedName', [
+            return translate('Pivot_Dataset_SelectedName', [
                 field,
-                getI18nValue('Pivot_Debug_SelectedNeutral'),
-                getI18nValue('Pivot_Debug_SelectedOn'),
-                getI18nValue('Pivot_Debug_SelectedOff'),
-                getI18nValue('Pivot_Debug_Refer_Documentation')
+                translate('Pivot_Debug_SelectedNeutral'),
+                translate('Pivot_Debug_SelectedOn'),
+                translate('Pivot_Debug_SelectedOff'),
+                translate('Pivot_Debug_Refer_Documentation')
             ]);
         default:
-            return getI18nValue(
+            return translate(
                 `Pivot_Dataset_${
                     field === ROW_INDEX_FIELD_NAME ? 'RowIdentifier' : 'Unknown'
                 }`,

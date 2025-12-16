@@ -13,7 +13,6 @@ import {
 import { useDebounce } from '@uidotdev/usehooks';
 
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { useDenebState } from '../../state';
 
 type CappedTextFieldProps = {
@@ -39,13 +38,13 @@ const useStyles = makeStyles({
 export const CappedTextField = (props: CappedTextFieldProps) => {
     const inputId = useId(props.id);
     const classes = useStyles();
-    const { metadata, setMetadataPropertyBySelector } = useDenebState(
-        (state) => ({
+    const { metadata, setMetadataPropertyBySelector, translate } =
+        useDenebState((state) => ({
             metadata: state.export.metadata,
             setMetadataPropertyBySelector:
-                state.export.setMetadataPropertyBySelector
-        })
-    );
+                state.export.setMetadataPropertyBySelector,
+            translate: state.i18n.translate
+        }));
     const [value, setValue] = useState<string>(
         (metadata as unknown as Record<string, string | undefined>)?.[
             props.id
@@ -72,7 +71,7 @@ export const CappedTextField = (props: CappedTextFieldProps) => {
         }
     };
     const label = !props.inline
-        ? `${getI18nValue(props.i18nLabel)} (${value?.length || 0}/${
+        ? `${translate(props.i18nLabel)} (${value?.length || 0}/${
               props.maxLength
           })`
         : '';
@@ -84,7 +83,7 @@ export const CappedTextField = (props: CappedTextFieldProps) => {
                     value={value}
                     onChange={onChange}
                     id={inputId}
-                    placeholder={getI18nValue(props.i18nPlaceholder)}
+                    placeholder={translate(props.i18nPlaceholder)}
                     autoComplete='off'
                 />
             ) : (
@@ -92,7 +91,7 @@ export const CappedTextField = (props: CappedTextFieldProps) => {
                     value={value}
                     onChange={onChange}
                     id={inputId}
-                    placeholder={getI18nValue(props.i18nPlaceholder)}
+                    placeholder={translate(props.i18nPlaceholder)}
                     autoComplete='off'
                 />
             )}

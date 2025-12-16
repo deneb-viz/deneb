@@ -60,6 +60,14 @@ export type CrossFilterSelectionDirective = CrossFilterSelectionAssessment & {
 };
 
 /**
+ * Translations method signature used in cross-filtering interactivity.
+ */
+export type CrossFilterTranslate = (
+    key: string,
+    tokens?: (string | number | undefined)[]
+) => string;
+
+/**
  * Options used to check whether cross-filtering is enabled and should be performed or data processed accordingly.
  */
 export type CrossFilterPropCheckOptions = {

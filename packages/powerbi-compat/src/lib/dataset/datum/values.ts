@@ -25,6 +25,7 @@ const getCategoryValueEntries = (
 export const getDatumValueEntriesFromDataview = (
     categories: powerbi.DataViewCategoryColumn[],
     values: powerbi.DataViewValueColumns,
+    locale: string,
     enableHighlight: boolean
 ) => {
     return [
@@ -33,7 +34,7 @@ export const getDatumValueEntriesFromDataview = (
             getHighlightValueEntries(values, enableHighlight)) ||
             []),
         ...getMeasureValueEntries(values, enableHighlight),
-        ...getFormattingStringValueEntries(values)
+        ...getFormattingStringValueEntries(values, locale)
     ];
 };
 
@@ -41,7 +42,8 @@ export const getDatumValueEntriesFromDataview = (
  * For measures, return the formatting string per row, and the formatted value.
  */
 const getFormattingStringValueEntries = (
-    values: powerbi.DataViewValueColumns
+    values: powerbi.DataViewValueColumns,
+    locale: string
 ): powerbi.PrimitiveValue[][] => {
     logTimeStart('getFormattingStringEntries');
     const entries = (values || []).reduce(
@@ -52,7 +54,9 @@ const getFormattingStringValueEntries = (
                     getFormatStringForValueByIndex(v, vvi)
                 );
                 const formattedValues = values.map((vv, vvi) =>
-                    getFormattedValue(vv, formatStrings[vvi])
+                    getFormattedValue(vv, formatStrings[vvi], {
+                        cultureSelector: locale
+                    })
                 );
                 acc.push(formatStrings);
                 acc.push(formattedValues);

@@ -11,7 +11,6 @@ import {
 import { type PaginationComponentProps } from 'react-data-table-component';
 
 import { DATA_VIEWER_CONFIGURATION } from '@deneb-viz/configuration';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { useDenebState } from '../../../../state';
 import { handleDataTableRowsPerPageChange } from '../../../../lib';
 import { DatasetSelect } from '../dataset-viewer/dataset-select';
@@ -47,11 +46,12 @@ export const DataTableStatusBar = ({
     onChangeRowsPerPage,
     currentPage
 }: PaginationComponentProps) => {
-    const { rowsPerPageSetting, mode } = useDenebState((state) => ({
+    const { rowsPerPageSetting, mode, translate } = useDenebState((state) => ({
         rowsPerPageSetting:
             state.visualSettings.editor.debugPane.debugTableRowsPerPage.value
                 .value,
-        mode: state.editorPreviewAreaSelectedPivot
+        mode: state.editorPreviewAreaSelectedPivot,
+        translate: state.i18n.translate
     }));
     useEffect(() => {
         if (rowsPerPage !== rowsPerPageSetting) {
@@ -104,7 +104,7 @@ export const DataTableStatusBar = ({
                 <div className={classes.navigation}>
                     <div>
                         <Label htmlFor={rowsPerPageId} size='small'>
-                            {getI18nValue('Text_Data_Table_Navigation_Rows')}
+                            {translate('Text_Data_Table_Navigation_Rows')}
                         </Label>
                     </div>
                     <div>

@@ -7,9 +7,9 @@ import {
 } from '@fluentui/react-components';
 
 import { type UsermetaDatasetFieldType } from '@deneb-viz/template-usermeta';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { DataTypeIcon } from './data-type-icon';
 import { TooltipCustomMount } from '../ui';
+import { getDenebState } from '../../state';
 
 type DataTypeColumnCellProps = {
     type: UsermetaDatasetFieldType;
@@ -50,16 +50,17 @@ export const DataTypeColumnCell = ({ type }: DataTypeColumnCellProps) => {
  * tooltip/title text for its data type.
  */
 const getDataTypeIconTitle = (type: UsermetaDatasetFieldType) => {
+    const { translate } = getDenebState().i18n;
     switch (type) {
         case 'bool':
-            return getI18nValue('Template_Type_Descriptor_Bool');
+            return translate('Template_Type_Descriptor_Bool');
         case 'text':
-            return getI18nValue('Template_Type_Descriptor_Text');
+            return translate('Template_Type_Descriptor_Text');
         case 'numeric':
-            return getI18nValue('Template_Type_Descriptor_Numeric');
+            return translate('Template_Type_Descriptor_Numeric');
         case 'dateTime':
-            return getI18nValue('Template_Type_Descriptor_DateTime');
+            return translate('Template_Type_Descriptor_DateTime');
         default:
-            return getI18nValue('Template_Import_Not_Deneb');
+            return translate('Template_Import_Not_Deneb');
     }
 };

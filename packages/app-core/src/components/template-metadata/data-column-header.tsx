@@ -1,9 +1,9 @@
 import { TableHeaderCell } from '@fluentui/react-components';
 
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { useDataTypeColumnCellStyles } from './data-type-column-cell';
 import { useDataNameColumnCellStyles } from './data-name-column-cell';
 import { useDataAssignmentColumnCellStyles } from './data-assignment-column-cell';
+import { getDenebState } from '../../state';
 
 /**
  * Denotes the role that a column performs, allowing us to switch based on this value.
@@ -57,18 +57,19 @@ const getDataColumnClass = (role: DenebTemplateDatasetColumnRole) => {
  * Resolve heading column text based on role.
  */
 const getDataColumnText = (role: DenebTemplateDatasetColumnRole) => {
+    const { translate } = getDenebState().i18n;
     switch (role) {
         case 'name':
-            return getI18nValue('Text_Template_Dataset_Field_Name');
+            return translate('Text_Template_Dataset_Field_Name');
         case 'exportName':
-            return getI18nValue('Text_Template_Dataset_Field_Name_Export');
+            return translate('Text_Template_Dataset_Field_Name_Export');
         case 'originalName':
-            return getI18nValue('Text_Template_Dataset_Field_OriginalName');
+            return translate('Text_Template_Dataset_Field_OriginalName');
         case 'assignment':
-            return getI18nValue('Text_Template_Dataset_Field_Assignment');
+            return translate('Text_Template_Dataset_Field_Assignment');
         case 'description':
         case 'exportDescription':
-            return getI18nValue('Text_Template_Dataset_Field_Description');
+            return translate('Text_Template_Dataset_Field_Description');
         default:
             return '';
     }

@@ -8,7 +8,6 @@ import {
 
 import { useDenebState } from '../../../state';
 import { TooltipCustomMount } from '../../../components/ui';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logRender } from '@deneb-viz/utils/logging';
 
 const useTokenizerStyles = makeStyles({
@@ -29,6 +28,7 @@ export const TrackingSyncStatus = () => {
     const isTrackingFields = useDenebState(
         (state) => state.interface.isTrackingFields
     );
+    const translate = useDenebState((state) => state.i18n.translate);
     const classes = useTokenizerStyles();
     logRender('TrackingSyncStatus');
     return (
@@ -36,7 +36,7 @@ export const TrackingSyncStatus = () => {
             <div className={classes.root}>
                 <TooltipCustomMount setRef={setRef} />
                 <Tooltip
-                    content={getI18nValue('Text_Tokenizer_Sync_Tooltip')}
+                    content={translate('Tooltip_Tokenizer_Sync')}
                     relationship='label'
                     withArrow
                     mountNode={ref}
@@ -44,7 +44,7 @@ export const TrackingSyncStatus = () => {
                 >
                     <Field
                         className={classes.field}
-                        validationMessage={getI18nValue(
+                        validationMessage={translate(
                             'Text_Tokenizer_Sync_Message'
                         )}
                         validationState='none'

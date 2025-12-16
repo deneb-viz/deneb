@@ -7,7 +7,6 @@ import {
     useModalDialogStyles
 } from '../../../components/ui';
 import { logRender } from '@deneb-viz/utils/logging';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 const useProgressStyles = makeStyles({
     container: {
@@ -23,31 +22,34 @@ const useProgressStyles = makeStyles({
 export const FieldRemapPaneProgress = () => {
     const classes = useModalDialogStyles();
     const progressClasses = useProgressStyles();
-    const remapState = useDenebState((state) => state.interface.remapState);
+    const { remapState, translate } = useDenebState((state) => ({
+        remapState: state.interface.remapState,
+        translate: state.i18n.translate
+    }));
     logRender('FieldRemapPane');
     return (
         <div className={classes.paneContentScrollable}>
             <p>
-                <Body1>{getI18nValue('Text_Remap_In_Progress_Message')}</Body1>
+                <Body1>{translate('Text_Remap_In_Progress_Message')}</Body1>
             </p>
             <div className={progressClasses.container}>
                 <StageProgressIndicator
-                    message={getI18nValue('Text_Remap_State_Tokenizing')}
+                    message={translate('Text_Remap_State_Tokenizing')}
                     isInProgress={remapState === 'Tokenizing'}
                     isCompleted={hasPassedStage(remapState, 'Tokenizing')}
                 />
                 <StageProgressIndicator
-                    message={getI18nValue('Text_Remap_State_Replacing')}
+                    message={translate('Text_Remap_State_Replacing')}
                     isInProgress={remapState === 'Replacing'}
                     isCompleted={hasPassedStage(remapState, 'Replacing')}
                 />
                 <StageProgressIndicator
-                    message={getI18nValue('Text_Remap_State_Tracking')}
+                    message={translate('Text_Remap_State_Tracking')}
                     isInProgress={remapState === 'Tracking'}
                     isCompleted={hasPassedStage(remapState, 'Tracking')}
                 />
                 <StageProgressIndicator
-                    message={getI18nValue('Text_Remap_State_UpdatingEditor')}
+                    message={translate('Text_Remap_State_UpdatingEditor')}
                     isInProgress={remapState === 'UpdatingEditor'}
                     isCompleted={hasPassedStage(remapState, 'UpdatingEditor')}
                 />

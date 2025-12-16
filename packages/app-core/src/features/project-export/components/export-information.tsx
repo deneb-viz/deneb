@@ -8,7 +8,6 @@ import {
 } from '@fluentui/react-components';
 
 import { logRender } from '@deneb-viz/utils/logging';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import {
     getBase64ImagePngBlank,
     getBase64MimeType
@@ -51,13 +50,15 @@ export const ExportInformation = () => {
         includePreviewImage,
         previewImageBase64PNG,
         visualViewportReport,
-        setPreviewImage
+        setPreviewImage,
+        translate
     } = useDenebState((state) => ({
         includePreviewImage: state.export.includePreviewImage,
         previewImageBase64PNG:
             state.export?.metadata?.information.previewImageBase64PNG,
         visualViewportReport: state.visualViewportReport,
-        setPreviewImage: state.export.setPreviewImage
+        setPreviewImage: state.export.setPreviewImage,
+        translate: state.i18n.translate
     }));
     const modalClasses = useModalDialogStyles();
     const exportClasses = useVisualExportInformationStyles();
@@ -101,7 +102,7 @@ export const ExportInformation = () => {
         <div className={modalClasses.paneContentSection}>
             <div className={modalClasses.paneContentHeading}>
                 <Subtitle2>
-                    {getI18nValue('Template_Export_Information')}
+                    {translate('Template_Export_Information')}
                 </Subtitle2>
             </div>
             <div className={exportClasses.informationContainer}>
@@ -142,7 +143,7 @@ export const ExportInformation = () => {
                     <div className={exportClasses.informationPreviewCheckbox}>
                         <Checkbox
                             checked={includePreviewImage}
-                            label={getI18nValue(
+                            label={translate(
                                 'Template_Export_Include_Preview_Image'
                             )}
                             onChange={onCheckboxChange}

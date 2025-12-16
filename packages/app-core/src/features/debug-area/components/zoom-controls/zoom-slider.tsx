@@ -10,7 +10,6 @@ import {
 import { VISUAL_PREVIEW_ZOOM_CONFIGURATION } from '@deneb-viz/configuration';
 import { TooltipCustomMount } from '../../../../components/ui';
 import { useDenebState } from '../../../../state';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logRender } from '@deneb-viz/utils/logging';
 
 export const useZoomSliderStyles = makeStyles({
@@ -25,13 +24,18 @@ export const useZoomSliderStyles = makeStyles({
 
 export const ZoomSlider = () => {
     const classes = useZoomSliderStyles();
-    const { editorZoomLevel, zoomFitEnabled, updateEditorZoomLevel } =
-        useDenebState((state) => ({
-            editorZoomLevel: state.editorZoomLevel,
-            zoomFitEnabled: state.commands.zoomFit,
-            updateEditorZoomLevel: state.updateEditorZoomLevel
-        }));
-    const i18nText = getI18nValue('Text_Slider_Zoom_Level');
+    const {
+        editorZoomLevel,
+        zoomFitEnabled,
+        translate,
+        updateEditorZoomLevel
+    } = useDenebState((state) => ({
+        editorZoomLevel: state.editorZoomLevel,
+        zoomFitEnabled: state.commands.zoomFit,
+        translate: state.i18n.translate,
+        updateEditorZoomLevel: state.updateEditorZoomLevel
+    }));
+    const i18nText = translate('Text_Slider_Zoom_Level');
     const onChange: SliderProps['onChange'] = (event, data) =>
         updateEditorZoomLevel(data.value);
     const [ref, setRef] = useState<HTMLElement | null>();

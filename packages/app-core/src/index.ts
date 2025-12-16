@@ -1,5 +1,6 @@
 export { DenebProvider, Editor, Viewer } from './app';
 export { useDenebPlatformProvider } from './components/deneb-platform';
+export { type I18nLocale, type Translations } from './lib/i18n';
 export * from './state';
 
 // TEMPORARY API WHILE WE HOIST APP OUT OF POWER BI

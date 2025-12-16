@@ -1,6 +1,5 @@
 import { makeStyles, tokens } from '@fluentui/react-components';
 
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { useDenebState } from '../../../state';
 import {
     PREVIEW_PANE_TOOLBAR_MIN_SIZE,
@@ -49,11 +48,12 @@ const useNoDataMessageStyles = makeStyles({
  * Displays when no data is available in the data table.
  */
 export const NoDataMessage = () => {
-    const { mode } = useDenebState((state) => ({
-        mode: state.editorPreviewAreaSelectedPivot
+    const { mode, translate } = useDenebState((state) => ({
+        mode: state.editorPreviewAreaSelectedPivot,
+        translate: state.i18n.translate
     }));
     const classes = useNoDataMessageStyles();
-    const message = getI18nValue(
+    const message = translate(
         mode === 'data'
             ? 'Text_Debug_Data_No_Data'
             : 'Text_Debug_Signal_No_Data'

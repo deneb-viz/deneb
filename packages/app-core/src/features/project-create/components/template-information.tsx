@@ -12,7 +12,6 @@ import {
     PreviewImage,
     TemplateDataset
 } from '../../../components/template-metadata';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { useDenebState } from '../../../state';
 
 export const useTemplateInformationStyles = makeStyles({
@@ -33,6 +32,7 @@ export const useTemplateInformationStyles = makeStyles({
  */
 export const TemplateInformation = () => {
     const metadata = useDenebState((state) => state.create.metadata);
+    const translate = useDenebState((state) => state.i18n.translate);
     if (!metadata) return null;
     const classes = useTemplateInformationStyles();
     const { previewImageBase64PNG } = metadata?.information || {};
@@ -49,15 +49,15 @@ export const TemplateInformation = () => {
                     <div className={classes.title}>
                         <Subtitle2>{metadata.information.name}</Subtitle2>{' '}
                         <Caption1>
-                            {getI18nValue('Text_Template_By')}{' '}
+                            {translate('Text_Template_By')}{' '}
                             {metadata.information.author ||
-                                getI18nValue('Text_Template_No_Author')}
+                                translate('Text_Template_No_Author')}
                         </Caption1>
                     </div>
                     <div>
                         <Body1>
                             {metadata.information.description ||
-                                getI18nValue('Text_Template_No_Description')}
+                                translate('Text_Template_No_Description')}
                         </Body1>
                     </div>
                     <TemplatePlaceholderMessage />

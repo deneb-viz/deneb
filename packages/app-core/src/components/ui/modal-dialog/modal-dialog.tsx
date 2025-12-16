@@ -10,7 +10,6 @@ import {
     DialogTitle
 } from '@fluentui/react-components';
 
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logRender } from '@deneb-viz/utils/logging';
 import { useDenebState } from '../../../state';
 import { useSpecificationEditor } from '../../../features/specification-editor';
@@ -35,14 +34,16 @@ export const ModalDialog = () => {
         remapState,
         clearMigrationDialog,
         setExportProcessingState,
-        setModalDialogRole
+        setModalDialogRole,
+        translate
     } = useDenebState((state) => ({
         exportProcessingState: state.interface.exportProcessingState,
         modalDialogRole: state.interface.modalDialogRole,
         remapState: state.interface.remapState,
         clearMigrationDialog: state.migration.clearMigrationDialog,
         setExportProcessingState: state.interface.setExportProcessingState,
-        setModalDialogRole: state.interface.setModalDialogRole
+        setModalDialogRole: state.interface.setModalDialogRole,
+        translate: state.i18n.translate
     }));
     const editorRefs = useSpecificationEditor();
     const classes = useModalDialogStyles();
@@ -55,9 +56,9 @@ export const ModalDialog = () => {
         }
     }, [modalDialogRole]);
     const isOpen = modalDialogRole !== 'None';
-    const closeLabel = useMemo(() => getI18nValue('Text_Button_Close'), []);
+    const closeLabel = useMemo(() => translate('Text_Button_Close'), []);
     const titleLabel = useMemo(
-        () => getI18nValue(`Text_Dialog_Title_${modalDialogRole}`),
+        () => translate(`Text_Dialog_Title_${modalDialogRole}`),
         [modalDialogRole]
     );
     const content = getDialogContent(modalDialogRole);

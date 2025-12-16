@@ -6,14 +6,14 @@ import {
     APPLICATION_INFORMATION_CONFIGURATION,
     PROVIDER_RESOURCE_CONFIGURATION
 } from '@deneb-viz/configuration';
-import { Hyperlink } from '@deneb-viz/app-core';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
+import { Hyperlink, useDenebState } from '@deneb-viz/app-core';
 
 /**
  * Provides the hyperlinks to associated documentation for the landing page.
  */
 export const LandingPageLearnMore: React.FC = () => {
     const classes = useStatusStyles();
+    const translate = useDenebState((state) => state.i18n.translate);
     return (
         <div>
             <ul className={classes.landingUl}>
@@ -21,10 +21,10 @@ export const LandingPageLearnMore: React.FC = () => {
                     <Hyperlink
                         href={APPLICATION_INFORMATION_CONFIGURATION.supportUrl}
                     >
-                        <Caption1>{`${getI18nValue(
-                            'Text_Landing_Resources_Deneb'
-                        )} ${getI18nValue(
-                            'Text_Link_Landing_Deneb_Doc'
+                        <Caption1>{`${translate(
+                            'PowerBI_Landing_Resources_Deneb'
+                        )} ${translate(
+                            'PowerBI_Landing_Link_Deneb_Doc'
                         )}`}</Caption1>
                     </Hyperlink>
                 </li>
@@ -35,10 +35,10 @@ export const LandingPageLearnMore: React.FC = () => {
                                 .documentationUrl
                         }
                     >
-                        <Caption1>{`${getI18nValue(
-                            'Link_Vega_Doc'
-                        )} ${getI18nValue(
-                            'Text_Landing_Resources_Vega_Suffix'
+                        <Caption1>{`${translate(
+                            'PowerBI_Landing_Link_Vega_Doc'
+                        )} ${translate(
+                            'PowerBI_Landing_Resources_Vega_Suffix'
                         )}`}</Caption1>
                     </Hyperlink>
                 </li>
@@ -49,10 +49,10 @@ export const LandingPageLearnMore: React.FC = () => {
                                 .documentationUrl
                         }
                     >
-                        <Caption1>{`${getI18nValue(
-                            'Link_VegaLite_Doc'
-                        )} ${getI18nValue(
-                            'Text_Landing_Resources_Vega_Suffix'
+                        <Caption1>{`${translate(
+                            'PowerBI_Landing_Link_VegaLite_Doc'
+                        )} ${translate(
+                            'PowerBI_Landing_Resources_Vega_Suffix'
                         )}`}</Caption1>
                     </Hyperlink>
                 </li>

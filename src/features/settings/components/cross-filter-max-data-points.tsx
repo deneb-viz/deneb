@@ -22,21 +22,20 @@ import {
     TooltipCustomMount,
     useDenebState
 } from '@deneb-viz/app-core';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logDebug } from '@deneb-viz/utils/logging';
 
 const DEFAULT_VALUE = DEFAULTS.vega.selectionMaxDataPoints;
 
 export const CrossFilterMaxDataPoints = () => {
-    const { enableSelection, selectionMaxDataPoints } = useDenebState(
-        (state) => ({
+    const { enableSelection, selectionMaxDataPoints, translate } =
+        useDenebState((state) => ({
             enableSelection:
                 state.visualSettings.vega.interactivity.enableSelection.value,
             selectionMaxDataPoints:
                 state.visualSettings.vega.interactivity.selectionMaxDataPoints
-                    .value
-        })
-    );
+                    .value,
+            translate: state.i18n.translate
+        }));
     const onChange: SpinButtonProps['onChange'] = useCallback(
         (event, data): void => {
             const resolvedValue = getResolvedValue(data);
@@ -66,7 +65,7 @@ export const CrossFilterMaxDataPoints = () => {
         (isCrossFilterPropSet({ enableSelection }) && (
             <div className={classes.spinButtonContainer}>
                 <Label htmlFor={id}>
-                    {getI18nValue('Objects_Vega_SelectionMaxDataPoints')}
+                    {translate('PowerBI_Objects_Vega_SelectionMaxDataPoints')}
                 </Label>
                 <div>
                     <SpinButton
@@ -81,7 +80,7 @@ export const CrossFilterMaxDataPoints = () => {
                     />
                     <>
                         <Tooltip
-                            content={getI18nValue('Tooltip_Setting_Reset')}
+                            content={translate('PowerBI_Tooltip_Setting_Reset')}
                             relationship='label'
                             withArrow
                             mountNode={ref}

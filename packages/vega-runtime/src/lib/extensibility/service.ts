@@ -3,13 +3,17 @@ import powerbi from 'powerbi-visuals-api';
 import { registerCustomExpressions } from './expressions';
 import { registerVegaExtensions } from './runtime';
 import { type PowerBiColorPalette } from '@deneb-viz/powerbi-compat/theme';
-import { type InteractivityLookupDataset } from '@deneb-viz/powerbi-compat/interactivity';
+import {
+    type CrossFilterTranslate,
+    type InteractivityLookupDataset
+} from '@deneb-viz/powerbi-compat/interactivity';
 import { type SelectionMode } from '@deneb-viz/template-usermeta';
 import { type ExtensibilityServicesUpdateOptions } from './types';
 
 let _dataset: InteractivityLookupDataset | null = null;
 let _selectionMode: SelectionMode | null = null;
 let _warnCallback: ((warning: string) => void) | null = null;
+let _translateCallback: CrossFilterTranslate | null = null;
 
 /**
  * Use declare and initialize the service to ensure that it is available for
@@ -27,6 +31,7 @@ export const VegaExtensibilityServices = {
     update: (options: ExtensibilityServicesUpdateOptions) => {
         _dataset = options.dataset;
         _selectionMode = options.selectionMode as SelectionMode;
+        _translateCallback = options.translate;
         _warnCallback = options.logWarn;
     },
     getOptions: (): ExtensibilityServicesUpdateOptions => {
@@ -38,7 +43,8 @@ export const VegaExtensibilityServices = {
         return {
             dataset: _dataset,
             selectionMode: _selectionMode,
-            logWarn: _warnCallback
+            logWarn: _warnCallback,
+            translate: _translateCallback!
         };
     }
 };

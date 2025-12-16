@@ -1,4 +1,4 @@
-import React, { CSSProperties, useEffect, useMemo } from 'react';
+import { CSSProperties, useEffect, useMemo } from 'react';
 import {
     Caption1,
     Label,
@@ -7,7 +7,6 @@ import {
     tokens,
     useId
 } from '@fluentui/react-components';
-import { shallow } from 'zustand/shallow';
 import { useDropzone, FileWithPath } from 'react-dropzone';
 
 import { getValidatedTemplate } from '@deneb-viz/json-processing';
@@ -15,7 +14,6 @@ import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { type DenebTemplateImportState } from '@deneb-viz/json-processing/template-processing';
 import { getDenebState, useDenebState } from '../../../state';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Base styling for dropzone.
@@ -69,10 +67,10 @@ const useStatusStyles = makeStyles({
  * is processed and will be rejected if not a valid template.
  */
 export const ImportDropzone = () => {
-    const createImportState = useDenebState(
-        (state) => state.create.importState,
-        shallow
-    );
+    const { createImportState, translate } = useDenebState((state) => ({
+        createImportState: state.create.importState,
+        translate: state.i18n.translate
+    }));
     useEffect(() => {
         const onPaste = (event: Event) => {
             logDebug('Content pasted from clipboard.');
@@ -131,16 +129,16 @@ export const ImportDropzone = () => {
         <div>
             <Label id={labelId}>
                 <Subtitle2>
-                    {getI18nValue('Text_Import_Template_Subtitle')}
+                    {translate('Text_Import_Template_Subtitle')}
                 </Subtitle2>
             </Label>
             <section className='container'>
                 <div {...getRootProps({ style })}>
                     <input
                         {...getInputProps()}
-                        placeholder={getI18nValue('Text_Button_Import_File')}
+                        placeholder={translate('Text_Button_Import_File')}
                     />
-                    <em>{getI18nValue('Text_Button_Import_File')}</em>
+                    <em>{translate('Text_Button_Import_File')}</em>
                 </div>
                 <div>
                     <p className={getValidationClassName(createImportState)}>
@@ -173,11 +171,12 @@ const getValidationClassName = (state: DenebTemplateImportState) => {
  * Apply correct message for validation result.
  */
 const getValidationContent = (state: DenebTemplateImportState) => {
+    const { translate } = getDenebState().i18n;
     switch (state) {
         case 'Success':
-            return getI18nValue('Text_Create_Validation_Success');
+            return translate('Text_Create_Validation_Success');
         case 'Error':
-            return getI18nValue('Text_Create_Validation_Error');
+            return translate('Text_Create_Validation_Error');
         default:
             return '';
     }

@@ -22,7 +22,6 @@ import {
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logRender } from '@deneb-viz/utils/logging';
 import { getVegaProviderI18n } from '../../../lib/vega';
 import { useDenebState } from '../../../state';
@@ -45,7 +44,10 @@ const useSelectIncludedTemplateStyles = makeStyles({
 export const SelectIncludedTemplate = ({
     createMode
 }: SelectIncludedTemplateProps) => {
-    const setTemplate = useDenebState((state) => state.create.setTemplate);
+    const { setTemplate, translate } = useDenebState((state) => ({
+        setTemplate: state.create.setTemplate,
+        translate: state.i18n.translate
+    }));
     const classes = useSelectIncludedTemplateStyles();
     const templates = useMemo(() => getIncludedTemplates(), []);
     const templateList = templates[createMode];
@@ -112,7 +114,7 @@ export const SelectIncludedTemplate = ({
     }, [createMode]);
     const subtitle = useMemo(
         () =>
-            getI18nValue('Text_Radio_Group_Select_Template', [
+            translate('Text_Radio_Group_Select_Template', [
                 getVegaProviderI18n(createMode)
             ]),
         [createMode]

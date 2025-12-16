@@ -4,7 +4,6 @@ import { FieldRemapPaneProgress } from './field-remap-pane-progress';
 import { useModalDialogStyles } from '../../../components/ui';
 import { useDenebState } from '../../../state';
 import { logRender } from '@deneb-viz/utils/logging';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { TemplateDataset } from '../../../components/template-metadata';
 
 /**
@@ -13,24 +12,25 @@ import { TemplateDataset } from '../../../components/template-metadata';
 export const FieldRemapPane = () => {
     const classes = useModalDialogStyles();
     const remapState = useDenebState((state) => state.interface.remapState);
+    const translate = useDenebState((state) => state.i18n.translate);
     logRender('FieldRemapPane');
     return (
         <div className={classes.paneRoot}>
             <div className={classes.paneMenu}>
                 <p>
-                    <Body1>{getI18nValue('Text_Dialog_Overview_Remap')}</Body1>
+                    <Body1>{translate('Text_Dialog_Overview_Remap')}</Body1>
                 </p>
                 <p>
                     <Body1>
-                        {getI18nValue('Text_Dialog_Instruction_Remap', [
-                            getI18nValue('Text_Button_Remap')
+                        {translate('Text_Dialog_Instruction_Remap', [
+                            translate('Text_Button_Remap')
                         ])}
                     </Body1>
                 </p>
                 <p>
                     <Caption1 italic>
-                        {getI18nValue('Text_Dialog_Notes_Remap', [
-                            getI18nValue('Text_Button_Close')
+                        {translate('Text_Dialog_Notes_Remap', [
+                            translate('Text_Button_Close')
                         ])}
                     </Caption1>
                 </p>

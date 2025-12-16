@@ -9,12 +9,10 @@ import {
     tokens,
     useId
 } from '@fluentui/react-components';
-import { shallow } from 'zustand/shallow';
 
 import { type DenebTemplateCreateMode } from '@deneb-viz/json-processing/template-processing';
 import { useDenebState } from '../../../state';
 import { logRender } from '@deneb-viz/utils/logging';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 const useCreateMethodStyles = makeStyles({
     radioGroup: {
@@ -31,13 +29,11 @@ const useCreateMethodStyles = makeStyles({
  * should be created.
  */
 export const CreateMethod = () => {
-    const { mode, setMode } = useDenebState(
-        (state) => ({
-            mode: state.create.mode,
-            setMode: state.create.setMode
-        }),
-        shallow
-    );
+    const { mode, setMode, translate } = useDenebState((state) => ({
+        mode: state.create.mode,
+        setMode: state.create.setMode,
+        translate: state.i18n.translate
+    }));
     const onChange = (
         ev: React.FormEvent<HTMLDivElement>,
         data: RadioGroupOnChangeData
@@ -50,7 +46,7 @@ export const CreateMethod = () => {
     return (
         <div className={classes.radioGroup}>
             <Label id={labelId}>
-                <Subtitle2>{getI18nValue('Text_Radio_Group_Create')}</Subtitle2>
+                <Subtitle2>{translate('Text_Radio_Group_Create')}</Subtitle2>
             </Label>
             <RadioGroup
                 aria-labelledby={labelId}
@@ -60,17 +56,17 @@ export const CreateMethod = () => {
                 <Radio
                     className={classes.radioButton}
                     value='import'
-                    label={getI18nValue('Text_Radio_Button_Create_Import')}
+                    label={translate('Text_Radio_Button_Create_Import')}
                 />
                 <Radio
                     className={classes.radioButton}
                     value='vegaLite'
-                    label={getI18nValue('Text_Radio_Button_Create_VegaLite')}
+                    label={translate('Text_Radio_Button_Create_VegaLite')}
                 />
                 <Radio
                     className={classes.radioButton}
                     value='vega'
-                    label={getI18nValue('Text_Radio_Button_Create_Vega')}
+                    label={translate('Text_Radio_Button_Create_Vega')}
                 />
             </RadioGroup>
         </div>

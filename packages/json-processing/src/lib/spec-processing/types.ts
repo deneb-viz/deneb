@@ -96,6 +96,10 @@ export type SpecificationParseOptions = {
     logLevel: number;
     provider: SpecProvider;
     spec: string;
+    translations: {
+        configParseError: string;
+        specParseError: string;
+    };
     viewportHeight: number;
     viewportWidth: number;
     validateSchema: boolean;

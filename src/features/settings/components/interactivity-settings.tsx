@@ -7,7 +7,7 @@ import { CrossFilterMaxDataPoints } from './cross-filter-max-data-points';
 import { CrossFilterModeSettings } from './cross-filter-mode-settings';
 import { useSettingsStyles } from '../styles';
 import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
-import { getI18nValue, launchUrl } from '@deneb-viz/powerbi-compat/visual-host';
+import { launchUrl } from '@deneb-viz/powerbi-compat/visual-host';
 import {
     SettingsHeadingLabel,
     SettingsTextSection,
@@ -16,12 +16,15 @@ import {
 } from '@deneb-viz/app-core';
 
 export const InteractivitySettings = () => {
-    const { enableSelection, selectionMode } = useDenebState((state) => ({
-        enableSelection:
-            state.visualSettings.vega.interactivity.enableSelection.value,
-        selectionMode:
-            state.visualSettings.vega.interactivity.selectionMode.value
-    }));
+    const { enableSelection, selectionMode, translate } = useDenebState(
+        (state) => ({
+            enableSelection:
+                state.visualSettings.vega.interactivity.enableSelection.value,
+            selectionMode:
+                state.visualSettings.vega.interactivity.selectionMode.value,
+            translate: state.i18n.translate
+        })
+    );
     const openInteractivityLink = useCallback(() => {
         launchUrl(
             PROVIDER_RESOURCE_CONFIGURATION.deneb.interactivityDocumentationUrl
@@ -32,19 +35,19 @@ export const InteractivitySettings = () => {
     return (
         <div className={spClasses.sectionContainer}>
             <SettingsHeadingLabel>
-                {getI18nValue('Objects_Vega_Interactivity')}
+                {translate('PowerBI_Objects_Vega_Interactivity')}
             </SettingsHeadingLabel>
             <InteractivityCheckbox type='tooltip' />
             <InteractivityCheckbox type='context' />
             <InteractivityCheckbox type='highlight' />
             <InteractivityCheckbox type='select' />
             <SettingsTextSection>
-                {getI18nValue('Assistive_Text_Interactivity')}{' '}
+                {translate('PowerBI_Assistive_Text_Interactivity')}{' '}
                 <Link
                     onClick={openInteractivityLink}
                     className={classes.interactivityLink}
                 >
-                    {getI18nValue('Link_Interactivity_Doc')}
+                    {translate('PowerBI_Interactivity_Link_Doc')}
                 </Link>
             </SettingsTextSection>
             {(enableSelection && (
@@ -54,8 +57,8 @@ export const InteractivitySettings = () => {
                         <>
                             <CrossFilterMaxDataPoints />
                             <SettingsTextSection>
-                                {getI18nValue(
-                                    'Objects_Vega_SelectionMaxDataPoints_Description'
+                                {translate(
+                                    'PowerBI_Objects_Vega_SelectionMaxDataPoints_Description'
                                 )}
                             </SettingsTextSection>
                         </>

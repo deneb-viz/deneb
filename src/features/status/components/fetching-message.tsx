@@ -5,7 +5,6 @@ import { StatusStackItem } from './status-stack-item';
 import { useStatusStyles } from '.';
 import { Progress } from './progress';
 import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logRender } from '@deneb-viz/utils/logging';
 import { useDenebState } from '@deneb-viz/app-core';
 
@@ -15,16 +14,19 @@ import { useDenebState } from '@deneb-viz/app-core';
  * something is happening.
  */
 export const FetchingMessage = () => {
-    const rowsLoaded = useDenebState((state) => state.dataset.rowsLoaded);
+    const { rowsLoaded, translate } = useDenebState((state) => ({
+        rowsLoaded: state.dataset.rowsLoaded,
+        translate: state.i18n.translate
+    }));
     logRender('FetchingMessage');
     return (
         <StatusContainer>
             <StatusStackItem>
                 <Progress
-                    description={`${getI18nValue(
-                        'Fetching_Data'
-                    )}. ${getFormattedValue(rowsLoaded, '#,0')} ${getI18nValue(
-                        'Fetching_Data_Progress_Suffix'
+                    description={`${translate(
+                        'PowerBI_Fetching_Data_Progress_Message'
+                    )}. ${getFormattedValue(rowsLoaded, '#,0')} ${translate(
+                        'PowerBI_Fetching_Data_Progress_Suffix'
                     )}`}
                 />
             </StatusStackItem>
@@ -37,53 +39,62 @@ export const FetchingMessage = () => {
  * Handle the display for the 'notes for creators', if they're specified.
  */
 const customVisualNotes = () => {
-    const { override, showCustomVisualNotes } = useDenebState((state) => ({
-        override: state.visualSettings.dataLimit.loading.override
-            .value as boolean,
-        showCustomVisualNotes: state.visualSettings.dataLimit.loading
-            .showCustomVisualNotes.value as boolean
-    }));
+    const { override, showCustomVisualNotes, translate } = useDenebState(
+        (state) => ({
+            override: state.visualSettings.dataLimit.loading.override
+                .value as boolean,
+            showCustomVisualNotes: state.visualSettings.dataLimit.loading
+                .showCustomVisualNotes.value as boolean,
+            translate: state.i18n.translate
+        })
+    );
     const classes = useStatusStyles();
     return (
         (override && showCustomVisualNotes && (
             <>
                 <StatusStackItem>
                     <Title3>
-                        {getI18nValue('Fetching_Data_Developer_Notes')}
+                        {translate('PowerBI_Fetching_Data_Developer_Notes')}
                     </Title3>
                 </StatusStackItem>
                 <StatusStackItem>
                     <Caption1>
-                        {getI18nValue('Fetching_Data_Assitive_01_Prefix')}
-                        <b>{getI18nValue('Objects_DataLimit_Override')}</b>
-                        {getI18nValue('Fetching_Data_Assitive_01_Suffix')}
+                        {translate('PowerBI_Fetching_Data_Assistive_01_Prefix')}
+                        <b>{translate('PowerBI_Objects_DataLimit_Override')}</b>
+                        {translate('PowerBI_Fetching_Data_Assistive_01_Suffix')}
                     </Caption1>
                     <Caption1>
                         <p>
                             <ul>
                                 <li className={classes.li}>
-                                    {getI18nValue(
-                                        'Fetching_Data_Assitive_02_Point_01'
+                                    {translate(
+                                        'PowerBI_Fetching_Data_Assistive_02_Point_01'
                                     )}
                                 </li>
                                 <li className={classes.li}>
-                                    {getI18nValue(
-                                        'Fetching_Data_Assitive_02_Point_02'
+                                    {translate(
+                                        'PowerBI_Fetching_Data_Assistive_02_Point_02'
                                     )}
                                 </li>
                             </ul>
                         </p>
                         <p>
-                            {getI18nValue('Fetching_Data_Assitive_02_Suffix')}
+                            {translate(
+                                'PowerBI_Fetching_Data_Assistive_02_Suffix'
+                            )}
                         </p>
                         <p>
-                            {getI18nValue('Fetching_Data_Assitive_03_Prefix')}
+                            {translate(
+                                'PowerBI_Fetching_Data_Assistive_03_Prefix'
+                            )}
                             <b>
-                                {getI18nValue(
-                                    'Objects_DataLimit_ShowCustomVisualNotes'
+                                {translate(
+                                    'PowerBI_Objects_DataLimit_ShowCustomVisualNotes'
                                 )}
                             </b>
-                            {getI18nValue('Fetching_Data_Assitive_03_Suffix')}
+                            {translate(
+                                'PowerBI_Fetching_Data_Assistive_03_Suffix'
+                            )}
                         </p>
                     </Caption1>
                 </StatusStackItem>

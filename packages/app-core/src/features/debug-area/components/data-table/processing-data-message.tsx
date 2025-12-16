@@ -1,11 +1,11 @@
 import { makeStyles, Spinner, tokens } from '@fluentui/react-components';
 
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import {
     PREVIEW_PANE_TOOLBAR_MIN_SIZE,
     SPLIT_PANE_HANDLE_SIZE
 } from '../../../../lib';
 import { StatusBarContainer } from '../../../../components/ui';
+import { useDenebState } from '../../../../state';
 
 const useProcessingDataMessageStyles = makeStyles({
     container: {
@@ -48,7 +48,8 @@ const useProcessingDataMessageStyles = makeStyles({
  */
 export const ProcessingDataMessage = () => {
     const classes = useProcessingDataMessageStyles();
-    const message = getI18nValue('Text_Debug_Data_Processing');
+    const translate = useDenebState((state) => state.i18n.translate);
+    const message = translate('Text_Debug_Data_Processing');
     return (
         <div className={classes.container}>
             <div className={classes.contentWrapper}>

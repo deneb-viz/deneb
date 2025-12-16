@@ -7,8 +7,8 @@ import {
     ChevronRight12Regular
 } from '@fluentui/react-icons';
 
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { TooltipCustomMount } from '../../../../components/ui';
+import { useDenebState } from '../../../../state';
 
 /**
  * Specifies navigation operations on the data table. We can use this as a property in a generic component to handle
@@ -29,7 +29,11 @@ export const DataTableNavigationButton = ({
 }: DataTableNavigationButtonProps) => {
     const [ref, setRef] = useState<HTMLElement | null>();
     const icon = useMemo(() => getNavigationIcon(type), [type]);
-    const i18nKey = useMemo(() => getI18nValue(getI18nKey(type)), [type]);
+    const translate = useDenebState((state) => state.i18n.translate);
+    const i18nKey = useMemo(
+        () => translate(getI18nKey(type)),
+        [type, translate]
+    );
     return (
         <div>
             <Tooltip

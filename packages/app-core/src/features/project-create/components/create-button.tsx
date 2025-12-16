@@ -1,10 +1,8 @@
 import { Button } from '@fluentui/react-components';
-import { shallow } from 'zustand/shallow';
 
 import { getTemplateReplacedForDataset } from '@deneb-viz/json-processing';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
 import {
-    getI18nValue,
     persistProperties,
     resolveObjectProperties
 } from '@deneb-viz/powerbi-compat/visual-host';
@@ -20,17 +18,16 @@ export const CreateButton = () => {
         candidates,
         metadata,
         metadataAllDependenciesAssigned,
-        createFromTemplate
-    } = useDenebState(
-        (state) => ({
-            candidates: state.create.candidates,
-            metadata: state.create.metadata,
-            metadataAllDependenciesAssigned:
-                state.create.metadataAllDependenciesAssigned,
-            createFromTemplate: state.create.createFromTemplate
-        }),
-        shallow
-    );
+        createFromTemplate,
+        translate
+    } = useDenebState((state) => ({
+        candidates: state.create.candidates,
+        metadata: state.create.metadata,
+        metadataAllDependenciesAssigned:
+            state.create.metadataAllDependenciesAssigned,
+        createFromTemplate: state.create.createFromTemplate,
+        translate: state.i18n.translate
+    }));
     const { spec, config } = useSpecificationEditor();
     const onCreate = () => {
         logDebug('createFromTemplate', { metadata, candidates });
@@ -88,7 +85,7 @@ export const CreateButton = () => {
             appearance='primary'
             onClick={onCreate}
         >
-            {getI18nValue('Button_Create')}
+            {translate('Button_Create')}
         </Button>
     );
 };

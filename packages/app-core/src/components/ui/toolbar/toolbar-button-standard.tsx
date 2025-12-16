@@ -21,9 +21,7 @@ import {
     ZoomInRegular,
     ZoomOutRegular
 } from '@fluentui/react-icons';
-import { shallow } from 'zustand/shallow';
 
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import {
     handleApplyChanges,
     handleAutoApplyChanges,
@@ -65,14 +63,12 @@ export const ToolbarButtonStandard = ({
     command,
     role
 }: ToolbarButtonStandardProps) => {
-    const { commands } = useDenebState(
-        (state) => ({
-            commands: state.commands
-        }),
-        shallow
-    );
+    const { commands, translate } = useDenebState((state) => ({
+        commands: state.commands,
+        translate: state.i18n.translate
+    }));
     const classes = useToolbarButtonStandardStyles();
-    const i18nKey = getI18nValue(resolveI18nKey(command));
+    const i18nKey = translate(resolveI18nKey(command));
     const icon = resolveIcon(command);
     const caption = resolveCaption(command);
     const buttonClass = mergeClasses(
@@ -189,7 +185,7 @@ const resolveI18nKey = (command: Command) => {
         case 'zoomIn':
             return 'Button_ZoomIn';
         case 'zoomLevel':
-            return 'Zoom_Level_Tooltip';
+            return 'Tooltip_Zoom_Level';
         case 'zoomOut':
             return 'Button_ZoomOut';
         default:

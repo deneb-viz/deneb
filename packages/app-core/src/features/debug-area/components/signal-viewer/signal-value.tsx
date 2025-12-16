@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import { usePrevious } from '@uidotdev/usehooks';
 
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { stringifyPruned } from '@deneb-viz/utils/object';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 import { DATA_TABLE_VALUE_MAX_LENGTH } from '../../constants';
 import { DataTableCell } from '../data-table/data-table-cell';
+import { useDenebState } from '../../../../state';
 
 type DataTableCellSignalValueProps = {
     signalName: string;
@@ -38,6 +38,7 @@ export const SignalValue = ({
     const previousSignalName = usePrevious(signalName);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [signalValue, setSignalValue] = useState<any>(initialValue);
+    const translate = useDenebState((state) => state.i18n.translate);
     /**
      * Attempt to add specified signal listener to the Vega view.
      */
@@ -85,7 +86,7 @@ export const SignalValue = ({
             VegaViewServices.getSignalByName(signalName)
         );
         return value?.length > DATA_TABLE_VALUE_MAX_LENGTH
-            ? getI18nValue('Table_Placeholder_TooLong')
+            ? translate('Table_Placeholder_TooLong')
             : value;
     };
     /**

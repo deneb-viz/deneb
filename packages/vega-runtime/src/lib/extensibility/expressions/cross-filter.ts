@@ -7,7 +7,6 @@ import {
     type CrossFilterSelectionDirective,
     InteractivityManager
 } from '@deneb-viz/powerbi-compat/interactivity';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logDebug, logWarning } from '@deneb-viz/utils/logging';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { VegaExtensibilityServices } from '../service';
@@ -27,7 +26,7 @@ export const pbiCrossFilterApply = (
     fOptions: CrossFilterOptions
 ) => {
     const LOG_PREFIX = '[pbiCrossFilterApply]';
-    const { dataset, selectionMode, logWarn } =
+    const { dataset, selectionMode, logWarn, translate } =
         VegaExtensibilityServices.getOptions();
     logDebug(`${LOG_PREFIX} cross-filter event fired from view`, {
         event,
@@ -35,7 +34,9 @@ export const pbiCrossFilterApply = (
     });
     if (selectionMode !== 'advanced') {
         logWarn(
-            getI18nValue('Text_Warning_Invalid_Cross_Filter_Incorrect_Mode')
+            translate(
+                'PowerBI_Text_Warning_Invalid_Cross_Filter_Incorrect_Mode'
+            )
         );
         return {};
     }
@@ -43,14 +44,18 @@ export const pbiCrossFilterApply = (
         // Event must be valid
         if (!isEventPresent(event)) {
             throw new Error(
-                getI18nValue('Text_Warning_Invalid_Cross_Filter_Event_Type')
+                translate(
+                    'PowerBI_Text_Warning_Invalid_Cross_Filter_Event_Type'
+                )
             );
         }
         // Expression must be valid string, and parse successfully, after substitution
         // if missing, we assume simple (legacy) cross-filtering
         if (!isExpressionPresent(filterExpr)) {
             throw new Error(
-                getI18nValue('Text_Warning_Invalid_Cross_Filter_Missing_Filter')
+                translate(
+                    'PowerBI_Text_Warning_Invalid_Cross_Filter_Missing_Filter'
+                )
             );
         }
         const item = <Item>event['item'];
@@ -64,8 +69,8 @@ export const pbiCrossFilterApply = (
         // Options must be valid
         if (!isCrossFilterOptionValid(fOptions)) {
             throw new Error(
-                getI18nValue(
-                    'Text_Warning_Invalid_Cross_Filter_Incorrect_Options'
+                translate(
+                    'PowerBI_Text_Warning_Invalid_Cross_Filter_Incorrect_Options'
                 )
             );
         }
@@ -76,20 +81,24 @@ export const pbiCrossFilterApply = (
             item,
             options
         });
-        const result = crossFilterHandler(dataset, options)(
-            event,
-            item
-        ) as unknown as CrossFilterSelectionDirective;
+        const result = crossFilterHandler(
+            dataset,
+            translate,
+            options
+        )(event, item) as unknown as CrossFilterSelectionDirective;
         if (result.warning) {
             throw new Error(result.warning);
         }
         return result;
     } catch (e) {
-        logWarn(getI18nValue('Text_Warning_Invalid_Cross_Filter_Not_Applied'));
         logWarn(
-            getI18nValue('Text_Warning_Invalid_Cross_Filter_General_Error', [
-                (e as Error).message
-            ])
+            translate('PowerBI_Text_Warning_Invalid_Cross_Filter_Not_Applied')
+        );
+        logWarn(
+            translate(
+                'PowerBI_Text_Warning_Invalid_Cross_Filter_General_Error',
+                [(e as Error).message]
+            )
         );
         logWarning(`${LOG_PREFIX} error`, (e as Error).message);
         return <CrossFilterSelectionDirective>{

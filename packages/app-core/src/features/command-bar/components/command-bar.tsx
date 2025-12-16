@@ -14,7 +14,6 @@ import {
     TextEditStyleRegular
 } from '@fluentui/react-icons';
 
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { useDenebState } from '../../../state';
 import { useSpecificationEditor } from '../../specification-editor';
 import {
@@ -100,8 +99,9 @@ const useCommandBarStyles = makeStyles({
 });
 
 export const CommandBar = () => {
-    const { editorSelectedOperation } = useDenebState((state) => ({
-        editorSelectedOperation: state.editorSelectedOperation
+    const { editorSelectedOperation, translate } = useDenebState((state) => ({
+        editorSelectedOperation: state.editorSelectedOperation,
+        translate: state.i18n.translate
     }));
     const editorRefs = useSpecificationEditor();
     const classes = useCommandBarStyles();
@@ -138,7 +138,7 @@ export const CommandBar = () => {
                         appearance='subtle'
                         icon={<DataHistogramFilled />}
                     >
-                        {getI18nValue('Editor_Role_Spec')}
+                        {translate('Editor_Role_Spec')}
                     </ToolbarRadioButton>
                     <ToolbarRadioButton
                         name='editorMode'
@@ -146,7 +146,7 @@ export const CommandBar = () => {
                         appearance='subtle'
                         icon={<TextEditStyleRegular />}
                     >
-                        {getI18nValue('Editor_Role_Config')}
+                        {translate('Editor_Role_Config')}
                     </ToolbarRadioButton>
                     <ToolbarRadioButton
                         name='editorMode'
@@ -154,7 +154,7 @@ export const CommandBar = () => {
                         appearance='subtle'
                         icon={<SettingsRegular />}
                     >
-                        {getI18nValue('Editor_Role_Settings')}
+                        {translate('Editor_Role_Settings')}
                     </ToolbarRadioButton>
                 </ToolbarRadioGroup>
                 <ToolbarDivider />

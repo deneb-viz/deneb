@@ -9,7 +9,6 @@ import {
 } from '@fluentui/react-components';
 
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/powerbi-compat/dataset';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logRender } from '@deneb-viz/utils/logging';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 import { useDenebState } from '../../../../state';
@@ -35,11 +34,14 @@ const useDatasetSelectStyles = makeStyles({
  * are available, then will default to and read from the visual.store dataset.
  */
 export const DatasetSelect = () => {
-    const { renderId, datasetName, setDataset } = useDenebState((state) => ({
-        renderId: state.interface.renderId,
-        datasetName: state.debug.datasetName,
-        setDataset: state.debug.setDatasetName
-    }));
+    const { renderId, datasetName, setDataset, translate } = useDenebState(
+        (state) => ({
+            renderId: state.interface.renderId,
+            datasetName: state.debug.datasetName,
+            setDataset: state.debug.setDatasetName,
+            translate: state.i18n.translate
+        })
+    );
     const datasetSelectId = useId();
     const classes = useDatasetSelectStyles();
     const datasets = useMemo(() => getDatasetNames(), [renderId]);
@@ -71,7 +73,7 @@ export const DatasetSelect = () => {
         <div className={classes.statusBar}>
             <div>
                 <Label htmlFor={datasetSelectId} size='small'>
-                    {getI18nValue('Text_Data_Table_Dataset_Label')}
+                    {translate('Text_Data_Table_Dataset_Label')}
                 </Label>
             </div>
             <div>

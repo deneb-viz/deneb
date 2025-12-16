@@ -1,10 +1,7 @@
-import React from 'react';
 import { Caption1, makeStyles, tokens } from '@fluentui/react-components';
-import { shallow } from 'zustand/shallow';
 
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { useDenebState } from '../../../state';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 export const useTemplatePlaceholderMessageStyles = makeStyles({
     templatePlaceholderMessage: {
@@ -18,19 +15,17 @@ export const useTemplatePlaceholderMessageStyles = makeStyles({
  * placeholders or not.
  */
 export const TemplatePlaceholderMessage = () => {
-    const { metadata } = useDenebState(
-        (state) => ({
-            metadata: state.create.metadata
-        }),
-        shallow
-    );
+    const { metadata, translate } = useDenebState((state) => ({
+        metadata: state.create.metadata,
+        translate: state.i18n.translate
+    }));
     const classes = useTemplatePlaceholderMessageStyles();
     const hasPlaceholders = templateHasPlaceholders(metadata);
-    const message = getI18nValue(
+    const message = translate(
         hasPlaceholders
             ? 'Text_Create_Placeholders'
             : 'Text_Create_No_Placeholders',
-        [getI18nValue('Text_Button_Create')]
+        [translate('Button_Create')]
     );
     return (
         <div className={classes.templatePlaceholderMessage}>

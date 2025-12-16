@@ -26,7 +26,6 @@ import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
 import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
 import { SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { LocalVegaLoggerService } from '@deneb-viz/vega-runtime/extensibility';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Borrowed from vega-editor
@@ -90,11 +89,11 @@ export const getParsedSpec = (
     const specHasErrors = patchedSpec.errors.length > 0;
     const configHasErrors = patchedConfig.errors.length > 0;
     if (specHasErrors) {
-        errors.push(getI18nValue('Text_Debug_Error_Spec_Parse'));
+        errors.push(nextOptions.translations.specParseError);
         errors.push(...patchedSpec.errors);
     }
     if (configHasErrors) {
-        errors.push(getI18nValue('Text_Debug_Error_Config_Parse'));
+        errors.push(nextOptions.translations.configParseError);
         errors.push(...patchedConfig.errors);
     }
     let specToParse: Spec | TopLevelSpec | null = null;

@@ -15,7 +15,6 @@ import {
 } from '@deneb-viz/powerbi-compat/dataset';
 import { type ModalDialogType } from '../ui';
 import { DataTypeIcon } from './data-type-icon';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
 import { useDenebState } from '../../state';
 
@@ -39,6 +38,7 @@ export const DataFieldDropdown = ({
 }: DatasetFieldAssignmentDropdownProps) => {
     const classes = useDataFieldDropdownStyles();
     const fields = useDenebState((state) => state.dataset.fields);
+    const translate = useDenebState((state) => state.i18n.translate);
     const createSliceReducer = useDenebState(
         (state) => state.create.setFieldAssignment
     );
@@ -93,7 +93,7 @@ export const DataFieldDropdown = ({
             inlinePopup
             selectedOptions={selectedKey ? [selectedKey] : []}
             className={classes.root}
-            placeholder={getI18nValue('Text_Placeholder_Create_Assigned_Field')}
+            placeholder={translate('Text_Placeholder_Create_Assigned_Field')}
             onOptionSelect={onOptionSelect}
             value={selectedField?.templateMetadata?.name ?? ''}
         >

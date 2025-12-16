@@ -21,11 +21,8 @@ import {
     canFetchMoreFromDataview,
     getCategoricalDataViewFromOptions,
     getCategoricalRowCount,
-    getLocale,
-    getLocalizationManager,
     getVisualHost,
     getVisualSettings,
-    I18nServices,
     setRenderingFailed,
     setRenderingStarted,
     VisualHostServices
@@ -41,10 +38,15 @@ import {
 } from '@deneb-viz/utils/logging';
 import { VegaPatternFillServices } from '@deneb-viz/vega-runtime/pattern-fill';
 import { InteractivityManager } from '@deneb-viz/powerbi-compat/interactivity';
-import { getDenebState, updateFieldTracking } from '@deneb-viz/app-core';
+import {
+    getDenebState,
+    type I18nLocale,
+    updateFieldTracking
+} from '@deneb-viz/app-core';
 import { VegaExtensibilityServices } from '@deneb-viz/vega-runtime/extensibility';
 import { type SelectionMode } from '@deneb-viz/template-usermeta';
 import { getMappedDataset } from './lib/dataset';
+import { I18N_TRANSLATIONS } from './i18n';
 
 /**
  * Centralize/report developer mode from environment.
@@ -67,19 +69,28 @@ export class Deneb implements IVisual {
         logHost('Constructor has been called.', { options });
         try {
             const { host } = options;
-            const { setSelectionLimitExceeded } =
-                getDenebVisualState().interactivity;
-            const { updateDatasetSelectors } = getDenebState();
+            const {
+                interactivity: { setSelectionLimitExceeded }
+            } = getDenebVisualState();
+            const {
+                i18n: { setLocale },
+                updateDatasetSelectors
+            } = getDenebState();
             VisualHostServices.bind(options);
             InteractivityManager.bind({
                 host,
                 limitExceededCallback: setSelectionLimitExceeded,
                 selectorUpdateCallback: updateDatasetSelectors
             });
-            I18nServices.bind(options);
+            setLocale({
+                locale: host.locale as I18nLocale,
+                translationExtensions: [I18N_TRANSLATIONS]
+            });
             VegaPatternFillServices.bind();
             VegaExtensibilityServices.bind(host.colorPalette);
-            VisualFormattingSettingsService.bind(getLocalizationManager());
+            VisualFormattingSettingsService.bind(
+                options.host.createLocalizationManager()
+            );
             const { element } = options;
             this.#applicationWrapper = document.createElement('div');
             this.#applicationWrapper.id = 'deneb-application-wrapper';
@@ -159,10 +170,12 @@ export class Deneb implements IVisual {
             }
         } = settings;
         const {
+            i18n: { locale },
             processing: { shouldProcessDataset },
             specification: { logWarn },
             updateDataset,
-            updateDatasetProcessingStage
+            updateDatasetProcessingStage,
+            i18n: { translate }
         } = getDenebState();
         const categorical = getCategoricalDataViewFromOptions(options);
         if (shouldProcessDataset) {
@@ -197,6 +210,7 @@ export class Deneb implements IVisual {
                 });
                 const dataset = getMappedDataset(
                     categorical,
+                    locale,
                     enableSelection,
                     enableHighlight
                 );
@@ -211,7 +225,8 @@ export class Deneb implements IVisual {
                         values: dataset.values
                     },
                     selectionMode: selectionMode as SelectionMode,
-                    logWarn
+                    logWarn,
+                    translate
                 });
             }
             logTimeEnd('processDataset');
@@ -226,11 +241,19 @@ export class Deneb implements IVisual {
     private resolveLocale() {
         logDebug('Resolving locale options...');
         const settings = getVisualSettings();
-        const locale = IS_DEVELOPER_MODE
+        const { locale, setLocale } = getDenebState().i18n;
+        const localeNext = IS_DEVELOPER_MODE
             ? (settings.developer.localization.locale.value as string)
-            : getLocale();
-        logDebug('Locale resolved.', { locale });
-        I18nServices.update(locale);
+            : locale;
+        if (localeNext !== locale) {
+            logDebug('Locale has changed. Updating...', {
+                localeCurrent: locale,
+                localeNext
+            });
+            setLocale({
+                locale: localeNext as I18nLocale
+            });
+        }
     }
 
     /**'

@@ -81,11 +81,7 @@ const getProcessedData = (
             (acc, key) => {
                 const value = newDatum[key];
                 const valueType = getValueType(value);
-                const rawValue = getRawValueForTableCell(
-                    valueType,
-                    value,
-                    data.translations
-                );
+                const rawValue = getRawValueForTableCell(valueType, value);
                 const formattedValue = getFormattedValueForTableCell(
                     valueType,
                     rawValue
@@ -132,12 +128,9 @@ const getProcessedData = (
  */
 const getRawValueForTableCell = (
     valueType: WorkerDatasetViewerValueType,
-    value: unknown,
-    translations: IWorkerDatasetViewerTranslations
+    value: unknown
 ): unknown => {
     switch (valueType) {
-        case 'key':
-            return translations.selectionKeywordPresent;
         case 'date':
             return new Date(<string | number>value);
         default:

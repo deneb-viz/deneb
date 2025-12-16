@@ -10,16 +10,20 @@ import {
 import { InteractivityManager } from '@deneb-viz/powerbi-compat/interactivity';
 import { useSettingsStyles } from '../styles';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
-import { handleSelectionMode, useDenebState } from '@deneb-viz/app-core';
+import {
+    getDenebState,
+    handleSelectionMode,
+    useDenebState
+} from '@deneb-viz/app-core';
 import { type SelectionMode } from '@deneb-viz/template-usermeta';
 
 export const CrossFilterModeSettings = () => {
-    const { provider, selectionMode } = useDenebState((state) => ({
+    const { provider, selectionMode, translate } = useDenebState((state) => ({
         provider: state.visualSettings.vega.output.provider
             .value as SpecProvider,
         selectionMode: state.visualSettings.vega.interactivity.selectionMode
-            .value as SelectionMode
+            .value as SelectionMode,
+        translate: state.i18n.translate
     }));
     const onChange = useCallback(
         (ev: FormEvent<HTMLDivElement>, data: RadioGroupOnChangeData) => {
@@ -34,7 +38,7 @@ export const CrossFilterModeSettings = () => {
         []
     );
     return (
-        <Field label={getI18nValue('Objects_Vega_SelectionMode')}>
+        <Field label={translate('PowerBI_Objects_Vega_SelectionMode')}>
             <RadioGroup
                 value={selectionMode as SelectionMode}
                 onChange={onChange}
@@ -42,15 +46,15 @@ export const CrossFilterModeSettings = () => {
                 <Radio
                     value='simple'
                     label={getRadioLabel(
-                        'Enum_SelectionMode_Simple',
-                        'Text_Radio_Button_Description_Cross_Filter_Simple'
+                        'PowerBI_Enum_SelectionMode_Simple',
+                        'PowerBI_Radio_Button_Description_Cross_Filter_Simple'
                     )}
                 />
                 <Radio
                     value='advanced'
                     label={getRadioLabel(
-                        'Enum_SelectionMode_Advanced',
-                        'Text_Radio_Button_Description_Cross_Filter_Advanced'
+                        'PowerBI_Enum_SelectionMode_Advanced',
+                        'PowerBI_Radio_Button_Description_Cross_Filter_Advanced'
                     )}
                     disabled={provider === 'vegaLite'}
                 />
@@ -61,12 +65,13 @@ export const CrossFilterModeSettings = () => {
 
 const getRadioLabel = (labelKey: string, descriptionKey: string) => {
     const classes = useSettingsStyles();
+    const { translate } = getDenebState().i18n;
     return (
         <>
-            {getI18nValue(labelKey)}
+            {translate(labelKey)}
             <br />
             <Text size={200} className={classes.radioGroupLabel}>
-                {getI18nValue(descriptionKey)}
+                {translate(descriptionKey)}
             </Text>
         </>
     );

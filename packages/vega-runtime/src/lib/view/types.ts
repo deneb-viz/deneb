@@ -1,4 +1,7 @@
-import { type InteractivityLookupDataset } from '@deneb-viz/powerbi-compat/interactivity';
+import {
+    type CrossFilterTranslate,
+    type InteractivityLookupDataset
+} from '@deneb-viz/powerbi-compat/interactivity';
 import { type SelectionMode } from '@deneb-viz/template-usermeta';
 
 export type HandleNewViewOptions = {
@@ -6,6 +9,7 @@ export type HandleNewViewOptions = {
     logLevel: number;
     selectionMode: SelectionMode;
     generateRenderId: () => void;
+    translate: CrossFilterTranslate;
     logError: (error: string) => void;
     logWarn: (warning: string) => void;
 };

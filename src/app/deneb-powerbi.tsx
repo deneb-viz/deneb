@@ -11,11 +11,23 @@ import {
 import { InteractivitySettings } from '../features/settings';
 import { NotificationToaster } from '../features/toaster';
 import { VisualUpdateHistoryOverlay } from '../features/visual-update-history-overlay';
+import { getVegaLoader } from '../lib/vega-embed';
 
 export const DenebPowerbi = () => {
-    const { mode } = useDenebState((state) => ({
-        mode: state.interface.mode
+    const { mode, translate } = useDenebState((state) => ({
+        mode: state.interface.mode,
+        translate: state.i18n.translate
     }));
+    const vegaLoader = useMemo(() => {
+        return getVegaLoader({
+            translations: {
+                hoverText: translate('PowerBI_Vega_Loader_Warning_HoverText'),
+                detailedText: translate(
+                    'PowerBI_Vega_Loader_Warning_DetailedText'
+                )
+            }
+        });
+    }, [translate]);
     const mainComponent = useMemo(() => {
         switch (mode) {
             case 'Initializing':
@@ -36,7 +48,8 @@ export const DenebPowerbi = () => {
     return (
         <DenebProvider
             platformProvider={{
-                settingsPanePlatformComponent: <InteractivitySettings />
+                settingsPanePlatformComponent: <InteractivitySettings />,
+                vegaLoader
             }}
         >
             {mainComponent}

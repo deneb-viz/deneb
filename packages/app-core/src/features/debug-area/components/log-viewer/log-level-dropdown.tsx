@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { makeStyles, Select, SelectProps } from '@fluentui/react-components';
 
 import { logRender } from '@deneb-viz/utils/logging';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { useDenebState } from '../../../../state';
 import { type LogLevelEnumMember } from './types';
 import { handleVegaLogLevel } from '../../../../lib';
@@ -55,9 +54,10 @@ export const LogLevelDropdown = ({ id }: LogLevelDropdownProps) => {
  */
 const getFieldOptions = () =>
     getDebugLogLevels().map((e: LogLevelEnumMember) => {
+        const { translate } = useDenebState.getState().i18n;
         return (
             <option key={e.value} value={`${e.value}`}>
-                {getI18nValue(e.displayNameKey as string)}
+                {translate(e.displayNameKey as string)}
             </option>
         );
     });

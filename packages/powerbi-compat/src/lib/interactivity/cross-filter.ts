@@ -9,20 +9,17 @@ import {
     EventListenerHandler
 } from 'vega';
 
-import {
-    type CrossFilterPropCheckOptions,
-    type CrossFilterOptions,
-    type DataPointSelectionStatus,
+import type {
+    CrossFilterPropCheckOptions,
+    CrossFilterOptions,
+    DataPointSelectionStatus,
     InteractivityLookupDataset,
     VegaDatum,
     CrossFilterSelectionAssessment,
-    CrossFilterSelectionDirective
+    CrossFilterSelectionDirective,
+    CrossFilterTranslate
 } from './types';
-import {
-    getI18nValue,
-    getVisualInteractionStatus,
-    getVisualSettings
-} from '../visual-host';
+import { getVisualInteractionStatus, getVisualSettings } from '../visual-host';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { isPotentialCrossFilterMultiSelectEvent } from './event';
 import { InteractivityManager } from './interactivity-manager';
@@ -39,6 +36,7 @@ const LOG_PREFIX = '[crossFilterHandler]';
  */
 export const crossFilterHandler = (
     dataset: InteractivityLookupDataset,
+    translate: CrossFilterTranslate,
     crossFilterOptions?: CrossFilterOptions
 ): EventListenerHandler => {
     return (event, item) => {
@@ -48,6 +46,7 @@ export const crossFilterHandler = (
             event,
             item ?? ({} as Item),
             dataset,
+            translate,
             crossFilterOptions
         );
         logDebug(`${LOG_PREFIX} final cross-filter result`, { result });
@@ -63,6 +62,7 @@ const getResolvedCrossFilterResult = (
     event: ScenegraphEvent,
     item: Item,
     dataset: InteractivityLookupDataset,
+    translate: CrossFilterTranslate,
     options: CrossFilterOptions | undefined
 ): CrossFilterSelectionDirective => {
     try {
@@ -78,11 +78,12 @@ const getResolvedCrossFilterResult = (
         });
         if (isCrossFilterPropSet({ enableSelection })) {
             const resolved = isSimpleCrossFilterMode(options)
-                ? getCrossFilterSelectionSimpleMode(item, dataset)
+                ? getCrossFilterSelectionSimpleMode(item, dataset, translate)
                 : getCrossFilterSelectionAdvanced(
                       event,
                       item,
                       dataset,
+                      translate,
                       options!
                   );
             logDebug(`${LOG_PREFIX} resolved cross-filter data`, {
@@ -128,9 +129,9 @@ const getResolvedCrossFilterResult = (
     } catch (e) {
         return {
             rowNumbers: [],
-            warning: getI18nValue(
-                'Text_Warning_Invalid_Cross_Filter_General_Error',
-                (e as Error).message
+            warning: translate(
+                'PowerBI_Text_Warning_Invalid_Cross_Filter_General_Error',
+                [(e as Error).message]
             )
         };
     }
@@ -147,6 +148,7 @@ const getCrossFilterSelectionAdvanced = (
     event: ScenegraphEvent,
     item: Item,
     dataset: InteractivityLookupDataset,
+    translate: CrossFilterTranslate,
     options: CrossFilterOptions
 ): CrossFilterSelectionAssessment => {
     logDebug(
@@ -197,8 +199,8 @@ const getCrossFilterSelectionAdvanced = (
     } catch (e) {
         return {
             rowNumbers: [],
-            warning: getI18nValue(
-                'Text_Warning_Invalid_Cross_Filter_General_Error',
+            warning: translate(
+                'PowerBI_Text_Warning_Invalid_Cross_Filter_General_Error',
                 [(e as Error).message]
             )
         };
@@ -210,7 +212,8 @@ const getCrossFilterSelectionAdvanced = (
  */
 const getCrossFilterSelectionSimpleMode = (
     item: Item,
-    dataset: InteractivityLookupDataset
+    dataset: InteractivityLookupDataset,
+    translate: CrossFilterTranslate
 ): CrossFilterSelectionAssessment => {
     logDebug(`${LOG_PREFIX} getting selection for simple mode...`);
     try {
@@ -221,7 +224,7 @@ const getCrossFilterSelectionSimpleMode = (
     } catch (e) {
         return {
             rowNumbers: [],
-            warning: getI18nValue(
+            warning: translate(
                 'Text_Warning_Invalid_Cross_Filter_General_Error',
                 [(e as Error).message]
             )

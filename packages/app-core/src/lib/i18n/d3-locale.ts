@@ -1,19 +1,26 @@
 import { LocaleConfiguration } from './types';
-import { getLocale } from '@deneb-viz/powerbi-compat/visual-host';
 
 /**
  * Resolve the D3 number format specifier, based on locale settings.
  */
-export const getD3FormatLocale = () =>
-    I18N_D3_LOCALES.format[getLocale()] ||
-    I18N_D3_LOCALES.format[I18N_D3_LOCALES.default];
+export const getD3FormatLocale = () => {
+    const { locale } = getDenebState().i18n;
+    return (
+        I18N_D3_LOCALES.format[locale] ||
+        I18N_D3_LOCALES.format[I18N_D3_LOCALES.default]
+    );
+};
 
 /**
  * Resolve the D3 time format specifier, based on locale settings.
  */
-export const getD3TimeFormatLocale = () =>
-    I18N_D3_LOCALES.timeFormat[getLocale()] ||
-    I18N_D3_LOCALES.timeFormat[I18N_D3_LOCALES.default];
+export const getD3TimeFormatLocale = () => {
+    const { locale } = getDenebState().i18n;
+    return (
+        I18N_D3_LOCALES.timeFormat[locale] ||
+        I18N_D3_LOCALES.timeFormat[I18N_D3_LOCALES.default]
+    );
+};
 
 const I18N_D3_LOCALES: LocaleConfiguration = {
     default: 'en-US',
@@ -173,3 +180,4 @@ import * as t_tr_TR from 'd3-time-format/locale/tr-TR.json';
 import * as t_uk_UA from 'd3-time-format/locale/uk-UA.json';
 import * as t_zh_CN from 'd3-time-format/locale/zh-CN.json';
 import * as t_zh_TW from 'd3-time-format/locale/zh-TW.json';
+import { getDenebState } from '../../state';

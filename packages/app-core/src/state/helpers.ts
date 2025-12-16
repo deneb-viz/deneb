@@ -14,6 +14,10 @@ export const getSpecificationParseOptions = (
     logLevel: state.visualSettings.vega.logging.logLevel.value as number,
     provider: state.visualSettings.vega.output.provider.value as SpecProvider,
     spec: state.visualSettings.vega.output.jsonSpec.value,
+    translations: {
+        configParseError: state.i18n.translate('Text_Debug_Error_Config_Parse'),
+        specParseError: state.i18n.translate('Text_Debug_Error_Spec_Parse')
+    },
     viewportHeight: state.visualViewportReport.height,
     viewportWidth: state.visualViewportReport.width,
     validateSchema: state.interface.mode === 'Editor'

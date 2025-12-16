@@ -7,7 +7,7 @@ import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { ptToPx } from '@deneb-viz/utils/dom';
 import { getProviderSchema } from '@deneb-viz/json-processing';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import { getI18nValue, launchUrl } from '@deneb-viz/powerbi-compat/visual-host';
+import { launchUrl } from '@deneb-viz/powerbi-compat/visual-host';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { type IDatasetField } from '@deneb-viz/powerbi-compat/dataset';
 import {
@@ -402,13 +402,14 @@ const setMonacoKeyBindingRules = () => {
  * something else.
  */
 const getSnippetFieldMetadata = (field: IDatasetField) => {
+    const { translate } = getDenebState().i18n;
     switch (true) {
         case field.isHighlightComponent:
-            return getI18nValue('Text_AutoComplete_Meta_Highlight');
+            return translate('Text_AutoComplete_Meta_Highlight');
         case field.isMeasure:
-            return getI18nValue('Text_AutoComplete_Meta_Measure');
+            return translate('Text_AutoComplete_Meta_Measure');
         case field.isColumn:
-            return getI18nValue('Text_AutoComplete_Meta_Column');
+            return translate('Text_AutoComplete_Meta_Column');
         default:
             return '';
     }

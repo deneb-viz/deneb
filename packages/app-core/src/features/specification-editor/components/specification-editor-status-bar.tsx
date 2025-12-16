@@ -1,17 +1,20 @@
 import { Caption1, makeStyles, tokens } from '@fluentui/react-components';
 
 import { logRender } from '@deneb-viz/utils/logging';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { monaco } from '../../../components/code-editor/monaco-integration';
 import { PREVIEW_PANE_TOOLBAR_MIN_SIZE } from '../../../lib';
-import { StatusBarContainer, ToolbarButtonStandard } from '../../../components/ui';
+import {
+    StatusBarContainer,
+    ToolbarButtonStandard
+} from '../../../components/ui';
 import { ProviderDetail } from './provider-detail';
 import { TrackingSyncStatus } from './tracking-sync-status';
+import { getDenebState, useDenebState } from '../../../state';
 
 type SpecificationEditorStatusBarProps = {
     position: monaco.Position;
     selectedText: string;
-}
+};
 
 const useStatusStyles = makeStyles({
     surround: {
@@ -60,6 +63,7 @@ export const SpecificationEditorStatusBar = ({
     const classes = useStatusStyles();
     const row = position.lineNumber;
     const column = position.column;
+    const translate = useDenebState((state) => state.i18n.translate);
     logRender('JsonEditorStatusBar');
     return (
         <StatusBarContainer>
@@ -76,9 +80,8 @@ export const SpecificationEditorStatusBar = ({
                         <TrackingSyncStatus />
                         <div className={classes.cursorContainer}>
                             <Caption1 className={classes.caption}>
-                                {getI18nValue('Text_Editor_Status_Bar_Line')}{' '}
-                                {row}{' '}
-                                {getI18nValue('Text_Editor_Status_Bar_Column')}{' '}
+                                {translate('Text_Editor_Status_Bar_Line')} {row}{' '}
+                                {translate('Text_Editor_Status_Bar_Column')}{' '}
                                 {column} {getSelectedTextMessage(selectedText)}
                             </Caption1>
                         </div>
@@ -95,7 +98,8 @@ export const SpecificationEditorStatusBar = ({
  */
 const getSelectedTextMessage = (selectedText: string) => {
     const selectionLength = selectedText.length;
+    const { translate } = getDenebState().i18n;
     return selectionLength > 0
-        ? getI18nValue('Text_Editor_Status_Bar_Selection', [selectionLength])
+        ? translate('Text_Editor_Status_Bar_Selection', [selectionLength])
         : '';
 };

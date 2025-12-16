@@ -3,7 +3,6 @@ import { Subtitle2 } from '@fluentui/react-components';
 
 import { TEMPLATE_PREVIEW_IMAGE_MAX_SIZE } from '@deneb-viz/configuration';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import {
     StageProgressIndicator,
     useModalDialogStyles
@@ -21,8 +20,9 @@ import {
  */
 export const ExportPane = () => {
     const classes = useModalDialogStyles();
-    const { exportProcessingState } = useDenebState((state) => ({
-        exportProcessingState: state.interface.exportProcessingState
+    const { exportProcessingState, translate } = useDenebState((state) => ({
+        exportProcessingState: state.interface.exportProcessingState,
+        translate: state.i18n.translate
     }));
     useEffect(() => {
         handleProcessing();
@@ -32,20 +32,20 @@ export const ExportPane = () => {
         <div className={classes.paneRoot}>
             <div className={classes.paneMenu}>
                 <div className={classes.paneAssistiveText}>
-                    {getI18nValue('Text_Overview_Export_1')}
+                    {translate('Text_Overview_Export_1')}
                 </div>
                 <div className={classes.paneAssistiveText}>
-                    {getI18nValue('Text_Overview_Export_2')}
+                    {translate('Text_Overview_Export_2')}
                 </div>
                 <div className={classes.paneAssistiveText}>
-                    {getI18nValue('Text_Overview_Export_3', [
+                    {translate('Text_Overview_Export_3', [
                         TEMPLATE_PREVIEW_IMAGE_MAX_SIZE,
                         TEMPLATE_PREVIEW_IMAGE_MAX_SIZE
                     ])}
                 </div>
                 <div className={classes.paneAssistiveText}>
-                    {getI18nValue('Text_Overview_Export_4', [
-                        getI18nValue('Text_Button_Download')
+                    {translate('Text_Overview_Export_4', [
+                        translate('Button_Download')
                     ])}
                 </div>
             </div>
@@ -55,7 +55,7 @@ export const ExportPane = () => {
                     {exportProcessingState === 'Tokenizing' && (
                         <div className={classes.paneContentSection}>
                             <StageProgressIndicator
-                                message={getI18nValue('Text_Export_Tokenizing')}
+                                message={translate('Text_Export_Tokenizing')}
                                 isInProgress={
                                     exportProcessingState === 'Tokenizing'
                                 }
@@ -69,7 +69,7 @@ export const ExportPane = () => {
                         <div className={classes.paneContentSection}>
                             <div className={classes.paneContentHeading}>
                                 <Subtitle2>
-                                    {getI18nValue('Template_Export_Dataset')}
+                                    {translate('Template_Export_Dataset')}
                                 </Subtitle2>
                             </div>
                             <TemplateDataset datasetRole='export' />

@@ -3,7 +3,6 @@ import { Label, makeStyles, tokens, useId } from '@fluentui/react-components';
 import { Error, Info, Warn } from 'vega';
 
 import { LogLevelDropdown } from './log-level-dropdown';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logRender } from '@deneb-viz/utils/logging';
 import { useDenebState } from '../../../../state';
 import { StatusBarContainer } from '../../../../components/ui';
@@ -76,14 +75,15 @@ export const useLogViewerStyles = makeStyles({
 });
 
 export const LogViewer = () => {
-    const { errors, logLevel, warns } = useDenebState((state) => ({
+    const { errors, logLevel, warns, translate } = useDenebState((state) => ({
         errors: state.specification.errors,
         logLevel: state.visualSettings.vega.logging.logLevel.value,
-        warns: state.specification.warns
+        warns: state.specification.warns,
+        translate: state.i18n.translate
     }));
     const classes = useLogViewerStyles();
     const levelId = useId();
-    const levelLabel = useMemo(() => getI18nValue('Objects_Vega_LogLevel'), []);
+    const levelLabel = useMemo(() => translate('Text_Vega_LogLevel'), []);
     const logEntries = useMemo(
         () => getLogEntries(warns, errors, logLevel as number, classes),
         [warns, errors, logLevel, classes]
@@ -152,18 +152,19 @@ const getDebugLogEntriesForDisplay = (
 const getDebugLogEntryDisplayDetails = (entry: LogEntry): LogEntryDisplay => {
     const { level, message } = entry;
     const metadata = getDebugLogLevels().find(
-        (e: LogLevelEnumMember) => e.value === `${level}`
+        (e: LogLevelEnumMember) => e.value === level
     );
+    const { translate } = useDenebState.getState().i18n;
     return metadata
         ? {
               level,
               message,
-              i18nLevel: getI18nValue(metadata.displayNameKey)
+              i18nLevel: translate(metadata.displayNameKey || '')
           }
         : {
               level,
               message,
-              i18nLevel: 'Unknown'
+              i18nLevel: translate('Enum_Log_Level_Unknown')
           };
 };
 
@@ -178,6 +179,7 @@ const getResolvedLogEntries = (
     errors: string[],
     logLevel: number
 ): LogEntry[] => {
+    const { translate } = useDenebState.getState().i18n;
     return (
         errors.length > 0 || warns.length > 0
             ? [
@@ -193,7 +195,7 @@ const getResolvedLogEntries = (
             : [
                   {
                       level: Info,
-                      message: getI18nValue('Pivot_Log_No_Issues')
+                      message: translate('Pivot_Log_No_Issues')
                   }
               ]
     ).filter((e) => e.level <= logLevel);

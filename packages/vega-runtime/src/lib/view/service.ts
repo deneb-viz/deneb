@@ -8,7 +8,8 @@ import { logDebug, logTimeEnd } from '@deneb-viz/utils/logging';
 import {
     contextMenuHandler,
     crossFilterHandler,
-    VegaDatum,
+    type CrossFilterTranslate,
+    type VegaDatum,
     type InteractivityLookupDataset
 } from '@deneb-viz/powerbi-compat/interactivity';
 import { VegaPatternFillServices } from '../pattern-fill';
@@ -101,10 +102,11 @@ const bindContextMenuEvents = (
  */
 const bindCrossFilterEvents = (
     view: View,
-    dataset: InteractivityLookupDataset
+    dataset: InteractivityLookupDataset,
+    translate: CrossFilterTranslate
 ) => {
     logDebug('Binding cross-filter listener...');
-    view.addEventListener('click', crossFilterHandler(dataset));
+    view.addEventListener('click', crossFilterHandler(dataset, translate));
 };
 
 /**
@@ -135,6 +137,7 @@ export const handleNewView = (newView: View, options: HandleNewViewOptions) => {
         generateRenderId,
         logError,
         logWarn,
+        translate,
         logLevel,
         selectionMode
     } = options;
@@ -154,7 +157,7 @@ export const handleNewView = (newView: View, options: HandleNewViewOptions) => {
         bindContainerSignals(view);
         bindContextMenuEvents(view, dataset);
         if (selectionMode === 'simple') {
-            bindCrossFilterEvents(view, dataset);
+            bindCrossFilterEvents(view, dataset, translate);
         }
         generateRenderId();
         logTimeEnd('VegaRender');

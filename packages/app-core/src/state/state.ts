@@ -12,6 +12,7 @@ import {
     createFieldUsageSlice,
     type FieldUsageSliceState
 } from './field-usage';
+import { createI18nSlice, I18nSlice } from './i18n';
 import { createInterfaceSlice, type InterfaceSlice } from './interface';
 import { createMigrationSlice, type MigrationSlice } from './migration';
 import { createProcessingSlice, type ProcessingSlice } from './processing';
@@ -34,6 +35,7 @@ export type StoreState = CommandsSlice &
     EditorSlice &
     ExportSliceState &
     FieldUsageSliceState &
+    I18nSlice &
     InterfaceSlice &
     MigrationSlice &
     ProcessingSlice &
@@ -56,6 +58,7 @@ export const createDenebState = (dependencies: StateDependencies) =>
                 ...createEditorSlice()(...a),
                 ...createExportSlice(dependencies)(...a),
                 ...createFieldUsageSlice()(...a),
+                ...createI18nSlice()(...a),
                 ...createInterfaceSlice()(...a),
                 ...createMigrationSlice()(...a),
                 ...createProcessingSlice()(...a),

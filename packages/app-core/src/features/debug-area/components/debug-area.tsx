@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 
 import { Caption1, makeStyles, tokens } from '@fluentui/react-components';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logRender } from '@deneb-viz/utils/logging';
 import { useDenebState } from '../../../state';
 import { LogViewer } from './log-viewer/log-viewer';
@@ -24,14 +23,16 @@ export const DebugArea = () => {
         editorPreviewDebugIsExpanded,
         hashValue,
         logAttention,
-        renderId
+        renderId,
+        translate
     } = useDenebState((state) => ({
         datasetName: state.debug.datasetName,
         editorPreviewAreaSelectedPivot: state.editorPreviewAreaSelectedPivot,
         editorPreviewDebugIsExpanded: state.editorPreviewDebugIsExpanded,
         hashValue: state.dataset.hashValue,
         logAttention: state.debug.logAttention,
-        renderId: state.interface.renderId
+        renderId: state.interface.renderId,
+        translate: state.i18n.translate
     }));
     const classes = useDebugAreaStyles();
     const content = useMemo(() => {
@@ -50,9 +51,7 @@ export const DebugArea = () => {
             case 'signal':
                 return <SignalViewer renderId={renderId} />;
             default:
-                return (
-                    <Caption1>{getI18nValue('Pivot_Mode_Unknown')}</Caption1>
-                );
+                return <Caption1>{translate('Pivot_Mode_Unknown')}</Caption1>;
         }
     }, [
         datasetName,

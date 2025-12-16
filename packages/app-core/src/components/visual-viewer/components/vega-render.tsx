@@ -2,7 +2,6 @@ import React, { memo, useCallback, useMemo } from 'react';
 import { createClassFromSpec, View } from 'react-vega';
 
 import {
-    getVegaLoader,
     type SpecProvider,
     type SpecRenderMode
 } from '@deneb-viz/vega-runtime/embed';
@@ -18,6 +17,7 @@ import { useDenebState } from '../../../state';
 import { getD3FormatLocale, getD3TimeFormatLocale } from '../../../lib/i18n';
 import { makeStyles } from '@fluentui/react-components';
 import { VEGA_VIEWPORT_ADJUST } from '../constants';
+import { useDenebPlatformProvider } from '../../deneb-platform';
 
 type VegaRenderProps = {
     datasetHash: string;
@@ -98,18 +98,24 @@ export const VegaRender: React.FC<VegaRenderProps> = memo(
         viewportHeight,
         viewportWidth
     }) => {
-        const loader = useMemo(() => getVegaLoader(), []);
+        const { vegaLoader } = useDenebPlatformProvider();
         const classes = useVegaRenderStyles();
         const fields = useDenebState((state) => state.dataset.fields);
         const values = useDenebState((state) => state.dataset.values);
-        const { selectionMode, generateRenderId, logWarn, logError } =
-            useDenebState((state) => ({
-                selectionMode: state.visualSettings.vega.interactivity
-                    .selectionMode.value as SelectionMode,
-                generateRenderId: state.interface.generateRenderId,
-                logWarn: state.specification.logWarn,
-                logError: state.specification.logError
-            }));
+        const {
+            selectionMode,
+            generateRenderId,
+            logWarn,
+            logError,
+            translate
+        } = useDenebState((state) => ({
+            selectionMode: state.visualSettings.vega.interactivity.selectionMode
+                .value as SelectionMode,
+            generateRenderId: state.interface.generateRenderId,
+            logWarn: state.specification.logWarn,
+            logError: state.specification.logError,
+            translate: state.i18n.translate
+        }));
         const ttHandler = useMemo(
             () =>
                 tooltipHandler({
@@ -136,7 +142,8 @@ export const VegaRender: React.FC<VegaRenderProps> = memo(
                     selectionMode,
                     generateRenderId,
                     logError,
-                    logWarn
+                    logWarn,
+                    translate
                 });
             },
             [fields, values]
@@ -182,7 +189,7 @@ export const VegaRender: React.FC<VegaRenderProps> = memo(
             <VegaChart
                 actions={false}
                 renderer={renderMode}
-                loader={loader}
+                loader={vegaLoader}
                 tooltip={ttHandler}
                 logLevel={logLevel}
                 formatLocale={numberFormatLocale}

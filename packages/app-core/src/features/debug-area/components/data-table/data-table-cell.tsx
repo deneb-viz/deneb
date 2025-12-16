@@ -10,8 +10,8 @@ import {
     type DataPointSelectionStatus,
     getSanitizedTooltipValue
 } from '@deneb-viz/powerbi-compat/interactivity';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { getPrunedObject } from '@deneb-viz/utils/object';
+import { getDenebState } from '../../../../state';
 
 type DataTableCellProps = {
     displayValue: string;
@@ -39,6 +39,7 @@ export const DataTableCell = ({
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getCellTooltip = (field: string, value: any) => {
+    const { translate } = getDenebState().i18n;
     switch (true) {
         case field === SELECTED_ROW_FIELD_NAME:
             return getCellCrossFilterTooltip(value);
@@ -47,7 +48,7 @@ const getCellTooltip = (field: string, value: any) => {
         case isCrossHighlightStatusField(field):
             return getCellHighlightComparatorStatus(value);
         case isValuePlaceholderComplex(value):
-            return getI18nValue('Table_Tooltip_TooLong');
+            return translate('Table_Tooltip_TooLong');
         case isDate(value):
             return new Date(value).toUTCString();
         case isNumber(value):
@@ -63,27 +64,30 @@ const getCellTooltip = (field: string, value: any) => {
  * Handle the display and translation of number values for a table. Borrowed
  * and adapted from vega-editor.
  */
-const formatNumberValueForTable = (value: number, tooltip = false) =>
-    isNaN(value)
-        ? getI18nValue('Table_Placeholder_NaN')
+const formatNumberValueForTable = (value: number, tooltip = false) => {
+    const { translate } = getDenebState().i18n;
+    return isNaN(value)
+        ? translate('Table_Placeholder_NaN')
         : value === Number.POSITIVE_INFINITY
-          ? getI18nValue('Table_Placeholder_Infinity')
+          ? translate('Table_Placeholder_Infinity')
           : value === Number.NEGATIVE_INFINITY
-            ? `-${getI18nValue('Table_Placeholder_Infinity')}`
+            ? `-${translate('Table_Placeholder_Infinity')}`
             : getStringifiedDisplayValue(value, tooltip);
+};
 
 /**
  * If the column/cell relates to cross-filtering, return a tooltip value that
  * is contextual for the displayed value.
  */
 const getCellCrossFilterTooltip = (value: DataPointSelectionStatus) => {
+    const { translate } = getDenebState().i18n;
     switch (value) {
         case 'neutral':
-            return getI18nValue('Pivot_Debug_SelectedNeutral');
+            return translate('Pivot_Debug_SelectedNeutral');
         case 'on':
-            return getI18nValue('Pivot_Debug_SelectedOn');
+            return translate('Pivot_Debug_SelectedOn');
         case 'off':
-            return getI18nValue('Pivot_Debug_SelectedOff');
+            return translate('Pivot_Debug_SelectedOff');
     }
 };
 
@@ -92,13 +96,14 @@ const getCellCrossFilterTooltip = (value: DataPointSelectionStatus) => {
  * value that is contextual for the displayed value.
  */
 const getCellHighlightComparatorStatus = (value: DataPointSelectionStatus) => {
+    const { translate } = getDenebState().i18n;
     switch (value) {
         case 'neutral':
-            return getI18nValue('Pivot_Debug_HighlightStatusNeutral');
+            return translate('Pivot_Debug_HighlightStatusNeutral');
         case 'on':
-            return getI18nValue('Pivot_Debug_HighlightStatusOn');
+            return translate('Pivot_Debug_HighlightStatusOn');
         case 'off':
-            return getI18nValue('Pivot_Debug_HighlightStatusOff');
+            return translate('Pivot_Debug_HighlightStatusOff');
     }
 };
 
@@ -109,15 +114,16 @@ const getCellHighlightComparatorStatus = (value: DataPointSelectionStatus) => {
 const getCellHighlightComparatorTooltip = (
     value: DataPointHighlightComparator
 ) => {
+    const { translate } = getDenebState().i18n;
     switch (value) {
         case 'eq':
-            return getI18nValue('Pivot_Debug_HighlightComparatorEq');
+            return translate('Pivot_Debug_HighlightComparatorEq');
         case 'lt':
-            return getI18nValue('Pivot_Debug_HighlightComparatorLt');
+            return translate('Pivot_Debug_HighlightComparatorLt');
         case 'gt':
-            return getI18nValue('Pivot_Debug_HighlightComparatorGt');
+            return translate('Pivot_Debug_HighlightComparatorGt');
         case 'neq':
-            return getI18nValue('Pivot_Debug_HighlightComparatorNeq');
+            return translate('Pivot_Debug_HighlightComparatorNeq');
     }
 };
 
@@ -134,8 +140,12 @@ const getStringifiedDisplayValue = (value: any, tooltip = false) => {
  * Determines whether a supplied value matches one of the 'placeholder' values
  * for a table cell.
  */
-const isValuePlaceholderComplex = (value: string) =>
-    value === getI18nValue('Table_Placeholder_TooLong') ||
-    value === getI18nValue('Table_Placeholder_Object') ||
-    value === getI18nValue('Table_Placeholder_Circular') ||
-    false;
+const isValuePlaceholderComplex = (value: string) => {
+    const { translate } = getDenebState().i18n;
+    return (
+        value === translate('Table_Placeholder_TooLong') ||
+        value === translate('Table_Placeholder_Object') ||
+        value === translate('Table_Placeholder_Circular') ||
+        false
+    );
+};

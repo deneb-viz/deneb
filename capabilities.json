@@ -106,12 +106,10 @@
                     "type": {
                         "enumeration": [
                             {
-                                "displayNameKey": "Provider_VegaLite",
                                 "displayName": "vegaLite",
                                 "value": "vegaLite"
                             },
                             {
-                                "displayNameKey": "Provider_Vega",
                                 "displayName": "vega",
                                 "value": "vega"
                             }
@@ -127,27 +125,22 @@
                     "type": {
                         "enumeration": [
                             {
-                                "displayNameKey": "Enum_LogLevel_None",
                                 "displayName": "none",
                                 "value": "0"
                             },
                             {
-                                "displayNameKey": "Enum_LogLevel_Error",
                                 "displayName": "error",
                                 "value": "1"
                             },
                             {
-                                "displayNameKey": "Enum_LogLevel_Warn",
                                 "displayName": "warn",
                                 "value": "2"
                             },
                             {
-                                "displayNameKey": "Enum_LogLevel_Info",
                                 "displayName": "info",
                                 "value": "3"
                             },
                             {
-                                "displayNameKey": "Enum_LogLevel_Debug",
                                 "displayName": "debug",
                                 "value": "4"
                             }
@@ -158,12 +151,10 @@
                     "type": {
                         "enumeration": [
                             {
-                                "displayNameKey": "Enum_Grammar_RenderMode_Svg",
                                 "displayName": "svg",
                                 "value": "svg"
                             },
                             {
-                                "displayNameKey": "Enum_Grammar_RenderMode_Canvas",
                                 "displayName": "canvas",
                                 "value": "canvas"
                             }
@@ -194,12 +185,10 @@
                     "type": {
                         "enumeration": [
                             {
-                                "displayNameKey": "Enum_SelectionMode_Simple",
                                 "displayName": "Simple",
                                 "value": "simple"
                             },
                             {
-                                "displayNameKey": "Enum_SelectionMode_Advanced",
                                 "displayName": "Advanced",
                                 "value": "advanced"
                             }

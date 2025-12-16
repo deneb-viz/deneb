@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { shallow } from 'zustand/shallow';
 import { Link, useId, useToastController } from '@fluentui/react-components';
 
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { type NotificationProps } from '../types';
 import {
     TOAST_NOTIFICATION_ID_APPLY_CHANGES,
@@ -17,10 +16,11 @@ import {
 } from '@deneb-viz/app-core';
 
 export const NotificationApplyChanges = ({ toasterId }: NotificationProps) => {
-    const { isDirty, mode } = useDenebState(
+    const { isDirty, mode, translate } = useDenebState(
         (state) => ({
             isDirty: state.editor.isDirty,
-            mode: state.interface.mode
+            mode: state.interface.mode,
+            translate: state.i18n.translate
         }),
         shallow
     );
@@ -38,15 +38,15 @@ export const NotificationApplyChanges = ({ toasterId }: NotificationProps) => {
     const notify = () =>
         dispatchToast(
             <NotificationToast
-                title={getI18nValue('Text_Toast_Title_Unapplied_Changes')}
-                body={getI18nValue('Text_Toast_Body_Unapplied_Changes')}
+                title={translate('PowerBI_Toast_Title_Unapplied_Changes')}
+                body={translate('PowerBI_Toast_Body_Unapplied_Changes')}
                 footer={
                     <>
                         <Link onClick={handleApply}>
-                            {getI18nValue('Text_Toast_Action_Apply')}
+                            {translate('PowerBI_Toast_Action_Apply')}
                         </Link>
                         <Link onClick={handleDiscard}>
-                            {getI18nValue('Text_Toast_Action_Dismiss')}
+                            {translate('PowerBI_Toast_Action_Dismiss')}
                         </Link>
                     </>
                 }

@@ -7,7 +7,6 @@ import {
 } from '@fluentui/react-components';
 
 import { useDenebVisualState } from '../../../state';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { InteractivityManager } from '@deneb-viz/powerbi-compat/interactivity';
 import { type NotificationProps } from '../types';
 import { NotificationToast } from './notification-toast';
@@ -15,10 +14,12 @@ import {
     TOAST_NOTIFICATION_ID_CROSS_FILTER_EXCEEDED,
     TOAST_NOTIFICATION_TIMEOUT
 } from '../constants';
+import { useDenebState } from '@deneb-viz/app-core';
 
 export const NotificationCrossFilterExceeded = ({
     toasterId
 }: NotificationProps) => {
+    const translate = useDenebState((state) => state.i18n.translate);
     const {
         selectionLimit,
         selectionLimitExceeded,
@@ -38,26 +39,26 @@ export const NotificationCrossFilterExceeded = ({
     const notify = () =>
         dispatchToast(
             <NotificationToast
-                title={getI18nValue(
-                    'Text_Toast_Title_Cross_Filter_Limit_Reached'
+                title={translate(
+                    'PowerBI_Toast_Title_Cross_Filter_Limit_Reached'
                 )}
-                subtitle={getI18nValue(
-                    'Text_Toast_Subtitle_Cross_Filter_Limit_Reached'
+                subtitle={translate(
+                    'PowerBI_Toast_Subtitle_Cross_Filter_Limit_Reached'
                 )}
-                body={getI18nValue(
-                    'Text_Toast_Body_Cross_Filter_Limit_Reached',
+                body={translate(
+                    'PowerBI_Toast_Body_Cross_Filter_Limit_Reached',
                     [selectionLimit]
                 )}
                 footer={
                     <>
                         <ToastTrigger>
                             <Link>
-                                {getI18nValue('Text_Toast_Action_Dismiss')}
+                                {translate('PowerBI_Toast_Action_Dismiss')}
                             </Link>
                         </ToastTrigger>
                         <Link onClick={handleClearSelection}>
-                            {getI18nValue(
-                                'Text_Toast_Action_Dismiss_Clear_Selection'
+                            {translate(
+                                'PowerBI_Toast_Action_Dismiss_Clear_Selection'
                             )}
                         </Link>
                     </>

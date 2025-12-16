@@ -2,8 +2,7 @@
  * Represents an enum member from capabilities.json
  */
 export type LogLevelEnumMember = {
-    value: string;
-    displayName: string;
+    value: number;
     displayNameKey?: string;
 };
 

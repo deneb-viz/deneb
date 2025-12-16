@@ -7,7 +7,6 @@ import {
 } from '@fluentui/react-components';
 import { ChevronLeftRegular, ChevronRightRegular } from '@fluentui/react-icons';
 
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { useDenebState } from '../../../state';
 import { TooltipCustomMount } from '../../../components/ui';
 import { handleToggleEditorPane } from '../../../lib';
@@ -37,10 +36,13 @@ const useEditorPaneCollapsedStyles = makeStyles({
 });
 
 export const EditorPaneCollapsed = () => {
-    const { editorPaneIsExpanded, position } = useDenebState((state) => ({
-        editorPaneIsExpanded: state.editorPaneIsExpanded,
-        position: state.visualSettings.editor.json.position.value
-    }));
+    const { editorPaneIsExpanded, position, translate } = useDenebState(
+        (state) => ({
+            editorPaneIsExpanded: state.editorPaneIsExpanded,
+            position: state.visualSettings.editor.json.position.value,
+            translate: state.i18n.translate
+        })
+    );
     const classes = useEditorPaneCollapsedStyles();
     const icon = useMemo(
         () =>
@@ -64,7 +66,7 @@ export const EditorPaneCollapsed = () => {
         <div id='editorPane' className={classes.paneContainerCollapsed}>
             <div className={classes.paneContainerSurround}>
                 <Tooltip
-                    content={getI18nValue('Tooltip_Expand_Editor_Pane')}
+                    content={translate('Tooltip_Expand_Editor_Pane')}
                     relationship='label'
                     withArrow
                     mountNode={ref}

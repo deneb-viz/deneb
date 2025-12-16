@@ -1,6 +1,5 @@
 import { devDependencies } from '../../../package.json';
 import { visual } from '../../../pbiviz.json';
-import capabilities from '../../../capabilities.json';
 
 /**
  * This is an object that contains the visual's metadata. This is used to handle places we need to display this
@@ -9,14 +8,6 @@ import capabilities from '../../../capabilities.json';
  * POTENTIAL TECH DEBT
  */
 export const APPLICATION_INFORMATION_CONFIGURATION = visual;
-
-/**
- * This is an object that contains the capabilities of Power BI.
- * @remarks
- * POTENTIAL TECH DEBT
- */
-// TODO: drive capabilities configuration from centralized configuration here when we get a chance.
-export const POWERBI_CAPABILITIES = capabilities;
 
 /**
  * Default values for the data table in the debug pane.
@@ -62,6 +53,32 @@ export const DEBUG_PANE_CONFIGURATION = {
         }
     ]
 };
+
+/**
+ * Log level configuration for Vega logging and UI representation.
+ */
+export const VEGA_LOG_LEVEL_CONFIGURATION = [
+    {
+        displayNameKey: 'Enum_LogLevel_None',
+        value: 0
+    },
+    {
+        displayNameKey: 'Enum_LogLevel_Error',
+        value: 1
+    },
+    {
+        displayNameKey: 'Enum_LogLevel_Warn',
+        value: 2
+    },
+    {
+        displayNameKey: 'Enum_LogLevel_Info',
+        value: 3
+    },
+    {
+        displayNameKey: 'Enum_LogLevel_Debug',
+        value: 4
+    }
+];
 
 /**
  * Additional resources needed for each provider in the application (Vega, Vega-Lite and Deneb). These are used to

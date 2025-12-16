@@ -4,7 +4,6 @@ import { Button } from '@fluentui/react-components';
 import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 import { type TrackedFields } from '@deneb-viz/json-processing/field-tracking';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import {
     type SpecificationEditorRefs,
     useSpecificationEditor
@@ -27,14 +26,16 @@ export const FieldRemapButton = () => {
         jsonSpec,
         remapAllDependenciesAssigned,
         remapFields,
-        remapState
+        remapState,
+        translate
     } = useDenebState((state) => ({
         dataset: state.fieldUsage.dataset,
         jsonSpec: state.visualSettings.vega.output.jsonSpec.value,
         remapAllDependenciesAssigned:
             state.fieldUsage.remapAllDependenciesAssigned,
         remapFields: state.fieldUsage.remapFields,
-        remapState: state.interface.remapState
+        remapState: state.interface.remapState,
+        translate: state.i18n.translate
     }));
     const onRemap = () => {
         applyRemappedFields(jsonSpec, remapFields, dataset, editorRefs);
@@ -46,7 +47,7 @@ export const FieldRemapButton = () => {
             appearance='primary'
             onClick={onRemap}
         >
-            {getI18nValue('Button_Remap')}
+            {translate('Button_Remap')}
         </Button>
     );
 };

@@ -2,7 +2,6 @@ import { ChangeEvent, useCallback, useMemo } from 'react';
 import { Checkbox, CheckboxOnChangeData } from '@fluentui/react-components';
 
 import { useSettingsStyles } from '../styles';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import {
     handlePersistBooleanProperty,
     useDenebState
@@ -20,9 +19,10 @@ type InteractivityCheckboxProps = {
 };
 
 export const InteractivityCheckbox = ({ type }: InteractivityCheckboxProps) => {
-    const { interactivity } = useDenebState(
-        (state) => state.visualSettings.vega
-    );
+    const { interactivity, translate } = useDenebState((state) => ({
+        interactivity: state.visualSettings.vega.interactivity,
+        translate: state.i18n.translate
+    }));
     const propertyName = useMemo(() => getPropertyName(type), [type]);
     const classes = useSettingsStyles();
     const handleToggle = useCallback(
@@ -46,7 +46,7 @@ export const InteractivityCheckbox = ({ type }: InteractivityCheckboxProps) => {
     return (
         status && (
             <Checkbox
-                label={getI18nValue(geti18LabelKey(type))}
+                label={translate(geti18LabelKey(type))}
                 checked={interactivity[propertyName]?.value || false}
                 onChange={handleToggle}
                 className={classes.sectionItem}
@@ -71,13 +71,13 @@ const getFeatureStatus = (type: TInteractivityType) => {
 const geti18LabelKey = (type: TInteractivityType) => {
     switch (type) {
         case 'context':
-            return 'Objects_Vega_EnableContextMenu';
+            return 'PowerBI_Objects_Vega_EnableContextMenu';
         case 'highlight':
-            return 'Objects_Vega_EnableHighlight';
+            return 'PowerBI_Objects_Vega_EnableHighlight';
         case 'select':
-            return 'Objects_Vega_EnableSelection';
+            return 'PowerBI_Objects_Vega_EnableSelection';
         case 'tooltip':
-            return 'Objects_Vega_EnableTooltips';
+            return 'PowerBI_Objects_Vega_EnableTooltips';
     }
 };
 

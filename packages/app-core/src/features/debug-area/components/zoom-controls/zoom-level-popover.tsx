@@ -5,7 +5,7 @@ import {
     useMemo,
     useState
 } from 'react';
-import { shallow } from 'zustand/shallow';
+
 import {
     Label,
     Popover,
@@ -26,7 +26,6 @@ import {
 } from '@fluentui/react-components';
 
 import { VISUAL_PREVIEW_ZOOM_CONFIGURATION } from '@deneb-viz/configuration';
-import { getI18nValue } from '@deneb-viz/powerbi-compat/visual-host';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
 import {
     POPOVER_Z_INDEX,
@@ -60,15 +59,17 @@ const useToolbarStyles = makeStyles({
 
 // eslint-disable-next-line max-lines-per-function
 export const ZoomLevelPopover = () => {
-    const { editorZoomLevel, zoomFitEnabled, updateEditorZoomLevel } =
-        useDenebState(
-            (state) => ({
-                editorZoomLevel: state.editorZoomLevel,
-                zoomFitEnabled: state.commands.zoomFit,
-                updateEditorZoomLevel: state.updateEditorZoomLevel
-            }),
-            shallow
-        );
+    const {
+        editorZoomLevel,
+        zoomFitEnabled,
+        translate,
+        updateEditorZoomLevel
+    } = useDenebState((state) => ({
+        editorZoomLevel: state.editorZoomLevel,
+        zoomFitEnabled: state.commands.zoomFit,
+        translate: state.i18n.translate,
+        updateEditorZoomLevel: state.updateEditorZoomLevel
+    }));
     const id = useId();
     const caption = `${editorZoomLevel}%`;
     const classes = useToolbarStyles();
@@ -77,9 +78,7 @@ export const ZoomLevelPopover = () => {
             VISUAL_PREVIEW_ZOOM_CONFIGURATION.customLevels.map((l) => (
                 <Radio
                     key={`zoom-${l.value}`}
-                    label={getI18nValue(
-                        `Text_Radio_Group_ZoomLevel_${l.value}`
-                    )}
+                    label={translate(`Text_Radio_Group_ZoomLevel_${l.value}`)}
                     value={l.value}
                 />
             )) || [],
@@ -142,7 +141,7 @@ export const ZoomLevelPopover = () => {
             <>
                 <Tooltip
                     relationship='label'
-                    content={getI18nValue('Text_Tooltip_Zoom_Level_Popover')}
+                    content={translate('Tooltip_Zoom_Level_Popover')}
                     withArrow
                     mountNode={ref}
                 >
@@ -163,7 +162,7 @@ export const ZoomLevelPopover = () => {
             <PopoverSurface className={classes.popoverZoomLevel}>
                 <div className={classes.controlBaseZoomLevel}>
                     <Label id={id}>
-                        {getI18nValue('Text_Zoom_Level_Custom_Label')}
+                        {translate('Text_Zoom_Level_Custom_Label')}
                     </Label>
                     <RadioGroup
                         aria-labelledby={id}
