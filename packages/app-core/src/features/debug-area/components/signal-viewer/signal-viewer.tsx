@@ -64,7 +64,11 @@ export const SignalViewer = ({ renderId }: SignalViewerProps) => {
         <div className={classes.container}>
             <div className={classes.wrapper}>
                 <div className={classes.details}>
-                    <DataTableViewer columns={columns} data={values} />
+                    <DataTableViewer
+                        columns={columns}
+                        data={values}
+                        defaultSortFieldId={undefined}
+                    />
                 </div>
             </div>
         </div>

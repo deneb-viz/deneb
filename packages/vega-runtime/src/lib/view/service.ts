@@ -53,9 +53,9 @@ export const VegaViewServices = {
      * Get all signals and values from the current Vega view (for the signals
      * table). Returns an empty object if nothing is available.
      */
-    getAllSignals: () =>
+    getAllSignals: (): Record<string, unknown> =>
         view?.getState({
-            data: truthy,
+            data: falsy,
             signals: truthy,
             recurse: true
         })?.signals || {},
