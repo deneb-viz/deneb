@@ -71,7 +71,11 @@ function getCommonConfig(options = {}) {
             ],
             symlinks: false,
             // Prefer ESM over CJS for packages that provide both
-            mainFields: ['module', 'browser', 'main']
+            mainFields: ['module', 'browser', 'main'],
+            // Polyfills for Node.js core modules needed by monaco-editor and vega-loader
+            fallback: {
+                buffer: require.resolve('buffer/')
+            }
         },
         // No externals for powerbi-visuals-api. TypeScript (via ts-loader) inlines const enums,
         // and we avoid runtime reads from the package. Keeping it non-external prevents confusing nulls.
