@@ -1,26 +1,35 @@
 import { type TemplateExportProcessingState } from '@deneb-viz/json-processing/template-processing';
-import { type InterfaceMode, type ModalDialogRole } from '../lib/interface';
+import {
+    EditorPanePosition,
+    type ContainerViewport,
+    type InterfaceType,
+    type ModalDialogRole
+} from '../lib/interface';
 import { type RemapState } from '@deneb-viz/json-processing/field-tracking';
 import { StoreState } from './state';
 import { isMappingDialogRequired } from '@deneb-viz/json-processing';
 import { getNewUuid } from '@deneb-viz/utils/crypto';
 import { StateCreator } from 'zustand';
 import { getModalDialogRole } from '../lib/interface/state';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
+import {
+    getEditorPreviewAreaWidth,
+    getEditPaneDefaultWidth,
+    getPreviewAreaHeightInitial,
+    getPreviewAreaHeightMaximum,
+    getResizablePaneSize
+} from '../lib/interface/layout';
 
 export type InterfaceSliceProperties = {
+    editorPosition: EditorPanePosition;
+    /**
+     * The viewport definitions for the interface container.
+     */
+    embedViewport: ContainerViewport | null;
     /**
      * The current state of the export processing.
      */
     exportProcessingState: TemplateExportProcessingState;
-    /**
-     * Whether the visual has initialized or not. The visual is regarded
-     * as initialized once the very first attempt to check the dataset has
-     * been made. This is to ensure that we only start to handle mode
-     * states beyond `Initializing` after this point (and prevent the UI
-     * from flickering between modes during the initial constructor and
-     * update events).
-     */
-    isInitialized: boolean;
     /**
      * Whether the spec tokenization worker is currently processing. This is used to be able to update the
      * interface accordingly when this is in progress.
@@ -31,10 +40,6 @@ export type InterfaceSliceProperties = {
      * interface accordingly when this is in progress.
      */
     isTrackingFields: boolean;
-    /**
-     * The current application mode
-     */
-    mode: InterfaceMode;
     /**
      * Current modal dialog display role. Used to display correct dialog to
      * the user (or not at all).
@@ -51,6 +56,14 @@ export type InterfaceSliceProperties = {
      * changes).
      */
     renderId: string;
+    type: InterfaceType;
+    /**
+     * The viewport dimensions for the interface container.
+     */
+    viewport: ContainerViewport | null;
+    computeEditorLayout: () => void;
+    setEditorPosition: (position: EditorPanePosition) => void;
+    setEmbedViewport: (viewport: ContainerViewport) => void;
     /**
      * Sets the export processing state.
      */
@@ -60,12 +73,6 @@ export type InterfaceSliceProperties = {
      * specification.
      */
     generateRenderId: () => void;
-    /**
-     * For situations where we're not ready to process data (e.g. first
-     * run), then we will explicitly flag the visual as initialized and set
-     * the mode to `Landing`.
-     */
-    setExplicitInitialize: () => void;
     /**
      * Sets the tokenization state.
      */
@@ -82,6 +89,8 @@ export type InterfaceSliceProperties = {
      * Sets the remap state.
      */
     setRemapState: (state: RemapState) => void;
+    setType: (type: InterfaceType) => void;
+    setViewport: (viewport: ContainerViewport) => void;
 };
 
 export type InterfaceSlice = {
@@ -95,27 +104,103 @@ export const createInterfaceSlice =
         [],
         InterfaceSlice
     > =>
-    (set) => ({
+    (set, get) => ({
         interface: {
+            editorPosition: DEFAULTS.editor.position as EditorPanePosition,
+            embedViewport: null,
             exportProcessingState: 'None',
-            isInitialized: false,
             isTokenizingSpec: false,
             isTrackingFields: false,
-            mode: 'Initializing',
             modalDialogRole: 'None',
             remapState: 'None',
             renderId: getNewUuid(),
+            type: 'viewer',
+            viewport: null,
+            computeEditorLayout: () => {
+                set(
+                    (state) => {
+                        const { editorPosition, viewport } = state.interface;
+                        if (!viewport) {
+                            return {};
+                        }
+                        const editorPaneDefaultWidth = getEditPaneDefaultWidth(
+                            viewport,
+                            editorPosition
+                        );
+                        const editorPaneExpandedWidth =
+                            state.editorPaneExpandedWidth ??
+                            editorPaneDefaultWidth;
+                        const editorPaneWidth =
+                            getResizablePaneSize(
+                                editorPaneExpandedWidth,
+                                state.editorPaneIsExpanded,
+                                viewport,
+                                editorPosition
+                            ) ??
+                            state.editorPaneExpandedWidth ??
+                            0;
+                        const editorPreviewAreaWidth =
+                            getEditorPreviewAreaWidth(
+                                viewport.width,
+                                editorPaneWidth,
+                                editorPosition
+                            );
+                        const editorPreviewAreaHeightMax =
+                            getPreviewAreaHeightMaximum(viewport.height);
+                        const editorPreviewAreaHeight =
+                            getPreviewAreaHeightInitial(
+                                viewport.height,
+                                state.editorPreviewAreaHeight ?? 0
+                            );
+                        const editorPreviewDebugIsExpanded =
+                            editorPreviewAreaHeight !==
+                            editorPreviewAreaHeightMax;
+                        return {
+                            editorPaneDefaultWidth,
+                            editorPaneExpandedWidth,
+                            editorPaneWidth,
+                            editorPreviewAreaHeight,
+                            editorPreviewAreaHeightMax,
+                            editorPreviewAreaWidth,
+                            editorPreviewDebugIsExpanded,
+                            interface: {
+                                ...state.interface
+                            }
+                        };
+                    },
+                    false,
+                    'interface.computeEditorLayout'
+                );
+            },
             generateRenderId: () =>
                 set(
                     (state) => handleGenerateRenderId(state),
                     false,
                     'interface.generateRenderId'
                 ),
-            setExplicitInitialize: () =>
+            setEditorPosition: (position: EditorPanePosition) => {
                 set(
-                    (state) => handleSetExplicitInitialize(state),
+                    (state) => ({
+                        interface: {
+                            ...state.interface,
+                            editorPosition: position
+                        }
+                    }),
                     false,
-                    'interface.setExplicitInitialize'
+                    'interface.setEditorPosition'
+                );
+                get().interface.computeEditorLayout();
+            },
+            setEmbedViewport: (viewport: ContainerViewport) =>
+                set(
+                    (state) => ({
+                        interface: {
+                            ...state.interface,
+                            embedViewport: viewport
+                        }
+                    }),
+                    false,
+                    'interface.setEmbedViewport'
                 ),
             setExportProcessingState: (
                 exportProcessingState: TemplateExportProcessingState
@@ -152,7 +237,31 @@ export const createInterfaceSlice =
                     (state) => handleSetRemapState(state, remapState),
                     false,
                     'interface.setRemapState'
-                )
+                ),
+            setType: (type: InterfaceType) =>
+                set(
+                    (state) => ({
+                        interface: {
+                            ...state.interface,
+                            type
+                        }
+                    }),
+                    false,
+                    'interface.setType'
+                ),
+            setViewport: (viewport: ContainerViewport) => {
+                set(
+                    (state) => ({
+                        interface: {
+                            ...state.interface,
+                            viewport: viewport
+                        }
+                    }),
+                    false,
+                    'interface.setViewport'
+                );
+                get().interface.computeEditorLayout();
+            }
         }
     });
 
@@ -207,7 +316,7 @@ const handleSetRemapState = (
               ? 'Remap'
               : getModalDialogRole(
                     state.visualSettings,
-                    state.interface.mode,
+                    state.interface.type,
                     state.interface.modalDialogRole
                 );
     return {
@@ -218,16 +327,3 @@ const handleSetRemapState = (
         }
     };
 };
-
-/**
- * Explicitly set the visual as initialized and set the mode to `Landing`.
- */
-const handleSetExplicitInitialize = (
-    state: StoreState
-): StoreState | Partial<StoreState> => ({
-    interface: {
-        ...state.interface,
-        isInitialized: true,
-        mode: 'Landing'
-    }
-});

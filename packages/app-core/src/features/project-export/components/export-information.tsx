@@ -49,14 +49,14 @@ export const ExportInformation = () => {
     const {
         includePreviewImage,
         previewImageBase64PNG,
-        visualViewportReport,
+        viewport,
         setPreviewImage,
         translate
     } = useDenebState((state) => ({
         includePreviewImage: state.export.includePreviewImage,
         previewImageBase64PNG:
             state.export?.metadata?.information.previewImageBase64PNG,
-        visualViewportReport: state.visualViewportReport,
+        viewport: state.interface.viewport,
         setPreviewImage: state.export.setPreviewImage,
         translate: state.i18n.translate
     }));
@@ -86,7 +86,7 @@ export const ExportInformation = () => {
                     previewImageBase64PNG
                 });
             };
-            const { width, height } = visualViewportReport;
+            const { width = 0, height = 0 } = viewport ?? {};
             const scale =
                 width >= height
                     ? TEMPLATE_PREVIEW_IMAGE_MAX_SIZE / width

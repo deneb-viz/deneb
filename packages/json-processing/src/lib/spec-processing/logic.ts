@@ -386,7 +386,7 @@ export const isSpecificationVolatile = (
     prev: SpecificationComparisonOptions,
     next: SpecificationComparisonOptions
 ) => {
-    const omitList = ['datasetHash', 'values'];
+    const omitList = ['values'];
     const newPrev = omit(prev, omitList);
     const newNext = omit(next, omitList);
     logDebug('isSpecificationVolatile', { newPrev, newNext });

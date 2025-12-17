@@ -10,15 +10,14 @@ export const getSpecificationParseOptions = (
     state: StoreState
 ): SpecificationParseOptions => ({
     config: state.visualSettings.vega.output.jsonConfig.value,
-    datasetHash: state.dataset.hashValue,
-    logLevel: state.visualSettings.vega.logging.logLevel.value as number,
-    provider: state.visualSettings.vega.output.provider.value as SpecProvider,
+    logLevel: state.project.logLevel,
+    provider: state.project.provider as SpecProvider,
     spec: state.visualSettings.vega.output.jsonSpec.value,
     translations: {
         configParseError: state.i18n.translate('Text_Debug_Error_Config_Parse'),
         specParseError: state.i18n.translate('Text_Debug_Error_Spec_Parse')
     },
-    viewportHeight: state.visualViewportReport.height,
-    viewportWidth: state.visualViewportReport.width,
-    validateSchema: state.interface.mode === 'Editor'
+    viewportHeight: state.interface.viewport?.height ?? 0,
+    viewportWidth: state.interface.viewport?.width ?? 0,
+    validateSchema: state.interface.type === 'editor'
 });

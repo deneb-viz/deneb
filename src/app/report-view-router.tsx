@@ -2,39 +2,27 @@ import { useMemo } from 'react';
 
 import { FetchingMessage, SplashInitial } from '../features/status';
 import { logRender } from '@deneb-viz/utils/logging';
-import { useDenebState, Viewer } from '@deneb-viz/app-core';
+import { DenebApp } from '@deneb-viz/app-core';
+import { useDenebVisualState } from '../state';
 
 /**
  * Handles routing of the main visual display, when in report view.
  */
 export const ReportViewRouter = () => {
-    const { datasetProcessingStage, mode, translate } = useDenebState(
-        (state) => ({
-            datasetProcessingStage: state.datasetProcessingStage,
-            mode: state.interface.mode,
-            translate: state.i18n.translate
-        })
-    );
+    const mode = useDenebVisualState((state) => state.interface.mode);
     const component = useMemo(() => {
-        switch (datasetProcessingStage) {
-            case 'Initial': {
+        switch (mode) {
+            case 'initializing': {
                 return <SplashInitial />;
             }
-            case 'Fetching': {
+            case 'fetching': {
                 return <FetchingMessage />;
             }
-            case 'Processing': {
-                return (
-                    <div>
-                        {translate('PowerBI_Fetching_Data_Assistive_Processed')}
-                    </div>
-                );
-            }
-            case 'Processed': {
-                return <Viewer />;
+            default: {
+                return <DenebApp type='viewer' />;
             }
         }
-    }, [datasetProcessingStage]);
-    logRender('DataProcessingRouter', { datasetProcessingStage, mode });
+    }, [mode]);
+    logRender('ReportViewRouter', { mode });
     return component;
 };

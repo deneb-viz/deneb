@@ -30,13 +30,13 @@ export const DataTableViewer = ({
     ...props
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
 }: TableProps<any>) => {
-    const { editorPreviewAreaHeight, viewportHeight, debugTableRowsPerPage } =
+    const { editorPreviewAreaHeight, debugTableRowsPerPage, viewportHeight } =
         useDenebState((state) => ({
             editorPreviewAreaHeight: state.editorPreviewAreaHeight,
             debugTableRowsPerPage:
                 state.visualSettings.editor.debugPane.debugTableRowsPerPage
                     .value.value,
-            viewportHeight: state.visualViewportCurrent.height
+            viewportHeight: state.interface.viewport?.height ?? 0
         }));
     const debugAreaHeight = useMemo(
         () =>

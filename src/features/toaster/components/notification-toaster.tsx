@@ -16,7 +16,7 @@ import {
 import { NotificationApplyChanges } from './notification-apply-changes';
 
 export const NotificationToaster = () => {
-    const mode = useDenebState((state) => state.interface.mode);
+    const mode = useDenebState((state) => state.interface.type);
     const toasterId = useId(TOASTER_ID);
     return (
         <FluentProvider theme={getDenebTheme(THEME_DEFAULT)}>
@@ -25,11 +25,11 @@ export const NotificationToaster = () => {
                     toasterId={toasterId}
                     offset={{
                         horizontal:
-                            mode === 'Editor'
+                            mode === 'editor'
                                 ? TOAST_OFFSET_HORIZONTAL_EDITOR
                                 : TOAST_OFFSET_HORIZONTAL_VISUAL,
                         vertical:
-                            mode === 'Editor'
+                            mode === 'editor'
                                 ? TOAST_OFFSET_VERTICAL_EDITOR
                                 : TOAST_OFFSET_VERTICAL_VISUAL
                     }}

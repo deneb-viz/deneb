@@ -21,11 +21,12 @@ export const updateFieldTracking = async (
     reset = false
 ) => {
     const {
-        dataset: { fields, hasDrilldown },
+        dataset: { fields },
         fieldUsage: { applyTrackingChanges },
         interface: { setIsTrackingFields }
     } = getDenebState();
     setIsTrackingFields(true);
+    const hasDrilldown = false;
     const request: IDenebJsonProcessingWorkerRequest = {
         type: 'tracking',
         payload: {

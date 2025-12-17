@@ -7,6 +7,7 @@ import { Progress } from './progress';
 import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
 import { logRender } from '@deneb-viz/utils/logging';
 import { useDenebState } from '@deneb-viz/app-core';
+import { useDenebVisualState } from '../../../state';
 
 /**
  * Displays when the visual is fetching data from the data model, and provides
@@ -14,10 +15,8 @@ import { useDenebState } from '@deneb-viz/app-core';
  * something is happening.
  */
 export const FetchingMessage = () => {
-    const { rowsLoaded, translate } = useDenebState((state) => ({
-        rowsLoaded: state.dataset.rowsLoaded,
-        translate: state.i18n.translate
-    }));
+    const translate = useDenebState((state) => state.i18n.translate);
+    const rowsLoaded = useDenebVisualState((state) => state.dataset.rowsLoaded);
     logRender('FetchingMessage');
     return (
         <StatusContainer>

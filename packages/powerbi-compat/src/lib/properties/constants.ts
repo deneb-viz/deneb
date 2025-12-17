@@ -174,17 +174,9 @@ export const DEFAULTS = {
          */
         jsonConfig: '{}',
         /**
-         * The level of logging to apply to the Vega parser.
-         */
-        logLevel: 3,
-        /**
          * The Vega provider to use when parsing.
          */
         provider: 'vegaLite',
-        /**
-         * The default render mode.
-         */
-        renderMode: 'svg',
         /**
          * Maximum number of data points to include when cross-filtering
          */

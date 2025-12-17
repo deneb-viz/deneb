@@ -8,23 +8,19 @@ import {
 
 import { SettingsHeadingLabel } from './settings-heading-label';
 import { SettingsTextSection } from './settings-text-section';
-import { type SelectionMode } from '@deneb-viz/template-usermeta';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import { handleVegaProvider } from '../../../lib';
 import { useDenebState } from '../../../state';
 import { useSettingsPaneStyles } from '../styles';
 
 export const ProviderSettings = () => {
-    const { provider, selectionMode, translate } = useDenebState((state) => ({
-        provider: state.visualSettings.vega.output.provider
-            .value as SpecProvider,
-        selectionMode: state.visualSettings.vega.interactivity.selectionMode
-            .value as SelectionMode,
+    const { provider, setProvider, translate } = useDenebState((state) => ({
+        provider: state.project.provider,
+        setProvider: state.project.setProvider,
         translate: state.i18n.translate
     }));
     const onChange = useCallback(
         (ev: FormEvent<HTMLDivElement>, data: RadioGroupOnChangeData) => {
-            handleVegaProvider(data.value as SpecProvider, selectionMode);
+            setProvider(data.value as SpecProvider);
         },
         []
     );

@@ -18,16 +18,16 @@ const PREVIEW_PANE_AREA_MIN_SIZE = DEBUG_PANE_CONFIGURATION.areaMinSize;
 export const SplitPaneOutput = () => {
     const {
         editorPreviewAreaHeight,
-        visualViewportCurrent: { height },
+        viewportHeight,
         updateEditorPreviewAreaHeight
     } = useDenebState((state) => ({
         editorPreviewAreaHeight: state.editorPreviewAreaHeight,
-        visualViewportCurrent: state.visualViewportCurrent,
+        viewportHeight: state.interface.viewport?.height ?? 0,
         updateEditorPreviewAreaHeight: state.updateEditorPreviewAreaHeight
     }));
     const maxSize = useMemo(
-        () => getPreviewAreaHeightMaximum(height),
-        [height]
+        () => getPreviewAreaHeightMaximum(viewportHeight),
+        [viewportHeight]
     );
     const handleResize = (size: number) => updateEditorPreviewAreaHeight(size);
     logRender('PreviewArea');

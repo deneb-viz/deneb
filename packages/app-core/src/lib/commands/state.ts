@@ -6,7 +6,6 @@ import {
     type ZoomOtherCommandTestOptions
 } from './types';
 import { type EditorApplyMode } from '../interface';
-import { isEditorInterface } from '../interface/state';
 
 /**
  * For the current apply mode, determine what the new one should be.
@@ -20,32 +19,25 @@ export const getNextApplyMode = (
  */
 export const isExportSpecCommandEnabled = (
     options: ExportSpecCommandTestOptions
-) =>
-    !options.editorIsDirty &&
-    isSpecificationValid(options.specification) &&
-    isEditorInterface(options.interfaceMode);
+) => !options.editorIsDirty && isSpecificationValid(options.specification);
 
 /**
  * Tests whether the zoom in command is enabled.
  */
 export const isZoomInCommandEnabled = (options: ZoomLevelCommandTestOptions) =>
     options.value !== VISUAL_PREVIEW_ZOOM_CONFIGURATION.max &&
-    isSpecificationValid(options.specification) &&
-    isEditorInterface(options.interfaceMode);
+    isSpecificationValid(options.specification);
 
 /**
  * Tests whether other zoom commands are enabled.
  */
 export const isZoomOtherCommandsEnabled = (
     options: ZoomOtherCommandTestOptions
-) =>
-    isSpecificationValid(options.specification) &&
-    isEditorInterface(options.interfaceMode);
+) => isSpecificationValid(options.specification);
 
 /**
  * Tests whether the zoom out command is enabled.
  */
 export const isZoomOutCommandEnabled = (options: ZoomLevelCommandTestOptions) =>
     options.value !== VISUAL_PREVIEW_ZOOM_CONFIGURATION.min &&
-    isSpecificationValid(options.specification) &&
-    isEditorInterface(options.interfaceMode);
+    isSpecificationValid(options.specification);

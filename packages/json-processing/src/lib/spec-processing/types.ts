@@ -79,7 +79,6 @@ export type CompileStatus = 'valid' | 'error' | 'new';
  * Items we need to compare whether a specification has changed or not.
  */
 export type SpecificationComparisonOptions = {
-    datasetHash: string;
     config: string;
     spec: string;
     provider: SpecProvider;
@@ -92,7 +91,6 @@ export type SpecificationComparisonOptions = {
  */
 export type SpecificationParseOptions = {
     config: string;
-    datasetHash: string;
     logLevel: number;
     provider: SpecProvider;
     spec: string;

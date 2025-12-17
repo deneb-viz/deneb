@@ -12,14 +12,6 @@ export {
     canFetchMoreFromDataview,
     doesDataViewHaveHighlights,
     getCategoricalDataViewFromOptions,
-    getCategoricalRowCount,
-    isAdvancedEditor,
-    isVisualUpdateEventVolatile,
-    isVisualUpdateTypeData,
-    isVisualUpdateTypeResize,
-    isVisualUpdateTypeResizeEnd,
-    isVisualUpdateTypeViewMode,
-    isVisualUpdateTypeVolatile,
-    resolveAndPersistReportViewport
+    getCategoricalRowCount
 } from './update';
 export type * from './types';

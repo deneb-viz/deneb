@@ -1,6 +1,7 @@
 import { formattingSettings } from 'powerbi-visuals-utils-formattingmodel';
 import { DEFAULTS } from './constants';
 import { CROSS_FILTER_LIMITS } from '../interactivity';
+import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 
 export class SettingsVega extends formattingSettings.CompositeCard {
     name = 'vega';
@@ -40,7 +41,7 @@ class SettingsVegaGroupOutput extends formattingSettings.Group {
     renderMode = new formattingSettings.AutoDropdown({
         name: 'renderMode',
         displayNameKey: 'Objects_Vega_RenderMode',
-        value: DEFAULTS.vega.renderMode
+        value: PROJECT_DEFAULTS.renderMode
     });
     slices = [
         this.provider,
@@ -57,7 +58,7 @@ class SettingsVegaLoggingGroup extends formattingSettings.Group {
     logLevel = new formattingSettings.AutoDropdown({
         name: 'logLevel',
         displayNameKey: 'Objects_Vega_LogLevel',
-        value: DEFAULTS.vega.logLevel
+        value: PROJECT_DEFAULTS.logLevel
     });
     slices = [this.logLevel];
 }

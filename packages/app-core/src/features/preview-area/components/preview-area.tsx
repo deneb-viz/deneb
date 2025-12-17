@@ -98,7 +98,7 @@ export const PreviewArea = () => {
                     id='deneb-visual-preview'
                     className={classes.previewContainer}
                 >
-                    <VisualViewer />
+                    <VisualViewer isEmbeddedInEditor />
                 </div>
             </div>
         </div>

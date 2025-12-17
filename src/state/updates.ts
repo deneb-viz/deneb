@@ -6,11 +6,13 @@ import { VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/propert
 import { type DenebVisualStoreState } from './state';
 import {
     getUpdatedDisplayHistoryList,
+    isVisualUpdateTypeResizeEnd,
+    isVisualUpdateTypeVolatile,
     type DisplayHistoryRecord
 } from '../lib/state';
-import { isVisualUpdateTypeResizeEnd } from '@deneb-viz/powerbi-compat/visual-host';
 
 export type UpdatesSlice = {
+    __hydrated__: boolean;
     count: number;
     history: DisplayHistoryRecord[];
     options: powerbi.extensibility.visual.VisualUpdateOptions | null;
@@ -29,6 +31,7 @@ export const createUpdatesSlice = (): StateCreator<
     UpdatesSlice
 > => {
     return (set, get) => ({
+        __hydrated__: false,
         count: 0,
         history: [],
         options: null,
@@ -40,13 +43,17 @@ export const createUpdatesSlice = (): StateCreator<
                     (state) => {
                         const history = getUpdatedDisplayHistoryList(
                             state.updates.history,
-                            payload
+                            {
+                                ...payload,
+                                isFetchingAdditionalData:
+                                    state.dataset.isFetchingAdditional
+                            }
                         );
-                        const mode = history[0]?.displayMode ?? 'initializing';
                         return {
-                            interface: {
-                                ...state.interface,
-                                mode
+                            dataset: {
+                                ...state.dataset,
+                                shouldProcess:
+                                    isVisualUpdateTypeVolatile(options)
                             },
                             settings: {
                                 ...state.settings,
@@ -54,6 +61,7 @@ export const createUpdatesSlice = (): StateCreator<
                             },
                             updates: {
                                 ...state.updates,
+                                __hydrated__: true,
                                 count: state.updates.count + 1,
                                 history,
                                 options
@@ -63,10 +71,13 @@ export const createUpdatesSlice = (): StateCreator<
                     false,
                     'updates.setVisualUpdateOptions'
                 );
+                const mode =
+                    get().updates.history[0]?.displayMode ?? 'initializing';
+                get().interface.setMode(mode);
             }
+            const { viewport } = options;
             // Update embed viewport if needed
             {
-                const { viewport } = options;
                 const { embedViewport, mode, setEmbedViewport } =
                     get().interface;
                 if (
@@ -77,6 +88,33 @@ export const createUpdatesSlice = (): StateCreator<
                         !embedViewport)
                 ) {
                     setEmbedViewport(viewport);
+                }
+                // Fallback: if we don't have a viewport ensure we have the latest viewport
+                if (!get().interface.embedViewport) {
+                    setEmbedViewport({
+                        height: Number.parseFloat(
+                            settings.stateManagement.viewport.viewportHeight
+                                .value
+                        ),
+                        width: Number.parseFloat(
+                            settings.stateManagement.viewport.viewportWidth
+                                .value
+                        )
+                    });
+                }
+            }
+            // Update interface viewport if needed
+            {
+                const {
+                    mode,
+                    viewport: currentViewport,
+                    setViewport
+                } = get().interface;
+                if (
+                    !shallowEqual(currentViewport, viewport) &&
+                    mode === 'editor'
+                ) {
+                    setViewport(viewport);
                 }
             }
         }

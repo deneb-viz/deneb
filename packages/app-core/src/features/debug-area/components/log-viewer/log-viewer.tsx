@@ -77,7 +77,7 @@ export const useLogViewerStyles = makeStyles({
 export const LogViewer = () => {
     const { errors, logLevel, warns, translate } = useDenebState((state) => ({
         errors: state.specification.errors,
-        logLevel: state.visualSettings.vega.logging.logLevel.value,
+        logLevel: state.project.logLevel,
         warns: state.specification.warns,
         translate: state.i18n.translate
     }));

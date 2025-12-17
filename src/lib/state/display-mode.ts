@@ -1,12 +1,8 @@
 import powerbi from 'powerbi-visuals-api';
 
-import {
-    isVisualUpdateTypeResize,
-    isVisualUpdateTypeResizeEnd,
-    isVisualUpdateTypeViewMode
-} from '@deneb-viz/powerbi-compat/visual-host';
 import { type VisualUpdateDataPayload } from '../../state/updates';
-import { getParsedPropertyJsonValue } from '@deneb-viz/powerbi-compat/properties';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
+import { logDebug } from '@deneb-viz/utils/logging';
 
 /**
  * Resolved display mode for the Deneb visual; will dictate what UI and processing is performed.
@@ -15,6 +11,7 @@ export type DisplayMode =
     | 'initializing'
     | 'landing'
     | 'no-project'
+    | 'fetching'
     | 'viewer'
     | 'transition-viewer-editor'
     | 'transition-editor-viewer'
@@ -25,10 +22,15 @@ export type DisplayMode =
  */
 export type DisplayHistoryRecord = {
     displayMode: DisplayMode;
+    isFetchingAdditionalData: boolean;
     isInFocus: powerbi.extensibility.visual.VisualUpdateOptions['isInFocus'];
     type: powerbi.extensibility.visual.VisualUpdateOptions['type'];
     viewMode: powerbi.extensibility.visual.VisualUpdateOptions['viewMode'];
     viewport: powerbi.extensibility.visual.VisualUpdateOptions['viewport'];
+};
+
+export type GetUpdatedHistoryListPayload = VisualUpdateDataPayload & {
+    isFetchingAdditionalData: boolean;
 };
 
 /**
@@ -41,12 +43,14 @@ const MAX_UPDATE_HISTORY_RETENTION = 100;
  */
 export const getUpdatedDisplayHistoryList = (
     current: DisplayHistoryRecord[],
-    payload: VisualUpdateDataPayload
+    payload: GetUpdatedHistoryListPayload
 ): DisplayHistoryRecord[] => {
-    const { isInFocus, type, viewMode, viewport } = payload.options;
+    const { isFetchingAdditionalData, options } = payload;
+    const { isInFocus, type, viewMode, viewport } = options;
     const displayMode = getDisplayModeAccordingToOptions(payload);
     const workingEntry: DisplayHistoryRecord = {
         displayMode,
+        isFetchingAdditionalData,
         isInFocus,
         type,
         viewMode,
@@ -75,24 +79,41 @@ export const getUpdatedDisplayHistoryList = (
  * focus mode and vice versa. We're less bothered about the transition back, but we will use this "base" state to
  * determine if the visual is transitioning between modes.
  */
-const getDisplayModeAccordingToOptions = (
-    payload: VisualUpdateDataPayload
+export const getDisplayModeAccordingToOptions = (
+    payload: GetUpdatedHistoryListPayload
 ): DisplayMode => {
-    const { dataViews, isInFocus, viewMode } = payload.options;
-    const project = getParsedPropertyJsonValue(
-        payload.settings.vega.output.jsonSpec.value
-    );
+    const { isFetchingAdditionalData, options, settings } = payload;
+    const { dataViews, isInFocus, viewMode } = options;
+    const project = settings.vega.output.jsonSpec.value;
+    const defaultProject = DEFAULTS.vega.jsonSpec;
+    const hasProject = project !== defaultProject;
     // Determine correct states for whether we are viewing or editing
     const isLandingPage =
         !dataViews || !dataViews[0]?.metadata?.columns?.length;
     const isViewMode = viewMode === 0 || (viewMode === 1 && !isInFocus);
     const isEditMode = viewMode === 1 && isInFocus;
-    const isNoProject = !project && isViewMode;
-    if (isLandingPage) {
-        return 'landing';
+    const isNoProject = !hasProject && isViewMode;
+    logDebug('getDisplayModeAccordingToOptions', {
+        payload,
+        hasProject,
+        isFetchingAdditionalData,
+        isLandingPage,
+        isNoProject,
+        isViewMode,
+        isEditMode,
+        defaultProject,
+        project,
+        viewMode,
+        isInFocus
+    });
+    if (isFetchingAdditionalData) {
+        return 'fetching';
     }
     if (isNoProject) {
         return 'no-project';
+    }
+    if (isLandingPage) {
+        return 'landing';
     }
     if (isViewMode) {
         return 'viewer';
@@ -201,3 +222,48 @@ export const isDisplayModeEligibleForDataProcessing = (
         displayMode === 'editor'
     );
 };
+
+/**
+ * Checks if a visual update type is data-related.
+ */
+const isVisualUpdateTypeData = (type: powerbi.VisualUpdateType | undefined) =>
+    type !== undefined
+        ? powerbi.VisualUpdateType.Data ===
+          (type & powerbi.VisualUpdateType.Data)
+        : false;
+
+/**
+ * Checks if a visual update type is a resize event.
+ */
+const isVisualUpdateTypeResize = (
+    type: powerbi.VisualUpdateType | undefined
+) =>
+    type !== undefined
+        ? powerbi.VisualUpdateType.Resize ===
+          (type & powerbi.VisualUpdateType.Resize)
+        : false;
+
+/**
+ * Checks if a visual has finished resizing.
+ */
+export const isVisualUpdateTypeResizeEnd = (
+    type: powerbi.VisualUpdateType | undefined
+) =>
+    type !== undefined
+        ? powerbi.VisualUpdateType.ResizeEnd ===
+          (type & powerbi.VisualUpdateType.ResizeEnd)
+        : false;
+
+/**
+ * Checks if a visual update type is view mode change.
+ */
+const isVisualUpdateTypeViewMode = (type: powerbi.VisualUpdateType) =>
+    powerbi.VisualUpdateType.ViewMode ===
+    (type & powerbi.VisualUpdateType.ViewMode);
+
+/**
+ * Check the visual update type to see if it is volatile.
+ */
+export const isVisualUpdateTypeVolatile = (
+    options: powerbi.extensibility.visual.VisualUpdateOptions
+) => isVisualUpdateTypeData(options.type);

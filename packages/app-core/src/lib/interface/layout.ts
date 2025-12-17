@@ -1,5 +1,3 @@
-import powerbi from 'powerbi-visuals-api';
-
 import {
     EDITOR_PANE_SPLIT_COLLAPSED_SIZE,
     EDITOR_PANE_SPLIT_DEFAULT_SIZE_PERCENT,
@@ -10,7 +8,7 @@ import {
     SPLIT_PANE_HANDLE_SIZE,
     ZOOM_FIT_BUFFER
 } from './constants';
-import { type EditorPanePosition } from './types';
+import { ContainerViewport, type EditorPanePosition } from './types';
 import {
     DEBUG_PANE_CONFIGURATION,
     VISUAL_PREVIEW_ZOOM_CONFIGURATION
@@ -21,13 +19,16 @@ import { getDenebState } from '../../state';
  * Calculate the default size of the resizable pane (in px) based on current viewport size and config defaults.
  */
 export const getEditPaneDefaultWidth = (
-    viewport: powerbi.IViewport,
+    viewport: ContainerViewport | null,
     position: EditorPanePosition
 ) => {
     if (position === 'right') {
-        return viewport.width * (1 - EDITOR_PANE_SPLIT_DEFAULT_SIZE_PERCENT);
+        return (
+            (viewport?.width ?? 0) *
+            (1 - EDITOR_PANE_SPLIT_DEFAULT_SIZE_PERCENT)
+        );
     }
-    return viewport.width * EDITOR_PANE_SPLIT_DEFAULT_SIZE_PERCENT;
+    return (viewport?.width ?? 0) * EDITOR_PANE_SPLIT_DEFAULT_SIZE_PERCENT;
 };
 
 /**
@@ -64,12 +65,12 @@ export const getPreviewAreaHeightMaximum = (height: number) =>
 export const getResizablePaneSize = (
     paneExpandedWidth: number,
     editorPaneIsExpanded: boolean,
-    viewport: powerbi.IViewport,
+    viewport: ContainerViewport | null,
     position: EditorPanePosition
 ) => {
     const collapsedSize =
             position === 'right'
-                ? viewport.width - EDITOR_PANE_SPLIT_COLLAPSED_SIZE
+                ? (viewport?.width ?? 0) - EDITOR_PANE_SPLIT_COLLAPSED_SIZE
                 : EDITOR_PANE_SPLIT_COLLAPSED_SIZE,
         resolvedWidth =
             (editorPaneIsExpanded && paneExpandedWidth) ||
@@ -89,9 +90,9 @@ export const getZoomToFitScale = () => {
     const {
             editorPreviewAreaWidth,
             editorPreviewAreaHeight,
-            visualViewportReport
+            interface: { embedViewport }
         } = getDenebState(),
-        { height, width } = visualViewportReport,
+        { height = 0, width = 0 } = embedViewport ?? {},
         previewWidth = getAdjustedPreviewAreaWidthForPadding(
             editorPreviewAreaWidth ?? 0
         ),

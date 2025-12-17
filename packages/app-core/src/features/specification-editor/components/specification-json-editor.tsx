@@ -90,8 +90,7 @@ export const SpecificationJsonEditor = ({
         current: state.editorSelectedOperation,
         debouncePeriod: state.visualSettings.editor.json.debouncePeriod.value,
         fontSize: state.visualSettings.editor.json.fontSize.value,
-        provider: state.visualSettings.vega.output.provider
-            .value as SpecProvider,
+        provider: state.project.provider as SpecProvider,
         showLineNumbers: state.visualSettings.editor.json.showLineNumbers.value,
         theme: state.visualSettings.editor.interface.theme.value,
         viewStateConfig: state.editor.viewStateConfig,

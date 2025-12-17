@@ -4,7 +4,6 @@ import { makeStyles, tokens } from '@fluentui/react-components';
 import { logRender } from '@deneb-viz/utils/logging';
 import { ActiveEditorPaneRouter } from '../../specification-editor';
 import { useDenebState } from '../../../state';
-import { type EditorPanePosition } from '../../../lib';
 
 const useEditorPaneExpandedStyles = makeStyles({
     container: {
@@ -21,9 +20,8 @@ export const EditorPaneExpanded = () => {
         useDenebState((state) => ({
             editorPaneWidth: state.editorPaneWidth,
             editorPreviewAreaWidth: state.editorPreviewAreaWidth,
-            position: state.visualSettings.editor.json.position
-                .value as EditorPanePosition,
-            viewportWidth: state.visualViewportCurrent.width
+            position: state.interface.editorPosition,
+            viewportWidth: state.interface.viewport?.width ?? 0
         }));
     const maxWidth = useMemo(
         () =>

@@ -15,18 +15,14 @@ import {
 import { createI18nSlice, I18nSlice } from './i18n';
 import { createInterfaceSlice, type InterfaceSlice } from './interface';
 import { createMigrationSlice, type MigrationSlice } from './migration';
-import { createProcessingSlice, type ProcessingSlice } from './processing';
 import {
     createSpecificationSlice,
     type SpecificationSlice
 } from './specification';
 import { createVisualSlice, type VisualSlice } from './visual';
-import {
-    createVisualUpdateSlice,
-    type VisualUpdateSlice
-} from './visual-update';
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
 import { APPLICATION_INFORMATION_CONFIGURATION } from '@deneb-viz/configuration';
+import { createProjectSlice, ProjectSlice } from './project';
 
 export type StoreState = CommandsSlice &
     CreateSliceState &
@@ -38,10 +34,9 @@ export type StoreState = CommandsSlice &
     I18nSlice &
     InterfaceSlice &
     MigrationSlice &
-    ProcessingSlice &
+    ProjectSlice &
     SpecificationSlice &
-    VisualSlice &
-    VisualUpdateSlice;
+    VisualSlice;
 
 export type StateDependencies = {
     applicationVersion: string;
@@ -61,10 +56,9 @@ export const createDenebState = (dependencies: StateDependencies) =>
                 ...createI18nSlice()(...a),
                 ...createInterfaceSlice()(...a),
                 ...createMigrationSlice()(...a),
-                ...createProcessingSlice()(...a),
+                ...createProjectSlice()(...a),
                 ...createSpecificationSlice()(...a),
-                ...createVisualSlice()(...a),
-                ...createVisualUpdateSlice()(...a)
+                ...createVisualSlice()(...a)
             }),
             { enabled: toBoolean(process.env.ZUSTAND_DEV_TOOLS) }
         ),

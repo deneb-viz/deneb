@@ -20,7 +20,6 @@ import { VEGA_VIEWPORT_ADJUST } from '../constants';
 import { useDenebPlatformProvider } from '../../deneb-platform';
 
 type VegaRenderProps = {
-    datasetHash: string;
     enableTooltips: boolean;
     multiSelectDelay: number;
     locale: string;
@@ -52,7 +51,6 @@ const arePropsEqual = (
     const isTooltipEqual =
         prevProps.enableTooltips === nextProps.enableTooltips;
     const isRenderModeEqual = prevProps.renderMode == nextProps.renderMode;
-    const isDatasetEqual = prevProps.datasetHash == nextProps.datasetHash;
     const isViewportEqual =
         prevProps.viewportHeight == nextProps.viewportHeight &&
         prevProps.viewportWidth == nextProps.viewportWidth;
@@ -64,7 +62,6 @@ const arePropsEqual = (
         isTooltipEqual &&
         isRenderModeEqual &&
         isViewportEqual &&
-        isDatasetEqual &&
         isLocaleEqual &&
         isLogLevelEqual;
     logDebug('VegaRender: arePropsEqual', {
@@ -74,9 +71,6 @@ const arePropsEqual = (
         isTooltipEqual,
         isRenderModeEqual,
         isViewportEqual,
-        isDatasetEqual,
-        prevData: prevProps.datasetHash,
-        nextData: nextProps.datasetHash,
         isLocaleEqual,
         isLogLevelEqual
     });
@@ -189,7 +183,7 @@ export const VegaRender: React.FC<VegaRenderProps> = memo(
             <VegaChart
                 actions={false}
                 renderer={renderMode}
-                loader={vegaLoader}
+                loader={vegaLoader || undefined}
                 tooltip={ttHandler}
                 logLevel={logLevel}
                 formatLocale={numberFormatLocale}

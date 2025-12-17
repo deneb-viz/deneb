@@ -1,1 +1,1 @@
-export { getMappedDataset } from './processing';
+export { getMappedDataset, hasDataViewChanged } from './processing';

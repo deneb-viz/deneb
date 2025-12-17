@@ -9,10 +9,7 @@ import { useThrottle } from '@uidotdev/usehooks';
 import { mergeClasses } from '@fluentui/react-components';
 import { Scrollbars, type positionValues } from 'react-custom-scrollbars-2';
 
-import {
-    type SpecProvider,
-    type SpecRenderMode
-} from '@deneb-viz/vega-runtime/embed';
+import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
 import { logRender } from '@deneb-viz/utils/logging';
 import { InteractivityManager } from '@deneb-viz/powerbi-compat/interactivity';
@@ -36,15 +33,18 @@ const useVisualViewerStyles = makeStyles({
     }
 });
 
+type VisualViewerProps = {
+    isEmbeddedInEditor?: boolean;
+};
+
 /**
  * Master component for hosting Vega content. We will handle the workflow
  * around memoisation of UI-specific dependencies here, so that we don't
  * compute more re-renders than we need to.
  */
 // eslint-disable-next-line max-lines-per-function
-export const VisualViewer = () => {
+export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
     const {
-        datasetHash,
         enableTooltips,
         jsonConfig,
         jsonSpec,
@@ -60,24 +60,20 @@ export const VisualViewer = () => {
         scrollEventThrottle,
         specification,
         viewportHeight,
-        viewportWidth,
-        visualMode
+        viewportWidth
     } = useDenebState((state) => ({
-        datasetHash: state.dataset.hashValue,
         enableTooltips:
             state.visualSettings.vega.interactivity.enableTooltips.value,
         jsonConfig: state.visualSettings.vega.output.jsonConfig.value,
         jsonSpec: state.visualSettings.vega.output.jsonSpec.value,
         locale: state.i18n.locale,
-        logLevel: state.visualSettings.vega.logging.logLevel.value,
+        logLevel: state.project.logLevel,
         multiSelectDelay:
             state.visualSettings.vega.interactivity.tooltipDelay.value,
         previewScrollbars:
             state.visualSettings.editor.preview.previewScrollbars.value,
-        provider: state.visualSettings.vega.output.provider
-            .value as SpecProvider,
-        renderMode: state.visualSettings.vega.output.renderMode
-            .value as SpecRenderMode,
+        provider: state.project.provider as SpecProvider,
+        renderMode: state.project.renderMode,
         scrollbarColor:
             state.visualSettings.display.scrollbars.scrollbarColor.value.value,
         scrollbarOpacity:
@@ -87,14 +83,13 @@ export const VisualViewer = () => {
         scrollEventThrottle:
             state.visualSettings.display.scrollEvents.scrollEventThrottle.value,
         specification: state.specification,
-        viewportHeight: state.visualViewportReport.height,
-        viewportWidth: state.visualViewportReport.width,
-        visualMode: state.interface.mode
+        viewportHeight: state.interface.viewport?.height ?? 0,
+        viewportWidth: state.interface.viewport?.width ?? 0
     }));
     const useScrollbars = useMemo(
-        () => visualMode === 'View' || previewScrollbars,
+        () => !isEmbeddedInEditor || previewScrollbars,
         [
-            visualMode,
+            isEmbeddedInEditor,
             previewScrollbars,
             scrollbarColor,
             scrollbarOpacity,
@@ -105,14 +100,11 @@ export const VisualViewer = () => {
     const throttledScrollFrame = useThrottle(scrollFrame, scrollEventThrottle);
     const classes = useVisualViewerStyles();
     const containerClassName = mergeClasses(
-        visualMode === 'View'
-            ? classes.overflowOverlay
-            : classes.overflowVisible,
+        !isEmbeddedInEditor ? classes.overflowOverlay : classes.overflowVisible,
         classes.container
     );
     const vegaComponent = (
         <VegaRender
-            datasetHash={datasetHash}
             enableTooltips={enableTooltips}
             locale={locale}
             logLevel={logLevel as number}
@@ -126,24 +118,22 @@ export const VisualViewer = () => {
     );
     useEffect(() => {
         logRender('VegaContainer', {
-            datasetHash,
+            isEmbeddedInEditor,
             jsonConfig,
             jsonSpec,
             provider,
             specification,
             viewportHeight,
-            viewportWidth,
-            visualMode
+            viewportWidth
         });
     }, [
-        datasetHash,
+        isEmbeddedInEditor,
         jsonConfig,
         jsonSpec,
         provider,
         specification.hashValue,
         viewportHeight,
-        viewportWidth,
-        visualMode
+        viewportWidth
     ]);
 
     useEffect(() => {

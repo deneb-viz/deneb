@@ -1,3 +1,2 @@
 export { DenebProvider } from './deneb-provider';
-export { Editor } from './editor/editor';
-export { Viewer } from './viewer';
+export { DenebApp } from './deneb-app';

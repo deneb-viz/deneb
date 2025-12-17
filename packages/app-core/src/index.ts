@@ -1,4 +1,4 @@
-export { DenebProvider, Editor, Viewer } from './app';
+export * from './app';
 export { useDenebPlatformProvider } from './components/deneb-platform';
 export { type I18nLocale, type Translations } from './lib/i18n';
 export * from './state';

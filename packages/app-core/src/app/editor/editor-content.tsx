@@ -85,7 +85,7 @@ export const EditorContent = () => {
         editorPaneWidth,
         position,
         theme,
-        visualViewportWidth,
+        viewportWidth,
         updateEditorPaneWidth
     } = useDenebState(
         (state) => ({
@@ -94,11 +94,10 @@ export const EditorContent = () => {
             editorPaneDefaultWidth: state.editorPaneDefaultWidth,
             editorPaneIsExpanded: state.editorPaneIsExpanded,
             editorPaneWidth: state.editorPaneWidth,
-            position: state.visualSettings.editor.json.position
-                .value as EditorPanePosition,
+            position: state.interface.editorPosition,
             theme: state.visualSettings.editor.interface.theme
                 .value as DenebTheme,
-            visualViewportWidth: state.visualViewportCurrent.width,
+            viewportWidth: state.interface.viewport?.width ?? 0,
             updateEditorPaneWidth: state.updateEditorPaneWidth
         }),
         shallow
@@ -169,12 +168,12 @@ export const EditorContent = () => {
                 minSize={getResizablePaneMinSize(
                     editorPaneIsExpanded,
                     position,
-                    visualViewportWidth
+                    viewportWidth
                 )}
                 maxSize={getResizablePaneMaxSize(
                     editorPaneIsExpanded,
                     position,
-                    visualViewportWidth
+                    viewportWidth
                 )}
                 size={editorPaneWidth as number}
                 onChange={handleResize}

@@ -12,7 +12,6 @@ import {
 import {
     type DebugPaneRole,
     type EditorApplyMode,
-    type EditorPanePosition,
     type EditorPaneRole
 } from '../lib/interface';
 import { StoreState } from './state';
@@ -24,7 +23,6 @@ import {
     getPreviewAreaHeightInitial,
     getResizablePaneSize
 } from '../lib/interface/layout';
-import { getApplicationMode } from '../lib/interface/state';
 
 type EditorSliceProperties = {
     applyMode: EditorApplyMode;
@@ -279,7 +277,6 @@ const handleUpdateChanges = (
             ...state.commands,
             exportSpecification: isExportSpecCommandEnabled({
                 editorIsDirty: isDirty,
-                interfaceMode: state.interface.mode,
                 specification: state.specification
             })
         },
@@ -295,41 +292,25 @@ const handleUpdateChanges = (
         fieldUsage: {
             ...state.fieldUsage,
             editorShouldSkipRemap: false
-        },
-        interface: {
-            ...state.interface,
-            mode: getApplicationMode({
-                currentMode: state.interface.mode,
-                dataset: state.dataset,
-                viewMode: state.visualUpdateOptions.viewMode,
-                editMode: state.visualUpdateOptions.editMode,
-                isInFocus: state.visualUpdateOptions.isInFocus,
-                prevMode: state.interface.mode,
-                prevUpdateType: state.visualUpdateOptions.type,
-                specification: state.editor.stagedSpec,
-                updateType: state.visualUpdateOptions.type,
-                visualUpdates: state.visualUpdates
-            })
         }
     };
 };
 
 const handleToggleEditorPane = (state: StoreState): Partial<StoreState> => {
     const newExpansionState = !state.editorPaneIsExpanded;
-    const { value: position } = state.visualSettings.editor.json.position;
     const newWidth = getResizablePaneSize(
         state.editorPaneExpandedWidth as number,
         newExpansionState,
-        state.visualViewportCurrent,
-        position as EditorPanePosition
+        state.interface.viewport,
+        state.interface.editorPosition
     );
     return {
         editorPaneIsExpanded: newExpansionState,
         editorPaneWidth: newWidth,
         editorPreviewAreaWidth: getEditorPreviewAreaWidth(
-            state.visualViewportCurrent.width,
+            state.interface.viewport?.width ?? 0,
             newWidth,
-            position as EditorPanePosition
+            state.interface.editorPosition
         )
     };
 };
@@ -342,7 +323,6 @@ const handleUpdateIsDirty = (
         ...state.commands,
         exportSpecification: isExportSpecCommandEnabled({
             editorIsDirty: isDirty,
-            interfaceMode: state.interface.mode,
             specification: state.specification
         })
     },
@@ -357,14 +337,14 @@ const handleUpdateEditorPaneWidth = (
     payload: EditorPaneUpdatePayload
 ): Partial<StoreState> => {
     const { editorPaneWidth, editorPaneExpandedWidth } = payload;
-    const { value: position } = state.visualSettings.editor.json.position;
+    const viewportWidth = state.interface.viewport?.width ?? 0;
     return {
         editorPaneWidth,
         editorPaneExpandedWidth,
         editorPreviewAreaWidth: getEditorPreviewAreaWidth(
-            state.visualViewportCurrent.width,
+            viewportWidth,
             editorPaneWidth,
-            position as EditorPanePosition
+            state.interface.editorPosition
         )
     };
 };
@@ -385,9 +365,9 @@ const handleUpdateEditorPreviewAreaWidth = (
     state: StoreState
 ): Partial<StoreState> => ({
     editorPreviewAreaWidth: getEditorPreviewAreaWidth(
-        state.visualViewportCurrent.width,
+        state.interface.viewport?.width ?? 0,
         state.editorPaneWidth as number,
-        state.visualSettings.editor.json.position.value as EditorPanePosition
+        state.interface.editorPosition
     )
 });
 
@@ -407,7 +387,7 @@ const handleTogglePreviewDebugPane = (
         ? state.editorPreviewAreaHeightMax
         : state.editorPreviewAreaHeightLatch ===
             state.editorPreviewAreaHeightMax
-          ? getPreviewAreaHeightInitial(state.visualViewportCurrent.height)
+          ? getPreviewAreaHeightInitial(state.interface.viewport?.height ?? 0)
           : state.editorPreviewAreaHeightLatch;
     const editorPreviewAreaHeightLatch = prev
         ? state.editorPreviewAreaHeightLatch
@@ -446,13 +426,11 @@ const handleUpdateEditorZoomLevel = (
     zoomLevel: number
 ): Partial<StoreState> => {
     const zoomOtherCommandTest: ZoomOtherCommandTestOptions = {
-        specification: state.specification,
-        interfaceMode: state.interface.mode
+        specification: state.specification
     };
     const zoomLevelCommandTest: ZoomLevelCommandTestOptions = {
         value: zoomLevel,
-        specification: state.specification,
-        interfaceMode: state.interface.mode
+        specification: state.specification
     };
     return {
         commands: {

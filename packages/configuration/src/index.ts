@@ -79,6 +79,11 @@ export const VEGA_LOG_LEVEL_CONFIGURATION = [
     }
 ];
 
+export const PROJECT_DEFAULTS = {
+    logLevel: 3,
+    renderMode: 'svg'
+};
+
 /**
  * Additional resources needed for each provider in the application (Vega, Vega-Lite and Deneb). These are used to
  * provide links to documentation, examples, other resources, and patching of specifications.

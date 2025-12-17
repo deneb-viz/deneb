@@ -12,7 +12,10 @@ import { createRoot } from 'react-dom/client';
 import { App } from './app';
 
 import { getDenebVisualState, useDenebVisualState } from './state';
-import { handlePropertyMigration } from './lib/persistence';
+import {
+    handlePropertyMigration,
+    bindPersistPropertiesHost
+} from './lib/persistence';
 import {
     VisualFormattingSettingsService,
     getVisualFormattingService
@@ -21,7 +24,6 @@ import {
     canFetchMoreFromDataview,
     getCategoricalDataViewFromOptions,
     getCategoricalRowCount,
-    getVisualHost,
     getVisualSettings,
     setRenderingFailed,
     setRenderingStarted,
@@ -45,8 +47,9 @@ import {
 } from '@deneb-viz/app-core';
 import { VegaExtensibilityServices } from '@deneb-viz/vega-runtime/extensibility';
 import { type SelectionMode } from '@deneb-viz/template-usermeta';
-import { getMappedDataset } from './lib/dataset';
+import { getMappedDataset, hasDataViewChanged } from './lib/dataset';
 import { I18N_TRANSLATIONS } from './i18n';
+import { initializeStoreSynchronization } from './lib/state';
 
 /**
  * Centralize/report developer mode from environment.
@@ -64,23 +67,26 @@ logDebug(`Developer Mode: ${IS_DEVELOPER_MODE}`);
 export class Deneb implements IVisual {
     #applicationWrapper: HTMLElement;
     #root: ReturnType<typeof createRoot>;
+    #host: powerbi.extensibility.visual.IVisualHost;
 
     constructor(options: VisualConstructorOptions) {
         logHost('Constructor has been called.', { options });
         try {
             const { host } = options;
+            this.#host = host;
             const {
+                dataset: { setSelectors },
                 interactivity: { setSelectionLimitExceeded }
             } = getDenebVisualState();
             const {
-                i18n: { setLocale },
-                updateDatasetSelectors
+                i18n: { setLocale }
             } = getDenebState();
             VisualHostServices.bind(options);
+            bindPersistPropertiesHost(host);
             InteractivityManager.bind({
                 host,
                 limitExceededCallback: setSelectionLimitExceeded,
-                selectorUpdateCallback: updateDatasetSelectors
+                selectorUpdateCallback: setSelectors
             });
             setLocale({
                 locale: host.locale as I18nLocale,
@@ -91,6 +97,7 @@ export class Deneb implements IVisual {
             VisualFormattingSettingsService.bind(
                 options.host.createLocalizationManager()
             );
+            initializeStoreSynchronization();
             const { element } = options;
             this.#applicationWrapper = document.createElement('div');
             this.#applicationWrapper.id = 'deneb-application-wrapper';
@@ -136,21 +143,11 @@ export class Deneb implements IVisual {
         setRenderingStarted();
         // TODO: likely migrate to visual store action and add as dependency to main app
         const { setVisualUpdate } = getDenebState();
-        setVisualUpdate({
-            options,
-            settings
-        });
+        setVisualUpdate({ settings });
         // Perform any necessary property migrations
         handlePropertyMigration(settings);
         // Data change or re-processing required?
         this.resolveDataset(options);
-        const {
-            interface: { isInitialized, setExplicitInitialize }
-        } = getDenebState();
-        if (!isInitialized) {
-            logDebug('Visual has not been initialized yet. Setting...');
-            setExplicitInitialize();
-        }
         logTimeEnd('resolveUpdateOptions');
     }
 
@@ -169,22 +166,29 @@ export class Deneb implements IVisual {
                 }
             }
         } = settings;
+        const { shouldProcess, setDataset, setIsFetchingAdditional } =
+            getDenebVisualState().dataset;
         const {
             i18n: { locale },
-            processing: { shouldProcessDataset },
             specification: { logWarn },
-            updateDataset,
-            updateDatasetProcessingStage,
             i18n: { translate }
         } = getDenebState();
         const categorical = getCategoricalDataViewFromOptions(options);
-        if (shouldProcessDataset) {
+
+        // Do a quick check of the data view to see if it should be processed, to avoid unnecessary processing/syncing
+        const canFetchMore = canFetchMoreFromDataview(
+            settings,
+            options?.dataViews?.[0]?.metadata
+        );
+        let dataChanged = false;
+        if (shouldProcess) {
+            dataChanged = hasDataViewChanged(categorical, enableSelection);
+            logDebug('Data changed check', { dataChanged });
+        }
+
+        if (shouldProcess && dataChanged) {
             logDebug('Visual dataset has changed and should be re-processed.');
             logTimeStart('processDataset');
-            const canFetchMore = canFetchMoreFromDataview(
-                settings,
-                options?.dataViews?.[0]?.metadata
-            );
             const rowsLoaded = getCategoricalRowCount(categorical);
             // If first segment, we test and set state accordingly for user feedback
             if (
@@ -196,16 +200,16 @@ export class Deneb implements IVisual {
                 logDebug(
                     `${rowsLoaded} row(s) loaded. Attempting to fetch more data...`
                 );
-                updateDatasetProcessingStage({
-                    dataProcessingStage: 'Fetching',
+                setIsFetchingAdditional({
+                    isFetchingAdditional: true,
                     rowsLoaded
                 });
-                fetchSuccess = getVisualHost().fetchMoreData(true);
+                fetchSuccess = this.#host.fetchMoreData(true);
             }
             if (!fetchSuccess) {
                 logDebug('No more data to fetch. Processing dataset...');
-                updateDatasetProcessingStage({
-                    dataProcessingStage: 'Processing',
+                setIsFetchingAdditional({
+                    isFetchingAdditional: false,
                     rowsLoaded
                 });
                 const dataset = getMappedDataset(
@@ -214,9 +218,7 @@ export class Deneb implements IVisual {
                     enableSelection,
                     enableHighlight
                 );
-                updateDataset({
-                    dataset
-                });
+                setDataset(dataset);
                 // Tracking is now only used for export (#486)
                 // this.updateTracking();
                 VegaExtensibilityServices.update({

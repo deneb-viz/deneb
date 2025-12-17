@@ -39,7 +39,7 @@ export const EditorPaneCollapsed = () => {
     const { editorPaneIsExpanded, position, translate } = useDenebState(
         (state) => ({
             editorPaneIsExpanded: state.editorPaneIsExpanded,
-            position: state.visualSettings.editor.json.position.value,
+            position: state.interface.editorPosition,
             translate: state.i18n.translate
         })
     );

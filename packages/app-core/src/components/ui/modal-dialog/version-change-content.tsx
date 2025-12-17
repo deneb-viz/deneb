@@ -20,8 +20,7 @@ export const VersionChangeContent = () => {
         current: state.migration.current,
         previous: state.migration.previous,
         showMigrationDialog: state.migration.showMigrationDialog,
-        vegaProvider: state.visualSettings.vega.output.provider
-            .value as SpecProvider,
+        vegaProvider: state.project.provider as SpecProvider,
         translate: state.i18n.translate
     }));
     const { launchUrl } = useDenebPlatformProvider();

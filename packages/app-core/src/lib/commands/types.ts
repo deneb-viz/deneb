@@ -1,5 +1,4 @@
 import { type CompiledSpecification } from '@deneb-viz/json-processing/spec-processing';
-import { type InterfaceMode } from '../interface';
 
 /**
  * Available commands within the UI, which can be invoked via buttons or shortcuts.
@@ -31,7 +30,6 @@ export type Command =
 export type ExportSpecCommandTestOptions = {
     editorIsDirty: boolean;
     specification: CompiledSpecification;
-    interfaceMode: InterfaceMode;
 };
 
 /**
@@ -39,7 +37,6 @@ export type ExportSpecCommandTestOptions = {
  */
 export type ZoomOtherCommandTestOptions = {
     specification: CompiledSpecification;
-    interfaceMode: InterfaceMode;
 };
 
 /**
@@ -48,5 +45,4 @@ export type ZoomOtherCommandTestOptions = {
 export type ZoomLevelCommandTestOptions = {
     value: number;
     specification: CompiledSpecification;
-    interfaceMode: InterfaceMode;
 };

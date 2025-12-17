@@ -1,5 +1,9 @@
 export {
+    getDisplayModeAccordingToOptions,
     getUpdatedDisplayHistoryList,
-    isDisplayModeEligibleForDataProcessing
+    isDisplayModeEligibleForDataProcessing,
+    isVisualUpdateTypeResizeEnd,
+    isVisualUpdateTypeVolatile
 } from './display-mode';
 export type * from './display-mode';
+export { initializeStoreSynchronization } from './sync';

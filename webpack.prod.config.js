@@ -5,9 +5,6 @@ const TerserPlugin = require('terser-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const { getCommonConfig } = require('./webpack.common.config');
 
-// Set ANALYZE_MODULES=true to disable scope hoisting for detailed module analysis
-const analyzeModules = process.env.ANALYZE_MODULES === 'true';
-
 /**
  * Production webpack configuration
  * Optimized for bundle size and performance
@@ -44,7 +41,7 @@ module.exports = merge(
                     extractComments: false
                 })
             ],
-            concatenateModules: !analyzeModules, // Disable for module analysis
+            concatenateModules: true,
             usedExports: true,
             sideEffects: true
         },
@@ -63,34 +60,8 @@ module.exports = merge(
                 reportFilename: path.join(__dirname, 'webpack.statistics.html'),
                 openAnalyzer: false,
                 analyzerMode: 'static',
-                defaultSizes: 'gzip',
-                // Show all modules within concatenated chunks
-                excludeAssets: null
-            }),
-            // Generate detailed stats JSON for external analysis
-            {
-                apply(compiler) {
-                    compiler.hooks.done.tapAsync(
-                        'StatsPlugin',
-                        (stats, callback) => {
-                            const statsJson = stats.toJson({
-                                all: true,
-                                modules: true,
-                                reasons: true,
-                                modulesSort: 'size',
-                                // Don't concatenate in stats output
-                                optimizationBailout: true
-                            });
-                            const fs = require('fs');
-                            fs.writeFileSync(
-                                path.join(__dirname, 'webpack.stats.json'),
-                                JSON.stringify(statsJson, null, 2)
-                            );
-                            callback();
-                        }
-                    );
-                }
-            }
+                defaultSizes: 'gzip'
+            })
         ],
 
         stats: {

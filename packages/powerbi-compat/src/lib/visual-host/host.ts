@@ -4,7 +4,6 @@ import {
     getVisualFormattingModel,
     VisualFormattingSettingsModel
 } from '../properties';
-import { resolveAndPersistReportViewport } from './update';
 
 let services: powerbi.extensibility.visual.VisualConstructorOptions;
 let events: powerbi.extensibility.IVisualEventService;
@@ -32,7 +31,6 @@ export const VisualHostServices = {
         visualUpdateOptions = options;
         settings = getVisualFormattingModel(options?.dataViews?.[0]);
         settings.resolveDeveloperSettings(isDeveloperMode);
-        resolveAndPersistReportViewport(options, settings);
     }
 };
 

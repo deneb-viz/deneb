@@ -4,7 +4,6 @@ import { makeStyles, Select, SelectProps } from '@fluentui/react-components';
 import { logRender } from '@deneb-viz/utils/logging';
 import { useDenebState } from '../../../../state';
 import { type LogLevelEnumMember } from './types';
-import { handleVegaLogLevel } from '../../../../lib';
 import { getDebugLogLevels } from './helpers';
 
 type LogLevelDropdownProps = {
@@ -24,15 +23,16 @@ const useLogLevelStyles = makeStyles({
  * Fluent UI `Menu` and `SplitButton` components, as Dropdown is still unstable.
  */
 export const LogLevelDropdown = ({ id }: LogLevelDropdownProps) => {
-    const { logLevel } = useDenebState((state) => ({
-        logLevel: state.visualSettings.vega.logging.logLevel.value
+    const { logLevel, setLogLevel } = useDenebState((state) => ({
+        logLevel: state.project.logLevel,
+        setLogLevel: state.project.setLogLevel
     }));
     const items = useMemo(() => getFieldOptions(), []);
     const onChange: SelectProps['onChange'] = (
         event: React.ChangeEvent<HTMLSelectElement>,
         data
     ) => {
-        handleVegaLogLevel(data.value);
+        setLogLevel(Number.parseInt(data.value));
     };
     const classes = useLogLevelStyles();
     logRender('LogLevelDropdown');

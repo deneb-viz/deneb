@@ -1,6 +1,5 @@
 import {
     APPLICATION_INFORMATION_CONFIGURATION,
-    PROVIDER_VERSION_CONFIGURATION,
     VISUAL_PREVIEW_ZOOM_CONFIGURATION
 } from '@deneb-viz/configuration';
 import { getDenebState } from '../../state';
@@ -25,15 +24,11 @@ import { getZoomToFitScale } from '../interface/layout';
 /**
  * Executes a command if:
  * - the command is valid
- * - the interface mode is valid
  * - the command callback is defined
  */
 const executeCommand = (command: Command, callback: () => void) => {
-    const {
-        commands,
-        interface: { mode }
-    } = getDenebState();
-    if (mode === 'Editor' && commands[command]) {
+    const { commands } = getDenebState();
+    if (commands[command]) {
         callback();
     }
 };
@@ -222,7 +217,7 @@ export const handlePersistSpecification = (
 ) => {
     const {
         editor: { stagedConfig, stagedSpec, updateChanges },
-        fieldUsage: { dataset: trackedFieldsCurrent },
+        // fieldUsage: { dataset: trackedFieldsCurrent },
         visualSettings: {
             vega: {
                 output: {
@@ -334,35 +329,6 @@ export const handleToggleEditorTheme = () => {
         setVisualProperty([{ name: 'theme', value: newValue }], 'editor');
     });
 };
-
-export const handleVegaLogLevel = (value: string) => {
-    setVisualProperty([{ name: 'logLevel', value: value.toString() }]);
-};
-
-/**
- * Handle the change in provider from one to the other and update necessary store dependencies and properties.
- */
-export const handleVegaProvider = (
-    provider: SpecProvider,
-    currentSelectionMode: SelectionMode
-) =>
-    setVisualProperty([
-        { name: 'provider', value: provider },
-        {
-            name: 'selectionMode',
-            value: provider === 'vegaLite' ? 'simple' : currentSelectionMode
-        },
-        {
-            name: 'version',
-            value: PROVIDER_VERSION_CONFIGURATION[provider]
-        }
-    ]);
-
-/**
- * Handle the change in render mode from one to the other and update necessary store dependencies and properties.
- */
-export const handleVegaRenderMode = (renderMode: SpecRenderMode) =>
-    setVisualProperty([{ name: 'renderMode', value: renderMode }]);
 
 /**
  * Fit the zoom level to the current preview area dimensions.

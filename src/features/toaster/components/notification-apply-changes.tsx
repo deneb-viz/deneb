@@ -16,10 +16,10 @@ import {
 } from '@deneb-viz/app-core';
 
 export const NotificationApplyChanges = ({ toasterId }: NotificationProps) => {
-    const { isDirty, mode, translate } = useDenebState(
+    const { isDirty, type, translate } = useDenebState(
         (state) => ({
             isDirty: state.editor.isDirty,
-            mode: state.interface.mode,
+            type: state.interface.type,
             translate: state.i18n.translate
         }),
         shallow
@@ -58,11 +58,11 @@ export const NotificationApplyChanges = ({ toasterId }: NotificationProps) => {
             }
         );
     useEffect(() => {
-        if (isDirty && mode === 'View') {
+        if (isDirty && type === 'viewer') {
             notify();
         } else {
             dismissToast(toastId);
         }
-    }, [isDirty, mode]);
+    }, [isDirty, type]);
     return <></>;
 };

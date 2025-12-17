@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { logRender } from '@deneb-viz/utils/logging';
 import { ReportViewRouter } from './report-view-router';
-import { DenebProvider, Editor, useDenebState } from '@deneb-viz/app-core';
+import { DenebApp, DenebProvider, useDenebState } from '@deneb-viz/app-core';
 import {
     FetchingMessage,
     LandingPage,
@@ -13,6 +13,7 @@ import { InteractivitySettings } from '../features/settings';
 import { NotificationToaster } from '../features/toaster';
 import { VisualUpdateHistoryOverlay } from '../features/visual-update-history-overlay';
 import { getVegaLoader } from '../lib/vega-embed';
+import { useDenebVisualState } from '../state';
 
 type AppProps = {
     host: powerbi.extensibility.visual.IVisualHost;
@@ -22,8 +23,8 @@ export const App = ({ host }: AppProps) => {
     const [isDownloadPermitted, setIsDownloadPermitted] = useState<
         boolean | undefined
     >(undefined);
-    const { mode, translate } = useDenebState((state) => ({
-        mode: state.interface.mode,
+    const mode = useDenebVisualState((state) => state.interface.mode);
+    const { translate } = useDenebState((state) => ({
         translate: state.i18n.translate
     }));
     const { launchUrl } = host;
@@ -52,17 +53,16 @@ export const App = ({ host }: AppProps) => {
 
     const mainComponent = useMemo(() => {
         switch (mode) {
-            case 'Initializing':
+            case 'initializing':
                 return <SplashInitial />;
-            case 'Fetching':
+            case 'fetching':
                 return <FetchingMessage />;
-            case 'Landing':
-            case 'NoSpec':
-            case 'EditorNoData':
+            case 'landing':
+            case 'no-project':
                 return <LandingPage />;
-            case 'Editor':
-                return <Editor />;
-            case 'View':
+            case 'editor':
+                return <DenebApp type='editor' />;
+            case 'viewer':
                 return <ReportViewRouter />;
         }
     }, [mode]);

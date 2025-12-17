@@ -8,20 +8,19 @@ import {
 
 import { type SpecRenderMode } from '@deneb-viz/vega-runtime/embed';
 import { useDenebState } from '../../../state';
-import { handleVegaRenderMode } from '../../../lib';
 import { useSettingsPaneStyles } from '../styles';
 import { SettingsHeadingLabel } from './settings-heading-label';
 import { SettingsTextSection } from './settings-text-section';
 
 export const RenderModeSettings = () => {
-    const { renderMode, translate } = useDenebState((state) => ({
-        renderMode: state.visualSettings.vega.output.renderMode
-            .value as SpecRenderMode,
+    const { renderMode, setRenderMode, translate } = useDenebState((state) => ({
+        renderMode: state.project.renderMode,
+        setRenderMode: state.project.setRenderMode,
         translate: state.i18n.translate
     }));
     const onChange = useCallback(
         (ev: React.FormEvent<HTMLDivElement>, data: RadioGroupOnChangeData) => {
-            handleVegaRenderMode(data.value as SpecRenderMode);
+            setRenderMode(data.value as SpecRenderMode);
         },
         []
     );

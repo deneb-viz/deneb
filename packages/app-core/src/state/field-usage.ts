@@ -185,7 +185,7 @@ const handleApplyTrackingChanges = (
             ? 'Remap'
             : getModalDialogRole(
                   state.visualSettings,
-                  state.interface.mode,
+                  state.interface.type,
                   state.interface.modalDialogRole
               );
     return {
@@ -193,7 +193,6 @@ const handleApplyTrackingChanges = (
             ...state.commands,
             exportSpecification: isExportSpecCommandEnabled({
                 editorIsDirty: state.editor.isDirty,
-                interfaceMode: state.interface.mode,
                 specification: state.specification
             })
         },
