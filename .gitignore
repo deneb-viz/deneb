@@ -67,7 +67,7 @@ typings/
 .api/
 .tmp/
 dist/
-webpack.statistics*.html
+webpack.stat*
 
 # Yalc
 **/.yalc/**/*.md
