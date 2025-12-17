@@ -36,8 +36,8 @@
     },
     "sideEffects": false,
     "scripts": {
-        "build": "tsup",
-        "dev": "tsup --watch",
+        "build": "npm run clean && tsc -p tsconfig.json",
+        "dev": "tsc -p tsconfig.json --watch",
         "clean": "rimraf dist",
         "typecheck": "tsc --noEmit",
         "eslint": "eslint ."
@@ -46,7 +46,6 @@
         "@deneb-viz/eslint-config": "*",
         "@deneb-viz/typescript-config": "*",
         "@types/node": "^22.15.33",
-        "tsup": "^8.5.0",
         "typescript": "^5.6.2",
         "vitest": "^3.2.4"
     },

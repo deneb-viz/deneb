@@ -22,10 +22,10 @@
     "sideEffects": false,
     "scripts": {
         "build": "npm run build:schema && npm run build:package",
-        "build:package": "tsup",
+        "build:package": "tsc -p tsconfig.json",
         "build:schema": "node bin/generate-project-schema.js",
-        "dev": "concurrently \"npm run dev:schema\" \"npm run dev:package\" --watch",
-        "dev:package": "tsup --watch --config tsup.config.ts",
+        "dev": "concurrently \"npm run dev:schema\" \"npm run dev:package\"",
+        "dev:package": "tsc -p tsconfig.json --watch",
         "dev:schema": "tsx watch --include ./src/project/types.ts --clear-screen=false ./bin/generate-project-schema.js",
         "clean": "rimraf dist",
         "typecheck": "tsc --noEmit -p tsconfig.json",
@@ -36,7 +36,6 @@
         "@deneb-viz/typescript-config": "*",
         "@types/node": "^22.15.33",
         "ts-json-schema-generator": "^2.4.0",
-        "tsup": "^8.5.0",
         "tsx": "^4.20.3",
         "typescript": "^5.6.2",
         "vitest": "^3.2.4"

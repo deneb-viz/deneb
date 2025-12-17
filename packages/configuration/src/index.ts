@@ -1,5 +1,4 @@
-import { devDependencies } from '../../../package.json';
-import { visual } from '../../../pbiviz.json';
+import { devDependencies, visual } from './generated';
 
 /**
  * This is an object that contains the visual's metadata. This is used to handle places we need to display this

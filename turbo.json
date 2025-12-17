@@ -9,39 +9,67 @@
         "ALLOW_EXTERNAL_URI"
     ],
     "tasks": {
+        "clean": {
+            "cache": false
+        },
         "build": {
-            "dependsOn": ["^build"],
-            "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+            "dependsOn": [
+                "^build"
+            ],
+            "outputs": [
+                ".next/**",
+                "!.next/cache/**",
+                "dist/**"
+            ]
         },
         "dev": {
             "cache": false,
             "persistent": true,
-            "outputs": ["dist/**"]
+            "outputs": [
+                "dist/**"
+            ]
         },
         "eslint": {
-            "dependsOn": ["^eslint"]
+            "dependsOn": [
+                "^eslint"
+            ]
         },
         "test": {
-            "outputs": ["coverage/**"]
+            "outputs": [
+                "coverage/**"
+            ]
         },
         "test:ci": {},
         "test:watch": {
-            "outputs": ["coverage/**"],
+            "outputs": [
+                "coverage/**"
+            ],
             "cache": false
         },
         "//#webpack:start": {
             "cache": false,
             "persistent": true,
-            "dependsOn": ["^build"]
+            "dependsOn": [
+                "^build"
+            ]
         },
         "//#webpack:build": {
             "cache": false,
-            "dependsOn": ["^build"],
-            "outputs": [".tmp/**"]
+            "dependsOn": [
+                "^build"
+            ],
+            "outputs": [
+                ".tmp/**"
+            ]
         },
         "//#webpack:package": {
-            "dependsOn": ["^build"],
-            "outputs": ["dist/**", ".tmp/**"]
+            "dependsOn": [
+                "^build"
+            ],
+            "outputs": [
+                "dist/**",
+                ".tmp/**"
+            ]
         }
     }
 }

@@ -3,8 +3,10 @@
     "compilerOptions": {
         // Allow type-only imports that resolve outside of src/ without TS6059 rootDir errors.
         // rootDir removed so declaration build can include mapped type definition files.
-        "outDir": "dist/src",
-        "baseUrl": "."
+        "outDir": "dist",
+        "baseUrl": ".",
+        "declaration": true,
+        "declarationMap": true
     },
     "include": ["src/**/*"],
     "exclude": ["dist", "node_modules", "**/*.test.*", "**/*.spec.*"]
