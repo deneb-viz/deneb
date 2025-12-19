@@ -124,16 +124,6 @@ export const DEFAULTS = {
          */
         viewportWidth: null
     },
-    theme: {
-        /**
-         * Number of discrete colors to use when computing the `pbiColorOrdinal` scheme hues.
-         */
-        ordinalColorCount: {
-            default: 10,
-            min: 1,
-            max: 100
-        }
-    },
     unitSymbols: {
         milliseconds: 'ms',
         percent: '%',

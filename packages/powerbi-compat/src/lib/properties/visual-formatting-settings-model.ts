@@ -4,7 +4,6 @@ import { SettingsDataLimit } from './settings-data-limit';
 import { SettingsDeveloper } from './settings-developer';
 import { SettingsDisplay } from './settings-display';
 import { SettingsGeneral } from './settings-general';
-import { SettingsTheme } from './settings-theme';
 import { SettingsVega } from './settings-vega';
 import { SettingsEditor } from './settings-editor';
 import { SettingsStateManagement } from './settings-state-management';
@@ -15,7 +14,6 @@ import { SettingsStateManagement } from './settings-state-management';
 export class VisualFormattingSettingsModel extends formattingSettings.Model {
     general = new SettingsGeneral();
     editor = new SettingsEditor();
-    theme = new SettingsTheme();
     dataLimit = new SettingsDataLimit();
     display = new SettingsDisplay();
     vega = new SettingsVega();
@@ -23,7 +21,6 @@ export class VisualFormattingSettingsModel extends formattingSettings.Model {
     developer = new SettingsDeveloper();
     cards = [
         this.editor,
-        this.theme,
         this.display,
         this.dataLimit,
         this.stateManagement,

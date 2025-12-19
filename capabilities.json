@@ -290,15 +290,6 @@
                 }
             }
         },
-        "theme": {
-            "properties": {
-                "ordinalColorCount": {
-                    "type": {
-                        "integer": true
-                    }
-                }
-            }
-        },
         "dataLimit": {
             "properties": {
                 "override": {
