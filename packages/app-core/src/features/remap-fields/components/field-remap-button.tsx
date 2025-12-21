@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@fluentui/react-components';
 
-import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
+import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 import { type TrackedFields } from '@deneb-viz/json-processing/field-tracking';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
 import {

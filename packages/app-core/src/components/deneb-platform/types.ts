@@ -1,5 +1,11 @@
 import { type JSX } from 'react';
-import { type Loader } from 'vega';
+import { type Loader, type TooltipHandler, type View } from 'vega';
+
+/**
+ * A function that binds platform-specific event listeners to a Vega view.
+ * Implementations should close over any required dependencies (dataset, translations, etc.).
+ */
+export type ViewEventBinder = (view: View) => void;
 
 export type DenebPlatformProviderProps = {
     /**
@@ -11,9 +17,19 @@ export type DenebPlatformProviderProps = {
      */
     settingsPanePlatformComponent?: JSX.Element;
     /**
+     * A platform-specific tooltip handler for Vega. If not provided, default Vega tooltips will be used.
+     */
+    tooltipHandler?: TooltipHandler;
+    /**
      * A custom Vega Loader instance to use within Deneb.
      */
     vegaLoader?: Loader | null;
+    /**
+     * Array of functions that bind platform-specific event listeners to the Vega view.
+     * Called in order after view initialization. Each binder should close over its
+     * required dependencies (dataset, translations, selection mode checks, etc.).
+     */
+    viewEventBinders?: ViewEventBinder[];
     /**
      * Function to handle the download of a JSON file from the application, if a host environment has a custom download
      * API.

@@ -8,7 +8,6 @@ import { ptToPx } from '@deneb-viz/utils/dom';
 import { getProviderSchema } from '@deneb-viz/json-processing';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { logDebug } from '@deneb-viz/utils/logging';
-import { type IDatasetField } from '@deneb-viz/powerbi-compat/dataset';
 import {
     handlePersistSpecification,
     PREVIEW_PANE_TOOLBAR_BUTTON_PADDING,
@@ -24,6 +23,7 @@ import { useSpecificationEditor } from '../hooks/use-specification-editor';
 import { SpecificationEditorStatusBar } from './specification-editor-status-bar';
 import { updateFieldTracking } from '../../../lib/field-processing';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
+import { DatasetField } from '@deneb-viz/data-core/field';
 
 /**
  * Initialize Monaco editor on first mount. This is deferred from module load time to only run when the editor is
@@ -402,7 +402,7 @@ const setMonacoKeyBindingRules = () => {
  * For any data-based completers in the editor, provide a qualifier denoting whether it's a column, measure or
  * something else.
  */
-const getSnippetFieldMetadata = (field: IDatasetField) => {
+const getSnippetFieldMetadata = (field: DatasetField) => {
     const { translate } = getDenebState().i18n;
     switch (true) {
         case field.isHighlightComponent:

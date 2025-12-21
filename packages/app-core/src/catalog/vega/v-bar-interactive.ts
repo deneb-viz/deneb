@@ -7,11 +7,12 @@ import {
 } from '.';
 import { getNewIncludedTemplateMetadata } from '..';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
-import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
+import {} from '@deneb-viz/template-usermeta';
 import {
-    DATASET_DEFAULT_NAME,
-    SELECTED_ROW_FIELD_NAME
-} from '@deneb-viz/powerbi-compat/dataset';
+    SELECTED_ROW_FIELD_NAME,
+    type UsermetaDatasetField
+} from '@deneb-viz/data-core/field';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 
 const dataset: UsermetaDatasetField[] = [
     {

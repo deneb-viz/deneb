@@ -1,4 +1,3 @@
-import { type SelectionMode } from '@deneb-viz/template-usermeta';
 import { DATA_VIEWER_CONFIGURATION } from '@deneb-viz/configuration';
 
 /**
@@ -174,7 +173,7 @@ export const DEFAULTS = {
         /**
          * The mode of selection to use for the visual.
          */
-        selectionMode: <SelectionMode>'simple',
+        selectionMode: 'simple',
         /**
          * The delay before showing a tooltip.
          */

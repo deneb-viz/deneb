@@ -10,36 +10,20 @@ import {
     resolveDrilldownComponents,
     resolveDrilldownFlat
 } from './drilldown';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 import {
-    type AugmentedMetadataField,
     DRILL_FIELD_FLAT,
     DRILL_FIELD_NAME,
-    getCastedPrimitiveValue,
-    getHighlightComparatorValue,
-    getHighlightStatusValue,
     HIGHLIGHT_COMPARATOR_SUFFIX,
     HIGHLIGHT_FIELD_SUFFIX,
     HIGHLIGHT_STATUS_SUFFIX,
-    DATASET_DEFAULT_NAME,
-    getDatumFieldMetadataFromDataView,
-    getDatumFieldsFromMetadata,
-    getDatumValueEntriesFromDataview,
-    getEncodedFieldName,
-    type DatasetValueRow,
     ROW_INDEX_FIELD_NAME
-} from '@deneb-viz/powerbi-compat/dataset';
+} from '@deneb-viz/data-core/field';
 import {
-    InteractivityManager,
-    isCrossFilterPropSet,
-    isCrossHighlightPropSet,
-    type SelectionIdQueueEntry,
-    type SelectionIdQueue,
-    type SelectorStatus
-} from '@deneb-viz/powerbi-compat/interactivity';
-import {
-    doesDataViewHaveHighlights,
-    getCategoricalRowCount
-} from '@deneb-viz/powerbi-compat/visual-host';
+    getHighlightComparatorValue,
+    getHighlightStatusValue,
+    type VegaDatum
+} from '@deneb-viz/data-core/value';
 import {
     logDebug,
     logError,
@@ -47,6 +31,28 @@ import {
     logTimeStart
 } from '@deneb-viz/utils/logging';
 import { type DatasetSlice, type SetDatasetPayload } from '../../state/dataset';
+import {
+    doesDataViewHaveHighlights,
+    getCategoricalRowCount
+} from './data-view';
+import type { AugmentedMetadataField } from './types';
+import {
+    getCastedPrimitiveValue,
+    getDatumValueEntriesFromDataview
+} from './values';
+import {
+    getDatumFieldMetadataFromDataView,
+    getDatumFieldsFromMetadata,
+    getEncodedFieldName
+} from './fields';
+import {
+    InteractivityManager,
+    isCrossFilterPropSet,
+    isCrossHighlightPropSet,
+    type SelectionIdQueue,
+    type SelectionIdQueueEntry,
+    type SelectorStatus
+} from '../interactivity';
 
 // State for reference-based change detection
 let prevCategories: DataViewCategoryColumn[] | undefined;
@@ -67,7 +73,7 @@ const getDataRow = (
     hasDrilldown: boolean,
     isCrossHighlight: boolean
 ) => {
-    const row = <DatasetValueRow>{};
+    const row = <VegaDatum>{};
     for (let fi = 0; fi < fields.length; fi++) {
         const f = fields[fi];
         const rawValue = getCastedPrimitiveValue(f, values[fi][rowIndex]);
@@ -265,7 +271,7 @@ export const getMappedDataset = (
                     if (f.isMeasure) {
                         selectionQueueBase.push({
                             type: 'measure',
-                            queryName: f.queryName
+                            queryName: f.id
                         });
                     } else {
                         selectionQueueBase.push({
@@ -280,12 +286,12 @@ export const getMappedDataset = (
                 rowNumber: 0
             };
 
-            const values: DatasetValueRow[] = [];
+            const values: VegaDatum[] = [];
             for (let r = 0; r < rowsLoaded; r++) {
                 selectionQueue.rowNumber = r;
                 const selector =
                     InteractivityManager.addRowSelector(selectionQueue);
-                const md: DatasetValueRow = {
+                const md: VegaDatum = {
                     __row__: r,
                     ...(isCrossFilter && { __selected__: selector?.status }),
                     ...getDataRow(
@@ -327,7 +333,7 @@ export const getUpdatedDatasetSelectors = (
     const isCrossFilter = isCrossFilterPropSet({
         enableSelection
     });
-    const values: DatasetValueRow[] = [];
+    const values: VegaDatum[] = [];
     const nValues = dataset.values.length;
     if (isCrossFilter) {
         for (let i = 0; i < nValues; i++) {

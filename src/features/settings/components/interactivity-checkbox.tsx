@@ -6,7 +6,7 @@ import {
     handlePersistBooleanProperty,
     useDenebState
 } from '@deneb-viz/app-core';
-import { InteractivityManager } from '@deneb-viz/powerbi-compat/interactivity';
+import { InteractivityManager } from '../../../lib/interactivity';
 
 /**
  * Used to denote supported interactivity types within Deneb. These can be used

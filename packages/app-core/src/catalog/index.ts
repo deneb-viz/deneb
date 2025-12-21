@@ -11,7 +11,7 @@ import {
     type UsermetaInformation,
     type UsermetaTemplate
 } from '@deneb-viz/template-usermeta';
-import { DATASET_DEFAULT_NAME } from '@deneb-viz/powerbi-compat/dataset';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 import {
     APPLICATION_INFORMATION_CONFIGURATION,
     PROVIDER_VERSION_CONFIGURATION

@@ -3,7 +3,7 @@ import { type StateCreator } from 'zustand';
 import { type StoreState } from './state';
 import { getParsedSpec } from '@deneb-viz/json-processing/spec-processing';
 import { getSpecificationParseOptions } from './helpers';
-import { getDatasetTemplateFieldsFromMetadata } from '@deneb-viz/powerbi-compat/dataset';
+import { getDatasetTemplateFieldsFromMetadata } from '@deneb-viz/data-core/field';
 import { logDebug, logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
 import {
     areAllCreateDataRequirementsMet,

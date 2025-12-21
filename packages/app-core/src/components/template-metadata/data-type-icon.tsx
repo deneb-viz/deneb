@@ -4,7 +4,7 @@ import {
     NumberSymbolRegular,
     TextCaseUppercaseRegular
 } from '@fluentui/react-icons';
-import { type UsermetaDatasetFieldType } from '@deneb-viz/template-usermeta';
+import { type UsermetaDatasetFieldType } from '@deneb-viz/data-core/field';
 
 type DataTypeIconProps = {
     type: UsermetaDatasetFieldType | undefined;

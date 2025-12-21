@@ -1,7 +1,4 @@
-import {
-    getTokenPatternsReplacement,
-    type TrackedFields
-} from '@deneb-viz/json-processing/field-tracking';
+import { type TrackedFields } from '@deneb-viz/json-processing/field-tracking';
 import {
     type IDenebTokenizationResponseMessage,
     type IDenebJsonProcessingWorkerRequest,
@@ -13,7 +10,10 @@ import {
     uint8ArrayToString
 } from '@deneb-viz/utils/type-conversion';
 import { getDenebState } from '../../state';
-import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
+import {
+    getTokenPatternsReplacement,
+    type UsermetaDatasetField
+} from '@deneb-viz/data-core/field';
 
 /**
  * Take a tokenized specification, tracked fields, and desired remapping information, and asynchronously update the

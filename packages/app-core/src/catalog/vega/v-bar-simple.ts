@@ -6,8 +6,8 @@ import {
     VEGA_SCHEMA_URL
 } from '.';
 import { getNewIncludedTemplateMetadata } from '..';
-import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
-import { DATASET_DEFAULT_NAME } from '@deneb-viz/powerbi-compat/dataset';
+import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 
 const dataset: UsermetaDatasetField[] = [
     {

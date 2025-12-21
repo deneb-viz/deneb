@@ -46,6 +46,7 @@
         "vitest": "^3.2.4"
     },
     "dependencies": {
+        "@deneb-viz/data-core": "*",
         "@deneb-viz/json-processing": "*",
         "@deneb-viz/template-usermeta": "*",
         "@deneb-viz/utils": "*",

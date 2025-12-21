@@ -7,7 +7,6 @@ import {
     Text
 } from '@fluentui/react-components';
 
-import { InteractivityManager } from '@deneb-viz/powerbi-compat/interactivity';
 import { useSettingsStyles } from '../styles';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import {
@@ -16,6 +15,7 @@ import {
     useDenebState
 } from '@deneb-viz/app-core';
 import { type SelectionMode } from '@deneb-viz/template-usermeta';
+import { InteractivityManager } from '../../../lib/interactivity';
 
 export const CrossFilterModeSettings = () => {
     const { provider, selectionMode, translate } = useDenebState((state) => ({

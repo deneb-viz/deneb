@@ -6,16 +6,14 @@ import {
     makeStyles
 } from '@fluentui/react-components';
 
-import {
-    type UsermetaDatasetField,
-    type UsermetaTemplate
-} from '@deneb-viz/template-usermeta';
+import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { type ModalDialogType } from '../ui';
 import { useDenebState } from '../../state';
 import { TemplateDatasetColumns } from './template-dataset-columns';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { TemplateDatasetRow } from './template-dataset-row';
 import { useCallback } from 'react';
+import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 
 type TemplateDatasetProps = {
     datasetRole: ModalDialogType;

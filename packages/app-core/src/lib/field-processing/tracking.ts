@@ -1,7 +1,4 @@
-import {
-    getTokenPatternsLiteral,
-    type TrackedFields
-} from '@deneb-viz/json-processing/field-tracking';
+import { type TrackedFields } from '@deneb-viz/json-processing/field-tracking';
 import {
     doDenebSpecJsonWorkerRequest,
     type IDenebJsonProcessingWorkerRequest,
@@ -10,6 +7,7 @@ import {
 import { stringToUint8Array } from '@deneb-viz/utils/type-conversion';
 import { getRemapEligibleFields } from '@deneb-viz/json-processing';
 import { getDenebState } from '../../state';
+import { getTokenPatternsLiteral } from '@deneb-viz/data-core/field';
 
 /**
  * Take the current spec and tracked fields, and asynchronously update the tracking info via another thread (using

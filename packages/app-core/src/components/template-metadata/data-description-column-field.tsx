@@ -1,6 +1,6 @@
 import { TableCell } from '@fluentui/react-components';
 
-import { DATASET_DEFAULT_NAME } from '@deneb-viz/powerbi-compat/dataset';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 import { CappedTextField } from '../ui';
 import { TEMPLATE_DATASET_FIELD_PROPS } from './constants';
 

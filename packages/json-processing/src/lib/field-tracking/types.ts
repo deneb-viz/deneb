@@ -1,4 +1,4 @@
-import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
+import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 import { type JSONPath } from 'jsonc-parser';
 
 /**
@@ -11,15 +11,6 @@ export type RemapState =
     | 'Tracking'
     | 'UpdatingEditor'
     | 'Complete';
-
-/**
- * When we parse the JSON to look for specific field types, these rely on specific patterns and replacements. This
- * interface provides the pattern and the replacement for a given field type.
- */
-export type TokenPatternReplacer = {
-    pattern: string;
-    replacer: string;
-};
 
 /**
  * Ensures that we can manage tracking of drilldown field usage.

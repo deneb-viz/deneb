@@ -4,13 +4,15 @@ import {
     isCrossHighlightComparatorField,
     isCrossHighlightStatusField,
     SELECTED_ROW_FIELD_NAME
-} from '@deneb-viz/powerbi-compat/dataset';
+} from '@deneb-viz/data-core/field';
+import {
+    getPrunedObject,
+    getSanitizedTooltipValue
+} from '@deneb-viz/utils/object';
 import {
     type DataPointHighlightComparator,
-    type DataPointSelectionStatus,
-    getSanitizedTooltipValue
-} from '@deneb-viz/powerbi-compat/interactivity';
-import { getPrunedObject } from '@deneb-viz/utils/object';
+    type DataPointSelectionStatus
+} from '@deneb-viz/data-core/value';
 import { getDenebState } from '../../../../state';
 
 type DataTableCellProps = {

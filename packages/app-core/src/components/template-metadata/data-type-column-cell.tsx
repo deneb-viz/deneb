@@ -6,7 +6,7 @@ import {
     Tooltip
 } from '@fluentui/react-components';
 
-import { type UsermetaDatasetFieldType } from '@deneb-viz/template-usermeta';
+import { type UsermetaDatasetFieldType } from '@deneb-viz/data-core/field';
 import { DataTypeIcon } from './data-type-icon';
 import { TooltipCustomMount } from '../ui';
 import { getDenebState } from '../../state';

@@ -8,11 +8,11 @@ import {
 } from '../template-dataset';
 import {
     TEMPLATE_USERMETA_VERSION,
-    type UsermetaDatasetField,
     type UsermetaTemplate
 } from '@deneb-viz/template-usermeta';
 import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 
 const INCOMPLETE_FIELD: UsermetaDatasetField[] = [
     {

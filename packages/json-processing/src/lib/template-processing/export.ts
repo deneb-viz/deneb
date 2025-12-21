@@ -1,4 +1,4 @@
-import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
+import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 
 /**
  * Gets the appropriate field name for export, prioritizing entered name (if present) over the placeholder.

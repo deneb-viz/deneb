@@ -59,6 +59,7 @@
     },
     "dependencies": {
         "@deneb-viz/configuration": "*",
+        "@deneb-viz/data-core": "*",
         "@deneb-viz/template-usermeta": "*",
         "@deneb-viz/utils": "*",
         "ajv": "^8.12.0",

@@ -21,9 +21,6 @@ import {
     getVisualFormattingService
 } from '@deneb-viz/powerbi-compat/properties';
 import {
-    canFetchMoreFromDataview,
-    getCategoricalDataViewFromOptions,
-    getCategoricalRowCount,
     getVisualSettings,
     setRenderingFailed,
     setRenderingStarted,
@@ -39,17 +36,26 @@ import {
     logTimeStart
 } from '@deneb-viz/utils/logging';
 import { VegaPatternFillServices } from '@deneb-viz/vega-runtime/pattern-fill';
-import { InteractivityManager } from '@deneb-viz/powerbi-compat/interactivity';
+import { InteractivityManager } from './lib/interactivity';
 import {
     getDenebState,
     type I18nLocale,
     updateFieldTracking
 } from '@deneb-viz/app-core';
 import { VegaExtensibilityServices } from '@deneb-viz/vega-runtime/extensibility';
-import { type SelectionMode } from '@deneb-viz/template-usermeta';
-import { getMappedDataset, hasDataViewChanged } from './lib/dataset';
+import {
+    canFetchMoreFromDataview,
+    getCategoricalDataViewFromOptions,
+    getCategoricalRowCount,
+    getMappedDataset,
+    hasDataViewChanged
+} from './lib/dataset';
 import { I18N_TRANSLATIONS } from './i18n';
 import { initializeStoreSynchronization } from './lib/state';
+import {
+    createCrossFilterApplyHandler,
+    createCrossFilterClearHandler
+} from './lib/vega-embed';
 
 /**
  * Centralize/report developer mode from environment.
@@ -94,6 +100,10 @@ export class Deneb implements IVisual {
             });
             VegaPatternFillServices.bind();
             VegaExtensibilityServices.bind(host.colorPalette);
+            VegaExtensibilityServices.setExpressionHandlers({
+                onCrossFilterClear: createCrossFilterClearHandler(),
+                onCrossFilterApply: createCrossFilterApplyHandler()
+            });
             VisualFormattingSettingsService.bind(
                 options.host.createLocalizationManager()
             );
@@ -161,17 +171,14 @@ export class Deneb implements IVisual {
             vega: {
                 interactivity: {
                     enableHighlight: { value: enableHighlight },
-                    enableSelection: { value: enableSelection },
-                    selectionMode: { value: selectionMode }
+                    enableSelection: { value: enableSelection }
                 }
             }
         } = settings;
         const { shouldProcess, setDataset, setIsFetchingAdditional } =
             getDenebVisualState().dataset;
         const {
-            i18n: { locale },
-            specification: { logWarn },
-            i18n: { translate }
+            i18n: { locale }
         } = getDenebState();
         const categorical = getCategoricalDataViewFromOptions(options);
 
@@ -221,15 +228,6 @@ export class Deneb implements IVisual {
                 setDataset(dataset);
                 // Tracking is now only used for export (#486)
                 // this.updateTracking();
-                VegaExtensibilityServices.update({
-                    dataset: {
-                        fields: dataset.fields,
-                        values: dataset.values
-                    },
-                    selectionMode: selectionMode as SelectionMode,
-                    logWarn,
-                    translate
-                });
             }
             logTimeEnd('processDataset');
         } else {

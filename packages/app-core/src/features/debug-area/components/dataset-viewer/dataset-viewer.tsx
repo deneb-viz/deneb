@@ -32,7 +32,7 @@ import { getDenebState, useDenebState } from '../../../../state';
 import { NoDataMessage } from '../no-data-message';
 import { DataTableViewer } from '../data-table/data-table';
 import { ProcessingDataMessage } from '../data-table/processing-data-message';
-import { type VegaDatum } from '@deneb-viz/powerbi-compat/interactivity';
+import { type VegaDatum } from '@deneb-viz/data-core/value';
 import {
     getCrossHighlightFieldBaseMeasureName,
     isCrossHighlightComparatorField,
@@ -40,7 +40,7 @@ import {
     isCrossHighlightStatusField,
     ROW_INDEX_FIELD_NAME,
     SELECTED_ROW_FIELD_NAME
-} from '@deneb-viz/powerbi-compat/dataset';
+} from '@deneb-viz/data-core/field';
 import { makeStyles } from '@fluentui/react-components';
 import {
     PREVIEW_PANE_TOOLBAR_MIN_SIZE,

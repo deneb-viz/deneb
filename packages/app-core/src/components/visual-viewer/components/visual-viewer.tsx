@@ -12,7 +12,6 @@ import { Scrollbars, type positionValues } from 'react-custom-scrollbars-2';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
 import { logRender } from '@deneb-viz/utils/logging';
-import { InteractivityManager } from '@deneb-viz/powerbi-compat/interactivity';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 import { makeStyles } from '@fluentui/react-components';
 import { VegaRender } from './vega-render';
@@ -45,12 +44,10 @@ type VisualViewerProps = {
 // eslint-disable-next-line max-lines-per-function
 export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
     const {
-        enableTooltips,
         jsonConfig,
         jsonSpec,
         locale,
         logLevel,
-        multiSelectDelay,
         previewScrollbars,
         provider,
         renderMode,
@@ -62,14 +59,10 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
         viewportHeight,
         viewportWidth
     } = useDenebState((state) => ({
-        enableTooltips:
-            state.visualSettings.vega.interactivity.enableTooltips.value,
         jsonConfig: state.visualSettings.vega.output.jsonConfig.value,
         jsonSpec: state.visualSettings.vega.output.jsonSpec.value,
         locale: state.i18n.locale,
         logLevel: state.project.logLevel,
-        multiSelectDelay:
-            state.visualSettings.vega.interactivity.tooltipDelay.value,
         previewScrollbars:
             state.visualSettings.editor.preview.previewScrollbars.value,
         provider: state.project.provider as SpecProvider,
@@ -83,8 +76,8 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
         scrollEventThrottle:
             state.visualSettings.display.scrollEvents.scrollEventThrottle.value,
         specification: state.specification,
-        viewportHeight: state.interface.viewport?.height ?? 0,
-        viewportWidth: state.interface.viewport?.width ?? 0
+        viewportHeight: state.interface.embedViewport?.height ?? 0,
+        viewportWidth: state.interface.embedViewport?.width ?? 0
     }));
     const useScrollbars = useMemo(
         () => !isEmbeddedInEditor || previewScrollbars,
@@ -105,10 +98,8 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
     );
     const vegaComponent = (
         <VegaRender
-            enableTooltips={enableTooltips}
             locale={locale}
             logLevel={logLevel as number}
-            multiSelectDelay={multiSelectDelay}
             provider={provider}
             renderMode={renderMode}
             specification={specification}
@@ -157,7 +148,6 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
             className={containerClassName}
             renderThumbHorizontal={scrollbarThumbHorizontal}
             renderThumbVertical={scrollbarThumbVertical}
-            onClick={() => InteractivityManager.crossFilter()}
             onScrollFrame={(e: positionValues) => setScrollFrame(e)}
         >
             {vegaComponent}

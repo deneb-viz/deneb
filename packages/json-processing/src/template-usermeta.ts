@@ -8,20 +8,16 @@ import {
 } from './processing';
 import { getProviderValidator } from './validation';
 import { applyEdits, modify } from 'jsonc-parser';
+import { type TrackedFields } from './lib/field-tracking';
 import {
-    getEscapedReplacerPattern,
-    getPlaceholderKey,
-    type TrackedFields
-} from './lib/field-tracking';
-import {
+    type SelectionMode,
     TEMPLATE_USERMETA_VERSION,
-    type UsermetaDatasetField,
     type UsermetaInformation,
     type UsermetaInteractivity,
     type UsermetaTemplate
 } from '@deneb-viz/template-usermeta';
 import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
-import { DATASET_DEFAULT_NAME } from '@deneb-viz/powerbi-compat/dataset';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { getNewUuid } from '@deneb-viz/utils/crypto';
 import {
@@ -31,6 +27,11 @@ import {
     getFieldNameForExport
 } from './lib/template-processing';
 import { omit } from '@deneb-viz/utils/object';
+import {
+    getEscapedReplacerPattern,
+    getPlaceholderKey,
+    type UsermetaDatasetField
+} from '@deneb-viz/data-core/field';
 
 /**
  * If we cannot resolve a provider, this is the default to assign.
@@ -152,7 +153,7 @@ export const getNewTemplateMetadata = (options: {
         tooltip: DEFAULTS.vega.enableTooltips,
         contextMenu: DEFAULTS.vega.enableContextMenu,
         selection: DEFAULTS.vega.enableSelection,
-        selectionMode: DEFAULTS.vega.selectionMode,
+        selectionMode: DEFAULTS.vega.selectionMode as SelectionMode,
         dataPointLimit: DEFAULTS.vega.selectionMaxDataPoints,
         highlight: DEFAULTS.vega.enableHighlight
     },

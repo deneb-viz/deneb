@@ -7,7 +7,7 @@ import {
 } from '@fluentui/react-components';
 
 import { useDenebVisualState } from '../../../state';
-import { InteractivityManager } from '@deneb-viz/powerbi-compat/interactivity';
+import { InteractivityManager } from '../../../lib/interactivity';
 import { type NotificationProps } from '../types';
 import { NotificationToast } from './notification-toast';
 import {

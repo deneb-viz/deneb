@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Dropdown,
     DropdownProps,
@@ -7,12 +7,12 @@ import {
     useId
 } from '@fluentui/react-components';
 
-import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 import {
-    getDatasetFieldsInclusive,
-    type IDatasetField,
-    type IDatasetFields
-} from '@deneb-viz/powerbi-compat/dataset';
+    type DatasetField,
+    type DatasetFields,
+    type UsermetaDatasetField
+} from '@deneb-viz/data-core/field';
+import { getDatasetFieldsInclusive } from '@deneb-viz/data-core/field';
 import { type ModalDialogType } from '../ui';
 import { DataTypeIcon } from './data-type-icon';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
@@ -61,7 +61,7 @@ export const DataFieldDropdown = ({
         setSelectedKey(() => (data.optionValue as string) ?? undefined);
     };
     useEffect(() => {
-        const option = options.find((o) => o.queryName === selectedKey);
+        const option = options.find((o) => o.id === selectedKey);
         let reducer:
             | typeof createSliceReducer
             | typeof fieldUsageSliceReducer
@@ -73,7 +73,7 @@ export const DataFieldDropdown = ({
         }
         reducer?.({
             key: datasetField.key,
-            suppliedObjectKey: option?.queryName,
+            suppliedObjectKey: option?.id,
             suppliedObjectName: option?.templateMetadata?.name
         });
     }, [selectedKey]);
@@ -108,13 +108,13 @@ export const DataFieldDropdown = ({
 const getDatasetFieldFromFields = (
     lookupKey: string | undefined,
     role: ModalDialogType,
-    fields: IDatasetFields
-): IDatasetField | undefined => {
+    fields: DatasetFields
+): DatasetField | undefined => {
     switch (role) {
         case 'new':
         case 'mapping':
             return getTemplateDatasetFields(fields).find(
-                (df) => df.queryName === lookupKey
+                (df) => df.id === lookupKey
             );
         default:
             return undefined;
@@ -128,22 +128,17 @@ const getDatasetFieldFromFields = (
  */
 const getDefaultSelectedKey = (
     field: UsermetaDatasetField,
-    fields: IDatasetFields
-) => fields[field.name]?.queryName || undefined;
+    fields: DatasetFields
+) => fields[field.name]?.id || undefined;
 
 /**
  * Returns a list of `Option` components, representing the available
  * fields from the dataset.
  */
-const getFieldOptions = (fields: IDatasetField[]) => {
+const getFieldOptions = (fields: DatasetField[]) => {
     return fields?.map((df, i) => {
         return (
-            <Option
-                id={`field-${i}`}
-                key={df.queryName}
-                value={df.queryName}
-                text={df.displayName}
-            >
+            <Option id={`field-${i}`} key={df.id} value={df.id} text={df.name}>
                 <DataTypeIcon type={df.templateMetadata?.type} />
                 {df.templateMetadata?.name}
             </Option>
@@ -154,15 +149,15 @@ const getFieldOptions = (fields: IDatasetField[]) => {
 /**
  * Get the eligible template fields from a supplied set of metadata.
  */
-const getTemplateDatasetFields = (metadata: IDatasetFields) => {
+const getTemplateDatasetFields = (metadata: DatasetFields) => {
     return Object.values(getDatasetFieldsInclusive(metadata)).reduce<
-        IDatasetField[]
+        DatasetField[]
     >((acc, value) => {
         if (!value) return acc;
         if (Array.isArray(value)) {
             acc.push(...value);
         } else {
-            acc.push(value as IDatasetField);
+            acc.push(value as DatasetField);
         }
         return acc;
     }, []);

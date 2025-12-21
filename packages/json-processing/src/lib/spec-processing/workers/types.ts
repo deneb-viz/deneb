@@ -1,10 +1,12 @@
 import {
+    type DatasetFields,
+    type FieldPatternReplacer
+} from '@deneb-viz/data-core/field';
+import {
     type TrackedDrilldownProperties,
-    type TokenPatternReplacer,
     type TrackedFields
 } from '../../field-tracking';
-import { type IDatasetFields } from '@deneb-viz/powerbi-compat/dataset';
-import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
+import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 
 /**
  * Represents the worker that processes the JSON in a specification. Because these are typically very expensive, we
@@ -91,7 +93,7 @@ export interface IDenebTokenizationRequestMessage {
 export interface IDenebTokenizationRequestPayload {
     spec: Uint8Array;
     trackedFields: TrackedFields;
-    supplementaryReplacers: TokenPatternReplacer[];
+    supplementaryReplacers: FieldPatternReplacer[];
     isRemap?: boolean;
 }
 
@@ -124,7 +126,7 @@ export interface IDenebTrackingRequestMessage {
  */
 export interface IDenebTrackingRequestPayload {
     spec: Uint8Array;
-    fields: IDatasetFields;
+    fields: DatasetFields;
     hasDrilldown: boolean;
     trackedFieldsCurrent: TrackedFields;
     supplementaryPatterns: string[];

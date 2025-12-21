@@ -2,7 +2,7 @@ import { TopLevelSpec } from 'vega-lite';
 
 import { VEGA_LITE_SCHEMA_URL } from '.';
 import { getDenebTemplateDatasetRef, getNewIncludedTemplateMetadata } from '..';
-import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
+import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 
 const dataset: UsermetaDatasetField[] = [
     {

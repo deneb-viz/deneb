@@ -1,5 +1,5 @@
 import { areAllTemplateFieldsAssigned } from './template-dataset';
-import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
+import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 import {
     type TrackedFields,
     type TrackedDrilldownProperties,

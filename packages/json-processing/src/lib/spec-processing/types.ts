@@ -1,7 +1,7 @@
 import { type Spec } from 'vega';
 import { type TopLevelSpec } from 'vega-lite';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import { type DatasetValueRow } from '@deneb-viz/powerbi-compat/dataset';
+import { type VegaDatum } from '@deneb-viz/data-core/value';
 
 /**
  * After parsing, we need to patch content. This represents the results of
@@ -25,7 +25,7 @@ export type GetProviderValidatorOptions = {
  * Options for getting the specification for the visual.
  */
 export type GetSpecificationForVisualOptions = {
-    values: DatasetValueRow[];
+    values: VegaDatum[];
     spec: object;
     provider: SpecProvider;
 };

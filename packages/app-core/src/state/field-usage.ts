@@ -8,7 +8,7 @@ import {
     type TrackedFields,
     type TrackedFieldWorkingProperties
 } from '@deneb-viz/json-processing/field-tracking';
-import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
+import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 import { StoreState } from './state';
 import { isExportSpecCommandEnabled, ModalDialogRole } from '../lib';
 import { StateCreator } from 'zustand';

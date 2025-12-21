@@ -1,7 +1,7 @@
 import { makeStyles, TableCell } from '@fluentui/react-components';
 
-import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
-import { DATASET_DEFAULT_NAME } from '@deneb-viz/powerbi-compat/dataset';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
+import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 import { CappedTextField } from '../ui';
 import {
     TEMPLATE_DATA_FIELD_COLUMN_MAX_WIDTH,

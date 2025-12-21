@@ -8,7 +8,7 @@ import {
     tokens
 } from '@fluentui/react-components';
 
-import { DATASET_DEFAULT_NAME } from '@deneb-viz/powerbi-compat/dataset';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 import { logRender } from '@deneb-viz/utils/logging';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 import { useDenebState } from '../../../../state';

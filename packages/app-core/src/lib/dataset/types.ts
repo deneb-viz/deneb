@@ -1,10 +1,7 @@
-import {
-    DatasetValueRow,
-    IDatasetFields
-} from '@deneb-viz/powerbi-compat/dataset';
+import {type DatasetFields } from '@deneb-viz/data-core/field';
+import {type VegaDatum} from '@deneb-viz/data-core/value';
 
 export type TabularDataset = {
-    fields: IDatasetFields;
-    // TODO: remove dependency on Power BI specific stuff and make this more generic; for now this will do
-    values: DatasetValueRow[];
+    fields: DatasetFields;
+    values: VegaDatum[];
 };

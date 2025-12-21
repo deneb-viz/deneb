@@ -3,7 +3,7 @@ import { type TrackedFields } from '../../../field-tracking';
 import {
     type UsermetaDatasetFieldKind,
     type UsermetaDatasetFieldType
-} from '@deneb-viz/template-usermeta';
+} from '@deneb-viz/data-core/field';
 import {
     stringToUint8Array,
     uint8ArrayToString

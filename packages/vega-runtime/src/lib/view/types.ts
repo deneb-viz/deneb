@@ -1,17 +1,20 @@
-import {
-    type CrossFilterTranslate,
-    type InteractivityLookupDataset
-} from '@deneb-viz/powerbi-compat/interactivity';
-import { type SelectionMode } from '@deneb-viz/template-usermeta';
+import { type View } from 'vega';
+
+/**
+ * A function that binds platform-specific event listeners to a Vega view.
+ * Implementations should close over any required dependencies (dataset, translations, etc.).
+ */
+export type ViewEventBinder = (view: View) => void;
 
 export type HandleNewViewOptions = {
-    dataset: InteractivityLookupDataset;
     logLevel: number;
-    selectionMode: SelectionMode;
     generateRenderId: () => void;
-    translate: CrossFilterTranslate;
     logError: (error: string) => void;
     logWarn: (warning: string) => void;
+    /**
+     * Optional array of binders to attach platform-specific events to the view.
+     */
+    viewEventBinders?: ViewEventBinder[];
 };
 
 export type HandleViewErrorOptions = {

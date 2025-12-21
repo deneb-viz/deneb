@@ -1,22 +1,21 @@
+import powerbi from 'powerbi-visuals-api';
 import type { StateCreator } from 'zustand';
 
 import { type DenebVisualStoreState } from './state';
 import { getDisplayModeAccordingToOptions } from '../lib/state';
-import {
-    type DatasetValueRow,
-    type IDatasetFields
-} from '@deneb-viz/powerbi-compat/dataset';
-import { type SelectorStatus } from '@deneb-viz/powerbi-compat/interactivity';
 import { getUpdatedDatasetSelectors } from '../lib/dataset/processing';
+import { type DatasetFields } from '@deneb-viz/data-core/field';
+import { type VegaDatum } from '@deneb-viz/data-core/value';
+import { type SelectorStatus } from '../lib/interactivity';
 
 export type DatasetSlice = {
-    fields: IDatasetFields;
+    fields: DatasetFields<powerbi.DataViewMetadataColumn>;
     hasDrilldown: boolean;
     hasHighlights: boolean;
     isFetchingAdditional: boolean;
     shouldProcess: boolean;
     rowsLoaded: number;
-    values: DatasetValueRow[];
+    values: VegaDatum[];
     version: number;
     setDataset: (payload: SetDatasetPayload) => void;
     setIsFetchingAdditional: (payload: SetIsFetchingAdditionalPayload) => void;
@@ -24,11 +23,11 @@ export type DatasetSlice = {
 };
 
 export type SetDatasetPayload = {
-    fields: IDatasetFields;
+    fields: DatasetFields<powerbi.DataViewMetadataColumn>;
     hasDrilldown: boolean;
     hasHighlights: boolean;
     rowsLoaded: number;
-    values: DatasetValueRow[];
+    values: VegaDatum[];
 };
 
 type SetIsFetchingAdditionalPayload = {

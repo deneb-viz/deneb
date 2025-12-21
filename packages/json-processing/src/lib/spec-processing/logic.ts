@@ -18,14 +18,12 @@ import {
 } from '../../validation';
 import { getParsedJsonWithResult } from '../../processing';
 import { omit } from '@deneb-viz/utils/object';
-import {
-    DATASET_DEFAULT_NAME,
-    DatasetValueRow
-} from '@deneb-viz/powerbi-compat/dataset';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
 import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
 import { SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { LocalVegaLoggerService } from '@deneb-viz/vega-runtime/extensibility';
+import { type VegaDatum } from '@deneb-viz/data-core/value';
 
 /**
  * Borrowed from vega-editor
@@ -202,7 +200,7 @@ const getPatchedConfig = (content: string): ContentPatchResult => {
 /**
  * Patch the data array in a spec to ensure that values from the visual dataset are in the correct place.
  */
-const getPatchedData = (spec: Spec, values: DatasetValueRow[]) => {
+const getPatchedData = (spec: Spec, values: VegaDatum[]) => {
     const name = DATASET_DEFAULT_NAME;
     logDebug('getPatchedData', { spec, values });
     try {
@@ -286,10 +284,7 @@ const getPatchedVegaSpec = (spec: Spec): Spec => {
  * Editor), so we do this here. We don't do this in `getPatchedVegaSpec`, as this creates too much overhead when
  * parsing the spec.
  */
-const getPatchedVegaSpecWithData = (
-    spec: Spec,
-    values: DatasetValueRow[]
-): Spec => {
+const getPatchedVegaSpecWithData = (spec: Spec, values: VegaDatum[]): Spec => {
     logTimeStart('getPatchedVegaSpecWithData');
     logDebug('getPatchedVegaSpecWithData', { spec, values });
     const merged = mergician(spec || {}, {
@@ -332,7 +327,7 @@ const getPatchedVegaLiteSpec = (spec: TopLevelSpec): TopLevelSpec => {
  */
 const getPatchedVegaLiteSpecWithData = (
     spec: TopLevelSpec,
-    values: DatasetValueRow[]
+    values: VegaDatum[]
 ): TopLevelSpec => {
     logTimeStart('getPatchedVegaLiteSpecWithData');
     const datasets = {

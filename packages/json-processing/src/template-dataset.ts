@@ -1,10 +1,10 @@
 import powerbi from 'powerbi-visuals-api';
-import type {
-    UsermetaDatasetField,
-    UsermetaDatasetFieldType,
-    UsermetaTemplate
-} from '@deneb-viz/template-usermeta';
+import type { UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { type DenebTemplateImportWorkingProperties } from './lib/template-processing';
+import {
+    type UsermetaDatasetField,
+    type UsermetaDatasetFieldType
+} from '@deneb-viz/data-core/field';
 
 /**
  * Ensure that all requirements are tested and validated before we can create.

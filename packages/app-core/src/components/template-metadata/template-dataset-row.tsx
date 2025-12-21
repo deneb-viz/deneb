@@ -1,4 +1,4 @@
-import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
+import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 import { type ModalDialogType } from '../ui';
 import { DataTypeColumnCell } from './data-type-column-cell';
 import { DataNameColumnCell } from './data-name-column-cell';

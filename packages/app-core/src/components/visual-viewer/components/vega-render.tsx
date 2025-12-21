@@ -9,10 +9,8 @@ import {
     getSpecificationForVisual,
     type CompiledSpecification
 } from '@deneb-viz/json-processing/spec-processing';
-import { tooltipHandler } from '@deneb-viz/powerbi-compat/interactivity';
 import { logDebug, logRender, logTimeStart } from '@deneb-viz/utils/logging';
 import { handleNewView, handleViewError } from '@deneb-viz/vega-runtime/view';
-import { type SelectionMode } from '@deneb-viz/template-usermeta';
 import { useDenebState } from '../../../state';
 import { getD3FormatLocale, getD3TimeFormatLocale } from '../../../lib/i18n';
 import { makeStyles } from '@fluentui/react-components';
@@ -20,8 +18,6 @@ import { VEGA_VIEWPORT_ADJUST } from '../constants';
 import { useDenebPlatformProvider } from '../../deneb-platform';
 
 type VegaRenderProps = {
-    enableTooltips: boolean;
-    multiSelectDelay: number;
     locale: string;
     logLevel: number;
     provider: SpecProvider;
@@ -48,8 +44,6 @@ const arePropsEqual = (
     const isSpecEqual =
         prevProps.specification.hashValue == nextProps.specification.hashValue;
     const isProviderEqual = prevProps.provider == nextProps.provider;
-    const isTooltipEqual =
-        prevProps.enableTooltips === nextProps.enableTooltips;
     const isRenderModeEqual = prevProps.renderMode == nextProps.renderMode;
     const isViewportEqual =
         prevProps.viewportHeight == nextProps.viewportHeight &&
@@ -59,7 +53,6 @@ const arePropsEqual = (
     const isSame =
         isSpecEqual &&
         isProviderEqual &&
-        isTooltipEqual &&
         isRenderModeEqual &&
         isViewportEqual &&
         isLocaleEqual &&
@@ -68,7 +61,6 @@ const arePropsEqual = (
         isSame,
         isSpecEqual,
         isProviderEqual,
-        isTooltipEqual,
         isRenderModeEqual,
         isViewportEqual,
         isLocaleEqual,
@@ -82,8 +74,6 @@ const arePropsEqual = (
  */
 export const VegaRender: React.FC<VegaRenderProps> = memo(
     ({
-        enableTooltips,
-        multiSelectDelay,
         locale,
         logLevel,
         provider,
@@ -92,33 +82,16 @@ export const VegaRender: React.FC<VegaRenderProps> = memo(
         viewportHeight,
         viewportWidth
     }) => {
-        const { vegaLoader } = useDenebPlatformProvider();
+        const { tooltipHandler, vegaLoader, viewEventBinders } =
+            useDenebPlatformProvider();
         const classes = useVegaRenderStyles();
-        const fields = useDenebState((state) => state.dataset.fields);
         const values = useDenebState((state) => state.dataset.values);
-        const {
-            selectionMode,
-            generateRenderId,
-            logWarn,
-            logError,
-            translate
-        } = useDenebState((state) => ({
-            selectionMode: state.visualSettings.vega.interactivity.selectionMode
-                .value as SelectionMode,
-            generateRenderId: state.interface.generateRenderId,
-            logWarn: state.specification.logWarn,
-            logError: state.specification.logError,
-            translate: state.i18n.translate
-        }));
-        const ttHandler = useMemo(
-            () =>
-                tooltipHandler({
-                    enabled: enableTooltips,
-                    fields,
-                    multiSelectDelay,
-                    values
-                }),
-            [enableTooltips, fields, multiSelectDelay, values]
+        const { generateRenderId, logWarn, logError } = useDenebState(
+            (state) => ({
+                generateRenderId: state.interface.generateRenderId,
+                logWarn: state.specification.logWarn,
+                logError: state.specification.logError
+            })
         );
         const numberFormatLocale = useMemo(() => getD3FormatLocale(), [locale]);
         const timeFormatLocale = useMemo(
@@ -131,16 +104,14 @@ export const VegaRender: React.FC<VegaRenderProps> = memo(
                     hashValue: specification.hashValue
                 });
                 handleNewView(view, {
-                    dataset: { fields, values },
                     logLevel,
-                    selectionMode,
                     generateRenderId,
                     logError,
                     logWarn,
-                    translate
+                    viewEventBinders
                 });
             },
-            [fields, values]
+            [viewEventBinders]
         );
         const onError = useCallback((error: Error) => {
             handleViewError(error, { generateRenderId, logError });
@@ -184,7 +155,7 @@ export const VegaRender: React.FC<VegaRenderProps> = memo(
                 actions={false}
                 renderer={renderMode}
                 loader={vegaLoader || undefined}
-                tooltip={ttHandler}
+                tooltip={tooltipHandler}
                 logLevel={logLevel}
                 formatLocale={numberFormatLocale}
                 timeFormatLocale={timeFormatLocale}

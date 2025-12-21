@@ -10,3 +10,9 @@ export {
     getThemeColorByIndex,
     getThemeColorByName
 } from './scheme';
+export type {
+    CrossFilterApplyResult,
+    CrossFilterApplyHandler,
+    CrossFilterClearHandler,
+    ExtensibilityExpressionHandlers
+} from './types';

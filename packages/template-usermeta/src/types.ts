@@ -1,3 +1,5 @@
+import type { UsermetaDatasetField } from '@deneb-viz/data-core/field';
+
 /**
  * Specifies the provider type for the template specification.
  */
@@ -10,21 +12,6 @@ export type SpecProvider = 'vega' | 'vegaLite';
  * `advanced` = advanced selection mode (let me do it for Deneb).
  */
 export type SelectionMode = 'simple' | 'advanced';
-
-/**
- * The type of field that should ideally be applied to a placeholder.
- */
-export type UsermetaDatasetFieldKind = 'column' | 'measure' | 'any';
-
-/**
- * The list of data types that can be used for this placeholder, for any columns or measures in the data model.
- */
-export type UsermetaDatasetFieldType =
-    | 'bool'
-    | 'text'
-    | 'numeric'
-    | 'dateTime'
-    | 'other';
 
 /**
  * Main template definition.
@@ -110,54 +97,6 @@ export interface UsermetaDeneb {
      * Which version of the provider library was used to create the specification.
      */
     providerVersion: string;
-}
-
-/**
- * Definitions for individual fields within the dataset.
- */
-export interface UsermetaDatasetField {
-    /**
-     * Unique field placeholder name. Must start and end with __ (double-underscore) and can only use alpha-numeric
-     * characters in-between.
-     * @pattern ^__[a-zA-Z0-9]+__$
-     * @maxLength 30
-     */
-    key: string;
-    /**
-     * The display name of the field when presenting the template to the end user.
-     * @maxLength 150
-     */
-    name: string;
-    /**
-     * Optional assistive text to display to the end-user when adding fields to the template.
-     * @maxLength 300
-     */
-    description?: string;
-    /**
-     * Specifies whether a column or measure (or either) should be used for this placeholder.
-     */
-    kind: UsermetaDatasetFieldKind;
-    /**
-     * The list of data types that can be used for this placeholder, for any columns or measures in the data model.
-     */
-    type: UsermetaDatasetFieldType;
-    /**
-     * Used internally by Deneb for import reconcilitation purposes once user supplies object from their own visual via
-     * the UI. This is the `queryName` of a supplied field from the data view.
-     * @ignore
-     */
-    suppliedObjectKey?: string;
-    /**
-     * Used internally by Deneb for import reconcilitation purposes once user supplies object from their own visual via
-     * the UI. This is the `displayName` of a supplied field from the data view.
-     * @ignore
-     */
-    suppliedObjectName?: string;
-    /**
-     * Used internally by Deneb for export reconcilitation purposes.
-     * @ignore
-     */
-    namePlaceholder?: string;
 }
 
 /**

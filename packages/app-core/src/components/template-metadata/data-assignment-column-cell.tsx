@@ -1,6 +1,6 @@
 import { makeStyles, TableCell } from '@fluentui/react-components';
 
-import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
+import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 import { type ModalDialogType } from '../ui';
 import { DataFieldDropdown } from './data-field-dropdown';
 

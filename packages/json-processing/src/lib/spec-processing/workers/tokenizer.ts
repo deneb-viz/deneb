@@ -16,10 +16,10 @@ import {
 } from 'jsonc-parser';
 import {
     getEscapedReplacerPattern,
-    JSON_FIELD_TRACKING_METADATA_PLACEHOLDER,
-    JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER,
-    type TokenPatternReplacer
-} from '../../field-tracking';
+    FIELD_TRACKING_METADATA_PLACEHOLDER,
+    FIELD_TRACKING_TOKEN_PLACEHOLDER,
+    type FieldPatternReplacer
+} from '@deneb-viz/data-core/field';
 
 /**
  * For the supplied text-based specification, process it as a JSON AST and traverse it, replacing all field names with
@@ -65,16 +65,16 @@ export const getTokenizedSpec = (
 const getTokenPatternsReplacement = (
     fieldName: string,
     placeholder: string,
-    supplementaryReplacers: TokenPatternReplacer[]
+    supplementaryReplacers: FieldPatternReplacer[]
 ) => {
     const namePattern = getEscapedReplacerPattern(fieldName);
     const replacers = supplementaryReplacers.map((r) => ({
         pattern: r.pattern.replaceAll(
-            JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER,
+            FIELD_TRACKING_TOKEN_PLACEHOLDER,
             namePattern
         ),
         replacer: r.replacer.replaceAll(
-            JSON_FIELD_TRACKING_METADATA_PLACEHOLDER,
+            FIELD_TRACKING_METADATA_PLACEHOLDER,
             placeholder
         )
     }));

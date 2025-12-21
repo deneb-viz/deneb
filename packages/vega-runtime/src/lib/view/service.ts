@@ -5,16 +5,10 @@ import {
 } from '@deneb-viz/powerbi-compat/visual-host';
 import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
 import { logDebug, logTimeEnd } from '@deneb-viz/utils/logging';
-import {
-    contextMenuHandler,
-    crossFilterHandler,
-    type CrossFilterTranslate,
-    type VegaDatum,
-    type InteractivityLookupDataset
-} from '@deneb-viz/powerbi-compat/interactivity';
 import { VegaPatternFillServices } from '../pattern-fill';
 import { DispatchingVegaLoggerService } from '../extensibility';
 import { HandleNewViewOptions, HandleViewErrorOptions } from './types';
+import { type VegaDatum } from '@deneb-viz/data-core/value';
 
 let view: View | null;
 
@@ -85,31 +79,6 @@ export const VegaViewServices = {
 Object.freeze(VegaViewServices);
 
 /**
- * For the supplied View, check conditions for context menu binding, and
- * apply/remove as necessary.
- */
-const bindContextMenuEvents = (
-    view: View,
-    dataset: InteractivityLookupDataset
-) => {
-    logDebug('Binding context menu listener...');
-    view.addEventListener('contextmenu', contextMenuHandler(dataset));
-};
-
-/**
- * For the supplied View, check conditions for data point selection binding,
- * and apply/remove as necessary.
- */
-const bindCrossFilterEvents = (
-    view: View,
-    dataset: InteractivityLookupDataset,
-    translate: CrossFilterTranslate
-) => {
-    logDebug('Binding cross-filter listener...');
-    view.addEventListener('click', crossFilterHandler(dataset, translate));
-};
-
-/**
  * For the supplied view, bind the custom container signals.
  */
 const bindContainerSignals = (view: View) => {
@@ -132,15 +101,8 @@ const bindContainerSignals = (view: View) => {
 export const handleNewView = (newView: View, options: HandleNewViewOptions) => {
     logDebug('Vega view initialized.');
     setRenderingStarted();
-    const {
-        dataset,
-        generateRenderId,
-        logError,
-        logWarn,
-        translate,
-        logLevel,
-        selectionMode
-    } = options;
+    const { generateRenderId, logError, logWarn, logLevel, viewEventBinders } =
+        options;
     newView.logger(
         new DispatchingVegaLoggerService(logLevel, logWarn, logError)
     );
@@ -155,10 +117,7 @@ export const handleNewView = (newView: View, options: HandleNewViewOptions) => {
             data: VegaViewServices.getAllData()
         });
         bindContainerSignals(view);
-        bindContextMenuEvents(view, dataset);
-        if (selectionMode === 'simple') {
-            bindCrossFilterEvents(view, dataset, translate);
-        }
+        viewEventBinders?.forEach((binder) => binder(view));
         generateRenderId();
         logTimeEnd('VegaRender');
         setRenderingFinished();

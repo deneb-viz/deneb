@@ -7,15 +7,13 @@ import {
     type DenebTemplateImportWorkingProperties,
     type DenebTemplateCreateMode
 } from '@deneb-viz/json-processing/template-processing';
-import {
-    type UsermetaDatasetField,
-    type UsermetaTemplate
-} from '@deneb-viz/template-usermeta';
+import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { type StoreState } from './state';
 import {
     areAllCreateDataRequirementsMet,
     getNewCreateFromTemplateSliceProperties
 } from '@deneb-viz/json-processing';
+import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 
 /**
  * Represents the create slice in the visual store.

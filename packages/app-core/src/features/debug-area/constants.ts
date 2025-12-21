@@ -1,7 +1,7 @@
 import {
     ROW_INDEX_FIELD_NAME,
     SELECTED_ROW_FIELD_NAME
-} from '@deneb-viz/powerbi-compat/dataset';
+} from '@deneb-viz/data-core/field';
 
 /**
  * List of reserved words for column headers that can benefit from specific tooltips explaining their purpose.

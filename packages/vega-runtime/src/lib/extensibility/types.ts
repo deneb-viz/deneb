@@ -1,16 +1,31 @@
-import {
-    type CrossFilterTranslate,
-    type InteractivityLookupDataset
-} from '@deneb-viz/powerbi-compat/interactivity';
-import { SelectionMode } from '@deneb-viz/template-usermeta';
+/**
+ * Result returned from a cross-filter apply operation.
+ */
+export type CrossFilterApplyResult = {
+    rowNumbers?: number[];
+    multiSelect?: boolean;
+    exceedsLimit?: boolean;
+    warning?: string;
+};
 
 /**
- * Options provided when updating extensibility services. This allows advanced corss-filtering to work with the latest
- * information from the visual host and state.
+ * Handler for clearing cross-filter selection.
  */
-export type ExtensibilityServicesUpdateOptions = {
-    dataset: InteractivityLookupDataset;
-    selectionMode: SelectionMode;
-    logWarn: (warning: string) => void;
-    translate: CrossFilterTranslate;
+export type CrossFilterClearHandler = () => void;
+
+/**
+ * Handler for applying cross-filter selection.
+ */
+export type CrossFilterApplyHandler = (
+    event: Event,
+    filterExpr: string,
+    options?: Record<string, unknown>
+) => CrossFilterApplyResult;
+
+/**
+ * Injectable handlers for custom Vega expressions.
+ */
+export type ExtensibilityExpressionHandlers = {
+    onCrossFilterClear?: CrossFilterClearHandler;
+    onCrossFilterApply?: CrossFilterApplyHandler;
 };

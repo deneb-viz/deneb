@@ -5,5 +5,11 @@
         "noEmit": false
     },
     "include": ["src/**/*", ".tmp/**/*"],
-    "exclude": ["node_modules", "dist", ".tmp/drop"]
+    "exclude": [
+        "node_modules",
+        "dist",
+        ".tmp/drop",
+        "**/*.test.*",
+        "**/*.spec.*"
+    ]
 }

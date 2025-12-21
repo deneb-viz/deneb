@@ -3,8 +3,10 @@ import { TopLevelSpec } from 'vega-lite';
 import { VEGA_LITE_SCHEMA_URL } from '.';
 import { getDenebTemplateDatasetRef, getNewIncludedTemplateMetadata } from '..';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
-import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
-import { SELECTED_ROW_FIELD_NAME } from '@deneb-viz/powerbi-compat/dataset';
+import {
+    SELECTED_ROW_FIELD_NAME,
+    type UsermetaDatasetField
+} from '@deneb-viz/data-core/field';
 
 const dataset: UsermetaDatasetField[] = [
     {

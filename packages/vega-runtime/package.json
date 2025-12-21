@@ -51,6 +51,7 @@
     },
     "dependencies": {
         "@deneb-viz/configuration": "*",
+        "@deneb-viz/data-core": "*",
         "@deneb-viz/utils": "*",
         "d3-interpolate": "^3.0.1",
         "d3-selection": "^3.0.0",

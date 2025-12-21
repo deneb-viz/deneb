@@ -5,24 +5,24 @@ import { mergician } from 'mergician';
 import { isBase64Image } from '@deneb-viz/utils/base64';
 import { isString } from '@deneb-viz/utils/inspection';
 import { uint8ArrayToString } from '@deneb-viz/utils/type-conversion';
-import type { UsermetaDatasetField } from '@deneb-viz/template-usermeta';
 import {
-    getEscapedReplacerPattern,
-    JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER,
     type TrackedDrilldownProperties,
     type TrackedFieldProperties,
     type TrackedFieldCandidates,
-    type TrackedFields,
-    getPlaceholderKey
+    type TrackedFields
 } from '../../field-tracking';
-import {
-    getDatasetFieldsInclusive,
-    type IDatasetField
-} from '@deneb-viz/powerbi-compat/dataset';
 import {
     type IDenebTrackingRequestPayload,
     type IDenebTrackingResponsePayload
 } from './types';
+import {
+    type DatasetField,
+    FIELD_TRACKING_TOKEN_PLACEHOLDER,
+    getDatasetFieldsInclusive,
+    getEscapedReplacerPattern,
+    getPlaceholderKey,
+    type UsermetaDatasetField
+} from '@deneb-viz/data-core/field';
 
 /**
  * For a Vega expression AST node, check if it has an occurrence of a field from the visual dataset.
@@ -102,7 +102,7 @@ const getTemplateMetadataOriginal = (
  * they are in the current dataset.
  */
 const getTrackedFieldMapCurrent = (
-    datasetFields: Record<string, IDatasetField>,
+    datasetFields: Record<string, DatasetField>,
     trackedFields: TrackedFields,
     reset = false
 ): TrackedFieldCandidates =>
@@ -134,7 +134,7 @@ const getTokenPatternsLiteral = (
 ) => {
     const namePattern = getEscapedReplacerPattern(fieldName);
     const replacers = supplementaryPatterns.map((p) =>
-        p.replaceAll(JSON_FIELD_TRACKING_TOKEN_PLACEHOLDER, namePattern)
+        p.replaceAll(FIELD_TRACKING_TOKEN_PLACEHOLDER, namePattern)
     );
     return [`(^${namePattern}$)`, ...replacers];
 };
@@ -174,7 +174,7 @@ export const getTrackingDataFromSpecification = (
         reset,
         supplementaryPatterns
     } = options;
-    const datasetFields = <Record<string, IDatasetField>>(
+    const datasetFields = <Record<string, DatasetField>>(
         getDatasetFieldsInclusive(fields)
     );
     const trackedFields: TrackedFields = {};

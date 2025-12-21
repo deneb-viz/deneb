@@ -2,7 +2,15 @@ import { createContext, useMemo, type ReactNode } from 'react';
 
 import { type DenebPlatformProviderProps } from '../types';
 
-type DenebPlatformProviderContextProps = Required<DenebPlatformProviderProps>;
+/**
+ * Context props type - makes most props required (with defaults), but keeps
+ * tooltipHandler optional since it's platform-specific and may not be provided.
+ */
+type DenebPlatformProviderContextProps = Omit<
+    Required<DenebPlatformProviderProps>,
+    'tooltipHandler'
+> &
+    Pick<DenebPlatformProviderProps, 'tooltipHandler'>;
 
 export const DenebPlatformProviderContext =
     createContext<DenebPlatformProviderContextProps | null>(null);
@@ -10,7 +18,9 @@ export const DenebPlatformProviderContext =
 export const DenebPlatformProvider = ({
     isDownloadPermitted = true,
     settingsPanePlatformComponent = <></>,
+    tooltipHandler,
     vegaLoader = null,
+    viewEventBinders = [],
     downloadJsonFile = downloadJsonFileDefault,
     launchUrl = launchUrlDefault,
     children
@@ -19,11 +29,19 @@ export const DenebPlatformProvider = ({
         () => ({
             isDownloadPermitted,
             settingsPanePlatformComponent,
+            tooltipHandler,
             vegaLoader,
+            viewEventBinders,
             downloadJsonFile,
             launchUrl
         }),
-        [launchUrl, settingsPanePlatformComponent, vegaLoader]
+        [
+            launchUrl,
+            settingsPanePlatformComponent,
+            tooltipHandler,
+            vegaLoader,
+            viewEventBinders
+        ]
     );
 
     return (

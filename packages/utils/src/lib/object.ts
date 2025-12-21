@@ -1,4 +1,5 @@
 import stringify from 'json-stringify-pretty-compact';
+import { isDate, isObject } from './inspection';
 
 /**
  * Path for a nested object. Each element in the array is a key to access the next level of the object.
@@ -72,6 +73,20 @@ export const getPrunedObject = (
     });
     return JSON.parse(pruned);
 };
+
+/**
+ * Ensure that tooltip values are correctly sanitized for output into a default tooltip.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const getSanitizedTooltipValue = (
+    value: any,
+    whitespaceChar = DEFAULT_WHITESPACE_CHAR
+) =>
+    isObject(value) && !isDate(value)
+        ? stringifyPruned(value, {
+              whitespaceChar
+          })
+        : `${value}`;
 
 /**
  * Checks if an object matches all key-value pairs in the source object.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { type UsermetaDatasetField } from '@deneb-viz/template-usermeta';
+import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 import {
     areAllRemapDataRequirementsMet,
     getRemapEligibleFields,
