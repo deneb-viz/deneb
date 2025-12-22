@@ -9,7 +9,8 @@
         "dist/**"
       ],
       "dependsOn": [
-        "@deneb-viz/powerbi-compat#build"
+        "@deneb-viz/powerbi-compat#build",
+        "@deneb-viz/data-core#build"
       ]
     }
   }
