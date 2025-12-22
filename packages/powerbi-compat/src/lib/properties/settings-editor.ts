@@ -1,5 +1,8 @@
 import { formattingSettings } from 'powerbi-visuals-utils-formattingmodel';
-import { DATA_VIEWER_CONFIGURATION } from '@deneb-viz/configuration';
+import {
+    DATA_VIEWER_CONFIGURATION,
+    EDITOR_DEFAULTS
+} from '@deneb-viz/configuration';
 import { DEFAULTS } from './constants';
 
 export class SettingsEditor extends formattingSettings.CompositeCard {
@@ -98,16 +101,16 @@ class SettingsEditorGroupJson extends formattingSettings.Group {
         descriptionKey: 'Objects_Editor_DebouncePeriod_Description',
         options: {
             minValue: {
-                value: DEFAULTS.editor.debouncePeriod.min,
+                value: EDITOR_DEFAULTS.debouncePeriod.min,
                 type: 0
             },
             maxValue: {
-                value: DEFAULTS.editor.debouncePeriod.max,
+                value: EDITOR_DEFAULTS.debouncePeriod.max,
                 type: 1
             },
             unitSymbol: DEFAULTS.unitSymbols.milliseconds
         },
-        value: DEFAULTS.editor.debouncePeriod.default
+        value: EDITOR_DEFAULTS.debouncePeriod.default
     });
     slices = [
         this.position,
