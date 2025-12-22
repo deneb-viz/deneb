@@ -280,7 +280,6 @@ const manager = (() => {
      */
     const clearSelectors = (): void => {
         _store.clear();
-        _selectionManager?.clear();
         _cachedQueueLength = undefined;
     };
 
