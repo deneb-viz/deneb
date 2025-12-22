@@ -3,12 +3,10 @@ import {
     uint8ArrayToString
 } from '@deneb-viz/utils/type-conversion';
 import { getTokenizedSpec } from '../tokenizer';
-import {
-    getTokenPatternsReplacement,
-    type TrackedFields
-} from '../../../field-tracking';
+import { type TrackedFields } from '../../../field-tracking';
 import { describe, expect, it } from 'vitest';
 import { type IDenebTokenizationRequestPayload } from '../types';
+import { getTokenPatternsReplacement } from '@deneb-viz/data-core/field';
 
 const TRACKED_FIELDS_NO_REMAP_PENDING: TrackedFields = {
     'Date.Date': {
