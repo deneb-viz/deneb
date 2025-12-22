@@ -11,7 +11,6 @@ import { isMappingDialogRequired } from '@deneb-viz/json-processing';
 import { getNewUuid } from '@deneb-viz/utils/crypto';
 import { StateCreator } from 'zustand';
 import { getModalDialogRole } from '../lib/interface/state';
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import {
     getEditorPreviewAreaWidth,
     getEditPaneDefaultWidth,
@@ -19,6 +18,7 @@ import {
     getPreviewAreaHeightMaximum,
     getResizablePaneSize
 } from '../lib/interface/layout';
+import { EDITOR_DEFAULTS } from '@deneb-viz/configuration';
 
 export type InterfaceSliceProperties = {
     editorPosition: EditorPanePosition;
@@ -106,7 +106,7 @@ export const createInterfaceSlice =
     > =>
     (set, get) => ({
         interface: {
-            editorPosition: DEFAULTS.editor.position as EditorPanePosition,
+            editorPosition: EDITOR_DEFAULTS.position as EditorPanePosition,
             embedViewport: null,
             exportProcessingState: 'None',
             isTokenizingSpec: false,

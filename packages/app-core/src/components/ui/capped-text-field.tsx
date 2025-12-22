@@ -12,8 +12,8 @@ import {
 } from '@fluentui/react-components';
 import { useDebounce } from '@uidotdev/usehooks';
 
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { useDenebState } from '../../state';
+import { EDITOR_DEFAULTS } from '@deneb-viz/configuration';
 
 type CappedTextFieldProps = {
     id: string;
@@ -52,7 +52,7 @@ export const CappedTextField = (props: CappedTextFieldProps) => {
     );
     const debouncedValue = useDebounce(
         value,
-        DEFAULTS.editor.debouncePeriod.default
+        EDITOR_DEFAULTS.debouncePeriod.default
     );
 
     useEffect(() => {

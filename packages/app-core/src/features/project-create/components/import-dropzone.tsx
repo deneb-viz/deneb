@@ -10,10 +10,10 @@ import {
 import { useDropzone, FileWithPath } from 'react-dropzone';
 
 import { getValidatedTemplate } from '@deneb-viz/json-processing';
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { type DenebTemplateImportState } from '@deneb-viz/json-processing/template-processing';
 import { getDenebState, useDenebState } from '../../../state';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
+import { EDITOR_DEFAULTS } from '@deneb-viz/configuration';
 
 /**
  * Base styling for dropzone.
@@ -209,7 +209,7 @@ const handleValidation = (content: string) => {
     setImportState({ importState: 'Validating', refresh: true });
     const validationResult = getValidatedTemplate(
         content,
-        DEFAULTS.editor.tabSize
+        EDITOR_DEFAULTS.tabSize
     );
     setImportFile(validationResult);
 };

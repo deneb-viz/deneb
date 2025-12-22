@@ -19,12 +19,12 @@ import {
     getTemplateMetadata,
     getTemplateResolvedForPlaceholderAssignment
 } from '@deneb-viz/json-processing';
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { logRender } from '@deneb-viz/utils/logging';
 import { getVegaProviderI18n } from '../../../lib/vega';
 import { useDenebState } from '../../../state';
+import { EDITOR_DEFAULTS } from '@deneb-viz/configuration';
 
 type SelectIncludedTemplateProps = {
     createMode: SpecProvider;
@@ -89,7 +89,7 @@ export const SelectIncludedTemplate = ({
         const templateContent = JSON.stringify(template);
         const candidates = getTemplateResolvedForPlaceholderAssignment(
             templateContent,
-            DEFAULTS.editor.tabSize
+            EDITOR_DEFAULTS.tabSize
         );
         setTemplate({
             metadata: getTemplateMetadata(templateContent),

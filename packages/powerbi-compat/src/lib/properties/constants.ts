@@ -1,4 +1,7 @@
-import { DATA_VIEWER_CONFIGURATION } from '@deneb-viz/configuration';
+import {
+    DATA_VIEWER_CONFIGURATION,
+    EDITOR_DEFAULTS
+} from '@deneb-viz/configuration';
 
 /**
  * Default values for Deneb's persistable properties, matching the structure of the visual capabilities from the Power
@@ -67,11 +70,7 @@ export const DEFAULTS = {
         /**
          * Interval in milliseconds to debounce editor changes.
          */
-        debouncePeriod: {
-            default: 700,
-            min: 0,
-            max: 1000
-        },
+        debouncePeriod: EDITOR_DEFAULTS,
         /**
          * Font size for the JSON editor.
          */
@@ -87,7 +86,7 @@ export const DEFAULTS = {
         /**
          * Preferred editor position within interface.
          */
-        position: 'left',
+        position: EDITOR_DEFAULTS.position,
         /**
          * Show scrollbars in advanced editor preview area.
          */
@@ -103,7 +102,7 @@ export const DEFAULTS = {
         /**
          * Number of spaces to use for tab size in the JSON editor.
          */
-        tabSize: 2,
+        tabSize: EDITOR_DEFAULTS.tabSize,
         /**
          * The theme to use for the editor.
          */

@@ -3,7 +3,6 @@ import { useDebounce } from '@uidotdev/usehooks';
 import { makeStyles, useUncontrolledFocus } from '@fluentui/react-components';
 import Editor, { loader, OnChange, OnMount } from '@monaco-editor/react';
 
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { ptToPx } from '@deneb-viz/utils/dom';
 import { getProviderSchema } from '@deneb-viz/json-processing';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
@@ -24,6 +23,7 @@ import { SpecificationEditorStatusBar } from './specification-editor-status-bar'
 import { updateFieldTracking } from '../../../lib/field-processing';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 import { DatasetField } from '@deneb-viz/data-core/field';
+import { EDITOR_DEFAULTS } from '@deneb-viz/configuration';
 
 /**
  * Initialize Monaco editor on first mount. This is deferred from module load time to only run when the editor is
@@ -223,7 +223,7 @@ export const SpecificationJsonEditor = ({
                     minimap: { enabled: false },
                     quickSuggestions: true,
                     scrollBeyondLastLine: false,
-                    tabSize: DEFAULTS.editor.tabSize,
+                    tabSize: EDITOR_DEFAULTS.tabSize,
                     wordWrap: wordWrap ? 'on' : 'off'
                 }}
             />

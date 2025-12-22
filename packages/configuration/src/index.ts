@@ -54,6 +54,15 @@ export const DEBUG_PANE_CONFIGURATION = {
 };
 
 /**
+ * Default values for the advanced editor interface.
+ */
+export const EDITOR_DEFAULTS = {
+    debouncePeriod: { default: 700, min: 0, max: 1000 },
+    position: 'left',
+    tabSize: 2
+};
+
+/**
  * Log level configuration for Vega logging and UI representation.
  */
 export const VEGA_LOG_LEVEL_CONFIGURATION = [
