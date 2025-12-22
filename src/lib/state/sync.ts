@@ -70,44 +70,48 @@ const subscribeEmbedViewport = (): (() => void) => {
             mode: state.interface.mode,
             hasHydrated: state.updates.__hydrated__
         }),
-        ({ embedViewport: reportViewport, mode, hasHydrated }) => {
+        ({ embedViewport: newEmbedViewport, mode, hasHydrated }) => {
             // Sync to app-core
             const { embedViewport, setEmbedViewport } =
                 getDenebState().interface;
-            if (!shallowEqual(embedViewport, reportViewport)) {
+            if (!shallowEqual(embedViewport, newEmbedViewport)) {
                 logDebug(
                     '[StoreSynchronization] Embed viewport changed, syncing to app-core store...',
-                    { reportViewport }
+                    { newEmbedViewport }
                 );
-                setEmbedViewport(reportViewport);
+                setEmbedViewport(newEmbedViewport);
             }
 
             // Persist to Power BI (only in viewer mode after hydration)
-            if (hasHydrated && mode === 'viewer' && reportViewport) {
+            if (hasHydrated && mode === 'viewer' && newEmbedViewport) {
                 const settings = useDenebVisualState.getState().settings;
-                const storedHeight =
-                    settings.stateManagement.viewport.viewportHeight.value;
-                const storedWidth =
-                    settings.stateManagement.viewport.viewportWidth.value;
+                const storedHeight = String(
+                    settings.stateManagement.viewport.viewportHeight.value
+                );
+                const storedWidth = String(
+                    settings.stateManagement.viewport.viewportWidth.value
+                );
 
                 if (
-                    storedHeight !== String(reportViewport.height) ||
-                    storedWidth !== String(reportViewport.width)
+                    storedHeight !== String(newEmbedViewport.height) ||
+                    storedWidth !== String(newEmbedViewport.width)
                 ) {
                     logDebug(
                         '[StoreSynchronization] Embed viewport changed, persisting to Power BI...',
-                        { reportViewport }
+                        {
+                            newEmbedViewport
+                        }
                     );
                     persistProjectProperties([
                         {
                             objectName: 'stateManagement',
                             propertyName: 'viewportHeight',
-                            value: reportViewport.height
+                            value: newEmbedViewport.height
                         },
                         {
                             objectName: 'stateManagement',
                             propertyName: 'viewportWidth',
-                            value: reportViewport.width
+                            value: newEmbedViewport.width
                         }
                     ]);
                 }
