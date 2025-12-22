@@ -1,4 +1,4 @@
-import { pickBy } from 'lodash';
+import { pickBy } from '@deneb-viz/utils/object';
 import type { DatasetFields, UsermetaDatasetField } from './types';
 
 /**
