@@ -49,11 +49,16 @@ export const createUpdatesSlice = (): StateCreator<
                                     state.dataset.isFetchingAdditional
                             }
                         );
+                        const mode = history[0]?.displayMode ?? 'initializing';
                         return {
                             dataset: {
                                 ...state.dataset,
                                 shouldProcess:
                                     isVisualUpdateTypeVolatile(options)
+                            },
+                            interface: {
+                                ...state.interface,
+                                mode
                             },
                             settings: {
                                 ...state.settings,
@@ -71,9 +76,6 @@ export const createUpdatesSlice = (): StateCreator<
                     false,
                     'updates.setVisualUpdateOptions'
                 );
-                const mode =
-                    get().updates.history[0]?.displayMode ?? 'initializing';
-                get().interface.setMode(mode);
             }
             const { viewport } = options;
             // Update embed viewport if needed
