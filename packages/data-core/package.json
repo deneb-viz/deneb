@@ -1,0 +1,52 @@
+{
+    "name": "@deneb-viz/data-core",
+    "version": "1.9.0",
+    "author": "Deneb contributors",
+    "private": true,
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/deneb-viz/deneb.git"
+    },
+    "packageManager": "npm@10.3.0",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./dataset": {
+            "types": "./dist/lib/dataset/index.d.ts",
+            "default": "./dist/lib/dataset/index.js"
+        },
+        "./field": {
+            "types": "./dist/lib/field/index.d.ts",
+            "default": "./dist/lib/field/index.js"
+        },
+        "./value": {
+            "types": "./dist/lib/value/index.d.ts",
+            "default": "./dist/lib/value/index.js"
+        }
+    },
+    "sideEffects": false,
+    "scripts": {
+        "build": "npm run clean && tsc -p tsconfig.json",
+        "dev": "tsc -p tsconfig.json --watch",
+        "clean": "rimraf dist",
+        "typecheck": "tsc --noEmit",
+        "eslint": "eslint .",
+        "test": "vitest run",
+        "test:watch": "vitest"
+    },
+    "devDependencies": {
+        "@deneb-viz/eslint-config": "*",
+        "@deneb-viz/typescript-config": "*",
+        "@types/node": "^22.15.33",
+        "typescript": "^5.6.2",
+        "vitest": "^3.2.4"
+    },
+    "dependencies": {},
+    "peerDependencies": {}
+}

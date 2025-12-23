@@ -1,0 +1,12 @@
+{
+    "extends": "@deneb-viz/typescript-config/base.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "noEmit": true,
+        "lib": ["ES2022", "DOM"],
+        "baseUrl": ".",
+        // Disable isolatedModules for schema generation so type-only path remaps are allowed.
+        "isolatedModules": false
+    },
+    "include": ["src/types.ts"]
+}

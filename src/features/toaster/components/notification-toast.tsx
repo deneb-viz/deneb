@@ -1,4 +1,4 @@
-import React from 'react';
+import { type ReactNode } from 'react';
 import {
     Toast,
     ToastBody,
@@ -6,19 +6,19 @@ import {
     ToastTitle
 } from '@fluentui/react-components';
 
-interface INotificationToastProps {
+type NotificationToastProps = {
     title: string;
     subtitle?: string;
     body: string;
-    footer: React.ReactNode;
-}
+    footer: ReactNode;
+};
 
-export const NotificationToast: React.FC<INotificationToastProps> = ({
+export const NotificationToast = ({
     title,
     subtitle,
     body,
     footer
-}) => {
+}: NotificationToastProps) => {
     return (
         <Toast>
             <ToastTitle>{title}</ToastTitle>

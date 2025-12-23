@@ -1,57 +1,65 @@
-import React, { useCallback } from 'react';
+import { useCallback } from 'react';
 
 import { Link } from '@fluentui/react-components';
-import { shallow } from 'zustand/shallow';
 
 import { InteractivityCheckbox } from './interactivity-checkbox';
-import { SettingsHeadingLabel } from './settings-heading-label';
-import { SettingsTextSection } from './settings-text-section';
 import { CrossFilterMaxDataPoints } from './cross-filter-max-data-points';
 import { CrossFilterModeSettings } from './cross-filter-mode-settings';
-import store from '../../../store';
-import { getI18nValue } from '../../i18n';
-import { useSettingsStyles } from '.';
-import { FEATURES, PROVIDER_RESOURCES } from '../../../../config';
-import { launchUrl } from '../../visual-host';
+import { useSettingsStyles } from '../styles';
+import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
+import {
+    SettingsHeadingLabel,
+    SettingsTextSection,
+    useDenebPlatformProvider,
+    useDenebState,
+    useSettingsPaneStyles
+} from '@deneb-viz/app-core';
 
-export const InteractivitySettings: React.FC = () => {
-    const {
-        enableSelection: { value: enableSelection },
-        selectionMode: { value: selectionMode }
-    } = store((state) => state.visualSettings.vega.interactivity, shallow);
+export const InteractivitySettings = () => {
+    const { enableSelection, selectionMode, translate } = useDenebState(
+        (state) => ({
+            enableSelection:
+                state.visualSettings.vega.interactivity.enableSelection.value,
+            selectionMode:
+                state.visualSettings.vega.interactivity.selectionMode.value,
+            translate: state.i18n.translate
+        })
+    );
+    const { launchUrl } = useDenebPlatformProvider();
     const openInteractivityLink = useCallback(() => {
-        launchUrl(PROVIDER_RESOURCES.deneb.interactivityDocumentationUrl);
+        launchUrl(
+            PROVIDER_RESOURCE_CONFIGURATION.deneb.interactivityDocumentationUrl
+        );
     }, []);
     const classes = useSettingsStyles();
+    const spClasses = useSettingsPaneStyles();
     return (
-        <div className={classes.sectionContainer}>
+        <div className={spClasses.sectionContainer}>
             <SettingsHeadingLabel>
-                {getI18nValue('Objects_Vega_Interactivity')}
+                {translate('PowerBI_Objects_Vega_Interactivity')}
             </SettingsHeadingLabel>
             <InteractivityCheckbox type='tooltip' />
             <InteractivityCheckbox type='context' />
             <InteractivityCheckbox type='highlight' />
             <InteractivityCheckbox type='select' />
             <SettingsTextSection>
-                {getI18nValue('Assistive_Text_Interactivity')}{' '}
+                {translate('PowerBI_Assistive_Text_Interactivity')}{' '}
                 <Link
                     onClick={openInteractivityLink}
                     className={classes.interactivityLink}
                 >
-                    {getI18nValue('Link_Interactivity_Doc')}
+                    {translate('PowerBI_Interactivity_Link_Doc')}
                 </Link>
             </SettingsTextSection>
             {(enableSelection && (
                 <>
-                    {FEATURES.advanced_cross_filtering && (
-                        <CrossFilterModeSettings />
-                    )}
+                    <CrossFilterModeSettings />
                     {selectionMode === 'simple' && (
                         <>
                             <CrossFilterMaxDataPoints />
                             <SettingsTextSection>
-                                {getI18nValue(
-                                    'Objects_Vega_SelectionMaxDataPoints_Description'
+                                {translate(
+                                    'PowerBI_Objects_Vega_SelectionMaxDataPoints_Description'
                                 )}
                             </SettingsTextSection>
                         </>

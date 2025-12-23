@@ -1,5 +1,4 @@
-import * as React from 'react';
-import { shallow } from 'zustand/shallow';
+import { type FormEvent, useCallback } from 'react';
 import {
     Field,
     Radio,
@@ -8,32 +7,30 @@ import {
     Text
 } from '@fluentui/react-components';
 
-import { updateSelectionMode } from '../../../core/ui/commands';
-import store from '../../../store';
-import { getI18nValue } from '../../i18n';
-import { SelectionMode, SpecProvider } from '@deneb-viz/core-dependencies';
-import { getVisualSelectionManager } from '../../visual-host';
-import { useSettingsStyles } from '.';
+import { useSettingsStyles } from '../styles';
+import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import {
+    getDenebState,
+    handleSelectionMode,
+    useDenebState
+} from '@deneb-viz/app-core';
+import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
+import { InteractivityManager } from '../../../lib/interactivity';
 
-export const CrossFilterModeSettings: React.FC = () => {
-    const {
-        visualSettings: {
-            vega: {
-                output: {
-                    provider: { value: provider }
-                },
-                interactivity: {
-                    selectionMode: { value: selectionMode }
-                }
+export const CrossFilterModeSettings = () => {
+    const { provider, selectionMode, translate } = useDenebState((state) => ({
+        provider: state.visualSettings.vega.output.provider
+            .value as SpecProvider,
+        selectionMode: state.visualSettings.vega.interactivity.selectionMode
+            .value as SelectionMode,
+        translate: state.i18n.translate
+    }));
+    const onChange = useCallback(
+        (ev: FormEvent<HTMLDivElement>, data: RadioGroupOnChangeData) => {
+            if (InteractivityManager.hasSelection()) {
+                InteractivityManager.crossFilter();
             }
-        }
-    } = store((state) => state, shallow);
-    const onChange = React.useCallback(
-        (ev: React.FormEvent<HTMLDivElement>, data: RadioGroupOnChangeData) => {
-            if (getVisualSelectionManager().hasSelection()) {
-                getVisualSelectionManager().clear();
-            }
-            updateSelectionMode(
+            handleSelectionMode(
                 data.value as SelectionMode,
                 provider as SpecProvider
             );
@@ -41,7 +38,7 @@ export const CrossFilterModeSettings: React.FC = () => {
         []
     );
     return (
-        <Field label={getI18nValue('Objects_Vega_SelectionMode')}>
+        <Field label={translate('PowerBI_Objects_Vega_SelectionMode')}>
             <RadioGroup
                 value={selectionMode as SelectionMode}
                 onChange={onChange}
@@ -49,15 +46,15 @@ export const CrossFilterModeSettings: React.FC = () => {
                 <Radio
                     value='simple'
                     label={getRadioLabel(
-                        'Enum_SelectionMode_Simple',
-                        'Text_Radio_Button_Description_Cross_Filter_Simple'
+                        'PowerBI_Enum_SelectionMode_Simple',
+                        'PowerBI_Radio_Button_Description_Cross_Filter_Simple'
                     )}
                 />
                 <Radio
                     value='advanced'
                     label={getRadioLabel(
-                        'Enum_SelectionMode_Advanced',
-                        'Text_Radio_Button_Description_Cross_Filter_Advanced'
+                        'PowerBI_Enum_SelectionMode_Advanced',
+                        'PowerBI_Radio_Button_Description_Cross_Filter_Advanced'
                     )}
                     disabled={provider === 'vegaLite'}
                 />
@@ -68,12 +65,13 @@ export const CrossFilterModeSettings: React.FC = () => {
 
 const getRadioLabel = (labelKey: string, descriptionKey: string) => {
     const classes = useSettingsStyles();
+    const { translate } = getDenebState().i18n;
     return (
         <>
-            {getI18nValue(labelKey)}
+            {translate(labelKey)}
             <br />
             <Text size={200} className={classes.radioGroupLabel}>
-                {getI18nValue(descriptionKey)}
+                {translate(descriptionKey)}
             </Text>
         </>
     );

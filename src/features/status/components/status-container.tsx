@@ -1,8 +1,8 @@
 import React from 'react';
-import { logRender } from '../../logging';
 import { FluentProvider } from '@fluentui/react-components';
-import { Themes } from '../../interface';
 import { useStatusStyles } from '.';
+import { getDenebTheme, THEME_DEFAULT } from '@deneb-viz/app-core';
+import { logRender } from '@deneb-viz/utils/logging';
 
 type StatusContainerProps = {
     children: React.ReactNode;
@@ -17,7 +17,10 @@ export const StatusContainer: React.FC<StatusContainerProps> = ({
     const classes = useStatusStyles();
     logRender('StatusContainer');
     return (
-        <FluentProvider theme={Themes.light} className={classes.container}>
+        <FluentProvider
+            theme={getDenebTheme(THEME_DEFAULT)}
+            className={classes.container}
+        >
             <div className={classes.flexContainerVertical}>{children}</div>
         </FluentProvider>
     );

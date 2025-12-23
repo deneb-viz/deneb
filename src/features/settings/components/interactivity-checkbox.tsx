@@ -1,37 +1,44 @@
-import React, { useMemo } from 'react';
+import { ChangeEvent, useCallback, useMemo } from 'react';
 import { Checkbox, CheckboxOnChangeData } from '@fluentui/react-components';
 
-import store from '../../../store';
-import { updateBooleanProperty } from '../../../core/ui/commands';
-import { TInteractivityType } from '../../interactivity/types';
-import { getI18nValue } from '../../i18n';
-import { useSettingsStyles } from '.';
-import { getVisualSelectionManager } from '../../visual-host';
+import { useSettingsStyles } from '../styles';
+import {
+    handlePersistBooleanProperty,
+    useDenebState
+} from '@deneb-viz/app-core';
+import { InteractivityManager } from '../../../lib/interactivity';
 
-interface IInteractivityCheckboxProps {
+/**
+ * Used to denote supported interactivity types within Deneb. These can be used
+ * to flag any contextual methods for any particular functionality.
+ */
+type TInteractivityType = 'tooltip' | 'highlight' | 'select' | 'context';
+
+type InteractivityCheckboxProps = {
     type: TInteractivityType;
-}
+};
 
-export const InteractivityCheckbox: React.FC<IInteractivityCheckboxProps> = ({
-    type
-}) => {
-    const { interactivity } = store((state) => state.visualSettings.vega);
+export const InteractivityCheckbox = ({ type }: InteractivityCheckboxProps) => {
+    const { interactivity, translate } = useDenebState((state) => ({
+        interactivity: state.visualSettings.vega.interactivity,
+        translate: state.i18n.translate
+    }));
     const propertyName = useMemo(() => getPropertyName(type), [type]);
     const classes = useSettingsStyles();
-    const handleToggle = React.useCallback(
+    const handleToggle = useCallback(
         (
-            ev: React.ChangeEvent<HTMLInputElement>,
+            ev: ChangeEvent<HTMLInputElement>,
             data: CheckboxOnChangeData
         ): void => {
             const value = !!data.checked;
             if (
                 type === 'select' &&
                 !value &&
-                getVisualSelectionManager().hasSelection()
+                InteractivityManager.hasSelection()
             ) {
-                getVisualSelectionManager().clear();
+                InteractivityManager.crossFilter();
             }
-            updateBooleanProperty(propertyName, value);
+            handlePersistBooleanProperty(propertyName, value);
         },
         []
     );
@@ -39,7 +46,7 @@ export const InteractivityCheckbox: React.FC<IInteractivityCheckboxProps> = ({
     return (
         status && (
             <Checkbox
-                label={getI18nValue(geti18LabelKey(type))}
+                label={translate(geti18LabelKey(type))}
                 checked={interactivity[propertyName]?.value || false}
                 onChange={handleToggle}
                 className={classes.sectionItem}
@@ -64,13 +71,13 @@ const getFeatureStatus = (type: TInteractivityType) => {
 const geti18LabelKey = (type: TInteractivityType) => {
     switch (type) {
         case 'context':
-            return 'Objects_Vega_EnableContextMenu';
+            return 'PowerBI_Objects_Vega_EnableContextMenu';
         case 'highlight':
-            return 'Objects_Vega_EnableHighlight';
+            return 'PowerBI_Objects_Vega_EnableHighlight';
         case 'select':
-            return 'Objects_Vega_EnableSelection';
+            return 'PowerBI_Objects_Vega_EnableSelection';
         case 'tooltip':
-            return 'Objects_Vega_EnableTooltips';
+            return 'PowerBI_Objects_Vega_EnableTooltips';
     }
 };
 

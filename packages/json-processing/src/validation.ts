@@ -1,14 +1,11 @@
 import Ajv, { ErrorObject, ValidateFunction } from 'ajv';
+import { mergician } from 'mergician';
 import addFormats from 'ajv-formats';
-import merge from 'lodash/merge';
+import { VEGA_LITE_SCHEME_ADDITIONS } from '@deneb-viz/vega-runtime/extensibility';
 import {
-    GetProviderValidatorOptions,
-    SchemaProviderReference,
-    VEGA_SCHEME_POWERBI_DIVERGENT,
-    VEGA_SCHEME_POWERBI_LINEAR,
-    VEGA_SCHEME_POWERBI_NOMINAL,
-    VEGA_SCHEME_POWERBI_ORDINAL
-} from '@deneb-viz/core-dependencies';
+    type GetProviderValidatorOptions,
+    type SchemaProviderReference
+} from './lib/spec-processing';
 
 /**
  * All schemas required for validation functions.
@@ -16,48 +13,61 @@ import {
 import * as vegaSchema from 'vega/vega-schema.json';
 import * as vegaLiteSchema from 'vega-lite/vega-lite-schema.json';
 import * as draft06Schema from 'ajv/lib/refs/json-schema-draft-06.json';
-import * as denebUserMetaSchema from '@deneb-viz/template-usermeta-schema';
+import * as denebUserMetaSchema from '@deneb-viz/template-usermeta/schema.deneb-template-usermeta.json';
 
 /**
  * Create a common validator, with the necessary schema support for Vega/
- * Vega-Lite.
+ * Vega-Lite. Lazy initialized on first use.
  */
-const BASE_VALIDATOR = new Ajv({
-    strict: false
-});
-addFormats(BASE_VALIDATOR);
-BASE_VALIDATOR.addMetaSchema(draft06Schema);
-// istanbul ignore next
-BASE_VALIDATOR.addFormat('color-hex', () => true);
+let BASE_VALIDATOR: Ajv | null = null;
+const getBaseValidator = () => {
+    if (!BASE_VALIDATOR) {
+        BASE_VALIDATOR = new Ajv({
+            strict: false
+        });
+        addFormats(BASE_VALIDATOR);
+        BASE_VALIDATOR.addMetaSchema(draft06Schema);
+        // istanbul ignore next
+        BASE_VALIDATOR.addFormat('color-hex', () => true);
+    }
+    return BASE_VALIDATOR;
+};
 
 const CURRENT_VERSION = 'current';
 
 /**
- * Add custom schemes to Vega-Lite schema.
+ * Add custom schemes to Vega-Lite schema. Lazy initialized on first use.
  */
-const VEGA_LITE_SCHEMA_POWERBI = merge(vegaLiteSchema, {
-    definitions: {
-        Categorical: {
-            enum: [
-                ...vegaLiteSchema.definitions.Categorical.enum,
-                VEGA_SCHEME_POWERBI_NOMINAL,
-                VEGA_SCHEME_POWERBI_ORDINAL
-            ]
-        },
-        Diverging: {
-            enum: [
-                ...vegaLiteSchema.definitions.Diverging.enum,
-                VEGA_SCHEME_POWERBI_DIVERGENT
-            ]
-        },
-        SequentialMultiHue: {
-            enum: [
-                ...vegaLiteSchema.definitions.SequentialMultiHue.enum,
-                VEGA_SCHEME_POWERBI_LINEAR
-            ]
-        }
+let VEGA_LITE_SCHEMA_POWERBI: any = null;
+const getVegaLiteSchemaWithPowerBI = () => {
+    if (!VEGA_LITE_SCHEMA_POWERBI) {
+        const vegaLiteSchemaClone: typeof vegaLiteSchema =
+            structuredClone(vegaLiteSchema);
+        VEGA_LITE_SCHEMA_POWERBI = mergician(vegaLiteSchemaClone, {
+            definitions: {
+                Categorical: {
+                    enum: [
+                        ...vegaLiteSchema.definitions.Categorical.enum,
+                        ...VEGA_LITE_SCHEME_ADDITIONS.categorical
+                    ]
+                },
+                Diverging: {
+                    enum: [
+                        ...vegaLiteSchema.definitions.Diverging.enum,
+                        ...VEGA_LITE_SCHEME_ADDITIONS.diverging
+                    ]
+                },
+                SequentialMultiHue: {
+                    enum: [
+                        ...vegaLiteSchema.definitions.SequentialMultiHue.enum,
+                        ...VEGA_LITE_SCHEME_ADDITIONS.sequential
+                    ]
+                }
+            }
+        });
     }
-});
+    return VEGA_LITE_SCHEMA_POWERBI;
+};
 
 /**
  * Borrowed from vega-editor.
@@ -97,18 +107,26 @@ export const getSchemaWithMarkdownProps = (schema: any) =>
     addMarkdownProps(structuredClone(schema));
 
 /**
- * Mapping of schema providers to their versions.
+ * Mapping of schema providers to their versions. Lazy initialized on first access.
  */
-const SCHEMA_MAPPING: SchemaProviderReference = {
-    vega: {
-        current: getSchemaWithMarkdownProps(vegaSchema)
-    },
-    vegaLite: {
-        current: getSchemaWithMarkdownProps(VEGA_LITE_SCHEMA_POWERBI)
-    },
-    denebUserMeta: {
-        current: denebUserMetaSchema
+let SCHEMA_MAPPING: SchemaProviderReference | null = null;
+const getSchemaMapping = () => {
+    if (!SCHEMA_MAPPING) {
+        SCHEMA_MAPPING = {
+            vega: {
+                current: getSchemaWithMarkdownProps(vegaSchema)
+            },
+            vegaLite: {
+                current: getSchemaWithMarkdownProps(
+                    getVegaLiteSchemaWithPowerBI()
+                )
+            },
+            denebUserMeta: {
+                current: denebUserMetaSchema
+            }
+        };
     }
+    return SCHEMA_MAPPING;
 };
 
 /**
@@ -120,7 +138,7 @@ export const getProviderSchema = ({
     isConfig = false
 }: GetProviderValidatorOptions) => {
     if (isConfig) return {};
-    return SCHEMA_MAPPING[provider][version];
+    return getSchemaMapping()[provider][version];
 };
 
 /**
@@ -131,4 +149,6 @@ export const getProviderValidator = ({
     version = 'current',
     isConfig = false
 }: GetProviderValidatorOptions): ValidateFunction =>
-    BASE_VALIDATOR.compile(getProviderSchema({ provider, version, isConfig }));
+    getBaseValidator().compile(
+        getProviderSchema({ provider, version, isConfig })
+    );

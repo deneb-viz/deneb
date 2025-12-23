@@ -1,43 +1,35 @@
-import React from 'react';
-import { shallow } from 'zustand/shallow';
-
 import { FluentProvider, Toaster, useId } from '@fluentui/react-components';
-import store from '../../../store';
-import { Themes } from '../../interface';
+
+import { NotificationCrossFilterExceeded } from './notification-cross-filter-exceeded';
 import {
-    TOASTER_ID,
+    getDenebTheme,
+    THEME_DEFAULT,
+    useDenebState
+} from '@deneb-viz/app-core';
+import {
     TOAST_OFFSET_HORIZONTAL_EDITOR,
     TOAST_OFFSET_HORIZONTAL_VISUAL,
     TOAST_OFFSET_VERTICAL_EDITOR,
-    TOAST_OFFSET_VERTICAL_VISUAL
-} from '../../../constants';
+    TOAST_OFFSET_VERTICAL_VISUAL,
+    TOASTER_ID
+} from '../constants';
 import { NotificationApplyChanges } from './notification-apply-changes';
-import { NotificationCrossFilterExceeded } from './notification-cross-filter-exceeded';
 
-export const NotificationToaster: React.FC = () => {
-    const { mode } = store(
-        (state) => ({
-            datasetHasSelectionAborted: state.datasetHasSelectionAborted,
-            mode: state.interface.mode,
-            selectionMaxDataPoints:
-                state.visualSettings.vega.interactivity.selectionMaxDataPoints
-                    .value
-        }),
-        shallow
-    );
+export const NotificationToaster = () => {
+    const mode = useDenebState((state) => state.interface.type);
     const toasterId = useId(TOASTER_ID);
     return (
-        <FluentProvider theme={Themes.light}>
+        <FluentProvider theme={getDenebTheme(THEME_DEFAULT)}>
             <>
                 <Toaster
                     toasterId={toasterId}
                     offset={{
                         horizontal:
-                            mode === 'Editor'
+                            mode === 'editor'
                                 ? TOAST_OFFSET_HORIZONTAL_EDITOR
                                 : TOAST_OFFSET_HORIZONTAL_VISUAL,
                         vertical:
-                            mode === 'Editor'
+                            mode === 'editor'
                                 ? TOAST_OFFSET_VERTICAL_EDITOR
                                 : TOAST_OFFSET_VERTICAL_VISUAL
                     }}

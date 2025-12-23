@@ -1,0 +1,82 @@
+{
+    "name": "@deneb-viz/utils",
+    "version": "1.9.0",
+    "author": "Deneb contributors",
+    "private": true,
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/deneb-viz/deneb.git"
+    },
+    "packageManager": "npm@10.3.0",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./base64": {
+            "types": "./dist/lib/base64.d.ts",
+            "default": "./dist/lib/base64.js"
+        },
+        "./color": {
+            "types": "./dist/lib/color.d.ts",
+            "default": "./dist/lib/color.js"
+        },
+        "./crypto": {
+            "types": "./dist/lib/crypto.d.ts",
+            "default": "./dist/lib/crypto.js"
+        },
+        "./dom": {
+            "types": "./dist/lib/dom.d.ts",
+            "default": "./dist/lib/dom.js"
+        },
+        "./inspection": {
+            "types": "./dist/lib/inspection.d.ts",
+            "default": "./dist/lib/inspection.js"
+        },
+        "./logging": {
+            "types": "./dist/lib/logging.d.ts",
+            "default": "./dist/lib/logging.js"
+        },
+        "./object": {
+            "types": "./dist/lib/object.d.ts",
+            "default": "./dist/lib/object.js"
+        },
+        "./type-conversion": {
+            "types": "./dist/lib/type-conversion.d.ts",
+            "default": "./dist/lib/type-conversion.js"
+        },
+        "./versioning": {
+            "types": "./dist/lib/versioning.d.ts",
+            "default": "./dist/lib/versioning.js"
+        },
+        "./worker": {
+            "types": "./dist/lib/worker.d.ts",
+            "default": "./dist/lib/worker.js"
+        }
+    },
+    "sideEffects": false,
+    "scripts": {
+        "build": "npm run clean && tsc -p tsconfig.json",
+        "dev": "tsc -p tsconfig.json --watch",
+        "clean": "rimraf dist",
+        "typecheck": "tsc --noEmit",
+        "eslint": "eslint .",
+        "test": "vitest run",
+        "test:watch": "vitest"
+    },
+    "devDependencies": {
+        "@deneb-viz/eslint-config": "*",
+        "@deneb-viz/typescript-config": "*",
+        "@types/node": "^22.15.33",
+        "typescript": "^5.6.2",
+        "vitest": "^3.2.4"
+    },
+    "dependencies": {
+        "json-stringify-pretty-compact": "^4.0.0",
+        "simple-sha1": "^3.1.0"
+    }
+}

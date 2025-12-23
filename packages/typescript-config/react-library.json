@@ -1,0 +1,18 @@
+{
+    "$schema": "https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/tsconfig.json",
+    "display": "React Library",
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "jsx": "react-jsx",
+        "esModuleInterop": true,
+        "strict": true,
+        "resolveJsonModule": true,
+        "types": [
+            "react",
+            "react-dom",
+            "vitest/globals"
+        ]
+    }
+}

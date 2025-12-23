@@ -1,8 +1,3 @@
 {
-    "developer_mode": false,
-    "combined_apply_button": false,
-    "data_drilldown": false,
-    "enable_external_uri": false,
-    "visual_update_history_overlay": false,
-    "advanced_cross_filtering": true
+    "data_drilldown": false
 }

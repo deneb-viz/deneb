@@ -1,13 +1,14 @@
-import {
-    TrackedDrilldownProperties,
-    TrackedFields,
-    UsermetaDatasetField
-} from '@deneb-viz/core-dependencies';
+import { describe, expect, it } from 'vitest';
+import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 import {
     areAllRemapDataRequirementsMet,
     getRemapEligibleFields,
     isMappingDialogRequired
 } from '../field-tracking';
+import {
+    type TrackedFields,
+    type TrackedDrilldownProperties
+} from '../lib/field-tracking';
 
 const TRACKED_FIELDS_NO_REMAP_PENDING: TrackedFields = {
     'Date.Date': {

@@ -1,18 +1,19 @@
 import powerbi from 'powerbi-visuals-api';
-
-import {
-    PROPERTIES_DEFAULTS,
-    SpecProvider,
-    TEMPLATE_USERMETA_VERSION,
-    UsermetaDatasetField,
-    UsermetaTemplate,
-    getBase64ImagePngBlank
-} from '@deneb-viz/core-dependencies';
+import { describe, expect, it } from 'vitest';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import {
     areAllCreateDataRequirementsMet,
     areAllTemplateFieldsAssigned,
     getTemplateDatasetFieldType
 } from '../template-dataset';
+import {
+    TEMPLATE_USERMETA_VERSION,
+    type UsermetaTemplate
+} from '@deneb-viz/template-usermeta';
+import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
+import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
+import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 
 const INCOMPLETE_FIELD: UsermetaDatasetField[] = [
     {
@@ -59,12 +60,12 @@ const MOCK_TEMPLATE_METADATA_BASE: UsermetaTemplate = {
         providerVersion: MOCK_PROVIDER_VERSION
     },
     interactivity: {
-        tooltip: PROPERTIES_DEFAULTS.vega.enableTooltips,
-        contextMenu: PROPERTIES_DEFAULTS.vega.enableContextMenu,
-        selection: PROPERTIES_DEFAULTS.vega.enableSelection,
-        selectionMode: PROPERTIES_DEFAULTS.vega.selectionMode,
-        dataPointLimit: PROPERTIES_DEFAULTS.vega.selectionMaxDataPoints,
-        highlight: PROPERTIES_DEFAULTS.vega.enableHighlight
+        tooltip: DEFAULTS.vega.enableTooltips,
+        contextMenu: DEFAULTS.vega.enableContextMenu,
+        selection: DEFAULTS.vega.enableSelection,
+        selectionMode: DEFAULTS.vega.selectionMode as SelectionMode,
+        dataPointLimit: DEFAULTS.vega.selectionMaxDataPoints,
+        highlight: DEFAULTS.vega.enableHighlight
     },
     dataset: [],
     config: '{}'

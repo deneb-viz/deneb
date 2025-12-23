@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { exec } from 'child_process';
+import { exec, spawn } from 'child_process';
 import git from 'git-last-commit';
 import _ from 'lodash';
 import parseArgs from 'minimist';
@@ -18,22 +18,27 @@ const capabilitiesOriginal = require(`../${capabilitiesFile}`);
 
 const runNpmScript = (
     script: string,
+    env: NodeJS.ProcessEnv,
     callback: (err: Error | null) => void | null
 ) => {
-    // keep track of whether callback has been invoked to prevent multiple invocations
-    var invoked = false;
-    var process = exec(script);
-    // listen for errors as they may prevent the exit event from firing
-    process.on('error', function (err) {
+    // Use spawn with stdio inherited so child output is visible in the console
+    let invoked = false;
+    const child = spawn(script, {
+        env,
+        shell: true,
+        stdio: 'inherit'
+    });
+
+    child.on('error', (err) => {
         if (invoked) return;
         invoked = true;
         callback(err);
     });
-    // execute the callback once the process has finished running
-    process.on('exit', function (code) {
+
+    child.on('close', (code) => {
         if (invoked) return;
         invoked = true;
-        var err = code === 0 ? null : new Error('exit code ' + code);
+        const err = code === 0 ? null : new Error('exit code ' + code);
         callback(err);
     });
 };
@@ -57,7 +62,28 @@ const writeFile = (name: string, path: string, content: string) => {
 };
 
 // Perform necessary patching of pbiviz.json for supplied mode
-const getPatchedPbiviz = (packageConfig, commit) => {
+interface IPackageModeConfig {
+    pbiviz: {
+        visual: {
+            displayName?: string;
+            description?: string;
+            guid: string;
+            version?: string;
+        };
+        assets?: Record<string, unknown>;
+    };
+    features?: Record<string, unknown>;
+    capabilities?: Record<string, unknown>;
+}
+
+interface ILastCommitInfo {
+    shortHash?: string;
+}
+
+const getPatchedPbiviz = (
+    packageConfig: IPackageModeConfig,
+    commit: ILastCommitInfo | undefined
+) => {
     const { guid } = packageConfig.pbiviz.visual;
     const suffix = new Date().toISOString().substr(0, 10).replace(/-/g, '');
     return {
@@ -75,7 +101,9 @@ try {
     git.getLastCommit(function (err, commit) {
         console.log('Checking for package configuration...');
         const argv = parseArgs(process.argv.slice(2));
-        const packageConfig = config[argv.mode];
+        const packageConfig: IPackageModeConfig | undefined = (config as any)[
+            argv.mode
+        ];
         console.log('Configuration', packageConfig);
         if (!packageConfig) {
             throw new Error('No configuration for package found!');
@@ -100,23 +128,28 @@ try {
             packageConfig.capabilities
         );
         writeFile(capabilitiesFile, capabilitiesFilePath, capabilitiesFileNew);
-        console.log('Running pbiviz package with new options...');
-        runNpmScript(
-            `pbiviz package --all-locales ${
-                !featuresFileNew.enable_external_uri
-                    ? '--certification-fix'
-                    : ''
-            }`,
-            (err) => {
-                if (err) throw err;
-                console.log('Completed package process.');
-                cleanup();
-                exit(0);
-            }
-        );
+        console.log('Running webpack production package with new options...');
+        const childEnv: NodeJS.ProcessEnv = { ...process.env };
+        if (argv.mode === 'standalone') {
+            childEnv.DENEB_PACKAGE_MODE = 'standalone';
+            console.log(`Setting DENEB_PACKAGE_MODE=standalone`);
+        } else {
+            // Ensure no stale value leaks in from parent shell
+            delete childEnv.DENEB_PACKAGE_MODE;
+            console.log(
+                `Ensuring DENEB_PACKAGE_MODE is unset for certified build`
+            );
+        }
+        runNpmScript(`npm run webpack:package`, childEnv, (err) => {
+            if (err) throw err;
+            console.log('Completed package process.');
+            cleanup();
+            exit(0);
+        });
     });
 } catch (e) {
-    console.error(`[ERROR] ${e.message}`);
+    const message = e instanceof Error ? e.message : String(e);
+    console.error(`[ERROR] ${message}`);
     cleanup();
     exit(1);
 }

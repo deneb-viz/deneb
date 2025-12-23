@@ -55,7 +55,9 @@
                 "@deneb-viz/**"
             ],
             "dependencyTypes": [
-                "dev"
+                "dev",
+                "prod",
+                "peer"
             ],
             "pinVersion": "*"
         }

@@ -67,7 +67,10 @@ typings/
 .api/
 .tmp/
 dist/
-webpack.statistics*.html
+webpack.stat*
+
+# Auto-generated config files
+packages/configuration/src/generated.ts
 
 # Yalc
 **/.yalc/**/*.md

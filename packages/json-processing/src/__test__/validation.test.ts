@@ -1,4 +1,4 @@
-import { SpecProvider } from '@deneb-viz/core-dependencies';
+import { describe, expect, it } from 'vitest';
 import {
     getFriendlyValidationErrors,
     getProviderSchema,
@@ -7,6 +7,7 @@ import {
 } from '../validation';
 import * as vegaSchema from 'vega/vega-schema.json';
 import { ErrorObject } from 'ajv';
+import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 
 describe('getProviderSchema', () => {
     it('should return an empty object when isConfig is true', () => {

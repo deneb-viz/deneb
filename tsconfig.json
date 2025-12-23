@@ -3,5 +3,6 @@
     "compilerOptions": {
         "outDir": "./.tmp/build/"
     },
-    "files": ["src/Deneb.ts"]
+    "include": ["src/**/*.ts", "src/**/*.tsx"],
+    "exclude": ["dist", "node_modules", "**/*.test.*", "**/*.spec.*"]
 }

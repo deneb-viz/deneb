@@ -1,0 +1,8 @@
+{
+  "extends": "@deneb-viz/typescript-config/worker.json",
+  "compilerOptions": {
+    "outDir": "./dist/worker"
+  },
+  "include": ["src/**/*.worker.ts"],
+  "exclude": ["src/**"]
+}

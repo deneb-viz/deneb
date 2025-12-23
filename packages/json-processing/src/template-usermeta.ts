@@ -1,25 +1,4 @@
-import powerbi from 'powerbi-visuals-api';
-
-import omit from 'lodash/omit';
-import {
-    SpecProvider,
-    UsermetaInformation,
-    UsermetaTemplate,
-    TEMPLATE_USERMETA_VERSION,
-    PROPERTIES_DEFAULTS,
-    ICreateSliceSetImportFile,
-    IDenebTemplateAllocationComponents,
-    UsermetaDatasetField,
-    ICreateSliceProperties,
-    UsermetaInteractivity,
-    DATASET_CORE_ROLE_NAME,
-    TrackedFields,
-    UsermetaDatasetFieldType,
-    getEscapedReplacerPattern,
-    getJsonPlaceholderKey,
-    getNewUuid,
-    getBase64ImagePngBlank
-} from '@deneb-viz/core-dependencies';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import {
     getJsoncNodeValue,
     getJsoncStringAsObject,
@@ -29,6 +8,30 @@ import {
 } from './processing';
 import { getProviderValidator } from './validation';
 import { applyEdits, modify } from 'jsonc-parser';
+import { type TrackedFields } from './lib/field-tracking';
+import {
+    TEMPLATE_USERMETA_VERSION,
+    type UsermetaInformation,
+    type UsermetaInteractivity,
+    type UsermetaTemplate
+} from '@deneb-viz/template-usermeta';
+import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
+import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import { getNewUuid } from '@deneb-viz/utils/crypto';
+import {
+    type DenebTemplateSetImportFilePayload,
+    type DenebTemplateAllocationComponents,
+    type DenebTemplateImportWorkingProperties,
+    getFieldNameForExport
+} from './lib/template-processing';
+import { omit } from '@deneb-viz/utils/object';
+import {
+    getEscapedReplacerPattern,
+    getPlaceholderKey,
+    type UsermetaDatasetField
+} from '@deneb-viz/data-core/field';
+import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 
 /**
  * If we cannot resolve a provider, this is the default to assign.
@@ -38,7 +41,7 @@ const DEFAULT_PROVIDER: SpecProvider = 'vega';
 /**
  * If a template does not validate, this is the object to return.
  */
-const INVALID_TEMPLATE_OPTIONS: ICreateSliceSetImportFile = {
+const INVALID_TEMPLATE_OPTIONS: DenebTemplateSetImportFilePayload = {
     candidates: null,
     importFile: null,
     importState: 'Error',
@@ -105,14 +108,14 @@ export const getExportTemplate = (options: {
 };
 
 const getFieldPattern = (index: number) =>
-    new RegExp(getEscapedReplacerPattern(getJsonPlaceholderKey(index)), 'g');
+    new RegExp(getEscapedReplacerPattern(getPlaceholderKey(index)), 'g');
 
 /**
  * When we initialize a new template for import (or when intializing the store), this provides the default values for
  * the create slice properties (except for methods).
  */
 export const getNewCreateFromTemplateSliceProperties =
-    (): Partial<ICreateSliceProperties> => ({
+    (): DenebTemplateImportWorkingProperties => ({
         candidates: null,
         importFile: null,
         importState: 'None',
@@ -129,8 +132,8 @@ export const getNewCreateFromTemplateSliceProperties =
  */
 export const getNewTemplateMetadata = (options: {
     buildVersion: string;
-    provider: SpecProvider;
-    providerVersion: string;
+    provider: SpecProvider | null;
+    providerVersion: string | null;
 }): Partial<UsermetaTemplate> => ({
     information: <UsermetaInformation>{
         uuid: getNewUuid(),
@@ -143,16 +146,16 @@ export const getNewTemplateMetadata = (options: {
     deneb: {
         build: options.buildVersion,
         metaVersion: TEMPLATE_USERMETA_VERSION,
-        provider: options.provider,
-        providerVersion: options.providerVersion
+        provider: options.provider ?? DEFAULT_PROVIDER,
+        providerVersion: options.providerVersion ?? ''
     },
     interactivity: {
-        tooltip: PROPERTIES_DEFAULTS.vega.enableTooltips,
-        contextMenu: PROPERTIES_DEFAULTS.vega.enableContextMenu,
-        selection: PROPERTIES_DEFAULTS.vega.enableSelection,
-        selectionMode: PROPERTIES_DEFAULTS.vega.selectionMode,
-        dataPointLimit: PROPERTIES_DEFAULTS.vega.selectionMaxDataPoints,
-        highlight: PROPERTIES_DEFAULTS.vega.enableHighlight
+        tooltip: DEFAULTS.vega.enableTooltips,
+        contextMenu: DEFAULTS.vega.enableContextMenu,
+        selection: DEFAULTS.vega.enableSelection,
+        selectionMode: DEFAULTS.vega.selectionMode as SelectionMode,
+        dataPointLimit: DEFAULTS.vega.selectionMaxDataPoints,
+        highlight: DEFAULTS.vega.enableHighlight
     },
     config: '{}',
     dataset: []
@@ -185,52 +188,14 @@ export const getPublishableUsermeta = (
                     usermeta.information.author ||
                     options.informationTranslationPlaceholders.author
             },
-            dataset: usermeta?.[DATASET_CORE_ROLE_NAME].map((d) => {
+            dataset: (usermeta?.[DATASET_DEFAULT_NAME] ?? []).map((d) => {
                 d.key = options.trackedFields?.[d.key]?.placeholder ?? d.key;
-                return omit(d, ['namePlaceholder']);
+                d.name = getFieldNameForExport(d);
+                return omit(d as unknown as Record<string, unknown>, [
+                    'namePlaceholder'
+                ]) as Omit<UsermetaDatasetField, 'namePlaceholder'>;
             })
         }
-    };
-};
-
-/**
- * For a given column or measure (or template placeholder), resolve its type
- * against the corresponding Power BI value descriptor.
- */
-export const getResolvedValueDescriptor = (
-    type: powerbi.ValueTypeDescriptor
-): UsermetaDatasetFieldType => {
-    switch (true) {
-        case type?.bool:
-            return 'bool';
-        case type?.text:
-            return 'text';
-        case type?.numeric:
-            return 'numeric';
-        case type?.dateTime:
-            return 'dateTime';
-        default:
-            return 'other';
-    }
-};
-
-/**
- * For a given `DataViewMetadataColumn`, and its encoded name produces a new
- * `ITemplateDatasetField` object that can be used for templating purposes.
- */
-export const getResolvedVisualMetadataToDatasetField = (
-    metadata: powerbi.DataViewMetadataColumn,
-    encodedName: string
-): UsermetaDatasetField => {
-    return {
-        key: metadata.queryName ?? metadata.displayName ?? '',
-        name: encodedName,
-        namePlaceholder: encodedName,
-        description: '',
-        kind: (metadata.isMeasure && 'measure') || 'column',
-        type: getResolvedValueDescriptor(
-            metadata.type as powerbi.ValueTypeDescriptor
-        )
     };
 };
 
@@ -310,7 +275,7 @@ export const getTemplateResolvedForLegacyVersions = (
 export const getTemplateResolvedForPlaceholderAssignment = (
     template: string,
     tabSize: number
-): IDenebTemplateAllocationComponents => {
+): DenebTemplateAllocationComponents => {
     const config = getTemplateMetadata(template)?.config || '{}';
     const keysToRemove = ['$schema', 'usermeta'];
     const spec = getTextFormattedAsJsonC(
@@ -363,8 +328,8 @@ export const getUpdatedExportMetadata = (
 /**
  * Perform validation of the supplied content, which should be a Vega or Vega-Lite specification containing a valid
  * `usermeta` object confirming to the Deneb JSON schema. If valid, this will return a suitable
- * `ICreateSliceSetImportFile` object with the necessary content for the rest of the import process. If invalid, this
- * will return an `ICreateSliceSetImportFile` object sufficient to indicate that the template is invalid. Either result
+ * `DenebTemplateSetImportFilePayload` object with the necessary content for the rest of the import process. If invalid, this
+ * will return an `DenebTemplateSetImportFilePayload` object sufficient to indicate that the template is invalid. Either result
  * should be sufficient to pass to the application store.
  *
  * Throughout 1.x, we have some minor changes to the template structure, and these need to be managed:
@@ -377,7 +342,7 @@ export const getUpdatedExportMetadata = (
 export const getValidatedTemplate = (
     content: string,
     tabSize: number
-): ICreateSliceSetImportFile => {
+): DenebTemplateSetImportFilePayload => {
     try {
         if (!getJsoncStringAsObject(content)) return INVALID_TEMPLATE_OPTIONS;
         const provider = getTemplateProvider(content);
@@ -407,7 +372,7 @@ export const getValidatedTemplate = (
             };
         }
         return INVALID_TEMPLATE_OPTIONS;
-    } catch (e) {
+    } catch {
         return INVALID_TEMPLATE_OPTIONS;
     }
 };

@@ -2,10 +2,11 @@
     "$schema": "https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/tsconfig.json",
     "compilerOptions": {
         "allowJs": false,
-        "jsx": "react",
+        "jsx": "react-jsx",
         "types": [
             "react",
-            "react-dom"
+            "react-dom",
+            "node"
         ],
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
@@ -17,12 +18,14 @@
         "moduleResolution": "bundler",
         "declaration": true,
         "lib": [
-            "es2019",
+            "es2022",
             "dom",
+            "DOM.Iterable",
             "WebWorker"
         ],
         "alwaysStrict": true,
         "resolveJsonModule": true,
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "preserveConstEnums": false
     }
 }

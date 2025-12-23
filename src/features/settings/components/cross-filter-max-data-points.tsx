@@ -1,5 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { shallow } from 'zustand/shallow';
+import { useCallback, useMemo, useState } from 'react';
 import {
     Button,
     Label,
@@ -11,37 +10,36 @@ import {
 } from '@fluentui/react-components';
 import { ArrowResetRegular } from '@fluentui/react-icons';
 
-import store from '../../../store';
+import { useSettingsStyles } from '../styles';
+import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import {
-    resetProviderPropertyValue,
-    updateSelectionMaxDataPoints
-} from '../../../core/ui/commands';
-import { isCrossFilterPropSet } from '../../interactivity';
-import { getI18nValue } from '../../i18n';
-import { useSettingsStyles } from '.';
-import { logDebug } from '../../logging';
-import { TooltipCustomMount } from '../../interface';
+    handleResetVegaProperty,
+    handleSelectionMaxDataPoints,
+    TooltipCustomMount,
+    useDenebState
+} from '@deneb-viz/app-core';
+import { logDebug } from '@deneb-viz/utils/logging';
 import {
     CROSS_FILTER_LIMITS,
-    PROPERTIES_DEFAULTS
-} from '@deneb-viz/core-dependencies';
+    isCrossFilterPropSet
+} from '../../../lib/interactivity';
 
-const DEFAULT_VALUE = PROPERTIES_DEFAULTS.vega.selectionMaxDataPoints;
+const DEFAULT_VALUE = DEFAULTS.vega.selectionMaxDataPoints;
 
-export const CrossFilterMaxDataPoints: React.FC = () => {
-    const {
-        visualSettings: {
-            vega: {
-                interactivity: {
-                    selectionMaxDataPoints: { value: selectionMaxDataPoints }
-                }
-            }
-        }
-    } = store((state) => state, shallow);
+export const CrossFilterMaxDataPoints = () => {
+    const { enableSelection, selectionMaxDataPoints, translate } =
+        useDenebState((state) => ({
+            enableSelection:
+                state.visualSettings.vega.interactivity.enableSelection.value,
+            selectionMaxDataPoints:
+                state.visualSettings.vega.interactivity.selectionMaxDataPoints
+                    .value,
+            translate: state.i18n.translate
+        }));
     const onChange: SpinButtonProps['onChange'] = useCallback(
         (event, data): void => {
             const resolvedValue = getResolvedValue(data);
-            updateSelectionMaxDataPoints(
+            handleSelectionMaxDataPoints(
                 Math.min(
                     Math.max(
                         resolvedValue,
@@ -54,7 +52,7 @@ export const CrossFilterMaxDataPoints: React.FC = () => {
         []
     );
     const onReset = useCallback(() => {
-        resetProviderPropertyValue('selectionMaxDataPoints');
+        handleResetVegaProperty('selectionMaxDataPoints');
     }, []);
     const id = useId();
     const classes = useSettingsStyles();
@@ -64,10 +62,10 @@ export const CrossFilterMaxDataPoints: React.FC = () => {
     );
     const [ref, setRef] = useState<HTMLElement | null>();
     return (
-        (isCrossFilterPropSet() && (
+        (isCrossFilterPropSet({ enableSelection }) && (
             <div className={classes.spinButtonContainer}>
                 <Label htmlFor={id}>
-                    {getI18nValue('Objects_Vega_SelectionMaxDataPoints')}
+                    {translate('PowerBI_Objects_Vega_SelectionMaxDataPoints')}
                 </Label>
                 <div>
                     <SpinButton
@@ -82,7 +80,7 @@ export const CrossFilterMaxDataPoints: React.FC = () => {
                     />
                     <>
                         <Tooltip
-                            content={getI18nValue('Tooltip_Setting_Reset')}
+                            content={translate('PowerBI_Tooltip_Setting_Reset')}
                             relationship='label'
                             withArrow
                             mountNode={ref}

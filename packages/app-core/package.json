@@ -1,0 +1,80 @@
+{
+    "name": "@deneb-viz/app-core",
+    "version": "1.9.0",
+    "author": "Deneb contributors",
+    "description": "Provides the core functionality for a Deneb application.",
+    "private": true,
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/deneb-viz/deneb.git"
+    },
+    "packageManager": "npm@10.3.0",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./index.css": "./dist/index.css"
+    },
+    "types": "dist/src/index.d.ts",
+    "type": "module",
+    "scripts": {
+        "build": "npm run build:worker && npm run build:package",
+        "build:package": "tsup",
+        "build:worker": "tsup --config tsup.worker.config.ts",
+        "clean": "rimraf dist",
+        "dev": "concurrently \"npm run dev:worker\" \"npm run dev:package\"",
+        "dev:package": "tsup --watch --config tsup.config.ts",
+        "dev:worker": "tsup --watch --config tsup.worker.config.ts",
+        "prepack": "npm run build",
+        "typecheck": "tsc --noEmit",
+        "eslint": "eslint ."
+    },
+    "files": [
+        "dist/**"
+    ],
+    "sideEffects": false,
+    "devDependencies": {
+        "@deneb-viz/eslint-config": "*",
+        "@deneb-viz/typescript-config": "*",
+        "@types/node": "^22.15.33",
+        "@types/react": "^19.0.0",
+        "concurrently": "^9.1.2",
+        "tsup": "^8.5.0",
+        "typescript": "^5.6.2",
+        "vitest": "^3.2.4"
+    },
+    "dependencies": {
+        "@deneb-viz/data-core": "*",
+        "@deneb-viz/json-processing": "*",
+        "@deneb-viz/template-usermeta": "*",
+        "@deneb-viz/utils": "*",
+        "@monaco-editor/react": "^4.6.0",
+        "@uidotdev/usehooks": "^2.4.1",
+        "d3-format": "^2.0.0",
+        "d3-time-format": "^3.0.0",
+        "fast-equals": "^5.3.3",
+        "monaco-editor": "0.45.0",
+        "react-custom-scrollbars-2": "^4.4.0",
+        "react-data-table-component": "^7.7.0",
+        "react-dropzone": "^14.2.3",
+        "react-hotkeys-hook": "^5.2.0",
+        "react-split-pane": "^0.1.92",
+        "react-vega": "7.6.0",
+        "styled-components": "^6.1.19",
+        "zustand": "^4.5.5"
+    },
+    "peerDependencies": {
+        "@deneb-viz/powerbi-compat": "*",
+        "@deneb-viz/vega-runtime": "*",
+        "@fluentui/react-components": "^9.72.6",
+        "@fluentui/react-icons": "^2.0.313",
+        "powerbi-visuals-api": "5.11.0",
+        "powerbi-visuals-utils-formattingutils": "^6.1.2",
+        "react": "^19.2.0",
+        "react-dom": "^19.2.0",
+        "vega": "6.2.0",
+        "vega-lite": "6.4.1"
+    }
+}

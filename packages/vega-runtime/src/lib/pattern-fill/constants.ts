@@ -1,0 +1,6 @@
+export const PATTERN_FILL_CONTAINER_ID = 'denebFillPatterns';
+export const PATTERN_FILL_DEFAULT_STROKE_COLOR = '#000000';
+export const PATTERN_FILL_DEFAULT_FILL_COLOR = 'transparent';
+export const PATTERN_FILL_DEFAULT_STROKE_WIDTH = 1;
+export const PATTERN_FILL_DEFAULT_SIZE = 10;
+export const PATTERN_FILL_DEFAULT_OFFSET_PERCENT = 0;
