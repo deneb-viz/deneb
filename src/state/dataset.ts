@@ -104,8 +104,7 @@ export const createDatasetSlice = (): StateCreator<
                             selectorMap,
                             state.settings.vega.interactivity.enableSelection
                                 .value
-                        ),
-                        version: state.dataset.version + 1
+                        )
                     }
                 }),
                 false,

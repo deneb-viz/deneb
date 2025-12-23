@@ -333,15 +333,28 @@ export const getUpdatedDatasetSelectors = (
     const isCrossFilter = isCrossFilterPropSet({
         enableSelection
     });
+    let hasSelectionChanged = false;
     const values: VegaDatum[] = [];
     const nValues = dataset.values.length;
     if (isCrossFilter) {
         for (let i = 0; i < nValues; i++) {
             const v = dataset.values[i];
+            const currentState =
+                selectorMap.get(v[ROW_INDEX_FIELD_NAME]) ?? 'neutral';
+            if (v.__selected__ !== currentState) {
+                logDebug(
+                    'dataset.updateDatasetSelectors: selection state changed',
+                    {
+                        rowIndex: v[ROW_INDEX_FIELD_NAME],
+                        previous: v.__selected__,
+                        current: currentState
+                    }
+                );
+                hasSelectionChanged = true;
+            }
             values.push({
                 ...v,
-                __selected__:
-                    selectorMap.get(v[ROW_INDEX_FIELD_NAME]) || 'neutral'
+                __selected__: currentState
             });
         }
     } else {
@@ -350,7 +363,14 @@ export const getUpdatedDatasetSelectors = (
         }
     }
     const newDataset = mergician(dataset, { values }) as DatasetSlice;
-    logDebug('dataset.updateDatasetSelectors', { newDataset });
+    // Only update version if selection state has changed, as this is the only volatile change
+    newDataset.version = hasSelectionChanged
+        ? dataset.version + 1
+        : dataset.version;
+    logDebug('dataset.updateDatasetSelectors', {
+        newDataset,
+        hasSelectionChanged
+    });
     logTimeEnd('dataset.updateDatasetSelectors');
     return newDataset;
 };
