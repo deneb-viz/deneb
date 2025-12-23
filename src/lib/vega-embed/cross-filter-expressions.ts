@@ -5,7 +5,6 @@ import {
     getResolvedCrossFilterResult,
     InteractivityManager,
     type CrossFilterOptions,
-    type CrossFilterSelectionDirective,
     type InteractivityLookupDataset
 } from '../interactivity';
 import { logDebug, logWarning } from '@deneb-viz/utils/logging';
