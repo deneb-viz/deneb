@@ -15,9 +15,21 @@ export type HandleNewViewOptions = {
      * Optional array of binders to attach platform-specific events to the view.
      */
     viewEventBinders?: ViewEventBinder[];
+    /**
+     * Optional callback invoked when rendering starts.
+     */
+    onRenderingStarted?: () => void;
+    /**
+     * Optional callback invoked when rendering finishes successfully.
+     */
+    onRenderingFinished?: () => void;
 };
 
 export type HandleViewErrorOptions = {
     generateRenderId: () => void;
     logError: (error: string) => void;
+    /**
+     * Optional callback invoked when rendering fails with an error.
+     */
+    onRenderingError?: (error: Error) => void;
 };

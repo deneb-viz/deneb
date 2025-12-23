@@ -1,8 +1,4 @@
 import { falsy, truthy, View } from 'vega';
-import {
-    setRenderingFinished,
-    setRenderingStarted
-} from '@deneb-viz/powerbi-compat/visual-host';
 import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
 import { logDebug, logTimeEnd } from '@deneb-viz/utils/logging';
 import { VegaPatternFillServices } from '../pattern-fill';
@@ -100,9 +96,15 @@ const bindContainerSignals = (view: View) => {
  */
 export const handleNewView = (newView: View, options: HandleNewViewOptions) => {
     logDebug('Vega view initialized.');
-    setRenderingStarted();
-    const { generateRenderId, logError, logWarn, logLevel, viewEventBinders } =
-        options;
+    options.onRenderingStarted?.();
+    const {
+        generateRenderId,
+        logError,
+        logWarn,
+        logLevel,
+        viewEventBinders,
+        onRenderingFinished
+    } = options;
     newView.logger(
         new DispatchingVegaLoggerService(logLevel, logWarn, logError)
     );
@@ -120,7 +122,7 @@ export const handleNewView = (newView: View, options: HandleNewViewOptions) => {
         viewEventBinders?.forEach((binder) => binder(view));
         generateRenderId();
         logTimeEnd('VegaRender');
-        setRenderingFinished();
+        onRenderingFinished?.();
     });
 };
 
@@ -132,7 +134,7 @@ export const handleViewError = (
     options: HandleViewErrorOptions
 ) => {
     logDebug('Vega view error.', error);
-    const { generateRenderId, logError } = options;
+    const { generateRenderId, logError, onRenderingError } = options;
     logDebug('Clearing view...');
     VegaViewServices.clearView();
     logDebug('View services', {
@@ -142,4 +144,5 @@ export const handleViewError = (
     });
     logError(error.message);
     generateRenderId();
+    onRenderingError?.(error);
 };

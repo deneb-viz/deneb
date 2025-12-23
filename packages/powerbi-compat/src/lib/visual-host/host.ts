@@ -1,4 +1,3 @@
-import { logHost } from '@deneb-viz/utils/logging';
 import powerbi from 'powerbi-visuals-api';
 import {
     getVisualFormattingModel,
@@ -6,7 +5,6 @@ import {
 } from '../properties';
 
 let services: powerbi.extensibility.visual.VisualConstructorOptions;
-let events: powerbi.extensibility.IVisualEventService;
 let visualUpdateOptions: powerbi.extensibility.visual.VisualUpdateOptions;
 let settings: VisualFormattingSettingsModel;
 
@@ -22,7 +20,6 @@ let settings: VisualFormattingSettingsModel;
 export const VisualHostServices = {
     bind: (service: powerbi.extensibility.visual.VisualConstructorOptions) => {
         services = service;
-        events = service.host.eventService;
     },
     update: (
         options: powerbi.extensibility.visual.VisualUpdateOptions,
@@ -55,27 +52,3 @@ export const getVisualObjects = () =>
  * Get the current visual settings as resolved from the data view.
  */
 export const getVisualSettings = () => settings;
-
-/**
- * Signal rendering has failed for visual host events.
- */
-export const setRenderingFailed = (reason?: string) => {
-    logHost('Rendering event failed:', reason);
-    events.renderingFailed(visualUpdateOptions);
-};
-
-/**
- * Signal rendering has finished for visual host events.
- */
-export const setRenderingFinished = () => {
-    logHost('Rendering event finished.');
-    events.renderingFinished(visualUpdateOptions);
-};
-
-/**
- * Signal rendering has begun for visual host events.
- */
-export const setRenderingStarted = () => {
-    logHost('Rendering event started.');
-    events.renderingStarted(visualUpdateOptions);
-};

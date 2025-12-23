@@ -1,8 +1,8 @@
 import powerbi from 'powerbi-visuals-api';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { type View } from 'vega';
 
-import { logRender } from '@deneb-viz/utils/logging';
+import { logHost, logRender } from '@deneb-viz/utils/logging';
 import { ReportViewRouter } from './report-view-router';
 import {
     DenebApp,
@@ -38,6 +38,9 @@ export const App = ({ host }: AppProps) => {
     const mode = useDenebVisualState((state) => state.interface.mode);
     const fields = useDenebVisualState((state) => state.dataset.fields);
     const values = useDenebVisualState((state) => state.dataset.values);
+    const visualUpdateOptions = useDenebVisualState(
+        (state) => state.updates.options
+    );
     const selectionMode = useDenebVisualState(
         (state) =>
             state.settings?.vega?.interactivity?.selectionMode
@@ -104,6 +107,27 @@ export const App = ({ host }: AppProps) => {
         return binders;
     }, [fields, values, selectionMode, translate]);
 
+    /**
+     * Rendering lifecycle callbacks for Power BI visual host.
+     * These call the event service directly rather than through powerbi-compat.
+     */
+    const onRenderingFinished = useCallback(() => {
+        if (visualUpdateOptions) {
+            logHost('Rendering event finished.');
+            host.eventService.renderingFinished(visualUpdateOptions);
+        }
+    }, [host, visualUpdateOptions]);
+
+    const onRenderingError = useCallback(
+        (error: Error) => {
+            if (visualUpdateOptions) {
+                logHost('Rendering event failed:', error.message);
+                host.eventService.renderingFailed(visualUpdateOptions);
+            }
+        },
+        [host, visualUpdateOptions]
+    );
+
     // Ensure that download permissions are evaluated against the current tenant and sent to the core app
     useEffect(() => {
         if (host) {
@@ -135,6 +159,8 @@ export const App = ({ host }: AppProps) => {
         <DenebProvider
             platformProvider={{
                 isDownloadPermitted,
+                onRenderingError,
+                onRenderingFinished,
                 settingsPanePlatformComponent: <InteractivitySettings />,
                 tooltipHandler: pbiTooltipHandler,
                 vegaLoader,

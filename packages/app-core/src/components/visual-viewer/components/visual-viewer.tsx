@@ -95,8 +95,14 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
     const [scrollFrame, setScrollFrame] = useState<positionValues | null>(null);
     const throttledScrollFrame = useThrottle(scrollFrame, scrollEventThrottle);
     const classes = useVisualViewerStyles();
-    const { tooltipHandler, vegaLoader, viewEventBinders } =
-        useDenebPlatformProvider();
+    const {
+        onRenderingError,
+        onRenderingFinished,
+        onRenderingStarted,
+        tooltipHandler,
+        vegaLoader,
+        viewEventBinders
+    } = useDenebPlatformProvider();
     const containerClassName = mergeClasses(
         !isEmbeddedInEditor ? classes.overflowOverlay : classes.overflowVisible,
         classes.container
@@ -105,6 +111,9 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
         <VegaRender
             locale={locale}
             logLevel={logLevel as number}
+            onRenderingError={onRenderingError}
+            onRenderingFinished={onRenderingFinished}
+            onRenderingStarted={onRenderingStarted}
             provider={provider}
             renderMode={renderMode}
             specification={specification}

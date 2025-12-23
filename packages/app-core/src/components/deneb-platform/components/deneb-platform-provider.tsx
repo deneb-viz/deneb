@@ -4,19 +4,28 @@ import { type DenebPlatformProviderProps } from '../types';
 
 /**
  * Context props type - makes most props required (with defaults), but keeps
- * tooltipHandler optional since it's platform-specific and may not be provided.
+ * tooltipHandler and rendering callbacks optional since they're platform-specific.
  */
 type DenebPlatformProviderContextProps = Omit<
     Required<DenebPlatformProviderProps>,
-    'tooltipHandler'
+    'tooltipHandler' | 'onRenderingStarted' | 'onRenderingFinished' | 'onRenderingError'
 > &
-    Pick<DenebPlatformProviderProps, 'tooltipHandler'>;
+    Pick<
+        DenebPlatformProviderProps,
+        | 'tooltipHandler'
+        | 'onRenderingStarted'
+        | 'onRenderingFinished'
+        | 'onRenderingError'
+    >;
 
 export const DenebPlatformProviderContext =
     createContext<DenebPlatformProviderContextProps | null>(null);
 
 export const DenebPlatformProvider = ({
     isDownloadPermitted = true,
+    onRenderingError,
+    onRenderingFinished,
+    onRenderingStarted,
     settingsPanePlatformComponent = <></>,
     tooltipHandler,
     vegaLoader = null,
@@ -28,6 +37,9 @@ export const DenebPlatformProvider = ({
     const platformContext = useMemo<DenebPlatformProviderContextProps>(
         () => ({
             isDownloadPermitted,
+            onRenderingError,
+            onRenderingFinished,
+            onRenderingStarted,
             settingsPanePlatformComponent,
             tooltipHandler,
             vegaLoader,
@@ -37,6 +49,9 @@ export const DenebPlatformProvider = ({
         }),
         [
             launchUrl,
+            onRenderingError,
+            onRenderingFinished,
+            onRenderingStarted,
             settingsPanePlatformComponent,
             tooltipHandler,
             vegaLoader,

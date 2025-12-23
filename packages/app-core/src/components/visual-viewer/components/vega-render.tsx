@@ -21,6 +21,9 @@ import { type VegaDatum } from '@deneb-viz/data-core/value';
 import { type Loader, type TooltipHandler } from 'vega';
 
 type VegaRenderProps = {
+    onRenderingError?: (error: Error) => void;
+    onRenderingFinished?: () => void;
+    onRenderingStarted?: () => void;
     tooltipHandler?: TooltipHandler;
     values: VegaDatum[];
     vegaLoader?: Loader | null;
@@ -93,6 +96,9 @@ const arePropsEqual = (
  */
 export const VegaRender: React.FC<VegaRenderProps> = memo(
     ({
+        onRenderingError,
+        onRenderingFinished,
+        onRenderingStarted,
         tooltipHandler,
         values,
         vegaLoader,
@@ -128,14 +134,23 @@ export const VegaRender: React.FC<VegaRenderProps> = memo(
                     generateRenderId,
                     logError,
                     logWarn,
-                    viewEventBinders
+                    viewEventBinders,
+                    onRenderingStarted,
+                    onRenderingFinished
                 });
             },
-            [viewEventBinders]
+            [viewEventBinders, onRenderingStarted, onRenderingFinished]
         );
-        const onError = useCallback((error: Error) => {
-            handleViewError(error, { generateRenderId, logError });
-        }, []);
+        const onError = useCallback(
+            (error: Error) => {
+                handleViewError(error, {
+                    generateRenderId,
+                    logError,
+                    onRenderingError
+                });
+            },
+            [onRenderingError]
+        );
         const resolvedProvider = useMemo(
             () => (provider === 'vegaLite' ? 'vega-lite' : provider),
             [provider]

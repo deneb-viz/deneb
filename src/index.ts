@@ -22,8 +22,6 @@ import {
 } from '@deneb-viz/powerbi-compat/properties';
 import {
     getVisualSettings,
-    setRenderingFailed,
-    setRenderingStarted,
     VisualHostServices
 } from '@deneb-viz/powerbi-compat/visual-host';
 import { APPLICATION_INFORMATION_CONFIGURATION } from '@deneb-viz/configuration';
@@ -133,7 +131,8 @@ export class Deneb implements IVisual {
         } catch (e) {
             // Signal that we've encountered an error
             logDebug('Error during visual update.', { error: e });
-            setRenderingFailed(e.message);
+            logHost('Rendering event failed:', e.message);
+            this.#host.eventService.renderingFailed(options);
         }
     }
 
@@ -150,7 +149,8 @@ export class Deneb implements IVisual {
         const settings = getVisualSettings();
         setVisualUpdateOptions({ options, settings });
         // Signal we've begun rendering
-        setRenderingStarted();
+        logHost('Rendering event started.');
+        this.#host.eventService.renderingStarted(options);
         // TODO: likely migrate to visual store action and add as dependency to main app
         const { setVisualUpdate } = getDenebState();
         setVisualUpdate({ settings });

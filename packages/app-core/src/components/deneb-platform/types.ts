@@ -13,6 +13,18 @@ export type DenebPlatformProviderProps = {
      */
     isDownloadPermitted?: boolean;
     /**
+     * Callback invoked when Vega rendering fails with an error.
+     */
+    onRenderingError?: (error: Error) => void;
+    /**
+     * Callback invoked when Vega rendering finishes successfully.
+     */
+    onRenderingFinished?: () => void;
+    /**
+     * Callback invoked when Vega rendering starts.
+     */
+    onRenderingStarted?: () => void;
+    /**
      * A component to display and manage platform-specific settings, that will be added to the Settings pane.
      */
     settingsPanePlatformComponent?: JSX.Element;

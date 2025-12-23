@@ -2,10 +2,7 @@ export {
     VisualHostServices,
     getVisualHost,
     getVisualInteractionStatus,
-    getVisualSettings,
-    setRenderingFailed,
-    setRenderingFinished,
-    setRenderingStarted
+    getVisualSettings
 } from './host';
 export { persistProperties, resolveObjectProperties } from './persistence';
 export type * from './types';
