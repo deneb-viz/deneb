@@ -7,7 +7,9 @@
     "build": {
       "dependsOn": [
         "@deneb-viz/powerbi-compat#build",
-        "@deneb-viz/vega-runtime#build"
+        "@deneb-viz/vega-runtime#build",
+        "@deneb-viz/template-usermeta#build",
+        "@deneb-viz/data-core#build"
       ],
       "outputs": [
         "dist/**"
