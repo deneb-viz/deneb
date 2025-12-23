@@ -84,7 +84,12 @@ export const LogViewer = () => {
     const classes = useLogViewerStyles();
     const levelId = useId();
     const levelLabel = useMemo(() => translate('Text_Vega_LogLevel'), []);
-    const logEntries = getLogEntries(warns, errors, logLevel as number, classes);
+    const logEntries = getLogEntries(
+        warns,
+        errors,
+        logLevel as number,
+        classes
+    );
     logRender('LogViewer', { warns, errors });
     return (
         <div className={classes.container}>
