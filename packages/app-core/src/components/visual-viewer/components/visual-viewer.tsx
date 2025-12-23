@@ -17,6 +17,7 @@ import { makeStyles } from '@fluentui/react-components';
 import { VegaRender } from './vega-render';
 import { VEGA_CONTAINER_ID } from '../constants';
 import { getDenebState, useDenebState } from '../../../state';
+import { useDenebPlatformProvider } from '../../deneb-platform';
 
 const useVisualViewerStyles = makeStyles({
     container: {
@@ -56,6 +57,7 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
         scrollbarRadius,
         scrollEventThrottle,
         specification,
+        values,
         viewportHeight,
         viewportWidth
     } = useDenebState((state) => ({
@@ -76,6 +78,7 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
         scrollEventThrottle:
             state.visualSettings.display.scrollEvents.scrollEventThrottle.value,
         specification: state.specification,
+        values: state.dataset.values,
         viewportHeight: state.interface.embedViewport?.height ?? 0,
         viewportWidth: state.interface.embedViewport?.width ?? 0
     }));
@@ -92,6 +95,8 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
     const [scrollFrame, setScrollFrame] = useState<positionValues | null>(null);
     const throttledScrollFrame = useThrottle(scrollFrame, scrollEventThrottle);
     const classes = useVisualViewerStyles();
+    const { tooltipHandler, vegaLoader, viewEventBinders } =
+        useDenebPlatformProvider();
     const containerClassName = mergeClasses(
         !isEmbeddedInEditor ? classes.overflowOverlay : classes.overflowVisible,
         classes.container
@@ -103,6 +108,10 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
             provider={provider}
             renderMode={renderMode}
             specification={specification}
+            tooltipHandler={tooltipHandler}
+            values={values}
+            vegaLoader={vegaLoader}
+            viewEventBinders={viewEventBinders}
             viewportHeight={viewportHeight}
             viewportWidth={viewportWidth}
         />

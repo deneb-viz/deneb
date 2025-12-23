@@ -239,7 +239,7 @@ const getCrossFilterSelectionSimpleMode = (
     try {
         const data = resolveDatumFromItem(item);
         const rowNumbers = getResolvedRowIdentities(data, dataset);
-        logDebug(`${LOG_PREFIX} resolved row numbers`, { rowNumbers });
+        logDebug(`${LOG_PREFIX} resolved row numbers`, { data, rowNumbers });
         return { rowNumbers };
     } catch (e) {
         return {

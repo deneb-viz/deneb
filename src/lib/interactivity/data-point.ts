@@ -34,19 +34,29 @@ export const getResolvedRowIdentities = (
     data: VegaDatum[],
     dataset: InteractivityLookupDataset
 ): number[] => {
+    const LOG_PREFIX = '[getResolvedRowIdentities]';
     // No datum to process; therefore no identities.
     if (!data || data.length === 0) {
+        //logDebug(`${LOG_PREFIX} no data supplied, returning empty array`);
         return [];
     }
     // Single, identifiable datum
     if (data.length === 1 && data[0]?.[ROW_INDEX_FIELD_NAME] !== undefined) {
+        // logDebug(`${LOG_PREFIX} single datum with identity field found`, {
+        //     datum: data[0]
+        // });
         return [data[0][ROW_INDEX_FIELD_NAME]];
     }
     // Multiple values; all with identifiable row indices
     if (allValuesHaveIdentityField(data)) {
+        // logDebug(`${LOG_PREFIX} all datum have identity field`, { data });
         return getRowNumbersFromData(data);
     }
     // Otherwise, panic mode: try to identify from the matched values
+    // logDebug(`${LOG_PREFIX} attempting to resolve via field matching`, {
+    //     data,
+    //     dataset
+    // });
     const metadata = getDatasetFieldsBySelectionKeys(
         dataset?.fields || {},
         Object.keys(data?.[0] || {})
@@ -55,17 +65,17 @@ export const getResolvedRowIdentities = (
         fields: metadata,
         values: dataset.values
     });
-    logDebug('getResolvedRowIdentities resolved values', {
+    logDebug(`${LOG_PREFIX} resolved values`, {
         values: foundValues
     });
     // All rows selected, ergo we don't actually need to highlight; as per `!data` case above
     if (foundValues?.length === dataset.values.length) {
         logDebug(
-            'getResolvedRowIdentities all rows selected; returning empty, so we can clear'
+            `${LOG_PREFIX} all rows selected; returning empty, so we can clear`
         );
         return [];
     }
-    logDebug('getResolvedRowIdentities fall-through case');
+    logDebug(`${LOG_PREFIX} fall-through case`, { foundValues });
     return foundValues ? getRowNumbersFromData(foundValues) : [];
 };
 

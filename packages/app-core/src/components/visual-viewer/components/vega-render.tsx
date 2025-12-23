@@ -1,5 +1,6 @@
 import React, { memo, useCallback, useMemo } from 'react';
 import { createClassFromSpec, View } from 'react-vega';
+import { deepEqual } from 'fast-equals';
 
 import {
     type SpecProvider,
@@ -15,9 +16,15 @@ import { useDenebState } from '../../../state';
 import { getD3FormatLocale, getD3TimeFormatLocale } from '../../../lib/i18n';
 import { makeStyles } from '@fluentui/react-components';
 import { VEGA_VIEWPORT_ADJUST } from '../constants';
-import { useDenebPlatformProvider } from '../../deneb-platform';
+import { type ViewEventBinder } from '../../deneb-platform';
+import { type VegaDatum } from '@deneb-viz/data-core/value';
+import { type Loader, type TooltipHandler } from 'vega';
 
 type VegaRenderProps = {
+    tooltipHandler?: TooltipHandler;
+    values: VegaDatum[];
+    vegaLoader?: Loader | null;
+    viewEventBinders: ViewEventBinder[];
     locale: string;
     logLevel: number;
     provider: SpecProvider;
@@ -36,11 +43,15 @@ const useVegaRenderStyles = makeStyles({
 
 /**
  * Memoization function for determining whether we should re-render the Vega content.
+ * Note: tooltipHandler and viewEventBinders references are not compared directly - they're derived from values/fields/
+ * settings which are already compared. However, we do check if tooltipHandler changes between defined/undefined states
+ * as this indicates the tooltip setting has changed in the Power BI visual.
  */
 const arePropsEqual = (
     prevProps: VegaRenderProps,
     nextProps: VegaRenderProps
 ) => {
+    const isDatasetEqual = deepEqual(prevProps.values, nextProps.values);
     const isSpecEqual =
         prevProps.specification.hashValue == nextProps.specification.hashValue;
     const isProviderEqual = prevProps.provider == nextProps.provider;
@@ -50,21 +61,29 @@ const arePropsEqual = (
         prevProps.viewportWidth == nextProps.viewportWidth;
     const isLogLevelEqual = prevProps.logLevel == nextProps.logLevel;
     const isLocaleEqual = prevProps.locale == nextProps.locale;
+    // Check if tooltip handler state changed (enabled <-> disabled)
+    const isTooltipStateEqual =
+        (prevProps.tooltipHandler === undefined) ===
+        (nextProps.tooltipHandler === undefined);
     const isSame =
+        isDatasetEqual &&
         isSpecEqual &&
         isProviderEqual &&
         isRenderModeEqual &&
         isViewportEqual &&
         isLocaleEqual &&
-        isLogLevelEqual;
+        isLogLevelEqual &&
+        isTooltipStateEqual;
     logDebug('VegaRender: arePropsEqual', {
         isSame,
+        isDatasetEqual,
         isSpecEqual,
         isProviderEqual,
         isRenderModeEqual,
         isViewportEqual,
         isLocaleEqual,
-        isLogLevelEqual
+        isLogLevelEqual,
+        isTooltipStateEqual
     });
     return isSame;
 };
@@ -74,6 +93,10 @@ const arePropsEqual = (
  */
 export const VegaRender: React.FC<VegaRenderProps> = memo(
     ({
+        tooltipHandler,
+        values,
+        vegaLoader,
+        viewEventBinders,
         locale,
         logLevel,
         provider,
@@ -82,10 +105,7 @@ export const VegaRender: React.FC<VegaRenderProps> = memo(
         viewportHeight,
         viewportWidth
     }) => {
-        const { tooltipHandler, vegaLoader, viewEventBinders } =
-            useDenebPlatformProvider();
         const classes = useVegaRenderStyles();
-        const values = useDenebState((state) => state.dataset.values);
         const { generateRenderId, logWarn, logError } = useDenebState(
             (state) => ({
                 generateRenderId: state.interface.generateRenderId,
