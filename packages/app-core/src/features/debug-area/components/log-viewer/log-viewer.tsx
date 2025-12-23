@@ -75,20 +75,17 @@ export const useLogViewerStyles = makeStyles({
 });
 
 export const LogViewer = () => {
-    const { errors, logLevel, warns, translate } = useDenebState((state) => ({
+    const { errors, logLevel, warns } = useDenebState((state) => ({
         errors: state.specification.errors,
         logLevel: state.project.logLevel,
-        warns: state.specification.warns,
-        translate: state.i18n.translate
+        warns: state.specification.warns
     }));
+    const translate = useDenebState((state) => state.i18n.translate);
     const classes = useLogViewerStyles();
     const levelId = useId();
     const levelLabel = useMemo(() => translate('Text_Vega_LogLevel'), []);
-    const logEntries = useMemo(
-        () => getLogEntries(warns, errors, logLevel as number, classes),
-        [warns, errors, logLevel, classes]
-    );
-    logRender('LogViewer');
+    const logEntries = getLogEntries(warns, errors, logLevel as number, classes);
+    logRender('LogViewer', { warns, errors });
     return (
         <div className={classes.container}>
             <div className={classes.contentWrapper}>
@@ -115,8 +112,8 @@ const getLogEntries = (
     logLevel: number,
     classes: ReturnType<typeof useLogViewerStyles>
 ) =>
-    getDebugLogEntriesForDisplay(warns, errors, logLevel).map((e) => (
-        <div key={`${e.level}-${e.message}`}>
+    getDebugLogEntriesForDisplay(warns, errors, logLevel).map((e, i) => (
+        <div key={`${e.level}-${i}-${e.message}`}>
             <span
                 className={
                     classes[
