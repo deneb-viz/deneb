@@ -1,11 +1,13 @@
 import { type StateCreator } from 'zustand';
 import { type StoreState } from './state';
-import { SpecProvider } from '@deneb-viz/template-usermeta';
 import {
     PROJECT_DEFAULTS,
     PROVIDER_VERSION_CONFIGURATION
 } from '@deneb-viz/configuration';
-import { SpecRenderMode } from '@deneb-viz/vega-runtime/embed';
+import {
+    type SpecProvider,
+    type SpecRenderMode
+} from '@deneb-viz/vega-runtime/embed';
 
 export type ProjectSliceProperties = {
     __hasHydrated__: boolean;

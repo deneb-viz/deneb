@@ -10,7 +10,6 @@ import { getProviderValidator } from './validation';
 import { applyEdits, modify } from 'jsonc-parser';
 import { type TrackedFields } from './lib/field-tracking';
 import {
-    type SelectionMode,
     TEMPLATE_USERMETA_VERSION,
     type UsermetaInformation,
     type UsermetaInteractivity,
@@ -32,6 +31,7 @@ import {
     getPlaceholderKey,
     type UsermetaDatasetField
 } from '@deneb-viz/data-core/field';
+import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 
 /**
  * If we cannot resolve a provider, this is the default to assign.

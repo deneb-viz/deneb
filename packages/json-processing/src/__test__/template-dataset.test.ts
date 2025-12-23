@@ -13,6 +13,7 @@ import {
 import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
+import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 
 const INCOMPLETE_FIELD: UsermetaDatasetField[] = [
     {
@@ -62,7 +63,7 @@ const MOCK_TEMPLATE_METADATA_BASE: UsermetaTemplate = {
         tooltip: DEFAULTS.vega.enableTooltips,
         contextMenu: DEFAULTS.vega.enableContextMenu,
         selection: DEFAULTS.vega.enableSelection,
-        selectionMode: DEFAULTS.vega.selectionMode,
+        selectionMode: DEFAULTS.vega.selectionMode as SelectionMode,
         dataPointLimit: DEFAULTS.vega.selectionMaxDataPoints,
         highlight: DEFAULTS.vega.enableHighlight
     },

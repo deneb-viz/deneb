@@ -17,7 +17,6 @@ import {
 } from '../template-usermeta';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import {
-    type SelectionMode,
     TEMPLATE_USERMETA_VERSION,
     type UsermetaTemplate
 } from '@deneb-viz/template-usermeta';
@@ -26,6 +25,7 @@ import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { type TrackedFields } from '../lib/field-tracking';
 import { type DenebTemplateAllocationComponents } from '../lib/template-processing';
 import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
+import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 
 const MOCK_BUILD_VERSION = '1.0.0';
 const MOCK_DATE = '2022-01-01T00:00:00.000Z';
@@ -55,7 +55,7 @@ const MOCK_TEMPLATE_METADATA_BASE = `{
             "tooltip": ${DEFAULTS.vega.enableTooltips},
             "contextMenu": ${DEFAULTS.vega.enableContextMenu},
             "selection": ${DEFAULTS.vega.enableSelection},
-            "selectionMode": "${DEFAULTS.vega.selectionMode}",
+            "selectionMode": "${DEFAULTS.vega.selectionMode as SelectionMode}",
             "dataPointLimit": ${DEFAULTS.vega.selectionMaxDataPoints},
             "highlight": ${DEFAULTS.vega.enableHighlight}
         },
@@ -84,7 +84,7 @@ const MOCK_TEMPLATE_METADATA_NO_PROVIDER_VERSION = `{
             "tooltip": ${DEFAULTS.vega.enableTooltips},
             "contextMenu": ${DEFAULTS.vega.enableContextMenu},
             "selection": ${DEFAULTS.vega.enableSelection},
-            "selectionMode": "${DEFAULTS.vega.selectionMode}",
+            "selectionMode": "${DEFAULTS.vega.selectionMode as SelectionMode}",
             "dataPointLimit": ${DEFAULTS.vega.selectionMaxDataPoints},
             "highlight": ${DEFAULTS.vega.enableHighlight}
         },
@@ -112,7 +112,7 @@ const EXPECTED_METADATA_BASE = {
         tooltip: DEFAULTS.vega.enableTooltips,
         contextMenu: DEFAULTS.vega.enableContextMenu,
         selection: DEFAULTS.vega.enableSelection,
-        selectionMode: DEFAULTS.vega.selectionMode,
+        selectionMode: DEFAULTS.vega.selectionMode as SelectionMode,
         dataPointLimit: DEFAULTS.vega.selectionMaxDataPoints,
         highlight: DEFAULTS.vega.enableHighlight
     },
@@ -238,7 +238,7 @@ describe('getExportTemplate', () => {
       "tooltip": ${DEFAULTS.vega.enableTooltips},
       "contextMenu": ${DEFAULTS.vega.enableContextMenu},
       "selection": ${DEFAULTS.vega.enableSelection},
-      "selectionMode": "${DEFAULTS.vega.selectionMode}",
+      "selectionMode": "${DEFAULTS.vega.selectionMode as SelectionMode}",
       "dataPointLimit": ${DEFAULTS.vega.selectionMaxDataPoints},
       "highlight": ${DEFAULTS.vega.enableHighlight}
     },

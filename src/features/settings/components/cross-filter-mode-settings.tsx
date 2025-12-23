@@ -14,7 +14,7 @@ import {
     handleSelectionMode,
     useDenebState
 } from '@deneb-viz/app-core';
-import { type SelectionMode } from '@deneb-viz/template-usermeta';
+import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 import { InteractivityManager } from '../../../lib/interactivity';
 
 export const CrossFilterModeSettings = () => {

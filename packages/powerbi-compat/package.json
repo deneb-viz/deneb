@@ -21,6 +21,10 @@
             "types": "./dist/lib/formatting/index.d.ts",
             "default": "./dist/lib/formatting/index.js"
         },
+        "./interactivity": {
+            "types": "./dist/lib/interactivity/index.d.ts",
+            "default": "./dist/lib/interactivity/index.js"
+        },
         "./properties": {
             "types": "./dist/lib/properties/index.d.ts",
             "default": "./dist/lib/properties/index.js"

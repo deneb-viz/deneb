@@ -12,7 +12,7 @@ import { logDebug, logWarning } from '@deneb-viz/utils/logging';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { getDenebState } from '@deneb-viz/app-core';
 import { useDenebVisualState } from '../../state';
-import { type SelectionMode } from '@deneb-viz/template-usermeta';
+import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 
 /**
  * Result returned from a cross-filter apply operation.

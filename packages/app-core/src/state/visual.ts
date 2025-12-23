@@ -17,12 +17,10 @@ import { getParsedSpec } from '@deneb-viz/json-processing/spec-processing';
 import { getSpecificationParseOptions } from './helpers';
 import { type StoreState } from './state';
 import { logDebug } from '@deneb-viz/utils/logging';
-import {
-    type SelectionMode,
-    type UsermetaTemplate
-} from '@deneb-viz/template-usermeta';
+import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { type StateCreator } from 'zustand';
 import { getModalDialogRole } from '../lib/interface/state';
+import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 
 export type VisualSlice = {
     visualSettings: VisualFormattingSettingsModel;

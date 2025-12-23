@@ -13,11 +13,8 @@ import {
 import { type SpecificationEditorRefs } from '../../features/specification-editor';
 import { monaco } from '../../components/code-editor/monaco-integration';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
-import {
-    SpecProvider,
-    type SpecRenderMode
-} from '@deneb-viz/vega-runtime/embed';
-import { type SelectionMode } from '@deneb-viz/template-usermeta';
+import { SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 import { HOTKEY_BINDINGS } from './constants';
 import { getZoomToFitScale } from '../interface/layout';
 

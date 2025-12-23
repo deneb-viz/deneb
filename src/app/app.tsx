@@ -25,7 +25,7 @@ import {
     crossFilterHandler,
     tooltipHandler
 } from '../lib/interactivity';
-import { type SelectionMode } from '@deneb-viz/template-usermeta';
+import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 
 type AppProps = {
     host: powerbi.extensibility.visual.IVisualHost;

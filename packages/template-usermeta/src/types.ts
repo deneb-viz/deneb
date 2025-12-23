@@ -1,17 +1,7 @@
 import type { UsermetaDatasetField } from '@deneb-viz/data-core/field';
+import type { SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import type { SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 
-/**
- * Specifies the provider type for the template specification.
- */
-// TODO: removes circular dependency by duplicating type here temporarily.
-export type SpecProvider = 'vega' | 'vegaLite';
-
-/**
- * Indicates the type of selection mode that is currently active.
- * `simple` = legacy selection mode (let Deneb do it for me);
- * `advanced` = advanced selection mode (let me do it for Deneb).
- */
-export type SelectionMode = 'simple' | 'advanced';
 
 /**
  * Main template definition.

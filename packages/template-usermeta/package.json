@@ -34,7 +34,9 @@
     "devDependencies": {
         "@deneb-viz/data-core": "*",
         "@deneb-viz/eslint-config": "*",
+        "@deneb-viz/powerbi-compat": "*",
         "@deneb-viz/typescript-config": "*",
+        "@deneb-viz/vega-runtime": "*",
         "@types/node": "^22.15.33",
         "ts-json-schema-generator": "^2.4.0",
         "tsx": "^4.20.3",

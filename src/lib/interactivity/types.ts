@@ -5,7 +5,7 @@ import {
     type VegaDatum,
     type DataPointSelectionStatus
 } from '@deneb-viz/data-core/value';
-import { type SelectionMode } from '@deneb-viz/template-usermeta';
+import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 
 /**
  * Options that can be supplied for advanced cross-filtering behavior.
