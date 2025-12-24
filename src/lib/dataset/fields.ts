@@ -101,9 +101,7 @@ export const getEncodedFieldName = (displayName: string) =>
 /**
  * Get artificial array of values first (if needed) as we'll need them when working out highlights later on.
  */
-const getHighlightFieldEntries = (
-    values: powerbi.DataViewValueColumns
-) =>
+const getHighlightFieldEntries = (values: powerbi.DataViewValueColumns) =>
     (isCrossHighlightPropSet() &&
         values?.map((v, vi): AugmentedMetadataField => {
             const displayName = `${v.source.displayName}${HIGHLIGHT_FIELD_SUFFIX}`;
