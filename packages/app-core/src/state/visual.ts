@@ -20,6 +20,7 @@ import { logDebug } from '@deneb-viz/utils/logging';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { type StateCreator } from 'zustand';
 import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
+import { getModalDialogRole } from '../lib/interface/state';
 
 export type VisualSlice = {
     visualSettings: VisualFormattingSettingsModel;
@@ -69,6 +70,11 @@ const handleSetVisualUpdate = (
                   }
               })
             : state.specification;
+    const modalDialogRole = getModalDialogRole(
+        state.project.__isInitialized__,
+        state.interface.type,
+        state.interface.modalDialogRole
+    );
     const zoomOtherCommandTest: ZoomOtherCommandTestOptions = {
         specification: spec
     };
@@ -125,6 +131,10 @@ const handleSetVisualUpdate = (
         export: {
             ...state.export,
             metadata: exportMetadata
+        },
+        interface: {
+            ...state.interface,
+            modalDialogRole
         },
         specification: {
             ...state.specification,

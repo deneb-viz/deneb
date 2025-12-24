@@ -243,6 +243,11 @@ export const createInterfaceSlice =
                     (state) => ({
                         interface: {
                             ...state.interface,
+                            modalDialogRole: getModalDialogRole(
+                                state.project.__isInitialized__,
+                                type,
+                                state.interface.modalDialogRole
+                            ),
                             type
                         }
                     }),

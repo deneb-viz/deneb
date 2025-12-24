@@ -8,6 +8,7 @@ import {
 } from '@deneb-viz/powerbi-compat/properties';
 import { type DenebVisualStoreState } from './state';
 import {
+    doesModeAllowEmbedViewportSet,
     getUpdatedDisplayHistoryList,
     isVisualUpdateTypeResizeEnd,
     isVisualUpdateTypeVolatile,
@@ -89,8 +90,7 @@ export const createUpdatesSlice = (): StateCreator<
                 const { embedViewport, mode, setEmbedViewport } =
                     get().interface;
                 if (
-                    mode !== 'editor' &&
-                    mode !== 'transition-viewer-editor' &&
+                    doesModeAllowEmbedViewportSet(mode, options.isInFocus) &&
                     !shallowEqual(embedViewport, viewport) &&
                     (isVisualUpdateTypeResizeEnd(options.type) ||
                         !embedViewport)

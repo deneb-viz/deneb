@@ -67,12 +67,8 @@ export const PreviewArea = () => {
         showViewportMarker:
             state.visualSettings.editor.preview.showViewportMarker.value,
         status: state.specification.status,
-        viewportHeight: Number.parseFloat(
-            state.visualSettings.stateManagement.viewport.viewportHeight.value
-        ),
-        viewportWidth: Number.parseFloat(
-            state.visualSettings.stateManagement.viewport.viewportWidth.value
-        )
+        viewportHeight: state.interface.embedViewport?.height ?? 0,
+        viewportWidth: state.interface.embedViewport?.width ?? 0
     }));
     const classes = usePreviewStyles();
     const borderWidth = DEBUG_PANE_CONFIGURATION.viewportBorderSize;

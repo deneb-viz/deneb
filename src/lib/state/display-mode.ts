@@ -1,6 +1,5 @@
 import powerbi from 'powerbi-visuals-api';
 
-import { type VisualUpdateDataPayload } from '../../state/updates';
 import {
     DEFAULTS,
     type VisualFormattingSettingsModel
@@ -42,6 +41,18 @@ export type GetUpdatedHistoryListPayload = {
  * Maximum number of update history records to retain.
  */
 const MAX_UPDATE_HISTORY_RETENTION = 100;
+
+export const doesModeAllowEmbedViewportSet = (
+    mode: DisplayMode,
+    isInFocus: boolean
+) => {
+    return (
+        mode !== 'editor' &&
+        mode !== 'transition-viewer-editor' &&
+        mode !== 'transition-editor-viewer' &&
+        !isInFocus
+    );
+};
 
 /**
  * Generate an updated display history list based on the current history and new update payload.
