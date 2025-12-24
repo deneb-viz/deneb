@@ -315,7 +315,7 @@ const handleSetRemapState = (
                 })
               ? 'Remap'
               : getModalDialogRole(
-                    state.visualSettings,
+                    state.project.__isInitialized__,
                     state.interface.type,
                     state.interface.modalDialogRole
                 );

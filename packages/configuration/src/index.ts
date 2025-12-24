@@ -89,8 +89,10 @@ export const VEGA_LOG_LEVEL_CONFIGURATION = [
 ];
 
 export const PROJECT_DEFAULTS = {
+    config: '{}',
     logLevel: 3,
-    renderMode: 'svg'
+    renderMode: 'svg',
+    spec: '{}'
 };
 
 /**

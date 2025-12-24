@@ -1,5 +1,6 @@
 import {
     APPLICATION_INFORMATION_CONFIGURATION,
+    PROJECT_DEFAULTS,
     VISUAL_PREVIEW_ZOOM_CONFIGURATION
 } from '@deneb-viz/configuration';
 import { getDenebState } from '../../state';
@@ -57,9 +58,9 @@ const getCleanJsonInputForPersistence = (
     if (clean === '') {
         switch (operation) {
             case 'Spec':
-                return DEFAULTS.vega.jsonSpec;
+                return PROJECT_DEFAULTS.spec;
             case 'Config':
-                return DEFAULTS.vega.jsonConfig;
+                return PROJECT_DEFAULTS.config;
         }
     }
     return clean;
@@ -96,7 +97,7 @@ export const handleAutoApplyChanges = (editorRefs: SpecificationEditorRefs) => {
 };
 
 export const handleCloseCreateDialog = () =>
-    setVisualProperty([{ name: 'isNewDialogOpen', value: false }]);
+    getDenebState().project.setIsInitialized(true);
 
 export const handleDataTableRowsPerPageChange = (value: number) => {
     setVisualProperty(
@@ -173,9 +174,7 @@ export const handleExportSpecification = () =>
     });
 
 export const handleOpenCreateSpecificationDialog = () => {
-    executeCommand('newSpecification', () => {
-        setVisualProperty([{ name: 'isNewDialogOpen', value: true }]);
-    });
+    getDenebState().interface.setModalDialogRole('Create');
 };
 
 /**
@@ -213,40 +212,21 @@ export const handlePersistSpecification = (
     stage = true
 ) => {
     const {
-        editor: { stagedConfig, stagedSpec, updateChanges },
+        editor: { stagedConfig, stagedSpec },
+        project: { spec, config, setContent }
         // fieldUsage: { dataset: trackedFieldsCurrent },
-        visualSettings: {
-            vega: {
-                output: {
-                    jsonConfig: { value: jsonConfig },
-                    jsonSpec: { value: jsonSpec }
-                }
-            }
-        }
     } = getDenebState();
-    const spec =
+    const nextSpec =
         (stage && specEditor
             ? getCleanJsonInputForPersistence('Spec', specEditor.getValue())
-            : stagedSpec) ?? jsonSpec;
-    const config =
+            : stagedSpec) ?? spec;
+    const nextConfig =
         (stage && configEditor
             ? getCleanJsonInputForPersistence('Config', configEditor.getValue())
-            : stagedConfig) ?? jsonConfig;
+            : stagedConfig) ?? config;
     // Tracking is now only used for export (#486)
-    // updateFieldTracking(spec, trackedFieldsCurrent);
-    updateChanges({ role: 'Spec', text: spec });
-    updateChanges({ role: 'Config', text: config });
-    persistProperties(
-        resolveObjectProperties([
-            {
-                objectName: 'vega',
-                properties: [
-                    { name: 'jsonSpec', value: spec },
-                    { name: 'jsonConfig', value: config }
-                ]
-            }
-        ])
-    );
+    // updateFieldTracking(nextSpec, trackedFieldsCurrent);
+    setContent({ spec: nextSpec, config: nextConfig });
 };
 
 /**

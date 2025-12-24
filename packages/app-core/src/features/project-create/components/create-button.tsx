@@ -8,6 +8,7 @@ import {
 } from '@deneb-viz/powerbi-compat/visual-host';
 import { useSpecificationEditor } from '../../specification-editor';
 import { useDenebState } from '../../../state';
+import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 
 /**
  * Displays the content for creating a specification using the selected
@@ -32,14 +33,15 @@ export const CreateButton = () => {
     const onCreate = () => {
         logDebug('createFromTemplate', { metadata, candidates });
         const jsonSpec = getTemplateReplacedForDataset(
-            candidates?.spec ?? '',
+            candidates?.spec ?? PROJECT_DEFAULTS.spec,
             metadata?.dataset ?? []
         );
-        const jsonConfig = candidates?.config;
+        const jsonConfig = candidates?.config ?? PROJECT_DEFAULTS.config;
         logDebug('createFromTemplate - processed candidates', {
             jsonSpec,
             jsonConfig
         });
+        // TODO: creates race conditions if we sync to state without everything being migrated
         persistProperties(
             resolveObjectProperties([
                 {
@@ -48,7 +50,6 @@ export const CreateButton = () => {
                         { name: 'provider', value: metadata?.deneb.provider },
                         { name: 'jsonSpec', value: jsonSpec },
                         { name: 'jsonConfig', value: jsonConfig },
-                        { name: 'isNewDialogOpen', value: false },
                         {
                             name: 'enableTooltips',
                             value: metadata?.interactivity?.tooltip || false

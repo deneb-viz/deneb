@@ -252,13 +252,13 @@ const addHyperlinkOverride = (
 const getDefaultValue = (role: EditorPaneRole) => {
     const {
         editor: { stagedConfig, stagedSpec },
-        visualSettings
+        project: { spec, config }
     } = getDenebState();
     switch (role) {
         case 'Spec':
-            return stagedSpec ?? visualSettings.vega.output.jsonSpec.value;
+            return stagedSpec ?? spec;
         case 'Config':
-            return stagedConfig ?? visualSettings.vega.output.jsonConfig.value;
+            return stagedConfig ?? config;
     }
 };
 
@@ -426,17 +426,12 @@ const updateTracking = async (spec: string, editorRole: EditorPaneRole) => {
     );
     const {
         fieldUsage: { dataset: trackedFieldsCurrent, editorShouldSkipRemap },
-        visualSettings: {
-            vega: {
-                output: {
-                    jsonSpec: { value: jsonSpec }
-                }
-            }
-        }
+        project: { spec: currentSpec }
     } = getDenebState();
     if (
         editorRole === 'Config' ||
-        (editorRole === 'Spec' && (spec === jsonSpec || editorShouldSkipRemap))
+        (editorRole === 'Spec' &&
+            (spec === currentSpec || editorShouldSkipRemap))
     ) {
         logDebug(
             "[Spec Editor] Spec hasn't changed, skipping tracking and tokens..."

@@ -43,7 +43,6 @@ type EditorSliceProperties = {
 export type EditorSlice = {
     editor: EditorSliceProperties;
     editorIsExportDialogVisible: boolean;
-    editorIsNewDialogVisible: boolean;
     editorPaneIsExpanded: boolean;
     editorPreviewAreaHeight: number | null;
     editorPreviewAreaHeightLatch: number | null;
@@ -139,7 +138,6 @@ export const createEditorSlice =
                 )
         },
         editorIsExportDialogVisible: false,
-        editorIsNewDialogVisible: true,
         editorPaneIsExpanded: true,
         editorPreviewAreaHeight: null,
         editorPreviewAreaHeightLatch: null,
@@ -255,8 +253,8 @@ const handleUpdateChanges = (
             : state.editor.viewStateConfig;
     const isDirty =
         (role === 'Spec'
-            ? state.visualSettings.vega.output.jsonSpec.value !== text
-            : state.visualSettings.vega.output.jsonConfig.value !== text) &&
+            ? state.project.spec !== text
+            : state.project.config !== text) &&
         state.editor.applyMode !== 'Auto';
     const viewStateConfig =
         role === 'Config'

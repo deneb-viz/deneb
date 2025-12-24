@@ -8,27 +8,28 @@ import {
     type SpecProvider,
     type SpecRenderMode
 } from '@deneb-viz/vega-runtime/embed';
+import { isProjectInitialized, type DenebProject } from '../lib/project';
+import { getModalDialogRole } from '../lib/interface/state';
 
-export type ProjectSliceProperties = {
+export type ProjectSliceProperties = DenebProject & {
     __hasHydrated__: boolean;
-    logLevel: number;
-    provider: SpecProvider | undefined;
-    providerVersion?: string;
-    renderMode: SpecRenderMode;
+    __isInitialized__: boolean;
+    setContent: (payload: SetContentPayload) => void;
     setLogLevel: (logLevel: number) => void;
-    syncProjectData: (payload: ProjectSyncPayload) => void;
+    setIsInitialized: (isInitialized: boolean) => void;
     setProvider: (provider: SpecProvider | undefined) => void;
     setRenderMode: (renderMode: SpecRenderMode) => void;
+    syncProjectData: (payload: ProjectSyncPayload) => void;
 };
 
 /**
  * Used to hydrate or synchronize project data from/to a hosting application.
  */
-export type ProjectSyncPayload = {
-    logLevel: number;
-    provider: SpecProvider | undefined;
-    providerVersion: string | undefined;
-    renderMode: SpecRenderMode;
+export type ProjectSyncPayload = DenebProject;
+
+export type SetContentPayload = {
+    spec: string;
+    config: string;
 };
 
 export type ProjectSlice = {
@@ -42,13 +43,37 @@ export const createProjectSlice =
         [],
         ProjectSlice
     > =>
-    (set) => ({
+    (set, get) => ({
         project: {
             __hasHydrated__: false,
+            __isInitialized__: false,
+            config: PROJECT_DEFAULTS.config,
             logLevel: PROJECT_DEFAULTS.logLevel,
             provider: undefined,
             providerVersion: undefined,
             renderMode: PROJECT_DEFAULTS.renderMode as SpecRenderMode,
+            spec: PROJECT_DEFAULTS.spec,
+            setContent: (payload: SetContentPayload) => {
+                set(
+                    (state) => ({
+                        project: {
+                            ...state.project,
+                            spec: payload.spec,
+                            config: payload.config
+                        }
+                    }),
+                    false,
+                    'project.setContent'
+                );
+                get().editor.updateChanges({
+                    role: 'Spec',
+                    text: payload.spec
+                });
+                get().editor.updateChanges({
+                    role: 'Config',
+                    text: payload.config
+                });
+            },
             setLogLevel: (logLevel: number) =>
                 set(
                     (state) => ({
@@ -59,6 +84,17 @@ export const createProjectSlice =
                     }),
                     false,
                     'project.setLogLevel'
+                ),
+            setIsInitialized: (isInitialized: boolean) =>
+                set(
+                    (state) => ({
+                        project: {
+                            ...state.project,
+                            __isInitialized__: isInitialized
+                        }
+                    }),
+                    false,
+                    'project.setIsInitialized'
                 ),
             setProvider: (provider: SpecProvider | undefined) =>
                 set(
@@ -97,14 +133,27 @@ export const createProjectSlice =
 const handleSyncProjectData = (
     state: StoreState,
     payload: ProjectSyncPayload
-): Partial<StoreState> => ({
-    project: {
-        ...state.project,
-        __hasHydrated__: true,
-        logLevel: payload.logLevel ?? state.project.logLevel,
-        provider: payload.provider ?? state.project.provider,
-        providerVersion:
-            payload.providerVersion ?? state.project.providerVersion,
-        renderMode: payload.renderMode ?? state.project.renderMode
-    }
-});
+): Partial<StoreState> => {
+    // Filter out undefined values so we only override with defined properties
+    const definedPayload = Object.fromEntries(
+        Object.entries(payload).filter(([, value]) => value !== undefined)
+    );
+    const __isInitialized__ = isProjectInitialized(payload);
+    const modalDialogRole = getModalDialogRole(
+        __isInitialized__,
+        state.interface.type,
+        state.interface.modalDialogRole
+    );
+    return {
+        interface: {
+            ...state.interface,
+            modalDialogRole
+        },
+        project: {
+            ...state.project,
+            ...definedPayload,
+            __hasHydrated__: true,
+            __isInitialized__
+        }
+    };
+};

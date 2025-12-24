@@ -6,6 +6,7 @@ import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
  * Get the options for parsing the specification and configuration from the
  * store.
  */
+// TODO: need to use visual settings rather than project while we are on the legacy parse workflow
 export const getSpecificationParseOptions = (
     state: StoreState
 ): SpecificationParseOptions => ({

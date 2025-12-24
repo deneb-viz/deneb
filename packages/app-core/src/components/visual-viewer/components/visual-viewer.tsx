@@ -45,8 +45,8 @@ type VisualViewerProps = {
 // eslint-disable-next-line max-lines-per-function
 export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
     const {
-        jsonConfig,
-        jsonSpec,
+        config,
+        spec,
         locale,
         logLevel,
         previewScrollbars,
@@ -61,8 +61,8 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
         viewportHeight,
         viewportWidth
     } = useDenebState((state) => ({
-        jsonConfig: state.visualSettings.vega.output.jsonConfig.value,
-        jsonSpec: state.visualSettings.vega.output.jsonSpec.value,
+        spec: state.project.spec,
+        config: state.project.config,
         locale: state.i18n.locale,
         logLevel: state.project.logLevel,
         previewScrollbars:
@@ -128,8 +128,8 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
     useEffect(() => {
         logRender('VegaContainer', {
             isEmbeddedInEditor,
-            jsonConfig,
-            jsonSpec,
+            config,
+            spec,
             provider,
             specification,
             viewportHeight,
@@ -137,8 +137,8 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
         });
     }, [
         isEmbeddedInEditor,
-        jsonConfig,
-        jsonSpec,
+        config,
+        spec,
         provider,
         specification.hashValue,
         viewportHeight,

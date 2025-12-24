@@ -39,6 +39,22 @@ export type ProjectPropertyMapping<T> = {
  */
 export const PROJECT_SYNC_MAPPINGS: ProjectPropertyMapping<unknown>[] = [
     {
+        projectKey: 'spec',
+        getVisualValue: (s) => s.vega.output.jsonSpec.value,
+        persistence: {
+            objectName: 'vega',
+            propertyName: 'jsonSpec'
+        }
+    },
+    {
+        projectKey: 'config',
+        getVisualValue: (s) => s.vega.output.jsonConfig.value,
+        persistence: {
+            objectName: 'vega',
+            propertyName: 'jsonConfig'
+        }
+    },
+    {
         projectKey: 'logLevel',
         getVisualValue: (s) => s.vega.logging.logLevel.value,
         persistence: {

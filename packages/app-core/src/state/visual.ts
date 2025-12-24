@@ -19,7 +19,6 @@ import { type StoreState } from './state';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { type StateCreator } from 'zustand';
-import { getModalDialogRole } from '../lib/interface/state';
 import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 
 export type VisualSlice = {
@@ -70,12 +69,6 @@ const handleSetVisualUpdate = (
                   }
               })
             : state.specification;
-    // Check to see if onboarding dialog should be shown
-    const modalDialogRole = getModalDialogRole(
-        payload.settings,
-        state.interface.type,
-        state.interface.modalDialogRole
-    );
     const zoomOtherCommandTest: ZoomOtherCommandTestOptions = {
         specification: spec
     };
@@ -86,11 +79,9 @@ const handleSetVisualUpdate = (
     const exportSpecCommandTest: ExportSpecCommandTestOptions = {
         editorIsDirty:
             (state.editor.stagedSpec !== null &&
-                state.editor.stagedSpec !==
-                    payload.settings.vega.output.jsonSpec.value) ||
+                state.editor.stagedSpec !== state.project.spec) ||
             (state.editor.stagedConfig !== null &&
-                state.editor.stagedConfig !==
-                    payload.settings.vega.output.jsonConfig.value),
+                state.editor.stagedConfig !== state.project.config),
         specification: spec
     };
     const exportMetadata = getUpdatedExportMetadata(
@@ -131,15 +122,9 @@ const handleSetVisualUpdate = (
             zoomReset: isZoomOtherCommandsEnabled(zoomLevelCommandTest)
         },
         debug: { ...state.debug, logAttention: spec.errors.length > 0 },
-        editorIsNewDialogVisible:
-            payload.settings.vega.state.isNewDialogOpen.value,
         export: {
             ...state.export,
             metadata: exportMetadata
-        },
-        interface: {
-            ...state.interface,
-            modalDialogRole
         },
         specification: {
             ...state.specification,

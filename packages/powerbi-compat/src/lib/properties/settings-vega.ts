@@ -18,8 +18,7 @@ export class SettingsVega extends formattingSettings.CompositeCard {
     output = new SettingsVegaGroupOutput(Object());
     logging = new SettingsVegaLoggingGroup(Object());
     interactivity = new SettingsVegaInteractivityGroup(Object());
-    state = new SettingsVegaStateGroup(Object());
-    groups = [this.output, this.logging, this.interactivity, this.state];
+    groups = [this.output, this.logging, this.interactivity];
 }
 
 class SettingsVegaGroupOutput extends formattingSettings.Group {
@@ -139,15 +138,4 @@ class SettingsVegaInteractivityGroup extends formattingSettings.Group {
         this.selectionMaxDataPoints,
         this.enableHighlight
     ];
-}
-
-class SettingsVegaStateGroup extends formattingSettings.Group {
-    name = 'state';
-    displayNameKey = 'Objects_Vega_Group_State';
-    isNewDialogOpen = new formattingSettings.ToggleSwitch({
-        name: 'isNewDialogOpen',
-        displayNameKey: 'Objects_Vega_IsNewDialogOpen',
-        value: DEFAULTS.vega.isNewDialogOpen
-    });
-    slices = [this.isNewDialogOpen];
 }

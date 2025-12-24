@@ -1,6 +1,7 @@
 import {
     DATA_VIEWER_CONFIGURATION,
-    EDITOR_DEFAULTS
+    EDITOR_DEFAULTS,
+    PROJECT_DEFAULTS
 } from '@deneb-viz/configuration';
 
 /**
@@ -150,17 +151,13 @@ export const DEFAULTS = {
          */
         enableHighlight: false,
         /**
-         * Whether the 'create' dialog should be open or not.
-         */
-        isNewDialogOpen: true,
-        /**
          * The JSON editor content for specification.
          */
-        jsonSpec: '{}',
+        jsonSpec: PROJECT_DEFAULTS.spec,
         /**
          * The JSON editor content for configuration.
          */
-        jsonConfig: '{}',
+        jsonConfig: PROJECT_DEFAULTS.config,
         /**
          * The Vega provider to use when parsing.
          */
