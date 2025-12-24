@@ -49,7 +49,6 @@ import {
 
 type DatasetViewerProps = {
     datasetName: string;
-    hashValue: string;
     logAttention: boolean;
     renderId: string;
 };
@@ -82,7 +81,6 @@ const useDatasetViewerStyles = makeStyles({
 // eslint-disable-next-line max-lines-per-function
 export const DatasetViewer = ({
     datasetName,
-    hashValue,
     logAttention,
     renderId
 }: DatasetViewerProps) => {
@@ -296,7 +294,6 @@ export const DatasetViewer = ({
                 logDebug(
                     `DatasetViewer: change necessitates dataset update. Updating...`,
                     {
-                        hashValue,
                         datasetName,
                         renderId,
                         logAttention
@@ -320,7 +317,7 @@ export const DatasetViewer = ({
         return () => {
             removeListener();
         };
-    }, [hashValue, datasetName, renderId, logAttention]);
+    }, [datasetName, renderId, logAttention]);
     /**
      * Keep sort persisted across renders.
      */
@@ -338,7 +335,6 @@ export const DatasetViewer = ({
     logRender('DatasetViewer', {
         datasetState,
         datasetRaw,
-        hashValue,
         renderId,
         logAttention,
         sortColumnId,

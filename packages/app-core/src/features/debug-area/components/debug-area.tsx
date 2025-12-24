@@ -21,7 +21,6 @@ export const DebugArea = () => {
         datasetName,
         editorPreviewAreaSelectedPivot,
         editorPreviewDebugIsExpanded,
-        hashValue,
         logAttention,
         renderId,
         translate
@@ -29,7 +28,6 @@ export const DebugArea = () => {
         datasetName: state.debug.datasetName,
         editorPreviewAreaSelectedPivot: state.editorPreviewAreaSelectedPivot,
         editorPreviewDebugIsExpanded: state.editorPreviewDebugIsExpanded,
-        hashValue: state.dataset.hashValue,
         logAttention: state.debug.logAttention,
         renderId: state.interface.renderId,
         translate: state.i18n.translate
@@ -43,7 +41,6 @@ export const DebugArea = () => {
                 return (
                     <DatasetViewer
                         datasetName={datasetName}
-                        hashValue={hashValue}
                         logAttention={logAttention}
                         renderId={renderId}
                     />
@@ -57,7 +54,6 @@ export const DebugArea = () => {
         datasetName,
         editorPreviewAreaSelectedPivot,
         editorPreviewDebugIsExpanded,
-        hashValue,
         logAttention,
         renderId
     ]);
