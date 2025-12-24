@@ -1,12 +1,7 @@
 import powerbi from 'powerbi-visuals-api';
-import {
-    getVisualFormattingModel,
-    VisualFormattingSettingsModel
-} from '../properties';
 
 let services: powerbi.extensibility.visual.VisualConstructorOptions;
 let visualUpdateOptions: powerbi.extensibility.visual.VisualUpdateOptions;
-let settings: VisualFormattingSettingsModel;
 
 /**
  * Use to bind the visual host services to this API for use in the application lifecycle.
@@ -21,13 +16,8 @@ export const VisualHostServices = {
     bind: (service: powerbi.extensibility.visual.VisualConstructorOptions) => {
         services = service;
     },
-    update: (
-        options: powerbi.extensibility.visual.VisualUpdateOptions,
-        isDeveloperMode = false
-    ) => {
+    update: (options: powerbi.extensibility.visual.VisualUpdateOptions) => {
         visualUpdateOptions = options;
-        settings = getVisualFormattingModel(options?.dataViews?.[0]);
-        settings.resolveDeveloperSettings(isDeveloperMode);
     }
 };
 
@@ -37,18 +27,7 @@ export const VisualHostServices = {
 export const getVisualHost = () => services?.host;
 
 /**
- * Whether or not the visual host has determined that interactions are allowed.
- */
-export const getVisualInteractionStatus = () =>
-    services?.host?.hostCapabilities?.allowInteractions || false;
-
-/**
  * Get the current visual data view's persistence objects.
  */
 export const getVisualObjects = () =>
     visualUpdateOptions?.dataViews?.[0]?.metadata?.objects;
-
-/**
- * Get the current visual settings as resolved from the data view.
- */
-export const getVisualSettings = () => settings;

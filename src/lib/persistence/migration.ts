@@ -14,12 +14,12 @@ import {
 } from '@deneb-viz/configuration';
 import { logDebug } from '@deneb-viz/utils/logging';
 import {
-    getVisualSettings,
     type PersistenceProperty,
     persistProperties,
     resolveObjectProperties
 } from '@deneb-viz/powerbi-compat/visual-host';
 import { getDenebState } from '@deneb-viz/app-core';
+import { getDenebVisualState } from '../../state';
 
 /**
  * Current visual and provider information
@@ -154,13 +154,15 @@ export const handlePropertyMigration = (
 const isNewSpec = () => {
     const defaults = DEFAULTS.vega;
     const {
-        vega: {
-            output: {
-                jsonSpec: { value: jsonSpec },
-                jsonConfig: { value: jsonConfig }
+        settings: {
+            vega: {
+                output: {
+                    jsonSpec: { value: jsonSpec },
+                    jsonConfig: { value: jsonConfig }
+                }
             }
         }
-    } = getVisualSettings();
+    } = getDenebVisualState();
     return jsonSpec === defaults.jsonSpec && jsonConfig === defaults.jsonConfig;
 };
 
@@ -193,7 +195,7 @@ const isUnversionedSpec = () => !isNewSpec() && !isVersionedSpec();
  */
 const isVersionedSpec = () => {
     const {
-        visualSettings: {
+        settings: {
             developer: {
                 versioning: {
                     version: { value: denebVersion }
@@ -205,7 +207,7 @@ const isVersionedSpec = () => {
                 }
             }
         }
-    } = getDenebState();
+    } = getDenebVisualState();
     return (denebVersion && providerVersion) || false;
 };
 

@@ -72,20 +72,6 @@ export type CrossFilterTranslate = (
 ) => string;
 
 /**
- * Options used to check whether cross-filtering is enabled and should be performed or data processed accordingly.
- */
-export type CrossFilterPropCheckOptions = {
-    enableSelection: boolean;
-};
-
-/**
- * Options used to check whether cross-highlighting is enabled and should be performed or data processed accordingly.
- */
-export type CrossHighlightPropCheckOptions = {
-    enableHighlight: boolean;
-};
-
-/**
  * Field and value information from the main dataset, used for interactivity lookups when we cannot directly resolve a
  * row number from a Vega datum.
  */

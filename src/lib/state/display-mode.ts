@@ -1,7 +1,10 @@
 import powerbi from 'powerbi-visuals-api';
 
 import { type VisualUpdateDataPayload } from '../../state/updates';
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
+import {
+    DEFAULTS,
+    type VisualFormattingSettingsModel
+} from '@deneb-viz/powerbi-compat/properties';
 import { logDebug } from '@deneb-viz/utils/logging';
 
 /**
@@ -29,7 +32,9 @@ export type DisplayHistoryRecord = {
     viewport: powerbi.extensibility.visual.VisualUpdateOptions['viewport'];
 };
 
-export type GetUpdatedHistoryListPayload = VisualUpdateDataPayload & {
+export type GetUpdatedHistoryListPayload = {
+    options: powerbi.extensibility.visual.VisualUpdateOptions;
+    settings: VisualFormattingSettingsModel;
     isFetchingAdditionalData: boolean;
 };
 

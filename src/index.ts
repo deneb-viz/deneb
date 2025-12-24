@@ -20,10 +20,7 @@ import {
     VisualFormattingSettingsService,
     getVisualFormattingService
 } from '@deneb-viz/powerbi-compat/properties';
-import {
-    getVisualSettings,
-    VisualHostServices
-} from '@deneb-viz/powerbi-compat/visual-host';
+import { VisualHostServices } from '@deneb-viz/powerbi-compat/visual-host';
 import { APPLICATION_INFORMATION_CONFIGURATION } from '@deneb-viz/configuration';
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
 import {
@@ -80,11 +77,13 @@ export class Deneb implements IVisual {
             this.#host = host;
             const {
                 dataset: { setSelectors },
+                host: { setHost },
                 interactivity: { setSelectionLimitExceeded }
             } = getDenebVisualState();
             const {
                 i18n: { setLocale }
             } = getDenebState();
+            setHost(host);
             VisualHostServices.bind(options);
             bindPersistPropertiesHost(host);
             InteractivityManager.bind({
@@ -139,15 +138,14 @@ export class Deneb implements IVisual {
     private resolveUpdateOptions(options: VisualUpdateOptions) {
         logDebug('Resolving update options...', { options });
         logTimeStart('resolveUpdateOptions');
-        VisualHostServices.update(options, IS_DEVELOPER_MODE);
-        this.resolveLocale();
+        VisualHostServices.update(options);
         // Provide initial update options to store
         // TODO: we're side-loading these for now until we can refactor the Deneb app store and app to be less reliant
-        const {
-            updates: { setVisualUpdateOptions }
-        } = useDenebVisualState.getState();
-        const settings = getVisualSettings();
-        setVisualUpdateOptions({ options, settings });
+        const { setVisualUpdateOptions } =
+            useDenebVisualState.getState().updates;
+        setVisualUpdateOptions({ options, isDeveloperMode: IS_DEVELOPER_MODE });
+        this.resolveLocale();
+        const { settings } = getDenebVisualState();
         // Signal we've begun rendering
         logHost('Rendering event started.');
         this.#host.eventService.renderingStarted(options);
@@ -166,7 +164,10 @@ export class Deneb implements IVisual {
      */
     private resolveDataset(options: VisualUpdateOptions) {
         let fetchSuccess = false;
-        const settings = getVisualSettings();
+        const {
+            dataset: { shouldProcess, setDataset, setIsFetchingAdditional },
+            settings
+        } = getDenebVisualState();
         const {
             vega: {
                 interactivity: {
@@ -175,8 +176,6 @@ export class Deneb implements IVisual {
                 }
             }
         } = settings;
-        const { shouldProcess, setDataset, setIsFetchingAdditional } =
-            getDenebVisualState().dataset;
         const {
             i18n: { locale }
         } = getDenebState();
@@ -189,7 +188,11 @@ export class Deneb implements IVisual {
         );
         let dataChanged = false;
         if (shouldProcess) {
-            dataChanged = hasDataViewChanged(categorical, enableSelection);
+            dataChanged = hasDataViewChanged(
+                categorical,
+                enableSelection,
+                enableHighlight
+            );
             logDebug('Data changed check', { dataChanged });
         }
 
@@ -219,12 +222,7 @@ export class Deneb implements IVisual {
                     isFetchingAdditional: false,
                     rowsLoaded
                 });
-                const dataset = getMappedDataset(
-                    categorical,
-                    locale,
-                    enableSelection,
-                    enableHighlight
-                );
+                const dataset = getMappedDataset(categorical, locale);
                 setDataset(dataset);
                 // Tracking is now only used for export (#486)
                 // this.updateTracking();
@@ -240,7 +238,7 @@ export class Deneb implements IVisual {
      */
     private resolveLocale() {
         logDebug('Resolving locale options...');
-        const settings = getVisualSettings();
+        const { settings } = getDenebVisualState();
         const { locale, setLocale } = getDenebState().i18n;
         const localeNext = IS_DEVELOPER_MODE
             ? (settings.developer.localization.locale.value as string)
@@ -261,7 +259,7 @@ export class Deneb implements IVisual {
      */
     private async updateTracking() {
         logDebug('[Visual Update] Updating tracking and tokens...');
-        const settings = getVisualSettings();
+        const { settings } = getDenebVisualState();
         const {
             vega: {
                 output: {
@@ -295,7 +293,7 @@ export class Deneb implements IVisual {
      */
     public getFormattingModel(): FormattingModel {
         logDebug('[start] getformattingModel');
-        const settings = getVisualSettings();
+        const { settings } = getDenebVisualState();
         const model =
             getVisualFormattingService().buildFormattingModel(settings);
         logDebug('[return] getFormattingModel', { model });

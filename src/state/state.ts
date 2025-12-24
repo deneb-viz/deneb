@@ -4,6 +4,7 @@ import { shallow } from 'zustand/shallow';
 
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
 import { createDatasetSlice, DatasetSlice } from './dataset';
+import { createHostSlice, HostSlice } from './host';
 import {
     createInteractivitySlice,
     type InteractivitySlice
@@ -14,6 +15,7 @@ import { createUpdatesSlice, type UpdatesSlice } from './updates';
 
 export type DenebVisualStoreState = {
     dataset: DatasetSlice;
+    host: HostSlice;
     interactivity: InteractivitySlice;
     interface: InterfaceSlice;
     settings: SettingsSlice;
@@ -27,6 +29,7 @@ const useDenebVisualState = createWithEqualityFn<DenebVisualStoreState>()(
         devtools(
             (...a) => ({
                 dataset: createDatasetSlice()(...a),
+                host: createHostSlice()(...a),
                 interactivity: createInteractivitySlice()(...a),
                 interface: createInterfaceSlice()(...a),
                 settings: createSettingsSlice()(...a),

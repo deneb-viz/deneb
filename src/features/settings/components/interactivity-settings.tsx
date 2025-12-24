@@ -14,17 +14,17 @@ import {
     useDenebState,
     useSettingsPaneStyles
 } from '@deneb-viz/app-core';
+import { useDenebVisualState } from '../../../state';
 
 export const InteractivitySettings = () => {
-    const { enableSelection, selectionMode, translate } = useDenebState(
-        (state) => ({
-            enableSelection:
-                state.visualSettings.vega.interactivity.enableSelection.value,
-            selectionMode:
-                state.visualSettings.vega.interactivity.selectionMode.value,
-            translate: state.i18n.translate
-        })
-    );
+    const { translate } = useDenebState((state) => ({
+        translate: state.i18n.translate
+    }));
+    const { enableSelection, selectionMode } = useDenebVisualState((state) => ({
+        enableSelection:
+            state.settings.vega.interactivity.enableSelection.value,
+        selectionMode: state.settings.vega.interactivity.selectionMode.value
+    }));
     const { launchUrl } = useDenebPlatformProvider();
     const openInteractivityLink = useCallback(() => {
         launchUrl(

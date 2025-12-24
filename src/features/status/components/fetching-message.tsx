@@ -38,15 +38,15 @@ export const FetchingMessage = () => {
  * Handle the display for the 'notes for creators', if they're specified.
  */
 const customVisualNotes = () => {
-    const { override, showCustomVisualNotes, translate } = useDenebState(
+    const { override, showCustomVisualNotes } = useDenebVisualState(
         (state) => ({
-            override: state.visualSettings.dataLimit.loading.override
+            override: state.settings.dataLimit.loading.override
                 .value as boolean,
-            showCustomVisualNotes: state.visualSettings.dataLimit.loading
-                .showCustomVisualNotes.value as boolean,
-            translate: state.i18n.translate
+            showCustomVisualNotes: state.settings.dataLimit.loading
+                .showCustomVisualNotes.value as boolean
         })
     );
+    const translate = useDenebState((state) => state.i18n.translate);
     const classes = useStatusStyles();
     return (
         (override && showCustomVisualNotes && (

@@ -16,14 +16,16 @@ import {
 } from '@deneb-viz/app-core';
 import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 import { InteractivityManager } from '../../../lib/interactivity';
+import { useDenebVisualState } from '../../../state';
 
 export const CrossFilterModeSettings = () => {
-    const { provider, selectionMode, translate } = useDenebState((state) => ({
-        provider: state.visualSettings.vega.output.provider
-            .value as SpecProvider,
-        selectionMode: state.visualSettings.vega.interactivity.selectionMode
-            .value as SelectionMode,
+    const { translate } = useDenebState((state) => ({
         translate: state.i18n.translate
+    }));
+    const { provider, selectionMode } = useDenebVisualState((state) => ({
+        provider: state.settings.vega.output.provider.value as SpecProvider,
+        selectionMode: state.settings.vega.interactivity.selectionMode
+            .value as SelectionMode
     }));
     const onChange = useCallback(
         (ev: FormEvent<HTMLDivElement>, data: RadioGroupOnChangeData) => {

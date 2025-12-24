@@ -35,13 +35,12 @@ const getCategoryFieldEntries = (
  */
 export const getDatumFieldMetadataFromDataView = (
     categories: powerbi.DataViewCategoryColumn[],
-    values: powerbi.DataViewValueColumns,
-    enableHighlight: boolean
+    values: powerbi.DataViewValueColumns
 ) => {
     logTimeStart('getDatumFieldMetadataFromDataView');
     const fieldEntries = [
         ...getCategoryFieldEntries(categories),
-        ...getHighlightFieldEntries(values, enableHighlight),
+        ...getHighlightFieldEntries(values),
         ...getMeasureFieldEntries(values),
         ...getMeasureFormatEntries(values)
     ];
@@ -103,10 +102,9 @@ export const getEncodedFieldName = (displayName: string) =>
  * Get artificial array of values first (if needed) as we'll need them when working out highlights later on.
  */
 const getHighlightFieldEntries = (
-    values: powerbi.DataViewValueColumns,
-    enableHighlight: boolean
+    values: powerbi.DataViewValueColumns
 ) =>
-    (isCrossHighlightPropSet({ enableHighlight }) &&
+    (isCrossHighlightPropSet() &&
         values?.map((v, vi): AugmentedMetadataField => {
             const displayName = `${v.source.displayName}${HIGHLIGHT_FIELD_SUFFIX}`;
             return {

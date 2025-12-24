@@ -7,6 +7,7 @@ import {
     useDenebState
 } from '@deneb-viz/app-core';
 import { InteractivityManager } from '../../../lib/interactivity';
+import { useDenebVisualState } from '../../../state';
 
 /**
  * Used to denote supported interactivity types within Deneb. These can be used
@@ -19,9 +20,11 @@ type InteractivityCheckboxProps = {
 };
 
 export const InteractivityCheckbox = ({ type }: InteractivityCheckboxProps) => {
-    const { interactivity, translate } = useDenebState((state) => ({
-        interactivity: state.visualSettings.vega.interactivity,
+    const { translate } = useDenebState((state) => ({
         translate: state.i18n.translate
+    }));
+    const { interactivity } = useDenebVisualState((state) => ({
+        interactivity: state.settings.vega.interactivity
     }));
     const propertyName = useMemo(() => getPropertyName(type), [type]);
     const classes = useSettingsStyles();
