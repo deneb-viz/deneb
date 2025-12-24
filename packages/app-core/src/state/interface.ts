@@ -1,6 +1,5 @@
 import { type TemplateExportProcessingState } from '@deneb-viz/json-processing/template-processing';
 import {
-    EditorPanePosition,
     type ContainerViewport,
     type InterfaceType,
     type ModalDialogRole
@@ -18,10 +17,8 @@ import {
     getPreviewAreaHeightMaximum,
     getResizablePaneSize
 } from '../lib/interface/layout';
-import { EDITOR_DEFAULTS } from '@deneb-viz/configuration';
 
 export type InterfaceSliceProperties = {
-    editorPosition: EditorPanePosition;
     /**
      * The viewport definitions for the interface container.
      */
@@ -62,7 +59,6 @@ export type InterfaceSliceProperties = {
      */
     viewport: ContainerViewport | null;
     computeEditorLayout: () => void;
-    setEditorPosition: (position: EditorPanePosition) => void;
     setEmbedViewport: (viewport: ContainerViewport) => void;
     /**
      * Sets the export processing state.
@@ -106,7 +102,6 @@ export const createInterfaceSlice =
     > =>
     (set, get) => ({
         interface: {
-            editorPosition: EDITOR_DEFAULTS.position as EditorPanePosition,
             embedViewport: null,
             exportProcessingState: 'None',
             isTokenizingSpec: false,
@@ -119,13 +114,14 @@ export const createInterfaceSlice =
             computeEditorLayout: () => {
                 set(
                     (state) => {
-                        const { editorPosition, viewport } = state.interface;
+                        const { viewport } = state.interface;
+                        const { jsonEditorPosition } = state.editorPreferences;
                         if (!viewport) {
                             return {};
                         }
                         const editorPaneDefaultWidth = getEditPaneDefaultWidth(
                             viewport,
-                            editorPosition
+                            jsonEditorPosition
                         );
                         const editorPaneExpandedWidth =
                             state.editorPaneExpandedWidth ??
@@ -135,7 +131,7 @@ export const createInterfaceSlice =
                                 editorPaneExpandedWidth,
                                 state.editorPaneIsExpanded,
                                 viewport,
-                                editorPosition
+                                jsonEditorPosition
                             ) ??
                             state.editorPaneExpandedWidth ??
                             0;
@@ -143,7 +139,7 @@ export const createInterfaceSlice =
                             getEditorPreviewAreaWidth(
                                 viewport.width,
                                 editorPaneWidth,
-                                editorPosition
+                                jsonEditorPosition
                             );
                         const editorPreviewAreaHeightMax =
                             getPreviewAreaHeightMaximum(viewport.height);
@@ -178,19 +174,6 @@ export const createInterfaceSlice =
                     false,
                     'interface.generateRenderId'
                 ),
-            setEditorPosition: (position: EditorPanePosition) => {
-                set(
-                    (state) => ({
-                        interface: {
-                            ...state.interface,
-                            editorPosition: position
-                        }
-                    }),
-                    false,
-                    'interface.setEditorPosition'
-                );
-                get().interface.computeEditorLayout();
-            },
             setEmbedViewport: (viewport: ContainerViewport) =>
                 set(
                     (state) => ({

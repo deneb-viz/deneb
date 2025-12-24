@@ -1,35 +1,20 @@
 import type { VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/properties';
 import type { ProjectSliceProperties } from '@deneb-viz/app-core';
-import type { PropertyChange } from '../persistence/types';
+import type { SliceSyncMapping } from './sync-types';
 
 /**
- * Defines the mapping between a project slice property and its corresponding
- * Power BI visual setting for bidirectional synchronization.
+ * Keys that can be synced from ProjectSliceProperties
+ * (excludes internal flags and methods)
  */
-export type ProjectPropertyMapping<T> = {
-    /** Key in ProjectSliceProperties (excludes internal/method properties) */
-    projectKey: keyof Omit<
-        ProjectSliceProperties,
-        '__hasHydrated__' | 'syncProjectData'
-    >;
-    /** Extract the value from Power BI visual settings */
-    getVisualValue: (settings: VisualFormattingSettingsModel) => T;
-    /** Power BI object/property path for persistence */
-    persistence: {
-        objectName: string;
-        propertyName: string;
-    };
-    /** Optional equality check (defaults to ===) */
-    isEqual?: (a: T, b: T) => boolean;
-    /**
-     * Optional callback to generate additional property changes when this value
-     * is persisted. Use this for side effects like resetting dependent properties.
-     */
-    onPersist?: (
-        value: T,
-        settings: VisualFormattingSettingsModel
-    ) => PropertyChange[];
-};
+type ProjectSyncKey = keyof Omit<
+    ProjectSliceProperties,
+    | '__hasHydrated__'
+    | '__isInitialized__'
+    | 'syncProjectData'
+    | 'setLogLevel'
+    | 'setProvider'
+    | 'setRenderMode'
+>;
 
 /**
  * Mappings for all project properties that need to be synchronized
@@ -37,9 +22,9 @@ export type ProjectPropertyMapping<T> = {
  *
  * Add new mappings here as project properties are added.
  */
-export const PROJECT_SYNC_MAPPINGS: ProjectPropertyMapping<unknown>[] = [
+export const PROJECT_SYNC_MAPPINGS: SliceSyncMapping<ProjectSyncKey>[] = [
     {
-        projectKey: 'spec',
+        sliceKey: 'spec',
         getVisualValue: (s) => s.vega.output.jsonSpec.value,
         persistence: {
             objectName: 'vega',
@@ -47,7 +32,7 @@ export const PROJECT_SYNC_MAPPINGS: ProjectPropertyMapping<unknown>[] = [
         }
     },
     {
-        projectKey: 'config',
+        sliceKey: 'config',
         getVisualValue: (s) => s.vega.output.jsonConfig.value,
         persistence: {
             objectName: 'vega',
@@ -55,7 +40,7 @@ export const PROJECT_SYNC_MAPPINGS: ProjectPropertyMapping<unknown>[] = [
         }
     },
     {
-        projectKey: 'logLevel',
+        sliceKey: 'logLevel',
         getVisualValue: (s) => s.vega.logging.logLevel.value,
         persistence: {
             objectName: 'vega',
@@ -63,14 +48,13 @@ export const PROJECT_SYNC_MAPPINGS: ProjectPropertyMapping<unknown>[] = [
         }
     },
     {
-        projectKey: 'provider',
+        sliceKey: 'provider',
         getVisualValue: (s) => s.vega.output.provider.value,
         persistence: {
             objectName: 'vega',
             propertyName: 'provider'
         },
         onPersist: (provider, settings) => {
-            const base: PropertyChange[] = [];
             // Reset selectionMode to 'simple' if switching to vegaLite
             // (vegaLite doesn't support 'advanced' selection mode)
             if (
@@ -89,7 +73,7 @@ export const PROJECT_SYNC_MAPPINGS: ProjectPropertyMapping<unknown>[] = [
         }
     },
     {
-        projectKey: 'providerVersion',
+        sliceKey: 'providerVersion',
         getVisualValue: (s) => s.vega.output.version.value,
         persistence: {
             objectName: 'vega',
@@ -97,7 +81,7 @@ export const PROJECT_SYNC_MAPPINGS: ProjectPropertyMapping<unknown>[] = [
         }
     },
     {
-        projectKey: 'renderMode',
+        sliceKey: 'renderMode',
         getVisualValue: (s) => s.vega.output.renderMode.value,
         persistence: {
             objectName: 'vega',

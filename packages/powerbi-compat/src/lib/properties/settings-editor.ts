@@ -24,7 +24,7 @@ class SettingsEditorGroupInterface extends formattingSettings.Group {
         name: 'theme',
         displayNameKey: 'Objects_Editor_Theme',
         descriptionKey: 'Objects_Editor_Theme_Description',
-        value: DEFAULTS.editor.theme
+        value: EDITOR_DEFAULTS.theme
     });
     slices = [this.theme];
 }
@@ -36,19 +36,19 @@ class SettingsEditorGroupPreview extends formattingSettings.Group {
         name: 'showViewportMarker',
         displayNameKey: 'Objects_Editor_ShowViewportMarker',
         descriptionKey: 'Objects_Editor_ShowViewportMarker_Description',
-        value: DEFAULTS.editor.showViewportMarker
+        value: EDITOR_DEFAULTS.previewAreaShowBorder
     });
     previewScrollbars = new formattingSettings.ToggleSwitch({
         name: 'previewScrollbars',
         displayNameKey: 'Objects_Editor_PreviewScrollbars',
         descriptionKey: 'Objects_Editor_PreviewScrollbars_Description',
-        value: DEFAULTS.editor.previewScrollbars
+        value: EDITOR_DEFAULTS.previewAreaShowScrollbarsOnOverflow
     });
     backgroundPassThrough = new formattingSettings.ToggleSwitch({
         name: 'backgroundPassThrough',
         displayNameKey: 'Objects_Editor_BackgroundPassThrough',
         descriptionKey: 'Objects_Editor_BackgroundPassThrough_Description',
-        value: DEFAULTS.editor.backgroundPassThrough
+        value: EDITOR_DEFAULTS.previewAreaTransparentBackground
     });
     slices = [
         this.showViewportMarker,
@@ -64,7 +64,7 @@ class SettingsEditorGroupJson extends formattingSettings.Group {
         name: 'position',
         displayNameKey: 'Objects_Editor_Position',
         descriptionKey: 'Objects_Editor_Position_Description',
-        value: DEFAULTS.editor.position
+        value: EDITOR_DEFAULTS.position
     });
     fontSize = new formattingSettings.NumUpDown({
         name: 'fontSize',
@@ -72,28 +72,28 @@ class SettingsEditorGroupJson extends formattingSettings.Group {
         descriptionKey: 'Objects_Editor_FontSize_Description',
         options: {
             minValue: {
-                value: DEFAULTS.editor.fontSize.min,
+                value: EDITOR_DEFAULTS.fontSize.min,
                 type: 0
             },
             maxValue: {
-                value: DEFAULTS.editor.fontSize.max,
+                value: EDITOR_DEFAULTS.fontSize.max,
                 type: 1
             },
             unitSymbol: DEFAULTS.unitSymbols.pt
         },
-        value: DEFAULTS.editor.fontSize.default
+        value: EDITOR_DEFAULTS.fontSize.default
     });
     wordWrap = new formattingSettings.ToggleSwitch({
         name: 'wordWrap',
         displayNameKey: 'Objects_Editor_WordWrap',
         descriptionKey: 'Objects_Editor_WordWrap_Description',
-        value: DEFAULTS.editor.wordWrap
+        value: EDITOR_DEFAULTS.wordWrap
     });
     showLineNumbers = new formattingSettings.ToggleSwitch({
         name: 'showLineNumbers',
         displayNameKey: 'Objects_Editor_ShowLineNumbers',
         descriptionKey: 'Objects_Editor_ShowLineNumbers_Description',
-        value: DEFAULTS.editor.showLineNumbers
+        value: EDITOR_DEFAULTS.showLineNumbers
     });
     debouncePeriod = new formattingSettings.NumUpDown({
         name: 'debouncePeriod',
@@ -136,8 +136,8 @@ class SettingsEditorGroupDebugPane extends formattingSettings.Group {
         descriptionKey: 'Objects_Editor_DebugTableRowsPerPage_Description',
         items: getPageRowCountEnumValues(),
         value: {
-            displayName: `${DEFAULTS.editor.dataTableRowsPerPage}`,
-            value: `${DEFAULTS.editor.dataTableRowsPerPage}`
+            displayName: `${DATA_VIEWER_CONFIGURATION.rowsPerPage.default}`,
+            value: `${DATA_VIEWER_CONFIGURATION.rowsPerPage.default}`
         }
     });
     slices = [this.debugTableRowsPerPage];

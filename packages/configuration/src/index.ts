@@ -58,8 +58,19 @@ export const DEBUG_PANE_CONFIGURATION = {
  */
 export const EDITOR_DEFAULTS = {
     debouncePeriod: { default: 700, min: 0, max: 1000 },
+    fontSize: {
+        default: 10,
+        min: 8,
+        max: 30
+    },
+    previewAreaShowBorder: true,
+    previewAreaShowScrollbarsOnOverflow: true,
+    previewAreaTransparentBackground: true,
     position: 'left',
-    tabSize: 2
+    showLineNumbers: true,
+    tabSize: 2,
+    theme: 'light',
+    wordWrap: true
 };
 
 /**

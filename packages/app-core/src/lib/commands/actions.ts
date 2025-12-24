@@ -100,10 +100,10 @@ export const handleCloseCreateDialog = () =>
     getDenebState().project.setIsInitialized(true);
 
 export const handleDataTableRowsPerPageChange = (value: number) => {
-    setVisualProperty(
-        [{ name: 'debugTableRowsPerPage', value: `${value}` }],
-        'editor'
-    );
+    const {
+        editorPreferences: { setDataViewerRowsPerPage }
+    } = getDenebState();
+    setDataViewerRowsPerPage(value);
 };
 
 export const handleDebugPaneData = () => {
@@ -294,16 +294,10 @@ export const handleToggleEditorPane = () => {
 export const handleToggleEditorTheme = () => {
     executeCommand('themeToggle', () => {
         const {
-            visualSettings: {
-                editor: {
-                    interface: {
-                        theme: { value: theme }
-                    }
-                }
-            }
+            editorPreferences: { theme, setTheme }
         } = getDenebState();
         const newValue = theme === 'dark' ? 'light' : 'dark';
-        setVisualProperty([{ name: 'theme', value: newValue }], 'editor');
+        setTheme(newValue);
     });
 };
 

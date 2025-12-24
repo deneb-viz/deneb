@@ -148,13 +148,7 @@ const resolveI18nKey = (command: Command) => {
     const {
         editorPreviewDebugIsExpanded,
         editor: { applyMode, isDirty },
-        visualSettings: {
-            editor: {
-                interface: {
-                    theme: { value: theme }
-                }
-            }
-        }
+        editorPreferences: { theme }
     } = getDenebState();
     switch (command) {
         case 'applyChanges':
@@ -198,13 +192,7 @@ const resolveI18nKey = (command: Command) => {
 const resolveIcon = (command: Command) => {
     const {
         editorPreviewDebugIsExpanded,
-        visualSettings: {
-            editor: {
-                interface: {
-                    theme: { value: theme }
-                }
-            }
-        }
+        editorPreferences: { theme }
     } = getDenebState();
     switch (command) {
         case 'applyChanges':

@@ -37,7 +37,6 @@ import {
     HOTKEY_OPTIONS,
     POPOVER_Z_INDEX,
     type Command,
-    type DenebTheme,
     EDITOR_PANE_SPLIT_MAX_SIZE_PERCENT,
     EDITOR_PANE_SPLIT_COLLAPSED_SIZE,
     EDITOR_PANE_SPLIT_MIN_SIZE
@@ -79,24 +78,23 @@ const useInterfaceStyles = makeStyles({
 //eslint-disable-next-line max-lines-per-function
 export const EditorContent = () => {
     const {
-        backgroundPassThrough,
         editorPaneDefaultWidth,
         editorPaneIsExpanded,
         editorPaneWidth,
         position,
+        previewAreaTransparentBackground,
         theme,
         viewportWidth,
         updateEditorPaneWidth
     } = useDenebState(
         (state) => ({
-            backgroundPassThrough:
-                state.visualSettings.editor.preview.backgroundPassThrough.value,
+            previewAreaTransparentBackground:
+                state.editorPreferences.previewAreaTransparentBackground,
             editorPaneDefaultWidth: state.editorPaneDefaultWidth,
             editorPaneIsExpanded: state.editorPaneIsExpanded,
             editorPaneWidth: state.editorPaneWidth,
-            position: state.interface.editorPosition,
-            theme: state.visualSettings.editor.interface.theme
-                .value as DenebTheme,
+            position: state.editorPreferences.jsonEditorPosition,
+            theme: state.editorPreferences.theme,
             viewportWidth: state.interface.viewport?.width ?? 0,
             updateEditorPaneWidth: state.updateEditorPaneWidth
         }),
@@ -146,11 +144,11 @@ export const EditorContent = () => {
         () =>
             mergeClasses(
                 classes.container,
-                backgroundPassThrough
+                previewAreaTransparentBackground
                     ? classes.visualBackground
                     : classes.themeBackground
             ),
-        [theme, backgroundPassThrough]
+        [theme, previewAreaTransparentBackground]
     );
     logRender('AdvancedEditorInterface');
     return (

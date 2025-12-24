@@ -88,14 +88,14 @@ export const SpecificationJsonEditor = ({
     } = useDenebState((state) => ({
         applyMode: state.editor.applyMode,
         current: state.editorSelectedOperation,
-        debouncePeriod: state.visualSettings.editor.json.debouncePeriod.value,
-        fontSize: state.visualSettings.editor.json.fontSize.value,
+        debouncePeriod: state.editorPreferences.jsonEditorDebouncePeriod,
+        fontSize: state.editorPreferences.jsonEditorFontSize,
         provider: state.project.provider as SpecProvider,
-        showLineNumbers: state.visualSettings.editor.json.showLineNumbers.value,
-        theme: state.visualSettings.editor.interface.theme.value,
+        showLineNumbers: state.editorPreferences.jsonEditorShowLineNumbers,
+        theme: state.editorPreferences.theme,
         viewStateConfig: state.editor.viewStateConfig,
         viewStateSpec: state.editor.viewStateSpec,
-        wordWrap: state.visualSettings.editor.json.wordWrap.value,
+        wordWrap: state.editorPreferences.jsonEditorWordWrap,
         setViewState: state.editor.setViewState,
         updateChanges: state.editor.updateChanges
     }));

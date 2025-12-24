@@ -34,8 +34,7 @@ export const DataTableViewer = ({
         useDenebState((state) => ({
             editorPreviewAreaHeight: state.editorPreviewAreaHeight,
             debugTableRowsPerPage:
-                state.visualSettings.editor.debugPane.debugTableRowsPerPage
-                    .value.value,
+                state.editorPreferences.dataViewerRowsPerPage,
             viewportHeight: state.interface.viewport?.height ?? 0
         }));
     const debugAreaHeight = useMemo(

@@ -1,8 +1,4 @@
-import {
-    DATA_VIEWER_CONFIGURATION,
-    EDITOR_DEFAULTS,
-    PROJECT_DEFAULTS
-} from '@deneb-viz/configuration';
+import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 
 /**
  * Default values for Deneb's persistable properties, matching the structure of the visual capabilities from the Power
@@ -61,57 +57,9 @@ export const DEFAULTS = {
     },
     editor: {
         /**
-         * Whether to pass through the visual background effects in the preview area.
-         */
-        backgroundPassThrough: true,
-        /**
-         * Number of rows to display in the debug table.
-         */
-        dataTableRowsPerPage: DATA_VIEWER_CONFIGURATION.rowsPerPage.default,
-        /**
-         * Interval in milliseconds to debounce editor changes.
-         */
-        debouncePeriod: EDITOR_DEFAULTS,
-        /**
-         * Font size for the JSON editor.
-         */
-        fontSize: {
-            default: 10,
-            min: 8,
-            max: 30
-        },
-        /**
          * Maximum line length for the JSON editor.
          */
-        maxLineLength: 40,
-        /**
-         * Preferred editor position within interface.
-         */
-        position: EDITOR_DEFAULTS.position,
-        /**
-         * Show scrollbars in advanced editor preview area.
-         */
-        previewScrollbars: false,
-        /**
-         * Show line numbers in the JSON editor.
-         */
-        showLineNumbers: true,
-        /**
-         * Show viewport marker in editor.
-         */
-        showViewportMarker: true,
-        /**
-         * Number of spaces to use for tab size in the JSON editor.
-         */
-        tabSize: EDITOR_DEFAULTS.tabSize,
-        /**
-         * The theme to use for the editor.
-         */
-        theme: 'light',
-        /**
-         * Whether to wrap text in the JSON editor or not.
-         */
-        wordWrap: true
+        maxLineLength: 40
     },
     stateManagement: {
         /**

@@ -47,9 +47,7 @@ export const DataTableStatusBar = ({
     currentPage
 }: PaginationComponentProps) => {
     const { rowsPerPageSetting, mode, translate } = useDenebState((state) => ({
-        rowsPerPageSetting:
-            state.visualSettings.editor.debugPane.debugTableRowsPerPage.value
-                .value,
+        rowsPerPageSetting: state.editorPreferences.dataViewerRowsPerPage,
         mode: state.editorPreviewAreaSelectedPivot,
         translate: state.i18n.translate
     }));

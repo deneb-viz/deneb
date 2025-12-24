@@ -300,7 +300,7 @@ const handleToggleEditorPane = (state: StoreState): Partial<StoreState> => {
         state.editorPaneExpandedWidth as number,
         newExpansionState,
         state.interface.viewport,
-        state.interface.editorPosition
+        state.editorPreferences.jsonEditorPosition
     );
     return {
         editorPaneIsExpanded: newExpansionState,
@@ -308,7 +308,7 @@ const handleToggleEditorPane = (state: StoreState): Partial<StoreState> => {
         editorPreviewAreaWidth: getEditorPreviewAreaWidth(
             state.interface.viewport?.width ?? 0,
             newWidth,
-            state.interface.editorPosition
+            state.editorPreferences.jsonEditorPosition
         )
     };
 };
@@ -342,7 +342,7 @@ const handleUpdateEditorPaneWidth = (
         editorPreviewAreaWidth: getEditorPreviewAreaWidth(
             viewportWidth,
             editorPaneWidth,
-            state.interface.editorPosition
+            state.editorPreferences.jsonEditorPosition
         )
     };
 };
@@ -365,7 +365,7 @@ const handleUpdateEditorPreviewAreaWidth = (
     editorPreviewAreaWidth: getEditorPreviewAreaWidth(
         state.interface.viewport?.width ?? 0,
         state.editorPaneWidth as number,
-        state.interface.editorPosition
+        state.editorPreferences.jsonEditorPosition
     )
 });
 

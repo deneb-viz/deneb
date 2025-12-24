@@ -134,7 +134,6 @@ const handleSyncProjectData = (
     state: StoreState,
     payload: ProjectSyncPayload
 ): Partial<StoreState> => {
-    // Filter out undefined values so we only override with defined properties
     const definedPayload = Object.fromEntries(
         Object.entries(payload).filter(([, value]) => value !== undefined)
     );

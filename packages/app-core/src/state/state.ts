@@ -7,6 +7,10 @@ import { createCreateSlice, type CreateSliceState } from './create';
 import { createDatasetSlice, type DatasetSlice } from './dataset';
 import { createDebugSlice, type DebugSlice } from './debug';
 import { createEditorSlice, type EditorSlice } from './editor';
+import {
+    createEditorPreferencesSlice,
+    EditorPreferencesSlice
+} from './editor-preferences';
 import { createExportSlice, type ExportSliceState } from './export';
 import {
     createFieldUsageSlice,
@@ -29,6 +33,7 @@ export type StoreState = CommandsSlice &
     DatasetSlice &
     DebugSlice &
     EditorSlice &
+    EditorPreferencesSlice &
     ExportSliceState &
     FieldUsageSliceState &
     I18nSlice &
@@ -51,6 +56,7 @@ export const createDenebState = (dependencies: StateDependencies) =>
                 ...createDatasetSlice()(...a),
                 ...createDebugSlice()(...a),
                 ...createEditorSlice()(...a),
+                ...createEditorPreferencesSlice()(...a),
                 ...createExportSlice(dependencies)(...a),
                 ...createFieldUsageSlice()(...a),
                 ...createI18nSlice()(...a),

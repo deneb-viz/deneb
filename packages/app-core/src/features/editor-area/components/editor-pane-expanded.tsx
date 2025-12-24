@@ -20,7 +20,7 @@ export const EditorPaneExpanded = () => {
         useDenebState((state) => ({
             editorPaneWidth: state.editorPaneWidth,
             editorPreviewAreaWidth: state.editorPreviewAreaWidth,
-            position: state.interface.editorPosition,
+            position: state.editorPreferences.jsonEditorPosition,
             viewportWidth: state.interface.viewport?.width ?? 0
         }));
     const maxWidth = useMemo(

@@ -66,7 +66,7 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
         locale: state.i18n.locale,
         logLevel: state.project.logLevel,
         previewScrollbars:
-            state.visualSettings.editor.preview.previewScrollbars.value,
+            state.editorPreferences.previewAreaShowScrollbarsOnOverflow,
         provider: state.project.provider as SpecProvider,
         renderMode: state.project.renderMode,
         scrollbarColor:

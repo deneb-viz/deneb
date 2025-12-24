@@ -64,8 +64,7 @@ export const PreviewArea = () => {
     } = useDenebState((state) => ({
         editorPreviewAreaHeight: state.editorPreviewAreaHeight,
         editorZoomLevel: state.editorZoomLevel,
-        showViewportMarker:
-            state.visualSettings.editor.preview.showViewportMarker.value,
+        showViewportMarker: state.editorPreferences.previewAreaShowBorder,
         status: state.specification.status,
         viewportHeight: state.interface.embedViewport?.height ?? 0,
         viewportWidth: state.interface.embedViewport?.width ?? 0
