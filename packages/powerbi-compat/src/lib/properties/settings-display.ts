@@ -1,3 +1,4 @@
+import { VISUAL_RENDER_DEFAULTS } from '@deneb-viz/configuration';
 import { DEFAULTS } from './constants';
 import { formattingSettings } from 'powerbi-visuals-utils-formattingmodel';
 
@@ -17,20 +18,20 @@ class SettingsDisplayGroupScrollbars extends formattingSettings.Group {
         name: 'scrollbarColor',
         displayNameKey: 'Objects_Display_ScrollbarColor',
         descriptionKey: 'Objects_Display_ScrollbarColor_Description',
-        value: { value: DEFAULTS.display.scrollbarColor }
+        value: { value: VISUAL_RENDER_DEFAULTS.scrollbarColor }
     });
     scrollbarOpacity = new formattingSettings.Slider({
         name: 'scrollbarOpacity',
         displayNameKey: 'Objects_Display_ScrollbarOpacity',
         descriptionKey: 'Objects_Display_ScrollbarOpacity_Description',
-        value: DEFAULTS.display.scrollbarOpacity.default,
+        value: VISUAL_RENDER_DEFAULTS.scrollbarOpacity.default,
         options: {
             minValue: {
-                value: DEFAULTS.display.scrollbarOpacity.min,
+                value: VISUAL_RENDER_DEFAULTS.scrollbarOpacity.min,
                 type: 0
             },
             maxValue: {
-                value: DEFAULTS.display.scrollbarOpacity.max,
+                value: VISUAL_RENDER_DEFAULTS.scrollbarOpacity.max,
                 type: 1
             },
             unitSymbol: DEFAULTS.unitSymbols.percent
@@ -40,14 +41,14 @@ class SettingsDisplayGroupScrollbars extends formattingSettings.Group {
         name: 'scrollbarRadius',
         displayNameKey: 'Objects_Display_ScrollbarRadius',
         descriptionKey: 'Objects_Display_ScrollbarRadius_Description',
-        value: DEFAULTS.display.scrollbarRadius.default,
+        value: VISUAL_RENDER_DEFAULTS.scrollbarRadius.default,
         options: {
             minValue: {
-                value: DEFAULTS.display.scrollbarRadius.min,
+                value: VISUAL_RENDER_DEFAULTS.scrollbarRadius.min,
                 type: 0
             },
             maxValue: {
-                value: DEFAULTS.display.scrollbarRadius.max,
+                value: VISUAL_RENDER_DEFAULTS.scrollbarRadius.max,
                 type: 1
             },
             unitSymbol: DEFAULTS.unitSymbols.pixels
@@ -63,14 +64,14 @@ class SettingDisplayGroupScrollEvents extends formattingSettings.Group {
         name: 'scrollEventThrottle',
         displayNameKey: 'Objects_Display_ScrollEventThrottle',
         descriptionKey: 'Objects_Display_ScrollEventThrottle_Description',
-        value: DEFAULTS.display.scrollEventThrottle.default,
+        value: VISUAL_RENDER_DEFAULTS.scrollEventThrottle.default,
         options: {
             minValue: {
-                value: DEFAULTS.display.scrollEventThrottle.min,
+                value: VISUAL_RENDER_DEFAULTS.scrollEventThrottle.min,
                 type: 0
             },
             maxValue: {
-                value: DEFAULTS.display.scrollEventThrottle.max,
+                value: VISUAL_RENDER_DEFAULTS.scrollEventThrottle.max,
                 type: 1
             },
             unitSymbol: DEFAULTS.unitSymbols.milliseconds

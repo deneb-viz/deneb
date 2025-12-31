@@ -19,14 +19,18 @@ import {
 import { createI18nSlice, I18nSlice } from './i18n';
 import { createInterfaceSlice, type InterfaceSlice } from './interface';
 import { createMigrationSlice, type MigrationSlice } from './migration';
+import { createProjectSlice, type ProjectSlice } from './project';
 import {
     createSpecificationSlice,
     type SpecificationSlice
 } from './specification';
 import { createVisualSlice, type VisualSlice } from './visual';
+import {
+    createVisualRenderSlice,
+    type VisualRenderSlice
+} from './visual-render';
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
 import { APPLICATION_INFORMATION_CONFIGURATION } from '@deneb-viz/configuration';
-import { createProjectSlice, ProjectSlice } from './project';
 
 export type StoreState = CommandsSlice &
     CreateSliceState &
@@ -41,10 +45,22 @@ export type StoreState = CommandsSlice &
     MigrationSlice &
     ProjectSlice &
     SpecificationSlice &
-    VisualSlice;
+    VisualSlice &
+    VisualRenderSlice;
 
 export type StateDependencies = {
     applicationVersion: string;
+};
+
+/**
+ * A slice of state that can be synchronized and hydrated.
+ */
+export type SyncableSlice = {
+    /**
+     * Indicates whether the slice has been hydrated from an external source. This can be used by subscribers to
+     * determine if they should perform synchronization actions.
+     */
+    __hasHydrated__: boolean;
 };
 
 export const createDenebState = (dependencies: StateDependencies) =>
@@ -64,7 +80,8 @@ export const createDenebState = (dependencies: StateDependencies) =>
                 ...createMigrationSlice()(...a),
                 ...createProjectSlice()(...a),
                 ...createSpecificationSlice()(...a),
-                ...createVisualSlice()(...a)
+                ...createVisualSlice()(...a),
+                ...createVisualRenderSlice()(...a)
             }),
             { enabled: toBoolean(process.env.ZUSTAND_DEV_TOOLS) }
         ),

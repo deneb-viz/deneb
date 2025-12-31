@@ -1,5 +1,5 @@
 import { type StateCreator } from 'zustand';
-import { type StoreState } from './state';
+import { type SyncableSlice, type StoreState } from './state';
 import { type EditorPanePosition, type DenebTheme } from '../lib';
 import {
     DATA_VIEWER_CONFIGURATION,
@@ -20,13 +20,13 @@ export type EditorPreferencesSliceProperties = {
 };
 
 export type EditorPreferencesSlice = {
-    editorPreferences: EditorPreferencesSliceProperties & {
-        __hasHydrated__: boolean;
-        setDataViewerRowsPerPage: (rowsPerPage: number) => void;
-        setJsonEditorPosition: (position: EditorPanePosition) => void;
-        setTheme: (theme: DenebTheme) => void;
-        syncPreferences: (payload: EditorPreferencesSyncPayload) => void;
-    };
+    editorPreferences: SyncableSlice &
+        EditorPreferencesSliceProperties & {
+            setDataViewerRowsPerPage: (rowsPerPage: number) => void;
+            setJsonEditorPosition: (position: EditorPanePosition) => void;
+            setTheme: (theme: DenebTheme) => void;
+            syncPreferences: (payload: EditorPreferencesSyncPayload) => void;
+        };
 };
 
 export type EditorPreferencesSyncPayload = EditorPreferencesSliceProperties;

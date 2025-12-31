@@ -5,3 +5,7 @@ export type {
     EditorPreferencesSyncPayload
 } from './editor-preferences';
 export type { ProjectSliceProperties, ProjectSyncPayload } from './project';
+export type {
+    VisualRenderSliceProperties,
+    VisualRenderSyncPayload
+} from './visual-render';

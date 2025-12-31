@@ -25,36 +25,6 @@ export const DEFAULTS = {
          */
         showCustomVisualNotes: true
     },
-    display: {
-        /**
-         * Color of displayed scrollbars.
-         */
-        scrollbarColor: '#000000',
-        /**
-         * Opacity of displayed scrollbars.
-         */
-        scrollbarOpacity: {
-            min: 0,
-            max: 100,
-            default: 20
-        },
-        /**
-         * Radius of displayed scrollbars.
-         */
-        scrollbarRadius: {
-            min: 0,
-            max: 3,
-            default: 0
-        },
-        /**
-         * The time between throttling scroll events
-         */
-        scrollEventThrottle: {
-            min: 0,
-            max: 1000,
-            default: 5
-        }
-    },
     editor: {
         /**
          * Maximum line length for the JSON editor.

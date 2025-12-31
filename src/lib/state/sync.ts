@@ -6,6 +6,7 @@ import { PROJECT_SYNC_MAPPINGS } from './project-sync-mappings';
 import { EDITOR_PREFERENCES_SYNC_MAPPINGS } from './editor-preferences-sync-mappings';
 import { createSliceSync } from './create-slice-sync';
 import { persistProjectProperties } from '../persistence';
+import { VISUAL_RENDER_SYNC_MAPPINGS } from './visual-render-sync-mappings';
 
 /**
  * Initializes subscriptions to sync state from the Power BI visual store to the app-core store.
@@ -162,6 +163,17 @@ const syncSlicesWithVisualSettings = (): (() => void) => {
             isHydrated: (slice) => slice.__hasHydrated__,
             getSliceValue: (slice, key) => slice[key as keyof typeof slice],
             mappings: EDITOR_PREFERENCES_SYNC_MAPPINGS
+        }),
+
+        // Visual render (display) slice sync
+        createSliceSync({
+            name: 'visualRender',
+            getSlice: (state) =>
+                (state as ReturnType<typeof getDenebState>).visualRender,
+            getSyncFn: (slice) => slice.syncPreferences,
+            isHydrated: (slice) => slice.__hasHydrated__,
+            getSliceValue: (slice, key) => slice[key as keyof typeof slice],
+            mappings: VISUAL_RENDER_SYNC_MAPPINGS
         })
     ];
 

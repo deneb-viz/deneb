@@ -211,3 +211,22 @@ export const VISUAL_PREVIEW_ZOOM_CONFIGURATION = {
         }
     ]
 };
+
+export const VISUAL_RENDER_DEFAULTS = {
+    scrollbarColor: '#000000',
+    scrollbarOpacity: {
+        min: 0,
+        max: 100,
+        default: 20
+    },
+    scrollbarRadius: {
+        min: 0,
+        max: 3,
+        default: 0
+    },
+    scrollEventThrottle: {
+        min: 0,
+        max: 1000,
+        default: 5
+    }
+};

@@ -69,14 +69,10 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
             state.editorPreferences.previewAreaShowScrollbarsOnOverflow,
         provider: state.project.provider as SpecProvider,
         renderMode: state.project.renderMode,
-        scrollbarColor:
-            state.visualSettings.display.scrollbars.scrollbarColor.value.value,
-        scrollbarOpacity:
-            state.visualSettings.display.scrollbars.scrollbarOpacity.value,
-        scrollbarRadius:
-            state.visualSettings.display.scrollbars.scrollbarRadius.value,
-        scrollEventThrottle:
-            state.visualSettings.display.scrollEvents.scrollEventThrottle.value,
+        scrollbarColor: state.visualRender.scrollbarColor,
+        scrollbarOpacity: state.visualRender.scrollbarOpacity,
+        scrollbarRadius: state.visualRender.scrollbarRadius,
+        scrollEventThrottle: state.visualRender.scrollEventThrottle,
         specification: state.specification,
         values: state.dataset.values,
         viewportHeight: state.interface.embedViewport?.height ?? 0,
@@ -195,11 +191,8 @@ const getScrollBarThumb = (
     style: CSSProperties
 ) => {
     const { scrollbarRadius, scrollbarColor, scrollbarOpacity } =
-        getDenebState().visualSettings.display.scrollbars;
-    const backgroundColor = addAlpha(
-        scrollbarColor.value.value,
-        scrollbarOpacity.value / 100
-    );
+        getDenebState().visualRender;
+    const backgroundColor = addAlpha(scrollbarColor, scrollbarOpacity / 100);
     return (
         <div
             {...props}
@@ -207,7 +200,7 @@ const getScrollBarThumb = (
             style={{
                 ...{
                     backgroundColor,
-                    borderRadius: scrollbarRadius.value
+                    borderRadius: scrollbarRadius
                 },
                 ...style
             }}

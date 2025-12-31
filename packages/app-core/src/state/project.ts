@@ -1,5 +1,5 @@
 import { type StateCreator } from 'zustand';
-import { type StoreState } from './state';
+import { type SyncableSlice, type StoreState } from './state';
 import {
     PROJECT_DEFAULTS,
     PROVIDER_VERSION_CONFIGURATION
@@ -11,16 +11,16 @@ import {
 import { isProjectInitialized, type DenebProject } from '../lib/project';
 import { getModalDialogRole } from '../lib/interface/state';
 
-export type ProjectSliceProperties = DenebProject & {
-    __hasHydrated__: boolean;
-    __isInitialized__: boolean;
-    setContent: (payload: SetContentPayload) => void;
-    setLogLevel: (logLevel: number) => void;
-    setIsInitialized: (isInitialized: boolean) => void;
-    setProvider: (provider: SpecProvider | undefined) => void;
-    setRenderMode: (renderMode: SpecRenderMode) => void;
-    syncProjectData: (payload: ProjectSyncPayload) => void;
-};
+export type ProjectSliceProperties = SyncableSlice &
+    DenebProject & {
+        __isInitialized__: boolean;
+        setContent: (payload: SetContentPayload) => void;
+        setLogLevel: (logLevel: number) => void;
+        setIsInitialized: (isInitialized: boolean) => void;
+        setProvider: (provider: SpecProvider | undefined) => void;
+        setRenderMode: (renderMode: SpecRenderMode) => void;
+        syncProjectData: (payload: ProjectSyncPayload) => void;
+    };
 
 /**
  * Used to hydrate or synchronize project data from/to a hosting application.
