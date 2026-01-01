@@ -24,7 +24,6 @@ import {
     createSpecificationSlice,
     type SpecificationSlice
 } from './specification';
-import { createVisualSlice, type VisualSlice } from './visual';
 import {
     createVisualRenderSlice,
     type VisualRenderSlice
@@ -45,7 +44,6 @@ export type StoreState = CommandsSlice &
     MigrationSlice &
     ProjectSlice &
     SpecificationSlice &
-    VisualSlice &
     VisualRenderSlice;
 
 export type StateDependencies = {
@@ -80,7 +78,6 @@ export const createDenebState = (dependencies: StateDependencies) =>
                 ...createMigrationSlice()(...a),
                 ...createProjectSlice()(...a),
                 ...createSpecificationSlice()(...a),
-                ...createVisualSlice()(...a),
                 ...createVisualRenderSlice()(...a)
             }),
             { enabled: toBoolean(process.env.ZUSTAND_DEV_TOOLS) }

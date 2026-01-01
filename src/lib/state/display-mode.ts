@@ -1,9 +1,7 @@
 import powerbi from 'powerbi-visuals-api';
 
-import {
-    DEFAULTS,
-    type VisualFormattingSettingsModel
-} from '@deneb-viz/powerbi-compat/properties';
+import { type VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/properties';
+import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 import { logDebug } from '@deneb-viz/utils/logging';
 
 /**
@@ -101,7 +99,7 @@ export const getDisplayModeAccordingToOptions = (
     const { isFetchingAdditionalData, options, settings } = payload;
     const { dataViews, isInFocus, viewMode } = options;
     const project = settings.vega.output.jsonSpec.value;
-    const defaultProject = DEFAULTS.vega.jsonSpec;
+    const defaultProject = PROJECT_DEFAULTS.spec;
     const hasProject = project !== defaultProject;
     // Determine correct states for whether we are viewing or editing
     const isLandingPage =

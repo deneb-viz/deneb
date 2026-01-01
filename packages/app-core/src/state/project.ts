@@ -10,11 +10,27 @@ import {
 } from '@deneb-viz/vega-runtime/embed';
 import { isProjectInitialized, type DenebProject } from '../lib/project';
 import { getModalDialogRole } from '../lib/interface/state';
+import {
+    type ExportSpecCommandTestOptions,
+    isExportSpecCommandEnabled,
+    isZoomInCommandEnabled,
+    isZoomOtherCommandsEnabled,
+    isZoomOutCommandEnabled,
+    type ZoomLevelCommandTestOptions,
+    type ZoomOtherCommandTestOptions
+} from '../lib';
+import { getUpdatedExportMetadata } from '@deneb-viz/json-processing';
+import { getParsedSpec } from '@deneb-viz/json-processing/spec-processing';
+import { getSpecificationParseOptions } from './helpers';
+import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
+import { logDebug } from '@deneb-viz/utils/logging';
 
 export type ProjectSliceProperties = SyncableSlice &
     DenebProject & {
         __isInitialized__: boolean;
-        initializeFromTemplate: (payload: InitializeFromTemplatePayload) => void;
+        initializeFromTemplate: (
+            payload: InitializeFromTemplatePayload
+        ) => void;
         setContent: (payload: SetContentPayload) => void;
         setLogLevel: (logLevel: number) => void;
         setIsInitialized: (isInitialized: boolean) => void;
@@ -180,10 +196,13 @@ export const createProjectSlice =
         }
     });
 
+// eslint-disable-next-line max-lines-per-function
 const handleSyncProjectData = (
     state: StoreState,
     payload: ProjectSyncPayload
 ): Partial<StoreState> => {
+    logDebug('project.syncProjectData', payload);
+
     const definedPayload = Object.fromEntries(
         Object.entries(payload).filter(([, value]) => value !== undefined)
     );
@@ -193,16 +212,92 @@ const handleSyncProjectData = (
         state.interface.type,
         state.interface.modalDialogRole
     );
+
+    // Determine if spec/config changed (requires re-parsing)
+    const specChanged =
+        payload.spec !== undefined && payload.spec !== state.project.spec;
+    const configChanged =
+        payload.config !== undefined && payload.config !== state.project.config;
+    const needsParsing = specChanged || configChanged;
+
+    // Build the updated project state first (needed for spec options)
+    const updatedProject = {
+        ...state.project,
+        ...definedPayload,
+        __hasHydrated__: true,
+        __isInitialized__
+    };
+
+    // Parse spec if spec/config changed
+    const prevSpecOptions = getSpecificationParseOptions(state);
+    const nextSpecOptions: typeof prevSpecOptions = {
+        ...prevSpecOptions,
+        config: payload.config ?? state.project.config,
+        spec: payload.spec ?? state.project.spec,
+        provider: updatedProject.provider as SpecProvider,
+        logLevel: updatedProject.logLevel,
+        viewportHeight: state.interface.viewport?.height ?? 0,
+        viewportWidth: state.interface.viewport?.width ?? 0
+    };
+    const spec = needsParsing
+        ? getParsedSpec(state.specification, prevSpecOptions, nextSpecOptions)
+        : state.specification;
+
+    // Update commands based on specification state
+    const zoomOtherCommandTest: ZoomOtherCommandTestOptions = {
+        specification: spec
+    };
+    const zoomLevelCommandTest: ZoomLevelCommandTestOptions = {
+        value: state.editorZoomLevel,
+        specification: spec
+    };
+    const exportSpecCommandTest: ExportSpecCommandTestOptions = {
+        editorIsDirty:
+            (state.editor.stagedSpec !== null &&
+                state.editor.stagedSpec !== updatedProject.spec) ||
+            (state.editor.stagedConfig !== null &&
+                state.editor.stagedConfig !== updatedProject.config),
+        specification: spec
+    };
+
+    // Update export metadata with current interactivity settings
+    const exportMetadata = getUpdatedExportMetadata(
+        state.export.metadata as UsermetaTemplate,
+        {
+            config:
+                spec.status === 'valid'
+                    ? updatedProject.config
+                    : state.export.metadata?.config,
+            provider: updatedProject.provider as SpecProvider,
+            providerVersion: updatedProject.providerVersion,
+            interactivity: updatedProject.interactivity
+        }
+    );
+
     return {
+        commands: {
+            ...state.commands,
+            exportSpecification: isExportSpecCommandEnabled(
+                exportSpecCommandTest
+            ),
+            zoomFit: isZoomOtherCommandsEnabled(zoomOtherCommandTest),
+            zoomIn: isZoomInCommandEnabled(zoomLevelCommandTest),
+            zoomOut: isZoomOutCommandEnabled(zoomLevelCommandTest),
+            zoomReset: isZoomOtherCommandsEnabled(zoomLevelCommandTest)
+        },
+        debug: { ...state.debug, logAttention: spec.errors.length > 0 },
+        export: {
+            ...state.export,
+            metadata: exportMetadata
+        },
         interface: {
             ...state.interface,
             modalDialogRole
         },
-        project: {
-            ...state.project,
-            ...definedPayload,
-            __hasHydrated__: true,
-            __isInitialized__
+        project: updatedProject,
+        specification: {
+            ...state.specification,
+            ...spec
         }
     };
 };

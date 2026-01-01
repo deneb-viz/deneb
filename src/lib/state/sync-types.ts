@@ -2,22 +2,25 @@ import type { VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/pr
 import type { PropertyChange } from '../persistence/types';
 
 /**
- * Generic mapping between a slice property and its corresponding
- * Power BI visual setting for bidirectional synchronization.
+ * Generic mapping between a slice property and its corresponding Power BI visual setting for bidirectional
+ * synchronization.
  */
 export type SliceSyncMapping<TSliceKey extends string> = {
     /** Key in the slice properties (excludes internal/method properties) */
     sliceKey: TSliceKey;
     /** Extract the value from Power BI visual settings */
     getVisualValue: (settings: VisualFormattingSettingsModel) => unknown;
-    /** Power BI object/property path for persistence */
-    persistence: {
+    /**
+     * Power BI object/property path for persistence.
+     * Optional for properties that are read-only from Power BI settings (e.g., composite objects like interactivity).
+     */
+    persistence?: {
         objectName: string;
         propertyName: string;
     };
     /**
-     * Optional callback to generate additional property changes when this value
-     * is persisted. Use this for side effects like resetting dependent properties.
+     * Optional callback to generate additional property changes when this value is persisted. Use this for side
+     * effects like resetting dependent properties.
      */
     onPersist?: (
         value: unknown,

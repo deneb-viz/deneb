@@ -149,9 +149,6 @@ export class Deneb implements IVisual {
         // Signal we've begun rendering
         logHost('Rendering event started.');
         this.#host.eventService.renderingStarted(options);
-        // TODO: likely migrate to visual store action and add as dependency to main app
-        const { setVisualUpdate } = getDenebState();
-        setVisualUpdate({ settings });
         // Perform any necessary property migrations
         handlePropertyMigration(settings);
         // Data change or re-processing required?

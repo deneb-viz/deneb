@@ -99,6 +99,9 @@ export const createSliceSync = <TSlice, TSliceKey extends string, TSyncPayload>(
             const changes: PropertyChange[] = [];
 
             for (const mapping of mappings) {
+                // Skip mappings without persistence (read-only from Power BI)
+                if (!mapping.persistence) continue;
+
                 const appCoreValue = getSliceValue(slice, mapping.sliceKey);
                 const visualValue = mapping.getVisualValue(settings);
 

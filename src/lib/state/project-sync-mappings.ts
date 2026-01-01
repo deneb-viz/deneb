@@ -1,6 +1,8 @@
 import type { VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/properties';
 import type { ProjectSliceProperties } from '@deneb-viz/app-core';
 import type { SliceSyncMapping } from './sync-types';
+import type { SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
+import type { UsermetaInteractivity } from '@deneb-viz/template-usermeta';
 
 /**
  * Keys that can be synced from ProjectSliceProperties
@@ -15,6 +17,20 @@ type ProjectSyncKey = keyof Omit<
     | 'setProvider'
     | 'setRenderMode'
 >;
+
+/**
+ * Helper to extract interactivity object from visual settings.
+ */
+const getInteractivityFromSettings = (
+    s: VisualFormattingSettingsModel
+): UsermetaInteractivity => ({
+    tooltip: s.vega.interactivity.enableTooltips.value,
+    contextMenu: s.vega.interactivity.enableContextMenu.value,
+    selection: s.vega.interactivity.enableSelection.value,
+    selectionMode: s.vega.interactivity.selectionMode.value as SelectionMode,
+    highlight: s.vega.interactivity.enableHighlight.value,
+    dataPointLimit: s.vega.interactivity.selectionMaxDataPoints.value
+});
 
 /**
  * Mappings for all project properties that need to be synchronized
@@ -87,6 +103,12 @@ export const PROJECT_SYNC_MAPPINGS: SliceSyncMapping<ProjectSyncKey>[] = [
             objectName: 'vega',
             propertyName: 'renderMode'
         }
+    },
+    {
+        sliceKey: 'interactivity',
+        getVisualValue: getInteractivityFromSettings
+        // Note: interactivity persistence is handled separately per-property
+        // since it's an object composed of multiple visual settings properties.
+        // Changes to interactivity come from the Power BI side only.
     }
-    // Add more mappings here as needed
 ];
