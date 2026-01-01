@@ -12,18 +12,17 @@ import { ArrowResetRegular } from '@fluentui/react-icons';
 
 import { useSettingsStyles } from '../styles';
 import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
-import {
-    handleResetVegaProperty,
-    handleSelectionMaxDataPoints,
-    TooltipCustomMount,
-    useDenebState
-} from '@deneb-viz/app-core';
+import { TooltipCustomMount, useDenebState } from '@deneb-viz/app-core';
 import { logDebug } from '@deneb-viz/utils/logging';
 import {
     CROSS_FILTER_LIMITS,
     isCrossFilterPropSet
 } from '../../../lib/interactivity';
 import { useDenebVisualState } from '../../../state';
+import {
+    handleResetVegaProperty,
+    handleSelectionMaxDataPoints
+} from './helpers';
 
 const DEFAULT_VALUE = DEFAULTS.vega.selectionMaxDataPoints;
 

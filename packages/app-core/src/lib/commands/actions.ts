@@ -6,16 +6,8 @@ import {
 import { getDenebState } from '../../state';
 import { type DebugPaneRole, type EditorPaneRole } from '../interface';
 import { type Command } from './types';
-import {
-    type PersistenceProperty,
-    persistProperties,
-    resolveObjectProperties
-} from '@deneb-viz/powerbi-compat/visual-host';
 import { type SpecificationEditorRefs } from '../../features/specification-editor';
 import { monaco } from '../../components/code-editor/monaco-integration';
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
-import { SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 import { HOTKEY_BINDINGS } from './constants';
 import { getZoomToFitScale } from '../interface/layout';
 
@@ -197,12 +189,6 @@ export const handleOpenWebsite = (launchUrl: (url: string) => void) => {
 };
 
 /**
- * Generic handler for a boolean (checkbox) property in the settings pane.
- */
-export const handlePersistBooleanProperty = (name: string, value: boolean) =>
-    setVisualProperty([{ name, value }]);
-
-/**
  * Resolve the spec/config and use the `properties` API for persistence. Also
  * resets the `isDirty` flag in the store.
  */
@@ -228,36 +214,6 @@ export const handlePersistSpecification = (
     // updateFieldTracking(nextSpec, trackedFieldsCurrent);
     setContent({ spec: nextSpec, config: nextConfig });
 };
-
-/**
- * Reset the specified provider (Vega) visual property to its default value.
- */
-export const handleResetVegaProperty = (
-    propertyKey: keyof typeof DEFAULTS.vega
-) => {
-    const value = DEFAULTS.vega[propertyKey];
-    setVisualProperty([{ name: propertyKey, value }]);
-};
-
-/**
- * Handle the change in maximum permitted underlying data points for selection.
- */
-export const handleSelectionMaxDataPoints = (value: number) =>
-    setVisualProperty([{ name: 'selectionMaxDataPoints', value }]);
-
-/**
- * Handle the change in selection mode from one to the other and update necessary store dependencies and properties.
- */
-export const handleSelectionMode = (
-    selectionMode: SelectionMode,
-    provider: SpecProvider
-) =>
-    setVisualProperty([
-        {
-            name: 'selectionMode',
-            value: provider === 'vegaLite' ? 'simple' : selectionMode
-        }
-    ]);
 
 /**
  * Set focus to the active editor, based on the current editor role in the store.
@@ -357,14 +313,6 @@ const setDebugPivotItem = (role: DebugPaneRole) => {
  */
 const setEditorPivotItem = (operation: EditorPaneRole) =>
     getDenebState().updateEditorSelectedOperation(operation);
-
-/**
- * Manages persistence of a properties object to the store from an operation.
- */
-const setVisualProperty = (
-    properties: PersistenceProperty[],
-    objectName = 'vega'
-) => persistProperties(resolveObjectProperties([{ objectName, properties }]));
 
 /**
  * Confirms that specified events are not occurring in the advanced editor UI

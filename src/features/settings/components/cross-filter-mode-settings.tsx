@@ -9,14 +9,11 @@ import {
 
 import { useSettingsStyles } from '../styles';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import {
-    getDenebState,
-    handleSelectionMode,
-    useDenebState
-} from '@deneb-viz/app-core';
+import { getDenebState, useDenebState } from '@deneb-viz/app-core';
 import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 import { InteractivityManager } from '../../../lib/interactivity';
 import { useDenebVisualState } from '../../../state';
+import { handleSelectionMode } from './helpers';
 
 export const CrossFilterModeSettings = () => {
     const { translate } = useDenebState((state) => ({
