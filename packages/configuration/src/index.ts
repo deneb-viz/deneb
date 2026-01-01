@@ -74,6 +74,17 @@ export const EDITOR_DEFAULTS = {
 };
 
 /**
+ * Default project values used when initializing a new project.
+ */
+export const PROJECT_DEFAULTS = {
+    config: '{}',
+    logLevel: 3,
+    renderMode: 'svg',
+    provider: 'vegaLite',
+    spec: '{}'
+};
+
+/**
  * Log level configuration for Vega logging and UI representation.
  */
 export const VEGA_LOG_LEVEL_CONFIGURATION = [
@@ -98,13 +109,6 @@ export const VEGA_LOG_LEVEL_CONFIGURATION = [
         value: 4
     }
 ];
-
-export const PROJECT_DEFAULTS = {
-    config: '{}',
-    logLevel: 3,
-    renderMode: 'svg',
-    spec: '{}'
-};
 
 /**
  * Additional resources needed for each provider in the application (Vega, Vega-Lite and Deneb). These are used to

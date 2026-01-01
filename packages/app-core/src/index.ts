@@ -1,6 +1,7 @@
 export * from './app';
 export {
     useDenebPlatformProvider,
+    type OnCreateProjectPayload,
     type ViewEventBinder
 } from './components/deneb-platform';
 export {

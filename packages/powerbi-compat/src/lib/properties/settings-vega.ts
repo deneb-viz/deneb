@@ -27,7 +27,7 @@ class SettingsVegaGroupOutput extends formattingSettings.Group {
     provider = new formattingSettings.AutoDropdown({
         name: 'provider',
         displayNameKey: 'Objects_Vega_Provider',
-        value: DEFAULTS.vega.provider
+        value: PROJECT_DEFAULTS.provider
     });
     version = new formattingSettings.ReadOnlyText({
         name: 'version',
@@ -38,13 +38,13 @@ class SettingsVegaGroupOutput extends formattingSettings.Group {
         name: 'jsonSpec',
         displayNameKey: 'Objects_Vega_JsonSpec',
         placeholder: 'Specification JSON',
-        value: DEFAULTS.vega.jsonSpec
+        value: PROJECT_DEFAULTS.spec
     });
     jsonConfig = new formattingSettings.TextArea({
         name: 'jsonConfig',
         displayNameKey: 'Objects_Vega_JsonConfig',
         placeholder: 'Config JSON',
-        value: DEFAULTS.vega.jsonConfig
+        value: PROJECT_DEFAULTS.config
     });
     renderMode = new formattingSettings.AutoDropdown({
         name: 'renderMode',

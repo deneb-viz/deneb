@@ -1,11 +1,22 @@
 import { type JSX } from 'react';
 import { type Loader, type TooltipHandler, type View } from 'vega';
+import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 
 /**
  * A function that binds platform-specific event listeners to a Vega view.
  * Implementations should close over any required dependencies (dataset, translations, etc.).
  */
 export type ViewEventBinder = (view: View) => void;
+
+/**
+ * Project data passed to the onCreateProject callback.
+ * Includes template metadata and processed spec/config content.
+ */
+export type OnCreateProjectPayload = {
+    metadata: UsermetaTemplate;
+    spec: string;
+    config: string;
+};
 
 export type DenebPlatformProviderProps = {
     /**
@@ -55,4 +66,13 @@ export type DenebPlatformProviderProps = {
      * How the action of launching a URL should be handled.
      */
     launchUrl?: (url: string) => void;
+    /**
+     * Callback invoked when a project is created from a template.
+     * Platforms can use this to persist project and interactivity settings, or perform other platform-specific
+     * actions. This is called BEFORE app-core state is updated, allowing platforms to persist to their source of truth
+     * first and avoid sync race conditions.
+     * @param payload - The template metadata and processed project data
+     * @returns void or Promise<void> - errors should be logged, not thrown
+     */
+    onCreateProject?: (payload: OnCreateProjectPayload) => void | Promise<void>;
 };

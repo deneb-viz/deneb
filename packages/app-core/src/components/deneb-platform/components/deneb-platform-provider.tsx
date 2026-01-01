@@ -8,7 +8,7 @@ import { type DenebPlatformProviderProps } from '../types';
  */
 type DenebPlatformProviderContextProps = Omit<
     Required<DenebPlatformProviderProps>,
-    'tooltipHandler' | 'onRenderingStarted' | 'onRenderingFinished' | 'onRenderingError'
+    'tooltipHandler' | 'onRenderingStarted' | 'onRenderingFinished' | 'onRenderingError' | 'onCreateProject'
 > &
     Pick<
         DenebPlatformProviderProps,
@@ -16,6 +16,7 @@ type DenebPlatformProviderContextProps = Omit<
         | 'onRenderingStarted'
         | 'onRenderingFinished'
         | 'onRenderingError'
+        | 'onCreateProject'
     >;
 
 export const DenebPlatformProviderContext =
@@ -23,6 +24,7 @@ export const DenebPlatformProviderContext =
 
 export const DenebPlatformProvider = ({
     isDownloadPermitted = true,
+    onCreateProject,
     onRenderingError,
     onRenderingFinished,
     onRenderingStarted,
@@ -37,6 +39,7 @@ export const DenebPlatformProvider = ({
     const platformContext = useMemo<DenebPlatformProviderContextProps>(
         () => ({
             isDownloadPermitted,
+            onCreateProject,
             onRenderingError,
             onRenderingFinished,
             onRenderingStarted,
@@ -49,6 +52,7 @@ export const DenebPlatformProvider = ({
         }),
         [
             launchUrl,
+            onCreateProject,
             onRenderingError,
             onRenderingFinished,
             onRenderingStarted,

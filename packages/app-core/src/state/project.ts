@@ -14,6 +14,7 @@ import { getModalDialogRole } from '../lib/interface/state';
 export type ProjectSliceProperties = SyncableSlice &
     DenebProject & {
         __isInitialized__: boolean;
+        initializeFromTemplate: (payload: InitializeFromTemplatePayload) => void;
         setContent: (payload: SetContentPayload) => void;
         setLogLevel: (logLevel: number) => void;
         setIsInitialized: (isInitialized: boolean) => void;
@@ -26,6 +27,16 @@ export type ProjectSliceProperties = SyncableSlice &
  * Used to hydrate or synchronize project data from/to a hosting application.
  */
 export type ProjectSyncPayload = DenebProject;
+
+/**
+ * Payload for initializing a project from a template.
+ */
+export type InitializeFromTemplatePayload = {
+    spec: string;
+    config: string;
+    provider: SpecProvider;
+    renderMode?: SpecRenderMode;
+};
 
 export type SetContentPayload = {
     spec: string;
@@ -53,6 +64,45 @@ export const createProjectSlice =
             providerVersion: undefined,
             renderMode: PROJECT_DEFAULTS.renderMode as SpecRenderMode,
             spec: PROJECT_DEFAULTS.spec,
+            initializeFromTemplate: (
+                payload: InitializeFromTemplatePayload
+            ) => {
+                const provider = payload.provider;
+                const providerVersion = provider
+                    ? PROVIDER_VERSION_CONFIGURATION[provider]
+                    : undefined;
+                const renderMode =
+                    payload.renderMode ??
+                    (PROJECT_DEFAULTS.renderMode as SpecRenderMode);
+                set(
+                    (state) => ({
+                        editorSelectedOperation: 'Spec',
+                        interface: {
+                            ...state.interface,
+                            modalDialogRole: 'None'
+                        },
+                        project: {
+                            ...state.project,
+                            spec: payload.spec,
+                            config: payload.config,
+                            provider,
+                            providerVersion,
+                            renderMode,
+                            __isInitialized__: true
+                        }
+                    }),
+                    false,
+                    'project.initializeFromTemplate'
+                );
+                get().editor.updateChanges({
+                    role: 'Spec',
+                    text: payload.spec
+                });
+                get().editor.updateChanges({
+                    role: 'Config',
+                    text: payload.config
+                });
+            },
             setContent: (payload: SetContentPayload) => {
                 set(
                     (state) => ({

@@ -4,7 +4,11 @@ export type {
     EditorPreferencesSliceProperties,
     EditorPreferencesSyncPayload
 } from './editor-preferences';
-export type { ProjectSliceProperties, ProjectSyncPayload } from './project';
+export type {
+    InitializeFromTemplatePayload,
+    ProjectSliceProperties,
+    ProjectSyncPayload
+} from './project';
 export type {
     VisualRenderSliceProperties,
     VisualRenderSyncPayload

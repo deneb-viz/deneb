@@ -25,6 +25,7 @@ import {
     crossFilterHandler,
     tooltipHandler
 } from '../lib/interactivity';
+import { persistOnCreateFromTemplate } from '../lib/persistence';
 import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 
 type AppProps = {
@@ -157,6 +158,7 @@ export const App = ({ host }: AppProps) => {
         <DenebProvider
             platformProvider={{
                 isDownloadPermitted,
+                onCreateProject: persistOnCreateFromTemplate,
                 onRenderingError,
                 onRenderingFinished,
                 settingsPanePlatformComponent: <InteractivitySettings />,

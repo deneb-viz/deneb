@@ -1,5 +1,3 @@
-import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
-
 /**
  * Default values for Deneb's persistable properties, matching the structure of the visual capabilities from the Power
  * BI custom visual.
@@ -68,18 +66,6 @@ export const DEFAULTS = {
          * highlighting APIs for data points.
          */
         enableHighlight: false,
-        /**
-         * The JSON editor content for specification.
-         */
-        jsonSpec: PROJECT_DEFAULTS.spec,
-        /**
-         * The JSON editor content for configuration.
-         */
-        jsonConfig: PROJECT_DEFAULTS.config,
-        /**
-         * The Vega provider to use when parsing.
-         */
-        provider: 'vegaLite',
         /**
          * Maximum number of data points to include when cross-filtering
          */
