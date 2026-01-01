@@ -5,7 +5,7 @@ import { useSettingsStyles } from '../styles';
 import { useDenebState } from '@deneb-viz/app-core';
 import { InteractivityManager } from '../../../lib/interactivity';
 import { useDenebVisualState } from '../../../state';
-import { handlePersistBooleanProperty } from './helpers';
+import { handlePersistBooleanProperty } from '../helpers';
 
 /**
  * Used to denote supported interactivity types within Deneb. These can be used

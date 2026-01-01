@@ -22,7 +22,7 @@ import { useDenebVisualState } from '../../../state';
 import {
     handleResetVegaProperty,
     handleSelectionMaxDataPoints
-} from './helpers';
+} from '../helpers';
 
 const DEFAULT_VALUE = DEFAULTS.vega.selectionMaxDataPoints;
 

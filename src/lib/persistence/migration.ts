@@ -1,8 +1,5 @@
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import {
-    DEFAULTS,
-    VisualFormattingSettingsModel
-} from '@deneb-viz/powerbi-compat/properties';
+import { VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/properties';
 import {
     type VersionChangeDirection,
     type VersionComparator,
@@ -10,6 +7,7 @@ import {
 } from '@deneb-viz/utils/versioning';
 import {
     APPLICATION_INFORMATION_CONFIGURATION,
+    PROJECT_DEFAULTS,
     PROVIDER_VERSION_CONFIGURATION
 } from '@deneb-viz/configuration';
 import { logDebug } from '@deneb-viz/utils/logging';
@@ -152,7 +150,6 @@ export const handlePropertyMigration = (
  * In order to determine if our current spec/config is the same as the default properties, indicating that
  */
 const isNewSpec = () => {
-    const defaults = DEFAULTS.vega;
     const {
         settings: {
             vega: {
@@ -163,7 +160,10 @@ const isNewSpec = () => {
             }
         }
     } = getDenebVisualState();
-    return jsonSpec === defaults.jsonSpec && jsonConfig === defaults.jsonConfig;
+    return (
+        jsonSpec === PROJECT_DEFAULTS.spec &&
+        jsonConfig === PROJECT_DEFAULTS.config
+    );
 };
 
 /**
