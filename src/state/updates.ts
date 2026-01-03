@@ -2,10 +2,7 @@ import powerbi from 'powerbi-visuals-api';
 import type { StateCreator } from 'zustand';
 import { shallowEqual } from 'fast-equals';
 
-import {
-    getVisualFormattingModel,
-    VisualFormattingSettingsModel
-} from '@deneb-viz/powerbi-compat/properties';
+import { getVisualFormattingModel } from '../lib/persistence';
 import { type DenebVisualStoreState } from './state';
 import {
     doesModeAllowEmbedViewportSet,

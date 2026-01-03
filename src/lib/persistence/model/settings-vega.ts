@@ -1,6 +1,7 @@
 import { formattingSettings } from 'powerbi-visuals-utils-formattingmodel';
-import { DEFAULTS } from './constants';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
+import { DEFAULTS } from './constants';
+import { INTERACTIVITY_DEFAULTS } from '@deneb-viz/powerbi-compat/interactivity';
 
 /**
  * Specifies the limits (and step size) for handling cross-filtering.
@@ -77,7 +78,7 @@ class SettingsVegaInteractivityGroup extends formattingSettings.Group {
     enableTooltips = new formattingSettings.ToggleSwitch({
         name: 'enableTooltips',
         displayNameKey: 'Objects_Vega_EnableTooltips',
-        value: DEFAULTS.vega.enableTooltips
+        value: INTERACTIVITY_DEFAULTS.enableTooltips
     });
     tooltipDelay = new formattingSettings.NumUpDown({
         name: 'tooltipDelay',
@@ -97,17 +98,17 @@ class SettingsVegaInteractivityGroup extends formattingSettings.Group {
     enableContextMenu = new formattingSettings.ToggleSwitch({
         name: 'enableContextMenu',
         displayNameKey: 'Objects_Vega_EnableContextMenu',
-        value: DEFAULTS.vega.enableContextMenu
+        value: INTERACTIVITY_DEFAULTS.enableContextMenu
     });
     enableSelection = new formattingSettings.ToggleSwitch({
         name: 'enableSelection',
         displayNameKey: 'Objects_Vega_EnableSelection',
-        value: DEFAULTS.vega.enableSelection
+        value: INTERACTIVITY_DEFAULTS.enableSelection
     });
     selectionMode = new formattingSettings.AutoDropdown({
         name: 'selectionMode',
         displayNameKey: 'Objects_Vega_SelectionMode',
-        value: DEFAULTS.vega.selectionMode
+        value: INTERACTIVITY_DEFAULTS.selectionMode
     });
     selectionMaxDataPoints = new formattingSettings.NumUpDown({
         name: 'selectionMaxDataPoints',
@@ -122,12 +123,12 @@ class SettingsVegaInteractivityGroup extends formattingSettings.Group {
                 type: 1
             }
         },
-        value: DEFAULTS.vega.selectionMaxDataPoints
+        value: INTERACTIVITY_DEFAULTS.selectionMaxDataPoints
     });
     enableHighlight = new formattingSettings.ToggleSwitch({
         name: 'enableHighlight',
         displayNameKey: 'Objects_Vega_EnableHighlight',
-        value: DEFAULTS.vega.enableHighlight
+        value: INTERACTIVITY_DEFAULTS.enableHighlight
     });
     slices = [
         this.enableTooltips,

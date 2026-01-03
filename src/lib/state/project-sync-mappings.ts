@@ -1,4 +1,4 @@
-import type { VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/properties';
+import type { VisualFormattingSettingsModel } from '../../lib/persistence';
 import type { ProjectSliceProperties } from '@deneb-viz/app-core';
 import type { SliceSyncMapping } from './sync-types';
 import type { SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';

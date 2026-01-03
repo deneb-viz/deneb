@@ -1,11 +1,10 @@
 import { type OnCreateProjectPayload } from '@deneb-viz/app-core';
 import { logWarning } from '@deneb-viz/utils/logging';
-import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
+import { INTERACTIVITY_DEFAULTS } from '@deneb-viz/powerbi-compat/interactivity';
 import {
     persistProperties,
     resolveObjectProperties
-} from '@deneb-viz/powerbi-compat/visual-host';
+} from '../../lib/persistence';
 
 /**
  * Persists all project and interactivity settings to Power BI properties when creating from a template.
@@ -56,13 +55,13 @@ export const persistOnCreateFromTemplate = async (
                             name: 'selectionMaxDataPoints',
                             value:
                                 metadata?.interactivity?.dataPointLimit ??
-                                DEFAULTS.vega.selectionMaxDataPoints
+                                INTERACTIVITY_DEFAULTS.selectionMaxDataPoints
                         },
                         {
                             name: 'selectionMode',
                             value:
                                 metadata?.interactivity?.selectionMode ??
-                                (DEFAULTS.vega.selectionMode as SelectionMode)
+                                INTERACTIVITY_DEFAULTS.selectionMode
                         }
                     ]
                 }

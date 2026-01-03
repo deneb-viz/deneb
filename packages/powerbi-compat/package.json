@@ -25,10 +25,6 @@
             "types": "./dist/lib/interactivity/index.d.ts",
             "default": "./dist/lib/interactivity/index.js"
         },
-        "./properties": {
-            "types": "./dist/lib/properties/index.d.ts",
-            "default": "./dist/lib/properties/index.js"
-        },
         "./signals": {
             "types": "./dist/lib/signals/index.d.ts",
             "default": "./dist/lib/signals/index.js"
@@ -36,10 +32,6 @@
         "./theme": {
             "types": "./dist/lib/theme/index.d.ts",
             "default": "./dist/lib/theme/index.js"
-        },
-        "./visual-host": {
-            "types": "./dist/lib/visual-host/index.d.ts",
-            "default": "./dist/lib/visual-host/index.js"
         }
     },
     "sideEffects": false,

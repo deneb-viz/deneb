@@ -1,7 +1,6 @@
 import powerbi from 'powerbi-visuals-api';
 
 let services: powerbi.extensibility.visual.VisualConstructorOptions;
-let visualUpdateOptions: powerbi.extensibility.visual.VisualUpdateOptions;
 
 /**
  * Use to bind the visual host services to this API for use in the application lifecycle.
@@ -15,9 +14,6 @@ let visualUpdateOptions: powerbi.extensibility.visual.VisualUpdateOptions;
 export const VisualHostServices = {
     bind: (service: powerbi.extensibility.visual.VisualConstructorOptions) => {
         services = service;
-    },
-    update: (options: powerbi.extensibility.visual.VisualUpdateOptions) => {
-        visualUpdateOptions = options;
     }
 };
 
@@ -25,9 +21,3 @@ export const VisualHostServices = {
  * Provides top-level access to the Power BI visual host services.
  */
 export const getVisualHost = () => services?.host;
-
-/**
- * Get the current visual data view's persistence objects.
- */
-export const getVisualObjects = () =>
-    visualUpdateOptions?.dataViews?.[0]?.metadata?.objects;

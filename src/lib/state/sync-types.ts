@@ -1,4 +1,4 @@
-import type { VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/properties';
+import type { VisualFormattingSettingsModel } from '../../lib/persistence';
 import type { PropertyChange } from '../persistence/types';
 
 /**

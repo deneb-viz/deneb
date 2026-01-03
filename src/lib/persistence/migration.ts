@@ -1,5 +1,5 @@
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import { VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/properties';
+import { VisualFormattingSettingsModel } from './model';
 import {
     type VersionChangeDirection,
     type VersionComparator,
@@ -11,11 +11,8 @@ import {
     PROVIDER_VERSION_CONFIGURATION
 } from '@deneb-viz/configuration';
 import { logDebug } from '@deneb-viz/utils/logging';
-import {
-    type PersistenceProperty,
-    persistProperties,
-    resolveObjectProperties
-} from '@deneb-viz/powerbi-compat/visual-host';
+import { type PersistenceProperty } from './types';
+import { persistProperties, resolveObjectProperties } from './persist';
 import { getDenebState } from '@deneb-viz/app-core';
 import { getDenebVisualState } from '../../state';
 

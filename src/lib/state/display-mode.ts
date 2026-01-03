@@ -1,6 +1,6 @@
 import powerbi from 'powerbi-visuals-api';
 
-import { type VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/properties';
+import { type VisualFormattingSettingsModel } from '../../lib/persistence';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 import { logDebug } from '@deneb-viz/utils/logging';
 

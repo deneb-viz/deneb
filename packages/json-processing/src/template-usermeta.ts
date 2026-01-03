@@ -1,4 +1,3 @@
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import {
     getJsoncNodeValue,
     getJsoncStringAsObject,
@@ -31,7 +30,10 @@ import {
     getPlaceholderKey,
     type UsermetaDatasetField
 } from '@deneb-viz/data-core/field';
-import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
+import {
+    type SelectionMode,
+    INTERACTIVITY_DEFAULTS
+} from '@deneb-viz/powerbi-compat/interactivity';
 
 /**
  * If we cannot resolve a provider, this is the default to assign.
@@ -150,12 +152,12 @@ export const getNewTemplateMetadata = (options: {
         providerVersion: options.providerVersion ?? ''
     },
     interactivity: {
-        tooltip: DEFAULTS.vega.enableTooltips,
-        contextMenu: DEFAULTS.vega.enableContextMenu,
-        selection: DEFAULTS.vega.enableSelection,
-        selectionMode: DEFAULTS.vega.selectionMode as SelectionMode,
-        dataPointLimit: DEFAULTS.vega.selectionMaxDataPoints,
-        highlight: DEFAULTS.vega.enableHighlight
+        tooltip: INTERACTIVITY_DEFAULTS.enableTooltips,
+        contextMenu: INTERACTIVITY_DEFAULTS.enableContextMenu,
+        selection: INTERACTIVITY_DEFAULTS.enableSelection,
+        selectionMode: INTERACTIVITY_DEFAULTS.selectionMode as SelectionMode,
+        dataPointLimit: INTERACTIVITY_DEFAULTS.selectionMaxDataPoints,
+        highlight: INTERACTIVITY_DEFAULTS.enableHighlight
     },
     config: '{}',
     dataset: []

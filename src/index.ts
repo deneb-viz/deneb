@@ -14,13 +14,11 @@ import { App } from './app';
 import { getDenebVisualState, useDenebVisualState } from './state';
 import {
     handlePropertyMigration,
-    bindPersistPropertiesHost
-} from './lib/persistence';
-import {
+    bindPersistPropertiesHost,
     VisualFormattingSettingsService,
     getVisualFormattingService
-} from '@deneb-viz/powerbi-compat/properties';
-import { VisualHostServices } from '@deneb-viz/powerbi-compat/visual-host';
+} from './lib/persistence';
+import { VisualHostServices } from './lib/host';
 import { APPLICATION_INFORMATION_CONFIGURATION } from '@deneb-viz/configuration';
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
 import {
@@ -138,7 +136,6 @@ export class Deneb implements IVisual {
     private resolveUpdateOptions(options: VisualUpdateOptions) {
         logDebug('Resolving update options...', { options });
         logTimeStart('resolveUpdateOptions');
-        VisualHostServices.update(options);
         // Provide initial update options to store
         // TODO: we're side-loading these for now until we can refactor the Deneb app store and app to be less reliant
         const { setVisualUpdateOptions } =

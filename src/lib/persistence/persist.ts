@@ -1,4 +1,5 @@
-import { getVisualHost, getVisualObjects } from './host';
+import { getDenebVisualState } from '../../state';
+import { getVisualHost } from '../host';
 import { type PersistenceObject } from './types';
 
 /**
@@ -25,7 +26,9 @@ const getNewObjectInstanceToPersist =
 const getNewObjectInstance = (
     objectName: string[]
 ): powerbi.VisualObjectInstancesToPersist => {
-    const datasetViewObjects = getVisualObjects() ?? {};
+    const datasetViewObjects =
+        getDenebVisualState().updates.options?.dataViews?.[0]?.metadata
+            ?.objects ?? {};
     const result = getNewObjectInstanceToPersist();
     for (const value of objectName) {
         result.replace?.push({

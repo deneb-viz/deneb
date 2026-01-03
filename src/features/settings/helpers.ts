@@ -1,12 +1,14 @@
 // TODO: correctly integrate once we have migrated host dependencies
 
-import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
+import {
+    INTERACTIVITY_DEFAULTS,
+    type SelectionMode
+} from '@deneb-viz/powerbi-compat/interactivity';
 import {
     type PersistenceProperty,
     persistProperties,
     resolveObjectProperties
-} from '@deneb-viz/powerbi-compat/visual-host';
+} from '../../lib/persistence';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 
 /**
@@ -19,9 +21,9 @@ export const handlePersistBooleanProperty = (name: string, value: boolean) =>
  * Reset the specified provider (Vega) visual property to its default value.
  */
 export const handleResetVegaProperty = (
-    propertyKey: keyof typeof DEFAULTS.vega
+    propertyKey: keyof typeof INTERACTIVITY_DEFAULTS
 ) => {
-    const value = DEFAULTS.vega[propertyKey];
+    const value = INTERACTIVITY_DEFAULTS[propertyKey];
     setVisualProperty([{ name: propertyKey, value }]);
 };
 

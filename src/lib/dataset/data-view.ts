@@ -1,6 +1,6 @@
 import powerbi from 'powerbi-visuals-api';
 
-import { VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/properties';
+import { VisualFormattingSettingsModel } from '../persistence';
 
 /**
  * Determines whether the visual can fetch more data, based on the feature switch and the corresponding flag in the store
