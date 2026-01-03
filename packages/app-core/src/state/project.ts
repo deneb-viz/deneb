@@ -25,6 +25,117 @@ import { getSpecificationParseOptions } from './helpers';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { logDebug } from '@deneb-viz/utils/logging';
 
+/**
+ * Options for updating project content with spec parsing.
+ */
+type ContentUpdateOptions = {
+    spec?: string;
+    config?: string;
+    provider?: SpecProvider;
+    logLevel?: number;
+};
+
+/**
+ * Shared logic to parse spec/config and update related state (commands, debug, export metadata).
+ * Called by both setContent and syncProjectData to ensure consistent behavior.
+ */
+const getStateWithParsedSpec = (
+    state: StoreState,
+    updatedProject: DenebProject & {
+        __hasHydrated__: boolean;
+        __isInitialized__: boolean;
+    },
+    options: ContentUpdateOptions
+): Pick<StoreState, 'commands' | 'debug' | 'export' | 'specification'> => {
+    const newSpec = options.spec ?? state.project.spec;
+    const newConfig = options.config ?? state.project.config;
+
+    // Check if parsing is needed
+    const specChanged = newSpec !== state.project.spec;
+    const configChanged = newConfig !== state.project.config;
+    const needsParsing = specChanged || configChanged;
+
+    logDebug('getStateWithParsedSpec - change detection', {
+        specChanged,
+        configChanged,
+        needsParsing
+    });
+
+    // Parse spec if needed
+    const prevSpecOptions = getSpecificationParseOptions(state);
+    const nextSpecOptions: typeof prevSpecOptions = {
+        ...prevSpecOptions,
+        config: newConfig,
+        spec: newSpec,
+        provider: (options.provider ?? updatedProject.provider) as SpecProvider,
+        logLevel: options.logLevel ?? updatedProject.logLevel,
+        viewportHeight: state.interface.viewport?.height ?? 0,
+        viewportWidth: state.interface.viewport?.width ?? 0
+    };
+
+    const spec = needsParsing
+        ? getParsedSpec(state.specification, prevSpecOptions, nextSpecOptions)
+        : state.specification;
+
+    logDebug('getStateWithParsedSpec - parse result', {
+        specStatus: spec.status,
+        needsParsing
+    });
+
+    // Update commands based on specification state
+    const zoomOtherCommandTest: ZoomOtherCommandTestOptions = {
+        specification: spec
+    };
+    const zoomLevelCommandTest: ZoomLevelCommandTestOptions = {
+        value: state.editorZoomLevel,
+        specification: spec
+    };
+    const exportSpecCommandTest: ExportSpecCommandTestOptions = {
+        editorIsDirty:
+            (state.editor.stagedSpec !== null &&
+                state.editor.stagedSpec !== updatedProject.spec) ||
+            (state.editor.stagedConfig !== null &&
+                state.editor.stagedConfig !== updatedProject.config),
+        specification: spec
+    };
+
+    // Update export metadata
+    const exportMetadata = getUpdatedExportMetadata(
+        state.export.metadata as UsermetaTemplate,
+        {
+            config:
+                spec.status === 'valid'
+                    ? updatedProject.config
+                    : state.export.metadata?.config,
+            provider: updatedProject.provider as SpecProvider,
+            providerVersion: updatedProject.providerVersion,
+            interactivity: updatedProject.interactivity
+        }
+    );
+
+    return {
+        commands: {
+            ...state.commands,
+            exportSpecification: isExportSpecCommandEnabled(
+                exportSpecCommandTest
+            ),
+            zoomFit: isZoomOtherCommandsEnabled(zoomOtherCommandTest),
+            zoomIn: isZoomInCommandEnabled(zoomLevelCommandTest),
+            zoomOut: isZoomOutCommandEnabled(zoomLevelCommandTest),
+            zoomReset: isZoomOtherCommandsEnabled(zoomLevelCommandTest)
+        },
+        debug: { ...state.debug, logAttention: spec.errors.length > 0 },
+        export: {
+            ...state.export,
+            metadata: exportMetadata
+        },
+        specification: {
+            ...state.specification,
+            ...spec
+        }
+    };
+};
+
 export type ProjectSliceProperties = SyncableSlice &
     DenebProject & {
         __isInitialized__: boolean;
@@ -121,13 +232,24 @@ export const createProjectSlice =
             },
             setContent: (payload: SetContentPayload) => {
                 set(
-                    (state) => ({
-                        project: {
+                    (state) => {
+                        const updatedProject = {
                             ...state.project,
                             spec: payload.spec,
-                            config: payload.config
-                        }
-                    }),
+                            config: payload.config,
+                            __hasHydrated__: state.project.__hasHydrated__,
+                            __isInitialized__: state.project.__isInitialized__
+                        };
+                        const parsedState = getStateWithParsedSpec(
+                            state,
+                            updatedProject,
+                            { spec: payload.spec, config: payload.config }
+                        );
+                        return {
+                            ...parsedState,
+                            project: updatedProject
+                        };
+                    },
                     false,
                     'project.setContent'
                 );
@@ -213,14 +335,7 @@ const handleSyncProjectData = (
         state.interface.modalDialogRole
     );
 
-    // Determine if spec/config changed (requires re-parsing)
-    const specChanged =
-        payload.spec !== undefined && payload.spec !== state.project.spec;
-    const configChanged =
-        payload.config !== undefined && payload.config !== state.project.config;
-    const needsParsing = specChanged || configChanged;
-
-    // Build the updated project state first (needed for spec options)
+    // Build the updated project state
     const updatedProject = {
         ...state.project,
         ...definedPayload,
@@ -228,76 +343,20 @@ const handleSyncProjectData = (
         __isInitialized__
     };
 
-    // Parse spec if spec/config changed
-    const prevSpecOptions = getSpecificationParseOptions(state);
-    const nextSpecOptions: typeof prevSpecOptions = {
-        ...prevSpecOptions,
-        config: payload.config ?? state.project.config,
-        spec: payload.spec ?? state.project.spec,
-        provider: updatedProject.provider as SpecProvider,
-        logLevel: updatedProject.logLevel,
-        viewportHeight: state.interface.viewport?.height ?? 0,
-        viewportWidth: state.interface.viewport?.width ?? 0
-    };
-    const spec = needsParsing
-        ? getParsedSpec(state.specification, prevSpecOptions, nextSpecOptions)
-        : state.specification;
-
-    // Update commands based on specification state
-    const zoomOtherCommandTest: ZoomOtherCommandTestOptions = {
-        specification: spec
-    };
-    const zoomLevelCommandTest: ZoomLevelCommandTestOptions = {
-        value: state.editorZoomLevel,
-        specification: spec
-    };
-    const exportSpecCommandTest: ExportSpecCommandTestOptions = {
-        editorIsDirty:
-            (state.editor.stagedSpec !== null &&
-                state.editor.stagedSpec !== updatedProject.spec) ||
-            (state.editor.stagedConfig !== null &&
-                state.editor.stagedConfig !== updatedProject.config),
-        specification: spec
-    };
-
-    // Update export metadata with current interactivity settings
-    const exportMetadata = getUpdatedExportMetadata(
-        state.export.metadata as UsermetaTemplate,
-        {
-            config:
-                spec.status === 'valid'
-                    ? updatedProject.config
-                    : state.export.metadata?.config,
-            provider: updatedProject.provider as SpecProvider,
-            providerVersion: updatedProject.providerVersion,
-            interactivity: updatedProject.interactivity
-        }
-    );
+    // Use shared helper for spec parsing and related state updates
+    const parsedState = getStateWithParsedSpec(state, updatedProject, {
+        spec: payload.spec,
+        config: payload.config,
+        provider: payload.provider as SpecProvider,
+        logLevel: payload.logLevel
+    });
 
     return {
-        commands: {
-            ...state.commands,
-            exportSpecification: isExportSpecCommandEnabled(
-                exportSpecCommandTest
-            ),
-            zoomFit: isZoomOtherCommandsEnabled(zoomOtherCommandTest),
-            zoomIn: isZoomInCommandEnabled(zoomLevelCommandTest),
-            zoomOut: isZoomOutCommandEnabled(zoomLevelCommandTest),
-            zoomReset: isZoomOtherCommandsEnabled(zoomLevelCommandTest)
-        },
-        debug: { ...state.debug, logAttention: spec.errors.length > 0 },
-        export: {
-            ...state.export,
-            metadata: exportMetadata
-        },
+        ...parsedState,
         interface: {
             ...state.interface,
             modalDialogRole
         },
-        project: updatedProject,
-        specification: {
-            ...state.specification,
-            ...spec
-        }
+        project: updatedProject
     };
 };
