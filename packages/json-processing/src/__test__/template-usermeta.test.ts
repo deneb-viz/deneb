@@ -15,7 +15,7 @@ import {
     getUpdatedExportMetadata,
     getValidatedTemplate
 } from '../template-usermeta';
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
+import { INTERACTIVITY_DEFAULTS } from '@deneb-viz/powerbi-compat/interactivity';
 import {
     TEMPLATE_USERMETA_VERSION,
     type UsermetaTemplate
@@ -52,12 +52,12 @@ const MOCK_TEMPLATE_METADATA_BASE = `{
             "providerVersion": "${MOCK_PROVIDER_VERSION}"
         },
         "interactivity": {
-            "tooltip": ${DEFAULTS.vega.enableTooltips},
-            "contextMenu": ${DEFAULTS.vega.enableContextMenu},
-            "selection": ${DEFAULTS.vega.enableSelection},
-            "selectionMode": "${DEFAULTS.vega.selectionMode as SelectionMode}",
-            "dataPointLimit": ${DEFAULTS.vega.selectionMaxDataPoints},
-            "highlight": ${DEFAULTS.vega.enableHighlight}
+            "tooltip": ${INTERACTIVITY_DEFAULTS.enableTooltips},
+            "contextMenu": ${INTERACTIVITY_DEFAULTS.enableContextMenu},
+            "selection": ${INTERACTIVITY_DEFAULTS.enableSelection},
+            "selectionMode": "${INTERACTIVITY_DEFAULTS.selectionMode as SelectionMode}",
+            "dataPointLimit": ${INTERACTIVITY_DEFAULTS.selectionMaxDataPoints},
+            "highlight": ${INTERACTIVITY_DEFAULTS.enableHighlight}
         },
         "dataset": [],
         "config": "{}"
@@ -81,12 +81,12 @@ const MOCK_TEMPLATE_METADATA_NO_PROVIDER_VERSION = `{
             "provider": "${MOCK_PROVIDER}"
         },
         "interactivity": {
-            "tooltip": ${DEFAULTS.vega.enableTooltips},
-            "contextMenu": ${DEFAULTS.vega.enableContextMenu},
-            "selection": ${DEFAULTS.vega.enableSelection},
-            "selectionMode": "${DEFAULTS.vega.selectionMode as SelectionMode}",
-            "dataPointLimit": ${DEFAULTS.vega.selectionMaxDataPoints},
-            "highlight": ${DEFAULTS.vega.enableHighlight}
+            "tooltip": ${INTERACTIVITY_DEFAULTS.enableTooltips},
+            "contextMenu": ${INTERACTIVITY_DEFAULTS.enableContextMenu},
+            "selection": ${INTERACTIVITY_DEFAULTS.enableSelection},
+            "selectionMode": "${INTERACTIVITY_DEFAULTS.selectionMode as SelectionMode}",
+            "dataPointLimit": ${INTERACTIVITY_DEFAULTS.selectionMaxDataPoints},
+            "highlight": ${INTERACTIVITY_DEFAULTS.enableHighlight}
         },
         "dataset": [],
         "config": "{}"
@@ -109,12 +109,12 @@ const EXPECTED_METADATA_BASE = {
         providerVersion: MOCK_PROVIDER_VERSION
     },
     interactivity: {
-        tooltip: DEFAULTS.vega.enableTooltips,
-        contextMenu: DEFAULTS.vega.enableContextMenu,
-        selection: DEFAULTS.vega.enableSelection,
-        selectionMode: DEFAULTS.vega.selectionMode as SelectionMode,
-        dataPointLimit: DEFAULTS.vega.selectionMaxDataPoints,
-        highlight: DEFAULTS.vega.enableHighlight
+        tooltip: INTERACTIVITY_DEFAULTS.enableTooltips,
+        contextMenu: INTERACTIVITY_DEFAULTS.enableContextMenu,
+        selection: INTERACTIVITY_DEFAULTS.enableSelection,
+        selectionMode: INTERACTIVITY_DEFAULTS.selectionMode as SelectionMode,
+        dataPointLimit: INTERACTIVITY_DEFAULTS.selectionMaxDataPoints,
+        highlight: INTERACTIVITY_DEFAULTS.enableHighlight
     },
     dataset: [],
     config: '{}'
@@ -235,12 +235,12 @@ describe('getExportTemplate', () => {
       "providerVersion": "${MOCK_PROVIDER_VERSION}"
     },
     "interactivity": {
-      "tooltip": ${DEFAULTS.vega.enableTooltips},
-      "contextMenu": ${DEFAULTS.vega.enableContextMenu},
-      "selection": ${DEFAULTS.vega.enableSelection},
-      "selectionMode": "${DEFAULTS.vega.selectionMode as SelectionMode}",
-      "dataPointLimit": ${DEFAULTS.vega.selectionMaxDataPoints},
-      "highlight": ${DEFAULTS.vega.enableHighlight}
+      "tooltip": ${INTERACTIVITY_DEFAULTS.enableTooltips},
+      "contextMenu": ${INTERACTIVITY_DEFAULTS.enableContextMenu},
+      "selection": ${INTERACTIVITY_DEFAULTS.enableSelection},
+      "selectionMode": "${INTERACTIVITY_DEFAULTS.selectionMode as SelectionMode}",
+      "dataPointLimit": ${INTERACTIVITY_DEFAULTS.selectionMaxDataPoints},
+      "highlight": ${INTERACTIVITY_DEFAULTS.enableHighlight}
     },
     "dataset": [
       {
