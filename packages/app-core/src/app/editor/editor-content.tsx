@@ -1,10 +1,3 @@
-import { useMemo } from 'react';
-import {
-    FluentProvider,
-    makeStyles,
-    mergeClasses,
-    tokens
-} from '@fluentui/react-components';
 import SplitPane from 'react-split-pane';
 import { shallow } from 'zustand/shallow';
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -15,7 +8,6 @@ import {
     EDITOR_TOOLBAR_HEIGHT,
     type EditorPanePosition,
     getCommandKey,
-    getDenebTheme,
     handleApplyChanges,
     handleAutoApplyChanges,
     handleDebugPaneData,
@@ -35,13 +27,15 @@ import {
     handleZoomOut,
     handleZoomReset,
     HOTKEY_OPTIONS,
-    POPOVER_Z_INDEX,
     type Command,
     EDITOR_PANE_SPLIT_MAX_SIZE_PERCENT,
     EDITOR_PANE_SPLIT_COLLAPSED_SIZE,
     EDITOR_PANE_SPLIT_MIN_SIZE
 } from '../../lib';
-import { useSpecificationEditor } from '../../features/specification-editor';
+import {
+    SpecificationEditorProvider,
+    useSpecificationEditor
+} from '../../features/specification-editor';
 import { CommandBar } from '../../features/command-bar';
 import { ModalDialog } from '../../components/ui';
 import { PortalRoot } from './portal-root';
@@ -53,28 +47,6 @@ import {
 } from './styles';
 import { useDenebPlatformProvider } from '../../components/deneb-platform';
 
-const useInterfaceStyles = makeStyles({
-    container: {
-        boxSizing: 'border-box',
-        height: '100%',
-        width: '100%',
-        cursor: 'auto',
-        '& .editor-heading': {
-            cursor: 'pointer'
-        },
-        border: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke2}`
-    },
-    tooltipMount: {
-        zIndex: POPOVER_Z_INDEX
-    },
-    themeBackground: {
-        backgroundColor: tokens.colorNeutralBackground1
-    },
-    visualBackground: {
-        backgroundColor: 'transparent'
-    }
-});
-
 //eslint-disable-next-line max-lines-per-function
 export const EditorContent = () => {
     const {
@@ -82,19 +54,14 @@ export const EditorContent = () => {
         editorPaneIsExpanded,
         editorPaneWidth,
         position,
-        previewAreaTransparentBackground,
-        theme,
         viewportWidth,
         updateEditorPaneWidth
     } = useDenebState(
         (state) => ({
-            previewAreaTransparentBackground:
-                state.editorPreferences.previewAreaTransparentBackground,
             editorPaneDefaultWidth: state.editorPaneDefaultWidth,
             editorPaneIsExpanded: state.editorPaneIsExpanded,
             editorPaneWidth: state.editorPaneWidth,
             position: state.editorPreferences.jsonEditorPosition,
-            theme: state.editorPreferences.theme,
             viewportWidth: state.interface.viewport?.width ?? 0,
             updateEditorPaneWidth: state.updateEditorPaneWidth
         }),
@@ -138,25 +105,9 @@ export const EditorContent = () => {
             handleResize(editorPaneDefaultWidth as number);
         }
     };
-    const classes = useInterfaceStyles();
-    const resolvedTheme = useMemo(() => getDenebTheme(theme), [theme]);
-    const className = useMemo(
-        () =>
-            mergeClasses(
-                classes.container,
-                previewAreaTransparentBackground
-                    ? classes.visualBackground
-                    : classes.themeBackground
-            ),
-        [theme, previewAreaTransparentBackground]
-    );
     logRender('AdvancedEditorInterface');
     return (
-        <FluentProvider
-            theme={resolvedTheme}
-            className={className}
-            id='visualEditor'
-        >
+        <SpecificationEditorProvider>
             <CommandBar />
             <SplitPane
                 style={{
@@ -185,14 +136,14 @@ export const EditorContent = () => {
             </SplitPane>
             <ModalDialog />
             <PortalRoot />
-        </FluentProvider>
+        </SpecificationEditorProvider>
     );
 };
 
 /**
  * Work out what the maximum size of the resizable pane should be (in px), based on the persisted visual (store) state.
  */
-export const getResizablePaneMaxSize = (
+const getResizablePaneMaxSize = (
     editorPaneIsExpanded: boolean,
     position: EditorPanePosition,
     visualViewportWidth: number

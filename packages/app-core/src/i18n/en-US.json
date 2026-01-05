@@ -115,6 +115,7 @@
     "Text_Editor_Status_Bar_Column": "Col",
     "Text_Editor_Status_Bar_Line": "Ln",
     "Text_Editor_Status_Bar_Selection": "({0} selected)",
+    "Text_Editor_Suspense_Message": "Preparing editor. Please wait...",
     "Text_Export_Tokenizing": "Updating your specification with placeholders for your dataset. Please wait...",
     "Text_Import_Template_Subtitle": "Import your file",
     "Text_Link_Changelog": "View on website",
