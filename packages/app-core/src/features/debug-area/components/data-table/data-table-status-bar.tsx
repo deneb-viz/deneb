@@ -96,9 +96,9 @@ export const DataTableStatusBar = ({
     }, [mode]);
 
     return (
-        <StatusBarContainer>
-            <div className={classes.container}>
-                <div>{optionComponent}</div>
+        <StatusBarContainer
+            nearItems={<div>{optionComponent}</div>}
+            farItems={
                 <div className={classes.navigation}>
                     <div>
                         <Label htmlFor={rowsPerPageId} size='small'>
@@ -139,8 +139,8 @@ export const DataTableStatusBar = ({
                         disabled={currentPage === numPages}
                     />
                 </div>
-            </div>
-        </StatusBarContainer>
+            }
+        />
     );
 };
 

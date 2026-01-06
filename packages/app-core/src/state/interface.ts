@@ -10,13 +10,6 @@ import { isMappingDialogRequired } from '@deneb-viz/json-processing';
 import { getNewUuid } from '@deneb-viz/utils/crypto';
 import { StateCreator } from 'zustand';
 import { getModalDialogRole } from '../lib/interface/state';
-import {
-    getEditorPreviewAreaWidth,
-    getEditPaneDefaultWidth,
-    getPreviewAreaHeightInitial,
-    getPreviewAreaHeightMaximum,
-    getResizablePaneSize
-} from '../lib/interface/layout';
 
 export type InterfaceSliceProperties = {
     /**
@@ -54,11 +47,6 @@ export type InterfaceSliceProperties = {
      */
     renderId: string;
     type: InterfaceType;
-    /**
-     * The viewport dimensions for the interface container.
-     */
-    viewport: ContainerViewport | null;
-    computeEditorLayout: () => void;
     setEmbedViewport: (viewport: ContainerViewport) => void;
     /**
      * Sets the export processing state.
@@ -86,7 +74,6 @@ export type InterfaceSliceProperties = {
      */
     setRemapState: (state: RemapState) => void;
     setType: (type: InterfaceType) => void;
-    setViewport: (viewport: ContainerViewport) => void;
 };
 
 export type InterfaceSlice = {
@@ -100,7 +87,7 @@ export const createInterfaceSlice =
         [],
         InterfaceSlice
     > =>
-    (set, get) => ({
+    (set) => ({
         interface: {
             embedViewport: null,
             exportProcessingState: 'None',
@@ -110,64 +97,6 @@ export const createInterfaceSlice =
             remapState: 'None',
             renderId: getNewUuid(),
             type: 'viewer',
-            viewport: null,
-            computeEditorLayout: () => {
-                set(
-                    (state) => {
-                        const { viewport } = state.interface;
-                        const { jsonEditorPosition } = state.editorPreferences;
-                        if (!viewport) {
-                            return {};
-                        }
-                        const editorPaneDefaultWidth = getEditPaneDefaultWidth(
-                            viewport,
-                            jsonEditorPosition
-                        );
-                        const editorPaneExpandedWidth =
-                            state.editorPaneExpandedWidth ??
-                            editorPaneDefaultWidth;
-                        const editorPaneWidth =
-                            getResizablePaneSize(
-                                editorPaneExpandedWidth,
-                                state.editorPaneIsExpanded,
-                                viewport,
-                                jsonEditorPosition
-                            ) ??
-                            state.editorPaneExpandedWidth ??
-                            0;
-                        const editorPreviewAreaWidth =
-                            getEditorPreviewAreaWidth(
-                                viewport.width,
-                                editorPaneWidth,
-                                jsonEditorPosition
-                            );
-                        const editorPreviewAreaHeightMax =
-                            getPreviewAreaHeightMaximum(viewport.height);
-                        const editorPreviewAreaHeight =
-                            getPreviewAreaHeightInitial(
-                                viewport.height,
-                                state.editorPreviewAreaHeight ?? 0
-                            );
-                        const editorPreviewDebugIsExpanded =
-                            editorPreviewAreaHeight !==
-                            editorPreviewAreaHeightMax;
-                        return {
-                            editorPaneDefaultWidth,
-                            editorPaneExpandedWidth,
-                            editorPaneWidth,
-                            editorPreviewAreaHeight,
-                            editorPreviewAreaHeightMax,
-                            editorPreviewAreaWidth,
-                            editorPreviewDebugIsExpanded,
-                            interface: {
-                                ...state.interface
-                            }
-                        };
-                    },
-                    false,
-                    'interface.computeEditorLayout'
-                );
-            },
             generateRenderId: () =>
                 set(
                     (state) => handleGenerateRenderId(state),
@@ -236,20 +165,7 @@ export const createInterfaceSlice =
                     }),
                     false,
                     'interface.setType'
-                ),
-            setViewport: (viewport: ContainerViewport) => {
-                set(
-                    (state) => ({
-                        interface: {
-                            ...state.interface,
-                            viewport: viewport
-                        }
-                    }),
-                    false,
-                    'interface.setViewport'
-                );
-                get().interface.computeEditorLayout();
-            }
+                )
         }
     });
 

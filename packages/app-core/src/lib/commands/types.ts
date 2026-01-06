@@ -12,7 +12,6 @@ export type Command =
     | 'debugPaneToggle'
     | 'discardChanges'
     | 'editorFocusOut'
-    | 'editorPaneToggle'
     | 'fieldMappings'
     | 'navigateConfig'
     | 'navigateSettings'

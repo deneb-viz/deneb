@@ -1,5 +1,5 @@
 import { Field, ProgressBar } from '@fluentui/react-components';
-import { useDenebState } from '../../state';
+import { useDenebState } from '../../../state';
 
 export const EditorSuspense = () => {
     const translate = useDenebState((state) => state.i18n.translate);

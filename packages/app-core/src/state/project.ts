@@ -69,8 +69,8 @@ const getStateWithParsedSpec = (
         spec: newSpec,
         provider: (options.provider ?? updatedProject.provider) as SpecProvider,
         logLevel: options.logLevel ?? updatedProject.logLevel,
-        viewportHeight: state.interface.viewport?.height ?? 0,
-        viewportWidth: state.interface.viewport?.width ?? 0
+        viewportHeight: state.interface.embedViewport?.height ?? 0,
+        viewportWidth: state.interface.embedViewport?.width ?? 0
     };
 
     const spec = needsParsing

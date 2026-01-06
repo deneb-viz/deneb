@@ -20,7 +20,6 @@ export const initializeStoreSynchronization = (): (() => void) => {
     const unsubscribers: (() => void)[] = [
         subscribeDataset(),
         subscribeEmbedViewport(),
-        subscribeInterfaceViewport(),
         syncSlicesWithVisualSettings()
     ];
 
@@ -113,26 +112,6 @@ const subscribeEmbedViewport = (): (() => void) => {
                     ]);
                 }
             }
-        }
-    );
-};
-
-/**
- * Subscribe to interface viewport changes in the visual store and sync to the app-core store.
- */
-const subscribeInterfaceViewport = (): (() => void) => {
-    return useDenebVisualState.subscribe(
-        (state) => state.interface.viewport,
-        (interfaceViewport) => {
-            const { viewport, setViewport } = getDenebState().interface;
-            if (shallowEqual(viewport, interfaceViewport)) {
-                return;
-            }
-            logDebug(
-                '[StoreSynchronization] Interface viewport changed, syncing to app-core store...',
-                { viewport }
-            );
-            setViewport(interfaceViewport);
         }
     );
 };

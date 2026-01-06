@@ -52,6 +52,7 @@
         "@deneb-viz/utils": "*",
         "@monaco-editor/react": "^4.6.0",
         "@uidotdev/usehooks": "^2.4.1",
+        "allotment": "^1.20.5",
         "d3-format": "^2.0.0",
         "d3-time-format": "^3.0.0",
         "fast-equals": "^5.3.3",
@@ -60,9 +61,9 @@
         "react-data-table-component": "^7.7.0",
         "react-dropzone": "^14.2.3",
         "react-hotkeys-hook": "^5.2.0",
-        "react-split-pane": "^0.1.92",
         "react-vega": "7.6.0",
         "styled-components": "^6.1.19",
+        "use-resize-observer": "^9.1.0",
         "zustand": "^4.5.5"
     },
     "peerDependencies": {

@@ -41,11 +41,7 @@ import {
     ROW_INDEX_FIELD_NAME,
     SELECTED_ROW_FIELD_NAME
 } from '@deneb-viz/data-core/field';
-import { makeStyles } from '@fluentui/react-components';
-import {
-    PREVIEW_PANE_TOOLBAR_MIN_SIZE,
-    SPLIT_PANE_HANDLE_SIZE
-} from '../../../../lib';
+import { useDebugWrapperStyles } from '../styles';
 
 type DatasetViewerProps = {
     datasetName: string;
@@ -54,26 +50,6 @@ type DatasetViewerProps = {
 };
 
 const DATA_LISTENER_DEBOUNCE_INTERVAL = 100;
-
-const useDatasetViewerStyles = makeStyles({
-    container: {
-        height: `calc(100% - ${PREVIEW_PANE_TOOLBAR_MIN_SIZE}px - ${
-            SPLIT_PANE_HANDLE_SIZE / 2
-        }px)`
-    },
-    wrapper: {
-        display: 'flex',
-        height: '100%',
-        maxHeight: '100%',
-        flexDirection: 'column'
-    },
-    details: {
-        display: 'flex',
-        flexDirection: 'column',
-        flexGrow: 1,
-        overflow: 'auto'
-    }
-});
 
 /**
  * Handles display of dataset details for the current Vega view.
@@ -331,7 +307,7 @@ export const DatasetViewer = ({
         setSortColumnId(column?.id ?? null);
         setSortAsc(() => sortDirection === 'asc');
     };
-    const classes = useDatasetViewerStyles();
+    const classes = useDebugWrapperStyles();
     logRender('DatasetViewer', {
         datasetState,
         datasetRaw,

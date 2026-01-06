@@ -231,16 +231,10 @@ export const handleSetFocusToActiveEditor = (
  */
 export const handleToggleDebugPane = () => {
     executeCommand('debugPaneToggle', () => {
-        getDenebState().togglePreviewDebugPane();
-    });
-};
-
-/**
- * Handle toggling the editor pane.
- */
-export const handleToggleEditorPane = () => {
-    executeCommand('editorPaneToggle', () => {
-        getDenebState().toggleEditorPane();
+        const {
+            editor: { isDebugPaneMinimized, setIsDebugPaneMinimized }
+        } = getDenebState();
+        setIsDebugPaneMinimized(!isDebugPaneMinimized);
     });
 };
 

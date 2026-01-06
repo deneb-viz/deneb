@@ -4,16 +4,12 @@ import { TableColumn } from 'react-data-table-component';
 import { logRender } from '@deneb-viz/utils/logging';
 import { stringifyPruned } from '@deneb-viz/utils/object';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
-import { makeStyles } from '@fluentui/react-components';
-import {
-    PREVIEW_PANE_TOOLBAR_MIN_SIZE,
-    SPLIT_PANE_HANDLE_SIZE
-} from '../../../../lib';
 import { DataTableViewer } from '../data-table/data-table';
 import { NoDataMessage } from '../no-data-message';
 import { DataTableCell } from '../data-table/data-table-cell';
 import { SignalValue } from './signal-value';
 import { getDenebState } from '../../../../state';
+import { useDebugWrapperStyles } from '../styles';
 
 type SignalViewerProps = {
     renderId: string;
@@ -28,31 +24,11 @@ type SignalTableDataRow = {
     value: any;
 };
 
-const useSignalViewerStyles = makeStyles({
-    container: {
-        height: `calc(100% - ${PREVIEW_PANE_TOOLBAR_MIN_SIZE}px - ${
-            SPLIT_PANE_HANDLE_SIZE / 2
-        }px)`
-    },
-    wrapper: {
-        display: 'flex',
-        height: '100%',
-        maxHeight: '100%',
-        flexDirection: 'column'
-    },
-    details: {
-        display: 'flex',
-        flexDirection: 'column',
-        flexGrow: 1,
-        overflow: 'auto'
-    }
-});
-
 /**
  * Handles display of signal data for the current Vega view.
  */
 export const SignalViewer = ({ renderId }: SignalViewerProps) => {
-    const classes = useSignalViewerStyles();
+    const classes = useDebugWrapperStyles();
     const columns = useMemo(() => getTableColumns(renderId), [renderId]);
     const values = useMemo(() => getSignalTableValues(), [renderId]);
     logRender('SignalViewer', {

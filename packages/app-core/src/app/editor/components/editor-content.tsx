@@ -1,19 +1,16 @@
 import { makeStyles } from '@fluentui/react-components';
 
 import { logRender } from '@deneb-viz/utils/logging';
-import {
-    SpecificationEditorProvider,
-    useSpecificationEditor
-} from '../../features/specification-editor';
-import { CommandBar } from '../../features/command-bar';
+import { useSpecificationEditor } from '../../../features/specification-editor';
+import { CommandBar } from '../../../features/command-bar';
 import {
     FullContainerLayoutNoOverflow,
     ModalDialog
-} from '../../components/ui';
-import { PortalRoot } from '../editor/components/portal-root';
-import { useDenebPlatformProvider } from '../../components/deneb-platform';
-import { useEditorHotkeys, useEditorPaneLayout } from './hooks';
-import { EditorPaneLayout } from '../editor/components/editor-pane-layout';
+} from '../../../components/ui';
+import { PortalRoot } from './portal-root';
+import { useDenebPlatformProvider } from '../../../components/deneb-platform';
+import { useEditorHotkeys, useEditorPaneLayout } from '../hooks';
+import { EditorPaneLayout } from './editor-pane-layout';
 
 const EDITOR_CONTENT_ID = 'deneb-editor-content';
 const EDITOR_PANE_CONTENT_ID = 'deneb-editor-pane-content';
@@ -53,7 +50,7 @@ export const EditorContent = () => {
 
     logRender('EditorContent');
     return (
-        <SpecificationEditorProvider>
+        <>
             <div
                 className={classes.container}
                 id={EDITOR_CONTENT_ID}
@@ -77,6 +74,6 @@ export const EditorContent = () => {
             </div>
             <ModalDialog />
             <PortalRoot />
-        </SpecificationEditorProvider>
+        </>
     );
 };

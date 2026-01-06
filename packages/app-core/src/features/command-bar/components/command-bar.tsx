@@ -22,10 +22,10 @@ import {
     handleEditorPaneSettings,
     handleEditorPaneSpecification,
     POPOVER_Z_INDEX,
-    PREVIEW_PANE_TOOLBAR_BUTTON_PADDING,
-    PREVIEW_PANE_TOOLBAR_MIN_SIZE
+    PREVIEW_PANE_TOOLBAR_BUTTON_PADDING
 } from '../../../lib';
 import { ToolbarButtonStandard } from '../../../components/ui';
+import { DEBUG_PANE_CONFIGURATION } from '@deneb-viz/configuration';
 
 const useCommandBarStyles = makeStyles({
     buttonSmall: {
@@ -69,7 +69,9 @@ const useCommandBarStyles = makeStyles({
     },
     toolbarAdvancedEditor: {
         backgroundColor: tokens.colorNeutralBackground1,
+        borderBottom: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke2}`,
         display: 'flex',
+        flex: '0 0 auto',
         justifyContent: 'space-between'
     },
     toolbarAdvancedEditorGrow: {
@@ -82,7 +84,7 @@ const useCommandBarStyles = makeStyles({
     toolbarDebug: {
         borderBottom: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke2}`,
         display: 'flex',
-        height: `${PREVIEW_PANE_TOOLBAR_MIN_SIZE}px`,
+        height: `${DEBUG_PANE_CONFIGURATION.toolbarMinSize}px`,
         justifyContent: 'space-between',
         paddingBottom: tokens.spacingVerticalNone,
         paddingTop: tokens.spacingVerticalNone

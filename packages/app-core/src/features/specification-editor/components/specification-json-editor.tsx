@@ -7,12 +7,7 @@ import { ptToPx } from '@deneb-viz/utils/dom';
 import { getProviderSchema } from '@deneb-viz/json-processing';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { logDebug } from '@deneb-viz/utils/logging';
-import {
-    handlePersistSpecification,
-    PREVIEW_PANE_TOOLBAR_BUTTON_PADDING,
-    PREVIEW_PANE_TOOLBAR_MIN_SIZE,
-    type EditorPaneRole
-} from '../../../lib';
+import { handlePersistSpecification, type EditorPaneRole } from '../../../lib';
 import {
     monaco,
     setupMonacoWorker
@@ -56,10 +51,12 @@ type JsonEditorStatusState = {
 
 const useSpecificationJsonEditorStyles = makeStyles({
     container: {
-        height: '100%',
-        maxHeight: '100%',
-        maxWidth: '100%',
-        width: '100%',
+        flex: '1 1 0',
+        flexDirection: 'column',
+        overflow: 'hidden'
+    },
+    editor: {
+        flex: '1 1 auto',
         overflow: 'hidden'
     }
 });
@@ -110,17 +107,9 @@ export const SpecificationJsonEditor = ({
     }, []);
     const attr = useUncontrolledFocus();
     const classes = useSpecificationJsonEditorStyles();
-    const editorHeight = useMemo(
-        () =>
-            `calc(100% - ${
-                PREVIEW_PANE_TOOLBAR_MIN_SIZE +
-                PREVIEW_PANE_TOOLBAR_BUTTON_PADDING
-            }px)`,
-        []
-    );
     const isActiveEditor = useMemo(() => current === thisEditorRole, [current]);
     const display = useMemo(
-        () => (isActiveEditor ? 'inline' : 'none'),
+        () => (isActiveEditor ? 'flex' : 'none'),
         [isActiveEditor]
     );
     const { spec, config } = useSpecificationEditor();
@@ -204,29 +193,30 @@ export const SpecificationJsonEditor = ({
     ]);
     return (
         <div style={{ display }} className={classes.container} {...attr}>
-            <Editor
-                onMount={handleOnMount}
-                onChange={handleOnChange}
-                width='100%'
-                height={editorHeight}
-                defaultLanguage='json'
-                path={`deneb://${thisEditorRole}-${provider}.json`}
-                theme={theme === 'dark' ? 'vs-dark' : 'light'}
-                defaultValue={getDefaultValue(thisEditorRole)}
-                options={{
-                    cursorBlinking: 'smooth',
-                    fixedOverflowWidgets: true,
-                    folding: true,
-                    fontSize: ptToPx(fontSize),
-                    lineNumbers: showLineNumbers ? 'on' : 'off',
-                    lineNumbersMinChars: 2,
-                    minimap: { enabled: false },
-                    quickSuggestions: true,
-                    scrollBeyondLastLine: false,
-                    tabSize: EDITOR_DEFAULTS.tabSize,
-                    wordWrap: wordWrap ? 'on' : 'off'
-                }}
-            />
+            <div className={classes.editor}>
+                <Editor
+                    onMount={handleOnMount}
+                    onChange={handleOnChange}
+                    width='100%'
+                    defaultLanguage='json'
+                    path={`deneb://${thisEditorRole}-${provider}.json`}
+                    theme={theme === 'dark' ? 'vs-dark' : 'light'}
+                    defaultValue={getDefaultValue(thisEditorRole)}
+                    options={{
+                        cursorBlinking: 'smooth',
+                        fixedOverflowWidgets: true,
+                        folding: true,
+                        fontSize: ptToPx(fontSize),
+                        lineNumbers: showLineNumbers ? 'on' : 'off',
+                        lineNumbersMinChars: 2,
+                        minimap: { enabled: false },
+                        quickSuggestions: true,
+                        scrollBeyondLastLine: false,
+                        tabSize: EDITOR_DEFAULTS.tabSize,
+                        wordWrap: wordWrap ? 'on' : 'off'
+                    }}
+                />
+            </div>
             <SpecificationEditorStatusBar
                 position={status.cursor}
                 selectedText={status.selectedText}

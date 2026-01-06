@@ -18,22 +18,21 @@ import {
     handleDebugPaneData,
     handleDebugPaneLog,
     handleDebugPaneSignal,
-    PREVIEW_PANE_TOOLBAR_MIN_SIZE,
     type DebugPaneRole
 } from '../../../lib';
 import { LogErrorIndicator } from './log-viewer/log-error-indicator';
 import { ToolbarButtonStandard } from '../../../components/ui';
 import { ZoomSlider } from './zoom-controls/zoom-slider';
 import { ZoomLevelPopover } from './zoom-controls/zoom-level-popover';
+import { DEBUG_PANE_CONFIGURATION } from '@deneb-viz/configuration';
 
 const useToolbarStyles = makeStyles({
     root: {
         display: 'flex',
-        height: `${PREVIEW_PANE_TOOLBAR_MIN_SIZE}px`,
+        height: `${DEBUG_PANE_CONFIGURATION.toolbarMinSize}px`,
         justifyContent: 'space-between',
         paddingBottom: tokens.spacingVerticalNone,
-        paddingTop: tokens.spacingVerticalNone,
-        borderBottom: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke2}`
+        paddingTop: tokens.spacingVerticalNone
     },
     group: {
         alignItems: 'center',

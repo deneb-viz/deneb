@@ -1,12 +1,8 @@
-import { Caption1, makeStyles, tokens } from '@fluentui/react-components';
+import { Caption1, makeStyles } from '@fluentui/react-components';
 
 import { logRender } from '@deneb-viz/utils/logging';
 import { monaco } from '../../../components/code-editor/monaco-integration';
-import { PREVIEW_PANE_TOOLBAR_MIN_SIZE } from '../../../lib';
-import {
-    StatusBarContainer,
-    ToolbarButtonStandard
-} from '../../../components/ui';
+import { StatusBarContainer } from '../../../components/ui';
 import { ProviderDetail } from './provider-detail';
 import { TrackingSyncStatus } from './tracking-sync-status';
 import { getDenebState, useDenebState } from '../../../state';
@@ -17,12 +13,6 @@ type SpecificationEditorStatusBarProps = {
 };
 
 const useStatusStyles = makeStyles({
-    surround: {
-        height: `${PREVIEW_PANE_TOOLBAR_MIN_SIZE}px}`,
-        width: '100%',
-        position: 'absolute',
-        zIndex: 5
-    },
     container: {
         display: 'flex',
         flexDirection: 'row',
@@ -31,9 +21,6 @@ const useStatusStyles = makeStyles({
         columnGap: '5px',
         height: '100%',
         width: '100%'
-    },
-    collapse: {
-        paddingLeft: tokens.spacingHorizontalXS
     },
     status: {
         display: 'flex',
@@ -66,30 +53,26 @@ export const SpecificationEditorStatusBar = ({
     const translate = useDenebState((state) => state.i18n.translate);
     logRender('JsonEditorStatusBar');
     return (
-        <StatusBarContainer>
-            <div className={classes.surround}>
+        <StatusBarContainer
+            nearItems={
                 <div className={classes.container}>
-                    <div className={classes.collapse}>
-                        <ToolbarButtonStandard
-                            command='editorPaneToggle'
-                            role='debug'
-                        />
-                    </div>
                     <ProviderDetail />
-                    <div className={classes.status}>
-                        <TrackingSyncStatus />
-                        <div className={classes.cursorContainer}>
-                            <Caption1 className={classes.caption}>
-                                {translate('Text_Editor_Status_Bar_Line')} {row}{' '}
-                                {translate('Text_Editor_Status_Bar_Column')}{' '}
-                                {column} {getSelectedTextMessage(selectedText)}
-                            </Caption1>
-                        </div>
-                        <div className='status-settings'></div>
-                    </div>
                 </div>
-            </div>
-        </StatusBarContainer>
+            }
+            farItems={
+                <div className={classes.status}>
+                    <TrackingSyncStatus />
+                    <div className={classes.cursorContainer}>
+                        <Caption1 className={classes.caption}>
+                            {translate('Text_Editor_Status_Bar_Line')} {row}{' '}
+                            {translate('Text_Editor_Status_Bar_Column')}{' '}
+                            {column} {getSelectedTextMessage(selectedText)}
+                        </Caption1>
+                    </div>
+                    <div className='status-settings'></div>
+                </div>
+            }
+        />
     );
 };
 

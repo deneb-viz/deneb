@@ -2,7 +2,7 @@ import { useLayoutEffect } from 'react';
 
 import { type InterfaceType } from '../lib';
 import { useDenebState } from '../state';
-import { Editor } from './editor/editor';
+import { Editor } from './editor/components/editor';
 import { Viewer } from './viewer';
 
 export type AppProps = {

@@ -23,8 +23,9 @@ export const DATA_VIEWER_CONFIGURATION = {
  */
 export const DEBUG_PANE_CONFIGURATION = {
     areaMinSize: 100,
-    toolbarMinSize: 28,
-    toolbarInitialPercent: 40,
+    minWidth: 525,
+    preferredHeightPercentage: 0.4,
+    toolbarMinSize: 30,
     viewportBorderSize: 2,
     logLevels: [
         {

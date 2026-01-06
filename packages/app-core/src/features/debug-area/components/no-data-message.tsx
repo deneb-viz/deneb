@@ -1,31 +1,11 @@
 import { makeStyles, tokens } from '@fluentui/react-components';
 
 import { useDenebState } from '../../../state';
-import {
-    PREVIEW_PANE_TOOLBAR_MIN_SIZE,
-    SPLIT_PANE_HANDLE_SIZE
-} from '../../../lib';
 import { DatasetSelect } from './dataset-viewer/dataset-select';
 import { StatusBarContainer } from '../../../components/ui';
+import { useDebugWrapperStyles } from './styles';
 
 const useNoDataMessageStyles = makeStyles({
-    container: {
-        height: `calc(100% - ${PREVIEW_PANE_TOOLBAR_MIN_SIZE}px - ${
-            SPLIT_PANE_HANDLE_SIZE / 2
-        }px)`
-    },
-    contentWrapper: {
-        display: 'flex',
-        height: '100%',
-        maxHeight: '100%',
-        flexDirection: 'column'
-    },
-    dataTableDetails: {
-        display: 'flex',
-        flexDirection: 'column',
-        flexGrow: 1,
-        overflow: 'auto'
-    },
     dataTableNoDataMessage: {
         display: 'flex',
         flexDirection: 'column',
@@ -53,6 +33,7 @@ export const NoDataMessage = () => {
         translate: state.i18n.translate
     }));
     const classes = useNoDataMessageStyles();
+    const wrapperClasses = useDebugWrapperStyles();
     const message = translate(
         mode === 'data'
             ? 'Text_Debug_Data_No_Data'
@@ -60,9 +41,9 @@ export const NoDataMessage = () => {
     );
     const options = mode === 'data' ? <DatasetSelect /> : null;
     return (
-        <div className={classes.container}>
-            <div className={classes.contentWrapper}>
-                <div className={classes.dataTableDetails}>
+        <div className={wrapperClasses.container}>
+            <div className={wrapperClasses.wrapper}>
+                <div className={wrapperClasses.details}>
                     <div className={classes.dataTableNoDataMessage}>
                         {message}
                     </div>
