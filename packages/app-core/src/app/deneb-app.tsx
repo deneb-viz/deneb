@@ -5,6 +5,7 @@ import { type InterfaceType } from '../lib';
 import { useDenebState } from '../state';
 import { Editor } from './editor/components/editor';
 import { Viewer } from './viewer';
+import { VegaExtensibilityServices } from '@deneb-viz/vega-runtime/extensibility';
 import { VegaPatternFillServices } from '@deneb-viz/vega-runtime/pattern-fill';
 
 export type AppProps = {
@@ -28,6 +29,7 @@ export const DenebApp = ({ type }: AppProps) => {
     useLayoutEffect(() => {
         setInterfaceType(type);
         setEmbedContainerSetByHost(embedContainerSetByHost);
+        VegaExtensibilityServices.bind();
         VegaPatternFillServices.bind();
     }, [
         type,

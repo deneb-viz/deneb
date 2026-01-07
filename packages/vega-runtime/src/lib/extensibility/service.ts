@@ -2,23 +2,29 @@ import powerbi from 'powerbi-visuals-api';
 
 import { registerCustomExpressions } from './expressions';
 import { registerVegaExtensions } from './runtime';
-import { type PowerBiColorPalette } from '@deneb-viz/powerbi-compat/theme';
+import {
+    type PowerBiColorPalette,
+    POWERBI_THEME_DEFAULT
+} from '@deneb-viz/powerbi-compat/theme';
 import { type ExtensibilityExpressionHandlers } from './types';
 
 let _expressionHandlers: ExtensibilityExpressionHandlers = {};
+let _isBound = false;
 
 /**
- * Use declare and initialize the service to ensure that it is available for
- * the lifetime of the current visual instance.
+ * Use declare and initialize the service to ensure that it is available for the lifetime of the current app lifecycle.
  */
 export const VegaExtensibilityServices = {
     bind: (
-        pbiColorPalette: powerbi.extensibility.ISandboxExtendedColorPalette
+        pbiColorPalette?: powerbi.extensibility.ISandboxExtendedColorPalette
     ) => {
+        if (_isBound) return; // Already bound
         registerCustomExpressions();
         registerVegaExtensions({
-            pbiColorPalette: pbiColorPalette as PowerBiColorPalette
+            pbiColorPalette: (pbiColorPalette ??
+                POWERBI_THEME_DEFAULT) as PowerBiColorPalette
         });
+        _isBound = true;
     },
     /**
      * Set handlers for custom expression functions.
