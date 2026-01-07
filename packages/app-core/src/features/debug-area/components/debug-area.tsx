@@ -8,6 +8,7 @@ import { DatasetViewer } from './dataset-viewer/dataset-viewer';
 import { SignalViewer } from './signal-viewer/signal-viewer';
 import { DebugToolbar } from './debug-toolbar';
 import { FullContainerLayoutNoOverflow } from '../../../components/ui';
+import { DatasetSelectInitializer } from './dataset-viewer/dataset-select';
 
 const DEBUG_AREA_CLASS_NAME = 'deneb-debug-area';
 const DEBUG_AREA_CONTENT_CLASS_NAME = `${DEBUG_AREA_CLASS_NAME}-content`;
@@ -23,14 +24,14 @@ export const DebugArea = () => {
     const {
         datasetName,
         editorPreviewAreaSelectedPivot,
-        editorPreviewDebugIsExpanded,
+        isDebugPaneMinimized,
         logAttention,
         renderId,
         translate
     } = useDenebState((state) => ({
         datasetName: state.debug.datasetName,
         editorPreviewAreaSelectedPivot: state.editorPreviewAreaSelectedPivot,
-        editorPreviewDebugIsExpanded: state.editorPreviewDebugIsExpanded,
+        isDebugPaneMinimized: state.editor.isDebugPaneMinimized,
         logAttention: state.debug.logAttention,
         renderId: state.interface.renderId,
         translate: state.i18n.translate
@@ -60,13 +61,14 @@ export const DebugArea = () => {
     }, [
         datasetName,
         editorPreviewAreaSelectedPivot,
-        editorPreviewDebugIsExpanded,
+        isDebugPaneMinimized,
         logAttention,
         renderId
     ]);
     logRender('DebugAreaContent');
     return (
         <FullContainerLayoutNoOverflow className={DEBUG_AREA_CLASS_NAME}>
+            <DatasetSelectInitializer />
             <DebugToolbar />
             <div className={contentClasses}>{content}</div>
         </FullContainerLayoutNoOverflow>

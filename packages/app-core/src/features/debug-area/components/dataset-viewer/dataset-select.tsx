@@ -9,13 +9,12 @@ import {
 } from '@fluentui/react-components';
 
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
-import { logRender } from '@deneb-viz/utils/logging';
+import { logDebug, logRender } from '@deneb-viz/utils/logging';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 import { useDenebState } from '../../../../state';
 
 /**
- * The name of the root dataset that Vega generates, to filter out when
- * deriving from the view.
+ * The name of the root dataset that Vega generates, to filter out when deriving from the view.
  */
 const DEBUG_ROOT_DATASET_NAME = 'root';
 
@@ -30,8 +29,37 @@ const useDatasetSelectStyles = makeStyles({
 });
 
 /**
- * Provides the ability to select a dataset from the Vega view. If no datasets
- * are available, then will default to and read from the visual.store dataset.
+ * Headless component that ensures the dataset name is initialized when the Vega view is ready. This runs before
+ * DatasetViewer renders to avoid the chicken-and-egg problem where DatasetViewer needs a dataset name, but
+ * DatasetSelect (which sets it) only renders after data is loaded.
+ */
+export const DatasetSelectInitializer = () => {
+    const { renderId, datasetName, setDataset } = useDenebState((state) => ({
+        renderId: state.interface.renderId,
+        datasetName: state.debug.datasetName,
+        setDataset: state.debug.setDatasetName
+    }));
+    const datasets = useMemo(() => getDatasetNames(), [renderId]);
+
+    useEffect(() => {
+        if (
+            datasets.length > 0 &&
+            (!datasetName || !datasets.includes(datasetName))
+        ) {
+            logDebug('DatasetSelectInitializer: setting initial dataset', {
+                datasets,
+                first: datasets[0]
+            });
+            setDataset(datasets[0]);
+        }
+    }, [datasets, datasetName, setDataset]);
+
+    return null; // Renders nothing - just handles initialization
+};
+
+/**
+ * Provides the ability to select a dataset from the Vega view. If no datasets are available, then will default to and
+ * read from the visual.store dataset.
  */
 export const DatasetSelect = () => {
     const { renderId, datasetName, setDataset, translate } = useDenebState(
@@ -56,14 +84,18 @@ export const DatasetSelect = () => {
     );
 
     /**
-     * If our datasets change and we no longer have our selected one in the
-     * list, we should reset it to the default.
+     * If our datasets change and we no longer have our selected one in the list (or datasetName is empty), reset to
+     * the first available dataset from the view. This ensures we show actual view data rather than always defaulting
+     * to the main dataset.
      */
     useEffect(() => {
-        if (datasets.length > 0 && !datasets.includes(datasetName)) {
-            setDataset(DATASET_DEFAULT_NAME);
+        if (
+            datasets.length > 0 &&
+            (!datasetName || !datasets.includes(datasetName))
+        ) {
+            setDataset(datasets[0]);
         }
-    }, [datasets]);
+    }, [datasets, datasetName]);
 
     const handleDatasetChange: SelectProps['onChange'] = (event, data) =>
         setDataset(data.value);
@@ -91,14 +123,19 @@ export const DatasetSelect = () => {
 };
 
 /**
- * Gets the list of datasets that should be present in the Vega view. If none
- * can be found, the view is not bound, or the previously selected datset has
- * been removed, then we return the default dataset name.
+ * Gets the list of datasets that should be present in the Vega view. If none can be found, the view is not bound, or
+ * the previously selected dataset has been removed, then we return the default dataset name.
  */
 const getDatasetNames = () => {
-    const datasets = Object.keys(VegaViewServices.getAllData()).filter(
+    const allData = VegaViewServices.getAllData();
+    logDebug('DatasetSelect: getAllData result', {
+        allData,
+        keys: Object.keys(allData)
+    });
+    const datasets = Object.keys(allData).filter(
         (key) => key !== DEBUG_ROOT_DATASET_NAME
     );
+    logDebug('DatasetSelect: filtered datasets', { datasets });
     return (datasets.length === 0 ? [DATASET_DEFAULT_NAME] : datasets).map(
         (key) => key
     );

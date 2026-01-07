@@ -87,8 +87,7 @@ export const DatasetViewer = ({
         logError: state.specification.logError
     }));
     /**
-     * When our dataset changes, we need to send it to our web worker for
-     * processing.
+     * When our dataset changes, we need to send it to our web worker for processing.
      */
     useEffect(() => {
         logDebug('DatasetViewer: updating dataset state...');
@@ -103,8 +102,8 @@ export const DatasetViewer = ({
                 datasetState
             });
             /**
-             * We have to fix/prune a dataset prior to sending to the worker,
-             * as postMessage gets upset about cyclics and methods.
+             * We have to fix/prune a dataset prior to sending to the worker, as postMessage gets upset about cyclics
+             * and methods.
              */
             const message: IWorkerDatasetViewerMessage = {
                 canvasFontCharWidth: getDataTableRenderedCharWidth(),
@@ -118,8 +117,7 @@ export const DatasetViewer = ({
         }
     }, [datasetRaw.hashValue]);
     /**
-     * When we get a response from our worker, we need to update our state
-     * with the processed data table output.
+     * When we get a response from our worker, we need to update our state with the processed data table output.
      */
     useEffect(() => {
         if (window.Worker) {
@@ -339,8 +337,7 @@ export const DatasetViewer = ({
 };
 
 /**
- * Retrieves the specified dataset from the Vega view (or directly from the
- * store if there are issues with the view).
+ * Retrieves the specified dataset from the Vega view (or directly from the store if there are issues with the view).
  */
 const getDatasetValues = (datasetName: string, logAttention: boolean) => {
     logTimeStart('getDatasetValues');
@@ -348,6 +345,14 @@ const getDatasetValues = (datasetName: string, logAttention: boolean) => {
         logDebug('Falling back to store dataset...');
         return getDenebState()?.dataset?.values;
     };
+    // Guard against empty dataset name to avoid Vega "Unrecognized data set" error
+    if (!datasetName) {
+        logDebug(
+            'DatasetViewer: no dataset name provided. Returning store dataset.'
+        );
+        logTimeEnd('getDatasetValues');
+        return storeDs();
+    }
     try {
         const ds = logAttention
             ? storeDs()
