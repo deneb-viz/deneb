@@ -372,7 +372,7 @@ const getTableColumns = (
     maxLengths: IWorkerDatasetViewerMaxDisplayWidths
 ): TableColumn<IWorkerDatasetViewerDataTableRow>[] => {
     logDebug('DatasetViewer: calculating table columns...');
-    return Object.keys(dataset?.[0])?.map((c) => ({
+    return Object.keys(dataset?.[0] ?? {})?.map((c) => ({
         id: c,
         name: <span title={getColumnHeaderTooltip(c)}>{c}</span>,
         cell: (row) => (
