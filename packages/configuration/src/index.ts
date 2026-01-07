@@ -113,18 +113,22 @@ export const VEGA_LOG_LEVEL_CONFIGURATION = [
 /**
  * Additional resources needed for each provider in the application (Vega, Vega-Lite and Deneb). These are used to
  * provide links to documentation, examples, other resources, and patching of specifications.
+ *
+ * Legacy version properties are used to assume defaults for if we need to load version 1.0-generated metadata (as we
+ * didn't introduce versioning until 1.1)
  */
 export const PROVIDER_RESOURCE_CONFIGURATION = {
     deneb: {
         interactivityDocumentationUrl:
             'https://deneb-viz.github.io/interactivity-overview',
         changelogDocumentationUrl: 'https://deneb-viz.github.io/changelog',
-        examplesUrl: 'https://deneb-viz.github.io/community/resources'
+        examplesUrl: 'https://deneb-viz.github.io/community/resources',
+        legacyVersion: '1.0.0.57'
     },
     vega: {
         documentationUrl: 'https://vega.github.io/vega/docs/',
         examplesUrl: 'https://vega.github.io/vega/examples/',
-        schemaUrl: 'https://vega.github.io/schema/vega/v5.json',
+        legacyVersion: '5.21.0',
         patch: {
             signals: [
                 {
@@ -141,7 +145,7 @@ export const PROVIDER_RESOURCE_CONFIGURATION = {
     vegaLite: {
         documentationUrl: 'https://vega.github.io/vega-lite/docs/',
         examplesUrl: 'https://vega.github.io/vega-lite/examples/',
-        schemaUrl: 'https://vega.github.io/schema/vega-lite/v5.json'
+        legacyVersion: '5.1.1'
     }
 };
 

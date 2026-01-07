@@ -1,7 +1,6 @@
 import { getJsoncStringAsObject } from '../processing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-    PROVIDER_RESOURCES,
     getExportTemplate,
     getNewCreateFromTemplateSliceProperties,
     getNewTemplateMetadata,
@@ -21,11 +20,15 @@ import {
     type UsermetaTemplate
 } from '@deneb-viz/template-usermeta';
 import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
-import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import {
+    getProviderSchemaUrl,
+    type SpecProvider
+} from '@deneb-viz/vega-runtime/embed';
 import { type TrackedFields } from '../lib/field-tracking';
 import { type DenebTemplateAllocationComponents } from '../lib/template-processing';
 import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
+import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
 
 const MOCK_BUILD_VERSION = '1.0.0';
 const MOCK_DATE = '2022-01-01T00:00:00.000Z';
@@ -218,7 +221,7 @@ describe('getExportTemplate', () => {
 
     it('should return the expected JSONC formatted string with updated usermeta and schema', () => {
         const expectedJsonc = `{
-  "$schema": "${PROVIDER_RESOURCES[MOCK_METADATA.deneb.provider].schemaUrl}",
+  "$schema": "${getProviderSchemaUrl(MOCK_METADATA.deneb.provider)}",
   "usermeta": {
     "information": {
       "uuid": "${MOCK_UUID}",
@@ -507,7 +510,7 @@ describe('getTemplateResolvedForLegacyVersions', () => {
                 MOCK_TEMPLATE_METADATA_NO_PROVIDER_VERSION
             )
         );
-        const expected = PROVIDER_RESOURCES.vega.legacyVersion;
+        const expected = PROVIDER_RESOURCE_CONFIGURATION.vega.legacyVersion;
         expect(result.usermeta.deneb.providerVersion).toEqual(expected);
     });
     it('should return the correct legacy Vega-Lite version if providerVersion is missing', () => {
@@ -517,10 +520,10 @@ describe('getTemplateResolvedForLegacyVersions', () => {
                 MOCK_TEMPLATE_METADATA_NO_PROVIDER_VERSION
             )
         );
-        const expected = PROVIDER_RESOURCES.vegaLite.legacyVersion;
+        const expected = PROVIDER_RESOURCE_CONFIGURATION.vegaLite.legacyVersion;
         expect(result.usermeta.deneb.providerVersion).toEqual(expected);
     });
-    it('should return the provderVersion from the template if supplied', () => {
+    it('should return the providerVersion from the template if supplied', () => {
         const result = getJsoncStringAsObject(
             getTemplateResolvedForLegacyVersions(
                 'vegaLite',

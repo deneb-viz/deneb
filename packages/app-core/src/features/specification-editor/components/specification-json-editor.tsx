@@ -6,7 +6,10 @@ import Editor, { loader, OnChange, OnMount } from '@monaco-editor/react';
 import { ptToPx } from '@deneb-viz/utils/dom';
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
 import { getProviderSchema } from '@deneb-viz/json-processing';
-import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import {
+    getProviderSchemaUrl,
+    type SpecProvider
+} from '@deneb-viz/vega-runtime/embed';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { handlePersistSpecification, type EditorPaneRole } from '../../../lib';
 import {
@@ -350,14 +353,14 @@ const setMonacoDiagnosticsOptions = () => {
         schemas: [
             {
                 schema: getProviderSchema({ provider: 'vegaLite' }),
-                uri: 'https://vega.github.io/schema/vega-lite/v5.json',
+                uri: getProviderSchemaUrl('vegaLite'),
                 fileMatch: [
                     monaco.Uri.parse('deneb://Spec-vegaLite.json').toString()
                 ]
             },
             {
                 schema: getProviderSchema({ provider: 'vega' }),
-                uri: 'https://vega.github.io/schema/vega/v5.json',
+                uri: getProviderSchemaUrl('vega'),
                 fileMatch: [
                     monaco.Uri.parse('deneb://Spec-vega.json').toString()
                 ]
