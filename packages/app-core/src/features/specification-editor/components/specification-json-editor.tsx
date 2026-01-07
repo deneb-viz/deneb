@@ -4,6 +4,7 @@ import { makeStyles, useUncontrolledFocus } from '@fluentui/react-components';
 import Editor, { loader, OnChange, OnMount } from '@monaco-editor/react';
 
 import { ptToPx } from '@deneb-viz/utils/dom';
+import { toBoolean } from '@deneb-viz/utils/type-conversion';
 import { getProviderSchema } from '@deneb-viz/json-processing';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { logDebug } from '@deneb-viz/utils/logging';
@@ -341,9 +342,11 @@ const setMonacoCompletionProvider = () => {
  * JSON editor.
  */
 const setMonacoDiagnosticsOptions = () => {
+    const enableSchemaRequest =
+        toBoolean(process.env.ALLOW_EXTERNAL_URI) ?? false;
     monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
         allowComments: true,
-        enableSchemaRequest: false,
+        enableSchemaRequest,
         schemas: [
             {
                 schema: getProviderSchema({ provider: 'vegaLite' }),
