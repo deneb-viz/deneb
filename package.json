@@ -104,8 +104,5 @@
         "webpack-dev-server": "^5.2.2",
         "webpack-merge": "^6.0.1",
         "zustand": "^4.5.5"
-    },
-    "peerDependencies": {
-        "monaco-editor": "0.45.0"
     }
 }

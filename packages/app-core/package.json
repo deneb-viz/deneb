@@ -56,7 +56,7 @@
         "d3-format": "^2.0.0",
         "d3-time-format": "^3.0.0",
         "fast-equals": "^5.3.3",
-        "monaco-editor": "0.45.0",
+        "monaco-editor": "0.46.0",
         "react-custom-scrollbars-2": "^4.4.0",
         "react-data-table-component": "^7.7.0",
         "react-dropzone": "^14.2.3",

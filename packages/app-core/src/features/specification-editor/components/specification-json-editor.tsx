@@ -144,15 +144,18 @@ export const SpecificationJsonEditor = ({
             setViewState(ref.current?.saveViewState());
         });
         // Tracking of cursor position for status bar
-        editor.onDidChangeCursorPosition((e) => {
-            const range = editor.getSelection();
-            setStatus({
-                ...status,
-                cursor: e.position,
-                selectedText:
-                    (range && editor.getModel()?.getValueInRange(range)) || ''
-            });
-        });
+        editor.onDidChangeCursorPosition(
+            (e: monaco.editor.ICursorPositionChangedEvent) => {
+                const range = editor.getSelection();
+                setStatus({
+                    ...status,
+                    cursor: e.position,
+                    selectedText:
+                        (range && editor.getModel()?.getValueInRange(range)) ||
+                        ''
+                });
+            }
+        );
         // Process context menu
         editor.onContextMenu(() => removeContextMenuItems(editor));
         addHyperlinkOverride(editor, launchUrl);
@@ -319,7 +322,7 @@ const setMonacoCompletionProvider = () => {
                     fields.push({
                         label: key,
                         insertText: key,
-                        detail: getSnippetFieldMetadata(field),
+                        documentation: getSnippetFieldMetadata(field),
                         kind: monaco.languages.CompletionItemKind.Field,
                         range,
                         sortText: `zzzzz__${key}`
