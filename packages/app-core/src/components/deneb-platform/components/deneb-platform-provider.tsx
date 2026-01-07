@@ -8,7 +8,11 @@ import { type DenebPlatformProviderProps } from '../types';
  */
 type DenebPlatformProviderContextProps = Omit<
     Required<DenebPlatformProviderProps>,
-    'tooltipHandler' | 'onRenderingStarted' | 'onRenderingFinished' | 'onRenderingError' | 'onCreateProject'
+    | 'tooltipHandler'
+    | 'onRenderingStarted'
+    | 'onRenderingFinished'
+    | 'onRenderingError'
+    | 'onCreateProject'
 > &
     Pick<
         DenebPlatformProviderProps,
@@ -23,6 +27,7 @@ export const DenebPlatformProviderContext =
     createContext<DenebPlatformProviderContextProps | null>(null);
 
 export const DenebPlatformProvider = ({
+    embedContainerSetByHost = false,
     isDownloadPermitted = true,
     onCreateProject,
     onRenderingError,
@@ -38,6 +43,7 @@ export const DenebPlatformProvider = ({
 }: DenebPlatformProviderProps & { children: ReactNode }) => {
     const platformContext = useMemo<DenebPlatformProviderContextProps>(
         () => ({
+            embedContainerSetByHost,
             isDownloadPermitted,
             onCreateProject,
             onRenderingError,
@@ -51,6 +57,7 @@ export const DenebPlatformProvider = ({
             launchUrl
         }),
         [
+            embedContainerSetByHost,
             launchUrl,
             onCreateProject,
             onRenderingError,

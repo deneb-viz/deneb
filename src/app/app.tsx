@@ -157,6 +157,7 @@ export const App = ({ host }: AppProps) => {
     return (
         <DenebProvider
             platformProvider={{
+                embedContainerSetByHost: true,
                 isDownloadPermitted,
                 onCreateProject: persistOnCreateFromTemplate,
                 onRenderingError,

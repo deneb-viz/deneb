@@ -1,4 +1,5 @@
 import { type TemplateExportProcessingState } from '@deneb-viz/json-processing/template-processing';
+import { EMBED_DEFAULTS } from '@deneb-viz/configuration';
 import {
     type ContainerViewport,
     type InterfaceType,
@@ -12,6 +13,12 @@ import { StateCreator } from 'zustand';
 import { getModalDialogRole } from '../lib/interface/state';
 
 export type InterfaceSliceProperties = {
+    /**
+     * Whether the embed container size is managed by the host application.
+     * When true, the host is responsible for setting embedViewport dimensions.
+     * When false, app-core will manage the container size internally.
+     */
+    embedContainerSetByHost: boolean;
     /**
      * The viewport definitions for the interface container.
      */
@@ -47,6 +54,7 @@ export type InterfaceSliceProperties = {
      */
     renderId: string;
     type: InterfaceType;
+    setEmbedContainerSetByHost: (setByHost: boolean) => void;
     setEmbedViewport: (viewport: ContainerViewport) => void;
     /**
      * Sets the export processing state.
@@ -89,7 +97,8 @@ export const createInterfaceSlice =
     > =>
     (set) => ({
         interface: {
-            embedViewport: null,
+            embedContainerSetByHost: false,
+            embedViewport: EMBED_DEFAULTS.viewport,
             exportProcessingState: 'None',
             isTokenizingSpec: false,
             isTrackingFields: false,
@@ -102,6 +111,17 @@ export const createInterfaceSlice =
                     (state) => handleGenerateRenderId(state),
                     false,
                     'interface.generateRenderId'
+                ),
+            setEmbedContainerSetByHost: (setByHost: boolean) =>
+                set(
+                    (state) => ({
+                        interface: {
+                            ...state.interface,
+                            embedContainerSetByHost: setByHost
+                        }
+                    }),
+                    false,
+                    'interface.setEmbedContainerSetByHost'
                 ),
             setEmbedViewport: (viewport: ContainerViewport) =>
                 set(

@@ -64,6 +64,13 @@ export const EDITOR_DEFAULTS = {
     wordWrap: true
 };
 
+export const EMBED_DEFAULTS = {
+    viewport: {
+        width: 450,
+        height: 300
+    }
+};
+
 /**
  * Default project values used when initializing a new project.
  */

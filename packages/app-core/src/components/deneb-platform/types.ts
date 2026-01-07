@@ -24,6 +24,12 @@ export type DenebPlatformProviderProps = {
      */
     isDownloadPermitted?: boolean;
     /**
+     * Whether the embed container size is managed by the host application.
+     * When true, the host is responsible for setting embedViewport dimensions.
+     * When false (default), app-core will manage the container size internally.
+     */
+    embedContainerSetByHost?: boolean;
+    /**
      * Callback invoked when Vega rendering fails with an error.
      */
     onRenderingError?: (error: Error) => void;
