@@ -12,18 +12,18 @@ import {
     getResolvedRowIdentities,
     resolveDatumFromItem
 } from './data-point';
-import { isDate, isObject } from '@deneb-viz/utils/inspection';
+import { isObject } from '@deneb-viz/utils/inspection';
 import {
     getPrunedObject,
     getSanitizedTooltipValue,
-    pickBy,
-    stringifyPruned
+    pickBy
 } from '@deneb-viz/utils/object';
 
 import { toDate, toNumber } from '@deneb-viz/utils/type-conversion';
 import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
 import { type DatasetFields } from '@deneb-viz/data-core/field';
 import { type VegaDatum } from '@deneb-viz/data-core/value';
+import { type AugmentedMetadataField } from '../dataset';
 
 /**
  * In order to create suitable output for tooltips and debugging tables. Because Power BI tooltips suppress standard
@@ -86,14 +86,14 @@ export const tooltipHandler = (
  */
 const getFieldsEligibleForAutoFormat = (
     tooltip: Record<string, unknown>,
-    fields: DatasetFields<powerbi.DataViewMetadataColumn>
+    fields: DatasetFields<AugmentedMetadataField>
 ): VegaDatum =>
     pickBy(tooltip, (v, k) => {
         const ttKeys = Object.keys(tooltip);
         const dsFields = getDatasetFieldsBySelectionKeys(fields, ttKeys);
         const mdKeys = Object.keys(dsFields);
         const isSourceFieldNumeric =
-            dsFields[k]?.hostMetadata?.type?.numeric || false;
+            dsFields[k]?.hostMetadata?.column?.type?.numeric || false;
         const isTooltipFieldNumeric =
             isSourceFieldNumeric && !isNaN(v as number);
         const isEligible =
@@ -108,7 +108,7 @@ const getFieldsEligibleForAutoFormat = (
  */
 const getObjectAsTooltipItems = (
     obj: Record<string, unknown>,
-    fields: DatasetFields<powerbi.DataViewMetadataColumn>,
+    fields: DatasetFields<AugmentedMetadataField>,
     autoFormatFields: VegaDatum
 ) => {
     const items: powerbi.extensibility.VisualTooltipDataItem[] = [];
@@ -119,16 +119,16 @@ const getObjectAsTooltipItems = (
     Object.entries(obj).forEach(([key, val]) => {
         const primitiveValue = val as powerbi.PrimitiveValue;
         const isValueDate =
-            autoFormatMetadata[key]?.hostMetadata?.type?.dateTime;
+            autoFormatMetadata[key]?.hostMetadata?.column?.type?.dateTime;
         const isValueNumeric =
-            autoFormatMetadata[key]?.hostMetadata?.type?.numeric;
+            autoFormatMetadata[key]?.hostMetadata?.column?.type?.numeric;
         const value =
             isValueDate || isValueNumeric
                 ? getFormattedValue(
                       isValueDate
                           ? toDate(primitiveValue)
                           : toNumber(primitiveValue),
-                      autoFormatMetadata[key]?.hostMetadata?.format
+                      autoFormatMetadata[key]?.hostMetadata?.column?.format
                   )
                 : getSanitizedTooltipValue(val, TOOLTIP_WHITESPACE_CHAR);
         items.push({

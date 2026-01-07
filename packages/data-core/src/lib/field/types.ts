@@ -29,10 +29,6 @@ export type DatasetField<T = object> = {
      */
     isHighlightComponent: boolean;
     /**
-     * Original dataView index (from categories or values), if we need it for other operations post assembly.
-     */
-    sourceIndex: number;
-    /**
      * Host-specific metadata that can be attached to the field for use by the host application and applied during
      * dataset construction.
      */

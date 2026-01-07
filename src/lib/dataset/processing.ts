@@ -278,7 +278,7 @@ export const getMappedDataset = (
                     } else {
                         selectionQueueBase.push({
                             type: 'category',
-                            column: dvCategories[f.sourceIndex]
+                            column: dvCategories[f.hostMetadata?.sourceIndex]
                         });
                     }
                 }

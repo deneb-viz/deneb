@@ -54,37 +54,30 @@ export const getDatumFieldMetadataFromDataView = (
  */
 export const getDatumFieldsFromMetadata = (
     fields: AugmentedMetadataField[]
-): DatasetFields<powerbi.DataViewMetadataColumn> => {
-    return fields.reduce<DatasetFields<powerbi.DataViewMetadataColumn>>(
-        (result, c) => {
-            const encodedName =
-                c.encodedName ?? getEncodedFieldName(c.column.displayName);
-            const isExcludedFromTemplate = isSourceExcludedFromTemplate(
-                c.source
-            );
-            result[`${encodedName}`] = {
-                ...{
-                    id: c.column.queryName ?? c.column.displayName ?? '',
-                    name: encodedName,
-                    isColumn: !c.column.isMeasure,
-                    isMeasure: c.column.isMeasure,
-                    isHighlightComponent: c.source === 'highlights',
-                    isExcludedFromTemplate,
-                    sourceIndex: c.sourceIndex,
-                    source: <DatasetFieldValueSource>c.source,
-                    hostMetadata: c.column,
-                    templateMetadata: isExcludedFromTemplate
-                        ? undefined
-                        : getResolvedVisualMetadataToDatasetField(
-                              c.column,
-                              encodedName
-                          )
-                }
-            };
-            return result;
-        },
-        {}
-    );
+): DatasetFields<AugmentedMetadataField> => {
+    return fields.reduce<DatasetFields<AugmentedMetadataField>>((result, c) => {
+        const encodedName =
+            c.encodedName ?? getEncodedFieldName(c.column.displayName);
+        const isExcludedFromTemplate = isSourceExcludedFromTemplate(c.source);
+        result[`${encodedName}`] = {
+            ...{
+                id: c.column.queryName ?? c.column.displayName ?? '',
+                name: encodedName,
+                isColumn: !c.column.isMeasure,
+                isMeasure: c.column.isMeasure,
+                isHighlightComponent: c.source === 'highlights',
+                isExcludedFromTemplate,
+                hostMetadata: c,
+                templateMetadata: isExcludedFromTemplate
+                    ? undefined
+                    : getResolvedVisualMetadataToDatasetField(
+                          c.column,
+                          encodedName
+                      )
+            }
+        };
+        return result;
+    }, {});
 };
 
 /**

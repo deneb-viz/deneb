@@ -6,6 +6,7 @@ import {
     type DataPointSelectionStatus
 } from '@deneb-viz/data-core/value';
 import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
+import { type AugmentedMetadataField } from '../dataset';
 
 /**
  * Options that can be supplied for advanced cross-filtering behavior.
@@ -76,7 +77,7 @@ export type CrossFilterTranslate = (
  * row number from a Vega datum.
  */
 export type InteractivityLookupDataset = {
-    fields: DatasetFields<powerbi.DataViewMetadataColumn>;
+    fields: DatasetFields<AugmentedMetadataField>;
     values: VegaDatum[];
 };
 
@@ -163,7 +164,7 @@ export type SelectorStatus = Map<number, DataPointSelectionStatus>;
  * Options that can be supplied to configure the Power BI tooltip handler.
  */
 export type TooltipHandlerOptions = {
-    fields: DatasetFields<powerbi.DataViewMetadataColumn>;
+    fields: DatasetFields<AugmentedMetadataField>;
     enabled: boolean;
     multiSelectDelay: number;
     values: VegaDatum[];

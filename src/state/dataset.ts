@@ -7,9 +7,10 @@ import { getUpdatedDatasetSelectors } from '../lib/dataset/processing';
 import { type DatasetFields } from '@deneb-viz/data-core/field';
 import { type VegaDatum } from '@deneb-viz/data-core/value';
 import { type SelectorStatus } from '../lib/interactivity';
+import { type AugmentedMetadataField } from '../lib/dataset';
 
 export type DatasetSlice = {
-    fields: DatasetFields<powerbi.DataViewMetadataColumn>;
+    fields: DatasetFields<AugmentedMetadataField>;
     hasDrilldown: boolean;
     hasHighlights: boolean;
     isFetchingAdditional: boolean;
@@ -23,7 +24,7 @@ export type DatasetSlice = {
 };
 
 export type SetDatasetPayload = {
-    fields: DatasetFields<powerbi.DataViewMetadataColumn>;
+    fields: DatasetFields<AugmentedMetadataField>;
     hasDrilldown: boolean;
     hasHighlights: boolean;
     rowsLoaded: number;
