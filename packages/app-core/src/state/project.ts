@@ -33,107 +33,6 @@ type ContentUpdateOptions = {
     logLevel?: number;
 };
 
-/**
- * Shared logic to parse spec/config and update related state (commands, debug, export metadata).
- * Called by both setContent and syncProjectData to ensure consistent behavior.
- */
-const getStateWithParsedSpec = (
-    state: StoreState,
-    updatedProject: DenebProject & {
-        __hasHydrated__: boolean;
-        __isInitialized__: boolean;
-    },
-    options: ContentUpdateOptions
-): Pick<StoreState, 'commands' | 'debug' | 'export' | 'specification'> => {
-    const newSpec = options.spec ?? state.project.spec;
-    const newConfig = options.config ?? state.project.config;
-
-    // Check if parsing is needed
-    const specChanged = newSpec !== state.project.spec;
-    const configChanged = newConfig !== state.project.config;
-    const needsParsing = specChanged || configChanged;
-
-    logDebug('getStateWithParsedSpec - change detection', {
-        specChanged,
-        configChanged,
-        needsParsing
-    });
-
-    // Parse spec if needed
-    const prevSpecOptions = getSpecificationParseOptions(state);
-    const nextSpecOptions: typeof prevSpecOptions = {
-        ...prevSpecOptions,
-        config: newConfig,
-        spec: newSpec,
-        provider: (options.provider ?? updatedProject.provider) as SpecProvider,
-        logLevel: options.logLevel ?? updatedProject.logLevel,
-        viewportHeight: state.interface.embedViewport?.height ?? 0,
-        viewportWidth: state.interface.embedViewport?.width ?? 0
-    };
-
-    const spec = needsParsing
-        ? getParsedSpec(state.specification, prevSpecOptions, nextSpecOptions)
-        : state.specification;
-
-    logDebug('getStateWithParsedSpec - parse result', {
-        specStatus: spec.status,
-        needsParsing
-    });
-
-    // Update commands based on specification state
-    const zoomOtherCommandTest: ZoomOtherCommandTestOptions = {
-        specification: spec
-    };
-    const zoomLevelCommandTest: ZoomLevelCommandTestOptions = {
-        value: state.editorZoomLevel,
-        specification: spec
-    };
-    const exportSpecCommandTest: ExportSpecCommandTestOptions = {
-        editorIsDirty:
-            (state.editor.stagedSpec !== null &&
-                state.editor.stagedSpec !== updatedProject.spec) ||
-            (state.editor.stagedConfig !== null &&
-                state.editor.stagedConfig !== updatedProject.config),
-        specification: spec
-    };
-
-    // Update export metadata
-    const exportMetadata = getUpdatedExportMetadata(
-        state.export.metadata as UsermetaTemplate,
-        {
-            config:
-                spec.status === 'valid'
-                    ? updatedProject.config
-                    : state.export.metadata?.config,
-            provider: updatedProject.provider as SpecProvider,
-            providerVersion: updatedProject.providerVersion,
-            interactivity: updatedProject.interactivity
-        }
-    );
-
-    return {
-        commands: {
-            ...state.commands,
-            exportSpecification: isExportSpecCommandEnabled(
-                exportSpecCommandTest
-            ),
-            zoomFit: isZoomOtherCommandsEnabled(zoomOtherCommandTest),
-            zoomIn: isZoomInCommandEnabled(zoomLevelCommandTest),
-            zoomOut: isZoomOutCommandEnabled(zoomLevelCommandTest),
-            zoomReset: isZoomOtherCommandsEnabled(zoomLevelCommandTest)
-        },
-        debug: { ...state.debug, logAttention: spec.errors.length > 0 },
-        export: {
-            ...state.export,
-            metadata: exportMetadata
-        },
-        specification: {
-            ...state.specification,
-            ...spec
-        }
-    };
-};
-
 export type ProjectSliceProperties = SyncableSlice &
     DenebProject & {
         __isInitialized__: boolean;
@@ -185,8 +84,10 @@ export const createProjectSlice =
             __isInitialized__: false,
             config: PROJECT_DEFAULTS.config,
             logLevel: PROJECT_DEFAULTS.logLevel,
-            provider: undefined,
-            providerVersion: undefined,
+            provider: PROJECT_DEFAULTS.provider as SpecProvider,
+            providerVersion: getVegaVersion(
+                PROJECT_DEFAULTS.provider as SpecProvider
+            ),
             renderMode: PROJECT_DEFAULTS.renderMode as SpecRenderMode,
             spec: PROJECT_DEFAULTS.spec,
             initializeFromTemplate: (
@@ -370,5 +271,106 @@ const handleSyncProjectData = (
             modalDialogRole
         },
         project: updatedProject
+    };
+};
+
+/**
+ * Shared logic to parse spec/config and update related state (commands, debug, export metadata).
+ * Called by both setContent and syncProjectData to ensure consistent behavior.
+ */
+const getStateWithParsedSpec = (
+    state: StoreState,
+    updatedProject: DenebProject & {
+        __hasHydrated__: boolean;
+        __isInitialized__: boolean;
+    },
+    options: ContentUpdateOptions
+): Pick<StoreState, 'commands' | 'debug' | 'export' | 'specification'> => {
+    const newSpec = options.spec ?? state.project.spec;
+    const newConfig = options.config ?? state.project.config;
+
+    // Check if parsing is needed
+    const specChanged = newSpec !== state.project.spec;
+    const configChanged = newConfig !== state.project.config;
+    const needsParsing = specChanged || configChanged;
+
+    logDebug('getStateWithParsedSpec - change detection', {
+        specChanged,
+        configChanged,
+        needsParsing
+    });
+
+    // Parse spec if needed
+    const prevSpecOptions = getSpecificationParseOptions(state);
+    const nextSpecOptions: typeof prevSpecOptions = {
+        ...prevSpecOptions,
+        config: newConfig,
+        spec: newSpec,
+        provider: (options.provider ?? updatedProject.provider) as SpecProvider,
+        logLevel: options.logLevel ?? updatedProject.logLevel,
+        viewportHeight: state.interface.embedViewport?.height ?? 0,
+        viewportWidth: state.interface.embedViewport?.width ?? 0
+    };
+
+    const spec = needsParsing
+        ? getParsedSpec(state.specification, prevSpecOptions, nextSpecOptions)
+        : state.specification;
+
+    logDebug('getStateWithParsedSpec - parse result', {
+        specStatus: spec.status,
+        needsParsing
+    });
+
+    // Update commands based on specification state
+    const zoomOtherCommandTest: ZoomOtherCommandTestOptions = {
+        specification: spec
+    };
+    const zoomLevelCommandTest: ZoomLevelCommandTestOptions = {
+        value: state.editorZoomLevel,
+        specification: spec
+    };
+    const exportSpecCommandTest: ExportSpecCommandTestOptions = {
+        editorIsDirty:
+            (state.editor.stagedSpec !== null &&
+                state.editor.stagedSpec !== updatedProject.spec) ||
+            (state.editor.stagedConfig !== null &&
+                state.editor.stagedConfig !== updatedProject.config),
+        specification: spec
+    };
+
+    // Update export metadata
+    const exportMetadata = getUpdatedExportMetadata(
+        state.export.metadata as UsermetaTemplate,
+        {
+            config:
+                spec.status === 'valid'
+                    ? updatedProject.config
+                    : state.export.metadata?.config,
+            provider: updatedProject.provider as SpecProvider,
+            providerVersion: updatedProject.providerVersion,
+            interactivity: updatedProject.interactivity
+        }
+    );
+
+    return {
+        commands: {
+            ...state.commands,
+            exportSpecification: isExportSpecCommandEnabled(
+                exportSpecCommandTest
+            ),
+            zoomFit: isZoomOtherCommandsEnabled(zoomOtherCommandTest),
+            zoomIn: isZoomInCommandEnabled(zoomLevelCommandTest),
+            zoomOut: isZoomOutCommandEnabled(zoomLevelCommandTest),
+            zoomReset: isZoomOtherCommandsEnabled(zoomLevelCommandTest)
+        },
+        debug: { ...state.debug, logAttention: spec.errors.length > 0 },
+        export: {
+            ...state.export,
+            metadata: exportMetadata
+        },
+        specification: {
+            ...state.specification,
+            ...spec
+        }
     };
 };
