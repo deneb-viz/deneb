@@ -1,0 +1,39 @@
+{
+    "name": "@deneb-viz/web-client-sample",
+    "version": "0.1.0",
+    "author": "Deneb contributors",
+    "description": "Sample web client integration for Deneb.",
+    "private": true,
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/deneb-viz/deneb.git"
+    },
+    "packageManager": "npm@10.3.0",
+    "type": "module",
+    "scripts": {
+        "build": "tsc -b && vite build",
+        "clean": "rimraf dist",
+        "dev": "vite",
+        "preview": "vite preview",
+        "typecheck": "tsc --noEmit",
+        "eslint": "eslint ."
+    },
+    "dependencies": {
+        "@deneb-viz/app-core": "*",
+        "react": "^19.2.0",
+        "react-dom": "^19.2.0",
+        "vega": "^6.2.0",
+        "vega-lite": "^6.4.1"
+    },
+    "devDependencies": {
+        "@deneb-viz/eslint-config": "*",
+        "@deneb-viz/typescript-config": "*",
+        "@types/react": "^19.2.0",
+        "@types/react-dom": "^19.2.0",
+        "@vitejs/plugin-react": "^4.5.2",
+        "rimraf": "^6.0.1",
+        "typescript": "^5.7.3",
+        "vite": "^7.0.0"
+    }
+}
