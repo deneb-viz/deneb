@@ -1,20 +1,20 @@
-import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import {
+    getVegaVersion,
+    type SpecProvider
+} from '@deneb-viz/vega-runtime/embed';
 import { VisualFormattingSettingsModel } from './model';
 import {
     type VersionChangeDirection,
     type VersionComparator,
     type VersionInformation
 } from '@deneb-viz/utils/versioning';
-import {
-    APPLICATION_INFORMATION_CONFIGURATION,
-    PROJECT_DEFAULTS,
-    PROVIDER_VERSION_CONFIGURATION
-} from '@deneb-viz/configuration';
+import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { type PersistenceProperty } from './types';
 import { persistProperties, resolveObjectProperties } from './persist';
 import { getDenebState } from '@deneb-viz/app-core';
 import { getDenebVisualState } from '../../state';
+import { APPLICATION_VERSION } from '../application';
 
 /**
  * Current visual and provider information
@@ -30,9 +30,9 @@ const getCurrentVersionInfo = (
         }
     } = visualSettings;
     return {
-        denebVersion: APPLICATION_INFORMATION_CONFIGURATION.version,
+        denebVersion: APPLICATION_VERSION,
         provider: provider as SpecProvider,
-        providerVersion: PROVIDER_VERSION_CONFIGURATION[provider]
+        providerVersion: getVegaVersion(provider as SpecProvider)
     };
 };
 
@@ -224,7 +224,7 @@ const migrateUnversionedSpec = (provider: SpecProvider) => {
                 properties: [
                     {
                         name: 'version',
-                        value: PROVIDER_VERSION_CONFIGURATION[provider]
+                        value: getVegaVersion(provider)
                     }
                 ]
             }
@@ -250,7 +250,7 @@ const migrateWithNoChanges = (provider: SpecProvider) => {
                 properties: [
                     {
                         name: 'version',
-                        value: PROVIDER_VERSION_CONFIGURATION[provider]
+                        value: getVegaVersion(provider)
                     }
                 ]
             }
@@ -263,5 +263,5 @@ const migrateWithNoChanges = (provider: SpecProvider) => {
  */
 const getDenebVersionProperty = (): PersistenceProperty => ({
     name: 'version',
-    value: APPLICATION_INFORMATION_CONFIGURATION.version
+    value: APPLICATION_VERSION
 });

@@ -32,7 +32,6 @@ const DRY_RUN =
 
 // Canonical fields we want to keep in sync
 const FIELDS: (keyof PackageJson)[] = [
-    'version',
     'author',
     'license',
     'repository',
@@ -57,25 +56,6 @@ function differ(a: any, b: any) {
 async function main() {
     const rootPkgPath = path.join(ROOT, 'package.json');
     const rootPkg = await readJson(rootPkgPath);
-    // Derive canonical version from pbiviz.json if requested
-    let pbivizVersionShort: string | undefined;
-    if (FIELDS.includes('version')) {
-        try {
-            const pbivizRaw = (await readJson(
-                path.join(ROOT, 'pbiviz.json')
-            )) as any;
-            const fullVersion: string | undefined = pbivizRaw?.visual?.version;
-            if (fullVersion) {
-                const segments = fullVersion.split('.');
-                pbivizVersionShort = segments.slice(0, 3).join('.');
-            }
-        } catch (e) {
-            console.warn(
-                '[sync] Unable to read pbiviz.json for version field:',
-                (e as Error).message
-            );
-        }
-    }
 
     const entries = await fs.readdir(PACKAGES_DIR, { withFileTypes: true });
     const packageDirs = entries
@@ -91,14 +71,9 @@ async function main() {
             const changedFields: string[] = [];
             for (const field of FIELDS) {
                 const canonicalRoot = (rootPkg as any)[field];
-                // Special handling: version comes from pbiviz.json, not root package.json
-                const effectiveCanonical =
-                    field === 'version'
-                        ? (pbivizVersionShort ?? canonicalRoot)
-                        : canonicalRoot;
-                if (effectiveCanonical === undefined) continue; // nothing to sync
-                if (differ(pkg[field], effectiveCanonical)) {
-                    (pkg as any)[field] = effectiveCanonical;
+                if (canonicalRoot === undefined) continue; // nothing to sync
+                if (differ(pkg[field], canonicalRoot)) {
+                    (pkg as any)[field] = canonicalRoot;
                     modified = true;
                     changedFields.push(String(field));
                 }

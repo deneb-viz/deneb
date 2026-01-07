@@ -3,8 +3,8 @@ import { Caption1 } from '@fluentui/react-components';
 
 import { useStatusStyles } from '.';
 import {
-    APPLICATION_INFORMATION_CONFIGURATION,
-    PROVIDER_RESOURCE_CONFIGURATION
+    PROVIDER_RESOURCE_CONFIGURATION,
+    WEBSITE_URL
 } from '@deneb-viz/configuration';
 import { Hyperlink, useDenebState } from '@deneb-viz/app-core';
 
@@ -18,9 +18,7 @@ export const LandingPageLearnMore: React.FC = () => {
         <div>
             <ul className={classes.landingUl}>
                 <li className={classes.landingLi}>
-                    <Hyperlink
-                        href={APPLICATION_INFORMATION_CONFIGURATION.supportUrl}
-                    >
+                    <Hyperlink href={WEBSITE_URL}>
                         <Caption1>{`${translate(
                             'PowerBI_Landing_Resources_Deneb'
                         )} ${translate(

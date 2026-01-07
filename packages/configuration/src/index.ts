@@ -1,13 +1,3 @@
-import { devDependencies, visual } from './generated';
-
-/**
- * This is an object that contains the visual's metadata. This is used to handle places we need to display this
- * information in the UI, as well as for versioning and other purposes.
- * @remarks
- * POTENTIAL TECH DEBT
- */
-export const APPLICATION_INFORMATION_CONFIGURATION = visual;
-
 /**
  * Default values for the data table in the debug pane.
  */
@@ -85,6 +75,8 @@ export const PROJECT_DEFAULTS = {
     spec: '{}'
 };
 
+export const WEBSITE_URL = 'https://deneb-viz.github.io/';
+
 /**
  * Log level configuration for Vega logging and UI representation.
  */
@@ -144,18 +136,6 @@ export const PROVIDER_RESOURCE_CONFIGURATION = {
         examplesUrl: 'https://vega.github.io/vega-lite/examples/',
         schemaUrl: 'https://vega.github.io/schema/vega-lite/v5.json'
     }
-};
-
-/**
- * Provider versions, sourced from the `package.json` file. These are used to track which version of Vega or Vega-Lite
- * we're currently using, whether this may have changed between visual versions, and potentially perform migrations
- * if necessary.
- * @remarks
- * POTENTIAL TECH DEBT
- */
-export const PROVIDER_VERSION_CONFIGURATION = {
-    vega: devDependencies['vega'],
-    vegaLite: devDependencies['vega-lite']
 };
 
 /**

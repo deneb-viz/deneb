@@ -1,7 +1,7 @@
 import {
-    APPLICATION_INFORMATION_CONFIGURATION,
     PROJECT_DEFAULTS,
-    VISUAL_PREVIEW_ZOOM_CONFIGURATION
+    VISUAL_PREVIEW_ZOOM_CONFIGURATION,
+    WEBSITE_URL
 } from '@deneb-viz/configuration';
 import { getDenebState } from '../../state';
 import { type DebugPaneRole, type EditorPaneRole } from '../interface';
@@ -10,6 +10,7 @@ import { type SpecificationEditorRefs } from '../../features/specification-edito
 import { monaco } from '../../components/code-editor/monaco-integration';
 import { HOTKEY_BINDINGS } from './constants';
 import { getZoomToFitScale } from '../interface/layout';
+import {} from '../../../package.json';
 
 /**
  * Executes a command if:
@@ -184,7 +185,7 @@ export const handleOpenRemapDialog = () => {
  */
 export const handleOpenWebsite = (launchUrl: (url: string) => void) => {
     executeCommand('helpSite', () => {
-        launchUrl(APPLICATION_INFORMATION_CONFIGURATION.supportUrl);
+        launchUrl(WEBSITE_URL);
     });
 };
 

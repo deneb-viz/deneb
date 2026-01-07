@@ -6,20 +6,20 @@ import {
     getNewTemplateMetadata,
     getTemplateMetadata
 } from '@deneb-viz/json-processing';
-import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import {
+    getVegaVersion,
+    type SpecProvider
+} from '@deneb-viz/vega-runtime/embed';
 import {
     type UsermetaInformation,
     type UsermetaTemplate
 } from '@deneb-viz/template-usermeta';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
-import {
-    APPLICATION_INFORMATION_CONFIGURATION,
-    PROVIDER_VERSION_CONFIGURATION
-} from '@deneb-viz/configuration';
 import { getBase64ImageWithMime } from '@deneb-viz/utils/base64';
 import { type DenebTemplateCatalog } from './types';
 import { VEGA_INCLUDED_TEMPLATES } from './vega';
 import { VEGA_LITE_INCLUDED_TEMPLATES } from './vega-lite';
+import { APPLICATION_VERSION } from '../lib/application';
 
 /**
  * Standard dataset binding for specifications.
@@ -45,9 +45,9 @@ export const getNewIncludedTemplateMetadata = (
     previewImageKey?: keyof typeof THUMBNAIL_IMAGES
 ): Partial<UsermetaTemplate> => {
     const metadata = getNewTemplateMetadata({
-        buildVersion: APPLICATION_INFORMATION_CONFIGURATION.version,
+        buildVersion: APPLICATION_VERSION,
         provider,
-        providerVersion: PROVIDER_VERSION_CONFIGURATION[provider]
+        providerVersion: getVegaVersion(provider)
     });
     return {
         ...metadata,

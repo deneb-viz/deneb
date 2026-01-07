@@ -1,10 +1,8 @@
 import { type StateCreator } from 'zustand';
 import { type SyncableSlice, type StoreState } from './state';
+import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 import {
-    PROJECT_DEFAULTS,
-    PROVIDER_VERSION_CONFIGURATION
-} from '@deneb-viz/configuration';
-import {
+    getVegaVersion,
     type SpecProvider,
     type SpecRenderMode
 } from '@deneb-viz/vega-runtime/embed';
@@ -196,7 +194,7 @@ export const createProjectSlice =
             ) => {
                 const provider = payload.provider;
                 const providerVersion = provider
-                    ? PROVIDER_VERSION_CONFIGURATION[provider]
+                    ? getVegaVersion(provider)
                     : undefined;
                 const renderMode =
                     payload.renderMode ??
@@ -291,7 +289,7 @@ export const createProjectSlice =
                             ...state.project,
                             provider,
                             providerVersion: provider
-                                ? PROVIDER_VERSION_CONFIGURATION[provider]
+                                ? getVegaVersion(provider)
                                 : undefined
                         }
                     }),

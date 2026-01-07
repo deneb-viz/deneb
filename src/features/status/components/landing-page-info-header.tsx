@@ -8,7 +8,10 @@ import {
 
 import { useStatusStyles } from '.';
 import { StatusStackItem } from './status-stack-item';
-import { APPLICATION_INFORMATION_CONFIGURATION } from '@deneb-viz/configuration';
+import {
+    APPLICATION_DESCRIPTION,
+    APPLICATION_VERSION
+} from '../../../lib/application';
 
 const useInfoHeaderStyles = makeStyles({
     nameVersion: {
@@ -41,16 +44,10 @@ export const LandingPageInfoHeader = () => {
                                 className={`${nameClasses.name} visual-name-image image`}
                             />
                             <div>
-                                <Caption2>
-                                    {
-                                        APPLICATION_INFORMATION_CONFIGURATION.version
-                                    }
-                                </Caption2>
+                                <Caption2>{APPLICATION_VERSION}</Caption2>
                             </div>
                         </div>
-                        <Caption1>
-                            {APPLICATION_INFORMATION_CONFIGURATION.description}
-                        </Caption1>
+                        <Caption1>{APPLICATION_DESCRIPTION}</Caption1>
                     </div>
                 </div>
             </StatusStackItem>

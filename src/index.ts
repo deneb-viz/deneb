@@ -19,7 +19,6 @@ import {
     getVisualFormattingService
 } from './lib/persistence';
 import { VisualHostServices } from './lib/host';
-import { APPLICATION_INFORMATION_CONFIGURATION } from '@deneb-viz/configuration';
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
 import {
     logDebug,
@@ -49,6 +48,7 @@ import {
     createCrossFilterApplyHandler,
     createCrossFilterClearHandler
 } from './lib/vega-embed';
+import { APPLICATION_NAME, APPLICATION_VERSION } from './lib/application';
 
 /**
  * Centralize/report developer mode from environment.
@@ -59,8 +59,8 @@ const IS_DEVELOPER_MODE = toBoolean(process.env.PBIVIZ_DEV_MODE);
  * Run to indicate that the visual has started.
  */
 IS_DEVELOPER_MODE && console.clear();
-logHeading(`${APPLICATION_INFORMATION_CONFIGURATION?.displayName}`);
-logHeading(`Version: ${APPLICATION_INFORMATION_CONFIGURATION?.version}`, 12);
+logHeading(`${APPLICATION_NAME}`);
+logHeading(`Version: ${APPLICATION_VERSION}`, 12);
 logDebug(`Developer Mode: ${IS_DEVELOPER_MODE}`);
 
 export class Deneb implements IVisual {

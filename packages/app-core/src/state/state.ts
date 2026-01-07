@@ -29,7 +29,7 @@ import {
     type VisualRenderSlice
 } from './visual-render';
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
-import { APPLICATION_INFORMATION_CONFIGURATION } from '@deneb-viz/configuration';
+import { APPLICATION_VERSION } from '../lib/application';
 
 export type StoreState = CommandsSlice &
     CreateSliceState &
@@ -90,7 +90,7 @@ export const createDenebState = (dependencies: StateDependencies) =>
  * TODO: eventually move to dependency injection pattern.
  */
 const dependencies: StateDependencies = {
-    applicationVersion: APPLICATION_INFORMATION_CONFIGURATION.version
+    applicationVersion: APPLICATION_VERSION
 };
 
 const useDenebState = createDenebState(dependencies);
