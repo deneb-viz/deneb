@@ -5,6 +5,7 @@ import { type InterfaceType } from '../lib';
 import { useDenebState } from '../state';
 import { Editor } from './editor/components/editor';
 import { Viewer } from './viewer';
+import { VegaPatternFillServices } from '@deneb-viz/vega-runtime/pattern-fill';
 
 export type AppProps = {
     type: InterfaceType;
@@ -23,10 +24,11 @@ export const DenebApp = ({ type }: AppProps) => {
         })
     );
 
-    // Sync interface type and platform configuration to state
+    // Sync interface type and platform configuration to state, and bind services
     useLayoutEffect(() => {
         setInterfaceType(type);
         setEmbedContainerSetByHost(embedContainerSetByHost);
+        VegaPatternFillServices.bind();
     }, [
         type,
         embedContainerSetByHost,

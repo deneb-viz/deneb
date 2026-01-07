@@ -27,7 +27,6 @@ import {
     logTimeEnd,
     logTimeStart
 } from '@deneb-viz/utils/logging';
-import { VegaPatternFillServices } from '@deneb-viz/vega-runtime/pattern-fill';
 import { InteractivityManager } from './lib/interactivity';
 import {
     getDenebState,
@@ -93,7 +92,6 @@ export class Deneb implements IVisual {
                 locale: host.locale as I18nLocale,
                 translationExtensions: [I18N_TRANSLATIONS]
             });
-            VegaPatternFillServices.bind();
             VegaExtensibilityServices.bind(host.colorPalette);
             VegaExtensibilityServices.setExpressionHandlers({
                 onCrossFilterClear: createCrossFilterClearHandler(),
