@@ -200,22 +200,36 @@ export const createProjectSlice =
                     payload.renderMode ??
                     (PROJECT_DEFAULTS.renderMode as SpecRenderMode);
                 set(
-                    (state) => ({
-                        editorSelectedOperation: 'Spec',
-                        interface: {
-                            ...state.interface,
-                            modalDialogRole: 'None'
-                        },
-                        project: {
+                    (state) => {
+                        const updatedProject = {
                             ...state.project,
                             spec: payload.spec,
                             config: payload.config,
                             provider,
                             providerVersion,
                             renderMode,
+                            __hasHydrated__: state.project.__hasHydrated__,
                             __isInitialized__: true
-                        }
-                    }),
+                        };
+                        const parsedState = getStateWithParsedSpec(
+                            state,
+                            updatedProject,
+                            {
+                                spec: payload.spec,
+                                config: payload.config,
+                                provider
+                            }
+                        );
+                        return {
+                            ...parsedState,
+                            editorSelectedOperation: 'Spec',
+                            interface: {
+                                ...state.interface,
+                                modalDialogRole: 'None'
+                            },
+                            project: updatedProject
+                        };
+                    },
                     false,
                     'project.initializeFromTemplate'
                 );
