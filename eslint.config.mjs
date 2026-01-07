@@ -9,6 +9,7 @@ export default [
             '.vscode/**',
             '.tmp/**',
             'packages/**',
+            'apps/**',
             'bin/**'
         ]
     }

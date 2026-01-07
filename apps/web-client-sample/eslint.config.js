@@ -1,3 +1,8 @@
-import baseConfig from '@deneb-viz/eslint-config/base.js';
+import { config } from '@deneb-viz/eslint-config/base.js';
 
-export default [...baseConfig];
+export default [
+    {
+        ignores: ['dist/**']
+    },
+    ...config
+];
