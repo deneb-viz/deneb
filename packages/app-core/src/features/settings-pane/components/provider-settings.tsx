@@ -36,7 +36,7 @@ export const ProviderSettings = () => {
                     layout='horizontal'
                     aria-labelledby={labelId}
                     onChange={onChange}
-                    value={provider}
+                    value={provider ?? ''}
                 >
                     <Radio
                         value='vegaLite'

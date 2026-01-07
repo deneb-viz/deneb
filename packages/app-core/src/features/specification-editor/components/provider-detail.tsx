@@ -22,26 +22,29 @@ export const ProviderDetail = () => {
         provider: state.project.provider,
         translate: state.i18n.translate
     }));
-    if (provider) {
-        const providerName = translate(getVegaProviderI18n(provider));
-        const version = getVegaVersion(provider);
-        const classes = useProviderStyles();
-        const [ref, setRef] = useState<HTMLElement | null>(null);
-        logRender('ProviderDetail');
-        return (
-            <div className={classes.root}>
-                <Tooltip
-                    content={translate('Tooltip_Current_Provider')}
-                    relationship='label'
-                    withArrow
-                    mountNode={ref}
-                >
-                    <Caption1 className={classes.caption}>
-                        {providerName} {version}
-                    </Caption1>
-                </Tooltip>
-                <TooltipCustomMount setRef={setRef} />
-            </div>
-        );
+    const classes = useProviderStyles();
+    const [ref, setRef] = useState<HTMLElement | null>(null);
+
+    if (!provider) {
+        return null;
     }
+
+    const providerName = translate(getVegaProviderI18n(provider));
+    const version = getVegaVersion(provider);
+    logRender('ProviderDetail');
+    return (
+        <div className={classes.root}>
+            <Tooltip
+                content={translate('Tooltip_Current_Provider')}
+                relationship='label'
+                withArrow
+                mountNode={ref}
+            >
+                <Caption1 className={classes.caption}>
+                    {providerName} {version}
+                </Caption1>
+            </Tooltip>
+            <TooltipCustomMount setRef={setRef} />
+        </div>
+    );
 };
