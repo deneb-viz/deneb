@@ -270,7 +270,7 @@ export const getMappedDataset = (
             for (const key in fields) {
                 const f = fields[key];
                 if (f && !f.isExcludedFromTemplate) {
-                    if (f.isMeasure) {
+                    if (f.hostMetadata?.column.isMeasure) {
                         selectionQueueBase.push({
                             type: 'measure',
                             queryName: f.id

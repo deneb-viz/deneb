@@ -23,6 +23,7 @@ import { updateFieldTracking } from '../../../lib/field-processing';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 import { DatasetField } from '@deneb-viz/data-core/field';
 import { EDITOR_DEFAULTS } from '@deneb-viz/configuration';
+import { getFieldDocumentationByName } from '../../../lib/dataset';
 
 /**
  * Initialize Monaco editor on first mount. This is deferred from module load time to only run when the editor is
@@ -402,17 +403,7 @@ const setMonacoKeyBindingRules = () => {
  * something else.
  */
 const getSnippetFieldMetadata = (field: DatasetField) => {
-    const { translate } = getDenebState().i18n;
-    switch (true) {
-        case field.isHighlightComponent:
-            return translate('Text_AutoComplete_Meta_Highlight');
-        case field.isMeasure:
-            return translate('Text_AutoComplete_Meta_Measure');
-        case field.isColumn:
-            return translate('Text_AutoComplete_Meta_Column');
-        default:
-            return '';
-    }
+    return getFieldDocumentationByName(field.name);
 };
 
 /**

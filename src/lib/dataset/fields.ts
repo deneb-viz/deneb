@@ -63,9 +63,6 @@ export const getDatumFieldsFromMetadata = (
             ...{
                 id: c.column.queryName ?? c.column.displayName ?? '',
                 name: encodedName,
-                isColumn: !c.column.isMeasure,
-                isMeasure: c.column.isMeasure,
-                isHighlightComponent: c.source === 'highlights',
                 isExcludedFromTemplate,
                 hostMetadata: c,
                 templateMetadata: isExcludedFromTemplate

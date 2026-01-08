@@ -135,7 +135,7 @@ const getValuesForField = (
     return getMatchedValues(data, {
         fields: pickBy(
             options.fields,
-            (md) => !md.isMeasure
+            (md) => !md.hostMetadata?.column.isMeasure
         ) as DatasetFields<AugmentedMetadataField>,
         values: options.values
     });

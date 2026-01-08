@@ -85,11 +85,11 @@ const getCellCrossFilterTooltip = (value: DataPointSelectionStatus) => {
     const { translate } = getDenebState().i18n;
     switch (value) {
         case 'neutral':
-            return translate('Pivot_Debug_SelectedNeutral');
+            return translate('Text_Dataset_FieldSelectedNeutral');
         case 'on':
-            return translate('Pivot_Debug_SelectedOn');
+            return translate('Text_Dataset_FieldSelectedOn');
         case 'off':
-            return translate('Pivot_Debug_SelectedOff');
+            return translate('Text_Dataset_FieldSelectedOff');
     }
 };
 
@@ -101,11 +101,11 @@ const getCellHighlightComparatorStatus = (value: DataPointSelectionStatus) => {
     const { translate } = getDenebState().i18n;
     switch (value) {
         case 'neutral':
-            return translate('Pivot_Debug_HighlightStatusNeutral');
+            return translate('Text_Dataset_FieldHighlightStatusNeutral');
         case 'on':
-            return translate('Pivot_Debug_HighlightStatusOn');
+            return translate('Text_Dataset_FieldHighlightStatusOn');
         case 'off':
-            return translate('Pivot_Debug_HighlightStatusOff');
+            return translate('Text_Dataset_FieldHighlightStatusOff');
     }
 };
 
@@ -119,13 +119,13 @@ const getCellHighlightComparatorTooltip = (
     const { translate } = getDenebState().i18n;
     switch (value) {
         case 'eq':
-            return translate('Pivot_Debug_HighlightComparatorEq');
+            return translate('Text_Dataset_FieldHighlightComparatorEq');
         case 'lt':
-            return translate('Pivot_Debug_HighlightComparatorLt');
+            return translate('Text_Dataset_FieldHighlightComparatorLt');
         case 'gt':
-            return translate('Pivot_Debug_HighlightComparatorGt');
+            return translate('Text_Dataset_FieldHighlightComparatorGt');
         case 'neq':
-            return translate('Pivot_Debug_HighlightComparatorNeq');
+            return translate('Text_Dataset_FieldHighlightComparatorNeq');
     }
 };
 
