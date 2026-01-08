@@ -31,32 +31,72 @@ export const VegaViewServices = {
         VegaViewServices.getAllSignals()[name] !== undefined,
     /**
      * Get all datasets and their content from the current Vega view (for the
-     * dataset table). Returns an empty object if nothing is available.
+     * dataset table). Returns an empty object if nothing is available or if an error occurs.
      */
-    getAllData: () =>
-        view?.getState({
-            data: truthy,
-            signals: falsy,
-            recurse: true
-        })?.data || {},
+    getAllData: () => {
+        try {
+            return (
+                view?.getState({
+                    data: truthy,
+                    signals: falsy,
+                    recurse: true
+                })?.data || {}
+            );
+        } catch (error) {
+            logDebug('VegaViewServices.getAllData: Error getting data', {
+                error
+            });
+            return {};
+        }
+    },
     /**
      * Get all signals and values from the current Vega view (for the signals
-     * table). Returns an empty object if nothing is available.
+     * table). Returns an empty object if nothing is available or if an error occurs.
      */
-    getAllSignals: (): Record<string, unknown> =>
-        view?.getState({
-            data: falsy,
-            signals: truthy,
-            recurse: true
-        })?.signals || {},
+    getAllSignals: (): Record<string, unknown> => {
+        try {
+            return (
+                view?.getState({
+                    data: falsy,
+                    signals: truthy,
+                    recurse: true
+                })?.signals || {}
+            );
+        } catch (error) {
+            logDebug('VegaViewServices.getAllSignals: Error getting signals', {
+                error
+            });
+            return {};
+        }
+    },
     /**
-     * Get specified data stream from view by name.
+     * Get specified data stream from view by name. Returns undefined if an error occurs.
      */
-    getDataByName: (name: string): VegaDatum[] | undefined => view?.data(name),
+    getDataByName: (name: string): VegaDatum[] | undefined => {
+        try {
+            return view?.data(name);
+        } catch (error) {
+            logDebug(
+                `VegaViewServices.getDataByName: Error getting data ${name}`,
+                { error }
+            );
+            return undefined;
+        }
+    },
     /**
-     * Get specified signal from view by name.
+     * Get specified signal from view by name. Returns undefined if an error occurs.
      */
-    getSignalByName: (name: string) => view?.signal(name),
+    getSignalByName: (name: string) => {
+        try {
+            return view?.signal(name);
+        } catch (error) {
+            logDebug(
+                `VegaViewServices.getSignalByName: Error getting signal ${name}`,
+                { error }
+            );
+            return undefined;
+        }
+    },
     /**
      * Set specified signal in view by name. f it does not exist, it will not be set.
      */

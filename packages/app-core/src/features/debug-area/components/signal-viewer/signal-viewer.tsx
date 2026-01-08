@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { TableColumn } from 'react-data-table-component';
 
 import { logRender } from '@deneb-viz/utils/logging';
-import { stringifyPruned } from '@deneb-viz/utils/object';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 import { DataTableViewer } from '../data-table/data-table';
 import { NoDataMessage } from '../no-data-message';
@@ -54,17 +53,15 @@ export const SignalViewer = ({ renderId }: SignalViewerProps) => {
 };
 
 /**
- * For the Signals table, this swaps out the key/value pairs into an array of
- * entries, suitable for tabulator.
+ * For the Signals table, get the list of signal names. We only extract the keys here rather than values because some
+ * Vega signals (particularly bin-related ones) contain accessor functions that throw errors when evaluated without a
+ * proper `datum` context. The actual values are fetched safely in the SignalValue component.
  */
 const getSignalTableValues = () => {
     const signals = VegaViewServices.getAllSignals();
-    return Object.entries(signals).map(([key, value]) => ({
+    return Object.keys(signals).map((key) => ({
         key,
-        value:
-            value !== null && typeof value === 'object' && !Array.isArray(value)
-                ? JSON.parse(stringifyPruned(value))
-                : value
+        value: null // Value will be fetched by SignalValue component
     }));
 };
 
@@ -94,13 +91,9 @@ const getTableColumns = (
             name: translate('Pivot_Signals_ValueColumn'),
             id: 'value',
             grow: 5,
-            selector: (row) => row.value,
+            selector: (row) => row.key, // Use key for sorting since value is fetched dynamically
             cell: (row) => (
-                <SignalValue
-                    signalName={row.key}
-                    initialValue={row.value}
-                    renderId={renderId}
-                />
+                <SignalValue signalName={row.key} renderId={renderId} />
             )
         }
     ];
