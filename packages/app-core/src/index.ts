@@ -1,8 +1,13 @@
 export * from './app';
 export {
     useDenebPlatformProvider,
+    type OnCreateProjectPayload,
     type ViewEventBinder
 } from './components/deneb-platform';
+export {
+    handleDiscardChanges,
+    handlePersistSpecification
+} from './lib/commands';
 export { type I18nLocale, type Translations } from './lib/i18n';
 export * from './state';
 
@@ -15,13 +20,6 @@ export {
     useSettingsPaneStyles
 } from './features/settings-pane';
 export { useSpecificationEditor } from './features/specification-editor';
-export {
-    handleDiscardChanges,
-    handlePersistBooleanProperty,
-    handlePersistSpecification,
-    handleResetVegaProperty,
-    handleSelectionMaxDataPoints,
-    handleSelectionMode
-} from './lib/commands';
+
 export { updateFieldTracking } from './lib/field-processing';
 export * from './lib/interface';

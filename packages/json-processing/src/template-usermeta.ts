@@ -1,4 +1,3 @@
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import {
     getJsoncNodeValue,
     getJsoncStringAsObject,
@@ -17,7 +16,10 @@ import {
 } from '@deneb-viz/template-usermeta';
 import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
-import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import {
+    getProviderSchemaUrl,
+    type SpecProvider
+} from '@deneb-viz/vega-runtime/embed';
 import { getNewUuid } from '@deneb-viz/utils/crypto';
 import {
     type DenebTemplateSetImportFilePayload,
@@ -31,7 +33,11 @@ import {
     getPlaceholderKey,
     type UsermetaDatasetField
 } from '@deneb-viz/data-core/field';
-import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
+import {
+    type SelectionMode,
+    INTERACTIVITY_DEFAULTS
+} from '@deneb-viz/powerbi-compat/interactivity';
+import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
 
 /**
  * If we cannot resolve a provider, this is the default to assign.
@@ -46,24 +52,6 @@ const INVALID_TEMPLATE_OPTIONS: DenebTemplateSetImportFilePayload = {
     importFile: null,
     importState: 'Error',
     metadata: null
-};
-
-/**
- * For version 1.0, we did not populate versions for tracking purposes, so we keep a list of the initial version that
- * we use to coalesce them if they're missing from a loaded template.
- */
-export const PROVIDER_RESOURCES = {
-    deneb: {
-        legacyVersion: '1.0.0.57'
-    },
-    vega: {
-        schemaUrl: 'https://vega.github.io/schema/vega/v5.json',
-        legacyVersion: '5.21.0'
-    },
-    vegaLite: {
-        schemaUrl: 'https://vega.github.io/schema/vega-lite/v5.json',
-        legacyVersion: '5.1.1'
-    }
 };
 
 /**
@@ -98,7 +86,7 @@ export const getExportTemplate = (options: {
         modify(
             withUsermeta,
             ['$schema'],
-            PROVIDER_RESOURCES[newMetadata.deneb.provider].schemaUrl,
+            getProviderSchemaUrl(newMetadata.deneb.provider),
             {
                 getInsertionIndex: () => 0
             }
@@ -150,12 +138,12 @@ export const getNewTemplateMetadata = (options: {
         providerVersion: options.providerVersion ?? ''
     },
     interactivity: {
-        tooltip: DEFAULTS.vega.enableTooltips,
-        contextMenu: DEFAULTS.vega.enableContextMenu,
-        selection: DEFAULTS.vega.enableSelection,
-        selectionMode: DEFAULTS.vega.selectionMode as SelectionMode,
-        dataPointLimit: DEFAULTS.vega.selectionMaxDataPoints,
-        highlight: DEFAULTS.vega.enableHighlight
+        tooltip: INTERACTIVITY_DEFAULTS.enableTooltips,
+        contextMenu: INTERACTIVITY_DEFAULTS.enableContextMenu,
+        selection: INTERACTIVITY_DEFAULTS.enableSelection,
+        selectionMode: INTERACTIVITY_DEFAULTS.selectionMode as SelectionMode,
+        dataPointLimit: INTERACTIVITY_DEFAULTS.selectionMaxDataPoints,
+        highlight: INTERACTIVITY_DEFAULTS.enableHighlight
     },
     config: '{}',
     dataset: []
@@ -259,7 +247,8 @@ export const getTemplateResolvedForLegacyVersions = (
     template: string
 ) => {
     const { deneb } = getTemplateMetadata(template);
-    const legacyVersion = PROVIDER_RESOURCES[provider].legacyVersion;
+    const legacyVersion =
+        PROVIDER_RESOURCE_CONFIGURATION[provider].legacyVersion;
     const providerVersion = deneb.providerVersion ?? legacyVersion;
     return getModifiedJsoncByPath(
         template,

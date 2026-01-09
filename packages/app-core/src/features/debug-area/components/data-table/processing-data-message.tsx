@@ -1,30 +1,10 @@
 import { makeStyles, Spinner, tokens } from '@fluentui/react-components';
 
-import {
-    PREVIEW_PANE_TOOLBAR_MIN_SIZE,
-    SPLIT_PANE_HANDLE_SIZE
-} from '../../../../lib';
 import { StatusBarContainer } from '../../../../components/ui';
 import { useDenebState } from '../../../../state';
+import { useDebugWrapperStyles } from '../styles';
 
 const useProcessingDataMessageStyles = makeStyles({
-    container: {
-        height: `calc(100% - ${PREVIEW_PANE_TOOLBAR_MIN_SIZE}px - ${
-            SPLIT_PANE_HANDLE_SIZE / 2
-        }px)`
-    },
-    contentWrapper: {
-        display: 'flex',
-        height: '100%',
-        maxHeight: '100%',
-        flexDirection: 'column'
-    },
-    dataTableDetails: {
-        display: 'flex',
-        flexDirection: 'column',
-        flexGrow: 1,
-        overflow: 'auto'
-    },
     dataTableNoDataMessage: {
         display: 'flex',
         flexDirection: 'column',
@@ -48,12 +28,13 @@ const useProcessingDataMessageStyles = makeStyles({
  */
 export const ProcessingDataMessage = () => {
     const classes = useProcessingDataMessageStyles();
+    const wrapperClasses = useDebugWrapperStyles();
     const translate = useDenebState((state) => state.i18n.translate);
     const message = translate('Text_Debug_Data_Processing');
     return (
-        <div className={classes.container}>
-            <div className={classes.contentWrapper}>
-                <div className={classes.dataTableDetails}>
+        <div className={wrapperClasses.container}>
+            <div className={wrapperClasses.wrapper}>
+                <div className={wrapperClasses.details}>
                     <div className={classes.dataTableNoDataMessage}>
                         <Spinner size='small' label={message} />
                     </div>

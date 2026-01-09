@@ -25,6 +25,7 @@ import {
     crossFilterHandler,
     tooltipHandler
 } from '../lib/interactivity';
+import { persistOnCreateFromTemplate } from '../lib/persistence';
 import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 
 type AppProps = {
@@ -46,15 +47,13 @@ export const App = ({ host }: AppProps) => {
             state.settings?.vega?.interactivity?.selectionMode
                 ?.value as SelectionMode
     );
-    const { enableTooltips, multiSelectDelay, translate } = useDenebState(
-        (state) => ({
-            enableTooltips:
-                state.visualSettings.vega.interactivity.enableTooltips.value,
-            multiSelectDelay:
-                state.visualSettings.vega.interactivity.tooltipDelay.value,
-            translate: state.i18n.translate
-        })
+    const enableTooltips = useDenebVisualState(
+        (state) => state.settings?.vega?.interactivity?.enableTooltips?.value
     );
+    const multiSelectDelay = useDenebVisualState(
+        (state) => state.settings?.vega?.interactivity?.tooltipDelay?.value
+    );
+    const translate = useDenebState((state) => state.i18n.translate);
     const { launchUrl } = host;
     const vegaLoader = useMemo(() => {
         return getVegaLoader({
@@ -158,7 +157,9 @@ export const App = ({ host }: AppProps) => {
     return (
         <DenebProvider
             platformProvider={{
+                embedContainerSetByHost: true,
                 isDownloadPermitted,
+                onCreateProject: persistOnCreateFromTemplate,
                 onRenderingError,
                 onRenderingFinished,
                 settingsPanePlatformComponent: <InteractivitySettings />,

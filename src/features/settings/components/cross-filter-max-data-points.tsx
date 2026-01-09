@@ -11,31 +11,29 @@ import {
 import { ArrowResetRegular } from '@fluentui/react-icons';
 
 import { useSettingsStyles } from '../styles';
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
-import {
-    handleResetVegaProperty,
-    handleSelectionMaxDataPoints,
-    TooltipCustomMount,
-    useDenebState
-} from '@deneb-viz/app-core';
+import { TooltipCustomMount, useDenebState } from '@deneb-viz/app-core';
 import { logDebug } from '@deneb-viz/utils/logging';
 import {
     CROSS_FILTER_LIMITS,
     isCrossFilterPropSet
 } from '../../../lib/interactivity';
+import { useDenebVisualState } from '../../../state';
+import {
+    handleResetVegaProperty,
+    handleSelectionMaxDataPoints
+} from '../helpers';
+import { INTERACTIVITY_DEFAULTS } from '@deneb-viz/powerbi-compat/interactivity';
 
-const DEFAULT_VALUE = DEFAULTS.vega.selectionMaxDataPoints;
+const DEFAULT_VALUE = INTERACTIVITY_DEFAULTS.selectionMaxDataPoints;
 
 export const CrossFilterMaxDataPoints = () => {
-    const { enableSelection, selectionMaxDataPoints, translate } =
-        useDenebState((state) => ({
-            enableSelection:
-                state.visualSettings.vega.interactivity.enableSelection.value,
-            selectionMaxDataPoints:
-                state.visualSettings.vega.interactivity.selectionMaxDataPoints
-                    .value,
-            translate: state.i18n.translate
-        }));
+    const { translate } = useDenebState((state) => ({
+        translate: state.i18n.translate
+    }));
+    const { selectionMaxDataPoints } = useDenebVisualState((state) => ({
+        selectionMaxDataPoints:
+            state.settings.vega.interactivity.selectionMaxDataPoints.value
+    }));
     const onChange: SpinButtonProps['onChange'] = useCallback(
         (event, data): void => {
             const resolvedValue = getResolvedValue(data);
@@ -62,7 +60,7 @@ export const CrossFilterMaxDataPoints = () => {
     );
     const [ref, setRef] = useState<HTMLElement | null>();
     return (
-        (isCrossFilterPropSet({ enableSelection }) && (
+        (isCrossFilterPropSet() && (
             <div className={classes.spinButtonContainer}>
                 <Label htmlFor={id}>
                     {translate('PowerBI_Objects_Vega_SelectionMaxDataPoints')}

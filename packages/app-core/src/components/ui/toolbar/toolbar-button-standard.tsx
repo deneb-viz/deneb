@@ -8,7 +8,6 @@ import {
 } from '@fluentui/react-components';
 import {
     ChevronDownRegular,
-    ChevronLeftRegular,
     ChevronUpRegular,
     DocumentRegular,
     PlayRegular,
@@ -29,7 +28,6 @@ import {
     handleOpenCreateSpecificationDialog,
     handleOpenWebsite,
     handleToggleDebugPane,
-    handleToggleEditorPane,
     handleToggleEditorTheme,
     handleZoomFit,
     handleZoomIn,
@@ -120,8 +118,6 @@ const resolveClick = (command: Command, launchUrl: (url: string) => void) => {
             return handleAutoApplyChanges;
         case 'debugPaneToggle':
             return handleToggleDebugPane;
-        case 'editorPaneToggle':
-            return handleToggleEditorPane;
         case 'exportSpecification':
             return handleExportSpecification;
         // Tracking is now only used for export (#486)
@@ -146,15 +142,8 @@ const resolveClick = (command: Command, launchUrl: (url: string) => void) => {
 
 const resolveI18nKey = (command: Command) => {
     const {
-        editorPreviewDebugIsExpanded,
-        editor: { applyMode, isDirty },
-        visualSettings: {
-            editor: {
-                interface: {
-                    theme: { value: theme }
-                }
-            }
-        }
+        editor: { applyMode, isDebugPaneMinimized, isDirty },
+        editorPreferences: { theme }
     } = getDenebState();
     switch (command) {
         case 'applyChanges':
@@ -164,11 +153,9 @@ const resolveI18nKey = (command: Command) => {
                 ? 'Button_Auto_Apply_On'
                 : 'Button_Auto_Apply_Off';
         case 'debugPaneToggle':
-            return editorPreviewDebugIsExpanded
+            return !isDebugPaneMinimized
                 ? 'Tooltip_Collapse_Debug_Pane'
                 : 'Tooltip_Expand_Debug_Pane';
-        case 'editorPaneToggle':
-            return 'Tooltip_Collapse_Editor_Pane';
         case 'exportSpecification':
             return isDirty ? 'Button_Export_Dirty' : 'Button_Export';
         // Tracking is now only used for export (#486)
@@ -197,14 +184,8 @@ const resolveI18nKey = (command: Command) => {
 
 const resolveIcon = (command: Command) => {
     const {
-        editorPreviewDebugIsExpanded,
-        visualSettings: {
-            editor: {
-                interface: {
-                    theme: { value: theme }
-                }
-            }
-        }
+        editor: { isDebugPaneMinimized },
+        editorPreferences: { theme }
     } = getDenebState();
     switch (command) {
         case 'applyChanges':
@@ -212,13 +193,11 @@ const resolveIcon = (command: Command) => {
         case 'autoApplyToggle':
             return <ReplayRegular />;
         case 'debugPaneToggle':
-            return editorPreviewDebugIsExpanded ? (
+            return !isDebugPaneMinimized ? (
                 <ChevronDownRegular />
             ) : (
                 <ChevronUpRegular />
             );
-        case 'editorPaneToggle':
-            return <ChevronLeftRegular />;
         case 'exportSpecification':
             return <ShareRegular />;
         // Tracking is now only used for export (#486)

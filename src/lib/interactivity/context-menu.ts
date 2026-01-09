@@ -5,10 +5,7 @@ import { InteractivityManager } from './interactivity-manager';
 
 import { resolveCoordinates } from './event';
 import { type InteractivityLookupDataset } from './types';
-import {
-    getVisualInteractionStatus,
-    getVisualSettings
-} from '@deneb-viz/powerbi-compat/visual-host';
+import { getDenebVisualState } from '../../state';
 
 /**
  * If a context menu event is fired over the visual, attempt to retrieve any datum and associated identity, before
@@ -45,11 +42,14 @@ export const contextMenuHandler = (
  */
 const isContextMenuPropSet = () => {
     const {
-        vega: {
-            interactivity: {
-                enableContextMenu: { value: enableContextMenu }
+        host: { allowInteractions },
+        settings: {
+            vega: {
+                interactivity: {
+                    enableContextMenu: { value: enableContextMenu }
+                }
             }
         }
-    } = getVisualSettings();
-    return (enableContextMenu && getVisualInteractionStatus()) || false;
+    } = getDenebVisualState();
+    return (enableContextMenu && allowInteractions) || false;
 };

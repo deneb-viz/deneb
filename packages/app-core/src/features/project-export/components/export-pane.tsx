@@ -88,16 +88,10 @@ const handleProcessing = async () => {
     const {
         fieldUsage: { dataset },
         interface: { setExportProcessingState },
-        visualSettings: {
-            vega: {
-                output: {
-                    jsonSpec: { value: jsonSpec }
-                }
-            }
-        }
+        project: { spec }
     } = getDenebState();
     setExportProcessingState('Tokenizing');
-    await updateFieldTracking(jsonSpec, dataset);
+    await updateFieldTracking(spec, dataset);
     const {
         fieldUsage: { dataset: trackedFieldsCurrent }
     } = getDenebState();
@@ -105,6 +99,6 @@ const handleProcessing = async () => {
         trackedFieldsInitial: dataset,
         trackedFieldsCurrent
     });
-    await updateFieldTokenization(jsonSpec, trackedFieldsCurrent);
+    await updateFieldTokenization(spec, trackedFieldsCurrent);
     setExportProcessingState('Complete');
 };

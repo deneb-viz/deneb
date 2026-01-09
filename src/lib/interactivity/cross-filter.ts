@@ -10,7 +10,6 @@ import {
 } from 'vega';
 
 import type {
-    CrossFilterPropCheckOptions,
     CrossFilterOptions,
     InteractivityLookupDataset,
     CrossFilterSelectionAssessment,
@@ -29,10 +28,6 @@ import {
     type VegaDatum,
     type DataPointSelectionStatus
 } from '@deneb-viz/data-core/value';
-import {
-    getVisualInteractionStatus,
-    getVisualSettings
-} from '@deneb-viz/powerbi-compat/visual-host';
 import { getDenebVisualState } from '../../state';
 
 const LOG_PREFIX = '[crossFilterHandler]';
@@ -52,16 +47,12 @@ export const crossFilterHandler = (
             settings: {
                 vega: {
                     interactivity: {
-                        enableSelection: { value: enableSelection },
                         selectionMode: { value: selectionMode }
                     }
                 }
             }
         } = getDenebVisualState();
-        if (
-            selectionMode === 'simple' &&
-            isCrossFilterPropSet({ enableSelection })
-        ) {
+        if (selectionMode === 'simple' && isCrossFilterPropSet()) {
             const result = getResolvedCrossFilterResult(
                 event,
                 item ?? ({} as Item),
@@ -87,17 +78,14 @@ export const getResolvedCrossFilterResult = (
     options: CrossFilterOptions | undefined
 ): CrossFilterSelectionDirective => {
     try {
-        const enableSelection =
-            getVisualSettings().vega.interactivity.enableSelection.value;
         const multiSelect = isMultiSelect(event, options);
         logDebug(`${LOG_PREFIX} Cross-filter event`, {
             event,
             item,
             dataset,
-            enableSelection,
             multiSelect
         });
-        if (isCrossFilterPropSet({ enableSelection })) {
+        if (isCrossFilterPropSet()) {
             const resolved = isSimpleCrossFilterMode(options)
                 ? getCrossFilterSelectionSimpleMode(item, dataset, translate)
                 : getCrossFilterSelectionAdvanced(
@@ -257,12 +245,14 @@ const getCrossFilterSelectionSimpleMode = (
  */
 const getCrossFilterSelectionLimitSize = (options?: CrossFilterOptions) => {
     const {
-        vega: {
-            interactivity: {
-                selectionMaxDataPoints: { value: selectionMaxDataPoints }
+        settings: {
+            vega: {
+                interactivity: {
+                    selectionMaxDataPoints: { value: selectionMaxDataPoints }
+                }
             }
         }
-    } = getVisualSettings();
+    } = getDenebVisualState();
     return ((options && options.limit) || null) ?? selectionMaxDataPoints;
 };
 
@@ -299,15 +289,18 @@ const getPotentialCrossFilterSelectionSize = (
 /**
  * Allows us to validate for all key pre-requisites before we can bind a selection event to the visual.
  */
-export const isCrossFilterPropSet = (options: CrossFilterPropCheckOptions) => {
-    const { enableSelection } = options;
-    const interactionStatus = getVisualInteractionStatus();
-    const isSet = enableSelection && interactionStatus;
-    /*     logDebug('isCrossFilterPropSet', {
-        enableSelection,
-        interactionStatus,
-        isSet
-    }); */
+export const isCrossFilterPropSet = () => {
+    const {
+        host: { allowInteractions },
+        settings: {
+            vega: {
+                interactivity: {
+                    enableSelection: { value: enableSelection }
+                }
+            }
+        }
+    } = getDenebVisualState();
+    const isSet = enableSelection && allowInteractions;
     return isSet;
 };
 

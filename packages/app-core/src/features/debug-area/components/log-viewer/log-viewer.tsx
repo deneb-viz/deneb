@@ -1,5 +1,11 @@
 import { useMemo } from 'react';
-import { Label, makeStyles, tokens, useId } from '@fluentui/react-components';
+import {
+    Label,
+    makeStyles,
+    mergeClasses,
+    tokens,
+    useId
+} from '@fluentui/react-components';
 import { Error, Info, Warn } from 'vega';
 
 import { LogLevelDropdown } from './log-level-dropdown';
@@ -8,32 +14,13 @@ import { useDenebState } from '../../../../state';
 import { StatusBarContainer } from '../../../../components/ui';
 import type { LogEntry, LogEntryDisplay, LogLevelEnumMember } from './types';
 import { getDebugLogLevels } from './helpers';
-import {
-    PREVIEW_PANE_TOOLBAR_MIN_SIZE,
-    SPLIT_PANE_HANDLE_SIZE
-} from '../../../../lib';
+import { useDebugWrapperStyles } from '../styles';
 
 /**
  * Styles used for debugging features.
  */
 export const useLogViewerStyles = makeStyles({
-    container: {
-        height: `calc(100% - ${PREVIEW_PANE_TOOLBAR_MIN_SIZE}px - ${
-            SPLIT_PANE_HANDLE_SIZE / 2
-        }px)`
-    },
-    contentWrapper: {
-        display: 'flex',
-        height: '100%',
-        maxHeight: '100%',
-        flexDirection: 'column'
-    },
     logDetails: {
-        display: 'flex',
-        flexDirection: 'column',
-        flexGrow: 1,
-        height: '0px',
-        overflow: 'auto',
         padding: tokens.spacingVerticalM
     },
     logLevelDropdown: {
@@ -82,22 +69,34 @@ export const LogViewer = () => {
     }));
     const translate = useDenebState((state) => state.i18n.translate);
     const classes = useLogViewerStyles();
+    const wrapperClasses = useDebugWrapperStyles();
+    const detailClass = mergeClasses(
+        classes.logDetails,
+        wrapperClasses.details
+    );
     const levelId = useId();
     const levelLabel = useMemo(() => translate('Text_Vega_LogLevel'), []);
-    const logEntries = getLogEntries(warns, errors, logLevel as number, classes);
+    const logEntries = getLogEntries(
+        warns,
+        errors,
+        logLevel as number,
+        classes
+    );
     logRender('LogViewer', { warns, errors });
     return (
-        <div className={classes.container}>
-            <div className={classes.contentWrapper}>
-                <div className={classes.logDetails}>{logEntries}</div>
-                <StatusBarContainer>
-                    <div className={classes.statusBar}>
-                        <Label size='small' id={levelId}>
-                            {levelLabel}
-                        </Label>
-                        <LogLevelDropdown id={levelId} />
-                    </div>
-                </StatusBarContainer>
+        <div className={wrapperClasses.container}>
+            <div className={wrapperClasses.wrapper}>
+                <div className={detailClass}>{logEntries}</div>
+                <StatusBarContainer
+                    nearItems={
+                        <div className={classes.statusBar}>
+                            <Label size='small' id={levelId}>
+                                {levelLabel}
+                            </Label>
+                            <LogLevelDropdown id={levelId} />
+                        </div>
+                    }
+                />
             </div>
         </div>
     );

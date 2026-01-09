@@ -23,14 +23,14 @@ export const FieldRemapButton = () => {
     const editorRefs = useSpecificationEditor();
     const {
         dataset,
-        jsonSpec,
+        spec,
         remapAllDependenciesAssigned,
         remapFields,
         remapState,
         translate
     } = useDenebState((state) => ({
         dataset: state.fieldUsage.dataset,
-        jsonSpec: state.visualSettings.vega.output.jsonSpec.value,
+        spec: state.project.spec,
         remapAllDependenciesAssigned:
             state.fieldUsage.remapAllDependenciesAssigned,
         remapFields: state.fieldUsage.remapFields,
@@ -38,7 +38,7 @@ export const FieldRemapButton = () => {
         translate: state.i18n.translate
     }));
     const onRemap = () => {
-        applyRemappedFields(jsonSpec, remapFields, dataset, editorRefs);
+        applyRemappedFields(spec, remapFields, dataset, editorRefs);
     };
     logRender('RemapButton');
     return (

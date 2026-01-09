@@ -3,7 +3,7 @@ import { DenebVisualStoreState } from './state';
 import {
     getVisualFormattingModel,
     VisualFormattingSettingsModel
-} from '@deneb-viz/powerbi-compat/properties';
+} from '../lib/persistence';
 
 export type SettingsSlice = VisualFormattingSettingsModel & {};
 

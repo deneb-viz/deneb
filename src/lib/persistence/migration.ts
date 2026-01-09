@@ -1,25 +1,20 @@
-import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import {
-    DEFAULTS,
-    VisualFormattingSettingsModel
-} from '@deneb-viz/powerbi-compat/properties';
+    getVegaVersion,
+    type SpecProvider
+} from '@deneb-viz/vega-runtime/embed';
+import { VisualFormattingSettingsModel } from './model';
 import {
     type VersionChangeDirection,
     type VersionComparator,
     type VersionInformation
 } from '@deneb-viz/utils/versioning';
-import {
-    APPLICATION_INFORMATION_CONFIGURATION,
-    PROVIDER_VERSION_CONFIGURATION
-} from '@deneb-viz/configuration';
+import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 import { logDebug } from '@deneb-viz/utils/logging';
-import {
-    getVisualSettings,
-    type PersistenceProperty,
-    persistProperties,
-    resolveObjectProperties
-} from '@deneb-viz/powerbi-compat/visual-host';
+import { type PersistenceProperty } from './types';
+import { persistProperties, resolveObjectProperties } from './persist';
 import { getDenebState } from '@deneb-viz/app-core';
+import { getDenebVisualState } from '../../state';
+import { APPLICATION_VERSION } from '../application';
 
 /**
  * Current visual and provider information
@@ -35,9 +30,9 @@ const getCurrentVersionInfo = (
         }
     } = visualSettings;
     return {
-        denebVersion: APPLICATION_INFORMATION_CONFIGURATION.version,
+        denebVersion: APPLICATION_VERSION,
         provider: provider as SpecProvider,
-        providerVersion: PROVIDER_VERSION_CONFIGURATION[provider]
+        providerVersion: getVegaVersion(provider as SpecProvider)
     };
 };
 
@@ -152,16 +147,20 @@ export const handlePropertyMigration = (
  * In order to determine if our current spec/config is the same as the default properties, indicating that
  */
 const isNewSpec = () => {
-    const defaults = DEFAULTS.vega;
     const {
-        vega: {
-            output: {
-                jsonSpec: { value: jsonSpec },
-                jsonConfig: { value: jsonConfig }
+        settings: {
+            vega: {
+                output: {
+                    jsonSpec: { value: jsonSpec },
+                    jsonConfig: { value: jsonConfig }
+                }
             }
         }
-    } = getVisualSettings();
-    return jsonSpec === defaults.jsonSpec && jsonConfig === defaults.jsonConfig;
+    } = getDenebVisualState();
+    return (
+        jsonSpec === PROJECT_DEFAULTS.spec &&
+        jsonConfig === PROJECT_DEFAULTS.config
+    );
 };
 
 /**
@@ -193,7 +192,7 @@ const isUnversionedSpec = () => !isNewSpec() && !isVersionedSpec();
  */
 const isVersionedSpec = () => {
     const {
-        visualSettings: {
+        settings: {
             developer: {
                 versioning: {
                     version: { value: denebVersion }
@@ -205,7 +204,7 @@ const isVersionedSpec = () => {
                 }
             }
         }
-    } = getDenebState();
+    } = getDenebVisualState();
     return (denebVersion && providerVersion) || false;
 };
 
@@ -225,7 +224,7 @@ const migrateUnversionedSpec = (provider: SpecProvider) => {
                 properties: [
                     {
                         name: 'version',
-                        value: PROVIDER_VERSION_CONFIGURATION[provider]
+                        value: getVegaVersion(provider)
                     }
                 ]
             }
@@ -251,7 +250,7 @@ const migrateWithNoChanges = (provider: SpecProvider) => {
                 properties: [
                     {
                         name: 'version',
-                        value: PROVIDER_VERSION_CONFIGURATION[provider]
+                        value: getVegaVersion(provider)
                     }
                 ]
             }
@@ -264,5 +263,5 @@ const migrateWithNoChanges = (provider: SpecProvider) => {
  */
 const getDenebVersionProperty = (): PersistenceProperty => ({
     name: 'version',
-    value: APPLICATION_INFORMATION_CONFIGURATION.version
+    value: APPLICATION_VERSION
 });

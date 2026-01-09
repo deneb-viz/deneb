@@ -2,7 +2,7 @@ import { TopLevelSpec } from 'vega-lite';
 
 import { VEGA_LITE_SCHEMA_URL } from '.';
 import { getDenebTemplateDatasetRef, getNewIncludedTemplateMetadata } from '..';
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
+import { INTERACTIVITY_DEFAULTS } from '@deneb-viz/powerbi-compat/interactivity';
 import {
     SELECTED_ROW_FIELD_NAME,
     type UsermetaDatasetField
@@ -89,7 +89,7 @@ export const vlBarInteractive = (): TopLevelSpec => ({
                 contextMenu: true,
                 highlight: true,
                 selection: true,
-                dataPointLimit: DEFAULTS.vega.selectionMaxDataPoints
+                dataPointLimit: INTERACTIVITY_DEFAULTS.selectionMaxDataPoints
             }
         }
     }

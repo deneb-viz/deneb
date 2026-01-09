@@ -137,7 +137,7 @@ export const ZoomLevelPopover = () => {
     logRender('ZoomLevelPopover');
     const [ref, setRef] = useState<HTMLElement | null>();
     return (
-        <Popover withArrow trapFocus onOpenChange={onOpenChange} inline>
+        <Popover withArrow trapFocus onOpenChange={onOpenChange}>
             <>
                 <Tooltip
                     relationship='label'

@@ -12,7 +12,8 @@ import {
     PATTERN_FILL_DEFAULT_STROKE_COLOR
 } from './constants';
 
-let defsContainer: Selection<SVGDefsElement, unknown, HTMLElement, any>;
+let defsContainer: Selection<SVGDefsElement, unknown, HTMLElement, any> | null =
+    null;
 let defsRegistry: PatternFillResolved[] = [];
 
 /**
@@ -23,6 +24,7 @@ let defsRegistry: PatternFillResolved[] = [];
  */
 export const VegaPatternFillServices = {
     bind: () => {
+        if (defsContainer) return; // Already bound
         defsContainer = initializePatternFillDefsContainer();
         defsRegistry = getPackagedFillPatternDefs();
         joinPatternFillData();
@@ -91,6 +93,7 @@ const initializePatternFillDefsContainer = () => {
  * run once per visual instance.
  */
 const joinPatternFillData = () => {
+    if (!defsContainer) return;
     defsContainer
         .selectAll('pattern')
         .data(defsRegistry)

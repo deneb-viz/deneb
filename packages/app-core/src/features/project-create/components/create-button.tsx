@@ -1,13 +1,11 @@
 import { Button } from '@fluentui/react-components';
 
 import { getTemplateReplacedForDataset } from '@deneb-viz/json-processing';
-import { logDebug, logRender } from '@deneb-viz/utils/logging';
-import {
-    persistProperties,
-    resolveObjectProperties
-} from '@deneb-viz/powerbi-compat/visual-host';
+import { logDebug, logRender, logWarning } from '@deneb-viz/utils/logging';
+import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 import { useSpecificationEditor } from '../../specification-editor';
 import { useDenebState } from '../../../state';
+import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 
 /**
  * Displays the content for creating a specification using the selected
@@ -18,65 +16,61 @@ export const CreateButton = () => {
         candidates,
         metadata,
         metadataAllDependenciesAssigned,
-        createFromTemplate,
+        initializeFromTemplate,
         translate
     } = useDenebState((state) => ({
         candidates: state.create.candidates,
         metadata: state.create.metadata,
         metadataAllDependenciesAssigned:
             state.create.metadataAllDependenciesAssigned,
-        createFromTemplate: state.create.createFromTemplate,
+        initializeFromTemplate: state.project.initializeFromTemplate,
         translate: state.i18n.translate
     }));
-    const { spec, config } = useSpecificationEditor();
-    const onCreate = () => {
+    const { onCreateProject } = useDenebPlatformProvider();
+    const { spec: editorSpec, config: editorConfig } = useSpecificationEditor();
+    const onCreate = async () => {
         logDebug('createFromTemplate', { metadata, candidates });
-        const jsonSpec = getTemplateReplacedForDataset(
-            candidates?.spec ?? '',
+        const provider = metadata?.deneb?.provider;
+        if (!provider) {
+            logWarning(
+                'Cannot create project: template metadata is missing provider'
+            );
+            return;
+        }
+        const spec = getTemplateReplacedForDataset(
+            candidates?.spec ?? PROJECT_DEFAULTS.spec,
             metadata?.dataset ?? []
         );
-        const jsonConfig = candidates?.config;
+        const config = candidates?.config ?? PROJECT_DEFAULTS.config;
         logDebug('createFromTemplate - processed candidates', {
-            jsonSpec,
-            jsonConfig
+            spec,
+            config
         });
-        persistProperties(
-            resolveObjectProperties([
-                {
-                    objectName: 'vega',
-                    properties: [
-                        { name: 'provider', value: metadata?.deneb.provider },
-                        { name: 'jsonSpec', value: jsonSpec },
-                        { name: 'jsonConfig', value: jsonConfig },
-                        { name: 'isNewDialogOpen', value: false },
-                        {
-                            name: 'enableTooltips',
-                            value: metadata?.interactivity?.tooltip || false
-                        },
-                        {
-                            name: 'enableContextMenu',
-                            value: metadata?.interactivity?.contextMenu || false
-                        },
-                        {
-                            name: 'enableHighlight',
-                            value: metadata?.interactivity?.highlight || false
-                        },
-                        {
-                            name: 'enableSelection',
-                            value: metadata?.interactivity?.selection || false
-                        },
-                        {
-                            name: 'selectionMaxDataPoints',
-                            value: metadata?.interactivity?.dataPointLimit || 0
-                        }
-                    ]
-                }
-            ])
-        );
-        spec?.current?.setValue(jsonSpec);
-        config?.current?.setValue(jsonConfig ?? '');
-        spec?.current?.focus();
-        createFromTemplate();
+        // Call platform-specific handler FIRST for persistence (avoids sync race conditions)
+        if (onCreateProject && metadata) {
+            try {
+                await onCreateProject({
+                    metadata,
+                    spec,
+                    config
+                });
+            } catch (error) {
+                logWarning(
+                    'onCreateProject callback failed:',
+                    error instanceof Error ? error.message : String(error)
+                );
+            }
+        }
+        // Initialize project state from template
+        initializeFromTemplate({
+            spec: spec,
+            config: config,
+            provider
+        });
+        // Update editor refs directly for immediate UI update
+        editorSpec?.current?.setValue(spec);
+        editorConfig?.current?.setValue(config ?? '');
+        editorSpec?.current?.focus();
     };
     logRender('CreateButton');
     return (

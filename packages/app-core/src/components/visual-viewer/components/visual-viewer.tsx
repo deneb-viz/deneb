@@ -45,8 +45,8 @@ type VisualViewerProps = {
 // eslint-disable-next-line max-lines-per-function
 export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
     const {
-        jsonConfig,
-        jsonSpec,
+        config,
+        spec,
         locale,
         logLevel,
         previewScrollbars,
@@ -61,22 +61,18 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
         viewportHeight,
         viewportWidth
     } = useDenebState((state) => ({
-        jsonConfig: state.visualSettings.vega.output.jsonConfig.value,
-        jsonSpec: state.visualSettings.vega.output.jsonSpec.value,
+        spec: state.project.spec,
+        config: state.project.config,
         locale: state.i18n.locale,
         logLevel: state.project.logLevel,
         previewScrollbars:
-            state.visualSettings.editor.preview.previewScrollbars.value,
+            state.editorPreferences.previewAreaShowScrollbarsOnOverflow,
         provider: state.project.provider as SpecProvider,
         renderMode: state.project.renderMode,
-        scrollbarColor:
-            state.visualSettings.display.scrollbars.scrollbarColor.value.value,
-        scrollbarOpacity:
-            state.visualSettings.display.scrollbars.scrollbarOpacity.value,
-        scrollbarRadius:
-            state.visualSettings.display.scrollbars.scrollbarRadius.value,
-        scrollEventThrottle:
-            state.visualSettings.display.scrollEvents.scrollEventThrottle.value,
+        scrollbarColor: state.visualRender.scrollbarColor,
+        scrollbarOpacity: state.visualRender.scrollbarOpacity,
+        scrollbarRadius: state.visualRender.scrollbarRadius,
+        scrollEventThrottle: state.visualRender.scrollEventThrottle,
         specification: state.specification,
         values: state.dataset.values,
         viewportHeight: state.interface.embedViewport?.height ?? 0,
@@ -128,8 +124,8 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
     useEffect(() => {
         logRender('VegaContainer', {
             isEmbeddedInEditor,
-            jsonConfig,
-            jsonSpec,
+            config,
+            spec,
             provider,
             specification,
             viewportHeight,
@@ -137,8 +133,8 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
         });
     }, [
         isEmbeddedInEditor,
-        jsonConfig,
-        jsonSpec,
+        config,
+        spec,
         provider,
         specification.hashValue,
         viewportHeight,
@@ -195,11 +191,8 @@ const getScrollBarThumb = (
     style: CSSProperties
 ) => {
     const { scrollbarRadius, scrollbarColor, scrollbarOpacity } =
-        getDenebState().visualSettings.display.scrollbars;
-    const backgroundColor = addAlpha(
-        scrollbarColor.value.value,
-        scrollbarOpacity.value / 100
-    );
+        getDenebState().visualRender;
+    const backgroundColor = addAlpha(scrollbarColor, scrollbarOpacity / 100);
     return (
         <div
             {...props}
@@ -207,7 +200,7 @@ const getScrollBarThumb = (
             style={{
                 ...{
                     backgroundColor,
-                    borderRadius: scrollbarRadius.value
+                    borderRadius: scrollbarRadius
                 },
                 ...style
             }}

@@ -3,12 +3,12 @@
  */
 import { getDenebTemplateDatasetRef } from '..';
 import { getPowerBiThemeVega } from '@deneb-viz/vega-runtime/extensibility';
-import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
+import { getProviderSchemaUrl } from '@deneb-viz/vega-runtime/embed';
 
 /**
- * Schema URL for all templates.
+ * Schema URL for all templates (derived from bundled Vega runtime version).
  */
-export const VEGA_SCHEMA_URL = PROVIDER_RESOURCE_CONFIGURATION.vega.schemaUrl;
+export const VEGA_SCHEMA_URL = getProviderSchemaUrl('vega');
 
 /**
  * Vega specifications allow multiple datasets to be bound, so this provides

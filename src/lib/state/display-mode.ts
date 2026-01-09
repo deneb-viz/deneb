@@ -1,7 +1,7 @@
 import powerbi from 'powerbi-visuals-api';
 
-import { type VisualUpdateDataPayload } from '../../state/updates';
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
+import { type VisualFormattingSettingsModel } from '../../lib/persistence';
+import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 import { logDebug } from '@deneb-viz/utils/logging';
 
 /**
@@ -29,7 +29,9 @@ export type DisplayHistoryRecord = {
     viewport: powerbi.extensibility.visual.VisualUpdateOptions['viewport'];
 };
 
-export type GetUpdatedHistoryListPayload = VisualUpdateDataPayload & {
+export type GetUpdatedHistoryListPayload = {
+    options: powerbi.extensibility.visual.VisualUpdateOptions;
+    settings: VisualFormattingSettingsModel;
     isFetchingAdditionalData: boolean;
 };
 
@@ -37,6 +39,18 @@ export type GetUpdatedHistoryListPayload = VisualUpdateDataPayload & {
  * Maximum number of update history records to retain.
  */
 const MAX_UPDATE_HISTORY_RETENTION = 100;
+
+export const doesModeAllowEmbedViewportSet = (
+    mode: DisplayMode,
+    isInFocus: boolean
+) => {
+    return (
+        mode !== 'editor' &&
+        mode !== 'transition-viewer-editor' &&
+        mode !== 'transition-editor-viewer' &&
+        !isInFocus
+    );
+};
 
 /**
  * Generate an updated display history list based on the current history and new update payload.
@@ -85,7 +99,7 @@ export const getDisplayModeAccordingToOptions = (
     const { isFetchingAdditionalData, options, settings } = payload;
     const { dataViews, isInFocus, viewMode } = options;
     const project = settings.vega.output.jsonSpec.value;
-    const defaultProject = DEFAULTS.vega.jsonSpec;
+    const defaultProject = PROJECT_DEFAULTS.spec;
     const hasProject = project !== defaultProject;
     // Determine correct states for whether we are viewing or editing
     const isLandingPage =

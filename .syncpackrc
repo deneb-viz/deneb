@@ -17,7 +17,7 @@
             "pinVersion": "5.11.0"
         },
         {
-            "label": "Vega should be specific version we wish to package",
+            "label": "Vega should be specific version in dev dependencies",
             "dependencies": [
                 "vega"
             ],
@@ -28,7 +28,17 @@
             "pinVersion": "6.2.0"
         },
         {
-            "label": "Vega-Lite should be specific version we wish to package",
+            "label": "Vega peer dependencies should allow broad version range",
+            "dependencies": [
+                "vega"
+            ],
+            "dependencyTypes": [
+                "peer"
+            ],
+            "pinVersion": ">=5"
+        },
+        {
+            "label": "Vega-Lite should be specific version in dev dependencies",
             "dependencies": [
                 "vega-lite"
             ],
@@ -37,6 +47,16 @@
                 "prod"
             ],
             "pinVersion": "6.4.1"
+        },
+        {
+            "label": "Vega-Lite peer dependencies should allow broad version range",
+            "dependencies": [
+                "vega-lite"
+            ],
+            "dependencyTypes": [
+                "peer"
+            ],
+            "pinVersion": ">=5"
         },
         {
             "label": "Monaco should be specific version we wish to package",

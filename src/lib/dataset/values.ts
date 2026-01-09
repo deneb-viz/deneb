@@ -37,15 +37,13 @@ const getCategoryValueEntries = (
 export const getDatumValueEntriesFromDataview = (
     categories: powerbi.DataViewCategoryColumn[],
     values: powerbi.DataViewValueColumns,
-    locale: string,
-    enableHighlight: boolean
+    locale: string
 ) => {
     return [
         ...getCategoryValueEntries(categories),
-        ...((enableHighlight &&
-            getHighlightValueEntries(values, enableHighlight)) ||
+        ...((isCrossHighlightPropSet() && getHighlightValueEntries(values)) ||
             []),
-        ...getMeasureValueEntries(values, enableHighlight),
+        ...getMeasureValueEntries(values),
         ...getFormattingStringValueEntries(values, locale)
     ];
 };
@@ -97,13 +95,11 @@ const getFormatStringForValueByIndex = (
  * are applied, we need to sub-in the regular values so that any logic is correctly preserved.
  */
 const getHighlightValueEntries = (
-    values: powerbi.DataViewValueColumns,
-    enableHighlight: boolean
+    values: powerbi.DataViewValueColumns
 ): powerbi.PrimitiveValue[][] => {
     logTimeStart('getHighlightValueEntries');
     const entries = (values?.map((v) =>
-        isCrossHighlightPropSet({ enableHighlight }) &&
-        doesDataViewHaveHighlights(values)
+        isCrossHighlightPropSet() && doesDataViewHaveHighlights(values)
             ? v.highlights
             : v.values
     ) || []) as powerbi.PrimitiveValue[][];
@@ -117,14 +113,12 @@ const getHighlightValueEntries = (
  * values passed in by Power BI.
  */
 const getMeasureValueEntries = (
-    values: powerbi.DataViewValueColumns,
-    enableHighlight: boolean
+    values: powerbi.DataViewValueColumns
 ): powerbi.PrimitiveValue[][] => {
     logTimeStart('getMeasureValueEntries');
     const entries = (values?.map((v) => {
         const useHighlights =
-            doesDataViewHaveHighlights(values) &&
-            !isCrossHighlightPropSet({ enableHighlight });
+            doesDataViewHaveHighlights(values) && !isCrossHighlightPropSet();
         return useHighlights ? v.highlights : v.values;
     }) || []) as powerbi.PrimitiveValue[][];
     logTimeEnd('getMeasureValueEntries');

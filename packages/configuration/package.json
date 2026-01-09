@@ -1,6 +1,6 @@
 {
     "name": "@deneb-viz/configuration",
-    "version": "1.9.0",
+    "version": "0.1.0",
     "author": "Deneb contributors",
     "private": true,
     "license": "MIT",
@@ -20,9 +20,8 @@
     },
     "sideEffects": false,
     "scripts": {
-        "build": "npm run generate && npm run clean && tsc -p tsconfig.json",
-        "generate": "node bin/generate-config.js",
-        "dev": "npm run generate && tsc -p tsconfig.json --watch",
+        "build": "npm run clean && tsc -p tsconfig.json",
+        "dev": "tsc -p tsconfig.json --watch",
         "clean": "rimraf dist",
         "typecheck": "tsc --noEmit",
         "eslint": "eslint ."

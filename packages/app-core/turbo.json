@@ -5,6 +5,9 @@
   ],
   "tasks": {
     "build": {
+      "dependsOn": [
+        "@deneb-viz/json-processing#build"
+      ],
       "outputs": [
         "dist/**"
       ]

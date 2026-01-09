@@ -1,4 +1,3 @@
-import { VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/properties';
 import { type InterfaceType, type ModalDialogRole } from './types';
 
 /**
@@ -7,10 +6,10 @@ import { type InterfaceType, type ModalDialogRole } from './types';
  * should be displayed or the existing state continued to be used.
  */
 export const getModalDialogRole = (
-    settings: VisualFormattingSettingsModel,
+    hasProjectInitialized: boolean,
     interfaceType: InterfaceType,
     currentDialogRole: ModalDialogRole
 ) =>
-    settings?.vega?.state?.isNewDialogOpen?.value && interfaceType === 'editor'
+    !hasProjectInitialized && interfaceType === 'editor'
         ? 'Create'
         : currentDialogRole;

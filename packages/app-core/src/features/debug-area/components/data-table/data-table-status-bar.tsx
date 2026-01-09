@@ -47,9 +47,7 @@ export const DataTableStatusBar = ({
     currentPage
 }: PaginationComponentProps) => {
     const { rowsPerPageSetting, mode, translate } = useDenebState((state) => ({
-        rowsPerPageSetting:
-            state.visualSettings.editor.debugPane.debugTableRowsPerPage.value
-                .value,
+        rowsPerPageSetting: state.editorPreferences.dataViewerRowsPerPage,
         mode: state.editorPreviewAreaSelectedPivot,
         translate: state.i18n.translate
     }));
@@ -98,9 +96,9 @@ export const DataTableStatusBar = ({
     }, [mode]);
 
     return (
-        <StatusBarContainer>
-            <div className={classes.container}>
-                <div>{optionComponent}</div>
+        <StatusBarContainer
+            nearItems={<div>{optionComponent}</div>}
+            farItems={
                 <div className={classes.navigation}>
                     <div>
                         <Label htmlFor={rowsPerPageId} size='small'>
@@ -141,8 +139,8 @@ export const DataTableStatusBar = ({
                         disabled={currentPage === numPages}
                     />
                 </div>
-            </div>
-        </StatusBarContainer>
+            }
+        />
     );
 };
 

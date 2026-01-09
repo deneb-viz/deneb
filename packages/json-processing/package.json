@@ -1,6 +1,6 @@
 {
     "name": "@deneb-viz/json-processing",
-    "version": "1.9.0",
+    "version": "0.1.0",
     "author": "Deneb contributors",
     "private": true,
     "license": "MIT",
@@ -38,7 +38,7 @@
         "build": "npm run build:worker && npm run build:package",
         "build:package": "tsup",
         "build:worker": "tsup --config tsup.worker.config.ts",
-        "dev": "concurrently \"npm run dev:worker\" \"npm run dev:package\"",
+        "dev": "npm run build:worker && concurrently \"npm run dev:worker\" \"npm run dev:package\"",
         "dev:package": "tsup --watch --config tsup.config.ts",
         "dev:worker": "tsup --watch --config tsup.worker.config.ts",
         "clean": "rimraf dist",
@@ -74,7 +74,7 @@
         "@deneb-viz/powerbi-compat": "*",
         "@deneb-viz/vega-runtime": "*",
         "powerbi-visuals-api": "5.11.0",
-        "vega": "6.2.0",
-        "vega-lite": "6.4.1"
+        "vega": ">=5",
+        "vega-lite": ">=5"
     }
 }

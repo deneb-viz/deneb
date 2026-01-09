@@ -4,15 +4,14 @@ import { makeStyles, useUncontrolledFocus } from '@fluentui/react-components';
 import Editor, { loader, OnChange, OnMount } from '@monaco-editor/react';
 
 import { ptToPx } from '@deneb-viz/utils/dom';
+import { toBoolean } from '@deneb-viz/utils/type-conversion';
 import { getProviderSchema } from '@deneb-viz/json-processing';
-import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import { logDebug } from '@deneb-viz/utils/logging';
 import {
-    handlePersistSpecification,
-    PREVIEW_PANE_TOOLBAR_BUTTON_PADDING,
-    PREVIEW_PANE_TOOLBAR_MIN_SIZE,
-    type EditorPaneRole
-} from '../../../lib';
+    getProviderSchemaUrl,
+    type SpecProvider
+} from '@deneb-viz/vega-runtime/embed';
+import { logDebug } from '@deneb-viz/utils/logging';
+import { handlePersistSpecification, type EditorPaneRole } from '../../../lib';
 import {
     monaco,
     setupMonacoWorker
@@ -24,6 +23,7 @@ import { updateFieldTracking } from '../../../lib/field-processing';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 import { DatasetField } from '@deneb-viz/data-core/field';
 import { EDITOR_DEFAULTS } from '@deneb-viz/configuration';
+import { getFieldDocumentationByName } from '../../../lib/dataset';
 
 /**
  * Initialize Monaco editor on first mount. This is deferred from module load time to only run when the editor is
@@ -56,10 +56,12 @@ type JsonEditorStatusState = {
 
 const useSpecificationJsonEditorStyles = makeStyles({
     container: {
-        height: '100%',
-        maxHeight: '100%',
-        maxWidth: '100%',
-        width: '100%',
+        flex: '1 1 0',
+        flexDirection: 'column',
+        overflow: 'hidden'
+    },
+    editor: {
+        flex: '1 1 auto',
         overflow: 'hidden'
     }
 });
@@ -88,14 +90,14 @@ export const SpecificationJsonEditor = ({
     } = useDenebState((state) => ({
         applyMode: state.editor.applyMode,
         current: state.editorSelectedOperation,
-        debouncePeriod: state.visualSettings.editor.json.debouncePeriod.value,
-        fontSize: state.visualSettings.editor.json.fontSize.value,
+        debouncePeriod: state.editorPreferences.jsonEditorDebouncePeriod,
+        fontSize: state.editorPreferences.jsonEditorFontSize,
         provider: state.project.provider as SpecProvider,
-        showLineNumbers: state.visualSettings.editor.json.showLineNumbers.value,
-        theme: state.visualSettings.editor.interface.theme.value,
+        showLineNumbers: state.editorPreferences.jsonEditorShowLineNumbers,
+        theme: state.editorPreferences.theme,
         viewStateConfig: state.editor.viewStateConfig,
         viewStateSpec: state.editor.viewStateSpec,
-        wordWrap: state.visualSettings.editor.json.wordWrap.value,
+        wordWrap: state.editorPreferences.jsonEditorWordWrap,
         setViewState: state.editor.setViewState,
         updateChanges: state.editor.updateChanges
     }));
@@ -110,17 +112,9 @@ export const SpecificationJsonEditor = ({
     }, []);
     const attr = useUncontrolledFocus();
     const classes = useSpecificationJsonEditorStyles();
-    const editorHeight = useMemo(
-        () =>
-            `calc(100% - ${
-                PREVIEW_PANE_TOOLBAR_MIN_SIZE +
-                PREVIEW_PANE_TOOLBAR_BUTTON_PADDING
-            }px)`,
-        []
-    );
     const isActiveEditor = useMemo(() => current === thisEditorRole, [current]);
     const display = useMemo(
-        () => (isActiveEditor ? 'inline' : 'none'),
+        () => (isActiveEditor ? 'flex' : 'none'),
         [isActiveEditor]
     );
     const { spec, config } = useSpecificationEditor();
@@ -155,15 +149,18 @@ export const SpecificationJsonEditor = ({
             setViewState(ref.current?.saveViewState());
         });
         // Tracking of cursor position for status bar
-        editor.onDidChangeCursorPosition((e) => {
-            const range = editor.getSelection();
-            setStatus({
-                ...status,
-                cursor: e.position,
-                selectedText:
-                    (range && editor.getModel()?.getValueInRange(range)) || ''
-            });
-        });
+        editor.onDidChangeCursorPosition(
+            (e: monaco.editor.ICursorPositionChangedEvent) => {
+                const range = editor.getSelection();
+                setStatus({
+                    ...status,
+                    cursor: e.position,
+                    selectedText:
+                        (range && editor.getModel()?.getValueInRange(range)) ||
+                        ''
+                });
+            }
+        );
         // Process context menu
         editor.onContextMenu(() => removeContextMenuItems(editor));
         addHyperlinkOverride(editor, launchUrl);
@@ -204,29 +201,30 @@ export const SpecificationJsonEditor = ({
     ]);
     return (
         <div style={{ display }} className={classes.container} {...attr}>
-            <Editor
-                onMount={handleOnMount}
-                onChange={handleOnChange}
-                width='100%'
-                height={editorHeight}
-                defaultLanguage='json'
-                path={`deneb://${thisEditorRole}-${provider}.json`}
-                theme={theme === 'dark' ? 'vs-dark' : 'light'}
-                defaultValue={getDefaultValue(thisEditorRole)}
-                options={{
-                    cursorBlinking: 'smooth',
-                    fixedOverflowWidgets: true,
-                    folding: true,
-                    fontSize: ptToPx(fontSize),
-                    lineNumbers: showLineNumbers ? 'on' : 'off',
-                    lineNumbersMinChars: 2,
-                    minimap: { enabled: false },
-                    quickSuggestions: true,
-                    scrollBeyondLastLine: false,
-                    tabSize: EDITOR_DEFAULTS.tabSize,
-                    wordWrap: wordWrap ? 'on' : 'off'
-                }}
-            />
+            <div className={classes.editor}>
+                <Editor
+                    onMount={handleOnMount}
+                    onChange={handleOnChange}
+                    width='100%'
+                    defaultLanguage='json'
+                    path={`deneb://${thisEditorRole}-${provider}.json`}
+                    theme={theme === 'dark' ? 'vs-dark' : 'light'}
+                    defaultValue={getDefaultValue(thisEditorRole)}
+                    options={{
+                        cursorBlinking: 'smooth',
+                        fixedOverflowWidgets: true,
+                        folding: true,
+                        fontSize: ptToPx(fontSize),
+                        lineNumbers: showLineNumbers ? 'on' : 'off',
+                        lineNumbersMinChars: 2,
+                        minimap: { enabled: false },
+                        quickSuggestions: true,
+                        scrollBeyondLastLine: false,
+                        tabSize: EDITOR_DEFAULTS.tabSize,
+                        wordWrap: wordWrap ? 'on' : 'off'
+                    }}
+                />
+            </div>
             <SpecificationEditorStatusBar
                 position={status.cursor}
                 selectedText={status.selectedText}
@@ -252,13 +250,13 @@ const addHyperlinkOverride = (
 const getDefaultValue = (role: EditorPaneRole) => {
     const {
         editor: { stagedConfig, stagedSpec },
-        visualSettings
+        project: { spec, config }
     } = getDenebState();
     switch (role) {
         case 'Spec':
-            return stagedSpec ?? visualSettings.vega.output.jsonSpec.value;
+            return stagedSpec ?? spec;
         case 'Config':
-            return stagedConfig ?? visualSettings.vega.output.jsonConfig.value;
+            return stagedConfig ?? config;
     }
 };
 
@@ -329,7 +327,7 @@ const setMonacoCompletionProvider = () => {
                     fields.push({
                         label: key,
                         insertText: key,
-                        detail: getSnippetFieldMetadata(field),
+                        documentation: getSnippetFieldMetadata(field),
                         kind: monaco.languages.CompletionItemKind.Field,
                         range,
                         sortText: `zzzzz__${key}`
@@ -348,20 +346,22 @@ const setMonacoCompletionProvider = () => {
  * JSON editor.
  */
 const setMonacoDiagnosticsOptions = () => {
+    const enableSchemaRequest =
+        toBoolean(process.env.ALLOW_EXTERNAL_URI) ?? false;
     monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
         allowComments: true,
-        enableSchemaRequest: false,
+        enableSchemaRequest,
         schemas: [
             {
                 schema: getProviderSchema({ provider: 'vegaLite' }),
-                uri: 'https://vega.github.io/schema/vega-lite/v5.json',
+                uri: getProviderSchemaUrl('vegaLite'),
                 fileMatch: [
                     monaco.Uri.parse('deneb://Spec-vegaLite.json').toString()
                 ]
             },
             {
                 schema: getProviderSchema({ provider: 'vega' }),
-                uri: 'https://vega.github.io/schema/vega/v5.json',
+                uri: getProviderSchemaUrl('vega'),
                 fileMatch: [
                     monaco.Uri.parse('deneb://Spec-vega.json').toString()
                 ]
@@ -403,17 +403,7 @@ const setMonacoKeyBindingRules = () => {
  * something else.
  */
 const getSnippetFieldMetadata = (field: DatasetField) => {
-    const { translate } = getDenebState().i18n;
-    switch (true) {
-        case field.isHighlightComponent:
-            return translate('Text_AutoComplete_Meta_Highlight');
-        case field.isMeasure:
-            return translate('Text_AutoComplete_Meta_Measure');
-        case field.isColumn:
-            return translate('Text_AutoComplete_Meta_Column');
-        default:
-            return '';
-    }
+    return getFieldDocumentationByName(field.name);
 };
 
 /**
@@ -426,17 +416,12 @@ const updateTracking = async (spec: string, editorRole: EditorPaneRole) => {
     );
     const {
         fieldUsage: { dataset: trackedFieldsCurrent, editorShouldSkipRemap },
-        visualSettings: {
-            vega: {
-                output: {
-                    jsonSpec: { value: jsonSpec }
-                }
-            }
-        }
+        project: { spec: currentSpec }
     } = getDenebState();
     if (
         editorRole === 'Config' ||
-        (editorRole === 'Spec' && (spec === jsonSpec || editorShouldSkipRemap))
+        (editorRole === 'Spec' &&
+            (spec === currentSpec || editorShouldSkipRemap))
     ) {
         logDebug(
             "[Spec Editor] Spec hasn't changed, skipping tracking and tokens..."

@@ -1,4 +1,5 @@
 export {
+    doesModeAllowEmbedViewportSet,
     getDisplayModeAccordingToOptions,
     getUpdatedDisplayHistoryList,
     isDisplayModeEligibleForDataProcessing,

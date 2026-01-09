@@ -1,0 +1,12 @@
+{
+    "extends": "@deneb-viz/typescript-config/react-library.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": ".",
+        "sourceMap": true,
+        "noEmit": true
+    },
+    "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts"],
+    "exclude": ["node_modules", "dist"],
+    "references": [{ "path": "./tsconfig.node.json" }]
+}

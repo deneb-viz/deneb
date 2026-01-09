@@ -21,7 +21,6 @@ import {
     type IWorkerDatasetViewerMessage
 } from '../../workers';
 import {
-    DATA_TABLE_COLUMN_RESERVED_WORDS,
     DATA_TABLE_FONT_FAMILY,
     DATA_TABLE_FONT_SIZE,
     DATA_TABLE_VALUE_MAX_DEPTH,
@@ -33,48 +32,16 @@ import { NoDataMessage } from '../no-data-message';
 import { DataTableViewer } from '../data-table/data-table';
 import { ProcessingDataMessage } from '../data-table/processing-data-message';
 import { type VegaDatum } from '@deneb-viz/data-core/value';
-import {
-    getCrossHighlightFieldBaseMeasureName,
-    isCrossHighlightComparatorField,
-    isCrossHighlightField,
-    isCrossHighlightStatusField,
-    ROW_INDEX_FIELD_NAME,
-    SELECTED_ROW_FIELD_NAME
-} from '@deneb-viz/data-core/field';
-import { makeStyles } from '@fluentui/react-components';
-import {
-    PREVIEW_PANE_TOOLBAR_MIN_SIZE,
-    SPLIT_PANE_HANDLE_SIZE
-} from '../../../../lib';
+import { useDebugWrapperStyles } from '../styles';
+import { getFieldDocumentationByName } from '../../../../lib/dataset';
 
 type DatasetViewerProps = {
     datasetName: string;
-    hashValue: string;
     logAttention: boolean;
     renderId: string;
 };
 
 const DATA_LISTENER_DEBOUNCE_INTERVAL = 100;
-
-const useDatasetViewerStyles = makeStyles({
-    container: {
-        height: `calc(100% - ${PREVIEW_PANE_TOOLBAR_MIN_SIZE}px - ${
-            SPLIT_PANE_HANDLE_SIZE / 2
-        }px)`
-    },
-    wrapper: {
-        display: 'flex',
-        height: '100%',
-        maxHeight: '100%',
-        flexDirection: 'column'
-    },
-    details: {
-        display: 'flex',
-        flexDirection: 'column',
-        flexGrow: 1,
-        overflow: 'auto'
-    }
-});
 
 /**
  * Handles display of dataset details for the current Vega view.
@@ -82,7 +49,6 @@ const useDatasetViewerStyles = makeStyles({
 // eslint-disable-next-line max-lines-per-function
 export const DatasetViewer = ({
     datasetName,
-    hashValue,
     logAttention,
     renderId
 }: DatasetViewerProps) => {
@@ -113,8 +79,7 @@ export const DatasetViewer = ({
         logError: state.specification.logError
     }));
     /**
-     * When our dataset changes, we need to send it to our web worker for
-     * processing.
+     * When our dataset changes, we need to send it to our web worker for processing.
      */
     useEffect(() => {
         logDebug('DatasetViewer: updating dataset state...');
@@ -129,8 +94,8 @@ export const DatasetViewer = ({
                 datasetState
             });
             /**
-             * We have to fix/prune a dataset prior to sending to the worker,
-             * as postMessage gets upset about cyclics and methods.
+             * We have to fix/prune a dataset prior to sending to the worker, as postMessage gets upset about cyclics
+             * and methods.
              */
             const message: IWorkerDatasetViewerMessage = {
                 canvasFontCharWidth: getDataTableRenderedCharWidth(),
@@ -144,8 +109,7 @@ export const DatasetViewer = ({
         }
     }, [datasetRaw.hashValue]);
     /**
-     * When we get a response from our worker, we need to update our state
-     * with the processed data table output.
+     * When we get a response from our worker, we need to update our state with the processed data table output.
      */
     useEffect(() => {
         if (window.Worker) {
@@ -296,7 +260,6 @@ export const DatasetViewer = ({
                 logDebug(
                     `DatasetViewer: change necessitates dataset update. Updating...`,
                     {
-                        hashValue,
                         datasetName,
                         renderId,
                         logAttention
@@ -320,7 +283,7 @@ export const DatasetViewer = ({
         return () => {
             removeListener();
         };
-    }, [hashValue, datasetName, renderId, logAttention]);
+    }, [datasetName, renderId, logAttention]);
     /**
      * Keep sort persisted across renders.
      */
@@ -334,11 +297,10 @@ export const DatasetViewer = ({
         setSortColumnId(column?.id ?? null);
         setSortAsc(() => sortDirection === 'asc');
     };
-    const classes = useDatasetViewerStyles();
+    const classes = useDebugWrapperStyles();
     logRender('DatasetViewer', {
         datasetState,
         datasetRaw,
-        hashValue,
         renderId,
         logAttention,
         sortColumnId,
@@ -367,8 +329,7 @@ export const DatasetViewer = ({
 };
 
 /**
- * Retrieves the specified dataset from the Vega view (or directly from the
- * store if there are issues with the view).
+ * Retrieves the specified dataset from the Vega view (or directly from the store if there are issues with the view).
  */
 const getDatasetValues = (datasetName: string, logAttention: boolean) => {
     logTimeStart('getDatasetValues');
@@ -376,6 +337,14 @@ const getDatasetValues = (datasetName: string, logAttention: boolean) => {
         logDebug('Falling back to store dataset...');
         return getDenebState()?.dataset?.values;
     };
+    // Guard against empty dataset name to avoid Vega "Unrecognized data set" error
+    if (!datasetName) {
+        logDebug(
+            'DatasetViewer: no dataset name provided. Returning store dataset.'
+        );
+        logTimeEnd('getDatasetValues');
+        return storeDs();
+    }
     try {
         const ds = logAttention
             ? storeDs()
@@ -400,9 +369,9 @@ const getTableColumns = (
     maxLengths: IWorkerDatasetViewerMaxDisplayWidths
 ): TableColumn<IWorkerDatasetViewerDataTableRow>[] => {
     logDebug('DatasetViewer: calculating table columns...');
-    return Object.keys(dataset?.[0])?.map((c) => ({
+    return Object.keys(dataset?.[0] ?? {})?.map((c) => ({
         id: c,
-        name: <span title={getColumnHeaderTooltip(c)}>{c}</span>,
+        name: <span title={getFieldDocumentationByName(c)}>{c}</span>,
         cell: (row) => (
             <DataTableCell
                 displayValue={row[c]?.displayValue}
@@ -453,41 +422,6 @@ const calculateMaxWidth = (fieldName: string, fieldDataMaxWidth: number) => {
 };
 
 /**
- * For a given column, checks for any special conditions and returns a
- * customized tooltip for the column header.
- */
-const getColumnHeaderTooltip = (column: string) => {
-    const { translate } = getDenebState().i18n;
-    switch (true) {
-        case isTableColumnNameReserved(column):
-            return getReservedTableColumnTooltip(column);
-        case isCrossHighlightComparatorField(column):
-            return translate('Pivot_Dataset_HighlightComparatorField', [
-                getCrossHighlightFieldBaseMeasureName(column),
-                translate('Pivot_Debug_HighlightComparatorEq'),
-                translate('Pivot_Debug_HighlightComparatorLt'),
-                translate('Pivot_Debug_HighlightComparatorGt'),
-                translate('Pivot_Debug_HighlightComparatorNeq'),
-                translate('Pivot_Debug_Refer_Documentation')
-            ]);
-        case isCrossHighlightStatusField(column):
-            return translate('Pivot_Dataset_HighlightStatusField', [
-                getCrossHighlightFieldBaseMeasureName(column),
-                translate('Pivot_Debug_HighlightStatusNeutral'),
-                translate('Pivot_Debug_HighlightStatusOn'),
-                translate('Pivot_Debug_HighlightStatusOff'),
-                translate('Pivot_Debug_Refer_Documentation')
-            ]);
-        case isCrossHighlightField(column):
-            return translate('Pivot_Dataset_HighlightField', [
-                getCrossHighlightFieldBaseMeasureName(column)
-            ]);
-        default:
-            return column;
-    }
-};
-
-/**
  * Create hash of dataset, that we can use to determine changes more cheaply within the UI.
  */
 const getDataHash = (data: VegaDatum[]) => {
@@ -533,38 +467,8 @@ const getDataTableWorkerTranslations = (): IWorkerDatasetViewerTranslations => {
         placeholderInfinity: translate('Table_Placeholder_Infinity'),
         placeholderNaN: translate('Table_Placeholder_NaN'),
         placeholderTooLong: translate('Table_Placeholder_TooLong'),
-        selectedNeutral: translate('Pivot_Debug_SelectedNeutral'),
-        selectedOn: translate('Pivot_Debug_SelectedOn'),
-        selectedOff: translate('Pivot_Debug_SelectedOff')
+        selectedNeutral: translate('Text_Dataset_FieldSelectedNeutral'),
+        selectedOn: translate('Text_Dataset_FieldSelectedOn'),
+        selectedOff: translate('Text_Dataset_FieldSelectedOff')
     };
 };
-
-/**
- * If a column name is a reserved word, then supply a suitable tooltip value.
- */
-const getReservedTableColumnTooltip = (field: string) => {
-    const { translate } = getDenebState().i18n;
-    switch (true) {
-        case field === SELECTED_ROW_FIELD_NAME:
-            return translate('Pivot_Dataset_SelectedName', [
-                field,
-                translate('Pivot_Debug_SelectedNeutral'),
-                translate('Pivot_Debug_SelectedOn'),
-                translate('Pivot_Debug_SelectedOff'),
-                translate('Pivot_Debug_Refer_Documentation')
-            ]);
-        default:
-            return translate(
-                `Pivot_Dataset_${
-                    field === ROW_INDEX_FIELD_NAME ? 'RowIdentifier' : 'Unknown'
-                }`,
-                [field]
-            );
-    }
-};
-
-/**
- * For a given column value, determine if it's in the list of 'reserved' words that should be processed differently.
- */
-const isTableColumnNameReserved = (value: string) =>
-    DATA_TABLE_COLUMN_RESERVED_WORDS.indexOf(value) > -1;

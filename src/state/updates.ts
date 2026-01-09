@@ -2,9 +2,10 @@ import powerbi from 'powerbi-visuals-api';
 import type { StateCreator } from 'zustand';
 import { shallowEqual } from 'fast-equals';
 
-import { VisualFormattingSettingsModel } from '@deneb-viz/powerbi-compat/properties';
+import { getVisualFormattingModel } from '../lib/persistence';
 import { type DenebVisualStoreState } from './state';
 import {
+    doesModeAllowEmbedViewportSet,
     getUpdatedDisplayHistoryList,
     isVisualUpdateTypeResizeEnd,
     isVisualUpdateTypeVolatile,
@@ -21,7 +22,7 @@ export type UpdatesSlice = {
 
 export type VisualUpdateDataPayload = {
     options: powerbi.extensibility.visual.VisualUpdateOptions;
-    settings: VisualFormattingSettingsModel;
+    isDeveloperMode: boolean;
 };
 
 export const createUpdatesSlice = (): StateCreator<
@@ -36,7 +37,9 @@ export const createUpdatesSlice = (): StateCreator<
         history: [],
         options: null,
         setVisualUpdateOptions: async (payload) => {
-            const { options, settings } = payload;
+            const { options, isDeveloperMode } = payload;
+            const settings = getVisualFormattingModel(options?.dataViews?.[0]);
+            settings.resolveDeveloperSettings(isDeveloperMode);
             // Apply consistent updates we will always need
             {
                 set(
@@ -44,7 +47,8 @@ export const createUpdatesSlice = (): StateCreator<
                         const history = getUpdatedDisplayHistoryList(
                             state.updates.history,
                             {
-                                ...payload,
+                                options,
+                                settings,
                                 isFetchingAdditionalData:
                                     state.dataset.isFetchingAdditional
                             }
@@ -83,8 +87,7 @@ export const createUpdatesSlice = (): StateCreator<
                 const { embedViewport, mode, setEmbedViewport } =
                     get().interface;
                 if (
-                    mode !== 'editor' &&
-                    mode !== 'transition-viewer-editor' &&
+                    doesModeAllowEmbedViewportSet(mode, options.isInFocus) &&
                     !shallowEqual(embedViewport, viewport) &&
                     (isVisualUpdateTypeResizeEnd(options.type) ||
                         !embedViewport)

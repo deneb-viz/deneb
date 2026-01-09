@@ -1,6 +1,6 @@
 import powerbi from 'powerbi-visuals-api';
 import { describe, expect, it } from 'vitest';
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
+import { INTERACTIVITY_DEFAULTS } from '@deneb-viz/powerbi-compat/interactivity';
 import {
     areAllCreateDataRequirementsMet,
     areAllTemplateFieldsAssigned,
@@ -60,12 +60,12 @@ const MOCK_TEMPLATE_METADATA_BASE: UsermetaTemplate = {
         providerVersion: MOCK_PROVIDER_VERSION
     },
     interactivity: {
-        tooltip: DEFAULTS.vega.enableTooltips,
-        contextMenu: DEFAULTS.vega.enableContextMenu,
-        selection: DEFAULTS.vega.enableSelection,
-        selectionMode: DEFAULTS.vega.selectionMode as SelectionMode,
-        dataPointLimit: DEFAULTS.vega.selectionMaxDataPoints,
-        highlight: DEFAULTS.vega.enableHighlight
+        tooltip: INTERACTIVITY_DEFAULTS.enableTooltips,
+        contextMenu: INTERACTIVITY_DEFAULTS.enableContextMenu,
+        selection: INTERACTIVITY_DEFAULTS.enableSelection,
+        selectionMode: INTERACTIVITY_DEFAULTS.selectionMode as SelectionMode,
+        dataPointLimit: INTERACTIVITY_DEFAULTS.selectionMaxDataPoints,
+        highlight: INTERACTIVITY_DEFAULTS.enableHighlight
     },
     dataset: [],
     config: '{}'

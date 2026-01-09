@@ -1,16 +1,3 @@
-import {
-    ROW_INDEX_FIELD_NAME,
-    SELECTED_ROW_FIELD_NAME
-} from '@deneb-viz/data-core/field';
-
-/**
- * List of reserved words for column headers that can benefit from specific tooltips explaining their purpose.
- */
-export const DATA_TABLE_COLUMN_RESERVED_WORDS = [
-    ROW_INDEX_FIELD_NAME,
-    SELECTED_ROW_FIELD_NAME
-];
-
 /**
  * Font family to use for data table. We use a monospace font, to be able to guarantee that display width can be
  * reliably predicated without having to spam a canvas renderer for every field and value and saves us a significant

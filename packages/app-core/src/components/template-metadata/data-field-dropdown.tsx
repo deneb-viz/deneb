@@ -74,7 +74,7 @@ export const DataFieldDropdown = ({
         reducer?.({
             key: datasetField.key,
             suppliedObjectKey: option?.id,
-            suppliedObjectName: option?.templateMetadata?.name
+            suppliedObjectName: getFieldDisplayName(option)
         });
     }, [selectedKey]);
     const dropdownId = useId('dataset-field');
@@ -95,7 +95,7 @@ export const DataFieldDropdown = ({
             className={classes.root}
             placeholder={translate('Text_Placeholder_Create_Assigned_Field')}
             onOptionSelect={onOptionSelect}
-            value={selectedField?.templateMetadata?.name ?? ''}
+            value={getFieldDisplayName(selectedField)}
         >
             {dropdownOptionElements}
         </Dropdown>
@@ -132,15 +132,28 @@ const getDefaultSelectedKey = (
 ) => fields[field.name]?.id || undefined;
 
 /**
+ * Get the display name for a given field, preferring template metadata if available.
+ */
+const getFieldDisplayName = (field: DatasetField | undefined) => {
+    return field?.templateMetadata?.name || field?.name || '';
+};
+
+/**
  * Returns a list of `Option` components, representing the available
  * fields from the dataset.
  */
 const getFieldOptions = (fields: DatasetField[]) => {
     return fields?.map((df, i) => {
+        const displayValue = getFieldDisplayName(df);
         return (
-            <Option id={`field-${i}`} key={df.id} value={df.id} text={df.name}>
+            <Option
+                id={`field-${i}`}
+                key={df.id}
+                value={df.id}
+                text={displayValue}
+            >
                 <DataTypeIcon type={df.templateMetadata?.type} />
-                {df.templateMetadata?.name}
+                {displayValue}
             </Option>
         );
     });

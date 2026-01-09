@@ -10,6 +10,7 @@ import {
     type ZoomOtherCommandTestOptions
 } from '../lib';
 import {
+    type ContainerViewport,
     type DebugPaneRole,
     type EditorApplyMode,
     type EditorPaneRole
@@ -18,19 +19,27 @@ import { StoreState } from './state';
 import { StateCreator } from 'zustand';
 import { VISUAL_PREVIEW_ZOOM_CONFIGURATION } from '@deneb-viz/configuration';
 import { UsermetaTemplate } from '@deneb-viz/template-usermeta';
-import {
-    getEditorPreviewAreaWidth,
-    getPreviewAreaHeightInitial,
-    getResizablePaneSize
-} from '../lib/interface/layout';
 
 type EditorSliceProperties = {
     applyMode: EditorApplyMode;
+    debugPaneLatchHeight: number;
+    debugPaneViewport: ContainerViewport;
+    editorPaneViewport: ContainerViewport;
+    isDebugPaneMinimized: boolean;
     isDirty: boolean;
+    previewAreaViewport: ContainerViewport;
     stagedConfig: string | undefined;
     stagedSpec: string | undefined;
     viewStateConfig: monaco.editor.ICodeEditorViewState | undefined;
     viewStateSpec: monaco.editor.ICodeEditorViewState | undefined;
+    setIsDebugPaneMinimized: (isMinimized: boolean) => void;
+    setViewports: (options: {
+        editorPaneViewport: ContainerViewport;
+        previewAreaViewport: ContainerViewport;
+        debugPaneViewport: ContainerViewport;
+        debugPaneLatchHeight: number;
+        isDebugPaneMinimized: boolean;
+    }) => void;
     setViewState: (
         viewState: monaco.editor.ICodeEditorViewState | undefined | null
     ) => void;
@@ -42,26 +51,9 @@ type EditorSliceProperties = {
 
 export type EditorSlice = {
     editor: EditorSliceProperties;
-    editorIsExportDialogVisible: boolean;
-    editorIsNewDialogVisible: boolean;
-    editorPaneIsExpanded: boolean;
-    editorPreviewAreaHeight: number | null;
-    editorPreviewAreaHeightLatch: number | null;
-    editorPreviewAreaHeightMax: number | null;
     editorPreviewAreaSelectedPivot: DebugPaneRole;
-    editorPreviewAreaWidth: number | null;
-    editorPreviewDebugIsExpanded: boolean;
-    editorPaneDefaultWidth: number | null;
-    editorPaneExpandedWidth: number | null;
-    editorPaneWidth: number | null;
     editorSelectedOperation: EditorPaneRole;
     editorZoomLevel: number;
-    toggleEditorPane: () => void;
-    togglePreviewDebugPane: () => void;
-    updateEditorPreviewDebugIsExpanded: (value: boolean) => void;
-    updateEditorPaneWidth: (payload: EditorPaneUpdatePayload) => void;
-    updateEditorPreviewAreaHeight: (height: number) => void;
-    updateEditorPreviewAreaWidth: () => void;
     updateEditorSelectedOperation: (role: EditorPaneRole) => void;
     updateEditorSelectedPreviewRole: (role: DebugPaneRole) => void;
     updateEditorZoomLevel: (zoomLevel: number) => void;
@@ -102,11 +94,53 @@ export const createEditorSlice =
     (set) => ({
         editor: {
             applyMode: 'Manual',
+            debugPaneLatchHeight: 0,
+            debugPaneViewport: {
+                height: 0,
+                width: 0
+            },
+            editorPaneViewport: {
+                height: 0,
+                width: 0
+            },
+            isDebugPaneMinimized: false,
             isDirty: false,
+            previewAreaViewport: {
+                height: 0,
+                width: 0
+            },
             stagedConfig: undefined,
             stagedSpec: undefined,
             viewStateConfig: undefined,
             viewStateSpec: undefined,
+            setIsDebugPaneMinimized: (isMinimized) =>
+                set(
+                    (state) => ({
+                        editor: {
+                            ...state.editor,
+                            isDebugPaneMinimized: isMinimized
+                        }
+                    }),
+                    false,
+                    'editor.setIsDebugPaneMinimized'
+                ),
+            setViewports(options) {
+                set(
+                    (state) => ({
+                        editor: {
+                            ...state.editor,
+                            isDebugPaneMinimized: options.isDebugPaneMinimized,
+                            debugPaneLatchHeight: options.debugPaneLatchHeight,
+                            debugPaneViewport: options.debugPaneViewport,
+                            editorPaneViewport: options.editorPaneViewport,
+                            previewAreaViewport: options.previewAreaViewport
+                        }
+                    }),
+                    undefined,
+                    'editor.setViewports'
+                );
+                //   get().setEditorPreviewAreaScaleToFit();
+            },
             setViewState: (viewState) =>
                 set(
                     (state) => handleSetViewState(state, viewState),
@@ -138,57 +172,9 @@ export const createEditorSlice =
                     'editor.updateIsDirty'
                 )
         },
-        editorIsExportDialogVisible: false,
-        editorIsNewDialogVisible: true,
-        editorPaneIsExpanded: true,
-        editorPreviewAreaHeight: null,
-        editorPreviewAreaHeightLatch: null,
-        editorPreviewAreaHeightMax: null,
         editorPreviewAreaSelectedPivot: 'data',
-        editorPreviewAreaWidth: null,
-        editorPreviewDebugIsExpanded: false,
-        editorPaneDefaultWidth: null,
-        editorPaneExpandedWidth: null,
-        editorPaneWidth: null,
         editorSelectedOperation: 'Spec',
         editorZoomLevel: VISUAL_PREVIEW_ZOOM_CONFIGURATION.default,
-        toggleEditorPane: () =>
-            set(
-                (state) => handleToggleEditorPane(state),
-                false,
-                'toggleEditorPane'
-            ),
-        togglePreviewDebugPane: () =>
-            set(
-                (state) => handleTogglePreviewDebugPane(state),
-                false,
-                'togglePreviewDebugPane'
-            ),
-        updateEditorPaneWidth: (payload) =>
-            set(
-                (state) => handleUpdateEditorPaneWidth(state, payload),
-                false,
-                'updateEditorPaneWidth'
-            ),
-        updateEditorPreviewAreaHeight: (height) =>
-            set(
-                (state) => handleUpdateEditorPreviewAreaHeight(state, height),
-                false,
-                'updateEditorPreviewAreaHeight'
-            ),
-        updateEditorPreviewAreaWidth: () =>
-            set(
-                (state) => handleUpdateEditorPreviewAreaWidth(state),
-                false,
-                'updateEditorPreviewAreaWidth'
-            ),
-        updateEditorPreviewDebugIsExpanded: (value) =>
-            set(
-                (state) =>
-                    handleUpdateEditorPreviewDebugIsExpanded(state, value),
-                false,
-                'updateEditorPreviewDebugIsExpanded'
-            ),
         updateEditorSelectedOperation: (role) =>
             set(
                 (state) => handleUpdateEditorSelectedOperation(state, role),
@@ -255,8 +241,8 @@ const handleUpdateChanges = (
             : state.editor.viewStateConfig;
     const isDirty =
         (role === 'Spec'
-            ? state.visualSettings.vega.output.jsonSpec.value !== text
-            : state.visualSettings.vega.output.jsonConfig.value !== text) &&
+            ? state.project.spec !== text
+            : state.project.config !== text) &&
         state.editor.applyMode !== 'Auto';
     const viewStateConfig =
         role === 'Config'
@@ -296,25 +282,6 @@ const handleUpdateChanges = (
     };
 };
 
-const handleToggleEditorPane = (state: StoreState): Partial<StoreState> => {
-    const newExpansionState = !state.editorPaneIsExpanded;
-    const newWidth = getResizablePaneSize(
-        state.editorPaneExpandedWidth as number,
-        newExpansionState,
-        state.interface.viewport,
-        state.interface.editorPosition
-    );
-    return {
-        editorPaneIsExpanded: newExpansionState,
-        editorPaneWidth: newWidth,
-        editorPreviewAreaWidth: getEditorPreviewAreaWidth(
-            state.interface.viewport?.width ?? 0,
-            newWidth,
-            state.interface.editorPosition
-        )
-    };
-};
-
 const handleUpdateIsDirty = (
     state: StoreState,
     isDirty: boolean
@@ -332,73 +299,6 @@ const handleUpdateIsDirty = (
     }
 });
 
-const handleUpdateEditorPaneWidth = (
-    state: StoreState,
-    payload: EditorPaneUpdatePayload
-): Partial<StoreState> => {
-    const { editorPaneWidth, editorPaneExpandedWidth } = payload;
-    const viewportWidth = state.interface.viewport?.width ?? 0;
-    return {
-        editorPaneWidth,
-        editorPaneExpandedWidth,
-        editorPreviewAreaWidth: getEditorPreviewAreaWidth(
-            viewportWidth,
-            editorPaneWidth,
-            state.interface.editorPosition
-        )
-    };
-};
-
-const handleUpdateEditorPreviewAreaHeight = (
-    state: StoreState,
-    height: number
-): Partial<StoreState> => {
-    return {
-        editorPreviewDebugIsExpanded:
-            height !== state.editorPreviewAreaHeightMax,
-        editorPreviewAreaHeight: height,
-        editorPreviewAreaHeightLatch: height
-    };
-};
-
-const handleUpdateEditorPreviewAreaWidth = (
-    state: StoreState
-): Partial<StoreState> => ({
-    editorPreviewAreaWidth: getEditorPreviewAreaWidth(
-        state.interface.viewport?.width ?? 0,
-        state.editorPaneWidth as number,
-        state.interface.editorPosition
-    )
-});
-
-const handleUpdateEditorPreviewDebugIsExpanded = (
-    state: StoreState,
-    value: boolean
-): Partial<StoreState> => ({
-    editorPreviewDebugIsExpanded: value
-});
-
-const handleTogglePreviewDebugPane = (
-    state: StoreState
-): Partial<StoreState> => {
-    const prev = state.editorPreviewDebugIsExpanded;
-    const next = !prev;
-    const editorPreviewAreaHeight = prev
-        ? state.editorPreviewAreaHeightMax
-        : state.editorPreviewAreaHeightLatch ===
-            state.editorPreviewAreaHeightMax
-          ? getPreviewAreaHeightInitial(state.interface.viewport?.height ?? 0)
-          : state.editorPreviewAreaHeightLatch;
-    const editorPreviewAreaHeightLatch = prev
-        ? state.editorPreviewAreaHeightLatch
-        : state.editorPreviewAreaHeight;
-    return {
-        editorPreviewDebugIsExpanded: next,
-        editorPreviewAreaHeight,
-        editorPreviewAreaHeightLatch
-    };
-};
-
 const handleUpdateEditorSelectedOperation = (
     state: StoreState,
     role: EditorPaneRole
@@ -410,14 +310,8 @@ const handleUpdateEditorSelectedPreviewRole = (
     state: StoreState,
     role: DebugPaneRole
 ): Partial<StoreState> => {
-    const expand = state.editorPreviewDebugIsExpanded;
-    const editorPreviewAreaHeight = !expand
-        ? state.editorPreviewAreaHeightLatch
-        : state.editorPreviewAreaHeight;
     return {
-        editorPreviewAreaSelectedPivot: role,
-        editorPreviewAreaHeight,
-        editorPreviewDebugIsExpanded: true
+        editorPreviewAreaSelectedPivot: role
     };
 };
 

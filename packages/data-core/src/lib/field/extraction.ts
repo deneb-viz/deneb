@@ -8,7 +8,7 @@ export function getDatasetFieldsInclusive(fields: DatasetFields | undefined) {
     if (!fields) {
         return {};
     }
-    return pickBy(fields, (f) => !f.isExcludedFromTemplate);
+    return pickBy(fields, (f) => f.templateMetadata !== undefined);
 }
 
 /**

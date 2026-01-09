@@ -1,22 +1,42 @@
 import { useLayoutEffect } from 'react';
 
+import { useDenebPlatformProvider } from '../components/deneb-platform';
 import { type InterfaceType } from '../lib';
 import { useDenebState } from '../state';
-import { Editor } from './editor/editor';
+import { Editor } from './editor/components/editor';
 import { Viewer } from './viewer';
+import { VegaExtensibilityServices } from '@deneb-viz/vega-runtime/extensibility';
+import { VegaPatternFillServices } from '@deneb-viz/vega-runtime/pattern-fill';
 
 export type AppProps = {
     type: InterfaceType;
 };
 
 export const DenebApp = ({ type }: AppProps) => {
-    // Sync prop to state immediately on render (before effects)
-    const setInterfaceType = useDenebState((state) => state.interface.setType);
+    // Get platform context values
+    const { embedContainerSetByHost } = useDenebPlatformProvider();
 
-    // Option 1: useLayoutEffect (runs before paint, after render)
+    // Sync props to state immediately on render (before effects)
+    const { setInterfaceType, setEmbedContainerSetByHost } = useDenebState(
+        (state) => ({
+            setInterfaceType: state.interface.setType,
+            setEmbedContainerSetByHost:
+                state.interface.setEmbedContainerSetByHost
+        })
+    );
+
+    // Sync interface type and platform configuration to state, and bind services
     useLayoutEffect(() => {
         setInterfaceType(type);
-    }, [type, setInterfaceType]);
+        setEmbedContainerSetByHost(embedContainerSetByHost);
+        VegaExtensibilityServices.bind();
+        VegaPatternFillServices.bind();
+    }, [
+        type,
+        embedContainerSetByHost,
+        setInterfaceType,
+        setEmbedContainerSetByHost
+    ]);
 
     // Render the appropriate UI
     return type === 'editor' ? <Editor /> : <Viewer />;

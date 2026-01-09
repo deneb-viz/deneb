@@ -8,10 +8,12 @@ import {
     type InteractivityLookupDataset
 } from '../interactivity';
 import { logDebug, logWarning } from '@deneb-viz/utils/logging';
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
 import { getDenebState } from '@deneb-viz/app-core';
 import { useDenebVisualState } from '../../state';
-import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
+import {
+    INTERACTIVITY_DEFAULTS,
+    type SelectionMode
+} from '@deneb-viz/powerbi-compat/interactivity';
 
 /**
  * Result returned from a cross-filter apply operation.
@@ -188,7 +190,7 @@ const getResolvedCrossFilterOptions = (
     const baseOptions: CrossFilterOptions = {
         mode: expr ? 'advanced' : 'simple',
         filterExpr: expr,
-        limit: DEFAULTS.vega.selectionMaxDataPoints,
+        limit: INTERACTIVITY_DEFAULTS.selectionMaxDataPoints,
         multiSelect: ['ctrl', 'shift']
     };
     return { ...baseOptions, ...options };

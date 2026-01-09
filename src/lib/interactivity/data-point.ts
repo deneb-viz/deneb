@@ -9,6 +9,7 @@ import {
     ROW_INDEX_FIELD_NAME
 } from '@deneb-viz/data-core/field';
 import { type VegaDatum } from '@deneb-viz/data-core/value';
+import { type AugmentedMetadataField } from '../dataset';
 
 /**
  * Confirm that each datum in a dataset contains a reconcilable identifier for selection purposes.
@@ -22,7 +23,7 @@ const allValuesHaveIdentityField = (data: VegaDatum[]) =>
  * Get a reduced set of fields based on an array of key names from the dataset fields.
  */
 export const getDatasetFieldsBySelectionKeys = (
-    fields: DatasetFields<powerbi.DataViewMetadataColumn>,
+    fields: DatasetFields<AugmentedMetadataField>,
     keys: string[] = []
 ) => pickBy(fields, (_v, k) => keys.indexOf(`${k}`) !== -1);
 
@@ -60,7 +61,7 @@ export const getResolvedRowIdentities = (
     const metadata = getDatasetFieldsBySelectionKeys(
         dataset?.fields || {},
         Object.keys(data?.[0] || {})
-    ) as DatasetFields<powerbi.DataViewMetadataColumn>;
+    ) as DatasetFields<AugmentedMetadataField>;
     const foundValues = getValuesForField(data, {
         fields: metadata,
         values: dataset.values
@@ -134,8 +135,8 @@ const getValuesForField = (
     return getMatchedValues(data, {
         fields: pickBy(
             options.fields,
-            (md) => !md.isMeasure
-        ) as DatasetFields<powerbi.DataViewMetadataColumn>,
+            (md) => !md.hostMetadata?.column.isMeasure
+        ) as DatasetFields<AugmentedMetadataField>,
         values: options.values
     });
 };
@@ -146,7 +147,7 @@ const getValuesForField = (
  * metadata.
  */
 const resolveDatumForFields = (
-    fields: DatasetFields<powerbi.DataViewMetadataColumn>,
+    fields: DatasetFields<AugmentedMetadataField>,
     datum: VegaDatum
 ): VegaDatum => {
     const fieldKeys = Object.keys(fields);
@@ -186,15 +187,15 @@ export const resolveDatumFromItem = (item: any): VegaDatum[] => {
  * in order to resolve row identifiers.
  */
 const resolveValueForField = (
-    field: DatasetField<powerbi.DataViewMetadataColumn>,
+    field: DatasetField<AugmentedMetadataField>,
     value: any
 ) => {
     switch (true) {
-        case field?.hostMetadata?.type?.dateTime: {
+        case field?.hostMetadata?.column?.type?.dateTime: {
             return new Date(value);
         }
-        case field?.hostMetadata?.type?.numeric:
-        case field?.hostMetadata?.type?.integer: {
+        case field?.hostMetadata?.column?.type?.numeric:
+        case field?.hostMetadata?.column?.type?.integer: {
             return Number.parseFloat(value);
         }
         default:

@@ -12,34 +12,13 @@ export type DatasetField<T = object> = {
      */
     name: string;
     /**
-     * Flag to confirm if this is a column, according to the data model. This is not in the Power BI metadata but is
-     * helpful for us to know later on.
-     */
-    isColumn: boolean;
-    /**
-     * Flag to confirm if this is a measure, according to the data model.
-     */
-    isMeasure: boolean;
-    /**
-     * Indicates field should not be included in templating activities and supports another field in the dataset.
-     */
-    isExcludedFromTemplate: boolean;
-    /**
-     * Indicates the field is to support highlight-functionality.
-     */
-    isHighlightComponent: boolean;
-    /**
-     * Original dataView index (from categories or values), if we need it for other operations post assembly.
-     */
-    sourceIndex: number;
-    /**
      * Host-specific metadata that can be attached to the field for use by the host application and applied during
      * dataset construction.
      */
     hostMetadata?: T;
     /**
-     * Representation of the field for templating purposes. Should not be present for
-     * `isExcludedFromTemplate === true`.
+     * Representation of the field for templating purposes. Should only be present if the field is eligible for use
+     * within templates. Anything else is assumed to be a support field.
      */
     templateMetadata?: UsermetaDatasetField;
 };

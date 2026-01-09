@@ -1,17 +1,21 @@
 import { useMemo } from 'react';
 
-import { Caption1, makeStyles, tokens } from '@fluentui/react-components';
+import { Caption1, makeStyles, mergeClasses } from '@fluentui/react-components';
 import { logRender } from '@deneb-viz/utils/logging';
 import { useDenebState } from '../../../state';
 import { LogViewer } from './log-viewer/log-viewer';
 import { DatasetViewer } from './dataset-viewer/dataset-viewer';
 import { SignalViewer } from './signal-viewer/signal-viewer';
 import { DebugToolbar } from './debug-toolbar';
+import { FullContainerLayoutNoOverflow } from '../../../components/ui';
+import { DatasetSelectInitializer } from './dataset-viewer/dataset-select';
+
+const DEBUG_AREA_CLASS_NAME = 'deneb-debug-area';
+const DEBUG_AREA_CONTENT_CLASS_NAME = `${DEBUG_AREA_CLASS_NAME}-content`;
 
 const useDebugAreaStyles = makeStyles({
-    body: {
-        height: '100%',
-        backgroundColor: tokens.colorNeutralBackground1,
+    content: {
+        flex: '1 1 0',
         overflow: 'hidden'
     }
 });
@@ -20,21 +24,23 @@ export const DebugArea = () => {
     const {
         datasetName,
         editorPreviewAreaSelectedPivot,
-        editorPreviewDebugIsExpanded,
-        hashValue,
+        isDebugPaneMinimized,
         logAttention,
         renderId,
         translate
     } = useDenebState((state) => ({
         datasetName: state.debug.datasetName,
         editorPreviewAreaSelectedPivot: state.editorPreviewAreaSelectedPivot,
-        editorPreviewDebugIsExpanded: state.editorPreviewDebugIsExpanded,
-        hashValue: state.dataset.hashValue,
+        isDebugPaneMinimized: state.editor.isDebugPaneMinimized,
         logAttention: state.debug.logAttention,
         renderId: state.interface.renderId,
         translate: state.i18n.translate
     }));
     const classes = useDebugAreaStyles();
+    const contentClasses = mergeClasses(
+        DEBUG_AREA_CONTENT_CLASS_NAME,
+        classes.content
+    );
     const content = useMemo(() => {
         switch (editorPreviewAreaSelectedPivot) {
             case 'log':
@@ -43,7 +49,6 @@ export const DebugArea = () => {
                 return (
                     <DatasetViewer
                         datasetName={datasetName}
-                        hashValue={hashValue}
                         logAttention={logAttention}
                         renderId={renderId}
                     />
@@ -56,16 +61,16 @@ export const DebugArea = () => {
     }, [
         datasetName,
         editorPreviewAreaSelectedPivot,
-        editorPreviewDebugIsExpanded,
-        hashValue,
+        isDebugPaneMinimized,
         logAttention,
         renderId
     ]);
     logRender('DebugAreaContent');
     return (
-        <div className={classes.body}>
+        <FullContainerLayoutNoOverflow className={DEBUG_AREA_CLASS_NAME}>
+            <DatasetSelectInitializer />
             <DebugToolbar />
-            {content}
-        </div>
+            <div className={contentClasses}>{content}</div>
+        </FullContainerLayoutNoOverflow>
     );
 };

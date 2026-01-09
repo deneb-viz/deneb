@@ -2,18 +2,13 @@ import { useMemo } from 'react';
 import { TableColumn } from 'react-data-table-component';
 
 import { logRender } from '@deneb-viz/utils/logging';
-import { stringifyPruned } from '@deneb-viz/utils/object';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
-import { makeStyles } from '@fluentui/react-components';
-import {
-    PREVIEW_PANE_TOOLBAR_MIN_SIZE,
-    SPLIT_PANE_HANDLE_SIZE
-} from '../../../../lib';
 import { DataTableViewer } from '../data-table/data-table';
 import { NoDataMessage } from '../no-data-message';
 import { DataTableCell } from '../data-table/data-table-cell';
 import { SignalValue } from './signal-value';
 import { getDenebState } from '../../../../state';
+import { useDebugWrapperStyles } from '../styles';
 
 type SignalViewerProps = {
     renderId: string;
@@ -28,31 +23,11 @@ type SignalTableDataRow = {
     value: any;
 };
 
-const useSignalViewerStyles = makeStyles({
-    container: {
-        height: `calc(100% - ${PREVIEW_PANE_TOOLBAR_MIN_SIZE}px - ${
-            SPLIT_PANE_HANDLE_SIZE / 2
-        }px)`
-    },
-    wrapper: {
-        display: 'flex',
-        height: '100%',
-        maxHeight: '100%',
-        flexDirection: 'column'
-    },
-    details: {
-        display: 'flex',
-        flexDirection: 'column',
-        flexGrow: 1,
-        overflow: 'auto'
-    }
-});
-
 /**
  * Handles display of signal data for the current Vega view.
  */
 export const SignalViewer = ({ renderId }: SignalViewerProps) => {
-    const classes = useSignalViewerStyles();
+    const classes = useDebugWrapperStyles();
     const columns = useMemo(() => getTableColumns(renderId), [renderId]);
     const values = useMemo(() => getSignalTableValues(), [renderId]);
     logRender('SignalViewer', {
@@ -78,17 +53,15 @@ export const SignalViewer = ({ renderId }: SignalViewerProps) => {
 };
 
 /**
- * For the Signals table, this swaps out the key/value pairs into an array of
- * entries, suitable for tabulator.
+ * For the Signals table, get the list of signal names. We only extract the keys here rather than values because some
+ * Vega signals (particularly bin-related ones) contain accessor functions that throw errors when evaluated without a
+ * proper `datum` context. The actual values are fetched safely in the SignalValue component.
  */
 const getSignalTableValues = () => {
     const signals = VegaViewServices.getAllSignals();
-    return Object.entries(signals).map(([key, value]) => ({
+    return Object.keys(signals).map((key) => ({
         key,
-        value:
-            value !== null && typeof value === 'object' && !Array.isArray(value)
-                ? JSON.parse(stringifyPruned(value))
-                : value
+        value: null // Value will be fetched by SignalValue component
     }));
 };
 
@@ -118,13 +91,9 @@ const getTableColumns = (
             name: translate('Pivot_Signals_ValueColumn'),
             id: 'value',
             grow: 5,
-            selector: (row) => row.value,
+            selector: (row) => row.key, // Use key for sorting since value is fetched dynamically
             cell: (row) => (
-                <SignalValue
-                    signalName={row.key}
-                    initialValue={row.value}
-                    renderId={renderId}
-                />
+                <SignalValue signalName={row.key} renderId={renderId} />
             )
         }
     ];

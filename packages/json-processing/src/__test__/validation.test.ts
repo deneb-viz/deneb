@@ -5,7 +5,7 @@ import {
     getProviderValidator,
     getSchemaWithMarkdownProps
 } from '../validation';
-import * as vegaSchema from 'vega/vega-schema.json';
+import vegaSchema from 'vega/vega-schema.json';
 import { ErrorObject } from 'ajv';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 

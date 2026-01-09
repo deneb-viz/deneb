@@ -24,7 +24,7 @@
         "build:package": "tsup",
         "build:worker": "tsup --config tsup.worker.config.ts",
         "clean": "rimraf dist",
-        "dev": "concurrently \"npm run dev:worker\" \"npm run dev:package\"",
+        "dev": "npm run build:worker && concurrently \"npm run dev:worker\" \"npm run dev:package\"",
         "dev:package": "tsup --watch --config tsup.config.ts",
         "dev:worker": "tsup --watch --config tsup.worker.config.ts",
         "prepack": "npm run build",
@@ -52,17 +52,18 @@
         "@deneb-viz/utils": "*",
         "@monaco-editor/react": "^4.6.0",
         "@uidotdev/usehooks": "^2.4.1",
+        "allotment": "^1.20.5",
         "d3-format": "^2.0.0",
         "d3-time-format": "^3.0.0",
         "fast-equals": "^5.3.3",
-        "monaco-editor": "0.45.0",
+        "monaco-editor": "0.46.0",
         "react-custom-scrollbars-2": "^4.4.0",
         "react-data-table-component": "^7.7.0",
         "react-dropzone": "^14.2.3",
         "react-hotkeys-hook": "^5.2.0",
-        "react-split-pane": "^0.1.92",
         "react-vega": "7.6.0",
         "styled-components": "^6.1.19",
+        "use-resize-observer": "^9.1.0",
         "zustand": "^4.5.5"
     },
     "peerDependencies": {
@@ -74,7 +75,7 @@
         "powerbi-visuals-utils-formattingutils": "^6.1.2",
         "react": "^19.2.0",
         "react-dom": "^19.2.0",
-        "vega": "6.2.0",
-        "vega-lite": "6.4.1"
+        "vega": ">=5",
+        "vega-lite": ">=5"
     }
 }

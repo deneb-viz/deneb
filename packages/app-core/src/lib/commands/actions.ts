@@ -1,22 +1,16 @@
 import {
-    APPLICATION_INFORMATION_CONFIGURATION,
-    VISUAL_PREVIEW_ZOOM_CONFIGURATION
+    PROJECT_DEFAULTS,
+    VISUAL_PREVIEW_ZOOM_CONFIGURATION,
+    WEBSITE_URL
 } from '@deneb-viz/configuration';
 import { getDenebState } from '../../state';
 import { type DebugPaneRole, type EditorPaneRole } from '../interface';
 import { type Command } from './types';
-import {
-    type PersistenceProperty,
-    persistProperties,
-    resolveObjectProperties
-} from '@deneb-viz/powerbi-compat/visual-host';
 import { type SpecificationEditorRefs } from '../../features/specification-editor';
 import { monaco } from '../../components/code-editor/monaco-integration';
-import { DEFAULTS } from '@deneb-viz/powerbi-compat/properties';
-import { SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 import { HOTKEY_BINDINGS } from './constants';
 import { getZoomToFitScale } from '../interface/layout';
+import {} from '../../../package.json';
 
 /**
  * Executes a command if:
@@ -57,9 +51,9 @@ const getCleanJsonInputForPersistence = (
     if (clean === '') {
         switch (operation) {
             case 'Spec':
-                return DEFAULTS.vega.jsonSpec;
+                return PROJECT_DEFAULTS.spec;
             case 'Config':
-                return DEFAULTS.vega.jsonConfig;
+                return PROJECT_DEFAULTS.config;
         }
     }
     return clean;
@@ -96,13 +90,13 @@ export const handleAutoApplyChanges = (editorRefs: SpecificationEditorRefs) => {
 };
 
 export const handleCloseCreateDialog = () =>
-    setVisualProperty([{ name: 'isNewDialogOpen', value: false }]);
+    getDenebState().project.setIsInitialized(true);
 
 export const handleDataTableRowsPerPageChange = (value: number) => {
-    setVisualProperty(
-        [{ name: 'debugTableRowsPerPage', value: `${value}` }],
-        'editor'
-    );
+    const {
+        editorPreferences: { setDataViewerRowsPerPage }
+    } = getDenebState();
+    setDataViewerRowsPerPage(value);
 };
 
 export const handleDebugPaneData = () => {
@@ -173,9 +167,7 @@ export const handleExportSpecification = () =>
     });
 
 export const handleOpenCreateSpecificationDialog = () => {
-    executeCommand('newSpecification', () => {
-        setVisualProperty([{ name: 'isNewDialogOpen', value: true }]);
-    });
+    getDenebState().interface.setModalDialogRole('Create');
 };
 
 /**
@@ -193,15 +185,9 @@ export const handleOpenRemapDialog = () => {
  */
 export const handleOpenWebsite = (launchUrl: (url: string) => void) => {
     executeCommand('helpSite', () => {
-        launchUrl(APPLICATION_INFORMATION_CONFIGURATION.supportUrl);
+        launchUrl(WEBSITE_URL);
     });
 };
-
-/**
- * Generic handler for a boolean (checkbox) property in the settings pane.
- */
-export const handlePersistBooleanProperty = (name: string, value: boolean) =>
-    setVisualProperty([{ name, value }]);
 
 /**
  * Resolve the spec/config and use the `properties` API for persistence. Also
@@ -213,71 +199,22 @@ export const handlePersistSpecification = (
     stage = true
 ) => {
     const {
-        editor: { stagedConfig, stagedSpec, updateChanges },
+        editor: { stagedConfig, stagedSpec },
+        project: { spec, config, setContent }
         // fieldUsage: { dataset: trackedFieldsCurrent },
-        visualSettings: {
-            vega: {
-                output: {
-                    jsonConfig: { value: jsonConfig },
-                    jsonSpec: { value: jsonSpec }
-                }
-            }
-        }
     } = getDenebState();
-    const spec =
+    const nextSpec =
         (stage && specEditor
             ? getCleanJsonInputForPersistence('Spec', specEditor.getValue())
-            : stagedSpec) ?? jsonSpec;
-    const config =
+            : stagedSpec) ?? spec;
+    const nextConfig =
         (stage && configEditor
             ? getCleanJsonInputForPersistence('Config', configEditor.getValue())
-            : stagedConfig) ?? jsonConfig;
+            : stagedConfig) ?? config;
     // Tracking is now only used for export (#486)
-    // updateFieldTracking(spec, trackedFieldsCurrent);
-    updateChanges({ role: 'Spec', text: spec });
-    updateChanges({ role: 'Config', text: config });
-    persistProperties(
-        resolveObjectProperties([
-            {
-                objectName: 'vega',
-                properties: [
-                    { name: 'jsonSpec', value: spec },
-                    { name: 'jsonConfig', value: config }
-                ]
-            }
-        ])
-    );
+    // updateFieldTracking(nextSpec, trackedFieldsCurrent);
+    setContent({ spec: nextSpec, config: nextConfig });
 };
-
-/**
- * Reset the specified provider (Vega) visual property to its default value.
- */
-export const handleResetVegaProperty = (
-    propertyKey: keyof typeof DEFAULTS.vega
-) => {
-    const value = DEFAULTS.vega[propertyKey];
-    setVisualProperty([{ name: propertyKey, value }]);
-};
-
-/**
- * Handle the change in maximum permitted underlying data points for selection.
- */
-export const handleSelectionMaxDataPoints = (value: number) =>
-    setVisualProperty([{ name: 'selectionMaxDataPoints', value }]);
-
-/**
- * Handle the change in selection mode from one to the other and update necessary store dependencies and properties.
- */
-export const handleSelectionMode = (
-    selectionMode: SelectionMode,
-    provider: SpecProvider
-) =>
-    setVisualProperty([
-        {
-            name: 'selectionMode',
-            value: provider === 'vegaLite' ? 'simple' : selectionMode
-        }
-    ]);
 
 /**
  * Set focus to the active editor, based on the current editor role in the store.
@@ -295,16 +232,10 @@ export const handleSetFocusToActiveEditor = (
  */
 export const handleToggleDebugPane = () => {
     executeCommand('debugPaneToggle', () => {
-        getDenebState().togglePreviewDebugPane();
-    });
-};
-
-/**
- * Handle toggling the editor pane.
- */
-export const handleToggleEditorPane = () => {
-    executeCommand('editorPaneToggle', () => {
-        getDenebState().toggleEditorPane();
+        const {
+            editor: { isDebugPaneMinimized, setIsDebugPaneMinimized }
+        } = getDenebState();
+        setIsDebugPaneMinimized(!isDebugPaneMinimized);
     });
 };
 
@@ -314,16 +245,10 @@ export const handleToggleEditorPane = () => {
 export const handleToggleEditorTheme = () => {
     executeCommand('themeToggle', () => {
         const {
-            visualSettings: {
-                editor: {
-                    interface: {
-                        theme: { value: theme }
-                    }
-                }
-            }
+            editorPreferences: { theme, setTheme }
         } = getDenebState();
         const newValue = theme === 'dark' ? 'light' : 'dark';
-        setVisualProperty([{ name: 'theme', value: newValue }], 'editor');
+        setTheme(newValue);
     });
 };
 
@@ -383,14 +308,6 @@ const setDebugPivotItem = (role: DebugPaneRole) => {
  */
 const setEditorPivotItem = (operation: EditorPaneRole) =>
     getDenebState().updateEditorSelectedOperation(operation);
-
-/**
- * Manages persistence of a properties object to the store from an operation.
- */
-const setVisualProperty = (
-    properties: PersistenceProperty[],
-    objectName = 'vega'
-) => persistProperties(resolveObjectProperties([{ objectName, properties }]));
 
 /**
  * Confirms that specified events are not occurring in the advanced editor UI

@@ -1,30 +1,63 @@
-import { type ReactNode } from 'react';
-import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
+import { DEBUG_PANE_CONFIGURATION } from '@deneb-viz/configuration';
+import { makeStyles, mergeClasses, tokens } from '@fluentui/react-components';
+import React, { ComponentProps } from 'react';
 
-import { PREVIEW_PANE_TOOLBAR_MIN_SIZE } from '../../lib';
+/**
+ * Class name for the container holding far items in the status bar.
+ */
+const STATUS_BAR_CONTAINER_FAR_ITEMS_CLASS_NAME = 'status-bar-far-items';
 
-type StatusBarContainerProps = {
-    children: ReactNode;
-};
+/**
+ * Class name for the container holding near items in the status bar.
+ */
+const STATUS_BAR_CONTAINER_NEAR_ITEMS_CLASS_NAME = 'status-bar-near-items';
 
-const useStatusBarContainerStyles = makeStyles({
+const useStatusBarStyles = makeStyles({
     root: {
+        alignItems: 'center',
+        backgroundColor: tokens.colorNeutralBackground1,
+        borderTop: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke2}`,
         boxSizing: 'border-box',
-        flexShrink: 0,
-        width: '100%',
-        height: `${PREVIEW_PANE_TOOLBAR_MIN_SIZE}px}`,
-        borderTopColor: tokens.colorNeutralStroke2,
-        borderTopStyle: 'solid',
-        borderTopWidth: '1px',
-        ...shorthands.overflow('hidden')
+        color: tokens.colorNeutralForeground3,
+        columnGap: tokens.spacingHorizontalS,
+        display: 'flex',
+        height: `${DEBUG_PANE_CONFIGURATION.toolbarMinSize}px`,
+        justifyContent: 'space-between',
+        padding: `${tokens.spacingVerticalNone} ${tokens.spacingHorizontalS}`,
+        userSelect: 'none'
+    },
+    nearContainer: {
+        display: 'flex'
+    },
+    farContainer: {
+        display: 'flex'
     }
 });
 
-/**
- * Provides a consistent container for a status bar in the interface. These are used underneath the editor, and in the
- * debug area.
- */
-export const StatusBarContainer = ({ children }: StatusBarContainerProps) => {
-    const classes = useStatusBarContainerStyles();
-    return <div className={classes.root}>{children}</div>;
+export type StatusBarProps = ComponentProps<'div'> & {
+    nearItems?: React.ReactNode;
+    farItems?: React.ReactNode;
+};
+
+export const StatusBarContainer = ({
+    nearItems,
+    farItems,
+    ...props
+}: StatusBarProps) => {
+    const classes = useStatusBarStyles();
+    const rootClasses = mergeClasses(classes.root, props.className);
+    return (
+        <div {...props} className={rootClasses}>
+            <div
+                className={`${STATUS_BAR_CONTAINER_NEAR_ITEMS_CLASS_NAME} ${classes.nearContainer}`}
+            >
+                {nearItems}
+            </div>
+            <div
+                className={`${STATUS_BAR_CONTAINER_FAR_ITEMS_CLASS_NAME} ${classes.farContainer}`}
+            >
+                {farItems}
+            </div>
+        </div>
+    );
 };

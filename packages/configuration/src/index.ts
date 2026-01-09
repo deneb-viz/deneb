@@ -1,13 +1,3 @@
-import { devDependencies, visual } from './generated';
-
-/**
- * This is an object that contains the visual's metadata. This is used to handle places we need to display this
- * information in the UI, as well as for versioning and other purposes.
- * @remarks
- * POTENTIAL TECH DEBT
- */
-export const APPLICATION_INFORMATION_CONFIGURATION = visual;
-
 /**
  * Default values for the data table in the debug pane.
  */
@@ -23,8 +13,9 @@ export const DATA_VIEWER_CONFIGURATION = {
  */
 export const DEBUG_PANE_CONFIGURATION = {
     areaMinSize: 100,
-    toolbarMinSize: 28,
-    toolbarInitialPercent: 40,
+    minWidth: 525,
+    preferredHeightPercentage: 0.4,
+    toolbarMinSize: 30,
     viewportBorderSize: 2,
     logLevels: [
         {
@@ -58,9 +49,40 @@ export const DEBUG_PANE_CONFIGURATION = {
  */
 export const EDITOR_DEFAULTS = {
     debouncePeriod: { default: 700, min: 0, max: 1000 },
+    fontSize: {
+        default: 10,
+        min: 8,
+        max: 30
+    },
+    previewAreaShowBorder: true,
+    previewAreaShowScrollbarsOnOverflow: true,
+    previewAreaTransparentBackground: true,
     position: 'left',
-    tabSize: 2
+    showLineNumbers: true,
+    tabSize: 2,
+    theme: 'light',
+    wordWrap: true
 };
+
+export const EMBED_DEFAULTS = {
+    viewport: {
+        width: 450,
+        height: 300
+    }
+};
+
+/**
+ * Default project values used when initializing a new project.
+ */
+export const PROJECT_DEFAULTS = {
+    config: '{}',
+    logLevel: 3,
+    renderMode: 'svg',
+    provider: 'vegaLite',
+    spec: '{}'
+};
+
+export const WEBSITE_URL = 'https://deneb-viz.github.io/';
 
 /**
  * Log level configuration for Vega logging and UI representation.
@@ -88,26 +110,25 @@ export const VEGA_LOG_LEVEL_CONFIGURATION = [
     }
 ];
 
-export const PROJECT_DEFAULTS = {
-    logLevel: 3,
-    renderMode: 'svg'
-};
-
 /**
  * Additional resources needed for each provider in the application (Vega, Vega-Lite and Deneb). These are used to
  * provide links to documentation, examples, other resources, and patching of specifications.
+ *
+ * Legacy version properties are used to assume defaults for if we need to load version 1.0-generated metadata (as we
+ * didn't introduce versioning until 1.1)
  */
 export const PROVIDER_RESOURCE_CONFIGURATION = {
     deneb: {
         interactivityDocumentationUrl:
             'https://deneb-viz.github.io/interactivity-overview',
         changelogDocumentationUrl: 'https://deneb-viz.github.io/changelog',
-        examplesUrl: 'https://deneb-viz.github.io/community/resources'
+        examplesUrl: 'https://deneb-viz.github.io/community/resources',
+        legacyVersion: '1.0.0.57'
     },
     vega: {
         documentationUrl: 'https://vega.github.io/vega/docs/',
         examplesUrl: 'https://vega.github.io/vega/examples/',
-        schemaUrl: 'https://vega.github.io/schema/vega/v5.json',
+        legacyVersion: '5.21.0',
         patch: {
             signals: [
                 {
@@ -124,20 +145,8 @@ export const PROVIDER_RESOURCE_CONFIGURATION = {
     vegaLite: {
         documentationUrl: 'https://vega.github.io/vega-lite/docs/',
         examplesUrl: 'https://vega.github.io/vega-lite/examples/',
-        schemaUrl: 'https://vega.github.io/schema/vega-lite/v5.json'
+        legacyVersion: '5.1.1'
     }
-};
-
-/**
- * Provider versions, sourced from the `package.json` file. These are used to track which version of Vega or Vega-Lite
- * we're currently using, whether this may have changed between visual versions, and potentially perform migrations
- * if necessary.
- * @remarks
- * POTENTIAL TECH DEBT
- */
-export const PROVIDER_VERSION_CONFIGURATION = {
-    vega: devDependencies['vega'],
-    vegaLite: devDependencies['vega-lite']
 };
 
 /**
@@ -197,4 +206,23 @@ export const VISUAL_PREVIEW_ZOOM_CONFIGURATION = {
             isCustom: true
         }
     ]
+};
+
+export const VISUAL_RENDER_DEFAULTS = {
+    scrollbarColor: '#000000',
+    scrollbarOpacity: {
+        min: 0,
+        max: 100,
+        default: 20
+    },
+    scrollbarRadius: {
+        min: 0,
+        max: 3,
+        default: 0
+    },
+    scrollEventThrottle: {
+        min: 0,
+        max: 1000,
+        default: 5
+    }
 };

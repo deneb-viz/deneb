@@ -1,6 +1,6 @@
 {
     "name": "@deneb-viz/data-core",
-    "version": "1.9.0",
+    "version": "0.1.0",
     "author": "Deneb contributors",
     "private": true,
     "license": "MIT",

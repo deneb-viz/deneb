@@ -35,13 +35,12 @@ const getCategoryFieldEntries = (
  */
 export const getDatumFieldMetadataFromDataView = (
     categories: powerbi.DataViewCategoryColumn[],
-    values: powerbi.DataViewValueColumns,
-    enableHighlight: boolean
+    values: powerbi.DataViewValueColumns
 ) => {
     logTimeStart('getDatumFieldMetadataFromDataView');
     const fieldEntries = [
         ...getCategoryFieldEntries(categories),
-        ...getHighlightFieldEntries(values, enableHighlight),
+        ...getHighlightFieldEntries(values),
         ...getMeasureFieldEntries(values),
         ...getMeasureFormatEntries(values)
     ];
@@ -55,37 +54,25 @@ export const getDatumFieldMetadataFromDataView = (
  */
 export const getDatumFieldsFromMetadata = (
     fields: AugmentedMetadataField[]
-): DatasetFields<powerbi.DataViewMetadataColumn> => {
-    return fields.reduce<DatasetFields<powerbi.DataViewMetadataColumn>>(
-        (result, c) => {
-            const encodedName =
-                c.encodedName ?? getEncodedFieldName(c.column.displayName);
-            const isExcludedFromTemplate = isSourceExcludedFromTemplate(
-                c.source
-            );
-            result[`${encodedName}`] = {
-                ...{
-                    id: c.column.queryName ?? c.column.displayName ?? '',
-                    name: encodedName,
-                    isColumn: !c.column.isMeasure,
-                    isMeasure: c.column.isMeasure,
-                    isHighlightComponent: c.source === 'highlights',
-                    isExcludedFromTemplate,
-                    sourceIndex: c.sourceIndex,
-                    source: <DatasetFieldValueSource>c.source,
-                    hostMetadata: c.column,
-                    templateMetadata: isExcludedFromTemplate
-                        ? undefined
-                        : getResolvedVisualMetadataToDatasetField(
-                              c.column,
-                              encodedName
-                          )
-                }
-            };
-            return result;
-        },
-        {}
-    );
+): DatasetFields<AugmentedMetadataField> => {
+    return fields.reduce<DatasetFields<AugmentedMetadataField>>((result, c) => {
+        const encodedName =
+            c.encodedName ?? getEncodedFieldName(c.column.displayName);
+        result[`${encodedName}`] = {
+            ...{
+                id: c.column.queryName ?? c.column.displayName ?? '',
+                name: encodedName,
+                hostMetadata: c,
+                templateMetadata: isSourceField(c.source)
+                    ? getResolvedVisualMetadataToDatasetField(
+                          c.column,
+                          encodedName
+                      )
+                    : undefined
+            }
+        };
+        return result;
+    }, {});
 };
 
 /**
@@ -102,11 +89,8 @@ export const getEncodedFieldName = (displayName: string) =>
 /**
  * Get artificial array of values first (if needed) as we'll need them when working out highlights later on.
  */
-const getHighlightFieldEntries = (
-    values: powerbi.DataViewValueColumns,
-    enableHighlight: boolean
-) =>
-    (isCrossHighlightPropSet({ enableHighlight }) &&
+const getHighlightFieldEntries = (values: powerbi.DataViewValueColumns) =>
+    (isCrossHighlightPropSet() &&
         values?.map((v, vi): AugmentedMetadataField => {
             const displayName = `${v.source.displayName}${HIGHLIGHT_FIELD_SUFFIX}`;
             return {
@@ -239,7 +223,7 @@ export const isFieldEligibleForFormatting = (
 ) => field?.source?.type?.numeric || field?.source?.type?.dateTime || false;
 
 /**
- * Allows us to test that a field is excluded from templating activities.
+ * Allows us to test that a field should have template metadata and/or eligible for deriving selection IDs.
  */
-const isSourceExcludedFromTemplate = (source: DatasetFieldValueSource) =>
-    ['highlights', 'formatting'].includes(source);
+export const isSourceField = (source: DatasetFieldValueSource) =>
+    (<DatasetFieldValueSource[]>['categories', 'values']).includes(source);

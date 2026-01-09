@@ -62,17 +62,12 @@ export const PreviewArea = () => {
         viewportWidth,
         showViewportMarker
     } = useDenebState((state) => ({
-        editorPreviewAreaHeight: state.editorPreviewAreaHeight,
+        editorPreviewAreaHeight: state.editor.previewAreaViewport.height ?? 0,
         editorZoomLevel: state.editorZoomLevel,
-        showViewportMarker:
-            state.visualSettings.editor.preview.showViewportMarker.value,
+        showViewportMarker: state.editorPreferences.previewAreaShowBorder,
         status: state.specification.status,
-        viewportHeight: Number.parseFloat(
-            state.visualSettings.stateManagement.viewport.viewportHeight.value
-        ),
-        viewportWidth: Number.parseFloat(
-            state.visualSettings.stateManagement.viewport.viewportWidth.value
-        )
+        viewportHeight: state.interface.embedViewport?.height ?? 0,
+        viewportWidth: state.interface.embedViewport?.width ?? 0
     }));
     const classes = usePreviewStyles();
     const borderWidth = DEBUG_PANE_CONFIGURATION.viewportBorderSize;

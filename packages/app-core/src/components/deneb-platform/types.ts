@@ -1,5 +1,6 @@
 import { type JSX } from 'react';
 import { type Loader, type TooltipHandler, type View } from 'vega';
+import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 
 /**
  * A function that binds platform-specific event listeners to a Vega view.
@@ -7,11 +8,27 @@ import { type Loader, type TooltipHandler, type View } from 'vega';
  */
 export type ViewEventBinder = (view: View) => void;
 
+/**
+ * Project data passed to the onCreateProject callback.
+ * Includes template metadata and processed spec/config content.
+ */
+export type OnCreateProjectPayload = {
+    metadata: UsermetaTemplate;
+    spec: string;
+    config: string;
+};
+
 export type DenebPlatformProviderProps = {
     /**
      * Whether the host application allows downloading of files.
      */
     isDownloadPermitted?: boolean;
+    /**
+     * Whether the embed container size is managed by the host application.
+     * When true, the host is responsible for setting embedViewport dimensions.
+     * When false (default), app-core will manage the container size internally.
+     */
+    embedContainerSetByHost?: boolean;
     /**
      * Callback invoked when Vega rendering fails with an error.
      */
@@ -55,4 +72,13 @@ export type DenebPlatformProviderProps = {
      * How the action of launching a URL should be handled.
      */
     launchUrl?: (url: string) => void;
+    /**
+     * Callback invoked when a project is created from a template.
+     * Platforms can use this to persist project and interactivity settings, or perform other platform-specific
+     * actions. This is called BEFORE app-core state is updated, allowing platforms to persist to their source of truth
+     * first and avoid sync race conditions.
+     * @param payload - The template metadata and processed project data
+     * @returns void or Promise<void> - errors should be logged, not thrown
+     */
+    onCreateProject?: (payload: OnCreateProjectPayload) => void | Promise<void>;
 };

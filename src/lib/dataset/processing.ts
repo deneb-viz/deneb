@@ -43,7 +43,8 @@ import {
 import {
     getDatumFieldMetadataFromDataView,
     getDatumFieldsFromMetadata,
-    getEncodedFieldName
+    getEncodedFieldName,
+    isSourceField
 } from './fields';
 import {
     InteractivityManager,
@@ -59,6 +60,7 @@ let prevCategories: DataViewCategoryColumn[] | undefined;
 let prevValues: DataViewValueColumns | undefined;
 let prevHighlights: (PrimitiveValue[] | undefined)[] = [];
 let prevEnableSelection: boolean | undefined;
+let prevEnableHighlight: boolean | undefined;
 let prevRowCount: number = 0;
 
 /**
@@ -138,15 +140,22 @@ const getEmptyDataset = (): SetDatasetPayload => ({
  */
 export const hasDataViewChanged = (
     categorical: DataViewCategorical | undefined,
-    enableSelection: boolean
+    enableSelection: boolean,
+    enableHighlight: boolean
 ): boolean => {
     logTimeStart('hasDataViewChanged');
 
     // Settings changed
-    if (enableSelection !== prevEnableSelection) {
+    if (
+        enableSelection !== prevEnableSelection ||
+        enableHighlight !== prevEnableHighlight
+    ) {
         prevEnableSelection = enableSelection;
+        prevEnableHighlight = enableHighlight;
         updatePrevReferences(categorical);
-        logDebug('hasDataViewChanged: enableSelection changed');
+        logDebug(
+            'hasDataViewChanged: enableSelection or enableHighlight changed'
+        );
         logTimeEnd('hasDataViewChanged');
         return true;
     }
@@ -223,9 +232,7 @@ const updatePrevReferences = (
  */
 export const getMappedDataset = (
     categorical: DataViewCategorical,
-    locale: string,
-    enableSelection: boolean,
-    enableHighlight: boolean
+    locale: string
 ): SetDatasetPayload => {
     const rowsLoaded = getCategoricalRowCount(categorical);
     const empty = getEmptyDataset();
@@ -238,15 +245,12 @@ export const getMappedDataset = (
     } else {
         try {
             logTimeStart('getMappedDataset');
-            const isCrossHighlight = isCrossHighlightPropSet({
-                enableHighlight
-            });
-            const isCrossFilter = isCrossFilterPropSet({ enableSelection });
+            const isCrossHighlight = isCrossHighlightPropSet();
+            const isCrossFilter = isCrossFilterPropSet();
             const hasHighlights = doesDataViewHaveHighlights(dvValues);
             const columns = getDatumFieldMetadataFromDataView(
                 dvCategories,
-                dvValues,
-                enableHighlight
+                dvValues
             );
             const hasDrilldown =
                 isDrilldownFeatureEnabled() &&
@@ -255,8 +259,7 @@ export const getMappedDataset = (
             const fieldValues = getDatumValueEntriesFromDataview(
                 dvCategories,
                 dvValues,
-                locale,
-                enableHighlight
+                locale
             );
             const fields = getDatumFieldsFromMetadata(columns);
 
@@ -267,8 +270,8 @@ export const getMappedDataset = (
             const selectionQueueBase: SelectionIdQueueEntry[] = [];
             for (const key in fields) {
                 const f = fields[key];
-                if (f && !f.isExcludedFromTemplate) {
-                    if (f.isMeasure) {
+                if (f && isSourceField(f.hostMetadata?.source)) {
+                    if (f.hostMetadata?.column.isMeasure) {
                         selectionQueueBase.push({
                             type: 'measure',
                             queryName: f.id
@@ -276,7 +279,7 @@ export const getMappedDataset = (
                     } else {
                         selectionQueueBase.push({
                             type: 'category',
-                            column: dvCategories[f.sourceIndex]
+                            column: dvCategories[f.hostMetadata?.sourceIndex]
                         });
                     }
                 }
@@ -330,9 +333,7 @@ export const getUpdatedDatasetSelectors = (
     enableSelection: boolean
 ) => {
     logTimeStart('dataset.updateDatasetSelectors');
-    const isCrossFilter = isCrossFilterPropSet({
-        enableSelection
-    });
+    const isCrossFilter = isCrossFilterPropSet();
     let hasSelectionChanged = false;
     const values: VegaDatum[] = [];
     const nValues = dataset.values.length;
