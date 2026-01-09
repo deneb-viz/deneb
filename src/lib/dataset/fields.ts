@@ -58,19 +58,17 @@ export const getDatumFieldsFromMetadata = (
     return fields.reduce<DatasetFields<AugmentedMetadataField>>((result, c) => {
         const encodedName =
             c.encodedName ?? getEncodedFieldName(c.column.displayName);
-        const isExcludedFromTemplate = isSourceExcludedFromTemplate(c.source);
         result[`${encodedName}`] = {
             ...{
                 id: c.column.queryName ?? c.column.displayName ?? '',
                 name: encodedName,
-                isExcludedFromTemplate,
                 hostMetadata: c,
-                templateMetadata: isExcludedFromTemplate
-                    ? undefined
-                    : getResolvedVisualMetadataToDatasetField(
+                templateMetadata: isSourceField(c.source)
+                    ? getResolvedVisualMetadataToDatasetField(
                           c.column,
                           encodedName
                       )
+                    : undefined
             }
         };
         return result;
@@ -225,7 +223,7 @@ export const isFieldEligibleForFormatting = (
 ) => field?.source?.type?.numeric || field?.source?.type?.dateTime || false;
 
 /**
- * Allows us to test that a field is excluded from templating activities.
+ * Allows us to test that a field should have template metadata and/or eligible for deriving selection IDs.
  */
-const isSourceExcludedFromTemplate = (source: DatasetFieldValueSource) =>
-    ['highlights', 'formatting'].includes(source);
+export const isSourceField = (source: DatasetFieldValueSource) =>
+    (<DatasetFieldValueSource[]>['categories', 'values']).includes(source);

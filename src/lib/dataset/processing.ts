@@ -43,7 +43,8 @@ import {
 import {
     getDatumFieldMetadataFromDataView,
     getDatumFieldsFromMetadata,
-    getEncodedFieldName
+    getEncodedFieldName,
+    isSourceField
 } from './fields';
 import {
     InteractivityManager,
@@ -269,7 +270,7 @@ export const getMappedDataset = (
             const selectionQueueBase: SelectionIdQueueEntry[] = [];
             for (const key in fields) {
                 const f = fields[key];
-                if (f && !f.isExcludedFromTemplate) {
+                if (f && isSourceField(f.hostMetadata?.source)) {
                     if (f.hostMetadata?.column.isMeasure) {
                         selectionQueueBase.push({
                             type: 'measure',

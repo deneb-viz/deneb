@@ -12,17 +12,13 @@ export type DatasetField<T = object> = {
      */
     name: string;
     /**
-     * Indicates field should not be included in templating activities and supports another field in the dataset.
-     */
-    isExcludedFromTemplate: boolean;
-    /**
      * Host-specific metadata that can be attached to the field for use by the host application and applied during
      * dataset construction.
      */
     hostMetadata?: T;
     /**
-     * Representation of the field for templating purposes. Should not be present for
-     * `isExcludedFromTemplate === true`.
+     * Representation of the field for templating purposes. Should only be present if the field is eligible for use
+     * within templates. Anything else is assumed to be a support field.
      */
     templateMetadata?: UsermetaDatasetField;
 };

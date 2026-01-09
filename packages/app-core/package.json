@@ -24,7 +24,7 @@
         "build:package": "tsup",
         "build:worker": "tsup --config tsup.worker.config.ts",
         "clean": "rimraf dist",
-        "dev": "concurrently \"npm run dev:worker\" \"npm run dev:package\"",
+        "dev": "npm run build:worker && concurrently \"npm run dev:worker\" \"npm run dev:package\"",
         "dev:package": "tsup --watch --config tsup.config.ts",
         "dev:worker": "tsup --watch --config tsup.worker.config.ts",
         "prepack": "npm run build",
