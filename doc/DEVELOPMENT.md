@@ -76,6 +76,8 @@ Typical cycle:
 
 An `.env.example` is provided at the repo root. Copy it to `.env` to get started and adjust values as needed. The `.env` file is loaded automatically by `@dotenvx/dotenvx` for local scripts (e.g., validation and packaging).
 
+> **Auto-creation:** The packaging scripts (`npm run package`, `package-alpha`, `package-beta`, `package-standalone`) automatically create a `.env` file from `.env.ci` if one doesn't exist. This ensures certification-safe defaults for packaging. Since packaging is required to prime assets for visual development, new checkouts will typically get a valid `.env` file automatically when running `npm run package` for the first time.
+
 PowerShell (only create if missing):
 
 ```powershell
