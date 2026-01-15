@@ -157,6 +157,11 @@ function getCommonConfig(options = {}) {
         },
         output: {
             path: path.join(__dirname, '.tmp', 'drop'),
+            // NOTE: In dev, webpack-dev-server must serve static assets from an absolute URL
+            // path (starting with "/") so that the Power BI host can resolve them correctly
+            // from the in-memory dev server. In production, the pbiviz package expects assets
+            // to be referenced via a relative path inside the .tmp/drop folder, so we omit
+            // the leading slash.
             publicPath: devMode ? '/assets/' : 'assets',
             filename: '[name]',
             // In dev, Power BI host expects the library name to have _DEBUG suffix
