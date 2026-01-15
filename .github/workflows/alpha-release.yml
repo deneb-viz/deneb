@@ -34,10 +34,9 @@ jobs:
               run: npm run build
             - name: Build Alpha Package
               run: npm run package-alpha
-            - name: Create Alpha Channel Draft Release
+            - name: Create Alpha Channel Pre-Release
               uses: softprops/action-gh-release@v2
               with:
-                  draft: true
                   prerelease: true
                   name: 'Alpha Channel: ${{ github.ref_name }}'
                   files: |
