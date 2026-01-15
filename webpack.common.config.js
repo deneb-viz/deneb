@@ -104,7 +104,21 @@ function getCommonConfig(options = {}) {
                                 transpileOnly: false,
                                 experimentalWatchApi: !isProduction,
                                 configFile: 'tsconfig.webpack.json',
-                                context: __dirname
+                                context: __dirname,
+                                // Compiler options to speed up builds while preserving correctness
+                                compilerOptions: !isProduction
+                                    ? {
+                                          skipLibCheck: true,
+                                          // These optimizations speed up compilation without breaking const enums
+                                          incremental: true,
+                                          tsBuildInfoFile: path.join(
+                                              __dirname,
+                                              '.tmp',
+                                              'webpack-cache',
+                                              'tsconfig.tsbuildinfo'
+                                          )
+                                      }
+                                    : undefined
                             }
                         }
                     ]
@@ -143,7 +157,12 @@ function getCommonConfig(options = {}) {
         },
         output: {
             path: path.join(__dirname, '.tmp', 'drop'),
-            publicPath: 'assets',
+            // NOTE: In dev, webpack-dev-server must serve static assets from an absolute URL
+            // path (starting with "/") so that the Power BI host can resolve them correctly
+            // from the in-memory dev server. In production, the pbiviz package expects assets
+            // to be referenced via a relative path inside the .tmp/drop folder, so we omit
+            // the leading slash.
+            publicPath: devMode ? '/assets/' : 'assets',
             filename: '[name]',
             // In dev, Power BI host expects the library name to have _DEBUG suffix
             // See: https://github.com/microsoft/powerbi-visuals-webpack-plugin/issues/59
@@ -190,7 +209,8 @@ function getCommonConfig(options = {}) {
                 devMode,
                 generatePbiviz,
                 generateResources,
-                certificationFix,
+                // Only run certification fix in production builds (it's very slow)
+                certificationFix: !devMode && certificationFix,
                 modules: true,
                 packageOutPath: path.join(__dirname, 'dist')
             }),

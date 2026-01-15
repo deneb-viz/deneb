@@ -18,7 +18,7 @@ module.exports = merge(
     }),
     {
         mode: 'production',
-        devtool: 'source-map', // Full source maps for debugging production issues
+        devtool: false, // No source maps - not included in .pbiviz anyway, use dev build for debugging
 
         optimization: {
             minimize: true,

@@ -1,11 +1,16 @@
-name: CI
+name: Alpha Release
 
 on:
     push:
+        tags:
+            - 'alpha'
+            - 'alpha-*'
 
 jobs:
     build:
         runs-on: ubuntu-latest
+        permissions:
+            contents: write
         steps:
             - name: Check out code
               uses: actions/checkout@v4
@@ -27,15 +32,14 @@ jobs:
               run: npm ci
             - name: Build packages
               run: npm run build
-            - name: Check Package Versions are in Sync
-              run: npm run validate-packages-sync
-            - name: Validate Current Configuration (deneb-config.json)
-              run: npm run validate-config-for-commit
-            - name: Linting Checks
-              run: npm run eslint
-            - name: Prettier Checks
-              run: npm run prettier-check
-            - name: Tests
-              run: npm run test
-            - name: Confirm pbiviz package (AppSource Version)
-              run: npm run package
+            - name: Build Alpha Package
+              run: npm run package-alpha
+            - name: Create Alpha Channel Pre-Release
+              uses: softprops/action-gh-release@v2
+              with:
+                  prerelease: true
+                  name: 'Alpha Channel: ${{ github.ref_name }}'
+                  files: |
+                      dist/ALPHA*.pbiviz
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
