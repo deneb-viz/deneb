@@ -8,13 +8,15 @@ const { getCommonConfig } = require('./webpack.common.config');
  * Development webpack configuration
  * Optimized for fast rebuilds and HMR
  */
-module.exports = merge(
-    getCommonConfig({
-        isProduction: false,
-        devMode: true,
-        generatePbiviz: false,
-        generateResources: false
-    }),
+module.exports = (env = {}) =>
+    merge(
+        getCommonConfig({
+            isProduction: false,
+            devMode: true,
+            generatePbiviz: false,
+            // Generate resources if explicitly requested (e.g., for priming assets)
+            generateResources: env.generateResources === 'true'
+        }),
     {
         mode: 'development',
         // Make webpack watch our linked @deneb-viz packages under node_modules
@@ -23,7 +25,9 @@ module.exports = merge(
         },
         // No alias tweaks required.
         resolve: { alias: {} },
-        devtool: 'cheap-module-source-map',
+        // Source maps: false for fastest builds, or 'cheap-module-source-map' for debugging
+        // Use IDE debugging instead of browser for best dev experience
+        devtool: false,
 
         cache: {
             type: 'filesystem',
@@ -105,5 +109,4 @@ module.exports = merge(
                 'process.env.NODE_ENV': JSON.stringify('development')
             })
         ]
-    }
-);
+    });
