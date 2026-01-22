@@ -77,8 +77,8 @@ export const getPrunedObject = (
 /**
  * Ensure that tooltip values are correctly sanitized for output into a default tooltip.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getSanitizedTooltipValue = (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value: any,
     whitespaceChar = DEFAULT_WHITESPACE_CHAR
 ) =>
@@ -139,9 +139,23 @@ export const prune = (maxDepth = DEFAULT_MAX_PRUNE_DEPTH) => {
         const pos = stack.indexOf(this) + 1;
         stack.length = pos;
         /**
-         * We're hitting memory limits when we try to stringify the dataflow, as it contains the scenegraph (#352). We manually remove this
-         * from our object to avoid this.
+         * We're hitting memory limits when we try to stringify the dataflow, as it contains the scenegraph (#352). We
+         * manually remove the scenegraph from the dataflow here.
          */
+        if (
+            key === 'dataflow' &&
+            '_scenegraph' in (value as Record<string, unknown>)
+        ) {
+            // Return a shallow copy without `_scenegraph` instead of mutating (#419)
+            const dataflow = value as Record<string, unknown>;
+            const copy: Record<string, unknown> = {};
+            for (const k in dataflow) {
+                if (k !== '_scenegraph') {
+                    copy[k] = dataflow[k];
+                }
+            }
+            value = copy;
+        }
         if (key === 'dataflow') {
             delete (value as { _scenegraph?: unknown })._scenegraph;
         }
