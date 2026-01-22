@@ -13,14 +13,6 @@ const useNoDataMessageStyles = makeStyles({
         flexShrink: 1000,
         margin: tokens.spacingVerticalXS,
         overflow: 'auto'
-    },
-    statusBar: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        columnGap: '10px',
-        height: '100%',
-        margin: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalMNudge}`
     }
 });
 
@@ -47,9 +39,7 @@ export const NoDataMessage = () => {
                     <div className={classes.dataTableNoDataMessage}>
                         {message}
                     </div>
-                    <StatusBarContainer>
-                        <div className={classes.statusBar}>{options}</div>
-                    </StatusBarContainer>
+                    <StatusBarContainer nearItems={options} />
                 </div>
             </div>
         </div>
