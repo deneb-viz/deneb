@@ -2,9 +2,16 @@ name: CI
 
 on:
     push:
+        branches:
+            - '**'
+        tags:
+            - 'alpha'
+            - 'alpha-*'
+    pull_request:
 
 jobs:
-    build:
+    ci:
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         runs-on: ubuntu-latest
         steps:
             - name: Check out code
@@ -39,3 +46,78 @@ jobs:
               run: npm run test
             - name: Confirm pbiviz package (AppSource Version)
               run: npm run package
+
+    alpha-release:
+        if: startsWith(github.ref, 'refs/tags/alpha')
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        steps:
+            - name: Check out code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+            - name: Use CI .env file
+              run: cp .env.ci .env
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: 'npm'
+            - name: Cache turbo build setup
+              uses: actions/cache@v4
+              with:
+                  path: .turbo
+                  key: ${{ runner.os }}-turbo-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-turbo-
+            - name: Install Packages
+              run: npm ci
+            - name: Build packages
+              run: npm run build
+            - name: Build Alpha Package
+              run: npm run package-alpha
+            - name: Delete existing alpha release
+              run: gh release delete ${{ github.ref_name }} --yes || true
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - name: Get last versioned tag
+              id: last_tag
+              run: |
+                  LAST_TAG=$(git tag -l 'v*' --sort=-v:refname | head -n 1)
+                  echo "tag=$LAST_TAG" >> $GITHUB_OUTPUT
+                  echo "Last versioned tag: $LAST_TAG"
+            - name: Generate changelog
+              id: changelog
+              uses: requarks/changelog-action@v1
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  fromTag: ${{ github.ref_name }}
+                  toTag: ${{ steps.last_tag.outputs.tag }}
+                  excludeTypes: ''
+                  writeToFile: false
+            - name: Create Alpha Channel Pre-Release
+              uses: softprops/action-gh-release@v2
+              with:
+                  prerelease: true
+                  name: 'Alpha Channel: ${{ github.ref_name }}'
+                  body: |
+                      Deneb Alpha Channel build, which is the latest release candidate for early adopters.
+
+                      Please refer to the [Early Access Builds](https://deneb-viz.github.io/community/early-access) page on the Deneb website for information on usage and installation.
+
+                      The list of changes should be present in the [Change Log in the 'canary' version](https://deneb-viz.github.io/docs/next/changelog) of the documentation on the Deneb website.
+
+                      The .pbiviz file below needs to be manually installed and is not tied to the AppSource version. **It is not supported for production use and is intended for the purposes of testing and feedback only**.
+
+                      For any issues you create, please ensure to specify the exact version number you are using. Again, please refer to the [Early Access Builds](https://deneb-viz.github.io/community/early-access#providing-feedback-on-early-access-builds) page for information on how to do this.
+
+                      ---
+
+                      ## Changes since ${{ steps.last_tag.outputs.tag }}
+
+                      ${{ steps.changelog.outputs.changes }}
+                  files: |
+                      dist/ALPHA*.pbiviz
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
