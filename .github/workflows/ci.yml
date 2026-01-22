@@ -81,6 +81,8 @@ jobs:
               run: gh release delete ${{ github.ref_name }} --yes || true
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - name: Fetch all tags
+              run: git fetch --tags --force
             - name: Get last versioned tag
               id: last_tag
               run: |
