@@ -86,7 +86,7 @@ jobs:
             - name: Get last versioned tag
               id: last_tag
               run: |
-                  LAST_TAG=$(git tag -l 'v*' --sort=-v:refname | head -n 1)
+                  LAST_TAG=$(git tag -l '[0-9]*' --sort=-v:refname | head -n 1)
                   echo "tag=$LAST_TAG" >> $GITHUB_OUTPUT
                   echo "Last versioned tag: $LAST_TAG"
             - name: Generate changelog
