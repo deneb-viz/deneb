@@ -46,7 +46,6 @@ const DATA_LISTENER_DEBOUNCE_INTERVAL = 100;
 /**
  * Handles display of dataset details for the current Vega view.
  */
-// eslint-disable-next-line max-lines-per-function
 export const DatasetViewer = ({
     datasetName,
     logAttention,
@@ -76,7 +75,7 @@ export const DatasetViewer = ({
     });
     const datasetWorker = useMemo(() => datasetViewerWorker, []);
     const { logError } = useDenebState((state) => ({
-        logError: state.specification.logError
+        logError: state.compilation.logError
     }));
     /**
      * When our dataset changes, we need to send it to our web worker for processing.
@@ -216,7 +215,7 @@ export const DatasetViewer = ({
         }));
     }, []);
     /**
-     * Ensure that listener is added/removed when the data might change.
+     * Ensure that listener is added/removed when the data might change or we re-render (new view).
      */
     useEffect(() => {
         try {
@@ -266,12 +265,13 @@ export const DatasetViewer = ({
                     }
                 );
                 setDatasetRaw(() => latestDatasetRaw);
-                cycleListeners();
             } else {
                 logDebug(
                     `DatasetViewer: no change detected. Skipping dataset update.`
                 );
             }
+            // Always cycle listeners when this effect runs (renderId change means new view)
+            cycleListeners();
         } catch (e) {
             logDebug(`DatasetViewer: error getting latest dataset from view.`, {
                 e

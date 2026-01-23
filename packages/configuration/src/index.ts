@@ -128,19 +128,7 @@ export const PROVIDER_RESOURCE_CONFIGURATION = {
     vega: {
         documentationUrl: 'https://vega.github.io/vega/docs/',
         examplesUrl: 'https://vega.github.io/vega/examples/',
-        legacyVersion: '5.21.0',
-        patch: {
-            signals: [
-                {
-                    name: 'pbiContainerHeight',
-                    update: 'containerSize()[1]'
-                },
-                {
-                    name: 'pbiContainerWidth',
-                    update: 'containerSize()[0]'
-                }
-            ]
-        }
+        legacyVersion: '5.21.0'
     },
     vegaLite: {
         documentationUrl: 'https://vega.github.io/vega-lite/docs/',

@@ -8,7 +8,7 @@ import { DATA_TABLE_VALUE_MAX_LENGTH } from '../../constants';
 import { DataTableCell } from '../data-table/data-table-cell';
 import { useDenebState } from '../../../../state';
 
-type DataTableCellSignalValueProps = {
+type SignalValueProps = {
     signalName: string;
     renderId?: string;
 };
@@ -41,10 +41,7 @@ const getInitialSignalValue = (signalName: string) => {
  * happens anyway and it only affects dynamic signal values, this is an acceptable risk for now.
  */
 // eslint-disable-next-line max-lines-per-function
-export const SignalValue = ({
-    signalName,
-    renderId
-}: DataTableCellSignalValueProps) => {
+export const SignalValue = ({ signalName, renderId }: SignalValueProps) => {
     const previousSignalName = usePrevious(signalName);
     /**
      * Use a lazy initializer with error handling to safely get the initial value.
@@ -136,7 +133,7 @@ export const SignalValue = ({
             removeListener();
         };
     }, [signalName]);
-    logRender('DataTableCellSignalValue', {
+    logRender('SignalValue', {
         signalName,
         signalValue,
         viewValue: getSignalValue()

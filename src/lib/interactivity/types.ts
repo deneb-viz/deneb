@@ -162,10 +162,12 @@ export type SelectorStatus = Map<number, DataPointSelectionStatus>;
 
 /**
  * Options that can be supplied to configure the Power BI tooltip handler.
+ *
+ * NOTE: `fields` and `values` are NOT included here - they are accessed lazily
+ * from the Zustand store inside the handler at invocation time. This keeps the
+ * handler identity stable across data changes.
  */
 export type TooltipHandlerOptions = {
-    fields: DatasetFields<AugmentedMetadataField>;
     enabled: boolean;
     multiSelectDelay: number;
-    values: VegaDatum[];
 };

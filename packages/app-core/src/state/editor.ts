@@ -263,7 +263,7 @@ const handleUpdateChanges = (
             ...state.commands,
             exportSpecification: isExportSpecCommandEnabled({
                 editorIsDirty: isDirty,
-                specification: state.specification
+                compilationResult: state.compilation.result
             })
         },
         editor: {
@@ -290,7 +290,7 @@ const handleUpdateIsDirty = (
         ...state.commands,
         exportSpecification: isExportSpecCommandEnabled({
             editorIsDirty: isDirty,
-            specification: state.specification
+            compilationResult: state.compilation.result
         })
     },
     editor: {
@@ -320,11 +320,11 @@ const handleUpdateEditorZoomLevel = (
     zoomLevel: number
 ): Partial<StoreState> => {
     const zoomOtherCommandTest: ZoomOtherCommandTestOptions = {
-        specification: state.specification
+        compilationResult: state.compilation.result
     };
     const zoomLevelCommandTest: ZoomLevelCommandTestOptions = {
         value: zoomLevel,
-        specification: state.specification
+        compilationResult: state.compilation.result
     };
     return {
         commands: {

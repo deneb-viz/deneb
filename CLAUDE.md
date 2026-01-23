@@ -69,7 +69,8 @@ npm run dev       # Start development (auto-primes assets if needed)
 **Workspace Packages (`packages/`):**
 
 - **app-core** - Core UI application (React components, Monaco editor, state management)
-- **vega-runtime** - Vega/Vega-Lite runtime integration and extensibility
+- **vega-runtime** - Vega/Vega-Lite runtime integration, spec processing, and compilation
+- **vega-react** - React hooks and context for Vega embedding (useVegaEmbed, VegaViewProvider)
 - **powerbi-compat** - Power BI API compatibility layer (**SINGLETON** - see below)
 - **data-core** - Dataset field management and value processing
 - **json-processing** - JSON spec processing and field tracking
@@ -97,12 +98,34 @@ npm run dev       # Start development (auto-primes assets if needed)
 2. Add to `external` array in consuming package's tsup.config.ts
 3. Never bundle it - let the root visual provide the singleton instance
 
+### Compilation Architecture
+
+The spec compilation flow in `@deneb-viz/vega-runtime` and `@deneb-viz/app-core`:
+
+```
+User Spec (JSONC) → parseSpec() → Signal migration (pbiContainer→denebContainer)
+    ↓
+Parsed spec → patchVegaSpec/patchVegaLiteSpec → Config patching
+    ↓
+Compiled template (reusable) → patchSpecWithData() → Final spec with dataset
+    ↓
+buildEmbedOptions() → useVegaEmbed() → vegaEmbed() → Vega View
+```
+
+**Key modules:**
+- `vega-runtime/spec-processing` - Parsing, patching, validation
+- `vega-runtime/compilation` - Orchestrates spec compilation
+- `vega-react/hooks` - useVegaEmbed, useVegaView for React integration
+- `app-core/state/compilation` - Zustand slice for compilation state
+
+**Legacy signal migration:** Specs using `pbiContainerWidth`/`pbiContainerHeight` are automatically migrated to `denebContainer.width`/`denebContainer.height` with deprecation warnings.
+
 ### Data Flow
 
 ```
 Power BI DataView → update() → Categorical data extraction → Dataset mapping
     ↓
-Dataset passed to Vega view (via react-vega)
+Dataset passed to Vega view (via compilation API)
     ↓
 Vega signals → Visual state (Zustand) → Power BI host (selections/cross-filters)
     ↓
@@ -192,7 +215,7 @@ React UI (Fluent UI components) + Vega canvas rendering
 2. Open Power BI pointing to `https://localhost:8080/assets/visual.js`
 3. Edit code → webpack auto-rebuilds (~1-2s) → page reloads
 
-**Package Build Order**: Config → Utils/Data-core/PowerBI-compat → Vega-runtime/JSON-processing → App-core → Root visual
+**Package Build Order**: Config → Utils/Data-core/PowerBI-compat → Vega-runtime/JSON-processing → Vega-react → App-core → Root visual
 
 > **Details**: See [Local Development Workflow](doc/DEVELOPMENT.md#2-local-development-workflow) in DEVELOPMENT.md
 
@@ -214,6 +237,24 @@ Common issues:
 - **Slow rebuilds (>5s)** → Ensure `certificationFix: false` in dev mode
 - **Visual doesn't load** → Clear `.tmp/`, restart `npm run dev` (auto-primes)
 - **Type errors unnoticed** → Run `npm run webpack:package` or `npx tsc --noEmit`
+
+## Known Workarounds
+
+### Vega-Embed Actions Bug
+
+vega-embed has a bug where `actions: false` doesn't prevent the `.has-actions` class from being applied, causing unwanted padding. The workaround requires spreading `actions: false` directly at the `vegaEmbed()` call site in `vega-react/src/hooks/use-vega-embed.ts`:
+
+```typescript
+vegaEmbed(ref.current, spec, { ...options, actions: false })
+```
+
+This is combined with CSS safety in `app-core/vega-embed.tsx`:
+```typescript
+'& .vega-actions': { display: 'none !important' },
+paddingRight: '0 !important'
+```
+
+Both layers are necessary - upstream configuration alone doesn't work due to vega-embed's internal option processing.
 
 > **Full troubleshooting guide**: [DEVELOPMENT.md#10-troubleshooting--known-issues](doc/DEVELOPMENT.md#10-troubleshooting--known-issues)
 

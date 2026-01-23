@@ -24,7 +24,7 @@ export type DenebVisualStoreState = {
 
 export type DenebVisualStateDependencies = {};
 
-const useDenebVisualState = createWithEqualityFn<DenebVisualStoreState>()(
+export const useDenebVisualState = createWithEqualityFn<DenebVisualStoreState>()(
     subscribeWithSelector(
         devtools(
             (...a) => ({
@@ -44,6 +44,4 @@ const useDenebVisualState = createWithEqualityFn<DenebVisualStoreState>()(
     shallow
 );
 
-const getDenebVisualState = () => useDenebVisualState.getState();
-
-export { useDenebVisualState, getDenebVisualState };
+export const getDenebVisualState = () => useDenebVisualState.getState();

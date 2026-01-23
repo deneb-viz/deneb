@@ -1,4 +1,4 @@
-import { makeStyles, tokens } from '@fluentui/react-components';
+import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 
 export const useSettingsPaneStyles = makeStyles({
     radioGroupHorizontal: {
@@ -9,5 +9,18 @@ export const useSettingsPaneStyles = makeStyles({
         display: 'flex',
         flexDirection: 'column',
         padding: `${tokens.spacingVerticalMNudge} ${tokens.spacingHorizontalNone}`
+    },
+    spinButtonContainer: {
+        display: 'flex',
+        flexBasis: '100%',
+        flexDirection: 'row',
+        '> label': {
+            marginRight: tokens.spacingHorizontalM
+        },
+        alignItems: 'center',
+        ...shorthands.padding('5px', tokens.spacingHorizontalNone)
+    },
+    spinButtonControl: {
+        width: '80px'
     }
 });

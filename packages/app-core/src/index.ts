@@ -23,3 +23,4 @@ export { useSpecificationEditor } from './features/specification-editor';
 
 export { updateFieldTracking } from './lib/field-processing';
 export * from './lib/interface';
+export { INCREMENTAL_UPDATE_CONFIGURATION } from './lib/vega';

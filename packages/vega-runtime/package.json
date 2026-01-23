@@ -32,6 +32,18 @@
         "./view": {
             "types": "./dist/lib/view/index.d.ts",
             "default": "./dist/lib/view/index.js"
+        },
+        "./signals": {
+            "types": "./dist/lib/signals/index.d.ts",
+            "default": "./dist/lib/signals/index.js"
+        },
+        "./spec-processing": {
+            "types": "./dist/lib/spec-processing/index.d.ts",
+            "default": "./dist/lib/spec-processing/index.js"
+        },
+        "./compilation": {
+            "types": "./dist/lib/compilation/index.d.ts",
+            "default": "./dist/lib/compilation/index.js"
         }
     },
     "sideEffects": false,
@@ -39,6 +51,8 @@
         "build": "npm run clean && tsc -p tsconfig.json",
         "dev": "tsc -p tsconfig.json --watch",
         "clean": "rimraf dist",
+        "test": "vitest run --coverage",
+        "test:watch": "vitest",
         "typecheck": "tsc --noEmit",
         "eslint": "eslint ."
     },
@@ -46,6 +60,7 @@
         "@deneb-viz/eslint-config": "*",
         "@deneb-viz/typescript-config": "*",
         "@types/node": "^22.15.33",
+        "@vitest/coverage-v8": "^3.2.4",
         "typescript": "^5.6.2",
         "vitest": "^3.2.4"
     },
@@ -55,6 +70,7 @@
         "@deneb-viz/utils": "*",
         "d3-interpolate": "^3.0.1",
         "d3-selection": "^3.0.0",
+        "jsonc-parser": "^3.3.1",
         "mergician": "^2.0.2",
         "powerbi-visuals-utils-formattingutils": "^6.1.2"
     },
@@ -62,6 +78,7 @@
         "@deneb-viz/powerbi-compat": "*",
         "powerbi-visuals-api": "5.11.0",
         "vega": ">=5",
+        "vega-embed": ">=6",
         "vega-lite": ">=5"
     }
 }

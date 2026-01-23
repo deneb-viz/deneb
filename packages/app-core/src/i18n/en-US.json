@@ -1,4 +1,7 @@
 {
+    "Assistive_Text_Performance": "These settings control rendering optimizations. When data patching is disabled, underlying data changes from embedded datasets will fully re-compile and re-embed the visualization (resetting all signals). Patching data and preserving signal values has a performance implication for large datasets and can only be used when datasets are small enough to avoid timeouts during change detection.",
+    "Assistive_Text_Performance_IncrementalActive": "Patching is ACTIVE for your current dataset. Data refreshes will preserve interaction state (zoom, selections, filters) without re-compiling.",
+    "Assistive_Text_Performance_IncrementalInactive": "Patching is INACTIVE because your dataset exceeds the row threshold. Data refreshes will re-compile the visualization and reset signals.",
     "Assistive_Text_Provider": "Vega-Lite is a much more concise syntax for creating common visualizations, and is simpler for newcomers. It is recommended to start with Vega-Lite first, and then switch to Vega if you need more advanced functionality.",
     "Assistive_Text_RenderMode": "Specify how visuals should be rendered when processed. Canvas creates pixel graphics and SVG creates vector graphics. It is recommended to use Canvas if your visual needs to render many data points or marks, as this can reduce overhead on devices viewing the visual.",
     "Button_Apply": "Apply changes [Ctrl+Enter]",
@@ -159,6 +162,10 @@
     "Text_Template_No_Description": "[no description supplied]",
     "Text_Tokenizer_Sync_Message": "Tracking fields...",
     "Text_Vega_LogLevel": "Log level",
+    "Text_Vega_Performance": "Hosted dataset handling",
+    "Text_Vega_Performance_IncrementalUpdates": "Enable patching for hosted datasets",
+    "Text_Vega_Performance_Threshold": "Row threshold for patching",
+    "Tooltip_Setting_Reset": "Reset to default",
     "Text_Vega_Provider": "Provider",
     "Text_Vega_RenderMode": "Render mode",
     "Text_Zoom_Level_Custom_Label": "Zoom to",

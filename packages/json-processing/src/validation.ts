@@ -38,6 +38,7 @@ const CURRENT_VERSION = 'current';
 /**
  * Add custom schemes to Vega-Lite schema. Lazy initialized on first use.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let VEGA_LITE_SCHEMA_POWERBI: any = null;
 const getVegaLiteSchemaWithPowerBI = () => {
     if (!VEGA_LITE_SCHEMA_POWERBI) {

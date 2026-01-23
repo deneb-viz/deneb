@@ -5,11 +5,13 @@ import {
     tokens,
     mergeClasses
 } from '@fluentui/react-components';
+import { VegaViewProvider } from '@deneb-viz/vega-react';
 
 import { DEBUG_PANE_CONFIGURATION } from '@deneb-viz/configuration';
 import { logRender } from '@deneb-viz/utils/logging';
 import { VisualViewer } from '../../../components/visual-viewer';
 import { useDenebState } from '../../../state';
+import { COMPILATION_STATUS_DEFAULT } from '@deneb-viz/vega-runtime/compilation';
 
 /**
  * Preview area base styles (static). Dynamic sizing is applied via inline styles.
@@ -65,7 +67,7 @@ export const PreviewArea = () => {
         editorPreviewAreaHeight: state.editor.previewAreaViewport.height ?? 0,
         editorZoomLevel: state.editorZoomLevel,
         showViewportMarker: state.editorPreferences.previewAreaShowBorder,
-        status: state.specification.status,
+        status: state.compilation.result?.status ?? COMPILATION_STATUS_DEFAULT,
         viewportHeight: state.interface.embedViewport?.height ?? 0,
         viewportWidth: state.interface.embedViewport?.width ?? 0
     }));
@@ -80,22 +82,24 @@ export const PreviewArea = () => {
     };
     logRender('VisualPreview', status, editorPreviewAreaHeight);
     return (
-        <div className={classes.previewArea} style={styleVars}>
-            <div
-                className={mergeClasses(
-                    classes.previewWrapper,
-                    showViewportMarker
-                        ? classes.previewWrapperViewportMarker
-                        : classes.previewWrapperNoMarker
-                )}
-            >
+        <VegaViewProvider>
+            <div className={classes.previewArea} style={styleVars}>
                 <div
-                    id='deneb-visual-preview'
-                    className={classes.previewContainer}
+                    className={mergeClasses(
+                        classes.previewWrapper,
+                        showViewportMarker
+                            ? classes.previewWrapperViewportMarker
+                            : classes.previewWrapperNoMarker
+                    )}
                 >
-                    <VisualViewer isEmbeddedInEditor />
+                    <div
+                        id='deneb-visual-preview'
+                        className={classes.previewContainer}
+                    >
+                        <VisualViewer isEmbeddedInEditor />
+                    </div>
                 </div>
             </div>
-        </div>
+        </VegaViewProvider>
     );
 };
