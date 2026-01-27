@@ -103,7 +103,14 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
         !isEmbeddedInEditor ? classes.overflowOverlay : classes.overflowVisible,
         classes.container
     );
-    const vegaComponent = (
+    // Don't render VegaRender until we have valid viewport dimensions and spec
+    // This prevents rendering issues during mode transitions when embedViewport
+    // hasn't been synced yet or when the spec is not ready
+    const hasValidViewport = viewportHeight > 0 && viewportWidth > 0;
+    const hasValidSpec =
+        specification.spec !== null && specification.status === 'valid';
+    const canRender = hasValidViewport && hasValidSpec;
+    const vegaComponent = canRender ? (
         <VegaRender
             locale={locale}
             logLevel={logLevel as number}
@@ -120,10 +127,14 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
             viewportHeight={viewportHeight}
             viewportWidth={viewportWidth}
         />
-    );
+    ) : null;
     useEffect(() => {
         logRender('VegaContainer', {
             isEmbeddedInEditor,
+            hasValidViewport,
+            hasValidSpec,
+            canRender,
+            specStatus: specification.status,
             config,
             spec,
             provider,

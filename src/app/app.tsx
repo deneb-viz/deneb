@@ -148,8 +148,10 @@ export const App = ({ host }: AppProps) => {
             case 'no-project':
                 return <LandingPage />;
             case 'editor':
+            case 'transition-editor-viewer':
                 return <DenebApp type='editor' />;
             case 'viewer':
+            case 'transition-viewer-editor':
                 return <ReportViewRouter />;
         }
     }, [mode]);

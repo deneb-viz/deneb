@@ -83,29 +83,35 @@ export const createUpdatesSlice = (): StateCreator<
             }
             const { viewport } = options;
             // Update embed viewport if needed
+            // Use persisted settings as primary source (like old code) to avoid
+            // unnecessary updates from raw viewport fluctuations
             {
                 const { embedViewport, mode, setEmbedViewport } =
                     get().interface;
+                const persistedViewport = {
+                    height: Number.parseFloat(
+                        settings.stateManagement.viewport.viewportHeight.value
+                    ),
+                    width: Number.parseFloat(
+                        settings.stateManagement.viewport.viewportWidth.value
+                    )
+                };
+                // Use persisted values if available, otherwise fall back to raw viewport
+                const targetViewport = {
+                    height: persistedViewport.height || viewport.height,
+                    width: persistedViewport.width || viewport.width
+                };
                 if (
                     doesModeAllowEmbedViewportSet(mode, options.isInFocus) &&
-                    !shallowEqual(embedViewport, viewport) &&
+                    !shallowEqual(embedViewport, targetViewport) &&
                     (isVisualUpdateTypeResizeEnd(options.type) ||
                         !embedViewport)
                 ) {
-                    setEmbedViewport(viewport);
+                    setEmbedViewport(targetViewport);
                 }
                 // Fallback: if we don't have a viewport ensure we have the latest viewport
                 if (!get().interface.embedViewport) {
-                    setEmbedViewport({
-                        height: Number.parseFloat(
-                            settings.stateManagement.viewport.viewportHeight
-                                .value
-                        ),
-                        width: Number.parseFloat(
-                            settings.stateManagement.viewport.viewportWidth
-                                .value
-                        )
-                    });
+                    setEmbedViewport(targetViewport);
                 }
             }
             // Update interface viewport if needed
