@@ -136,7 +136,12 @@ export const getParsedSpec = (
         warns.push(...logger.warns);
     }
     // TODO: hashing should be replaced with something better when we refactor properly
-    const hashValue = JSON.stringify(specToParse);
+    // Include validateSchema in hash so mode transitions (viewer<->editor) produce
+    // different hashValues, matching 1.8.2 behavior where visualMode was part of comparison
+    const hashValue = JSON.stringify({
+        spec: specToParse,
+        validateSchema: nextOptions.validateSchema
+    });
     logDebug('getParsedSpec results', {
         config,
         patchedConfig,

@@ -82,6 +82,7 @@ export type SpecificationComparisonOptions = {
     config: string;
     spec: string;
     provider: SpecProvider;
+    validateSchema: boolean;
     viewportHeight: number;
     viewportWidth: number;
 };

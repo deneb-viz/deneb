@@ -184,7 +184,7 @@ const getResolvedDisplayModeForHostQuirks = (
     if (latest.displayMode === 'transition-viewer-editor') {
         if (
             working.isInFocus &&
-            isVisualUpdateTypeResizeEnd(working.type) &&
+            isVisualUpdateTypeResize(working.type) &&
             !isVisualUpdateTypeResizeEnd(working.type) &&
             isVisualUpdateTypeResize(latest.type) &&
             isVisualUpdateTypeResizeEnd(latest.type)
