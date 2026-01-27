@@ -71,15 +71,23 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
     // Track whether we've done the initial embed (to distinguish first render from updates)
     const hasEmbeddedRef = useRef(false);
 
-    const { compilation, logError, values, provider, setViewReady, viewReady } =
-        useDenebState((state) => ({
-            compilation: state.compilation.result,
-            logError: state.compilation.logError,
-            values: state.dataset.values,
-            provider: state.project.provider,
-            setViewReady: state.compilation.setViewReady,
-            viewReady: state.compilation.viewReady
-        }));
+    const {
+        compilation,
+        generateRenderId,
+        logError,
+        values,
+        provider,
+        setViewReady,
+        viewReady
+    } = useDenebState((state) => ({
+        compilation: state.compilation.result,
+        generateRenderId: state.interface.generateRenderId,
+        logError: state.compilation.logError,
+        values: state.dataset.values,
+        provider: state.project.provider,
+        setViewReady: state.compilation.setViewReady,
+        viewReady: state.compilation.viewReady
+    }));
 
     const { setView } = useVegaView();
 
@@ -135,6 +143,10 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
 
             logDebug('VegaEmbed: View run complete (via vega-embed)');
             setViewReady(true);
+
+            // Generate new renderId to trigger debug pane listeners to reattach to new view
+            generateRenderId();
+
             onRenderingFinished?.();
         },
         [
@@ -144,6 +156,7 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
             onRenderingError,
             setView,
             setViewReady,
+            generateRenderId,
             logError,
             compilation?.embedOptions?.logLevel
         ]
