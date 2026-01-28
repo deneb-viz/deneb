@@ -282,6 +282,102 @@ describe('patchVegaSpec', () => {
 
         expect(patched.autosize).toEqual({ type: 'fit', contains: 'padding' });
     });
+
+    it('should not add responsive width when user has width signal with init', () => {
+        const spec: Spec = {
+            $schema: 'https://vega.github.io/schema/vega/v5.json',
+            signals: [
+                {
+                    name: 'width',
+                    init: 'isFinite(containerSize()[0]) ? containerSize()[0] : 200',
+                    on: [
+                        {
+                            update: 'isFinite(containerSize()[0]) ? containerSize()[0] : 200',
+                            events: 'window:resize'
+                        }
+                    ]
+                }
+            ],
+            marks: []
+        };
+
+        const patched = patchVegaSpec(spec, {
+            containerDimensions: { width: 800, height: 600 }
+        });
+
+        // Should NOT add top-level width property (would conflict with signal's init)
+        expect(patched.width).toBeUndefined();
+        // Should still add responsive height since no height signal exists
+        expect(patched.height).toHaveProperty('signal');
+    });
+
+    it('should not add responsive height when user has height signal with init', () => {
+        const spec: Spec = {
+            $schema: 'https://vega.github.io/schema/vega/v5.json',
+            signals: [
+                {
+                    name: 'height',
+                    init: 'isFinite(containerSize()[1]) ? containerSize()[1] : 200',
+                    on: [
+                        {
+                            update: 'isFinite(containerSize()[1]) ? containerSize()[1] : 200',
+                            events: 'window:resize'
+                        }
+                    ]
+                }
+            ],
+            marks: []
+        };
+
+        const patched = patchVegaSpec(spec, {
+            containerDimensions: { width: 800, height: 600 }
+        });
+
+        // Should NOT add top-level height property (would conflict with signal's init)
+        expect(patched.height).toBeUndefined();
+        // Should still add responsive width since no width signal exists
+        expect(patched.width).toHaveProperty('signal');
+    });
+
+    it('should not add responsive dimensions when user has both width and height signals', () => {
+        const spec: Spec = {
+            $schema: 'https://vega.github.io/schema/vega/v5.json',
+            signals: [
+                {
+                    name: 'width',
+                    init: 'isFinite(containerSize()[0]) ? containerSize()[0] : 200',
+                    on: [
+                        {
+                            update: 'isFinite(containerSize()[0]) ? containerSize()[0] : 200',
+                            events: 'window:resize'
+                        }
+                    ]
+                },
+                {
+                    name: 'height',
+                    init: 'isFinite(containerSize()[1]) ? containerSize()[1] : 200',
+                    on: [
+                        {
+                            update: 'isFinite(containerSize()[1]) ? containerSize()[1] : 200',
+                            events: 'window:resize'
+                        }
+                    ]
+                }
+            ],
+            marks: []
+        };
+
+        const patched = patchVegaSpec(spec, {
+            containerDimensions: { width: 800, height: 600 }
+        });
+
+        // Should NOT add top-level width/height properties
+        expect(patched.width).toBeUndefined();
+        expect(patched.height).toBeUndefined();
+        // User signals should be preserved
+        expect(patched.signals?.find((s: any) => s.name === 'width')).toBeDefined();
+        expect(patched.signals?.find((s: any) => s.name === 'height')).toBeDefined();
+    });
 });
 
 describe('patchVegaSpec Integration', () => {

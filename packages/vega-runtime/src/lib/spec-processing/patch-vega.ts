@@ -7,11 +7,18 @@ import {
 import type { PatchVegaOptions } from './types';
 
 /**
+ * Check if a signal with the given name exists in the signals array.
+ */
+const hasSignalNamed = (spec: Spec, name: string): boolean => {
+    return spec.signals?.some((signal) => signal.name === name) ?? false;
+};
+
+/**
  * Apply Deneb-specific patches to a Vega specification.
  *
  * Patches applied:
  * 1. Adds denebContainer signal with container dimensions
- * 2. Sets responsive width/height if not specified
+ * 2. Sets responsive width/height if not specified (and no user-defined signal exists)
  * 3. Merges additional signals if provided
  *
  * @param spec The Vega specification to patch
@@ -44,12 +51,13 @@ export const patchVegaSpec = (
         ]
     };
 
-    // Set responsive dimensions if not already specified
-    if (!spec.width && containerDimensions) {
+    // Set responsive dimensions if not already specified as a top-level property
+    // or as a user-defined signal (to avoid conflicts with init/update expressions)
+    if (!spec.width && !hasSignalNamed(spec, 'width') && containerDimensions) {
         patches.width = { signal: containerRefs.width };
     }
 
-    if (!spec.height && containerDimensions) {
+    if (!spec.height && !hasSignalNamed(spec, 'height') && containerDimensions) {
         patches.height = { signal: containerRefs.height };
     }
 
