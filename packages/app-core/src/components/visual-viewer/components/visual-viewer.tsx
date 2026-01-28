@@ -18,6 +18,7 @@ import { makeStyles } from '@fluentui/react-components';
 import { VegaEmbed } from './vega-embed';
 import { VegaEmbedErrorBoundary } from './vega-embed-error-boundary';
 import { VEGA_CONTAINER_ID } from '../constants';
+import { performIncrementalUpdate } from '../incremental-update';
 import { getDenebState, useDenebState } from '../../../state';
 import { useDenebPlatformProvider } from '../../deneb-platform';
 import {
@@ -72,7 +73,10 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
         compileSpec,
         enableIncrementalDataUpdates,
         incrementalUpdateThreshold,
-        viewReady
+        viewReady,
+        logDurableError,
+        logDurableWarn,
+        translate
     } = useDenebState((state) => ({
         spec: state.project.spec,
         config: state.project.config,
@@ -93,7 +97,10 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
             state.compilation.enableIncrementalDataUpdates,
         incrementalUpdateThreshold:
             state.compilation.incrementalUpdateThreshold,
-        viewReady: state.compilation.viewReady
+        viewReady: state.compilation.viewReady,
+        logDurableError: state.compilation.logDurableError,
+        logDurableWarn: state.compilation.logDurableWarn,
+        translate: state.i18n.translate
     }));
 
     /**
@@ -200,46 +207,44 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
             }
         );
 
-        try {
-            /**
-             * Deep copy the values array to ensure Vega sees new object references. A shallow copy via slice() isn't
-             * sufficient - Vega may check object identity when determining if data has changed for derived datasets.
-             */
-            const valuesCopy = structuredClone(values);
-            view.data(DATASET_DEFAULT_NAME, valuesCopy);
-            view.runAsync()
-                .then(() => {
-                    logDebug(
-                        'VisualViewer: INCREMENTAL UPDATE SUCCESS - ' +
-                            'Data updated, signals preserved (no re-embed)'
-                    );
-                })
-                .catch((error) => {
-                    logDebug(
-                        'VisualViewer: Incremental update runAsync failed',
-                        {
-                            error
-                        }
-                    );
+        performIncrementalUpdate({
+            view,
+            values,
+            onFailure: (reason, errorDetails) => {
+                logDebug(
+                    `VisualViewer: Incremental update failed (${reason}), triggering re-compile`,
+                    errorDetails ? { error: errorDetails } : undefined
+                );
+
+                // Log durable error with the actual error message (shown at ERROR level in editor)
+                if (errorDetails) {
+                    logDurableError(errorDetails);
+                }
+
+                // Log durable warning explaining the fallback (shown at WARN level in editor)
+                logDurableWarn(
+                    translate('Text_Warn_Incremental_Update_Failure', [reason])
+                );
+
+                // Trigger full re-compile as fallback
+                compileSpec({
+                    spec,
+                    config,
+                    provider,
+                    schemaValidator,
+                    containerDimensions: {
+                        width: viewportWidth,
+                        height: viewportHeight
+                    },
+                    logLevel
                 });
-        } catch (error) {
-            logDebug(
-                'VisualViewer: Incremental update error, triggering re-compile',
-                { error }
-            );
-            // Fall back to full re-compile
-            compileSpec({
-                spec,
-                config,
-                provider,
-                schemaValidator,
-                containerDimensions: {
-                    width: viewportWidth,
-                    height: viewportHeight
-                },
-                logLevel
-            });
-        }
+            },
+            onSuccess: () => {
+                logDebug(
+                    'VisualViewer: INCREMENTAL UPDATE SUCCESS - Data updated via view.data() API'
+                );
+            }
+        });
     }, [
         values,
         viewReady,
@@ -252,7 +257,10 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
         viewportWidth,
         logLevel,
         compileSpec,
-        schemaValidator
+        schemaValidator,
+        logDurableError,
+        logDurableWarn,
+        translate
     ]);
 
     const useScrollbars = useMemo(

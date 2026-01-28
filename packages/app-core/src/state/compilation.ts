@@ -79,6 +79,21 @@ export type CompilationSliceProperties = SyncableSlice &
         runtimeWarnings: string[];
 
         /**
+         * Warnings that should survive the next compile cycle.
+         * Used for warnings that are generated during operations that trigger a compile (e.g., incremental update
+         * failures that fall back to re-compile). These are merged into runtimeWarnings after compile, then cleared.
+         */
+        durableWarnings: string[];
+
+        /**
+         * Errors that should survive the next compile cycle.
+         * Used for errors that are generated during operations that trigger a compile (e.g., Vega internal errors
+         * during incremental update that fall back to re-compile). These are merged into runtimeErrors after compile,
+         * then cleared.
+         */
+        durableErrors: string[];
+
+        /**
          * Compile the current specification with given options.
          */
         compile: (options: CompileSpecOptions) => void;
@@ -126,6 +141,18 @@ export type CompilationSliceProperties = SyncableSlice &
         logWarn: (warn: string) => void;
 
         /**
+         * Record a warning that should survive the next compile cycle.
+         * Use this for warnings generated during operations that trigger a re-compile.
+         */
+        logDurableWarn: (warn: string) => void;
+
+        /**
+         * Record an error that should survive the next compile cycle.
+         * Use this for errors generated during operations that trigger a re-compile.
+         */
+        logDurableError: (error: string) => void;
+
+        /**
          * Clear all runtime errors and warnings.
          */
         clearLog: () => void;
@@ -159,6 +186,8 @@ const initialState: Omit<
     | 'setViewReady'
     | 'logError'
     | 'logWarn'
+    | 'logDurableWarn'
+    | 'logDurableError'
     | 'clearLog'
 > = {
     __hasHydrated__: false,
@@ -168,6 +197,8 @@ const initialState: Omit<
     viewReady: false,
     runtimeErrors: [],
     runtimeWarnings: [],
+    durableWarnings: [],
+    durableErrors: [],
     ...defaultPerformanceSettings
 };
 
@@ -243,6 +274,18 @@ export const createCompilationSlice =
                     false,
                     'compilation.logWarn'
                 ),
+            logDurableWarn: (warn) =>
+                set(
+                    (state) => handleLogDurableWarn(state, warn),
+                    false,
+                    'compilation.logDurableWarn'
+                ),
+            logDurableError: (error) =>
+                set(
+                    (state) => handleLogDurableError(state, error),
+                    false,
+                    'compilation.logDurableError'
+                ),
             clearLog: () => set(handleClearLog, false, 'compilation.clearLog')
         }
     });
@@ -252,13 +295,21 @@ export const createCompilationSlice =
  *
  * - updates state with compilation result or errors
  * - clears previous runtime errors/warnings since we're starting fresh
+ * - merges any durable warnings (from previous operations) into runtime warnings, then clears them
  */
 const handleCompile = (
     state: StoreState,
     options: CompileSpecOptions
 ): Partial<StoreState> => {
     const result = compileSpec(options);
-    const hasErrors = (result.errors?.length ?? 0) > 0;
+    const hasCompilationErrors = (result.errors?.length ?? 0) > 0;
+
+    // Merge durable errors/warnings into runtime errors/warnings (they survive this compile, then get cleared)
+    const runtimeErrors = [...state.compilation.durableErrors];
+    const runtimeWarnings = [...state.compilation.durableWarnings];
+
+    // Show attention indicator if there are compilation errors OR durable errors
+    const hasErrors = hasCompilationErrors || runtimeErrors.length > 0;
 
     return {
         debug: { ...state.debug, logAttention: hasErrors },
@@ -268,8 +319,11 @@ const handleCompile = (
             isCompiling: false,
             lastCompiled: Date.now(),
             // Clear runtime logs on new compilation - they'll be repopulated if errors occur during render
-            runtimeErrors: [],
-            runtimeWarnings: []
+            runtimeErrors,
+            runtimeWarnings,
+            // Clear durable errors/warnings - they've been merged into runtime errors/warnings
+            durableErrors: [],
+            durableWarnings: []
         }
     };
 };
@@ -344,6 +398,38 @@ const handleLogWarn = (
         ...state.compilation,
         runtimeWarnings: Array.from(
             new Set<string>([...state.compilation.runtimeWarnings, message])
+        )
+    }
+});
+
+/**
+ * Record a durable warning that survives the next compile cycle.
+ * Use this for warnings generated during operations that trigger a re-compile.
+ */
+const handleLogDurableWarn = (
+    state: StoreState,
+    message: string
+): Partial<StoreState> => ({
+    compilation: {
+        ...state.compilation,
+        durableWarnings: Array.from(
+            new Set<string>([...state.compilation.durableWarnings, message])
+        )
+    }
+});
+
+/**
+ * Record a durable error that survives the next compile cycle.
+ * Use this for errors generated during operations that trigger a re-compile.
+ */
+const handleLogDurableError = (
+    state: StoreState,
+    message: string
+): Partial<StoreState> => ({
+    compilation: {
+        ...state.compilation,
+        durableErrors: Array.from(
+            new Set<string>([...state.compilation.durableErrors, message])
         )
     }
 });
