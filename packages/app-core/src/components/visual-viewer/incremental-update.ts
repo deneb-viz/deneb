@@ -109,7 +109,7 @@ export const performIncrementalUpdate = ({
                 viewWithError.error = originalErrorHandler;
 
                 if (internalErrorMessage) {
-                    handleFailure('internal error during update');
+                    handleFailure('internal Vega error during update');
                 } else {
                     logDebug(
                         'IncrementalUpdate: SUCCESS - Data updated via view.data() API'

@@ -161,7 +161,7 @@
     "Text_Template_No_Author": "[author unknown]",
     "Text_Template_No_Description": "[no description supplied]",
     "Text_Tokenizer_Sync_Message": "Tracking fields...",
-    "Text_Warn_Incremental_Update_Failure": "Incremental data update failed ({0}). Falling back to full re-compile. This can happen with specs using complex transforms like aggregate or force.",
+    "Text_Warn_Incremental_Update_Failure": "Incremental data update failed ({0}). In order to ensure visual output is consistent with your source dataset state, your spec was re-compiled and the Vega view was re-initialized.",
     "Text_Vega_LogLevel": "Log level",
     "Text_Vega_Performance": "Hosted dataset handling",
     "Text_Vega_Performance_IncrementalUpdates": "Enable patching for hosted datasets",
