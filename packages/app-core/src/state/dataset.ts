@@ -1,8 +1,6 @@
 import { type StateCreator } from 'zustand';
 
 import { type StoreState } from './state';
-import { getParsedSpec } from '@deneb-viz/json-processing/spec-processing';
-import { getSpecificationParseOptions } from './helpers';
 import { getDatasetTemplateFieldsFromMetadata } from '@deneb-viz/data-core/field';
 import { logDebug, logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
 import {
@@ -41,7 +39,9 @@ export const createDatasetSlice =
             )
     });
 
-// eslint-disable-next-line max-lines-per-function
+/**
+ * Handle dataset updates from host application, and update export metadata.
+ */
 const handleUpdateDataset = (
     state: StoreState,
     payload: VisualDatasetUpdatePayload
@@ -52,10 +52,7 @@ const handleUpdateDataset = (
         metadataAllDependenciesAssigned = false,
         metadataAllFieldsAssigned = false
     } = areAllCreateDataRequirementsMet(state.create.metadata);
-    const specOptions = getSpecificationParseOptions(state);
-    const spec = getParsedSpec(state.specification, specOptions, {
-        ...specOptions
-    });
+
     logTimeStart('dataset.updateDataset.getUpdatedExportMetadata');
     const exportMetadata = getUpdatedExportMetadata(
         state.export.metadata as UsermetaTemplate,
@@ -81,6 +78,7 @@ const handleUpdateDataset = (
     );
     logTimeEnd('dataset.updateDataset.getUpdatedExportMetadata');
     logDebug('dataset.updateDataset persisting to store...');
+
     return {
         create: {
             ...state.create,
@@ -88,14 +86,9 @@ const handleUpdateDataset = (
             metadataAllFieldsAssigned
         },
         dataset,
-        debug: { ...state.debug, logAttention: spec.errors.length > 0 },
         export: {
             ...state.export,
             metadata: exportMetadata
-        },
-        specification: {
-            ...state.specification,
-            ...spec
         }
     };
 };

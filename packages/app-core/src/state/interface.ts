@@ -8,11 +8,9 @@ import {
 import { type RemapState } from '@deneb-viz/json-processing/field-tracking';
 import { StoreState } from './state';
 import { isMappingDialogRequired } from '@deneb-viz/json-processing';
-import { getParsedSpec } from '@deneb-viz/json-processing/spec-processing';
 import { getNewUuid } from '@deneb-viz/utils/crypto';
 import { StateCreator } from 'zustand';
 import { getModalDialogRole } from '../lib/interface/state';
-import { getSpecificationParseOptions } from './helpers';
 
 export type InterfaceSliceProperties = {
     /**
@@ -175,44 +173,6 @@ export const createInterfaceSlice =
             setType: (type: InterfaceType) =>
                 set(
                     (state) => {
-                        // When transitioning between viewer/editor modes, we need to
-                        // trigger a spec reparse to generate a new hashValue. This
-                        // matches 1.8.2 behavior where mode changes triggered reparsing.
-                        const typeChanged = type !== state.interface.type;
-
-                        // Get the new specification by triggering a reparse with the
-                        // new validateSchema value (which differs between viewer/editor)
-                        let specData = {
-                            errors: state.specification.errors,
-                            hashValue: state.specification.hashValue,
-                            spec: state.specification.spec,
-                            status: state.specification.status,
-                            warns: state.specification.warns
-                        };
-                        if (
-                            typeChanged &&
-                            state.specification.status === 'valid'
-                        ) {
-                            const prevOptions =
-                                getSpecificationParseOptions(state);
-                            const nextOptions = {
-                                ...prevOptions,
-                                validateSchema: type === 'editor'
-                            };
-                            const parsed = getParsedSpec(
-                                state.specification,
-                                prevOptions,
-                                nextOptions
-                            );
-                            specData = {
-                                errors: parsed.errors,
-                                hashValue: parsed.hashValue,
-                                spec: parsed.spec,
-                                status: parsed.status,
-                                warns: parsed.warns
-                            };
-                        }
-
                         return {
                             interface: {
                                 ...state.interface,
@@ -223,10 +183,6 @@ export const createInterfaceSlice =
                                 ),
                                 renderId: getNewUuid(),
                                 type
-                            },
-                            specification: {
-                                ...state.specification,
-                                ...specData
                             }
                         };
                     },

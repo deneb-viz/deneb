@@ -2,6 +2,7 @@ import { Divider, makeStyles, tokens } from '@fluentui/react-components';
 
 import { ProviderSettings } from './provider-settings';
 import { RenderModeSettings } from './render-mode-settings';
+import { PerformanceSettings } from './performance-settings';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 
 const useSettingsPaneStyles = makeStyles({
@@ -19,6 +20,8 @@ export const SettingsPane = () => {
             <ProviderSettings />
             <Divider />
             <RenderModeSettings />
+            <Divider />
+            <PerformanceSettings />
             {settingsPanePlatformComponent ? (
                 <>
                     <Divider />

@@ -296,6 +296,16 @@
                     "type": {
                         "bool": true
                     }
+                },
+                "enableIncrementalDataUpdates": {
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "incrementalUpdateThreshold": {
+                    "type": {
+                        "numeric": true
+                    }
                 }
             }
         },

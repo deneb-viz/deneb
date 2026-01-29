@@ -68,17 +68,15 @@ export const App = ({ host }: AppProps) => {
     }, [translate, host]);
 
     /**
-     * Create the Power BI-specific tooltip handler with all dependencies baked in.
+     * Create the Power BI-specific tooltip handler.
      */
     const pbiTooltipHandler = useMemo(
         () =>
             tooltipHandler({
                 enabled: enableTooltips,
-                fields,
-                multiSelectDelay,
-                values
+                multiSelectDelay
             }),
-        [enableTooltips, fields, multiSelectDelay, values]
+        [enableTooltips, multiSelectDelay]
     );
 
     /**

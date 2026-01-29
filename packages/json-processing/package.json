@@ -65,7 +65,7 @@
         "ajv": "^8.12.0",
         "ajv-formats": "^2.1.1",
         "fast-equals": "^5.3.3",
-        "jsonc-parser": "^3.2.1",
+        "jsonc-parser": "^3.3.1",
         "mergician": "^2.0.2",
         "vega-expression": "^5.1.1",
         "vscode-json-languageservice": "^5.3.11"

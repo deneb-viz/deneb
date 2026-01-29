@@ -1,5 +1,5 @@
-import { isSpecificationValid } from '@deneb-viz/json-processing/spec-processing';
 import { VISUAL_PREVIEW_ZOOM_CONFIGURATION } from '@deneb-viz/configuration';
+import { type CompilationResult } from '@deneb-viz/vega-runtime/compilation';
 import {
     type ExportSpecCommandTestOptions,
     type ZoomLevelCommandTestOptions,
@@ -15,29 +15,36 @@ export const getNextApplyMode = (
 ): EditorApplyMode => (applyMode === 'Auto' ? 'Manual' : 'Auto');
 
 /**
+ * Check if compilation result indicates a valid/ready specification.
+ */
+export const isCompilationReady = (
+    result: CompilationResult | null
+): boolean => result?.status === 'ready';
+
+/**
  * Tests whether the export specification command is enabled.
  */
 export const isExportSpecCommandEnabled = (
     options: ExportSpecCommandTestOptions
-) => !options.editorIsDirty && isSpecificationValid(options.specification);
+) => !options.editorIsDirty && isCompilationReady(options.compilationResult);
 
 /**
  * Tests whether the zoom in command is enabled.
  */
 export const isZoomInCommandEnabled = (options: ZoomLevelCommandTestOptions) =>
     options.value !== VISUAL_PREVIEW_ZOOM_CONFIGURATION.max &&
-    isSpecificationValid(options.specification);
+    isCompilationReady(options.compilationResult);
 
 /**
  * Tests whether other zoom commands are enabled.
  */
 export const isZoomOtherCommandsEnabled = (
     options: ZoomOtherCommandTestOptions
-) => isSpecificationValid(options.specification);
+) => isCompilationReady(options.compilationResult);
 
 /**
  * Tests whether the zoom out command is enabled.
  */
 export const isZoomOutCommandEnabled = (options: ZoomLevelCommandTestOptions) =>
     options.value !== VISUAL_PREVIEW_ZOOM_CONFIGURATION.min &&
-    isSpecificationValid(options.specification);
+    isCompilationReady(options.compilationResult);

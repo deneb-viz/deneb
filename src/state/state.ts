@@ -24,26 +24,25 @@ export type DenebVisualStoreState = {
 
 export type DenebVisualStateDependencies = {};
 
-const useDenebVisualState = createWithEqualityFn<DenebVisualStoreState>()(
-    subscribeWithSelector(
-        devtools(
-            (...a) => ({
-                dataset: createDatasetSlice()(...a),
-                host: createHostSlice()(...a),
-                interactivity: createInteractivitySlice()(...a),
-                interface: createInterfaceSlice()(...a),
-                settings: createSettingsSlice()(...a),
-                updates: createUpdatesSlice()(...a)
-            }),
-            {
-                name: 'DenebVisualStore',
-                enabled: toBoolean(process.env.ZUSTAND_DEV_TOOLS)
-            }
-        )
-    ),
-    shallow
-);
+export const useDenebVisualState =
+    createWithEqualityFn<DenebVisualStoreState>()(
+        subscribeWithSelector(
+            devtools(
+                (...a) => ({
+                    dataset: createDatasetSlice()(...a),
+                    host: createHostSlice()(...a),
+                    interactivity: createInteractivitySlice()(...a),
+                    interface: createInterfaceSlice()(...a),
+                    settings: createSettingsSlice()(...a),
+                    updates: createUpdatesSlice()(...a)
+                }),
+                {
+                    name: 'DenebVisualStore',
+                    enabled: toBoolean(process.env.ZUSTAND_DEV_TOOLS)
+                }
+            )
+        ),
+        shallow
+    );
 
-const getDenebVisualState = () => useDenebVisualState.getState();
-
-export { useDenebVisualState, getDenebVisualState };
+export const getDenebVisualState = () => useDenebVisualState.getState();

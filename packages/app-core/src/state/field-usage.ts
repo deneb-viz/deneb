@@ -193,7 +193,7 @@ const handleApplyTrackingChanges = (
             ...state.commands,
             exportSpecification: isExportSpecCommandEnabled({
                 editorIsDirty: state.editor.isDirty,
-                specification: state.specification
+                compilationResult: state.compilation.result
             })
         },
         fieldUsage: {

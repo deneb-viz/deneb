@@ -7,10 +7,17 @@ import { useDenebState } from '../../../../state';
 
 export const LogErrorIndicator = () => {
     const { errors, warns } = useDenebState(
-        (state) => ({
-            errors: state.specification.errors,
-            warns: state.specification.warns
-        }),
+        (state) => {
+            // Combine parse errors/warnings with runtime errors/warnings
+            const parseErrors = state.compilation.result?.errors ?? [];
+            const parseWarnings = state.compilation.result?.parsed.warnings ?? [];
+            const runtimeErrors = state.compilation.runtimeErrors;
+            const runtimeWarnings = state.compilation.runtimeWarnings;
+            return {
+                errors: [...parseErrors, ...runtimeErrors],
+                warns: [...parseWarnings, ...runtimeWarnings]
+            };
+        },
         shallow
     );
     const indicator = useMemo(() => {

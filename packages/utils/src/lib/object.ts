@@ -156,9 +156,6 @@ export const prune = (maxDepth = DEFAULT_MAX_PRUNE_DEPTH) => {
             }
             value = copy;
         }
-        if (key === 'dataflow') {
-            delete (value as { _scenegraph?: unknown })._scenegraph;
-        }
         if (stack.length > maxDepth) {
             return '[OBJECT]';
         }

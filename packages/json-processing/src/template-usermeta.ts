@@ -20,6 +20,7 @@ import {
     getProviderSchemaUrl,
     type SpecProvider
 } from '@deneb-viz/vega-runtime/embed';
+import { replaceLegacySignalReferences } from '@deneb-viz/vega-runtime/signals';
 import { getNewUuid } from '@deneb-viz/utils/crypto';
 import {
     type DenebTemplateSetImportFilePayload,
@@ -195,15 +196,20 @@ export const getTemplateProvider = (template: string): SpecProvider =>
 
 /**
  * For all supplied template fields, perform a replace on all tokens and return the new spec.
+ * Also migrates any legacy signal references (pbiContainer → denebContainer).
  */
 export const getTemplateReplacedForDataset = (
     spec: string,
     dataset: UsermetaDatasetField[]
-) =>
-    dataset.reduce((result, value, index) => {
+) => {
+    // First, migrate any legacy signal references
+    const migratedSpec = replaceLegacySignalReferences(spec).spec;
+    // Then replace field placeholders
+    return dataset.reduce((result, value, index) => {
         const pattern = getFieldPattern(index);
         return result.replace(pattern, value.suppliedObjectName as string);
-    }, spec);
+    }, migratedSpec);
+};
 
 /**
  * In v1.7, we moved the Config editor content into the `usermeta` object. Prior to this we merged the content in the

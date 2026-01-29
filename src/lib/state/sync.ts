@@ -4,6 +4,7 @@ import { logDebug } from '@deneb-viz/utils/logging';
 import { shallowEqual } from 'fast-equals';
 import { PROJECT_SYNC_MAPPINGS } from './project-sync-mappings';
 import { EDITOR_PREFERENCES_SYNC_MAPPINGS } from './editor-preferences-sync-mappings';
+import { COMPILATION_SYNC_MAPPINGS } from './compilation-sync-mappings';
 import { createSliceSync } from './create-slice-sync';
 import { persistProjectProperties } from '../persistence';
 import { VISUAL_RENDER_SYNC_MAPPINGS } from './visual-render-sync-mappings';
@@ -153,6 +154,17 @@ const syncSlicesWithVisualSettings = (): (() => void) => {
             isHydrated: (slice) => slice.__hasHydrated__,
             getSliceValue: (slice, key) => slice[key as keyof typeof slice],
             mappings: VISUAL_RENDER_SYNC_MAPPINGS
+        }),
+
+        // Compilation (performance settings) slice sync
+        createSliceSync({
+            name: 'compilation',
+            getSlice: (state) =>
+                (state as ReturnType<typeof getDenebState>).compilation,
+            getSyncFn: (slice) => slice.syncPerformanceSettings,
+            isHydrated: (slice) => slice.__hasHydrated__,
+            getSliceValue: (slice, key) => slice[key as keyof typeof slice],
+            mappings: COMPILATION_SYNC_MAPPINGS
         })
     ];
 

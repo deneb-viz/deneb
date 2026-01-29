@@ -63,7 +63,7 @@ export const createCrossFilterApplyHandler = (): CrossFilterApplyHandler => {
         const selectionMode = useDenebVisualState.getState().settings?.vega
             ?.interactivity?.selectionMode?.value as SelectionMode;
         const {
-            specification: { logWarn },
+            compilation: { logWarn },
             i18n: { translate }
         } = getDenebState();
 

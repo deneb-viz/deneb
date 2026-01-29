@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TableColumn, TableProps } from 'react-data-table-component';
 import { useDebounce } from '@uidotdev/usehooks';
 import { textMeasurementService } from 'powerbi-visuals-utils-formattingutils';
@@ -46,7 +46,6 @@ const DATA_LISTENER_DEBOUNCE_INTERVAL = 100;
 /**
  * Handles display of dataset details for the current Vega view.
  */
-// eslint-disable-next-line max-lines-per-function
 export const DatasetViewer = ({
     datasetName,
     logAttention,
@@ -76,8 +75,9 @@ export const DatasetViewer = ({
     });
     const datasetWorker = useMemo(() => datasetViewerWorker, []);
     const { logError } = useDenebState((state) => ({
-        logError: state.specification.logError
+        logError: state.compilation.logError
     }));
+
     /**
      * When our dataset changes, we need to send it to our web worker for processing.
      */
@@ -108,6 +108,7 @@ export const DatasetViewer = ({
             logDebug('DatasetViewer: worker message sent');
         }
     }, [datasetRaw.hashValue]);
+
     /**
      * When we get a response from our worker, we need to update our state with the processed data table output.
      */
@@ -139,6 +140,7 @@ export const DatasetViewer = ({
             };
         }
     }, [datasetWorker]);
+
     /**
      * Attempt to add specified data listener to the Vega view.
      */
@@ -160,6 +162,7 @@ export const DatasetViewer = ({
             );
         }
     };
+
     /**
      * Attempt to remove specified data listener from the Vega view.
      */
@@ -181,6 +184,7 @@ export const DatasetViewer = ({
             );
         }
     };
+
     /**
      * Attempt to cycle (add/remove) listeners for the specified dataset.
      */
@@ -191,6 +195,7 @@ export const DatasetViewer = ({
         removeListener();
         addListener();
     };
+
     /**
      * Sync debounced value to actual state.
      */
@@ -199,26 +204,59 @@ export const DatasetViewer = ({
             setDatasetRaw(debouncedDatasetRaw);
         }
     }, [debouncedDatasetRaw]);
+
+    /**
+     * Track hash to avoid unnecessary updates.
+     */
+    const lastListenerHashRef = useRef<string | null>(null);
+
     /**
      * Handler for dataset listener events.
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dataListener = useCallback((name: string, value: any) => {
-        logDebug(
-            `DatasetViewer: [${renderId}] dataset ${name} has changed`,
-            value
-        );
         const newDataset = getPrunedObject(value);
         const hashValue = getDataHash(newDataset);
+
+        // Skip update if hash hasn't changed - prevents looping on derived datasets
+        if (hashValue === lastListenerHashRef.current) {
+            logDebug(
+                `DatasetViewer: dataset ${name} listener fired but hash unchanged, skipping`
+            );
+            return;
+        }
+
+        // Skip processing if we have data but the listener returns an empty array - likely an incremental update in progress
+        if (
+            Array.isArray(newDataset) &&
+            newDataset.length === 0 &&
+            lastListenerHashRef.current !== null
+        ) {
+            logDebug(
+                `DatasetViewer: dataset ${name} listener received empty array while we have existing data, skipping (likely incremental update in progress)`
+            );
+            return;
+        }
+
+        logDebug(`DatasetViewer: dataset ${name} has changed`, {
+            previousHash: lastListenerHashRef.current,
+            newHash: hashValue
+        });
+
+        lastListenerHashRef.current = hashValue;
         setDatasetRawPending(() => ({
             hashValue,
             values: newDataset
         }));
     }, []);
+
     /**
-     * Ensure that listener is added/removed when the data might change.
+     * Ensure that listener is added/removed when the data might change or we re-render (new view).
      */
     useEffect(() => {
+        // Reset the listener hash ref when dataset or view changes to ensure first listener event is processed
+        lastListenerHashRef.current = null;
+
         try {
             logDebug(
                 `DatasetViewer: getting latest dataset from view (${datasetName})...`
@@ -266,12 +304,13 @@ export const DatasetViewer = ({
                     }
                 );
                 setDatasetRaw(() => latestDatasetRaw);
-                cycleListeners();
             } else {
                 logDebug(
                     `DatasetViewer: no change detected. Skipping dataset update.`
                 );
             }
+            // Always cycle listeners when this effect runs (renderId change means new view)
+            cycleListeners();
         } catch (e) {
             logDebug(`DatasetViewer: error getting latest dataset from view.`, {
                 e
@@ -284,6 +323,7 @@ export const DatasetViewer = ({
             removeListener();
         };
     }, [datasetName, renderId, logAttention]);
+
     /**
      * Keep sort persisted across renders.
      */
@@ -297,7 +337,9 @@ export const DatasetViewer = ({
         setSortColumnId(column?.id ?? null);
         setSortAsc(() => sortDirection === 'asc');
     };
+
     const classes = useDebugWrapperStyles();
+
     logRender('DatasetViewer', {
         datasetState,
         datasetRaw,
@@ -306,6 +348,7 @@ export const DatasetViewer = ({
         sortColumnId,
         sortAsc
     });
+
     return datasetState.processing ? (
         <ProcessingDataMessage />
     ) : datasetState.values?.length ? (

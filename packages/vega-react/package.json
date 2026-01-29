@@ -1,0 +1,53 @@
+{
+    "name": "@deneb-viz/vega-react",
+    "version": "1.9.0",
+    "description": "React hooks and components for Vega/Vega-Lite visualization integration",
+    "type": "module",
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "npm run clean && tsc -p tsconfig.json",
+        "dev": "tsc -p tsconfig.json --watch",
+        "clean": "rimraf dist",
+        "test": "vitest run --coverage",
+        "test:watch": "vitest",
+        "typecheck": "tsc --noEmit"
+    },
+    "peerDependencies": {
+        "@deneb-viz/vega-runtime": "*",
+        "react": "^19.2.0",
+        "vega": ">=5",
+        "vega-embed": ">=6"
+    },
+    "dependencies": {
+        "use-deep-compare-effect": "^1.8.1"
+    },
+    "devDependencies": {
+        "@deneb-viz/typescript-config": "*",
+        "@testing-library/dom": "^10.4.0",
+        "@testing-library/react": "^16.1.0",
+        "@testing-library/react-hooks": "^8.0.1",
+        "@testing-library/jest-dom": "^6.6.3",
+        "@types/react": "^19.0.0",
+        "@vitest/coverage-v8": "^3.2.4",
+        "jsdom": "^25.0.1",
+        "react": "^19.2.0",
+        "react-dom": "^19.2.0",
+        "rimraf": "^6.0.1",
+        "typescript": "^5.6.2",
+        "vitest": "^3.2.4"
+    },
+    "publishConfig": {
+        "access": "public"
+    }
+}

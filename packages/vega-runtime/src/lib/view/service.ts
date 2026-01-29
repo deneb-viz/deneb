@@ -1,9 +1,5 @@
 import { falsy, truthy, View } from 'vega';
-import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
-import { logDebug, logTimeEnd } from '@deneb-viz/utils/logging';
-import { VegaPatternFillServices } from '../pattern-fill';
-import { DispatchingVegaLoggerService } from '../extensibility';
-import { HandleNewViewOptions, HandleViewErrorOptions } from './types';
+import { logDebug } from '@deneb-viz/utils/logging';
 import { type VegaDatum } from '@deneb-viz/data-core/value';
 
 let view: View | null;
@@ -113,76 +109,3 @@ export const VegaViewServices = {
     getView: () => view
 };
 Object.freeze(VegaViewServices);
-
-/**
- * For the supplied view, bind the custom container signals.
- */
-const bindContainerSignals = (view: View) => {
-    const update = () => {
-        const container = view.container();
-        if (container) {
-            const signal = getSignalPbiContainer({ container });
-            VegaViewServices.setSignalByName(signal.name, signal.value);
-        }
-    };
-    update();
-    view.addResizeListener(() => {
-        update();
-    });
-};
-
-/**
- * Any logic that we need to apply to a new Vega view.
- */
-export const handleNewView = (newView: View, options: HandleNewViewOptions) => {
-    logDebug('Vega view initialized.');
-    options.onRenderingStarted?.();
-    const {
-        generateRenderId,
-        logError,
-        logWarn,
-        logLevel,
-        viewEventBinders,
-        onRenderingFinished
-    } = options;
-    newView.logger(
-        new DispatchingVegaLoggerService(logLevel, logWarn, logError)
-    );
-    newView.runAfter((view) => {
-        logDebug('Running post-Vega view logic...', view);
-        logDebug('Binding view services...');
-        VegaPatternFillServices.update();
-        VegaViewServices.bind(view);
-        logDebug('View services', {
-            view: VegaViewServices.getView(),
-            signals: VegaViewServices.getAllSignals(),
-            data: VegaViewServices.getAllData()
-        });
-        bindContainerSignals(view);
-        viewEventBinders?.forEach((binder) => binder(view));
-        generateRenderId();
-        logTimeEnd('VegaRender');
-        onRenderingFinished?.();
-    });
-};
-
-/**
- * Any logic that we need to apply when the view errors.
- */
-export const handleViewError = (
-    error: Error,
-    options: HandleViewErrorOptions
-) => {
-    logDebug('Vega view error.', error);
-    const { generateRenderId, logError, onRenderingError } = options;
-    logDebug('Clearing view...');
-    VegaViewServices.clearView();
-    logDebug('View services', {
-        view: VegaViewServices.getView(),
-        signals: VegaViewServices.getAllSignals(),
-        data: VegaViewServices.getAllData()
-    });
-    logError(error.message);
-    generateRenderId();
-    onRenderingError?.(error);
-};

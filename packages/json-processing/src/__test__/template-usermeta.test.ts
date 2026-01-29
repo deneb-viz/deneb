@@ -468,6 +468,28 @@ describe('getTemplateReplacedForDataset', () => {
         const result = getTemplateReplacedForDataset(spec, emptyDataset);
         expect(result).toEqual(spec);
     });
+    it('should migrate legacy pbiContainer signal references to denebContainer', () => {
+        const specWithLegacySignal =
+            '{ "signals": [{ "name": "myWidth", "update": "pbiContainerWidth" }] }';
+        const expectedSpec =
+            '{ "signals": [{ "name": "myWidth", "update": "denebContainer.width" }] }';
+        const result = getTemplateReplacedForDataset(specWithLegacySignal, []);
+        expect(result).toEqual(expectedSpec);
+    });
+    it('should migrate pbiContainerHeight to denebContainer.height', () => {
+        const specWithLegacySignal =
+            '{ "update": "pbiContainerHeight - 50" }';
+        const expectedSpec = '{ "update": "denebContainer.height - 50" }';
+        const result = getTemplateReplacedForDataset(specWithLegacySignal, []);
+        expect(result).toEqual(expectedSpec);
+    });
+    it('should migrate pbiContainer to denebContainer', () => {
+        const specWithLegacySignal =
+            '{ "update": "pbiContainer.scrollTop" }';
+        const expectedSpec = '{ "update": "denebContainer.scrollTop" }';
+        const result = getTemplateReplacedForDataset(specWithLegacySignal, []);
+        expect(result).toEqual(expectedSpec);
+    });
 });
 
 describe('getTemplateResolvedForLegacyConfig', () => {

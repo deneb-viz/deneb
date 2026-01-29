@@ -50,6 +50,8 @@
         "@deneb-viz/json-processing": "*",
         "@deneb-viz/template-usermeta": "*",
         "@deneb-viz/utils": "*",
+        "@deneb-viz/vega-react": "*",
+        "@deneb-viz/vega-runtime": "*",
         "@monaco-editor/react": "^4.6.0",
         "@uidotdev/usehooks": "^2.4.1",
         "allotment": "^1.20.5",
@@ -68,6 +70,7 @@
     },
     "peerDependencies": {
         "@deneb-viz/powerbi-compat": "*",
+        "@deneb-viz/vega-react": "*",
         "@deneb-viz/vega-runtime": "*",
         "@fluentui/react-components": "^9.72.6",
         "@fluentui/react-icons": "^2.0.313",
