@@ -361,10 +361,6 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
     useEffect(() => {
         logRender('VisualViewer', {
             isEmbeddedInEditor,
-            hasValidViewport,
-            hasValidSpec,
-            canRender,
-            specStatus: specification.status,
             config,
             spec,
             provider,
