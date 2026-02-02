@@ -96,10 +96,10 @@ export const createUpdatesSlice = (): StateCreator<
                         settings.stateManagement.viewport.viewportWidth.value
                     )
                 };
-                // Use persisted values if available, otherwise fall back to raw viewport
+                // Use live viewport as primary, fall back to persisted values if viewport is 0
                 const targetViewport = {
-                    height: persistedViewport.height || viewport.height,
-                    width: persistedViewport.width || viewport.width
+                    height: viewport.height || persistedViewport.height,
+                    width: viewport.width || persistedViewport.width
                 };
                 if (
                     doesModeAllowEmbedViewportSet(mode, options.isInFocus) &&
