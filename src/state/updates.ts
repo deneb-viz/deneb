@@ -83,23 +83,29 @@ export const createUpdatesSlice = (): StateCreator<
             }
             const { viewport } = options;
             // Update embed viewport if needed
-            // Use persisted settings as primary source (like old code) to avoid
-            // unnecessary updates from raw viewport fluctuations
             {
                 const { embedViewport, mode, setEmbedViewport } =
                     get().interface;
+                const parsedHeight = Number.parseFloat(
+                    settings.stateManagement.viewport.viewportHeight.value
+                );
+                const parsedWidth = Number.parseFloat(
+                    settings.stateManagement.viewport.viewportWidth.value
+                );
                 const persistedViewport = {
-                    height: Number.parseFloat(
-                        settings.stateManagement.viewport.viewportHeight.value
-                    ),
-                    width: Number.parseFloat(
-                        settings.stateManagement.viewport.viewportWidth.value
-                    )
+                    height: Number.isFinite(parsedHeight) ? parsedHeight : 0,
+                    width: Number.isFinite(parsedWidth) ? parsedWidth : 0
                 };
-                // Use live viewport as primary, fall back to persisted values if viewport is 0
+                // Use live viewport as primary, fall back to persisted values only if viewport is exactly 0
                 const targetViewport = {
-                    height: viewport.height || persistedViewport.height,
-                    width: viewport.width || persistedViewport.width
+                    height:
+                        viewport.height === 0
+                            ? persistedViewport.height
+                            : viewport.height,
+                    width:
+                        viewport.width === 0
+                            ? persistedViewport.width
+                            : viewport.width
                 };
                 if (
                     doesModeAllowEmbedViewportSet(mode, options.isInFocus) &&
