@@ -12,7 +12,6 @@ import {
     type DatasetFields,
     type UsermetaDatasetField
 } from '@deneb-viz/data-core/field';
-import { getDatasetFieldsInclusive } from '@deneb-viz/data-core/field';
 import { type ModalDialogType } from '../ui';
 import { DataTypeIcon } from './data-type-icon';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
@@ -49,19 +48,21 @@ export const DataFieldDropdown = ({
     const [selectedKey, setSelectedKey] = useState<string | undefined>(
         selectedKeyDefault
     );
-    const selectedField = getDatasetFieldFromFields(
+    const selectedFieldEntry = getDatasetFieldEntryFromFields(
         selectedKey,
         dialogType,
         fields
     );
-    const options = getTemplateDatasetFields(fields);
+    const options = getTemplateDatasetFieldEntries(fields);
     const dropdownOptionElements = getFieldOptions(options);
     const onOptionSelect: DropdownProps['onOptionSelect'] = (ev, data) => {
         logDebug('onOptionSelect', { dialogType, data });
         setSelectedKey(() => (data.optionValue as string) ?? undefined);
     };
     useEffect(() => {
-        const option = options.find((o) => o.id === selectedKey);
+        const option = options.find(
+            ([key, field]) => (field.id ?? key) === selectedKey
+        );
         let reducer:
             | typeof createSliceReducer
             | typeof fieldUsageSliceReducer
@@ -73,8 +74,8 @@ export const DataFieldDropdown = ({
         }
         reducer?.({
             key: datasetField.key,
-            suppliedObjectKey: option?.id,
-            suppliedObjectName: getFieldDisplayName(option)
+            suppliedObjectKey: option ? (option[1].id ?? option[0]) : undefined,
+            suppliedObjectName: option ? option[0] : undefined
         });
     }, [selectedKey]);
     const dropdownId = useId('dataset-field');
@@ -82,7 +83,7 @@ export const DataFieldDropdown = ({
         datasetField,
         dialogType,
         fields,
-        selectedField,
+        selectedFieldEntry,
         selectedKey,
         selectedKeyDefault,
         options
@@ -95,7 +96,7 @@ export const DataFieldDropdown = ({
             className={classes.root}
             placeholder={translate('Text_Placeholder_Create_Assigned_Field')}
             onOptionSelect={onOptionSelect}
-            value={getFieldDisplayName(selectedField)}
+            value={selectedFieldEntry ? selectedFieldEntry[0] : ''}
         >
             {dropdownOptionElements}
         </Dropdown>
@@ -103,18 +104,18 @@ export const DataFieldDropdown = ({
 };
 
 /**
- * For the supplied lookup name, returns the dataset field with the same name.
+ * For the supplied lookup key, returns the dataset field entry [key, field] with the matching id.
  */
-const getDatasetFieldFromFields = (
+const getDatasetFieldEntryFromFields = (
     lookupKey: string | undefined,
     role: ModalDialogType,
     fields: DatasetFields
-): DatasetField | undefined => {
+): [string, DatasetField] | undefined => {
     switch (role) {
         case 'new':
         case 'mapping':
-            return getTemplateDatasetFields(fields).find(
-                (df) => df.id === lookupKey
+            return getTemplateDatasetFieldEntries(fields).find(
+                ([key, field]) => (field.id ?? key) === lookupKey
             );
         default:
             return undefined;
@@ -123,55 +124,48 @@ const getDatasetFieldFromFields = (
 
 /**
  * If we have a column in our dataset with a name matching a placeholder (and
- * this is not yet assigned), we should get the key for it. If not, we'll init
+ * this is not yet assigned), we should get the id (or key) for it. If not, we'll init
  * with an empty value and prompt the user to select, as normal.
  */
 const getDefaultSelectedKey = (
     field: UsermetaDatasetField,
     fields: DatasetFields
-) => fields[field.name]?.id || undefined;
-
-/**
- * Get the display name for a given field, preferring template metadata if available.
- */
-const getFieldDisplayName = (field: DatasetField | undefined) => {
-    return field?.templateMetadata?.name || field?.name || '';
+) => {
+    const matchingField = fields[field.name];
+    if (!matchingField) return undefined;
+    return matchingField.id ?? field.name;
 };
 
 /**
  * Returns a list of `Option` components, representing the available
  * fields from the dataset.
  */
-const getFieldOptions = (fields: DatasetField[]) => {
-    return fields?.map((df, i) => {
-        const displayValue = getFieldDisplayName(df);
+const getFieldOptions = (entries: [string, DatasetField][]) => {
+    return entries?.map(([key, df], i) => {
+        const optionValue = df.id ?? key;
         return (
             <Option
                 id={`field-${i}`}
-                key={df.id}
-                value={df.id}
-                text={displayValue}
+                key={optionValue}
+                value={optionValue}
+                text={key}
             >
-                <DataTypeIcon type={df.templateMetadata?.type} />
-                {displayValue}
+                <DataTypeIcon type={df.dataType} />
+                {key}
             </Option>
         );
     });
 };
 
 /**
- * Get the eligible template fields from a supplied set of metadata.
+ * Get all field entries from a supplied set of metadata for dropdown selection.
+ * Returns array of [key, field] tuples. Unlike template operations, the dropdown
+ * should show ALL available fields, not just those with role/dataType defined.
  */
-const getTemplateDatasetFields = (metadata: DatasetFields) => {
-    return Object.values(getDatasetFieldsInclusive(metadata)).reduce<
-        DatasetField[]
-    >((acc, value) => {
-        if (!value) return acc;
-        if (Array.isArray(value)) {
-            acc.push(...value);
-        } else {
-            acc.push(value as DatasetField);
-        }
-        return acc;
-    }, []);
+const getTemplateDatasetFieldEntries = (
+    metadata: DatasetFields
+): [string, DatasetField][] => {
+    return Object.entries(metadata).filter(
+        (entry): entry is [string, DatasetField] => entry[1] !== undefined
+    );
 };

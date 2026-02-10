@@ -1,27 +1,21 @@
 import { DenebApp, DenebProvider, getDenebState } from '@deneb-viz/app-core';
 
 /**
- * Do a simple initialization of our data "outside" app, to validate that we can assign fields. Simulates a dataset
- * being supplied from a host environment.
+ * Do a simple initialization of our data "outside" app, to validate that we can assign fields.
+ * Simulates a dataset being supplied from a host environment.
  *
- * TODO: we will need to add `templateMetadata` as part of processing our host datasets if we want to leverage support
- * export/tokenization properly and this needs to be defined for generic environments as well as handling datasets that
- * don't have this defined (will currently treat it as a generic spec, which may actually be OK for some use cases, but
- * TBD either way).
+ * Fields can be defined as:
+ * - Simple array: ['a', 'b'] - just field names
+ * - Record with metadata: { a: { role: 'grouping', dataType: 'text' } }
+ *
+ * Fields with `role` and `dataType` are eligible for template operations (export, field tracking).
+ * Fields without these properties are available in dropdowns but excluded from template operations.
  */
 const { updateDataset } = getDenebState();
 updateDataset({
     dataset: {
-        fields: {
-            a: {
-                id: 'a',
-                name: 'a'
-            },
-            b: {
-                id: 'b',
-                name: 'b'
-            }
-        },
+        // Simple format - just field names as an array
+        fields: ['a', 'b'],
         values: [
             { a: 'A', b: 28 },
             { a: 'B', b: 55 },

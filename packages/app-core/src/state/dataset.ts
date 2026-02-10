@@ -1,14 +1,20 @@
 import { type StateCreator } from 'zustand';
 
 import { type StoreState } from './state';
-import { getDatasetTemplateFieldsFromMetadata } from '@deneb-viz/data-core/field';
+import {
+    getDatasetTemplateFieldsFromMetadata,
+    normalizeFieldsInput
+} from '@deneb-viz/data-core/field';
 import { logDebug, logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
 import {
     areAllCreateDataRequirementsMet,
     getUpdatedExportMetadata
 } from '@deneb-viz/json-processing';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
-import { type TabularDataset } from '../lib/dataset';
+import {
+    type TabularDataset,
+    type TabularDatasetInput
+} from '@deneb-viz/data-core/dataset';
 
 export type DatasetSlice = {
     dataset: TabularDataset;
@@ -16,7 +22,7 @@ export type DatasetSlice = {
 };
 
 export type VisualDatasetUpdatePayload = {
-    dataset: TabularDataset;
+    dataset: TabularDatasetInput;
 };
 
 export const createDatasetSlice =
@@ -41,13 +47,21 @@ export const createDatasetSlice =
 
 /**
  * Handle dataset updates from host application, and update export metadata.
+ * Normalizes field input (array or record) to the internal record format.
  */
 const handleUpdateDataset = (
     state: StoreState,
     payload: VisualDatasetUpdatePayload
 ): Partial<StoreState> => {
     logDebug('dataset.updateDataset', payload);
-    const { dataset } = payload;
+
+    // Normalize fields input (array → record)
+    const normalizedFields = normalizeFieldsInput(payload.dataset.fields);
+    const dataset: TabularDataset = {
+        fields: normalizedFields,
+        values: payload.dataset.values
+    };
+
     const {
         metadataAllDependenciesAssigned = false,
         metadataAllFieldsAssigned = false
@@ -57,23 +71,23 @@ const handleUpdateDataset = (
     const exportMetadata = getUpdatedExportMetadata(
         state.export.metadata as UsermetaTemplate,
         {
-            dataset: getDatasetTemplateFieldsFromMetadata(
-                payload.dataset.fields
-            ).map((d) => {
-                const match = state.export.metadata?.dataset.find(
-                    (ds) => ds.key === d.key
-                );
-                if (match) {
-                    return {
-                        ...match,
-                        ...{
-                            name: d.name,
-                            namePlaceholder: d.namePlaceholder
-                        }
-                    };
+            dataset: getDatasetTemplateFieldsFromMetadata(normalizedFields).map(
+                (d) => {
+                    const match = state.export.metadata?.dataset.find(
+                        (ds) => ds.key === d.key
+                    );
+                    if (match) {
+                        return {
+                            ...match,
+                            ...{
+                                name: d.name,
+                                namePlaceholder: d.namePlaceholder
+                            }
+                        };
+                    }
+                    return d;
                 }
-                return d;
-            })
+            )
         }
     );
     logTimeEnd('dataset.updateDataset.getUpdatedExportMetadata');

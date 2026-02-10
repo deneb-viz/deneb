@@ -1,26 +1,50 @@
 /**
+ * The role of a field in the dataset - either for grouping (categorical) or aggregation (numeric measures).
+ */
+export type DatasetFieldRole = 'grouping' | 'aggregation';
+
+/**
+ * The data type of a field in the dataset.
+ */
+export type DatasetFieldDataType =
+    | 'bool'
+    | 'text'
+    | 'numeric'
+    | 'dateTime'
+    | 'other';
+
+/**
  * Metadata for dataset fields. This is based on the Power BI metadata and is enriched with other properties that we
  * need for Deneb.
+ *
+ * The record key in DatasetFields serves as the field's "name" - i.e., the column name in Vega data.
+ * The `id` property is optional and only needed when it differs from the record key (e.g., Power BI queryName).
  */
 export type DatasetField<T = object> = {
     /**
-     * Unique identifier for the field within the dataset
+     * Unique identifier for the field within the dataset.
+     * Optional - defaults to the record key if not provided.
+     * Use this when the identifier differs from the record key (e.g., Power BI queryName).
      */
-    id: string;
+    id?: string;
     /**
-     * The display/friendly name of the field. Can be set to the same as the `id` if needed.
+     * The role of this field - 'grouping' for categorical fields or 'aggregation' for measures.
+     * Optional - defaults to 'grouping' when not specified.
      */
-    name: string;
+    role?: DatasetFieldRole;
+    /**
+     * The data type of this field. Optional - defaults to 'other' when not specified.
+     */
+    dataType?: DatasetFieldDataType;
+    /**
+     * Optional description for the field, used in template exports.
+     */
+    description?: string;
     /**
      * Host-specific metadata that can be attached to the field for use by the host application and applied during
      * dataset construction.
      */
     hostMetadata?: T;
-    /**
-     * Representation of the field for templating purposes. Should only be present if the field is eligible for use
-     * within templates. Anything else is assumed to be a support field.
-     */
-    templateMetadata?: UsermetaDatasetField;
 };
 
 /**
@@ -29,6 +53,25 @@ export type DatasetField<T = object> = {
 export type DatasetFields<T = object> = {
     [key: string]: DatasetField<T>;
 };
+
+/**
+ * Input type for field definitions - supports both simple array format and full record format.
+ * Arrays are normalized to records internally.
+ *
+ * @example
+ * // Simple format - just field names
+ * fields: ['a', 'b', 'c']
+ *
+ * @example
+ * // Full format - with metadata
+ * fields: {
+ *     a: { role: 'grouping', dataType: 'text' },
+ *     b: { role: 'aggregation', dataType: 'numeric' }
+ * }
+ */
+export type DatasetFieldsInput<T = object> =
+    | string[]
+    | DatasetFields<T>;
 
 /**
  * When we parse the JSON to look for specific field types, these rely on specific patterns and replacements. This
@@ -62,8 +105,9 @@ export type UsermetaDatasetField = {
     description?: string;
     /**
      * Specifies whether a column or measure (or either) should be used for this placeholder.
+     * Optional - purely informational, not used for filtering during import.
      */
-    kind: UsermetaDatasetFieldKind;
+    kind?: UsermetaDatasetFieldKind;
     /**
      * The list of data types that can be used for this placeholder, for any columns or measures in the data model.
      */
@@ -94,10 +138,6 @@ export type UsermetaDatasetFieldKind = 'column' | 'measure' | 'any';
 
 /**
  * The list of data types that can be used for this placeholder, for any columns or measures in the data model.
+ * Alias for DatasetFieldDataType to ensure consistency between internal and export formats.
  */
-export type UsermetaDatasetFieldType =
-    | 'bool'
-    | 'text'
-    | 'numeric'
-    | 'dateTime'
-    | 'other';
+export type UsermetaDatasetFieldType = DatasetFieldDataType;

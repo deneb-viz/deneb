@@ -327,7 +327,7 @@ const setMonacoCompletionProvider = () => {
                     fields.push({
                         label: key,
                         insertText: key,
-                        documentation: getSnippetFieldMetadata(field),
+                        documentation: getSnippetFieldMetadata(key, field),
                         kind: monaco.languages.CompletionItemKind.Field,
                         range,
                         sortText: `zzzzz__${key}`
@@ -402,8 +402,8 @@ const setMonacoKeyBindingRules = () => {
  * For any data-based completers in the editor, provide a qualifier denoting whether it's a column, measure or
  * something else.
  */
-const getSnippetFieldMetadata = (field: DatasetField) => {
-    return getFieldDocumentationByName(field.name);
+const getSnippetFieldMetadata = (key: string, field: DatasetField) => {
+    return getFieldDocumentationByName(key);
 };
 
 /**
