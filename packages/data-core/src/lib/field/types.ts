@@ -29,11 +29,14 @@ export type DatasetField<T = object> = {
     id?: string;
     /**
      * The role of this field - 'grouping' for categorical fields or 'aggregation' for measures.
-     * Optional - defaults to 'grouping' when not specified.
+     * Optional - when unset, the field is not eligible for template operations (export/tracking).
+     * Shorthand array input via `normalizeFieldsInput()` defaults this to 'grouping'.
      */
     role?: DatasetFieldRole;
     /**
-     * The data type of this field. Optional - defaults to 'other' when not specified.
+     * The data type of this field.
+     * Optional - when unset, the field is not eligible for template operations unless `role` is set.
+     * Shorthand array input via `normalizeFieldsInput()` defaults this to 'other'.
      */
     dataType?: DatasetFieldDataType;
     /**
@@ -69,9 +72,7 @@ export type DatasetFields<T = object> = {
  *     b: { role: 'aggregation', dataType: 'numeric' }
  * }
  */
-export type DatasetFieldsInput<T = object> =
-    | string[]
-    | DatasetFields<T>;
+export type DatasetFieldsInput<T = object> = string[] | DatasetFields<T>;
 
 /**
  * When we parse the JSON to look for specific field types, these rely on specific patterns and replacements. This
