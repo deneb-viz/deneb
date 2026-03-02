@@ -94,8 +94,9 @@ export type FieldPatternReplacer = {
  */
 export type UsermetaDatasetField = {
     /**
-     * Unique field placeholder name. Must start and end with __ (double-underscore) and can only use alpha-numeric
-     * characters in-between.
+     * Field identifier. In exported templates, this is a placeholder name matching the
+     * `@pattern` below (e.g., `__0__`). In runtime tracking contexts, this is the field's
+     * actual identifier (e.g., queryName or record key).
      * @pattern ^__[a-zA-Z0-9]+__$
      * @maxLength 30
      */

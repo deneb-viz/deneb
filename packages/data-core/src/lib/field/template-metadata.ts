@@ -49,6 +49,10 @@ export type ToUsermetaDatasetFieldOptions = {
 /**
  * Transforms a DatasetField to a UsermetaDatasetField for use at the json-processing boundary.
  *
+ * When `options.placeholder` is provided, the result's `key` is set to the placeholder (e.g., `__0__`)
+ * for template export. When omitted, `key` is set to `field.id ?? key` (the field's actual identifier),
+ * used for runtime field tracking.
+ *
  * @param key - The record key (field name in Vega data)
  * @param field - The DatasetField to transform
  * @param options - Optional transformation options
