@@ -74,7 +74,9 @@ export const enrichFields = <T = object>(
                     role: field.role ?? newData.role,
                     dataType: field.dataType ?? newData.dataType,
                     description: field.description ?? newData.description,
-                    id: field.id ?? newData.id
+                    id: field.id ?? newData.id,
+                    isSupportField:
+                        field.isSupportField ?? newData.isSupportField
                 }
             ];
         })

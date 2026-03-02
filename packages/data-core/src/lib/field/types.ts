@@ -44,6 +44,12 @@ export type DatasetField<T = object> = {
      */
     description?: string;
     /**
+     * Whether this field is a support/derived field (e.g., highlights, formatting).
+     * Support fields are excluded from template operations (export, tracking, import assignment).
+     * Optional - defaults to false (i.e., field is template-eligible).
+     */
+    isSupportField?: boolean;
+    /**
      * Host-specific metadata that can be attached to the field for use by the host application and applied during
      * dataset construction.
      */

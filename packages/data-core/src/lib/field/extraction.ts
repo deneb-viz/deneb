@@ -4,16 +4,13 @@ import type { DatasetFields, UsermetaDatasetField } from './types';
 
 /**
  * For supplied fields, retrieve only those that should be eligible for template operations.
- * Fields are eligible if they have either a `role` or `dataType` property set.
+ * Fields are eligible unless explicitly marked as support fields via `isSupportField: true`.
  */
 export function getDatasetFieldsInclusive(fields: DatasetFields | undefined) {
     if (!fields) {
         return {};
     }
-    return pickBy(
-        fields,
-        (f) => f.role !== undefined || f.dataType !== undefined
-    );
+    return pickBy(fields, (f) => f.isSupportField !== true);
 }
 
 /**

@@ -59,14 +59,17 @@ export const getDatumFieldsFromMetadata = (
             c.encodedName ?? getEncodedFieldName(c.column.displayName);
         const isTemplateEligible = isSourceField(c.source);
         result[`${encodedName}`] = {
-            id: c.column.queryName ?? c.column.displayName ?? '',
-            // Only set role and dataType for template-eligible fields (categories and values)
-            ...(isTemplateEligible && {
-                role: c.column.isMeasure ? 'aggregation' : 'grouping',
-                dataType: getResolvedValueDescriptor(
-                    c.column.type as powerbi.ValueTypeDescriptor
-                )
-            }),
+            id: c.column.queryName || c.column.displayName || undefined,
+            ...(isTemplateEligible
+                ? {
+                      role: c.column.isMeasure
+                          ? ('aggregation' as const)
+                          : ('grouping' as const),
+                      dataType: getResolvedValueDescriptor(
+                          c.column.type as powerbi.ValueTypeDescriptor
+                      )
+                  }
+                : { isSupportField: true as const }),
             hostMetadata: c
         };
         return result;

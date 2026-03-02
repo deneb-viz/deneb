@@ -154,4 +154,26 @@ describe('enrichFields', () => {
         expect(result.a.id).toBe('field-id');
         expect(result.a.description).toBe('A field description');
     });
+
+    it('should enrich isSupportField property', () => {
+        const existing: DatasetFields = { a: {} };
+        const enrichment = {
+            a: { isSupportField: true as const }
+        };
+        const result = enrichFields(existing, enrichment);
+
+        expect(result.a.isSupportField).toBe(true);
+    });
+
+    it('should preserve existing isSupportField over enrichment', () => {
+        const existing: DatasetFields = {
+            a: { isSupportField: false }
+        };
+        const enrichment = {
+            a: { isSupportField: true as const }
+        };
+        const result = enrichFields(existing, enrichment);
+
+        expect(result.a.isSupportField).toBe(false);
+    });
 });

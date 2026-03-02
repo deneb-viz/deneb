@@ -10,6 +10,7 @@ import {
 import {
     type DatasetField,
     type DatasetFields,
+    getDatasetFieldsInclusive,
     type UsermetaDatasetField
 } from '@deneb-viz/data-core/field';
 import { type ModalDialogType } from '../ui';
@@ -53,7 +54,7 @@ export const DataFieldDropdown = ({
         dialogType,
         fields
     );
-    const options = getTemplateDatasetFieldEntries(fields);
+    const options = getSourceDatasetFieldEntries(fields);
     const dropdownOptionElements = getFieldOptions(options);
     const onOptionSelect: DropdownProps['onOptionSelect'] = (ev, data) => {
         logDebug('onOptionSelect', { dialogType, data });
@@ -114,7 +115,7 @@ const getDatasetFieldEntryFromFields = (
     switch (role) {
         case 'new':
         case 'mapping':
-            return getTemplateDatasetFieldEntries(fields).find(
+            return getSourceDatasetFieldEntries(fields).find(
                 ([key, field]) => (field.id ?? key) === lookupKey
             );
         default:
@@ -158,14 +159,13 @@ const getFieldOptions = (entries: [string, DatasetField][]) => {
 };
 
 /**
- * Get all field entries from a supplied set of metadata for dropdown selection.
- * Returns array of [key, field] tuples. Unlike template operations, the dropdown
- * should show ALL available fields, not just those with role/dataType defined.
+ * Get eligible field entries from a supplied set of metadata for dropdown selection.
+ * Returns array of [key, field] tuples, excluding support fields.
  */
-const getTemplateDatasetFieldEntries = (
+const getSourceDatasetFieldEntries = (
     metadata: DatasetFields
 ): [string, DatasetField][] => {
-    return Object.entries(metadata).filter(
+    return Object.entries(getDatasetFieldsInclusive(metadata)).filter(
         (entry): entry is [string, DatasetField] => entry[1] !== undefined
     );
 };

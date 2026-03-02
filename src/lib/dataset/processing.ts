@@ -274,7 +274,7 @@ export const getMappedDataset = (
                     if (f.hostMetadata?.column.isMeasure) {
                         selectionQueueBase.push({
                             type: 'measure',
-                            queryName: f.id
+                            queryName: f.id!
                         });
                     } else {
                         selectionQueueBase.push({

@@ -40,9 +40,19 @@ describe('getDatasetFieldsInclusive', () => {
         expect(result.a).toBeDefined();
     });
 
-    it('should exclude fields without role or dataType', () => {
+    it('should include fields without role or dataType when not marked as support', () => {
         const fields: DatasetFields = {
             a: { id: 'a' },
+            b: { id: 'b', role: 'grouping' }
+        };
+        const result = getDatasetFieldsInclusive(fields);
+        expect(result.a).toBeDefined();
+        expect(result.b).toBeDefined();
+    });
+
+    it('should exclude fields marked as support fields', () => {
+        const fields: DatasetFields = {
+            a: { id: 'a', isSupportField: true },
             b: { id: 'b', role: 'grouping' }
         };
         const result = getDatasetFieldsInclusive(fields);
@@ -50,17 +60,32 @@ describe('getDatasetFieldsInclusive', () => {
         expect(result.b).toBeDefined();
     });
 
+    it('should exclude support fields even if role and dataType are set', () => {
+        const fields: DatasetFields = {
+            a: {
+                id: 'a',
+                role: 'grouping',
+                dataType: 'text',
+                isSupportField: true
+            }
+        };
+        const result = getDatasetFieldsInclusive(fields);
+        expect(result.a).toBeUndefined();
+    });
+
     it('should handle mixed fields correctly', () => {
         const fields: DatasetFields = {
             category: { id: 'cat', role: 'grouping', dataType: 'text' },
             measure: { id: 'meas', role: 'aggregation', dataType: 'numeric' },
-            support: { id: 'sup' } // No role or dataType
+            highlight: { id: 'hl', isSupportField: true },
+            minimal: { id: 'min' }
         };
         const result = getDatasetFieldsInclusive(fields);
-        expect(Object.keys(result)).toHaveLength(2);
+        expect(Object.keys(result)).toHaveLength(3);
         expect(result.category).toBeDefined();
         expect(result.measure).toBeDefined();
-        expect(result.support).toBeUndefined();
+        expect(result.minimal).toBeDefined();
+        expect(result.highlight).toBeUndefined();
     });
 });
 
@@ -94,14 +119,14 @@ describe('getDatasetTemplateFieldsFromMetadata', () => {
         expect(result[1].key).toBe('__1__');
     });
 
-    it('should exclude fields without role or dataType', () => {
+    it('should exclude support fields', () => {
         const fields: DatasetFields = {
             a: { id: 'id-a', role: 'grouping', dataType: 'text' },
-            b: { id: 'id-b' } // No role or dataType
+            b: { id: 'id-b', isSupportField: true }
         };
         const result = getDatasetTemplateFieldsFromMetadata(fields);
         expect(result).toHaveLength(1);
-        expect(result[0].name).toBe('a'); // Record key is used as name
+        expect(result[0].name).toBe('a');
     });
 
     it('should properly map role to kind', () => {
