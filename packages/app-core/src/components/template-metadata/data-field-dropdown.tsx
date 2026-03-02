@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
     Dropdown,
     DropdownProps,
@@ -54,7 +54,10 @@ export const DataFieldDropdown = ({
         dialogType,
         fields
     );
-    const options = getSourceDatasetFieldEntries(fields);
+    const options = useMemo(
+        () => getSourceDatasetFieldEntries(fields),
+        [fields]
+    );
     const dropdownOptionElements = getFieldOptions(options);
     const onOptionSelect: DropdownProps['onOptionSelect'] = (ev, data) => {
         logDebug('onOptionSelect', { dialogType, data });
@@ -78,7 +81,14 @@ export const DataFieldDropdown = ({
             suppliedObjectKey: option ? (option[1].id ?? option[0]) : undefined,
             suppliedObjectName: option ? option[0] : undefined
         });
-    }, [selectedKey]);
+    }, [
+        selectedKey,
+        options,
+        dialogType,
+        datasetField.key,
+        createSliceReducer,
+        fieldUsageSliceReducer
+    ]);
     const dropdownId = useId('dataset-field');
     logRender(`DataFieldDropdown ${datasetField.key}`, {
         datasetField,
