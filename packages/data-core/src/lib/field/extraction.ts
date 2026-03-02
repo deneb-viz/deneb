@@ -21,5 +21,8 @@ export const getDatasetTemplateFieldsFromMetadata = (
     metadata: DatasetFields | undefined
 ): UsermetaDatasetField[] =>
     Object.entries(getDatasetFieldsInclusive(metadata))
-        .filter((entry): entry is [string, NonNullable<typeof entry[1]>] => entry[1] !== undefined)
+        .filter(
+            (entry): entry is [string, NonNullable<DatasetFields[string]>] =>
+                entry[1] !== undefined
+        )
         .map(([key, field], i) => toUsermetaDatasetField(key, field, { placeholder: `__${i}__` }));
