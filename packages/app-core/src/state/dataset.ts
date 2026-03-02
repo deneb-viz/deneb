@@ -15,6 +15,7 @@ import {
     type TabularDataset,
     type TabularDatasetInput
 } from '@deneb-viz/data-core/dataset';
+import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 
 export type DatasetSlice = {
     dataset: TabularDataset;
@@ -46,6 +47,33 @@ export const createDatasetSlice =
     });
 
 /**
+ * Reconcile freshly-generated template fields with previously-stored export metadata, preserving user-edited
+ * properties (description, kind, type, suppliedObject*) while refreshing name/namePlaceholder/key from the current
+ * dataset. Matches by `namePlaceholder` (stable field identity) rather than `key` (positional placeholder) so that
+ * field reordering doesn't cause metadata to be applied to the wrong field.
+ */
+export const reconcileExportDatasetFields = (
+    freshFields: UsermetaDatasetField[],
+    previousFields: UsermetaDatasetField[] | undefined
+): UsermetaDatasetField[] =>
+    freshFields.map((d) => {
+        const match = previousFields?.find(
+            (ds) => ds.namePlaceholder === d.namePlaceholder
+        );
+        if (match) {
+            return {
+                ...match,
+                ...{
+                    name: d.name,
+                    namePlaceholder: d.namePlaceholder,
+                    key: d.key
+                }
+            };
+        }
+        return d;
+    });
+
+/**
  * Handle dataset updates from host application, and update export metadata.
  * Normalizes field input (array or record) to the internal record format.
  */
@@ -71,22 +99,9 @@ const handleUpdateDataset = (
     const exportMetadata = getUpdatedExportMetadata(
         state.export.metadata as UsermetaTemplate,
         {
-            dataset: getDatasetTemplateFieldsFromMetadata(normalizedFields).map(
-                (d) => {
-                    const match = state.export.metadata?.dataset.find(
-                        (ds) => ds.key === d.key
-                    );
-                    if (match) {
-                        return {
-                            ...match,
-                            ...{
-                                name: d.name,
-                                namePlaceholder: d.namePlaceholder
-                            }
-                        };
-                    }
-                    return d;
-                }
+            dataset: reconcileExportDatasetFields(
+                getDatasetTemplateFieldsFromMetadata(normalizedFields),
+                state.export.metadata?.dataset
             )
         }
     );
