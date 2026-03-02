@@ -59,7 +59,7 @@ export const getDatumFieldsFromMetadata = (
             c.encodedName ?? getEncodedFieldName(c.column.displayName);
         const isTemplateEligible = isSourceField(c.source);
         result[`${encodedName}`] = {
-            id: c.column.queryName || c.column.displayName || undefined,
+            id: c.column.queryName || c.column.displayName,
             ...(isTemplateEligible
                 ? {
                       role: c.column.isMeasure

@@ -29,13 +29,13 @@ export type DatasetField<T = object> = {
     id?: string;
     /**
      * The role of this field - 'grouping' for categorical fields or 'aggregation' for measures.
-     * Optional - when unset, the field is not eligible for template operations (export/tracking).
+     * Optional - used for template export metadata (maps to `kind` in UsermetaDatasetField).
      * Shorthand array input via `normalizeFieldsInput()` defaults this to 'grouping'.
      */
     role?: DatasetFieldRole;
     /**
      * The data type of this field.
-     * Optional - when unset, the field is not eligible for template operations unless `role` is set.
+     * Optional - used for template export metadata (maps to `type` in UsermetaDatasetField).
      * Shorthand array input via `normalizeFieldsInput()` defaults this to 'other'.
      */
     dataType?: DatasetFieldDataType;

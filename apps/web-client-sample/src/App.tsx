@@ -8,8 +8,9 @@ import { DenebApp, DenebProvider, getDenebState } from '@deneb-viz/app-core';
  * - Simple array: ['a', 'b'] - just field names
  * - Record with metadata: { a: { role: 'grouping', dataType: 'text' } }
  *
- * Fields with `role` and `dataType` are eligible for template operations (export, field tracking).
- * Fields without these properties are available in dropdowns but excluded from template operations.
+ * Fields with `role` and `dataType` provide explicit metadata used by template operations (export, field tracking).
+ * Fields without these properties are still template-eligible by default; mark `isSupportField: true` to exclude them
+ * from template operations.
  */
 const { updateDataset } = getDenebState();
 updateDataset({
