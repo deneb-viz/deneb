@@ -75,7 +75,7 @@ export const toUsermetaDatasetField = <T = object>(
  * Transforms an array of DatasetField entries to UsermetaDatasetFields with sequential placeholders.
  *
  * @param entries - Array of [key, field] entries to transform
- * @returns Array of UsermetaDatasetFields with placeholders __0__, __1__, etc.
+ * @returns Array of UsermetaDatasetFields with placeholders `__0__`, `__1__`, etc.
  */
 export const toUsermetaDatasetFields = <T = object>(
     entries: [string, DatasetField<T>][]
@@ -117,7 +117,9 @@ export const withTemplateMetadata = <T = object>(
  * @returns A new object with templateMetadata added to each field
  */
 export const withTemplateMetadataAll = <T = object>(
-    fields: Partial<Record<string, DatasetField<T>>> | Record<string, DatasetField<T>>
+    fields:
+        | Partial<Record<string, DatasetField<T>>>
+        | Record<string, DatasetField<T>>
 ): Record<string, DatasetFieldWithTemplateMetadata<T>> =>
     Object.fromEntries(
         Object.entries(fields)
