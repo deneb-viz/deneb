@@ -16,7 +16,7 @@ import {
     type IDenebTrackingResponsePayload
 } from './types';
 import {
-    type DatasetField,
+    type DatasetFieldWithTemplateMetadata,
     FIELD_TRACKING_TOKEN_PLACEHOLDER,
     getDatasetFieldsInclusive,
     getEscapedReplacerPattern,
@@ -102,19 +102,18 @@ const getTemplateMetadataOriginal = (
  * they are in the current dataset.
  */
 const getTrackedFieldMapCurrent = (
-    datasetFields: Record<string, DatasetField>,
+    datasetFields: Record<string, DatasetFieldWithTemplateMetadata>,
     trackedFields: TrackedFields,
     reset = false
 ): TrackedFieldCandidates =>
     Object.values(datasetFields).reduce(
         (acc, v) => {
-            const templateMetadata = v.templateMetadata as UsermetaDatasetField;
-            acc[templateMetadata.key] = {
+            acc[v.templateMetadata.key] = {
                 isCurrent: true,
                 templateMetadata: v.templateMetadata,
                 templateMetadataOriginal: getTemplateMetadataOriginal(
                     trackedFields,
-                    templateMetadata,
+                    v.templateMetadata,
                     reset
                 )
             };
@@ -174,9 +173,9 @@ export const getTrackingDataFromSpecification = (
         reset,
         supplementaryPatterns
     } = options;
-    const datasetFields = <Record<string, DatasetField>>(
-        getDatasetFieldsInclusive(fields)
-    );
+    const datasetFields = getDatasetFieldsInclusive(
+        fields
+    ) as Record<string, DatasetFieldWithTemplateMetadata>;
     const trackedFields: TrackedFields = {};
     const trackedDrilldown: TrackedDrilldownProperties = {
         isCurrent: hasDrilldown,
@@ -222,10 +221,10 @@ export const getTrackingDataFromSpecification = (
             let fieldIndex = 0;
             const isExpression = isExpressionField(value);
             Object.entries(fieldMapMerged).forEach(([, f]) => {
-                const templateMetadata =
-                    f.templateMetadata as UsermetaDatasetField;
-                const templateMetadataOriginal =
-                    f.templateMetadataOriginal as UsermetaDatasetField;
+                const { templateMetadata, templateMetadataOriginal } = f as {
+                    templateMetadata: UsermetaDatasetField;
+                    templateMetadataOriginal: UsermetaDatasetField;
+                };
                 const { key } = templateMetadata;
                 const tracking: TrackedFieldProperties = trackedFields[key] || {
                     placeholder: getPlaceholderKey(fieldIndex),

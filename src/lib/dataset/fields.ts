@@ -6,8 +6,7 @@ import {
     FORMAT_FIELD_SUFFIX,
     FORMATTED_FIELD_SUFFIX,
     HIGHLIGHT_FIELD_SUFFIX,
-    type UsermetaDatasetField,
-    type UsermetaDatasetFieldType
+    type DatasetFieldDataType
 } from '@deneb-viz/data-core/field';
 import type { AugmentedMetadataField, DatasetFieldValueSource } from './types';
 import { isCrossHighlightPropSet } from '../interactivity';
@@ -58,18 +57,20 @@ export const getDatumFieldsFromMetadata = (
     return fields.reduce<DatasetFields<AugmentedMetadataField>>((result, c) => {
         const encodedName =
             c.encodedName ?? getEncodedFieldName(c.column.displayName);
+        const isTemplateEligible = isSourceField(c.source);
         result[`${encodedName}`] = {
-            ...{
-                id: c.column.queryName ?? c.column.displayName ?? '',
-                name: encodedName,
-                hostMetadata: c,
-                templateMetadata: isSourceField(c.source)
-                    ? getResolvedVisualMetadataToDatasetField(
-                          c.column,
-                          encodedName
+            id: c.column.queryName || c.column.displayName,
+            ...(isTemplateEligible
+                ? {
+                      role: c.column.isMeasure
+                          ? ('aggregation' as const)
+                          : ('grouping' as const),
+                      dataType: getResolvedValueDescriptor(
+                          c.column.type as powerbi.ValueTypeDescriptor
                       )
-                    : undefined
-            }
+                  }
+                : { isSupportField: true as const }),
+            hostMetadata: c
         };
         return result;
     }, {});
@@ -179,7 +180,7 @@ const getResolvedArtificialIndex = (index: number | undefined) =>
  */
 export const getResolvedValueDescriptor = (
     type: powerbi.ValueTypeDescriptor
-): UsermetaDatasetFieldType => {
+): DatasetFieldDataType => {
     switch (true) {
         case type?.bool:
             return 'bool';
@@ -192,26 +193,6 @@ export const getResolvedValueDescriptor = (
         default:
             return 'other';
     }
-};
-
-/**
- * For a given `DataViewMetadataColumn`, and its encoded name produces a new
- * `ITemplateDatasetField` object that can be used for templating purposes.
- */
-export const getResolvedVisualMetadataToDatasetField = (
-    metadata: powerbi.DataViewMetadataColumn,
-    encodedName: string
-): UsermetaDatasetField => {
-    return {
-        key: metadata.queryName ?? metadata.displayName ?? '',
-        name: encodedName,
-        namePlaceholder: encodedName,
-        description: '',
-        kind: (metadata.isMeasure && 'measure') || 'column',
-        type: getResolvedValueDescriptor(
-            metadata.type as powerbi.ValueTypeDescriptor
-        )
-    };
 };
 
 /**

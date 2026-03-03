@@ -38,7 +38,8 @@
         "sync-packages": "syncpack fix-mismatches && npm i",
         "validate-config-for-commit": "ts-node -P tsconfig.build-scripts.json bin/validate-config-for-commit",
         "validate-packages-sync": "syncpack list-mismatches",
-        "sync:metadata": "ts-node -P tsconfig.build-scripts.json bin/sync-package-metadata.ts"
+        "sync:metadata": "ts-node -P tsconfig.build-scripts.json bin/sync-package-metadata.ts",
+        "test:root": "vitest run --config vitest.root.config.ts"
     },
     "devDependencies": {
         "@babel/core": "^7.28.5",
@@ -98,6 +99,7 @@
         "tsup": "^8.5.0",
         "turbo": "^2.6.0",
         "typescript": "^5.6.2",
+        "vitest": "^3.2.4",
         "vega": "^6.2.0",
         "vega-embed": "^6.26.0",
         "vega-lite": "^6.4.1",
