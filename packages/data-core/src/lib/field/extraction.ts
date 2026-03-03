@@ -10,7 +10,7 @@ export function getDatasetFieldsInclusive(fields: DatasetFields | undefined) {
     if (!fields) {
         return {};
     }
-    return pickBy(fields, (f) => f.isSupportField !== true);
+    return pickBy(fields, (f) => f?.isSupportField !== true);
 }
 
 /**
@@ -25,4 +25,6 @@ export const getDatasetTemplateFieldsFromMetadata = (
             (entry): entry is [string, NonNullable<DatasetFields[string]>] =>
                 entry[1] !== undefined
         )
-        .map(([key, field], i) => toUsermetaDatasetField(key, field, { placeholder: `__${i}__` }));
+        .map(([key, field], i) =>
+            toUsermetaDatasetField(key, field, { placeholder: `__${i}__` })
+        );
