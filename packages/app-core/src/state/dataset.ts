@@ -58,7 +58,9 @@ export const reconcileExportDatasetFields = (
 ): UsermetaDatasetField[] =>
     freshFields.map((d) => {
         const match = previousFields?.find(
-            (ds) => ds.namePlaceholder === d.namePlaceholder
+            (ds) =>
+                (ds.namePlaceholder ?? ds.name) ===
+                (d.namePlaceholder ?? d.name)
         );
         if (match) {
             return {

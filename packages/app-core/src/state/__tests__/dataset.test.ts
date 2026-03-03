@@ -129,6 +129,32 @@ describe('reconcileExportDatasetFields', () => {
         expect(result[2].key).toBe('__2__');
     });
 
+    it('should fall back to name when previous entries lack namePlaceholder', () => {
+        const fresh = [field('__0__', 'Category'), field('__1__', 'Sales')];
+        const previous: UsermetaDatasetField[] = [
+            {
+                key: '__0__',
+                name: 'Category',
+                type: 'text',
+                description: 'Cat desc from import'
+            },
+            {
+                key: '__1__',
+                name: 'Sales',
+                type: 'numeric',
+                description: 'Sales desc from import',
+                kind: 'measure'
+            }
+        ];
+        const result = reconcileExportDatasetFields(fresh, previous);
+        expect(result[0].description).toBe('Cat desc from import');
+        expect(result[1].description).toBe('Sales desc from import');
+        expect(result[1].kind).toBe('measure');
+        // Fresh namePlaceholder and key should be applied
+        expect(result[0].namePlaceholder).toBe('Category');
+        expect(result[1].namePlaceholder).toBe('Sales');
+    });
+
     it('should refresh name and namePlaceholder from fresh fields', () => {
         const fresh = [field('__0__', 'Category')];
         const previous = [
