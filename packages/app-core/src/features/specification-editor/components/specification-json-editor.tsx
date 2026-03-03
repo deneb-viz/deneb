@@ -322,18 +322,16 @@ const setMonacoCompletionProvider = () => {
                 endColumn: word.endColumn
             };
             const fields: monaco.languages.CompletionItem[] = [];
-            Object.entries(getDenebState().dataset.fields).forEach(
-                ([key, field]) => {
-                    fields.push({
-                        label: key,
-                        insertText: key,
-                        documentation: getSnippetFieldMetadata(field),
-                        kind: monaco.languages.CompletionItemKind.Field,
-                        range,
-                        sortText: `zzzzz__${key}`
-                    });
-                }
-            );
+            Object.entries(getDenebState().dataset.fields).forEach(([key]) => {
+                fields.push({
+                    label: key,
+                    insertText: key,
+                    documentation: getSnippetFieldMetadata(key),
+                    kind: monaco.languages.CompletionItemKind.Field,
+                    range,
+                    sortText: `zzzzz__${key}`
+                });
+            });
             return {
                 suggestions: fields
             };
@@ -402,8 +400,8 @@ const setMonacoKeyBindingRules = () => {
  * For any data-based completers in the editor, provide a qualifier denoting whether it's a column, measure or
  * something else.
  */
-const getSnippetFieldMetadata = (field: DatasetField) => {
-    return getFieldDocumentationByName(field.name);
+const getSnippetFieldMetadata = (key: string) => {
+    return getFieldDocumentationByName(key);
 };
 
 /**

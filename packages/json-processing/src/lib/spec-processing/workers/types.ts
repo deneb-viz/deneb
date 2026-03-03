@@ -1,12 +1,12 @@
 import {
-    type DatasetFields,
-    type FieldPatternReplacer
+    type DatasetFieldWithTemplateMetadata,
+    type FieldPatternReplacer,
+    type UsermetaDatasetField
 } from '@deneb-viz/data-core/field';
 import {
     type TrackedDrilldownProperties,
     type TrackedFields
 } from '../../field-tracking';
-import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 
 /**
  * Represents the worker that processes the JSON in a specification. Because these are typically very expensive, we
@@ -126,7 +126,7 @@ export interface IDenebTrackingRequestMessage {
  */
 export interface IDenebTrackingRequestPayload {
     spec: Uint8Array;
-    fields: DatasetFields;
+    fields: Record<string, DatasetFieldWithTemplateMetadata>;
     hasDrilldown: boolean;
     trackedFieldsCurrent: TrackedFields;
     supplementaryPatterns: string[];

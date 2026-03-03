@@ -7,7 +7,11 @@ import {
 import { stringToUint8Array } from '@deneb-viz/utils/type-conversion';
 import { getRemapEligibleFields } from '@deneb-viz/json-processing';
 import { getDenebState } from '../../state';
-import { getTokenPatternsLiteral } from '@deneb-viz/data-core/field';
+import {
+    getDatasetFieldsInclusive,
+    getTokenPatternsLiteral,
+    withTemplateMetadataAll
+} from '@deneb-viz/data-core/field';
 
 /**
  * Take the current spec and tracked fields, and asynchronously update the tracking info via another thread (using
@@ -25,11 +29,15 @@ export const updateFieldTracking = async (
     } = getDenebState();
     setIsTrackingFields(true);
     const hasDrilldown = false;
+    // Transform fields to include templateMetadata for json-processing compatibility
+    const fieldsWithMetadata = withTemplateMetadataAll(
+        getDatasetFieldsInclusive(fields)
+    );
     const request: IDenebJsonProcessingWorkerRequest = {
         type: 'tracking',
         payload: {
             spec: stringToUint8Array(specification),
-            fields,
+            fields: fieldsWithMetadata,
             hasDrilldown,
             trackedFieldsCurrent,
             supplementaryPatterns: getTokenPatternsLiteral(),
