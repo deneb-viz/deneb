@@ -29,7 +29,7 @@
         "dev:schema": "tsx watch --include ./src/project/types.ts --clear-screen=false ./bin/generate-project-schema.js",
         "clean": "rimraf dist",
         "typecheck": "tsc --noEmit -p tsconfig.json",
-        "eslint": "eslint ."
+        "eslint": "npx eslint ."
     },
     "devDependencies": {
         "@deneb-viz/data-core": "*",

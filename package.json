@@ -39,7 +39,8 @@
         "validate-config-for-commit": "ts-node -P tsconfig.build-scripts.json bin/validate-config-for-commit",
         "validate-packages-sync": "syncpack lint",
         "sync:metadata": "ts-node -P tsconfig.build-scripts.json bin/sync-package-metadata.ts",
-        "test:root": "vitest run --config vitest.root.config.ts"
+        "test:root": "vitest run --config vitest.root.config.ts",
+        "ci:local": "node bin/ci-local.js"
     },
     "devDependencies": {
         "@babel/core": "^7.28.5",

@@ -43,7 +43,7 @@
         "dev:worker": "tsup --watch --config tsup.worker.config.ts",
         "clean": "rimraf dist",
         "typecheck": "tsc --noEmit",
-        "eslint": "eslint .",
+        "eslint": "npx eslint .",
         "pretest": "node scripts/patch-powerbi-utils.mjs",
         "test": "vitest run",
         "test:watch": "vitest"

@@ -17,7 +17,7 @@
         "dev": "vite",
         "preview": "vite preview",
         "typecheck": "tsc --noEmit",
-        "eslint": "eslint ."
+        "eslint": "npx eslint ."
     },
     "dependencies": {
         "@deneb-viz/app-core": "*",
