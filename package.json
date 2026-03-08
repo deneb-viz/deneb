@@ -22,7 +22,7 @@
         "package-standalone": "cross-env DOTENVX_ENV=.env.standalone npm run build && cross-env DOTENVX_ENV=.env.standalone npm run package:standalone",
         "package-alpha": "npm run ensure-env && npm run build && npm run package:alpha",
         "package-beta": "npm run ensure-env && npm run build && npm run package:beta",
-        "eslint:root": "npx eslint .",
+        "eslint:root": "node bin/workspace-eslint.js",
         "webpack:start": "cross-env NODE_ENV=development webpack serve --config webpack.dev.config.js",
         "webpack:build": "cross-env NODE_ENV=development webpack --config webpack.dev.config.js",
         "webpack:prime": "cross-env NODE_ENV=development webpack --config webpack.dev.config.js --env generateResources=true",
