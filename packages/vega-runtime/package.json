@@ -54,7 +54,7 @@
         "test": "vitest run --coverage",
         "test:watch": "vitest",
         "typecheck": "tsc --noEmit",
-        "eslint": "eslint ."
+        "eslint": "node ../../bin/workspace-eslint.js"
     },
     "devDependencies": {
         "@deneb-viz/eslint-config": "*",

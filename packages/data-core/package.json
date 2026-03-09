@@ -36,7 +36,7 @@
         "dev": "tsc -p tsconfig.json --watch",
         "clean": "rimraf dist",
         "typecheck": "tsc --noEmit",
-        "eslint": "eslint .",
+        "eslint": "node ../../bin/workspace-eslint.js",
         "test": "vitest run",
         "test:watch": "vitest"
     },

@@ -17,7 +17,7 @@
         "dev": "vite",
         "preview": "vite preview",
         "typecheck": "tsc --noEmit",
-        "eslint": "eslint ."
+        "eslint": "node ../../bin/workspace-eslint.js"
     },
     "dependencies": {
         "@deneb-viz/app-core": "*",

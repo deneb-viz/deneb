@@ -29,7 +29,7 @@
         "dev:worker": "tsup --watch --config tsup.worker.config.ts",
         "prepack": "npm run build",
         "typecheck": "tsc --noEmit",
-        "eslint": "eslint .",
+        "eslint": "node ../../bin/workspace-eslint.js",
         "test": "vitest run"
     },
     "files": [

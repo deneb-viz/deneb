@@ -40,7 +40,7 @@
         "dev": "tsc -p tsconfig.json --watch",
         "clean": "rimraf dist",
         "typecheck": "tsc --noEmit",
-        "eslint": "eslint ."
+        "eslint": "node ../../bin/workspace-eslint.js"
     },
     "devDependencies": {
         "@deneb-viz/eslint-config": "*",
