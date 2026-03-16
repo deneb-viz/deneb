@@ -42,9 +42,10 @@ vi.mock('@monaco-editor/react', () => ({
     loader: { init: vi.fn().mockResolvedValue(undefined) }
 }));
 
-// Mock schema service
+// Mock schema service — kept at module scope so retry tests can spy on it.
+const initializeSchemasMock = vi.fn().mockResolvedValue(undefined);
 vi.mock('../../schema', () => ({
-    initializeSchemas: vi.fn().mockResolvedValue(undefined),
+    initializeSchemas: initializeSchemasMock,
     getProcessedSchema: vi.fn((provider: string) => ({
         $schema: `https://example.com/${provider}`,
         type: 'object'
@@ -155,5 +156,54 @@ describe('editor-init-service', () => {
                 })
             ])
         );
+    });
+
+    describe('retry behaviour', () => {
+        it('should reject when doInitialize fails', async () => {
+            vi.resetModules();
+            initializeSchemasMock.mockRejectedValueOnce(
+                new Error('transient error')
+            );
+            const service = await import('../editor-init-service');
+            await expect(
+                service.initializeEditorDependencies()
+            ).rejects.toThrow('transient error');
+        });
+
+        it('should clear initPromise after failure so a retry can succeed', async () => {
+            vi.resetModules();
+            initializeSchemasMock.mockRejectedValueOnce(
+                new Error('transient error')
+            );
+            const service = await import('../editor-init-service');
+            await expect(
+                service.initializeEditorDependencies()
+            ).rejects.toThrow('transient error');
+            expect(service.isEditorReady()).toBe(false);
+
+            // Second call — initializeSchemas now succeeds (default mock).
+            await expect(
+                service.initializeEditorDependencies()
+            ).resolves.toBeUndefined();
+            expect(service.isEditorReady()).toBe(true);
+        });
+
+        it('should deliver the same rejection to concurrent callers', async () => {
+            vi.resetModules();
+            initializeSchemasMock.mockRejectedValueOnce(
+                new Error('concurrent error')
+            );
+            const service = await import('../editor-init-service');
+            const [r1, r2] = await Promise.allSettled([
+                service.initializeEditorDependencies(),
+                service.initializeEditorDependencies()
+            ]);
+            expect(r1.status).toBe('rejected');
+            expect(r2.status).toBe('rejected');
+            if (r1.status === 'rejected' && r2.status === 'rejected') {
+                expect(r1.reason.message).toBe('concurrent error');
+                expect(r2.reason.message).toBe('concurrent error');
+            }
+        });
     });
 });

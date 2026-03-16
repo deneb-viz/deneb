@@ -172,7 +172,12 @@ const doInitialize = async (): Promise<void> => {
 export const initializeEditorDependencies = (): Promise<void> => {
     if (editorReady) return Promise.resolve();
     if (initPromise) return initPromise;
-    initPromise = doInitialize();
+    initPromise = doInitialize().catch((error) => {
+        // Reset so callers can retry after a transient failure.
+        // Without this a single rejection permanently poisons initPromise.
+        initPromise = null;
+        throw error;
+    });
     return initPromise;
 };
 
