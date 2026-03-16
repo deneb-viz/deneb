@@ -10,7 +10,12 @@ import { EditorContent } from './editor-content';
 let editorInitPromise: Promise<void> | null = null;
 const getEditorInitPromise = () => {
     if (!editorInitPromise) {
-        editorInitPromise = initializeEditorDependencies();
+        editorInitPromise = initializeEditorDependencies().catch((error) => {
+            // Reset so the next render triggers a fresh attempt via the service.
+            // Without this, a rejected promise is reused forever across mounts.
+            editorInitPromise = null;
+            throw error;
+        });
     }
     return editorInitPromise;
 };
