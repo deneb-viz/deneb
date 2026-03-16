@@ -17,6 +17,7 @@ import { initializeSchemas, getProcessedSchema } from '../schema';
  */
 let editorReady = false;
 let initPromise: Promise<void> | null = null;
+let completionProviderDisposable: { dispose(): void } | null = null;
 
 /**
  * Configure Monaco JSON diagnostics with the pre-processed Vega/Vega-Lite
@@ -53,7 +54,10 @@ const configureMonacoDiagnostics = () => {
  * when editing spec JSON.
  */
 const configureMonacoCompletionProvider = () => {
-    monaco.languages.registerCompletionItemProvider('json', {
+    // Dispose any previous registration before re-registering to prevent
+    // stacking duplicate providers on retry.
+    completionProviderDisposable?.dispose();
+    completionProviderDisposable = monaco.languages.registerCompletionItemProvider('json', {
         provideCompletionItems: async (model, position) => {
             const { editorSelectedOperation } = getDenebState();
             if (editorSelectedOperation !== 'Spec') {
