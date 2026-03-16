@@ -98,11 +98,15 @@ describe('schema-service', () => {
                 expect(typeof validator).toBe('function');
             });
 
-            it('should accept a spec that the schema considers valid', () => {
+            it('should accept a minimal valid Vega-Lite spec', () => {
                 const validator = getEditorSchemaValidator('vegaLite');
-                const result = validator({});
-                expect(result).toHaveProperty('valid');
-                expect(result).toHaveProperty('warnings');
+                // TopLevelUnitSpec requires both mark and data.
+                const result = validator({
+                    mark: 'bar',
+                    data: { values: [] }
+                });
+                expect(result.valid).toBe(true);
+                expect(result.warnings).toHaveLength(0);
             });
 
             it('should return warnings for an obviously invalid spec', () => {
