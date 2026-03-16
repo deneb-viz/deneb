@@ -11,6 +11,7 @@ import { mergeClasses } from '@fluentui/react-components';
 import { Scrollbars, type positionValues } from 'react-custom-scrollbars-2';
 
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import type { SchemaValidator } from '@deneb-viz/vega-runtime/spec-processing';
 import { getSignalDenebContainer } from '@deneb-viz/vega-runtime/signals';
 import { logRender, logDebug } from '@deneb-viz/utils/logging';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
@@ -21,10 +22,7 @@ import { VEGA_CONTAINER_ID } from '../constants';
 import { performIncrementalUpdate } from '../incremental-update';
 import { getDenebState, useDenebState } from '../../../state';
 import { useDenebPlatformProvider } from '../../deneb-platform';
-import {
-    INCREMENTAL_UPDATE_CONFIGURATION,
-    createSchemaValidator
-} from '../../../lib/vega';
+import { INCREMENTAL_UPDATE_CONFIGURATION } from '../../../lib/vega/incremental-update-configuration';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 
 const useVisualViewerStyles = makeStyles({
@@ -43,6 +41,12 @@ const useVisualViewerStyles = makeStyles({
 
 type VisualViewerProps = {
     isEmbeddedInEditor?: boolean;
+    /**
+     * Optional schema validator for spec validation during compilation.
+     * Only provided when embedded in the editor — viewer-only builds pass
+     * no validator, which keeps schema dependencies out of the viewer bundle.
+     */
+    schemaValidator?: SchemaValidator;
 };
 
 /**
@@ -55,7 +59,10 @@ type VisualViewerProps = {
  * - If spec has binding AND row count > threshold: trigger full re-compile
  * - If spec has NO binding (inline or remote data): do nothing (data changes are irrelevant)
  */
-export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
+export const VisualViewer = ({
+    isEmbeddedInEditor,
+    schemaValidator
+}: VisualViewerProps) => {
     const {
         config,
         spec,
@@ -102,16 +109,6 @@ export const VisualViewer = ({ isEmbeddedInEditor }: VisualViewerProps) => {
         logDurableWarn: state.compilation.logDurableWarn,
         translate: state.i18n.translate
     }));
-
-    /**
-     * Schema validator - only created when in editor mode to avoid perf overhead in viewer.
-     * Memoized per provider to avoid recreating the validator on every render.
-     */
-    const schemaValidator = useMemo(
-        () =>
-            isEmbeddedInEditor ? createSchemaValidator(provider) : undefined,
-        [isEmbeddedInEditor, provider]
-    );
 
     // Track previous values reference for incremental update detection
     const prevValuesRef = useRef<unknown[] | null>(null);

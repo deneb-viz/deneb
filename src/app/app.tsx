@@ -5,11 +5,11 @@ import { type View } from 'vega';
 import { logHost, logRender } from '@deneb-viz/utils/logging';
 import { ReportViewRouter } from './report-view-router';
 import {
-    DenebApp,
     DenebProvider,
     useDenebState,
     type ViewEventBinder
 } from '@deneb-viz/app-core';
+import { DenebEditor } from '@deneb-viz/app-core/editor';
 import {
     FetchingMessage,
     LandingPage,
@@ -145,12 +145,18 @@ export const App = ({ host }: AppProps) => {
             case 'landing':
             case 'no-project':
                 return <LandingPage />;
-            case 'editor':
-            case 'transition-editor-viewer':
-                return <DenebApp type='editor' />;
-            case 'viewer':
+            // Render nothing during Power BI host transitions — the container is
+            // actively resizing and anything mounted would appear at the wrong
+            // viewport size. See display-mode.ts for the full update sequence.
             case 'transition-viewer-editor':
+            case 'transition-editor-viewer':
+                return null;
+            case 'editor':
+                return <DenebEditor />;
+            case 'viewer':
                 return <ReportViewRouter />;
+            default:
+                return null;
         }
     }, [mode]);
     logRender('App', mode);

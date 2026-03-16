@@ -10,7 +10,8 @@ import 'allotment/dist/style.css';
 import { logRender } from '@deneb-viz/utils/logging';
 import { useDenebState } from '../../../state';
 import { getDenebTheme } from '../../../lib';
-import { EditorContent } from './editor-content';
+import { ModalDialog } from '../../../components/ui';
+import { EditorContentLoader } from './editor-content-loader';
 import { EditorSuspense } from './editor-suspense';
 import { SpecificationEditorProvider } from '../../../features/specification-editor';
 
@@ -76,11 +77,12 @@ export const Editor = () => {
             ref={editorContentRef}
             id={EDITOR_INTERFACE_ID}
         >
-            <Suspense fallback={<EditorSuspense />}>
-                <SpecificationEditorProvider>
-                    <EditorContent />
-                </SpecificationEditorProvider>
-            </Suspense>
+            <SpecificationEditorProvider>
+                <Suspense fallback={<EditorSuspense />}>
+                    <EditorContentLoader />
+                </Suspense>
+                <ModalDialog />
+            </SpecificationEditorProvider>
         </FluentProvider>
     );
 };

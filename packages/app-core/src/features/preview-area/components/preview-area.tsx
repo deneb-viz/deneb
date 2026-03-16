@@ -1,4 +1,4 @@
-import { type CSSProperties } from 'react';
+import { type CSSProperties, useMemo } from 'react';
 import {
     makeStyles,
     shorthands,
@@ -7,9 +7,11 @@ import {
 } from '@fluentui/react-components';
 import { VegaViewProvider } from '@deneb-viz/vega-react';
 
+import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { DEBUG_PANE_CONFIGURATION } from '@deneb-viz/configuration';
 import { logRender } from '@deneb-viz/utils/logging';
 import { VisualViewer } from '../../../components/visual-viewer';
+import { createSchemaValidator } from '../../../lib/vega/compilation';
 import { useDenebState } from '../../../state';
 import { COMPILATION_STATUS_DEFAULT } from '@deneb-viz/vega-runtime/compilation';
 
@@ -59,6 +61,7 @@ export const PreviewArea = () => {
     const {
         editorPreviewAreaHeight,
         editorZoomLevel,
+        provider,
         status,
         viewportHeight,
         viewportWidth,
@@ -66,11 +69,22 @@ export const PreviewArea = () => {
     } = useDenebState((state) => ({
         editorPreviewAreaHeight: state.editor.previewAreaViewport.height ?? 0,
         editorZoomLevel: state.editorZoomLevel,
+        provider: state.project.provider as SpecProvider,
         showViewportMarker: state.editorPreferences.previewAreaShowBorder,
         status: state.compilation.result?.status ?? COMPILATION_STATUS_DEFAULT,
         viewportHeight: state.interface.embedViewport?.height ?? 0,
         viewportWidth: state.interface.embedViewport?.width ?? 0
     }));
+
+    /**
+     * Schema validator for spec validation during compilation.
+     * Created here (editor path only) so the schema dependency chain
+     * doesn't leak into viewer-only builds.
+     */
+    const schemaValidator = useMemo(
+        () => createSchemaValidator(provider),
+        [provider]
+    );
     const classes = usePreviewStyles();
     const borderWidth = DEBUG_PANE_CONFIGURATION.viewportBorderSize;
     const scale = editorZoomLevel / 100;
@@ -96,7 +110,10 @@ export const PreviewArea = () => {
                         id='deneb-visual-preview'
                         className={classes.previewContainer}
                     >
-                        <VisualViewer isEmbeddedInEditor />
+                        <VisualViewer
+                            isEmbeddedInEditor
+                            schemaValidator={schemaValidator}
+                        />
                     </div>
                 </div>
             </div>
