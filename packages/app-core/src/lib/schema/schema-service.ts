@@ -26,7 +26,7 @@ let initPromise: Promise<void> | null = null;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let processedSchemas: Record<string, any> = {};
-const schemaValidators: Partial<Record<SpecProvider, SchemaValidator>> = {};
+let schemaValidators: Partial<Record<SpecProvider, SchemaValidator>> = {};
 
 /**
  * Adds markdownDescription props to a schema object for Monaco editor
@@ -155,6 +155,7 @@ export const initializeSchemas = (): Promise<void> => {
         // Without this a single rejection permanently poisons initPromise.
         initPromise = null;
         processedSchemas = {};
+        schemaValidators = {};
         throw error;
     });
     return initPromise;
