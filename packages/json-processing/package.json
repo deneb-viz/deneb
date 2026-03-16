@@ -73,8 +73,6 @@
     "peerDependencies": {
         "@deneb-viz/powerbi-compat": "*",
         "@deneb-viz/vega-runtime": "*",
-        "powerbi-visuals-api": "5.11.0",
-        "vega": ">=5",
-        "vega-lite": ">=5"
+        "powerbi-visuals-api": "5.11.0"
     }
 }

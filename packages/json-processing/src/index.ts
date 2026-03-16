@@ -23,8 +23,4 @@ export {
     getUpdatedExportMetadata,
     getValidatedTemplate
 } from './template-usermeta';
-export {
-    getFriendlyValidationErrors,
-    getProviderSchema,
-    getProviderValidator
-} from './validation';
+export { getProviderValidator } from './validation';

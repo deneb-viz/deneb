@@ -350,9 +350,7 @@ export const getValidatedTemplate = (
             tabSize
         );
         const metadata = getTemplateMetadata(templateResolvedLegacyConfig);
-        const validator = getProviderValidator({
-            provider: 'denebUserMeta'
-        });
+        const validator = getProviderValidator();
         const valid = validator(metadata);
         if (valid) {
             const candidates = getTemplateResolvedForPlaceholderAssignment(
