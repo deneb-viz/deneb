@@ -171,7 +171,8 @@ const doInitialize = async (): Promise<void> => {
  * compilation and Monaco editor setup into a single awaitable operation
  * that gates the editor UI behind a Suspense boundary.
  *
- * Idempotent — safe to call multiple times; returns the same promise.
+ * Idempotent — safe to call multiple times. Returns the shared in-flight
+ * promise while initialization is running; resolves immediately once complete.
  */
 export const initializeEditorDependencies = (): Promise<void> => {
     if (editorReady) return Promise.resolve();

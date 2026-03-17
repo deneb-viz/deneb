@@ -25,6 +25,12 @@ const getBaseValidator = () => {
 /**
  * Returns a compiled AJV validator for the denebUserMeta template schema.
  * Used internally by template-usermeta.ts for template validation.
+ * Cached after first compilation to avoid recompiling the static schema.
  */
-export const getProviderValidator = (): ValidateFunction =>
-    getBaseValidator().compile(denebUserMetaSchema);
+let cachedProviderValidator: ValidateFunction | null = null;
+export const getProviderValidator = (): ValidateFunction => {
+    if (!cachedProviderValidator) {
+        cachedProviderValidator = getBaseValidator().compile(denebUserMetaSchema);
+    }
+    return cachedProviderValidator;
+};

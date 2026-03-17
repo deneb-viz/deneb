@@ -145,7 +145,8 @@ const doInitialize = async (): Promise<void> => {
  * Initialize all editor schemas. Processes the Vega/Vega-Lite JSON schemas
  * for Monaco editor support and pre-compiles AJV validators.
  *
- * Idempotent — safe to call multiple times; returns the same promise.
+ * Idempotent — safe to call multiple times. Returns the shared in-flight
+ * promise while initialization is running; resolves immediately once complete.
  */
 export const initializeSchemas = (): Promise<void> => {
     if (schemasReady) return Promise.resolve();
