@@ -2,6 +2,7 @@ import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { Button, Field, makeStyles, tokens } from '@fluentui/react-components';
 import { ArrowClockwiseRegular } from '@fluentui/react-icons';
 import { logError } from '@deneb-viz/utils/logging';
+import { useDenebState } from '../../../state';
 
 const useErrorStyles = makeStyles({
     container: {
@@ -20,11 +21,12 @@ type ErrorFallbackProps = {
 };
 
 const ErrorFallback = ({ onRetry }: ErrorFallbackProps) => {
+    const translate = useDenebState((state) => state.i18n.translate);
     const classes = useErrorStyles();
     return (
         <div className={classes.container}>
             <Field
-                validationMessage='Editor failed to initialize.'
+                validationMessage={translate('Text_Editor_Error_Message')}
                 validationState='error'
             />
             <Button
@@ -32,7 +34,7 @@ const ErrorFallback = ({ onRetry }: ErrorFallbackProps) => {
                 icon={<ArrowClockwiseRegular />}
                 onClick={onRetry}
             >
-                Retry
+                {translate('Text_Editor_Error_Retry')}
             </Button>
         </div>
     );
@@ -60,7 +62,7 @@ export class EditorErrorBoundary extends Component<
     }
 
     componentDidCatch(error: Error, info: ErrorInfo): void {
-        logError('Editor initialization failed:', error, info);
+        logError('Editor error:', error, info);
     }
 
     private handleRetry = () => {
