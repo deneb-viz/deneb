@@ -3,7 +3,8 @@ const fs = require('fs');
 const webpack = require('webpack');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const {
-    PowerBICustomVisualsWebpackPlugin
+    PowerBICustomVisualsWebpackPlugin,
+    LocalizationLoader
 } = require('powerbi-visuals-webpack-plugin');
 const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
 // Load environment variables for build-time injection. If DOTENVX_ENV is set
@@ -152,6 +153,10 @@ function getCommonConfig(options = {}) {
                 {
                     test: /\.(woff|ttf|ico|woff2|jpg|jpeg|png|webp|gif|svg|eot)$/i,
                     type: 'asset/inline'
+                },
+                {
+                    test: /powerbiGlobalizeLocales\.js$/,
+                    loader: LocalizationLoader
                 }
             ]
         },
