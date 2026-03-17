@@ -56,7 +56,7 @@ const formatValidationErrors = (
 ): string[] =>
     errors.map(
         (error) =>
-            `Validation: ${error.instancePath} ${error.message} of ${error.schemaPath}`
+            `Validation: ${error.instancePath} ${error.message ?? 'is invalid'} of ${error.schemaPath}`
     );
 
 /**
