@@ -1,4 +1,5 @@
-import { DenebApp, DenebProvider, getDenebState } from '@deneb-viz/app-core';
+import { DenebProvider, getDenebState } from '@deneb-viz/app-core';
+import { DenebEditor } from '@deneb-viz/app-core/editor';
 
 /**
  * Do a simple initialization of our data "outside" app, to validate that we can assign fields.
@@ -34,7 +35,7 @@ updateDataset({
 function App() {
     return (
         <DenebProvider>
-            <DenebApp type='editor' />
+            <DenebEditor />
         </DenebProvider>
     );
 }

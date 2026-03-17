@@ -5,7 +5,7 @@ import type {
     CompileSpecOptions
 } from '@deneb-viz/vega-runtime/compilation';
 import { type StoreState, type SyncableSlice } from './state';
-import { INCREMENTAL_UPDATE_CONFIGURATION } from '../lib/vega';
+import { INCREMENTAL_UPDATE_CONFIGURATION } from '../lib/vega/incremental-update-configuration';
 
 /**
  * Performance settings that control compilation and rendering behavior.

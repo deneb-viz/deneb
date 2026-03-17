@@ -3,10 +3,7 @@ import { makeStyles } from '@fluentui/react-components';
 import { logRender } from '@deneb-viz/utils/logging';
 import { useSpecificationEditor } from '../../../features/specification-editor';
 import { CommandBar } from '../../../features/command-bar';
-import {
-    FullContainerLayoutNoOverflow,
-    ModalDialog
-} from '../../../components/ui';
+import { FullContainerLayoutNoOverflow } from '../../../components/ui';
 import { PortalRoot } from './portal-root';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 import { useEditorHotkeys, useEditorPaneLayout } from '../hooks';
@@ -72,7 +69,6 @@ export const EditorContent = () => {
                     </FullContainerLayoutNoOverflow>
                 )}
             </div>
-            <ModalDialog />
             <PortalRoot />
         </>
     );

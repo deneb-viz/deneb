@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import { FetchingMessage, SplashInitial } from '../features/status';
 import { logRender } from '@deneb-viz/utils/logging';
-import { DenebApp } from '@deneb-viz/app-core';
+import { DenebViewer } from '@deneb-viz/app-core';
 import { useDenebVisualState } from '../state';
 
 /**
@@ -19,7 +19,7 @@ export const ReportViewRouter = () => {
                 return <FetchingMessage />;
             }
             default: {
-                return <DenebApp type='viewer' />;
+                return <DenebViewer />;
             }
         }
     }, [mode]);

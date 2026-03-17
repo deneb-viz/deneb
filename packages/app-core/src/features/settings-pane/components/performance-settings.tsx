@@ -18,7 +18,7 @@ import { useDenebState } from '../../../state';
 import { useSettingsPaneStyles } from '../styles';
 import { TooltipCustomMount } from '../../../components/ui';
 import { logDebug } from '@deneb-viz/utils/logging';
-import { INCREMENTAL_UPDATE_CONFIGURATION } from '../../../lib/vega';
+import { INCREMENTAL_UPDATE_CONFIGURATION } from '../../../lib/vega/incremental-update-configuration';
 
 /**
  * Performance settings panel for compilation and rendering optimizations.

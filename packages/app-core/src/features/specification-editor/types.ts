@@ -1,5 +1,5 @@
 import { type RefObject } from 'react';
-import { monaco } from '../../components/code-editor/monaco-integration';
+import type { monaco } from '../../components/code-editor/monaco-integration';
 
 /**
  * We need to be able to access the editors across components, so this provides an interface to make this easier for

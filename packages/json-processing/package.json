@@ -52,7 +52,7 @@
         "@deneb-viz/eslint-config": "*",
         "@deneb-viz/typescript-config": "*",
         "@types/node": "^22.15.33",
-        "concurrently": "^9.1.2",
+        "concurrently": "^9.2.1",
         "tsup": "^8.5.0",
         "typescript": "^5.6.2",
         "vitest": "^3.2.4"
@@ -73,8 +73,6 @@
     "peerDependencies": {
         "@deneb-viz/powerbi-compat": "*",
         "@deneb-viz/vega-runtime": "*",
-        "powerbi-visuals-api": "5.11.0",
-        "vega": ">=5",
-        "vega-lite": ">=5"
+        "powerbi-visuals-api": "5.11.0"
     }
 }

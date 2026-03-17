@@ -5,7 +5,7 @@ import { getVegaVersion } from '@deneb-viz/vega-runtime/embed';
 import { logRender } from '@deneb-viz/utils/logging';
 import { TooltipCustomMount } from '../../../components/ui';
 import { useDenebState } from '../../../state';
-import { getVegaProviderI18n } from '../../../lib/vega';
+import { getVegaProviderI18n } from '../../../lib/vega/i18n';
 
 const useProviderStyles = makeStyles({
     root: {

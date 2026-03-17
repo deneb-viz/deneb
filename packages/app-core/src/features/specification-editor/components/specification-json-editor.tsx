@@ -1,45 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce } from '@uidotdev/usehooks';
 import { makeStyles, useUncontrolledFocus } from '@fluentui/react-components';
-import Editor, { loader, OnChange, OnMount } from '@monaco-editor/react';
+import Editor, { OnChange, OnMount } from '@monaco-editor/react';
 
 import { ptToPx } from '@deneb-viz/utils/dom';
-import { toBoolean } from '@deneb-viz/utils/type-conversion';
-import { getProviderSchema } from '@deneb-viz/json-processing';
-import {
-    getProviderSchemaUrl,
-    type SpecProvider
-} from '@deneb-viz/vega-runtime/embed';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { handlePersistSpecification, type EditorPaneRole } from '../../../lib';
-import {
-    monaco,
-    setupMonacoWorker
-} from '../../../components/code-editor/monaco-integration';
+import { monaco } from '../../../components/code-editor/monaco-integration';
 import { getDenebState, useDenebState } from '../../../state';
 import { useSpecificationEditor } from '../hooks/use-specification-editor';
 import { SpecificationEditorStatusBar } from './specification-editor-status-bar';
-import { updateFieldTracking } from '../../../lib/field-processing';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
-import { DatasetField } from '@deneb-viz/data-core/field';
 import { EDITOR_DEFAULTS } from '@deneb-viz/configuration';
-import { getFieldDocumentationByName } from '../../../lib/dataset';
-
-/**
- * Initialize Monaco editor on first mount. This is deferred from module load time to only run when the editor is
- * actually needed (Editor mode).
- */
-let monacoInitialized = false;
-const initializeMonaco = () => {
-    if (monacoInitialized) return;
-    monacoInitialized = true;
-    loader.init().then(() => {
-        logDebug('Monaco Editor initialized');
-        setMonacoCompletionProvider();
-        setMonacoDiagnosticsOptions();
-        setMonacoKeyBindingRules();
-    });
-};
 
 type JsonEditorProps = {
     thisEditorRole: EditorPaneRole;
@@ -92,7 +64,7 @@ export const SpecificationJsonEditor = ({
         current: state.editorSelectedOperation,
         debouncePeriod: state.editorPreferences.jsonEditorDebouncePeriod,
         fontSize: state.editorPreferences.jsonEditorFontSize,
-        provider: state.project.provider as SpecProvider,
+        provider: state.project.provider,
         showLineNumbers: state.editorPreferences.jsonEditorShowLineNumbers,
         theme: state.editorPreferences.theme,
         viewStateConfig: state.editor.viewStateConfig,
@@ -102,14 +74,6 @@ export const SpecificationJsonEditor = ({
         updateChanges: state.editor.updateChanges
     }));
     const { launchUrl } = useDenebPlatformProvider();
-    // Override default Monaco worker lookup to use bundled worker
-    useEffect(() => {
-        setupMonacoWorker();
-    }, []);
-    // Initialize Monaco editor on first mount (deferred from module load)
-    useEffect(() => {
-        initializeMonaco();
-    }, []);
     const attr = useUncontrolledFocus();
     const classes = useSpecificationJsonEditorStyles();
     const isActiveEditor = useMemo(() => current === thisEditorRole, [current]);
@@ -184,8 +148,6 @@ export const SpecificationJsonEditor = ({
             text: debouncedEditorText,
             viewState: ref.current?.saveViewState()
         });
-        // Tracking is now only used for export (#486)
-        // updateTracking(debouncedEditorText, thisEditorRole);
         if (applyMode === 'Auto') {
             logDebug('Auto-apply changes');
             handlePersistSpecification(spec.current, config.current);
@@ -299,133 +261,3 @@ const removeContextMenuItems = (
     };
 };
 
-/**
- * Set up the completion item provider for the Monaco editor. This will return fields from the dataset as snippets
- * in the completion list, in addition to the Vega completers. This returns the disposable completion provider, so that
- * it can be cleaned up when the component is unmounted.
- * @privateRemarks
- * If we want to call this more than once per editor setup, it will need to be disposed of, otherwise we'll end up
- * with multiple entries for each list.
- */
-const setMonacoCompletionProvider = () => {
-    return monaco.languages.registerCompletionItemProvider('json', {
-        provideCompletionItems: async (model, position) => {
-            const { editorSelectedOperation } = getDenebState();
-            if (editorSelectedOperation !== 'Spec') {
-                return null;
-            }
-            const word = model.getWordUntilPosition(position);
-            const range = {
-                startLineNumber: position.lineNumber,
-                endLineNumber: position.lineNumber,
-                startColumn: word.startColumn,
-                endColumn: word.endColumn
-            };
-            const fields: monaco.languages.CompletionItem[] = [];
-            Object.entries(getDenebState().dataset.fields).forEach(([key]) => {
-                fields.push({
-                    label: key,
-                    insertText: key,
-                    documentation: getSnippetFieldMetadata(key),
-                    kind: monaco.languages.CompletionItemKind.Field,
-                    range,
-                    sortText: `zzzzz__${key}`
-                });
-            });
-            return {
-                suggestions: fields
-            };
-        }
-    });
-};
-
-/**
- * Set up the diagnostics options for the Monaco editor. This will allow us to provide schema-based validation for the
- * JSON editor.
- */
-const setMonacoDiagnosticsOptions = () => {
-    const enableSchemaRequest =
-        toBoolean(process.env.ALLOW_EXTERNAL_URI) ?? false;
-    monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
-        allowComments: true,
-        enableSchemaRequest,
-        schemas: [
-            {
-                schema: getProviderSchema({ provider: 'vegaLite' }),
-                uri: getProviderSchemaUrl('vegaLite'),
-                fileMatch: [
-                    monaco.Uri.parse('deneb://Spec-vegaLite.json').toString()
-                ]
-            },
-            {
-                schema: getProviderSchema({ provider: 'vega' }),
-                uri: getProviderSchemaUrl('vega'),
-                fileMatch: [
-                    monaco.Uri.parse('deneb://Spec-vega.json').toString()
-                ]
-            }
-        ]
-    });
-};
-
-/**
- * Override the default key bindings for the Monaco editor that will clash with the Deneb hotkeys.
- */
-const setMonacoKeyBindingRules = () => {
-    monaco.editor.addKeybindingRules([
-        {
-            keybinding:
-                monaco.KeyMod.CtrlCmd |
-                monaco.KeyMod.Shift |
-                monaco.KeyCode.Enter,
-            command: null
-        },
-        {
-            keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
-            command: null
-        },
-        {
-            keybinding:
-                monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyR,
-            command: 'editor.action.formatDocument'
-        },
-        {
-            keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.F1,
-            command: 'editor.action.quickCommand'
-        }
-    ]);
-};
-
-/**
- * For any data-based completers in the editor, provide a qualifier denoting whether it's a column, measure or
- * something else.
- */
-const getSnippetFieldMetadata = (key: string) => {
-    return getFieldDocumentationByName(key);
-};
-
-/**
- * Do the necessary tests and then call the tracking /tokenization workers, if needed.
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const updateTracking = async (spec: string, editorRole: EditorPaneRole) => {
-    logDebug(
-        '[Spec Editor] Checking to see if tracking and tokenization is needed...'
-    );
-    const {
-        fieldUsage: { dataset: trackedFieldsCurrent, editorShouldSkipRemap },
-        project: { spec: currentSpec }
-    } = getDenebState();
-    if (
-        editorRole === 'Config' ||
-        (editorRole === 'Spec' &&
-            (spec === currentSpec || editorShouldSkipRemap))
-    ) {
-        logDebug(
-            "[Spec Editor] Spec hasn't changed, skipping tracking and tokens..."
-        );
-        return;
-    }
-    logDebug('[Spec Editor] Updating tracking and tokens...');
-    updateFieldTracking(spec, trackedFieldsCurrent);
-};

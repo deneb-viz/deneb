@@ -1,6 +1,6 @@
 import React, { createContext, createRef, useContext } from 'react';
 import { type SpecificationEditorRefs } from '../types';
-import { monaco } from '../../../components/code-editor/monaco-integration';
+import type { monaco } from '../../../components/code-editor/monaco-integration';
 
 export const SpecificationEditorContext =
     createContext<SpecificationEditorRefs>({} as SpecificationEditorRefs);
