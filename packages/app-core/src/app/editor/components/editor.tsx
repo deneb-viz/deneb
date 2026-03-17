@@ -12,6 +12,7 @@ import { useDenebState } from '../../../state';
 import { getDenebTheme } from '../../../lib';
 import { ModalDialog } from '../../../components/ui';
 import { EditorContentLoader } from './editor-content-loader';
+import { EditorErrorBoundary } from './editor-error-boundary';
 import { EditorSuspense } from './editor-suspense';
 import { SpecificationEditorProvider } from '../../../features/specification-editor';
 
@@ -78,9 +79,11 @@ export const Editor = () => {
             id={EDITOR_INTERFACE_ID}
         >
             <SpecificationEditorProvider>
-                <Suspense fallback={<EditorSuspense />}>
-                    <EditorContentLoader />
-                </Suspense>
+                <EditorErrorBoundary>
+                    <Suspense fallback={<EditorSuspense />}>
+                        <EditorContentLoader />
+                    </Suspense>
+                </EditorErrorBoundary>
                 <ModalDialog />
             </SpecificationEditorProvider>
         </FluentProvider>
