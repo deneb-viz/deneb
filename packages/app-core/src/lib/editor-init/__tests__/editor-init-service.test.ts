@@ -161,34 +161,46 @@ describe('editor-init-service', () => {
         );
     });
 
-    it('should dispose the previous completion provider before re-registering on retry', async () => {
+    it('should not dispose a completion provider when none was previously registered', async () => {
         vi.resetModules();
-        // Simulate failure after the provider is registered by making
-        // the second schema mock call (the retry) produce a distinct disposable.
-        const firstDispose = vi.fn();
-        mockRegisterCompletionItemProvider.mockReturnValueOnce({
-            dispose: firstDispose
-        });
-        // First init: fail after provider registration by making
-        // configureMonacoDiagnostics throw (called just before completion provider)
-        // — simpler: just allow success on both attempts and trigger re-init manually
-        // via a second vi.resetModules() cycle isn't possible without module reload.
-        // Instead, directly verify the dispose-before-register path by calling
-        // initializeEditorDependencies() twice with a failure in between.
+        // Fail before configure* calls — no provider is registered.
         initializeSchemasMock.mockRejectedValueOnce(
             new Error('fail before configure')
         );
         const service = await import('../editor-init-service');
-        // First attempt fails (before configure* calls), so no provider registered yet.
         await expect(service.initializeEditorDependencies()).rejects.toThrow();
 
-        // Second attempt succeeds — provider registered for the first time.
+        // Retry succeeds — provider registered for the first time.
         mockRegisterCompletionItemProvider.mockClear();
         mockDisposeCompletionProvider.mockClear();
         await service.initializeEditorDependencies();
         expect(mockRegisterCompletionItemProvider).toHaveBeenCalledTimes(1);
-        // No previous disposable to dispose on the first successful registration.
         expect(mockDisposeCompletionProvider).not.toHaveBeenCalled();
+    });
+
+    it('should dispose the previous completion provider before re-registering on retry', async () => {
+        vi.resetModules();
+        mockRegisterCompletionItemProvider.mockClear();
+        const firstDispose = vi.fn();
+        mockRegisterCompletionItemProvider.mockReturnValueOnce({
+            dispose: firstDispose
+        });
+        // First attempt: schemas + loader succeed, diagnostics + provider succeed,
+        // but keybindings throw — provider IS registered before failure.
+        mockAddKeybindingRules.mockImplementationOnce(() => {
+            throw new Error('keybinding failure');
+        });
+        const service = await import('../editor-init-service');
+        await expect(service.initializeEditorDependencies()).rejects.toThrow(
+            'keybinding failure'
+        );
+        expect(mockRegisterCompletionItemProvider).toHaveBeenCalledTimes(1);
+
+        // Retry succeeds — should dispose the provider from the first attempt.
+        mockRegisterCompletionItemProvider.mockClear();
+        await service.initializeEditorDependencies();
+        expect(firstDispose).toHaveBeenCalledTimes(1);
+        expect(mockRegisterCompletionItemProvider).toHaveBeenCalledTimes(1);
     });
 
     describe('retry behaviour', () => {
