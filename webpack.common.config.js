@@ -81,9 +81,13 @@ function getCommonConfig(options = {}) {
             // Without this, npm hoists separate copies into app-core and
             // json-processing because root node_modules has ajv@6 (ESLint).
             alias: {
-                ajv: require.resolve('ajv', {
-                    paths: [path.resolve(__dirname, 'packages', 'app-core')]
-                })
+                ajv: path.resolve(
+                    __dirname,
+                    'packages',
+                    'app-core',
+                    'node_modules',
+                    'ajv'
+                )
             }
         },
         // No externals for powerbi-visuals-api. TypeScript (via ts-loader) inlines const enums,
