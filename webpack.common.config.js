@@ -76,6 +76,18 @@ function getCommonConfig(options = {}) {
             // Polyfills for Node.js core modules needed by monaco-editor and vega-loader
             fallback: {
                 buffer: require.resolve('buffer/')
+            },
+            // Force a single copy of ajv@8 across all workspace packages.
+            // Without this, npm hoists separate copies into app-core and
+            // json-processing because root node_modules has ajv@6 (ESLint).
+            alias: {
+                ajv: path.resolve(
+                    __dirname,
+                    'packages',
+                    'app-core',
+                    'node_modules',
+                    'ajv'
+                )
             }
         },
         // No externals for powerbi-visuals-api. TypeScript (via ts-loader) inlines const enums,
