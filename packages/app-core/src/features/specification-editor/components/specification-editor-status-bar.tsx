@@ -1,31 +1,26 @@
-import { Caption1, makeStyles } from '@fluentui/react-components';
+import { Button, Caption1, makeStyles, Tooltip } from '@fluentui/react-components';
+import { ChevronDownRegular, CodeRegular } from '@fluentui/react-icons';
 
 import { logRender } from '@deneb-viz/utils/logging';
-import { monaco } from '../../../components/code-editor/monaco-integration';
 import { StatusBarContainer } from '../../../components/ui';
 import { ProviderDetail } from './provider-detail';
 import { TrackingSyncStatus } from './tracking-sync-status';
 import { getDenebState, useDenebState } from '../../../state';
+import { useCursorContext } from '../../../context';
 
-type SpecificationEditorStatusBarProps = {
-    position: monaco.Position;
-    selectedText: string;
-};
+const CHEVRON_BUTTON_WIDTH = 28;
 
 const useStatusStyles = makeStyles({
-    container: {
+    nearContainer: {
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
         columnGap: '5px',
-        height: '100%',
-        width: '100%'
+        height: '100%'
     },
-    status: {
+    farContainer: {
         display: 'flex',
         flexDirection: 'row',
-        flexGrow: 1,
         alignItems: 'center',
         justifyContent: 'flex-end',
         columnGap: '10px',
@@ -43,33 +38,80 @@ const useStatusStyles = makeStyles({
 /**
  * Represents the status bar at the bottom of the editor.
  */
-export const SpecificationEditorStatusBar = ({
-    position,
-    selectedText
-}: SpecificationEditorStatusBarProps) => {
+export const SpecificationEditorStatusBar = () => {
     const classes = useStatusStyles();
-    const row = position.lineNumber;
-    const column = position.column;
-    const translate = useDenebState((state) => state.i18n.translate);
+    const { cursor, tooltipMountNode } = useCursorContext();
+    const {
+        isCompiledVegaPaneVisible,
+        provider,
+        toggleCompiledVegaPane,
+        translate
+    } = useDenebState((state) => ({
+        isCompiledVegaPaneVisible: state.editor.isCompiledVegaPaneVisible,
+        provider: state.project.provider,
+        toggleCompiledVegaPane: state.editor.toggleCompiledVegaPane,
+        translate: state.i18n.translate
+    }));
+    const isVegaLite = provider === 'vegaLite';
+
+    const handleCollapse = () => {
+        toggleCompiledVegaPane();
+    };
+
     logRender('JsonEditorStatusBar');
     return (
         <StatusBarContainer
             nearItems={
-                <div className={classes.container}>
+                <div className={classes.nearContainer}>
                     <ProviderDetail />
                 </div>
             }
+            centerItems={
+                isVegaLite && !isCompiledVegaPaneVisible ? (
+                    <Tooltip
+                        relationship='description'
+                        content={translate('Tooltip_Compiled_Vega_Toggle')}
+                        withArrow
+                        mountNode={tooltipMountNode}
+                    >
+                        <Button
+                            appearance='subtle'
+                            size='small'
+                            icon={<CodeRegular />}
+                            onClick={toggleCompiledVegaPane}
+                        >
+                            {translate('Text_Compiled_Vega_Toggle')}
+                        </Button>
+                    </Tooltip>
+                ) : undefined
+            }
             farItems={
-                <div className={classes.status}>
+                <div className={classes.farContainer}>
                     <TrackingSyncStatus />
                     <div className={classes.cursorContainer}>
                         <Caption1 className={classes.caption}>
-                            {translate('Text_Editor_Status_Bar_Line')} {row}{' '}
+                            {translate('Text_Editor_Status_Bar_Line')}{' '}
+                            {cursor.lineNumber}{' '}
                             {translate('Text_Editor_Status_Bar_Column')}{' '}
-                            {column} {getSelectedTextMessage(selectedText)}
+                            {cursor.column}{' '}
+                            {getSelectedTextMessage(cursor.selectedText)}
                         </Caption1>
                     </div>
-                    <div className='status-settings'></div>
+                    <div
+                        style={{
+                            width: `${CHEVRON_BUTTON_WIDTH}px`,
+                            flexShrink: 0
+                        }}
+                    >
+                        {isVegaLite && isCompiledVegaPaneVisible && (
+                            <Button
+                                appearance='subtle'
+                                size='small'
+                                icon={<ChevronDownRegular />}
+                                onClick={handleCollapse}
+                            />
+                        )}
+                    </div>
                 </div>
             }
         />

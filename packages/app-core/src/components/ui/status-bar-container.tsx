@@ -12,6 +12,11 @@ const STATUS_BAR_CONTAINER_FAR_ITEMS_CLASS_NAME = 'status-bar-far-items';
  */
 const STATUS_BAR_CONTAINER_NEAR_ITEMS_CLASS_NAME = 'status-bar-near-items';
 
+/**
+ * Class name for the container holding center items in the status bar.
+ */
+const STATUS_BAR_CONTAINER_CENTER_ITEMS_CLASS_NAME = 'status-bar-center-items';
+
 const useStatusBarStyles = makeStyles({
     root: {
         alignItems: 'center',
@@ -27,20 +32,33 @@ const useStatusBarStyles = makeStyles({
         userSelect: 'none'
     },
     nearContainer: {
-        display: 'flex'
+        display: 'flex',
+        flex: '1 1 0',
+        minWidth: 0
+    },
+    centerContainer: {
+        display: 'flex',
+        flex: '0 0 auto',
+        justifyContent: 'center'
     },
     farContainer: {
-        display: 'flex'
+        display: 'flex',
+        flex: '1 1 0',
+        justifyContent: 'flex-end',
+        minWidth: 0,
+        overflow: 'hidden'
     }
 });
 
 export type StatusBarProps = ComponentProps<'div'> & {
     nearItems?: React.ReactNode;
+    centerItems?: React.ReactNode;
     farItems?: React.ReactNode;
 };
 
 export const StatusBarContainer = ({
     nearItems,
+    centerItems,
     farItems,
     ...props
 }: StatusBarProps) => {
@@ -53,6 +71,13 @@ export const StatusBarContainer = ({
             >
                 {nearItems}
             </div>
+            {centerItems && (
+                <div
+                    className={`${STATUS_BAR_CONTAINER_CENTER_ITEMS_CLASS_NAME} ${classes.centerContainer}`}
+                >
+                    {centerItems}
+                </div>
+            )}
             <div
                 className={`${STATUS_BAR_CONTAINER_FAR_ITEMS_CLASS_NAME} ${classes.farContainer}`}
             >
