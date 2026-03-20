@@ -77,6 +77,8 @@
         "cross-env": "^10.1.0",
         "css-loader": "^7.1.2",
         "eslint": "^9.39.3",
+        "eslint-import-resolver-typescript": "^4.4.4",
+        "eslint-plugin-import-x": "^4.16.2",
         "eslint-plugin-powerbi-visuals": "^1.1.0",
         "extra-watch-webpack-plugin": "^1.0.3",
         "fast-equals": "^5.3.3",
