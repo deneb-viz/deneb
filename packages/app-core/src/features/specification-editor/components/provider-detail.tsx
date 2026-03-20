@@ -1,9 +1,7 @@
-import { useState } from 'react';
 import { Caption1, Tooltip, makeStyles } from '@fluentui/react-components';
 
 import { getVegaVersion } from '@deneb-viz/vega-runtime/embed';
 import { logRender } from '@deneb-viz/utils/logging';
-import { TooltipCustomMount } from '../../../components/ui';
 import { useDenebState } from '../../../state';
 import { getVegaProviderI18n } from '../../../lib/vega/i18n';
 
@@ -17,13 +15,16 @@ const useProviderStyles = makeStyles({
     }
 });
 
-export const ProviderDetail = () => {
+type ProviderDetailProps = {
+    tooltipMountNode?: HTMLElement | null;
+};
+
+export const ProviderDetail = ({ tooltipMountNode }: ProviderDetailProps) => {
     const { provider, translate } = useDenebState((state) => ({
         provider: state.project.provider,
         translate: state.i18n.translate
     }));
     const classes = useProviderStyles();
-    const [ref, setRef] = useState<HTMLElement | null>(null);
 
     if (!provider) {
         return null;
@@ -38,13 +39,12 @@ export const ProviderDetail = () => {
                 content={translate('Tooltip_Current_Provider')}
                 relationship='label'
                 withArrow
-                mountNode={ref}
+                mountNode={tooltipMountNode}
             >
                 <Caption1 className={classes.caption}>
                     {providerName} {version}
                 </Caption1>
             </Tooltip>
-            <TooltipCustomMount setRef={setRef} />
         </div>
     );
 };

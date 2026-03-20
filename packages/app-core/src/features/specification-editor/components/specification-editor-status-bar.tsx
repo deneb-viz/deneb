@@ -63,7 +63,7 @@ export const SpecificationEditorStatusBar = () => {
         <StatusBarContainer
             nearItems={
                 <div className={classes.nearContainer}>
-                    <ProviderDetail />
+                    <ProviderDetail tooltipMountNode={tooltipMountNode} />
                 </div>
             }
             centerItems={
