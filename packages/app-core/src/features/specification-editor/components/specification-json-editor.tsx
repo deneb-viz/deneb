@@ -3,27 +3,17 @@ import { useDebounce } from '@uidotdev/usehooks';
 import { makeStyles, useUncontrolledFocus } from '@fluentui/react-components';
 import Editor, { OnChange, OnMount } from '@monaco-editor/react';
 
-import { ptToPx } from '@deneb-viz/utils/dom';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { handlePersistSpecification, type EditorPaneRole } from '../../../lib';
 import { monaco } from '../../../components/code-editor/monaco-integration';
+import { buildEditorProps } from '../../../components/code-editor/editor-configuration';
 import { getDenebState, useDenebState } from '../../../state';
 import { useSpecificationEditor } from '../hooks/use-specification-editor';
-import { SpecificationEditorStatusBar } from './specification-editor-status-bar';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
-import { EDITOR_DEFAULTS } from '@deneb-viz/configuration';
+import { useCursorContext } from '../../../context';
 
 type JsonEditorProps = {
     thisEditorRole: EditorPaneRole;
-};
-
-/**
- * Handles everything we need to manage for the status bar.
- */
-type JsonEditorStatusState = {
-    cursor: monaco.Position;
-    role: EditorPaneRole;
-    selectedText: string;
 };
 
 const useSpecificationJsonEditorStyles = makeStyles({
@@ -76,7 +66,10 @@ export const SpecificationJsonEditor = ({
     const { launchUrl } = useDenebPlatformProvider();
     const attr = useUncontrolledFocus();
     const classes = useSpecificationJsonEditorStyles();
-    const isActiveEditor = useMemo(() => current === thisEditorRole, [current]);
+    const isActiveEditor = useMemo(
+        () => current === thisEditorRole,
+        [current, thisEditorRole]
+    );
     const display = useMemo(
         () => (isActiveEditor ? 'flex' : 'none'),
         [isActiveEditor]
@@ -88,14 +81,7 @@ export const SpecificationJsonEditor = ({
     const [editorText, setEditorText] = useState(ref?.current?.getValue());
     const debouncedEditorText = useDebounce(editorText, debouncePeriod);
     const isFirstDebounce = useRef(true);
-    const [status, setStatus] = useState<JsonEditorStatusState>({
-        cursor: {
-            lineNumber: viewState?.cursorState?.[0]?.position?.lineNumber ?? 1,
-            column: viewState?.cursorState?.[0]?.position?.column ?? 1
-        } as monaco.Position,
-        role: thisEditorRole,
-        selectedText: ''
-    });
+    const { setCursor } = useCursorContext();
     const handleFocus = () => isActiveEditor && ref?.current?.focus();
     // Ensure that we update key dependencies/events if we change the editor.
     useEffect(() => {
@@ -112,16 +98,16 @@ export const SpecificationJsonEditor = ({
         editor.onDidChangeHiddenAreas(() => {
             setViewState(ref.current?.saveViewState());
         });
-        // Tracking of cursor position for status bar
+        // Tracking of cursor position for status bar (via context)
         editor.onDidChangeCursorPosition(
             (e: monaco.editor.ICursorPositionChangedEvent) => {
                 const range = editor.getSelection();
-                setStatus({
-                    ...status,
-                    cursor: e.position,
-                    selectedText:
-                        (range && editor.getModel()?.getValueInRange(range)) ||
-                        ''
+                const selectedText =
+                    (range && editor.getModel()?.getValueInRange(range)) || '';
+                setCursor({
+                    lineNumber: e.position.lineNumber,
+                    column: e.position.column,
+                    selectedText
                 });
             }
         );
@@ -165,32 +151,21 @@ export const SpecificationJsonEditor = ({
         <div style={{ display }} className={classes.container} {...attr}>
             <div className={classes.editor}>
                 <Editor
+                    {...buildEditorProps({
+                        theme,
+                        fontSize,
+                        wordWrap,
+                        showLineNumbers,
+                        quickSuggestions: true,
+                        fixedOverflowWidgets: true
+                    })}
+                    key={`${thisEditorRole}-${provider}`}
                     onMount={handleOnMount}
                     onChange={handleOnChange}
-                    width='100%'
-                    defaultLanguage='json'
                     path={`deneb://${thisEditorRole}-${provider}.json`}
-                    theme={theme === 'dark' ? 'vs-dark' : 'light'}
                     defaultValue={getDefaultValue(thisEditorRole)}
-                    options={{
-                        cursorBlinking: 'smooth',
-                        fixedOverflowWidgets: true,
-                        folding: true,
-                        fontSize: ptToPx(fontSize),
-                        lineNumbers: showLineNumbers ? 'on' : 'off',
-                        lineNumbersMinChars: 2,
-                        minimap: { enabled: false },
-                        quickSuggestions: true,
-                        scrollBeyondLastLine: false,
-                        tabSize: EDITOR_DEFAULTS.tabSize,
-                        wordWrap: wordWrap ? 'on' : 'off'
-                    }}
                 />
             </div>
-            <SpecificationEditorStatusBar
-                position={status.cursor}
-                selectedText={status.selectedText}
-            />
         </div>
     );
 };
@@ -260,4 +235,3 @@ const removeContextMenuItems = (
         });
     };
 };
-
