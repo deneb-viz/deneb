@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
     Button,
     makeStyles,
@@ -90,13 +90,23 @@ export const CompiledVegaPane = ({
         return JSON.stringify(strippedSpec, null, EDITOR_DEFAULTS.tabSize);
     }, [strippedSpec]);
 
-    const handleSwitchToVega = () => {
+    const [popoverOpen, setPopoverOpen] = useState(false);
+
+    const handleSwitchToVega = useCallback(() => {
         if (!formattedSpec) return;
+        setPopoverOpen(false);
         toggleCompiledVegaPane();
         clearCompilation();
         setProvider('vega');
         setContent({ spec: formattedSpec, config });
-    };
+    }, [
+        clearCompilation,
+        config,
+        formattedSpec,
+        setContent,
+        setProvider,
+        toggleCompiledVegaPane
+    ]);
 
     logRender('CompiledVegaPane');
     return (
@@ -106,7 +116,13 @@ export const CompiledVegaPane = ({
                     {translate('Text_Compiled_Vega_Description')}
                 </MessageBarBody>
                 <MessageBarActions>
-                    <Popover withArrow>
+                    <Popover
+                        withArrow
+                        open={popoverOpen}
+                        onOpenChange={(_e, data) =>
+                            setPopoverOpen(data.open)
+                        }
+                    >
                         <Tooltip
                             relationship='description'
                             content={translate('Tooltip_Compiled_Vega_Switch')}
