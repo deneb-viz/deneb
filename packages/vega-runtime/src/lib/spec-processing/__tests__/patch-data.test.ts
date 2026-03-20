@@ -136,6 +136,21 @@ describe('patchVegaSpecWithData', () => {
         expect((patched.data![0] as any).values).toEqual([]);
     });
 
+    it('should handle non-array data property gracefully', () => {
+        const spec = {
+            $schema: 'https://vega.github.io/schema/vega/v5.json',
+            data: { name: 'dataset' },
+            marks: []
+        } as unknown as Spec;
+        const values = [{ category: 'A', amount: 28 }];
+
+        const patched = patchVegaSpecWithData(spec, values);
+
+        expect(patched.data).toHaveLength(1);
+        expect(patched.data![0].name).toBe(DATASET_DEFAULT_NAME);
+        expect((patched.data![0] as any).values).toEqual(values);
+    });
+
     it('should handle complex nested data values', () => {
         const spec: Spec = {
             $schema: 'https://vega.github.io/schema/vega/v5.json',

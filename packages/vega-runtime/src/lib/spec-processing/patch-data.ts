@@ -30,8 +30,9 @@ export const patchVegaSpecWithData = (
     // Clone values to prevent mutations (#369 in legacy code)
     const specValues = structuredClone(values);
 
-    // Get existing data array
-    const existingData = spec.data || [];
+    // Get existing data array (guard against non-array truthy values,
+    // e.g. VL-style object data during provider transitions)
+    const existingData = Array.isArray(spec.data) ? spec.data : [];
 
     // Find if dataset already exists in data array
     const datasetIndex = existingData.findIndex(
