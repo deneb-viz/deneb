@@ -365,6 +365,95 @@ describe('parseSpec', () => {
         consoleWarnSpy.mockRestore();
     });
 
+    it('should produce clean vgSpec without denebContainer for Vega-Lite', () => {
+        const spec = `{
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "data": {"name": "table"},
+            "mark": "bar",
+            "encoding": {
+                "x": {"field": "a", "type": "ordinal"},
+                "y": {"field": "b", "type": "quantitative"}
+            }
+        }`;
+
+        const result = parseSpec({
+            spec,
+            provider: 'vegaLite',
+            containerDimensions: { width: 800, height: 600 }
+        });
+
+        expect(result.status).toBe('valid');
+        expect(result.vgSpec).toBeDefined();
+
+        // vgSpec should NOT contain denebContainer (compiled before patching)
+        const vgSpecStr = JSON.stringify(result.vgSpec);
+        expect(vgSpecStr).not.toContain(SIGNAL_DENEB_CONTAINER);
+
+        // But the patched spec SHOULD contain denebContainer
+        const specObj = result.spec as any;
+        const denebParam = specObj.params.find(
+            (p: any) => p.name === SIGNAL_DENEB_CONTAINER
+        );
+        expect(denebParam).toBeDefined();
+    });
+
+    it('should not produce vgSpec for Vega provider', () => {
+        const spec = `{
+            "$schema": "https://vega.github.io/schema/vega/v5.json",
+            "marks": []
+        }`;
+
+        const result = parseSpec({
+            spec,
+            provider: 'vega'
+        });
+
+        expect(result.status).toBe('valid');
+        expect(result.vgSpec).toBeUndefined();
+    });
+
+    it('should return error for Vega spec that fails parser validation', () => {
+        // A spec with duplicate signal names that Vega parser rejects
+        const spec = `{
+            "$schema": "https://vega.github.io/schema/vega/v5.json",
+            "signals": [
+                {"name": "mySignal", "value": 1},
+                {"name": "mySignal", "value": 2}
+            ],
+            "marks": []
+        }`;
+
+        const result = parseSpec({
+            spec,
+            provider: 'vega'
+        });
+
+        expect(result.status).toBe('error');
+        expect(result.spec).toBeNull();
+        expect(result.errors.length).toBeGreaterThan(0);
+    });
+
+    it('should invoke schemaValidator when provided', () => {
+        const spec = `{
+            "$schema": "https://vega.github.io/schema/vega/v5.json",
+            "marks": []
+        }`;
+        const mockValidator = vi.fn().mockReturnValue({
+            valid: false,
+            warnings: ['Test schema warning']
+        });
+
+        const result = parseSpec({
+            spec,
+            provider: 'vega',
+            schemaValidator: mockValidator
+        });
+
+        expect(result.status).toBe('valid');
+        expect(mockValidator).toHaveBeenCalled();
+        expect(result.warnings).toContain('Test schema warning');
+    });
+
     it('should parse JSONC spec with comments', () => {
         const spec = `{
             // Vega spec with comments

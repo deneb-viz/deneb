@@ -3,7 +3,10 @@ import { compile as compileVegaLite, type TopLevelSpec } from 'vega-lite';
 import { parseJsonWithResult, redactJsonFromError } from './json';
 import { patchConfig } from './patch-config';
 import { patchVegaSpec } from './patch-vega';
-import { patchVegaLiteSpec } from './patch-vega-lite';
+import {
+    patchVegaLiteSpec,
+    patchVegaLiteResponsiveSizing
+} from './patch-vega-lite';
 import {
     replaceLegacySignalReferences,
     logLegacySignalWarning
@@ -17,10 +20,10 @@ import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
  * Process flow:
  * 1. Apply legacy signal migration (`pbiContainer` > `denebContainer`)
  * 2. Parse JSON for spec and config
- * 3. Patch config with Deneb defaults
+ * 3. For Vega-Lite: apply responsive sizing + compile (pre-patch) for clean vgSpec + validation
  * 4. Patch spec with `denebContainer` signal and responsive sizing
  * 5. Schema validation (if schemaValidator provided)
- * 6. Validate with Vega/Vega-Lite compiler
+ * 6. For Vega: validate with Vega parser
  *
  * @param options Parsing options
  * @returns Parsed specification result
@@ -87,7 +90,40 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
         };
     }
 
-    // Step 3: Patch spec with denebContainer and responsive sizing
+    // Step 3: For Vega-Lite, compile with responsive sizing (but without denebContainer)
+    // to capture a clean vgSpec. Responsive sizing is applied so the compiled Vega output
+    // uses container-based dimensions rather than VL defaults (e.g. 200x200). The
+    // denebContainer signal is excluded to avoid duplication when the user converts to
+    // Vega via "Edit Vega Spec" (Deneb's Vega patching will add it).
+    let vgSpec: Spec | undefined;
+    if (provider !== 'vega') {
+        try {
+            const sizedSpec = patchVegaLiteResponsiveSizing(
+                parsedSpec.result as TopLevelSpec
+            );
+            const sizedSpecWithConfig = {
+                ...sizedSpec,
+                config: parsedConfig.result || {}
+            };
+            const compiled = compileVegaLite(
+                sizedSpecWithConfig as TopLevelSpec
+            );
+            vgSpec = compiled.spec;
+        } catch (e) {
+            const message = e instanceof Error ? e.message : String(e);
+            const redactedMessage = redactJsonFromError(message);
+
+            return {
+                status: 'error',
+                spec: null,
+                config: parsedConfig.result,
+                errors: [redactedMessage],
+                warnings
+            };
+        }
+    }
+
+    // Step 4: Patch spec with denebContainer and responsive sizing
     const patchedSpec =
         provider === 'vega'
             ? patchVegaSpec(parsedSpec.result as Spec, {
@@ -97,13 +133,13 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
                   containerDimensions
               });
 
-    // Step 4: Merge config into spec for validation
+    // Step 5: Merge config into spec for validation
     const specWithConfig = {
         ...patchedSpec,
         config: parsedConfig.result || {}
     };
 
-    // Step 5: Schema validation (if validator provided)
+    // Step 6: Schema validation (if validator provided)
     if (schemaValidator) {
         const schemaResult = schemaValidator(specWithConfig);
         if (!schemaResult.valid && schemaResult.warnings.length > 0) {
@@ -111,33 +147,32 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
         }
     }
 
-    // Step 6: Validate with Vega/Vega-Lite compiler
-    try {
-        if (provider === 'vega') {
+    // Step 7: Validate with Vega parser (Vega only; VL already validated in step 3)
+    if (provider === 'vega') {
+        try {
             parseVega(specWithConfig as Spec);
-        } else {
-            compileVegaLite(specWithConfig as TopLevelSpec);
+        } catch (e) {
+            const message = e instanceof Error ? e.message : String(e);
+            const redactedMessage = redactJsonFromError(message);
+
+            return {
+                status: 'error',
+                spec: null,
+                config: parsedConfig.result,
+                errors: [redactedMessage],
+                warnings
+            };
         }
-
-        return {
-            status: 'valid',
-            spec: patchedSpec,
-            config: parsedConfig.result,
-            errors: [],
-            warnings
-        };
-    } catch (e) {
-        const message = e instanceof Error ? e.message : String(e);
-        const redactedMessage = redactJsonFromError(message);
-
-        return {
-            status: 'error',
-            spec: null,
-            config: parsedConfig.result,
-            errors: [redactedMessage],
-            warnings
-        };
     }
+
+    return {
+        status: 'valid',
+        spec: patchedSpec,
+        config: parsedConfig.result,
+        errors: [],
+        warnings,
+        vgSpec
+    };
 };
 
 /**
