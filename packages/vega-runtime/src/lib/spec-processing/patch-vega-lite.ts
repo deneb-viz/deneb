@@ -42,11 +42,11 @@ export const patchVegaLiteResponsiveSizing = (
     const normalized = spec as ReturnType<typeof normalize>;
     const patches: Partial<TopLevelSpec> = {};
 
-    if (!normalized.width) {
+    if (normalized.width === undefined) {
         (patches as any).width = 'container';
     }
 
-    if (!normalized.height) {
+    if (normalized.height === undefined) {
         (patches as any).height = 'container';
     }
 

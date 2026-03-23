@@ -134,7 +134,7 @@ export const SpecificationEditorStatusBar = () => {
                                     size='small'
                                     icon={<ChevronDownRegular />}
                                     aria-label={translate(
-                                        'Tooltip_Compiled_Vega_Toggle'
+                                        'Text_Compiled_Vega_Collapse'
                                     )}
                                     onClick={handleCollapse}
                                 />

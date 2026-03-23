@@ -147,24 +147,26 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
         }
     }
 
-    // Step 7: Validate with Vega parser (Vega only; VL already validated in step 3)
-    // TODO: Consider also validating the post-patch VL spec (specWithConfig) to catch
-    // conflicts introduced by patchVegaLiteSpec (e.g. duplicate param names like denebContainer).
-    if (provider === 'vega') {
-        try {
+    // Step 7: Validate patched spec with the appropriate compiler/parser.
+    // Vega: parse with Vega parser. VL: compile with vega-lite to catch conflicts
+    // introduced by patchVegaLiteSpec (e.g. duplicate param names like denebContainer).
+    try {
+        if (provider === 'vega') {
             parseVega(specWithConfig as Spec);
-        } catch (e) {
-            const message = e instanceof Error ? e.message : String(e);
-            const redactedMessage = redactJsonFromError(message);
-
-            return {
-                status: 'error',
-                spec: null,
-                config: parsedConfig.result,
-                errors: [redactedMessage],
-                warnings
-            };
+        } else {
+            compileVegaLite(specWithConfig as TopLevelSpec);
         }
+    } catch (e) {
+        const message = e instanceof Error ? e.message : String(e);
+        const redactedMessage = redactJsonFromError(message);
+
+        return {
+            status: 'error',
+            spec: null,
+            config: parsedConfig.result,
+            errors: [redactedMessage],
+            warnings
+        };
     }
 
     return {
