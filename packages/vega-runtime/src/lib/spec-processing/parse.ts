@@ -148,6 +148,8 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
     }
 
     // Step 7: Validate with Vega parser (Vega only; VL already validated in step 3)
+    // TODO: Consider also validating the post-patch VL spec (specWithConfig) to catch
+    // conflicts introduced by patchVegaLiteSpec (e.g. duplicate param names like denebContainer).
     if (provider === 'vega') {
         try {
             parseVega(specWithConfig as Spec);

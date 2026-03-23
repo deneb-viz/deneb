@@ -98,6 +98,9 @@ export const SpecificationEditorStatusBar = () => {
                                 appearance='subtle'
                                 size='small'
                                 icon={<CodeRegular />}
+                                aria-label={translate(
+                                    'Text_Compiled_Vega_Toggle'
+                                )}
                                 onClick={toggleCompiledVegaPane}
                             >
                                 {showActionButtonText
@@ -130,6 +133,9 @@ export const SpecificationEditorStatusBar = () => {
                                     appearance='subtle'
                                     size='small'
                                     icon={<ChevronDownRegular />}
+                                    aria-label={translate(
+                                        'Tooltip_Compiled_Vega_Toggle'
+                                    )}
                                     onClick={handleCollapse}
                                 />
                             )}

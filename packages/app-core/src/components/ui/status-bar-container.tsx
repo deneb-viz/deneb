@@ -50,6 +50,7 @@ const useStatusBarStyles = makeStyles({
     farContainer: {
         display: 'flex',
         justifyContent: 'flex-end',
+        marginLeft: 'auto',
         minWidth: 0,
         overflow: 'hidden'
     },

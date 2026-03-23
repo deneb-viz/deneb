@@ -147,7 +147,10 @@ export const EditorArea = () => {
         ) as HTMLElement | null;
         if (!container) return;
         const handler = (e: Event) => {
-            if (!(e.target as HTMLElement)?.closest('.sash')) return;
+            const sashEl = (e.target as HTMLElement)?.closest('.sash');
+            if (!sashEl) return;
+            const sashes = container.querySelectorAll('.sash');
+            if (sashEl !== sashes[sashes.length - 1]) return;
             e.stopImmediatePropagation();
             e.preventDefault();
             if (!isCompiledVegaPaneVisible) {
