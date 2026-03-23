@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { makeStyles, mergeClasses, tokens } from '@fluentui/react-components';
+import { makeStyles, tokens } from '@fluentui/react-components';
 import { Allotment, type AllotmentHandle } from 'allotment';
 
 import { logRender } from '@deneb-viz/utils/logging';
@@ -65,6 +65,7 @@ export const EditorArea = () => {
     const isCompiledPaneShown = isVegaLite && isCompiledVegaPaneVisible;
 
     const allotmentRef = useRef<AllotmentHandle>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const currentSizesRef = useRef<number[]>([]);
 
     const handleChange = useCallback(
@@ -142,9 +143,7 @@ export const EditorArea = () => {
     // Only the sash between pane 2 and pane 3 matters (VL only).
     useEffect(() => {
         if (!isVegaLite) return;
-        const container = document.querySelector(
-            '.compiled-vega-allotment'
-        ) as HTMLElement | null;
+        const container = containerRef.current;
         if (!container) return;
         const handler = (e: Event) => {
             const sashEl = (e.target as HTMLElement)?.closest('.sash');
@@ -189,7 +188,7 @@ export const EditorArea = () => {
             preferredSize={`${SPLIT_PANE_CONFIGURATION.defaultSizePercent * 100}%`}
         >
             <CursorProvider>
-                <div className={mergeClasses(classes.container, 'compiled-vega-allotment')}>
+                <div ref={containerRef} className={classes.container}>
                     <Allotment
                         vertical
                         ref={allotmentRef}

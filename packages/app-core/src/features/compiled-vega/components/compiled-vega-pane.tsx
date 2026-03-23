@@ -18,7 +18,10 @@ import type { TopLevelSpec } from 'vega-lite';
 
 import { logRender } from '@deneb-viz/utils/logging';
 import { EDITOR_DEFAULTS } from '@deneb-viz/configuration';
-import { compileCleanVgSpec } from '@deneb-viz/vega-runtime/spec-processing';
+import {
+    compileCleanVgSpec,
+    parseJsonWithResult
+} from '@deneb-viz/vega-runtime/spec-processing';
 import { POPOVER_Z_INDEX } from '../../../lib';
 import { useDenebState } from '../../../state';
 import { stripSchemaFromSpec } from '../../../lib/spec-utils';
@@ -61,6 +64,7 @@ export const CompiledVegaPane = ({
         clearCompilation,
         configString,
         fontSize,
+        resetViewStates,
         setContent,
         setProvider,
         specString,
@@ -71,6 +75,7 @@ export const CompiledVegaPane = ({
         clearCompilation: state.compilation.clear,
         configString: state.project.config,
         fontSize: state.editorPreferences.jsonEditorFontSize,
+        resetViewStates: state.editor.resetViewStates,
         setContent: state.project.setContent,
         setProvider: state.project.setProvider,
         specString: state.project.spec,
@@ -81,18 +86,18 @@ export const CompiledVegaPane = ({
     const classes = useCompiledVegaPaneStyles();
 
     const formattedSpec = useMemo(() => {
-        try {
-            const spec = JSON.parse(specString) as TopLevelSpec;
-            const config = JSON.parse(configString || '{}');
-            const vgSpec = compileCleanVgSpec(spec, config);
-            if (!vgSpec) return '';
-            const stripped = stripSchemaFromSpec(
-                vgSpec as Record<string, unknown>
-            );
-            return JSON.stringify(stripped, null, EDITOR_DEFAULTS.tabSize);
-        } catch {
-            return '';
-        }
+        const parsedSpec = parseJsonWithResult(specString);
+        if (parsedSpec.errors.length > 0) return '';
+        const parsedConfig = parseJsonWithResult(configString || '{}');
+        const vgSpec = compileCleanVgSpec(
+            parsedSpec.result as TopLevelSpec,
+            parsedConfig.result
+        );
+        if (!vgSpec) return '';
+        const stripped = stripSchemaFromSpec(
+            vgSpec as Record<string, unknown>
+        );
+        return JSON.stringify(stripped, null, EDITOR_DEFAULTS.tabSize);
     }, [specString, configString]);
 
     const [popoverOpen, setPopoverOpen] = useState(false);
@@ -102,12 +107,14 @@ export const CompiledVegaPane = ({
         setPopoverOpen(false);
         toggleCompiledVegaPane();
         clearCompilation();
+        resetViewStates();
         setProvider('vega');
         setContent({ spec: formattedSpec, config: configString });
     }, [
         clearCompilation,
         configString,
         formattedSpec,
+        resetViewStates,
         setContent,
         setProvider,
         toggleCompiledVegaPane

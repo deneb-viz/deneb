@@ -47,6 +47,7 @@ type EditorSliceProperties = {
     setViewState: (
         viewState: monaco.editor.ICodeEditorViewState | undefined | null
     ) => void;
+    resetViewStates: () => void;
     toggleApplyMode: () => void;
     updateApplyMode: (applyMode: EditorApplyMode) => void;
     updateChanges: (payload: EditorSliceUpdateChangesPayload) => void;
@@ -175,6 +176,18 @@ export const createEditorSlice =
                     (state) => handleSetViewState(state, viewState),
                     false,
                     'editor.setViewState'
+                ),
+            resetViewStates: () =>
+                set(
+                    (state) => ({
+                        editor: {
+                            ...state.editor,
+                            viewStateSpec: undefined,
+                            viewStateConfig: undefined
+                        }
+                    }),
+                    false,
+                    'editor.resetViewStates'
                 ),
             toggleApplyMode: () =>
                 set(
