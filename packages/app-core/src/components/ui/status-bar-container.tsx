@@ -66,11 +66,13 @@ export const StatusBarContainer = ({
     const rootClasses = mergeClasses(classes.root, props.className);
     return (
         <div {...props} className={rootClasses}>
-            <div
-                className={`${STATUS_BAR_CONTAINER_NEAR_ITEMS_CLASS_NAME} ${classes.nearContainer}`}
-            >
-                {nearItems}
-            </div>
+            {nearItems && (
+                <div
+                    className={`${STATUS_BAR_CONTAINER_NEAR_ITEMS_CLASS_NAME} ${classes.nearContainer}`}
+                >
+                    {nearItems}
+                </div>
+            )}
             {centerItems && (
                 <div
                     className={`${STATUS_BAR_CONTAINER_CENTER_ITEMS_CLASS_NAME} ${classes.centerContainer}`}

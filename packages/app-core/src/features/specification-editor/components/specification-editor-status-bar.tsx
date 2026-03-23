@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { Button, Caption1, makeStyles, Tooltip } from '@fluentui/react-components';
 import { ChevronDownRegular, CodeRegular } from '@fluentui/react-icons';
 
@@ -7,10 +8,15 @@ import { ProviderDetail } from './provider-detail';
 import { TrackingSyncStatus } from './tracking-sync-status';
 import { getDenebState, useDenebState } from '../../../state';
 import { useCursorContext } from '../../../context';
+import { useStatusBarBreakpoint } from '../hooks/use-status-bar-breakpoint';
 
 const CHEVRON_BUTTON_WIDTH = 28;
 
 const useStatusStyles = makeStyles({
+    wrapper: {
+        width: '100%',
+        height: '100%'
+    },
     nearContainer: {
         display: 'flex',
         flexDirection: 'row',
@@ -40,6 +46,8 @@ const useStatusStyles = makeStyles({
  */
 export const SpecificationEditorStatusBar = () => {
     const classes = useStatusStyles();
+    const containerRef = useRef<HTMLDivElement>(null);
+    const layoutState = useStatusBarBreakpoint(containerRef);
     const { cursor, tooltipMountNode } = useCursorContext();
     const {
         isCompiledVegaPaneVisible,
@@ -53,6 +61,12 @@ export const SpecificationEditorStatusBar = () => {
         translate: state.i18n.translate
     }));
     const isVegaLite = provider === 'vegaLite';
+    const showProvider = layoutState === 'wide' || layoutState === 'medium';
+    const showActionButton =
+        isVegaLite &&
+        !isCompiledVegaPaneVisible &&
+        layoutState !== 'veryNarrow';
+    const showActionButtonText = layoutState === 'wide';
 
     const handleCollapse = () => {
         toggleCompiledVegaPane();
@@ -60,61 +74,69 @@ export const SpecificationEditorStatusBar = () => {
 
     logRender('JsonEditorStatusBar');
     return (
-        <StatusBarContainer
-            nearItems={
-                <div className={classes.nearContainer}>
-                    <ProviderDetail tooltipMountNode={tooltipMountNode} />
-                </div>
-            }
-            centerItems={
-                isVegaLite && !isCompiledVegaPaneVisible ? (
-                    <Tooltip
-                        relationship='description'
-                        content={translate('Tooltip_Compiled_Vega_Toggle')}
-                        withArrow
-                        mountNode={tooltipMountNode}
-                    >
-                        <Button
-                            appearance='subtle'
-                            size='small'
-                            icon={<CodeRegular />}
-                            onClick={toggleCompiledVegaPane}
+        <div ref={containerRef} className={classes.wrapper}>
+            <StatusBarContainer
+                nearItems={
+                    showProvider ? (
+                        <div className={classes.nearContainer}>
+                            <ProviderDetail
+                                tooltipMountNode={tooltipMountNode}
+                            />
+                        </div>
+                    ) : undefined
+                }
+                centerItems={
+                    showActionButton ? (
+                        <Tooltip
+                            relationship='description'
+                            content={translate('Tooltip_Compiled_Vega_Toggle')}
+                            withArrow
+                            mountNode={tooltipMountNode}
                         >
-                            {translate('Text_Compiled_Vega_Toggle')}
-                        </Button>
-                    </Tooltip>
-                ) : undefined
-            }
-            farItems={
-                <div className={classes.farContainer}>
-                    <TrackingSyncStatus />
-                    <div className={classes.cursorContainer}>
-                        <Caption1 className={classes.caption}>
-                            {translate('Text_Editor_Status_Bar_Line')}{' '}
-                            {cursor.lineNumber}{' '}
-                            {translate('Text_Editor_Status_Bar_Column')}{' '}
-                            {cursor.column}{' '}
-                            {getSelectedTextMessage(cursor.selectedText)}
-                        </Caption1>
-                    </div>
-                    <div
-                        style={{
-                            width: `${CHEVRON_BUTTON_WIDTH}px`,
-                            flexShrink: 0
-                        }}
-                    >
-                        {isVegaLite && isCompiledVegaPaneVisible && (
                             <Button
                                 appearance='subtle'
                                 size='small'
-                                icon={<ChevronDownRegular />}
-                                onClick={handleCollapse}
-                            />
-                        )}
+                                icon={<CodeRegular />}
+                                onClick={toggleCompiledVegaPane}
+                            >
+                                {showActionButtonText
+                                    ? translate('Text_Compiled_Vega_Toggle')
+                                    : undefined}
+                            </Button>
+                        </Tooltip>
+                    ) : undefined
+                }
+                farItems={
+                    <div className={classes.farContainer}>
+                        <TrackingSyncStatus />
+                        <div className={classes.cursorContainer}>
+                            <Caption1 className={classes.caption}>
+                                {translate('Text_Editor_Status_Bar_Line')}{' '}
+                                {cursor.lineNumber}{' '}
+                                {translate('Text_Editor_Status_Bar_Column')}{' '}
+                                {cursor.column}{' '}
+                                {getSelectedTextMessage(cursor.selectedText)}
+                            </Caption1>
+                        </div>
+                        <div
+                            style={{
+                                width: `${CHEVRON_BUTTON_WIDTH}px`,
+                                flexShrink: 0
+                            }}
+                        >
+                            {isVegaLite && isCompiledVegaPaneVisible && (
+                                <Button
+                                    appearance='subtle'
+                                    size='small'
+                                    icon={<ChevronDownRegular />}
+                                    onClick={handleCollapse}
+                                />
+                            )}
+                        </div>
                     </div>
-                </div>
-            }
-        />
+                }
+            />
+        </div>
     );
 };
 
