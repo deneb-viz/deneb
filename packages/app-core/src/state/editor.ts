@@ -183,7 +183,9 @@ export const createEditorSlice =
                         editor: {
                             ...state.editor,
                             viewStateSpec: undefined,
-                            viewStateConfig: undefined
+                            viewStateConfig: undefined,
+                            stagedSpec: undefined,
+                            stagedConfig: undefined
                         }
                     }),
                     false,
