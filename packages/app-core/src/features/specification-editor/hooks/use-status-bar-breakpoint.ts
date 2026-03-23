@@ -23,7 +23,7 @@ export const useStatusBarBreakpoint = (
     ref: RefObject<HTMLDivElement | null>,
     hasCenterContent: boolean
 ): StatusBarLayoutState => {
-    const { width = 0 } = useResizeObserver({
+    const { width = Infinity } = useResizeObserver({
         ref: ref as RefObject<HTMLDivElement>
     });
     return getStatusBarLayoutState(width, hasCenterContent);

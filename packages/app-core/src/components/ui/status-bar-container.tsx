@@ -93,7 +93,10 @@ export const StatusBarContainer = ({
             )}
             {centerItems && (
                 <div
-                    className={`${STATUS_BAR_CONTAINER_CENTER_ITEMS_CLASS_NAME} ${classes.centerContainer}`}
+                    className={mergeClasses(
+                        STATUS_BAR_CONTAINER_CENTER_ITEMS_CLASS_NAME,
+                        classes.centerContainer
+                    )}
                 >
                     {centerItems}
                 </div>
