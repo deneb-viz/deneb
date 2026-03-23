@@ -22,7 +22,9 @@ const useStatusStyles = makeStyles({
         flexDirection: 'row',
         alignItems: 'center',
         columnGap: '5px',
-        height: '100%'
+        height: '100%',
+        minWidth: 0,
+        overflow: 'hidden'
     },
     farContainer: {
         display: 'flex',
@@ -47,7 +49,6 @@ const useStatusStyles = makeStyles({
 export const SpecificationEditorStatusBar = () => {
     const classes = useStatusStyles();
     const containerRef = useRef<HTMLDivElement>(null);
-    const layoutState = useStatusBarBreakpoint(containerRef);
     const { cursor, tooltipMountNode } = useCursorContext();
     const {
         isCompiledVegaPaneVisible,
@@ -61,11 +62,11 @@ export const SpecificationEditorStatusBar = () => {
         translate: state.i18n.translate
     }));
     const isVegaLite = provider === 'vegaLite';
+    const hasCenterContent = isVegaLite && !isCompiledVegaPaneVisible;
+    const layoutState = useStatusBarBreakpoint(containerRef, hasCenterContent);
     const showProvider = layoutState === 'wide' || layoutState === 'medium';
     const showActionButton =
-        isVegaLite &&
-        !isCompiledVegaPaneVisible &&
-        layoutState !== 'veryNarrow';
+        hasCenterContent && layoutState !== 'veryNarrow';
     const showActionButtonText = layoutState === 'wide';
 
     const handleCollapse = () => {

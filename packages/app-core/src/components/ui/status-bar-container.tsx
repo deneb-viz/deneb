@@ -33,8 +33,14 @@ const useStatusBarStyles = makeStyles({
     },
     nearContainer: {
         display: 'flex',
-        flex: '1 1 0',
-        minWidth: 0
+        minWidth: 0,
+        overflow: 'hidden'
+    },
+    nearBalanced: {
+        flex: '1 1 0'
+    },
+    nearCompact: {
+        flex: '0 1 auto'
     },
     centerContainer: {
         display: 'flex',
@@ -43,10 +49,15 @@ const useStatusBarStyles = makeStyles({
     },
     farContainer: {
         display: 'flex',
-        flex: '1 1 0',
         justifyContent: 'flex-end',
         minWidth: 0,
         overflow: 'hidden'
+    },
+    farBalanced: {
+        flex: '1 1 0'
+    },
+    farCompact: {
+        flex: '0 0 auto'
     }
 });
 
@@ -64,11 +75,18 @@ export const StatusBarContainer = ({
 }: StatusBarProps) => {
     const classes = useStatusBarStyles();
     const rootClasses = mergeClasses(classes.root, props.className);
+    const hasCenter = !!centerItems;
     return (
         <div {...props} className={rootClasses}>
             {nearItems && (
                 <div
-                    className={`${STATUS_BAR_CONTAINER_NEAR_ITEMS_CLASS_NAME} ${classes.nearContainer}`}
+                    className={mergeClasses(
+                        STATUS_BAR_CONTAINER_NEAR_ITEMS_CLASS_NAME,
+                        classes.nearContainer,
+                        hasCenter
+                            ? classes.nearBalanced
+                            : classes.nearCompact
+                    )}
                 >
                     {nearItems}
                 </div>
@@ -81,7 +99,13 @@ export const StatusBarContainer = ({
                 </div>
             )}
             <div
-                className={`${STATUS_BAR_CONTAINER_FAR_ITEMS_CLASS_NAME} ${classes.farContainer}`}
+                className={mergeClasses(
+                    STATUS_BAR_CONTAINER_FAR_ITEMS_CLASS_NAME,
+                    classes.farContainer,
+                    hasCenter
+                        ? classes.farBalanced
+                        : classes.farCompact
+                )}
             >
                 {farItems}
             </div>

@@ -3,24 +3,28 @@ import useResizeObserver from 'use-resize-observer';
 
 export type StatusBarLayoutState = 'wide' | 'medium' | 'narrow' | 'veryNarrow';
 
-const WIDE = 350;
-const MEDIUM = 250;
-const NARROW = 140;
+type Breakpoints = { wide: number; medium: number; narrow: number };
+
+const WITH_CENTER: Breakpoints = { wide: 360, medium: 250, narrow: 140 };
+const WITHOUT_CENTER: Breakpoints = { wide: 200, medium: 170, narrow: 80 };
 
 export const getStatusBarLayoutState = (
-    width: number
+    width: number,
+    hasCenterContent: boolean
 ): StatusBarLayoutState => {
-    if (width >= WIDE) return 'wide';
-    if (width >= MEDIUM) return 'medium';
-    if (width >= NARROW) return 'narrow';
+    const bp = hasCenterContent ? WITH_CENTER : WITHOUT_CENTER;
+    if (width >= bp.wide) return 'wide';
+    if (width >= bp.medium) return 'medium';
+    if (width >= bp.narrow) return 'narrow';
     return 'veryNarrow';
 };
 
 export const useStatusBarBreakpoint = (
-    ref: RefObject<HTMLDivElement | null>
+    ref: RefObject<HTMLDivElement | null>,
+    hasCenterContent: boolean
 ): StatusBarLayoutState => {
     const { width = 0 } = useResizeObserver({
         ref: ref as RefObject<HTMLDivElement>
     });
-    return getStatusBarLayoutState(width);
+    return getStatusBarLayoutState(width, hasCenterContent);
 };
