@@ -20,10 +20,9 @@ import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
  * Process flow:
  * 1. Apply legacy signal migration (`pbiContainer` > `denebContainer`)
  * 2. Parse JSON for spec and config
- * 3. For Vega-Lite: apply responsive sizing + compile (pre-patch) for clean vgSpec + validation
- * 4. Patch spec with `denebContainer` signal and responsive sizing
- * 5. Schema validation (if schemaValidator provided)
- * 6. For Vega: validate with Vega parser
+ * 3. Patch spec with `denebContainer` signal and responsive sizing
+ * 4. Schema validation (if schemaValidator provided)
+ * 5. Validate patched spec (Vega: parser, VL: compile)
  *
  * @param options Parsing options
  * @returns Parsed specification result
@@ -90,40 +89,7 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
         };
     }
 
-    // Step 3: For Vega-Lite, compile with responsive sizing (but without denebContainer)
-    // to capture a clean vgSpec. Responsive sizing is applied so the compiled Vega output
-    // uses container-based dimensions rather than VL defaults (e.g. 200x200). The
-    // denebContainer signal is excluded to avoid duplication when the user converts to
-    // Vega via "Edit Vega Spec" (Deneb's Vega patching will add it).
-    let vgSpec: Spec | undefined;
-    if (provider !== 'vega') {
-        try {
-            const sizedSpec = patchVegaLiteResponsiveSizing(
-                parsedSpec.result as TopLevelSpec
-            );
-            const sizedSpecWithConfig = {
-                ...sizedSpec,
-                config: parsedConfig.result || {}
-            };
-            const compiled = compileVegaLite(
-                sizedSpecWithConfig as TopLevelSpec
-            );
-            vgSpec = compiled.spec;
-        } catch (e) {
-            const message = e instanceof Error ? e.message : String(e);
-            const redactedMessage = redactJsonFromError(message);
-
-            return {
-                status: 'error',
-                spec: null,
-                config: parsedConfig.result,
-                errors: [redactedMessage],
-                warnings
-            };
-        }
-    }
-
-    // Step 4: Patch spec with denebContainer and responsive sizing
+    // Step 3: Patch spec with denebContainer and responsive sizing
     const patchedSpec =
         provider === 'vega'
             ? patchVegaSpec(parsedSpec.result as Spec, {
@@ -133,13 +99,13 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
                   containerDimensions
               });
 
-    // Step 5: Merge config into spec for validation
+    // Step 4: Merge config into spec for validation
     const specWithConfig = {
         ...patchedSpec,
         config: parsedConfig.result || {}
     };
 
-    // Step 6: Schema validation (if validator provided)
+    // Step 4a: Schema validation (if validator provided)
     if (schemaValidator) {
         const schemaResult = schemaValidator(specWithConfig);
         if (!schemaResult.valid && schemaResult.warnings.length > 0) {
@@ -147,7 +113,7 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
         }
     }
 
-    // Step 7: Validate patched spec with the appropriate compiler/parser.
+    // Step 5: Validate patched spec with the appropriate compiler/parser.
     // Vega: parse with Vega parser. VL: compile with vega-lite to catch conflicts
     // introduced by patchVegaLiteSpec (e.g. duplicate param names like denebContainer).
     try {
@@ -174,9 +140,37 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
         spec: patchedSpec,
         config: parsedConfig.result,
         errors: [],
-        warnings,
-        vgSpec
+        warnings
     };
+};
+
+/**
+ * Compile a Vega-Lite spec into Vega, applying responsive sizing but excluding
+ * the denebContainer signal. Intended for lazy/on-demand use (e.g. when the
+ * compiled Vega pane is opened) rather than on every keystroke.
+ *
+ * @param spec The parsed Vega-Lite spec (pre-patch, without denebContainer)
+ * @param config The parsed config object
+ * @returns The compiled Vega spec, or undefined if compilation fails
+ */
+export const compileCleanVgSpec = (
+    spec: TopLevelSpec,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    config: any
+): Spec | undefined => {
+    try {
+        const sizedSpec = patchVegaLiteResponsiveSizing(spec);
+        const sizedSpecWithConfig = {
+            ...sizedSpec,
+            config: config || {}
+        };
+        const compiled = compileVegaLite(
+            sizedSpecWithConfig as TopLevelSpec
+        );
+        return compiled.spec;
+    } catch {
+        return undefined;
+    }
 };
 
 /**

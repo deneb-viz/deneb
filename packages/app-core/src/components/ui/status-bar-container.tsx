@@ -79,7 +79,7 @@ export const StatusBarContainer = ({
     const hasCenter = !!centerItems;
     return (
         <div {...props} className={rootClasses}>
-            {nearItems && (
+            {(nearItems || hasCenter) && (
                 <div
                     className={mergeClasses(
                         STATUS_BAR_CONTAINER_NEAR_ITEMS_CLASS_NAME,

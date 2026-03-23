@@ -150,7 +150,8 @@ export const EditorArea = () => {
             const sashEl = (e.target as HTMLElement)?.closest('.sash');
             if (!sashEl) return;
             const sashes = container.querySelectorAll('.sash');
-            if (sashEl !== sashes[sashes.length - 1]) return;
+            if (sashes.length < 2 || sashEl !== sashes[sashes.length - 1])
+                return;
             e.stopImmediatePropagation();
             e.preventDefault();
             if (!isCompiledVegaPaneVisible) {

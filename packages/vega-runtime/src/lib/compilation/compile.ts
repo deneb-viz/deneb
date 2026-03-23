@@ -12,8 +12,8 @@ import type { CompilationResult, CompileSpecOptions } from './types';
  * 2. Build embed options with Deneb defaults
  * 3. Return compilation result ready for vegaEmbed
  *
- * Note: For Vega-Lite, the compiled Vega spec is captured during parsing (via `compileVegaLite`) and available
- * as `result.parsed.vgSpec`. vegaEmbed also performs this compilation internally during embedding.
+ * Note: For Vega-Lite, the compiled Vega spec is NOT captured during parsing (to avoid double compilation).
+ * Use `compileCleanVgSpec` from spec-processing for on-demand compilation (e.g. compiled Vega pane).
  *
  * @param options Compilation options
  * @returns Compilation result with parsed spec and embed options
