@@ -95,6 +95,7 @@ export const CompiledVegaPane = ({
         const parsedSpec = parseJsonWithResult(specString);
         if (parsedSpec.errors.length > 0) return '';
         const parsedConfig = parseJsonWithResult(configString || '{}');
+        if (parsedConfig.errors.length > 0) return '';
         const vgSpec = compileCleanVgSpec(
             parsedSpec.result as TopLevelSpec,
             parsedConfig.result

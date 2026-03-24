@@ -112,7 +112,8 @@ export const EditorArea = () => {
     // Allotment shows it but we need to set its initial size.
     // onVisibleChange fires when Allotment processes the visible prop change.
     const handleVisibleChange = useCallback(
-        (_index: number, visible: boolean) => {
+        (index: number, visible: boolean) => {
+            if (index !== 2) return;
             if (visible) {
                 const sizes = currentSizesRef.current;
                 if (sizes.length < 2) return;
