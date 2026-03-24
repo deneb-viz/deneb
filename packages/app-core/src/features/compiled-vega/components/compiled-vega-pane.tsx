@@ -24,7 +24,10 @@ import {
 } from '@deneb-viz/vega-runtime/spec-processing';
 import { POPOVER_Z_INDEX } from '../../../lib';
 import { useDenebState } from '../../../state';
-import { stripSchemaFromSpec } from '../../../lib/spec-utils';
+import {
+    stripConfigFromSpec,
+    stripSchemaFromSpec
+} from '../../../lib/spec-utils';
 import { buildEditorProps } from '../../../components/code-editor/editor-configuration';
 
 const useCompiledVegaPaneStyles = makeStyles({
@@ -97,8 +100,8 @@ export const CompiledVegaPane = ({
             parsedConfig.result
         );
         if (!vgSpec) return '';
-        const stripped = stripSchemaFromSpec(
-            vgSpec as Record<string, unknown>
+        const stripped = stripConfigFromSpec(
+            stripSchemaFromSpec(vgSpec as Record<string, unknown>)
         );
         return JSON.stringify(stripped, null, EDITOR_DEFAULTS.tabSize);
     }, [provider, specString, configString]);

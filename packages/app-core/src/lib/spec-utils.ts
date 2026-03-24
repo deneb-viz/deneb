@@ -13,3 +13,18 @@ export const stripSchemaFromSpec = (
     const { $schema, ...rest } = spec;
     return rest;
 };
+
+/**
+ * Remove the `config` property from a spec object.
+ *
+ * When converting from Vega-Lite to Vega, the VL compiler embeds config into the compiled
+ * Vega spec. Deneb manages config separately (in the config editor), so we strip it from
+ * the spec to avoid double-application.
+ */
+export const stripConfigFromSpec = (
+    spec: Record<string, unknown>
+): Record<string, unknown> => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { config, ...rest } = spec;
+    return rest;
+};

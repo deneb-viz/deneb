@@ -183,19 +183,19 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
             return null;
         }
 
-        const specProvider = provider === 'vegaLite' ? 'vega-lite' : 'vega';
+        const embedMode = provider === 'vegaLite' ? 'vega-lite' : 'vega';
 
         // Guard against provider/compilation mismatch during provider switch.
         // When the provider changes (e.g. "Edit Vega Spec"), the memo recalculates
         // before the recompile effect fires. Skip until compilation catches up.
-        if (compilation.embedOptions.mode !== specProvider) {
+        if (compilation.embedOptions.mode !== embedMode) {
             return null;
         }
 
         const patchedSpec = patchSpecWithData(
             compilation.parsed.spec as object,
             values,
-            specProvider
+            provider
         );
 
         logDebug('VegaEmbed: Spec ready for embedding', {

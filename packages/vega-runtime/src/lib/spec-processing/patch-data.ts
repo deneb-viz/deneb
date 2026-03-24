@@ -2,6 +2,7 @@ import type { Spec } from 'vega';
 import type { TopLevelSpec } from 'vega-lite';
 import { mergician } from 'mergician';
 import type { VegaDatum } from '@deneb-viz/data-core/value';
+import type { SpecProvider } from './types';
 
 /**
  * Default dataset name used in Deneb specifications.
@@ -100,7 +101,7 @@ export const patchVegaLiteSpecWithData = (
  *
  * @param spec The specification (Vega or Vega-Lite)
  * @param values The dataset values to patch in
- * @param provider The spec provider ('vega' or 'vega-lite')
+ * @param provider The spec provider (SpecProvider: 'vega' or 'vegaLite')
  * @returns A new spec with dataset values merged
  *
  * @example
@@ -111,7 +112,7 @@ export const patchVegaLiteSpecWithData = (
 export const patchSpecWithData = (
     spec: Spec | TopLevelSpec,
     values: VegaDatum[],
-    provider: 'vega' | 'vega-lite'
+    provider: SpecProvider
 ): Spec | TopLevelSpec => {
     return provider === 'vega'
         ? patchVegaSpecWithData(spec as Spec, values)
