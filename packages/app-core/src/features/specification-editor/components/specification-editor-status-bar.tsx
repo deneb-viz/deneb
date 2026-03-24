@@ -69,10 +69,6 @@ export const SpecificationEditorStatusBar = () => {
         hasCenterContent && layoutState !== 'veryNarrow';
     const showActionButtonText = layoutState === 'wide';
 
-    const handleCollapse = () => {
-        toggleCompiledVegaPane();
-    };
-
     logRender('JsonEditorStatusBar');
     return (
         <div ref={containerRef} className={classes.wrapper}>
@@ -136,7 +132,7 @@ export const SpecificationEditorStatusBar = () => {
                                     aria-label={translate(
                                         'Text_Compiled_Vega_Collapse'
                                     )}
-                                    onClick={handleCollapse}
+                                    onClick={toggleCompiledVegaPane}
                                 />
                             )}
                         </div>

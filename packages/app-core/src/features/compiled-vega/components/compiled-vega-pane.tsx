@@ -67,6 +67,7 @@ export const CompiledVegaPane = ({
         clearCompilation,
         configString,
         fontSize,
+        isCompiledVegaPaneVisible,
         provider,
         resetViewStates,
         setContent,
@@ -79,6 +80,7 @@ export const CompiledVegaPane = ({
         clearCompilation: state.compilation.clear,
         configString: state.project.config,
         fontSize: state.editorPreferences.jsonEditorFontSize,
+        isCompiledVegaPaneVisible: state.editor.isCompiledVegaPaneVisible,
         provider: state.project.provider,
         resetViewStates: state.editor.resetViewStates,
         setContent: state.project.setContent,
@@ -91,7 +93,7 @@ export const CompiledVegaPane = ({
     const classes = useCompiledVegaPaneStyles();
 
     const formattedSpec = useMemo(() => {
-        if (provider !== 'vegaLite') return '';
+        if (provider !== 'vegaLite' || !isCompiledVegaPaneVisible) return '';
         const parsedSpec = parseJsonWithResult(specString);
         if (parsedSpec.errors.length > 0) return '';
         const parsedConfig = parseJsonWithResult(configString || '{}');
@@ -105,7 +107,7 @@ export const CompiledVegaPane = ({
             stripSchemaFromSpec(vgSpec as Record<string, unknown>)
         );
         return JSON.stringify(stripped, null, EDITOR_DEFAULTS.tabSize);
-    }, [provider, specString, configString]);
+    }, [provider, isCompiledVegaPaneVisible, specString, configString]);
 
     const [popoverOpen, setPopoverOpen] = useState(false);
 
