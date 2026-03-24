@@ -9,6 +9,7 @@ import { TooltipCustomMount } from '../../../components/ui';
 import { UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { TrackedFields } from '@deneb-viz/json-processing/field-tracking';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
+import { copyToClipboard } from '../../../lib/clipboard';
 
 /**
  * Displays download and copy template to clipboard buttons.
@@ -24,7 +25,6 @@ export const ExportButtons = () => {
     } = useDenebState((state) => ({
         exportMetadata: state.export?.metadata,
         exportProcessingState: state.interface.exportProcessingState,
-        isTrackingFields: state.interface.isTrackingFields,
         templateName: state.export?.metadata?.information?.name,
         tokenizedSpec: state.fieldUsage.tokenizedSpec,
         trackedFields: state.fieldUsage.dataset,
@@ -52,16 +52,13 @@ export const ExportButtons = () => {
     };
     const handleCopy = () => {
         if (exportMetadata && tokenizedSpec && trackedFields) {
-            const dummy = document.createElement('textarea');
-            document.body.appendChild(dummy);
-            dummy.value = getProcessedExportTemplate(
-                exportMetadata,
-                tokenizedSpec,
-                trackedFields
+            copyToClipboard(
+                getProcessedExportTemplate(
+                    exportMetadata,
+                    tokenizedSpec,
+                    trackedFields
+                )
             );
-            dummy.select();
-            document.execCommand('copy');
-            document.body.removeChild(dummy);
         }
     };
     const isDisabled = exportProcessingState !== 'Complete';

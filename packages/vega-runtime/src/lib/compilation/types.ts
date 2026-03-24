@@ -41,11 +41,6 @@ export interface CompilationResult {
     embedOptions: EmbedOptions;
 
     /**
-     * For Vega-Lite specs, the compiled Vega specification
-     */
-    vgSpec?: object;
-
-    /**
      * Compilation errors (if status is 'error')
      */
     errors?: string[];

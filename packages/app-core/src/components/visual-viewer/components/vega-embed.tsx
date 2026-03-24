@@ -75,17 +75,17 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
         compilation,
         generateRenderId,
         logError,
-        values,
         provider,
         setViewReady,
+        values,
         viewReady
     } = useDenebState((state) => ({
         compilation: state.compilation.result,
         generateRenderId: state.interface.generateRenderId,
         logError: state.compilation.logError,
-        values: state.dataset.values,
         provider: state.project.provider,
         setViewReady: state.compilation.setViewReady,
+        values: state.dataset.values,
         viewReady: state.compilation.viewReady
     }));
 
@@ -96,9 +96,7 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
      */
     const handleEmbed = useCallback(
         (result: { view: View; vgSpec?: object }) => {
-            logDebug('VegaEmbed: New view created', {
-                hasVgSpec: !!result.vgSpec
-            });
+            logDebug('VegaEmbed: New view created');
 
             // Mark view as NOT ready - datasets/signals won't be populated until runAsync completes
             setViewReady(false);
@@ -185,11 +183,19 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
             return null;
         }
 
-        const specProvider = provider === 'vegaLite' ? 'vega-lite' : 'vega';
+        const embedMode = provider === 'vegaLite' ? 'vega-lite' : 'vega';
+
+        // Guard against provider/compilation mismatch during provider switch.
+        // When the provider changes (e.g. "Edit Vega Spec"), the memo recalculates
+        // before the recompile effect fires. Skip until compilation catches up.
+        if (compilation.embedOptions.mode !== embedMode) {
+            return null;
+        }
+
         const patchedSpec = patchSpecWithData(
             compilation.parsed.spec as object,
             values,
-            specProvider
+            provider
         );
 
         logDebug('VegaEmbed: Spec ready for embedding', {

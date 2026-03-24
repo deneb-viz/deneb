@@ -148,6 +148,20 @@ node_modules/@deneb-viz/**/dist/**/*
 
 Snapshot `managedPaths` ensures linked workspace packages under `node_modules/@deneb-viz` are not treated as immutable.
 
+### Feature module boundaries (`app-core`)
+
+Features in `packages/app-core/src/features/` must not cross-import from sibling features. This prevents circular dependencies and keeps features independently composable.
+
+**Rules:**
+
+- A feature may only import from shared locations: `src/components/`, `src/lib/`, `src/state/`, `src/context/`, or workspace packages.
+- A parent feature may import child feature components (e.g., `editor-area` importing from `compiled-vega`), but the child must not import back from the parent.
+- If two features need to share code, extract it to a shared location at the `src/` level.
+
+**Enforcement:**
+
+The `import-x/no-cycle` ESLint rule (via `eslint-plugin-import-x`) warns on circular import chains. Run `npm run eslint` to check for violations. Note that this rule only detects **circular** imports — the broader boundary rule (no sibling-to-sibling imports, even non-circular) is enforced by code review. Some pre-existing violations exist and are being cleaned up incrementally.
+
 ## 6. Feature Flags
 
 JSON feature flags are defined in `config/features.json` and can be overridden in `config/package-custom.json` for custom builds. These are primarily used to gate visual behaviors that must remain stable and off by default in the certified build.

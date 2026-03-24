@@ -22,6 +22,40 @@ const isNonStandardLayout = (spec: TopLevelSpec): boolean => {
 };
 
 /**
+ * Apply responsive container sizing to a Vega-Lite specification.
+ *
+ * For standard layouts (no concat/hconcat/vconcat/facet), sets `width` and/or `height`
+ * to `'container'` if not already specified. Non-standard layouts are returned unchanged.
+ *
+ * This is separated from the full patching so it can be used independently — e.g. when
+ * compiling a clean Vega spec for the "Edit Vega Spec" feature, where we need container
+ * sizing in the output but don't want the `denebContainer` signal injected.
+ *
+ * @param spec The Vega-Lite specification
+ * @returns A new specification with responsive sizing applied (or the original if unchanged)
+ */
+export const patchVegaLiteResponsiveSizing = (
+    spec: TopLevelSpec
+): TopLevelSpec => {
+    if (isNonStandardLayout(spec)) return spec;
+
+    const normalized = spec as ReturnType<typeof normalize>;
+    const patches: Partial<TopLevelSpec> = {};
+
+    if (normalized.width === undefined) {
+        (patches as any).width = 'container';
+    }
+
+    if (normalized.height === undefined) {
+        (patches as any).height = 'container';
+    }
+
+    return Object.keys(patches).length > 0
+        ? (mergician(spec, patches) as TopLevelSpec)
+        : spec;
+};
+
+/**
  * Apply Deneb-specific patches to a Vega-Lite specification.
  *
  * Patches applied:
@@ -47,31 +81,18 @@ export const patchVegaLiteSpec = (
 ): TopLevelSpec => {
     const { containerDimensions, additionalParams = [] } = options;
 
-    const isNsl = isNonStandardLayout(spec);
+    // Apply responsive sizing first
+    const sized = patchVegaLiteResponsiveSizing(spec);
 
-    // Build patches object based on layout type
-    // Vega-Lite params have different structure but compatible with signal format
+    // Add denebContainer param and any additional params
     const patches: Partial<TopLevelSpec> = {
         params: [
-            ...(spec.params || []),
+            ...(sized.params || []),
             getDenebContainerSignalFromDimensions(containerDimensions) as any,
             ...additionalParams
         ]
     };
 
-    // For standard layouts, set responsive container sizing
-    if (!isNsl) {
-        const normalized = spec as ReturnType<typeof normalize>;
-
-        if (!normalized.width) {
-            (patches as any).width = 'container';
-        }
-
-        if (!normalized.height) {
-            (patches as any).height = 'container';
-        }
-    }
-
-    // Merge patches with original spec (non-mutating)
-    return mergician(spec, patches) as TopLevelSpec;
+    // Merge patches with sized spec (non-mutating)
+    return mergician(sized, patches) as TopLevelSpec;
 };

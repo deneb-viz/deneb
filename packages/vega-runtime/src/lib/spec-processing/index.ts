@@ -4,11 +4,14 @@
  */
 
 // Main parsing API
-export { parseSpec, validateSpec } from './parse';
+export { parseSpec, validateSpec, compileCleanVgSpec } from './parse';
 
 // Patching functions (for advanced usage)
 export { patchVegaSpec } from './patch-vega';
-export { patchVegaLiteSpec } from './patch-vega-lite';
+export {
+    patchVegaLiteSpec,
+    patchVegaLiteResponsiveSizing
+} from './patch-vega-lite';
 export { patchConfig } from './patch-config';
 export {
     patchVegaSpecWithData,

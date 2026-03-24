@@ -22,9 +22,11 @@ import { UsermetaTemplate } from '@deneb-viz/template-usermeta';
 
 type EditorSliceProperties = {
     applyMode: EditorApplyMode;
+    compiledVegaPaneHeight: number | null;
     debugPaneLatchHeight: number;
     debugPaneViewport: ContainerViewport;
     editorPaneViewport: ContainerViewport;
+    isCompiledVegaPaneVisible: boolean;
     isDebugPaneMinimized: boolean;
     isDirty: boolean;
     previewAreaViewport: ContainerViewport;
@@ -32,7 +34,9 @@ type EditorSliceProperties = {
     stagedSpec: string | undefined;
     viewStateConfig: monaco.editor.ICodeEditorViewState | undefined;
     viewStateSpec: monaco.editor.ICodeEditorViewState | undefined;
+    setCompiledVegaPaneHeight: (height: number) => void;
     setIsDebugPaneMinimized: (isMinimized: boolean) => void;
+    toggleCompiledVegaPane: () => void;
     setViewports: (options: {
         editorPaneViewport: ContainerViewport;
         previewAreaViewport: ContainerViewport;
@@ -43,6 +47,7 @@ type EditorSliceProperties = {
     setViewState: (
         viewState: monaco.editor.ICodeEditorViewState | undefined | null
     ) => void;
+    resetViewStates: () => void;
     toggleApplyMode: () => void;
     updateApplyMode: (applyMode: EditorApplyMode) => void;
     updateChanges: (payload: EditorSliceUpdateChangesPayload) => void;
@@ -94,6 +99,7 @@ export const createEditorSlice =
     (set) => ({
         editor: {
             applyMode: 'Manual',
+            compiledVegaPaneHeight: null,
             debugPaneLatchHeight: 0,
             debugPaneViewport: {
                 height: 0,
@@ -103,6 +109,7 @@ export const createEditorSlice =
                 height: 0,
                 width: 0
             },
+            isCompiledVegaPaneVisible: false,
             isDebugPaneMinimized: false,
             isDirty: false,
             previewAreaViewport: {
@@ -113,6 +120,17 @@ export const createEditorSlice =
             stagedSpec: undefined,
             viewStateConfig: undefined,
             viewStateSpec: undefined,
+            setCompiledVegaPaneHeight: (height) =>
+                set(
+                    (state) => ({
+                        editor: {
+                            ...state.editor,
+                            compiledVegaPaneHeight: height
+                        }
+                    }),
+                    false,
+                    'editor.setCompiledVegaPaneHeight'
+                ),
             setIsDebugPaneMinimized: (isMinimized) =>
                 set(
                     (state) => ({
@@ -123,6 +141,18 @@ export const createEditorSlice =
                     }),
                     false,
                     'editor.setIsDebugPaneMinimized'
+                ),
+            toggleCompiledVegaPane: () =>
+                set(
+                    (state) => ({
+                        editor: {
+                            ...state.editor,
+                            isCompiledVegaPaneVisible:
+                                !state.editor.isCompiledVegaPaneVisible
+                        }
+                    }),
+                    false,
+                    'editor.toggleCompiledVegaPane'
                 ),
             setViewports(options) {
                 set(
@@ -146,6 +176,20 @@ export const createEditorSlice =
                     (state) => handleSetViewState(state, viewState),
                     false,
                     'editor.setViewState'
+                ),
+            resetViewStates: () =>
+                set(
+                    (state) => ({
+                        editor: {
+                            ...state.editor,
+                            viewStateSpec: undefined,
+                            viewStateConfig: undefined,
+                            stagedSpec: undefined,
+                            stagedConfig: undefined
+                        }
+                    }),
+                    false,
+                    'editor.resetViewStates'
                 ),
             toggleApplyMode: () =>
                 set(

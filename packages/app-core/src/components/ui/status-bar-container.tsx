@@ -12,6 +12,11 @@ const STATUS_BAR_CONTAINER_FAR_ITEMS_CLASS_NAME = 'status-bar-far-items';
  */
 const STATUS_BAR_CONTAINER_NEAR_ITEMS_CLASS_NAME = 'status-bar-near-items';
 
+/**
+ * Class name for the container holding center items in the status bar.
+ */
+const STATUS_BAR_CONTAINER_CENTER_ITEMS_CLASS_NAME = 'status-bar-center-items';
+
 const useStatusBarStyles = makeStyles({
     root: {
         alignItems: 'center',
@@ -27,34 +32,84 @@ const useStatusBarStyles = makeStyles({
         userSelect: 'none'
     },
     nearContainer: {
-        display: 'flex'
+        display: 'flex',
+        minWidth: 0,
+        overflow: 'hidden'
+    },
+    nearBalanced: {
+        flex: '1 1 0'
+    },
+    nearCompact: {
+        flex: '0 1 auto'
+    },
+    centerContainer: {
+        display: 'flex',
+        flex: '0 0 auto',
+        justifyContent: 'center'
     },
     farContainer: {
-        display: 'flex'
+        display: 'flex',
+        justifyContent: 'flex-end',
+        marginLeft: 'auto',
+        minWidth: 0,
+        overflow: 'hidden'
+    },
+    farBalanced: {
+        flex: '1 1 0'
+    },
+    farCompact: {
+        flex: '0 0 auto'
     }
 });
 
 export type StatusBarProps = ComponentProps<'div'> & {
     nearItems?: React.ReactNode;
+    centerItems?: React.ReactNode;
     farItems?: React.ReactNode;
 };
 
 export const StatusBarContainer = ({
     nearItems,
+    centerItems,
     farItems,
     ...props
 }: StatusBarProps) => {
     const classes = useStatusBarStyles();
     const rootClasses = mergeClasses(classes.root, props.className);
+    const hasCenter = !!centerItems;
     return (
         <div {...props} className={rootClasses}>
+            {(nearItems || hasCenter) && (
+                <div
+                    className={mergeClasses(
+                        STATUS_BAR_CONTAINER_NEAR_ITEMS_CLASS_NAME,
+                        classes.nearContainer,
+                        hasCenter
+                            ? classes.nearBalanced
+                            : classes.nearCompact
+                    )}
+                >
+                    {nearItems}
+                </div>
+            )}
+            {centerItems && (
+                <div
+                    className={mergeClasses(
+                        STATUS_BAR_CONTAINER_CENTER_ITEMS_CLASS_NAME,
+                        classes.centerContainer
+                    )}
+                >
+                    {centerItems}
+                </div>
+            )}
             <div
-                className={`${STATUS_BAR_CONTAINER_NEAR_ITEMS_CLASS_NAME} ${classes.nearContainer}`}
-            >
-                {nearItems}
-            </div>
-            <div
-                className={`${STATUS_BAR_CONTAINER_FAR_ITEMS_CLASS_NAME} ${classes.farContainer}`}
+                className={mergeClasses(
+                    STATUS_BAR_CONTAINER_FAR_ITEMS_CLASS_NAME,
+                    classes.farContainer,
+                    hasCenter
+                        ? classes.farBalanced
+                        : classes.farCompact
+                )}
             >
                 {farItems}
             </div>

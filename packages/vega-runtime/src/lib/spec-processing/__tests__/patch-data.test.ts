@@ -136,6 +136,21 @@ describe('patchVegaSpecWithData', () => {
         expect((patched.data![0] as any).values).toEqual([]);
     });
 
+    it('should handle non-array data property gracefully', () => {
+        const spec = {
+            $schema: 'https://vega.github.io/schema/vega/v5.json',
+            data: { name: 'dataset' },
+            marks: []
+        } as unknown as Spec;
+        const values = [{ category: 'A', amount: 28 }];
+
+        const patched = patchVegaSpecWithData(spec, values);
+
+        expect(patched.data).toHaveLength(1);
+        expect(patched.data![0].name).toBe(DATASET_DEFAULT_NAME);
+        expect((patched.data![0] as any).values).toEqual(values);
+    });
+
     it('should handle complex nested data values', () => {
         const spec: Spec = {
             $schema: 'https://vega.github.io/schema/vega/v5.json',
@@ -341,7 +356,7 @@ describe('patchSpecWithData', () => {
         expect(patched.data![0].name).toBe(DATASET_DEFAULT_NAME);
     });
 
-    it('should dispatch to patchVegaLiteSpecWithData for vega-lite provider', () => {
+    it('should dispatch to patchVegaLiteSpecWithData for vegaLite provider', () => {
         const spec: TopLevelSpec = {
             $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
             data: { name: DATASET_DEFAULT_NAME },
@@ -353,7 +368,7 @@ describe('patchSpecWithData', () => {
         const patched = patchSpecWithData(
             spec,
             values,
-            'vega-lite'
+            'vegaLite'
         ) as TopLevelSpec;
 
         expect(patched.datasets).toBeDefined();
@@ -374,7 +389,7 @@ describe('patchSpecWithData', () => {
         expect(fromDispatch).toEqual(fromDirect);
     });
 
-    it('should produce same result as direct function call for vega-lite', () => {
+    it('should produce same result as direct function call for vegaLite', () => {
         const spec: TopLevelSpec = {
             $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
             datasets: { other: [] },
@@ -384,7 +399,7 @@ describe('patchSpecWithData', () => {
         };
         const values = [{ category: 'A', amount: 28 }];
 
-        const fromDispatch = patchSpecWithData(spec, values, 'vega-lite');
+        const fromDispatch = patchSpecWithData(spec, values, 'vegaLite');
         const fromDirect = patchVegaLiteSpecWithData(spec, values);
 
         expect(fromDispatch).toEqual(fromDirect);

@@ -58,8 +58,6 @@ export interface ParsedSpec {
     errors: string[];
     /** Array of warning messages */
     warnings: string[];
-    /** For Vega-Lite, the compiled Vega spec */
-    vgSpec?: Spec;
 }
 
 /**
