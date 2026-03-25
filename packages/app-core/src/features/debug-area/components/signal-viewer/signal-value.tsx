@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react';
 import { usePrevious } from '@uidotdev/usehooks';
 
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
-import { stringifyPruned } from '@deneb-viz/utils/object';
+import { getPrunedObject, stringifyPruned } from '@deneb-viz/utils/object';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
-import { DATA_TABLE_VALUE_MAX_LENGTH } from '../../constants';
+import {
+    DATA_TABLE_VALUE_MAX_DEPTH,
+    DATA_TABLE_VALUE_MAX_LENGTH
+} from '../../constants';
 import { DataTableCell } from '../data-table/data-table-cell';
 import { useDenebState } from '../../../../state';
 
@@ -95,20 +98,26 @@ export const SignalValue = ({ signalName, renderId }: SignalValueProps) => {
         setSignalValue(() => value);
         logDebug(`[${renderId}] Signal value for ${name} has changed`, value);
     };
-    const getSignalValue = () => {
+    const getRawSignalValue = () => {
         try {
-            const value = stringifyPruned(
-                VegaViewServices.getSignalByName(signalName)
+            return getPrunedObject(
+                VegaViewServices.getSignalByName(signalName),
+                { maxDepth: DATA_TABLE_VALUE_MAX_DEPTH }
             );
-            return value?.length > DATA_TABLE_VALUE_MAX_LENGTH
-                ? translate('Table_Placeholder_TooLong')
-                : value;
         } catch {
             logDebug(
                 `Could not retrieve value for signal ${signalName}. It may not exist in the current view scope.`
             );
-            return '';
+            return null;
         }
+    };
+    const getSignalDisplayValue = () => {
+        const raw = getRawSignalValue();
+        if (raw == null) return '';
+        const value = stringifyPruned(raw);
+        return value?.length > DATA_TABLE_VALUE_MAX_LENGTH
+            ? translate('Table_Placeholder_TooLong')
+            : value;
     };
     /**
      * Ensure that listener is added/removed when the view changes between renders.
@@ -127,7 +136,7 @@ export const SignalValue = ({ signalName, renderId }: SignalValueProps) => {
         logDebug(
             `Signal name has changed from ${previousSignalName} to ${signalName}. Updating...`
         );
-        setSignalValue(() => getSignalValue());
+        setSignalValue(() => getSignalDisplayValue());
         cycleListeners();
         return () => {
             removeListener();
@@ -136,13 +145,13 @@ export const SignalValue = ({ signalName, renderId }: SignalValueProps) => {
     logRender('SignalValue', {
         signalName,
         signalValue,
-        viewValue: getSignalValue()
+        viewValue: getSignalDisplayValue()
     });
     return (
         <DataTableCell
             field={signalName}
-            displayValue={getSignalValue()}
-            rawValue={getSignalValue()}
+            displayValue={getSignalDisplayValue()}
+            rawValue={getRawSignalValue()}
         />
     );
 };

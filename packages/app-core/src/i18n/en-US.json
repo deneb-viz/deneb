@@ -49,7 +49,7 @@
     "Table_Placeholder_Infinity": "Infinity",
     "Table_Placeholder_Object": "[Object]",
     "Table_Placeholder_TooLong": "{...}",
-    "Table_Tooltip_TooLong": "This is a complex object, or is too large to display.",
+    "Table_Tooltip_TooLong": "This is a complex object, or is too large to display. Click to inspect a shallow representation.",
     "Template_Description_Optional_Placeholder": "Optional description for end-user",
     "Template_Export_Author_Name": "Author",
     "Template_Export_Author_Name_Empty": "[No Author Details Provided]",

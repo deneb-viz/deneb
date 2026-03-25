@@ -6,6 +6,7 @@ import { StyleSheetManager } from 'styled-components';
 
 import { logRender } from '@deneb-viz/utils/logging';
 import { DataTableStatusBar } from './data-table-status-bar';
+import { DataTableTooltipProvider } from './data-table-tooltip-context';
 import {
     DATA_TABLE_FONT_FAMILY,
     DATA_TABLE_FONT_SIZE,
@@ -43,8 +44,9 @@ export const DataTableViewer = ({
     // Filter compact prop that RDT passes to column cells but shouldn't reach DOM
     const shouldForwardProp = (propName: string) => propName !== 'compact';
     return (
-        <div className={classes.enclosure}>
-            <StyleSheetManager shouldForwardProp={shouldForwardProp}>
+        <DataTableTooltipProvider>
+            <div className={classes.enclosure}>
+                <StyleSheetManager shouldForwardProp={shouldForwardProp}>
                 <DataTable
                     columns={columns}
                     data={data}
@@ -121,7 +123,8 @@ export const DataTableViewer = ({
                     dense
                     {...props}
                 />
-            </StyleSheetManager>
-        </div>
+                </StyleSheetManager>
+            </div>
+        </DataTableTooltipProvider>
     );
 };

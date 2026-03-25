@@ -55,6 +55,11 @@ const DEFAULT_WHITESPACE_CHAR = ' ';
 const DEFAULT_LINE_LENGTH = 40;
 
 /**
+ * Default indentation size for JSON formatting.
+ */
+const DEFAULT_JSON_FORMAT_INDENT_CHARS = 2;
+
+/**
  * Prune an object at a specified level of depth.
  */
 export const getPrunedObject = (
@@ -101,6 +106,14 @@ export const matchesObjectKeyValues =
         }
         return true;
     };
+
+/**
+ * Format a value as indented JSON. Suitable for display in read-only editors.
+ */
+export const formatJson = (
+    value: unknown,
+    indent = DEFAULT_JSON_FORMAT_INDENT_CHARS
+): string | undefined => JSON.stringify(value, null, indent);
 
 /**
  * Create a stringified representation of an object, pruned at a specified level of depth.

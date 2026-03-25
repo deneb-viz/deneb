@@ -23,7 +23,7 @@ export const DATA_TABLE_ROW_PADDING_LEFT = 10;
 /**
  * The maximum level of recursion to use when evaluating a table value (in case it's a complex object).
  */
-export const DATA_TABLE_VALUE_MAX_DEPTH = 3;
+export const DATA_TABLE_VALUE_MAX_DEPTH = 4;
 
 /**
  * The maximum permitted length of a value for a table cell before 'truncating' it for display.

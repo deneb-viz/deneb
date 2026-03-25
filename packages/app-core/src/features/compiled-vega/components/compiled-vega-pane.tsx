@@ -17,7 +17,7 @@ import Editor from '@monaco-editor/react';
 import type { TopLevelSpec } from 'vega-lite';
 
 import { logRender } from '@deneb-viz/utils/logging';
-import { EDITOR_DEFAULTS } from '@deneb-viz/configuration';
+import { formatJson } from '@deneb-viz/utils/object';
 import {
     compileCleanVgSpec,
     parseJsonWithResult
@@ -106,7 +106,7 @@ export const CompiledVegaPane = ({
         const stripped = stripConfigFromSpec(
             stripSchemaFromSpec(vgSpec as Record<string, unknown>)
         );
-        return JSON.stringify(stripped, null, EDITOR_DEFAULTS.tabSize);
+        return formatJson(stripped);
     }, [provider, isCompiledVegaPaneVisible, specString, configString]);
 
     const [popoverOpen, setPopoverOpen] = useState(false);
