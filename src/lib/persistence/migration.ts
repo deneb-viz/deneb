@@ -242,8 +242,11 @@ const migrateWithNoChanges = (
     visualSettings: VisualFormattingSettingsModel
 ) => {
     logDebug('Migrate to current version');
-    const contextMenuProperties =
-        getContextMenuMigrationProperties(visualSettings);
+    const previousVersion = getLastVersionInfo(visualSettings).denebVersion;
+    const contextMenuProperties = getContextMenuMigrationProperties(
+        visualSettings,
+        previousVersion
+    );
     persistProperties(
         resolveObjectProperties([
             {
@@ -265,13 +268,26 @@ const migrateWithNoChanges = (
 };
 
 /**
+ * The version that introduced the context menu property split. Only visuals
+ * upgrading from before this version need the legacy migration.
+ */
+const CONTEXT_MENU_SPLIT_VERSION = '1.10.0';
+
+/**
  * Pre-migration visuals had enableContextMenu: false to disable data point
  * resolution. The new model splits this into two properties. Detect the legacy
  * state and remap to enableContextMenu: true + enableContextMenuSelector: false.
+ *
+ * Only runs when upgrading from a version older than CONTEXT_MENU_SPLIT_VERSION
+ * to avoid overwriting intentional post-upgrade settings on future version bumps.
  */
 const getContextMenuMigrationProperties = (
-    visualSettings: VisualFormattingSettingsModel
+    visualSettings: VisualFormattingSettingsModel,
+    previousVersion: string
 ): PersistenceProperty[] => {
+    if (!isNewerVersion(previousVersion, CONTEXT_MENU_SPLIT_VERSION)) {
+        return [];
+    }
     const { enableContextMenu, enableContextMenuSelector } =
         visualSettings.vega.interactivity;
     if (!enableContextMenu.value && enableContextMenuSelector.value) {
