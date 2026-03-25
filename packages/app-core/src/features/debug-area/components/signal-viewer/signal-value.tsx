@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { usePrevious } from '@uidotdev/usehooks';
 
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
-import { stringifyPruned } from '@deneb-viz/utils/object';
+import { getPrunedObject, stringifyPruned } from '@deneb-viz/utils/object';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
-import { DATA_TABLE_VALUE_MAX_LENGTH } from '../../constants';
+import {
+    DATA_TABLE_VALUE_MAX_DEPTH,
+    DATA_TABLE_VALUE_MAX_LENGTH
+} from '../../constants';
 import { DataTableCell } from '../data-table/data-table-cell';
 import { useDenebState } from '../../../../state';
 
@@ -95,21 +98,25 @@ export const SignalValue = ({ signalName, renderId }: SignalValueProps) => {
         setSignalValue(() => value);
         logDebug(`[${renderId}] Signal value for ${name} has changed`, value);
     };
-    const getSignalValue = () => {
+    const getSignalValues = useCallback(() => {
         try {
-            const value = stringifyPruned(
-                VegaViewServices.getSignalByName(signalName)
+            const raw = getPrunedObject(
+                VegaViewServices.getSignalByName(signalName),
+                { maxDepth: DATA_TABLE_VALUE_MAX_DEPTH }
             );
-            return value?.length > DATA_TABLE_VALUE_MAX_LENGTH
-                ? translate('Table_Placeholder_TooLong')
-                : value;
+            const stringified = stringifyPruned(raw);
+            const display =
+                stringified?.length > DATA_TABLE_VALUE_MAX_LENGTH
+                    ? translate('Table_Placeholder_TooLong')
+                    : stringified;
+            return { raw, display };
         } catch {
             logDebug(
                 `Could not retrieve value for signal ${signalName}. It may not exist in the current view scope.`
             );
-            return '';
+            return { raw: null, display: '' };
         }
-    };
+    }, [signalName, translate]);
     /**
      * Ensure that listener is added/removed when the view changes between renders.
      */
@@ -127,22 +134,23 @@ export const SignalValue = ({ signalName, renderId }: SignalValueProps) => {
         logDebug(
             `Signal name has changed from ${previousSignalName} to ${signalName}. Updating...`
         );
-        setSignalValue(() => getSignalValue());
+        setSignalValue(() => getSignalValues().display);
         cycleListeners();
         return () => {
             removeListener();
         };
-    }, [signalName]);
+    }, [signalName, getSignalValues]);
+    const currentValues = getSignalValues();
     logRender('SignalValue', {
         signalName,
         signalValue,
-        viewValue: getSignalValue()
+        viewValue: currentValues.display
     });
     return (
         <DataTableCell
             field={signalName}
-            displayValue={getSignalValue()}
-            rawValue={getSignalValue()}
+            displayValue={currentValues.display}
+            rawValue={currentValues.raw}
         />
     );
 };

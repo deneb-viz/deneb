@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+    formatJson,
     getPrunedObject,
     matchesObjectKeyValues,
     omit,
@@ -287,5 +288,45 @@ describe('stringifyPruned', () => {
             const matcher = matchesObjectKeyValues(source);
             expect(matcher(object)).toBe(true);
         });
+    });
+});
+
+describe('formatJson', () => {
+    it('should format an object with default 2-space indentation', () => {
+        const obj = { a: 1, b: 2 };
+        const result = formatJson(obj);
+        expect(result).toBe('{\n  "a": 1,\n  "b": 2\n}');
+    });
+
+    it('should format nested objects with correct indentation', () => {
+        const obj = { a: { b: 1 } };
+        const result = formatJson(obj);
+        expect(result).toBe('{\n  "a": {\n    "b": 1\n  }\n}');
+    });
+
+    it('should accept a custom indent size', () => {
+        const obj = { a: 1 };
+        const result = formatJson(obj, 4);
+        expect(result).toBe('{\n    "a": 1\n}');
+    });
+
+    it('should format arrays', () => {
+        const arr = [1, 2, 3];
+        const result = formatJson(arr);
+        expect(result).toBe('[\n  1,\n  2,\n  3\n]');
+    });
+
+    it('should return "null" for null input', () => {
+        expect(formatJson(null)).toBe('null');
+    });
+
+    it('should return undefined for undefined input', () => {
+        expect(formatJson(undefined)).toBeUndefined();
+    });
+
+    it('should format primitive values', () => {
+        expect(formatJson('hello')).toBe('"hello"');
+        expect(formatJson(42)).toBe('42');
+        expect(formatJson(true)).toBe('true');
     });
 });

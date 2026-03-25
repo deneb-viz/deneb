@@ -14,6 +14,7 @@ import {
     type DataPointSelectionStatus
 } from '@deneb-viz/data-core/value';
 import { getDenebState } from '../../../../state';
+import { ComplexValueCell } from './complex-value-cell';
 
 type DataTableCellProps = {
     displayValue: string;
@@ -31,6 +32,9 @@ export const DataTableCell = ({
     field,
     rawValue
 }: DataTableCellProps) => {
+    if (isValuePlaceholderComplex(displayValue)) {
+        return <ComplexValueCell rawValue={rawValue} />;
+    }
     const tooltipValue = getCellTooltip(field, rawValue);
     return <div title={tooltipValue}>{displayValue}</div>;
 };
