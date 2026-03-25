@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { usePrevious } from '@uidotdev/usehooks';
 
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
@@ -98,7 +98,7 @@ export const SignalValue = ({ signalName, renderId }: SignalValueProps) => {
         setSignalValue(() => value);
         logDebug(`[${renderId}] Signal value for ${name} has changed`, value);
     };
-    const getSignalValues = () => {
+    const getSignalValues = useCallback(() => {
         try {
             const raw = getPrunedObject(
                 VegaViewServices.getSignalByName(signalName),
@@ -116,7 +116,7 @@ export const SignalValue = ({ signalName, renderId }: SignalValueProps) => {
             );
             return { raw: null, display: '' };
         }
-    };
+    }, [signalName, translate]);
     /**
      * Ensure that listener is added/removed when the view changes between renders.
      */
@@ -139,7 +139,7 @@ export const SignalValue = ({ signalName, renderId }: SignalValueProps) => {
         return () => {
             removeListener();
         };
-    }, [signalName]);
+    }, [signalName, getSignalValues]);
     const currentValues = getSignalValues();
     logRender('SignalValue', {
         signalName,

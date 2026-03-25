@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 
 import { TooltipCustomMount } from '../../../../components/ui';
 
@@ -20,8 +20,9 @@ export const DataTableTooltipProvider = ({
     children: ReactNode;
 }) => {
     const [mountNode, setMountNode] = useState<HTMLElement | null>(null);
+    const contextValue = useMemo(() => ({ mountNode }), [mountNode]);
     return (
-        <DataTableTooltipContext.Provider value={{ mountNode }}>
+        <DataTableTooltipContext.Provider value={contextValue}>
             {children}
             <TooltipCustomMount setRef={setMountNode} />
         </DataTableTooltipContext.Provider>
