@@ -6,6 +6,7 @@ import type { SelectionMode } from './types';
  */
 export const INTERACTIVITY_DEFAULTS = {
     enableContextMenu: true,
+    enableContextMenuSelector: true,
     enableHighlight: false,
     enableSelection: false,
     enableTooltips: true,

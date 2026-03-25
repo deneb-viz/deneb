@@ -26,6 +26,7 @@ const getInteractivityFromSettings = (
 ): UsermetaInteractivity => ({
     tooltip: s.vega.interactivity.enableTooltips.value,
     contextMenu: s.vega.interactivity.enableContextMenu.value,
+    contextMenuSelector: s.vega.interactivity.enableContextMenuSelector.value,
     selection: s.vega.interactivity.enableSelection.value,
     selectionMode: s.vega.interactivity.selectionMode.value as SelectionMode,
     highlight: s.vega.interactivity.enableHighlight.value,

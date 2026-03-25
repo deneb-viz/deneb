@@ -141,6 +141,7 @@ export const getNewTemplateMetadata = (options: {
     interactivity: {
         tooltip: INTERACTIVITY_DEFAULTS.enableTooltips,
         contextMenu: INTERACTIVITY_DEFAULTS.enableContextMenu,
+        contextMenuSelector: INTERACTIVITY_DEFAULTS.enableContextMenuSelector,
         selection: INTERACTIVITY_DEFAULTS.enableSelection,
         selectionMode: INTERACTIVITY_DEFAULTS.selectionMode as SelectionMode,
         dataPointLimit: INTERACTIVITY_DEFAULTS.selectionMaxDataPoints,

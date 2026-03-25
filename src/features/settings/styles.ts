@@ -18,6 +18,10 @@ export const useSettingsStyles = makeStyles({
     sectionItem: {
         display: 'flex'
     },
+    sectionItemIndented: {
+        display: 'flex',
+        paddingLeft: tokens.spacingHorizontalL
+    },
     spinButtonContainer: {
         display: 'flex',
         flexBasis: '100%',
