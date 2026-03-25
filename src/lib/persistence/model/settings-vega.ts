@@ -100,6 +100,11 @@ class SettingsVegaInteractivityGroup extends formattingSettings.Group {
         displayNameKey: 'Objects_Vega_EnableContextMenu',
         value: INTERACTIVITY_DEFAULTS.enableContextMenu
     });
+    enableContextMenuSelector = new formattingSettings.ToggleSwitch({
+        name: 'enableContextMenuSelector',
+        displayNameKey: 'Objects_Vega_EnableContextMenuSelector',
+        value: INTERACTIVITY_DEFAULTS.enableContextMenuSelector
+    });
     enableSelection = new formattingSettings.ToggleSwitch({
         name: 'enableSelection',
         displayNameKey: 'Objects_Vega_EnableSelection',
@@ -134,6 +139,7 @@ class SettingsVegaInteractivityGroup extends formattingSettings.Group {
         this.enableTooltips,
         this.tooltipDelay,
         this.enableContextMenu,
+        this.enableContextMenuSelector,
         this.enableSelection,
         this.selectionMode,
         this.selectionMaxDataPoints,

@@ -44,6 +44,12 @@ export const persistOnCreateFromTemplate = async (
                             value: metadata?.interactivity?.contextMenu ?? false
                         },
                         {
+                            name: 'enableContextMenuSelector',
+                            value:
+                                metadata?.interactivity?.contextMenuSelector ??
+                                true
+                        },
+                        {
                             name: 'enableHighlight',
                             value: metadata?.interactivity?.highlight ?? false
                         },

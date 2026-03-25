@@ -20,11 +20,15 @@ export const InteractivitySettings = () => {
     const { translate } = useDenebState((state) => ({
         translate: state.i18n.translate
     }));
-    const { enableSelection, selectionMode } = useDenebVisualState((state) => ({
-        enableSelection:
-            state.settings.vega.interactivity.enableSelection.value,
-        selectionMode: state.settings.vega.interactivity.selectionMode.value
-    }));
+    const { enableContextMenu, enableSelection, selectionMode } =
+        useDenebVisualState((state) => ({
+            enableContextMenu:
+                state.settings.vega.interactivity.enableContextMenu.value,
+            enableSelection:
+                state.settings.vega.interactivity.enableSelection.value,
+            selectionMode:
+                state.settings.vega.interactivity.selectionMode.value
+        }));
     const { launchUrl } = useDenebPlatformProvider();
     const openInteractivityLink = useCallback(() => {
         launchUrl(
@@ -40,6 +44,7 @@ export const InteractivitySettings = () => {
             </SettingsHeadingLabel>
             <InteractivityCheckbox type='tooltip' />
             <InteractivityCheckbox type='context' />
+            <InteractivityCheckbox type='contextSelector' disabled={!enableContextMenu} indented />
             <InteractivityCheckbox type='highlight' />
             <InteractivityCheckbox type='select' />
             <SettingsTextSection>

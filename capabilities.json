@@ -171,6 +171,11 @@
                         "bool": true
                     }
                 },
+                "enableContextMenuSelector": {
+                    "type": {
+                        "bool": true
+                    }
+                },
                 "enableHighlight": {
                     "type": {
                         "bool": true

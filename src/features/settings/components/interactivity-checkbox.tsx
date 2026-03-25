@@ -11,13 +11,15 @@ import { handlePersistBooleanProperty } from '../helpers';
  * Used to denote supported interactivity types within Deneb. These can be used
  * to flag any contextual methods for any particular functionality.
  */
-type TInteractivityType = 'tooltip' | 'highlight' | 'select' | 'context';
+type TInteractivityType = 'tooltip' | 'highlight' | 'select' | 'context' | 'contextSelector';
 
 type InteractivityCheckboxProps = {
     type: TInteractivityType;
+    disabled?: boolean;
+    indented?: boolean;
 };
 
-export const InteractivityCheckbox = ({ type }: InteractivityCheckboxProps) => {
+export const InteractivityCheckbox = ({ type, disabled, indented }: InteractivityCheckboxProps) => {
     const { translate } = useDenebState((state) => ({
         translate: state.i18n.translate
     }));
@@ -50,7 +52,8 @@ export const InteractivityCheckbox = ({ type }: InteractivityCheckboxProps) => {
                 label={translate(geti18LabelKey(type))}
                 checked={interactivity[propertyName]?.value || false}
                 onChange={handleToggle}
-                className={classes.sectionItem}
+                className={indented ? classes.sectionItemIndented : classes.sectionItem}
+                disabled={disabled}
             />
         )
     );
@@ -73,6 +76,8 @@ const geti18LabelKey = (type: TInteractivityType) => {
     switch (type) {
         case 'context':
             return 'PowerBI_Objects_Vega_EnableContextMenu';
+        case 'contextSelector':
+            return 'PowerBI_Objects_Vega_EnableContextMenuSelector';
         case 'highlight':
             return 'PowerBI_Objects_Vega_EnableHighlight';
         case 'select':
@@ -89,6 +94,8 @@ const getPropertyName = (type: TInteractivityType) => {
     switch (type) {
         case 'context':
             return 'enableContextMenu';
+        case 'contextSelector':
+            return 'enableContextMenuSelector';
         case 'highlight':
             return 'enableHighlight';
         case 'select':

@@ -46,6 +46,10 @@ export interface UsermetaInteractivity {
      */
     contextMenu: boolean;
     /**
+     * Enable data point resolution in the context menu.
+     */
+    contextMenuSelector?: boolean;
+    /**
      * Enable cross-filtering from data point click events.
      */
     selection: boolean;

@@ -57,6 +57,7 @@ const MOCK_TEMPLATE_METADATA_BASE = `{
         "interactivity": {
             "tooltip": ${INTERACTIVITY_DEFAULTS.enableTooltips},
             "contextMenu": ${INTERACTIVITY_DEFAULTS.enableContextMenu},
+            "contextMenuSelector": ${INTERACTIVITY_DEFAULTS.enableContextMenuSelector},
             "selection": ${INTERACTIVITY_DEFAULTS.enableSelection},
             "selectionMode": "${INTERACTIVITY_DEFAULTS.selectionMode as SelectionMode}",
             "dataPointLimit": ${INTERACTIVITY_DEFAULTS.selectionMaxDataPoints},
@@ -86,6 +87,7 @@ const MOCK_TEMPLATE_METADATA_NO_PROVIDER_VERSION = `{
         "interactivity": {
             "tooltip": ${INTERACTIVITY_DEFAULTS.enableTooltips},
             "contextMenu": ${INTERACTIVITY_DEFAULTS.enableContextMenu},
+            "contextMenuSelector": ${INTERACTIVITY_DEFAULTS.enableContextMenuSelector},
             "selection": ${INTERACTIVITY_DEFAULTS.enableSelection},
             "selectionMode": "${INTERACTIVITY_DEFAULTS.selectionMode as SelectionMode}",
             "dataPointLimit": ${INTERACTIVITY_DEFAULTS.selectionMaxDataPoints},
@@ -114,6 +116,7 @@ const EXPECTED_METADATA_BASE = {
     interactivity: {
         tooltip: INTERACTIVITY_DEFAULTS.enableTooltips,
         contextMenu: INTERACTIVITY_DEFAULTS.enableContextMenu,
+        contextMenuSelector: INTERACTIVITY_DEFAULTS.enableContextMenuSelector,
         selection: INTERACTIVITY_DEFAULTS.enableSelection,
         selectionMode: INTERACTIVITY_DEFAULTS.selectionMode as SelectionMode,
         dataPointLimit: INTERACTIVITY_DEFAULTS.selectionMaxDataPoints,
@@ -240,6 +243,7 @@ describe('getExportTemplate', () => {
     "interactivity": {
       "tooltip": ${INTERACTIVITY_DEFAULTS.enableTooltips},
       "contextMenu": ${INTERACTIVITY_DEFAULTS.enableContextMenu},
+      "contextMenuSelector": ${INTERACTIVITY_DEFAULTS.enableContextMenuSelector},
       "selection": ${INTERACTIVITY_DEFAULTS.enableSelection},
       "selectionMode": "${INTERACTIVITY_DEFAULTS.selectionMode as SelectionMode}",
       "dataPointLimit": ${INTERACTIVITY_DEFAULTS.selectionMaxDataPoints},
