@@ -98,26 +98,24 @@ export const SignalValue = ({ signalName, renderId }: SignalValueProps) => {
         setSignalValue(() => value);
         logDebug(`[${renderId}] Signal value for ${name} has changed`, value);
     };
-    const getRawSignalValue = () => {
+    const getSignalValues = () => {
         try {
-            return getPrunedObject(
+            const raw = getPrunedObject(
                 VegaViewServices.getSignalByName(signalName),
                 { maxDepth: DATA_TABLE_VALUE_MAX_DEPTH }
             );
+            const stringified = stringifyPruned(raw);
+            const display =
+                stringified?.length > DATA_TABLE_VALUE_MAX_LENGTH
+                    ? translate('Table_Placeholder_TooLong')
+                    : stringified;
+            return { raw, display };
         } catch {
             logDebug(
                 `Could not retrieve value for signal ${signalName}. It may not exist in the current view scope.`
             );
-            return null;
+            return { raw: null, display: '' };
         }
-    };
-    const getSignalDisplayValue = () => {
-        const raw = getRawSignalValue();
-        if (raw == null) return '';
-        const value = stringifyPruned(raw);
-        return value?.length > DATA_TABLE_VALUE_MAX_LENGTH
-            ? translate('Table_Placeholder_TooLong')
-            : value;
     };
     /**
      * Ensure that listener is added/removed when the view changes between renders.
@@ -136,22 +134,23 @@ export const SignalValue = ({ signalName, renderId }: SignalValueProps) => {
         logDebug(
             `Signal name has changed from ${previousSignalName} to ${signalName}. Updating...`
         );
-        setSignalValue(() => getSignalDisplayValue());
+        setSignalValue(() => getSignalValues().display);
         cycleListeners();
         return () => {
             removeListener();
         };
     }, [signalName]);
+    const currentValues = getSignalValues();
     logRender('SignalValue', {
         signalName,
         signalValue,
-        viewValue: getSignalDisplayValue()
+        viewValue: currentValues.display
     });
     return (
         <DataTableCell
             field={signalName}
-            displayValue={getSignalDisplayValue()}
-            rawValue={getRawSignalValue()}
+            displayValue={currentValues.display}
+            rawValue={currentValues.raw}
         />
     );
 };

@@ -44,13 +44,14 @@ export const ComplexValueCell = ({ rawValue }: ComplexValueCellProps) => {
     const editorContainerRef = useRef<HTMLDivElement>(null);
     const [popoverOpen, setPopoverOpen] = useState(false);
 
-    const formattedValue = useMemo(
-        () =>
-            rawValue != null
-                ? formatJson(rawValue)
-                : '',
-        [rawValue]
-    );
+    const formattedValue = useMemo(() => {
+        if (rawValue == null) return '';
+        try {
+            return formatJson(rawValue) ?? '';
+        } catch {
+            return '';
+        }
+    }, [rawValue]);
 
     const handleOpenChange = useCallback(
         (_e: unknown, data: { open: boolean }) => {
