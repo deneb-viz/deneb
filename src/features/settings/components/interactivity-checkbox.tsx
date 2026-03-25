@@ -11,7 +11,12 @@ import { handlePersistBooleanProperty } from '../helpers';
  * Used to denote supported interactivity types within Deneb. These can be used
  * to flag any contextual methods for any particular functionality.
  */
-type TInteractivityType = 'tooltip' | 'highlight' | 'select' | 'context' | 'contextSelector';
+type TInteractivityType =
+    | 'tooltip'
+    | 'highlight'
+    | 'select'
+    | 'context'
+    | 'contextSelector';
 
 type InteractivityCheckboxProps = {
     type: TInteractivityType;
@@ -19,7 +24,11 @@ type InteractivityCheckboxProps = {
     indented?: boolean;
 };
 
-export const InteractivityCheckbox = ({ type, disabled, indented }: InteractivityCheckboxProps) => {
+export const InteractivityCheckbox = ({
+    type,
+    disabled,
+    indented
+}: InteractivityCheckboxProps) => {
     const { translate } = useDenebState((state) => ({
         translate: state.i18n.translate
     }));
@@ -52,7 +61,9 @@ export const InteractivityCheckbox = ({ type, disabled, indented }: Interactivit
                 label={translate(geti18LabelKey(type))}
                 checked={interactivity[propertyName]?.value || false}
                 onChange={handleToggle}
-                className={indented ? classes.sectionItemIndented : classes.sectionItem}
+                className={
+                    indented ? classes.sectionItemIndented : classes.sectionItem
+                }
                 disabled={disabled}
             />
         )
