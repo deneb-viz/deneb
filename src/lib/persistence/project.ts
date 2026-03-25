@@ -5,6 +5,7 @@ import {
     persistProperties,
     resolveObjectProperties
 } from '../../lib/persistence';
+import { resolveContextMenuProperties } from './context-menu-migration';
 
 /**
  * Persists all project and interactivity settings to Power BI properties when creating from a template.
@@ -39,16 +40,9 @@ export const persistOnCreateFromTemplate = async (
                             name: 'enableTooltips',
                             value: metadata?.interactivity?.tooltip ?? false
                         },
-                        {
-                            name: 'enableContextMenu',
-                            value: metadata?.interactivity?.contextMenu ?? false
-                        },
-                        {
-                            name: 'enableContextMenuSelector',
-                            value:
-                                metadata?.interactivity?.contextMenuSelector ??
-                                true
-                        },
+                        ...resolveContextMenuProperties(
+                            metadata?.interactivity
+                        ),
                         {
                             name: 'enableHighlight',
                             value: metadata?.interactivity?.highlight ?? false
