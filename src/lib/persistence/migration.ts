@@ -134,7 +134,7 @@ export const handlePropertyMigration = (
             }
             // general change
             case changeType !== 'equal': {
-                migrateWithNoChanges(<SpecProvider>provider);
+                migrateWithNoChanges(<SpecProvider>provider, visualSettings);
                 break;
             }
             default:
@@ -237,8 +237,13 @@ const migrateUnversionedSpec = (provider: SpecProvider) => {
  * the visual and provider versions, and re-flagging the "new version"
  * notification).
  */
-const migrateWithNoChanges = (provider: SpecProvider) => {
-    logDebug('Migrate to current version (no changes)');
+const migrateWithNoChanges = (
+    provider: SpecProvider,
+    visualSettings: VisualFormattingSettingsModel
+) => {
+    logDebug('Migrate to current version');
+    const contextMenuProperties =
+        getContextMenuMigrationProperties(visualSettings);
     persistProperties(
         resolveObjectProperties([
             {
@@ -251,11 +256,31 @@ const migrateWithNoChanges = (provider: SpecProvider) => {
                     {
                         name: 'version',
                         value: getVegaVersion(provider)
-                    }
+                    },
+                    ...contextMenuProperties
                 ]
             }
         ])
     );
+};
+
+/**
+ * Pre-migration visuals had enableContextMenu: false to disable data point
+ * resolution. The new model splits this into two properties. Detect the legacy
+ * state and remap to enableContextMenu: true + enableContextMenuSelector: false.
+ */
+const getContextMenuMigrationProperties = (
+    visualSettings: VisualFormattingSettingsModel
+): PersistenceProperty[] => {
+    const { enableContextMenu, enableContextMenuSelector } =
+        visualSettings.vega.interactivity;
+    if (!enableContextMenu.value && enableContextMenuSelector.value) {
+        return [
+            { name: 'enableContextMenu', value: true },
+            { name: 'enableContextMenuSelector', value: false }
+        ];
+    }
+    return [];
 };
 
 /**
