@@ -106,7 +106,7 @@ export const CompiledVegaPane = ({
         const stripped = stripConfigFromSpec(
             stripSchemaFromSpec(vgSpec as Record<string, unknown>)
         );
-        return formatJson(stripped);
+        return formatJson(stripped) ?? '';
     }, [provider, isCompiledVegaPaneVisible, specString, configString]);
 
     const [popoverOpen, setPopoverOpen] = useState(false);
