@@ -15,9 +15,9 @@ export * from './state';
 export * from './components/template-metadata';
 export * from './components/ui';
 export {
-    SettingsHeadingLabel,
-    SettingsTextSection,
-    useSettingsPaneStyles
+    SettingsAccordionItem,
+    useSettingsPaneStyles,
+    useSettingsPaneTooltip
 } from './features/settings-pane';
 export { useSpecificationEditor } from './features/specification-editor/hooks/use-specification-editor';
 

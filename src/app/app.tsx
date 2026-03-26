@@ -15,7 +15,13 @@ import {
     LandingPage,
     SplashInitial
 } from '../features/status';
-import { InteractivitySettings } from '../features/settings';
+import {
+    InteractivityFooter,
+    TooltipSettings,
+    ContextMenuSettings,
+    CrossFilterSettings,
+    CrossHighlightSettings
+} from '../features/settings';
 import { NotificationToaster } from '../features/toaster';
 import { VisualUpdateHistoryOverlay } from '../features/visual-update-history-overlay';
 import { getVegaLoader } from '../lib/vega-embed';
@@ -168,7 +174,13 @@ export const App = ({ host }: AppProps) => {
                 onCreateProject: persistOnCreateFromTemplate,
                 onRenderingError,
                 onRenderingFinished,
-                settingsPanePlatformComponent: <InteractivitySettings />,
+                settingsPaneFooter: <InteractivityFooter />,
+                settingsPanePlatformComponent: [
+                    <TooltipSettings key='tooltips' />,
+                    <ContextMenuSettings key='contextmenu' />,
+                    <CrossFilterSettings key='crossfilter' />,
+                    <CrossHighlightSettings key='crosshighlight' />
+                ],
                 tooltipHandler: pbiTooltipHandler,
                 vegaLoader,
                 viewEventBinders,

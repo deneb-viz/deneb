@@ -1,79 +1,71 @@
-import { useCallback } from 'react';
-
-import { Link } from '@fluentui/react-components';
-
-import { InteractivityCheckbox } from './interactivity-checkbox';
+import { InteractivityToggle } from './interactivity-toggle';
 import { CrossFilterMaxDataPoints } from './cross-filter-max-data-points';
 import { CrossFilterModeSettings } from './cross-filter-mode-settings';
-import { useSettingsStyles } from '../styles';
-import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
-import {
-    SettingsHeadingLabel,
-    SettingsTextSection,
-    useDenebPlatformProvider,
-    useDenebState,
-    useSettingsPaneStyles
-} from '@deneb-viz/app-core';
+import { SettingsAccordionItem, useDenebState } from '@deneb-viz/app-core';
 import { useDenebVisualState } from '../../../state';
 
-export const InteractivitySettings = () => {
-    const { translate } = useDenebState((state) => ({
-        translate: state.i18n.translate
-    }));
-    const { enableContextMenu, enableSelection, selectionMode } =
-        useDenebVisualState((state) => ({
-            enableContextMenu:
-                state.settings.vega.interactivity.enableContextMenu.value,
-            enableSelection:
-                state.settings.vega.interactivity.enableSelection.value,
-            selectionMode: state.settings.vega.interactivity.selectionMode.value
-        }));
-    const { launchUrl } = useDenebPlatformProvider();
-    const openInteractivityLink = useCallback(() => {
-        launchUrl(
-            PROVIDER_RESOURCE_CONFIGURATION.deneb.interactivityDocumentationUrl
-        );
-    }, []);
-    const classes = useSettingsStyles();
-    const spClasses = useSettingsPaneStyles();
+export const TooltipSettings = () => {
+    const translate = useDenebState((state) => state.i18n.translate);
     return (
-        <div className={spClasses.sectionContainer}>
-            <SettingsHeadingLabel>
-                {translate('PowerBI_Objects_Vega_Interactivity')}
-            </SettingsHeadingLabel>
-            <InteractivityCheckbox type='tooltip' />
-            <InteractivityCheckbox type='context' />
-            <InteractivityCheckbox
+        <SettingsAccordionItem
+            value='tooltips'
+            heading={translate('PowerBI_Objects_Vega_Tooltips')}
+        >
+            <InteractivityToggle type='tooltip' />
+        </SettingsAccordionItem>
+    );
+};
+
+export const ContextMenuSettings = () => {
+    const translate = useDenebState((state) => state.i18n.translate);
+    const enableContextMenu = useDenebVisualState(
+        (state) => state.settings.vega.interactivity.enableContextMenu.value
+    );
+    return (
+        <SettingsAccordionItem
+            value='contextmenu'
+            heading={translate('PowerBI_Objects_Vega_ContextMenu')}
+        >
+            <InteractivityToggle type='context' />
+            <InteractivityToggle
                 type='contextSelector'
                 disabled={!enableContextMenu}
-                indented
             />
-            <InteractivityCheckbox type='highlight' />
-            <InteractivityCheckbox type='select' />
-            <SettingsTextSection>
-                {translate('PowerBI_Assistive_Text_Interactivity')}{' '}
-                <Link
-                    onClick={openInteractivityLink}
-                    className={classes.interactivityLink}
-                >
-                    {translate('PowerBI_Interactivity_Link_Doc')}
-                </Link>
-            </SettingsTextSection>
-            {(enableSelection && (
+        </SettingsAccordionItem>
+    );
+};
+
+export const CrossFilterSettings = () => {
+    const translate = useDenebState((state) => state.i18n.translate);
+    const { enableSelection, selectionMode } = useDenebVisualState((state) => ({
+        enableSelection:
+            state.settings.vega.interactivity.enableSelection.value,
+        selectionMode: state.settings.vega.interactivity.selectionMode.value
+    }));
+    return (
+        <SettingsAccordionItem
+            value='crossfilter'
+            heading={translate('PowerBI_Objects_Vega_CrossFiltering')}
+        >
+            <InteractivityToggle type='select' />
+            {enableSelection && (
                 <>
                     <CrossFilterModeSettings />
-                    {selectionMode === 'simple' && (
-                        <>
-                            <CrossFilterMaxDataPoints />
-                            <SettingsTextSection>
-                                {translate(
-                                    'PowerBI_Objects_Vega_SelectionMaxDataPoints_Description'
-                                )}
-                            </SettingsTextSection>
-                        </>
-                    )}
+                    {selectionMode === 'simple' && <CrossFilterMaxDataPoints />}
                 </>
-            )) || <></>}
-        </div>
+            )}
+        </SettingsAccordionItem>
+    );
+};
+
+export const CrossHighlightSettings = () => {
+    const translate = useDenebState((state) => state.i18n.translate);
+    return (
+        <SettingsAccordionItem
+            value='crosshighlight'
+            heading={translate('PowerBI_Objects_Vega_CrossHighlighting')}
+        >
+            <InteractivityToggle type='highlight' />
+        </SettingsAccordionItem>
     );
 };

@@ -42,16 +42,14 @@ class SettingsDataLimitGroupPerformance extends formattingSettings.Group {
     displayNameKey = 'Objects_DataLimit_Group_Performance';
     enableIncrementalDataUpdates = new formattingSettings.ToggleSwitch({
         name: 'enableIncrementalDataUpdates',
-        displayNameKey: 'Objects_DataLimit_EnableIncrementalDataUpdates',
-        descriptionKey:
-            'Objects_DataLimit_EnableIncrementalDataUpdates_Description',
+        displayNameKey: 'Text_Vega_Performance_IncrementalUpdates',
+        descriptionKey: 'Assistive_Text_Performance',
         value: INCREMENTAL_UPDATE_CONFIGURATION.enabledDefault
     });
     incrementalUpdateThreshold = new formattingSettings.NumUpDown({
         name: 'incrementalUpdateThreshold',
-        displayNameKey: 'Objects_DataLimit_IncrementalUpdateThreshold',
-        descriptionKey:
-            'Objects_DataLimit_IncrementalUpdateThreshold_Description',
+        displayNameKey: 'Text_Vega_Performance_Threshold',
+        descriptionKey: 'Assistive_Text_Performance',
         value: INCREMENTAL_UPDATE_CONFIGURATION.defaultThreshold,
         options: {
             minValue: {

@@ -1,4 +1,4 @@
+export { SettingsAccordionItem } from './components/settings-accordion-item';
 export { SettingsPane } from './components/settings-pane';
-export { SettingsHeadingLabel } from './components/settings-heading-label';
-export { SettingsTextSection } from './components/settings-text-section';
+export { useSettingsPaneTooltip } from './components/settings-pane-tooltip-context';
 export { useSettingsPaneStyles } from './styles';

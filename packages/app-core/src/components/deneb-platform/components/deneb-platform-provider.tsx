@@ -13,6 +13,7 @@ type DenebPlatformProviderContextProps = Omit<
     | 'onRenderingFinished'
     | 'onRenderingError'
     | 'onCreateProject'
+    | 'settingsPaneFooter'
 > &
     Pick<
         DenebPlatformProviderProps,
@@ -21,6 +22,7 @@ type DenebPlatformProviderContextProps = Omit<
         | 'onRenderingFinished'
         | 'onRenderingError'
         | 'onCreateProject'
+        | 'settingsPaneFooter'
     >;
 
 export const DenebPlatformProviderContext =
@@ -33,7 +35,8 @@ export const DenebPlatformProvider = ({
     onRenderingError,
     onRenderingFinished,
     onRenderingStarted,
-    settingsPanePlatformComponent = <></>,
+    settingsPaneFooter,
+    settingsPanePlatformComponent = [],
     tooltipHandler,
     vegaLoader = null,
     viewEventBinders = [],
@@ -49,6 +52,7 @@ export const DenebPlatformProvider = ({
             onRenderingError,
             onRenderingFinished,
             onRenderingStarted,
+            settingsPaneFooter,
             settingsPanePlatformComponent,
             tooltipHandler,
             vegaLoader,
@@ -63,6 +67,7 @@ export const DenebPlatformProvider = ({
             onRenderingError,
             onRenderingFinished,
             onRenderingStarted,
+            settingsPaneFooter,
             settingsPanePlatformComponent,
             tooltipHandler,
             vegaLoader,
