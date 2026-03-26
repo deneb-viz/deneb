@@ -86,11 +86,10 @@
     "Objects_DataLimit_ShowProgress_Description": "Display information and explanation when fetching more data from the model if the row limit is exceeded.",
     "Objects_DataLimit_ShowCustomVisualNotes": "Show data loading notes",
     "Objects_DataLimit_ShowCustomVisualNotes_Description": "Display information about the custom visual limitations and recommendations for end users.\n\nThis option allows you to turn this info off for end-users if you feel it is not relevant to them.",
-    "Objects_DataLimit_Group_Performance": "Performance",
-    "Objects_DataLimit_EnableIncrementalDataUpdates": "Incremental data updates",
-    "Objects_DataLimit_EnableIncrementalDataUpdates_Description": "When enabled, small dataset changes use incremental updates instead of full re-compilation. This can improve performance for datasets below the threshold.",
-    "Objects_DataLimit_IncrementalUpdateThreshold": "Incremental update threshold",
-    "Objects_DataLimit_IncrementalUpdateThreshold_Description": "Row count threshold for incremental updates. Datasets with fewer rows than this value will use incremental updates if enabled.",
+    "Objects_DataLimit_Group_Performance": "Continuous view",
+    "Assistive_Text_Performance": "These settings control rendering optimizations. When data patching is disabled, underlying data changes from embedded datasets will fully re-compile and re-embed the visualization (resetting all signals). Patching data and preserving signal values has a performance implication for large datasets and can only be used when datasets are small enough to avoid timeouts during change detection.",
+    "Text_Vega_Performance_IncrementalUpdates": "Enable patching for hosted datasets",
+    "Text_Vega_Performance_Threshold": "Row threshold for patching",
     "Enum_Position_Left": "Left",
     "Enum_Position_Right": "Right"
 }
