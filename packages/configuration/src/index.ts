@@ -120,7 +120,21 @@ export const VEGA_LOG_LEVEL_CONFIGURATION = [
 export const PROVIDER_RESOURCE_CONFIGURATION = {
     deneb: {
         interactivityDocumentationUrl:
-            'https://deneb-viz.github.io/interactivity-overview',
+            'https://deneb.guide/docs/interactivity-overview',
+        interactivityTooltipUrl:
+            'https://deneb.guide/docs/interactivity-tooltips',
+        interactivityContextMenuUrl:
+            'https://deneb.guide/docs/interactivity-context-menu',
+        interactivityContextMenuSelectorUrl:
+            'https://deneb.guide/docs/interactivity-context-menu',
+        interactivitySelectionUrl:
+            'https://deneb.guide/docs/interactivity-selection',
+        interactivitySelectionSimpleUrl:
+            'https://deneb.guide/docs/interactivity-selection#additional-strategy-for-the-simple-management-mode',
+        interactivitySelectionAdvancedUrl:
+            'https://deneb.guide/docs/interactivity-selection-advanced',
+        interactivityHighlightUrl:
+            'https://deneb.guide/docs/interactivity-highlight',
         changelogDocumentationUrl: 'https://deneb-viz.github.io/changelog',
         examplesUrl: 'https://deneb-viz.github.io/community/resources',
         legacyVersion: '1.0.0.57'

@@ -1,14 +1,6 @@
-import {
-    makeStyles,
-    shorthands,
-    tokens,
-    typographyStyles
-} from '@fluentui/react-components';
+import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 
 export const useSettingsStyles = makeStyles({
-    interactivityLink: {
-        ...typographyStyles.caption1
-    },
     radioGroupLabel: {
         userSelect: 'none',
         msUserSelect: 'none',

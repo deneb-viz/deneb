@@ -1,8 +1,10 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import {
     Button,
-    Field,
+    InfoLabel,
     Label,
+    MessageBar,
+    MessageBarBody,
     SpinButton,
     SpinButtonOnChangeData,
     SpinButtonProps,
@@ -12,11 +14,9 @@ import {
 } from '@fluentui/react-components';
 import { ArrowResetRegular } from '@fluentui/react-icons';
 
-import { SettingsHeadingLabel } from './settings-heading-label';
-import { SettingsTextSection } from './settings-text-section';
+import { useSettingsPaneTooltip } from './settings-pane-tooltip-context';
 import { useDenebState } from '../../../state';
 import { useSettingsPaneStyles } from '../styles';
-import { TooltipCustomMount } from '../../../components/ui';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { INCREMENTAL_UPDATE_CONFIGURATION } from '../../../lib/vega/incremental-update-configuration';
 
@@ -25,6 +25,7 @@ import { INCREMENTAL_UPDATE_CONFIGURATION } from '../../../lib/vega/incremental-
  */
 export const PerformanceSettings = () => {
     const classes = useSettingsPaneStyles();
+    const tooltipMountNode = useSettingsPaneTooltip();
 
     const {
         enableIncrementalDataUpdates,
@@ -89,23 +90,26 @@ export const PerformanceSettings = () => {
     );
 
     const spinButtonId = useId();
-    const [tooltipRef, setTooltipRef] = useState<HTMLElement | null>();
 
     return (
-        <div className={classes.sectionContainer}>
-            <SettingsHeadingLabel>
-                {translate('Text_Vega_Performance')}
-            </SettingsHeadingLabel>
-            <Field
-                label={translate('Text_Vega_Performance_IncrementalUpdates')}
-            >
-                <Switch
-                    checked={enableIncrementalDataUpdates}
-                    onChange={(_, data) =>
-                        setEnableIncrementalDataUpdates(data.checked)
-                    }
-                />
-            </Field>
+        <>
+            <Switch
+                label={
+                    <InfoLabel
+                        info={translate('Assistive_Text_Performance')}
+                        infoButton={{
+                            inline: false,
+                            popover: { mountNode: tooltipMountNode }
+                        }}
+                    >
+                        {translate('Text_Vega_Performance_IncrementalUpdates')}
+                    </InfoLabel>
+                }
+                checked={enableIncrementalDataUpdates}
+                onChange={(_, data) =>
+                    setEnableIncrementalDataUpdates(data.checked)
+                }
+            />
             {enableIncrementalDataUpdates && (
                 <div className={classes.spinButtonContainer}>
                     <Label htmlFor={spinButtonId}>
@@ -122,35 +126,37 @@ export const PerformanceSettings = () => {
                             step={INCREMENTAL_UPDATE_CONFIGURATION.stepValue}
                             onChange={onThresholdChange}
                         />
-                        <>
-                            <Tooltip
-                                content={translate('Tooltip_Setting_Reset')}
-                                relationship='label'
-                                withArrow
-                                mountNode={tooltipRef}
-                            >
-                                <Button
-                                    icon={<ArrowResetRegular />}
-                                    appearance='subtle'
-                                    onClick={onReset}
-                                    disabled={isResetDisabled}
-                                />
-                            </Tooltip>
-                            <TooltipCustomMount setRef={setTooltipRef} />
-                        </>
+                        <Tooltip
+                            content={translate('Tooltip_Setting_Reset')}
+                            relationship='label'
+                            withArrow
+                            mountNode={tooltipMountNode}
+                        >
+                            <Button
+                                icon={<ArrowResetRegular />}
+                                appearance='subtle'
+                                onClick={onReset}
+                                disabled={isResetDisabled}
+                            />
+                        </Tooltip>
                     </div>
                 </div>
             )}
-            <SettingsTextSection>
-                {translate(
-                    enableIncrementalDataUpdates
-                        ? isIncrementalActive
-                            ? 'Assistive_Text_Performance_IncrementalActive'
-                            : 'Assistive_Text_Performance_IncrementalInactive'
-                        : 'Assistive_Text_Performance'
-                )}
-            </SettingsTextSection>
-        </div>
+            {enableIncrementalDataUpdates && (
+                <MessageBar
+                    shape='rounded'
+                    intent={isIncrementalActive ? 'success' : 'warning'}
+                >
+                    <MessageBarBody>
+                        {translate(
+                            isIncrementalActive
+                                ? 'Assistive_Text_Performance_IncrementalActive'
+                                : 'Assistive_Text_Performance_IncrementalInactive'
+                        )}
+                    </MessageBarBody>
+                </MessageBar>
+            )}
+        </>
     );
 };
 

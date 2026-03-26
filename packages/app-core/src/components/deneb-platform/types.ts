@@ -1,4 +1,4 @@
-import { type JSX } from 'react';
+import { type JSX, type ReactNode } from 'react';
 import { type Loader, type TooltipHandler, type View } from 'vega';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 
@@ -42,9 +42,13 @@ export type DenebPlatformProviderProps = {
      */
     onRenderingStarted?: () => void;
     /**
+     * A component to display below the settings pane accordion, e.g. for generic guidance or links.
+     */
+    settingsPaneFooter?: ReactNode;
+    /**
      * A component to display and manage platform-specific settings, that will be added to the Settings pane.
      */
-    settingsPanePlatformComponent?: JSX.Element;
+    settingsPanePlatformComponent?: JSX.Element[];
     /**
      * A platform-specific tooltip handler for Vega. If not provided, default Vega tooltips will be used.
      */

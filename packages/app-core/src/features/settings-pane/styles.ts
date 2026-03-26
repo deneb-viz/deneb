@@ -5,11 +5,6 @@ export const useSettingsPaneStyles = makeStyles({
         display: 'grid',
         gridRowGap: tokens.spacingVerticalS
     },
-    sectionContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-        padding: `${tokens.spacingVerticalMNudge} ${tokens.spacingHorizontalNone}`
-    },
     spinButtonContainer: {
         display: 'flex',
         flexBasis: '100%',
