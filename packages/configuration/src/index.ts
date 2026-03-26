@@ -82,7 +82,7 @@ export const PROJECT_DEFAULTS = {
     spec: '{}'
 };
 
-export const WEBSITE_URL = 'https://deneb-viz.github.io/';
+export const WEBSITE_URL = 'https://deneb.guide/';
 
 /**
  * Log level configuration for Vega logging and UI representation.
@@ -135,8 +135,9 @@ export const PROVIDER_RESOURCE_CONFIGURATION = {
             'https://deneb.guide/docs/interactivity-selection-advanced',
         interactivityHighlightUrl:
             'https://deneb.guide/docs/interactivity-highlight',
-        changelogDocumentationUrl: 'https://deneb-viz.github.io/changelog',
-        examplesUrl: 'https://deneb-viz.github.io/community/resources',
+        datasetDocumentationUrl: 'https://deneb.guide/docs/dataset',
+        changelogDocumentationUrl: 'https://deneb.guide/changelog',
+        examplesUrl: 'https://deneb.guide/community/resources',
         legacyVersion: '1.0.0.57'
     },
     vega: {

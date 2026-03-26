@@ -13,7 +13,9 @@ import {
     useId
 } from '@fluentui/react-components';
 import { ArrowResetRegular } from '@fluentui/react-icons';
+import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
 
+import { Hyperlink } from '../../../components/ui';
 import { useSettingsPaneTooltip } from './settings-pane-tooltip-context';
 import { useDenebState } from '../../../state';
 import { useSettingsPaneStyles } from '../styles';
@@ -96,7 +98,20 @@ export const PerformanceSettings = () => {
             <Switch
                 label={
                     <InfoLabel
-                        info={translate('Assistive_Text_Performance')}
+                        info={
+                            <>
+                                {translate('Assistive_Text_Performance')}{' '}
+                                <Hyperlink
+                                    href={
+                                        PROVIDER_RESOURCE_CONFIGURATION.deneb
+                                            .datasetDocumentationUrl
+                                    }
+                                    inline
+                                >
+                                    {translate('Text_Link_Learn_More')}
+                                </Hyperlink>
+                            </>
+                        }
                         infoButton={{
                             inline: false,
                             popover: { mountNode: tooltipMountNode }

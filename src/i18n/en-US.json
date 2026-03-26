@@ -25,7 +25,6 @@
     "PowerBI_Fetching_Data_Developer_Notes": "Notes for Creators",
     "PowerBI_Fetching_Data_Progress_Message": "Fetching Data...",
     "PowerBI_Fetching_Data_Progress_Suffix": "row(s) loaded from data model so far...",
-    "PowerBI_Interactivity_Link_Doc": "Learn more",
     "PowerBI_Landing_Add_Data_Body": "Add the columns and/or measures you wish to visualize to the Values data role. You can add as many as you wish, in order to achieve the desired 'shape' of your dataset.",
     "PowerBI_Landing_Add_Data_Heading": "Add your data",
     "PowerBI_Landing_Add_Data_Subtitle": "At least one column or measure in your visual's dataset is needed for Deneb to function.",
@@ -65,5 +64,5 @@
     "PowerBI_Toast_Title_Unapplied_Changes": "Your JSON has changed",
     "PowerBI_Tooltip_Setting_Reset": "Reset to default",
     "PowerBI_Vega_Loader_Warning_HoverText": "Remote resources cannot be loaded in the AppSource version.",
-    "PowerBI_Vega_Loader_Warning_DetailedText": "Due to certification requirements, the AppSource version of Deneb does not permit loading from external URLs. This can be done with the standalone version, available from Deneb's GitHub repository. You can learn more about the standalone version on the Getting Started page on Deneb's website (https://deneb-viz.github.io/getting-started#standalone-version)."
+    "PowerBI_Vega_Loader_Warning_DetailedText": "Due to certification requirements, the AppSource version of Deneb does not permit loading from external URLs. This can be done with the standalone version, available from Deneb's GitHub repository. You can learn more about the standalone version on the Getting Started page on Deneb's website (https://deneb.guide/getting-started#standalone-version)."
 }

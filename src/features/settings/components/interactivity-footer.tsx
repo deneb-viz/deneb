@@ -26,7 +26,7 @@ export const InteractivityFooter = () => {
                     }
                     inline
                 >
-                    {translate('PowerBI_Interactivity_Link_Doc')}
+                    {translate('Text_Link_Learn_More')}
                 </Hyperlink>
             </Caption1>
         </div>

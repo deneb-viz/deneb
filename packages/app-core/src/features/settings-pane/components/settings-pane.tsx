@@ -28,7 +28,8 @@ const useSettingsPaneLayoutStyles = makeStyles({
 
 export const SettingsPane = () => {
     const classes = useSettingsPaneLayoutStyles();
-    const { settingsPanePlatformComponent } = useDenebPlatformProvider();
+    const { settingsPaneFooter, settingsPanePlatformComponent } =
+        useDenebPlatformProvider();
     const translate = useDenebState((state) => state.i18n.translate);
     const [openItems, setOpenItems] = useState<string[]>(
         () => persistedOpenItems ?? DEFAULT_OPEN_ITEMS
@@ -66,6 +67,7 @@ export const SettingsPane = () => {
                     </SettingsAccordionItem>
                     {settingsPanePlatformComponent}
                 </Accordion>
+                {settingsPaneFooter}
             </div>
         </SettingsPaneTooltipProvider>
     );

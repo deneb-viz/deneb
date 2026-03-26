@@ -57,7 +57,7 @@ export const CrossFilterModeSettings = () => {
                                 href={deneb.interactivitySelectionUrl}
                                 inline
                             >
-                                {translate('PowerBI_Interactivity_Link_Doc')}
+                                {translate('Text_Link_Learn_More')}
                             </Hyperlink>
                         </>
                     }
@@ -113,7 +113,7 @@ const renderRadioLabel = (
         <Text size={200} className={descriptionClass}>
             {translate(descriptionKey)}{' '}
             <Hyperlink href={docUrl} inline>
-                {translate('PowerBI_Interactivity_Link_Doc')}
+                {translate('Text_Link_Learn_More')}
             </Hyperlink>
         </Text>
     </>

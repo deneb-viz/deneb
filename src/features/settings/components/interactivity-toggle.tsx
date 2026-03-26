@@ -30,13 +30,11 @@ type TInteractivityType =
 type InteractivityToggleProps = {
     type: TInteractivityType;
     disabled?: boolean;
-    indented?: boolean;
 };
 
 export const InteractivityToggle = ({
     type,
-    disabled,
-    indented
+    disabled
 }: InteractivityToggleProps) => {
     const { translate } = useDenebState((state) => ({
         translate: state.i18n.translate
@@ -71,9 +69,7 @@ export const InteractivityToggle = ({
                             <>
                                 {translate(getInfoKey(type))}{' '}
                                 <Hyperlink href={getDocUrl(type)} inline>
-                                    {translate(
-                                        'PowerBI_Interactivity_Link_Doc'
-                                    )}
+                                    {translate('Text_Link_Learn_More')}
                                 </Hyperlink>
                             </>
                         }
@@ -87,9 +83,7 @@ export const InteractivityToggle = ({
                 }
                 checked={interactivity[propertyName]?.value || false}
                 onChange={handleToggle}
-                className={
-                    indented ? classes.sectionItemIndented : classes.sectionItem
-                }
+                className={classes.sectionItem}
                 disabled={disabled}
             />
         )
