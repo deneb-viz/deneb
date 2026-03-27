@@ -34,6 +34,7 @@ import {
     getPlaceholderKey,
     type UsermetaDatasetField
 } from '@deneb-viz/data-core/field';
+import { type SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 import {
     type SelectionMode,
     INTERACTIVITY_DEFAULTS
@@ -152,6 +153,52 @@ export const getNewTemplateMetadata = (options: {
 });
 
 /**
+ * Remap the keys of a SupportFieldConfiguration from template import placeholders (e.g. `__0__`,
+ * `__1__`) back to actual encoded field names supplied by the user during import. The dataset array
+ * order determines the mapping: `dataset[i].suppliedObjectName` is the actual name for placeholder
+ * `__i__`. Any key whose placeholder is not found in the dataset is carried through unchanged.
+ * Returns an empty object when the input is absent or empty.
+ */
+export const remapSupportFieldConfigurationForImport = (
+    config: SupportFieldConfiguration | undefined,
+    dataset: UsermetaDatasetField[]
+): SupportFieldConfiguration => {
+    if (!config || Object.keys(config).length === 0) return {};
+    const placeholderToName = new Map<string, string>(
+        dataset.map((field, index) => [
+            getPlaceholderKey(index),
+            field.suppliedObjectName as string
+        ])
+    );
+    return Object.fromEntries(
+        Object.entries(config).map(([placeholder, flags]) => {
+            const actualName =
+                placeholderToName.get(placeholder) ?? placeholder;
+            return [actualName, flags];
+        })
+    );
+};
+
+/**
+ * Remap the keys of a SupportFieldConfiguration from encoded field names to their export placeholders
+ * (e.g. `Category` → `__0__`), using the tracked fields mapping. Any key not found in trackedFields
+ * is carried through unchanged. Returns undefined when the input is absent or empty.
+ */
+const remapSupportFieldConfigurationForExport = (
+    config: SupportFieldConfiguration | undefined,
+    trackedFields: TrackedFields
+): SupportFieldConfiguration | undefined => {
+    if (!config || Object.keys(config).length === 0) return undefined;
+    return Object.fromEntries(
+        Object.entries(config).map(([fieldName, flags]) => {
+            const placeholder =
+                trackedFields[fieldName]?.placeholder ?? fieldName;
+            return [placeholder, flags];
+        })
+    );
+};
+
+/**
  * Ensure that usermeta is in its final, publishable state after all necessary substitutions and processing have been done.
  */
 export const getPublishableUsermeta = (
@@ -184,7 +231,11 @@ export const getPublishableUsermeta = (
                 return omit(d as unknown as Record<string, unknown>, [
                     'namePlaceholder'
                 ]) as Omit<UsermetaDatasetField, 'namePlaceholder'>;
-            })
+            }),
+            supportFieldConfiguration: remapSupportFieldConfigurationForExport(
+                usermeta.supportFieldConfiguration,
+                options.trackedFields
+            )
         }
     };
 };
@@ -304,10 +355,17 @@ export const getUpdatedExportMetadata = (
         interactivity?: UsermetaInteractivity;
         provider?: SpecProvider;
         providerVersion?: string;
+        supportFieldConfiguration?: SupportFieldConfiguration;
     }
 ) => {
-    const { config, dataset, interactivity, provider, providerVersion } =
-        options;
+    const {
+        config,
+        dataset,
+        interactivity,
+        provider,
+        providerVersion,
+        supportFieldConfiguration
+    } = options;
     return {
         ...metadata,
         deneb: {
@@ -317,7 +375,9 @@ export const getUpdatedExportMetadata = (
         },
         interactivity: interactivity ?? metadata.interactivity,
         dataset: dataset ?? metadata.dataset,
-        config: config ?? metadata.config
+        config: config ?? metadata.config,
+        supportFieldConfiguration:
+            supportFieldConfiguration ?? metadata.supportFieldConfiguration
     };
 };
 

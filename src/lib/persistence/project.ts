@@ -17,56 +17,72 @@ export const persistOnCreateFromTemplate = async (
 ): Promise<void> => {
     const { metadata, spec, config } = payload;
     try {
-        persistProperties(
-            resolveObjectProperties([
-                {
-                    objectName: 'vega',
-                    properties: [
-                        // Project properties
-                        {
-                            name: 'provider',
-                            value: metadata.deneb.provider
-                        },
-                        {
-                            name: 'jsonSpec',
-                            value: spec
-                        },
-                        {
-                            name: 'jsonConfig',
-                            value: config
-                        },
-                        // Interactivity properties
-                        {
-                            name: 'enableTooltips',
-                            value: metadata?.interactivity?.tooltip ?? false
-                        },
-                        ...resolveContextMenuProperties(
-                            metadata?.interactivity
-                        ),
-                        {
-                            name: 'enableHighlight',
-                            value: metadata?.interactivity?.highlight ?? false
-                        },
-                        {
-                            name: 'enableSelection',
-                            value: metadata?.interactivity?.selection ?? false
-                        },
-                        {
-                            name: 'selectionMaxDataPoints',
-                            value:
-                                metadata?.interactivity?.dataPointLimit ??
-                                INTERACTIVITY_DEFAULTS.selectionMaxDataPoints
-                        },
-                        {
-                            name: 'selectionMode',
-                            value:
-                                metadata?.interactivity?.selectionMode ??
-                                INTERACTIVITY_DEFAULTS.selectionMode
-                        }
-                    ]
-                }
-            ])
-        );
+        const objects: Parameters<typeof resolveObjectProperties>[0] = [
+            {
+                objectName: 'vega',
+                properties: [
+                    // Project properties
+                    {
+                        name: 'provider',
+                        value: metadata.deneb.provider
+                    },
+                    {
+                        name: 'jsonSpec',
+                        value: spec
+                    },
+                    {
+                        name: 'jsonConfig',
+                        value: config
+                    },
+                    // Interactivity properties
+                    {
+                        name: 'enableTooltips',
+                        value: metadata?.interactivity?.tooltip ?? false
+                    },
+                    ...resolveContextMenuProperties(metadata?.interactivity),
+                    {
+                        name: 'enableHighlight',
+                        value: metadata?.interactivity?.highlight ?? false
+                    },
+                    {
+                        name: 'enableSelection',
+                        value: metadata?.interactivity?.selection ?? false
+                    },
+                    {
+                        name: 'selectionMaxDataPoints',
+                        value:
+                            metadata?.interactivity?.dataPointLimit ??
+                            INTERACTIVITY_DEFAULTS.selectionMaxDataPoints
+                    },
+                    {
+                        name: 'selectionMode',
+                        value:
+                            metadata?.interactivity?.selectionMode ??
+                            INTERACTIVITY_DEFAULTS.selectionMode
+                    }
+                ]
+            }
+        ];
+        // Persist support field configuration when provided by the template.
+        // The value has already been remapped from placeholders to actual field names
+        // by the time this callback is invoked, so we serialise it directly.
+        if (
+            metadata.supportFieldConfiguration &&
+            Object.keys(metadata.supportFieldConfiguration).length > 0
+        ) {
+            objects.push({
+                objectName: 'stateManagement',
+                properties: [
+                    {
+                        name: 'supportFieldConfiguration',
+                        value: JSON.stringify(
+                            metadata.supportFieldConfiguration
+                        )
+                    }
+                ]
+            });
+        }
+        persistProperties(resolveObjectProperties(objects));
     } catch (error) {
         logWarning(
             'Failed to persist project settings from template:',

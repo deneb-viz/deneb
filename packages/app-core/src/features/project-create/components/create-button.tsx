@@ -1,6 +1,9 @@
 import { Button } from '@fluentui/react-components';
 
-import { getTemplateReplacedForDataset } from '@deneb-viz/json-processing';
+import {
+    getTemplateReplacedForDataset,
+    remapSupportFieldConfigurationForImport
+} from '@deneb-viz/json-processing';
 import { logDebug, logRender, logWarning } from '@deneb-viz/utils/logging';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 import { useSpecificationEditor } from '../../specification-editor';
@@ -42,15 +45,28 @@ export const CreateButton = () => {
             metadata?.dataset ?? []
         );
         const config = candidates?.config ?? PROJECT_DEFAULTS.config;
+        // Remap support field configuration keys from template placeholders (__0__, __1__, …)
+        // to actual field names supplied by the user. Computed once and shared with both the
+        // platform persistence callback and the project state initialisation.
+        const supportFieldConfiguration =
+            remapSupportFieldConfigurationForImport(
+                metadata?.supportFieldConfiguration,
+                metadata?.dataset ?? []
+            );
+        const metadataWithRemappedConfig = {
+            ...metadata,
+            supportFieldConfiguration
+        };
         logDebug('createFromTemplate - processed candidates', {
             spec,
-            config
+            config,
+            supportFieldConfiguration
         });
         // Call platform-specific handler FIRST for persistence (avoids sync race conditions)
         if (onCreateProject && metadata) {
             try {
                 await onCreateProject({
-                    metadata,
+                    metadata: metadataWithRemappedConfig,
                     spec,
                     config
                 });
@@ -61,11 +77,11 @@ export const CreateButton = () => {
                 );
             }
         }
-        // Initialize project state from template
         initializeFromTemplate({
             spec: spec,
             config: config,
-            provider
+            provider,
+            supportFieldConfiguration
         });
         // Update editor refs directly for immediate UI update
         editorSpec?.current?.setValue(spec);
