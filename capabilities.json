@@ -358,6 +358,7 @@
             }
         }
     ],
+    "supportsKeyboardFocus": true,
     "supportsLandingPage": true,
     "supportsMultiVisualSelection": true,
     "supportsEmptyDataView": false,
