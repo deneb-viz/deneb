@@ -1,5 +1,5 @@
 import type { SupportFieldValueProvider } from '@deneb-viz/data-core/support-fields';
-import type { PrimitiveValue } from '@deneb-viz/data-core';
+import type { PrimitiveValue } from '@deneb-viz/data-core/value';
 import { getFormattedValue as pbiGetFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
 import type powerbi from 'powerbi-visuals-api';
 

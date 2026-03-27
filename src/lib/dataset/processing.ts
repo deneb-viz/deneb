@@ -232,7 +232,11 @@ export const getMappedDataset = (
 
             const plan = buildProcessingPlan({
                 fields: columns
-                    .filter((c) => c.column.roles?.[DATASET_DEFAULT_NAME])
+                    .filter(
+                        (c) =>
+                            c.column.roles?.[DATASET_DEFAULT_NAME] &&
+                            isSourceField(c.source)
+                    )
                     .map((c) => ({
                         encodedName:
                             c.encodedName ??
@@ -251,7 +255,10 @@ export const getMappedDataset = (
             // Map plan field positions to their indices in columns/fieldValues
             const planFieldIndices = columns
                 .map((c, i) =>
-                    c.column.roles?.[DATASET_DEFAULT_NAME] ? i : -1
+                    c.column.roles?.[DATASET_DEFAULT_NAME] &&
+                    isSourceField(c.source)
+                        ? i
+                        : -1
                 )
                 .filter((i) => i !== -1);
 

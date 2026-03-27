@@ -180,17 +180,18 @@ export class Deneb implements IVisual {
             settings,
             options?.dataViews?.[0]?.metadata
         );
-        let dataChanged = false;
-        if (shouldProcess) {
-            dataChanged = hasDataViewChanged(
-                categorical,
-                enableSelection,
-                enableHighlight
-            );
-            logDebug('Data changed check', { dataChanged });
-        }
+        // Always run change detection — interactivity setting changes (cross-filter,
+        // cross-highlight) affect the processing plan and must trigger reprocessing
+        // even when the data itself hasn't changed (shouldProcess may be false for
+        // property-only updates).
+        const dataChanged = hasDataViewChanged(
+            categorical,
+            enableSelection,
+            enableHighlight
+        );
+        logDebug('Data changed check', { shouldProcess, dataChanged });
 
-        if (shouldProcess && dataChanged) {
+        if (dataChanged) {
             logDebug('Visual dataset has changed and should be re-processed.');
             logTimeStart('processDataset');
             const rowsLoaded = getCategoricalRowCount(categorical);
