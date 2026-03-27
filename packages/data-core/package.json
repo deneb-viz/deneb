@@ -28,6 +28,10 @@
         "./value": {
             "types": "./dist/lib/value/index.d.ts",
             "default": "./dist/lib/value/index.js"
+        },
+        "./support-fields": {
+            "types": "./dist/lib/support-fields/index.d.ts",
+            "default": "./dist/lib/support-fields/index.js"
         }
     },
     "sideEffects": false,
