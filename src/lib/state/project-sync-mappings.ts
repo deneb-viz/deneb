@@ -111,5 +111,27 @@ export const PROJECT_SYNC_MAPPINGS: SliceSyncMapping<ProjectSyncKey>[] = [
         // Note: interactivity persistence is handled separately per-property
         // since it's an object composed of multiple visual settings properties.
         // Changes to interactivity come from the Power BI side only.
+    },
+    {
+        sliceKey: 'supportFieldConfiguration',
+        getVisualValue: (s) => {
+            const raw =
+                s.stateManagement.supportFields.supportFieldConfiguration.value;
+            return raw ? JSON.parse(raw) : {};
+        },
+        persistence: {
+            objectName: 'stateManagement',
+            propertyName: 'supportFieldConfiguration'
+        },
+        onPersist: (value) => {
+            // Serialize object to JSON string for Power BI text property storage
+            return [
+                {
+                    objectName: 'stateManagement',
+                    propertyName: 'supportFieldConfiguration',
+                    value: JSON.stringify(value)
+                }
+            ];
+        }
     }
 ];

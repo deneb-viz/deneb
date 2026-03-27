@@ -325,6 +325,9 @@
                     "type": {
                         "numeric": true
                     }
+                },
+                "supportFieldConfiguration": {
+                    "type": { "text": true }
                 }
             }
         }
