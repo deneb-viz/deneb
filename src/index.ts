@@ -48,6 +48,7 @@ import {
     createCrossFilterClearHandler
 } from './lib/vega-embed';
 import { APPLICATION_NAME, APPLICATION_VERSION } from './lib/application';
+import { handleTabWrapAround } from './lib/keyboard-focus';
 
 /**
  * Centralize/report developer mode from environment.
@@ -106,6 +107,7 @@ export class Deneb implements IVisual {
             this.#applicationWrapper.id = 'deneb-application-wrapper';
             element.appendChild(this.#applicationWrapper);
             this.handleSuppressOnObjectFormatting();
+            this.bindTabCycling();
             this.#root = createRoot(this.#applicationWrapper);
             this.#root.render(createElement(App, { host }));
             element.oncontextmenu = (ev) => {
@@ -263,6 +265,27 @@ export class Deneb implements IVisual {
             fieldUsage: { dataset: trackedFieldsCurrent }
         } = getDenebState();
         updateFieldTracking(spec, trackedFieldsCurrent);
+    }
+
+    /**
+     * Cycle Tab focus within the visual's own tabbable elements to prevent focus from
+     * escaping the iframe into other visuals on the Power BI canvas. When the user
+     * reaches the last tabbable element, Tab wraps to the first; Shift+Tab on the first
+     * wraps to the last. Esc is not intercepted — Power BI handles exiting the visual.
+     */
+    private bindTabCycling() {
+        document.addEventListener('keydown', (event) => {
+            if (event.key !== 'Tab') return;
+            if (
+                handleTabWrapAround(
+                    this.#applicationWrapper,
+                    document.activeElement,
+                    event.shiftKey
+                )
+            ) {
+                event.preventDefault();
+            }
+        });
     }
 
     /**
