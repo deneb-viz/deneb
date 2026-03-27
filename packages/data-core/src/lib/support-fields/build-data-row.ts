@@ -35,9 +35,9 @@ export const buildDataRow = (params: BuildDataRowParams): VegaDatum => {
     }
 
     for (let i = 0; i < plan.fields.length; i++) {
-        const instruction = plan.fields[i];
+        const instruction = plan.fields[i]!;
         const { encodedName, sourceIndex } = instruction;
-        const baseValue = baseValues[i];
+        const baseValue = baseValues[i] as PrimitiveValue;
 
         row[encodedName] = baseValue;
 

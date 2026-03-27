@@ -14,28 +14,29 @@ import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 import {
     DRILL_FIELD_FLAT,
     DRILL_FIELD_NAME,
-    HIGHLIGHT_COMPARATOR_SUFFIX,
-    HIGHLIGHT_FIELD_SUFFIX,
-    HIGHLIGHT_STATUS_SUFFIX,
     ROW_INDEX_FIELD_NAME
 } from '@deneb-viz/data-core/field';
+import { type VegaDatum } from '@deneb-viz/data-core/value';
 import {
-    getHighlightComparatorValue,
-    getHighlightStatusValue,
-    type VegaDatum
-} from '@deneb-viz/data-core/value';
+    buildProcessingPlan,
+    buildDataRow
+} from '@deneb-viz/data-core/support-fields';
+import type {
+    SupportFieldConfiguration,
+    SupportFieldMasterSettings
+} from '@deneb-viz/data-core/support-fields';
 import {
     logDebug,
     logError,
     logTimeEnd,
     logTimeStart
 } from '@deneb-viz/utils/logging';
+import { getDenebState } from '@deneb-viz/app-core';
 import { type DatasetSlice, type SetDatasetPayload } from '../../state/dataset';
 import {
     doesDataViewHaveHighlights,
     getCategoricalRowCount
 } from './data-view';
-import type { AugmentedMetadataField } from './types';
 import {
     getCastedPrimitiveValue,
     getDatumValueEntriesFromDataview
@@ -54,6 +55,8 @@ import {
     type SelectionIdQueueEntry,
     type SelectorStatus
 } from '../interactivity';
+import { createPbiSupportFieldProvider } from './support-field-provider';
+import { isLegacySpec } from './support-field-migration';
 
 // State for reference-based change detection
 let prevCategories: DataViewCategoryColumn[] | undefined;
@@ -62,65 +65,6 @@ let prevHighlights: (PrimitiveValue[] | undefined)[] = [];
 let prevEnableSelection: boolean | undefined;
 let prevEnableHighlight: boolean | undefined;
 let prevRowCount: number = 0;
-
-/**
- * For supplied data view field metadata, produce a suitable object representation of the row that corresponds with the
- * dataset metadata.
- */
-const getDataRow = (
-    fields: AugmentedMetadataField[],
-    values: PrimitiveValue[][],
-    rowIndex: number,
-    hasHighlights: boolean,
-    hasDrilldown: boolean,
-    isCrossHighlight: boolean
-) => {
-    const row = <VegaDatum>{};
-    for (let fi = 0; fi < fields.length; fi++) {
-        const f = fields[fi];
-        const rawValue = getCastedPrimitiveValue(f, values[fi][rowIndex]);
-        const fieldName =
-            f.encodedName ?? getEncodedFieldName(f.column.displayName);
-        const isDatasetField = f?.column.roles?.[DATASET_DEFAULT_NAME];
-        const isDrilldownField =
-            hasDrilldown && f?.column?.roles?.[DRILL_FIELD_NAME];
-
-        if (isDatasetField) {
-            const fieldHighlight = `${fieldName}${HIGHLIGHT_FIELD_SUFFIX}`;
-            const fieldHighlightStatus = `${fieldName}${HIGHLIGHT_STATUS_SUFFIX}`;
-            const fieldHighlightComparator = `${fieldName}${HIGHLIGHT_COMPARATOR_SUFFIX}`;
-            const rawValueOriginal: PrimitiveValue = row[fieldHighlight];
-            const shouldHighlight = isCrossHighlight && f.source === 'values';
-
-            row[fieldName] = rawValue;
-            if (shouldHighlight) {
-                row[fieldHighlightStatus] = getHighlightStatusValue(
-                    hasHighlights,
-                    rawValue,
-                    rawValueOriginal
-                );
-                row[fieldHighlightComparator] = getHighlightComparatorValue(
-                    rawValue,
-                    rawValueOriginal
-                );
-            }
-        }
-
-        if (isDrilldownField) {
-            row[DRILL_FIELD_NAME] = resolveDrilldownComponents(
-                row?.[DRILL_FIELD_NAME],
-                rawValue,
-                f.column.format
-            );
-            row[DRILL_FIELD_FLAT] = resolveDrilldownFlat(
-                row?.[DRILL_FIELD_FLAT],
-                rawValue,
-                f.column.format
-            );
-        }
-    }
-    return row;
-};
 
 /**
  * Ensures an empty dataset is made available.
@@ -265,6 +209,52 @@ export const getMappedDataset = (
 
             logTimeStart('getMappedDataset values');
 
+            // Build support field processing plan
+            const masterSettings: SupportFieldMasterSettings = {
+                crossHighlightEnabled: isCrossHighlight,
+                crossFilterEnabled: isCrossFilter
+            };
+
+            const supportFieldConfig: SupportFieldConfiguration =
+                getDenebState().project.supportFieldConfiguration ?? {};
+
+            const legacy = isLegacySpec(
+                getDenebState().project.spec,
+                supportFieldConfig
+            );
+
+            const pbiProvider = createPbiSupportFieldProvider({
+                categories: dvCategories,
+                values: dvValues,
+                hasHighlights,
+                locale
+            });
+
+            const plan = buildProcessingPlan({
+                fields: columns
+                    .filter((c) => c.column.roles?.[DATASET_DEFAULT_NAME])
+                    .map((c) => ({
+                        encodedName:
+                            c.encodedName ??
+                            getEncodedFieldName(c.column.displayName),
+                        sourceIndex: c.sourceIndex,
+                        role: c.column.isMeasure
+                            ? ('aggregation' as const)
+                            : ('grouping' as const)
+                    })),
+                configuration: supportFieldConfig,
+                masterSettings,
+                hasHighlights,
+                isLegacy: legacy
+            });
+
+            // Map plan field positions to their indices in columns/fieldValues
+            const planFieldIndices = columns
+                .map((c, i) =>
+                    c.column.roles?.[DATASET_DEFAULT_NAME] ? i : -1
+                )
+                .filter((i) => i !== -1);
+
             // Build selection queue template once (outside the row loop)
             // Doing this here this adds up a lot when processing large datasets
             const selectionQueueBase: SelectionIdQueueEntry[] = [];
@@ -294,19 +284,47 @@ export const getMappedDataset = (
                 selectionQueue.rowNumber = r;
                 const selector =
                     InteractivityManager.addRowSelector(selectionQueue);
-                const md: VegaDatum = {
-                    __row__: r,
-                    ...(isCrossFilter && { __selected__: selector?.status }),
-                    ...getDataRow(
-                        columns,
-                        fieldValues,
-                        r,
-                        hasHighlights,
-                        hasDrilldown,
-                        isCrossHighlight
-                    )
-                };
-                values.push(md);
+
+                // Extract base values for dataset fields (matching plan.fields order)
+                const baseValues = planFieldIndices.map((idx) =>
+                    getCastedPrimitiveValue(columns[idx], fieldValues[idx][r])
+                );
+
+                const row = buildDataRow({
+                    plan,
+                    provider: pbiProvider,
+                    baseValues,
+                    rowIndex: r,
+                    selectionStatus: plan.emitSelected
+                        ? (selector?.status ?? 'neutral')
+                        : undefined,
+                    locale
+                });
+
+                // Handle drilldown fields (Power BI-specific, not part of the generic engine)
+                if (hasDrilldown) {
+                    for (let fi = 0; fi < columns.length; fi++) {
+                        const f = columns[fi];
+                        if (f?.column?.roles?.[DRILL_FIELD_NAME]) {
+                            const rawValue = getCastedPrimitiveValue(
+                                f,
+                                fieldValues[fi][r]
+                            );
+                            row[DRILL_FIELD_NAME] = resolveDrilldownComponents(
+                                row?.[DRILL_FIELD_NAME],
+                                rawValue,
+                                f.column.format
+                            );
+                            row[DRILL_FIELD_FLAT] = resolveDrilldownFlat(
+                                row?.[DRILL_FIELD_FLAT],
+                                rawValue,
+                                f.column.format
+                            );
+                        }
+                    }
+                }
+
+                values.push(row);
             }
             logTimeEnd('getMappedDataset values');
             logTimeEnd('getMappedDataset');
