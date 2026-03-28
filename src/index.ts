@@ -33,6 +33,7 @@ import {
     type I18nLocale,
     updateFieldTracking
 } from '@deneb-viz/app-core';
+import type { SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 import { VegaExtensibilityServices } from '@deneb-viz/vega-runtime/extensibility';
 import {
     canFetchMoreFromDataview,
@@ -184,10 +185,14 @@ export class Deneb implements IVisual {
         // cross-highlight) affect the processing plan and must trigger reprocessing
         // even when the data itself hasn't changed (shouldProcess may be false for
         // property-only updates).
+        const supportFieldConfig: SupportFieldConfiguration =
+            getDenebState().project.supportFieldConfiguration ?? {};
+
         const dataChanged = hasDataViewChanged(
             categorical,
             enableSelection,
-            enableHighlight
+            enableHighlight,
+            supportFieldConfig
         );
         logDebug('Data changed check', { shouldProcess, dataChanged });
 

@@ -19,7 +19,8 @@ import {
 import { type VegaDatum } from '@deneb-viz/data-core/value';
 import {
     buildProcessingPlan,
-    buildDataRow
+    buildDataRow,
+    resolveFieldDefaults
 } from '@deneb-viz/data-core/support-fields';
 import type {
     SupportFieldConfiguration,
@@ -65,6 +66,7 @@ let prevHighlights: (PrimitiveValue[] | undefined)[] = [];
 let prevEnableSelection: boolean | undefined;
 let prevEnableHighlight: boolean | undefined;
 let prevRowCount: number = 0;
+let prevSupportFieldConfiguration: string | undefined;
 
 /**
  * Ensures an empty dataset is made available.
@@ -85,9 +87,20 @@ const getEmptyDataset = (): SetDatasetPayload => ({
 export const hasDataViewChanged = (
     categorical: DataViewCategorical | undefined,
     enableSelection: boolean,
-    enableHighlight: boolean
+    enableHighlight: boolean,
+    supportFieldConfiguration: SupportFieldConfiguration
 ): boolean => {
     logTimeStart('hasDataViewChanged');
+
+    // Support field configuration changed
+    const configString = JSON.stringify(supportFieldConfiguration);
+    if (configString !== prevSupportFieldConfiguration) {
+        prevSupportFieldConfiguration = configString;
+        updatePrevReferences(categorical);
+        logDebug('hasDataViewChanged: supportFieldConfiguration changed');
+        logTimeEnd('hasDataViewChanged');
+        return true;
+    }
 
     // Settings changed
     if (
@@ -222,6 +235,37 @@ export const getMappedDataset = (
                 getDenebState().project.spec,
                 supportFieldConfig
             );
+
+            // One-time migration: stamp resolved legacy defaults into config
+            // so that isLegacySpec returns false from this point on. This
+            // ensures reset-to-default gives new-spec behavior, not legacy.
+            if (legacy) {
+                const migratedConfig: SupportFieldConfiguration = {};
+                const sourceColumns = columns.filter(
+                    (c) =>
+                        c.column.roles?.[DATASET_DEFAULT_NAME] &&
+                        isSourceField(c.source)
+                );
+                for (const c of sourceColumns) {
+                    const encodedName =
+                        c.encodedName ??
+                        getEncodedFieldName(c.column.displayName);
+                    migratedConfig[encodedName] = resolveFieldDefaults({
+                        masterSettings,
+                        fieldRole: c.column.isMeasure
+                            ? 'aggregation'
+                            : 'grouping',
+                        isLegacy: true
+                    });
+                }
+                getDenebState().project.setSupportFieldConfiguration(
+                    migratedConfig
+                );
+                logDebug(
+                    'getMappedDataset: migrated legacy support field config',
+                    { migratedConfig }
+                );
+            }
 
             const pbiProvider = createPbiSupportFieldProvider({
                 categories: dvCategories,
