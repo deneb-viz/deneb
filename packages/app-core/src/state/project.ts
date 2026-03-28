@@ -24,6 +24,9 @@ export type ProjectSliceProperties = SyncableSlice &
         setIsInitialized: (isInitialized: boolean) => void;
         setProvider: (provider: SpecProvider | undefined) => void;
         setRenderMode: (renderMode: SpecRenderMode) => void;
+        setSupportFieldConfiguration: (
+            config: SupportFieldConfiguration
+        ) => void;
         syncProjectData: (payload: ProjectSyncPayload) => void;
     };
 
@@ -226,6 +229,17 @@ export const createProjectSlice =
                     }),
                     false,
                     'project.setRenderMode'
+                ),
+            setSupportFieldConfiguration: (config: SupportFieldConfiguration) =>
+                set(
+                    (state) => ({
+                        project: {
+                            ...state.project,
+                            supportFieldConfiguration: config
+                        }
+                    }),
+                    false,
+                    'project.setSupportFieldConfiguration'
                 ),
             syncProjectData: (payload: ProjectSyncPayload) =>
                 set(
