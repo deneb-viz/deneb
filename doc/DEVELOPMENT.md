@@ -148,6 +148,22 @@ node_modules/@deneb-viz/**/dist/**/*
 
 Snapshot `managedPaths` ensures linked workspace packages under `node_modules/@deneb-viz` are not treated as immutable.
 
+### Support Field Configuration Engine (`data-core`)
+
+Per-field flags that control which support columns (`__highlight__`, `__format__`, `__formatted__`) are appended during dataset mapping.
+
+**Processing plan pattern** — avoids repeated flag evaluation inside the row loop:
+
+- `buildProcessingPlan(config, provider)` in `@deneb-viz/data-core/support-fields` resolves all flags once and returns a reusable plan.
+- `buildDataRow(row, plan)` executes the plan for each data row.
+- `SupportFieldValueProvider` is an interface injected at the call site, decoupling platform-specific value logic (e.g. Power BI format strings) from `data-core`.
+
+**State management** — configuration is stored in `supportFieldConfiguration` inside the visual's `stateManagement` property (alongside viewport dimensions) and is synced through the project slice in `@deneb-viz/app-core`. On first load of a pre-2.0 spec, legacy defaults are stamped in so existing specs continue to behave as before.
+
+**UI** — exposed via the Dataset accordion item in the Settings pane (`@deneb-viz/app-core`).
+
+Full API reference: [`packages/data-core/doc/support-fields.md`](../packages/data-core/doc/support-fields.md)
+
 ### Feature module boundaries (`app-core`)
 
 Features in `packages/app-core/src/features/` must not cross-import from sibling features. This prevents circular dependencies and keeps features independently composable.
