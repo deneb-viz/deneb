@@ -7,6 +7,7 @@ import {
     SELECTED_ROW_FIELD_NAME,
     type UsermetaDatasetField
 } from '@deneb-viz/data-core/field';
+import type { SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 
 const dataset: UsermetaDatasetField[] = [
     {
@@ -26,6 +27,16 @@ const dataset: UsermetaDatasetField[] = [
         kind: 'measure'
     }
 ];
+
+const supportFieldConfiguration: SupportFieldConfiguration = {
+    __1__: {
+        highlight: true,
+        highlightStatus: true,
+        highlightComparator: true,
+        format: false,
+        formatted: false
+    }
+};
 
 export const vlBarInteractive = (): TopLevelSpec => ({
     $schema: VEGA_LITE_SCHEMA_URL,
@@ -90,7 +101,8 @@ export const vlBarInteractive = (): TopLevelSpec => ({
                 highlight: true,
                 selection: true,
                 dataPointLimit: INTERACTIVITY_DEFAULTS.selectionMaxDataPoints
-            }
+            },
+            supportFieldConfiguration
         }
     }
 });

@@ -13,6 +13,7 @@ import {
     type UsermetaDatasetField
 } from '@deneb-viz/data-core/field';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
+import type { SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 
 const dataset: UsermetaDatasetField[] = [
     {
@@ -32,6 +33,16 @@ const dataset: UsermetaDatasetField[] = [
         kind: 'measure'
     }
 ];
+
+const supportFieldConfiguration: SupportFieldConfiguration = {
+    __1__: {
+        highlight: true,
+        highlightStatus: true,
+        highlightComparator: true,
+        format: false,
+        formatted: false
+    }
+};
 
 // eslint-disable-next-line max-lines-per-function
 export const vBarInteractive = (): Spec => ({
@@ -155,6 +166,7 @@ export const vBarInteractive = (): Spec => ({
                 selection: true,
                 dataPointLimit: INTERACTIVITY_DEFAULTS.selectionMaxDataPoints
             },
+            supportFieldConfiguration,
             config: getDenebTemplateVegaSpecificConfig()
         }
     }
