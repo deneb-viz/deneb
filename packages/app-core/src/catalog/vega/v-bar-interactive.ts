@@ -37,8 +37,8 @@ const dataset: UsermetaDatasetField[] = [
 const supportFieldConfiguration: SupportFieldConfiguration = {
     __1__: {
         highlight: true,
-        highlightStatus: true,
-        highlightComparator: true,
+        highlightStatus: false,
+        highlightComparator: false,
         format: false,
         formatted: false
     }
