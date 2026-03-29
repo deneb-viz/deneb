@@ -167,7 +167,7 @@ export const remapSupportFieldConfigurationForImport = (
     const placeholderToName = new Map<string, string>(
         dataset.map((field, index) => [
             getPlaceholderKey(index),
-            field.suppliedObjectName as string
+            field.suppliedObjectName ?? ''
         ])
     );
     return Object.fromEntries(
@@ -259,7 +259,7 @@ export const getTemplateReplacedForDataset = (
     // Then replace field placeholders
     return dataset.reduce((result, value, index) => {
         const pattern = getFieldPattern(index);
-        return result.replace(pattern, value.suppliedObjectName as string);
+        return result.replace(pattern, value.suppliedObjectName ?? '');
     }, migratedSpec);
 };
 

@@ -56,7 +56,10 @@ import {
     type SelectionIdQueueEntry,
     type SelectorStatus
 } from '../interactivity';
-import { createPbiSupportFieldProvider } from './support-field-provider';
+import {
+    createPbiSupportFieldProvider,
+    type FieldSourceMapping
+} from './support-field-provider';
 import { isLegacySpec } from './support-field-migration';
 
 // State for reference-based change detection
@@ -267,29 +270,36 @@ export const getMappedDataset = (
                 );
             }
 
+            // Filter to source fields and build plan inputs + field source mappings
+            const planSourceColumns = columns.filter(
+                (c) =>
+                    c.column.roles?.[DATASET_DEFAULT_NAME] &&
+                    isSourceField(c.source)
+            );
+
+            const fieldSourceMappings: FieldSourceMapping[] =
+                planSourceColumns.map((c) => ({
+                    source: c.column.isMeasure ? 'values' : 'categories',
+                    index: c.sourceIndex
+                }));
+
             const pbiProvider = createPbiSupportFieldProvider({
                 categories: dvCategories,
                 values: dvValues,
                 hasHighlights,
-                locale
+                fieldSourceMappings
             });
 
             const plan = buildProcessingPlan({
-                fields: columns
-                    .filter(
-                        (c) =>
-                            c.column.roles?.[DATASET_DEFAULT_NAME] &&
-                            isSourceField(c.source)
-                    )
-                    .map((c) => ({
-                        encodedName:
-                            c.encodedName ??
-                            getEncodedFieldName(c.column.displayName),
-                        sourceIndex: c.sourceIndex,
-                        role: c.column.isMeasure
-                            ? ('aggregation' as const)
-                            : ('grouping' as const)
-                    })),
+                fields: planSourceColumns.map((c) => ({
+                    encodedName:
+                        c.encodedName ??
+                        getEncodedFieldName(c.column.displayName),
+                    sourceIndex: c.sourceIndex,
+                    role: c.column.isMeasure
+                        ? ('aggregation' as const)
+                        : ('grouping' as const)
+                })),
                 configuration: supportFieldConfig,
                 masterSettings,
                 hasHighlights,
