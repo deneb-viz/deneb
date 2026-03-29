@@ -117,7 +117,12 @@ export const PROJECT_SYNC_MAPPINGS: SliceSyncMapping<ProjectSyncKey>[] = [
         getVisualValue: (s) => {
             const raw =
                 s.stateManagement.supportFields.supportFieldConfiguration.value;
-            return raw ? JSON.parse(raw) : {};
+            if (!raw) return {};
+            try {
+                return JSON.parse(raw);
+            } catch {
+                return {};
+            }
         },
         persistence: {
             objectName: 'stateManagement',
