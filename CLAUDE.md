@@ -72,7 +72,7 @@ npm run dev       # Start development (auto-primes assets if needed)
 - **vega-runtime** - Vega/Vega-Lite runtime integration, spec processing, and compilation
 - **vega-react** - React hooks and context for Vega embedding (useVegaEmbed, VegaViewProvider)
 - **powerbi-compat** - Power BI API compatibility layer (**SINGLETON** - see below)
-- **data-core** - Dataset field management and value processing
+- **data-core** - Dataset field management and value processing; includes the support field processing engine (types, plan builder, row builder, default provider)
 - **json-processing** - JSON spec processing and field tracking
 - **configuration** - Configuration and feature flags
 - **template-usermeta** - Template metadata handling
@@ -125,6 +125,9 @@ buildEmbedOptions() → useVegaEmbed() → vegaEmbed() → Vega View
 ```
 Power BI DataView → update() → Categorical data extraction → Dataset mapping
     ↓
+supportFieldConfiguration → buildProcessingPlan() → per-row buildDataRow()
+    (flags resolved once; platform values injected via SupportFieldValueProvider)
+    ↓
 Dataset passed to Vega view (via compilation API)
     ↓
 Vega signals → Visual state (Zustand) → Power BI host (selections/cross-filters)
@@ -144,6 +147,17 @@ React UI (Fluent UI components) + Vega canvas rendering
 - `updates` - Visual update tracking
 
 **App-Core State:** Separate store in `@deneb-viz/app-core` for reusable components
+
+### Support Field Configuration
+
+Per-field configuration of which support fields (`__highlight__`, `__format__`, `__formatted__`) are generated during dataset mapping.
+
+- **Storage:** `supportFieldConfiguration` object within the `stateManagement` property (alongside viewport dimensions), synced via the project slice in `@deneb-viz/app-core`
+- **Processing plan pattern:** `buildProcessingPlan()` resolves all flags once before the row loop; `buildDataRow()` executes the plan per row — avoids repeated flag evaluation at scale
+- **Platform abstraction:** `SupportFieldValueProvider` (in `@deneb-viz/data-core`) is injected at the call site; allows platform-specific implementations (e.g. Power BI format strings) without coupling `data-core` to the host
+- **Legacy migration:** On first load of a pre-2.0 spec, legacy defaults are stamped into `stateManagement` so existing specs continue to behave as before
+- **UI:** Dataset accordion item in the Settings pane (`@deneb-viz/app-core`)
+- **Full API docs:** [`packages/data-core/doc/support-fields.md`](packages/data-core/doc/support-fields.md)
 
 ### Build System Architecture
 
@@ -229,6 +243,8 @@ React UI (Fluent UI components) + Vega canvas rendering
 
 **Certification:** Validate with `npm run validate-config-for-commit` before packaging
 - `ALLOW_EXTERNAL_URI=false`, `LOG_LEVEL=0`, all dev toggles off
+
+**Persisted visual state (`stateManagement`):** Stores viewport dimensions and `supportFieldConfiguration` — the per-field flags controlling which support fields are generated. This property is part of the visual's persistent JSON and grows as new per-spec configuration is added.
 
 ## Troubleshooting
 

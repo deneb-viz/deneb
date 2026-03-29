@@ -33,6 +33,7 @@ import {
     type I18nLocale,
     updateFieldTracking
 } from '@deneb-viz/app-core';
+import type { SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 import { VegaExtensibilityServices } from '@deneb-viz/vega-runtime/extensibility';
 import {
     canFetchMoreFromDataview,
@@ -180,17 +181,22 @@ export class Deneb implements IVisual {
             settings,
             options?.dataViews?.[0]?.metadata
         );
-        let dataChanged = false;
-        if (shouldProcess) {
-            dataChanged = hasDataViewChanged(
-                categorical,
-                enableSelection,
-                enableHighlight
-            );
-            logDebug('Data changed check', { dataChanged });
-        }
+        // Always run change detection — interactivity setting changes (cross-filter,
+        // cross-highlight) affect the processing plan and must trigger reprocessing
+        // even when the data itself hasn't changed (shouldProcess may be false for
+        // property-only updates).
+        const supportFieldConfig: SupportFieldConfiguration =
+            getDenebState().project.supportFieldConfiguration ?? {};
 
-        if (shouldProcess && dataChanged) {
+        const dataChanged = hasDataViewChanged(
+            categorical,
+            enableSelection,
+            enableHighlight,
+            supportFieldConfig
+        );
+        logDebug('Data changed check', { shouldProcess, dataChanged });
+
+        if (dataChanged) {
             logDebug('Visual dataset has changed and should be re-processed.');
             logTimeStart('processDataset');
             const rowsLoaded = getCategoricalRowCount(categorical);

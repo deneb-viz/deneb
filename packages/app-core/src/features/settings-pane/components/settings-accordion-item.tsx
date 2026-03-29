@@ -3,10 +3,12 @@ import {
     AccordionItem,
     AccordionHeader,
     AccordionPanel,
+    InfoLabel,
     makeStyles,
     tokens,
     type AccordionHeaderProps
 } from '@fluentui/react-components';
+import { useSettingsPaneTooltip } from './settings-pane-tooltip-context';
 
 const useStyles = makeStyles({
     item: {
@@ -30,6 +32,8 @@ type SettingsAccordionItemProps = {
     value: string;
     heading: string;
     icon?: AccordionHeaderProps['icon'];
+    /** Optional info text displayed as a popover via InfoLabel in the header. */
+    info?: string;
     children: ReactNode;
 };
 
@@ -42,13 +46,28 @@ export const SettingsAccordionItem = ({
     value,
     heading,
     icon,
+    info,
     children
 }: SettingsAccordionItemProps) => {
     const classes = useStyles();
+    const tooltipMountNode = useSettingsPaneTooltip();
     return (
         <AccordionItem value={value} className={classes.item}>
             <AccordionHeader className={classes.header} icon={icon}>
-                {heading}
+                {info ? (
+                    <InfoLabel
+                        info={info}
+                        infoButton={{
+                            inline: false,
+                            popover: { mountNode: tooltipMountNode },
+                            onClick: (e) => e.stopPropagation()
+                        }}
+                    >
+                        {heading}
+                    </InfoLabel>
+                ) : (
+                    heading
+                )}
             </AccordionHeader>
             <AccordionPanel className={classes.panel}>
                 {children}

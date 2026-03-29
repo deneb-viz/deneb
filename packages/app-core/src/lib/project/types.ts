@@ -3,6 +3,7 @@ import {
     type SpecRenderMode
 } from '@deneb-viz/vega-runtime/embed';
 import { type UsermetaInteractivity } from '@deneb-viz/template-usermeta';
+import type { SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 
 export type DenebProject = {
     config: string;
@@ -12,4 +13,5 @@ export type DenebProject = {
     providerVersion: string | undefined;
     renderMode: SpecRenderMode;
     spec: string;
+    supportFieldConfiguration: SupportFieldConfiguration;
 };

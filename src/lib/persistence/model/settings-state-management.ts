@@ -6,7 +6,23 @@ export class SettingsStateManagement extends formattingSettings.CompositeCard {
     displayNameKey = 'Objects_StateManagement';
     descriptionKey = 'Objects_StateManagementDisplay_Description';
     viewport = new SettingsStateManagementGroupViewport(Object());
-    groups = [this.viewport];
+    supportFields = new SettingsStateManagementGroupSupportFields(Object());
+    groups = [this.viewport, this.supportFields];
+}
+
+class SettingsStateManagementGroupSupportFields
+    extends formattingSettings.Group
+{
+    name = 'supportFields';
+    displayNameKey = 'Objects_StateManagement_Group_SupportFields';
+    supportFieldConfiguration = new formattingSettings.ReadOnlyText({
+        name: 'supportFieldConfiguration',
+        displayNameKey: 'Objects_StateManagement_SupportFieldConfiguration',
+        descriptionKey:
+            'Objects_StateManagement_SupportFieldConfiguration_Description',
+        value: DEFAULTS.stateManagement.supportFieldConfiguration
+    });
+    slices = [this.supportFieldConfiguration];
 }
 
 class SettingsStateManagementGroupViewport extends formattingSettings.Group {
