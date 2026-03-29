@@ -231,13 +231,11 @@ export const getMappedDataset = (
                 crossFilterEnabled: isCrossFilter
             };
 
+            const state = getDenebState();
             const supportFieldConfig: SupportFieldConfiguration =
-                getDenebState().project.supportFieldConfiguration ?? {};
+                state.project.supportFieldConfiguration ?? {};
 
-            const legacy = isLegacySpec(
-                getDenebState().project.spec,
-                supportFieldConfig
-            );
+            const legacy = isLegacySpec(state.project.spec, supportFieldConfig);
 
             // One-time migration: stamp resolved legacy defaults into config
             // so that isLegacySpec returns false from this point on. This
@@ -261,9 +259,7 @@ export const getMappedDataset = (
                         isLegacy: true
                     });
                 }
-                getDenebState().project.setSupportFieldConfiguration(
-                    migratedConfig
-                );
+                state.project.setSupportFieldConfiguration(migratedConfig);
                 logDebug(
                     'getMappedDataset: migrated legacy support field config',
                     { migratedConfig }
