@@ -36,7 +36,7 @@ export const buildDataRow = (params: BuildDataRowParams): VegaDatum => {
 
     for (let i = 0; i < plan.fields.length; i++) {
         const instruction = plan.fields[i]!;
-        const { encodedName, sourceIndex } = instruction;
+        const { encodedName } = instruction;
         const baseValue = baseValues[i] as PrimitiveValue;
 
         row[encodedName] = baseValue;
@@ -48,11 +48,7 @@ export const buildDataRow = (params: BuildDataRowParams): VegaDatum => {
 
         let highlightValue: PrimitiveValue | undefined;
         if (needsHighlightValue) {
-            highlightValue = provider.getHighlightValue(
-                sourceIndex,
-                rowIndex,
-                baseValue
-            );
+            highlightValue = provider.getHighlightValue(i, rowIndex, baseValue);
         }
 
         if (instruction.emitHighlight) {
@@ -75,7 +71,7 @@ export const buildDataRow = (params: BuildDataRowParams): VegaDatum => {
 
         let formatString: string | undefined;
         if (instruction.emitFormat || instruction.emitFormatted) {
-            formatString = provider.getFormatString(sourceIndex, rowIndex);
+            formatString = provider.getFormatString(i, rowIndex);
         }
 
         if (instruction.emitFormat) {

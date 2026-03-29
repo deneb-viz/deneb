@@ -38,7 +38,7 @@ const makeParams = (
     categories: undefined,
     values: undefined,
     hasHighlights: false,
-    locale: 'en-US',
+    fieldSourceMappings: [],
     ...overrides
 });
 
@@ -53,7 +53,8 @@ describe('createPbiSupportFieldProvider', () => {
         it('should return column-level format string when available on source', () => {
             const col = makeValueColumn({ sourceFormat: '#,##0.00' });
             const params = makeParams({
-                values: [col] as unknown as powerbi.DataViewValueColumns
+                values: [col] as unknown as powerbi.DataViewValueColumns,
+                fieldSourceMappings: [{ source: 'values', index: 0 }]
             });
             const provider = createPbiSupportFieldProvider(params);
             expect(provider.getFormatString(0, 0)).toBe('#,##0.00');
@@ -65,7 +66,8 @@ describe('createPbiSupportFieldProvider', () => {
                 objectsFormatString: '$#,##0'
             });
             const params = makeParams({
-                values: [col] as unknown as powerbi.DataViewValueColumns
+                values: [col] as unknown as powerbi.DataViewValueColumns,
+                fieldSourceMappings: [{ source: 'values', index: 0 }]
             });
             const provider = createPbiSupportFieldProvider(params);
             expect(provider.getFormatString(0, 0)).toBe('$#,##0');
@@ -77,7 +79,8 @@ describe('createPbiSupportFieldProvider', () => {
                 objectsFormatString: undefined
             });
             const params = makeParams({
-                values: [col] as unknown as powerbi.DataViewValueColumns
+                values: [col] as unknown as powerbi.DataViewValueColumns,
+                fieldSourceMappings: [{ source: 'values', index: 0 }]
             });
             const provider = createPbiSupportFieldProvider(params);
             expect(provider.getFormatString(0, 0)).toBe('');
@@ -92,17 +95,29 @@ describe('createPbiSupportFieldProvider', () => {
         it('should return empty string when fieldIndex is out of bounds', () => {
             const col = makeValueColumn({ sourceFormat: '#,##0' });
             const params = makeParams({
-                values: [col] as unknown as powerbi.DataViewValueColumns
+                values: [col] as unknown as powerbi.DataViewValueColumns,
+                fieldSourceMappings: [{ source: 'values', index: 0 }]
             });
             const provider = createPbiSupportFieldProvider(params);
             expect(provider.getFormatString(99, 0)).toBe('');
+        });
+
+        it('should return category format string for category-mapped field', () => {
+            const params = makeParams({
+                categories: [
+                    { source: { format: 'yyyy-MM-dd' } }
+                ] as unknown as powerbi.DataViewCategoryColumn[],
+                fieldSourceMappings: [{ source: 'categories', index: 0 }]
+            });
+            const provider = createPbiSupportFieldProvider(params);
+            expect(provider.getFormatString(0, 0)).toBe('yyyy-MM-dd');
         });
     });
 
     describe('getFormattedValue', () => {
         it('should delegate to powerbi-compat getFormattedValue with cultureSelector', () => {
             vi.mocked(getFormattedValue).mockReturnValue('1,234.56');
-            const params = makeParams({ locale: 'en-US' });
+            const params = makeParams();
             const provider = createPbiSupportFieldProvider(params);
             const result = provider.getFormattedValue(
                 1234.56,
@@ -133,7 +148,8 @@ describe('createPbiSupportFieldProvider', () => {
             const col = makeValueColumn({ highlights: [null, 75, 50] });
             const params = makeParams({
                 hasHighlights: true,
-                values: [col] as unknown as powerbi.DataViewValueColumns
+                values: [col] as unknown as powerbi.DataViewValueColumns,
+                fieldSourceMappings: [{ source: 'values', index: 0 }]
             });
             const provider = createPbiSupportFieldProvider(params);
             expect(provider.getHighlightValue(0, 1, 100)).toBe(75);
@@ -143,7 +159,8 @@ describe('createPbiSupportFieldProvider', () => {
             const col = makeValueColumn({ highlights: [null, 75, 50] });
             const params = makeParams({
                 hasHighlights: true,
-                values: [col] as unknown as powerbi.DataViewValueColumns
+                values: [col] as unknown as powerbi.DataViewValueColumns,
+                fieldSourceMappings: [{ source: 'values', index: 0 }]
             });
             const provider = createPbiSupportFieldProvider(params);
             expect(provider.getHighlightValue(0, 0, 100)).toBeNull();
@@ -163,7 +180,8 @@ describe('createPbiSupportFieldProvider', () => {
             const col = makeValueColumn({ highlights: null });
             const params = makeParams({
                 hasHighlights: true,
-                values: [col] as unknown as powerbi.DataViewValueColumns
+                values: [col] as unknown as powerbi.DataViewValueColumns,
+                fieldSourceMappings: [{ source: 'values', index: 0 }]
             });
             const provider = createPbiSupportFieldProvider(params);
             expect(provider.getHighlightValue(0, 0, 100)).toBe(100);
@@ -172,7 +190,8 @@ describe('createPbiSupportFieldProvider', () => {
         it('should return baseValue when values is undefined', () => {
             const params = makeParams({
                 hasHighlights: true,
-                values: undefined
+                values: undefined,
+                fieldSourceMappings: [{ source: 'values', index: 0 }]
             });
             const provider = createPbiSupportFieldProvider(params);
             expect(provider.getHighlightValue(0, 0, 42)).toBe(42);

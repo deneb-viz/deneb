@@ -480,5 +480,41 @@ describe('buildDataRow', () => {
             // Row index always present
             expect(result[ROW_INDEX_FIELD_NAME]).toBe(4);
         });
+
+        it('should pass plan field index (not sourceIndex) to provider methods', () => {
+            // Both fields have sourceIndex=0 in their respective DataView arrays
+            // (category at dvCategories[0], measure at dvValues[0]), but plan
+            // positions are 0 and 1. The provider must receive i=0 and i=1, not
+            // sourceIndex=0 for both.
+            const provider = makeProvider({
+                getHighlightValue: vi.fn().mockReturnValue(50),
+                getFormatString: vi.fn().mockReturnValue('fmt')
+            });
+            const plan = makePlan([
+                makeInstruction({
+                    encodedName: 'Category',
+                    sourceIndex: 0,
+                    role: 'grouping',
+                    emitFormat: true
+                }),
+                makeInstruction({
+                    encodedName: 'Sales',
+                    sourceIndex: 0,
+                    role: 'aggregation',
+                    emitHighlight: true
+                })
+            ]);
+            buildDataRow({
+                plan,
+                provider,
+                baseValues: ['A', 100],
+                rowIndex: 0,
+                locale: 'en-US'
+            });
+            // Category is plan field 0 → provider receives fieldIndex=0
+            expect(provider.getFormatString).toHaveBeenCalledWith(0, 0);
+            // Sales is plan field 1 → provider receives fieldIndex=1 (NOT sourceIndex=0)
+            expect(provider.getHighlightValue).toHaveBeenCalledWith(1, 0, 100);
+        });
     });
 });
