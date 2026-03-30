@@ -434,3 +434,42 @@ The table below shows what each flag defaults to when a field has **no** explici
 - `crossHighlightEnabled` refers to `masterSettings.crossHighlightEnabled`.
 - Legacy mode (`isLegacy: true`) matches pre-2.0 behavior exactly, emitting format and formatted fields for all measures by default.
 - New specs opt in to each support field explicitly through `SupportFieldConfiguration` (or get only the minimal `highlight` field when cross-highlight is enabled).
+
+---
+
+## 7. Legacy Detection and Template Guidance
+
+### How legacy detection works
+
+Legacy detection uses the persisted `denebMetaVersion` value (stored in Power BI's `stateManagement` property bag). The function `isLegacySpec` checks:
+
+- `denebMetaVersion < 2` AND spec is not the default template → **legacy** (migration stamps all support fields on for measures)
+- `denebMetaVersion >= 2` → **2.0+ spec** (dynamic defaults from `resolveFieldDefaults` apply)
+
+The `denebMetaVersion` is stamped automatically:
+- On template creation: set to `TEMPLATE_USERMETA_VERSION` (currently `2`)
+- On legacy migration: set to `TEMPLATE_USERMETA_VERSION` after stamping legacy defaults
+
+### Template author guidance
+
+**Clean-slate templates** (e.g., empty, simple bar): Omit `supportFieldConfiguration` entirely. All fields get dynamic defaults — measures automatically gain highlight support when the user enables cross-highlighting. This is the recommended approach for templates that don't require specific support field behavior.
+
+**Interactive templates** (e.g., bar chart with cross-highlighting): Include `supportFieldConfiguration` with explicit flags for the fields that need specific support. Use placeholder keys matching the dataset field order:
+
+```json
+{
+    "supportFieldConfiguration": {
+        "__1__": {
+            "highlight": true,
+            "highlightStatus": false,
+            "highlightComparator": false,
+            "format": false,
+            "formatted": false
+        }
+    }
+}
+```
+
+These placeholder keys are remapped to actual field names during import.
+
+**Key principle:** `supportFieldConfiguration` entries are explicit overrides. Once a field has an entry, its flags are used verbatim — `resolveFieldDefaults` is not consulted. Omitting a field from the config lets it fall through to dynamic defaults based on current master settings.

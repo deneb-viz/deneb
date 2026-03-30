@@ -69,7 +69,6 @@ export const SettingsPane = () => {
                     <SettingsAccordionItem
                         value='dataset'
                         heading={translate('Text_Settings_Dataset')}
-                        info={translate('Assistive_Text_SupportFields')}
                     >
                         <DatasetSettings />
                     </SettingsAccordionItem>
