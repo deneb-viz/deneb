@@ -41,7 +41,11 @@ export const DEFAULTS = {
         /**
          * Persisted support field configuration as a JSON string.
          */
-        supportFieldConfiguration: ''
+        supportFieldConfiguration: '',
+        /**
+         * Persisted deneb metadata version for legacy detection.
+         */
+        denebMetaVersion: ''
     },
     unitSymbols: {
         milliseconds: 'ms',

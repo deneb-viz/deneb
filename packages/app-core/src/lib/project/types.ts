@@ -14,4 +14,5 @@ export type DenebProject = {
     renderMode: SpecRenderMode;
     spec: string;
     supportFieldConfiguration: SupportFieldConfiguration;
+    denebMetaVersion: number;
 };

@@ -9,7 +9,10 @@ import {
 import { isProjectInitialized, type DenebProject } from '../lib/project';
 import { getModalDialogRole } from '../lib/interface/state';
 import { getUpdatedExportMetadata } from '@deneb-viz/json-processing';
-import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
+import {
+    TEMPLATE_USERMETA_VERSION,
+    type UsermetaTemplate
+} from '@deneb-viz/template-usermeta';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { type SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 
@@ -27,6 +30,7 @@ export type ProjectSliceProperties = SyncableSlice &
         setSupportFieldConfiguration: (
             config: SupportFieldConfiguration
         ) => void;
+        setDenebMetaVersion: (version: number) => void;
         syncProjectData: (payload: ProjectSyncPayload) => void;
     };
 
@@ -48,6 +52,12 @@ export type InitializeFromTemplatePayload = {
      * Optional — when absent the project starts with an empty configuration (defaults apply).
      */
     supportFieldConfiguration?: SupportFieldConfiguration;
+    /**
+     * The template's deneb.metaVersion. Used to stamp the persisted
+     * denebMetaVersion so that legacy templates (metaVersion < 2) trigger
+     * migration on first dataset processing.
+     */
+    denebMetaVersion?: number;
 };
 
 export type SetContentPayload = {
@@ -79,6 +89,7 @@ export const createProjectSlice =
             renderMode: PROJECT_DEFAULTS.renderMode as SpecRenderMode,
             spec: PROJECT_DEFAULTS.spec,
             supportFieldConfiguration: {},
+            denebMetaVersion: 0,
             initializeFromTemplate: (
                 payload: InitializeFromTemplatePayload
             ) => {
@@ -100,6 +111,9 @@ export const createProjectSlice =
                             renderMode,
                             supportFieldConfiguration:
                                 payload.supportFieldConfiguration ?? {},
+                            denebMetaVersion:
+                                payload.denebMetaVersion ??
+                                TEMPLATE_USERMETA_VERSION,
                             __hasHydrated__: state.project.__hasHydrated__,
                             __isInitialized__: true
                         };
@@ -240,6 +254,17 @@ export const createProjectSlice =
                     }),
                     false,
                     'project.setSupportFieldConfiguration'
+                ),
+            setDenebMetaVersion: (version: number) =>
+                set(
+                    (state) => ({
+                        project: {
+                            ...state.project,
+                            denebMetaVersion: version
+                        }
+                    }),
+                    false,
+                    'project.setDenebMetaVersion'
                 ),
             syncProjectData: (payload: ProjectSyncPayload) =>
                 set(

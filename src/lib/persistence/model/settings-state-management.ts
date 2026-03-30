@@ -6,15 +6,15 @@ export class SettingsStateManagement extends formattingSettings.CompositeCard {
     displayNameKey = 'Objects_StateManagement';
     descriptionKey = 'Objects_StateManagementDisplay_Description';
     viewport = new SettingsStateManagementGroupViewport(Object());
-    supportFields = new SettingsStateManagementGroupSupportFields(Object());
-    groups = [this.viewport, this.supportFields];
+    projectMetadata = new SettingsStateManagementGroupProjectMetadata(Object());
+    groups = [this.viewport, this.projectMetadata];
 }
 
-class SettingsStateManagementGroupSupportFields
+class SettingsStateManagementGroupProjectMetadata
     extends formattingSettings.Group
 {
-    name = 'supportFields';
-    displayNameKey = 'Objects_StateManagement_Group_SupportFields';
+    name = 'projectMetadata';
+    displayNameKey = 'Objects_StateManagement_Group_ProjectMetadata';
     supportFieldConfiguration = new formattingSettings.ReadOnlyText({
         name: 'supportFieldConfiguration',
         displayNameKey: 'Objects_StateManagement_SupportFieldConfiguration',
@@ -22,7 +22,13 @@ class SettingsStateManagementGroupSupportFields
             'Objects_StateManagement_SupportFieldConfiguration_Description',
         value: DEFAULTS.stateManagement.supportFieldConfiguration
     });
-    slices = [this.supportFieldConfiguration];
+    denebMetaVersion = new formattingSettings.ReadOnlyText({
+        name: 'denebMetaVersion',
+        displayNameKey: 'Objects_StateManagement_DenebMetaVersion',
+        descriptionKey: 'Objects_StateManagement_DenebMetaVersion_Description',
+        value: DEFAULTS.stateManagement.denebMetaVersion
+    });
+    slices = [this.supportFieldConfiguration, this.denebMetaVersion];
 }
 
 class SettingsStateManagementGroupViewport extends formattingSettings.Group {

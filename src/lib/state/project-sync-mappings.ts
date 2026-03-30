@@ -116,7 +116,8 @@ export const PROJECT_SYNC_MAPPINGS: SliceSyncMapping<ProjectSyncKey>[] = [
         sliceKey: 'supportFieldConfiguration',
         getVisualValue: (s) => {
             const raw =
-                s.stateManagement.supportFields.supportFieldConfiguration.value;
+                s.stateManagement.projectMetadata?.supportFieldConfiguration
+                    ?.value;
             if (!raw) return {};
             try {
                 return JSON.parse(raw);
@@ -138,5 +139,24 @@ export const PROJECT_SYNC_MAPPINGS: SliceSyncMapping<ProjectSyncKey>[] = [
                 }
             ];
         }
+    },
+    {
+        sliceKey: 'denebMetaVersion',
+        getVisualValue: (s) => {
+            const raw =
+                s.stateManagement.projectMetadata?.denebMetaVersion?.value;
+            return raw ? parseInt(raw, 10) || 0 : 0;
+        },
+        persistence: {
+            objectName: 'stateManagement',
+            propertyName: 'denebMetaVersion'
+        },
+        onPersist: (value) => [
+            {
+                objectName: 'stateManagement',
+                propertyName: 'denebMetaVersion',
+                value: String(value)
+            }
+        ]
     }
 ];
