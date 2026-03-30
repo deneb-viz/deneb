@@ -55,7 +55,9 @@ vi.mock('@deneb-viz/app-core', () => ({
         project: {
             spec: '{}',
             supportFieldConfiguration: {},
-            setSupportFieldConfiguration: vi.fn()
+            setSupportFieldConfiguration: vi.fn(),
+            setDenebMetaVersion: vi.fn(),
+            denebMetaVersion: 2
         }
     }))
 }));

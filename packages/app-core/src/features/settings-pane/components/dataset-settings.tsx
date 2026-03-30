@@ -175,7 +175,7 @@ export const DatasetSettings = () => {
             }
         }
         return map;
-    }, [sourceFields, resolvedFlags]);
+    }, [sourceFields, resolvedFlags, highlightEnabled]);
 
     // Handle checkbox toggle — supports both parent (field) and leaf (flag) nodes
     const onCheckedChange = useCallback(
