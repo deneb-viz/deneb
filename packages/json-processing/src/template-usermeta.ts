@@ -149,7 +149,8 @@ export const getNewTemplateMetadata = (options: {
         highlight: INTERACTIVITY_DEFAULTS.enableHighlight
     },
     config: '{}',
-    dataset: []
+    dataset: [],
+    supportFieldConfiguration: {}
 });
 
 /**

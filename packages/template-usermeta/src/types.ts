@@ -86,7 +86,7 @@ export interface UsermetaDeneb {
     /**
      * Template metadata version. Will be capped to the version matching this definition.
      * @minimum 1
-     * @maximum 1
+     * @maximum 2
      */
     metaVersion: number;
     /**
