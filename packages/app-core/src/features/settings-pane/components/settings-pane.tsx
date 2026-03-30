@@ -8,13 +8,14 @@ import {
 
 import { ProviderSettings, RenderModeSettings } from './general-settings';
 import { PerformanceSettings } from './performance-settings';
+import { DatasetSettings } from './dataset-settings';
 import { SettingsAccordionItem } from './settings-accordion-item';
 import { SettingsPaneTooltipProvider } from './settings-pane-tooltip-context';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 import { useDenebState } from '../../../state';
 import { BeakerRegular } from '@fluentui/react-icons';
 
-const DEFAULT_OPEN_ITEMS: string[] = ['general'];
+const DEFAULT_OPEN_ITEMS: string[] = [];
 
 /** Memoize open items across remounts (module-level ref). */
 let persistedOpenItems: string[] | null = null;
@@ -64,6 +65,12 @@ export const SettingsPane = () => {
                         icon={<BeakerRegular />}
                     >
                         <PerformanceSettings />
+                    </SettingsAccordionItem>
+                    <SettingsAccordionItem
+                        value='dataset'
+                        heading={translate('Text_Settings_Dataset')}
+                    >
+                        <DatasetSettings />
                     </SettingsAccordionItem>
                     {settingsPanePlatformComponent}
                 </Accordion>

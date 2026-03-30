@@ -123,7 +123,8 @@ const EXPECTED_METADATA_BASE = {
         highlight: INTERACTIVITY_DEFAULTS.enableHighlight
     },
     dataset: [],
-    config: '{}'
+    config: '{}',
+    supportFieldConfiguration: {}
 };
 
 const TRACKED_FIELDS: TrackedFields = {
@@ -365,7 +366,9 @@ describe('getPublishableUsermeta ', () => {
                     kind: 'measure',
                     type: 'numeric'
                 }
-            ]
+            ],
+            // Empty config is stripped to undefined by remapSupportFieldConfigurationForExport
+            supportFieldConfiguration: undefined
         };
 
         const result = getPublishableUsermeta(MOCK_USERMETA, MOCK_OPTIONS);
@@ -481,15 +484,13 @@ describe('getTemplateReplacedForDataset', () => {
         expect(result).toEqual(expectedSpec);
     });
     it('should migrate pbiContainerHeight to denebContainer.height', () => {
-        const specWithLegacySignal =
-            '{ "update": "pbiContainerHeight - 50" }';
+        const specWithLegacySignal = '{ "update": "pbiContainerHeight - 50" }';
         const expectedSpec = '{ "update": "denebContainer.height - 50" }';
         const result = getTemplateReplacedForDataset(specWithLegacySignal, []);
         expect(result).toEqual(expectedSpec);
     });
     it('should migrate pbiContainer to denebContainer', () => {
-        const specWithLegacySignal =
-            '{ "update": "pbiContainer.scrollTop" }';
+        const specWithLegacySignal = '{ "update": "pbiContainer.scrollTop" }';
         const expectedSpec = '{ "update": "denebContainer.scrollTop" }';
         const result = getTemplateReplacedForDataset(specWithLegacySignal, []);
         expect(result).toEqual(expectedSpec);

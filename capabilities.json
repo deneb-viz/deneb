@@ -325,6 +325,12 @@
                     "type": {
                         "numeric": true
                     }
+                },
+                "supportFieldConfiguration": {
+                    "type": { "text": true }
+                },
+                "denebMetaVersion": {
+                    "type": { "text": true }
                 }
             }
         }

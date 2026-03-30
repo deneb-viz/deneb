@@ -33,6 +33,7 @@ import {
 } from '../lib/interactivity';
 import { persistOnCreateFromTemplate } from '../lib/persistence';
 import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
+import { handlePersistBooleanProperty } from '../features/settings/helpers';
 
 type AppProps = {
     host: powerbi.extensibility.visual.IVisualHost;
@@ -172,6 +173,10 @@ export const App = ({ host }: AppProps) => {
                 embedContainerSetByHost: true,
                 isDownloadPermitted,
                 onCreateProject: persistOnCreateFromTemplate,
+                onEnableCrossHighlight: () =>
+                    handlePersistBooleanProperty('enableHighlight', true),
+                onDisableCrossHighlight: () =>
+                    handlePersistBooleanProperty('enableHighlight', false),
                 onRenderingError,
                 onRenderingFinished,
                 settingsPaneFooter: <InteractivityFooter />,

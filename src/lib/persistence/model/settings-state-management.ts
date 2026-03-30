@@ -6,7 +6,29 @@ export class SettingsStateManagement extends formattingSettings.CompositeCard {
     displayNameKey = 'Objects_StateManagement';
     descriptionKey = 'Objects_StateManagementDisplay_Description';
     viewport = new SettingsStateManagementGroupViewport(Object());
-    groups = [this.viewport];
+    projectMetadata = new SettingsStateManagementGroupProjectMetadata(Object());
+    groups = [this.viewport, this.projectMetadata];
+}
+
+class SettingsStateManagementGroupProjectMetadata
+    extends formattingSettings.Group
+{
+    name = 'projectMetadata';
+    displayNameKey = 'Objects_StateManagement_Group_ProjectMetadata';
+    supportFieldConfiguration = new formattingSettings.ReadOnlyText({
+        name: 'supportFieldConfiguration',
+        displayNameKey: 'Objects_StateManagement_SupportFieldConfiguration',
+        descriptionKey:
+            'Objects_StateManagement_SupportFieldConfiguration_Description',
+        value: DEFAULTS.stateManagement.supportFieldConfiguration
+    });
+    denebMetaVersion = new formattingSettings.ReadOnlyText({
+        name: 'denebMetaVersion',
+        displayNameKey: 'Objects_StateManagement_DenebMetaVersion',
+        descriptionKey: 'Objects_StateManagement_DenebMetaVersion_Description',
+        value: DEFAULTS.stateManagement.denebMetaVersion
+    });
+    slices = [this.supportFieldConfiguration, this.denebMetaVersion];
 }
 
 class SettingsStateManagementGroupViewport extends formattingSettings.Group {

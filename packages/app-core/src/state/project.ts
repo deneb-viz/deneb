@@ -9,8 +9,12 @@ import {
 import { isProjectInitialized, type DenebProject } from '../lib/project';
 import { getModalDialogRole } from '../lib/interface/state';
 import { getUpdatedExportMetadata } from '@deneb-viz/json-processing';
-import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
+import {
+    TEMPLATE_USERMETA_VERSION,
+    type UsermetaTemplate
+} from '@deneb-viz/template-usermeta';
 import { logDebug } from '@deneb-viz/utils/logging';
+import { type SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 
 export type ProjectSliceProperties = SyncableSlice &
     DenebProject & {
@@ -23,6 +27,10 @@ export type ProjectSliceProperties = SyncableSlice &
         setIsInitialized: (isInitialized: boolean) => void;
         setProvider: (provider: SpecProvider | undefined) => void;
         setRenderMode: (renderMode: SpecRenderMode) => void;
+        setSupportFieldConfiguration: (
+            config: SupportFieldConfiguration
+        ) => void;
+        setDenebMetaVersion: (version: number) => void;
         syncProjectData: (payload: ProjectSyncPayload) => void;
     };
 
@@ -39,6 +47,17 @@ export type InitializeFromTemplatePayload = {
     config: string;
     provider: SpecProvider;
     renderMode?: SpecRenderMode;
+    /**
+     * Support field configuration remapped from template placeholders to actual field names.
+     * Optional — when absent the project starts with an empty configuration (defaults apply).
+     */
+    supportFieldConfiguration?: SupportFieldConfiguration;
+    /**
+     * The template's deneb.metaVersion. Used to stamp the persisted
+     * denebMetaVersion so that legacy templates (metaVersion < 2) trigger
+     * migration on first dataset processing.
+     */
+    denebMetaVersion?: number;
 };
 
 export type SetContentPayload = {
@@ -69,6 +88,8 @@ export const createProjectSlice =
             ),
             renderMode: PROJECT_DEFAULTS.renderMode as SpecRenderMode,
             spec: PROJECT_DEFAULTS.spec,
+            supportFieldConfiguration: {},
+            denebMetaVersion: 0,
             initializeFromTemplate: (
                 payload: InitializeFromTemplatePayload
             ) => {
@@ -88,6 +109,11 @@ export const createProjectSlice =
                             provider,
                             providerVersion,
                             renderMode,
+                            supportFieldConfiguration:
+                                payload.supportFieldConfiguration ?? {},
+                            denebMetaVersion:
+                                payload.denebMetaVersion ??
+                                TEMPLATE_USERMETA_VERSION,
                             __hasHydrated__: state.project.__hasHydrated__,
                             __isInitialized__: true
                         };
@@ -98,7 +124,9 @@ export const createProjectSlice =
                                 config: payload.config,
                                 provider,
                                 providerVersion,
-                                interactivity: updatedProject.interactivity
+                                interactivity: updatedProject.interactivity,
+                                supportFieldConfiguration:
+                                    updatedProject.supportFieldConfiguration
                             }
                         );
                         return {
@@ -141,9 +169,12 @@ export const createProjectSlice =
                             state.export.metadata as UsermetaTemplate,
                             {
                                 config: payload.config,
-                                provider: updatedProject.provider as SpecProvider,
+                                provider:
+                                    updatedProject.provider as SpecProvider,
                                 providerVersion: updatedProject.providerVersion,
-                                interactivity: updatedProject.interactivity
+                                interactivity: updatedProject.interactivity,
+                                supportFieldConfiguration:
+                                    updatedProject.supportFieldConfiguration
                             }
                         );
                         return {
@@ -213,6 +244,28 @@ export const createProjectSlice =
                     false,
                     'project.setRenderMode'
                 ),
+            setSupportFieldConfiguration: (config: SupportFieldConfiguration) =>
+                set(
+                    (state) => ({
+                        project: {
+                            ...state.project,
+                            supportFieldConfiguration: config
+                        }
+                    }),
+                    false,
+                    'project.setSupportFieldConfiguration'
+                ),
+            setDenebMetaVersion: (version: number) =>
+                set(
+                    (state) => ({
+                        project: {
+                            ...state.project,
+                            denebMetaVersion: version
+                        }
+                    }),
+                    false,
+                    'project.setDenebMetaVersion'
+                ),
             syncProjectData: (payload: ProjectSyncPayload) =>
                 set(
                     (state) => handleSyncProjectData(state, payload),
@@ -258,7 +311,8 @@ const handleSyncProjectData = (
             config: payload.config ?? state.export.metadata?.config,
             provider: updatedProject.provider as SpecProvider,
             providerVersion: updatedProject.providerVersion,
-            interactivity: updatedProject.interactivity
+            interactivity: updatedProject.interactivity,
+            supportFieldConfiguration: updatedProject.supportFieldConfiguration
         }
     );
 

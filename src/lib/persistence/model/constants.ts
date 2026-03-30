@@ -37,7 +37,15 @@ export const DEFAULTS = {
         /**
          * Persisted width of visual viewport in view mode (should preserve width on re-init)
          */
-        viewportWidth: null
+        viewportWidth: null,
+        /**
+         * Persisted support field configuration as a JSON string.
+         */
+        supportFieldConfiguration: '',
+        /**
+         * Persisted deneb metadata version for legacy detection.
+         */
+        denebMetaVersion: ''
     },
     unitSymbols: {
         milliseconds: 'ms',

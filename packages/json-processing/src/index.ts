@@ -21,6 +21,7 @@ export {
     getTemplateReplacedForDataset,
     getTemplateResolvedForPlaceholderAssignment,
     getUpdatedExportMetadata,
-    getValidatedTemplate
+    getValidatedTemplate,
+    remapSupportFieldConfigurationForImport
 } from './template-usermeta';
 export { getProviderValidator } from './validation';

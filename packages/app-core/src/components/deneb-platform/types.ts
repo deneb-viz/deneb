@@ -77,6 +77,16 @@ export type DenebPlatformProviderProps = {
      */
     launchUrl?: (url: string) => void;
     /**
+     * Callback to enable cross-highlighting from within the app-core UI (e.g., the Dataset
+     * settings MessageBar action). Platforms implement this to persist the setting change.
+     */
+    onEnableCrossHighlight?: () => void;
+    /**
+     * Callback to disable cross-highlighting from within the app-core UI (e.g., the Dataset
+     * settings MessageBar action when no highlight fields are selected).
+     */
+    onDisableCrossHighlight?: () => void;
+    /**
      * Callback invoked when a project is created from a template.
      * Platforms can use this to persist project and interactivity settings, or perform other platform-specific
      * actions. This is called BEFORE app-core state is updated, allowing platforms to persist to their source of truth
