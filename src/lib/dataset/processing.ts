@@ -61,6 +61,7 @@ import {
     type FieldSourceMapping
 } from './support-field-provider';
 import { isLegacySpec } from './support-field-migration';
+import { TEMPLATE_USERMETA_VERSION } from '@deneb-viz/template-usermeta';
 
 // State for reference-based change detection
 let prevCategories: DataViewCategoryColumn[] | undefined;
@@ -235,7 +236,10 @@ export const getMappedDataset = (
             const supportFieldConfig: SupportFieldConfiguration =
                 state.project.supportFieldConfiguration ?? {};
 
-            const legacy = isLegacySpec(state.project.spec, supportFieldConfig);
+            const legacy = isLegacySpec(
+                state.project.spec,
+                state.project.denebMetaVersion
+            );
 
             // One-time migration: stamp resolved legacy defaults into config
             // so that isLegacySpec returns false from this point on. This
@@ -260,6 +264,7 @@ export const getMappedDataset = (
                     });
                 }
                 state.project.setSupportFieldConfiguration(migratedConfig);
+                state.project.setDenebMetaVersion(TEMPLATE_USERMETA_VERSION);
                 logDebug(
                     'getMappedDataset: migrated legacy support field config',
                     { migratedConfig }

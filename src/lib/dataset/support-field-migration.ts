@@ -1,4 +1,3 @@
-import type { SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 
 /**
@@ -8,15 +7,14 @@ import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
  *
  * A spec is legacy when:
  * - It has non-default content (user has created a project)
- * - But no support field configuration has been persisted
+ * - The persisted denebMetaVersion is < 2 (pre-2.0 or never set)
  *
  * A brand new spec (default template) is NOT legacy — it gets new defaults.
  */
 export const isLegacySpec = (
     jsonSpec: string,
-    supportFieldConfiguration: SupportFieldConfiguration
+    denebMetaVersion: number
 ): boolean => {
     const hasProject = jsonSpec !== PROJECT_DEFAULTS.spec;
-    const hasConfig = Object.keys(supportFieldConfiguration).length > 0;
-    return hasProject && !hasConfig;
+    return hasProject && denebMetaVersion < 2;
 };

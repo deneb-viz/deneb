@@ -70,15 +70,23 @@ export const DatasetSettings = () => {
     const { onEnableCrossHighlight, onDisableCrossHighlight } =
         useDenebPlatformProvider();
 
-    const { fields, config, spec, interactivity, setConfig, translate } =
-        useDenebState((state) => ({
-            fields: state.dataset.fields,
-            config: state.project.supportFieldConfiguration,
-            spec: state.project.spec,
-            interactivity: state.project.interactivity,
-            setConfig: state.project.setSupportFieldConfiguration,
-            translate: state.i18n.translate
-        }));
+    const {
+        fields,
+        config,
+        spec,
+        denebMetaVersion,
+        interactivity,
+        setConfig,
+        translate
+    } = useDenebState((state) => ({
+        fields: state.dataset.fields,
+        config: state.project.supportFieldConfiguration,
+        spec: state.project.spec,
+        denebMetaVersion: state.project.denebMetaVersion,
+        interactivity: state.project.interactivity,
+        setConfig: state.project.setSupportFieldConfiguration,
+        translate: state.i18n.translate
+    }));
 
     // Filter to source fields only (exclude support/derived fields)
     const sourceFields = useMemo(
@@ -119,11 +127,10 @@ export const DatasetSettings = () => {
         [sourceFields]
     );
 
-    // A spec is legacy if it has non-default content but no support field config persisted
+    // A spec is legacy if it has non-default content but denebMetaVersion < 2
     const isLegacy = useMemo(
-        () =>
-            spec !== PROJECT_DEFAULTS.spec && Object.keys(config).length === 0,
-        [spec, config]
+        () => spec !== PROJECT_DEFAULTS.spec && denebMetaVersion < 2,
+        [spec, denebMetaVersion]
     );
 
     // Resolve flags for each source field (explicit config or defaults).

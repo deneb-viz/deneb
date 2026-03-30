@@ -81,7 +81,8 @@ export const CreateButton = () => {
             spec: spec,
             config: config,
             provider,
-            supportFieldConfiguration
+            supportFieldConfiguration,
+            denebMetaVersion: metadata?.deneb?.metaVersion
         });
         // Update editor refs directly for immediate UI update
         editorSpec?.current?.setValue(spec);

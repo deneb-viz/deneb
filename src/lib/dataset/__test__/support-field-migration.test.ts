@@ -13,37 +13,23 @@ describe('isLegacySpec', () => {
     const DEFAULT_SPEC = '{"$schema":"...","mark":"bar"}';
     const CUSTOM_SPEC = '{"$schema":"...","mark":"line","encoding":{}}';
 
-    it('should return true for existing spec with no support field config', () => {
-        expect(isLegacySpec(CUSTOM_SPEC, {})).toBe(true);
+    it('should return true for existing spec with metaVersion 0 (never set)', () => {
+        expect(isLegacySpec(CUSTOM_SPEC, 0)).toBe(true);
     });
 
-    it('should return false when support field config has entries', () => {
-        const config = {
-            Amount: {
-                highlight: true,
-                highlightStatus: false,
-                highlightComparator: false,
-                format: false,
-                formatted: false
-            }
-        };
-        expect(isLegacySpec(CUSTOM_SPEC, config)).toBe(false);
+    it('should return true for existing spec with metaVersion 1 (pre-2.0)', () => {
+        expect(isLegacySpec(CUSTOM_SPEC, 1)).toBe(true);
     });
 
-    it('should return false for brand new spec (default template)', () => {
-        expect(isLegacySpec(DEFAULT_SPEC, {})).toBe(false);
+    it('should return false for existing spec with metaVersion 2 (2.0+)', () => {
+        expect(isLegacySpec(CUSTOM_SPEC, 2)).toBe(false);
     });
 
-    it('should return false for brand new spec even with config', () => {
-        const config = {
-            Amount: {
-                highlight: true,
-                highlightStatus: false,
-                highlightComparator: false,
-                format: false,
-                formatted: false
-            }
-        };
-        expect(isLegacySpec(DEFAULT_SPEC, config)).toBe(false);
+    it('should return false for brand new spec (default template) regardless of metaVersion', () => {
+        expect(isLegacySpec(DEFAULT_SPEC, 0)).toBe(false);
+    });
+
+    it('should return false for future metaVersions', () => {
+        expect(isLegacySpec(CUSTOM_SPEC, 3)).toBe(false);
     });
 });
