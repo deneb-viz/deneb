@@ -22,6 +22,7 @@ export type DisplayMode =
  */
 export type DisplayHistoryRecord = {
     displayMode: DisplayMode;
+    editMode: powerbi.extensibility.visual.VisualUpdateOptions['editMode'];
     isFetchingAdditionalData: boolean;
     isInFocus: powerbi.extensibility.visual.VisualUpdateOptions['isInFocus'];
     type: powerbi.extensibility.visual.VisualUpdateOptions['type'];
@@ -40,15 +41,11 @@ export type GetUpdatedHistoryListPayload = {
  */
 const MAX_UPDATE_HISTORY_RETENTION = 100;
 
-export const doesModeAllowEmbedViewportSet = (
-    mode: DisplayMode,
-    isInFocus: boolean
-) => {
+export const doesModeAllowEmbedViewportSet = (mode: DisplayMode) => {
     return (
         mode !== 'editor' &&
         mode !== 'transition-viewer-editor' &&
-        mode !== 'transition-editor-viewer' &&
-        !isInFocus
+        mode !== 'transition-editor-viewer'
     );
 };
 
@@ -60,10 +57,11 @@ export const getUpdatedDisplayHistoryList = (
     payload: GetUpdatedHistoryListPayload
 ): DisplayHistoryRecord[] => {
     const { isFetchingAdditionalData, options } = payload;
-    const { isInFocus, type, viewMode, viewport } = options;
+    const { editMode, isInFocus, type, viewMode, viewport } = options;
     const displayMode = getDisplayModeAccordingToOptions(payload);
     const workingEntry: DisplayHistoryRecord = {
         displayMode,
+        editMode,
         isFetchingAdditionalData,
         isInFocus,
         type,
@@ -97,15 +95,18 @@ export const getDisplayModeAccordingToOptions = (
     payload: GetUpdatedHistoryListPayload
 ): DisplayMode => {
     const { isFetchingAdditionalData, options, settings } = payload;
-    const { dataViews, isInFocus, viewMode } = options;
+    const { dataViews, editMode, isInFocus, viewMode } = options;
     const project = settings.vega.output.jsonSpec.value;
     const defaultProject = PROJECT_DEFAULTS.spec;
     const hasProject = project !== defaultProject;
-    // Determine correct states for whether we are viewing or editing
+    // Determine correct states for whether we are viewing or editing.
+    // editMode === 1 (EditMode.Advanced) is set only when the user explicitly
+    // clicks "Edit" in the visual header. Focus Mode sets editMode to 0 or
+    // undefined, so it stays in viewer mode.
     const isLandingPage =
         !dataViews || !dataViews[0]?.metadata?.columns?.length;
-    const isViewMode = viewMode === 0 || (viewMode === 1 && !isInFocus);
-    const isEditMode = viewMode === 1 && isInFocus;
+    const isEditMode = editMode === 1;
+    const isViewMode = !isEditMode;
     const isNoProject = !hasProject && isViewMode;
     logDebug('getDisplayModeAccordingToOptions', {
         payload,
@@ -118,6 +119,7 @@ export const getDisplayModeAccordingToOptions = (
         defaultProject,
         project,
         viewMode,
+        editMode,
         isInFocus
     });
     if (isFetchingAdditionalData) {
@@ -143,12 +145,12 @@ export const getDisplayModeAccordingToOptions = (
  *
  * For a transition between viewer to editor, the visual host does the following order of updates:
  *
- * | #         | isInFocus | type                          | viewMode            |
- * |-----------|-----------|-------------------------------|---------------------|
- * | [initial] | `false`   | (irrelevant)                  | 1 (`ViewMode.Edit`) |
- * | 1         | `true`    | `36` (`Resize` + `ResizeEnd`) | 1 (`ViewMode.Edit`) |
- * | 2         | `true`    | `36` (`Resize` + `ResizeEnd`) | 1 (`ViewMode.Edit`) |
- * | 3         | `true`    | `4` (`Resize`)                | 1 (`ViewMode.Edit`) |
+ * | #         | editMode              | type                          | viewMode            |
+ * |-----------|-----------------------|-------------------------------|---------------------|
+ * | [initial] | `0` (`Default`)       | (irrelevant)                  | 1 (`ViewMode.Edit`) |
+ * | 1         | `1` (`Advanced`)      | `36` (`Resize` + `ResizeEnd`) | 1 (`ViewMode.Edit`) |
+ * | 2         | `1` (`Advanced`)      | `36` (`Resize` + `ResizeEnd`) | 1 (`ViewMode.Edit`) |
+ * | 3         | `1` (`Advanced`)      | `4` (`Resize`)                | 1 (`ViewMode.Edit`) |
  *
  * Assuming that we have resolved the `[initial]` state of type `viewer`, it is this chain that we use to flag that the
  * visual moves to edit mode. At this point, the visible viewport is enough to make sure that the editor will display
@@ -160,19 +162,23 @@ export const getDisplayModeAccordingToOptions = (
  *
  * Conversely, a transition from `editor` to `viewer` will result in the following order of updates:
  *
- * | #         | isInFocus | type                          | viewMode            |
- * |-----------|-----------|-------------------------------|---------------------|
- * | [initial] | `true`    | (irrelevant)                  | 1 (`ViewMode.Edit`) |
- * | 1         | `false`   | `8` (`ViewMode`)              | 1 (`ViewMode.Edit`) |
- * | 2         | `false`   | `4` (`Resize`)                | 1 (`ViewMode.Edit`) |
- * | 3         | `false`   | `4` (`Resize`)                | 1 (`ViewMode.Edit`) |
- * | 4         | `false`   | `4` (`Resize`)                | 1 (`ViewMode.Edit`) |
- * | 5         | `false`   | `36` (`Resize` + `ResizeEnd`) | 1 (`ViewMode.Edit`) |
+ * | #         | editMode              | type                          | viewMode            |
+ * |-----------|-----------------------|-------------------------------|---------------------|
+ * | [initial] | `1` (`Advanced`)      | (irrelevant)                  | 1 (`ViewMode.Edit`) |
+ * | 1         | `0` (`Default`)       | `8` (`ViewMode`)              | 1 (`ViewMode.Edit`) |
+ * | 2         | `0` (`Default`)       | `4` (`Resize`)                | 1 (`ViewMode.Edit`) |
+ * | 3         | `0` (`Default`)       | `4` (`Resize`)                | 1 (`ViewMode.Edit`) |
+ * | 4         | `0` (`Default`)       | `4` (`Resize`)                | 1 (`ViewMode.Edit`) |
+ * | 5         | `0` (`Default`)       | `36` (`Resize` + `ResizeEnd`) | 1 (`ViewMode.Edit`) |
  *
- * In this case, we can catch a change from `isInFocus === true` to `isInFocus === false && type === 8` is the start of
- * transition from editor to viewer (assigning `transition-editor-viewer`).
+ * In this case, we can catch a change from `editMode === Advanced` to `editMode === Default && type === 8` as the
+ * start of transition from editor to viewer (assigning `transition-editor-viewer`).
  *
  * When we reach the final update (5), we can confirm the transition to viewer mode.
+ *
+ * Note: `isInFocus` is NOT used for mode detection. Focus Mode (expand without editing) sets
+ * `editMode = Default` and is handled as normal viewer mode. Only `editMode = Advanced`
+ * (triggered by the visual header Edit button) opens the editor.
  *
  */
 const getResolvedDisplayModeForHostQuirks = (
@@ -181,9 +187,13 @@ const getResolvedDisplayModeForHostQuirks = (
 ) => {
     const latest = history[0];
     if (!latest) return working.displayMode;
+    // Confirm transition from viewer to editor:
+    // Previous must be transition-viewer-editor. Working must have
+    // editMode === Advanced, Resize only (no ResizeEnd), while latest had
+    // Resize + ResizeEnd.
     if (latest.displayMode === 'transition-viewer-editor') {
         if (
-            working.isInFocus &&
+            working.editMode === 1 &&
             isVisualUpdateTypeResize(working.type) &&
             !isVisualUpdateTypeResizeEnd(working.type) &&
             isVisualUpdateTypeResize(latest.type) &&
@@ -192,27 +202,36 @@ const getResolvedDisplayModeForHostQuirks = (
             return 'editor';
         }
     }
+    // Confirm transition from editor to viewer:
+    // Previous must be transition-editor-viewer. Working must have
+    // editMode !== Advanced, Resize + ResizeEnd.
     if (latest.displayMode === 'transition-editor-viewer') {
         if (
-            !working.isInFocus &&
+            working.editMode !== 1 &&
             isVisualUpdateTypeResizeEnd(working.type) &&
             isVisualUpdateTypeResize(working.type)
         ) {
             return 'viewer';
         }
     }
+    // Detect start of viewer-to-editor transition:
+    // Previous was viewer with editMode !== Advanced, viewMode === 1.
+    // Working has editMode === Advanced with ResizeEnd.
     if (
-        !latest.isInFocus &&
+        latest.editMode !== 1 &&
         latest.displayMode === 'viewer' &&
         latest.viewMode === 1 &&
-        working.isInFocus &&
+        working.editMode === 1 &&
         isVisualUpdateTypeResizeEnd(working.type)
     ) {
         return 'transition-viewer-editor';
     }
+    // Detect start of editor-to-viewer transition:
+    // Previous had editMode === Advanced and was in editor mode.
+    // Working has editMode !== Advanced with ViewMode update type.
     if (
-        latest.isInFocus &&
-        !working.isInFocus &&
+        latest.editMode === 1 &&
+        working.editMode !== 1 &&
         latest.displayMode === 'editor' &&
         working.displayMode === 'viewer' &&
         latest.viewMode === 1 &&
