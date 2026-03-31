@@ -28,6 +28,7 @@ import { DEBUG_PANE_CONFIGURATION } from '@deneb-viz/configuration';
 
 const useToolbarStyles = makeStyles({
     root: {
+        backgroundColor: tokens.colorNeutralBackground1,
         display: 'flex',
         height: `${DEBUG_PANE_CONFIGURATION.toolbarMinSize}px`,
         justifyContent: 'space-between',

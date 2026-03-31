@@ -2,6 +2,7 @@ import { makeStyles, tokens } from '@fluentui/react-components';
 
 export const useDebugWrapperStyles = makeStyles({
     container: {
+        backgroundColor: tokens.colorNeutralBackground1,
         borderTop: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke2}`,
         boxSizing: 'border-box',
         display: 'flex',
