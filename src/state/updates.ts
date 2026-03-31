@@ -108,7 +108,7 @@ export const createUpdatesSlice = (): StateCreator<
                             : viewport.width
                 };
                 if (
-                    doesModeAllowEmbedViewportSet(mode, options.isInFocus) &&
+                    doesModeAllowEmbedViewportSet(mode) &&
                     !shallowEqual(embedViewport, targetViewport) &&
                     (isVisualUpdateTypeResizeEnd(options.type) ||
                         !embedViewport)
