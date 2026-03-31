@@ -95,7 +95,7 @@ export const SpecificationJsonEditor = ({
     // Bootstrap the editor
     const handleOnMount: OnMount = (editor) => {
         ref.current = editor;
-        // Register $schema quick fix provider (idempotent — Monaco deduplicates)
+        // Register $schema quick fix provider (idempotent — guarded by module-level flag)
         registerSchemaPropertyCodeActionProvider();
         // Check for $schema on initial load
         const model = editor.getModel();

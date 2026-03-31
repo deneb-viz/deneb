@@ -20,12 +20,12 @@ export const updateSchemaPropertyMarkers = (
     const content = model.getValue();
     const tree = parseTree(content);
     if (!tree) {
-        monaco.editor.setModelMarkers(model, DIAGNOSTIC_SOURCE, []);
+        monaco.editor.setModelMarkers(model, SCHEMA_DIAGNOSTIC_CODE, []);
         return;
     }
     const schemaNode = findNodeAtLocation(tree, ['$schema']);
     if (!schemaNode) {
-        monaco.editor.setModelMarkers(model, DIAGNOSTIC_SOURCE, []);
+        monaco.editor.setModelMarkers(model, SCHEMA_DIAGNOSTIC_CODE, []);
         return;
     }
     // The schemaNode is the value node. Its parent is the property node
@@ -36,7 +36,7 @@ export const updateSchemaPropertyMarkers = (
     const startPos = model.getPositionAt(node.offset);
     const endPos = model.getPositionAt(node.offset + node.length);
     const { translate } = getDenebState().i18n;
-    monaco.editor.setModelMarkers(model, DIAGNOSTIC_SOURCE, [
+    monaco.editor.setModelMarkers(model, SCHEMA_DIAGNOSTIC_CODE, [
         {
             severity: monaco.MarkerSeverity.Warning,
             message: translate('Text_Diagnostic_SchemaProperty_Warning'),
@@ -68,7 +68,10 @@ export const registerSchemaPropertyCodeActionProvider = (): void => {
             if (!marker) return { actions: [], dispose() {} };
 
             const content = model.getValue();
-            const edits = modify(content, ['$schema'], undefined, {});
+            const { tabSize, insertSpaces } = model.getOptions();
+            const edits = modify(content, ['$schema'], undefined, {
+                formattingOptions: { tabSize, insertSpaces }
+            });
             const newContent = applyEdits(content, edits);
 
             const { translate } = getDenebState().i18n;
