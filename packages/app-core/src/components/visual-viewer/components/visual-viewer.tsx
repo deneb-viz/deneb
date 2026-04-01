@@ -10,6 +10,7 @@ import { useThrottle } from '@uidotdev/usehooks';
 import { mergeClasses } from '@fluentui/react-components';
 import { Scrollbars, type positionValues } from 'react-custom-scrollbars-2';
 
+import { DEFAULT_VIEWPORT_SCALE } from '@deneb-viz/configuration';
 import {
     type SpecProvider,
     type SpecRenderMode
@@ -72,6 +73,8 @@ export const VisualViewer = ({
         spec,
         logLevel,
         renderMode,
+        scaleToZoom,
+        embedScale,
         previewScrollbars,
         provider,
         scrollbarColor,
@@ -94,6 +97,9 @@ export const VisualViewer = ({
         config: state.project.config,
         logLevel: state.project.logLevel,
         renderMode: state.project.renderMode,
+        scaleToZoom: state.project.scaleToZoom,
+        embedScale:
+            state.interface.embedViewport?.scale ?? DEFAULT_VIEWPORT_SCALE,
         previewScrollbars:
             state.editorPreferences.previewAreaShowScrollbarsOnOverflow,
         provider: state.project.provider as SpecProvider,
@@ -115,6 +121,17 @@ export const VisualViewer = ({
         logDurableWarn: state.compilation.logDurableWarn,
         translate: state.i18n.translate
     }));
+
+    const embedScaleFactor = useMemo(() => {
+        if (
+            scaleToZoom &&
+            renderMode === 'canvas' &&
+            embedScale !== DEFAULT_VIEWPORT_SCALE
+        ) {
+            return embedScale;
+        }
+        return undefined;
+    }, [scaleToZoom, renderMode, embedScale]);
 
     // Track previous values reference for incremental update detection
     const prevValuesRef = useRef<unknown[] | null>(null);
@@ -197,7 +214,12 @@ export const VisualViewer = ({
                     height: viewportHeight
                 },
                 logLevel,
-                embedOptions: { renderer: renderMode as Renderers }
+                embedOptions: {
+                    renderer: renderMode as Renderers,
+                    ...(embedScaleFactor !== undefined && {
+                        scaleFactor: embedScaleFactor
+                    })
+                }
             });
             return;
         }
@@ -241,7 +263,12 @@ export const VisualViewer = ({
                         height: viewportHeight
                     },
                     logLevel,
-                    embedOptions: { renderer: renderMode as Renderers }
+                    embedOptions: {
+                        renderer: renderMode as Renderers,
+                        ...(embedScaleFactor !== undefined && {
+                            scaleFactor: embedScaleFactor
+                        })
+                    }
                 });
             },
             onSuccess: () => {
@@ -323,7 +350,12 @@ export const VisualViewer = ({
                 height: viewportHeight
             },
             logLevel,
-            embedOptions: { renderer: renderMode as Renderers }
+            embedOptions: {
+                renderer: renderMode as Renderers,
+                ...(embedScaleFactor !== undefined && {
+                    scaleFactor: embedScaleFactor
+                })
+            }
         });
     }, [
         spec,
@@ -333,6 +365,7 @@ export const VisualViewer = ({
         viewportWidth,
         logLevel,
         renderMode,
+        embedScaleFactor,
         schemaValidator
     ]);
 

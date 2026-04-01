@@ -2,6 +2,7 @@ import powerbi from 'powerbi-visuals-api';
 import type { StateCreator } from 'zustand';
 import { shallowEqual } from 'fast-equals';
 
+import { DEFAULT_VIEWPORT_SCALE } from '@deneb-viz/configuration';
 import { getVisualFormattingModel } from '../lib/persistence';
 import { type DenebVisualStoreState } from './state';
 import {
@@ -106,7 +107,9 @@ export const createUpdatesSlice = (): StateCreator<
                         viewport.width === 0
                             ? persistedViewport.width
                             : viewport.width,
-                    scale: (viewport as { scale?: number }).scale ?? 1
+                    scale:
+                        (viewport as { scale?: number }).scale ??
+                        DEFAULT_VIEWPORT_SCALE
                 };
                 if (
                     doesModeAllowEmbedViewportSet(mode) &&
