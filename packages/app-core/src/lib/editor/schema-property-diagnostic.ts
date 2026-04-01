@@ -1,9 +1,4 @@
-import {
-    parseTree,
-    findNodeAtLocation,
-    modify,
-    applyEdits
-} from 'jsonc-parser';
+import { parseTree, findNodeAtLocation, modify } from 'jsonc-parser';
 import { monaco } from '../../components/code-editor/monaco-integration';
 import { getDenebState } from '../../state';
 
@@ -72,25 +67,25 @@ export const registerSchemaPropertyCodeActionProvider = (): void => {
             const edits = modify(content, ['$schema'], undefined, {
                 formattingOptions: { tabSize, insertSpaces }
             });
-            const newContent = applyEdits(content, edits);
 
             const { translate } = getDenebState().i18n;
-            const fullRange = model.getFullModelRange();
+            const versionId = model.getVersionId();
             const action: monaco.languages.CodeAction = {
                 title: translate('Text_Diagnostic_SchemaProperty_QuickFix'),
                 diagnostics: [marker],
                 kind: 'quickfix',
                 edit: {
-                    edits: [
-                        {
-                            resource: model.uri,
-                            textEdit: {
-                                range: fullRange,
-                                text: newContent
-                            },
-                            versionId: model.getVersionId()
-                        }
-                    ]
+                    edits: edits.map((e) => ({
+                        resource: model.uri,
+                        textEdit: {
+                            range: monaco.Range.fromPositions(
+                                model.getPositionAt(e.offset),
+                                model.getPositionAt(e.offset + e.length)
+                            ),
+                            text: e.content
+                        },
+                        versionId
+                    }))
                 },
                 isPreferred: true
             };
