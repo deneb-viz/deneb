@@ -11,6 +11,10 @@ import { getDenebState, useDenebState } from '../../../state';
 import { useSpecificationEditor } from '../hooks/use-specification-editor';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 import { useCursorContext } from '../../../context';
+import {
+    updateSchemaPropertyMarkers,
+    registerSchemaPropertyCodeActionProvider
+} from '../../../lib/editor/schema-property-diagnostic';
 
 type JsonEditorProps = {
     thisEditorRole: EditorPaneRole;
@@ -91,6 +95,13 @@ export const SpecificationJsonEditor = ({
     // Bootstrap the editor
     const handleOnMount: OnMount = (editor) => {
         ref.current = editor;
+        // Register $schema quick fix provider (idempotent — guarded by module-level flag)
+        registerSchemaPropertyCodeActionProvider();
+        // Check for $schema on initial load
+        const model = editor.getModel();
+        if (model) {
+            updateSchemaPropertyMarkers(model);
+        }
         if (viewState) {
             editor.restoreViewState(viewState);
         }
@@ -119,6 +130,11 @@ export const SpecificationJsonEditor = ({
     // Handle change events within editor
     const handleOnChange = useCallback<OnChange>((value) => {
         setEditorText(() => value);
+        // Refresh $schema markers on every content change
+        const model = ref.current?.getModel();
+        if (model) {
+            updateSchemaPropertyMarkers(model);
+        }
     }, []);
 
     useEffect(() => {

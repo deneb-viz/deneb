@@ -181,6 +181,8 @@
     "Tooltip_Compiled_Vega_Toggle": "Vega-Lite specifications are compiled down to Vega prior to rendering - click to view this compiled output in a read-only editor.",
     "Text_Compiled_Vega_Collapse": "Hide compiled Vega",
     "Text_Compiled_Vega_Description": "Compiled Vega (read-only)",
+    "Text_Diagnostic_SchemaProperty_Warning": "Including an external `$schema` URL will block features such as auto-completion and validation from working in the editor where external requests are not permitted (such as certified Power BI visuals). For this reason, Deneb manages Vega and Vega-Lite schemas internally and this is safe to remove - the 'quick fix' option can do this automatically for you.",
+    "Text_Diagnostic_SchemaProperty_QuickFix": "Remove `$schema` property (Deneb manages schemas internally)",
     "Tooltip_Collapse_Debug_Pane": "Collapse the debug pane [Ctrl+`]",
     "Tooltip_Collapse_Editor_Pane": "Collapse the editor pane [Ctrl+Alt+Space]",
     "Tooltip_Current_Provider": "This is the provider you are currently using for your specification. The runtime version is also shown here, so that you can ensure that any features of the provider documentation are compatible with the version available in Deneb.",

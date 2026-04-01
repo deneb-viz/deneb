@@ -40,6 +40,8 @@ import 'monaco-editor/esm/vs/editor/contrib/folding/browser/folding';
 import 'monaco-editor/esm/vs/editor/contrib/fontZoom/browser/fontZoom';
 /* format */
 import 'monaco-editor/esm/vs/editor/contrib/format/browser/formatActions';
+/* code actions (quick fixes) */
+import 'monaco-editor/esm/vs/editor/contrib/codeAction/browser/codeActionContributions';
 /* go to error */
 import 'monaco-editor/esm/vs/editor/contrib/gotoError/browser/gotoError';
 /* go to line */
