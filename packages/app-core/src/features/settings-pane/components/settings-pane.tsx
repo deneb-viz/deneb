@@ -6,7 +6,11 @@ import {
     makeStyles
 } from '@fluentui/react-components';
 
-import { ProviderSettings, RenderModeSettings } from './general-settings';
+import {
+    ProviderSettings,
+    RenderModeSettings,
+    ScaleToZoomSettings
+} from './general-settings';
 import { PerformanceSettings } from './performance-settings';
 import { DatasetSettings } from './dataset-settings';
 import { SettingsAccordionItem } from './settings-accordion-item';
@@ -58,6 +62,7 @@ export const SettingsPane = () => {
                     >
                         <ProviderSettings />
                         <RenderModeSettings />
+                        <ScaleToZoomSettings />
                     </SettingsAccordionItem>
                     <SettingsAccordionItem
                         value='performance'

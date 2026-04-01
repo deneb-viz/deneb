@@ -213,5 +213,7 @@
     "Text_MessageBar_CrossHighlightDisabled_Action": "Turn on cross-highlighting",
     "Text_MessageBar_NoHighlightFields": "Cross-highlighting is enabled but no highlight fields are selected. Visual interactions may not behave as expected.",
     "Text_MessageBar_NoHighlightFields_Action": "Turn off cross-highlighting",
-    "Assistive_Text_SupportFields": "Deneb can generate additional supporting fields for each column and measure in your dataset. Use the options below to control which supporting fields are included. Reducing unnecessary fields can improve performance with large datasets."
+    "Assistive_Text_SupportFields": "Deneb can generate additional supporting fields for each column and measure in your dataset. Use the options below to control which supporting fields are included. Reducing unnecessary fields can improve performance with large datasets.",
+    "Text_Setting_ScaleToZoom": "Scale to report zoom level",
+    "Assistive_Text_ScaleToZoom": "When enabled and using canvas rendering, Deneb adjusts the canvas resolution to match the Power BI report zoom level. This produces sharper output at non-100% zoom but uses more memory. Only applies to canvas rendering mode."
 }
