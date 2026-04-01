@@ -27,6 +27,8 @@
     "Objects_StateManagement_SupportFieldConfiguration_Description": "Persisted support field configuration as a JSON string.",
     "Objects_StateManagement_DenebMetaVersion": "Deneb metadata version",
     "Objects_StateManagement_DenebMetaVersion_Description": "Persisted deneb metadata version for legacy detection.",
+    "Objects_StateManagement_ScaleToZoom": "Scale to zoom",
+    "Objects_StateManagement_ScaleToZoom_Description": "Persisted canvas DPI compensation setting.",
     "Objects_StateManagement_Description": "Options used to manage the state of the visual.",
     "Objects_StateManagement_Group_Viewport": "Viewport",
     "Objects_StateManagement_ViewportHeight": "Viewport height",

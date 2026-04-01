@@ -45,7 +45,11 @@ export const DEFAULTS = {
         /**
          * Persisted deneb metadata version for legacy detection.
          */
-        denebMetaVersion: ''
+        denebMetaVersion: '',
+        /**
+         * Persisted scale-to-zoom setting (canvas DPI compensation).
+         */
+        scaleToZoom: ''
     },
     unitSymbols: {
         milliseconds: 'ms',

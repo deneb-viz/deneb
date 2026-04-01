@@ -28,7 +28,17 @@ class SettingsStateManagementGroupProjectMetadata
         descriptionKey: 'Objects_StateManagement_DenebMetaVersion_Description',
         value: DEFAULTS.stateManagement.denebMetaVersion
     });
-    slices = [this.supportFieldConfiguration, this.denebMetaVersion];
+    scaleToZoom = new formattingSettings.ReadOnlyText({
+        name: 'scaleToZoom',
+        displayNameKey: 'Objects_StateManagement_ScaleToZoom',
+        descriptionKey: 'Objects_StateManagement_ScaleToZoom_Description',
+        value: DEFAULTS.stateManagement.scaleToZoom
+    });
+    slices = [
+        this.supportFieldConfiguration,
+        this.denebMetaVersion,
+        this.scaleToZoom
+    ];
 }
 
 class SettingsStateManagementGroupViewport extends formattingSettings.Group {
