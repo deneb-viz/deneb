@@ -10,8 +10,12 @@ import { useThrottle } from '@uidotdev/usehooks';
 import { mergeClasses } from '@fluentui/react-components';
 import { Scrollbars, type positionValues } from 'react-custom-scrollbars-2';
 
-import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import {
+    type SpecProvider,
+    type SpecRenderMode
+} from '@deneb-viz/vega-runtime/embed';
 import type { SchemaValidator } from '@deneb-viz/vega-runtime/spec-processing';
+import type { Renderers } from 'vega';
 import { getSignalDenebContainer } from '@deneb-viz/vega-runtime/signals';
 import { logRender, logDebug } from '@deneb-viz/utils/logging';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
@@ -67,6 +71,7 @@ export const VisualViewer = ({
         config,
         spec,
         logLevel,
+        renderMode,
         previewScrollbars,
         provider,
         scrollbarColor,
@@ -88,6 +93,7 @@ export const VisualViewer = ({
         spec: state.project.spec,
         config: state.project.config,
         logLevel: state.project.logLevel,
+        renderMode: state.project.renderMode,
         previewScrollbars:
             state.editorPreferences.previewAreaShowScrollbarsOnOverflow,
         provider: state.project.provider as SpecProvider,
@@ -190,7 +196,8 @@ export const VisualViewer = ({
                     width: viewportWidth,
                     height: viewportHeight
                 },
-                logLevel
+                logLevel,
+                embedOptions: { renderer: renderMode as Renderers }
             });
             return;
         }
@@ -233,7 +240,8 @@ export const VisualViewer = ({
                         width: viewportWidth,
                         height: viewportHeight
                     },
-                    logLevel
+                    logLevel,
+                    embedOptions: { renderer: renderMode as Renderers }
                 });
             },
             onSuccess: () => {
@@ -253,6 +261,7 @@ export const VisualViewer = ({
         viewportHeight,
         viewportWidth,
         logLevel,
+        renderMode,
         compileSpec,
         schemaValidator,
         logDurableError,
@@ -313,7 +322,8 @@ export const VisualViewer = ({
                 width: viewportWidth,
                 height: viewportHeight
             },
-            logLevel
+            logLevel,
+            embedOptions: { renderer: renderMode as Renderers }
         });
     }, [
         spec,
@@ -322,6 +332,7 @@ export const VisualViewer = ({
         viewportHeight,
         viewportWidth,
         logLevel,
+        renderMode,
         schemaValidator
     ]);
 

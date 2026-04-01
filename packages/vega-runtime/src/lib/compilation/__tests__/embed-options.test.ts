@@ -244,4 +244,15 @@ describe('buildEmbedOptions', () => {
 
         expect(result.actions).toBe(false);
     });
+
+    it('should use renderer from userOptions instead of default', () => {
+        const input: BuildEmbedOptionsInput = {
+            mode: 'vega',
+            userOptions: { renderer: 'canvas' }
+        };
+
+        const result = buildEmbedOptions(input);
+
+        expect(result.renderer).toBe('canvas');
+    });
 });
