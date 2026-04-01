@@ -16,6 +16,7 @@ type ProjectSyncKey = keyof Omit<
     | 'setLogLevel'
     | 'setProvider'
     | 'setRenderMode'
+    | 'setScaleToZoom'
 >;
 
 /**
@@ -155,6 +156,24 @@ export const PROJECT_SYNC_MAPPINGS: SliceSyncMapping<ProjectSyncKey>[] = [
             {
                 objectName: 'stateManagement',
                 propertyName: 'denebMetaVersion',
+                value: String(value)
+            }
+        ]
+    },
+    {
+        sliceKey: 'scaleToZoom',
+        getVisualValue: (s) => {
+            const raw = s.stateManagement.projectMetadata?.scaleToZoom?.value;
+            return raw === 'true';
+        },
+        persistence: {
+            objectName: 'stateManagement',
+            propertyName: 'scaleToZoom'
+        },
+        onPersist: (value) => [
+            {
+                objectName: 'stateManagement',
+                propertyName: 'scaleToZoom',
                 value: String(value)
             }
         ]
