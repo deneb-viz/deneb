@@ -105,7 +105,8 @@ export const createUpdatesSlice = (): StateCreator<
                     width:
                         viewport.width === 0
                             ? persistedViewport.width
-                            : viewport.width
+                            : viewport.width,
+                    scale: (viewport as { scale?: number }).scale ?? 1
                 };
                 if (
                     doesModeAllowEmbedViewportSet(mode) &&
