@@ -2,6 +2,7 @@ import {
     type CSSProperties,
     type HTMLProps,
     useEffect,
+    useLayoutEffect,
     useMemo,
     useRef,
     useState
@@ -11,10 +12,7 @@ import { mergeClasses } from '@fluentui/react-components';
 import { Scrollbars, type positionValues } from 'react-custom-scrollbars-2';
 
 import { DEFAULT_VIEWPORT_SCALE } from '@deneb-viz/configuration';
-import {
-    type SpecProvider,
-    type SpecRenderMode
-} from '@deneb-viz/vega-runtime/embed';
+import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import type { SchemaValidator } from '@deneb-viz/vega-runtime/spec-processing';
 import type { Renderers } from 'vega';
 import { getSignalDenebContainer } from '@deneb-viz/vega-runtime/signals';
@@ -146,7 +144,8 @@ export const VisualViewer = ({
             ? editorZoomLevel / 100
             : DEFAULT_VIEWPORT_SCALE;
         const effectiveScale = embedScale * editorScale;
-        if (effectiveScale === DEFAULT_VIEWPORT_SCALE) return undefined;
+        if (Math.abs(effectiveScale - DEFAULT_VIEWPORT_SCALE) < 1e-9)
+            return undefined;
         return effectiveScale;
     }, [
         scaleToZoom,
@@ -160,10 +159,13 @@ export const VisualViewer = ({
     // backing pixels to remain crisp after Power BI applies its CSS zoom.
     // The canvas resize() function reads devicePixelRatio() for live rendering
     // (scaleFactor in embed options only affects exports).
-    effectiveDevicePixelRatio =
-        embedScaleFactor !== undefined
-            ? originalDevicePixelRatio * embedScaleFactor
-            : originalDevicePixelRatio;
+    // Uses useLayoutEffect to run synchronously after commit but before paint.
+    useLayoutEffect(() => {
+        effectiveDevicePixelRatio =
+            embedScaleFactor !== undefined
+                ? originalDevicePixelRatio * embedScaleFactor
+                : originalDevicePixelRatio;
+    }, [embedScaleFactor]);
 
     // Track previous values reference for incremental update detection
     const prevValuesRef = useRef<unknown[] | null>(null);
@@ -321,6 +323,7 @@ export const VisualViewer = ({
         viewportWidth,
         logLevel,
         renderMode,
+        embedScaleFactor,
         compileSpec,
         schemaValidator,
         logDurableError,
