@@ -265,6 +265,7 @@ export const getMappedDataset = (
                 }
                 state.project.setSupportFieldConfiguration(migratedConfig);
                 state.project.setDenebMetaVersion(TEMPLATE_USERMETA_VERSION);
+                state.project.setConsolidateFieldParameters(false);
                 logDebug(
                     'getMappedDataset: migrated legacy support field config',
                     { migratedConfig }

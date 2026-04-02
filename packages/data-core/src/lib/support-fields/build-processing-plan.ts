@@ -116,6 +116,7 @@ export const buildProcessingPlan = (
         if (parameterFieldIndices.has(i)) continue;
 
         const field = fields[i];
+        if (!field) continue;
         const explicit = configuration[field.encodedName];
 
         const flags =

@@ -34,10 +34,18 @@ class SettingsStateManagementGroupProjectMetadata
         descriptionKey: 'Objects_StateManagement_ScaleToZoom_Description',
         value: DEFAULTS.stateManagement.scaleToZoom
     });
+    consolidateFieldParameters = new formattingSettings.ToggleSwitch({
+        name: 'consolidateFieldParameters',
+        displayNameKey: 'Objects_StateManagement_ConsolidateFieldParameters',
+        descriptionKey:
+            'Objects_StateManagement_ConsolidateFieldParameters_Description',
+        value: DEFAULTS.stateManagement.consolidateFieldParameters
+    });
     slices = [
         this.supportFieldConfiguration,
         this.denebMetaVersion,
-        this.scaleToZoom
+        this.scaleToZoom,
+        this.consolidateFieldParameters
     ];
 }
 

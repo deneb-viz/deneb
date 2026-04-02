@@ -32,6 +32,7 @@ export type ProjectSliceProperties = SyncableSlice &
         ) => void;
         setDenebMetaVersion: (version: number) => void;
         setScaleToZoom: (scaleToZoom: boolean) => void;
+        setConsolidateFieldParameters: (value: boolean) => void;
         syncProjectData: (payload: ProjectSyncPayload) => void;
     };
 
@@ -92,6 +93,7 @@ export const createProjectSlice =
             supportFieldConfiguration: {},
             denebMetaVersion: 0,
             scaleToZoom: false,
+            consolidateFieldParameters: true,
             initializeFromTemplate: (
                 payload: InitializeFromTemplatePayload
             ) => {
@@ -278,6 +280,19 @@ export const createProjectSlice =
                     }),
                     false,
                     'project.setScaleToZoom'
+                ),
+            setConsolidateFieldParameters: (
+                consolidateFieldParameters: boolean
+            ) =>
+                set(
+                    (state) => ({
+                        project: {
+                            ...state.project,
+                            consolidateFieldParameters
+                        }
+                    }),
+                    false,
+                    'project.setConsolidateFieldParameters'
                 ),
             syncProjectData: (payload: ProjectSyncPayload) =>
                 set(

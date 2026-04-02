@@ -334,6 +334,9 @@
                 },
                 "scaleToZoom": {
                     "type": { "bool": true }
+                },
+                "consolidateFieldParameters": {
+                    "type": { "bool": true }
                 }
             }
         }

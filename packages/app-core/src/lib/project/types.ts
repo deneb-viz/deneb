@@ -16,4 +16,5 @@ export type DenebProject = {
     supportFieldConfiguration: SupportFieldConfiguration;
     denebMetaVersion: number;
     scaleToZoom: boolean;
+    consolidateFieldParameters: boolean;
 };

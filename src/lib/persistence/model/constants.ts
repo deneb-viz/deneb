@@ -49,7 +49,12 @@ export const DEFAULTS = {
         /**
          * Persisted scale-to-zoom setting (canvas DPI compensation).
          */
-        scaleToZoom: false
+        scaleToZoom: false,
+        /**
+         * Whether to consolidate field parameter component fields into
+         * parameter-named array columns (true) or pass through individually (false).
+         */
+        consolidateFieldParameters: true
     },
     unitSymbols: {
         milliseconds: 'ms',
