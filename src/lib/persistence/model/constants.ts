@@ -49,7 +49,7 @@ export const DEFAULTS = {
         /**
          * Persisted scale-to-zoom setting (canvas DPI compensation).
          */
-        scaleToZoom: ''
+        scaleToZoom: false
     },
     unitSymbols: {
         milliseconds: 'ms',

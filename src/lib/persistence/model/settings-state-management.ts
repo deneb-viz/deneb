@@ -28,7 +28,7 @@ class SettingsStateManagementGroupProjectMetadata
         descriptionKey: 'Objects_StateManagement_DenebMetaVersion_Description',
         value: DEFAULTS.stateManagement.denebMetaVersion
     });
-    scaleToZoom = new formattingSettings.ReadOnlyText({
+    scaleToZoom = new formattingSettings.ToggleSwitch({
         name: 'scaleToZoom',
         displayNameKey: 'Objects_StateManagement_ScaleToZoom',
         descriptionKey: 'Objects_StateManagement_ScaleToZoom_Description',

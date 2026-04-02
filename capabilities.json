@@ -333,7 +333,7 @@
                     "type": { "text": true }
                 },
                 "scaleToZoom": {
-                    "type": { "text": true }
+                    "type": { "bool": true }
                 }
             }
         }

@@ -162,20 +162,11 @@ export const PROJECT_SYNC_MAPPINGS: SliceSyncMapping<ProjectSyncKey>[] = [
     },
     {
         sliceKey: 'scaleToZoom',
-        getVisualValue: (s) => {
-            const raw = s.stateManagement.projectMetadata?.scaleToZoom?.value;
-            return raw === 'true';
-        },
+        getVisualValue: (s) =>
+            s.stateManagement.projectMetadata?.scaleToZoom?.value ?? false,
         persistence: {
             objectName: 'stateManagement',
             propertyName: 'scaleToZoom'
-        },
-        onPersist: (value) => [
-            {
-                objectName: 'stateManagement',
-                propertyName: 'scaleToZoom',
-                value: String(value)
-            }
-        ]
+        }
     }
 ];
