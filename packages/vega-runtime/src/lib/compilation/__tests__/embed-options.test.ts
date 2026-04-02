@@ -244,4 +244,37 @@ describe('buildEmbedOptions', () => {
 
         expect(result.actions).toBe(false);
     });
+
+    it('should use renderer from userOptions instead of default', () => {
+        const input: BuildEmbedOptionsInput = {
+            mode: 'vega',
+            userOptions: { renderer: 'canvas' }
+        };
+
+        const result = buildEmbedOptions(input);
+
+        expect(result.renderer).toBe('canvas');
+    });
+
+    it('should pass scaleFactor through userOptions', () => {
+        const input: BuildEmbedOptionsInput = {
+            mode: 'vega',
+            userOptions: { renderer: 'canvas', scaleFactor: 1.5 }
+        };
+
+        const result = buildEmbedOptions(input);
+
+        expect(result.renderer).toBe('canvas');
+        expect(result.scaleFactor).toBe(1.5);
+    });
+
+    it('should not include scaleFactor when not provided', () => {
+        const input: BuildEmbedOptionsInput = {
+            mode: 'vega'
+        };
+
+        const result = buildEmbedOptions(input);
+
+        expect(result.scaleFactor).toBeUndefined();
+    });
 });

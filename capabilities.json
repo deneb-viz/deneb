@@ -331,6 +331,9 @@
                 },
                 "denebMetaVersion": {
                     "type": { "text": true }
+                },
+                "scaleToZoom": {
+                    "type": { "bool": true }
                 }
             }
         }

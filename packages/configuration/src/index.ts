@@ -82,6 +82,11 @@ export const PROJECT_DEFAULTS = {
     spec: '{}'
 };
 
+/**
+ * Default viewport scale factor (1 = 100% zoom, no scaling applied).
+ */
+export const DEFAULT_VIEWPORT_SCALE = 1;
+
 export const WEBSITE_URL = 'https://deneb.guide/';
 
 /**

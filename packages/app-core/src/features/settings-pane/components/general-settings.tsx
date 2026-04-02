@@ -4,7 +4,8 @@ import {
     InfoLabel,
     Radio,
     RadioGroup,
-    RadioGroupOnChangeData
+    RadioGroupOnChangeData,
+    Switch
 } from '@fluentui/react-components';
 
 import {
@@ -124,5 +125,43 @@ export const RenderModeSettings = () => {
             onValueChange={onValueChange}
             options={RENDER_MODE_OPTIONS}
         />
+    );
+};
+
+export const ScaleToZoomSettings = () => {
+    const { scaleToZoom, renderMode, setScaleToZoom, translate } =
+        useDenebState((state) => ({
+            scaleToZoom: state.project.scaleToZoom,
+            renderMode: state.project.renderMode,
+            setScaleToZoom: state.project.setScaleToZoom,
+            translate: state.i18n.translate
+        }));
+    const tooltipMountNode = useSettingsPaneTooltip();
+    const isCanvas = renderMode === 'canvas';
+    const onChange = useCallback(
+        (_ev: unknown, data: { checked: boolean }) =>
+            setScaleToZoom(data.checked),
+        [setScaleToZoom]
+    );
+    return (
+        <Field
+            label={
+                <InfoLabel
+                    info={translate('Assistive_Text_ScaleToZoom')}
+                    infoButton={{
+                        inline: false,
+                        popover: { mountNode: tooltipMountNode }
+                    }}
+                >
+                    {translate('Text_Setting_ScaleToZoom')}
+                </InfoLabel>
+            }
+        >
+            <Switch
+                checked={scaleToZoom}
+                onChange={onChange}
+                disabled={!isCanvas}
+            />
+        </Field>
     );
 };

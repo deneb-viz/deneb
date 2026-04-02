@@ -31,6 +31,7 @@ export type ProjectSliceProperties = SyncableSlice &
             config: SupportFieldConfiguration
         ) => void;
         setDenebMetaVersion: (version: number) => void;
+        setScaleToZoom: (scaleToZoom: boolean) => void;
         syncProjectData: (payload: ProjectSyncPayload) => void;
     };
 
@@ -90,6 +91,7 @@ export const createProjectSlice =
             spec: PROJECT_DEFAULTS.spec,
             supportFieldConfiguration: {},
             denebMetaVersion: 0,
+            scaleToZoom: false,
             initializeFromTemplate: (
                 payload: InitializeFromTemplatePayload
             ) => {
@@ -265,6 +267,17 @@ export const createProjectSlice =
                     }),
                     false,
                     'project.setDenebMetaVersion'
+                ),
+            setScaleToZoom: (scaleToZoom: boolean) =>
+                set(
+                    (state) => ({
+                        project: {
+                            ...state.project,
+                            scaleToZoom
+                        }
+                    }),
+                    false,
+                    'project.setScaleToZoom'
                 ),
             syncProjectData: (payload: ProjectSyncPayload) =>
                 set(

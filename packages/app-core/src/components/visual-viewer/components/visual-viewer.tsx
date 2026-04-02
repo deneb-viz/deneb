@@ -2,6 +2,7 @@ import {
     type CSSProperties,
     type HTMLProps,
     useEffect,
+    useLayoutEffect,
     useMemo,
     useRef,
     useState
@@ -10,8 +11,10 @@ import { useThrottle } from '@uidotdev/usehooks';
 import { mergeClasses } from '@fluentui/react-components';
 import { Scrollbars, type positionValues } from 'react-custom-scrollbars-2';
 
+import { DEFAULT_VIEWPORT_SCALE } from '@deneb-viz/configuration';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import type { SchemaValidator } from '@deneb-viz/vega-runtime/spec-processing';
+import type { Renderers } from 'vega';
 import { getSignalDenebContainer } from '@deneb-viz/vega-runtime/signals';
 import { logRender, logDebug } from '@deneb-viz/utils/logging';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
@@ -24,6 +27,22 @@ import { getDenebState, useDenebState } from '../../../state';
 import { useDenebPlatformProvider } from '../../deneb-platform';
 import { INCREMENTAL_UPDATE_CONFIGURATION } from '../../../lib/vega/incremental-update-configuration';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
+
+/**
+ * The original device pixel ratio, captured once at module load.
+ * Used to compute the effective DPR when canvas DPI compensation is active.
+ */
+const originalDevicePixelRatio = window.devicePixelRatio;
+
+/**
+ * Module-level effective DPR, read by the devicePixelRatio getter override.
+ * Updated synchronously during render by any VisualViewer instance.
+ */
+let effectiveDevicePixelRatio = originalDevicePixelRatio;
+Object.defineProperty(window, 'devicePixelRatio', {
+    get: () => effectiveDevicePixelRatio,
+    configurable: true
+});
 
 const useVisualViewerStyles = makeStyles({
     container: {
@@ -67,6 +86,10 @@ export const VisualViewer = ({
         config,
         spec,
         logLevel,
+        renderMode,
+        scaleToZoom,
+        embedScale,
+        editorZoomLevel,
         previewScrollbars,
         provider,
         scrollbarColor,
@@ -88,6 +111,11 @@ export const VisualViewer = ({
         spec: state.project.spec,
         config: state.project.config,
         logLevel: state.project.logLevel,
+        renderMode: state.project.renderMode,
+        scaleToZoom: state.project.scaleToZoom,
+        embedScale:
+            state.interface.embedViewport?.scale ?? DEFAULT_VIEWPORT_SCALE,
+        editorZoomLevel: state.editorZoomLevel,
         previewScrollbars:
             state.editorPreferences.previewAreaShowScrollbarsOnOverflow,
         provider: state.project.provider as SpecProvider,
@@ -109,6 +137,35 @@ export const VisualViewer = ({
         logDurableWarn: state.compilation.logDurableWarn,
         translate: state.i18n.translate
     }));
+
+    const embedScaleFactor = useMemo(() => {
+        if (!scaleToZoom || renderMode !== 'canvas') return undefined;
+        const editorScale = isEmbeddedInEditor
+            ? editorZoomLevel / 100
+            : DEFAULT_VIEWPORT_SCALE;
+        const effectiveScale = embedScale * editorScale;
+        if (Math.abs(effectiveScale - DEFAULT_VIEWPORT_SCALE) < 1e-9)
+            return undefined;
+        return effectiveScale;
+    }, [
+        scaleToZoom,
+        renderMode,
+        embedScale,
+        isEmbeddedInEditor,
+        editorZoomLevel
+    ]);
+
+    // Update the module-level DPR so Vega's canvas renderer produces enough
+    // backing pixels to remain crisp after Power BI applies its CSS zoom.
+    // The canvas resize() function reads devicePixelRatio() for live rendering
+    // (scaleFactor in embed options only affects exports).
+    // Uses useLayoutEffect to run synchronously after commit but before paint.
+    useLayoutEffect(() => {
+        effectiveDevicePixelRatio =
+            embedScaleFactor !== undefined
+                ? originalDevicePixelRatio * embedScaleFactor
+                : originalDevicePixelRatio;
+    }, [embedScaleFactor]);
 
     // Track previous values reference for incremental update detection
     const prevValuesRef = useRef<unknown[] | null>(null);
@@ -190,7 +247,13 @@ export const VisualViewer = ({
                     width: viewportWidth,
                     height: viewportHeight
                 },
-                logLevel
+                logLevel,
+                embedOptions: {
+                    renderer: renderMode as Renderers,
+                    ...(embedScaleFactor !== undefined && {
+                        scaleFactor: embedScaleFactor
+                    })
+                }
             });
             return;
         }
@@ -233,7 +296,13 @@ export const VisualViewer = ({
                         width: viewportWidth,
                         height: viewportHeight
                     },
-                    logLevel
+                    logLevel,
+                    embedOptions: {
+                        renderer: renderMode as Renderers,
+                        ...(embedScaleFactor !== undefined && {
+                            scaleFactor: embedScaleFactor
+                        })
+                    }
                 });
             },
             onSuccess: () => {
@@ -253,6 +322,8 @@ export const VisualViewer = ({
         viewportHeight,
         viewportWidth,
         logLevel,
+        renderMode,
+        embedScaleFactor,
         compileSpec,
         schemaValidator,
         logDurableError,
@@ -313,7 +384,13 @@ export const VisualViewer = ({
                 width: viewportWidth,
                 height: viewportHeight
             },
-            logLevel
+            logLevel,
+            embedOptions: {
+                renderer: renderMode as Renderers,
+                ...(embedScaleFactor !== undefined && {
+                    scaleFactor: embedScaleFactor
+                })
+            }
         });
     }, [
         spec,
@@ -322,6 +399,8 @@ export const VisualViewer = ({
         viewportHeight,
         viewportWidth,
         logLevel,
+        renderMode,
+        embedScaleFactor,
         schemaValidator
     ]);
 

@@ -16,6 +16,7 @@ type ProjectSyncKey = keyof Omit<
     | 'setLogLevel'
     | 'setProvider'
     | 'setRenderMode'
+    | 'setScaleToZoom'
 >;
 
 /**
@@ -158,5 +159,14 @@ export const PROJECT_SYNC_MAPPINGS: SliceSyncMapping<ProjectSyncKey>[] = [
                 value: String(value)
             }
         ]
+    },
+    {
+        sliceKey: 'scaleToZoom',
+        getVisualValue: (s) =>
+            s.stateManagement.projectMetadata?.scaleToZoom?.value ?? false,
+        persistence: {
+            objectName: 'stateManagement',
+            propertyName: 'scaleToZoom'
+        }
     }
 ];
