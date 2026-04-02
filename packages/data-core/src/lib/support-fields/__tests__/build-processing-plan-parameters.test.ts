@@ -1,0 +1,220 @@
+import { describe, expect, it } from 'vitest';
+import { buildProcessingPlan } from '../build-processing-plan';
+import type {
+    SupportFieldConfiguration,
+    FieldProcessingInstruction,
+    ParameterProcessingInstruction
+} from '../types';
+
+describe('buildProcessingPlan — field parameters', () => {
+    const masterSettings = {
+        crossHighlightEnabled: false,
+        crossFilterEnabled: false
+    };
+
+    it('should produce a parameter instruction for grouped fields', () => {
+        const plan = buildProcessingPlan({
+            fields: [
+                {
+                    encodedName: 'Country Code',
+                    sourceIndex: 0,
+                    role: 'grouping'
+                },
+                { encodedName: 'Segment', sourceIndex: 1, role: 'grouping' },
+                { encodedName: '$ Sales', sourceIndex: 0, role: 'aggregation' }
+            ],
+            configuration: {},
+            masterSettings,
+            hasHighlights: false,
+            isLegacy: false,
+            parameterGroups: [
+                {
+                    parameterName: 'Dynamic Category',
+                    componentFieldIndices: [0, 1],
+                    componentNames: ['Country Code', 'Segment'],
+                    formatStrings: undefined
+                }
+            ]
+        });
+
+        expect(plan.fields).toHaveLength(2);
+
+        const paramInstr = plan.fields[0];
+        expect(paramInstr.kind).toBe('parameter');
+        if (paramInstr.kind === 'parameter') {
+            expect(paramInstr.encodedName).toBe('Dynamic Category');
+            expect(paramInstr.componentIndices).toEqual([0, 1]);
+            expect(paramInstr.namesArray).toEqual(['Country Code', 'Segment']);
+        }
+
+        const fieldInstr = plan.fields[1];
+        expect(fieldInstr.kind).toBe('field');
+        if (fieldInstr.kind === 'field') {
+            expect(fieldInstr.encodedName).toBe('$ Sales');
+        }
+    });
+
+    it('should use explicit config for parameter by encoded parameter name', () => {
+        const config: SupportFieldConfiguration = {
+            'Dynamic Category': {
+                highlight: false,
+                highlightStatus: false,
+                highlightComparator: false,
+                format: true,
+                formatted: true
+            }
+        };
+        const plan = buildProcessingPlan({
+            fields: [
+                {
+                    encodedName: 'Country Code',
+                    sourceIndex: 0,
+                    role: 'grouping'
+                }
+            ],
+            configuration: config,
+            masterSettings,
+            hasHighlights: false,
+            isLegacy: false,
+            parameterGroups: [
+                {
+                    parameterName: 'Dynamic Category',
+                    componentFieldIndices: [0],
+                    componentNames: ['Country Code'],
+                    formatStrings: ['']
+                }
+            ]
+        });
+
+        const instr = plan.fields[0];
+        expect(instr.kind).toBe('parameter');
+        if (instr.kind === 'parameter') {
+            expect(instr.emitFormat).toBe(true);
+            expect(instr.emitFormatted).toBe(true);
+        }
+    });
+
+    it('should use default flags when no explicit config for parameter', () => {
+        const plan = buildProcessingPlan({
+            fields: [
+                {
+                    encodedName: 'Country Code',
+                    sourceIndex: 0,
+                    role: 'grouping'
+                }
+            ],
+            configuration: {},
+            masterSettings,
+            hasHighlights: false,
+            isLegacy: false,
+            parameterGroups: [
+                {
+                    parameterName: 'Dynamic Category',
+                    componentFieldIndices: [0],
+                    componentNames: ['Country Code'],
+                    formatStrings: undefined
+                }
+            ]
+        });
+
+        const instr = plan.fields[0];
+        expect(instr.kind).toBe('parameter');
+        if (instr.kind === 'parameter') {
+            expect(instr.emitFormat).toBe(false);
+            expect(instr.emitFormatted).toBe(false);
+        }
+    });
+
+    it('should pass through formatStrings when format is enabled', () => {
+        const config: SupportFieldConfiguration = {
+            'Dynamic Category': {
+                highlight: false,
+                highlightStatus: false,
+                highlightComparator: false,
+                format: true,
+                formatted: false
+            }
+        };
+        const plan = buildProcessingPlan({
+            fields: [
+                {
+                    encodedName: 'Country Code',
+                    sourceIndex: 0,
+                    role: 'grouping'
+                },
+                { encodedName: '$ Sales', sourceIndex: 0, role: 'aggregation' }
+            ],
+            configuration: config,
+            masterSettings,
+            hasHighlights: false,
+            isLegacy: false,
+            parameterGroups: [
+                {
+                    parameterName: 'Dynamic Category',
+                    componentFieldIndices: [0, 1],
+                    componentNames: ['Country Code', '$ Sales'],
+                    formatStrings: ['', '$#,0']
+                }
+            ]
+        });
+
+        const instr = plan.fields[0];
+        if (instr.kind === 'parameter') {
+            expect(instr.formatStringsArray).toEqual(['', '$#,0']);
+        }
+    });
+
+    it('should produce only regular instructions when no parameter groups provided', () => {
+        const plan = buildProcessingPlan({
+            fields: [{ encodedName: 'Year', sourceIndex: 0, role: 'grouping' }],
+            configuration: {},
+            masterSettings,
+            hasHighlights: false,
+            isLegacy: false
+        });
+
+        expect(plan.fields).toHaveLength(1);
+        expect(plan.fields[0].kind).toBe('field');
+    });
+
+    it('should handle multiple parameter groups', () => {
+        const plan = buildProcessingPlan({
+            fields: [
+                { encodedName: 'Country', sourceIndex: 0, role: 'grouping' },
+                { encodedName: 'Segment', sourceIndex: 1, role: 'grouping' },
+                { encodedName: '$ Sales', sourceIndex: 0, role: 'aggregation' },
+                { encodedName: '# Units', sourceIndex: 1, role: 'aggregation' },
+                { encodedName: 'Year', sourceIndex: 2, role: 'grouping' }
+            ],
+            configuration: {},
+            masterSettings,
+            hasHighlights: false,
+            isLegacy: false,
+            parameterGroups: [
+                {
+                    parameterName: 'Dynamic Cat',
+                    componentFieldIndices: [0, 1],
+                    componentNames: ['Country', 'Segment'],
+                    formatStrings: undefined
+                },
+                {
+                    parameterName: 'Dynamic Meas',
+                    componentFieldIndices: [2, 3],
+                    componentNames: ['$ Sales', '# Units'],
+                    formatStrings: undefined
+                }
+            ]
+        });
+
+        expect(plan.fields).toHaveLength(3);
+        expect(plan.fields[0].kind).toBe('parameter');
+        expect(plan.fields[1].kind).toBe('parameter');
+        expect(plan.fields[2].kind).toBe('field');
+        if (plan.fields[0].kind === 'parameter') {
+            expect(plan.fields[0].encodedName).toBe('Dynamic Cat');
+        }
+        if (plan.fields[1].kind === 'parameter') {
+            expect(plan.fields[1].encodedName).toBe('Dynamic Meas');
+        }
+    });
+});

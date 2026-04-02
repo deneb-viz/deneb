@@ -7,7 +7,8 @@ import {
     FORMAT_FIELD_SUFFIX,
     FORMATTED_FIELD_SUFFIX,
     ROW_INDEX_FIELD_NAME,
-    SELECTED_ROW_FIELD_NAME
+    SELECTED_ROW_FIELD_NAME,
+    PARAMETER_NAMES_SUFFIX
 } from '../field/constants';
 import {
     getHighlightStatusValue,
@@ -37,6 +38,52 @@ export const buildDataRow = (params: BuildDataRowParams): VegaDatum => {
     for (let i = 0; i < plan.fields.length; i++) {
         const instruction = plan.fields[i]!;
         const { encodedName } = instruction;
+
+        if (instruction.kind === 'parameter') {
+            const { componentIndices, namesArray } = instruction;
+
+            // Assemble array of values from component fields
+            const values: PrimitiveValue[] = componentIndices.map(
+                (idx) => baseValues[idx] as PrimitiveValue
+            );
+            row[encodedName] = values;
+
+            // Reuse the pre-built names array (same reference every row)
+            row[encodedName + PARAMETER_NAMES_SUFFIX] = namesArray;
+
+            // Format strings array
+            if (instruction.emitFormat) {
+                if (instruction.formatStringsArray) {
+                    row[encodedName + FORMAT_FIELD_SUFFIX] =
+                        instruction.formatStringsArray;
+                } else {
+                    row[encodedName + FORMAT_FIELD_SUFFIX] =
+                        componentIndices.map((idx) =>
+                            provider.getFormatString(idx, rowIndex)
+                        );
+                }
+            }
+
+            // Formatted values (always per-row via provider)
+            if (instruction.emitFormatted) {
+                const formatStrings =
+                    instruction.formatStringsArray ??
+                    componentIndices.map((idx) =>
+                        provider.getFormatString(idx, rowIndex)
+                    );
+                row[encodedName + FORMATTED_FIELD_SUFFIX] =
+                    componentIndices.map((idx, j) =>
+                        provider.getFormattedValue(
+                            baseValues[idx] as PrimitiveValue,
+                            formatStrings[j]!,
+                            locale
+                        )
+                    );
+            }
+
+            continue;
+        }
+
         const baseValue = baseValues[i] as PrimitiveValue;
 
         row[encodedName] = baseValue;

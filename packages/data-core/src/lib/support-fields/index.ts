@@ -15,6 +15,7 @@ export {
 } from './resolve-defaults';
 export {
     buildProcessingPlan,
-    type BuildProcessingPlanParams
+    type BuildProcessingPlanParams,
+    type PlanParameterGroup
 } from './build-processing-plan';
 export { buildDataRow, type BuildDataRowParams } from './build-data-row';
