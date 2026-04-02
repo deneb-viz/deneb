@@ -30,6 +30,22 @@ import { useDenebPlatformProvider } from '../../deneb-platform';
 import { INCREMENTAL_UPDATE_CONFIGURATION } from '../../../lib/vega/incremental-update-configuration';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 
+/**
+ * The original device pixel ratio, captured once at module load.
+ * Used to compute the effective DPR when canvas DPI compensation is active.
+ */
+const originalDevicePixelRatio = window.devicePixelRatio;
+
+/**
+ * Module-level effective DPR, read by the devicePixelRatio getter override.
+ * Updated synchronously during render by any VisualViewer instance.
+ */
+let effectiveDevicePixelRatio = originalDevicePixelRatio;
+Object.defineProperty(window, 'devicePixelRatio', {
+    get: () => effectiveDevicePixelRatio,
+    configurable: true
+});
+
 const useVisualViewerStyles = makeStyles({
     container: {
         height: '100%',
@@ -75,6 +91,7 @@ export const VisualViewer = ({
         renderMode,
         scaleToZoom,
         embedScale,
+        editorZoomLevel,
         previewScrollbars,
         provider,
         scrollbarColor,
@@ -100,6 +117,7 @@ export const VisualViewer = ({
         scaleToZoom: state.project.scaleToZoom,
         embedScale:
             state.interface.embedViewport?.scale ?? DEFAULT_VIEWPORT_SCALE,
+        editorZoomLevel: state.editorZoomLevel,
         previewScrollbars:
             state.editorPreferences.previewAreaShowScrollbarsOnOverflow,
         provider: state.project.provider as SpecProvider,
@@ -123,15 +141,29 @@ export const VisualViewer = ({
     }));
 
     const embedScaleFactor = useMemo(() => {
-        if (
-            scaleToZoom &&
-            renderMode === 'canvas' &&
-            embedScale !== DEFAULT_VIEWPORT_SCALE
-        ) {
-            return embedScale;
-        }
-        return undefined;
-    }, [scaleToZoom, renderMode, embedScale]);
+        if (!scaleToZoom || renderMode !== 'canvas') return undefined;
+        const editorScale = isEmbeddedInEditor
+            ? editorZoomLevel / 100
+            : DEFAULT_VIEWPORT_SCALE;
+        const effectiveScale = embedScale * editorScale;
+        if (effectiveScale === DEFAULT_VIEWPORT_SCALE) return undefined;
+        return effectiveScale;
+    }, [
+        scaleToZoom,
+        renderMode,
+        embedScale,
+        isEmbeddedInEditor,
+        editorZoomLevel
+    ]);
+
+    // Update the module-level DPR so Vega's canvas renderer produces enough
+    // backing pixels to remain crisp after Power BI applies its CSS zoom.
+    // The canvas resize() function reads devicePixelRatio() for live rendering
+    // (scaleFactor in embed options only affects exports).
+    effectiveDevicePixelRatio =
+        embedScaleFactor !== undefined
+            ? originalDevicePixelRatio * embedScaleFactor
+            : originalDevicePixelRatio;
 
     // Track previous values reference for incremental update detection
     const prevValuesRef = useRef<unknown[] | null>(null);
