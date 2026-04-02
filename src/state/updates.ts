@@ -111,13 +111,24 @@ export const createUpdatesSlice = (): StateCreator<
                         (viewport as { scale?: number }).scale ??
                         DEFAULT_VIEWPORT_SCALE
                 };
+                const scaleChanged =
+                    embedViewport?.scale !== targetViewport.scale;
                 if (
                     doesModeAllowEmbedViewportSet(mode) &&
                     !shallowEqual(embedViewport, targetViewport) &&
                     (isVisualUpdateTypeResizeEnd(options.type) ||
+                        scaleChanged ||
                         !embedViewport)
                 ) {
                     setEmbedViewport(targetViewport);
+                } else if (scaleChanged && embedViewport) {
+                    // Scale changed but viewport dimension update was
+                    // blocked (e.g. editor mode). Update only the scale,
+                    // preserving current dimensions.
+                    setEmbedViewport({
+                        ...embedViewport,
+                        scale: targetViewport.scale
+                    });
                 }
                 // Fallback: if we don't have a viewport ensure we have the latest viewport
                 if (!get().interface.embedViewport) {
