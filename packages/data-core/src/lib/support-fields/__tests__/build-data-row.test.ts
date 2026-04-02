@@ -29,6 +29,7 @@ const makeProvider = (
 const makeInstruction = (
     overrides: Partial<FieldProcessingInstruction> = {}
 ): FieldProcessingInstruction => ({
+    kind: 'field',
     encodedName: 'Sales',
     sourceIndex: 0,
     role: 'aggregation',

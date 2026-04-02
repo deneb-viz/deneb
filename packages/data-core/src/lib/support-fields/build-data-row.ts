@@ -41,46 +41,56 @@ export const buildDataRow = (params: BuildDataRowParams): VegaDatum => {
 
         row[encodedName] = baseValue;
 
-        const needsHighlightValue =
-            instruction.emitHighlight ||
-            instruction.emitHighlightStatus ||
-            instruction.emitHighlightComparator;
+        if (instruction.kind === 'field') {
+            const needsHighlightValue =
+                instruction.emitHighlight ||
+                instruction.emitHighlightStatus ||
+                instruction.emitHighlightComparator;
 
-        let highlightValue: PrimitiveValue | undefined;
-        if (needsHighlightValue) {
-            highlightValue = provider.getHighlightValue(i, rowIndex, baseValue);
-        }
-
-        if (instruction.emitHighlight) {
-            row[encodedName + HIGHLIGHT_FIELD_SUFFIX] = highlightValue;
-        }
-
-        if (instruction.emitHighlightStatus) {
-            row[encodedName + HIGHLIGHT_STATUS_SUFFIX] =
-                getHighlightStatusValue(
-                    plan.hasHighlights,
-                    baseValue,
-                    highlightValue!
+            let highlightValue: PrimitiveValue | undefined;
+            if (needsHighlightValue) {
+                highlightValue = provider.getHighlightValue(
+                    i,
+                    rowIndex,
+                    baseValue
                 );
-        }
+            }
 
-        if (instruction.emitHighlightComparator) {
-            row[encodedName + HIGHLIGHT_COMPARATOR_SUFFIX] =
-                getHighlightComparatorValue(baseValue, highlightValue!);
-        }
+            if (instruction.emitHighlight) {
+                row[encodedName + HIGHLIGHT_FIELD_SUFFIX] = highlightValue;
+            }
 
-        let formatString: string | undefined;
-        if (instruction.emitFormat || instruction.emitFormatted) {
-            formatString = provider.getFormatString(i, rowIndex);
-        }
+            if (instruction.emitHighlightStatus) {
+                row[encodedName + HIGHLIGHT_STATUS_SUFFIX] =
+                    getHighlightStatusValue(
+                        plan.hasHighlights,
+                        baseValue,
+                        highlightValue!
+                    );
+            }
 
-        if (instruction.emitFormat) {
-            row[encodedName + FORMAT_FIELD_SUFFIX] = formatString;
-        }
+            if (instruction.emitHighlightComparator) {
+                row[encodedName + HIGHLIGHT_COMPARATOR_SUFFIX] =
+                    getHighlightComparatorValue(baseValue, highlightValue!);
+            }
 
-        if (instruction.emitFormatted) {
-            row[encodedName + FORMATTED_FIELD_SUFFIX] =
-                provider.getFormattedValue(baseValue, formatString!, locale);
+            let formatString: string | undefined;
+            if (instruction.emitFormat || instruction.emitFormatted) {
+                formatString = provider.getFormatString(i, rowIndex);
+            }
+
+            if (instruction.emitFormat) {
+                row[encodedName + FORMAT_FIELD_SUFFIX] = formatString;
+            }
+
+            if (instruction.emitFormatted) {
+                row[encodedName + FORMATTED_FIELD_SUFFIX] =
+                    provider.getFormattedValue(
+                        baseValue,
+                        formatString!,
+                        locale
+                    );
+            }
         }
     }
 

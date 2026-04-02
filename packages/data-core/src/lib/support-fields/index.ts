@@ -4,6 +4,8 @@ export type {
     SupportFieldMasterSettings,
     SupportFieldValueProvider,
     FieldProcessingInstruction,
+    ParameterProcessingInstruction,
+    ProcessingInstruction,
     ProcessingPlan
 } from './types';
 export { createDefaultProvider } from './default-provider';

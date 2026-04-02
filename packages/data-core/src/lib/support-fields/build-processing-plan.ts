@@ -2,7 +2,7 @@ import type { DatasetFieldRole } from '../field/types';
 import type {
     SupportFieldConfiguration,
     SupportFieldMasterSettings,
-    FieldProcessingInstruction,
+    ProcessingInstruction,
     ProcessingPlan
 } from './types';
 import { resolveFieldDefaults } from './resolve-defaults';
@@ -36,7 +36,7 @@ export const buildProcessingPlan = (
     const { fields, configuration, masterSettings, hasHighlights, isLegacy } =
         params;
 
-    const instructions: FieldProcessingInstruction[] = fields.map((field) => {
+    const instructions: ProcessingInstruction[] = fields.map((field) => {
         const explicit = configuration[field.encodedName];
 
         const flags =
@@ -49,9 +49,10 @@ export const buildProcessingPlan = (
                   });
 
         return {
+            kind: 'field',
             encodedName: field.encodedName,
             sourceIndex: field.sourceIndex,
-            role: field.role,
+            role: field.role as 'grouping' | 'aggregation',
             emitHighlight: flags.highlight,
             emitHighlightStatus: flags.highlightStatus,
             emitHighlightComparator: flags.highlightComparator,
