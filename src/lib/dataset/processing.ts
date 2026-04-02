@@ -62,6 +62,11 @@ import {
 } from './support-field-provider';
 import { isLegacySpec } from './support-field-migration';
 import { TEMPLATE_USERMETA_VERSION } from '@deneb-viz/template-usermeta';
+import {
+    detectFieldParameterGroups,
+    type DetectableField
+} from './field-parameter-detection';
+import type { PlanParameterGroup } from '@deneb-viz/data-core/support-fields';
 
 // State for reference-based change detection
 let prevCategories: DataViewCategoryColumn[] | undefined;
@@ -279,6 +284,41 @@ export const getMappedDataset = (
                     isSourceField(c.source)
             );
 
+            // Detect field parameters when consolidation is enabled
+            const consolidate =
+                state.project.consolidateFieldParameters ?? true;
+            let planParameterGroups: PlanParameterGroup[] | undefined;
+
+            if (consolidate) {
+                const detectableFields: DetectableField[] =
+                    planSourceColumns.map((c) => ({
+                        displayName: c.column.displayName,
+                        sourceIndex: c.sourceIndex,
+                        isMeasure: c.column.isMeasure ?? false,
+                        sourceFieldParameters: c.column
+                            .sourceFieldParameters as
+                            | Array<{ displayName: string }>
+                            | undefined
+                    }));
+                const detection = detectFieldParameterGroups(detectableFields);
+
+                if (Object.keys(detection.parameterGroups).length > 0) {
+                    planParameterGroups = Object.values(
+                        detection.parameterGroups
+                    ).map((group) => ({
+                        parameterName: group.parameterName,
+                        componentFieldIndices: group.componentFieldIndices,
+                        componentNames: group.componentNames,
+                        formatStrings: group.componentFieldIndices.map(
+                            (idx) => {
+                                const col = planSourceColumns[idx];
+                                return col?.column?.format ?? '';
+                            }
+                        )
+                    }));
+                }
+            }
+
             const fieldSourceMappings: FieldSourceMapping[] =
                 planSourceColumns.map((c) => ({
                     source: c.column.isMeasure ? 'values' : 'categories',
@@ -305,7 +345,8 @@ export const getMappedDataset = (
                 configuration: supportFieldConfig,
                 masterSettings,
                 hasHighlights,
-                isLegacy: legacy
+                isLegacy: legacy,
+                parameterGroups: planParameterGroups
             });
 
             // Map plan field positions to their indices in columns/fieldValues
@@ -341,6 +382,31 @@ export const getMappedDataset = (
                 entries: selectionQueueBase,
                 rowNumber: 0
             };
+
+            // Update field metadata for consolidated parameters
+            // (done AFTER selection queue build so component fields
+            // are still visible to the interactivity pipeline)
+            if (planParameterGroups) {
+                for (const group of planParameterGroups) {
+                    const encodedParamName = getEncodedFieldName(
+                        group.parameterName
+                    );
+                    // Add the parameter as a dataset field
+                    fields[encodedParamName] = {
+                        role: 'field-parameter',
+                        dataType: 'other'
+                    };
+                    // Mark component fields as support fields
+                    // (hides them from template operations but keeps
+                    // them in the selection queue already built above)
+                    for (const name of group.componentNames) {
+                        const encodedName = getEncodedFieldName(name);
+                        if (fields[encodedName]) {
+                            fields[encodedName].isSupportField = true;
+                        }
+                    }
+                }
+            }
 
             const values: VegaDatum[] = [];
             for (let r = 0; r < rowsLoaded; r++) {
