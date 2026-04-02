@@ -20,7 +20,8 @@ import {
     TooltipSettings,
     ContextMenuSettings,
     CrossFilterSettings,
-    CrossHighlightSettings
+    CrossHighlightSettings,
+    SemanticModelSettings
 } from '../features/settings';
 import { NotificationToaster } from '../features/toaster';
 import { VisualUpdateHistoryOverlay } from '../features/visual-update-history-overlay';
@@ -184,7 +185,8 @@ export const App = ({ host }: AppProps) => {
                     <TooltipSettings key='tooltips' />,
                     <ContextMenuSettings key='contextmenu' />,
                     <CrossFilterSettings key='crossfilter' />,
-                    <CrossHighlightSettings key='crosshighlight' />
+                    <CrossHighlightSettings key='crosshighlight' />,
+                    <SemanticModelSettings key='semantic-model' />
                 ],
                 tooltipHandler: pbiTooltipHandler,
                 vegaLoader,

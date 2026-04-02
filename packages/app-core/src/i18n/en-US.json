@@ -215,5 +215,8 @@
     "Text_MessageBar_NoHighlightFields_Action": "Turn off cross-highlighting",
     "Assistive_Text_SupportFields": "Deneb can generate additional supporting fields for each column and measure in your dataset. Use the options below to control which supporting fields are included. Reducing unnecessary fields can improve performance with large datasets.",
     "Text_Setting_ScaleToZoom": "Scale to report zoom level",
-    "Assistive_Text_ScaleToZoom": "When enabled and using canvas rendering, Deneb adjusts the canvas resolution to match the Power BI report zoom level. This produces sharper output at non-100% zoom but still may not be as reliable as SVG output. Only applies to canvas rendering mode."
+    "Assistive_Text_ScaleToZoom": "When enabled and using canvas rendering, Deneb adjusts the canvas resolution to match the Power BI report zoom level. This produces sharper output at non-100% zoom but still may not be as reliable as SVG output. Only applies to canvas rendering mode.",
+    "Text_Settings_SemanticModel": "Semantic model integration",
+    "Text_Setting_ConsolidateFieldParameters": "Consolidate field parameters",
+    "Assistive_Text_ConsolidateFieldParameters": "When enabled, fields belonging to a Power BI field parameter are grouped into array-valued columns named after the parameter, with companion __names, __format, and __formatted fields. When disabled, all fields pass through individually with their actual names. Disable this if you use a modeling workaround for stable field names."
 }
