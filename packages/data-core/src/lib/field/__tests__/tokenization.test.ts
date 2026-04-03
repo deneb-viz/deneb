@@ -2,6 +2,7 @@ import { getHighlightRegExpAlternation } from '../highlight';
 import {
     getEscapedReplacerPattern,
     getNumberFormatRegExpAlternation,
+    getParameterRegExpAlternation,
     getPlaceholderKey,
     getTokenPatternsLiteral,
     getTokenPatternsReplacement
@@ -61,7 +62,15 @@ describe('getTokenPatternsLiteral', () => {
             `(?<=datum)(.\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?=)`,
             `(?<=datum\\[')(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?='\\])`,
             `(?<=datum\\[")(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?="\\])`,
-            `(?<=_\\{)(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?=\\}_)`
+            `(?<=_\\{)(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?=\\}_)`,
+            `^(\\${fieldName})(${getParameterRegExpAlternation()})$`,
+            `(?<='.*datum)(.\\${fieldName})(${getParameterRegExpAlternation()})?(?=.*')`,
+            `(?<='.*datum\\[\\\\\\')(\\${fieldName})(${getParameterRegExpAlternation()})?(?=\\\\\\'\\].*')`,
+            `(?<=datum\\[\\\\")(\\${fieldName})(${getParameterRegExpAlternation()})?(?=\\\\"\\])`,
+            `(?<=datum)(.\\${fieldName})(${getParameterRegExpAlternation()})?(?=)`,
+            `(?<=datum\\[')(\\${fieldName})(${getParameterRegExpAlternation()})?(?='\\])`,
+            `(?<=datum\\[")(\\${fieldName})(${getParameterRegExpAlternation()})?(?="\\])`,
+            `(?<=_\\{)(\\${fieldName})(${getParameterRegExpAlternation()})?(?=\\}_)`
         ];
         expect(result).toEqual(expectedPattern);
     });
@@ -166,7 +175,94 @@ it('should return an array with the expected replacement patterns', () => {
                 fieldName
             )})(${getNumberFormatRegExpAlternation()})?(?=\\}_)`,
             replacer: `${placeholder}$2`
+        },
+        {
+            pattern: `^(${getEscapedReplacerPattern(
+                fieldName
+            )})(${getParameterRegExpAlternation()})$`,
+            replacer: `${placeholder}$2`
+        },
+        {
+            pattern: `(?<='.*datum)(.${getEscapedReplacerPattern(
+                fieldName
+            )})(${getParameterRegExpAlternation()})?(?=.*')`,
+            replacer: `[\\'${placeholder}$2\\']`
+        },
+        {
+            pattern: `(?<='.*datum\\[\\\\\\')(${getEscapedReplacerPattern(
+                fieldName
+            )})(${getParameterRegExpAlternation()})?(?=\\\\\\'\\].*')`,
+            replacer: `${placeholder}$2`
+        },
+        {
+            pattern: `(?<=datum\\[\\\\")(${getEscapedReplacerPattern(
+                fieldName
+            )})(${getParameterRegExpAlternation()})?(?=\\\\"\\])`,
+            replacer: `${placeholder}$2`
+        },
+        {
+            pattern: `(?<=datum)(.${getEscapedReplacerPattern(
+                fieldName
+            )})(${getParameterRegExpAlternation()})?(?=)`,
+            replacer: `['${placeholder}$2']`
+        },
+        {
+            pattern: `(?<=datum\\[')(${getEscapedReplacerPattern(
+                fieldName
+            )})(${getParameterRegExpAlternation()})?(?='\\])`,
+            replacer: `${placeholder}$2`
+        },
+        {
+            pattern: `(?<=datum\\[")(${getEscapedReplacerPattern(
+                fieldName
+            )})(${getParameterRegExpAlternation()})?(?="\\])`,
+            replacer: `${placeholder}$2`
+        },
+        {
+            pattern: `(?<=_\\{)(${getEscapedReplacerPattern(
+                fieldName
+            )})(${getParameterRegExpAlternation()})?(?=\\}_)`,
+            replacer: `${placeholder}$2`
         }
     ];
     expect(result).toEqual(expectedPatterns);
+});
+
+describe('getParameterRegExpAlternation', () => {
+    it('should return the __names suffix', () => {
+        expect(getParameterRegExpAlternation()).toBe('__names');
+    });
+});
+
+describe('__names suffix tokenization', () => {
+    it('getTokenPatternsLiteral should include patterns for __names suffix', () => {
+        const fieldName = 'Dynamic Category';
+        const result = getTokenPatternsLiteral(fieldName);
+        const parameterAlternation = getParameterRegExpAlternation();
+        const escapedName = getEscapedReplacerPattern(fieldName);
+        // The base exact-match pattern for __names should be present
+        expect(result).toContain(`^(${escapedName})(${parameterAlternation})$`);
+        // The double-quote accessor pattern covering datum["Dynamic Category__names"]
+        expect(result).toContain(
+            `(?<=datum\\[")(${escapedName})(${parameterAlternation})?(?="\\])`
+        );
+    });
+
+    it('getTokenPatternsReplacement should produce correct replacer for __names suffix', () => {
+        const fieldName = 'Dynamic Category';
+        const placeholder = '__0__';
+        const result = getTokenPatternsReplacement(fieldName, placeholder);
+        const parameterAlternation = getParameterRegExpAlternation();
+        const escapedName = getEscapedReplacerPattern(fieldName);
+        // Base exact-match replacer
+        expect(result).toContainEqual({
+            pattern: `^(${escapedName})(${parameterAlternation})$`,
+            replacer: `${placeholder}$2`
+        });
+        // Double-quote accessor replacer covering datum["Dynamic Category__names"]
+        expect(result).toContainEqual({
+            pattern: `(?<=datum\\[")(${escapedName})(${parameterAlternation})?(?="\\])`,
+            replacer: `${placeholder}$2`
+        });
+    });
 });

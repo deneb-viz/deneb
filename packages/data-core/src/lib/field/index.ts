@@ -25,6 +25,8 @@ export type {
 } from './template-metadata';
 export {
     getEscapedReplacerPattern,
+    getNumberFormatRegExpAlternation,
+    getParameterRegExpAlternation,
     getPlaceholderKey,
     getTokenPatternsLiteral,
     getTokenPatternsReplacement

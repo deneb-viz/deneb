@@ -2,7 +2,8 @@ import {
     FIELD_TRACKING_METADATA_PLACEHOLDER,
     FIELD_TRACKING_TOKEN_PLACEHOLDER,
     FORMAT_FIELD_SUFFIX,
-    FORMATTED_FIELD_SUFFIX
+    FORMATTED_FIELD_SUFFIX,
+    PARAMETER_NAMES_SUFFIX
 } from './constants';
 import { getHighlightRegExpAlternation } from './highlight';
 import type { FieldPatternReplacer } from './types';
@@ -21,6 +22,11 @@ export const getEscapedReplacerPattern = (value: string) => {
  */
 export const getNumberFormatRegExpAlternation = () =>
     `${FORMAT_FIELD_SUFFIX}|${FORMATTED_FIELD_SUFFIX}`;
+
+/**
+ * Provides all parameter field suffixes, suitable for a RegExp expression.
+ */
+export const getParameterRegExpAlternation = () => PARAMETER_NAMES_SUFFIX;
 
 /**
  * Consistently format a supplied identity into a suitable placeholder. Placeholders are used to represent dataset
@@ -43,7 +49,12 @@ export const getTokenPatternsLiteral = (fieldName?: string): string[] => {
     );
     return [
         ...getTokenPatterns(namePattern, getHighlightRegExpAlternation(), ''),
-        ...getTokenPatterns(namePattern, getNumberFormatRegExpAlternation(), '')
+        ...getTokenPatterns(
+            namePattern,
+            getNumberFormatRegExpAlternation(),
+            ''
+        ),
+        ...getTokenPatterns(namePattern, getParameterRegExpAlternation(), '')
     ].map((r) => r.pattern);
 };
 
@@ -60,7 +71,8 @@ export const getTokenPatternsReplacement = (
     );
     const alternations = [
         getHighlightRegExpAlternation(),
-        getNumberFormatRegExpAlternation()
+        getNumberFormatRegExpAlternation(),
+        getParameterRegExpAlternation()
     ];
     const replacers: FieldPatternReplacer[] = [];
     for (let i = 0, n = alternations.length; i < n; i++) {
