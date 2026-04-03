@@ -22,6 +22,15 @@ import {
     Calculator16Regular,
     TableFreezeColumn16Regular
 } from '@fluentui/react-icons';
+import FabricTableColumnQuestion16Regular from '@fabric-msft/svg-icons/dist/TableColumnQuestion16Regular';
+
+/**
+ * Wrapper for the Fabric SVG icon to match Fluent icon sizing.
+ * Fabric icons don't set explicit width/height on the SVG element.
+ */
+const TableColumnQuestion16Regular = () => (
+    <FabricTableColumnQuestion16Regular width={16} height={16} />
+);
 import {
     resolveFieldDefaults,
     type SupportFieldConfiguration,
@@ -339,13 +348,17 @@ export const DatasetSettings = () => {
                         return flags;
                     })();
                     const roleTooltip = translate(
-                        isMeasure
-                            ? 'Text_SupportField_RoleTooltip_Measure'
-                            : 'Text_SupportField_RoleTooltip_Column'
+                        isParameter
+                            ? 'Text_SupportField_RoleTooltip_Parameter'
+                            : isMeasure
+                              ? 'Text_SupportField_RoleTooltip_Measure'
+                              : 'Text_SupportField_RoleTooltip_Column'
                     );
-                    const RoleIcon = isMeasure
-                        ? Calculator16Regular
-                        : TableFreezeColumn16Regular;
+                    const RoleIcon = isParameter
+                        ? TableColumnQuestion16Regular
+                        : isMeasure
+                          ? Calculator16Regular
+                          : TableFreezeColumn16Regular;
 
                     const isExplicitlyConfigured = name in config;
 
