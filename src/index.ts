@@ -187,12 +187,15 @@ export class Deneb implements IVisual {
         // property-only updates).
         const supportFieldConfig: SupportFieldConfiguration =
             getDenebState().project.supportFieldConfiguration ?? {};
+        const consolidateFieldParameters =
+            getDenebState().project.consolidateFieldParameters ?? true;
 
         const dataChanged = hasDataViewChanged(
             categorical,
             enableSelection,
             enableHighlight,
-            supportFieldConfig
+            supportFieldConfig,
+            consolidateFieldParameters
         );
         logDebug('Data changed check', { shouldProcess, dataChanged });
 

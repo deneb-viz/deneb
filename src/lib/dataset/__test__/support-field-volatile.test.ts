@@ -115,11 +115,29 @@ describe('hasDataViewChanged — supportFieldConfiguration detection', () => {
      * transition away from it.
      */
     beforeEach(() => {
-        // Prime the module state: first call always returns true (undefined → value),
-        // establishing prevSupportFieldConfiguration = JSON.stringify(CONFIG_EMPTY).
-        hasDataViewChanged(STABLE_CATEGORICAL, false, false, CONFIG_EMPTY);
-        // Second call with identical params sets a stable, known baseline.
-        hasDataViewChanged(STABLE_CATEGORICAL, false, false, CONFIG_EMPTY);
+        // Prime the module state: first call sets prevConsolidateFieldParameters,
+        // second call sets prevSupportFieldConfiguration, third stabilizes.
+        hasDataViewChanged(
+            STABLE_CATEGORICAL,
+            false,
+            false,
+            CONFIG_EMPTY,
+            true
+        );
+        hasDataViewChanged(
+            STABLE_CATEGORICAL,
+            false,
+            false,
+            CONFIG_EMPTY,
+            true
+        );
+        hasDataViewChanged(
+            STABLE_CATEGORICAL,
+            false,
+            false,
+            CONFIG_EMPTY,
+            true
+        );
     });
 
     it('returns false when supportFieldConfiguration is the same object reference', () => {
@@ -127,83 +145,84 @@ describe('hasDataViewChanged — supportFieldConfiguration detection', () => {
             STABLE_CATEGORICAL,
             false,
             false,
-            CONFIG_EMPTY
+            CONFIG_EMPTY,
+            true
         );
         expect(result).toBe(false);
     });
 
     it('returns false when supportFieldConfiguration has the same content but is a new object', () => {
-        // Structurally identical copy — JSON.stringify should match.
         const copy = makeConfig();
         const result = hasDataViewChanged(
             STABLE_CATEGORICAL,
             false,
             false,
-            copy
+            copy,
+            true
         );
         expect(result).toBe(false);
     });
 
     it('returns true when config goes from empty {} to having entries', () => {
-        // Baseline is CONFIG_EMPTY (set in beforeEach).
         const result = hasDataViewChanged(
             STABLE_CATEGORICAL,
             false,
             false,
-            CONFIG_A
+            CONFIG_A,
+            true
         );
         expect(result).toBe(true);
     });
 
     it('returns true when config entries change values between calls', () => {
-        // First prime with CONFIG_A.
-        hasDataViewChanged(STABLE_CATEGORICAL, false, false, CONFIG_A);
-        // Now transition to CONFIG_B — different flag values for the same key.
+        hasDataViewChanged(STABLE_CATEGORICAL, false, false, CONFIG_A, true);
         const result = hasDataViewChanged(
             STABLE_CATEGORICAL,
             false,
             false,
-            CONFIG_B
+            CONFIG_B,
+            true
         );
         expect(result).toBe(true);
     });
 
     it('returns false on a repeated call with the same non-empty config', () => {
-        hasDataViewChanged(STABLE_CATEGORICAL, false, false, CONFIG_A);
-        // Same config again — no change expected.
+        hasDataViewChanged(STABLE_CATEGORICAL, false, false, CONFIG_A, true);
         const result = hasDataViewChanged(
             STABLE_CATEGORICAL,
             false,
             false,
-            CONFIG_A
+            CONFIG_A,
+            true
         );
         expect(result).toBe(false);
     });
 
     it('returns true when config changes even though categorical, enableSelection, enableHighlight remain the same', () => {
-        // All "other" params are identical; only config changes.
         const result = hasDataViewChanged(
             STABLE_CATEGORICAL,
             false,
             false,
-            CONFIG_A
+            CONFIG_A,
+            true
         );
         expect(result).toBe(true);
     });
 
     it('returns true when going from a non-empty config back to an empty config', () => {
-        hasDataViewChanged(STABLE_CATEGORICAL, false, false, CONFIG_A);
+        hasDataViewChanged(STABLE_CATEGORICAL, false, false, CONFIG_A, true);
         const result = hasDataViewChanged(
             STABLE_CATEGORICAL,
             false,
             false,
-            CONFIG_EMPTY
+            CONFIG_EMPTY,
+            true
         );
         expect(result).toBe(true);
     });
 
     it('returns true when a new field key is added to an existing config', () => {
-        hasDataViewChanged(STABLE_CATEGORICAL, false, false, CONFIG_A);
+        hasDataViewChanged(STABLE_CATEGORICAL, false, false, CONFIG_A, true);
         const extended: SupportFieldConfiguration = {
             ...CONFIG_A,
             Revenue: {
@@ -218,8 +237,31 @@ describe('hasDataViewChanged — supportFieldConfiguration detection', () => {
             STABLE_CATEGORICAL,
             false,
             false,
-            extended
+            extended,
+            true
         );
         expect(result).toBe(true);
+    });
+
+    it('returns true when consolidateFieldParameters changes', () => {
+        const result = hasDataViewChanged(
+            STABLE_CATEGORICAL,
+            false,
+            false,
+            CONFIG_EMPTY,
+            false
+        );
+        expect(result).toBe(true);
+    });
+
+    it('returns false when consolidateFieldParameters stays the same', () => {
+        const result = hasDataViewChanged(
+            STABLE_CATEGORICAL,
+            false,
+            false,
+            CONFIG_EMPTY,
+            true
+        );
+        expect(result).toBe(false);
     });
 });

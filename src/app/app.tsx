@@ -182,11 +182,11 @@ export const App = ({ host }: AppProps) => {
                 onRenderingFinished,
                 settingsPaneFooter: <InteractivityFooter />,
                 settingsPanePlatformComponent: [
+                    <SemanticModelSettings key='semantic-model' />,
                     <TooltipSettings key='tooltips' />,
                     <ContextMenuSettings key='contextmenu' />,
                     <CrossFilterSettings key='crossfilter' />,
-                    <CrossHighlightSettings key='crosshighlight' />,
-                    <SemanticModelSettings key='semantic-model' />
+                    <CrossHighlightSettings key='crosshighlight' />
                 ],
                 tooltipHandler: pbiTooltipHandler,
                 vegaLoader,

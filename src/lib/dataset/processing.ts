@@ -76,6 +76,7 @@ let prevEnableSelection: boolean | undefined;
 let prevEnableHighlight: boolean | undefined;
 let prevRowCount: number = 0;
 let prevSupportFieldConfiguration: string | undefined;
+let prevConsolidateFieldParameters: boolean | undefined;
 
 /**
  * Ensures an empty dataset is made available.
@@ -97,9 +98,19 @@ export const hasDataViewChanged = (
     categorical: DataViewCategorical | undefined,
     enableSelection: boolean,
     enableHighlight: boolean,
-    supportFieldConfiguration: SupportFieldConfiguration
+    supportFieldConfiguration: SupportFieldConfiguration,
+    consolidateFieldParameters: boolean
 ): boolean => {
     logTimeStart('hasDataViewChanged');
+
+    // Consolidate field parameters setting changed
+    if (consolidateFieldParameters !== prevConsolidateFieldParameters) {
+        prevConsolidateFieldParameters = consolidateFieldParameters;
+        updatePrevReferences(categorical);
+        logDebug('hasDataViewChanged: consolidateFieldParameters changed');
+        logTimeEnd('hasDataViewChanged');
+        return true;
+    }
 
     // Support field configuration changed
     const configString = JSON.stringify(supportFieldConfiguration);
