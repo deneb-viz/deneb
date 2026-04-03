@@ -84,7 +84,9 @@ export const buildDataRow = (params: BuildDataRowParams): VegaDatum => {
             continue;
         }
 
-        const baseValue = baseValues[i] as PrimitiveValue;
+        const baseValue = baseValues[
+            instruction.baseValueIndex
+        ] as PrimitiveValue;
 
         row[encodedName] = baseValue;
 
@@ -97,7 +99,7 @@ export const buildDataRow = (params: BuildDataRowParams): VegaDatum => {
             let highlightValue: PrimitiveValue | undefined;
             if (needsHighlightValue) {
                 highlightValue = provider.getHighlightValue(
-                    i,
+                    instruction.baseValueIndex,
                     rowIndex,
                     baseValue
                 );
@@ -123,7 +125,10 @@ export const buildDataRow = (params: BuildDataRowParams): VegaDatum => {
 
             let formatString: string | undefined;
             if (instruction.emitFormat || instruction.emitFormatted) {
-                formatString = provider.getFormatString(i, rowIndex);
+                formatString = provider.getFormatString(
+                    instruction.baseValueIndex,
+                    rowIndex
+                );
             }
 
             if (instruction.emitFormat) {

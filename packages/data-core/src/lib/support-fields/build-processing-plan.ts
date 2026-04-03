@@ -132,6 +132,7 @@ export const buildProcessingPlan = (
             kind: 'field',
             encodedName: field.encodedName,
             sourceIndex: field.sourceIndex,
+            baseValueIndex: i,
             role: field.role as 'grouping' | 'aggregation',
             emitHighlight: flags.highlight,
             emitHighlightStatus: flags.highlightStatus,

@@ -32,6 +32,7 @@ const makeInstruction = (
     kind: 'field',
     encodedName: 'Sales',
     sourceIndex: 0,
+    baseValueIndex: 0,
     role: 'aggregation',
     emitHighlight: false,
     emitHighlightStatus: false,
@@ -438,6 +439,7 @@ describe('buildDataRow', () => {
                 makeInstruction({
                     encodedName: 'Sales',
                     sourceIndex: 0,
+                    baseValueIndex: 0,
                     emitHighlight: true,
                     emitFormat: false,
                     emitFormatted: false
@@ -445,6 +447,7 @@ describe('buildDataRow', () => {
                 makeInstruction({
                     encodedName: 'Category',
                     sourceIndex: 1,
+                    baseValueIndex: 1,
                     role: 'grouping',
                     emitHighlight: false,
                     emitFormat: true,
@@ -495,12 +498,14 @@ describe('buildDataRow', () => {
                 makeInstruction({
                     encodedName: 'Category',
                     sourceIndex: 0,
+                    baseValueIndex: 0,
                     role: 'grouping',
                     emitFormat: true
                 }),
                 makeInstruction({
                     encodedName: 'Sales',
                     sourceIndex: 0,
+                    baseValueIndex: 1,
                     role: 'aggregation',
                     emitHighlight: true
                 })
@@ -514,7 +519,7 @@ describe('buildDataRow', () => {
             });
             // Category is plan field 0 → provider receives fieldIndex=0
             expect(provider.getFormatString).toHaveBeenCalledWith(0, 0);
-            // Sales is plan field 1 → provider receives fieldIndex=1 (NOT sourceIndex=0)
+            // Sales has baseValueIndex=1 → provider receives fieldIndex=1
             expect(provider.getHighlightValue).toHaveBeenCalledWith(1, 0, 100);
         });
     });

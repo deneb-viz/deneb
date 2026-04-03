@@ -58,6 +58,8 @@ export type FieldProcessingInstruction = {
     kind: 'field';
     encodedName: string;
     sourceIndex: number;
+    /** Index into the baseValues array (position in the input fields array). */
+    baseValueIndex: number;
     role: 'grouping' | 'aggregation';
     emitHighlight: boolean;
     emitHighlightStatus: boolean;

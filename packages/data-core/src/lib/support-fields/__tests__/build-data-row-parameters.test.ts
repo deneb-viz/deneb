@@ -160,6 +160,7 @@ describe('buildDataRow — parameter instructions', () => {
                     kind: 'field',
                     encodedName: '$ Sales',
                     sourceIndex: 1,
+                    baseValueIndex: 1,
                     role: 'aggregation',
                     emitHighlight: false,
                     emitHighlightStatus: false,
