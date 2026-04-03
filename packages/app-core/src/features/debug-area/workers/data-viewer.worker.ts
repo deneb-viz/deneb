@@ -56,6 +56,7 @@ const getFormattedValueForTableCell = (
     switch (getValueType) {
         case 'date':
             return (<Date>value).toLocaleString();
+        case 'array':
         case 'object':
             return JSON.stringify(value);
         default:
@@ -147,6 +148,8 @@ const getValueType = (value: unknown): WorkerDatasetViewerValueType => {
             return 'date';
         case isNumber(value):
             return 'number';
+        case Array.isArray(value):
+            return 'array';
         case isObject(value):
             return 'object';
         case isBoolean(value):
