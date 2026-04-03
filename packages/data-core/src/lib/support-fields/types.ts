@@ -12,6 +12,8 @@ export type SupportFieldFlags = {
     highlightComparator: boolean;
     format: boolean;
     formatted: boolean;
+    /** When true, this field is wrapped in a single-element array to simulate a field parameter. */
+    treatAsParameter?: boolean;
 };
 
 /**

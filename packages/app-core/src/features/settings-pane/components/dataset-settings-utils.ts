@@ -22,7 +22,8 @@ export const FLAG_LABELS: Record<string, string> = {
     highlightStatus: 'Text_SupportField_HighlightStatus',
     highlightComparator: 'Text_SupportField_HighlightComparator',
     format: 'Text_SupportField_Format',
-    formatted: 'Text_SupportField_Formatted'
+    formatted: 'Text_SupportField_Formatted',
+    treatAsParameter: 'Text_SupportField_TreatAsParameter'
 };
 
 /**
@@ -34,7 +35,8 @@ export const FLAG_INFO: Partial<Record<string, string>> = {
     highlightStatus: 'Assistive_Text_SupportField_HighlightStatus',
     highlightComparator: 'Assistive_Text_SupportField_HighlightComparator',
     format: 'Assistive_Text_SupportField_Format',
-    formatted: 'Assistive_Text_SupportField_Formatted'
+    formatted: 'Assistive_Text_SupportField_Formatted',
+    treatAsParameter: 'Assistive_Text_SupportField_TreatAsParameter'
 };
 
 /** Separator used to encode field name + flag key in TreeItem values. */

@@ -330,6 +330,32 @@ export const getMappedDataset = (
                 }
             }
 
+            // Add manually flagged "treat as parameter" fields as single-element groups
+            if (consolidate) {
+                const parameterFieldIndicesSet = new Set(
+                    planParameterGroups?.flatMap(
+                        (g) => g.componentFieldIndices
+                    ) ?? []
+                );
+                for (let i = 0; i < planSourceColumns.length; i++) {
+                    if (parameterFieldIndicesSet.has(i)) continue;
+                    const col = planSourceColumns[i];
+                    const encodedName =
+                        col.encodedName ??
+                        getEncodedFieldName(col.column.displayName);
+                    const fieldConfig = supportFieldConfig[encodedName];
+                    if (fieldConfig?.treatAsParameter) {
+                        if (!planParameterGroups) planParameterGroups = [];
+                        planParameterGroups.push({
+                            parameterName: col.column.displayName,
+                            componentFieldIndices: [i],
+                            componentNames: [col.column.displayName],
+                            formatStrings: [col.column.format ?? '']
+                        });
+                    }
+                }
+            }
+
             const fieldSourceMappings: FieldSourceMapping[] =
                 planSourceColumns.map((c) => ({
                     source: c.column.isMeasure ? 'values' : 'categories',
@@ -402,18 +428,29 @@ export const getMappedDataset = (
                     const encodedParamName = getEncodedFieldName(
                         group.parameterName
                     );
-                    // Add the parameter as a dataset field
+                    // Determine if this is a single-element treat-as-parameter group
+                    // (parameter name matches the sole component name). In that case
+                    // the field is its own parameter — update role but do NOT mark
+                    // it as a support field, so it remains visible in the dataset UI.
+                    const isSingleSelf =
+                        group.componentNames.length === 1 &&
+                        getEncodedFieldName(group.componentNames[0]) ===
+                            encodedParamName;
+                    // Add/update the parameter as a dataset field
                     fields[encodedParamName] = {
-                        role: 'field-parameter',
-                        dataType: 'other'
+                        ...(fields[encodedParamName] ?? { dataType: 'other' }),
+                        role: 'field-parameter'
                     };
                     // Mark component fields as support fields
                     // (hides them from template operations but keeps
-                    // them in the selection queue already built above)
-                    for (const name of group.componentNames) {
-                        const encodedName = getEncodedFieldName(name);
-                        if (fields[encodedName]) {
-                            fields[encodedName].isSupportField = true;
+                    // them in the selection queue already built above).
+                    // Skip for single-self treat-as groups.
+                    if (!isSingleSelf) {
+                        for (const name of group.componentNames) {
+                            const encodedName = getEncodedFieldName(name);
+                            if (fields[encodedName]) {
+                                fields[encodedName].isSupportField = true;
+                            }
                         }
                     }
                 }

@@ -76,6 +76,7 @@ export const DatasetSettings = () => {
         spec,
         denebMetaVersion,
         interactivity,
+        consolidateFieldParameters,
         setConfig,
         translate
     } = useDenebState((state) => ({
@@ -84,6 +85,7 @@ export const DatasetSettings = () => {
         spec: state.project.spec,
         denebMetaVersion: state.project.denebMetaVersion,
         interactivity: state.project.interactivity,
+        consolidateFieldParameters: state.project.consolidateFieldParameters,
         setConfig: state.project.setSupportFieldConfiguration,
         translate: state.i18n.translate
     }));
@@ -158,8 +160,17 @@ export const DatasetSettings = () => {
         for (const [name, field] of sourceFields) {
             const flags = resolvedFlags[name];
             const isMeasure = (field.role ?? 'grouping') === 'aggregation';
+            const isFieldParameter = field.role === 'field-parameter';
+            const baseFlags = isMeasure
+                ? highlightEnabled
+                    ? MEASURE_FLAGS
+                    : COLUMN_FLAGS
+                : COLUMN_FLAGS;
             const applicableFlags =
-                isMeasure && highlightEnabled ? MEASURE_FLAGS : COLUMN_FLAGS;
+                consolidateFieldParameters &&
+                (!isFieldParameter || resolvedFlags[name]?.treatAsParameter)
+                    ? ([...baseFlags, 'treatAsParameter'] as const)
+                    : baseFlags;
             let checkedCount = 0;
             for (const flag of applicableFlags) {
                 if (flags[flag]) {
@@ -175,7 +186,12 @@ export const DatasetSettings = () => {
             }
         }
         return map;
-    }, [sourceFields, resolvedFlags, highlightEnabled]);
+    }, [
+        sourceFields,
+        resolvedFlags,
+        highlightEnabled,
+        consolidateFieldParameters
+    ]);
 
     // Handle checkbox toggle — supports both parent (field) and leaf (flag) nodes
     const onCheckedChange = useCallback(
@@ -193,10 +209,17 @@ export const DatasetSettings = () => {
                 if (!field) return;
                 const isMeasure =
                     (field[1].role ?? 'grouping') === 'aggregation';
-                const applicableFlags =
+                const isFieldParameter = field[1].role === 'field-parameter';
+                const baseFlags =
                     isMeasure && highlightEnabled
                         ? MEASURE_FLAGS
                         : COLUMN_FLAGS;
+                const applicableFlags =
+                    consolidateFieldParameters &&
+                    (!isFieldParameter ||
+                        resolvedFlags[fieldName]?.treatAsParameter)
+                        ? ([...baseFlags, 'treatAsParameter'] as const)
+                        : baseFlags;
 
                 const newChecked = data.checked === true;
                 const updatedFlags = { ...currentFlags };
@@ -229,7 +252,14 @@ export const DatasetSettings = () => {
                 setConfig(updatedConfig);
             }
         },
-        [highlightEnabled, resolvedFlags, config, setConfig, sourceFields]
+        [
+            highlightEnabled,
+            consolidateFieldParameters,
+            resolvedFlags,
+            config,
+            setConfig,
+            sourceFields
+        ]
     );
 
     // Determine Case 2: highlight enabled but no measure fields have any
@@ -264,11 +294,20 @@ export const DatasetSettings = () => {
                 {sourceFields.map(([name, field]) => {
                     const isMeasure =
                         (field.role ?? 'grouping') === 'aggregation';
-                    const applicableFlags = isMeasure
+                    const isFieldParameter = field.role === 'field-parameter';
+                    const baseFlags = isMeasure
                         ? highlightEnabled
                             ? MEASURE_FLAGS
                             : COLUMN_FLAGS
                         : COLUMN_FLAGS;
+                    // Append treatAsParameter at the bottom when consolidation
+                    // is enabled and the field isn't auto-detected as a parameter
+                    const applicableFlags =
+                        consolidateFieldParameters &&
+                        (!isFieldParameter ||
+                            resolvedFlags[name]?.treatAsParameter)
+                            ? ([...baseFlags, 'treatAsParameter'] as const)
+                            : baseFlags;
                     const roleTooltip = translate(
                         isMeasure
                             ? 'Text_SupportField_RoleTooltip_Measure'
