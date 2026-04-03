@@ -161,16 +161,25 @@ export const DatasetSettings = () => {
             const flags = resolvedFlags[name];
             const isMeasure = (field.role ?? 'grouping') === 'aggregation';
             const isFieldParameter = field.role === 'field-parameter';
+            const isTreatedAs = resolvedFlags[name]?.treatAsParameter === true;
+            const isParameter = isFieldParameter || isTreatedAs;
             const baseFlags = isMeasure
                 ? highlightEnabled
                     ? MEASURE_FLAGS
                     : COLUMN_FLAGS
                 : COLUMN_FLAGS;
-            const applicableFlags =
-                consolidateFieldParameters &&
-                (!isFieldParameter || resolvedFlags[name]?.treatAsParameter)
-                    ? ([...baseFlags, 'treatAsParameter'] as const)
-                    : baseFlags;
+            const applicableFlags = (() => {
+                const f = [...baseFlags];
+                if (consolidateFieldParameters) {
+                    if (!isFieldParameter || isTreatedAs) {
+                        f.push('treatAsParameter');
+                    }
+                    if (isParameter) {
+                        f.push('names');
+                    }
+                }
+                return f;
+            })();
             let checkedCount = 0;
             for (const flag of applicableFlags) {
                 if (flags[flag]) {
@@ -210,16 +219,25 @@ export const DatasetSettings = () => {
                 const isMeasure =
                     (field[1].role ?? 'grouping') === 'aggregation';
                 const isFieldParameter = field[1].role === 'field-parameter';
+                const isTreatedAs =
+                    resolvedFlags[fieldName]?.treatAsParameter === true;
+                const isParameter = isFieldParameter || isTreatedAs;
                 const baseFlags =
                     isMeasure && highlightEnabled
                         ? MEASURE_FLAGS
                         : COLUMN_FLAGS;
-                const applicableFlags =
-                    consolidateFieldParameters &&
-                    (!isFieldParameter ||
-                        resolvedFlags[fieldName]?.treatAsParameter)
-                        ? ([...baseFlags, 'treatAsParameter'] as const)
-                        : baseFlags;
+                const applicableFlags = (() => {
+                    const f = [...baseFlags];
+                    if (consolidateFieldParameters) {
+                        if (!isFieldParameter || isTreatedAs) {
+                            f.push('treatAsParameter');
+                        }
+                        if (isParameter) {
+                            f.push('names');
+                        }
+                    }
+                    return f;
+                })();
 
                 const newChecked = data.checked === true;
                 const updatedFlags = { ...currentFlags };
@@ -300,14 +318,26 @@ export const DatasetSettings = () => {
                             ? MEASURE_FLAGS
                             : COLUMN_FLAGS
                         : COLUMN_FLAGS;
-                    // Append treatAsParameter at the bottom when consolidation
-                    // is enabled and the field isn't auto-detected as a parameter
-                    const applicableFlags =
-                        consolidateFieldParameters &&
-                        (!isFieldParameter ||
-                            resolvedFlags[name]?.treatAsParameter)
-                            ? ([...baseFlags, 'treatAsParameter'] as const)
-                            : baseFlags;
+                    const isTreatedAs =
+                        resolvedFlags[name]?.treatAsParameter === true;
+                    const isParameter = isFieldParameter || isTreatedAs;
+                    // Build applicable flags based on field state:
+                    // - Auto-detected parameter: base + names
+                    // - Treat-as field: base + treatAsParameter + names
+                    // - Regular (consolidation on): base + treatAsParameter
+                    // - Regular (consolidation off): base only
+                    const applicableFlags = (() => {
+                        const flags = [...baseFlags];
+                        if (consolidateFieldParameters) {
+                            if (!isFieldParameter || isTreatedAs) {
+                                flags.push('treatAsParameter');
+                            }
+                            if (isParameter) {
+                                flags.push('names');
+                            }
+                        }
+                        return flags;
+                    })();
                     const roleTooltip = translate(
                         isMeasure
                             ? 'Text_SupportField_RoleTooltip_Measure'

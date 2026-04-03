@@ -23,6 +23,7 @@ export const FLAG_LABELS: Record<string, string> = {
     highlightComparator: 'Text_SupportField_HighlightComparator',
     format: 'Text_SupportField_Format',
     formatted: 'Text_SupportField_Formatted',
+    names: 'Text_SupportField_Names',
     treatAsParameter: 'Text_SupportField_TreatAsParameter'
 };
 
@@ -36,6 +37,7 @@ export const FLAG_INFO: Partial<Record<string, string>> = {
     highlightComparator: 'Assistive_Text_SupportField_HighlightComparator',
     format: 'Assistive_Text_SupportField_Format',
     formatted: 'Assistive_Text_SupportField_Formatted',
+    names: 'Assistive_Text_SupportField_Names',
     treatAsParameter: 'Assistive_Text_SupportField_TreatAsParameter'
 };
 

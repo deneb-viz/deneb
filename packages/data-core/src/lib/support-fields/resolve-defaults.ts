@@ -26,13 +26,27 @@ export const resolveFieldDefaults = ({
     const highlightApplicable =
         isMeasure && masterSettings.crossHighlightEnabled;
 
+    const isParameter = fieldRole === 'field-parameter';
+
     if (isLegacy) {
         return {
             highlight: highlightApplicable,
             highlightStatus: highlightApplicable,
             highlightComparator: highlightApplicable,
             format: isMeasure,
-            formatted: isMeasure
+            formatted: isMeasure,
+            names: isParameter
+        };
+    }
+
+    if (isParameter) {
+        return {
+            highlight: false,
+            highlightStatus: false,
+            highlightComparator: false,
+            format: false,
+            formatted: false,
+            names: true
         };
     }
 

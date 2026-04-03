@@ -12,6 +12,8 @@ export type SupportFieldFlags = {
     highlightComparator: boolean;
     format: boolean;
     formatted: boolean;
+    /** When true, emit the __names companion field for this parameter. */
+    names?: boolean;
     /** When true, this field is wrapped in a single-element array to simulate a field parameter. */
     treatAsParameter?: boolean;
 };
@@ -94,6 +96,8 @@ export type ParameterProcessingInstruction = {
      * undefined when format emission is disabled.
      */
     formatStringsArray?: string[];
+    /** Whether to emit the __names companion field. */
+    emitNames: boolean;
     /** Whether to emit the __format companion field. */
     emitFormat: boolean;
     /** Whether to emit the __formatted companion field. */

@@ -49,7 +49,9 @@ export const buildDataRow = (params: BuildDataRowParams): VegaDatum => {
             row[encodedName] = values;
 
             // Reuse the pre-built names array (same reference every row)
-            row[encodedName + PARAMETER_NAMES_SUFFIX] = namesArray;
+            if (instruction.emitNames) {
+                row[encodedName + PARAMETER_NAMES_SUFFIX] = namesArray;
+            }
 
             // Format strings array
             if (instruction.emitFormat) {

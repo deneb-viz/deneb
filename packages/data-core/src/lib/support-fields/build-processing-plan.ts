@@ -104,6 +104,7 @@ export const buildProcessingPlan = (
             componentIndices: group.componentFieldIndices,
             namesArray: group.componentNames,
             formatStringsArray: flags.format ? group.formatStrings : undefined,
+            emitNames: flags.names ?? true,
             emitFormat: flags.format,
             emitFormatted: flags.formatted
         };
