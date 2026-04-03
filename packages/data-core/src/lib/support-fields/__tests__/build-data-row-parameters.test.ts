@@ -20,6 +20,7 @@ const makeParameterInstruction = (
     encodedName: 'Dynamic Category',
     componentIndices: [0, 1, 2],
     namesArray: ['Country Code', 'Segment', 'Product'],
+    emitNames: true,
     emitFormat: false,
     emitFormatted: false,
     ...overrides
@@ -70,6 +71,27 @@ describe('buildDataRow — parameter instructions', () => {
         // toBe checks reference equality
         expect(row1['Dynamic Category__names']).toBe(namesArray);
         expect(row2['Dynamic Category__names']).toBe(namesArray);
+    });
+
+    it('should not emit __names when emitNames is false', () => {
+        const plan: ProcessingPlan = {
+            fields: [makeParameterInstruction({ emitNames: false })],
+            emitSelected: false,
+            hasHighlights: false
+        };
+        const row = buildDataRow({
+            plan,
+            provider: mockProvider,
+            baseValues: ['CA', 'Channel Partners', 'Amarilla'],
+            rowIndex: 0,
+            locale: 'en-US'
+        });
+        expect(row['Dynamic Category']).toEqual([
+            'CA',
+            'Channel Partners',
+            'Amarilla'
+        ]);
+        expect(row['Dynamic Category__names']).toBeUndefined();
     });
 
     it('should emit format array from pre-built formatStringsArray', () => {
