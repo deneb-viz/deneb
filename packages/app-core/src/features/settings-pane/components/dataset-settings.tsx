@@ -178,7 +178,7 @@ export const DatasetSettings = () => {
                     : COLUMN_FLAGS
                 : COLUMN_FLAGS;
             const applicableFlags = (() => {
-                const f = [...baseFlags];
+                const f: (keyof SupportFieldFlags)[] = [...baseFlags];
                 if (consolidateFieldParameters) {
                     if (!isFieldParameter || isTreatedAs) {
                         f.push('treatAsParameter');
@@ -236,7 +236,7 @@ export const DatasetSettings = () => {
                         ? MEASURE_FLAGS
                         : COLUMN_FLAGS;
                 const applicableFlags = (() => {
-                    const f = [...baseFlags];
+                    const f: (keyof SupportFieldFlags)[] = [...baseFlags];
                     if (consolidateFieldParameters) {
                         if (!isFieldParameter || isTreatedAs) {
                             f.push('treatAsParameter');
@@ -336,7 +336,9 @@ export const DatasetSettings = () => {
                     // - Regular (consolidation on): base + treatAsParameter
                     // - Regular (consolidation off): base only
                     const applicableFlags = (() => {
-                        const flags = [...baseFlags];
+                        const flags: (keyof SupportFieldFlags)[] = [
+                            ...baseFlags
+                        ];
                         if (consolidateFieldParameters) {
                             if (!isFieldParameter || isTreatedAs) {
                                 flags.push('treatAsParameter');
