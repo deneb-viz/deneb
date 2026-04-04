@@ -106,7 +106,9 @@ export const hasDataViewChanged = (
     // Consolidate field parameters setting changed
     if (consolidateFieldParameters !== prevConsolidateFieldParameters) {
         prevConsolidateFieldParameters = consolidateFieldParameters;
-        prevSupportFieldConfiguration = JSON.stringify(supportFieldConfiguration);
+        prevSupportFieldConfiguration = JSON.stringify(
+            supportFieldConfiguration
+        );
         updatePrevReferences(categorical);
         logDebug('hasDataViewChanged: consolidateFieldParameters changed');
         logTimeEnd('hasDataViewChanged');
