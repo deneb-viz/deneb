@@ -250,12 +250,22 @@ export const createProjectSlice =
                 ),
             setSupportFieldConfiguration: (config: SupportFieldConfiguration) =>
                 set(
-                    (state) => ({
-                        project: {
-                            ...state.project,
-                            supportFieldConfiguration: config
-                        }
-                    }),
+                    (state) => {
+                        const exportMetadata = getUpdatedExportMetadata(
+                            state.export.metadata as UsermetaTemplate,
+                            { supportFieldConfiguration: config }
+                        );
+                        return {
+                            project: {
+                                ...state.project,
+                                supportFieldConfiguration: config
+                            },
+                            export: {
+                                ...state.export,
+                                metadata: exportMetadata
+                            }
+                        };
+                    },
                     false,
                     'project.setSupportFieldConfiguration'
                 ),
