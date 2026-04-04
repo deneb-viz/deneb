@@ -104,6 +104,8 @@ export const buildProcessingPlan = (
             componentIndices: group.componentFieldIndices,
             namesArray: group.componentNames,
             formatStringsArray: flags.format ? group.formatStrings : undefined,
+            // Default true: configs saved before `names` was introduced have no
+            // `names` property, so new parameter specs always emit names.
             emitNames: flags.names ?? true,
             emitFormat: flags.format,
             emitFormatted: flags.formatted

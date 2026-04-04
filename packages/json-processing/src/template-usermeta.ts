@@ -245,10 +245,13 @@ export const getPublishableUsermeta = (
                     options.trackedFields
                 );
                 return (usermeta?.[DATASET_DEFAULT_NAME] ?? []).map((d) => {
-                    const tracked = nameMap.get(d.namePlaceholder ?? d.name);
-                    d.key = tracked?.placeholder ?? d.key;
-                    d.name = getFieldNameForExport(d);
-                    return omit(d as unknown as Record<string, unknown>, [
+                    const item = { ...d };
+                    const tracked = nameMap.get(
+                        item.namePlaceholder ?? item.name
+                    );
+                    item.key = tracked?.placeholder ?? item.key;
+                    item.name = getFieldNameForExport(item);
+                    return omit(item as unknown as Record<string, unknown>, [
                         'namePlaceholder'
                     ]) as Omit<UsermetaDatasetField, 'namePlaceholder'>;
                 });
