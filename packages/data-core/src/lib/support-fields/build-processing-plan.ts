@@ -129,12 +129,16 @@ export const buildProcessingPlan = (
                       isLegacy
                   });
 
+        // Field-parameter fields should be consumed by parameter groups;
+        // skip any that leak through (defensive guard).
+        if (field.role === 'field-parameter') continue;
+
         const instruction: FieldProcessingInstruction = {
             kind: 'field',
             encodedName: field.encodedName,
             sourceIndex: field.sourceIndex,
             baseValueIndex: i,
-            role: field.role as 'grouping' | 'aggregation',
+            role: field.role,
             emitHighlight: flags.highlight,
             emitHighlightStatus: flags.highlightStatus,
             emitHighlightComparator: flags.highlightComparator,

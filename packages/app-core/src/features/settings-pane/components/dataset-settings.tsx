@@ -47,7 +47,8 @@ import {
     FLAG_INFO,
     VALUE_SEPARATOR,
     encodeValue,
-    decodeValue
+    decodeValue,
+    getApplicableFlags
 } from './dataset-settings-utils';
 
 const useDatasetSettingsStyles = makeStyles({
@@ -177,18 +178,13 @@ export const DatasetSettings = () => {
                     ? MEASURE_FLAGS
                     : COLUMN_FLAGS
                 : COLUMN_FLAGS;
-            const applicableFlags = (() => {
-                const f: (keyof SupportFieldFlags)[] = [...baseFlags];
-                if (consolidateFieldParameters) {
-                    if (!isFieldParameter || isTreatedAs) {
-                        f.push('treatAsParameter');
-                    }
-                    if (isParameter) {
-                        f.push('names');
-                    }
-                }
-                return f;
-            })();
+            const applicableFlags = getApplicableFlags(
+                baseFlags,
+                isFieldParameter,
+                isTreatedAs,
+                isParameter,
+                consolidateFieldParameters
+            );
             let checkedCount = 0;
             for (const flag of applicableFlags) {
                 if (flags[flag]) {
@@ -235,18 +231,13 @@ export const DatasetSettings = () => {
                     isMeasure && highlightEnabled
                         ? MEASURE_FLAGS
                         : COLUMN_FLAGS;
-                const applicableFlags = (() => {
-                    const f: (keyof SupportFieldFlags)[] = [...baseFlags];
-                    if (consolidateFieldParameters) {
-                        if (!isFieldParameter || isTreatedAs) {
-                            f.push('treatAsParameter');
-                        }
-                        if (isParameter) {
-                            f.push('names');
-                        }
-                    }
-                    return f;
-                })();
+                const applicableFlags = getApplicableFlags(
+                    baseFlags,
+                    isFieldParameter,
+                    isTreatedAs,
+                    isParameter,
+                    consolidateFieldParameters
+                );
 
                 const newChecked = data.checked === true;
                 const updatedFlags = { ...currentFlags };
@@ -330,25 +321,13 @@ export const DatasetSettings = () => {
                     const isTreatedAs =
                         resolvedFlags[name]?.treatAsParameter === true;
                     const isParameter = isFieldParameter || isTreatedAs;
-                    // Build applicable flags based on field state:
-                    // - Auto-detected parameter: base + names
-                    // - Treat-as field: base + treatAsParameter + names
-                    // - Regular (consolidation on): base + treatAsParameter
-                    // - Regular (consolidation off): base only
-                    const applicableFlags = (() => {
-                        const flags: (keyof SupportFieldFlags)[] = [
-                            ...baseFlags
-                        ];
-                        if (consolidateFieldParameters) {
-                            if (!isFieldParameter || isTreatedAs) {
-                                flags.push('treatAsParameter');
-                            }
-                            if (isParameter) {
-                                flags.push('names');
-                            }
-                        }
-                        return flags;
-                    })();
+                    const applicableFlags = getApplicableFlags(
+                        baseFlags,
+                        isFieldParameter,
+                        isTreatedAs,
+                        isParameter,
+                        consolidateFieldParameters
+                    );
                     const roleTooltip = translate(
                         isParameter
                             ? 'Text_SupportField_RoleTooltip_Parameter'
