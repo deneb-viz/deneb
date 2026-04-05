@@ -3,6 +3,18 @@ import { loader } from '@monaco-editor/react';
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { getProviderSchemaUrl } from '@deneb-viz/vega-runtime/embed';
+import {
+    resolveFieldDefaults,
+    type SupportFieldFlags
+} from '@deneb-viz/data-core/support-fields';
+import {
+    HIGHLIGHT_FIELD_SUFFIX,
+    HIGHLIGHT_STATUS_SUFFIX,
+    HIGHLIGHT_COMPARATOR_SUFFIX,
+    FORMAT_FIELD_SUFFIX,
+    FORMATTED_FIELD_SUFFIX,
+    PARAMETER_NAMES_SUFFIX
+} from '@deneb-viz/data-core/field';
 
 import {
     monaco,
@@ -57,35 +69,108 @@ const configureMonacoCompletionProvider = () => {
     // Dispose any previous registration before re-registering to prevent
     // stacking duplicate providers on retry.
     completionProviderDisposable?.dispose();
-    completionProviderDisposable = monaco.languages.registerCompletionItemProvider('json', {
-        provideCompletionItems: async (model, position) => {
-            const { editorSelectedOperation } = getDenebState();
-            if (editorSelectedOperation !== 'Spec') {
-                return null;
+    completionProviderDisposable =
+        monaco.languages.registerCompletionItemProvider('json', {
+            provideCompletionItems: async (model, position) => {
+                const { editorSelectedOperation } = getDenebState();
+                if (editorSelectedOperation !== 'Spec') {
+                    return null;
+                }
+                const word = model.getWordUntilPosition(position);
+                const range = {
+                    startLineNumber: position.lineNumber,
+                    endLineNumber: position.lineNumber,
+                    startColumn: word.startColumn,
+                    endColumn: word.endColumn
+                };
+                const fields: monaco.languages.CompletionItem[] = [];
+                Object.entries(getDenebState().dataset.fields).forEach(
+                    ([key]) => {
+                        fields.push({
+                            label: key,
+                            insertText: key,
+                            documentation: getFieldDocumentationByName(key),
+                            kind: monaco.languages.CompletionItemKind.Field,
+                            range,
+                            sortText: `zzzzz__${key}`
+                        });
+                    }
+                );
+                // Support field companion suggestions — only for active (enabled) fields
+                const {
+                    project: {
+                        supportFieldConfiguration: explicitConfig,
+                        interactivity
+                    },
+                    i18n: { translate }
+                } = getDenebState();
+                const masterSettings = {
+                    crossHighlightEnabled: interactivity?.highlight ?? false,
+                    crossFilterEnabled: interactivity?.selection ?? false
+                };
+                const suffixMap: [keyof SupportFieldFlags, string, string][] = [
+                    [
+                        'highlight',
+                        HIGHLIGHT_FIELD_SUFFIX,
+                        translate('Completion_SupportField_Highlight')
+                    ],
+                    [
+                        'highlightStatus',
+                        HIGHLIGHT_STATUS_SUFFIX,
+                        translate('Completion_SupportField_HighlightStatus')
+                    ],
+                    [
+                        'highlightComparator',
+                        HIGHLIGHT_COMPARATOR_SUFFIX,
+                        translate('Completion_SupportField_HighlightComparator')
+                    ],
+                    [
+                        'format',
+                        FORMAT_FIELD_SUFFIX,
+                        translate('Completion_SupportField_Format')
+                    ],
+                    [
+                        'formatted',
+                        FORMATTED_FIELD_SUFFIX,
+                        translate('Completion_SupportField_Formatted')
+                    ],
+                    [
+                        'names',
+                        PARAMETER_NAMES_SUFFIX,
+                        translate('Completion_SupportField_Names')
+                    ]
+                ];
+                Object.entries(getDenebState().dataset.fields).forEach(
+                    ([key, field]) => {
+                        if (field?.isSupportField) return;
+                        const flags =
+                            explicitConfig?.[key] ??
+                            resolveFieldDefaults({
+                                masterSettings,
+                                fieldRole: field?.role ?? 'grouping',
+                                isLegacy: false
+                            });
+                        for (const [flagKey, suffix, doc] of suffixMap) {
+                            if (flags[flagKey]) {
+                                const name = `${key}${suffix}`;
+                                fields.push({
+                                    label: name,
+                                    insertText: name,
+                                    documentation: doc,
+                                    kind: monaco.languages.CompletionItemKind
+                                        .Property,
+                                    range,
+                                    sortText: `zzzzz__${key}${suffix}`
+                                });
+                            }
+                        }
+                    }
+                );
+                return {
+                    suggestions: fields
+                };
             }
-            const word = model.getWordUntilPosition(position);
-            const range = {
-                startLineNumber: position.lineNumber,
-                endLineNumber: position.lineNumber,
-                startColumn: word.startColumn,
-                endColumn: word.endColumn
-            };
-            const fields: monaco.languages.CompletionItem[] = [];
-            Object.entries(getDenebState().dataset.fields).forEach(([key]) => {
-                fields.push({
-                    label: key,
-                    insertText: key,
-                    documentation: getFieldDocumentationByName(key),
-                    kind: monaco.languages.CompletionItemKind.Field,
-                    range,
-                    sortText: `zzzzz__${key}`
-                });
-            });
-            return {
-                suggestions: fields
-            };
-        }
-    });
+        });
 };
 
 /**
@@ -107,9 +192,7 @@ const configureMonacoKeyBindings = () => {
         },
         {
             keybinding:
-                monaco.KeyMod.CtrlCmd |
-                monaco.KeyMod.Alt |
-                monaco.KeyCode.KeyR,
+                monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyR,
             command: 'editor.action.formatDocument'
         },
         {
