@@ -41,7 +41,7 @@ export const resolveFieldDefaults = ({
 
     if (isParameter) {
         return {
-            highlight: false,
+            highlight: masterSettings.crossHighlightEnabled,
             highlightStatus: false,
             highlightComparator: false,
             format: false,

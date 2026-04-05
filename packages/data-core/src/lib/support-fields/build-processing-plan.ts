@@ -19,6 +19,8 @@ export type PlanParameterGroup = {
     componentFieldIndices: number[];
     /** Display names of the component fields, in DataView order. */
     componentNames: string[];
+    /** Role of each component field — determines highlight behavior per-element. */
+    componentRoles: ('grouping' | 'aggregation')[];
     /**
      * Pre-resolved format strings for component fields (row-invariant).
      * undefined if format emission is not applicable.
@@ -102,10 +104,14 @@ export const buildProcessingPlan = (
             kind: 'parameter',
             encodedName,
             componentIndices: group.componentFieldIndices,
+            componentRoles: group.componentRoles,
             namesArray: group.componentNames,
             formatStringsArray: flags.format ? group.formatStrings : undefined,
             // Default false: __names is opt-in. Configs saved before the names flag was introduced have no names property.
             emitNames: flags.names ?? false,
+            emitHighlight: flags.highlight,
+            emitHighlightStatus: flags.highlightStatus,
+            emitHighlightComparator: flags.highlightComparator,
             emitFormat: flags.format,
             emitFormatted: flags.formatted
         };

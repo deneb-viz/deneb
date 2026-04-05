@@ -323,6 +323,7 @@ export const getMappedDataset = (
                         parameterName: group.parameterName,
                         componentFieldIndices: group.componentFieldIndices,
                         componentNames: group.componentNames,
+                        componentRoles: group.componentRoles,
                         formatStrings: group.componentFieldIndices.map(
                             (idx) => {
                                 const col = planSourceColumns[idx];
@@ -353,6 +354,11 @@ export const getMappedDataset = (
                             parameterName: col.column.displayName,
                             componentFieldIndices: [i],
                             componentNames: [col.column.displayName],
+                            componentRoles: [
+                                col.column.isMeasure
+                                    ? 'aggregation'
+                                    : 'grouping'
+                            ],
                             formatStrings: [col.column.format ?? '']
                         });
                     }
