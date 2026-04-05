@@ -62,6 +62,11 @@ import {
 } from './support-field-provider';
 import { isLegacySpec } from './support-field-migration';
 import { TEMPLATE_USERMETA_VERSION } from '@deneb-viz/template-usermeta';
+import {
+    detectFieldParameterGroups,
+    type DetectableField
+} from './field-parameter-detection';
+import type { PlanParameterGroup } from '@deneb-viz/data-core/support-fields';
 
 // State for reference-based change detection
 let prevCategories: DataViewCategoryColumn[] | undefined;
@@ -71,6 +76,7 @@ let prevEnableSelection: boolean | undefined;
 let prevEnableHighlight: boolean | undefined;
 let prevRowCount: number = 0;
 let prevSupportFieldConfiguration: string | undefined;
+let prevConsolidateFieldParameters: boolean | undefined;
 
 /**
  * Ensures an empty dataset is made available.
@@ -92,9 +98,22 @@ export const hasDataViewChanged = (
     categorical: DataViewCategorical | undefined,
     enableSelection: boolean,
     enableHighlight: boolean,
-    supportFieldConfiguration: SupportFieldConfiguration
+    supportFieldConfiguration: SupportFieldConfiguration,
+    consolidateFieldParameters: boolean
 ): boolean => {
     logTimeStart('hasDataViewChanged');
+
+    // Consolidate field parameters setting changed
+    if (consolidateFieldParameters !== prevConsolidateFieldParameters) {
+        prevConsolidateFieldParameters = consolidateFieldParameters;
+        prevSupportFieldConfiguration = JSON.stringify(
+            supportFieldConfiguration
+        );
+        updatePrevReferences(categorical);
+        logDebug('hasDataViewChanged: consolidateFieldParameters changed');
+        logTimeEnd('hasDataViewChanged');
+        return true;
+    }
 
     // Support field configuration changed
     const configString = JSON.stringify(supportFieldConfiguration);
@@ -265,6 +284,7 @@ export const getMappedDataset = (
                 }
                 state.project.setSupportFieldConfiguration(migratedConfig);
                 state.project.setDenebMetaVersion(TEMPLATE_USERMETA_VERSION);
+                state.project.setConsolidateFieldParameters(false);
                 logDebug(
                     'getMappedDataset: migrated legacy support field config',
                     { migratedConfig }
@@ -277,6 +297,67 @@ export const getMappedDataset = (
                     c.column.roles?.[DATASET_DEFAULT_NAME] &&
                     isSourceField(c.source)
             );
+
+            // Detect field parameters when consolidation is enabled
+            const consolidate =
+                state.project.consolidateFieldParameters ?? true;
+            let planParameterGroups: PlanParameterGroup[] | undefined;
+
+            if (consolidate) {
+                const detectableFields: DetectableField[] =
+                    planSourceColumns.map((c) => ({
+                        displayName: c.column.displayName,
+                        sourceIndex: c.sourceIndex,
+                        isMeasure: c.column.isMeasure ?? false,
+                        sourceFieldParameters: c.column
+                            .sourceFieldParameters as
+                            | Array<{ displayName: string }>
+                            | undefined
+                    }));
+                const detection = detectFieldParameterGroups(detectableFields);
+
+                if (Object.keys(detection.parameterGroups).length > 0) {
+                    planParameterGroups = Object.values(
+                        detection.parameterGroups
+                    ).map((group) => ({
+                        parameterName: group.parameterName,
+                        componentFieldIndices: group.componentFieldIndices,
+                        componentNames: group.componentNames,
+                        formatStrings: group.componentFieldIndices.map(
+                            (idx) => {
+                                const col = planSourceColumns[idx];
+                                return col?.column?.format ?? '';
+                            }
+                        )
+                    }));
+                }
+            }
+
+            // Add manually flagged "treat as parameter" fields as single-element groups
+            if (consolidate) {
+                const parameterFieldIndicesSet = new Set(
+                    planParameterGroups?.flatMap(
+                        (g) => g.componentFieldIndices
+                    ) ?? []
+                );
+                for (let i = 0; i < planSourceColumns.length; i++) {
+                    if (parameterFieldIndicesSet.has(i)) continue;
+                    const col = planSourceColumns[i];
+                    const encodedName =
+                        col.encodedName ??
+                        getEncodedFieldName(col.column.displayName);
+                    const fieldConfig = supportFieldConfig[encodedName];
+                    if (fieldConfig?.treatAsParameter) {
+                        if (!planParameterGroups) planParameterGroups = [];
+                        planParameterGroups.push({
+                            parameterName: col.column.displayName,
+                            componentFieldIndices: [i],
+                            componentNames: [col.column.displayName],
+                            formatStrings: [col.column.format ?? '']
+                        });
+                    }
+                }
+            }
 
             const fieldSourceMappings: FieldSourceMapping[] =
                 planSourceColumns.map((c) => ({
@@ -304,7 +385,8 @@ export const getMappedDataset = (
                 configuration: supportFieldConfig,
                 masterSettings,
                 hasHighlights,
-                isLegacy: legacy
+                isLegacy: legacy,
+                parameterGroups: planParameterGroups
             });
 
             // Map plan field positions to their indices in columns/fieldValues
@@ -340,6 +422,42 @@ export const getMappedDataset = (
                 entries: selectionQueueBase,
                 rowNumber: 0
             };
+
+            // Update field metadata for consolidated parameters
+            // (done AFTER selection queue build so component fields
+            // are still visible to the interactivity pipeline)
+            if (planParameterGroups) {
+                for (const group of planParameterGroups) {
+                    const encodedParamName = getEncodedFieldName(
+                        group.parameterName
+                    );
+                    // Determine if this is a single-element treat-as-parameter group
+                    // (parameter name matches the sole component name). In that case
+                    // the field is its own parameter — update role but do NOT mark
+                    // it as a support field, so it remains visible in the dataset UI.
+                    const isSingleSelf =
+                        group.componentNames.length === 1 &&
+                        getEncodedFieldName(group.componentNames[0]) ===
+                            encodedParamName;
+                    // Add/update the parameter as a dataset field
+                    fields[encodedParamName] = {
+                        ...(fields[encodedParamName] ?? { dataType: 'other' }),
+                        role: 'field-parameter'
+                    };
+                    // Mark component fields as support fields
+                    // (hides them from template operations but keeps
+                    // them in the selection queue already built above).
+                    // Skip for single-self treat-as groups.
+                    if (!isSingleSelf) {
+                        for (const name of group.componentNames) {
+                            const encodedName = getEncodedFieldName(name);
+                            if (fields[encodedName]) {
+                                fields[encodedName].isSupportField = true;
+                            }
+                        }
+                    }
+                }
+            }
 
             const values: VegaDatum[] = [];
             for (let r = 0; r < rowsLoaded; r++) {

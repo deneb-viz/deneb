@@ -17,6 +17,7 @@ export const roleToKind = (
 ): UsermetaDatasetFieldKind | undefined => {
     if (role === 'aggregation') return 'measure';
     if (role === 'grouping') return 'column';
+    if (role === 'field-parameter') return 'parameter';
     return undefined;
 };
 
@@ -32,6 +33,7 @@ export const kindToRole = (
 ): DatasetFieldRole | undefined => {
     if (kind === 'measure') return 'aggregation';
     if (kind === 'column') return 'grouping';
+    if (kind === 'parameter') return 'field-parameter';
     return undefined;
 };
 

@@ -5,3 +5,4 @@ export {
     CrossFilterSettings,
     CrossHighlightSettings
 } from './components/interactivity-settings';
+export { SemanticModelSettings } from './components/semantic-model-settings';

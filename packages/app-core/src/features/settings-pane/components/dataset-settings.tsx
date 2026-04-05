@@ -22,6 +22,15 @@ import {
     Calculator16Regular,
     TableFreezeColumn16Regular
 } from '@fluentui/react-icons';
+import FabricTableColumnQuestion16Regular from '@fabric-msft/svg-icons/dist/TableColumnQuestion16Regular';
+
+/**
+ * Wrapper for the Fabric SVG icon to match Fluent icon sizing.
+ * Fabric icons don't set explicit width/height on the SVG element.
+ */
+const TableColumnQuestion16Regular = () => (
+    <FabricTableColumnQuestion16Regular width={16} height={16} />
+);
 import {
     resolveFieldDefaults,
     type SupportFieldConfiguration,
@@ -38,7 +47,8 @@ import {
     FLAG_INFO,
     VALUE_SEPARATOR,
     encodeValue,
-    decodeValue
+    decodeValue,
+    getApplicableFlags
 } from './dataset-settings-utils';
 
 const useDatasetSettingsStyles = makeStyles({
@@ -76,6 +86,7 @@ export const DatasetSettings = () => {
         spec,
         denebMetaVersion,
         interactivity,
+        consolidateFieldParameters,
         setConfig,
         translate
     } = useDenebState((state) => ({
@@ -84,6 +95,7 @@ export const DatasetSettings = () => {
         spec: state.project.spec,
         denebMetaVersion: state.project.denebMetaVersion,
         interactivity: state.project.interactivity,
+        consolidateFieldParameters: state.project.consolidateFieldParameters,
         setConfig: state.project.setSupportFieldConfiguration,
         translate: state.i18n.translate
     }));
@@ -158,8 +170,21 @@ export const DatasetSettings = () => {
         for (const [name, field] of sourceFields) {
             const flags = resolvedFlags[name];
             const isMeasure = (field.role ?? 'grouping') === 'aggregation';
-            const applicableFlags =
-                isMeasure && highlightEnabled ? MEASURE_FLAGS : COLUMN_FLAGS;
+            const isFieldParameter = field.role === 'field-parameter';
+            const isTreatedAs = resolvedFlags[name]?.treatAsParameter === true;
+            const isParameter = isFieldParameter || isTreatedAs;
+            const baseFlags = isMeasure
+                ? highlightEnabled
+                    ? MEASURE_FLAGS
+                    : COLUMN_FLAGS
+                : COLUMN_FLAGS;
+            const applicableFlags = getApplicableFlags(
+                baseFlags,
+                isFieldParameter,
+                isTreatedAs,
+                isParameter,
+                consolidateFieldParameters
+            );
             let checkedCount = 0;
             for (const flag of applicableFlags) {
                 if (flags[flag]) {
@@ -175,7 +200,12 @@ export const DatasetSettings = () => {
             }
         }
         return map;
-    }, [sourceFields, resolvedFlags, highlightEnabled]);
+    }, [
+        sourceFields,
+        resolvedFlags,
+        highlightEnabled,
+        consolidateFieldParameters
+    ]);
 
     // Handle checkbox toggle — supports both parent (field) and leaf (flag) nodes
     const onCheckedChange = useCallback(
@@ -193,10 +223,21 @@ export const DatasetSettings = () => {
                 if (!field) return;
                 const isMeasure =
                     (field[1].role ?? 'grouping') === 'aggregation';
-                const applicableFlags =
+                const isFieldParameter = field[1].role === 'field-parameter';
+                const isTreatedAs =
+                    resolvedFlags[fieldName]?.treatAsParameter === true;
+                const isParameter = isFieldParameter || isTreatedAs;
+                const baseFlags =
                     isMeasure && highlightEnabled
                         ? MEASURE_FLAGS
                         : COLUMN_FLAGS;
+                const applicableFlags = getApplicableFlags(
+                    baseFlags,
+                    isFieldParameter,
+                    isTreatedAs,
+                    isParameter,
+                    consolidateFieldParameters
+                );
 
                 const newChecked = data.checked === true;
                 const updatedFlags = { ...currentFlags };
@@ -229,7 +270,14 @@ export const DatasetSettings = () => {
                 setConfig(updatedConfig);
             }
         },
-        [highlightEnabled, resolvedFlags, config, setConfig, sourceFields]
+        [
+            highlightEnabled,
+            consolidateFieldParameters,
+            resolvedFlags,
+            config,
+            setConfig,
+            sourceFields
+        ]
     );
 
     // Determine Case 2: highlight enabled but no measure fields have any
@@ -264,19 +312,34 @@ export const DatasetSettings = () => {
                 {sourceFields.map(([name, field]) => {
                     const isMeasure =
                         (field.role ?? 'grouping') === 'aggregation';
-                    const applicableFlags = isMeasure
+                    const isFieldParameter = field.role === 'field-parameter';
+                    const baseFlags = isMeasure
                         ? highlightEnabled
                             ? MEASURE_FLAGS
                             : COLUMN_FLAGS
                         : COLUMN_FLAGS;
-                    const roleTooltip = translate(
-                        isMeasure
-                            ? 'Text_SupportField_RoleTooltip_Measure'
-                            : 'Text_SupportField_RoleTooltip_Column'
+                    const isTreatedAs =
+                        resolvedFlags[name]?.treatAsParameter === true;
+                    const isParameter = isFieldParameter || isTreatedAs;
+                    const applicableFlags = getApplicableFlags(
+                        baseFlags,
+                        isFieldParameter,
+                        isTreatedAs,
+                        isParameter,
+                        consolidateFieldParameters
                     );
-                    const RoleIcon = isMeasure
-                        ? Calculator16Regular
-                        : TableFreezeColumn16Regular;
+                    const roleTooltip = translate(
+                        isParameter
+                            ? 'Text_SupportField_RoleTooltip_Parameter'
+                            : isMeasure
+                              ? 'Text_SupportField_RoleTooltip_Measure'
+                              : 'Text_SupportField_RoleTooltip_Column'
+                    );
+                    const RoleIcon = isParameter
+                        ? TableColumnQuestion16Regular
+                        : isMeasure
+                          ? Calculator16Regular
+                          : TableFreezeColumn16Regular;
 
                     const isExplicitlyConfigured = name in config;
 

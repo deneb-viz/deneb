@@ -28,6 +28,8 @@ type SupportFieldFlags = {
     highlightComparator: boolean;
     format: boolean;
     formatted: boolean;
+    names?: boolean;
+    treatAsParameter?: boolean;
 };
 ```
 
@@ -38,6 +40,8 @@ type SupportFieldFlags = {
 | `highlightComparator` | `<field>__highlightComparator` | Ordinal comparison of highlight vs. base: `'eq'`, `'lt'`, `'gt'`, or `'neq'` |
 | `format` | `<field>__format` | Format string for the field |
 | `formatted` | `<field>__formatted` | Display-ready formatted value |
+| `names` | `<field>__names` | Array of component field display names for a field parameter (optional, parameter-specific) |
+| `treatAsParameter` | _(behavioral)_ | When `true`, wraps this field into a single-element array to simulate a field parameter (optional, UI-specific) |
 
 ---
 
@@ -91,12 +95,14 @@ type SupportFieldValueProvider = {
 
 #### `FieldProcessingInstruction`
 
-Pre-computed instruction for a single field. Built once during `buildProcessingPlan` so the row loop performs no additional flag resolution.
+Pre-computed instruction for a single regular field. Built once during `buildProcessingPlan` so the row loop performs no additional flag resolution. Distinguished from parameter instructions by `kind: 'field'`.
 
 ```typescript
 type FieldProcessingInstruction = {
+    kind: 'field';
     encodedName: string;
     sourceIndex: number;
+    baseValueIndex: number;
     role: 'grouping' | 'aggregation';
     emitHighlight: boolean;
     emitHighlightStatus: boolean;
@@ -104,6 +110,50 @@ type FieldProcessingInstruction = {
     emitFormat: boolean;
     emitFormatted: boolean;
 };
+```
+
+| Property | Description |
+|---|---|
+| `baseValueIndex` | Index into the `baseValues` array. When field parameters consolidate multiple source fields, `baseValueIndex` maps each regular field back to its correct position in the input array. |
+
+---
+
+#### `ParameterProcessingInstruction`
+
+Pre-computed instruction for a consolidated field parameter. Component fields are merged into array-valued columns at row execution time. Distinguished from regular field instructions by `kind: 'parameter'`.
+
+```typescript
+type ParameterProcessingInstruction = {
+    kind: 'parameter';
+    encodedName: string;
+    componentIndices: number[];
+    namesArray: string[];
+    formatStringsArray?: string[];
+    emitNames: boolean;
+    emitFormat: boolean;
+    emitFormatted: boolean;
+};
+```
+
+| Property | Description |
+|---|---|
+| `componentIndices` | Indices into the `baseValues` array for each component field, in DataView order |
+| `namesArray` | Pre-built array of component field display names (row-invariant, reused for every row) |
+| `formatStringsArray` | Pre-built format strings array (undefined when `emitFormat` is `false`) |
+| `emitNames` | Whether to write `<encodedName>__names` (the companion field with component names) |
+| `emitFormat` | Whether to write `<encodedName>__format` (array of format strings) |
+| `emitFormatted` | Whether to write `<encodedName>__formatted` (array of formatted values) |
+
+---
+
+#### `ProcessingInstruction`
+
+A single instruction in the processing plan — either a regular field or a consolidated field parameter. The `kind` discriminant enables the row builder to branch on the instruction type.
+
+```typescript
+type ProcessingInstruction =
+    | FieldProcessingInstruction
+    | ParameterProcessingInstruction;
 ```
 
 ---
@@ -114,7 +164,7 @@ The complete plan built before the row loop. Passed unchanged to every `buildDat
 
 ```typescript
 type ProcessingPlan = {
-    fields: FieldProcessingInstruction[];
+    fields: ProcessingInstruction[];
     emitSelected: boolean;
     hasHighlights: boolean;
 };
@@ -122,7 +172,7 @@ type ProcessingPlan = {
 
 | Property | Description |
 |---|---|
-| `fields` | Ordered list of per-field instructions, one per input field |
+| `fields` | Ordered list of per-field instructions (regular or parameter), one per input field or parameter group |
 | `emitSelected` | Whether to write `__selected__` on each row (derived from `crossFilterEnabled`) |
 | `hasHighlights` | Whether the current data view has active highlights (affects `__highlightStatus__` computation) |
 
@@ -135,10 +185,32 @@ Parameter bag for `resolveFieldDefaults`.
 ```typescript
 type ResolveFieldDefaultsParams = {
     masterSettings: SupportFieldMasterSettings;
-    fieldRole: DatasetFieldRole;  // 'grouping' | 'aggregation'
+    fieldRole: DatasetFieldRole;  // 'grouping' | 'aggregation' | 'field-parameter'
     isLegacy: boolean;
 };
 ```
+
+---
+
+#### `PlanParameterGroup`
+
+Pre-grouped field parameter information, built by the platform-specific detection layer before plan building.
+
+```typescript
+type PlanParameterGroup = {
+    parameterName: string;
+    componentFieldIndices: number[];
+    componentNames: string[];
+    formatStrings?: string[];
+};
+```
+
+| Property | Description |
+|---|---|
+| `parameterName` | Encoded name of the field parameter (becomes the column name) |
+| `componentFieldIndices` | Indices into the `fields` array for each component field |
+| `componentNames` | Display names of the component fields, in DataView order |
+| `formatStrings` | Pre-resolved format strings (undefined if format emission is not applicable) |
 
 ---
 
@@ -151,12 +223,13 @@ type BuildProcessingPlanParams = {
     fields: Array<{
         encodedName: string;
         sourceIndex: number;
-        role: 'grouping' | 'aggregation';
+        role: DatasetFieldRole;
     }>;
     configuration: SupportFieldConfiguration;
     masterSettings: SupportFieldMasterSettings;
     hasHighlights: boolean;
     isLegacy: boolean;
+    parameterGroups?: PlanParameterGroup[];
 };
 ```
 
@@ -181,7 +254,7 @@ type BuildDataRowParams = {
 |---|---|
 | `plan` | The plan returned by `buildProcessingPlan` |
 | `provider` | Platform-specific value provider |
-| `baseValues` | Raw values for each field, in the same order as `plan.fields` |
+| `baseValues` | Raw values for each source field. Regular field instructions reference these via `baseValueIndex`; parameter instructions via `componentIndices`. |
 | `rowIndex` | Zero-based row index; written as `__row__` on the output object |
 | `selectionStatus` | Optional selection status string; only written when `plan.emitSelected` is `true` and this is not `undefined` |
 | `locale` | BCP 47 locale string passed through to `getFormattedValue` |
@@ -218,10 +291,13 @@ Builds a `ProcessingPlan` from the field list, sparse configuration, and master 
 **Behavior:**
 
 For each field in `params.fields`:
-1. If `params.configuration[field.encodedName]` exists, those flags are used directly (user-configured, no defaults applied).
-2. Otherwise, `resolveFieldDefaults` is called with `masterSettings`, `field.role`, and `isLegacy`.
+1. If the field belongs to a `parameterGroups` entry, it is skipped during the regular field loop and instead handled as part of a `ParameterProcessingInstruction` (see below).
+2. If `params.configuration[field.encodedName]` exists, those flags are used directly (user-configured, no defaults applied).
+3. Otherwise, `resolveFieldDefaults` is called with `masterSettings`, `field.role`, and `isLegacy`.
 
-The resulting flags are stored as `emitXxx` booleans on each `FieldProcessingInstruction`.
+The resulting flags are stored as `emitXxx` booleans on each `FieldProcessingInstruction`, with `baseValueIndex` set to the field's position in the input array.
+
+**Parameter groups:** For each entry in `parameterGroups`, a `ParameterProcessingInstruction` is built. Flags for the parameter are resolved from `configuration[parameterName]` if present, or from `resolveFieldDefaults` with `fieldRole: 'field-parameter'`. The `emitNames` flag defaults to `true` for field parameters.
 
 `plan.emitSelected` is set to `masterSettings.crossFilterEnabled`. `plan.hasHighlights` is passed through from `params.hasHighlights`.
 
@@ -239,8 +315,10 @@ Executes the processing plan for a single row. Returns a plain object (`VegaDatu
 
 1. Writes `__row__: rowIndex` unconditionally.
 2. If `plan.emitSelected` is `true` and `selectionStatus` is not `undefined`, writes `__selected__: selectionStatus`.
-3. For each field instruction:
-   - Writes `encodedName: baseValues[i]`.
+3. For each instruction in `plan.fields`, branches on `instruction.kind`:
+
+**`kind: 'field'` (regular field):**
+   - Writes `encodedName: baseValues[instruction.baseValueIndex]`.
    - If any of `emitHighlight`, `emitHighlightStatus`, or `emitHighlightComparator` is `true`, calls `provider.getHighlightValue` once and reuses the result for all three.
    - Writes `<encodedName>__highlight` if `emitHighlight`.
    - Writes `<encodedName>__highlightStatus` if `emitHighlightStatus` (value: `'neutral'` | `'on'` | `'off'`).
@@ -248,6 +326,13 @@ Executes the processing plan for a single row. Returns a plain object (`VegaDatu
    - If `emitFormat` or `emitFormatted`, calls `provider.getFormatString` once.
    - Writes `<encodedName>__format` if `emitFormat`.
    - Writes `<encodedName>__formatted` if `emitFormatted` (calls `provider.getFormattedValue`).
+
+**`kind: 'parameter'` (consolidated field parameter):**
+   - Assembles an array value by reading `baseValues[idx]` for each index in `componentIndices`.
+   - Writes `encodedName: [value0, value1, ...]` (array of component values).
+   - Writes `<encodedName>__names: namesArray` if `emitNames` (the pre-built component names array).
+   - If `emitFormat`, writes `<encodedName>__format: formatStringsArray`.
+   - If `emitFormatted`, writes `<encodedName>__formatted: [formatted0, formatted1, ...]` by applying `provider.getFormattedValue` to each component.
 
 Provider methods are only called when the corresponding flag is `true`. There are no redundant calls.
 
@@ -410,30 +495,74 @@ The table below shows what each flag defaults to when a field has **no** explici
 
 ### New specs (`isLegacy: false`)
 
-| Flag | Measure (`aggregation`) | Column (`grouping`) |
-|---|---|---|
-| `highlight` | `crossHighlightEnabled` | `false` |
-| `highlightStatus` | `false` | `false` |
-| `highlightComparator` | `false` | `false` |
-| `format` | `false` | `false` |
-| `formatted` | `false` | `false` |
+| Flag | Measure (`aggregation`) | Column (`grouping`) | Parameter (`field-parameter`) |
+|---|---|---|---|
+| `highlight` | `crossHighlightEnabled` | `false` | `false` |
+| `highlightStatus` | `false` | `false` | `false` |
+| `highlightComparator` | `false` | `false` | `false` |
+| `format` | `false` | `false` | `false` |
+| `formatted` | `false` | `false` | `false` |
+| `names` | _(n/a)_ | _(n/a)_ | `true` |
 
 ### Legacy specs (`isLegacy: true`)
 
-| Flag | Measure (`aggregation`) | Column (`grouping`) |
-|---|---|---|
-| `highlight` | `crossHighlightEnabled` | `false` |
-| `highlightStatus` | `crossHighlightEnabled` | `false` |
-| `highlightComparator` | `crossHighlightEnabled` | `false` |
-| `format` | `true` | `false` |
-| `formatted` | `true` | `false` |
+| Flag | Measure (`aggregation`) | Column (`grouping`) | Parameter (`field-parameter`) |
+|---|---|---|---|
+| `highlight` | `crossHighlightEnabled` | `false` | `false` |
+| `highlightStatus` | `crossHighlightEnabled` | `false` | `false` |
+| `highlightComparator` | `crossHighlightEnabled` | `false` | `false` |
+| `format` | `true` | `false` | `false` |
+| `formatted` | `true` | `false` | `false` |
+| `names` | _(n/a)_ | _(n/a)_ | `true` |
 
 **Notes:**
 
-- "Measure" means `role === 'aggregation'`; "Column" means `role === 'grouping'`.
+- "Measure" means `role === 'aggregation'`; "Column" means `role === 'grouping'`; "Parameter" means `role === 'field-parameter'`.
 - `crossHighlightEnabled` refers to `masterSettings.crossHighlightEnabled`.
 - Legacy mode (`isLegacy: true`) matches pre-2.0 behavior exactly, emitting format and formatted fields for all measures by default.
 - New specs opt in to each support field explicitly through `SupportFieldConfiguration` (or get only the minimal `highlight` field when cross-highlight is enabled).
+- Field parameters default to `names: true` only. Highlight flags are not applicable because parameters produce array values, not scalar values.
+
+---
+
+## 6. Field Parameter Processing
+
+### Overview
+
+Field parameters are a Power BI feature that lets report authors consolidate multiple related fields (e.g., "Revenue", "Profit", "Cost") into a single parameter (e.g., "Metric Selector"). When consolidation is enabled, the engine groups component fields into a single `ParameterProcessingInstruction` that produces array-valued columns instead of individual scalar columns.
+
+### Detection and grouping
+
+Parameter detection is platform-specific. In Power BI, the `sourceFieldParameters` property on `DataViewMetadataColumn` identifies which parameter a field belongs to. The detection layer (outside `data-core`) groups fields by parameter name and produces `PlanParameterGroup` entries that are passed to `buildProcessingPlan`.
+
+### Two consolidation modes
+
+| Mode | Behavior | When used |
+|---|---|---|
+| **Consolidate** (default for new specs) | Component fields are merged into array columns under the parameter name. Component fields are marked as support fields (`isSupportField: true`) so they don't appear as separate columns. | `consolidateFieldParameters: true` |
+| **Passthrough** (legacy default) | Field parameters are ignored; component fields appear as individual columns. | `consolidateFieldParameters: false` |
+
+The `consolidateFieldParameters` setting is persisted in Power BI's `stateManagement` property bag. New specs default to `true`; legacy migrations set it to `false` to preserve existing behavior.
+
+### Row output for parameters
+
+For a parameter "Metric" with components ["Revenue", "Profit"]:
+
+```
+{
+    "Metric": [15000, 8000],           // array of component values
+    "Metric__names": ["Revenue", "Profit"],  // companion names (if emitNames)
+    "__row__": 0
+}
+```
+
+### Manual "treat as parameter"
+
+When consolidation is enabled, users can mark a regular field as "treat as field parameter" via the settings UI. This wraps the field into a single-element array, making it behave like a parameter with one component. This is useful for fields that the platform doesn't auto-detect as parameters but that the user wants to expose as arrays for consistency.
+
+### Template integration
+
+Field parameters are exported with `kind: 'parameter'` in the template dataset metadata. The `__names` suffix is included in the tokenization regex alternation patterns so template export/import correctly handles `__names` references in specs. The `treatAsParameter` and `names` flags are included in `supportFieldConfiguration` when explicitly configured.
 
 ---
 

@@ -1,3 +1,5 @@
+import { type SupportFieldFlags } from '@deneb-viz/data-core/support-fields';
+
 /**
  * The support field flag keys applicable to measures (all flags).
  */
@@ -22,7 +24,9 @@ export const FLAG_LABELS: Record<string, string> = {
     highlightStatus: 'Text_SupportField_HighlightStatus',
     highlightComparator: 'Text_SupportField_HighlightComparator',
     format: 'Text_SupportField_Format',
-    formatted: 'Text_SupportField_Formatted'
+    formatted: 'Text_SupportField_Formatted',
+    names: 'Text_SupportField_Names',
+    treatAsParameter: 'Text_SupportField_TreatAsParameter'
 };
 
 /**
@@ -34,7 +38,34 @@ export const FLAG_INFO: Partial<Record<string, string>> = {
     highlightStatus: 'Assistive_Text_SupportField_HighlightStatus',
     highlightComparator: 'Assistive_Text_SupportField_HighlightComparator',
     format: 'Assistive_Text_SupportField_Format',
-    formatted: 'Assistive_Text_SupportField_Formatted'
+    formatted: 'Assistive_Text_SupportField_Formatted',
+    names: 'Assistive_Text_SupportField_Names',
+    treatAsParameter: 'Assistive_Text_SupportField_TreatAsParameter'
+};
+
+/**
+ * Compute which flags are applicable for a field based on its role,
+ * parameter state, and whether consolidation is enabled.
+ */
+export const getApplicableFlags = (
+    baseFlags: readonly string[],
+    isFieldParameter: boolean,
+    isTreatedAs: boolean,
+    isParameter: boolean,
+    consolidateFieldParameters: boolean
+): (keyof SupportFieldFlags)[] => {
+    const flags: (keyof SupportFieldFlags)[] = [
+        ...baseFlags
+    ] as (keyof SupportFieldFlags)[];
+    if (consolidateFieldParameters) {
+        if (!isFieldParameter || isTreatedAs) {
+            flags.push('treatAsParameter');
+        }
+        if (isParameter) {
+            flags.push('names');
+        }
+    }
+    return flags;
 };
 
 /** Separator used to encode field name + flag key in TreeItem values. */

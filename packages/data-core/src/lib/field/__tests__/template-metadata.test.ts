@@ -18,6 +18,10 @@ describe('roleToKind', () => {
         expect(roleToKind('aggregation')).toBe('measure');
     });
 
+    it('should return "parameter" for "field-parameter" role', () => {
+        expect(roleToKind('field-parameter')).toBe('parameter');
+    });
+
     it('should return undefined when role is undefined', () => {
         expect(roleToKind(undefined)).toBeUndefined();
     });
@@ -30,6 +34,10 @@ describe('kindToRole', () => {
 
     it('should return "aggregation" for "measure" kind', () => {
         expect(kindToRole('measure')).toBe('aggregation');
+    });
+
+    it('should return "field-parameter" for "parameter" kind', () => {
+        expect(kindToRole('parameter')).toBe('field-parameter');
     });
 
     it('should return undefined for "any" kind', () => {

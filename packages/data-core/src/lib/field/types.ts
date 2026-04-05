@@ -1,7 +1,7 @@
 /**
  * The role of a field in the dataset - either for grouping (categorical) or aggregation (numeric measures).
  */
-export type DatasetFieldRole = 'grouping' | 'aggregation';
+export type DatasetFieldRole = 'grouping' | 'aggregation' | 'field-parameter';
 
 /**
  * The data type of a field in the dataset.
@@ -142,7 +142,11 @@ export type UsermetaDatasetField = {
 /**
  * The type of field that should ideally be applied to a placeholder.
  */
-export type UsermetaDatasetFieldKind = 'column' | 'measure' | 'any';
+export type UsermetaDatasetFieldKind =
+    | 'column'
+    | 'measure'
+    | 'parameter'
+    | 'any';
 
 /**
  * The list of data types that can be used for this placeholder, for any columns or measures in the data model.

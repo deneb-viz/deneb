@@ -20,7 +20,8 @@ import {
     TooltipSettings,
     ContextMenuSettings,
     CrossFilterSettings,
-    CrossHighlightSettings
+    CrossHighlightSettings,
+    SemanticModelSettings
 } from '../features/settings';
 import { NotificationToaster } from '../features/toaster';
 import { VisualUpdateHistoryOverlay } from '../features/visual-update-history-overlay';
@@ -181,6 +182,7 @@ export const App = ({ host }: AppProps) => {
                 onRenderingFinished,
                 settingsPaneFooter: <InteractivityFooter />,
                 settingsPanePlatformComponent: [
+                    <SemanticModelSettings key='semantic-model' />,
                     <TooltipSettings key='tooltips' />,
                     <ContextMenuSettings key='contextmenu' />,
                     <CrossFilterSettings key='crossfilter' />,

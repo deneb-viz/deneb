@@ -181,6 +181,19 @@ export const remapSupportFieldConfigurationForImport = (
 };
 
 /**
+ * Build a lookup from display name → TrackedFieldProperties. TrackedFields is keyed by
+ * `field.id` (queryName), which differs from the display name used in supportFieldConfiguration
+ * and in the export dataset array. This helper enables name-based lookups.
+ */
+const buildNameToTrackedFieldMap = (trackedFields: TrackedFields) => {
+    const map = new Map<string, { placeholder: string }>();
+    for (const tf of Object.values(trackedFields)) {
+        map.set(tf.templateMetadata.name, { placeholder: tf.placeholder });
+    }
+    return map;
+};
+
+/**
  * Remap the keys of a SupportFieldConfiguration from encoded field names to their export placeholders
  * (e.g. `Category` → `__0__`), using the tracked fields mapping. Any key not found in trackedFields
  * is carried through unchanged. Returns undefined when the input is absent or empty.
@@ -190,10 +203,11 @@ const remapSupportFieldConfigurationForExport = (
     trackedFields: TrackedFields
 ): SupportFieldConfiguration | undefined => {
     if (!config || Object.keys(config).length === 0) return undefined;
+    const nameMap = buildNameToTrackedFieldMap(trackedFields);
     return Object.fromEntries(
         Object.entries(config).map(([fieldName, flags]) => {
             const placeholder =
-                trackedFields[fieldName]?.placeholder ?? fieldName;
+                nameMap.get(fieldName)?.placeholder ?? fieldName;
             return [placeholder, flags];
         })
     );
@@ -226,13 +240,22 @@ export const getPublishableUsermeta = (
                     usermeta.information.author ||
                     options.informationTranslationPlaceholders.author
             },
-            dataset: (usermeta?.[DATASET_DEFAULT_NAME] ?? []).map((d) => {
-                d.key = options.trackedFields?.[d.key]?.placeholder ?? d.key;
-                d.name = getFieldNameForExport(d);
-                return omit(d as unknown as Record<string, unknown>, [
-                    'namePlaceholder'
-                ]) as Omit<UsermetaDatasetField, 'namePlaceholder'>;
-            }),
+            dataset: (() => {
+                const nameMap = buildNameToTrackedFieldMap(
+                    options.trackedFields
+                );
+                return (usermeta?.[DATASET_DEFAULT_NAME] ?? []).map((d) => {
+                    const item = { ...d };
+                    const tracked = nameMap.get(
+                        item.namePlaceholder ?? item.name
+                    );
+                    item.key = tracked?.placeholder ?? item.key;
+                    item.name = getFieldNameForExport(item);
+                    return omit(item as unknown as Record<string, unknown>, [
+                        'namePlaceholder'
+                    ]) as Omit<UsermetaDatasetField, 'namePlaceholder'>;
+                });
+            })(),
             supportFieldConfiguration: remapSupportFieldConfigurationForExport(
                 usermeta.supportFieldConfiguration,
                 options.trackedFields

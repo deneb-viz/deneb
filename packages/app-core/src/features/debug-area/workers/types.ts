@@ -1,8 +1,10 @@
 /**
  * Represents the worker that processes the dataset for display in the debug pane.
  */
-export interface IWorkerDatasetViewer
-    extends Omit<Worker, 'onmessage,postMessage'> {
+export interface IWorkerDatasetViewer extends Omit<
+    Worker,
+    'onmessage,postMessage'
+> {
     onmessage:
         | ((
               this: Worker,
@@ -82,6 +84,7 @@ export type WorkerDatasetViewerValueType =
     | 'invalid'
     | 'number'
     | 'date'
+    | 'array'
     | 'object'
     | 'string'
     | 'boolean'

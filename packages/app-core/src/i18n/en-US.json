@@ -69,6 +69,7 @@
     "Template_Type_Descriptor_Numeric": "Template uses a numeric value for this dataset field.",
     "Template_Type_Descriptor_DateTime": "Template uses a Date/Time value for this dataset field.",
     "Template_Type_Descriptor_Other": "Template uses an unsupported data type for this dataset field.",
+    "Template_Type_Descriptor_Parameter": "Template uses a field parameter for this dataset field. Assign a field parameter for best results.",
     "Text_AutoComplete_Meta_Column": "column",
     "Text_AutoComplete_Meta_Highlight": "cross-highlight",
     "Text_AutoComplete_Meta_Measure": "measure",
@@ -209,11 +210,19 @@
     "Text_SupportField_RoleMeasure": "Measure",
     "Text_SupportField_RoleTooltip_Column": "This field is a column (categorical). Only format support fields are available.",
     "Text_SupportField_RoleTooltip_Measure": "This field is a measure (aggregation). All support field types are available.",
+    "Text_SupportField_RoleTooltip_Parameter": "This field is a consolidated field parameter. Values are array-valued with companion __names field.",
     "Text_MessageBar_CrossHighlightDisabled": "Looking for highlight support fields for your measures?",
     "Text_MessageBar_CrossHighlightDisabled_Action": "Turn on cross-highlighting",
     "Text_MessageBar_NoHighlightFields": "Cross-highlighting is enabled but no highlight fields are selected. Visual interactions may not behave as expected.",
     "Text_MessageBar_NoHighlightFields_Action": "Turn off cross-highlighting",
     "Assistive_Text_SupportFields": "Deneb can generate additional supporting fields for each column and measure in your dataset. Use the options below to control which supporting fields are included. Reducing unnecessary fields can improve performance with large datasets.",
     "Text_Setting_ScaleToZoom": "Scale to report zoom level",
-    "Assistive_Text_ScaleToZoom": "When enabled and using canvas rendering, Deneb adjusts the canvas resolution to match the Power BI report zoom level. This produces sharper output at non-100% zoom but still may not be as reliable as SVG output. Only applies to canvas rendering mode."
+    "Assistive_Text_ScaleToZoom": "When enabled and using canvas rendering, Deneb adjusts the canvas resolution to match the Power BI report zoom level. This produces sharper output at non-100% zoom but still may not be as reliable as SVG output. Only applies to canvas rendering mode.",
+    "Text_Settings_SemanticModel": "Semantic model integration",
+    "Text_Setting_ConsolidateFieldParameters": "Consolidate field parameters",
+    "Assistive_Text_ConsolidateFieldParameters": "When enabled, fields belonging to a Power BI field parameter are grouped into array-valued columns named after the parameter, with companion __names, __format, and __formatted fields. When disabled, all fields pass through individually with their actual names. Disable this if you use a modeling workaround for stable field names.",
+    "Text_SupportField_Names": "Field names",
+    "Assistive_Text_SupportField_Names": "Adds a companion __names field containing the display names of the component fields in the parameter. Useful for axis titles, tooltips, and flatten transforms.",
+    "Text_SupportField_TreatAsParameter": "Treat as field parameter",
+    "Assistive_Text_SupportField_TreatAsParameter": "Wraps this field's values in a single-element array with companion fields, making it compatible with specifications designed for field parameters. For compatibility and debugging purposes. Will be exported as a parameter field in templates."
 }

@@ -29,6 +29,8 @@
     "Objects_StateManagement_DenebMetaVersion_Description": "Persisted deneb metadata version for legacy detection.",
     "Objects_StateManagement_ScaleToZoom": "Scale to zoom",
     "Objects_StateManagement_ScaleToZoom_Description": "Persisted canvas DPI compensation setting.",
+    "Objects_StateManagement_ConsolidateFieldParameters": "Consolidate field parameters",
+    "Objects_StateManagement_ConsolidateFieldParameters_Description": "Whether to consolidate field parameter component fields into parameter-named array columns.",
     "Objects_StateManagement_Description": "Options used to manage the state of the visual.",
     "Objects_StateManagement_Group_Viewport": "Viewport",
     "Objects_StateManagement_ViewportHeight": "Viewport height",

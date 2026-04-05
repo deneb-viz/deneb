@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildProcessingPlan } from '../build-processing-plan';
 import type {
+    FieldProcessingInstruction,
     SupportFieldConfiguration,
     SupportFieldMasterSettings
 } from '../types';
@@ -89,7 +90,7 @@ describe('buildProcessingPlan', () => {
                 hasHighlights: true,
                 isLegacy: false
             });
-            const instr = plan.fields[0];
+            const instr = plan.fields[0] as FieldProcessingInstruction;
             expect(instr.emitHighlight).toBe(true);
             expect(instr.emitHighlightStatus).toBe(false);
             expect(instr.emitHighlightComparator).toBe(false);
@@ -111,7 +112,7 @@ describe('buildProcessingPlan', () => {
                 hasHighlights: true,
                 isLegacy: false
             });
-            const instr = plan.fields[0];
+            const instr = plan.fields[0] as FieldProcessingInstruction;
             expect(instr.encodedName).toBe('Sales');
             expect(instr.sourceIndex).toBe(3);
             expect(instr.role).toBe('aggregation');
@@ -127,7 +128,7 @@ describe('buildProcessingPlan', () => {
                 hasHighlights: false,
                 isLegacy: false
             });
-            const instr = plan.fields[0];
+            const instr = plan.fields[0] as FieldProcessingInstruction;
             expect(instr.emitHighlight).toBe(false);
             expect(instr.emitHighlightStatus).toBe(false);
             expect(instr.emitHighlightComparator).toBe(false);
@@ -145,7 +146,7 @@ describe('buildProcessingPlan', () => {
                 hasHighlights: true,
                 isLegacy: false
             });
-            const instr = plan.fields[0];
+            const instr = plan.fields[0] as FieldProcessingInstruction;
             expect(instr.emitHighlight).toBe(false);
             expect(instr.emitHighlightStatus).toBe(false);
             expect(instr.emitHighlightComparator).toBe(false);
@@ -163,7 +164,7 @@ describe('buildProcessingPlan', () => {
                 hasHighlights: true,
                 isLegacy: true
             });
-            const instr = plan.fields[0];
+            const instr = plan.fields[0] as FieldProcessingInstruction;
             expect(instr.emitHighlight).toBe(true);
             expect(instr.emitHighlightStatus).toBe(true);
             expect(instr.emitHighlightComparator).toBe(true);
@@ -181,7 +182,7 @@ describe('buildProcessingPlan', () => {
                 hasHighlights: true,
                 isLegacy: true
             });
-            const instr = plan.fields[0];
+            const instr = plan.fields[0] as FieldProcessingInstruction;
             expect(instr.emitHighlight).toBe(false);
             expect(instr.emitHighlightStatus).toBe(false);
             expect(instr.emitHighlightComparator).toBe(false);
@@ -209,7 +210,7 @@ describe('buildProcessingPlan', () => {
                 hasHighlights: true,
                 isLegacy: true
             });
-            const instr = plan.fields[0];
+            const instr = plan.fields[0] as FieldProcessingInstruction;
             expect(instr.emitHighlight).toBe(false);
             expect(instr.emitHighlightStatus).toBe(true);
             expect(instr.emitHighlightComparator).toBe(false);
@@ -234,7 +235,7 @@ describe('buildProcessingPlan', () => {
                 hasHighlights: true,
                 isLegacy: true
             });
-            const instr = plan.fields[0];
+            const instr = plan.fields[0] as FieldProcessingInstruction;
             expect(instr.emitHighlight).toBe(false);
             expect(instr.emitHighlightStatus).toBe(false);
             expect(instr.emitHighlightComparator).toBe(false);
@@ -266,7 +267,7 @@ describe('buildProcessingPlan', () => {
             });
 
             // Configured field uses explicit flags
-            const salesInstr = plan.fields[0];
+            const salesInstr = plan.fields[0] as FieldProcessingInstruction;
             expect(salesInstr.emitHighlight).toBe(true);
             expect(salesInstr.emitHighlightStatus).toBe(true);
             expect(salesInstr.emitHighlightComparator).toBe(true);
@@ -274,7 +275,7 @@ describe('buildProcessingPlan', () => {
             expect(salesInstr.emitFormatted).toBe(true);
 
             // Unconfigured column falls through to defaults
-            const categoryInstr = plan.fields[1];
+            const categoryInstr = plan.fields[1] as FieldProcessingInstruction;
             expect(categoryInstr.emitHighlight).toBe(false);
             expect(categoryInstr.emitHighlightStatus).toBe(false);
             expect(categoryInstr.emitHighlightComparator).toBe(false);

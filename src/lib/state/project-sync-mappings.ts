@@ -17,6 +17,7 @@ type ProjectSyncKey = keyof Omit<
     | 'setProvider'
     | 'setRenderMode'
     | 'setScaleToZoom'
+    | 'setConsolidateFieldParameters'
 >;
 
 /**
@@ -167,6 +168,16 @@ export const PROJECT_SYNC_MAPPINGS: SliceSyncMapping<ProjectSyncKey>[] = [
         persistence: {
             objectName: 'stateManagement',
             propertyName: 'scaleToZoom'
+        }
+    },
+    {
+        sliceKey: 'consolidateFieldParameters',
+        getVisualValue: (s) =>
+            s.stateManagement.projectMetadata?.consolidateFieldParameters
+                ?.value ?? true,
+        persistence: {
+            objectName: 'stateManagement',
+            propertyName: 'consolidateFieldParameters'
         }
     }
 ];
