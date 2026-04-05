@@ -45,18 +45,11 @@ export const CreateButton = () => {
             metadata?.dataset ?? []
         );
         const config = candidates?.config ?? PROJECT_DEFAULTS.config;
-        // Remap support field configuration keys from template placeholders (__0__, __1__, …)
+        // Remap support field configuration keys from inline dataset entries
         // to actual field names supplied by the user. Computed once and shared with both the
         // platform persistence callback and the project state initialisation.
         const supportFieldConfiguration =
-            remapSupportFieldConfigurationForImport(
-                metadata?.supportFieldConfiguration,
-                metadata?.dataset ?? []
-            );
-        const metadataWithRemappedConfig = {
-            ...metadata,
-            supportFieldConfiguration
-        };
+            remapSupportFieldConfigurationForImport(metadata?.dataset ?? []);
         logDebug('createFromTemplate - processed candidates', {
             spec,
             config,
@@ -66,7 +59,8 @@ export const CreateButton = () => {
         if (onCreateProject && metadata) {
             try {
                 await onCreateProject({
-                    metadata: metadataWithRemappedConfig,
+                    metadata,
+                    supportFieldConfiguration,
                     spec,
                     config
                 });

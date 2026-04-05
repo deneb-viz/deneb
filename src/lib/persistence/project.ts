@@ -15,7 +15,7 @@ import { resolveContextMenuProperties } from './context-menu-migration';
 export const persistOnCreateFromTemplate = async (
     payload: OnCreateProjectPayload
 ): Promise<void> => {
-    const { metadata, spec, config } = payload;
+    const { metadata, supportFieldConfiguration, spec, config } = payload;
     try {
         const objects: Parameters<typeof resolveObjectProperties>[0] = [
             {
@@ -67,17 +67,15 @@ export const persistOnCreateFromTemplate = async (
         // The value has already been remapped from placeholders to actual field names
         // by the time this callback is invoked, so we serialise it directly.
         if (
-            metadata.supportFieldConfiguration &&
-            Object.keys(metadata.supportFieldConfiguration).length > 0
+            supportFieldConfiguration &&
+            Object.keys(supportFieldConfiguration).length > 0
         ) {
             objects.push({
                 objectName: 'stateManagement',
                 properties: [
                     {
                         name: 'supportFieldConfiguration',
-                        value: JSON.stringify(
-                            metadata.supportFieldConfiguration
-                        )
+                        value: JSON.stringify(supportFieldConfiguration)
                     }
                 ]
             });

@@ -64,17 +64,20 @@ export const getExportTemplate = (options: {
         [key: string]: string;
     };
     metadata: UsermetaTemplate;
+    supportFieldConfiguration?: SupportFieldConfiguration;
     tokenizedSpec: string;
     trackedFields: TrackedFields;
 }) => {
     const {
         informationTranslationPlaceholders,
         metadata,
+        supportFieldConfiguration,
         tokenizedSpec,
         trackedFields
     } = options;
     const newMetadata = getPublishableUsermeta(metadata, {
         informationTranslationPlaceholders,
+        supportFieldConfiguration,
         trackedFields
     });
     const withUsermeta = applyEdits(
@@ -149,35 +152,25 @@ export const getNewTemplateMetadata = (options: {
         highlight: INTERACTIVITY_DEFAULTS.enableHighlight
     },
     config: '{}',
-    dataset: [],
-    supportFieldConfiguration: {}
+    dataset: []
 });
 
 /**
- * Remap the keys of a SupportFieldConfiguration from template import placeholders (e.g. `__0__`,
- * `__1__`) back to actual encoded field names supplied by the user during import. The dataset array
- * order determines the mapping: `dataset[i].suppliedObjectName` is the actual name for placeholder
- * `__i__`. Any key whose placeholder is not found in the dataset is carried through unchanged.
- * Returns an empty object when the input is absent or empty.
+ * Extract per-field support field configuration from dataset entries and remap to actual
+ * encoded field names supplied by the user during import. Each dataset entry may carry an
+ * inline `supportFieldConfiguration` (the new template format). The `suppliedObjectName`
+ * becomes the key in the returned record. Returns an empty object when no entries carry config.
  */
 export const remapSupportFieldConfigurationForImport = (
-    config: SupportFieldConfiguration | undefined,
     dataset: UsermetaDatasetField[]
 ): SupportFieldConfiguration => {
-    if (!config || Object.keys(config).length === 0) return {};
-    const placeholderToName = new Map<string, string>(
-        dataset.map((field, index) => [
-            getPlaceholderKey(index),
-            field.suppliedObjectName ?? ''
-        ])
-    );
-    return Object.fromEntries(
-        Object.entries(config).map(([placeholder, flags]) => {
-            const actualName =
-                placeholderToName.get(placeholder) ?? placeholder;
-            return [actualName, flags];
-        })
-    );
+    const result: SupportFieldConfiguration = {};
+    for (const field of dataset) {
+        if (field.supportFieldConfiguration && field.suppliedObjectName) {
+            result[field.suppliedObjectName] = field.supportFieldConfiguration;
+        }
+    }
+    return result;
 };
 
 /**
@@ -194,26 +187,6 @@ const buildNameToTrackedFieldMap = (trackedFields: TrackedFields) => {
 };
 
 /**
- * Remap the keys of a SupportFieldConfiguration from encoded field names to their export placeholders
- * (e.g. `Category` → `__0__`), using the tracked fields mapping. Any key not found in trackedFields
- * is carried through unchanged. Returns undefined when the input is absent or empty.
- */
-const remapSupportFieldConfigurationForExport = (
-    config: SupportFieldConfiguration | undefined,
-    trackedFields: TrackedFields
-): SupportFieldConfiguration | undefined => {
-    if (!config || Object.keys(config).length === 0) return undefined;
-    const nameMap = buildNameToTrackedFieldMap(trackedFields);
-    return Object.fromEntries(
-        Object.entries(config).map(([fieldName, flags]) => {
-            const placeholder =
-                nameMap.get(fieldName)?.placeholder ?? fieldName;
-            return [placeholder, flags];
-        })
-    );
-};
-
-/**
  * Ensure that usermeta is in its final, publishable state after all necessary substitutions and processing have been done.
  */
 export const getPublishableUsermeta = (
@@ -222,6 +195,7 @@ export const getPublishableUsermeta = (
         informationTranslationPlaceholders: {
             [key: string]: string;
         };
+        supportFieldConfiguration?: SupportFieldConfiguration;
         trackedFields: TrackedFields;
     }
 ) => {
@@ -251,15 +225,19 @@ export const getPublishableUsermeta = (
                     );
                     item.key = tracked?.placeholder ?? item.key;
                     item.name = getFieldNameForExport(item);
+                    // Embed per-field support field configuration if present
+                    const fieldConfig =
+                        options.supportFieldConfiguration?.[
+                            item.namePlaceholder ?? item.name
+                        ];
+                    if (fieldConfig) {
+                        item.supportFieldConfiguration = fieldConfig;
+                    }
                     return omit(item as unknown as Record<string, unknown>, [
                         'namePlaceholder'
                     ]) as Omit<UsermetaDatasetField, 'namePlaceholder'>;
                 });
-            })(),
-            supportFieldConfiguration: remapSupportFieldConfigurationForExport(
-                usermeta.supportFieldConfiguration,
-                options.trackedFields
-            )
+            })()
         }
     };
 };
@@ -379,17 +357,10 @@ export const getUpdatedExportMetadata = (
         interactivity?: UsermetaInteractivity;
         provider?: SpecProvider;
         providerVersion?: string;
-        supportFieldConfiguration?: SupportFieldConfiguration;
     }
 ) => {
-    const {
-        config,
-        dataset,
-        interactivity,
-        provider,
-        providerVersion,
-        supportFieldConfiguration
-    } = options;
+    const { config, dataset, interactivity, provider, providerVersion } =
+        options;
     return {
         ...metadata,
         deneb: {
@@ -399,9 +370,7 @@ export const getUpdatedExportMetadata = (
         },
         interactivity: interactivity ?? metadata.interactivity,
         dataset: dataset ?? metadata.dataset,
-        config: config ?? metadata.config,
-        supportFieldConfiguration:
-            supportFieldConfiguration ?? metadata.supportFieldConfiguration
+        config: config ?? metadata.config
     };
 };
 

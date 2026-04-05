@@ -1,5 +1,4 @@
 import type { UsermetaDatasetField } from '@deneb-viz/data-core/field';
-import type { SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 import type { SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import type { SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 
@@ -30,12 +29,6 @@ export interface UsermetaTemplate {
      * spec and config separate. Anything stored in here is regarded as JSONC upon import also.
      */
     config?: string;
-    /**
-     * Per-field support field configuration captured at export time. Keys are field name placeholders
-     * (e.g. `__0__`, `__1__`) matching the dataset array order. Optional for backward compatibility
-     * with templates that predate this feature.
-     */
-    supportFieldConfiguration?: SupportFieldConfiguration;
 }
 
 /**
