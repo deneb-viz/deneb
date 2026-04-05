@@ -35,7 +35,7 @@ export const resolveFieldDefaults = ({
             highlightComparator: highlightApplicable,
             format: isMeasure,
             formatted: isMeasure,
-            names: isParameter
+            names: false
         };
     }
 
@@ -46,7 +46,7 @@ export const resolveFieldDefaults = ({
             highlightComparator: false,
             format: false,
             formatted: false,
-            names: true
+            names: false
         };
     }
 

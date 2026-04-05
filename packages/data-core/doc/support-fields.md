@@ -297,7 +297,7 @@ For each field in `params.fields`:
 
 The resulting flags are stored as `emitXxx` booleans on each `FieldProcessingInstruction`, with `baseValueIndex` set to the field's position in the input array.
 
-**Parameter groups:** For each entry in `parameterGroups`, a `ParameterProcessingInstruction` is built. Flags for the parameter are resolved from `configuration[parameterName]` if present, or from `resolveFieldDefaults` with `fieldRole: 'field-parameter'`. The `emitNames` flag defaults to `true` for field parameters.
+**Parameter groups:** For each entry in `parameterGroups`, a `ParameterProcessingInstruction` is built. Flags for the parameter are resolved from `configuration[parameterName]` if present, or from `resolveFieldDefaults` with `fieldRole: 'field-parameter'`. The `emitNames` flag defaults to `false` for field parameters (`__names` is opt-in).
 
 `plan.emitSelected` is set to `masterSettings.crossFilterEnabled`. `plan.hasHighlights` is passed through from `params.hasHighlights`.
 
@@ -502,7 +502,7 @@ The table below shows what each flag defaults to when a field has **no** explici
 | `highlightComparator` | `false` | `false` | `false` |
 | `format` | `false` | `false` | `false` |
 | `formatted` | `false` | `false` | `false` |
-| `names` | _(n/a)_ | _(n/a)_ | `true` |
+| `names` | _(n/a)_ | _(n/a)_ | `false` |
 
 ### Legacy specs (`isLegacy: true`)
 
@@ -513,7 +513,7 @@ The table below shows what each flag defaults to when a field has **no** explici
 | `highlightComparator` | `crossHighlightEnabled` | `false` | `false` |
 | `format` | `true` | `false` | `false` |
 | `formatted` | `true` | `false` | `false` |
-| `names` | _(n/a)_ | _(n/a)_ | `true` |
+| `names` | _(n/a)_ | _(n/a)_ | `false` |
 
 **Notes:**
 
@@ -521,7 +521,7 @@ The table below shows what each flag defaults to when a field has **no** explici
 - `crossHighlightEnabled` refers to `masterSettings.crossHighlightEnabled`.
 - Legacy mode (`isLegacy: true`) matches pre-2.0 behavior exactly, emitting format and formatted fields for all measures by default.
 - New specs opt in to each support field explicitly through `SupportFieldConfiguration` (or get only the minimal `highlight` field when cross-highlight is enabled).
-- Field parameters default to `names: true` only. Highlight flags are not applicable because parameters produce array values, not scalar values.
+- Field parameters default to `names: false`. The `__names` companion field is opt-in and must be explicitly enabled via `SupportFieldConfiguration`. Highlight flags are not applicable because parameters produce array values, not scalar values.
 
 ---
 
