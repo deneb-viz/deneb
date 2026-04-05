@@ -7,7 +7,7 @@ import {
 import { logDebug, logRender, logWarning } from '@deneb-viz/utils/logging';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 import { useSpecificationEditor } from '../../specification-editor';
-import { useDenebState } from '../../../state';
+import { getDenebState, useDenebState } from '../../../state';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 
 /**
@@ -50,6 +50,34 @@ export const CreateButton = () => {
         // platform persistence callback and the project state initialisation.
         const supportFieldConfiguration =
             remapSupportFieldConfigurationForImport(metadata?.dataset ?? []);
+        // Auto-flag treatAsParameter for regular fields assigned to parameter placeholders
+        let needsConsolidation = false;
+        const datasetFields = getDenebState().dataset.fields;
+        for (const entry of metadata?.dataset ?? []) {
+            if (entry.kind === 'parameter' && entry.suppliedObjectName) {
+                const suppliedField = datasetFields[entry.suppliedObjectName];
+                const suppliedRole = suppliedField?.role ?? 'grouping';
+                if (
+                    suppliedRole === 'grouping' ||
+                    suppliedRole === 'aggregation'
+                ) {
+                    // Regular field assigned to parameter slot — auto-flag
+                    supportFieldConfiguration[entry.suppliedObjectName] = {
+                        ...(supportFieldConfiguration[
+                            entry.suppliedObjectName
+                        ] ?? {
+                            highlight: false,
+                            highlightStatus: false,
+                            highlightComparator: false,
+                            format: false,
+                            formatted: false
+                        }),
+                        treatAsParameter: true
+                    };
+                    needsConsolidation = true;
+                }
+            }
+        }
         logDebug('createFromTemplate - processed candidates', {
             spec,
             config,
@@ -76,7 +104,8 @@ export const CreateButton = () => {
             config: config,
             provider,
             supportFieldConfiguration,
-            denebMetaVersion: metadata?.deneb?.metaVersion
+            denebMetaVersion: metadata?.deneb?.metaVersion,
+            consolidateFieldParameters: needsConsolidation || undefined
         });
         // Update editor refs directly for immediate UI update
         editorSpec?.current?.setValue(spec);

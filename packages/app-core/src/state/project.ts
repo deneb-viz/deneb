@@ -60,6 +60,8 @@ export type InitializeFromTemplatePayload = {
      * migration on first dataset processing.
      */
     denebMetaVersion?: number;
+    /** When true, enable field parameter consolidation for this project. */
+    consolidateFieldParameters?: boolean;
 };
 
 export type SetContentPayload = {
@@ -118,6 +120,9 @@ export const createProjectSlice =
                             denebMetaVersion:
                                 payload.denebMetaVersion ??
                                 TEMPLATE_USERMETA_VERSION,
+                            consolidateFieldParameters:
+                                payload.consolidateFieldParameters ??
+                                state.project.consolidateFieldParameters,
                             __hasHydrated__: state.project.__hasHydrated__,
                             __isInitialized__: true
                         };
