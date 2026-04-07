@@ -1,4 +1,5 @@
 export * from './constants';
+export { getEncodedFieldName } from './encoding';
 export {
     getDatasetFieldsInclusive,
     getDatasetTemplateFieldsFromMetadata

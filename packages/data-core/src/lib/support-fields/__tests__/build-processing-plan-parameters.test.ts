@@ -32,6 +32,7 @@ describe('buildProcessingPlan — field parameters', () => {
                     parameterName: 'Dynamic Category',
                     componentFieldIndices: [0, 1],
                     componentNames: ['Country Code', 'Segment'],
+                    componentRoles: ['grouping', 'grouping'],
                     formatStrings: undefined
                 }
             ]
@@ -45,6 +46,7 @@ describe('buildProcessingPlan — field parameters', () => {
             expect(paramInstr.encodedName).toBe('Dynamic Category');
             expect(paramInstr.componentIndices).toEqual([0, 1]);
             expect(paramInstr.namesArray).toEqual(['Country Code', 'Segment']);
+            expect(paramInstr.componentRoles).toEqual(['grouping', 'grouping']);
         }
 
         const fieldInstr = plan.fields[1];
@@ -81,6 +83,7 @@ describe('buildProcessingPlan — field parameters', () => {
                     parameterName: 'Dynamic Category',
                     componentFieldIndices: [0],
                     componentNames: ['Country Code'],
+                    componentRoles: ['grouping'],
                     formatStrings: ['']
                 }
             ]
@@ -112,6 +115,7 @@ describe('buildProcessingPlan — field parameters', () => {
                     parameterName: 'Dynamic Category',
                     componentFieldIndices: [0],
                     componentNames: ['Country Code'],
+                    componentRoles: ['grouping'],
                     formatStrings: undefined
                 }
             ]
@@ -153,6 +157,7 @@ describe('buildProcessingPlan — field parameters', () => {
                     parameterName: 'Dynamic Category',
                     componentFieldIndices: [0, 1],
                     componentNames: ['Country Code', '$ Sales'],
+                    componentRoles: ['grouping', 'aggregation'],
                     formatStrings: ['', '$#,0']
                 }
             ]
@@ -195,12 +200,14 @@ describe('buildProcessingPlan — field parameters', () => {
                     parameterName: 'Dynamic Cat',
                     componentFieldIndices: [0, 1],
                     componentNames: ['Country', 'Segment'],
+                    componentRoles: ['grouping', 'grouping'],
                     formatStrings: undefined
                 },
                 {
                     parameterName: 'Dynamic Meas',
                     componentFieldIndices: [2, 3],
                     componentNames: ['$ Sales', '# Units'],
+                    componentRoles: ['aggregation', 'aggregation'],
                     formatStrings: undefined
                 }
             ]
@@ -215,6 +222,82 @@ describe('buildProcessingPlan — field parameters', () => {
         }
         if (plan.fields[1].kind === 'parameter') {
             expect(plan.fields[1].encodedName).toBe('Dynamic Meas');
+        }
+    });
+
+    it('should set highlight emit flags from resolved flags', () => {
+        const highlightMasterSettings = {
+            crossHighlightEnabled: true,
+            crossFilterEnabled: false
+        };
+        const plan = buildProcessingPlan({
+            fields: [
+                {
+                    encodedName: 'Country Code',
+                    sourceIndex: 0,
+                    role: 'grouping'
+                },
+                {
+                    encodedName: '$ Sales',
+                    sourceIndex: 0,
+                    role: 'aggregation'
+                }
+            ],
+            configuration: {},
+            masterSettings: highlightMasterSettings,
+            hasHighlights: true,
+            isLegacy: false,
+            parameterGroups: [
+                {
+                    parameterName: 'Mixed Param',
+                    componentFieldIndices: [0, 1],
+                    componentNames: ['Country Code', '$ Sales'],
+                    componentRoles: ['grouping', 'aggregation'],
+                    formatStrings: undefined
+                }
+            ]
+        });
+
+        const instr = plan.fields[0];
+        expect(instr.kind).toBe('parameter');
+        if (instr.kind === 'parameter') {
+            expect(instr.emitHighlight).toBe(true);
+            expect(instr.emitHighlightStatus).toBe(false);
+            expect(instr.emitHighlightComparator).toBe(false);
+            expect(instr.componentRoles).toEqual(['grouping', 'aggregation']);
+        }
+    });
+
+    it('should disable highlight emit flags when crossHighlight is off', () => {
+        const plan = buildProcessingPlan({
+            fields: [
+                {
+                    encodedName: '$ Sales',
+                    sourceIndex: 0,
+                    role: 'aggregation'
+                }
+            ],
+            configuration: {},
+            masterSettings,
+            hasHighlights: false,
+            isLegacy: false,
+            parameterGroups: [
+                {
+                    parameterName: 'Dynamic Meas',
+                    componentFieldIndices: [0],
+                    componentNames: ['$ Sales'],
+                    componentRoles: ['aggregation'],
+                    formatStrings: undefined
+                }
+            ]
+        });
+
+        const instr = plan.fields[0];
+        expect(instr.kind).toBe('parameter');
+        if (instr.kind === 'parameter') {
+            expect(instr.emitHighlight).toBe(false);
+            expect(instr.emitHighlightStatus).toBe(false);
+            expect(instr.emitHighlightComparator).toBe(false);
         }
     });
 });

@@ -127,9 +127,13 @@ type ParameterProcessingInstruction = {
     kind: 'parameter';
     encodedName: string;
     componentIndices: number[];
+    componentRoles: ('grouping' | 'aggregation')[];
     namesArray: string[];
     formatStringsArray?: string[];
     emitNames: boolean;
+    emitHighlight: boolean;
+    emitHighlightStatus: boolean;
+    emitHighlightComparator: boolean;
     emitFormat: boolean;
     emitFormatted: boolean;
 };
@@ -138,9 +142,13 @@ type ParameterProcessingInstruction = {
 | Property | Description |
 |---|---|
 | `componentIndices` | Indices into the `baseValues` array for each component field, in DataView order |
+| `componentRoles` | Role of each component field (`'grouping'` or `'aggregation'`), parallel to `componentIndices`. Used during row execution to determine highlight behavior per component. |
 | `namesArray` | Pre-built array of component field display names (row-invariant, reused for every row) |
 | `formatStringsArray` | Pre-built format strings array (undefined when `emitFormat` is `false`) |
 | `emitNames` | Whether to write `<encodedName>__names` (the companion field with component names) |
+| `emitHighlight` | Whether to emit `<encodedName>__highlight` (array of per-component highlight values) |
+| `emitHighlightStatus` | Whether to emit `<encodedName>__highlightStatus` (array of per-component highlight status strings) |
+| `emitHighlightComparator` | Whether to emit `<encodedName>__highlightComparator` (array of per-component highlight comparator strings) |
 | `emitFormat` | Whether to write `<encodedName>__format` (array of format strings) |
 | `emitFormatted` | Whether to write `<encodedName>__formatted` (array of formatted values) |
 
@@ -200,6 +208,7 @@ Pre-grouped field parameter information, built by the platform-specific detectio
 type PlanParameterGroup = {
     parameterName: string;
     componentFieldIndices: number[];
+    componentRoles: ('grouping' | 'aggregation')[];
     componentNames: string[];
     formatStrings?: string[];
 };
@@ -209,6 +218,7 @@ type PlanParameterGroup = {
 |---|---|
 | `parameterName` | Encoded name of the field parameter (becomes the column name) |
 | `componentFieldIndices` | Indices into the `fields` array for each component field |
+| `componentRoles` | Role of each component field, parallel to `componentFieldIndices`. Grouping components pass through their base value as the highlight value; aggregation components call `provider.getHighlightValue`. |
 | `componentNames` | Display names of the component fields, in DataView order |
 | `formatStrings` | Pre-resolved format strings (undefined if format emission is not applicable) |
 
@@ -297,7 +307,7 @@ For each field in `params.fields`:
 
 The resulting flags are stored as `emitXxx` booleans on each `FieldProcessingInstruction`, with `baseValueIndex` set to the field's position in the input array.
 
-**Parameter groups:** For each entry in `parameterGroups`, a `ParameterProcessingInstruction` is built. Flags for the parameter are resolved from `configuration[parameterName]` if present, or from `resolveFieldDefaults` with `fieldRole: 'field-parameter'`. The `emitNames` flag defaults to `true` for field parameters.
+**Parameter groups:** For each entry in `parameterGroups`, a `ParameterProcessingInstruction` is built. Flags for the parameter are resolved from `configuration[parameterName]` if present, or from `resolveFieldDefaults` with `fieldRole: 'field-parameter'`. The `emitNames` flag defaults to `false` for field parameters (`__names` is opt-in).
 
 `plan.emitSelected` is set to `masterSettings.crossFilterEnabled`. `plan.hasHighlights` is passed through from `params.hasHighlights`.
 
@@ -331,6 +341,10 @@ Executes the processing plan for a single row. Returns a plain object (`VegaDatu
    - Assembles an array value by reading `baseValues[idx]` for each index in `componentIndices`.
    - Writes `encodedName: [value0, value1, ...]` (array of component values).
    - Writes `<encodedName>__names: namesArray` if `emitNames` (the pre-built component names array).
+   - If any of `emitHighlight`, `emitHighlightStatus`, or `emitHighlightComparator` is `true`, computes a highlight value per component: for components with `componentRoles[i] === 'grouping'`, the base value is passed through; for `'aggregation'` components, `provider.getHighlightValue` is called. The per-component results are used to derive status and comparator arrays.
+   - Writes `<encodedName>__highlight: [hlValue0, hlValue1, ...]` if `emitHighlight`.
+   - Writes `<encodedName>__highlightStatus: [status0, status1, ...]` if `emitHighlightStatus` (values: `'neutral'` | `'on'` | `'off'`).
+   - Writes `<encodedName>__highlightComparator: [cmp0, cmp1, ...]` if `emitHighlightComparator` (values: `'eq'` | `'lt'` | `'gt'` | `'neq'`).
    - If `emitFormat`, writes `<encodedName>__format: formatStringsArray`.
    - If `emitFormatted`, writes `<encodedName>__formatted: [formatted0, formatted1, ...]` by applying `provider.getFormattedValue` to each component.
 
@@ -415,6 +429,10 @@ const myProvider: SupportFieldValueProvider = {
 };
 ```
 
+### Monaco editor autocomplete
+
+The Monaco editor in the Deneb UI surfaces active support field companion names as autocomplete hints when editing a Vega or Vega-Lite spec. For each field in the current dataset that has one or more support flags enabled, the editor suggests the corresponding `__highlight`, `__highlightStatus`, `__highlightComparator`, `__format`, `__formatted`, and `__names` suffixed names alongside the base field name. Suggestions are derived from the live `ProcessingPlan` so they always reflect the current `SupportFieldConfiguration` and master settings — if a user disables a flag, the companion hint is removed from autocomplete immediately.
+
 ---
 
 ## 4. Usage Example
@@ -497,23 +515,23 @@ The table below shows what each flag defaults to when a field has **no** explici
 
 | Flag | Measure (`aggregation`) | Column (`grouping`) | Parameter (`field-parameter`) |
 |---|---|---|---|
-| `highlight` | `crossHighlightEnabled` | `false` | `false` |
+| `highlight` | `crossHighlightEnabled` | `false` | `crossHighlightEnabled` |
 | `highlightStatus` | `false` | `false` | `false` |
 | `highlightComparator` | `false` | `false` | `false` |
 | `format` | `false` | `false` | `false` |
 | `formatted` | `false` | `false` | `false` |
-| `names` | _(n/a)_ | _(n/a)_ | `true` |
+| `names` | _(n/a)_ | _(n/a)_ | `false` |
 
 ### Legacy specs (`isLegacy: true`)
 
 | Flag | Measure (`aggregation`) | Column (`grouping`) | Parameter (`field-parameter`) |
 |---|---|---|---|
-| `highlight` | `crossHighlightEnabled` | `false` | `false` |
+| `highlight` | `crossHighlightEnabled` | `false` | `crossHighlightEnabled` |
 | `highlightStatus` | `crossHighlightEnabled` | `false` | `false` |
 | `highlightComparator` | `crossHighlightEnabled` | `false` | `false` |
 | `format` | `true` | `false` | `false` |
 | `formatted` | `true` | `false` | `false` |
-| `names` | _(n/a)_ | _(n/a)_ | `true` |
+| `names` | _(n/a)_ | _(n/a)_ | `false` |
 
 **Notes:**
 
@@ -521,7 +539,7 @@ The table below shows what each flag defaults to when a field has **no** explici
 - `crossHighlightEnabled` refers to `masterSettings.crossHighlightEnabled`.
 - Legacy mode (`isLegacy: true`) matches pre-2.0 behavior exactly, emitting format and formatted fields for all measures by default.
 - New specs opt in to each support field explicitly through `SupportFieldConfiguration` (or get only the minimal `highlight` field when cross-highlight is enabled).
-- Field parameters default to `names: true` only. Highlight flags are not applicable because parameters produce array values, not scalar values.
+- Field parameters default to `names: false`. The `__names` companion field is opt-in and must be explicitly enabled via `SupportFieldConfiguration`. When `crossHighlightEnabled` is `true`, parameters also receive highlight support by default, using per-component role logic to determine whether to pass through the base value or call the provider.
 
 ---
 
@@ -581,24 +599,35 @@ The `denebMetaVersion` is stamped automatically:
 
 ### Template author guidance
 
-**Clean-slate templates** (e.g., empty, simple bar): Omit `supportFieldConfiguration` entirely. All fields get dynamic defaults — measures automatically gain highlight support when the user enables cross-highlighting. This is the recommended approach for templates that don't require specific support field behavior.
+**Clean-slate templates** (e.g., empty, simple bar): Omit `supportFieldConfiguration` on each dataset entry entirely. All fields get dynamic defaults — measures and parameters automatically gain highlight support when the user enables cross-highlighting. This is the recommended approach for templates that don't require specific support field behavior.
 
-**Interactive templates** (e.g., bar chart with cross-highlighting): Include `supportFieldConfiguration` with explicit flags for the fields that need specific support. Use placeholder keys matching the dataset field order:
+**Interactive templates** (e.g., bar chart with cross-highlighting): Include `supportFieldConfiguration` inline on each dataset entry with explicit flags for the fields that need specific support. The configuration is stored per dataset entry rather than as a separate top-level property. Use placeholder keys matching the dataset field order:
 
 ```json
 {
-    "supportFieldConfiguration": {
-        "__1__": {
-            "highlight": true,
-            "highlightStatus": false,
-            "highlightComparator": false,
-            "format": false,
-            "formatted": false
+    "dataset": [
+        {
+            "key": "__0__",
+            "name": "Metric",
+            "namePlaceholder": "Metric",
+            "description": "",
+            "kind": "measure",
+            "supportFieldConfiguration": {
+                "__0__": {
+                    "highlight": true,
+                    "highlightStatus": false,
+                    "highlightComparator": false,
+                    "format": false,
+                    "formatted": false
+                }
+            }
         }
-    }
+    ]
 }
 ```
 
 These placeholder keys are remapped to actual field names during import.
+
+**Regular field assigned to a parameter placeholder:** When a user imports a template that declares a `kind: 'parameter'` dataset entry but maps a regular (non-parameter) field to it, the engine automatically sets `treatAsParameter: true` in `supportFieldConfiguration` for that field. This wraps the scalar field into a single-element array so the spec continues to work without modification.
 
 **Key principle:** `supportFieldConfiguration` entries are explicit overrides. Once a field has an entry, its flags are used verbatim — `resolveFieldDefaults` is not consulted. Omitting a field from the config lets it fall through to dynamic defaults based on current master settings.

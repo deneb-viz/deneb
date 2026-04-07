@@ -6,6 +6,7 @@ import {
     FORMAT_FIELD_SUFFIX,
     FORMATTED_FIELD_SUFFIX,
     HIGHLIGHT_FIELD_SUFFIX,
+    getEncodedFieldName,
     type DatasetFieldDataType
 } from '@deneb-viz/data-core/field';
 import type { AugmentedMetadataField, DatasetFieldValueSource } from './types';
@@ -76,16 +77,9 @@ export const getDatumFieldsFromMetadata = (
     }, {});
 };
 
-/**
- * If a Power BI column or measure contains characters that create problems in JSON or Vega/Vega-Lite expressions and
- * encodings, we will replace them with an underscore, which is much easier to educate people on than having to learn
- * all the specifics of escaping in the right context, in the right way.
- *
- *  - Vega: https://vega.github.io/vega/docs/types/#Field
- *  - Vega-Lite: https://vega.github.io/vega-lite/docs/field.html
- */
-export const getEncodedFieldName = (displayName: string) =>
-    displayName?.replace(/([\\".[\]])/g, '_') || '';
+// Re-exported from `@deneb-viz/data-core/field` so the encoding rule lives in
+// a single place. See `packages/data-core/src/lib/field/encoding.ts`.
+export { getEncodedFieldName };
 
 /**
  * Get artificial array of values first (if needed) as we'll need them when working out highlights later on.

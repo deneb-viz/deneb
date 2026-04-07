@@ -7,8 +7,6 @@ import {
     SELECTED_ROW_FIELD_NAME,
     type UsermetaDatasetField
 } from '@deneb-viz/data-core/field';
-import type { SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
-
 const dataset: UsermetaDatasetField[] = [
     {
         key: '__0__',
@@ -24,19 +22,16 @@ const dataset: UsermetaDatasetField[] = [
         description:
             "Select a measure that will be displayed on the chart's X-Axis",
         type: 'numeric',
-        kind: 'measure'
+        kind: 'measure',
+        supportFieldConfiguration: {
+            highlight: true,
+            highlightStatus: false,
+            highlightComparator: false,
+            format: false,
+            formatted: false
+        }
     }
 ];
-
-const supportFieldConfiguration: SupportFieldConfiguration = {
-    __1__: {
-        highlight: true,
-        highlightStatus: false,
-        highlightComparator: false,
-        format: false,
-        formatted: false
-    }
-};
 
 export const vlBarInteractive = (): TopLevelSpec => ({
     $schema: VEGA_LITE_SCHEMA_URL,
@@ -101,8 +96,7 @@ export const vlBarInteractive = (): TopLevelSpec => ({
                 highlight: true,
                 selection: true,
                 dataPointLimit: INTERACTIVITY_DEFAULTS.selectionMaxDataPoints
-            },
-            supportFieldConfiguration
+            }
         }
     }
 });

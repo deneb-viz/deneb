@@ -60,6 +60,8 @@ export type InitializeFromTemplatePayload = {
      * migration on first dataset processing.
      */
     denebMetaVersion?: number;
+    /** When true, enable field parameter consolidation for this project. */
+    consolidateFieldParameters?: boolean;
 };
 
 export type SetContentPayload = {
@@ -118,19 +120,36 @@ export const createProjectSlice =
                             denebMetaVersion:
                                 payload.denebMetaVersion ??
                                 TEMPLATE_USERMETA_VERSION,
+                            consolidateFieldParameters:
+                                payload.consolidateFieldParameters ??
+                                state.project.consolidateFieldParameters,
                             __hasHydrated__: state.project.__hasHydrated__,
                             __isInitialized__: true
                         };
+                        // Embed support field config into dataset entries for export metadata
+                        const datasetWithConfig = (
+                            state.export.metadata?.dataset ?? []
+                        ).map((d) => {
+                            const fieldConfig =
+                                updatedProject.supportFieldConfiguration?.[
+                                    d.namePlaceholder ?? d.name
+                                ];
+                            return fieldConfig
+                                ? {
+                                      ...d,
+                                      supportFieldConfiguration: fieldConfig
+                                  }
+                                : d;
+                        });
                         // Update export metadata for template creation
                         const exportMetadata = getUpdatedExportMetadata(
                             state.export.metadata as UsermetaTemplate,
                             {
                                 config: payload.config,
+                                dataset: datasetWithConfig,
                                 provider,
                                 providerVersion,
-                                interactivity: updatedProject.interactivity,
-                                supportFieldConfiguration:
-                                    updatedProject.supportFieldConfiguration
+                                interactivity: updatedProject.interactivity
                             }
                         );
                         return {
@@ -176,9 +195,7 @@ export const createProjectSlice =
                                 provider:
                                     updatedProject.provider as SpecProvider,
                                 providerVersion: updatedProject.providerVersion,
-                                interactivity: updatedProject.interactivity,
-                                supportFieldConfiguration:
-                                    updatedProject.supportFieldConfiguration
+                                interactivity: updatedProject.interactivity
                             }
                         );
                         return {
@@ -251,9 +268,24 @@ export const createProjectSlice =
             setSupportFieldConfiguration: (config: SupportFieldConfiguration) =>
                 set(
                     (state) => {
+                        const currentDataset =
+                            state.export.metadata?.dataset ?? [];
+                        const updatedDataset = currentDataset.map((d) => {
+                            const fieldConfig =
+                                config[d.namePlaceholder ?? d.name];
+                            if (fieldConfig) {
+                                return {
+                                    ...d,
+                                    supportFieldConfiguration: fieldConfig
+                                };
+                            }
+                            // Remove stale config from field if it was previously set
+                            const { supportFieldConfiguration: _, ...rest } = d;
+                            return rest as typeof d;
+                        });
                         const exportMetadata = getUpdatedExportMetadata(
                             state.export.metadata as UsermetaTemplate,
-                            { supportFieldConfiguration: config }
+                            { dataset: updatedDataset }
                         );
                         return {
                             project: {
@@ -342,15 +374,27 @@ const handleSyncProjectData = (
         __isInitialized__
     };
 
+    // Embed support field config into dataset entries for export metadata
+    const currentDataset = state.export.metadata?.dataset ?? [];
+    const datasetWithConfig = currentDataset.map((d) => {
+        const fieldConfig =
+            updatedProject.supportFieldConfiguration?.[
+                d.namePlaceholder ?? d.name
+            ];
+        return fieldConfig
+            ? { ...d, supportFieldConfiguration: fieldConfig }
+            : d;
+    });
+
     // Update export metadata for template export functionality
     const exportMetadata = getUpdatedExportMetadata(
         state.export.metadata as UsermetaTemplate,
         {
             config: payload.config ?? state.export.metadata?.config,
+            dataset: datasetWithConfig,
             provider: updatedProject.provider as SpecProvider,
             providerVersion: updatedProject.providerVersion,
-            interactivity: updatedProject.interactivity,
-            supportFieldConfiguration: updatedProject.supportFieldConfiguration
+            interactivity: updatedProject.interactivity
         }
     );
 

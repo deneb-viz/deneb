@@ -85,6 +85,8 @@ export type ParameterProcessingInstruction = {
      * Order matches the DataView order.
      */
     componentIndices: number[];
+    /** Role of each component field — determines highlight behavior per-element. */
+    componentRoles: ('grouping' | 'aggregation')[];
     /**
      * Pre-built array of component field display names (row-invariant).
      * The same reference is reused for every row.
@@ -98,6 +100,12 @@ export type ParameterProcessingInstruction = {
     formatStringsArray?: string[];
     /** Whether to emit the __names companion field. */
     emitNames: boolean;
+    /** Whether to emit the __highlight companion field. */
+    emitHighlight: boolean;
+    /** Whether to emit the __highlightStatus companion field. */
+    emitHighlightStatus: boolean;
+    /** Whether to emit the __highlightComparator companion field. */
+    emitHighlightComparator: boolean;
     /** Whether to emit the __format companion field. */
     emitFormat: boolean;
     /** Whether to emit the __formatted companion field. */

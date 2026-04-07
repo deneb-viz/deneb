@@ -49,6 +49,11 @@ describe('detectFieldParameterGroups', () => {
             'Product'
         ]);
         expect(group.componentFieldIndices).toEqual([0, 1, 2]);
+        expect(group.componentRoles).toEqual([
+            'grouping',
+            'grouping',
+            'grouping'
+        ]);
         expect(result.regularFieldIndices).toEqual([3]);
     });
 
@@ -97,6 +102,7 @@ describe('detectFieldParameterGroups', () => {
         const result = detectFieldParameterGroups(fields);
         const group = result.parameterGroups['Mixed Param'];
         expect(group.hasMixedRoles).toBe(true);
+        expect(group.componentRoles).toEqual(['grouping', 'aggregation']);
     });
 
     it('should not flag single-type parameter as mixed', () => {

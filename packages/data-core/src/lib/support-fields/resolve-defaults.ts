@@ -35,18 +35,18 @@ export const resolveFieldDefaults = ({
             highlightComparator: highlightApplicable,
             format: isMeasure,
             formatted: isMeasure,
-            names: isParameter
+            names: false
         };
     }
 
     if (isParameter) {
         return {
-            highlight: false,
+            highlight: masterSettings.crossHighlightEnabled,
             highlightStatus: false,
             highlightComparator: false,
             format: false,
             formatted: false,
-            names: true
+            names: false
         };
     }
 

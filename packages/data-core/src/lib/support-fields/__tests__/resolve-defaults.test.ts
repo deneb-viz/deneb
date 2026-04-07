@@ -72,6 +72,40 @@ describe('resolveFieldDefaults', () => {
         });
     });
 
+    describe('field-parameter defaults', () => {
+        it('should return highlight true for field-parameter when crossHighlight enabled', () => {
+            const result = resolveFieldDefaults({
+                masterSettings: HIGHLIGHT_ON,
+                fieldRole: 'field-parameter',
+                isLegacy: false
+            });
+            expect(result.highlight).toBe(true);
+            expect(result.highlightStatus).toBe(false);
+            expect(result.highlightComparator).toBe(false);
+        });
+
+        it('should return highlight false for field-parameter when crossHighlight disabled', () => {
+            const result = resolveFieldDefaults({
+                masterSettings: ALL_OFF,
+                fieldRole: 'field-parameter',
+                isLegacy: false
+            });
+            expect(result.highlight).toBe(false);
+            expect(result.highlightStatus).toBe(false);
+            expect(result.highlightComparator).toBe(false);
+        });
+
+        it('should disable format and formatted for field-parameter', () => {
+            const result = resolveFieldDefaults({
+                masterSettings: HIGHLIGHT_ON,
+                fieldRole: 'field-parameter',
+                isLegacy: false
+            });
+            expect(result.format).toBe(false);
+            expect(result.formatted).toBe(false);
+        });
+    });
+
     describe('legacy spec defaults', () => {
         it('should enable all highlight flags for measures when cross-highlight is on', () => {
             const result = resolveFieldDefaults({

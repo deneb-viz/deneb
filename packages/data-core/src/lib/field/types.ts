@@ -1,3 +1,5 @@
+import type { SupportFieldFlags } from '../support-fields/types';
+
 /**
  * The role of a field in the dataset - either for grouping (categorical) or aggregation (numeric measures).
  */
@@ -137,6 +139,12 @@ export type UsermetaDatasetField = {
      * @ignore
      */
     namePlaceholder?: string;
+    /**
+     * Per-field support field configuration captured at export time.
+     * Optional — only present for fields with explicit (non-default) configuration.
+     * @ignore
+     */
+    supportFieldConfiguration?: SupportFieldFlags;
 };
 
 /**

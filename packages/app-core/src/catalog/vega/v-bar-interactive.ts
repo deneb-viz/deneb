@@ -7,13 +7,11 @@ import {
 } from '.';
 import { getNewIncludedTemplateMetadata } from '..';
 import { INTERACTIVITY_DEFAULTS } from '@deneb-viz/powerbi-compat/interactivity';
-import {} from '@deneb-viz/template-usermeta';
 import {
     SELECTED_ROW_FIELD_NAME,
     type UsermetaDatasetField
 } from '@deneb-viz/data-core/field';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
-import type { SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 
 const dataset: UsermetaDatasetField[] = [
     {
@@ -30,19 +28,16 @@ const dataset: UsermetaDatasetField[] = [
         description:
             "Select a measure that will be displayed on the chart's X-Axis",
         type: 'numeric',
-        kind: 'measure'
+        kind: 'measure',
+        supportFieldConfiguration: {
+            highlight: true,
+            highlightStatus: false,
+            highlightComparator: false,
+            format: false,
+            formatted: false
+        }
     }
 ];
-
-const supportFieldConfiguration: SupportFieldConfiguration = {
-    __1__: {
-        highlight: true,
-        highlightStatus: false,
-        highlightComparator: false,
-        format: false,
-        formatted: false
-    }
-};
 
 // eslint-disable-next-line max-lines-per-function
 export const vBarInteractive = (): Spec => ({
@@ -166,7 +161,6 @@ export const vBarInteractive = (): Spec => ({
                 selection: true,
                 dataPointLimit: INTERACTIVITY_DEFAULTS.selectionMaxDataPoints
             },
-            supportFieldConfiguration,
             config: getDenebTemplateVegaSpecificConfig()
         }
     }

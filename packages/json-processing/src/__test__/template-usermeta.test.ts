@@ -124,8 +124,7 @@ const EXPECTED_METADATA_BASE = {
         highlight: INTERACTIVITY_DEFAULTS.enableHighlight
     },
     dataset: [],
-    config: '{}',
-    supportFieldConfiguration: {}
+    config: '{}'
 };
 
 const TRACKED_FIELDS: TrackedFields = {
@@ -344,7 +343,7 @@ describe('getPublishableUsermeta ', () => {
     };
 
     it('should return the updated usermeta with placeholders and omitted namePlaceholder', () => {
-        const expectedUsermeta: UsermetaTemplate = {
+        const expectedUsermeta = {
             ...EXPECTED_METADATA_BASE,
             information: {
                 ...EXPECTED_METADATA_BASE.information,
@@ -367,9 +366,7 @@ describe('getPublishableUsermeta ', () => {
                     kind: 'measure',
                     type: 'numeric'
                 }
-            ],
-            // Empty config is stripped to undefined by remapSupportFieldConfigurationForExport
-            supportFieldConfiguration: undefined
+            ]
         };
 
         const result = getPublishableUsermeta(MOCK_USERMETA, MOCK_OPTIONS);
@@ -1282,7 +1279,7 @@ describe('getPublishableUsermeta — dataset key remapping by name', () => {
     });
 });
 
-describe('getPublishableUsermeta — supportFieldConfiguration export remapping', () => {
+describe('getPublishableUsermeta — supportFieldConfiguration inline in dataset', () => {
     const MOCK_OPTIONS_BASE = {
         informationTranslationPlaceholders: {
             name: 'name-placeholder',
@@ -1291,65 +1288,107 @@ describe('getPublishableUsermeta — supportFieldConfiguration export remapping'
         }
     };
 
-    it('should remap config keys from display names to tracker placeholders', () => {
-        const usermeta: UsermetaTemplate = {
-            ...EXPECTED_METADATA_BASE,
-            dataset: [],
-            supportFieldConfiguration: {
-                '$ Sales': {
-                    highlight: true,
-                    highlightStatus: false,
-                    highlightComparator: false,
-                    format: false,
-                    formatted: false
-                },
-                '$ Profit': {
-                    highlight: true,
-                    highlightStatus: true,
-                    highlightComparator: false,
-                    format: false,
-                    formatted: false
-                }
-            }
-        };
-
-        const result = getPublishableUsermeta(usermeta, {
-            ...MOCK_OPTIONS_BASE,
-            trackedFields: TRACKED_FIELDS_BY_QUERYNAME
-        });
-
-        // Keys should be remapped: display name → placeholder
-        expect(result.supportFieldConfiguration).toEqual({
-            __0__: {
+    it('should embed config per-field in dataset entries keyed by display name', () => {
+        const supportFieldConfiguration = {
+            '$ Sales': {
                 highlight: true,
                 highlightStatus: false,
                 highlightComparator: false,
                 format: false,
                 formatted: false
             },
-            __1__: {
+            '$ Profit': {
                 highlight: true,
                 highlightStatus: true,
                 highlightComparator: false,
                 format: false,
                 formatted: false
             }
+        };
+        const usermeta: UsermetaTemplate = {
+            ...EXPECTED_METADATA_BASE,
+            dataset: [
+                {
+                    key: '__0__',
+                    name: '$ Sales',
+                    namePlaceholder: '$ Sales',
+                    description: '',
+                    kind: 'measure',
+                    type: 'numeric'
+                },
+                {
+                    key: '__1__',
+                    name: '$ Profit',
+                    namePlaceholder: '$ Profit',
+                    description: '',
+                    kind: 'measure',
+                    type: 'numeric'
+                }
+            ]
+        };
+
+        const result = getPublishableUsermeta(usermeta, {
+            ...MOCK_OPTIONS_BASE,
+            supportFieldConfiguration,
+            trackedFields: TRACKED_FIELDS_BY_QUERYNAME
+        });
+
+        // Config should be embedded inline in each dataset entry
+        expect(result.dataset[0].supportFieldConfiguration).toEqual({
+            highlight: true,
+            highlightStatus: false,
+            highlightComparator: false,
+            format: false,
+            formatted: false
+        });
+        expect(result.dataset[1].supportFieldConfiguration).toEqual({
+            highlight: true,
+            highlightStatus: true,
+            highlightComparator: false,
+            format: false,
+            formatted: false
         });
     });
 
-    it('should pass through config keys that have no matching tracked field', () => {
+    it('should not embed config for fields with no matching config entry', () => {
         const usermeta: UsermetaTemplate = {
             ...EXPECTED_METADATA_BASE,
-            dataset: [],
-            supportFieldConfiguration: {
-                'Unknown Field': {
-                    highlight: true,
-                    highlightStatus: false,
-                    highlightComparator: false,
-                    format: false,
-                    formatted: false
+            dataset: [
+                {
+                    key: '__0__',
+                    name: '$ Sales',
+                    namePlaceholder: '$ Sales',
+                    description: '',
+                    kind: 'measure',
+                    type: 'numeric'
                 }
-            }
+            ]
+        };
+
+        const result = getPublishableUsermeta(usermeta, {
+            ...MOCK_OPTIONS_BASE,
+            supportFieldConfiguration: {},
+            trackedFields: TRACKED_FIELDS_BY_QUERYNAME
+        });
+
+        expect(result.dataset[0]).not.toHaveProperty(
+            'supportFieldConfiguration'
+        );
+    });
+
+    it('should not embed config when supportFieldConfiguration option is undefined', () => {
+        const usermeta: UsermetaTemplate = {
+            ...EXPECTED_METADATA_BASE,
+            dataset: [
+                {
+                    key: '__0__',
+                    name: '$ Sales',
+                    namePlaceholder: '$ Sales',
+                    description: '',
+                    kind: 'measure',
+                    type: 'numeric'
+                }
+            ]
         };
 
         const result = getPublishableUsermeta(usermeta, {
@@ -1357,58 +1396,14 @@ describe('getPublishableUsermeta — supportFieldConfiguration export remapping'
             trackedFields: TRACKED_FIELDS_BY_QUERYNAME
         });
 
-        // No match → key passes through unchanged
-        expect(result.supportFieldConfiguration).toEqual({
-            'Unknown Field': {
-                highlight: true,
-                highlightStatus: false,
-                highlightComparator: false,
-                format: false,
-                formatted: false
-            }
-        });
+        expect(result.dataset[0]).not.toHaveProperty(
+            'supportFieldConfiguration'
+        );
     });
 
-    it('should return undefined when config is empty', () => {
-        const usermeta: UsermetaTemplate = {
-            ...EXPECTED_METADATA_BASE,
-            dataset: [],
-            supportFieldConfiguration: {}
-        };
-
-        const result = getPublishableUsermeta(usermeta, {
-            ...MOCK_OPTIONS_BASE,
-            trackedFields: TRACKED_FIELDS_BY_QUERYNAME
-        });
-
-        expect(result.supportFieldConfiguration).toBeUndefined();
-    });
-
-    it('should remap config keys correctly when tracker order differs', () => {
-        const usermeta: UsermetaTemplate = {
-            ...EXPECTED_METADATA_BASE,
-            dataset: [],
-            supportFieldConfiguration: {
-                'Category Parameter': {
-                    highlight: false,
-                    highlightStatus: false,
-                    highlightComparator: false,
-                    format: false,
-                    formatted: false,
-                    treatAsParameter: true,
-                    names: true
-                }
-            }
-        };
-
-        const result = getPublishableUsermeta(usermeta, {
-            ...MOCK_OPTIONS_BASE,
-            trackedFields: TRACKED_FIELDS_REORDERED
-        });
-
-        // In reordered tracker, Category Parameter → __1__
-        expect(result.supportFieldConfiguration).toEqual({
-            __1__: {
+    it('should embed config using namePlaceholder for lookup when tracker order differs', () => {
+        const supportFieldConfiguration = {
+            'Category Parameter': {
                 highlight: false,
                 highlightStatus: false,
                 highlightComparator: false,
@@ -1417,46 +1412,96 @@ describe('getPublishableUsermeta — supportFieldConfiguration export remapping'
                 treatAsParameter: true,
                 names: true
             }
+        };
+        const usermeta: UsermetaTemplate = {
+            ...EXPECTED_METADATA_BASE,
+            dataset: [
+                {
+                    key: '__0__',
+                    name: '$ Sales',
+                    namePlaceholder: '$ Sales',
+                    description: '',
+                    kind: 'measure',
+                    type: 'numeric'
+                },
+                {
+                    key: '__1__',
+                    name: '$ Profit',
+                    namePlaceholder: '$ Profit',
+                    description: '',
+                    kind: 'measure',
+                    type: 'numeric'
+                },
+                {
+                    key: '__2__',
+                    name: 'Category Parameter',
+                    namePlaceholder: 'Category Parameter',
+                    description: '',
+                    kind: 'parameter',
+                    type: 'other'
+                }
+            ]
+        };
+
+        const result = getPublishableUsermeta(usermeta, {
+            ...MOCK_OPTIONS_BASE,
+            supportFieldConfiguration,
+            trackedFields: TRACKED_FIELDS_REORDERED
+        });
+
+        // Only Category Parameter should have config embedded
+        expect(result.dataset[0]).not.toHaveProperty(
+            'supportFieldConfiguration'
+        );
+        expect(result.dataset[1]).not.toHaveProperty(
+            'supportFieldConfiguration'
+        );
+        expect(result.dataset[2].supportFieldConfiguration).toEqual({
+            highlight: false,
+            highlightStatus: false,
+            highlightComparator: false,
+            format: false,
+            formatted: false,
+            treatAsParameter: true,
+            names: true
         });
     });
 });
 
 describe('remapSupportFieldConfigurationForImport', () => {
-    it('should remap placeholder keys to supplied field names', () => {
-        const config = {
-            __0__: {
-                highlight: true,
-                highlightStatus: false,
-                highlightComparator: false,
-                format: false,
-                formatted: false
-            },
-            __1__: {
-                highlight: false,
-                highlightStatus: false,
-                highlightComparator: false,
-                format: true,
-                formatted: true
-            }
-        };
+    it('should extract inline config from dataset entries keyed by suppliedObjectName', () => {
         const dataset: UsermetaDatasetField[] = [
             {
                 key: '__0__',
                 name: 'Date',
                 suppliedObjectName: 'Order Date',
                 kind: 'column',
-                type: 'dateTime'
+                type: 'dateTime',
+                supportFieldConfiguration: {
+                    highlight: true,
+                    highlightStatus: false,
+                    highlightComparator: false,
+                    format: false,
+                    formatted: false
+                }
             },
             {
                 key: '__1__',
                 name: '$ Sales',
                 suppliedObjectName: 'Revenue',
                 kind: 'measure',
-                type: 'numeric'
+                type: 'numeric',
+                supportFieldConfiguration: {
+                    highlight: false,
+                    highlightStatus: false,
+                    highlightComparator: false,
+                    format: true,
+                    formatted: true
+                }
             }
         ];
 
-        const result = remapSupportFieldConfigurationForImport(config, dataset);
+        const result = remapSupportFieldConfigurationForImport(dataset);
 
         expect(result).toEqual({
             'Order Date': {
@@ -1476,26 +1521,12 @@ describe('remapSupportFieldConfigurationForImport', () => {
         });
     });
 
-    it('should return empty object for undefined config', () => {
-        const result = remapSupportFieldConfigurationForImport(undefined, []);
+    it('should return empty object for empty dataset', () => {
+        const result = remapSupportFieldConfigurationForImport([]);
         expect(result).toEqual({});
     });
 
-    it('should return empty object for empty config', () => {
-        const result = remapSupportFieldConfigurationForImport({}, []);
-        expect(result).toEqual({});
-    });
-
-    it('should pass through keys not matching any dataset placeholder', () => {
-        const config = {
-            __99__: {
-                highlight: true,
-                highlightStatus: false,
-                highlightComparator: false,
-                format: false,
-                formatted: false
-            }
-        };
+    it('should skip fields without supportFieldConfiguration', () => {
         const dataset: UsermetaDatasetField[] = [
             {
                 key: '__0__',
@@ -1506,51 +1537,36 @@ describe('remapSupportFieldConfigurationForImport', () => {
             }
         ];
 
-        const result = remapSupportFieldConfigurationForImport(config, dataset);
-
-        // __99__ doesn't match any dataset entry → passed through
-        expect(result).toEqual({
-            __99__: {
-                highlight: true,
-                highlightStatus: false,
-                highlightComparator: false,
-                format: false,
-                formatted: false
-            }
-        });
+        const result = remapSupportFieldConfigurationForImport(dataset);
+        expect(result).toEqual({});
     });
 
-    it('should handle treatAsParameter and names flags in roundtrip', () => {
-        // Export: display name → placeholder (via getPublishableUsermeta)
-        // Import: placeholder → supplied name (via remapSupportFieldConfigurationForImport)
-        const exportUsermeta: UsermetaTemplate = {
-            ...EXPECTED_METADATA_BASE,
-            dataset: [],
-            supportFieldConfiguration: {
-                'Category Parameter': {
-                    highlight: false,
+    it('should skip fields without suppliedObjectName', () => {
+        const dataset: UsermetaDatasetField[] = [
+            {
+                key: '__0__',
+                name: 'Date',
+                kind: 'column',
+                type: 'dateTime',
+                supportFieldConfiguration: {
+                    highlight: true,
                     highlightStatus: false,
                     highlightComparator: false,
                     format: false,
-                    formatted: false,
-                    treatAsParameter: true,
-                    names: true
+                    formatted: false
                 }
             }
-        };
+        ];
 
-        const exportResult = getPublishableUsermeta(exportUsermeta, {
-            informationTranslationPlaceholders: {
-                name: '',
-                description: '',
-                author: ''
-            },
-            trackedFields: TRACKED_FIELDS_BY_QUERYNAME
-        });
+        const result = remapSupportFieldConfigurationForImport(dataset);
+        expect(result).toEqual({});
+    });
 
-        // Export should tokenize to __2__
-        expect(exportResult.supportFieldConfiguration).toEqual({
-            __2__: {
+    it('should handle treatAsParameter and names flags in roundtrip', () => {
+        // Export: config embedded per-field in dataset (via getPublishableUsermeta)
+        // Import: config extracted from dataset entries (via remapSupportFieldConfigurationForImport)
+        const supportFieldConfiguration = {
+            'Category Parameter': {
                 highlight: false,
                 highlightStatus: false,
                 highlightComparator: false,
@@ -1559,6 +1575,56 @@ describe('remapSupportFieldConfigurationForImport', () => {
                 treatAsParameter: true,
                 names: true
             }
+        };
+        const exportUsermeta: UsermetaTemplate = {
+            ...EXPECTED_METADATA_BASE,
+            dataset: [
+                {
+                    key: '__0__',
+                    name: '$ Sales',
+                    namePlaceholder: '$ Sales',
+                    description: '',
+                    kind: 'measure',
+                    type: 'numeric'
+                },
+                {
+                    key: '__1__',
+                    name: '$ Profit',
+                    namePlaceholder: '$ Profit',
+                    description: '',
+                    kind: 'measure',
+                    type: 'numeric'
+                },
+                {
+                    key: '__2__',
+                    name: 'Category Parameter',
+                    namePlaceholder: 'Category Parameter',
+                    description: '',
+                    kind: 'parameter',
+                    type: 'other'
+                }
+            ]
+        };
+
+        const exportResult = getPublishableUsermeta(exportUsermeta, {
+            informationTranslationPlaceholders: {
+                name: '',
+                description: '',
+                author: ''
+            },
+            supportFieldConfiguration,
+            trackedFields: TRACKED_FIELDS_BY_QUERYNAME
+        });
+
+        // Export should embed config on Category Parameter (index 2)
+        expect(exportResult.dataset[2].supportFieldConfiguration).toEqual({
+            highlight: false,
+            highlightStatus: false,
+            highlightComparator: false,
+            format: false,
+            formatted: false,
+            treatAsParameter: true,
+            names: true
         });
 
         // Now import it back with a user-supplied field name
@@ -1582,14 +1648,14 @@ describe('remapSupportFieldConfigurationForImport', () => {
                 name: 'Category Parameter',
                 suppliedObjectName: 'Region Parameter',
                 kind: 'parameter',
-                type: 'other'
+                type: 'other',
+                supportFieldConfiguration:
+                    exportResult.dataset[2].supportFieldConfiguration
             }
         ];
 
-        const importResult = remapSupportFieldConfigurationForImport(
-            exportResult.supportFieldConfiguration,
-            importDataset
-        );
+        const importResult =
+            remapSupportFieldConfigurationForImport(importDataset);
 
         expect(importResult).toEqual({
             'Region Parameter': {

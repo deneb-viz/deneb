@@ -1,6 +1,7 @@
 import { type JSX, type ReactNode } from 'react';
 import { type Loader, type TooltipHandler, type View } from 'vega';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
+import { type SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 
 /**
  * A function that binds platform-specific event listeners to a Vega view.
@@ -14,6 +15,11 @@ export type ViewEventBinder = (view: View) => void;
  */
 export type OnCreateProjectPayload = {
     metadata: UsermetaTemplate;
+    /**
+     * Support field configuration remapped from template placeholders to actual field names.
+     * Optional — when absent the project starts with an empty configuration (defaults apply).
+     */
+    supportFieldConfiguration?: SupportFieldConfiguration;
     spec: string;
     config: string;
 };

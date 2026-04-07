@@ -173,11 +173,12 @@ export const DatasetSettings = () => {
             const isFieldParameter = field.role === 'field-parameter';
             const isTreatedAs = resolvedFlags[name]?.treatAsParameter === true;
             const isParameter = isFieldParameter || isTreatedAs;
-            const baseFlags = isMeasure
-                ? highlightEnabled
-                    ? MEASURE_FLAGS
-                    : COLUMN_FLAGS
-                : COLUMN_FLAGS;
+            const baseFlags =
+                isMeasure || isFieldParameter
+                    ? highlightEnabled
+                        ? MEASURE_FLAGS
+                        : COLUMN_FLAGS
+                    : COLUMN_FLAGS;
             const applicableFlags = getApplicableFlags(
                 baseFlags,
                 isFieldParameter,
@@ -228,7 +229,7 @@ export const DatasetSettings = () => {
                     resolvedFlags[fieldName]?.treatAsParameter === true;
                 const isParameter = isFieldParameter || isTreatedAs;
                 const baseFlags =
-                    isMeasure && highlightEnabled
+                    (isMeasure || isFieldParameter) && highlightEnabled
                         ? MEASURE_FLAGS
                         : COLUMN_FLAGS;
                 const applicableFlags = getApplicableFlags(
@@ -313,11 +314,12 @@ export const DatasetSettings = () => {
                     const isMeasure =
                         (field.role ?? 'grouping') === 'aggregation';
                     const isFieldParameter = field.role === 'field-parameter';
-                    const baseFlags = isMeasure
-                        ? highlightEnabled
-                            ? MEASURE_FLAGS
-                            : COLUMN_FLAGS
-                        : COLUMN_FLAGS;
+                    const baseFlags =
+                        isMeasure || isFieldParameter
+                            ? highlightEnabled
+                                ? MEASURE_FLAGS
+                                : COLUMN_FLAGS
+                            : COLUMN_FLAGS;
                     const isTreatedAs =
                         resolvedFlags[name]?.treatAsParameter === true;
                     const isParameter = isFieldParameter || isTreatedAs;

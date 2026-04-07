@@ -26,7 +26,7 @@ vi.mock('../../../components/code-editor/monaco-integration', () => ({
                 }
             },
             registerCompletionItemProvider: mockRegisterCompletionItemProvider,
-            CompletionItemKind: { Field: 5 }
+            CompletionItemKind: { Field: 5, Property: 9 }
         },
         editor: {
             addKeybindingRules: mockAddKeybindingRules
@@ -70,7 +70,12 @@ vi.mock('@deneb-viz/vega-runtime/embed', () => ({
 vi.mock('../../../state', () => ({
     getDenebState: vi.fn(() => ({
         editorSelectedOperation: 'Spec',
-        dataset: { fields: {} }
+        dataset: { fields: {} },
+        project: {
+            supportFieldConfiguration: {},
+            interactivity: undefined
+        },
+        i18n: { translate: vi.fn((key: string) => key) }
     }))
 }));
 vi.mock('../../../lib/dataset', () => ({

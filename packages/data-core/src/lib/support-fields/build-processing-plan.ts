@@ -1,3 +1,4 @@
+import { getEncodedFieldName } from '../field/encoding';
 import type { DatasetFieldRole } from '../field/types';
 import type {
     SupportFieldConfiguration,
@@ -19,6 +20,8 @@ export type PlanParameterGroup = {
     componentFieldIndices: number[];
     /** Display names of the component fields, in DataView order. */
     componentNames: string[];
+    /** Role of each component field — determines highlight behavior per-element. */
+    componentRoles: ('grouping' | 'aggregation')[];
     /**
      * Pre-resolved format strings for component fields (row-invariant).
      * undefined if format emission is not applicable.
@@ -85,8 +88,7 @@ export const buildProcessingPlan = (
     // Emit parameter instructions for each group (in group order)
     for (const group of parameterGroups) {
         // Encode the parameter name using the same rules as field names
-        const encodedName =
-            group.parameterName.replace(/([\\".[\]])/g, '_') || '';
+        const encodedName = getEncodedFieldName(group.parameterName);
 
         const explicit = configuration[encodedName];
         const flags =
@@ -102,11 +104,14 @@ export const buildProcessingPlan = (
             kind: 'parameter',
             encodedName,
             componentIndices: group.componentFieldIndices,
+            componentRoles: group.componentRoles,
             namesArray: group.componentNames,
             formatStringsArray: flags.format ? group.formatStrings : undefined,
-            // Default true: configs saved before `names` was introduced have no
-            // `names` property, so new parameter specs always emit names.
-            emitNames: flags.names ?? true,
+            // Default false: __names is opt-in. Configs saved before the names flag was introduced have no names property.
+            emitNames: flags.names ?? false,
+            emitHighlight: flags.highlight,
+            emitHighlightStatus: flags.highlightStatus,
+            emitHighlightComparator: flags.highlightComparator,
             emitFormat: flags.format,
             emitFormatted: flags.formatted
         };

@@ -48,6 +48,46 @@ export const buildDataRow = (params: BuildDataRowParams): VegaDatum => {
             );
             row[encodedName] = values;
 
+            // Highlight arrays — per-component role-aware
+            const needsHighlight =
+                instruction.emitHighlight ||
+                instruction.emitHighlightStatus ||
+                instruction.emitHighlightComparator;
+            if (needsHighlight) {
+                const highlightValues = componentIndices.map((idx, j) => {
+                    const base = baseValues[idx] as PrimitiveValue;
+                    // Columns pass through — highlight doesn't apply
+                    if (instruction.componentRoles[j] === 'grouping') {
+                        return base;
+                    }
+                    return provider.getHighlightValue(idx, rowIndex, base);
+                });
+                if (instruction.emitHighlight) {
+                    row[encodedName + HIGHLIGHT_FIELD_SUFFIX] = highlightValues;
+                }
+                if (instruction.emitHighlightStatus) {
+                    row[encodedName + HIGHLIGHT_STATUS_SUFFIX] =
+                        componentIndices.map((idx, j) => {
+                            const base = baseValues[idx] as PrimitiveValue;
+                            return getHighlightStatusValue(
+                                plan.hasHighlights,
+                                base,
+                                highlightValues[j]!
+                            );
+                        });
+                }
+                if (instruction.emitHighlightComparator) {
+                    row[encodedName + HIGHLIGHT_COMPARATOR_SUFFIX] =
+                        componentIndices.map((idx, j) => {
+                            const base = baseValues[idx] as PrimitiveValue;
+                            return getHighlightComparatorValue(
+                                base,
+                                highlightValues[j]!
+                            );
+                        });
+                }
+            }
+
             // Reuse the pre-built names array (same reference every row)
             if (instruction.emitNames) {
                 row[encodedName + PARAMETER_NAMES_SUFFIX] = namesArray;

@@ -19,6 +19,8 @@ export type FieldParameterGroup = {
     componentNames: string[];
     /** Indices into the original fields array for each component. */
     componentFieldIndices: number[];
+    /** Role of each component field — determines highlight behavior per-element. */
+    componentRoles: ('grouping' | 'aggregation')[];
     /** Whether the group contains both columns and measures. */
     hasMixedRoles: boolean;
 };
@@ -60,6 +62,7 @@ export const detectFieldParameterGroups = (
                 parameterName: paramName,
                 componentNames: [],
                 componentFieldIndices: [],
+                componentRoles: [],
                 hasMixedRoles: false
             };
         }
@@ -67,6 +70,7 @@ export const detectFieldParameterGroups = (
         const group = parameterGroups[paramName];
         group.componentNames.push(field.displayName);
         group.componentFieldIndices.push(i);
+        group.componentRoles.push(field.isMeasure ? 'aggregation' : 'grouping');
 
         // Check for mixed roles (columns + measures in same parameter)
         if (group.componentFieldIndices.length > 1) {
