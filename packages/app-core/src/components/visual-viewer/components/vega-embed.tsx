@@ -13,7 +13,6 @@ import {
 import { patchSpecWithData } from '@deneb-viz/vega-runtime/spec-processing';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
 import { useDenebState } from '../../../state';
-import { VEGA_VIEWPORT_ADJUST } from '../constants';
 import { type ViewEventBinder } from '../../deneb-platform';
 
 type VegaEmbedProps = {
@@ -29,8 +28,8 @@ type VegaEmbedProps = {
 
 const useVegaEmbedStyles = makeStyles({
     root: {
-        height: `calc(100% - ${VEGA_VIEWPORT_ADJUST}px)`,
-        width: `calc(100% - ${VEGA_VIEWPORT_ADJUST}px)`,
+        height: '100%',
+        width: '100%',
         // Hide vega-embed actions menu (workaround: actions: false doesn't fully work and needs further investigation).
         '& .vega-actions': {
             display: 'none !important'
