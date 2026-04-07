@@ -1,3 +1,4 @@
+import { getEncodedFieldName } from '../field/encoding';
 import type { DatasetFieldRole } from '../field/types';
 import type {
     SupportFieldConfiguration,
@@ -87,8 +88,7 @@ export const buildProcessingPlan = (
     // Emit parameter instructions for each group (in group order)
     for (const group of parameterGroups) {
         // Encode the parameter name using the same rules as field names
-        const encodedName =
-            group.parameterName.replace(/([\\".[\]])/g, '_') || '';
+        const encodedName = getEncodedFieldName(group.parameterName);
 
         const explicit = configuration[encodedName];
         const flags =

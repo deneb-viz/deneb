@@ -30,6 +30,7 @@ import {
 } from './lib/template-processing';
 import { omit } from '@deneb-viz/utils/object';
 import {
+    getEncodedFieldName,
     getEscapedReplacerPattern,
     getPlaceholderKey,
     type UsermetaDatasetField
@@ -225,11 +226,15 @@ export const getPublishableUsermeta = (
                     );
                     item.key = tracked?.placeholder ?? item.key;
                     item.name = getFieldNameForExport(item);
-                    // Embed per-field support field configuration if present
+                    // Embed per-field support field configuration if present.
+                    // Config is keyed by encoded field name, but namePlaceholder
+                    // holds the raw display name — encode before lookup so fields
+                    // with reserved characters (. [ ] \ ") are not silently dropped.
+                    const sfcKey = getEncodedFieldName(
+                        item.namePlaceholder ?? item.name ?? ''
+                    );
                     const fieldConfig =
-                        options.supportFieldConfiguration?.[
-                            item.namePlaceholder ?? item.name
-                        ];
+                        options.supportFieldConfiguration?.[sfcKey];
                     if (fieldConfig) {
                         item.supportFieldConfiguration = fieldConfig;
                     }
