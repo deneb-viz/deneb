@@ -40,6 +40,14 @@ export const VISUAL_RENDER_SYNC_MAPPINGS: SliceSyncMapping<VisualRenderPreferenc
             }
         },
         {
+            sliceKey: 'scrollbarWidth',
+            getVisualValue: (s) => s.display.scrollbars.scrollbarWidth.value,
+            persistence: {
+                objectName: 'display',
+                propertyName: 'scrollbarWidth'
+            }
+        },
+        {
             sliceKey: 'scrollEventThrottle',
             getVisualValue: (s) =>
                 s.display.scrollEvents.scrollEventThrottle.value,

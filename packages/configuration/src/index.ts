@@ -228,6 +228,11 @@ export const VISUAL_RENDER_DEFAULTS = {
         max: 3,
         default: 0
     },
+    scrollbarWidth: {
+        min: 4,
+        max: 16,
+        default: 8
+    },
     scrollEventThrottle: {
         min: 0,
         max: 1000,
