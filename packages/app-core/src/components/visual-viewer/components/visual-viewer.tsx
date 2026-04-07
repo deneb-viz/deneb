@@ -1,15 +1,6 @@
-import {
-    type CSSProperties,
-    type HTMLProps,
-    useEffect,
-    useLayoutEffect,
-    useMemo,
-    useRef,
-    useState
-} from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useThrottle } from '@uidotdev/usehooks';
-import { mergeClasses } from '@fluentui/react-components';
-import { Scrollbars, type positionValues } from 'react-custom-scrollbars-2';
+import { makeStyles, mergeClasses } from '@fluentui/react-components';
 
 import { DEFAULT_VIEWPORT_SCALE } from '@deneb-viz/configuration';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
@@ -18,12 +9,11 @@ import type { Renderers } from 'vega';
 import { getSignalDenebContainer } from '@deneb-viz/vega-runtime/signals';
 import { logRender, logDebug } from '@deneb-viz/utils/logging';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
-import { makeStyles } from '@fluentui/react-components';
 import { VegaEmbed } from './vega-embed';
 import { VegaEmbedErrorBoundary } from './vega-embed-error-boundary';
 import { VEGA_CONTAINER_ID } from '../constants';
 import { performIncrementalUpdate } from '../incremental-update';
-import { getDenebState, useDenebState } from '../../../state';
+import { useDenebState } from '../../../state';
 import { useDenebPlatformProvider } from '../../deneb-platform';
 import { INCREMENTAL_UPDATE_CONFIGURATION } from '../../../lib/vega/incremental-update-configuration';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
@@ -44,6 +34,8 @@ Object.defineProperty(window, 'devicePixelRatio', {
     configurable: true
 });
 
+type ScrollPosition = { scrollTop: number; scrollLeft: number };
+
 const useVisualViewerStyles = makeStyles({
     container: {
         height: '100%',
@@ -52,9 +44,32 @@ const useVisualViewerStyles = makeStyles({
         minWidth: '100%',
         display: 'flex'
     },
-    overflowVisible: { overflow: 'visible' },
-    overflowOverlay: {
-        overflow: 'overlay'
+    overflowVisible: { overflow: 'visible' }
+});
+
+const useScrollContainerStyles = makeStyles({
+    overlay: {
+        overflow: 'auto',
+        scrollbarWidth: 'thin',
+        scrollbarColor: 'var(--deneb-sb-thumb, #00000033) transparent',
+        '::-webkit-scrollbar': {
+            width: 'var(--deneb-sb-width, 8px)',
+            height: 'var(--deneb-sb-width, 8px)',
+            background: 'transparent'
+        },
+        '::-webkit-scrollbar-thumb': {
+            background: 'var(--deneb-sb-thumb, #00000033)',
+            borderRadius: 'var(--deneb-sb-radius, 0px)'
+        },
+        '::-webkit-scrollbar-thumb:hover': {
+            background: 'var(--deneb-sb-thumb, #00000033)'
+        },
+        '::-webkit-scrollbar-track': {
+            background: 'transparent'
+        },
+        '::-webkit-scrollbar-corner': {
+            background: 'transparent'
+        }
     }
 });
 
@@ -95,6 +110,7 @@ export const VisualViewer = ({
         scrollbarColor,
         scrollbarOpacity,
         scrollbarRadius,
+        scrollbarWidth,
         scrollEventThrottle,
         lastCompiled,
         values,
@@ -122,6 +138,7 @@ export const VisualViewer = ({
         scrollbarColor: state.visualRender.scrollbarColor,
         scrollbarOpacity: state.visualRender.scrollbarOpacity,
         scrollbarRadius: state.visualRender.scrollbarRadius,
+        scrollbarWidth: state.visualRender.scrollbarWidth,
         scrollEventThrottle: state.visualRender.scrollEventThrottle,
         lastCompiled: state.compilation.lastCompiled,
         values: state.dataset.values,
@@ -333,17 +350,17 @@ export const VisualViewer = ({
 
     const useScrollbars = useMemo(
         () => !isEmbeddedInEditor || previewScrollbars,
-        [
-            isEmbeddedInEditor,
-            previewScrollbars,
-            scrollbarColor,
-            scrollbarOpacity,
-            scrollbarRadius
-        ]
+        [isEmbeddedInEditor, previewScrollbars]
     );
 
-    const [scrollFrame, setScrollFrame] = useState<positionValues | null>(null);
-    const throttledScrollFrame = useThrottle(scrollFrame, scrollEventThrottle);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [scrollPosition, setScrollPosition] = useState<ScrollPosition | null>(
+        null
+    );
+    const throttledScrollPosition = useThrottle(
+        scrollPosition,
+        scrollEventThrottle
+    );
     const classes = useVisualViewerStyles();
     const {
         onRenderingError,
@@ -353,11 +370,6 @@ export const VisualViewer = ({
         vegaLoader,
         viewEventBinders
     } = useDenebPlatformProvider();
-
-    const containerClassName = mergeClasses(
-        !isEmbeddedInEditor ? classes.overflowOverlay : classes.overflowVisible,
-        classes.container
-    );
 
     /**
      * Trigger initial compilation when spec, config, provider, or viewport changes.
@@ -455,74 +467,65 @@ export const VisualViewer = ({
     ]);
 
     useEffect(() => {
-        // Don't update scroll signal if view isn't ready or scroll frame not set
-        if (!throttledScrollFrame || !viewReady) return;
+        if (!useScrollbars) return;
+        const el = containerRef.current;
+        if (!el) return;
+        const handler = () => {
+            setScrollPosition({
+                scrollTop: el.scrollTop,
+                scrollLeft: el.scrollLeft
+            });
+        };
+        el.addEventListener('scroll', handler, { passive: true });
+        return () => el.removeEventListener('scroll', handler);
+        // containerRef.current is stable; setScrollPosition is stable
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [useScrollbars]);
+
+    useEffect(() => {
+        // Don't update scroll signal if view isn't ready or scroll position not set
+        if (!throttledScrollPosition || !viewReady) return;
         const view = VegaViewServices.getView();
         if (!view) return;
-        const container = view.container();
-        if (!container) return;
+        const el = containerRef.current;
         const signal = getSignalDenebContainer({
             scroll: {
-                height: container.clientHeight ?? 0,
-                width: container.clientWidth ?? 0,
-                scrollHeight: container.scrollHeight ?? 0,
-                scrollWidth: container.scrollWidth ?? 0,
-                scrollTop: throttledScrollFrame.scrollTop,
-                scrollLeft: throttledScrollFrame.scrollLeft
+                height: el?.clientHeight ?? 0,
+                width: el?.clientWidth ?? 0,
+                scrollHeight: el?.scrollHeight ?? 0,
+                scrollWidth: el?.scrollWidth ?? 0,
+                scrollTop: throttledScrollPosition.scrollTop,
+                scrollLeft: throttledScrollPosition.scrollLeft
             }
         });
         VegaViewServices.setSignalByName(signal.name, signal.value);
-    }, [throttledScrollFrame, viewReady]);
+    }, [throttledScrollPosition, viewReady]);
 
-    return useScrollbars ? (
-        <Scrollbars
-            id={VEGA_CONTAINER_ID}
-            className={containerClassName}
-            renderThumbHorizontal={scrollbarThumbHorizontal}
-            renderThumbVertical={scrollbarThumbVertical}
-            onScrollFrame={(e: positionValues) => setScrollFrame(e)}
-        >
-            {vegaComponent}
-        </Scrollbars>
-    ) : (
-        <>{vegaComponent}</>
-    );
-};
+    const scrollContainerClasses = useScrollContainerStyles();
+    const resolvedThumbColor = addAlpha(scrollbarColor, scrollbarOpacity / 100);
 
-/**
- * Custom rendering for scrollbar vertical thumb.
- */
-const scrollbarThumbVertical = (props: HTMLProps<HTMLDivElement>) =>
-    getScrollBarThumb(props, { width: '100%' });
-
-/**
- * Custom rendering for scrollbar horizontal thumb.
- */
-const scrollbarThumbHorizontal = (props: HTMLProps<HTMLDivElement>) =>
-    getScrollBarThumb(props, { height: '100%' });
-
-/**
- * Generic scrollbar thumb component.
- */
-const getScrollBarThumb = (
-    props: HTMLProps<HTMLDivElement>,
-    style: CSSProperties
-) => {
-    const { scrollbarRadius, scrollbarColor, scrollbarOpacity } =
-        getDenebState().visualRender;
-    const backgroundColor = addAlpha(scrollbarColor, scrollbarOpacity / 100);
     return (
         <div
-            {...props}
-            className='thumb-horizontal'
-            style={{
-                ...{
-                    backgroundColor,
-                    borderRadius: scrollbarRadius
-                },
-                ...style
-            }}
-        />
+            ref={containerRef}
+            id={useScrollbars ? VEGA_CONTAINER_ID : undefined}
+            className={mergeClasses(
+                classes.container,
+                useScrollbars
+                    ? scrollContainerClasses.overlay
+                    : classes.overflowVisible
+            )}
+            style={
+                useScrollbars
+                    ? ({
+                          '--deneb-sb-thumb': resolvedThumbColor,
+                          '--deneb-sb-width': `${scrollbarWidth}px`,
+                          '--deneb-sb-radius': `${scrollbarRadius}px`
+                      } as React.CSSProperties)
+                    : undefined
+            }
+        >
+            {vegaComponent}
+        </div>
     );
 };
 
