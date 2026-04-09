@@ -1,2 +1,1 @@
-export { getOverlayScrollbarStyles } from './overlay-styles';
-export type { OverlayScrollbarOptions } from './overlay-styles';
+export { addAlpha, getScrollbarStyleVars } from './scrollbar-style-vars';
