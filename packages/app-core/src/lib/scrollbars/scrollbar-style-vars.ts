@@ -44,8 +44,8 @@ export const addAlpha = (color: string, opacity: number): string => {
  *
  * @param scrollbarColor 6-digit hex colour (e.g. '#000000')
  * @param scrollbarOpacity 0-100 percentage
- * @param scrollbarRadius pixel radius (0-3)
- * @param scrollbarWidth pixel width (4-16)
+ * @param scrollbarRadius pixel radius (0-8)
+ * @param scrollbarWidth pixel width (8-16)
  * @returns Inline style object suitable for `style={...}` on an element
  */
 export const getScrollbarStyleVars = (

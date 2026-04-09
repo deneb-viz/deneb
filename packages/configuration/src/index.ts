@@ -225,13 +225,13 @@ export const VISUAL_RENDER_DEFAULTS = {
     },
     scrollbarRadius: {
         min: 0,
-        max: 3,
+        max: 8,
         default: 0
     },
     scrollbarWidth: {
-        min: 4,
+        min: 8,
         max: 16,
-        default: 8
+        default: 10
     },
     scrollEventThrottle: {
         min: 0,

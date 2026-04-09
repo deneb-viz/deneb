@@ -95,10 +95,10 @@ describe('getScrollbarStyleVars', () => {
         expect(vars['--os-handle-bg' as keyof typeof vars]).toBe('#ffffff80');
     });
 
-    it('handles the full range of scrollbarWidth (4-16 px)', () => {
-        const narrow = getScrollbarStyleVars('#000000', 20, 0, 4);
+    it('handles the full range of scrollbarWidth (8-16 px)', () => {
+        const narrow = getScrollbarStyleVars('#000000', 20, 0, 8);
         const wide = getScrollbarStyleVars('#000000', 20, 0, 16);
-        expect(narrow['--os-size' as keyof typeof narrow]).toBe('4px');
+        expect(narrow['--os-size' as keyof typeof narrow]).toBe('8px');
         expect(wide['--os-size' as keyof typeof wide]).toBe('16px');
     });
 });
