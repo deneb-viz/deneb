@@ -1,0 +1,89 @@
+import { describe, expect, it } from 'vitest';
+import { addAlpha, getScrollbarStyleVars } from '../scrollbar-style-vars';
+
+describe('addAlpha', () => {
+    it('appends alpha hex pair for a mid-range opacity', () => {
+        // 0.2 * 255 = 51 = 0x33
+        expect(addAlpha('#000000', 0.2)).toBe('#00000033');
+    });
+
+    it('appends ff for full opacity', () => {
+        expect(addAlpha('#ffffff', 1)).toBe('#ffffffff');
+    });
+
+    it('zero-pads single-digit hex alpha values', () => {
+        // 0.02 * 255 ≈ 5 = 0x5 → must be '05', not '5'
+        // The old inline version missed this, producing invalid 7-char hex strings.
+        expect(addAlpha('#000000', 0.02)).toBe('#00000005');
+    });
+
+    it('zero-pads the boundary value just below single-digit-hex', () => {
+        // 0.04 * 255 ≈ 10 = 0xa → must be '0a'
+        expect(addAlpha('#000000', 0.04)).toBe('#0000000a');
+    });
+
+    it('clamps opacity above 1 to 1', () => {
+        expect(addAlpha('#ff0000', 2)).toBe('#ff0000ff');
+    });
+
+    it('clamps negative opacity to 0 (fully transparent)', () => {
+        // -1 is truthy, so `-1 || 1` stays as -1; Math.max(-1, 0) → 0.
+        // Alpha 0x00 = fully transparent. Note this asymmetry: negative
+        // values clamp to transparent, but opacity of exactly 0 is treated
+        // as full opacity (the next test) due to the `|| 1` falsy fallback.
+        expect(addAlpha('#ff0000', -1)).toBe('#ff000000');
+    });
+
+    it('treats 0 opacity as full opacity due to || 1 fallback', () => {
+        // Documents existing behaviour preserved from the inline addAlpha.
+        // `0 || 1` → 1 (0 is falsy). Users relying on scrollbarOpacity = 0
+        // as "fully transparent" get full opacity instead. This matches the
+        // behaviour of the original visual-viewer.tsx inline helper and is
+        // preserved intentionally to avoid silent user-visible changes.
+        expect(addAlpha('#ff0000', 0)).toBe('#ff0000ff');
+    });
+
+    it('accepts an uppercase hex colour and preserves case', () => {
+        expect(addAlpha('#FF0000', 0.5)).toBe('#FF000080');
+    });
+});
+
+describe('getScrollbarStyleVars', () => {
+    it('returns all three CSS variables as a style object', () => {
+        const vars = getScrollbarStyleVars('#000000', 20, 0, 8);
+        expect(vars).toHaveProperty('--os-size');
+        expect(vars).toHaveProperty('--os-handle-bg');
+        expect(vars).toHaveProperty('--os-handle-border-radius');
+    });
+
+    it('emits scrollbarWidth as an os-size pixel value', () => {
+        const vars = getScrollbarStyleVars('#000000', 20, 0, 12);
+        expect(vars['--os-size' as keyof typeof vars]).toBe('12px');
+    });
+
+    it('emits scrollbarRadius as an os-handle-border-radius pixel value', () => {
+        const vars = getScrollbarStyleVars('#000000', 20, 3, 8);
+        expect(vars['--os-handle-border-radius' as keyof typeof vars]).toBe(
+            '3px'
+        );
+    });
+
+    it('applies opacity to colour via addAlpha', () => {
+        // 20 / 100 = 0.2 → 0x33
+        const vars = getScrollbarStyleVars('#000000', 20, 0, 8);
+        expect(vars['--os-handle-bg' as keyof typeof vars]).toBe('#00000033');
+    });
+
+    it('divides the 0-100 percentage opacity by 100 before converting', () => {
+        // 50 / 100 = 0.5 → 0x80
+        const vars = getScrollbarStyleVars('#ffffff', 50, 0, 8);
+        expect(vars['--os-handle-bg' as keyof typeof vars]).toBe('#ffffff80');
+    });
+
+    it('handles the full range of scrollbarWidth (4-16 px)', () => {
+        const narrow = getScrollbarStyleVars('#000000', 20, 0, 4);
+        const wide = getScrollbarStyleVars('#000000', 20, 0, 16);
+        expect(narrow['--os-size' as keyof typeof narrow]).toBe('4px');
+        expect(wide['--os-size' as keyof typeof wide]).toBe('16px');
+    });
+});

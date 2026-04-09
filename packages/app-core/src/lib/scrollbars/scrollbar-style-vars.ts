@@ -1,0 +1,53 @@
+import type { CSSProperties } from 'react';
+
+/**
+ * Convert a 6-digit hex colour into an 8-digit hex with alpha, given 0–1 opacity.
+ *
+ * Defensive: clamps opacity to [0, 1]. Zero-pads single-digit hex alpha values
+ * (e.g. opacity 0.02 → '05', not '5') so the result is always a valid 9-char
+ * hex colour string.
+ *
+ * Note: due to the `|| 1` fallback, an opacity of `0` is treated as full opacity.
+ * Negative values (e.g. -1) are clamped to 0 (fully transparent) via `Math.max`.
+ * Both behaviours match the inline helper previously in visual-viewer.tsx and
+ * are preserved intentionally to avoid silent user-visible changes.
+ *
+ * @example
+ *   addAlpha('#000000', 0.2) // '#00000033'
+ *   addAlpha('#ffffff', 1)   // '#ffffffff'
+ *   addAlpha('#000000', 0.02) // '#00000005' (not '#0000005')
+ *   addAlpha('#ff0000', 0)   // '#ff0000ff' (0 is falsy, falls back to 1)
+ *   addAlpha('#ff0000', -1)  // '#ff000000' (negative clamps to 0)
+ */
+export const addAlpha = (color: string, opacity: number): string => {
+    const _opacity = Math.round(Math.min(Math.max(opacity || 1, 0), 1) * 255);
+    return `${color}${_opacity.toString(16).padStart(2, '0')}`;
+};
+
+/**
+ * Build the inline-style CSS custom properties object consumed by
+ * `overlayscrollbars` on the host element. Maps Deneb's four user-configurable
+ * display settings to the library's three styling variables:
+ *
+ *   scrollbarWidth       → --os-size
+ *   scrollbarColor +     → --os-handle-bg (via addAlpha)
+ *     scrollbarOpacity
+ *   scrollbarRadius      → --os-handle-border-radius
+ *
+ * @param scrollbarColor 6-digit hex colour (e.g. '#000000')
+ * @param scrollbarOpacity 0-100 percentage
+ * @param scrollbarRadius pixel radius (0-3)
+ * @param scrollbarWidth pixel width (4-16)
+ * @returns Inline style object suitable for `style={...}` on an element
+ */
+export const getScrollbarStyleVars = (
+    scrollbarColor: string,
+    scrollbarOpacity: number,
+    scrollbarRadius: number,
+    scrollbarWidth: number
+): CSSProperties =>
+    ({
+        '--os-size': `${scrollbarWidth}px`,
+        '--os-handle-bg': addAlpha(scrollbarColor, scrollbarOpacity / 100),
+        '--os-handle-border-radius': `${scrollbarRadius}px`
+    }) as CSSProperties;
