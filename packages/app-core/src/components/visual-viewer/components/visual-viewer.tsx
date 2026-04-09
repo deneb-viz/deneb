@@ -49,7 +49,28 @@ const useVisualViewerStyles = makeStyles({
         minHeight: '100%',
         width: '100%',
         minWidth: '100%',
-        display: 'flex'
+        display: 'flex',
+        // The overlayscrollbars library applies its default theme
+        // (.os-theme-dark) to each .os-scrollbar element, which sets
+        // --os-handle-bg, --os-handle-bg-hover, --os-handle-bg-active,
+        // --os-size and --os-handle-border-radius with hard-coded theme
+        // defaults. Those declarations shadow any values we set via inline
+        // style on the host element, so the user's display.scrollbar*
+        // settings never reach the scrollbar handle.
+        //
+        // Force the scrollbar elements to re-inherit each of those custom
+        // properties from their cascade instead. This selector's specificity
+        // (0,2,0) beats both .os-scrollbar (0,1,0) and .os-theme-dark (0,1,0),
+        // so `inherit` wins. The inherited value ultimately comes from the
+        // host element where getScrollbarStyleVars set the inline style vars
+        // from user settings. See #480.
+        '& .os-scrollbar': {
+            '--os-size': 'inherit',
+            '--os-handle-bg': 'inherit',
+            '--os-handle-bg-hover': 'inherit',
+            '--os-handle-bg-active': 'inherit',
+            '--os-handle-border-radius': 'inherit'
+        }
     },
     overflowVisible: { overflow: 'visible' }
 });
