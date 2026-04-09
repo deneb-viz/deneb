@@ -20,6 +20,8 @@
     "Objects_Display_ScrollbarOpacity_Description": "Opacity of the scrollbars (if displayed).",
     "Objects_Display_ScrollbarRadius": "Scrollbar radius",
     "Objects_Display_ScrollbarRadius_Description": "Border radius of the scrollbars (if displayed).",
+    "Objects_Display_ScrollbarWidth": "Scrollbar width",
+    "Objects_Display_ScrollbarWidth_Description": "Width of the scrollbars in pixels (if displayed).",
     "Objects_Display_ScrollEventThrottle": "Throttle time",
     "Objects_Display_ScrollEventThrottle_Description": "In order to prevent scroll events from updating the Vega view more than necessary, this property allows you to specify a throttle time (in milliseconds) to prevent this.",
     "Objects_StateManagement": "State management",

@@ -6,6 +6,7 @@ export type VisualRenderSliceProperties = {
     scrollbarColor: string;
     scrollbarOpacity: number;
     scrollbarRadius: number;
+    scrollbarWidth: number;
     scrollEventThrottle: number;
 };
 
@@ -31,6 +32,7 @@ export const createVisualRenderSlice =
             scrollbarColor: VISUAL_RENDER_DEFAULTS.scrollbarColor,
             scrollbarOpacity: VISUAL_RENDER_DEFAULTS.scrollbarOpacity.default,
             scrollbarRadius: VISUAL_RENDER_DEFAULTS.scrollbarRadius.default,
+            scrollbarWidth: VISUAL_RENDER_DEFAULTS.scrollbarWidth.default,
             scrollEventThrottle:
                 VISUAL_RENDER_DEFAULTS.scrollEventThrottle.default,
             syncPreferences: (payload: VisualRenderSyncPayload) => {

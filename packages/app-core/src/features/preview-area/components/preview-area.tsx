@@ -5,6 +5,8 @@ import {
     tokens,
     mergeClasses
 } from '@fluentui/react-components';
+import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
+import 'overlayscrollbars/overlayscrollbars.css';
 import { VegaViewProvider } from '@deneb-viz/vega-react';
 
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
@@ -14,6 +16,10 @@ import { VisualViewer } from '../../../components/visual-viewer';
 import { createSchemaValidator } from '../../../lib/vega/compilation';
 import { useDenebState } from '../../../state';
 import { COMPILATION_STATUS_DEFAULT } from '@deneb-viz/vega-runtime/compilation';
+import {
+    getScrollbarStyleVars,
+    SCROLLBAR_OPTIONS
+} from '../../../lib/scrollbars/scrollbar-style-vars';
 
 /**
  * Preview area base styles (static). Dynamic sizing is applied via inline styles.
@@ -21,10 +27,24 @@ import { COMPILATION_STATUS_DEFAULT } from '@deneb-viz/vega-runtime/compilation'
 const usePreviewStyles = makeStyles({
     previewArea: {
         ...shorthands.padding('2px'),
-        ...shorthands.overflow('overlay'),
         boxSizing: 'border-box',
         width: '100%',
-        height: '100%'
+        height: '100%',
+        // Override the overlayscrollbars default theme's hard-coded CSS
+        // custom properties on .os-scrollbar descendants so the user's
+        // display.scrollbar* settings (applied as inline style vars on the
+        // host via getScrollbarStyleVars) actually reach the rendered
+        // scrollbar handle. The descendant selector's specificity (0,2,0)
+        // beats the library's own .os-scrollbar and .os-theme-dark rules
+        // (both 0,1,0), and `inherit` resolves via the cascade back up to
+        // the host. Mirrors the same override in visual-viewer.tsx. See #480.
+        '& .os-scrollbar': {
+            '--os-size': 'inherit',
+            '--os-handle-bg': 'inherit',
+            '--os-handle-bg-hover': 'inherit',
+            '--os-handle-bg-active': 'inherit',
+            '--os-handle-border-radius': 'inherit'
+        }
     },
     previewWrapper: {
         // dynamic height/width driven by CSS variables
@@ -65,7 +85,11 @@ export const PreviewArea = () => {
         status,
         viewportHeight,
         viewportWidth,
-        showViewportMarker
+        showViewportMarker,
+        scrollbarColor,
+        scrollbarOpacity,
+        scrollbarRadius,
+        scrollbarWidth
     } = useDenebState((state) => ({
         editorPreviewAreaHeight: state.editor.previewAreaViewport.height ?? 0,
         editorZoomLevel: state.editorZoomLevel,
@@ -73,7 +97,11 @@ export const PreviewArea = () => {
         showViewportMarker: state.editorPreferences.previewAreaShowBorder,
         status: state.compilation.result?.status ?? COMPILATION_STATUS_DEFAULT,
         viewportHeight: state.interface.embedViewport?.height ?? 0,
-        viewportWidth: state.interface.embedViewport?.width ?? 0
+        viewportWidth: state.interface.embedViewport?.width ?? 0,
+        scrollbarColor: state.visualRender.scrollbarColor,
+        scrollbarOpacity: state.visualRender.scrollbarOpacity,
+        scrollbarRadius: state.visualRender.scrollbarRadius,
+        scrollbarWidth: state.visualRender.scrollbarWidth
     }));
 
     /**
@@ -94,10 +122,25 @@ export const PreviewArea = () => {
         ['--vp-border' as unknown as keyof CSSProperties]: `${borderWidth}px`,
         ['--vp-scale' as unknown as keyof CSSProperties]: String(scale)
     };
+    const scrollbarStyleVars = getScrollbarStyleVars(
+        scrollbarColor,
+        scrollbarOpacity,
+        scrollbarRadius,
+        scrollbarWidth
+    );
+    const combinedStyleVars: CSSProperties = {
+        ...styleVars,
+        ...scrollbarStyleVars
+    };
     logRender('VisualPreview', status, editorPreviewAreaHeight);
     return (
         <VegaViewProvider>
-            <div className={classes.previewArea} style={styleVars}>
+            <OverlayScrollbarsComponent
+                className={classes.previewArea}
+                style={combinedStyleVars}
+                options={SCROLLBAR_OPTIONS}
+                defer
+            >
                 <div
                     className={mergeClasses(
                         classes.previewWrapper,
@@ -116,7 +159,7 @@ export const PreviewArea = () => {
                         />
                     </div>
                 </div>
-            </div>
+            </OverlayScrollbarsComponent>
         </VegaViewProvider>
     );
 };

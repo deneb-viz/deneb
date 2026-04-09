@@ -13,7 +13,6 @@ import {
 import { patchSpecWithData } from '@deneb-viz/vega-runtime/spec-processing';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
 import { useDenebState } from '../../../state';
-import { VEGA_VIEWPORT_ADJUST } from '../constants';
 import { type ViewEventBinder } from '../../deneb-platform';
 
 type VegaEmbedProps = {
@@ -29,8 +28,29 @@ type VegaEmbedProps = {
 
 const useVegaEmbedStyles = makeStyles({
     root: {
-        height: `calc(100% - ${VEGA_VIEWPORT_ADJUST}px)`,
-        width: `calc(100% - ${VEGA_VIEWPORT_ADJUST}px)`,
+        height: '100%',
+        width: '100%',
+        // #480: Remove the line-box descender gap that otherwise produces a
+        // 4px vertical scroll overflow on fitted specs inside the overlay
+        // scroll container. Two fixes are needed, at two different layers:
+        //
+        // 1. `display: block` on THIS element (the root) overrides the
+        //    `display: inline-block` that the vega-embed library adds when
+        //    it mutates this div with the `.vega-embed` class. Without this,
+        //    the parent (#deneb-vega-container) creates a line box around
+        //    the inline-block and adds ~4px of strut descender below it.
+        //    !important is needed because the upstream `.vega-embed` rule
+        //    has equal specificity.
+        //
+        // 2. `display: block` on the descendant `svg` overrides its default
+        //    `display: inline`. Without this, the root (now block) creates
+        //    a line box around the inline SVG with the same ~4px descender
+        //    below. Fixing only one of the two moves the gap but doesn't
+        //    eliminate it.
+        display: 'block !important',
+        '& svg': {
+            display: 'block'
+        },
         // Hide vega-embed actions menu (workaround: actions: false doesn't fully work and needs further investigation).
         '& .vega-actions': {
             display: 'none !important'

@@ -1,15 +1,12 @@
-import {
-    type CSSProperties,
-    type HTMLProps,
-    useEffect,
-    useLayoutEffect,
-    useMemo,
-    useRef,
-    useState
-} from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useThrottle } from '@uidotdev/usehooks';
-import { mergeClasses } from '@fluentui/react-components';
-import { Scrollbars, type positionValues } from 'react-custom-scrollbars-2';
+import { makeStyles, mergeClasses } from '@fluentui/react-components';
+import {
+    OverlayScrollbarsComponent,
+    type OverlayScrollbarsComponentRef
+} from 'overlayscrollbars-react';
+import type { EventListeners } from 'overlayscrollbars';
+import 'overlayscrollbars/overlayscrollbars.css';
 
 import { DEFAULT_VIEWPORT_SCALE } from '@deneb-viz/configuration';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
@@ -18,15 +15,18 @@ import type { Renderers } from 'vega';
 import { getSignalDenebContainer } from '@deneb-viz/vega-runtime/signals';
 import { logRender, logDebug } from '@deneb-viz/utils/logging';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
-import { makeStyles } from '@fluentui/react-components';
 import { VegaEmbed } from './vega-embed';
 import { VegaEmbedErrorBoundary } from './vega-embed-error-boundary';
 import { VEGA_CONTAINER_ID } from '../constants';
 import { performIncrementalUpdate } from '../incremental-update';
-import { getDenebState, useDenebState } from '../../../state';
+import { useDenebState } from '../../../state';
 import { useDenebPlatformProvider } from '../../deneb-platform';
 import { INCREMENTAL_UPDATE_CONFIGURATION } from '../../../lib/vega/incremental-update-configuration';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
+import {
+    getScrollbarStyleVars,
+    SCROLLBAR_OPTIONS
+} from '../../../lib/scrollbars/scrollbar-style-vars';
 
 /**
  * The original device pixel ratio, captured once at module load.
@@ -44,18 +44,38 @@ Object.defineProperty(window, 'devicePixelRatio', {
     configurable: true
 });
 
+type ScrollPosition = { scrollTop: number; scrollLeft: number };
+
 const useVisualViewerStyles = makeStyles({
     container: {
         height: '100%',
         minHeight: '100%',
         width: '100%',
         minWidth: '100%',
-        display: 'flex'
+        display: 'flex',
+        // The overlayscrollbars library applies its default theme
+        // (.os-theme-dark) to each .os-scrollbar element, which sets
+        // --os-handle-bg, --os-handle-bg-hover, --os-handle-bg-active,
+        // --os-size and --os-handle-border-radius with hard-coded theme
+        // defaults. Those declarations shadow any values we set via inline
+        // style on the host element, so the user's display.scrollbar*
+        // settings never reach the scrollbar handle.
+        //
+        // Force the scrollbar elements to re-inherit each of those custom
+        // properties from their cascade instead. This selector's specificity
+        // (0,2,0) beats both .os-scrollbar (0,1,0) and .os-theme-dark (0,1,0),
+        // so `inherit` wins. The inherited value ultimately comes from the
+        // host element where getScrollbarStyleVars set the inline style vars
+        // from user settings. See #480.
+        '& .os-scrollbar': {
+            '--os-size': 'inherit',
+            '--os-handle-bg': 'inherit',
+            '--os-handle-bg-hover': 'inherit',
+            '--os-handle-bg-active': 'inherit',
+            '--os-handle-border-radius': 'inherit'
+        }
     },
-    overflowVisible: { overflow: 'visible' },
-    overflowOverlay: {
-        overflow: 'overlay'
-    }
+    overflowVisible: { overflow: 'visible' }
 });
 
 type VisualViewerProps = {
@@ -95,6 +115,7 @@ export const VisualViewer = ({
         scrollbarColor,
         scrollbarOpacity,
         scrollbarRadius,
+        scrollbarWidth,
         scrollEventThrottle,
         lastCompiled,
         values,
@@ -122,6 +143,7 @@ export const VisualViewer = ({
         scrollbarColor: state.visualRender.scrollbarColor,
         scrollbarOpacity: state.visualRender.scrollbarOpacity,
         scrollbarRadius: state.visualRender.scrollbarRadius,
+        scrollbarWidth: state.visualRender.scrollbarWidth,
         scrollEventThrottle: state.visualRender.scrollEventThrottle,
         lastCompiled: state.compilation.lastCompiled,
         values: state.dataset.values,
@@ -333,17 +355,17 @@ export const VisualViewer = ({
 
     const useScrollbars = useMemo(
         () => !isEmbeddedInEditor || previewScrollbars,
-        [
-            isEmbeddedInEditor,
-            previewScrollbars,
-            scrollbarColor,
-            scrollbarOpacity,
-            scrollbarRadius
-        ]
+        [isEmbeddedInEditor, previewScrollbars]
     );
 
-    const [scrollFrame, setScrollFrame] = useState<positionValues | null>(null);
-    const throttledScrollFrame = useThrottle(scrollFrame, scrollEventThrottle);
+    const osRef = useRef<OverlayScrollbarsComponentRef>(null);
+    const [scrollPosition, setScrollPosition] = useState<ScrollPosition | null>(
+        null
+    );
+    const throttledScrollPosition = useThrottle(
+        scrollPosition,
+        scrollEventThrottle
+    );
     const classes = useVisualViewerStyles();
     const {
         onRenderingError,
@@ -353,11 +375,6 @@ export const VisualViewer = ({
         vegaLoader,
         viewEventBinders
     } = useDenebPlatformProvider();
-
-    const containerClassName = mergeClasses(
-        !isEmbeddedInEditor ? classes.overflowOverlay : classes.overflowVisible,
-        classes.container
-    );
 
     /**
      * Trigger initial compilation when spec, config, provider, or viewport changes.
@@ -454,83 +471,80 @@ export const VisualViewer = ({
         viewportWidth
     ]);
 
+    // Overlayscrollbars event handlers. The `initialized` callback fires after
+    // the library creates its viewport element — the only safe point to read
+    // `instance.elements().viewport` from (before `initialized`, osInstance()
+    // is null, especially when `defer` is enabled). We route VEGA_CONTAINER_ID
+    // onto the viewport element here so outside consumers (debugging, tests,
+    // any CSS targeting the ID) can find the scrollable container.
+    //
+    // The `scroll` event is the library's native pass-through of the viewport
+    // scroll event. It fires on every user scroll; our useThrottle on the
+    // downstream state handles rate-limiting. Using the library's event means
+    // we don't manage addEventListener/removeEventListener manually — the
+    // library attaches/detaches its own listener across instance lifecycle.
+    //
+    // Memoized with [] deps because the only closure capture is setScrollPosition
+    // (stable React state setter). This gives the `events` prop a stable
+    // reference so the library does not re-wire listeners on every render.
+    const scrollbarEvents = useMemo<EventListeners>(
+        () => ({
+            initialized: (instance) => {
+                instance.elements().viewport.id = VEGA_CONTAINER_ID;
+            },
+            scroll: (instance) => {
+                const viewport = instance.elements().viewport;
+                setScrollPosition({
+                    scrollTop: viewport.scrollTop,
+                    scrollLeft: viewport.scrollLeft
+                });
+            }
+        }),
+        []
+    );
+
     useEffect(() => {
-        // Don't update scroll signal if view isn't ready or scroll frame not set
-        if (!throttledScrollFrame || !viewReady) return;
+        // Don't update scroll signal if view isn't ready or scroll position not set
+        if (!throttledScrollPosition || !viewReady) return;
         const view = VegaViewServices.getView();
         if (!view) return;
-        const container = view.container();
-        if (!container) return;
+        const viewport = osRef.current?.osInstance()?.elements().viewport;
         const signal = getSignalDenebContainer({
             scroll: {
-                height: container.clientHeight ?? 0,
-                width: container.clientWidth ?? 0,
-                scrollHeight: container.scrollHeight ?? 0,
-                scrollWidth: container.scrollWidth ?? 0,
-                scrollTop: throttledScrollFrame.scrollTop,
-                scrollLeft: throttledScrollFrame.scrollLeft
+                height: viewport?.clientHeight ?? 0,
+                width: viewport?.clientWidth ?? 0,
+                scrollHeight: viewport?.scrollHeight ?? 0,
+                scrollWidth: viewport?.scrollWidth ?? 0,
+                scrollTop: throttledScrollPosition.scrollTop,
+                scrollLeft: throttledScrollPosition.scrollLeft
             }
         });
         VegaViewServices.setSignalByName(signal.name, signal.value);
-    }, [throttledScrollFrame, viewReady]);
+    }, [throttledScrollPosition, viewReady]);
+
+    const scrollbarStyleVars = getScrollbarStyleVars(
+        scrollbarColor,
+        scrollbarOpacity,
+        scrollbarRadius,
+        scrollbarWidth
+    );
 
     return useScrollbars ? (
-        <Scrollbars
-            id={VEGA_CONTAINER_ID}
-            className={containerClassName}
-            renderThumbHorizontal={scrollbarThumbHorizontal}
-            renderThumbVertical={scrollbarThumbVertical}
-            onScrollFrame={(e: positionValues) => setScrollFrame(e)}
+        <OverlayScrollbarsComponent
+            ref={osRef}
+            className={classes.container}
+            style={scrollbarStyleVars}
+            options={SCROLLBAR_OPTIONS}
+            events={scrollbarEvents}
+            defer
         >
             {vegaComponent}
-        </Scrollbars>
+        </OverlayScrollbarsComponent>
     ) : (
-        <>{vegaComponent}</>
-    );
-};
-
-/**
- * Custom rendering for scrollbar vertical thumb.
- */
-const scrollbarThumbVertical = (props: HTMLProps<HTMLDivElement>) =>
-    getScrollBarThumb(props, { width: '100%' });
-
-/**
- * Custom rendering for scrollbar horizontal thumb.
- */
-const scrollbarThumbHorizontal = (props: HTMLProps<HTMLDivElement>) =>
-    getScrollBarThumb(props, { height: '100%' });
-
-/**
- * Generic scrollbar thumb component.
- */
-const getScrollBarThumb = (
-    props: HTMLProps<HTMLDivElement>,
-    style: CSSProperties
-) => {
-    const { scrollbarRadius, scrollbarColor, scrollbarOpacity } =
-        getDenebState().visualRender;
-    const backgroundColor = addAlpha(scrollbarColor, scrollbarOpacity / 100);
-    return (
         <div
-            {...props}
-            className='thumb-horizontal'
-            style={{
-                ...{
-                    backgroundColor,
-                    borderRadius: scrollbarRadius
-                },
-                ...style
-            }}
-        />
+            className={mergeClasses(classes.container, classes.overflowVisible)}
+        >
+            {vegaComponent}
+        </div>
     );
-};
-
-/**
- * For a hex value, add the corresponding opacity value to the end, adjusted
- * based on the value.
- */
-const addAlpha = (color: string, opacity: number) => {
-    const _opacity = Math.round(Math.min(Math.max(opacity || 1, 0), 1) * 255);
-    return `${color}${_opacity.toString(16)}`;
 };

@@ -54,6 +54,99 @@ describe('patchVegaLiteSpec', () => {
         expect(patched.height).toBe('container');
     });
 
+    it('should inject autosize { type: fit, contains: padding } when injecting container sizing', () => {
+        // Vega-Lite's default autosize.contains is 'content', which places padding
+        // OUTSIDE the container-specified dimensions → SVG is 2×padding larger than
+        // container on each axis. 'padding' fits padding inside. See #480.
+        const spec: TopLevelSpec = {
+            $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+            data: { name: 'table' },
+            mark: 'bar',
+            encoding: {}
+        };
+
+        const patched = patchVegaLiteSpec(spec);
+
+        expect((patched as any).autosize).toEqual({
+            type: 'fit',
+            contains: 'padding'
+        });
+    });
+
+    it('should preserve user-specified autosize when injecting container sizing', () => {
+        const spec: TopLevelSpec = {
+            $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+            autosize: { type: 'none' },
+            data: { name: 'table' },
+            mark: 'bar',
+            encoding: {}
+        } as TopLevelSpec;
+
+        const patched = patchVegaLiteSpec(spec);
+
+        expect((patched as any).autosize).toEqual({ type: 'none' });
+    });
+
+    it('should preserve user-specified autosize string shorthand', () => {
+        // Vega-Lite accepts `autosize` as either an object or a string shorthand
+        // (e.g. 'fit', 'none', 'pad', 'fit-x', 'fit-y'). When a user provides the
+        // string form, Deneb still treats it as "user has set autosize" and does
+        // not override — preserving the user's intent. Users who want
+        // container-fit with padding containment must set the full object form
+        // themselves; Deneb's default injection only applies when autosize is
+        // completely absent.
+        const spec: TopLevelSpec = {
+            $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+            autosize: 'fit',
+            data: { name: 'table' },
+            mark: 'bar',
+            encoding: {}
+        } as TopLevelSpec;
+
+        const patched = patchVegaLiteSpec(spec);
+
+        expect((patched as any).autosize).toBe('fit');
+    });
+
+    it('should not inject autosize when user has specified both width and height', () => {
+        // When user specifies explicit dimensions, Deneb does not inject container sizing,
+        // and therefore does not inject autosize either. The user is in full control.
+        const spec: TopLevelSpec = {
+            $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+            width: 500,
+            height: 300,
+            data: { name: 'table' },
+            mark: 'bar',
+            encoding: {}
+        };
+
+        const patched = patchVegaLiteSpec(spec, {
+            containerDimensions: { width: 800, height: 600 }
+        });
+
+        expect((patched as any).autosize).toBeUndefined();
+    });
+
+    it('should inject autosize when only width is missing', () => {
+        // When only one dimension is missing, container sizing is still being injected
+        // (just for the missing axis), so autosize should still be injected.
+        const spec: TopLevelSpec = {
+            $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+            height: 300,
+            data: { name: 'table' },
+            mark: 'bar',
+            encoding: {}
+        } as TopLevelSpec;
+
+        const patched = patchVegaLiteSpec(spec);
+
+        expect(patched.width).toBe('container');
+        expect((patched as any).autosize).toEqual({
+            type: 'fit',
+            contains: 'padding'
+        });
+    });
+
     it('should not set container sizing for concat layout', () => {
         const spec: TopLevelSpec = {
             $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
@@ -76,6 +169,7 @@ describe('patchVegaLiteSpec', () => {
         expect(patched.params).toBeDefined();
         expect(patched.width).toBeUndefined();
         expect(patched.height).toBeUndefined();
+        expect((patched as any).autosize).toBeUndefined();
     });
 
     it('should not set container sizing for hconcat layout', () => {
@@ -171,8 +265,12 @@ describe('patchVegaLiteSpec', () => {
         const patched = patchVegaLiteSpec(spec);
 
         expect(patched.params).toHaveLength(3); // 2 custom + 1 denebContainer
-        expect(patched.params?.find((p: any) => p.name === 'customParam')).toBeDefined();
-        expect(patched.params?.find((p: any) => p.name === 'anotherParam')).toBeDefined();
+        expect(
+            patched.params?.find((p: any) => p.name === 'customParam')
+        ).toBeDefined();
+        expect(
+            patched.params?.find((p: any) => p.name === 'anotherParam')
+        ).toBeDefined();
         expect(
             patched.params?.find((p: any) => p.name === SIGNAL_DENEB_CONTAINER)
         ).toBeDefined();
@@ -196,8 +294,12 @@ describe('patchVegaLiteSpec', () => {
         });
 
         expect(patched.params).toHaveLength(3); // denebContainer + 2 additional
-        expect(patched.params?.find((p: any) => p.name === 'brushSelection')).toBeDefined();
-        expect(patched.params?.find((p: any) => p.name === 'filterValue')).toBeDefined();
+        expect(
+            patched.params?.find((p: any) => p.name === 'brushSelection')
+        ).toBeDefined();
+        expect(
+            patched.params?.find((p: any) => p.name === 'filterValue')
+        ).toBeDefined();
     });
 
     it('should not mutate original spec', () => {

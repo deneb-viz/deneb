@@ -27,6 +27,14 @@ const isNonStandardLayout = (spec: TopLevelSpec): boolean => {
  * For standard layouts (no concat/hconcat/vconcat/facet), sets `width` and/or `height`
  * to `'container'` if not already specified. Non-standard layouts are returned unchanged.
  *
+ * When container-based sizing is injected, also injects
+ * `autosize: { type: 'fit', contains: 'padding' }` so the rendered SVG (including padding)
+ * fits within the container. Without this, Vega-Lite's default `autosize.contains = 'content'`
+ * causes the SVG to be `container + 2 × padding` in both dimensions — visible as unwanted
+ * scrollbars on fitted specs (issue #480).
+ *
+ * User-specified `autosize` is never overridden.
+ *
  * This is separated from the full patching so it can be used independently — e.g. when
  * compiling a clean Vega spec for the "Edit Vega Spec" feature, where we need container
  * sizing in the output but don't want the `denebContainer` signal injected.
@@ -41,13 +49,28 @@ export const patchVegaLiteResponsiveSizing = (
 
     const normalized = spec as ReturnType<typeof normalize>;
     const patches: Partial<TopLevelSpec> = {};
+    let injectingContainerSizing = false;
 
     if (normalized.width === undefined) {
         (patches as any).width = 'container';
+        injectingContainerSizing = true;
     }
 
     if (normalized.height === undefined) {
         (patches as any).height = 'container';
+        injectingContainerSizing = true;
+    }
+
+    // When Deneb injects container-based sizing, also inject an autosize that fits
+    // the total rendered size (including padding) within the container. Vega-Lite's
+    // default `autosize.contains` is `'content'`, which places padding OUTSIDE the
+    // container-specified dimensions, producing an SVG that is 2×padding larger than
+    // the container on each axis. `contains: 'padding'` fits padding INSIDE instead.
+    if (
+        injectingContainerSizing &&
+        (normalized as any).autosize === undefined
+    ) {
+        (patches as any).autosize = { type: 'fit', contains: 'padding' };
     }
 
     return Object.keys(patches).length > 0
