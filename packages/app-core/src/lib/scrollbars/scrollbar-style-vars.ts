@@ -27,12 +27,20 @@ export const addAlpha = (color: string, opacity: number): string => {
 /**
  * Build the inline-style CSS custom properties object consumed by
  * `overlayscrollbars` on the host element. Maps Deneb's four user-configurable
- * display settings to the library's three styling variables:
+ * display settings to the library's styling variables:
  *
  *   scrollbarWidth       → --os-size
- *   scrollbarColor +     → --os-handle-bg (via addAlpha)
- *     scrollbarOpacity
+ *   scrollbarColor +     → --os-handle-bg
+ *     scrollbarOpacity      + --os-handle-bg-hover
+ *                           + --os-handle-bg-active
  *   scrollbarRadius      → --os-handle-border-radius
+ *
+ * Hover and active states use the same computed thumb colour as the resting
+ * state. Without setting these, the library defaults them to `none` when no
+ * theme class is applied to the component, making the scrollbar handle vanish
+ * on hover/click. This preserves the pre-refactor behaviour where the webkit
+ * `::-webkit-scrollbar-thumb:hover` rule used the same colour as the resting
+ * thumb.
  *
  * @param scrollbarColor 6-digit hex colour (e.g. '#000000')
  * @param scrollbarOpacity 0-100 percentage
@@ -45,9 +53,13 @@ export const getScrollbarStyleVars = (
     scrollbarOpacity: number,
     scrollbarRadius: number,
     scrollbarWidth: number
-): CSSProperties =>
-    ({
+): CSSProperties => {
+    const thumbColor = addAlpha(scrollbarColor, scrollbarOpacity / 100);
+    return {
         '--os-size': `${scrollbarWidth}px`,
-        '--os-handle-bg': addAlpha(scrollbarColor, scrollbarOpacity / 100),
+        '--os-handle-bg': thumbColor,
+        '--os-handle-bg-hover': thumbColor,
+        '--os-handle-bg-active': thumbColor,
         '--os-handle-border-radius': `${scrollbarRadius}px`
-    }) as CSSProperties;
+    } as CSSProperties;
+};

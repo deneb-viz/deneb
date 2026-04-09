@@ -49,11 +49,26 @@ describe('addAlpha', () => {
 });
 
 describe('getScrollbarStyleVars', () => {
-    it('returns all three CSS variables as a style object', () => {
+    it('returns all five CSS variables as a style object', () => {
         const vars = getScrollbarStyleVars('#000000', 20, 0, 8);
         expect(vars).toHaveProperty('--os-size');
         expect(vars).toHaveProperty('--os-handle-bg');
+        expect(vars).toHaveProperty('--os-handle-bg-hover');
+        expect(vars).toHaveProperty('--os-handle-bg-active');
         expect(vars).toHaveProperty('--os-handle-border-radius');
+    });
+
+    it('sets hover and active handle bg to the same colour as the resting state', () => {
+        // Without explicit hover/active values, the overlayscrollbars library
+        // falls back to `none` when no theme class is applied, making the
+        // handle vanish on hover/click. Setting all three to the same computed
+        // colour preserves the pre-refactor behaviour.
+        const vars = getScrollbarStyleVars('#ff0000', 80, 0, 8);
+        const resting = vars['--os-handle-bg' as keyof typeof vars];
+        expect(vars['--os-handle-bg-hover' as keyof typeof vars]).toBe(resting);
+        expect(vars['--os-handle-bg-active' as keyof typeof vars]).toBe(
+            resting
+        );
     });
 
     it('emits scrollbarWidth as an os-size pixel value', () => {
