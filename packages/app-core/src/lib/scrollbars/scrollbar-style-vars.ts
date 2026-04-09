@@ -1,27 +1,38 @@
 import type { CSSProperties } from 'react';
+import type { PartialOptions } from 'overlayscrollbars';
 
 /**
  * Convert a 6-digit hex colour into an 8-digit hex with alpha, given 0–1 opacity.
  *
  * Defensive: clamps opacity to [0, 1]. Zero-pads single-digit hex alpha values
  * (e.g. opacity 0.02 → '05', not '5') so the result is always a valid 9-char
- * hex colour string.
- *
- * Note: due to the `|| 1` fallback, an opacity of `0` is treated as full opacity.
- * Negative values (e.g. -1) are clamped to 0 (fully transparent) via `Math.max`.
- * Both behaviours match the inline helper previously in visual-viewer.tsx and
- * are preserved intentionally to avoid silent user-visible changes.
+ * hex colour string. Uses `?? 1` so that `null`/`undefined` fall back to full
+ * opacity while an explicit `0` correctly produces fully transparent (`00`).
  *
  * @example
  *   addAlpha('#000000', 0.2) // '#00000033'
  *   addAlpha('#ffffff', 1)   // '#ffffffff'
  *   addAlpha('#000000', 0.02) // '#00000005' (not '#0000005')
- *   addAlpha('#ff0000', 0)   // '#ff0000ff' (0 is falsy, falls back to 1)
+ *   addAlpha('#ff0000', 0)   // '#ff000000' (fully transparent)
  *   addAlpha('#ff0000', -1)  // '#ff000000' (negative clamps to 0)
  */
 export const addAlpha = (color: string, opacity: number): string => {
-    const _opacity = Math.round(Math.min(Math.max(opacity || 1, 0), 1) * 255);
+    const _opacity = Math.round(Math.min(Math.max(opacity ?? 1, 0), 1) * 255);
     return `${color}${_opacity.toString(16).padStart(2, '0')}`;
+};
+
+/**
+ * Stable overlayscrollbars options reference. Lifted to module scope so the
+ * library does not re-apply options on every render (the library compares
+ * the `options` prop by reference and calls `instance.options(...)` whenever
+ * it changes). Shared by both `visual-viewer.tsx` and `preview-area.tsx`.
+ */
+export const SCROLLBAR_OPTIONS: PartialOptions = {
+    scrollbars: {
+        autoHide: 'never',
+        visibility: 'auto'
+    },
+    overflow: { x: 'scroll', y: 'scroll' }
 };
 
 /**

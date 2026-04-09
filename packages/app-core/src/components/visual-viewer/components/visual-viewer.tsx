@@ -5,7 +5,7 @@ import {
     OverlayScrollbarsComponent,
     type OverlayScrollbarsComponentRef
 } from 'overlayscrollbars-react';
-import type { EventListeners, PartialOptions } from 'overlayscrollbars';
+import type { EventListeners } from 'overlayscrollbars';
 import 'overlayscrollbars/overlayscrollbars.css';
 
 import { DEFAULT_VIEWPORT_SCALE } from '@deneb-viz/configuration';
@@ -23,7 +23,10 @@ import { useDenebState } from '../../../state';
 import { useDenebPlatformProvider } from '../../deneb-platform';
 import { INCREMENTAL_UPDATE_CONFIGURATION } from '../../../lib/vega/incremental-update-configuration';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
-import { getScrollbarStyleVars } from '../../../lib/scrollbars/scrollbar-style-vars';
+import {
+    getScrollbarStyleVars,
+    SCROLLBAR_OPTIONS
+} from '../../../lib/scrollbars/scrollbar-style-vars';
 
 /**
  * The original device pixel ratio, captured once at module load.
@@ -74,21 +77,6 @@ const useVisualViewerStyles = makeStyles({
     },
     overflowVisible: { overflow: 'visible' }
 });
-
-/**
- * Stable overlayscrollbars options reference. Lifted to module scope so the
- * library does not re-apply options on every VisualViewer render (the
- * library compares the `options` prop by reference and calls
- * `instance.options(...)` whenever it changes). The values here are constant
- * and do not depend on any component state.
- */
-const SCROLLBAR_OPTIONS: PartialOptions = {
-    scrollbars: {
-        autoHide: 'never',
-        visibility: 'auto'
-    },
-    overflow: { x: 'scroll', y: 'scroll' }
-};
 
 type VisualViewerProps = {
     isEmbeddedInEditor?: boolean;

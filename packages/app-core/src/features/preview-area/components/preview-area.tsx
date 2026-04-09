@@ -6,7 +6,6 @@ import {
     mergeClasses
 } from '@fluentui/react-components';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
-import type { PartialOptions } from 'overlayscrollbars';
 import 'overlayscrollbars/overlayscrollbars.css';
 import { VegaViewProvider } from '@deneb-viz/vega-react';
 
@@ -17,22 +16,10 @@ import { VisualViewer } from '../../../components/visual-viewer';
 import { createSchemaValidator } from '../../../lib/vega/compilation';
 import { useDenebState } from '../../../state';
 import { COMPILATION_STATUS_DEFAULT } from '@deneb-viz/vega-runtime/compilation';
-import { getScrollbarStyleVars } from '../../../lib/scrollbars/scrollbar-style-vars';
-
-/**
- * Stable overlayscrollbars options reference for the editor preview area.
- * Lifted to module scope so the library does not re-apply options on every
- * render (the library compares the `options` prop by reference and calls
- * `instance.options(...)` whenever it changes). Mirrors the SCROLLBAR_OPTIONS
- * used in visual-viewer.tsx.
- */
-const SCROLLBAR_OPTIONS: PartialOptions = {
-    scrollbars: {
-        autoHide: 'never',
-        visibility: 'auto'
-    },
-    overflow: { x: 'scroll', y: 'scroll' }
-};
+import {
+    getScrollbarStyleVars,
+    SCROLLBAR_OPTIONS
+} from '../../../lib/scrollbars/scrollbar-style-vars';
 
 /**
  * Preview area base styles (static). Dynamic sizing is applied via inline styles.

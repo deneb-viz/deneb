@@ -1,1 +1,5 @@
-export { addAlpha, getScrollbarStyleVars } from './scrollbar-style-vars';
+export {
+    addAlpha,
+    getScrollbarStyleVars,
+    SCROLLBAR_OPTIONS
+} from './scrollbar-style-vars';

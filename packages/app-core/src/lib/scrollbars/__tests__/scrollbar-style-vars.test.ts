@@ -27,20 +27,15 @@ describe('addAlpha', () => {
     });
 
     it('clamps negative opacity to 0 (fully transparent)', () => {
-        // -1 is truthy, so `-1 || 1` stays as -1; Math.max(-1, 0) → 0.
-        // Alpha 0x00 = fully transparent. Note this asymmetry: negative
-        // values clamp to transparent, but opacity of exactly 0 is treated
-        // as full opacity (the next test) due to the `|| 1` falsy fallback.
+        // Math.max(-1, 0) → 0. Alpha 0x00 = fully transparent.
         expect(addAlpha('#ff0000', -1)).toBe('#ff000000');
     });
 
-    it('treats 0 opacity as full opacity due to || 1 fallback', () => {
-        // Documents existing behaviour preserved from the inline addAlpha.
-        // `0 || 1` → 1 (0 is falsy). Users relying on scrollbarOpacity = 0
-        // as "fully transparent" get full opacity instead. This matches the
-        // behaviour of the original visual-viewer.tsx inline helper and is
-        // preserved intentionally to avoid silent user-visible changes.
-        expect(addAlpha('#ff0000', 0)).toBe('#ff0000ff');
+    it('treats 0 opacity as fully transparent', () => {
+        // With `?? 1` (null-coalescing), an explicit 0 is NOT treated as
+        // falsy — it correctly produces alpha 0x00 (fully transparent).
+        // This fixes the legacy `|| 1` quirk from the original inline helper.
+        expect(addAlpha('#ff0000', 0)).toBe('#ff000000');
     });
 
     it('accepts an uppercase hex colour and preserves case', () => {
