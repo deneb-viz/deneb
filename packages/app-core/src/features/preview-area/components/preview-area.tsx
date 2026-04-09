@@ -5,6 +5,9 @@ import {
     tokens,
     mergeClasses
 } from '@fluentui/react-components';
+import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
+import type { PartialOptions } from 'overlayscrollbars';
+import 'overlayscrollbars/overlayscrollbars.css';
 import { VegaViewProvider } from '@deneb-viz/vega-react';
 
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
@@ -14,6 +17,22 @@ import { VisualViewer } from '../../../components/visual-viewer';
 import { createSchemaValidator } from '../../../lib/vega/compilation';
 import { useDenebState } from '../../../state';
 import { COMPILATION_STATUS_DEFAULT } from '@deneb-viz/vega-runtime/compilation';
+import { getScrollbarStyleVars } from '../../../lib/scrollbars/scrollbar-style-vars';
+
+/**
+ * Stable overlayscrollbars options reference for the editor preview area.
+ * Lifted to module scope so the library does not re-apply options on every
+ * render (the library compares the `options` prop by reference and calls
+ * `instance.options(...)` whenever it changes). Mirrors the SCROLLBAR_OPTIONS
+ * used in visual-viewer.tsx.
+ */
+const SCROLLBAR_OPTIONS: PartialOptions = {
+    scrollbars: {
+        autoHide: 'never',
+        visibility: 'auto'
+    },
+    overflow: { x: 'scroll', y: 'scroll' }
+};
 
 /**
  * Preview area base styles (static). Dynamic sizing is applied via inline styles.
@@ -21,7 +40,6 @@ import { COMPILATION_STATUS_DEFAULT } from '@deneb-viz/vega-runtime/compilation'
 const usePreviewStyles = makeStyles({
     previewArea: {
         ...shorthands.padding('2px'),
-        ...shorthands.overflow('overlay'),
         boxSizing: 'border-box',
         width: '100%',
         height: '100%'
@@ -65,7 +83,11 @@ export const PreviewArea = () => {
         status,
         viewportHeight,
         viewportWidth,
-        showViewportMarker
+        showViewportMarker,
+        scrollbarColor,
+        scrollbarOpacity,
+        scrollbarRadius,
+        scrollbarWidth
     } = useDenebState((state) => ({
         editorPreviewAreaHeight: state.editor.previewAreaViewport.height ?? 0,
         editorZoomLevel: state.editorZoomLevel,
@@ -73,7 +95,11 @@ export const PreviewArea = () => {
         showViewportMarker: state.editorPreferences.previewAreaShowBorder,
         status: state.compilation.result?.status ?? COMPILATION_STATUS_DEFAULT,
         viewportHeight: state.interface.embedViewport?.height ?? 0,
-        viewportWidth: state.interface.embedViewport?.width ?? 0
+        viewportWidth: state.interface.embedViewport?.width ?? 0,
+        scrollbarColor: state.visualRender.scrollbarColor,
+        scrollbarOpacity: state.visualRender.scrollbarOpacity,
+        scrollbarRadius: state.visualRender.scrollbarRadius,
+        scrollbarWidth: state.visualRender.scrollbarWidth
     }));
 
     /**
@@ -94,10 +120,25 @@ export const PreviewArea = () => {
         ['--vp-border' as unknown as keyof CSSProperties]: `${borderWidth}px`,
         ['--vp-scale' as unknown as keyof CSSProperties]: String(scale)
     };
+    const scrollbarStyleVars = getScrollbarStyleVars(
+        scrollbarColor,
+        scrollbarOpacity,
+        scrollbarRadius,
+        scrollbarWidth
+    );
+    const combinedStyleVars: CSSProperties = {
+        ...styleVars,
+        ...scrollbarStyleVars
+    };
     logRender('VisualPreview', status, editorPreviewAreaHeight);
     return (
         <VegaViewProvider>
-            <div className={classes.previewArea} style={styleVars}>
+            <OverlayScrollbarsComponent
+                className={classes.previewArea}
+                style={combinedStyleVars}
+                options={SCROLLBAR_OPTIONS}
+                defer
+            >
                 <div
                     className={mergeClasses(
                         classes.previewWrapper,
@@ -116,7 +157,7 @@ export const PreviewArea = () => {
                         />
                     </div>
                 </div>
-            </div>
+            </OverlayScrollbarsComponent>
         </VegaViewProvider>
     );
 };
