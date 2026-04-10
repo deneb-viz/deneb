@@ -131,16 +131,7 @@ export const PROJECT_SYNC_MAPPINGS: SliceSyncMapping<ProjectSyncKey>[] = [
             objectName: 'stateManagement',
             propertyName: 'supportFieldConfiguration'
         },
-        onPersist: (value) => {
-            // Serialize object to JSON string for Power BI text property storage
-            return [
-                {
-                    objectName: 'stateManagement',
-                    propertyName: 'supportFieldConfiguration',
-                    value: JSON.stringify(value)
-                }
-            ];
-        }
+        serializeForPersistence: (value) => JSON.stringify(value)
     },
     {
         sliceKey: 'denebMetaVersion',
@@ -153,13 +144,7 @@ export const PROJECT_SYNC_MAPPINGS: SliceSyncMapping<ProjectSyncKey>[] = [
             objectName: 'stateManagement',
             propertyName: 'denebMetaVersion'
         },
-        onPersist: (value) => [
-            {
-                objectName: 'stateManagement',
-                propertyName: 'denebMetaVersion',
-                value: String(value)
-            }
-        ]
+        serializeForPersistence: (value) => String(value)
     },
     {
         sliceKey: 'scaleToZoom',

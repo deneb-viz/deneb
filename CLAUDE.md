@@ -2,7 +2,7 @@
 
 This file provides quick-reference guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-> **For detailed information**, see [doc/DEVELOPMENT.md](doc/DEVELOPMENT.md) - the comprehensive development guide.
+> **For detailed information**, see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) - the comprehensive development guide.
 
 ## Project Overview
 
@@ -83,6 +83,8 @@ npm run dev       # Start development (auto-primes assets if needed)
 
 - **web-client-sample** - Vite-based web integration sample
 
+**Documented Solutions (`docs/solutions/`):** Past problems diagnosed and solved, organized by category with YAML frontmatter (`module`, `tags`, `problem_type`). Relevant when debugging or implementing in documented areas.
+
 ### Critical: Singleton Package Pattern
 
 `@deneb-viz/powerbi-compat` MUST remain a singleton to maintain shared runtime state:
@@ -113,6 +115,7 @@ buildEmbedOptions() → useVegaEmbed() → vegaEmbed() → Vega View
 ```
 
 **Key modules:**
+
 - `vega-runtime/spec-processing` - Parsing, patching, validation
 - `vega-runtime/compilation` - Orchestrates spec compilation
 - `vega-react/hooks` - useVegaEmbed, useVegaView for React integration
@@ -174,7 +177,7 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 - Production: No source maps (not included in .pbiviz), certification fix enabled, type checking
 - Turbo orchestrates package builds with dependency awareness
 
-> **Details**: See [Webpack Architecture](doc/DEVELOPMENT.md#4-webpack-architecture) and [WEBPACK-OPTIMIZATIONS.md](doc/WEBPACK-OPTIMIZATIONS.md)
+> **Details**: See [Webpack Architecture](docs/DEVELOPMENT.md#4-webpack-architecture) and [WEBPACK-OPTIMIZATIONS.md](docs/WEBPACK-OPTIMIZATIONS.md)
 
 ### Power BI Visual Integration
 
@@ -203,6 +206,7 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 **Feature Flags**: JSON-based in [config/features.json](config/features.json), imported via `FEATURES` from `config/index.ts`
 
 **Environment Variables** (.env - local only, NOT committed):
+
 - `LOG_LEVEL` - 0 (None) to 51 (Timing)
 - `ALLOW_EXTERNAL_URI` - false (certified) / true (standalone only)
 - `ZUSTAND_DEV_TOOLS`, `PBIVIZ_DEV_MODE`, `PBIVIZ_DEV_OVERLAY` - dev toggles
@@ -225,6 +229,7 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 ## Development Workflow
 
 **Quick Start:**
+
 1. `npm run dev` → auto-primes assets, starts watchers + dev server
 2. Open Power BI pointing to `https://localhost:8080/assets/visual.js`
 3. Edit code → webpack auto-rebuilds (~1-2s) → page reloads
@@ -238,10 +243,12 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 **Bundle Size:** ~1MB max (Power BI limit) - use `npm run webpack:analyze` to inspect
 
 **TypeScript Const Enums:** `powerbi-visuals-api` enums are inlined at compile time (no runtime dependency)
+
 - Root visual: ts-loader with `transpileOnly=false` in production
 - `@deneb-viz/powerbi-compat`: uses tsc (not tsup) to preserve inlining
 
 **Certification:** Validate with `npm run validate-config-for-commit` before packaging
+
 - `ALLOW_EXTERNAL_URI=false`, `LOG_LEVEL=0`, all dev toggles off
 
 **Persisted visual state (`stateManagement`):** Stores viewport dimensions and `supportFieldConfiguration` — the per-field flags controlling which support fields are generated. This property is part of the visual's persistent JSON and grows as new per-spec configuration is added.
@@ -249,6 +256,7 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 ## Troubleshooting
 
 Common issues:
+
 - **Constructor not firing** → Check `_DEBUG` suffix in webpack.common.config.js
 - **Slow rebuilds (>5s)** → Ensure `certificationFix: false` in dev mode
 - **Visual doesn't load** → Clear `.tmp/`, restart `npm run dev` (auto-primes)
@@ -261,10 +269,11 @@ Common issues:
 vega-embed has a bug where `actions: false` doesn't prevent the `.has-actions` class from being applied, causing unwanted padding. The workaround requires spreading `actions: false` directly at the `vegaEmbed()` call site in `vega-react/src/hooks/use-vega-embed.ts`:
 
 ```typescript
-vegaEmbed(ref.current, spec, { ...options, actions: false })
+vegaEmbed(ref.current, spec, { ...options, actions: false });
 ```
 
 This is combined with CSS safety in `app-core/vega-embed.tsx`:
+
 ```typescript
 '& .vega-actions': { display: 'none !important' },
 paddingRight: '0 !important'
