@@ -74,16 +74,17 @@ export const createSliceSync = <TSlice, TSliceKey extends string, TSyncPayload>(
                     const appCoreValue = getSliceValue(slice, mapping.sliceKey);
 
                     // Check for pending persist before normal sync logic
-                    const pendingEntry = pendingPersists.get(
-                        mapping.sliceKey as TSliceKey
-                    );
+                    const pendingEntry = pendingPersists.get(mapping.sliceKey);
                     if (pendingEntry) {
+                        // deepEqual is used here (not shallowEqual) because the
+                        // pending value is the raw app-core object, while the visual
+                        // value may be a freshly deserialized copy (e.g., JSON.parse
+                        // round-trip for supportFieldConfiguration). shallowEqual
+                        // would fail on new object references with identical content.
                         if (deepEqual(visualValue, pendingEntry.value)) {
                             // Power BI confirmed our persist — clear the pending entry.
                             // App-core already has the correct value, so skip sync.
-                            pendingPersists.delete(
-                                mapping.sliceKey as TSliceKey
-                            );
+                            pendingPersists.delete(mapping.sliceKey);
                             logDebug(
                                 `[StoreSynchronization:${name}] Pending persist confirmed for '${mapping.sliceKey}'`
                             );
@@ -113,11 +114,15 @@ export const createSliceSync = <TSlice, TSliceKey extends string, TSyncPayload>(
                         `[StoreSynchronization:${name}] Visual settings changed, syncing to app-core...`,
                         { payload, isFirstHydration }
                     );
-                    // Set flag to prevent reverse persistence during this sync
+                    // Set flag to prevent reverse persistence during this sync.
+                    // Wrapped in try/finally so the flag is always cleared even if
+                    // the sync function throws (e.g., Zustand middleware error).
                     isApplyingInboundSync = true;
-                    getSyncFn(slice)(payload as TSyncPayload);
-                    // Clear flag after sync completes
-                    isApplyingInboundSync = false;
+                    try {
+                        getSyncFn(slice)(payload as TSyncPayload);
+                    } finally {
+                        isApplyingInboundSync = false;
+                    }
                 }
             }
         )
@@ -146,6 +151,10 @@ export const createSliceSync = <TSlice, TSliceKey extends string, TSyncPayload>(
 
             const settings = useDenebVisualState.getState().settings;
             const changes: PropertyChange[] = [];
+            const pendingEntries: {
+                key: TSliceKey;
+                value: unknown;
+            }[] = [];
 
             for (const mapping of mappings) {
                 // Skip mappings without persistence (read-only from Power BI)
@@ -168,11 +177,13 @@ export const createSliceSync = <TSlice, TSliceKey extends string, TSyncPayload>(
                         value: persistValue
                     });
 
-                    // Record the pending persist with the raw app-core value (not serialized).
-                    // Confirmation compares against getVisualValue output, which is deserialized.
-                    pendingPersists.set(mapping.sliceKey as TSliceKey, {
-                        value: appCoreValue,
-                        timestamp: Date.now()
+                    // Collect pending entry — recorded after persist call succeeds
+                    // so a failed persist doesn't block inbound sync for 5 seconds.
+                    // Stores the raw app-core value (not serialized) because
+                    // confirmation compares against getVisualValue output (deserialized).
+                    pendingEntries.push({
+                        key: mapping.sliceKey,
+                        value: appCoreValue
                     });
 
                     // Process any cross-property side-effect changes from onPersist callback
@@ -192,6 +203,15 @@ export const createSliceSync = <TSlice, TSliceKey extends string, TSyncPayload>(
                     { changes }
                 );
                 persistProjectProperties(changes);
+
+                // Record pending entries only after persist dispatch
+                const now = Date.now();
+                for (const entry of pendingEntries) {
+                    pendingPersists.set(entry.key, {
+                        value: entry.value,
+                        timestamp: now
+                    });
+                }
             }
         })
     );

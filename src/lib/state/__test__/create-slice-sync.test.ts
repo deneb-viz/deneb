@@ -150,10 +150,7 @@ const createTestConfig = (
 ): SliceSyncConfig<TestSlice, TestSliceKey, Partial<TestSlice>> => ({
     name: 'test',
     getSlice: (state) => (state as { test: TestSlice }).test,
-    getSyncFn: (slice) => {
-        mockSyncFn = vi.fn();
-        return mockSyncFn;
-    },
+    getSyncFn: () => mockSyncFn,
     isHydrated: (slice) => slice.__hasHydrated__,
     getSliceValue: (slice, key) => slice[key],
     mappings: overrides.mappings ?? TEST_MAPPINGS
@@ -530,15 +527,22 @@ describe('createSliceSync', () => {
             fireAppCoreSubscriber(changedSlice);
 
             // No persist call for interactivity (no persistence mapping)
-            // But visual sync should still work for interactivity (no pending blocks it)
+            expect(mockPersistProjectProperties).not.toHaveBeenCalled();
+
+            // Visual sync should still work for interactivity (no pending blocks it).
+            // Use a DIFFERENT visual value to prove the inbound sync path is open.
             const newSettings = {
                 vega: { spec: '{"data":{}}', config: '{}', fontSize: 14 },
-                interactivity: { tooltip: false }
+                interactivity: { tooltip: true }
             };
             fireVisualSubscriber(newSettings);
 
-            // interactivity should sync normally — it has no pending entry
-            // (values are equal so no sync call, but the path is exercised)
+            // interactivity differs from app-core (false vs true), no pending → syncs
+            expect(mockSyncFn).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    interactivity: { tooltip: true }
+                })
+            );
         });
 
         it('should skip when slice reference has not changed', () => {
@@ -766,8 +770,26 @@ describe('createSliceSync', () => {
             fireAppCoreSubscriber(changedSlice);
             expect(mockPersistProjectProperties).toHaveBeenCalled();
 
-            // Cleanup should not throw
+            // Cleanup should not throw and should clear pending state
             cleanup();
+
+            // After cleanup, a stale echo should sync normally (pending was cleared)
+            // Re-create the sync to get a fresh subscriber
+            const cleanup2 = createSliceSync(createTestConfig());
+            const postCleanupSlice = createSliceState({
+                __hasHydrated__: true,
+                spec: 'newSpec'
+            });
+            mockAppCoreState = { test: postCleanupSlice };
+            fireVisualSubscriber({
+                vega: { spec: 'fromPBI', config: '{}', fontSize: 14 },
+                interactivity: { tooltip: true }
+            });
+            // Should sync — no pending entries blocking
+            expect(mockSyncFn).toHaveBeenCalledWith(
+                expect.objectContaining({ spec: 'fromPBI' })
+            );
+            cleanup2();
         });
 
         it('should confirm pending via deepEqual for nested objects (JSON round-trip)', () => {
