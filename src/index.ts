@@ -287,7 +287,8 @@ export class Deneb implements IVisual {
             if (event.key !== 'Tab') return;
             // When a modal dialog is open, let the dialog manage its own
             // focus cycling — the document-level wrap-around must not interfere.
-            if (document.querySelector('[role="dialog"], [role="alertdialog"]')) return;
+            if (document.querySelector('[role="dialog"], [role="alertdialog"]'))
+                return;
             if (
                 handleTabWrapAround(
                     this.#applicationWrapper,
