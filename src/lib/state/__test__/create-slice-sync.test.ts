@@ -561,14 +561,27 @@ describe('createSliceSync', () => {
             mockAppCoreState = { test: slice };
             createSliceSync(createTestConfig());
 
-            // Trigger first hydration (sets isApplyingInboundSync during sync)
+            // Make mockSyncFn simulate a synchronous Zustand state update so the
+            // app-core subscriber fires while isApplyingInboundSync is still true.
+            mockSyncFn.mockImplementation(() => {
+                const hydratedSlice = createSliceState({
+                    __hasHydrated__: true,
+                    spec: 'fromPBI'
+                });
+                mockAppCoreState = { test: hydratedSlice };
+                capturedAppCoreSubscriber(mockAppCoreState);
+            });
+
+            // Trigger first hydration — getSyncFn fires, which synchronously
+            // triggers the app-core subscriber via the mock above
             fireVisualSubscriber({
                 vega: { spec: 'fromPBI', config: '{}', fontSize: 14 },
                 interactivity: { tooltip: true }
             });
 
-            // The sync function was called, but persistence should NOT have been triggered
-            // because isApplyingInboundSync was true during the sync
+            expect(mockSyncFn).toHaveBeenCalled();
+            // Persistence must be suppressed because the app-core update was caused
+            // by inbound sync, not a user action
             expect(mockPersistProjectProperties).not.toHaveBeenCalled();
         });
 

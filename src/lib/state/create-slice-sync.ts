@@ -186,7 +186,12 @@ export const createSliceSync = <TSlice, TSliceKey extends string, TSyncPayload>(
                         value: appCoreValue
                     });
 
-                    // Process any cross-property side-effect changes from onPersist callback
+                    // Process any cross-property side-effect changes from onPersist callback.
+                    // NOTE: side-effect targets are intentionally NOT tracked in pendingPersists.
+                    // Currently the only onPersist usage (provider → selectionMode) targets
+                    // interactivity, which has no persistence mapping and is therefore never
+                    // subject to stale-echo suppression. If a future onPersist targets a
+                    // persistable key, it would need its own pending entry to avoid echoes.
                     if (mapping.onPersist) {
                         const sideEffects = mapping.onPersist(
                             appCoreValue,
