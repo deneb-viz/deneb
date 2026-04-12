@@ -98,26 +98,32 @@ const handleProcessing = async (signal: AbortSignal) => {
         project: { spec }
     } = getDenebState();
     setExportProcessingState('Tokenizing');
-    await updateFieldTracking(spec, dataset);
-    if (signal.aborted) return;
-    const {
-        fieldUsage: { dataset: trackedFieldsCurrent }
-    } = getDenebState();
-    logDebug('[handleProcessing] trackedFieldsCurrent', {
-        trackedFieldsInitial: dataset,
-        trackedFieldsCurrent
-    });
-    await updateFieldTokenization(spec, trackedFieldsCurrent);
-    if (signal.aborted) return;
-    const {
-        dataset: { fields },
-        export: { metadata, updateExportDataset }
-    } = getDenebState();
-    const freshFields = getDatasetTemplateFieldsFromMetadata(fields);
-    const reconciledDataset = reconcileExportDatasetFields(
-        freshFields,
-        metadata?.dataset
-    );
-    updateExportDataset(reconciledDataset);
-    setExportProcessingState('Complete');
+    try {
+        await updateFieldTracking(spec, dataset);
+        if (signal.aborted) return;
+        const {
+            fieldUsage: { dataset: trackedFieldsCurrent }
+        } = getDenebState();
+        logDebug('[handleProcessing] trackedFieldsCurrent', {
+            trackedFieldsInitial: dataset,
+            trackedFieldsCurrent
+        });
+        await updateFieldTokenization(spec, trackedFieldsCurrent);
+        if (signal.aborted) return;
+        const {
+            dataset: { fields },
+            export: { metadata, updateExportDataset }
+        } = getDenebState();
+        const freshFields = getDatasetTemplateFieldsFromMetadata(fields);
+        const reconciledDataset = reconcileExportDatasetFields(
+            freshFields,
+            metadata?.dataset
+        );
+        updateExportDataset(reconciledDataset);
+        setExportProcessingState('Complete');
+    } catch {
+        if (!signal.aborted) {
+            setExportProcessingState('None');
+        }
+    }
 };
