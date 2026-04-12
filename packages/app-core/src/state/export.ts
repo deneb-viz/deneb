@@ -1,6 +1,7 @@
 import { type StateCreator } from 'zustand';
 
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
+import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 import { type DeepPath, updateDeep } from '@deneb-viz/utils/object';
 import { StateDependencies, type StoreState } from './state';
 import { getNewTemplateMetadata } from '@deneb-viz/json-processing';
@@ -23,6 +24,7 @@ export type ExportSliceProperties = {
         payload: ExportSliceSetMetadataPropertyBySelector
     ) => void;
     setPreviewImage: (payload: ExportSliceSetPreviewImage) => void;
+    updateExportDataset: (dataset: UsermetaDatasetField[]) => void;
 };
 
 /**
@@ -72,6 +74,12 @@ export const createExportSlice =
                         (state) => handleSetPreviewImage(state, payload),
                         false,
                         'export.setPreviewImage'
+                    ),
+                updateExportDataset: (dataset) =>
+                    set(
+                        (state) => handleUpdateExportDataset(state, dataset),
+                        false,
+                        'export.updateExportDataset'
                     )
             }
         };
@@ -116,3 +124,19 @@ const handleSetPreviewImage = (
         } as UsermetaTemplate
     }
 });
+
+const handleUpdateExportDataset = (
+    state: StoreState,
+    dataset: UsermetaDatasetField[]
+): Partial<StoreState> => {
+    if (!state.export.metadata) return {};
+    return {
+        export: {
+            ...state.export,
+            metadata: {
+                ...state.export.metadata,
+                dataset
+            }
+        }
+    };
+};

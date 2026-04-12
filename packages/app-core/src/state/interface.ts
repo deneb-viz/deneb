@@ -7,7 +7,6 @@ import {
 } from '../lib/interface';
 import { type RemapState } from '@deneb-viz/json-processing/field-tracking';
 import { StoreState } from './state';
-import { isMappingDialogRequired } from '@deneb-viz/json-processing';
 import { getNewUuid } from '@deneb-viz/utils/crypto';
 import { StateCreator } from 'zustand';
 import { getModalDialogRole } from '../lib/interface/state';
@@ -231,21 +230,12 @@ const handleSetRemapState = (
     state: StoreState,
     remapState: RemapState
 ): Partial<StoreState> => {
-    const modalDialogRole: ModalDialogRole =
-        state.interface.modalDialogRole === 'Remap' &&
-        remapState === 'None' &&
-        state.interface.remapState > 'None'
-            ? 'None'
-            : isMappingDialogRequired({
-                    trackedFields: state.fieldUsage.dataset,
-                    drilldownProperties: state.fieldUsage.drilldown
-                })
-              ? 'Remap'
-              : getModalDialogRole(
-                    state.project.__isInitialized__,
-                    state.interface.type,
-                    state.interface.modalDialogRole
-                );
+    // Remap dialog removed (#486) — tracking is now only used for export.
+    const modalDialogRole: ModalDialogRole = getModalDialogRole(
+        state.project.__isInitialized__,
+        state.interface.type,
+        state.interface.modalDialogRole
+    );
     return {
         interface: {
             ...state.interface,
