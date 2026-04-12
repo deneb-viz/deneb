@@ -63,12 +63,7 @@ export const ExportPane = () => {
                         <div className={classes.paneContentSection}>
                             <StageProgressIndicator
                                 message={translate('Text_Export_Tokenizing')}
-                                isInProgress={
-                                    exportProcessingState === 'Tokenizing'
-                                }
-                                isCompleted={
-                                    exportProcessingState > 'Tokenizing'
-                                }
+                                isInProgress
                             />
                         </div>
                     )}
