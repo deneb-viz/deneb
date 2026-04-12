@@ -68,8 +68,7 @@ export const TemplateDataset = ({ datasetRole }: TemplateDatasetProps) => {
     );
     const tableBody = getTableFieldRows(datasetRole);
 
-    const { dataset } = createMetadata || {};
-    if (dataset?.length === 0 || 0) {
+    if (tableBody.length === 0) {
         return <></>;
     }
     return (

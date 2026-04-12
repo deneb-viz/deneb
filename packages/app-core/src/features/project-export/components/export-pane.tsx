@@ -14,19 +14,26 @@ import {
     updateFieldTokenization,
     updateFieldTracking
 } from '../../../lib/field-processing';
+import { getDatasetTemplateFieldsFromMetadata } from '@deneb-viz/data-core/field';
+import { reconcileExportDatasetFields } from '../../../state/dataset';
 
 /**
  * Interface (pane) for exporting a existing visualization.
  */
 export const ExportPane = () => {
     const classes = useModalDialogStyles();
-    const { exportProcessingState, translate } = useDenebState((state) => ({
-        exportProcessingState: state.interface.exportProcessingState,
-        translate: state.i18n.translate
-    }));
+    const { datasetFields, exportProcessingState, translate } = useDenebState(
+        (state) => ({
+            datasetFields: state.dataset.fields,
+            exportProcessingState: state.interface.exportProcessingState,
+            translate: state.i18n.translate
+        })
+    );
     useEffect(() => {
-        handleProcessing();
-    }, []);
+        const abort = new AbortController();
+        handleProcessing(abort.signal);
+        return () => abort.abort();
+    }, [datasetFields]);
     logRender('VisualExportPane');
     return (
         <div className={classes.paneRoot}>
@@ -84,7 +91,7 @@ export const ExportPane = () => {
 /**
  * Do the necessary work to process the spec for the template fields when the dialog is loaded.
  */
-const handleProcessing = async () => {
+const handleProcessing = async (signal: AbortSignal) => {
     const {
         fieldUsage: { dataset },
         interface: { setExportProcessingState },
@@ -92,6 +99,7 @@ const handleProcessing = async () => {
     } = getDenebState();
     setExportProcessingState('Tokenizing');
     await updateFieldTracking(spec, dataset);
+    if (signal.aborted) return;
     const {
         fieldUsage: { dataset: trackedFieldsCurrent }
     } = getDenebState();
@@ -100,5 +108,16 @@ const handleProcessing = async () => {
         trackedFieldsCurrent
     });
     await updateFieldTokenization(spec, trackedFieldsCurrent);
+    if (signal.aborted) return;
+    const {
+        dataset: { fields },
+        export: { metadata, updateExportDataset }
+    } = getDenebState();
+    const freshFields = getDatasetTemplateFieldsFromMetadata(fields);
+    const reconciledDataset = reconcileExportDatasetFields(
+        freshFields,
+        metadata?.dataset
+    );
+    updateExportDataset(reconciledDataset);
     setExportProcessingState('Complete');
 };

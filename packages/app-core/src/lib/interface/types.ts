@@ -46,9 +46,4 @@ export type InterfaceType = 'viewer' | 'editor';
 /**
  * Represents modal dialog display state.
  */
-export type ModalDialogRole =
-    | 'None'
-    | 'Version'
-    | 'Create'
-    | 'Remap'
-    | 'Export';
+export type ModalDialogRole = 'None' | 'Version' | 'Create' | 'Export';

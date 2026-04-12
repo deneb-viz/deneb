@@ -25,13 +25,11 @@ import {
 } from '../../../features/project-create';
 import { ExportButtons, ExportPane } from '../../../features/project-export';
 import { VersionChangeContent } from './version-change-content';
-import { FieldRemapPane } from '../../../features/remap-fields';
 
 export const ModalDialog = () => {
     const {
         exportProcessingState,
         modalDialogRole,
-        remapState,
         clearMigrationDialog,
         setExportProcessingState,
         setModalDialogRole,
@@ -39,7 +37,6 @@ export const ModalDialog = () => {
     } = useDenebState((state) => ({
         exportProcessingState: state.interface.exportProcessingState,
         modalDialogRole: state.interface.modalDialogRole,
-        remapState: state.interface.remapState,
         clearMigrationDialog: state.migration.clearMigrationDialog,
         setExportProcessingState: state.interface.setExportProcessingState,
         setModalDialogRole: state.interface.setModalDialogRole,
@@ -78,9 +75,9 @@ export const ModalDialog = () => {
     };
     const shouldPreventClose = useMemo(
         () =>
-            (modalDialogRole === 'Remap' && remapState !== 'None') ||
-            (modalDialogRole === 'Export' && exportProcessingState !== 'None'),
-        [modalDialogRole, remapState]
+            modalDialogRole === 'Export' &&
+            exportProcessingState === 'Tokenizing',
+        [modalDialogRole, exportProcessingState]
     );
     const dialogType: DialogProps['modalType'] = shouldPreventClose
         ? 'alert'
@@ -128,9 +125,6 @@ const getDialogPrimaryButton = (dialogRole: ModalDialogRole) => {
     switch (dialogRole) {
         case 'Create':
             return <CreateButton />;
-        // Tracking is now only used for export (#486)
-        // case 'Remap':
-        //     return <RemapButton />;
         case 'Export':
             return <ExportButtons />;
         default:
@@ -147,8 +141,6 @@ const getDialogContent = (modalDialogRole: ModalDialogRole) => {
             return <VisualCreatePane />;
         case 'Version':
             return <VersionChangeContent />;
-        case 'Remap':
-            return <FieldRemapPane />;
         case 'Export':
             return <ExportPane />;
         default: {
