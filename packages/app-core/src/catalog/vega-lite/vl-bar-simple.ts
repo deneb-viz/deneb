@@ -3,10 +3,11 @@ import { TopLevelSpec } from 'vega-lite';
 import { VEGA_LITE_SCHEMA_URL } from '.';
 import { getDenebTemplateDatasetRef, getNewIncludedTemplateMetadata } from '..';
 import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 
 const dataset: UsermetaDatasetField[] = [
     {
-        key: '__0__',
+        key: `__${DATASET_DEFAULT_NAME}.0__`,
         name: 'Category',
         description:
             "Select a column that will be displayed on the chart's Y-Axis",
@@ -14,7 +15,7 @@ const dataset: UsermetaDatasetField[] = [
         kind: 'column'
     },
     {
-        key: '__1__',
+        key: `__${DATASET_DEFAULT_NAME}.1__`,
         name: 'Measure',
         description:
             "Select a measure that will be displayed on the chart's X-Axis",
@@ -31,11 +32,11 @@ export const vlBarSimple = (): TopLevelSpec => ({
     },
     encoding: {
         y: {
-            field: '__0__',
+            field: `__${DATASET_DEFAULT_NAME}.0__`,
             type: 'nominal'
         },
         x: {
-            field: '__1__',
+            field: `__${DATASET_DEFAULT_NAME}.1__`,
             type: 'quantitative'
         }
     },
@@ -46,6 +47,6 @@ export const vlBarSimple = (): TopLevelSpec => ({
             'A simple bar chart for a category and a measure.',
             'vlBarSimple'
         ),
-        ...{ dataset }
+        datasets: { [DATASET_DEFAULT_NAME]: dataset }
     }
 });

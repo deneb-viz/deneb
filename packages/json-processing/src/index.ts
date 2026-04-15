@@ -19,6 +19,7 @@ export {
     getNewTemplateMetadata,
     getTemplateMetadata,
     getTemplateReplacedForDataset,
+    getTemplateResolvedForLegacyDataset,
     getTemplateResolvedForPlaceholderAssignment,
     getUpdatedExportMetadata,
     getValidatedTemplate,

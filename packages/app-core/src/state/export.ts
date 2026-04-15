@@ -5,6 +5,7 @@ import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 import { type DeepPath, updateDeep } from '@deneb-viz/utils/object';
 import { StateDependencies, type StoreState } from './state';
 import { getNewTemplateMetadata } from '@deneb-viz/json-processing';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 import { logDebug } from '@deneb-viz/utils/logging';
 
 /**
@@ -135,7 +136,10 @@ const handleUpdateExportDataset = (
             ...state.export,
             metadata: {
                 ...state.export.metadata,
-                dataset
+                datasets: {
+                    ...state.export.metadata.datasets,
+                    [DATASET_DEFAULT_NAME]: dataset
+                }
             }
         }
     };

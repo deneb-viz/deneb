@@ -23,6 +23,7 @@ import {
     getPlaceholderKey,
     type UsermetaDatasetField
 } from '@deneb-viz/data-core/field';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 
 /**
  * For a Vega expression AST node, check if it has an occurrence of a field from the visual dataset.
@@ -173,9 +174,10 @@ export const getTrackingDataFromSpecification = (
         reset,
         supplementaryPatterns
     } = options;
-    const datasetFields = getDatasetFieldsInclusive(
-        fields
-    ) as Record<string, DatasetFieldWithTemplateMetadata>;
+    const datasetFields = getDatasetFieldsInclusive(fields) as Record<
+        string,
+        DatasetFieldWithTemplateMetadata
+    >;
     const trackedFields: TrackedFields = {};
     const trackedDrilldown: TrackedDrilldownProperties = {
         isCurrent: hasDrilldown,
@@ -227,7 +229,10 @@ export const getTrackingDataFromSpecification = (
                 };
                 const { key } = templateMetadata;
                 const tracking: TrackedFieldProperties = trackedFields[key] || {
-                    placeholder: getPlaceholderKey(fieldIndex),
+                    placeholder: getPlaceholderKey(
+                        DATASET_DEFAULT_NAME,
+                        fieldIndex
+                    ),
                     paths: [],
                     isInDataset: f.isCurrent,
                     isInSpecification: false,

@@ -96,10 +96,10 @@ export type FieldPatternReplacer = {
  */
 export type UsermetaDatasetField = {
     /**
-     * Field identifier. In exported templates, this is a placeholder name matching the
-     * `@pattern` below (e.g., `__0__`). In runtime tracking contexts, this is the field's
-     * actual identifier (e.g., queryName or record key).
-     * @pattern ^__[a-zA-Z0-9]+__$
+     * Field identifier. In exported templates, this is a dataset-scoped placeholder matching
+     * the `@pattern` below (e.g., `__dataset.0__`). In runtime tracking contexts, this is
+     * the field's actual identifier (e.g., queryName or record key).
+     * @pattern ^__[a-zA-Z0-9_]+\.\d+__$
      * @maxLength 30
      */
     key: string;

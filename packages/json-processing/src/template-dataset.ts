@@ -5,6 +5,7 @@ import {
     type UsermetaDatasetField,
     type UsermetaDatasetFieldType
 } from '@deneb-viz/data-core/field';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 
 /**
  * Ensure that all requirements are tested and validated before we can create.
@@ -13,7 +14,7 @@ export const areAllCreateDataRequirementsMet = (
     metadata: Partial<UsermetaTemplate> | null | undefined
 ): Partial<DenebTemplateImportWorkingProperties> => {
     const metadataAllFieldsAssigned = areAllTemplateFieldsAssigned(
-        metadata?.dataset ?? []
+        metadata?.datasets?.[DATASET_DEFAULT_NAME] ?? []
     );
     const metadataDrilldownAssigned = true; // to be implemented when drilldown is implemented
     const metadataAllDependenciesAssigned =

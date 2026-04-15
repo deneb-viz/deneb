@@ -33,9 +33,10 @@ export const getParameterRegExpAlternation = () => PARAMETER_NAMES_SUFFIX;
  * fields in the specification, so that they can be replaced with the actual values when the dataset is accessible.
  * - Decimal values are floored to the nearest integer.
  * - Negative values are converted to positive values.
+ * - Placeholders are scoped by dataset name using a dot separator: `__datasetName.N__`
  */
-export const getPlaceholderKey = (i: number) => {
-    return `__${Math.floor(Math.abs(i))}__`;
+export const getPlaceholderKey = (datasetName: string, i: number) => {
+    return `__${datasetName}.${Math.floor(Math.abs(i))}__`;
 };
 
 /**

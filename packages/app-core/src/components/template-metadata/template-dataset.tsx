@@ -14,6 +14,7 @@ import { logDebug } from '@deneb-viz/utils/logging';
 import { TemplateDatasetRow } from './template-dataset-row';
 import { useCallback } from 'react';
 import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 
 type TemplateDatasetProps = {
     datasetRole: ModalDialogType;
@@ -45,13 +46,19 @@ export const TemplateDataset = ({ datasetRole }: TemplateDatasetProps) => {
             let items: UsermetaDatasetField[] = [];
             switch (role) {
                 case 'new':
-                    items = createMetadata?.dataset.slice() || [];
+                    items =
+                        createMetadata?.datasets?.[
+                            DATASET_DEFAULT_NAME
+                        ]?.slice() || [];
                     break;
                 case 'mapping':
                     items = fieldUsage.remapFields.slice() || [];
                     break;
                 case 'export':
-                    items = exportMetadata?.dataset.slice() || [];
+                    items =
+                        exportMetadata?.datasets?.[
+                            DATASET_DEFAULT_NAME
+                        ]?.slice() || [];
                     break;
             }
             logDebug('getTableFieldRows', { items });

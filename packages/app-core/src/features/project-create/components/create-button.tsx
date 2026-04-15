@@ -9,6 +9,7 @@ import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 import { useSpecificationEditor } from '../../specification-editor';
 import { getDenebState, useDenebState } from '../../../state';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 
 /**
  * Displays the content for creating a specification using the selected
@@ -42,18 +43,20 @@ export const CreateButton = () => {
         }
         const spec = getTemplateReplacedForDataset(
             candidates?.spec ?? PROJECT_DEFAULTS.spec,
-            metadata?.dataset ?? []
+            metadata?.datasets ?? {}
         );
         const config = candidates?.config ?? PROJECT_DEFAULTS.config;
         // Remap support field configuration keys from inline dataset entries
         // to actual field names supplied by the user. Computed once and shared with both the
         // platform persistence callback and the project state initialisation.
         const supportFieldConfiguration =
-            remapSupportFieldConfigurationForImport(metadata?.dataset ?? []);
+            remapSupportFieldConfigurationForImport(
+                metadata?.datasets?.[DATASET_DEFAULT_NAME] ?? []
+            );
         // Auto-flag treatAsParameter for regular fields assigned to parameter placeholders
         let needsConsolidation = false;
         const datasetFields = getDenebState().dataset.fields;
-        for (const entry of metadata?.dataset ?? []) {
+        for (const entry of metadata?.datasets?.[DATASET_DEFAULT_NAME] ?? []) {
             if (entry.kind === 'parameter' && entry.suppliedObjectName) {
                 const suppliedField = datasetFields[entry.suppliedObjectName];
                 const suppliedRole = suppliedField?.role ?? 'grouping';

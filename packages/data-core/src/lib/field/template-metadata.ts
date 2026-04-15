@@ -1,3 +1,5 @@
+import { DATASET_DEFAULT_NAME } from '../dataset/constants';
+import { getPlaceholderKey } from './tokenization';
 import type {
     DatasetField,
     DatasetFieldRole,
@@ -77,13 +79,17 @@ export const toUsermetaDatasetField = <T = object>(
  * Transforms an array of DatasetField entries to UsermetaDatasetFields with sequential placeholders.
  *
  * @param entries - Array of [key, field] entries to transform
- * @returns Array of UsermetaDatasetFields with placeholders `__0__`, `__1__`, etc.
+ * @param datasetName - The dataset name for scoped placeholders (defaults to DATASET_DEFAULT_NAME)
+ * @returns Array of UsermetaDatasetFields with placeholders `__dataset.0__`, `__dataset.1__`, etc.
  */
 export const toUsermetaDatasetFields = <T = object>(
-    entries: [string, DatasetField<T>][]
+    entries: [string, DatasetField<T>][],
+    datasetName: string = DATASET_DEFAULT_NAME
 ): UsermetaDatasetField[] =>
     entries.map(([key, field], i) =>
-        toUsermetaDatasetField(key, field, { placeholder: `__${i}__` })
+        toUsermetaDatasetField(key, field, {
+            placeholder: getPlaceholderKey(datasetName, i)
+        })
     );
 
 /**

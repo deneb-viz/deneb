@@ -1,6 +1,7 @@
 import { Caption1, makeStyles, tokens } from '@fluentui/react-components';
 
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 import { useDenebState } from '../../../state';
 
 export const useTemplatePlaceholderMessageStyles = makeStyles({
@@ -40,4 +41,4 @@ export const TemplatePlaceholderMessage = () => {
  */
 const templateHasPlaceholders = (
     template: UsermetaTemplate | undefined | null
-) => (template?.dataset?.length ?? 0) > 0;
+) => (template?.datasets?.[DATASET_DEFAULT_NAME]?.length ?? 0) > 0;

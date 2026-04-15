@@ -15,6 +15,7 @@ import {
 } from '@deneb-viz/template-usermeta';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { type SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 
 export type ProjectSliceProperties = SyncableSlice &
     DenebProject & {
@@ -128,7 +129,9 @@ export const createProjectSlice =
                         };
                         // Embed support field config into dataset entries for export metadata
                         const datasetWithConfig = (
-                            state.export.metadata?.dataset ?? []
+                            state.export.metadata?.datasets?.[
+                                DATASET_DEFAULT_NAME
+                            ] ?? []
                         ).map((d) => {
                             const fieldConfig =
                                 updatedProject.supportFieldConfiguration?.[
@@ -146,7 +149,10 @@ export const createProjectSlice =
                             state.export.metadata as UsermetaTemplate,
                             {
                                 config: payload.config,
-                                dataset: datasetWithConfig,
+                                datasets: {
+                                    ...state.export.metadata?.datasets,
+                                    [DATASET_DEFAULT_NAME]: datasetWithConfig
+                                },
                                 provider,
                                 providerVersion,
                                 interactivity: updatedProject.interactivity
@@ -269,7 +275,9 @@ export const createProjectSlice =
                 set(
                     (state) => {
                         const currentDataset =
-                            state.export.metadata?.dataset ?? [];
+                            state.export.metadata?.datasets?.[
+                                DATASET_DEFAULT_NAME
+                            ] ?? [];
                         const updatedDataset = currentDataset.map((d) => {
                             const fieldConfig =
                                 config[d.namePlaceholder ?? d.name];
@@ -285,7 +293,12 @@ export const createProjectSlice =
                         });
                         const exportMetadata = getUpdatedExportMetadata(
                             state.export.metadata as UsermetaTemplate,
-                            { dataset: updatedDataset }
+                            {
+                                datasets: {
+                                    ...state.export.metadata?.datasets,
+                                    [DATASET_DEFAULT_NAME]: updatedDataset
+                                }
+                            }
                         );
                         return {
                             project: {
@@ -375,7 +388,8 @@ const handleSyncProjectData = (
     };
 
     // Embed support field config into dataset entries for export metadata
-    const currentDataset = state.export.metadata?.dataset ?? [];
+    const currentDataset =
+        state.export.metadata?.datasets?.[DATASET_DEFAULT_NAME] ?? [];
     const datasetWithConfig = currentDataset.map((d) => {
         const fieldConfig =
             updatedProject.supportFieldConfiguration?.[
@@ -391,7 +405,10 @@ const handleSyncProjectData = (
         state.export.metadata as UsermetaTemplate,
         {
             config: payload.config ?? state.export.metadata?.config,
-            dataset: datasetWithConfig,
+            datasets: {
+                ...state.export.metadata?.datasets,
+                [DATASET_DEFAULT_NAME]: datasetWithConfig
+            },
             provider: updatedProject.provider as SpecProvider,
             providerVersion: updatedProject.providerVersion,
             interactivity: updatedProject.interactivity
