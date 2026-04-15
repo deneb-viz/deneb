@@ -347,7 +347,7 @@ export const getTemplateResolvedForLegacyDataset = (
     });
     result = getModifiedJsoncByPath(result, ['usermeta', 'dataset'], undefined);
 
-    for (let i = legacyDataset.length - 1; i >= 0; i--) {
+    for (let i = 0; i < legacyDataset.length; i++) {
         const oldPattern = new RegExp(
             getEscapedReplacerPattern(`__${i}__`),
             'g'
