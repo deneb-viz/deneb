@@ -6,6 +6,7 @@ import {
     VEGA_SCHEMA_URL
 } from '.';
 import { getNewIncludedTemplateMetadata } from '..';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 
 export const vEmpty = (): Spec => ({
     $schema: VEGA_SCHEMA_URL,
@@ -17,6 +18,7 @@ export const vEmpty = (): Spec => ({
             '[empty]',
             'Bare-minimum Vega template, with data-binding pre-populated. Has no additional configuration for styling.'
         ),
+        datasets: { [DATASET_DEFAULT_NAME]: [] },
         config: getDenebTemplateVegaSpecificConfig()
     }
 });

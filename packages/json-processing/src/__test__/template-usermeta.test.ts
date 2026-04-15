@@ -9,6 +9,7 @@ import {
     getTemplateProvider,
     getTemplateReplacedForDataset,
     getTemplateResolvedForLegacyConfig,
+    getTemplateResolvedForLegacyDataset,
     getTemplateResolvedForLegacyVersions,
     getTemplateResolvedForPlaceholderAssignment,
     getUpdatedExportMetadata,
@@ -64,7 +65,7 @@ const MOCK_TEMPLATE_METADATA_BASE = `{
             "dataPointLimit": ${INTERACTIVITY_DEFAULTS.selectionMaxDataPoints},
             "highlight": ${INTERACTIVITY_DEFAULTS.enableHighlight}
         },
-        "dataset": [],
+        "datasets": { "dataset": [] },
         "config": "{}"
     }
 }`;
@@ -94,7 +95,7 @@ const MOCK_TEMPLATE_METADATA_NO_PROVIDER_VERSION = `{
             "dataPointLimit": ${INTERACTIVITY_DEFAULTS.selectionMaxDataPoints},
             "highlight": ${INTERACTIVITY_DEFAULTS.enableHighlight}
         },
-        "dataset": [],
+        "datasets": { "dataset": [] },
         "config": "{}"
     }
 }`;
@@ -123,13 +124,13 @@ const EXPECTED_METADATA_BASE = {
         dataPointLimit: INTERACTIVITY_DEFAULTS.selectionMaxDataPoints,
         highlight: INTERACTIVITY_DEFAULTS.enableHighlight
     },
-    dataset: [],
+    datasets: { dataset: [] },
     config: '{}'
 };
 
 const TRACKED_FIELDS: TrackedFields = {
     'Date.Date': {
-        placeholder: '__0__',
+        placeholder: '__dataset.0__',
         paths: [
             ['signals', 0, 'on', 0, 'update'],
             ['data', 1, 'transform', 0, 'expr'],
@@ -161,7 +162,7 @@ const TRACKED_FIELDS: TrackedFields = {
         }
     },
     'Financials.$ Sales': {
-        placeholder: '__1__',
+        placeholder: '__dataset.1__',
         paths: [
             ['data', 1, 'transform', 1, 'expr'],
             ['marks', 0, 'encode', 'update', 'description', 'signal'],
@@ -218,7 +219,7 @@ describe('getExportTemplate', () => {
     };
     const MOCK_METADATA: UsermetaTemplate = {
         ...EXPECTED_METADATA_BASE,
-        dataset: TEMPLATE_DATASET
+        datasets: { dataset: TEMPLATE_DATASET }
     };
     const MOCK_TOKENIZED_SPEC =
         '{"config": {}, "data": {"values": [] }, "mark": "bar"}';
@@ -250,22 +251,24 @@ describe('getExportTemplate', () => {
       "dataPointLimit": ${INTERACTIVITY_DEFAULTS.selectionMaxDataPoints},
       "highlight": ${INTERACTIVITY_DEFAULTS.enableHighlight}
     },
-    "dataset": [
-      {
-        "key": "__0__",
-        "name": "Date",
-        "description": "",
-        "kind": "column",
-        "type": "dateTime"
-      },
-      {
-        "key": "__1__",
-        "name": "$ Sales",
-        "description": "",
-        "kind": "measure",
-        "type": "numeric"
-      }
-    ],
+    "datasets": {
+      "dataset": [
+        {
+          "key": "__dataset.0__",
+          "name": "Date",
+          "description": "",
+          "kind": "column",
+          "type": "dateTime"
+        },
+        {
+          "key": "__dataset.1__",
+          "name": "$ Sales",
+          "description": "",
+          "kind": "measure",
+          "type": "numeric"
+        }
+      ]
+    },
     "config": "{}"
   },
   "config": {},
@@ -331,7 +334,7 @@ describe('getNewTemplateMetadata', () => {
 describe('getPublishableUsermeta ', () => {
     const MOCK_USERMETA: UsermetaTemplate = {
         ...EXPECTED_METADATA_BASE,
-        dataset: TEMPLATE_DATASET
+        datasets: { dataset: TEMPLATE_DATASET }
     };
     const MOCK_OPTIONS = {
         informationTranslationPlaceholders: {
@@ -351,22 +354,24 @@ describe('getPublishableUsermeta ', () => {
                 description: 'description-placeholder',
                 author: 'author-placeholder'
             },
-            dataset: [
-                {
-                    key: '__0__',
-                    name: 'Date',
-                    description: '',
-                    kind: 'column',
-                    type: 'dateTime'
-                },
-                {
-                    key: '__1__',
-                    name: '$ Sales',
-                    description: '',
-                    kind: 'measure',
-                    type: 'numeric'
-                }
-            ]
+            datasets: {
+                dataset: [
+                    {
+                        key: '__dataset.0__',
+                        name: 'Date',
+                        description: '',
+                        kind: 'column',
+                        type: 'dateTime'
+                    },
+                    {
+                        key: '__dataset.1__',
+                        name: '$ Sales',
+                        description: '',
+                        kind: 'measure',
+                        type: 'numeric'
+                    }
+                ]
+            }
         };
 
         const result = getPublishableUsermeta(MOCK_USERMETA, MOCK_OPTIONS);
@@ -419,43 +424,46 @@ describe('getTemplateProvider', () => {
 });
 
 describe('getTemplateReplacedForDataset', () => {
-    const spec = 'This is a sample spec with __0__ and __1__ placeholders.';
-    const dataset: UsermetaDatasetField[] = [
-        {
-            key: '__0__',
-            name: 'Date',
-            namePlaceholder: 'Date',
-            description: '',
-            kind: 'column',
-            type: 'dateTime',
-            suppliedObjectKey: 'Date.Date',
-            suppliedObjectName: 'Date'
-        },
-        {
-            key: '__1__',
-            name: '$ Sales',
-            namePlaceholder: '$ Sales',
-            description: '',
-            kind: 'measure',
-            type: 'numeric',
-            suppliedObjectKey: 'Financials.$ Sales',
-            suppliedObjectName: '$ Sales'
-        }
-    ];
+    const spec =
+        'This is a sample spec with __dataset.0__ and __dataset.1__ placeholders.';
+    const datasets: Record<string, UsermetaDatasetField[]> = {
+        dataset: [
+            {
+                key: '__dataset.0__',
+                name: 'Date',
+                namePlaceholder: 'Date',
+                description: '',
+                kind: 'column',
+                type: 'dateTime',
+                suppliedObjectKey: 'Date.Date',
+                suppliedObjectName: 'Date'
+            },
+            {
+                key: '__dataset.1__',
+                name: '$ Sales',
+                namePlaceholder: '$ Sales',
+                description: '',
+                kind: 'measure',
+                type: 'numeric',
+                suppliedObjectKey: 'Financials.$ Sales',
+                suppliedObjectName: '$ Sales'
+            }
+        ]
+    };
     it('should replace the placeholders in the spec with the corresponding dataset values', () => {
         const expectedSpec =
             'This is a sample spec with Date and $ Sales placeholders.';
-        const result = getTemplateReplacedForDataset(spec, dataset);
+        const result = getTemplateReplacedForDataset(spec, datasets);
         expect(result).toEqual(expectedSpec);
     });
     it('should replace multiple occurrences of the same placeholder in the spec', () => {
         const specWithDuplicatePlaceholder =
-            'This is a sample spec with __0__ and __0__ placeholders.';
+            'This is a sample spec with __dataset.0__ and __dataset.0__ placeholders.';
         const expectedSpec =
             'This is a sample spec with Date and Date placeholders.';
         const result = getTemplateReplacedForDataset(
             specWithDuplicatePlaceholder,
-            dataset
+            datasets
         );
         expect(result).toEqual(expectedSpec);
     });
@@ -464,33 +472,44 @@ describe('getTemplateReplacedForDataset', () => {
             'This is a sample spec without any placeholders.';
         const result = getTemplateReplacedForDataset(
             specWithoutPlaceholders,
-            dataset
+            datasets
         );
         expect(result).toEqual(specWithoutPlaceholders);
     });
-    it('should return the original spec if the dataset is empty', () => {
-        const emptyDataset: UsermetaDatasetField[] = [];
-        const result = getTemplateReplacedForDataset(spec, emptyDataset);
+    it('should return the original spec if the datasets are empty', () => {
+        const emptyDatasets: Record<string, UsermetaDatasetField[]> = {
+            dataset: []
+        };
+        const result = getTemplateReplacedForDataset(spec, emptyDatasets);
         expect(result).toEqual(spec);
+    });
+    it('should match by field key, not by array position', () => {
+        const reorderedDatasets: Record<string, UsermetaDatasetField[]> = {
+            dataset: [datasets.dataset[1], datasets.dataset[0]]
+        };
+        const result = getTemplateReplacedForDataset(spec, reorderedDatasets);
+        expect(result).toEqual(
+            'This is a sample spec with Date and $ Sales placeholders.'
+        );
     });
     it('should migrate legacy pbiContainer signal references to denebContainer', () => {
         const specWithLegacySignal =
             '{ "signals": [{ "name": "myWidth", "update": "pbiContainerWidth" }] }';
         const expectedSpec =
             '{ "signals": [{ "name": "myWidth", "update": "denebContainer.width" }] }';
-        const result = getTemplateReplacedForDataset(specWithLegacySignal, []);
+        const result = getTemplateReplacedForDataset(specWithLegacySignal, {});
         expect(result).toEqual(expectedSpec);
     });
     it('should migrate pbiContainerHeight to denebContainer.height', () => {
         const specWithLegacySignal = '{ "update": "pbiContainerHeight - 50" }';
         const expectedSpec = '{ "update": "denebContainer.height - 50" }';
-        const result = getTemplateReplacedForDataset(specWithLegacySignal, []);
+        const result = getTemplateReplacedForDataset(specWithLegacySignal, {});
         expect(result).toEqual(expectedSpec);
     });
     it('should migrate pbiContainer to denebContainer', () => {
         const specWithLegacySignal = '{ "update": "pbiContainer.scrollTop" }';
         const expectedSpec = '{ "update": "denebContainer.scrollTop" }';
-        const result = getTemplateReplacedForDataset(specWithLegacySignal, []);
+        const result = getTemplateReplacedForDataset(specWithLegacySignal, {});
         expect(result).toEqual(expectedSpec);
     });
 });
@@ -744,7 +763,7 @@ describe('getTemplateResolvedForPlaceholderAssignment', () => {
 describe('getUpdatedExportMetadata', () => {
     const MOCK_USERMETA: UsermetaTemplate = {
         ...EXPECTED_METADATA_BASE,
-        dataset: TEMPLATE_DATASET
+        datasets: { dataset: TEMPLATE_DATASET }
     };
     it('should return the updated metadata with the provided options', () => {
         const options = {
@@ -758,7 +777,7 @@ describe('getUpdatedExportMetadata', () => {
                 dataPointLimit: 50,
                 highlight: false
             },
-            dataset: TEMPLATE_DATASET,
+            datasets: { dataset: TEMPLATE_DATASET },
             config: '{"key": "value"}'
         };
 
@@ -777,7 +796,7 @@ describe('getUpdatedExportMetadata', () => {
                 dataPointLimit: 50,
                 highlight: false
             },
-            dataset: TEMPLATE_DATASET,
+            datasets: { dataset: TEMPLATE_DATASET },
             config: '{"key": "value"}'
         };
 
@@ -798,7 +817,7 @@ describe('getUpdatedExportMetadata', () => {
                 dataPointLimit: 50,
                 highlight: false
             },
-            dataset: TEMPLATE_DATASET,
+            datasets: { dataset: TEMPLATE_DATASET },
             config: '{"key": "value"}'
         };
         const expectedMetadata = {
@@ -811,11 +830,136 @@ describe('getUpdatedExportMetadata', () => {
                 dataPointLimit: 50,
                 highlight: false
             },
-            dataset: TEMPLATE_DATASET,
+            datasets: { dataset: TEMPLATE_DATASET },
             config: '{"key": "value"}'
         };
         const result = getUpdatedExportMetadata(MOCK_USERMETA, options);
         expect(result).toEqual(expectedMetadata);
+    });
+});
+
+describe('getTemplateResolvedForLegacyDataset', () => {
+    it('migrates v1 dataset array to datasets.dataset and rewrites placeholder keys', () => {
+        const v1 = JSON.stringify({
+            usermeta: {
+                dataset: [
+                    { key: '__0__', name: 'Sales', type: 'numeric' },
+                    { key: '__1__', name: 'Region', type: 'text' }
+                ]
+            }
+        });
+        const result = getTemplateResolvedForLegacyDataset(v1);
+        const parsed = getJsoncStringAsObject(result);
+        expect(parsed.usermeta.dataset).toBeUndefined();
+        expect(parsed.usermeta.datasets.dataset).toEqual([
+            { key: '__dataset.0__', name: 'Sales', type: 'numeric' },
+            { key: '__dataset.1__', name: 'Region', type: 'text' }
+        ]);
+    });
+
+    it('migrates an empty v1 dataset array to datasets.dataset = []', () => {
+        const v1 = JSON.stringify({ usermeta: { dataset: [] } });
+        const result = getTemplateResolvedForLegacyDataset(v1);
+        const parsed = getJsoncStringAsObject(result);
+        expect(parsed.usermeta.dataset).toBeUndefined();
+        expect(parsed.usermeta.datasets).toEqual({ dataset: [] });
+    });
+
+    it('rewrites placeholder references in the spec body', () => {
+        const v1 = JSON.stringify({
+            usermeta: {
+                dataset: [{ key: '__0__', name: 'Sales', type: 'numeric' }]
+            },
+            mark: 'bar',
+            encoding: { x: { field: '__0__', type: 'quantitative' } }
+        });
+        const result = getTemplateResolvedForLegacyDataset(v1);
+        expect(result).toContain('"__dataset.0__"');
+        expect(result).not.toContain('"__0__"');
+    });
+
+    it('preserves compound placeholder suffixes like __1____highlight', () => {
+        const v1 = JSON.stringify({
+            usermeta: {
+                dataset: [
+                    { key: '__0__', name: 'A', type: 'text' },
+                    { key: '__1__', name: 'B', type: 'numeric' }
+                ]
+            },
+            mark: { type: 'bar' },
+            encoding: { color: { field: '__1____highlight' } }
+        });
+        const result = getTemplateResolvedForLegacyDataset(v1);
+        expect(result).toContain('__dataset.1____highlight');
+        expect(result).not.toContain('"__1____highlight"');
+    });
+
+    it('handles 11+ fields without partial matches between __1__ and __10__', () => {
+        const dataset = Array.from({ length: 11 }, (_, i) => ({
+            key: `__${i}__`,
+            name: `Field${i}`,
+            type: 'text'
+        }));
+        const v1 = JSON.stringify({
+            usermeta: { dataset },
+            spec: { x: '__1__', y: '__10__' }
+        });
+        const result = getTemplateResolvedForLegacyDataset(v1);
+        expect(result).toContain('"__dataset.1__"');
+        expect(result).toContain('"__dataset.10__"');
+        expect(result).not.toContain('"__1__"');
+        expect(result).not.toContain('"__10__"');
+        // Ensure __1__ was not partial-matched inside __10__ to produce __dataset.1__0__
+        expect(result).not.toContain('__dataset.1__0__');
+    });
+
+    it('rewrites placeholders inside Vega expression strings', () => {
+        const v1 = JSON.stringify({
+            usermeta: {
+                dataset: [{ key: '__0__', name: 'Sales', type: 'numeric' }]
+            },
+            signals: [{ name: 'tooltip', update: "{'value': datum['__0__']}" }]
+        });
+        const result = getTemplateResolvedForLegacyDataset(v1);
+        expect(result).toContain("datum['__dataset.0__']");
+        expect(result).not.toContain("datum['__0__']");
+    });
+
+    it('passes a v2 template through unchanged when datasets is already present', () => {
+        const v2 = JSON.stringify({
+            usermeta: {
+                datasets: {
+                    dataset: [
+                        {
+                            key: '__dataset.0__',
+                            name: 'Sales',
+                            type: 'numeric'
+                        }
+                    ]
+                }
+            }
+        });
+        const result = getTemplateResolvedForLegacyDataset(v2);
+        expect(result).toBe(v2);
+    });
+
+    it('passes through unchanged when both dataset and datasets are present (schema rejection deferred)', () => {
+        const both = JSON.stringify({
+            usermeta: {
+                dataset: [{ key: '__0__', name: 'A', type: 'text' }],
+                datasets: {
+                    dataset: [{ key: '__dataset.0__', name: 'A', type: 'text' }]
+                }
+            }
+        });
+        const result = getTemplateResolvedForLegacyDataset(both);
+        expect(result).toBe(both);
+    });
+
+    it('returns the template unchanged when usermeta is absent', () => {
+        const noUsermeta = JSON.stringify({ mark: 'bar' });
+        const result = getTemplateResolvedForLegacyDataset(noUsermeta);
+        expect(result).toBe(noUsermeta);
     });
 });
 
@@ -887,72 +1031,37 @@ describe('getValidatedTemplate', () => {
 
     it('should return valid template with import state "Success"', () => {
         const result = getValidatedTemplate(MOCK_CONTENT, MOCK_TAB_SIZE);
-        expect(result).toEqual({
-            candidates: {
-                spec: `{
-  "data": {
-    "values": []
-  },
-  "mark": {
-    "type": "bar"
-  },
-  "encoding": {
-    "x": {
-      "field": "__0__",
-      "type": "temporal"
-    },
-    "y": {
-      "field": "__1__",
-      "type": "quantitative"
-    }
-  }
-}`,
-                config: `{\n  "view": {\n    "stroke": "transparent"\n  }\n}`
-            },
-            importFile: MOCK_CONTENT,
-            importState: 'Success',
-            metadata: {
-                deneb: {
-                    build: '1.6.0.0',
-                    metaVersion: 1,
-                    provider: 'vegaLite',
-                    providerVersion: '5.15.0'
-                },
-                interactivity: {
-                    tooltip: true,
-                    contextMenu: true,
-                    selection: true,
-                    highlight: true,
-                    dataPointLimit: 50
-                },
-                information: {
-                    name: 'Compact Bar Chart',
-                    description:
-                        'A bar char, with the category labels at the base of the bar, rather than as a separate axis label. Data labels are also at the end of each bar.',
-                    author: 'DM-P',
-                    uuid: '42b0e8bb-8538-4510-bb95-1c5a0c5188ac',
-                    generated: '2023-09-22T01:15:02.162Z'
-                },
-                dataset: [
-                    {
-                        key: '__0__',
-                        name: 'Category',
-                        description: "Category for the bar chart's y-axis.",
-                        type: 'text',
-                        kind: 'column'
-                    },
-                    {
-                        key: '__1__',
-                        name: 'Measure',
-                        description:
-                            "Measure to display along the bar chart's x-axis.",
-                        type: 'numeric',
-                        kind: 'measure'
-                    }
-                ],
-                config: `{\n  "view": {\n    "stroke": "transparent"\n  }\n}`
-            }
+        expect(result.importState).toBe('Success');
+        expect(result.importFile).toBe(MOCK_CONTENT);
+        expect(result.metadata).toBeTruthy();
+        expect(result.metadata?.deneb).toEqual({
+            build: '1.6.0.0',
+            metaVersion: 1,
+            provider: 'vegaLite',
+            providerVersion: '5.15.0'
         });
+        // Structural assertions on the migrated dataset entries
+        expect(result.metadata?.datasets?.dataset).toEqual([
+            {
+                key: '__dataset.0__',
+                name: 'Category',
+                description: "Category for the bar chart's y-axis.",
+                type: 'text',
+                kind: 'column'
+            },
+            {
+                key: '__dataset.1__',
+                name: 'Measure',
+                description: "Measure to display along the bar chart's x-axis.",
+                type: 'numeric',
+                kind: 'measure'
+            }
+        ]);
+        // Spec body assertions: confirm placeholders rewritten in expected positions
+        // (use unquoted forms to also catch occurrences inside Vega expression strings)
+        expect(result.candidates?.spec).toMatch(/"field":\s*"__dataset\.0__"/);
+        expect(result.candidates?.spec).toMatch(/"field":\s*"__dataset\.1__"/);
+        expect(result.candidates?.spec).not.toMatch(/__\d+__/);
     });
     it('should return invalid template with import state "None" if not valid JSON', () => {
         const invalidContent = 'invalid-json';
@@ -1039,7 +1148,7 @@ describe('getValidatedTemplate', () => {
  */
 const TRACKED_FIELDS_BY_QUERYNAME: TrackedFields = {
     'Financials.$ Sales': {
-        placeholder: '__0__',
+        placeholder: '__dataset.0__',
         paths: [['encoding', 'x', 'field']],
         isInDataset: true,
         isInSpecification: true,
@@ -1062,7 +1171,7 @@ const TRACKED_FIELDS_BY_QUERYNAME: TrackedFields = {
         }
     },
     'Financials.$ Profit': {
-        placeholder: '__1__',
+        placeholder: '__dataset.1__',
         paths: [],
         isInDataset: true,
         isInSpecification: false,
@@ -1085,7 +1194,7 @@ const TRACKED_FIELDS_BY_QUERYNAME: TrackedFields = {
         }
     },
     'Category.Category Parameter': {
-        placeholder: '__2__',
+        placeholder: '__dataset.2__',
         paths: [['encoding', 'y', 'field']],
         isInDataset: true,
         isInSpecification: true,
@@ -1118,15 +1227,15 @@ const TRACKED_FIELDS_BY_QUERYNAME: TrackedFields = {
 const TRACKED_FIELDS_REORDERED: TrackedFields = {
     'Financials.$ Sales': {
         ...TRACKED_FIELDS_BY_QUERYNAME['Financials.$ Sales'],
-        placeholder: '__0__'
+        placeholder: '__dataset.0__'
     },
     'Category.Category Parameter': {
         ...TRACKED_FIELDS_BY_QUERYNAME['Category.Category Parameter'],
-        placeholder: '__1__'
+        placeholder: '__dataset.1__'
     },
     'Financials.$ Profit': {
         ...TRACKED_FIELDS_BY_QUERYNAME['Financials.$ Profit'],
-        placeholder: '__2__'
+        placeholder: '__dataset.2__'
     }
 };
 
@@ -1141,35 +1250,37 @@ describe('getPublishableUsermeta — dataset key remapping by name', () => {
 
     it('should remap dataset keys from placeholder to tracker placeholder via name lookup', () => {
         // In production, dataset entries arrive with positional placeholder keys
-        // (__0__, __1__, __2__) that may not match the tracker's assignments.
+        // (__dataset.0__, __dataset.1__, __dataset.2__) that may not match the tracker's assignments.
         const usermeta: UsermetaTemplate = {
             ...EXPECTED_METADATA_BASE,
-            dataset: [
-                {
-                    key: '__0__',
-                    name: '$ Sales',
-                    namePlaceholder: '$ Sales',
-                    description: '',
-                    kind: 'measure',
-                    type: 'numeric'
-                },
-                {
-                    key: '__1__',
-                    name: '$ Profit',
-                    namePlaceholder: '$ Profit',
-                    description: '',
-                    kind: 'measure',
-                    type: 'numeric'
-                },
-                {
-                    key: '__2__',
-                    name: 'Category Parameter',
-                    namePlaceholder: 'Category Parameter',
-                    description: '',
-                    kind: 'parameter',
-                    type: 'other'
-                }
-            ]
+            datasets: {
+                dataset: [
+                    {
+                        key: '__dataset.0__',
+                        name: '$ Sales',
+                        namePlaceholder: '$ Sales',
+                        description: '',
+                        kind: 'measure',
+                        type: 'numeric'
+                    },
+                    {
+                        key: '__dataset.1__',
+                        name: '$ Profit',
+                        namePlaceholder: '$ Profit',
+                        description: '',
+                        kind: 'measure',
+                        type: 'numeric'
+                    },
+                    {
+                        key: '__dataset.2__',
+                        name: 'Category Parameter',
+                        namePlaceholder: 'Category Parameter',
+                        description: '',
+                        kind: 'parameter',
+                        type: 'other'
+                    }
+                ]
+            }
         };
 
         const result = getPublishableUsermeta(usermeta, {
@@ -1178,46 +1289,48 @@ describe('getPublishableUsermeta — dataset key remapping by name', () => {
         });
 
         // All three should map correctly via name lookup
-        expect(result.dataset[0].key).toBe('__0__');
-        expect(result.dataset[0].name).toBe('$ Sales');
-        expect(result.dataset[1].key).toBe('__1__');
-        expect(result.dataset[1].name).toBe('$ Profit');
-        expect(result.dataset[2].key).toBe('__2__');
-        expect(result.dataset[2].name).toBe('Category Parameter');
+        expect(result.datasets.dataset[0].key).toBe('__dataset.0__');
+        expect(result.datasets.dataset[0].name).toBe('$ Sales');
+        expect(result.datasets.dataset[1].key).toBe('__dataset.1__');
+        expect(result.datasets.dataset[1].name).toBe('$ Profit');
+        expect(result.datasets.dataset[2].key).toBe('__dataset.2__');
+        expect(result.datasets.dataset[2].name).toBe('Category Parameter');
     });
 
     it('should use tracker placeholders even when tracker order differs from dataset order', () => {
-        // Dataset array: $ Sales (__0__), $ Profit (__1__), Category Parameter (__2__)
-        // Tracker order: $ Sales (__0__), Category Parameter (__1__), $ Profit (__2__)
+        // Dataset array: $ Sales (__dataset.0__), $ Profit (__dataset.1__), Category Parameter (__dataset.2__)
+        // Tracker order: $ Sales (__dataset.0__), Category Parameter (__dataset.1__), $ Profit (__dataset.2__)
         // The dataset keys should be remapped to match the tracker's assignments.
         const usermeta: UsermetaTemplate = {
             ...EXPECTED_METADATA_BASE,
-            dataset: [
-                {
-                    key: '__0__',
-                    name: '$ Sales',
-                    namePlaceholder: '$ Sales',
-                    description: '',
-                    kind: 'measure',
-                    type: 'numeric'
-                },
-                {
-                    key: '__1__',
-                    name: '$ Profit',
-                    namePlaceholder: '$ Profit',
-                    description: '',
-                    kind: 'measure',
-                    type: 'numeric'
-                },
-                {
-                    key: '__2__',
-                    name: 'Category Parameter',
-                    namePlaceholder: 'Category Parameter',
-                    description: '',
-                    kind: 'parameter',
-                    type: 'other'
-                }
-            ]
+            datasets: {
+                dataset: [
+                    {
+                        key: '__dataset.0__',
+                        name: '$ Sales',
+                        namePlaceholder: '$ Sales',
+                        description: '',
+                        kind: 'measure',
+                        type: 'numeric'
+                    },
+                    {
+                        key: '__dataset.1__',
+                        name: '$ Profit',
+                        namePlaceholder: '$ Profit',
+                        description: '',
+                        kind: 'measure',
+                        type: 'numeric'
+                    },
+                    {
+                        key: '__dataset.2__',
+                        name: 'Category Parameter',
+                        namePlaceholder: 'Category Parameter',
+                        description: '',
+                        kind: 'parameter',
+                        type: 'other'
+                    }
+                ]
+            }
         };
 
         const result = getPublishableUsermeta(usermeta, {
@@ -1226,24 +1339,26 @@ describe('getPublishableUsermeta — dataset key remapping by name', () => {
         });
 
         // Keys should be remapped to match the tracker (not the positional index)
-        expect(result.dataset[0].key).toBe('__0__'); // $ Sales: tracker says __0__
-        expect(result.dataset[1].key).toBe('__2__'); // $ Profit: tracker says __2__ (was __1__)
-        expect(result.dataset[2].key).toBe('__1__'); // Category Parameter: tracker says __1__ (was __2__)
+        expect(result.datasets.dataset[0].key).toBe('__dataset.0__'); // $ Sales: tracker says __dataset.0__
+        expect(result.datasets.dataset[1].key).toBe('__dataset.2__'); // $ Profit: tracker says __dataset.2__ (was __dataset.1__)
+        expect(result.datasets.dataset[2].key).toBe('__dataset.1__'); // Category Parameter: tracker says __dataset.1__ (was __dataset.2__)
     });
 
     it('should fall back to existing key when field is not in trackedFields', () => {
         const usermeta: UsermetaTemplate = {
             ...EXPECTED_METADATA_BASE,
-            dataset: [
-                {
-                    key: '__0__',
-                    name: 'Unknown Field',
-                    namePlaceholder: 'Unknown Field',
-                    description: '',
-                    kind: 'column',
-                    type: 'text'
-                }
-            ]
+            datasets: {
+                dataset: [
+                    {
+                        key: '__dataset.0__',
+                        name: 'Unknown Field',
+                        namePlaceholder: 'Unknown Field',
+                        description: '',
+                        kind: 'column',
+                        type: 'text'
+                    }
+                ]
+            }
         };
 
         const result = getPublishableUsermeta(usermeta, {
@@ -1252,22 +1367,24 @@ describe('getPublishableUsermeta — dataset key remapping by name', () => {
         });
 
         // No match in tracker → key stays as-is
-        expect(result.dataset[0].key).toBe('__0__');
+        expect(result.datasets.dataset[0].key).toBe('__dataset.0__');
     });
 
     it('should strip namePlaceholder from output', () => {
         const usermeta: UsermetaTemplate = {
             ...EXPECTED_METADATA_BASE,
-            dataset: [
-                {
-                    key: '__0__',
-                    name: '$ Sales',
-                    namePlaceholder: '$ Sales',
-                    description: '',
-                    kind: 'measure',
-                    type: 'numeric'
-                }
-            ]
+            datasets: {
+                dataset: [
+                    {
+                        key: '__dataset.0__',
+                        name: '$ Sales',
+                        namePlaceholder: '$ Sales',
+                        description: '',
+                        kind: 'measure',
+                        type: 'numeric'
+                    }
+                ]
+            }
         };
 
         const result = getPublishableUsermeta(usermeta, {
@@ -1275,7 +1392,9 @@ describe('getPublishableUsermeta — dataset key remapping by name', () => {
             trackedFields: TRACKED_FIELDS_BY_QUERYNAME
         });
 
-        expect(result.dataset[0]).not.toHaveProperty('namePlaceholder');
+        expect(result.datasets.dataset[0]).not.toHaveProperty(
+            'namePlaceholder'
+        );
     });
 });
 
@@ -1307,24 +1426,26 @@ describe('getPublishableUsermeta — supportFieldConfiguration inline in dataset
         };
         const usermeta: UsermetaTemplate = {
             ...EXPECTED_METADATA_BASE,
-            dataset: [
-                {
-                    key: '__0__',
-                    name: '$ Sales',
-                    namePlaceholder: '$ Sales',
-                    description: '',
-                    kind: 'measure',
-                    type: 'numeric'
-                },
-                {
-                    key: '__1__',
-                    name: '$ Profit',
-                    namePlaceholder: '$ Profit',
-                    description: '',
-                    kind: 'measure',
-                    type: 'numeric'
-                }
-            ]
+            datasets: {
+                dataset: [
+                    {
+                        key: '__dataset.0__',
+                        name: '$ Sales',
+                        namePlaceholder: '$ Sales',
+                        description: '',
+                        kind: 'measure',
+                        type: 'numeric'
+                    },
+                    {
+                        key: '__dataset.1__',
+                        name: '$ Profit',
+                        namePlaceholder: '$ Profit',
+                        description: '',
+                        kind: 'measure',
+                        type: 'numeric'
+                    }
+                ]
+            }
         };
 
         const result = getPublishableUsermeta(usermeta, {
@@ -1334,14 +1455,14 @@ describe('getPublishableUsermeta — supportFieldConfiguration inline in dataset
         });
 
         // Config should be embedded inline in each dataset entry
-        expect(result.dataset[0].supportFieldConfiguration).toEqual({
+        expect(result.datasets.dataset[0].supportFieldConfiguration).toEqual({
             highlight: true,
             highlightStatus: false,
             highlightComparator: false,
             format: false,
             formatted: false
         });
-        expect(result.dataset[1].supportFieldConfiguration).toEqual({
+        expect(result.datasets.dataset[1].supportFieldConfiguration).toEqual({
             highlight: true,
             highlightStatus: true,
             highlightComparator: false,
@@ -1353,16 +1474,18 @@ describe('getPublishableUsermeta — supportFieldConfiguration inline in dataset
     it('should not embed config for fields with no matching config entry', () => {
         const usermeta: UsermetaTemplate = {
             ...EXPECTED_METADATA_BASE,
-            dataset: [
-                {
-                    key: '__0__',
-                    name: '$ Sales',
-                    namePlaceholder: '$ Sales',
-                    description: '',
-                    kind: 'measure',
-                    type: 'numeric'
-                }
-            ]
+            datasets: {
+                dataset: [
+                    {
+                        key: '__dataset.0__',
+                        name: '$ Sales',
+                        namePlaceholder: '$ Sales',
+                        description: '',
+                        kind: 'measure',
+                        type: 'numeric'
+                    }
+                ]
+            }
         };
 
         const result = getPublishableUsermeta(usermeta, {
@@ -1371,7 +1494,7 @@ describe('getPublishableUsermeta — supportFieldConfiguration inline in dataset
             trackedFields: TRACKED_FIELDS_BY_QUERYNAME
         });
 
-        expect(result.dataset[0]).not.toHaveProperty(
+        expect(result.datasets.dataset[0]).not.toHaveProperty(
             'supportFieldConfiguration'
         );
     });
@@ -1379,16 +1502,18 @@ describe('getPublishableUsermeta — supportFieldConfiguration inline in dataset
     it('should not embed config when supportFieldConfiguration option is undefined', () => {
         const usermeta: UsermetaTemplate = {
             ...EXPECTED_METADATA_BASE,
-            dataset: [
-                {
-                    key: '__0__',
-                    name: '$ Sales',
-                    namePlaceholder: '$ Sales',
-                    description: '',
-                    kind: 'measure',
-                    type: 'numeric'
-                }
-            ]
+            datasets: {
+                dataset: [
+                    {
+                        key: '__dataset.0__',
+                        name: '$ Sales',
+                        namePlaceholder: '$ Sales',
+                        description: '',
+                        kind: 'measure',
+                        type: 'numeric'
+                    }
+                ]
+            }
         };
 
         const result = getPublishableUsermeta(usermeta, {
@@ -1396,7 +1521,7 @@ describe('getPublishableUsermeta — supportFieldConfiguration inline in dataset
             trackedFields: TRACKED_FIELDS_BY_QUERYNAME
         });
 
-        expect(result.dataset[0]).not.toHaveProperty(
+        expect(result.datasets.dataset[0]).not.toHaveProperty(
             'supportFieldConfiguration'
         );
     });
@@ -1415,32 +1540,34 @@ describe('getPublishableUsermeta — supportFieldConfiguration inline in dataset
         };
         const usermeta: UsermetaTemplate = {
             ...EXPECTED_METADATA_BASE,
-            dataset: [
-                {
-                    key: '__0__',
-                    name: '$ Sales',
-                    namePlaceholder: '$ Sales',
-                    description: '',
-                    kind: 'measure',
-                    type: 'numeric'
-                },
-                {
-                    key: '__1__',
-                    name: '$ Profit',
-                    namePlaceholder: '$ Profit',
-                    description: '',
-                    kind: 'measure',
-                    type: 'numeric'
-                },
-                {
-                    key: '__2__',
-                    name: 'Category Parameter',
-                    namePlaceholder: 'Category Parameter',
-                    description: '',
-                    kind: 'parameter',
-                    type: 'other'
-                }
-            ]
+            datasets: {
+                dataset: [
+                    {
+                        key: '__dataset.0__',
+                        name: '$ Sales',
+                        namePlaceholder: '$ Sales',
+                        description: '',
+                        kind: 'measure',
+                        type: 'numeric'
+                    },
+                    {
+                        key: '__dataset.1__',
+                        name: '$ Profit',
+                        namePlaceholder: '$ Profit',
+                        description: '',
+                        kind: 'measure',
+                        type: 'numeric'
+                    },
+                    {
+                        key: '__dataset.2__',
+                        name: 'Category Parameter',
+                        namePlaceholder: 'Category Parameter',
+                        description: '',
+                        kind: 'parameter',
+                        type: 'other'
+                    }
+                ]
+            }
         };
 
         const result = getPublishableUsermeta(usermeta, {
@@ -1450,13 +1577,13 @@ describe('getPublishableUsermeta — supportFieldConfiguration inline in dataset
         });
 
         // Only Category Parameter should have config embedded
-        expect(result.dataset[0]).not.toHaveProperty(
+        expect(result.datasets.dataset[0]).not.toHaveProperty(
             'supportFieldConfiguration'
         );
-        expect(result.dataset[1]).not.toHaveProperty(
+        expect(result.datasets.dataset[1]).not.toHaveProperty(
             'supportFieldConfiguration'
         );
-        expect(result.dataset[2].supportFieldConfiguration).toEqual({
+        expect(result.datasets.dataset[2].supportFieldConfiguration).toEqual({
             highlight: false,
             highlightStatus: false,
             highlightComparator: false,
@@ -1472,7 +1599,7 @@ describe('remapSupportFieldConfigurationForImport', () => {
     it('should extract inline config from dataset entries keyed by suppliedObjectName', () => {
         const dataset: UsermetaDatasetField[] = [
             {
-                key: '__0__',
+                key: '__dataset.0__',
                 name: 'Date',
                 suppliedObjectName: 'Order Date',
                 kind: 'column',
@@ -1486,7 +1613,7 @@ describe('remapSupportFieldConfigurationForImport', () => {
                 }
             },
             {
-                key: '__1__',
+                key: '__dataset.1__',
                 name: '$ Sales',
                 suppliedObjectName: 'Revenue',
                 kind: 'measure',
@@ -1529,7 +1656,7 @@ describe('remapSupportFieldConfigurationForImport', () => {
     it('should skip fields without supportFieldConfiguration', () => {
         const dataset: UsermetaDatasetField[] = [
             {
-                key: '__0__',
+                key: '__dataset.0__',
                 name: 'Date',
                 suppliedObjectName: 'Order Date',
                 kind: 'column',
@@ -1544,7 +1671,7 @@ describe('remapSupportFieldConfigurationForImport', () => {
     it('should skip fields without suppliedObjectName', () => {
         const dataset: UsermetaDatasetField[] = [
             {
-                key: '__0__',
+                key: '__dataset.0__',
                 name: 'Date',
                 kind: 'column',
                 type: 'dateTime',
@@ -1578,32 +1705,34 @@ describe('remapSupportFieldConfigurationForImport', () => {
         };
         const exportUsermeta: UsermetaTemplate = {
             ...EXPECTED_METADATA_BASE,
-            dataset: [
-                {
-                    key: '__0__',
-                    name: '$ Sales',
-                    namePlaceholder: '$ Sales',
-                    description: '',
-                    kind: 'measure',
-                    type: 'numeric'
-                },
-                {
-                    key: '__1__',
-                    name: '$ Profit',
-                    namePlaceholder: '$ Profit',
-                    description: '',
-                    kind: 'measure',
-                    type: 'numeric'
-                },
-                {
-                    key: '__2__',
-                    name: 'Category Parameter',
-                    namePlaceholder: 'Category Parameter',
-                    description: '',
-                    kind: 'parameter',
-                    type: 'other'
-                }
-            ]
+            datasets: {
+                dataset: [
+                    {
+                        key: '__dataset.0__',
+                        name: '$ Sales',
+                        namePlaceholder: '$ Sales',
+                        description: '',
+                        kind: 'measure',
+                        type: 'numeric'
+                    },
+                    {
+                        key: '__dataset.1__',
+                        name: '$ Profit',
+                        namePlaceholder: '$ Profit',
+                        description: '',
+                        kind: 'measure',
+                        type: 'numeric'
+                    },
+                    {
+                        key: '__dataset.2__',
+                        name: 'Category Parameter',
+                        namePlaceholder: 'Category Parameter',
+                        description: '',
+                        kind: 'parameter',
+                        type: 'other'
+                    }
+                ]
+            }
         };
 
         const exportResult = getPublishableUsermeta(exportUsermeta, {
@@ -1617,7 +1746,9 @@ describe('remapSupportFieldConfigurationForImport', () => {
         });
 
         // Export should embed config on Category Parameter (index 2)
-        expect(exportResult.dataset[2].supportFieldConfiguration).toEqual({
+        expect(
+            exportResult.datasets.dataset[2].supportFieldConfiguration
+        ).toEqual({
             highlight: false,
             highlightStatus: false,
             highlightComparator: false,
@@ -1630,27 +1761,27 @@ describe('remapSupportFieldConfigurationForImport', () => {
         // Now import it back with a user-supplied field name
         const importDataset: UsermetaDatasetField[] = [
             {
-                key: '__0__',
+                key: '__dataset.0__',
                 name: '$ Sales',
                 suppliedObjectName: 'Revenue',
                 kind: 'measure',
                 type: 'numeric'
             },
             {
-                key: '__1__',
+                key: '__dataset.1__',
                 name: '$ Profit',
                 suppliedObjectName: 'Gross Profit',
                 kind: 'measure',
                 type: 'numeric'
             },
             {
-                key: '__2__',
+                key: '__dataset.2__',
                 name: 'Category Parameter',
                 suppliedObjectName: 'Region Parameter',
                 kind: 'parameter',
                 type: 'other',
                 supportFieldConfiguration:
-                    exportResult.dataset[2].supportFieldConfiguration
+                    exportResult.datasets.dataset[2].supportFieldConfiguration
             }
         ];
 

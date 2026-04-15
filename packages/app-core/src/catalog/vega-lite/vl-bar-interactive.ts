@@ -7,9 +7,10 @@ import {
     SELECTED_ROW_FIELD_NAME,
     type UsermetaDatasetField
 } from '@deneb-viz/data-core/field';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 const dataset: UsermetaDatasetField[] = [
     {
-        key: '__0__',
+        key: `__${DATASET_DEFAULT_NAME}.0__`,
         name: 'Category',
         description:
             "Select a column that will be displayed on the chart's Y-Axis",
@@ -17,7 +18,7 @@ const dataset: UsermetaDatasetField[] = [
         kind: 'column'
     },
     {
-        key: '__1__',
+        key: `__${DATASET_DEFAULT_NAME}.1__`,
         name: 'Measure',
         description:
             "Select a measure that will be displayed on the chart's X-Axis",
@@ -45,7 +46,7 @@ export const vlBarInteractive = (): TopLevelSpec => ({
             },
             encoding: {
                 x: {
-                    field: '__1__'
+                    field: `__${DATASET_DEFAULT_NAME}.1__`
                 }
             }
         },
@@ -56,7 +57,7 @@ export const vlBarInteractive = (): TopLevelSpec => ({
             },
             encoding: {
                 x: {
-                    field: '__1____highlight'
+                    field: `__${DATASET_DEFAULT_NAME}.1____highlight`
                 },
                 opacity: {
                     condition: {
@@ -73,12 +74,12 @@ export const vlBarInteractive = (): TopLevelSpec => ({
     ],
     encoding: {
         y: {
-            field: '__0__',
+            field: `__${DATASET_DEFAULT_NAME}.0__`,
             type: 'nominal'
         },
         x: {
             type: 'quantitative',
-            axis: { title: '__1__' }
+            axis: { title: `__${DATASET_DEFAULT_NAME}.1__` }
         }
     },
     usermeta: {
@@ -88,15 +89,13 @@ export const vlBarInteractive = (): TopLevelSpec => ({
             'An evolution of the simple bar chart, with tooltips, cross-filtering and cross-highlighting, compatible with Power BI.',
             'vlBarInteractive'
         ),
-        ...{
-            dataset,
-            interactivity: {
-                tooltip: true,
-                contextMenu: true,
-                highlight: true,
-                selection: true,
-                dataPointLimit: INTERACTIVITY_DEFAULTS.selectionMaxDataPoints
-            }
+        datasets: { [DATASET_DEFAULT_NAME]: dataset },
+        interactivity: {
+            tooltip: true,
+            contextMenu: true,
+            highlight: true,
+            selection: true,
+            dataPointLimit: INTERACTIVITY_DEFAULTS.selectionMaxDataPoints
         }
     }
 });

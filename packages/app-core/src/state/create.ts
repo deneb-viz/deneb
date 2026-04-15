@@ -14,6 +14,7 @@ import {
     getNewCreateFromTemplateSliceProperties
 } from '@deneb-viz/json-processing';
 import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 
 /**
  * Represents the create slice in the visual store.
@@ -142,24 +143,26 @@ const handleSetFieldAssignment = (
     state: StoreState,
     payload: CreateSliceSetFieldAssignment
 ): Partial<StoreState> => {
-    const { dataset } = state.create?.metadata || {};
+    const dataset = state.create?.metadata?.datasets?.[DATASET_DEFAULT_NAME];
     if (dataset) {
-        const phIndex =
-            dataset.findIndex((ph) => ph.key === payload.key) ?? dataset.length;
+        const phIndex = dataset.findIndex((ph) => ph.key === payload.key);
         const metadata = {
             ...state.create.metadata,
-            dataset:
-                phIndex === -1
-                    ? [...dataset]
-                    : [
-                          ...dataset.slice(0, phIndex),
-                          <UsermetaDatasetField>{
-                              ...dataset[phIndex],
-                              suppliedObjectKey: payload.suppliedObjectKey,
-                              suppliedObjectName: payload.suppliedObjectName
-                          },
-                          ...dataset.slice(phIndex + 1, dataset.length)
-                      ]
+            datasets: {
+                ...state.create.metadata?.datasets,
+                [DATASET_DEFAULT_NAME]:
+                    phIndex === -1
+                        ? [...dataset]
+                        : [
+                              ...dataset.slice(0, phIndex),
+                              <UsermetaDatasetField>{
+                                  ...dataset[phIndex],
+                                  suppliedObjectKey: payload.suppliedObjectKey,
+                                  suppliedObjectName: payload.suppliedObjectName
+                              },
+                              ...dataset.slice(phIndex + 1, dataset.length)
+                          ]
+            }
         } as UsermetaTemplate;
         const {
             metadataAllDependenciesAssigned = false,

@@ -71,9 +71,9 @@ describe('toUsermetaDatasetField', () => {
 
     it('should use placeholder when provided', () => {
         const result = toUsermetaDatasetField('Field Name', baseField, {
-            placeholder: '__0__'
+            placeholder: '__dataset.0__'
         });
-        expect(result.key).toBe('__0__');
+        expect(result.key).toBe('__dataset.0__');
     });
 
     it('should use field id when no placeholder provided', () => {
@@ -140,8 +140,8 @@ describe('toUsermetaDatasetFields', () => {
     it('should transform array of field entries with sequential placeholders', () => {
         const result = toUsermetaDatasetFields(entries);
         expect(result).toHaveLength(2);
-        expect(result[0].key).toBe('__0__');
-        expect(result[1].key).toBe('__1__');
+        expect(result[0].key).toBe('__dataset.0__');
+        expect(result[1].key).toBe('__dataset.1__');
     });
 
     it('should preserve field properties in transformation', () => {

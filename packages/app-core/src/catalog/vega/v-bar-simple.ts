@@ -11,7 +11,7 @@ import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 
 const dataset: UsermetaDatasetField[] = [
     {
-        key: '__0__',
+        key: `__${DATASET_DEFAULT_NAME}.0__`,
         name: 'Category',
         description:
             "Select a column that will be displayed on the chart's Y-Axis",
@@ -19,7 +19,7 @@ const dataset: UsermetaDatasetField[] = [
         kind: 'column'
     },
     {
-        key: '__1__',
+        key: `__${DATASET_DEFAULT_NAME}.1__`,
         name: 'Measure',
         description:
             "Select a measure that will be displayed on the chart's X-Axis",
@@ -37,7 +37,7 @@ export const vBarSimple = (): Spec => ({
             type: 'band',
             domain: {
                 data: DATASET_DEFAULT_NAME,
-                field: '__0__'
+                field: `__${DATASET_DEFAULT_NAME}.0__`
             },
             range: 'height',
             padding: 0.1,
@@ -47,7 +47,7 @@ export const vBarSimple = (): Spec => ({
             name: 'xscale',
             domain: {
                 data: DATASET_DEFAULT_NAME,
-                field: '__1__'
+                field: `__${DATASET_DEFAULT_NAME}.1__`
             },
             nice: true,
             range: 'width'
@@ -57,13 +57,13 @@ export const vBarSimple = (): Spec => ({
         {
             scale: 'xscale',
             orient: 'bottom',
-            title: '__1__',
+            title: `__${DATASET_DEFAULT_NAME}.1__`,
             tickCount: 5
         },
         {
             orient: 'left',
             scale: 'yscale',
-            title: '__0__'
+            title: `__${DATASET_DEFAULT_NAME}.0__`
         }
     ],
     marks: [
@@ -76,7 +76,7 @@ export const vBarSimple = (): Spec => ({
                 enter: {
                     x: {
                         scale: 'xscale',
-                        field: '__1__'
+                        field: `__${DATASET_DEFAULT_NAME}.1__`
                     },
                     x2: {
                         scale: 'xscale',
@@ -84,7 +84,7 @@ export const vBarSimple = (): Spec => ({
                     },
                     y: {
                         scale: 'yscale',
-                        field: '__0__'
+                        field: `__${DATASET_DEFAULT_NAME}.0__`
                     },
                     height: {
                         scale: 'yscale',
@@ -101,6 +101,7 @@ export const vBarSimple = (): Spec => ({
             'A simple bar chart for a category and a measure.',
             'vBarSimple'
         ),
-        ...{ dataset, config: getDenebTemplateVegaSpecificConfig() }
+        datasets: { [DATASET_DEFAULT_NAME]: dataset },
+        config: getDenebTemplateVegaSpecificConfig()
     }
 });

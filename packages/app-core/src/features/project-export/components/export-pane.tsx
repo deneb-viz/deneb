@@ -16,6 +16,7 @@ import {
 } from '../../../lib/field-processing';
 import { getDatasetTemplateFieldsFromMetadata } from '@deneb-viz/data-core/field';
 import { reconcileExportDatasetFields } from '../../../state/dataset';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 
 /**
  * Interface (pane) for exporting a existing visualization.
@@ -112,7 +113,7 @@ const handleProcessing = async (signal: AbortSignal) => {
         const freshFields = getDatasetTemplateFieldsFromMetadata(fields);
         const reconciledDataset = reconcileExportDatasetFields(
             freshFields,
-            metadata?.dataset
+            metadata?.datasets?.[DATASET_DEFAULT_NAME]
         );
         updateExportDataset(reconciledDataset);
         setExportProcessingState('Complete');

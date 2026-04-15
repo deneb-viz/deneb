@@ -28,17 +28,20 @@ describe('getEscapedReplacerPattern', () => {
 });
 
 describe('getPlaceholderKey', () => {
-    it('should return a placeholder key', () => {
-        expect(getPlaceholderKey(0)).toBe('__0__');
+    it('should return a dataset-scoped placeholder key', () => {
+        expect(getPlaceholderKey('dataset', 0)).toBe('__dataset.0__');
     });
     it('should return a placeholder key with positive number', () => {
-        expect(getPlaceholderKey(5)).toBe('__5__');
+        expect(getPlaceholderKey('dataset', 5)).toBe('__dataset.5__');
     });
     it('should return a placeholder key with negative number', () => {
-        expect(getPlaceholderKey(-3)).toBe('__3__');
+        expect(getPlaceholderKey('dataset', -3)).toBe('__dataset.3__');
     });
     it('should return a placeholder key with decimal number floored down', () => {
-        expect(getPlaceholderKey(2.5)).toBe('__2__');
+        expect(getPlaceholderKey('dataset', 2.5)).toBe('__dataset.2__');
+    });
+    it('should scope placeholder to the given dataset name', () => {
+        expect(getPlaceholderKey('map_layer', 0)).toBe('__map_layer.0__');
     });
 });
 
@@ -250,7 +253,7 @@ describe('__names suffix tokenization', () => {
 
     it('getTokenPatternsReplacement should produce correct replacer for __names suffix', () => {
         const fieldName = 'Dynamic Category';
-        const placeholder = '__0__';
+        const placeholder = '__dataset.0__';
         const result = getTokenPatternsReplacement(fieldName, placeholder);
         const parameterAlternation = getParameterRegExpAlternation();
         const escapedName = getEscapedReplacerPattern(fieldName);

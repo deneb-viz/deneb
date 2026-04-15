@@ -1,5 +1,7 @@
 import { pickBy } from '@deneb-viz/utils/object';
+import { DATASET_DEFAULT_NAME } from '../dataset/constants';
 import { toUsermetaDatasetField } from './template-metadata';
+import { getPlaceholderKey } from './tokenization';
 import type { DatasetFields, UsermetaDatasetField } from './types';
 
 /**
@@ -18,7 +20,8 @@ export function getDatasetFieldsInclusive(fields: DatasetFields | undefined) {
  * Transforms DatasetFields to UsermetaDatasetFields with sequential placeholders.
  */
 export const getDatasetTemplateFieldsFromMetadata = (
-    metadata: DatasetFields | undefined
+    metadata: DatasetFields | undefined,
+    datasetName: string = DATASET_DEFAULT_NAME
 ): UsermetaDatasetField[] =>
     Object.entries(getDatasetFieldsInclusive(metadata))
         .filter(
@@ -26,5 +29,7 @@ export const getDatasetTemplateFieldsFromMetadata = (
                 entry[1] !== undefined
         )
         .map(([key, field], i) =>
-            toUsermetaDatasetField(key, field, { placeholder: `__${i}__` })
+            toUsermetaDatasetField(key, field, {
+                placeholder: getPlaceholderKey(datasetName, i)
+            })
         );

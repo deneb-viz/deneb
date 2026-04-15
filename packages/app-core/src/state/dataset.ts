@@ -12,6 +12,7 @@ import {
 } from '@deneb-viz/json-processing';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import {
+    DATASET_DEFAULT_NAME,
     type TabularDataset,
     type TabularDatasetInput
 } from '@deneb-viz/data-core/dataset';
@@ -101,10 +102,13 @@ const handleUpdateDataset = (
     const exportMetadata = getUpdatedExportMetadata(
         state.export.metadata as UsermetaTemplate,
         {
-            dataset: reconcileExportDatasetFields(
-                getDatasetTemplateFieldsFromMetadata(normalizedFields),
-                state.export.metadata?.dataset
-            )
+            datasets: {
+                ...state.export.metadata?.datasets,
+                [DATASET_DEFAULT_NAME]: reconcileExportDatasetFields(
+                    getDatasetTemplateFieldsFromMetadata(normalizedFields),
+                    state.export.metadata?.datasets?.[DATASET_DEFAULT_NAME]
+                )
+            }
         }
     );
     logTimeEnd('dataset.updateDataset.getUpdatedExportMetadata');

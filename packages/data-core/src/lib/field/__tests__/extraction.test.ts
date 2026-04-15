@@ -115,8 +115,8 @@ describe('getDatasetTemplateFieldsFromMetadata', () => {
             b: { id: 'id-b', role: 'aggregation', dataType: 'numeric' }
         };
         const result = getDatasetTemplateFieldsFromMetadata(fields);
-        expect(result[0].key).toBe('__0__');
-        expect(result[1].key).toBe('__1__');
+        expect(result[0].key).toBe('__dataset.0__');
+        expect(result[1].key).toBe('__dataset.1__');
     });
 
     it('should exclude support fields', () => {
@@ -151,7 +151,11 @@ describe('getDatasetTemplateFieldsFromMetadata', () => {
 
     it('should use record key as name in result', () => {
         const fields: DatasetFields = {
-            'my-field': { id: 'internal-id', role: 'grouping', dataType: 'text' }
+            'my-field': {
+                id: 'internal-id',
+                role: 'grouping',
+                dataType: 'text'
+            }
         };
         const result = getDatasetTemplateFieldsFromMetadata(fields);
         expect(result[0].name).toBe('my-field');

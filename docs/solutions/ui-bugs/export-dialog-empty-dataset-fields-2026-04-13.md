@@ -1,6 +1,7 @@
 ---
 title: Export dialog shows empty dataset fields
 date: 2026-04-13
+last_updated: 2026-04-16
 category: ui-bugs
 module: app-core
 problem_type: ui_bug
@@ -20,6 +21,8 @@ tags:
   - remap-removal
   - field-tracking
 ---
+
+> **Path drift note (2026-04-16, [PR #619](https://github.com/deneb-viz/deneb/pull/619)):** The template schema was widened from `usermeta.dataset: UsermetaDatasetField[]` to `usermeta.datasets: Record<string, UsermetaDatasetField[]>`. The code snippets and path references below still use the pre-refactor singular form (`createMetadata.dataset`, `export.metadata.dataset`). In current source those are `createMetadata.datasets[DATASET_DEFAULT_NAME]` and `export.metadata.datasets[DATASET_DEFAULT_NAME]`. The internal `state.dataset` / `fieldUsage.dataset` paths were deliberately kept singular and are unchanged. The underlying diagnosis and fixes are still valid. See [best-practices/type-widening-requires-call-site-audit](../best-practices/type-widening-requires-call-site-audit-2026-04-16.md) for the audit pattern that surfaced in the same refactor.
 
 # Export dialog shows empty dataset fields
 

@@ -18,7 +18,7 @@ import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 const INCOMPLETE_FIELD: UsermetaDatasetField[] = [
     {
         name: 'Field 0',
-        key: '__0__',
+        key: '__dataset.0__',
         kind: 'column',
         type: 'text'
     }
@@ -26,7 +26,7 @@ const INCOMPLETE_FIELD: UsermetaDatasetField[] = [
 const COMPLETE_FIELD: UsermetaDatasetField[] = [
     {
         name: 'Field 1',
-        key: '__0__',
+        key: '__dataset.0__',
         kind: 'measure',
         type: 'numeric',
         suppliedObjectKey: 'Field1'
@@ -67,7 +67,7 @@ const MOCK_TEMPLATE_METADATA_BASE: UsermetaTemplate = {
         dataPointLimit: INTERACTIVITY_DEFAULTS.selectionMaxDataPoints,
         highlight: INTERACTIVITY_DEFAULTS.enableHighlight
     },
-    dataset: [],
+    datasets: { dataset: [] },
     config: '{}'
 };
 
@@ -92,7 +92,7 @@ describe('areAllCreateDataRequirementsMet', () => {
     it('should return true if all dependencies are assigned', () => {
         const metadata: UsermetaTemplate = {
             ...MOCK_TEMPLATE_METADATA_BASE,
-            dataset: COMPLETE_FIELD
+            datasets: { dataset: COMPLETE_FIELD }
         };
         const result = areAllCreateDataRequirementsMet(metadata);
         expect(result.metadataAllDependenciesAssigned).toBe(true);
@@ -100,7 +100,7 @@ describe('areAllCreateDataRequirementsMet', () => {
     it('should return false if not all fields are assigned', () => {
         const metadata: UsermetaTemplate = {
             ...MOCK_TEMPLATE_METADATA_BASE,
-            dataset: INCOMPLETE_FIELD
+            datasets: { dataset: INCOMPLETE_FIELD }
         };
         const result = areAllCreateDataRequirementsMet(metadata);
         expect(result.metadataAllDependenciesAssigned).toBe(false);
