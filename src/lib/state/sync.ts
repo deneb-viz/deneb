@@ -65,9 +65,10 @@ const subscribeEmbedViewport = (): (() => void) => {
         (state) => ({
             embedViewport: state.interface.embedViewport,
             mode: state.interface.mode,
-            hasHydrated: state.updates.__hydrated__
+            hasHydrated: state.updates.__hydrated__,
+            isInFocus: state.interface.isInFocus
         }),
-        ({ embedViewport: newEmbedViewport, mode, hasHydrated }) => {
+        ({ embedViewport: newEmbedViewport, mode, hasHydrated, isInFocus }) => {
             // Sync to app-core
             const { embedViewport, setEmbedViewport } =
                 getDenebState().interface;
@@ -80,7 +81,12 @@ const subscribeEmbedViewport = (): (() => void) => {
             }
 
             // Persist to Power BI (only in viewer mode after hydration)
-            if (hasHydrated && mode === 'viewer' && newEmbedViewport) {
+            if (
+                hasHydrated &&
+                mode === 'viewer' &&
+                !isInFocus &&
+                newEmbedViewport
+            ) {
                 const settings = useDenebVisualState.getState().settings;
                 const storedHeight = String(
                     settings.stateManagement.viewport.viewportHeight.value

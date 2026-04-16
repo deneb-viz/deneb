@@ -55,6 +55,8 @@ export const createUpdatesSlice = (): StateCreator<
                             }
                         );
                         const mode = history[0]?.displayMode ?? 'initializing';
+                        const isInFocus =
+                            options.isInFocus ?? state.interface.isInFocus;
                         return {
                             dataset: {
                                 ...state.dataset,
@@ -63,6 +65,7 @@ export const createUpdatesSlice = (): StateCreator<
                             },
                             interface: {
                                 ...state.interface,
+                                isInFocus,
                                 mode
                             },
                             settings: {
@@ -130,9 +133,23 @@ export const createUpdatesSlice = (): StateCreator<
                         scale: targetViewport.scale
                     });
                 }
-                // Fallback: if we don't have a viewport ensure we have the latest viewport
+                // Fallback: if we don't have a viewport ensure we have the latest viewport.
+                // In editor/transition modes, prefer persisted dimensions over the live
+                // viewport — Power BI reports full-screen dimensions during editor open.
                 if (!get().interface.embedViewport) {
-                    setEmbedViewport(targetViewport);
+                    const usePersistedDimensions =
+                        !doesModeAllowEmbedViewportSet(mode) &&
+                        persistedViewport.height > 0 &&
+                        persistedViewport.width > 0;
+                    setEmbedViewport(
+                        usePersistedDimensions
+                            ? {
+                                  height: persistedViewport.height,
+                                  width: persistedViewport.width,
+                                  scale: targetViewport.scale
+                              }
+                            : targetViewport
+                    );
                 }
             }
             // Update interface viewport if needed
