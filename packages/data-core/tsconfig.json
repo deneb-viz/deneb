@@ -7,5 +7,12 @@
         "declarationMap": true
     },
     "include": ["src/**/*"],
-    "exclude": ["dist", "node_modules", "**/*.test.*", "**/*.spec.*"]
+    "exclude": [
+        "dist",
+        "node_modules",
+        "**/*.test.*",
+        "**/*.spec.*",
+        "**/*.bench.*",
+        "**/__bench__/**"
+    ]
 }

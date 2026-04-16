@@ -42,7 +42,8 @@
         "typecheck": "tsc --noEmit",
         "eslint": "node ../../bin/workspace-eslint.js",
         "test": "vitest run",
-        "test:watch": "vitest"
+        "test:watch": "vitest",
+        "bench": "vitest bench --run --passWithNoTests"
     },
     "devDependencies": {
         "@deneb-viz/eslint-config": "*",

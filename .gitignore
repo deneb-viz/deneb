@@ -78,6 +78,9 @@ packages/configuration/src/generated.ts
 # Turbo
 .turbo
 
+# Benchmark results (transient; baselines in benchmarks/baselines/ are committed)
+**/benchmarks/results/
+
 # Windows Shell Cache (created when dev server accesses icon files)
 # This folder is created because Node.js/PowerShell doesn't expand %SystemDrive%
 # properly when Windows Shell creates icon/thumbnail cache during pbiviz:start
