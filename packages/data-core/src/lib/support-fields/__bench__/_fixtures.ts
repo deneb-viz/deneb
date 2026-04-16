@@ -17,7 +17,18 @@ import type {
     ProcessingPlan,
     SupportFieldValueProvider
 } from '../types';
+import type { DatasetFieldRole } from '../../field/types';
+import type { PlanParameterGroup } from '../build-processing-plan';
 import type { PrimitiveValue } from '../value/types';
+
+/**
+ * Field metadata shape expected by `buildProcessingPlan`.
+ */
+export type BenchFieldMetadata = {
+    encodedName: string;
+    sourceIndex: number;
+    role: DatasetFieldRole;
+};
 
 /**
  * Returns a provider where every call is a passthrough (no real work).
@@ -190,4 +201,75 @@ export const slotCountForPlan = (plan: ProcessingPlan): number => {
         }
     }
     return max;
+};
+
+/**
+ * Build a flat field metadata array for `buildProcessingPlan` input.
+ *
+ * - `fieldCount` — total number of fields
+ * - `opts.withParameterGroups` — when true, ~half the fields are tagged as
+ *   'field-parameter' role and will be consumed by the parameter group
+ *   returned by {@link makeParameterGroups}. The rest alternate between
+ *   grouping and aggregation roles.
+ */
+export const makeFieldMetadata = (
+    fieldCount: number,
+    opts: { withParameterGroups?: boolean } = {}
+): BenchFieldMetadata[] => {
+    const { withParameterGroups = false } = opts;
+    const parameterCount = withParameterGroups ? Math.floor(fieldCount / 2) : 0;
+    const fields: BenchFieldMetadata[] = new Array(fieldCount);
+    for (let i = 0; i < fieldCount; i++) {
+        const isParameter = i < parameterCount;
+        const role: DatasetFieldRole = isParameter
+            ? 'field-parameter'
+            : i % 2 === 0
+              ? 'grouping'
+              : 'aggregation';
+        fields[i] = {
+            encodedName: `Field_${i}`,
+            sourceIndex: i,
+            role
+        };
+    }
+    return fields;
+};
+
+/**
+ * Build parameter groups that consume the leading 'field-parameter' fields
+ * in a metadata array produced by `makeFieldMetadata({ withParameterGroups: true })`.
+ *
+ * Groups components into clusters of 3 (matching the typical Power BI
+ * field-parameter shape) up to the available count.
+ */
+export const makeParameterGroups = (
+    fieldCount: number,
+    componentsPerGroup = 3
+): PlanParameterGroup[] => {
+    const parameterCount = Math.floor(fieldCount / 2);
+    const groups: PlanParameterGroup[] = [];
+    for (
+        let start = 0;
+        start + componentsPerGroup <= parameterCount;
+        start += componentsPerGroup
+    ) {
+        const componentFieldIndices: number[] = [];
+        const componentNames: string[] = [];
+        const componentRoles: ('grouping' | 'aggregation')[] = [];
+        for (let c = 0; c < componentsPerGroup; c++) {
+            componentFieldIndices.push(start + c);
+            componentNames.push(`Field_${start + c}`);
+            componentRoles.push(
+                c === componentsPerGroup - 1 ? 'aggregation' : 'grouping'
+            );
+        }
+        groups.push({
+            parameterName: `Parameter_${groups.length}`,
+            componentFieldIndices,
+            componentNames,
+            componentRoles,
+            formatStrings: new Array(componentsPerGroup).fill('#,0.00')
+        });
+    }
+    return groups;
 };
