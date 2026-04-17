@@ -18,8 +18,9 @@ jobs:
         runs-on: ubuntu-22.04
         timeout-minutes: 15
         permissions:
-            contents: write
-            pull-requests: write
+            contents: read
+            # Add contents: write + pull-requests: write when the auto-PR
+            # upgrade lands. Currently only artifact upload is used.
         steps:
             - name: Check out code
               uses: actions/checkout@v4

@@ -9,6 +9,15 @@ const FIELD_TIERS = [
     { label: '50 fields', count: 50 }
 ] as const;
 
+// Parameter groups need at least 6 fields (3 parameter fields → 1 group of
+// 3 components). The 2-field tier would produce zero groups and degenerate
+// to the fields-only variant.
+const PARAMETER_TIERS = [
+    { label: '6 fields', count: 6 },
+    { label: '10 fields', count: 10 },
+    { label: '50 fields', count: 50 }
+] as const;
+
 const masterSettings: SupportFieldMasterSettings = {
     crossHighlightEnabled: true,
     crossFilterEnabled: true
@@ -25,7 +34,7 @@ const fieldsOnlyByTier = new Map(
 );
 
 const withParametersByTier = new Map(
-    FIELD_TIERS.map((tier) => [
+    PARAMETER_TIERS.map((tier) => [
         tier.label,
         {
             fields: makeFieldMetadata(tier.count, {
@@ -54,7 +63,7 @@ describe('buildProcessingPlan', () => {
     });
 
     describe('with parameter groups', () => {
-        for (const tier of FIELD_TIERS) {
+        for (const tier of PARAMETER_TIERS) {
             const input = withParametersByTier.get(tier.label)!;
             bench(tier.label, () => {
                 buildProcessingPlan({

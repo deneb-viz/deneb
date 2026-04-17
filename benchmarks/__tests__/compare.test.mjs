@@ -269,7 +269,7 @@ describe('compare', () => {
 // =========================================================================
 
 describe('detectMassMismatch', () => {
-    it('returns true when >50% of baseline keys are MISSING or NEW', () => {
+    it('returns true when >50% of baseline keys are MISSING', () => {
         const baseline = makeBaseline({ a: { hz: 100 }, b: { hz: 200 } });
         const results = [
             { key: 'a', status: 'MISSING', baselineHz: 100 },

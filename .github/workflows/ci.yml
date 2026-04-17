@@ -82,13 +82,13 @@ jobs:
               run: |
                   set +e
                   npm run bench
-                  BENCH_EXIT=$?
+                  # A bench crash leaves no results file → compare.mjs
+                  # hits ENOENT and exits 2 (script error), which the
+                  # "Fail on script error" step catches. No need to check
+                  # bench's own exit code separately.
                   npm run bench:compare
                   COMPARE_EXIT=$?
-                  echo "bench_exit=$BENCH_EXIT" >> "$GITHUB_OUTPUT"
                   echo "compare_exit=$COMPARE_EXIT" >> "$GITHUB_OUTPUT"
-                  # Always exit 0 so the captured outputs are available to
-                  # the follow-up steps. Failure routing is handled below.
                   exit 0
             - name: Upload bench results artifact
               if: always()
