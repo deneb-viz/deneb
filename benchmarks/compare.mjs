@@ -12,21 +12,25 @@
  *   2 — script error (malformed input, invalid hz, duplicate keys, file
  *       missing, CLI parse error). CI treats this as a hard failure even
  *       during advisory rollout.
+ *   3 — no baseline found (first run). Comparison skipped. Distinct from
+ *       exit 0 so callers can tell "all pass" from "nothing to compare".
  *
  * Usage:
  *   node benchmarks/compare.mjs \
  *     --results <path> \
  *     --baseline <path> \
  *     [--threshold 20] \
+ *     [--format markdown|json] \
  *     [--update] \
  *     [--allow-removed-benches] \
- *     [--force-non-ci]
+ *     [--force-non-ci] \
+ *     [--help]
  *
  * See docs/plans/2026-04-16-001-feat-performance-benchmarks-plan.md (Unit 4).
  */
 
 import { parseArgs } from 'node:util';
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, rename } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
@@ -35,6 +39,7 @@ import { fileURLToPath } from 'node:url';
 export const EXIT_OK = 0;
 export const EXIT_REGRESSION = 1;
 export const EXIT_ERROR = 2;
+export const EXIT_SKIP = 3;
 
 export const SCHEMA_SEPARATOR = ' > ';
 export const MIN_SAMPLE_COUNT = 5;
@@ -425,6 +430,24 @@ export function readCommitSha() {
 // CLI entrypoint
 // =========================================================================
 
+const USAGE = `Usage: node benchmarks/compare.mjs --results <path> --baseline <path> [options]
+
+Options:
+  --results <path>          Path to Vitest bench --outputJson file (required)
+  --baseline <path>         Path to committed baseline JSON (required)
+  --threshold <number>      Regression threshold as a percentage (default: 20)
+  --format <markdown|json>  Output format (default: markdown)
+  --update                  Write current results as the new baseline
+  --allow-removed-benches   Allow --update even if baseline keys are missing from results
+  --force-non-ci            Allow --update from a non-CI environment
+  --help                    Show this help message
+
+Exit codes:
+  0  All benchmarks pass
+  1  At least one regression detected
+  2  Script error (malformed input, invalid data, file missing)
+  3  No baseline found (first run, comparison skipped)`;
+
 async function main(argv) {
     let values;
     try {
@@ -434,19 +457,24 @@ async function main(argv) {
                 results: { type: 'string' },
                 baseline: { type: 'string' },
                 threshold: { type: 'string', default: '20' },
+                format: { type: 'string', default: 'markdown' },
                 update: { type: 'boolean', default: false },
                 'allow-removed-benches': { type: 'boolean', default: false },
-                'force-non-ci': { type: 'boolean', default: false }
+                'force-non-ci': { type: 'boolean', default: false },
+                help: { type: 'boolean', default: false }
             },
             strict: true,
             allowPositionals: false
         }));
     } catch (e) {
         console.error(`CLI parse error: ${e.message}`);
-        console.error(
-            'Usage: node benchmarks/compare.mjs --results <path> --baseline <path> [--threshold 20] [--update] [--allow-removed-benches] [--force-non-ci]'
-        );
+        console.error(USAGE);
         return EXIT_ERROR;
+    }
+
+    if (values.help) {
+        console.log(USAGE);
+        return EXIT_OK;
     }
 
     if (!values.results) {
@@ -455,6 +483,12 @@ async function main(argv) {
     }
     if (!values.baseline) {
         console.error('--baseline <path> is required');
+        return EXIT_ERROR;
+    }
+
+    const format = values.format;
+    if (format !== 'markdown' && format !== 'json') {
+        console.error(`--format must be "markdown" or "json" (got "${format}")`);
         return EXIT_ERROR;
     }
 
@@ -518,21 +552,27 @@ async function main(argv) {
         current: ingest,
         baseline,
         baselinePath: values.baseline,
-        defaultThreshold: threshold
+        defaultThreshold: threshold,
+        format
     });
 }
 
-export async function handleCompare({ current, baseline, baselinePath, defaultThreshold }) {
+export async function handleCompare({ current, baseline, baselinePath, defaultThreshold, format = 'markdown' }) {
     if (!baseline) {
-        console.log(`no baseline found at ${baselinePath} — treating as first run.`);
-        return EXIT_OK;
+        const msg = `no baseline found at ${baselinePath} — treating as first run.`;
+        if (format === 'json') {
+            console.log(JSON.stringify({ skipped: true, reason: msg }, null, 2));
+        } else {
+            console.log(msg);
+        }
+        return EXIT_SKIP;
     }
 
     const results = compare({ baseline, current, defaultThreshold });
 
     if (detectMassMismatch(results, baseline)) {
         console.error(
-            `baseline appears wholly mismatched — more than ${MASS_MISMATCH_FRACTION * 100}% of baseline keys are MISSING or NEW in current results. Likely a Vitest schema change or major bench rename. Refresh required.`
+            `baseline appears wholly mismatched — more than ${MASS_MISMATCH_FRACTION * 100}% of baseline keys are MISSING in current results. Likely a Vitest schema change or major bench rename. Refresh required.`
         );
         return EXIT_ERROR;
     }
@@ -545,12 +585,24 @@ export async function handleCompare({ current, baseline, baselinePath, defaultTh
         baselineMeta: baseline._meta,
         currentMeta
     });
+    // Drift warnings always go to stderr regardless of format
     for (const w of driftWarnings) console.warn(w);
 
-    console.log(renderTable(results));
     const classification = classifyResults(results);
-    console.log('');
-    console.log(renderSummary(classification));
+
+    if (format === 'json') {
+        console.log(JSON.stringify({
+            summary: classification,
+            results,
+            baselineMeta: baseline._meta ?? null,
+            currentMeta,
+            driftWarnings
+        }, null, 2));
+    } else {
+        console.log(renderTable(results));
+        console.log('');
+        console.log(renderSummary(classification));
+    }
 
     return classification.regressions > 0 ? EXIT_REGRESSION : EXIT_OK;
 }
@@ -589,9 +641,17 @@ export async function handleUpdate({ current, baseline, baselinePath, allowRemov
         previousBaseline: baseline
     });
 
-    // Ensure parent dir exists
+    // Atomic write: write to .tmp then rename — prevents a mid-write crash
+    // from leaving a corrupt baseline that subsequent compare runs can't parse.
     await mkdir(dirname(baselinePath), { recursive: true });
-    await writeFile(baselinePath, JSON.stringify(payload, null, 2) + '\n', 'utf-8');
+    const tmpPath = baselinePath + '.tmp';
+    try {
+        await writeFile(tmpPath, JSON.stringify(payload, null, 2) + '\n', 'utf-8');
+        await rename(tmpPath, baselinePath);
+    } catch (e) {
+        console.error(`failed to write baseline to ${baselinePath}: ${e.message}`);
+        return EXIT_ERROR;
+    }
 
     console.log(`wrote baseline to ${baselinePath}`);
     console.log(`  entries: ${current.entries.size}`);

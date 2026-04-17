@@ -3,6 +3,7 @@ import {
     EXIT_ERROR,
     EXIT_OK,
     EXIT_REGRESSION,
+    EXIT_SKIP,
     MASS_MISMATCH_FRACTION,
     MIN_SAMPLE_COUNT,
     buildBaselinePayload,
@@ -12,6 +13,8 @@ import {
     detectMassMismatch,
     detectRunnerImage,
     findMissingFromCurrent,
+    handleCompare,
+    handleUpdate,
     ingestVitestOutput,
     isCiSource,
     renderDriftWarnings,
@@ -544,5 +547,138 @@ describe('exit code constants', () => {
         expect(EXIT_OK).toBe(0);
         expect(EXIT_REGRESSION).toBe(1);
         expect(EXIT_ERROR).toBe(2);
+        expect(EXIT_SKIP).toBe(3);
+    });
+});
+
+// =========================================================================
+// handleCompare
+// =========================================================================
+
+describe('handleCompare', () => {
+    it('returns EXIT_SKIP when no baseline exists', async () => {
+        const current = makeCurrent({ a: { hz: 100 } });
+        const result = await handleCompare({
+            current: { entries: current.entries, warnings: [], errors: [] },
+            baseline: null,
+            baselinePath: '/nonexistent/baseline.json',
+            defaultThreshold: 20
+        });
+        expect(result).toBe(EXIT_SKIP);
+    });
+
+    it('returns EXIT_OK when all benchmarks pass', async () => {
+        const baseline = makeBaseline({ a: { hz: 100 } });
+        const current = { entries: new Map([['a', { hz: 100, mean_ms: 1, p75_ms: 1.2, sampleCount: 50 }]]), warnings: [], errors: [] };
+        const result = await handleCompare({
+            current,
+            baseline,
+            baselinePath: 'test.json',
+            defaultThreshold: 20
+        });
+        expect(result).toBe(EXIT_OK);
+    });
+
+    it('returns EXIT_REGRESSION when a benchmark regresses', async () => {
+        const baseline = makeBaseline({ a: { hz: 100 } });
+        const current = { entries: new Map([['a', { hz: 70, mean_ms: 1, p75_ms: 1.2, sampleCount: 50 }]]), warnings: [], errors: [] };
+        const result = await handleCompare({
+            current,
+            baseline,
+            baselinePath: 'test.json',
+            defaultThreshold: 20
+        });
+        expect(result).toBe(EXIT_REGRESSION);
+    });
+
+    it('returns EXIT_ERROR on mass mismatch', async () => {
+        const baseline = makeBaseline({ a: { hz: 100 }, b: { hz: 200 } });
+        const current = { entries: new Map(), warnings: [], errors: [] };
+        const result = await handleCompare({
+            current,
+            baseline,
+            baselinePath: 'test.json',
+            defaultThreshold: 20
+        });
+        expect(result).toBe(EXIT_ERROR);
+    });
+
+    it('returns structured JSON when format is "json"', async () => {
+        const baseline = makeBaseline({ a: { hz: 100 } }, { runnerImage: 'ci', vitestVersion: '3.2.4' });
+        const current = { entries: new Map([['a', { hz: 100, mean_ms: 1, p75_ms: 1.2, sampleCount: 50 }]]), warnings: [], errors: [] };
+
+        // Capture stdout
+        const logs = [];
+        const origLog = console.log;
+        console.log = (...args) => logs.push(args.join(' '));
+        try {
+            await handleCompare({
+                current,
+                baseline,
+                baselinePath: 'test.json',
+                defaultThreshold: 20,
+                format: 'json'
+            });
+        } finally {
+            console.log = origLog;
+        }
+
+        const output = JSON.parse(logs.join('\n'));
+        expect(output.summary).toEqual({ pass: 1, regressions: 0, newKeys: 0, missing: 0 });
+        expect(output.results).toHaveLength(1);
+        expect(output.results[0].status).toBe('PASS');
+        expect(output.baselineMeta).toEqual({ runnerImage: 'ci', vitestVersion: '3.2.4' });
+    });
+
+    it('returns EXIT_SKIP JSON when format is "json" and no baseline exists', async () => {
+        const logs = [];
+        const origLog = console.log;
+        console.log = (...args) => logs.push(args.join(' '));
+        try {
+            const result = await handleCompare({
+                current: { entries: new Map(), warnings: [], errors: [] },
+                baseline: null,
+                baselinePath: '/nonexistent.json',
+                defaultThreshold: 20,
+                format: 'json'
+            });
+            expect(result).toBe(EXIT_SKIP);
+        } finally {
+            console.log = origLog;
+        }
+
+        const output = JSON.parse(logs.join('\n'));
+        expect(output.skipped).toBe(true);
+    });
+});
+
+// =========================================================================
+// handleUpdate
+// =========================================================================
+
+describe('handleUpdate', () => {
+    it('returns EXIT_ERROR when not on CI without --force-non-ci', async () => {
+        const current = { entries: new Map([['a', { hz: 100, mean_ms: 1, p75_ms: 1.2, sampleCount: 50 }]]), warnings: [], errors: [] };
+        const result = await handleUpdate({
+            current,
+            baseline: null,
+            baselinePath: '/tmp/test-update.json',
+            allowRemovedBenches: false,
+            forceNonCi: false
+        });
+        expect(result).toBe(EXIT_ERROR);
+    });
+
+    it('returns EXIT_ERROR on superset violation', async () => {
+        const baseline = makeBaseline({ a: { hz: 100 }, b: { hz: 200 } });
+        const current = { entries: new Map([['a', { hz: 100, mean_ms: 1, p75_ms: 1.2, sampleCount: 50 }]]), warnings: [], errors: [] };
+        const result = await handleUpdate({
+            current,
+            baseline,
+            baselinePath: '/tmp/test-update.json',
+            allowRemovedBenches: false,
+            forceNonCi: true
+        });
+        expect(result).toBe(EXIT_ERROR);
     });
 });
