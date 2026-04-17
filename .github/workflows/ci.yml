@@ -44,8 +44,71 @@ jobs:
               run: npm run prettier-check
             - name: Tests
               run: npm run test
+            - name: Tests (benchmarks compare script)
+              run: npm run test:benchmarks
             - name: Confirm pbiviz package (AppSource Version)
               run: npm run package
+
+    bench:
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        needs: ci
+        runs-on: ubuntu-22.04
+        timeout-minutes: 10
+        steps:
+            - name: Check out code
+              uses: actions/checkout@v4
+            - name: Use CI .env file
+              run: cp .env.ci .env
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: 'npm'
+            - name: Cache turbo build setup
+              uses: actions/cache@v4
+              with:
+                  path: .turbo
+                  key: ${{ runner.os }}-turbo-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-turbo-
+            - name: Install Packages
+              run: npm ci
+            - name: Build packages
+              run: npm run build
+            - name: Run benchmarks and compare
+              id: bench
+              shell: bash
+              continue-on-error: true
+              run: |
+                  set +e
+                  npm run bench
+                  # A bench crash leaves no results file → compare.mjs
+                  # hits ENOENT and exits 2 (script error), which the
+                  # "Fail on script error" step catches. No need to check
+                  # bench's own exit code separately.
+                  npm run bench:compare
+                  COMPARE_EXIT=$?
+                  echo "compare_exit=$COMPARE_EXIT" >> "$GITHUB_OUTPUT"
+                  exit 0
+            - name: Upload bench results artifact
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: bench-results-${{ github.sha }}
+                  path: packages/data-core/benchmarks/results/data-core.json
+                  retention-days: 14
+                  if-no-files-found: warn
+            - name: Fail on script error
+              if: steps.bench.outputs.compare_exit == '2'
+              run: |
+                  echo "::error::Benchmark comparison script failed (compare_exit=${{ steps.bench.outputs.compare_exit }}). A bench crash produces ENOENT in compare.mjs which exits 2. See 'Run benchmarks and compare' step for details."
+                  exit 1
+            - name: Flag regression (advisory)
+              if: steps.bench.outputs.compare_exit == '1'
+              continue-on-error: true
+              run: |
+                  echo "::warning::Benchmark regression detected — see comparison table in the 'Run benchmarks and compare' step. During advisory rollout, regressions are reported but do NOT block merges."
+                  exit 1
 
     alpha-release:
         if: startsWith(github.ref, 'refs/tags/alpha')

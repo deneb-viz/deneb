@@ -1,0 +1,70 @@
+name: Bench — Update Baseline
+
+# Manually-triggered workflow to capture a fresh benchmark baseline on the
+# pinned CI runner. Produces the updated baseline JSON as a workflow artifact
+# for a maintainer to download and commit via PR.
+#
+# Why artifact instead of auto-PR: GitHub's anti-loop policy prevents PRs
+# opened by the default GITHUB_TOKEN from triggering subsequent workflow
+# runs. Uploading an artifact sidesteps this entirely. Upgrade to auto-PR
+# later if the refresh cadence justifies it — see the upgrade path note
+# in docs/plans/2026-04-16-001-feat-performance-benchmarks-plan.md (Unit 5).
+
+on:
+    workflow_dispatch:
+
+jobs:
+    update-baseline:
+        runs-on: ubuntu-22.04
+        timeout-minutes: 15
+        permissions:
+            contents: read
+            # Add contents: write + pull-requests: write when the auto-PR
+            # upgrade lands. Currently only artifact upload is used.
+        steps:
+            - name: Check out code
+              uses: actions/checkout@v4
+            - name: Use CI .env file
+              run: cp .env.ci .env
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: 'npm'
+            - name: Cache turbo build setup
+              uses: actions/cache@v4
+              with:
+                  path: .turbo
+                  key: ${{ runner.os }}-turbo-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-turbo-
+            - name: Install Packages
+              run: npm ci
+            - name: Build packages
+              run: npm run build
+            - name: Run benchmarks
+              run: npm run bench
+            - name: Verify results file exists
+              run: |
+                  RESULTS="packages/data-core/benchmarks/results/data-core.json"
+                  if [ ! -s "$RESULTS" ]; then
+                    echo "::error::Bench results file missing or empty at $RESULTS. Check that vitest bench matched at least one .bench.ts file."
+                    exit 1
+                  fi
+            - name: Write new baseline
+              run: npm run bench:update-baseline
+            - name: Upload refreshed baseline
+              uses: actions/upload-artifact@v4
+              with:
+                  name: refreshed-baseline-${{ github.sha }}
+                  path: benchmarks/baselines/data-core.json
+                  retention-days: 30
+                  if-no-files-found: error
+            - name: Summary
+              run: |
+                  echo "### Baseline refreshed" >> "$GITHUB_STEP_SUMMARY"
+                  echo "" >> "$GITHUB_STEP_SUMMARY"
+                  echo "Download the \`refreshed-baseline-${{ github.sha }}\` artifact from this run and commit it to \`benchmarks/baselines/data-core.json\` via a PR." >> "$GITHUB_STEP_SUMMARY"
+                  echo "" >> "$GITHUB_STEP_SUMMARY"
+                  echo "Commit SHA: \`${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
+                  echo "Runner image: \`$ImageOS-$ImageVersion\`" >> "$GITHUB_STEP_SUMMARY"
