@@ -115,21 +115,16 @@ export function ingestVitestOutput(raw) {
                 }
 
                 const sampleCount = typeof bench.sampleCount === 'number' ? bench.sampleCount : 0;
-                if (sampleCount > 0 && sampleCount < MIN_SAMPLE_COUNT) {
+                if (sampleCount >= 0 && sampleCount < MIN_SAMPLE_COUNT) {
                     warnings.push(
                         `bench "${key}": sampleCount=${sampleCount} (< ${MIN_SAMPLE_COUNT}). Result may be statistically weak — consider raising per-bench \`time\` or reducing workload.`
                     );
                 }
 
-                if (name.includes(SCHEMA_SEPARATOR) || groupFullName.includes(SCHEMA_SEPARATOR + SCHEMA_SEPARATOR.trim())) {
-                    // Detect literal " > " in the leaf name specifically
-                    // (the group itself uses " > " as a separator, so we can't
-                    // flag that in fullName without false positives).
-                    if (name.includes(SCHEMA_SEPARATOR)) {
-                        warnings.push(
-                            `bench name "${name}" contains "${SCHEMA_SEPARATOR}" — may confuse baseline key logic. Rename to use a different separator.`
-                        );
-                    }
+                if (name.includes(SCHEMA_SEPARATOR)) {
+                    warnings.push(
+                        `bench name "${name}" contains "${SCHEMA_SEPARATOR}" — may confuse baseline key logic. Rename to use a different separator.`
+                    );
                 }
 
                 entries.set(key, {
@@ -246,8 +241,9 @@ export function compare({ baseline, current, defaultThreshold }) {
         const b = baseline.benchmarks[key];
         const c = current.entries.get(key);
         if (b && c) {
-            const effectiveThreshold =
+            const rawThreshold =
                 typeof b.threshold === 'number' ? b.threshold : defaultThreshold;
+            const effectiveThreshold = rawThreshold >= 0 ? rawThreshold : defaultThreshold;
             const deltaPct = ((b.hz - c.hz) / b.hz) * 100;
             const status = deltaPct > effectiveThreshold ? 'REGRESSION' : 'PASS';
             results.push({
@@ -269,19 +265,24 @@ export function compare({ baseline, current, defaultThreshold }) {
 }
 
 /**
- * Sanity check: if more than 50% of baseline keys are either MISSING or
- * NEW, the baseline is likely wholly mismatched (e.g., Vitest changed how
- * fullName is constructed, or a large rename). Reporting 0 regressions in
- * that state is a silent-dark failure mode — treat it as a hard error.
+ * Sanity check: if more than 50% of baseline keys are MISSING from the
+ * current results, the baseline is likely wholly mismatched (e.g., Vitest
+ * changed how fullName is constructed, or a large rename). Reporting 0
+ * regressions in that state is a silent-dark failure mode — treat it as
+ * a hard error.
+ *
+ * Only MISSING keys count — NEW keys (benches added in this run but absent
+ * from baseline) are a normal additive change and must not inflate the
+ * mismatch ratio.
  */
 export function detectMassMismatch(results, baseline) {
     const total = Object.keys(baseline.benchmarks).length;
     if (total === 0) return false;
-    let missingOrNew = 0;
+    let missingCount = 0;
     for (const r of results) {
-        if (r.status === 'MISSING' || r.status === 'NEW') missingOrNew++;
+        if (r.status === 'MISSING') missingCount++;
     }
-    return missingOrNew / total > MASS_MISMATCH_FRACTION;
+    return missingCount / total > MASS_MISMATCH_FRACTION;
 }
 
 /**
@@ -521,7 +522,7 @@ async function main(argv) {
     });
 }
 
-async function handleCompare({ current, baseline, baselinePath, defaultThreshold }) {
+export async function handleCompare({ current, baseline, baselinePath, defaultThreshold }) {
     if (!baseline) {
         console.log(`no baseline found at ${baselinePath} — treating as first run.`);
         return EXIT_OK;
@@ -554,7 +555,7 @@ async function handleCompare({ current, baseline, baselinePath, defaultThreshold
     return classification.regressions > 0 ? EXIT_REGRESSION : EXIT_OK;
 }
 
-async function handleUpdate({ current, baseline, baselinePath, allowRemovedBenches, forceNonCi }) {
+export async function handleUpdate({ current, baseline, baselinePath, allowRemovedBenches, forceNonCi }) {
     // CI-source enforcement
     if (!isCiSource() && !forceNonCi) {
         console.error(

@@ -24,7 +24,7 @@ import type { PrimitiveValue } from '../value/types';
 /**
  * Field metadata shape expected by `buildProcessingPlan`.
  */
-export type BenchFieldMetadata = {
+type BenchFieldMetadata = {
     encodedName: string;
     sourceIndex: number;
     role: DatasetFieldRole;
@@ -109,7 +109,8 @@ export const makeFieldOnlyPlan = (fieldCount: number): ProcessingPlan => {
  * 3 components each. Exercises the allocation-heavy `.map()` branch of
  * `buildDataRow`.
  *
- * Total base value slots = `fieldCount` + (groupCount * 3).
+ * Total base value slots = ceil(fieldCount/2) + floor(fieldCount/2) * componentsPerGroup.
+ * Use `slotCountForPlan()` for the authoritative count.
  */
 export const makeParameterHeavyPlan = (
     fieldCount: number,

@@ -43,6 +43,13 @@ jobs:
               run: npm run build
             - name: Run benchmarks
               run: npm run bench
+            - name: Verify results file exists
+              run: |
+                  RESULTS="packages/data-core/benchmarks/results/data-core.json"
+                  if [ ! -s "$RESULTS" ]; then
+                    echo "::error::Bench results file missing or empty at $RESULTS. Check that vitest bench matched at least one .bench.ts file."
+                    exit 1
+                  fi
             - name: Write new baseline
               run: npm run bench:update-baseline
             - name: Upload refreshed baseline

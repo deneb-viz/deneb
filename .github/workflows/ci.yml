@@ -99,14 +99,16 @@ jobs:
                   retention-days: 14
                   if-no-files-found: warn
             - name: Fail on script error
-              if: steps.bench.outputs.compare_exit == '2' || steps.bench.outputs.bench_exit != '0'
+              if: steps.bench.outputs.compare_exit == '2'
               run: |
-                  echo "::error::Benchmark pipeline failed with script error (bench_exit=${{ steps.bench.outputs.bench_exit }}, compare_exit=${{ steps.bench.outputs.compare_exit }}). See 'Run benchmarks and compare' step for details."
+                  echo "::error::Benchmark comparison script failed (compare_exit=${{ steps.bench.outputs.compare_exit }}). A bench crash produces ENOENT in compare.mjs which exits 2. See 'Run benchmarks and compare' step for details."
                   exit 1
             - name: Flag regression (advisory)
               if: steps.bench.outputs.compare_exit == '1'
+              continue-on-error: true
               run: |
                   echo "::warning::Benchmark regression detected — see comparison table in the 'Run benchmarks and compare' step. During advisory rollout, regressions are reported but do NOT block merges."
+                  exit 1
 
     alpha-release:
         if: startsWith(github.ref, 'refs/tags/alpha')
