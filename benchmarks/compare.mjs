@@ -607,9 +607,9 @@ export async function handleCompare({ current, baseline, baselinePath, defaultTh
     return classification.regressions > 0 ? EXIT_REGRESSION : EXIT_OK;
 }
 
-export async function handleUpdate({ current, baseline, baselinePath, allowRemovedBenches, forceNonCi }) {
+export async function handleUpdate({ current, baseline, baselinePath, allowRemovedBenches, forceNonCi, env = process.env }) {
     // CI-source enforcement
-    if (!isCiSource() && !forceNonCi) {
+    if (!isCiSource(env) && !forceNonCi) {
         console.error(
             'refusing to update baseline from non-CI source: ImageOS/ImageVersion not detected. Use --force-non-ci to override (not recommended — produces a baseline that will drift against CI runs).'
         );
@@ -630,7 +630,7 @@ export async function handleUpdate({ current, baseline, baselinePath, allowRemov
 
     // Build new baseline
     const meta = buildMeta({
-        runnerImage: detectRunnerImage(),
+        runnerImage: detectRunnerImage(env),
         nodeVersion: process.version,
         vitestVersion: await readVitestVersion(),
         commitSha: readCommitSha()

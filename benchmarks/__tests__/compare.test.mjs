@@ -664,7 +664,8 @@ describe('handleUpdate', () => {
             baseline: null,
             baselinePath: '/tmp/test-update.json',
             allowRemovedBenches: false,
-            forceNonCi: false
+            forceNonCi: false,
+            env: {} // simulate non-CI: no ImageOS/ImageVersion
         });
         expect(result).toBe(EXIT_ERROR);
     });
