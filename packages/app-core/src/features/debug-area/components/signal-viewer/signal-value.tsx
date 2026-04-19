@@ -8,12 +8,14 @@ import {
     DATA_TABLE_VALUE_MAX_DEPTH,
     DATA_TABLE_VALUE_MAX_LENGTH
 } from '../../constants';
+import { getValueType } from '../../workers/get-value-type';
 import { DataTableCell } from '../data-table/data-table-cell';
 import { useDenebState } from '../../../../state';
 
 type SignalValueProps = {
     signalName: string;
     renderId?: string;
+    rowIndex?: number;
 };
 
 /**
@@ -44,7 +46,11 @@ const getInitialSignalValue = (signalName: string) => {
  * happens anyway and it only affects dynamic signal values, this is an acceptable risk for now.
  */
 // eslint-disable-next-line max-lines-per-function
-export const SignalValue = ({ signalName, renderId }: SignalValueProps) => {
+export const SignalValue = ({
+    signalName,
+    renderId,
+    rowIndex
+}: SignalValueProps) => {
     const previousSignalName = usePrevious(signalName);
     /**
      * Use a lazy initializer with error handling to safely get the initial value.
@@ -100,21 +106,26 @@ export const SignalValue = ({ signalName, renderId }: SignalValueProps) => {
     };
     const getSignalValues = useCallback(() => {
         try {
-            const raw = getPrunedObject(
-                VegaViewServices.getSignalByName(signalName),
-                { maxDepth: DATA_TABLE_VALUE_MAX_DEPTH }
-            );
+            // Capture the value type from the unpruned value so the inspector
+            // can size its popover and pick its Monaco language based on the
+            // original shape (e.g., an object with depth beyond the pruning
+            // limit still registers as 'object').
+            const unpruned = VegaViewServices.getSignalByName(signalName);
+            const valueType = getValueType(unpruned);
+            const raw = getPrunedObject(unpruned, {
+                maxDepth: DATA_TABLE_VALUE_MAX_DEPTH
+            });
             const stringified = stringifyPruned(raw);
             const display =
                 stringified?.length > DATA_TABLE_VALUE_MAX_LENGTH
                     ? translate('Table_Placeholder_TooLong')
                     : stringified;
-            return { raw, display };
+            return { raw, display, valueType };
         } catch {
             logDebug(
                 `Could not retrieve value for signal ${signalName}. It may not exist in the current view scope.`
             );
-            return { raw: null, display: '' };
+            return { raw: null, display: '', valueType: 'invalid' as const };
         }
     }, [signalName, translate]);
     /**
@@ -151,6 +162,8 @@ export const SignalValue = ({ signalName, renderId }: SignalValueProps) => {
             field={signalName}
             displayValue={currentValues.display}
             rawValue={currentValues.raw}
+            valueType={currentValues.valueType}
+            rowIndex={rowIndex}
         />
     );
 };

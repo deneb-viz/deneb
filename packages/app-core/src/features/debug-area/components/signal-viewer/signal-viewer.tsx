@@ -84,6 +84,7 @@ const getTableColumns = (
                     displayValue={row.key}
                     field={row.key}
                     rawValue={row.key}
+                    inspectable={false}
                 />
             )
         },
@@ -92,8 +93,12 @@ const getTableColumns = (
             id: 'value',
             grow: 5,
             selector: (row) => row.key, // Use key for sorting since value is fetched dynamically
-            cell: (row) => (
-                <SignalValue signalName={row.key} renderId={renderId} />
+            cell: (row, rowIndex) => (
+                <SignalValue
+                    signalName={row.key}
+                    renderId={renderId}
+                    rowIndex={rowIndex}
+                />
             )
         }
     ];

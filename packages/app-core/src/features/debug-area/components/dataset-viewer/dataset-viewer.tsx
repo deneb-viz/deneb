@@ -415,11 +415,13 @@ const getTableColumns = (
     return Object.keys(dataset?.[0] ?? {})?.map((c) => ({
         id: c,
         name: <span title={getFieldDocumentationByName(c)}>{c}</span>,
-        cell: (row) => (
+        cell: (row, rowIndex) => (
             <DataTableCell
                 displayValue={row[c]?.displayValue}
                 field={c}
                 rawValue={row[c]?.rawValue}
+                valueType={row[c]?.valueType}
+                rowIndex={rowIndex}
             />
         ),
         sortable: true,
