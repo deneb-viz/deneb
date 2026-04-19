@@ -12,6 +12,27 @@ export const TABBABLE_SELECTOR =
     '[tabindex="0"]';
 
 /**
+ * CSS selector for overlay containers that manage their own focus cycling
+ * and must therefore pre-empt the document-level Tab wrap-around handler.
+ *
+ * - `[role="dialog"]`, `[role="alertdialog"]` — Fluent UI Dialog / AlertDialog
+ * - `.fui-PopoverSurface` — Fluent UI v9 PopoverSurface (renders with
+ *   `role="note"`, so role-based detection alone misses it)
+ */
+export const FOCUS_YIELD_SELECTOR =
+    '[role="dialog"], [role="alertdialog"], .fui-PopoverSurface';
+
+/**
+ * Determine whether the document-level Tab handler should yield control to an
+ * overlay that manages its own focus (e.g. a Fluent UI Dialog or Popover).
+ * When an overlay matching {@link FOCUS_YIELD_SELECTOR} is present in the
+ * document, the overlay's own focus-trap / focus management takes priority and
+ * the caller should return early without wrapping focus.
+ */
+export const shouldYieldToFocusScope = (doc: Document = document): boolean =>
+    doc.querySelector(FOCUS_YIELD_SELECTOR) !== null;
+
+/**
  * Get all tabbable elements within a container, in DOM order.
  */
 export const getTabbableElements = (container: HTMLElement): HTMLElement[] => [

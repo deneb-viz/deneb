@@ -2,8 +2,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
+    FOCUS_YIELD_SELECTOR,
     getTabbableElements,
     handleTabWrapAround,
+    shouldYieldToFocusScope,
     TABBABLE_SELECTOR
 } from '../keyboard-focus';
 
@@ -285,5 +287,168 @@ describe('handleTabWrapAround', () => {
 
         expect(result).toBe(true);
         expect(focusSpy).toHaveBeenCalledWith({ preventScroll: true });
+    });
+});
+
+describe('FOCUS_YIELD_SELECTOR', () => {
+    it('should match [role="dialog"] elements', () => {
+        const container = createContainer({
+            tag: 'div',
+            attrs: { role: 'dialog' }
+        });
+        expect(container.querySelector(FOCUS_YIELD_SELECTOR)).not.toBeNull();
+    });
+
+    it('should match [role="alertdialog"] elements', () => {
+        const container = createContainer({
+            tag: 'div',
+            attrs: { role: 'alertdialog' }
+        });
+        expect(container.querySelector(FOCUS_YIELD_SELECTOR)).not.toBeNull();
+    });
+
+    it('should match .fui-PopoverSurface elements', () => {
+        const container = createContainer({
+            tag: 'div',
+            attrs: { class: 'fui-PopoverSurface', role: 'note' }
+        });
+        expect(container.querySelector(FOCUS_YIELD_SELECTOR)).not.toBeNull();
+    });
+
+    it('should not match unrelated elements', () => {
+        const container = createContainer(
+            { tag: 'div', attrs: { role: 'note' } },
+            { tag: 'div', attrs: { class: 'some-other-class' } },
+            { tag: 'button', text: 'Click' }
+        );
+        expect(container.querySelector(FOCUS_YIELD_SELECTOR)).toBeNull();
+    });
+});
+
+describe('shouldYieldToFocusScope', () => {
+    it('should return false when no overlay is present', () => {
+        createContainer(
+            { tag: 'input', attrs: { type: 'text' } },
+            { tag: 'button', text: 'Click' }
+        );
+        expect(shouldYieldToFocusScope()).toBe(false);
+    });
+
+    it('should return true when a [role="dialog"] is present', () => {
+        createContainer({ tag: 'div', attrs: { role: 'dialog' } });
+        expect(shouldYieldToFocusScope()).toBe(true);
+    });
+
+    it('should return true when a [role="alertdialog"] is present', () => {
+        createContainer({ tag: 'div', attrs: { role: 'alertdialog' } });
+        expect(shouldYieldToFocusScope()).toBe(true);
+    });
+
+    it('should return true when a Fluent UI PopoverSurface is present', () => {
+        // Fluent UI v9 PopoverSurface renders with role="note" and the
+        // `fui-PopoverSurface` stable class; detection relies on the class.
+        createContainer({
+            tag: 'div',
+            attrs: { class: 'fui-PopoverSurface', role: 'note' }
+        });
+        expect(shouldYieldToFocusScope()).toBe(true);
+    });
+
+    it('should return true when both a dialog and a PopoverSurface are present', () => {
+        createContainer(
+            { tag: 'div', attrs: { role: 'dialog' } },
+            { tag: 'div', attrs: { class: 'fui-PopoverSurface' } }
+        );
+        expect(shouldYieldToFocusScope()).toBe(true);
+    });
+
+    it('should accept a custom Document for testability', () => {
+        // Sanity-check the injected-document hook used by the production
+        // caller — passing the real document explicitly should behave the
+        // same as the default argument.
+        createContainer({ tag: 'div', attrs: { class: 'fui-PopoverSurface' } });
+        expect(shouldYieldToFocusScope(document)).toBe(true);
+    });
+});
+
+describe('bindTabCycling early-return integration', () => {
+    // These tests exercise the same decision the document-level Tab
+    // interceptor (`bindTabCycling` in src/index.ts) performs: yield when an
+    // overlay with its own focus management is present, otherwise wrap focus
+    // via handleTabWrapAround. Testing the composition guards against
+    // regressing the dialog fix or the PopoverSurface extension.
+    it('yields Tab (no wrap) when a PopoverSurface is in the DOM', () => {
+        const container = createContainer(
+            { tag: 'input', attrs: { id: 'first' } },
+            { tag: 'input', attrs: { id: 'last' } },
+            { tag: 'div', attrs: { class: 'fui-PopoverSurface' } }
+        );
+        const first = container.querySelector<HTMLElement>('#first')!;
+        const focusSpy = vi.spyOn(first, 'focus');
+
+        // Simulate the guard in bindTabCycling: if shouldYieldToFocusScope
+        // returns true, do not invoke handleTabWrapAround at all.
+        let wrapped = false;
+        if (!shouldYieldToFocusScope()) {
+            wrapped = handleTabWrapAround(container, document.body, false);
+        }
+
+        expect(wrapped).toBe(false);
+        expect(focusSpy).not.toHaveBeenCalled();
+    });
+
+    it('wraps Tab as before when no overlay is present', () => {
+        const container = createContainer(
+            { tag: 'input', attrs: { id: 'first' } },
+            { tag: 'input', attrs: { id: 'last' } }
+        );
+        const last = container.querySelector<HTMLElement>('#last')!;
+        const first = container.querySelector<HTMLElement>('#first')!;
+        const focusSpy = vi.spyOn(first, 'focus');
+
+        let wrapped = false;
+        if (!shouldYieldToFocusScope()) {
+            wrapped = handleTabWrapAround(container, last, false);
+        }
+
+        expect(wrapped).toBe(true);
+        expect(focusSpy).toHaveBeenCalledWith({ preventScroll: true });
+    });
+
+    it('yields when both a dialog and a PopoverSurface are present', () => {
+        const container = createContainer(
+            { tag: 'input', attrs: { id: 'first' } },
+            { tag: 'input', attrs: { id: 'last' } },
+            { tag: 'div', attrs: { role: 'dialog' } },
+            { tag: 'div', attrs: { class: 'fui-PopoverSurface' } }
+        );
+        const first = container.querySelector<HTMLElement>('#first')!;
+        const focusSpy = vi.spyOn(first, 'focus');
+
+        let wrapped = false;
+        if (!shouldYieldToFocusScope()) {
+            wrapped = handleTabWrapAround(container, document.body, false);
+        }
+
+        expect(wrapped).toBe(false);
+        expect(focusSpy).not.toHaveBeenCalled();
+    });
+
+    it('yields when only a dialog is present (regression: existing behaviour preserved)', () => {
+        const container = createContainer(
+            { tag: 'input', attrs: { id: 'first' } },
+            { tag: 'input', attrs: { id: 'last' } },
+            { tag: 'div', attrs: { role: 'dialog' } }
+        );
+        const first = container.querySelector<HTMLElement>('#first')!;
+        const focusSpy = vi.spyOn(first, 'focus');
+
+        let wrapped = false;
+        if (!shouldYieldToFocusScope()) {
+            wrapped = handleTabWrapAround(container, document.body, false);
+        }
+
+        expect(wrapped).toBe(false);
+        expect(focusSpy).not.toHaveBeenCalled();
     });
 });

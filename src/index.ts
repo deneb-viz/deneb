@@ -49,7 +49,10 @@ import {
     createCrossFilterClearHandler
 } from './lib/vega-embed';
 import { APPLICATION_NAME, APPLICATION_VERSION } from './lib/application';
-import { handleTabWrapAround } from './lib/keyboard-focus';
+import {
+    handleTabWrapAround,
+    shouldYieldToFocusScope
+} from './lib/keyboard-focus';
 
 /**
  * Centralize/report developer mode from environment.
@@ -285,10 +288,11 @@ export class Deneb implements IVisual {
     private bindTabCycling() {
         document.addEventListener('keydown', (event) => {
             if (event.key !== 'Tab') return;
-            // When a modal dialog is open, let the dialog manage its own
-            // focus cycling — the document-level wrap-around must not interfere.
-            if (document.querySelector('[role="dialog"], [role="alertdialog"]'))
-                return;
+            // When an overlay that manages its own focus is present (modal
+            // dialog, Fluent UI PopoverSurface, etc.), yield to it — the
+            // document-level wrap-around must not interfere with the
+            // overlay's own focus trap or focus management.
+            if (shouldYieldToFocusScope()) return;
             if (
                 handleTabWrapAround(
                     this.#applicationWrapper,
