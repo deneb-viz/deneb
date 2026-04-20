@@ -122,16 +122,17 @@ export const DataTableKeyboardProvider = ({
     );
     const [activeCellId, setActiveCellId] = useState<CellId | null>(null);
 
-    // Mirror provider props into refs so the stable callbacks below can read
-    // the latest values without listing them in their dependency arrays.
+    // Mirror provider props and the active cell into refs so the stable
+    // callbacks below can read the latest values without listing them in
+    // their dependency arrays. Assigning in the render body (rather than a
+    // `useEffect`) means an arrow-key dispatch that races a paginate-triggered
+    // re-render still reads this render's column order, not the previous one.
     const colOrderRef = useRef(colOrder);
     const rowCountRef = useRef(rowCount);
-    useEffect(() => {
-        colOrderRef.current = colOrder;
-    }, [colOrder]);
-    useEffect(() => {
-        rowCountRef.current = rowCount;
-    }, [rowCount]);
+    const activeCellIdRef = useRef<CellId | null>(activeCellId);
+    colOrderRef.current = colOrder;
+    rowCountRef.current = rowCount;
+    activeCellIdRef.current = activeCellId;
 
     const getRegisteredIds = useCallback(
         (): ReadonlySet<CellId> => new Set(refMapRef.current.keys()),
@@ -181,20 +182,20 @@ export const DataTableKeyboardProvider = ({
 
     const moveActive = useCallback<DataTableKeyboardActions['moveActive']>(
         (direction) => {
-            setActiveCellId((prev) => {
-                if (!prev) return prev;
-                const current = parseCellId(prev);
-                if (!current) return prev;
-                const target = resolveArrowTarget(
-                    current,
-                    direction,
-                    colOrderRef.current,
-                    rowCountRef.current,
-                    getRegisteredIds()
-                );
-                if (target !== prev) focusCell(target);
-                return target;
-            });
+            const prev = activeCellIdRef.current;
+            if (!prev) return;
+            const current = parseCellId(prev);
+            if (!current) return;
+            const target = resolveArrowTarget(
+                current,
+                direction,
+                colOrderRef.current,
+                rowCountRef.current,
+                getRegisteredIds()
+            );
+            if (target === prev) return;
+            setActiveCellId(target);
+            focusCell(target);
         },
         [getRegisteredIds, focusCell]
     );
@@ -203,19 +204,19 @@ export const DataTableKeyboardProvider = ({
         DataTableKeyboardActions['moveToRowEndpoint']
     >(
         (endpoint) => {
-            setActiveCellId((prev) => {
-                if (!prev) return prev;
-                const current = parseCellId(prev);
-                if (!current) return prev;
-                const target = resolveRowEndpoint(
-                    current,
-                    endpoint,
-                    colOrderRef.current,
-                    getRegisteredIds()
-                );
-                if (target !== prev) focusCell(target);
-                return target;
-            });
+            const prev = activeCellIdRef.current;
+            if (!prev) return;
+            const current = parseCellId(prev);
+            if (!current) return;
+            const target = resolveRowEndpoint(
+                current,
+                endpoint,
+                colOrderRef.current,
+                getRegisteredIds()
+            );
+            if (target === prev) return;
+            setActiveCellId(target);
+            focusCell(target);
         },
         [getRegisteredIds, focusCell]
     );

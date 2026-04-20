@@ -3,6 +3,7 @@ import {
     useCallback,
     useContext,
     useMemo,
+    useRef,
     useState,
     type ReactNode,
     type RefObject
@@ -113,6 +114,15 @@ export const DataTableInspectorProvider = ({
         INSPECTOR_POPOVER_CLOSED_STATE
     );
 
+    // Mirror state into a ref so `closeInspector` can read the current anchor
+    // without performing the focus side effect inside a `setState` updater.
+    // React treats updater callbacks as pure; in StrictMode (and under
+    // concurrent rendering) they may run more than once per dispatch, which
+    // would double-fire `anchorEl.focus()` and produce duplicate screen-reader
+    // announcements or a momentary flicker back to the cell.
+    const stateRef = useRef<InspectorPopoverState>(state);
+    stateRef.current = state;
+
     const openInspector = useCallback<
         InspectorPopoverContextValue['openInspector']
     >((anchorRef, rawValue, valueType, cellId) => {
@@ -120,13 +130,11 @@ export const DataTableInspectorProvider = ({
     }, []);
 
     const closeInspector = useCallback(() => {
-        setState((prev) => {
-            const anchorEl = prev.anchorRef?.current;
-            if (anchorEl && anchorEl.isConnected) {
-                anchorEl.focus({ preventScroll: true });
-            }
-            return INSPECTOR_POPOVER_CLOSED_STATE;
-        });
+        const anchorEl = stateRef.current.anchorRef?.current;
+        setState(INSPECTOR_POPOVER_CLOSED_STATE);
+        if (anchorEl?.isConnected) {
+            anchorEl.focus({ preventScroll: true });
+        }
     }, []);
 
     const isOpenForCell = useCallback(
