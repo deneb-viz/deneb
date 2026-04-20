@@ -27,6 +27,7 @@ import {
     DATA_TABLE_VALUE_MAX_LENGTH
 } from '../../constants';
 import { DataTableCell } from '../data-table/data-table-cell';
+import { DataTableHeaderCell } from '../data-table/data-table-header-cell';
 import { getDenebState, useDenebState } from '../../../../state';
 import { NoDataMessage } from '../no-data-message';
 import { DataTableViewer } from '../data-table/data-table';
@@ -414,7 +415,12 @@ const getTableColumns = (
     logDebug('DatasetViewer: calculating table columns...');
     return Object.keys(dataset?.[0] ?? {})?.map((c) => ({
         id: c,
-        name: <span title={getFieldDocumentationByName(c)}>{c}</span>,
+        name: (
+            <DataTableHeaderCell
+                label={c}
+                tooltip={getFieldDocumentationByName(c)}
+            />
+        ),
         cell: (row, rowIndex) => (
             <DataTableCell
                 displayValue={row[c]?.displayValue}
@@ -422,6 +428,7 @@ const getTableColumns = (
                 rawValue={row[c]?.rawValue}
                 valueType={row[c]?.valueType}
                 rowIndex={rowIndex}
+                tooLong={row[c]?.tooLong}
             />
         ),
         sortable: true,

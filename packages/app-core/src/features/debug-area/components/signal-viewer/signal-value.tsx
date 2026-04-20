@@ -116,16 +116,21 @@ export const SignalValue = ({
                 maxDepth: DATA_TABLE_VALUE_MAX_DEPTH
             });
             const stringified = stringifyPruned(raw);
-            const display =
-                stringified?.length > DATA_TABLE_VALUE_MAX_LENGTH
-                    ? translate('Table_Placeholder_TooLong')
-                    : stringified;
-            return { raw, display, valueType };
+            const tooLong = stringified?.length > DATA_TABLE_VALUE_MAX_LENGTH;
+            const display = tooLong
+                ? translate('Table_Placeholder_TooLong')
+                : stringified;
+            return { raw, display, valueType, tooLong };
         } catch {
             logDebug(
                 `Could not retrieve value for signal ${signalName}. It may not exist in the current view scope.`
             );
-            return { raw: null, display: '', valueType: 'invalid' as const };
+            return {
+                raw: null,
+                display: '',
+                valueType: 'invalid' as const,
+                tooLong: false
+            };
         }
     }, [signalName, translate]);
     /**
@@ -160,10 +165,12 @@ export const SignalValue = ({
     return (
         <DataTableCell
             field={signalName}
+            columnId='value'
             displayValue={currentValues.display}
             rawValue={currentValues.raw}
             valueType={currentValues.valueType}
             rowIndex={rowIndex}
+            tooLong={currentValues.tooLong}
         />
     );
 };

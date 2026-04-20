@@ -54,6 +54,8 @@
     "Table_Placeholder_Infinity": "Infinity",
     "Table_Placeholder_TooLong": "{...}",
     "Table_Aria_InspectCell": "Inspect value for {0}",
+    "Table_Tooltip_Inspect": "Select to inspect value",
+    "Table_Tooltip_InspectShallow": "Value is too large to display. Select to inspect a shallow representation.",
     "Template_Description_Optional_Placeholder": "Optional description for end-user",
     "Template_Export_Author_Name": "Author",
     "Template_Export_Author_Name_Empty": "[No Author Details Provided]",
