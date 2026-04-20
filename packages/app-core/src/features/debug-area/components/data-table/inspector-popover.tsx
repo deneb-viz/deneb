@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, type RefObject } from 'react';
 import {
     makeStyles,
     Popover,
@@ -22,8 +22,12 @@ import {
 
 // Selector used by both close-path guards to recognise a click that landed on
 // another inspectable DataTableCell — those cells carry their own onClick that
-// retargets the shared popover, so dismissing would stomp the retarget.
-const INSPECTABLE_CELL_SELECTOR = '[role="button"][aria-haspopup="dialog"]';
+// retargets the shared popover, so dismissing would stomp the retarget. The
+// matching `data-inspector-cell` attribute is applied by `DataTableCell` only
+// in its inspectable render branch, which scopes the guard to our own cells
+// (rather than any ambient `role=button aria-haspopup=dialog` element such as
+// an unrelated Fluent `PopoverTrigger`).
+const INSPECTABLE_CELL_SELECTOR = '[data-inspector-cell]';
 
 const useInspectorPopoverStyles = makeStyles({
     popoverSurface: {
@@ -45,6 +49,18 @@ const useInspectorPopoverStyles = makeStyles({
     }
 });
 
+export interface InspectorPopoverProps {
+    /**
+     * Element whose scroll events dismiss the inspector. Typically the
+     * `DataTableViewer` enclosure, so that scrolls in a sibling viewer (e.g.
+     * the dataset viewer while the signals viewer has an open inspector) do
+     * not cross-dismiss. Listeners attach in capture phase, so scrolls from
+     * any descendant — including react-data-table's internal responsive
+     * wrapper — are caught.
+     */
+    scrollContainerRef: RefObject<HTMLElement | null>;
+}
+
 /**
  * Single shared popover hosted at the `DataTableViewer` level. Reads its state
  * from `DataTableInspectorProvider` and re-anchors to whichever cell most
@@ -52,14 +68,24 @@ const useInspectorPopoverStyles = makeStyles({
  * `DataTableViewer` — this guarantees at most one inspector is visible at a
  * time, and eliminates per-cell popover state duplication.
  */
-export const InspectorPopover = () => {
+export const InspectorPopover = ({
+    scrollContainerRef
+}: InspectorPopoverProps) => {
     const classes = useInspectorPopoverStyles();
     const { fontSize, theme } = useDenebState((state) => ({
         fontSize: state.editorPreferences.jsonEditorFontSize,
         theme: state.editorPreferences.theme
     }));
+    const inspector = useDataTableInspector();
+    if (!inspector) {
+        // InspectorPopover is only valid inside DataTableInspectorProvider.
+        // Fail here rather than downstream with a less actionable error.
+        throw new Error(
+            'InspectorPopover must be mounted inside DataTableInspectorProvider'
+        );
+    }
     const { isOpen, anchorRef, cellId, rawValue, valueType, closeInspector } =
-        useDataTableInspector();
+        inspector;
     const editorContainerRef = useRef<HTMLDivElement>(null);
     const editorRef = useRef<monacoEditor.IStandaloneCodeEditor | null>(null);
 
@@ -82,17 +108,22 @@ export const InspectorPopover = () => {
         [valueType]
     );
 
-    // Dismiss popover on any ancestor scroll, but ignore scrolling within the
-    // popover's Monaco editor itself.
+    // Dismiss popover on scrolls inside the containing viewer, but ignore
+    // scrolling within the popover's Monaco editor itself. Scoping the
+    // listener to the viewer's enclosure (instead of `window`) means a
+    // scroll inside a sibling viewer — e.g. the dataset viewer while the
+    // signals viewer has an open inspector — no longer cross-dismisses.
     useEffect(() => {
         if (!isOpen) return;
+        const container = scrollContainerRef.current;
+        if (!container) return;
         const dismiss = (e: Event) => {
             if (editorContainerRef.current?.contains(e.target as Node)) return;
             closeInspector();
         };
-        window.addEventListener('scroll', dismiss, true);
-        return () => window.removeEventListener('scroll', dismiss, true);
-    }, [isOpen, closeInspector]);
+        container.addEventListener('scroll', dismiss, true);
+        return () => container.removeEventListener('scroll', dismiss, true);
+    }, [isOpen, closeInspector, scrollContainerRef]);
 
     // Focus Monaco as soon as it mounts so keyboard users can scroll, select,
     // and copy without a second Tab press. Popover no longer sets `trapFocus`

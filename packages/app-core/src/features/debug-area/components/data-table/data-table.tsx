@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { makeStyles } from '@fluentui/react-components';
 import { ArrowSortDown16Regular } from '@fluentui/react-icons';
 import { tokens } from '@fluentui/react-theme';
@@ -52,11 +52,15 @@ export const DataTableViewer = ({
         [columns]
     );
     const rowCount = data?.length ?? 0;
+    // Owns the viewer-level scrollable enclosure reference so the inspector
+    // popover can scope its scroll-dismissal listener to this viewer only —
+    // scrolls in a sibling viewer no longer dismiss our popover.
+    const enclosureRef = useRef<HTMLDivElement>(null);
     return (
         <DataTableInspectorProvider>
             <DataTableKeyboardProvider colOrder={colOrder} rowCount={rowCount}>
                 <DataTableTooltipProvider>
-                    <div className={classes.enclosure}>
+                    <div ref={enclosureRef} className={classes.enclosure}>
                         <StyleSheetManager
                             shouldForwardProp={shouldForwardProp}
                         >
@@ -149,7 +153,7 @@ export const DataTableViewer = ({
                         </StyleSheetManager>
                     </div>
                 </DataTableTooltipProvider>
-                <InspectorPopover />
+                <InspectorPopover scrollContainerRef={enclosureRef} />
             </DataTableKeyboardProvider>
         </DataTableInspectorProvider>
     );

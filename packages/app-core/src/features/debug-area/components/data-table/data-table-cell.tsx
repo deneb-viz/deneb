@@ -12,7 +12,10 @@ import {
 } from '@deneb-viz/data-core/value';
 import type { WorkerDatasetViewerValueType } from '../../workers/types';
 import { getDenebState } from '../../../../state';
-import { useDataTableInspector } from './inspector-popover-context';
+import {
+    isOpenForCellId,
+    useDataTableInspector
+} from './inspector-popover-context';
 import {
     buildCellId,
     useDataTableKeyboardActions,
@@ -88,8 +91,15 @@ export const DataTableCell = ({
     const keyboard = useDataTableKeyboardActions();
     const cellRef = useRef<HTMLDivElement>(null);
 
+    // `inspector` may be null if the cell is rendered outside a
+    // `DataTableInspectorProvider` (isolated test harness, signal-viewer key
+    // column, etc.). In that case click-to-inspect is unavailable and the
+    // cell renders in the non-inspectable branch below.
     const canInspect =
-        inspectable && valueType !== undefined && rowIndex !== undefined;
+        inspectable &&
+        inspector !== null &&
+        valueType !== undefined &&
+        rowIndex !== undefined;
 
     const cellId = useMemo(
         () => (canInspect ? buildCellId(rowIndex!, effectiveColumnId) : null),
@@ -108,7 +118,7 @@ export const DataTableCell = ({
         return keyboard.registerCell(cellId, cellRef);
     }, [cellId, keyboard]);
 
-    if (!canInspect || !cellId) {
+    if (!canInspect || !cellId || !inspector) {
         return (
             <Tooltip
                 content={tooltipContent ?? ''}
@@ -125,7 +135,7 @@ export const DataTableCell = ({
     // `DataTableViewer`), fall back to always-tabbable so the cell is at
     // least reachable.
     const isActive = keyboard ? isActiveCell : true;
-    const isOpen = inspector.isOpenForCell(cellId);
+    const isOpen = isOpenForCellId(inspector, cellId);
 
     const openForThisCell = () => {
         inspector.openInspector(cellRef, rawValue, valueType!, cellId);
@@ -191,6 +201,7 @@ export const DataTableCell = ({
                     'Table_Aria_InspectCell',
                     [field]
                 )}
+                data-inspector-cell=''
                 className={classes.cell}
                 onClick={handleClick}
                 onKeyDown={handleKeyDown}

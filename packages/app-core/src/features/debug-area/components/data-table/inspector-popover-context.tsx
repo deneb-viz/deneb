@@ -40,11 +40,6 @@ export interface InspectorPopoverContextValue extends InspectorPopoverState {
      * the anchor element is still connected to the DOM.
      */
     closeInspector: () => void;
-    /**
-     * Convenience helper for cells to compute whether they are currently
-     * targeted by the inspector (used for `aria-expanded`).
-     */
-    isOpenForCell: (cellId: string) => boolean;
 }
 
 export const INSPECTOR_POPOVER_CLOSED_STATE: InspectorPopoverState = {
@@ -86,18 +81,14 @@ const InspectorPopoverContext =
 
 /**
  * Hook for cells and the inspector itself to consume the shared popover state.
- * Must be used inside `DataTableInspectorProvider`; throws otherwise to fail
- * loudly rather than rendering a broken inspector silently.
+ * Returns `null` outside a provider so cells with `inspectable={false}` (the
+ * signal-viewer key column, or cells rendered in isolated test harnesses) can
+ * mount without a `DataTableInspectorProvider`. Consumers that genuinely
+ * require the provider (e.g. `InspectorPopover`) should short-circuit when
+ * this returns null rather than throwing deep inside a render tree.
  */
-export const useDataTableInspector = (): InspectorPopoverContextValue => {
-    const ctx = useContext(InspectorPopoverContext);
-    if (!ctx) {
-        throw new Error(
-            'useDataTableInspector must be used within a DataTableInspectorProvider'
-        );
-    }
-    return ctx;
-};
+export const useDataTableInspector = (): InspectorPopoverContextValue | null =>
+    useContext(InspectorPopoverContext);
 
 /**
  * Provides shared state for a single inspector popover hosted at the
@@ -137,19 +128,13 @@ export const DataTableInspectorProvider = ({
         }
     }, []);
 
-    const isOpenForCell = useCallback(
-        (cellId: string) => isOpenForCellId(state, cellId),
-        [state]
-    );
-
     const value = useMemo<InspectorPopoverContextValue>(
         () => ({
             ...state,
             openInspector,
-            closeInspector,
-            isOpenForCell
+            closeInspector
         }),
-        [state, openInspector, closeInspector, isOpenForCell]
+        [state, openInspector, closeInspector]
     );
 
     return (
