@@ -1,16 +1,11 @@
 import { useEffect, useMemo, useRef, type KeyboardEvent } from 'react';
 import { makeStyles, Tooltip } from '@fluentui/react-components';
-import { isDate, isFunction, isNumber } from 'vega';
 
 import {
     isCrossHighlightComparatorField,
     isCrossHighlightStatusField,
     SELECTED_ROW_FIELD_NAME
 } from '@deneb-viz/data-core/field';
-import {
-    getPrunedObject,
-    getSanitizedTooltipValue
-} from '@deneb-viz/utils/object';
 import {
     type DataPointHighlightComparator,
     type DataPointSelectionStatus
@@ -20,7 +15,8 @@ import { getDenebState } from '../../../../state';
 import { useDataTableInspector } from './inspector-popover-context';
 import {
     buildCellId,
-    useDataTableKeyboard
+    useDataTableKeyboardActions,
+    useIsDataTableCellActive
 } from './data-table-keyboard-context';
 import { useDataTableTooltip } from './data-table-tooltip-context';
 
@@ -43,6 +39,22 @@ type DataTableCellProps = {
     valueType?: WorkerDatasetViewerValueType;
     rowIndex?: number;
     /**
+     * Stable column identifier used to position the cell in the keyboard
+     * grid. Defaults to `field`. Must be overridden when `field` varies by
+     * row (e.g. the signal viewer's value column, where `field` is the
+     * signal name but the column position is always `"value"`) — otherwise
+     * arrow-key navigation can't map cells to a consistent column index.
+     */
+    columnId?: string;
+    /**
+     * When `true`, the cell's `displayValue` is a placeholder because the
+     * raw value was truncated for inline display. The tooltip then
+     * advertises that the inspector shows a shallow representation, rather
+     * than the generic "Select to inspect" hint used for fully-displayed
+     * values.
+     */
+    tooLong?: boolean;
+    /**
      * When `false`, the cell renders without click/keyboard handlers,
      * tabIndex, or a button role — just the tooltip and display text. Used
      * by the signal viewer to skip the key column.
@@ -63,27 +75,34 @@ export const DataTableCell = ({
     rawValue,
     valueType,
     rowIndex,
+    columnId,
+    tooLong = false,
     inspectable = true
 }: DataTableCellProps) => {
+    const effectiveColumnId = columnId ?? field;
     const classes = useDataTableCellStyles();
     const tooltipMountNode = useDataTableTooltip();
-    const tooltipContent = getCellTooltip(field, rawValue);
+    const tooltipContent = getCellTooltip(field, rawValue, tooLong);
 
     const inspector = useDataTableInspector();
-    const keyboard = useDataTableKeyboard();
+    const keyboard = useDataTableKeyboardActions();
     const cellRef = useRef<HTMLDivElement>(null);
 
     const canInspect =
         inspectable && valueType !== undefined && rowIndex !== undefined;
 
     const cellId = useMemo(
-        () => (canInspect ? buildCellId(rowIndex!, field) : null),
-        [canInspect, rowIndex, field]
+        () => (canInspect ? buildCellId(rowIndex!, effectiveColumnId) : null),
+        [canInspect, rowIndex, effectiveColumnId]
     );
+
+    const isActiveCell = useIsDataTableCellActive(cellId);
 
     // Register this cell with the keyboard provider for roving tabindex
     // tracking. Non-inspectable cells skip registration so arrow-key
-    // navigation steps over them.
+    // navigation steps over them. The actions object is identity-stable for
+    // the provider's lifetime, so this effect runs only on mount/unmount of
+    // the cell — not on every active-cell change.
     useEffect(() => {
         if (!cellId || !keyboard) return;
         return keyboard.registerCell(cellId, cellRef);
@@ -102,7 +121,10 @@ export const DataTableCell = ({
         );
     }
 
-    const isActive = keyboard?.isActive(cellId) ?? true;
+    // When the keyboard provider isn't present (e.g. cell rendered outside
+    // `DataTableViewer`), fall back to always-tabbable so the cell is at
+    // least reachable.
+    const isActive = keyboard ? isActiveCell : true;
     const isOpen = inspector.isOpenForCell(cellId);
 
     const openForThisCell = () => {
@@ -163,7 +185,7 @@ export const DataTableCell = ({
                 ref={cellRef}
                 role='button'
                 tabIndex={isActive ? 0 : -1}
-                aria-haspopup='true'
+                aria-haspopup='dialog'
                 aria-expanded={isOpen}
                 aria-label={getDenebState().i18n.translate(
                     'Table_Aria_InspectCell',
@@ -181,11 +203,21 @@ export const DataTableCell = ({
 };
 
 /**
- * For a given column, checks for any special conditions and returns a
- * customized tooltip for the current cell.
+ * Returns the tooltip content for a cell. Support/interactivity fields
+ * (cross-filter and cross-highlight) surface a translated explanation of
+ * their enum value because the raw `on`/`off`/`eq`/`lt`/… display text is
+ * meaningless on its own. Truncated cells (`tooLong`) advertise that the
+ * inspector shows a shallow representation of the value, since the cell's
+ * displayed placeholder (`{...}`) hides the real content. All other cells
+ * get a generic discoverability hint directing the user to the inspector.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const getCellTooltip = (field: string, value: any) => {
+const getCellTooltip = (
+    field: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    value: any,
+    tooLong: boolean
+) => {
+    const { translate } = getDenebState().i18n;
     switch (true) {
         case field === SELECTED_ROW_FIELD_NAME:
             return getCellCrossFilterTooltip(value);
@@ -193,30 +225,11 @@ const getCellTooltip = (field: string, value: any) => {
             return getCellHighlightComparatorTooltip(value);
         case isCrossHighlightStatusField(field):
             return getCellHighlightComparatorStatus(value);
-        case isDate(value):
-            return new Date(value).toUTCString();
-        case isNumber(value):
-            return formatNumberValueForTable(value);
-        case isFunction(value):
-            return value.toString();
+        case tooLong:
+            return translate('Table_Tooltip_InspectShallow');
         default:
-            return getSanitizedTooltipValue(value);
+            return translate('Table_Tooltip_Inspect');
     }
-};
-
-/**
- * Handle the display and translation of number values for a table. Borrowed
- * and adapted from vega-editor.
- */
-const formatNumberValueForTable = (value: number, tooltip = false) => {
-    const { translate } = getDenebState().i18n;
-    return isNaN(value)
-        ? translate('Table_Placeholder_NaN')
-        : value === Number.POSITIVE_INFINITY
-          ? translate('Table_Placeholder_Infinity')
-          : value === Number.NEGATIVE_INFINITY
-            ? `-${translate('Table_Placeholder_Infinity')}`
-            : getStringifiedDisplayValue(value, tooltip);
 };
 
 /**
@@ -269,13 +282,4 @@ const getCellHighlightComparatorTooltip = (
         case 'neq':
             return translate('Text_Dataset_FieldHighlightComparatorNeq');
     }
-};
-
-/**
- * Handle the processing of a stringified value within a data table.
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const getStringifiedDisplayValue = (value: any, tooltip = false) => {
-    const pruned = getPrunedObject(value);
-    return tooltip ? getSanitizedTooltipValue(pruned) : pruned;
 };

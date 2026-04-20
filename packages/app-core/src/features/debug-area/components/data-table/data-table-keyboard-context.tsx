@@ -21,7 +21,14 @@ import {
     type RowEndpoint
 } from './data-table-keyboard-utils';
 
-export interface DataTableKeyboardContextValue {
+/**
+ * Stable action surface exposed to cells for participating in roving tabindex
+ * navigation. The identity of this object and its methods never change for
+ * the lifetime of the provider, so cells can safely list `registerCell` in
+ * their `useEffect` dependencies without triggering register/unregister
+ * churn on every keystroke.
+ */
+export interface DataTableKeyboardActions {
     /**
      * Register an inspectable cell as a focus target. Returns a cleanup
      * function suitable for a `useEffect` return value.
@@ -46,25 +53,35 @@ export interface DataTableKeyboardContextValue {
      * current row.
      */
     moveToRowEndpoint: (endpoint: RowEndpoint) => void;
-    /**
-     * Predicate used by cells to drive `tabIndex` — exactly one cell has
-     * `tabIndex={0}` at any given time.
-     */
-    isActive: (cellId: CellId) => boolean;
 }
 
-const DataTableKeyboardContext =
-    createContext<DataTableKeyboardContextValue | null>(null);
+const DataTableKeyboardActionsContext =
+    createContext<DataTableKeyboardActions | null>(null);
 
 /**
- * Hook for cells to participate in roving tabindex navigation. Must be used
- * inside `DataTableKeyboardProvider`. When used outside the provider (e.g.,
- * in tests of a lone cell), returns `null` so callers can gracefully render
- * without keyboard navigation. The full provider-backed behaviour is only
- * relied upon inside `DataTableViewer`.
+ * Reactive active-cell context. Consumers re-render when the active cell
+ * changes so they can update `tabIndex`. Separated from the actions context
+ * so changes here do not invalidate the stable action callbacks.
  */
-export const useDataTableKeyboard = (): DataTableKeyboardContextValue | null =>
-    useContext(DataTableKeyboardContext);
+const DataTableActiveCellContext = createContext<CellId | null>(null);
+
+/**
+ * Hook for cells to obtain stable action callbacks. Returns `null` outside a
+ * provider so cells can render standalone in isolated tests without keyboard
+ * wiring.
+ */
+export const useDataTableKeyboardActions =
+    (): DataTableKeyboardActions | null =>
+        useContext(DataTableKeyboardActionsContext);
+
+/**
+ * Hook for a cell to learn whether it is the currently active (tabbable) cell.
+ * Re-renders the cell only when the active cell changes to or from this one.
+ */
+export const useIsDataTableCellActive = (cellId: CellId | null): boolean => {
+    const active = useContext(DataTableActiveCellContext);
+    return cellId !== null && active === cellId;
+};
 
 export interface DataTableKeyboardProviderProps {
     /**
@@ -85,70 +102,84 @@ export interface DataTableKeyboardProviderProps {
  * Coordinates roving tabindex for cells in a `DataTableViewer`. Only one cell
  * has `tabIndex={0}` at a time; arrow keys move focus within the grid; Tab
  * moves focus out of the table to the next external focusable element.
+ *
+ * Implementation notes
+ * --------------------
+ * Action callbacks are stabilised via refs so consuming cells can pass them
+ * as `useEffect` dependencies without re-running. The active-cell id is
+ * exposed through a separate context so changes there don't invalidate the
+ * action callbacks. This split is what lets `registerCell` stay identity-
+ * stable across active-cell changes — without it, every arrow-key press
+ * would cause every cell to unregister and re-register mid-transition.
  */
 export const DataTableKeyboardProvider = ({
     colOrder,
     rowCount,
     children
 }: DataTableKeyboardProviderProps) => {
-    // Mutable ref map rather than state — cells register and unregister on
-    // every mount/unmount cycle and tracking this in React state would cause
-    // a render cascade. The set of registered IDs is derived on demand.
     const refMapRef = useRef<Map<CellId, RefObject<HTMLElement | null>>>(
         new Map()
     );
     const [activeCellId, setActiveCellId] = useState<CellId | null>(null);
+
+    // Mirror provider props into refs so the stable callbacks below can read
+    // the latest values without listing them in their dependency arrays.
+    const colOrderRef = useRef(colOrder);
+    const rowCountRef = useRef(rowCount);
+    useEffect(() => {
+        colOrderRef.current = colOrder;
+    }, [colOrder]);
+    useEffect(() => {
+        rowCountRef.current = rowCount;
+    }, [rowCount]);
 
     const getRegisteredIds = useCallback(
         (): ReadonlySet<CellId> => new Set(refMapRef.current.keys()),
         []
     );
 
-    const registerCell = useCallback<
-        DataTableKeyboardContextValue['registerCell']
-    >(
-        (cellId, ref) => {
-            refMapRef.current.set(cellId, ref);
-            // If we have no active cell yet, make this the active one so that
-            // Tab into the table lands somewhere sensible.
-            setActiveCellId((prev) => prev ?? cellId);
-            return () => {
-                refMapRef.current.delete(cellId);
-                setActiveCellId((prev) => {
-                    if (prev !== cellId) return prev;
-                    // The previously-active cell has unregistered (e.g. the
-                    // page changed). Fall back to the next sensible default.
-                    return pickDefaultActiveCell(colOrder, getRegisteredIds());
-                });
-            };
-        },
-        [colOrder, getRegisteredIds]
-    );
-
-    // When columns or row count change (e.g., pagination), verify the active
-    // cell is still valid; reset to a sensible default otherwise.
-    useEffect(() => {
-        const registered = getRegisteredIds();
-        setActiveCellId((prev) => {
-            if (prev && registered.has(prev)) return prev;
-            return pickDefaultActiveCell(colOrder, registered);
-        });
-    }, [colOrder, rowCount, getRegisteredIds]);
-
     const focusCell = useCallback((cellId: CellId) => {
         const ref = refMapRef.current.get(cellId);
         ref?.current?.focus({ preventScroll: true });
     }, []);
 
+    const registerCell = useCallback<DataTableKeyboardActions['registerCell']>(
+        (cellId, ref) => {
+            refMapRef.current.set(cellId, ref);
+            setActiveCellId((prev) => prev ?? cellId);
+            return () => {
+                refMapRef.current.delete(cellId);
+                setActiveCellId((prev) => {
+                    if (prev !== cellId) return prev;
+                    return pickDefaultActiveCell(
+                        colOrderRef.current,
+                        new Set(refMapRef.current.keys())
+                    );
+                });
+            };
+        },
+        []
+    );
+
+    // When columns or row count change (e.g., pagination), verify the active
+    // cell is still valid; reset to a sensible default otherwise.
+    useEffect(() => {
+        setActiveCellId((prev) => {
+            const registered = new Set(refMapRef.current.keys());
+            if (prev && registered.has(prev)) return prev;
+            return pickDefaultActiveCell(colOrder, registered);
+        });
+    }, [colOrder, rowCount]);
+
     const setActiveCell = useCallback<
-        DataTableKeyboardContextValue['setActiveCell']
+        DataTableKeyboardActions['setActiveCell']
     >((cellId) => {
         if (refMapRef.current.has(cellId)) {
             setActiveCellId(cellId);
         }
     }, []);
 
-    const moveActive = useCallback<DataTableKeyboardContextValue['moveActive']>(
+    const moveActive = useCallback<DataTableKeyboardActions['moveActive']>(
         (direction) => {
             setActiveCellId((prev) => {
                 if (!prev) return prev;
@@ -157,19 +188,19 @@ export const DataTableKeyboardProvider = ({
                 const target = resolveArrowTarget(
                     current,
                     direction,
-                    colOrder,
-                    rowCount,
+                    colOrderRef.current,
+                    rowCountRef.current,
                     getRegisteredIds()
                 );
                 if (target !== prev) focusCell(target);
                 return target;
             });
         },
-        [colOrder, rowCount, getRegisteredIds, focusCell]
+        [getRegisteredIds, focusCell]
     );
 
     const moveToRowEndpoint = useCallback<
-        DataTableKeyboardContextValue['moveToRowEndpoint']
+        DataTableKeyboardActions['moveToRowEndpoint']
     >(
         (endpoint) => {
             setActiveCellId((prev) => {
@@ -179,36 +210,32 @@ export const DataTableKeyboardProvider = ({
                 const target = resolveRowEndpoint(
                     current,
                     endpoint,
-                    colOrder,
+                    colOrderRef.current,
                     getRegisteredIds()
                 );
                 if (target !== prev) focusCell(target);
                 return target;
             });
         },
-        [colOrder, getRegisteredIds, focusCell]
+        [getRegisteredIds, focusCell]
     );
 
-    const isActive = useCallback<DataTableKeyboardContextValue['isActive']>(
-        (cellId) => cellId === activeCellId,
-        [activeCellId]
-    );
-
-    const value = useMemo<DataTableKeyboardContextValue>(
+    const actions = useMemo<DataTableKeyboardActions>(
         () => ({
             registerCell,
             setActiveCell,
             moveActive,
-            moveToRowEndpoint,
-            isActive
+            moveToRowEndpoint
         }),
-        [registerCell, setActiveCell, moveActive, moveToRowEndpoint, isActive]
+        [registerCell, setActiveCell, moveActive, moveToRowEndpoint]
     );
 
     return (
-        <DataTableKeyboardContext.Provider value={value}>
-            {children}
-        </DataTableKeyboardContext.Provider>
+        <DataTableKeyboardActionsContext.Provider value={actions}>
+            <DataTableActiveCellContext.Provider value={activeCellId}>
+                {children}
+            </DataTableActiveCellContext.Provider>
+        </DataTableKeyboardActionsContext.Provider>
     );
 };
 

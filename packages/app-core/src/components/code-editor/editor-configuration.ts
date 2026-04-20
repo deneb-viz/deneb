@@ -8,6 +8,7 @@ type EditorOptionsOverrides = {
     showLineNumbers?: boolean;
     quickSuggestions?: boolean;
     fixedOverflowWidgets?: boolean;
+    automaticLayout?: boolean;
 };
 
 const buildEditorOptions = ({
@@ -16,7 +17,8 @@ const buildEditorOptions = ({
     wordWrap,
     showLineNumbers,
     quickSuggestions,
-    fixedOverflowWidgets
+    fixedOverflowWidgets,
+    automaticLayout
 }: EditorOptionsOverrides) => ({
     cursorBlinking: 'smooth' as const,
     folding: true,
@@ -29,7 +31,8 @@ const buildEditorOptions = ({
     tabSize: EDITOR_DEFAULTS.tabSize,
     wordWrap: (wordWrap === false ? 'off' : 'on') as 'on' | 'off',
     ...(quickSuggestions !== undefined && { quickSuggestions }),
-    ...(fixedOverflowWidgets !== undefined && { fixedOverflowWidgets })
+    ...(fixedOverflowWidgets !== undefined && { fixedOverflowWidgets }),
+    ...(automaticLayout !== undefined && { automaticLayout })
 });
 
 type EditorPropsOverrides = EditorOptionsOverrides & {
