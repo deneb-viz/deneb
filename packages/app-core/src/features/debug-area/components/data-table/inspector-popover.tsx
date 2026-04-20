@@ -3,7 +3,9 @@ import {
     makeStyles,
     Popover,
     PopoverSurface,
-    tokens
+    tokens,
+    type OnOpenChangeData,
+    type OpenPopoverEvents
 } from '@fluentui/react-components';
 import Editor, { type OnMount } from '@monaco-editor/react';
 import type { editor as monacoEditor } from 'monaco-editor';
@@ -92,42 +94,41 @@ export const InspectorPopover = () => {
         return () => window.removeEventListener('scroll', dismiss, true);
     }, [isOpen, closeInspector]);
 
-    // Monaco loads asynchronously, so when Fluent's `trapFocus` tries to move
-    // focus into the PopoverSurface on open, there is nothing focusable yet
-    // and its auto-focus no-ops. Capture the editor instance on mount and
-    // focus it immediately so the user can scroll, select, and copy from the
-    // keyboard right away.
+    // Focus Monaco as soon as it mounts so keyboard users can scroll, select,
+    // and copy without a second Tab press. Popover no longer sets `trapFocus`
+    // — with `trapFocus` Fluent would focus the empty PopoverSurface on open
+    // (Monaco isn't mounted yet) and then Monaco would steal focus here,
+    // producing a double focus event and duplicate screen-reader
+    // announcements. `bindTabCycling`'s `FOCUS_YIELD_SELECTOR` already yields
+    // Tab to the `.fui-PopoverSurface`, so there is no host-side Tab leak to
+    // mitigate with `trapFocus`.
     const handleEditorMount = useCallback<OnMount>((editor) => {
         editorRef.current = editor;
         editor.focus();
     }, []);
 
     // When the popover retargets from one cell to another without closing
-    // (single-inspector coordination), the Editor component's props change
-    // but it does not remount — `onMount` will not fire again. The user's
-    // click landed on the new cell div, so focus is now there rather than in
-    // Monaco. Re-focus the editor so the inspector behaves consistently
-    // whether it was just opened or retargeted.
+    // (single-inspector coordination), the Editor's props change but it does
+    // not remount — `onMount` will not fire again. The user's click landed on
+    // the new cell div, so focus is now there rather than in Monaco. Re-focus
+    // the editor so the inspector behaves consistently on retarget.
+    //
+    // `wasOpenRef` suppresses this on the first render where `isOpen` flips
+    // true — on initial open `handleEditorMount` already focuses Monaco once
+    // mounted, and firing here would either double-focus or focus a stale
+    // editor instance before Monaco finishes constructing.
+    const wasOpenRef = useRef(false);
     useEffect(() => {
-        if (!isOpen || !cellId) return;
+        if (!isOpen) {
+            wasOpenRef.current = false;
+            return;
+        }
+        if (!wasOpenRef.current) {
+            wasOpenRef.current = true;
+            return;
+        }
         editorRef.current?.focus();
     }, [isOpen, cellId]);
-
-    // Prevent Escape (and other popover-local keys) from reaching the Power
-    // BI host. Fluent's Popover closes the surface on Escape via its own
-    // modal-attributes handler, but does not stop propagation, so the
-    // keydown continues up to the iframe and triggers Power BI's default
-    // Escape handler (which shifts focus to "Back to report"). Stopping
-    // propagation at the surface lets Fluent do its job while keeping the
-    // event out of the host.
-    const handleSurfaceKeyDown = useCallback(
-        (event: React.KeyboardEvent<HTMLDivElement>) => {
-            if (event.key === 'Escape') {
-                event.stopPropagation();
-            }
-        },
-        []
-    );
 
     // Handle Fluent's close-intent events. Fluent fires onOpenChange(false)
     // on both Escape and outside-click dismissal. For outside clicks that
@@ -135,18 +136,16 @@ export const InspectorPopover = () => {
     // dispatched `openInspector` for the new target — treating the dismiss
     // as a close would stomp that retarget and leave the popover closed.
     // Ignore the dismiss in that case so the retarget wins; otherwise
-    // proceed with the usual close behaviour.
+    // proceed with the usual close behaviour. Bail out early when the
+    // inspector is already closed — the coordinate-based mousedown handler
+    // may have closed it before Fluent's own onOpenChange fires for the same
+    // gesture, and a redundant close-when-already-closed would re-queue the
+    // focus-restore work in `closeInspector`.
     const handleOpenChange = useCallback(
-        (
-            event: Parameters<
-                NonNullable<
-                    React.ComponentProps<typeof Popover>['onOpenChange']
-                >
-            >[0],
-            data: { open: boolean }
-        ) => {
+        (event: OpenPopoverEvents, data: OnOpenChangeData) => {
             if (data.open) return;
-            const target = (event as { target?: EventTarget | null })?.target;
+            if (!isOpen) return;
+            const target = event.target;
             if (
                 target instanceof Element &&
                 target.isConnected &&
@@ -156,7 +155,7 @@ export const InspectorPopover = () => {
             }
             closeInspector();
         },
-        [closeInspector]
+        [isOpen, closeInspector]
     );
 
     // Coordinate-based outside-click dismissal. Fluent's built-in light
@@ -165,22 +164,20 @@ export const InspectorPopover = () => {
     // container for pointer events: a click visually below the popover lands
     // on Monaco's `.lines-content`, which IS a DOM descendant of the surface,
     // so Fluent keeps the popover open and Monaco scrolls as if the click
-    // were interior. Detecting outside by bounding-rect coordinates instead
-    // of DOM target routes around the issue entirely.
+    // were interior. `document.elementFromPoint` uses visual hit testing
+    // (which `contain: strict` on the editor container correctly constrains)
+    // and respects CSS zoom — Power BI scales the visual iframe, and a
+    // `getBoundingClientRect`-vs-`clientX/Y` comparison would drift because
+    // the rect is zoom-scaled while the client coordinates are not.
     useEffect(() => {
         if (!isOpen) return;
         const handleDocumentMouseDown = (event: MouseEvent) => {
             const surfaceEl = editorContainerRef.current?.closest(
                 '.fui-PopoverSurface'
             );
-            const rect = surfaceEl?.getBoundingClientRect();
-            if (!rect) return;
-            const insideSurface =
-                event.clientX >= rect.left &&
-                event.clientX <= rect.right &&
-                event.clientY >= rect.top &&
-                event.clientY <= rect.bottom;
-            if (insideSurface) return;
+            if (!surfaceEl) return;
+            const hit = document.elementFromPoint(event.clientX, event.clientY);
+            if (hit instanceof Element && surfaceEl.contains(hit)) return;
             // Click is visually outside the popover. If it landed on another
             // inspectable cell, let that cell's onClick retarget the
             // inspector instead of closing.
@@ -203,18 +200,34 @@ export const InspectorPopover = () => {
         };
     }, [isOpen, closeInspector]);
 
+    // Stop Escape from reaching the Power BI host (which shifts focus to
+    // "Back to report"). Previously this was a React-synthetic onKeyDown on
+    // `PopoverSurface`, but React 17+ delegates synthetic events at the root
+    // — if Monaco's own native listeners on descendant elements call
+    // `stopPropagation` for Escape (e.g., closing the find widget), the
+    // synthetic handler at the root never fires. A native bubble-phase
+    // listener scoped to `editorContainer` always runs for Escape keys that
+    // make it past Monaco, catching them before they reach the host without
+    // interfering with Monaco's internal Escape handling.
+    useEffect(() => {
+        if (!isOpen) return;
+        const container = editorContainerRef.current;
+        if (!container) return;
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') event.stopPropagation();
+        };
+        container.addEventListener('keydown', onKeyDown);
+        return () => container.removeEventListener('keydown', onKeyDown);
+    }, [isOpen]);
+
     return (
         <Popover
             open={isOpen}
             onOpenChange={handleOpenChange}
             withArrow
-            trapFocus
             positioning={{ target: anchorRef?.current ?? null }}
         >
-            <PopoverSurface
-                className={classes.popoverSurface}
-                onKeyDown={handleSurfaceKeyDown}
-            >
+            <PopoverSurface className={classes.popoverSurface}>
                 <div
                     ref={editorContainerRef}
                     className={classes.editorContainer}
