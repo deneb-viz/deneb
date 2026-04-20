@@ -115,8 +115,8 @@ export const SignalValue = ({
             const raw = getPrunedObject(unpruned, {
                 maxDepth: DATA_TABLE_VALUE_MAX_DEPTH
             });
-            const stringified = stringifyPruned(raw);
-            const tooLong = stringified?.length > DATA_TABLE_VALUE_MAX_LENGTH;
+            const stringified = stringifyPruned(raw) ?? '';
+            const tooLong = stringified.length > DATA_TABLE_VALUE_MAX_LENGTH;
             const display = tooLong
                 ? translate('Table_Placeholder_TooLong')
                 : stringified;

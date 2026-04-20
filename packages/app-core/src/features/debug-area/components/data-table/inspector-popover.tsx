@@ -18,6 +18,11 @@ import {
     getInspectorLanguage
 } from './inspector-popover-utils';
 
+// Selector used by both close-path guards to recognise a click that landed on
+// another inspectable DataTableCell — those cells carry their own onClick that
+// retargets the shared popover, so dismissing would stomp the retarget.
+const INSPECTABLE_CELL_SELECTOR = '[role="button"][aria-haspopup="dialog"]';
+
 const useInspectorPopoverStyles = makeStyles({
     popoverSurface: {
         zIndex: POPOVER_Z_INDEX
@@ -144,7 +149,8 @@ export const InspectorPopover = () => {
             const target = (event as { target?: EventTarget | null })?.target;
             if (
                 target instanceof Element &&
-                target.closest('[role="button"][aria-haspopup="dialog"]')
+                target.isConnected &&
+                target.closest(INSPECTABLE_CELL_SELECTOR)
             ) {
                 return;
             }
@@ -181,7 +187,7 @@ export const InspectorPopover = () => {
             const target = event.target;
             if (
                 target instanceof Element &&
-                target.closest('[role="button"][aria-haspopup="dialog"]')
+                target.closest(INSPECTABLE_CELL_SELECTOR)
             ) {
                 return;
             }

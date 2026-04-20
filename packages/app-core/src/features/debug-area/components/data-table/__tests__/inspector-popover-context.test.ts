@@ -7,7 +7,7 @@ import {
     isOpenForCellId
 } from '../inspector-popover-context';
 
-const makeRef = (): RefObject<HTMLElement> => createRef<HTMLElement>();
+const makeRef = (): RefObject<HTMLElement | null> => createRef<HTMLElement>();
 
 describe('INSPECTOR_POPOVER_CLOSED_STATE', () => {
     it('represents a closed inspector with no target', () => {
