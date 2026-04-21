@@ -18,7 +18,8 @@ import {
     formatInspectorValue,
     getInspectorDimensions,
     getInspectorLanguage,
-    isDismissTargetInspectableCell
+    isDismissTargetInspectableCell,
+    isPointerDismissEvent
 } from './inspector-popover-utils';
 
 const useInspectorPopoverStyles = makeStyles({
@@ -158,7 +159,17 @@ export const InspectorPopover = ({
         (event: OpenPopoverEvents, data: OnOpenChangeData) => {
             if (data.open) return;
             if (!isOpen) return;
-            if (isDismissTargetInspectableCell(event.target)) return;
+            // Retarget-suppression only applies to pointer dismissals.
+            // Keyboard (Escape) and focus-out (Tab) dismissals should
+            // always close, even when Tab lands focus on another
+            // inspectable cell — the user's intent is to leave, not to
+            // retarget.
+            if (
+                isPointerDismissEvent(event) &&
+                isDismissTargetInspectableCell(event.target)
+            ) {
+                return;
+            }
             closeInspector();
         },
         [isOpen, closeInspector]

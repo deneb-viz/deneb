@@ -24,6 +24,21 @@ export const isDismissTargetInspectableCell = (
     target.closest(INSPECTABLE_CELL_SELECTOR) !== null;
 
 /**
+ * Whether a dismissal event was produced by a pointer interaction (mouse,
+ * touch, or pointer event). The retarget-suppression guard only applies to
+ * pointer dismissals — the user is clicking / tapping another cell and
+ * expects the popover to re-anchor there. Keyboard dismissals (Escape) and
+ * focus-out dismissals (Tab-away) should always close; applying the guard
+ * to them would trap the popover open when a Tab lands on another
+ * inspectable cell, since the user's actual intent is to leave.
+ */
+export const isPointerDismissEvent = (event: Pick<Event, 'type'>): boolean =>
+    event.type === 'click' ||
+    event.type.startsWith('mouse') ||
+    event.type.startsWith('touch') ||
+    event.type.startsWith('pointer');
+
+/**
  * Popover dimensions for values that should render in a compact container.
  * Single-line fit for scalar value types.
  */

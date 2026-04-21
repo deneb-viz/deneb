@@ -8,7 +8,8 @@ import {
     INSPECTABLE_CELL_ATTRIBUTE,
     INSPECTOR_COMPACT_DIMENSIONS,
     INSPECTOR_FULL_DIMENSIONS,
-    isDismissTargetInspectableCell
+    isDismissTargetInspectableCell,
+    isPointerDismissEvent
 } from '../inspector-popover-utils';
 
 describe('getInspectorLanguage', () => {
@@ -186,4 +187,27 @@ describe('isDismissTargetInspectableCell', () => {
         const bareTarget = new EventTarget();
         expect(isDismissTargetInspectableCell(bareTarget)).toBe(false);
     });
+});
+
+describe('isPointerDismissEvent', () => {
+    it.each(['click', 'mousedown', 'mouseup', 'pointerdown', 'pointerup'])(
+        'returns true for pointer-based type "%s"',
+        (type) => {
+            expect(isPointerDismissEvent({ type })).toBe(true);
+        }
+    );
+
+    it.each(['touchstart', 'touchend', 'touchmove'])(
+        'returns true for touch type "%s"',
+        (type) => {
+            expect(isPointerDismissEvent({ type })).toBe(true);
+        }
+    );
+
+    it.each(['keydown', 'keyup', 'blur', 'focusout', 'focus'])(
+        'returns false for non-pointer type "%s"',
+        (type) => {
+            expect(isPointerDismissEvent({ type })).toBe(false);
+        }
+    );
 });
