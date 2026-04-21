@@ -231,7 +231,15 @@ export const InspectorPopover = ({
             open={isOpen}
             onOpenChange={handleOpenChange}
             withArrow
-            positioning={{ target: anchorRef?.current ?? null }}
+            // `above-start` anchors the popover to the cell's top-left.
+            // Cells are left-aligned, so the popover's left edge stays put
+            // even when the rendered value width changes (e.g. a ticking
+            // numeric signal whose decimal-place count fluctuates).
+            positioning={{
+                target: anchorRef?.current ?? null,
+                position: 'above',
+                align: 'start'
+            }}
         >
             <PopoverSurface
                 className={classes.popoverSurface}
