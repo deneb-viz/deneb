@@ -5,7 +5,7 @@ import { tokens } from '@fluentui/react-theme';
 import DataTable, { type TableProps } from 'react-data-table-component';
 import { StyleSheetManager } from 'styled-components';
 
-import { logRender } from '@deneb-viz/utils/logging';
+import { logDebug, logRender } from '@deneb-viz/utils/logging';
 import { DataTableStatusBar } from './data-table-status-bar';
 import { DataTableTooltipProvider } from './data-table-tooltip-context';
 import { DataTableInspectorProvider } from './inspector-popover-context';
@@ -47,10 +47,20 @@ export const DataTableViewer = ({
     logRender('DataTableViewer');
     // Filter compact prop that RDT passes to column cells but shouldn't reach DOM
     const shouldForwardProp = (propName: string) => propName !== 'compact';
-    const colOrder = useMemo(
-        () => columns.map((c) => String(c.id ?? '')).filter((id) => id !== ''),
-        [columns]
-    );
+    const colOrder = useMemo(() => {
+        const ids = columns.map((c) => String(c.id ?? ''));
+        const filtered = ids.filter((id) => id !== '');
+        if (filtered.length !== ids.length) {
+            // Columns without an id can't participate in roving-tabindex
+            // arrow navigation (cells in them register under their field
+            // name but resolveArrowTarget can't locate the column). Warn
+            // so callers notice the gap during development.
+            logDebug(
+                `DataTableViewer: ${ids.length - filtered.length} column(s) have no id and will be excluded from arrow-key navigation.`
+            );
+        }
+        return filtered;
+    }, [columns]);
     const rowCount = data?.length ?? 0;
     // Owns the viewer-level scrollable enclosure reference so the inspector
     // popover can scope its scroll-dismissal listener to this viewer only —

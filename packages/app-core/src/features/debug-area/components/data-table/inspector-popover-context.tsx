@@ -51,23 +51,6 @@ export const INSPECTOR_POPOVER_CLOSED_STATE: InspectorPopoverState = {
 };
 
 /**
- * Pure state-transition producing the open state for a given target. Exposed
- * for testability.
- */
-export const buildOpenState = (
-    anchorRef: RefObject<HTMLElement | null>,
-    rawValue: unknown,
-    valueType: WorkerDatasetViewerValueType,
-    cellId: string
-): InspectorPopoverState => ({
-    isOpen: true,
-    anchorRef,
-    rawValue,
-    valueType,
-    cellId
-});
-
-/**
  * Pure predicate: given a state and a cell ID, is the inspector currently
  * targeting that cell? Exposed for testability.
  */
@@ -117,7 +100,13 @@ export const DataTableInspectorProvider = ({
     const openInspector = useCallback<
         InspectorPopoverContextValue['openInspector']
     >((anchorRef, rawValue, valueType, cellId) => {
-        setState(buildOpenState(anchorRef, rawValue, valueType, cellId));
+        setState({
+            isOpen: true,
+            anchorRef,
+            rawValue,
+            valueType,
+            cellId
+        });
     }, []);
 
     const closeInspector = useCallback(() => {

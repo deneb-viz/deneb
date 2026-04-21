@@ -107,10 +107,10 @@ export const DataTableCell = ({
         valueType !== undefined &&
         rowIndex !== undefined;
 
-    const cellId = useMemo(
-        () => (canInspect ? buildCellId(rowIndex!, effectiveColumnId) : null),
-        [canInspect, rowIndex, effectiveColumnId]
-    );
+    const cellId = useMemo(() => {
+        if (!canInspect || rowIndex === undefined) return null;
+        return buildCellId(rowIndex, effectiveColumnId);
+    }, [canInspect, rowIndex, effectiveColumnId]);
 
     const isActiveCell = useIsDataTableCellActive(cellId);
 

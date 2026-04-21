@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePrevious } from '@uidotdev/usehooks';
 
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
@@ -162,7 +162,15 @@ export const SignalValue = ({
             removeListener();
         };
     }, [signalName, getSignalValues]);
-    const currentValues = getSignalValues();
+    // Only re-read the Vega view when something observably relevant has
+    // changed: the signal name, the translator, or signalValue (the state
+    // flag listener events flip to trigger a re-render for the current
+    // signal). Unrelated render triggers no longer re-run the
+    // prune/stringify pipeline on every pass.
+    const currentValues = useMemo(
+        () => getSignalValues(),
+        [getSignalValues, signalValue]
+    );
     logRender('SignalValue', {
         signalName,
         signalValue,
