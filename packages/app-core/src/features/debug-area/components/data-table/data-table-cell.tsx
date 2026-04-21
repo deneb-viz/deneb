@@ -124,6 +124,27 @@ export const DataTableCell = ({
         return keyboard.registerCell(cellId, cellRef);
     }, [cellId, keyboard]);
 
+    // Keep the inspector's snapshot in sync with live cell updates. The
+    // inspector captures rawValue/valueType at click time via openInspector;
+    // without this effect, a cell whose value changes beneath it (e.g. the
+    // signal-viewer's currentDate signal ticking every second) would show
+    // stale content until the user re-clicks. Only the currently-targeted
+    // cell dispatches a refresh, so ticks from unrelated cells don't stomp
+    // the inspector. The Object.is guard suppresses the redundant
+    // re-dispatch that would otherwise fire immediately after click (when
+    // state is already current).
+    useEffect(() => {
+        if (!cellId || !inspector) return;
+        if (!isOpenForCellId(inspector, cellId)) return;
+        if (
+            Object.is(inspector.rawValue, rawValue) &&
+            inspector.valueType === valueType
+        ) {
+            return;
+        }
+        inspector.openInspector(cellRef, rawValue, valueType!, cellId);
+    }, [rawValue, valueType, cellId, inspector]);
+
     // Both render branches wrap in the same Fluent Tooltip when there IS
     // tooltip content; collect the props once so the two call sites can't
     // drift apart. A null tooltipContent means the cell has nothing to
