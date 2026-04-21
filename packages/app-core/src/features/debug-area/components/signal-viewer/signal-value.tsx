@@ -1,19 +1,19 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePrevious } from '@uidotdev/usehooks';
 
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
-import { getPrunedObject, stringifyPruned } from '@deneb-viz/utils/object';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
-import {
-    DATA_TABLE_VALUE_MAX_DEPTH,
-    DATA_TABLE_VALUE_MAX_LENGTH
-} from '../../constants';
 import { DataTableCell } from '../data-table/data-table-cell';
 import { useDenebState } from '../../../../state';
+import {
+    computeSignalDisplay,
+    INVALID_SIGNAL_DISPLAY
+} from './signal-value-utils';
 
 type SignalValueProps = {
     signalName: string;
     renderId?: string;
+    rowIndex?: number;
 };
 
 /**
@@ -44,7 +44,11 @@ const getInitialSignalValue = (signalName: string) => {
  * happens anyway and it only affects dynamic signal values, this is an acceptable risk for now.
  */
 // eslint-disable-next-line max-lines-per-function
-export const SignalValue = ({ signalName, renderId }: SignalValueProps) => {
+export const SignalValue = ({
+    signalName,
+    renderId,
+    rowIndex
+}: SignalValueProps) => {
     const previousSignalName = usePrevious(signalName);
     /**
      * Use a lazy initializer with error handling to safely get the initial value.
@@ -56,65 +60,83 @@ export const SignalValue = ({ signalName, renderId }: SignalValueProps) => {
         getInitialSignalValue(signalName)
     );
     const translate = useDenebState((state) => state.i18n.translate);
+    // Vega matches listener registrations by reference identity. Without a
+    // stable reference, every re-render would create a new closure — add
+    // would register the new one while remove would try to detach a
+    // different function that was never registered, silently leaking
+    // listeners on the Vega view across renders and signal/view changes.
+    // Hold the currently-registered listener plus the signal name it was
+    // registered against so a mid-flight signalName change still detaches
+    // from the correct signal.
+    const activeListenerRef = useRef<{
+        signalName: string;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        listener: (name: string, value: any) => void;
+    } | null>(null);
+    // Expose the latest renderId to the listener closure without rebuilding
+    // (and re-registering) the listener every time the id changes.
+    const renderIdRef = useRef(renderId);
+    renderIdRef.current = renderId;
     /**
-     * Attempt to add specified signal listener to the Vega view.
+     * Detach the currently-registered listener, if any, using the signal
+     * name it was originally registered against.
+     */
+    const removeListener = () => {
+        const entry = activeListenerRef.current;
+        if (!entry) return;
+        try {
+            VegaViewServices.getView()?.removeSignalListener(
+                entry.signalName,
+                entry.listener
+            );
+        } catch {
+            logDebug(
+                `Listener for signal ${entry.signalName} could not be removed.`
+            );
+        }
+        activeListenerRef.current = null;
+    };
+    /**
+     * Register a fresh listener for the current signal name and store the
+     * reference so future detachments can match it. Any previously-
+     * registered listener is detached first to guarantee at most one
+     * registration is active per component instance.
      */
     const addListener = () => {
-        try {
-            VegaViewServices.getView()?.addSignalListener(
-                signalName,
-                signalListener
+        removeListener();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const listener = (name: string, value: any) => {
+            setSignalValue(() => value);
+            logDebug(
+                `[${renderIdRef.current}] Signal value for ${name} has changed`,
+                value
             );
+        };
+        try {
+            VegaViewServices.getView()?.addSignalListener(signalName, listener);
+            activeListenerRef.current = { signalName, listener };
         } catch {
             logDebug(`Listener for signal ${signalName} could not be added.`);
         }
     };
     /**
-     * Attempt to remove specified signal listener from the Vega view.
-     */
-    const removeListener = () => {
-        try {
-            VegaViewServices.getView()?.removeSignalListener(
-                signalName,
-                signalListener
-            );
-        } catch {
-            logDebug(`Listener for signal ${signalName} could not be removed.`);
-        }
-    };
-    /**
-     * Attempt to cycle (add/remove) listeners for the specified signal.
+     * Re-attach the listener for the current signal. Equivalent to
+     * `addListener()` (which is itself idempotent), kept as a named helper
+     * for call-site clarity in the effects below.
      */
     const cycleListeners = () => {
         logDebug(`Cycling listeners for signal: ${signalName}...`);
-        removeListener();
         addListener();
-    };
-    /**
-     * Handler for signal listener events.
-     */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const signalListener = (name: string, value: any) => {
-        setSignalValue(() => value);
-        logDebug(`[${renderId}] Signal value for ${name} has changed`, value);
     };
     const getSignalValues = useCallback(() => {
         try {
-            const raw = getPrunedObject(
-                VegaViewServices.getSignalByName(signalName),
-                { maxDepth: DATA_TABLE_VALUE_MAX_DEPTH }
-            );
-            const stringified = stringifyPruned(raw);
-            const display =
-                stringified?.length > DATA_TABLE_VALUE_MAX_LENGTH
-                    ? translate('Table_Placeholder_TooLong')
-                    : stringified;
-            return { raw, display };
+            const unpruned = VegaViewServices.getSignalByName(signalName);
+            return computeSignalDisplay(unpruned, translate);
         } catch {
             logDebug(
                 `Could not retrieve value for signal ${signalName}. It may not exist in the current view scope.`
             );
-            return { raw: null, display: '' };
+            return INVALID_SIGNAL_DISPLAY;
         }
     }, [signalName, translate]);
     /**
@@ -140,7 +162,15 @@ export const SignalValue = ({ signalName, renderId }: SignalValueProps) => {
             removeListener();
         };
     }, [signalName, getSignalValues]);
-    const currentValues = getSignalValues();
+    // Only re-read the Vega view when something observably relevant has
+    // changed: the signal name, the translator, or signalValue (the state
+    // flag listener events flip to trigger a re-render for the current
+    // signal). Unrelated render triggers no longer re-run the
+    // prune/stringify pipeline on every pass.
+    const currentValues = useMemo(
+        () => getSignalValues(),
+        [getSignalValues, signalValue]
+    );
     logRender('SignalValue', {
         signalName,
         signalValue,
@@ -149,8 +179,12 @@ export const SignalValue = ({ signalName, renderId }: SignalValueProps) => {
     return (
         <DataTableCell
             field={signalName}
+            columnId='value'
             displayValue={currentValues.display}
             rawValue={currentValues.raw}
+            valueType={currentValues.valueType}
+            rowIndex={rowIndex}
+            tooLong={currentValues.tooLong}
         />
     );
 };
