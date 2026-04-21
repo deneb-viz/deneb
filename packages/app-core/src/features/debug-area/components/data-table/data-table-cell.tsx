@@ -166,7 +166,13 @@ export const DataTableCell = ({
     const isOpen = isOpenForCellId(inspector, cellId);
 
     const openForThisCell = () => {
-        inspector.openInspector(cellRef, rawValue, valueType!, cellId);
+        // Same pattern as the live-refresh effect's guard: `canInspect`
+        // (and therefore the cellId memo) implies `valueType !== undefined`,
+        // but TypeScript can't follow that inference across closure
+        // boundaries. Narrow via control flow rather than a non-null
+        // assertion so the invariant is visible at the call site.
+        if (valueType === undefined) return;
+        inspector.openInspector(cellRef, rawValue, valueType, cellId);
     };
 
     const handleClick = () => {

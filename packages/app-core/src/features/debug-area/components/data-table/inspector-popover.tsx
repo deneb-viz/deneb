@@ -139,11 +139,13 @@ export const InspectorPopover = ({
     // editor instance before Monaco finishes constructing.
     //
     // Invariant this guard depends on: live-refresh (DataTableCell's effect
-    // that re-dispatches `openInspector` on rawValue/valueType changes) MUST
-    // always dispatch with the same `cellId` as the currently-open inspector.
-    // If a future change ever routes a retarget through that path with a
-    // different cellId, `wasOpenRef.current` will already be true and the
-    // focus call here would be wrongly suppressed on the retarget.
+    // that re-dispatches `refreshInspector` on rawValue/valueType changes)
+    // never changes `cellId` — `refreshInspector` takes only (rawValue,
+    // valueType) and spreads the existing stateRef, so `cellId` is
+    // structurally stable across refreshes. If a future change ever
+    // bypassed `refreshInspector` and called `openInspector` directly with
+    // a different cellId, `wasOpenRef.current` would already be true and
+    // the focus call here would be wrongly suppressed on the retarget.
     const wasOpenRef = useRef(false);
     useEffect(() => {
         if (!isOpen) {
