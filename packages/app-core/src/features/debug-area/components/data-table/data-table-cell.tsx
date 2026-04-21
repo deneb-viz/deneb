@@ -135,6 +135,13 @@ export const DataTableCell = ({
     // state is already current).
     useEffect(() => {
         if (!cellId || !inspector) return;
+        // `cellId` non-null implies `canInspect` was true at memo time,
+        // which implies `valueType !== undefined` — but React can't follow
+        // that inference across render boundaries, so if a parent flips
+        // valueType to undefined in the same render that commits the
+        // effect, cellId may still be non-null. Guard explicitly rather
+        // than leaning on a non-null assertion.
+        if (valueType === undefined) return;
         if (!isOpenForCellId(inspector, cellId)) return;
         if (
             Object.is(inspector.rawValue, rawValue) &&
@@ -142,7 +149,7 @@ export const DataTableCell = ({
         ) {
             return;
         }
-        inspector.openInspector(cellRef, rawValue, valueType!, cellId);
+        inspector.openInspector(cellRef, rawValue, valueType, cellId);
     }, [rawValue, valueType, cellId, inspector]);
 
     // Both render branches wrap in the same Fluent Tooltip when there IS
