@@ -110,7 +110,17 @@ export const DataTableInspectorProvider = ({
     }, []);
 
     const closeInspector = useCallback(() => {
+        // Idempotent: the coordinate-rect mousedown handler and Fluent's
+        // own `onOpenChange` can both fire `closeInspector` for the same
+        // outside-click gesture in the same event-loop tick. The `isOpen`
+        // closure in `handleOpenChange` reads a stale render's value, so
+        // its `if (!isOpen) return` guard won't suppress the second call.
+        // Update `stateRef` synchronously so any follow-up call sees the
+        // closed state before React commits the next render, and
+        // `anchorEl.focus()` fires only once per dismissal.
+        if (!stateRef.current.isOpen) return;
         const anchorEl = stateRef.current.anchorRef?.current;
+        stateRef.current = INSPECTOR_POPOVER_CLOSED_STATE;
         setState(INSPECTOR_POPOVER_CLOSED_STATE);
         if (anchorEl?.isConnected) {
             anchorEl.focus({ preventScroll: true });

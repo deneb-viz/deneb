@@ -147,7 +147,20 @@ export const DataTableKeyboardProvider = ({
     const registerCell = useCallback<DataTableKeyboardActions['registerCell']>(
         (cellId, ref) => {
             refMapRef.current.set(cellId, ref);
-            setActiveCellId((prev) => prev ?? cellId);
+            // Use `pickDefaultActiveCell` for the initial-default path too.
+            // Taking the incoming `cellId` as "first registered wins" relies
+            // on React render order, which StrictMode double-invoke and
+            // concurrent rendering can perturb. Sorting by (rowIndex,
+            // colIdx) matches what the unregister cleanup does below and
+            // guarantees the same visible default cell regardless of the
+            // order in which mounts fire.
+            setActiveCellId((prev) => {
+                if (prev !== null) return prev;
+                return pickDefaultActiveCell(
+                    colOrderRef.current,
+                    new Set(refMapRef.current.keys())
+                );
+            });
             return () => {
                 refMapRef.current.delete(cellId);
                 setActiveCellId((prev) => {

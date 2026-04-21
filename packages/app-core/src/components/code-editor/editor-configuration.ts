@@ -48,15 +48,26 @@ type EditorPropsOverrides = EditorOptionsOverrides & {
  * JSON (e.g. a bare string or date literal in the cell inspector). When
  * omitted, the editor defaults to JSON to match the primary spec-editing use
  * case.
+ *
+ * Both `defaultLanguage` and `language` are set. `defaultLanguage` only
+ * applies when the Monaco model is first created; `language` is the reactive
+ * prop that switches the model language on every re-render. The cell
+ * inspector reuses the same Monaco instance across retargets (the Editor
+ * doesn't remount, only its props change), so the reactive prop is required
+ * for structured-vs-scalar switching to work.
  */
 export const buildEditorProps = ({
     theme,
     language,
     ...optionsOverrides
-}: EditorPropsOverrides) => ({
-    width: '100%' as const,
-    height: '100%' as const,
-    defaultLanguage: language ?? ('json' as const),
-    theme: theme === 'dark' ? ('vs-dark' as const) : ('light' as const),
-    options: buildEditorOptions(optionsOverrides)
-});
+}: EditorPropsOverrides) => {
+    const resolvedLanguage = language ?? ('json' as const);
+    return {
+        width: '100%' as const,
+        height: '100%' as const,
+        defaultLanguage: resolvedLanguage,
+        language: resolvedLanguage,
+        theme: theme === 'dark' ? ('vs-dark' as const) : ('light' as const),
+        options: buildEditorOptions(optionsOverrides)
+    };
+};
