@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, type KeyboardEvent } from 'react';
-import { makeStyles, Tooltip } from '@fluentui/react-components';
+import { makeStyles } from '@fluentui/react-components';
 
 import {
     isCrossHighlightComparatorField,
@@ -23,7 +23,7 @@ import {
     useIsDataTableCellActive
 } from './data-table-keyboard-context';
 import { resolveCellKeyAction } from './data-table-keyboard-utils';
-import { useDataTableTooltip } from './data-table-tooltip-context';
+import { DataTableTooltip } from './data-table-tooltip';
 
 const useDataTableCellStyles = makeStyles({
     cell: {
@@ -86,7 +86,6 @@ export const DataTableCell = ({
 }: DataTableCellProps) => {
     const effectiveColumnId = columnId ?? field;
     const classes = useDataTableCellStyles();
-    const tooltipMountNode = useDataTableTooltip();
     const tooltipContent = getCellTooltip(
         field,
         rawValue,
@@ -152,27 +151,11 @@ export const DataTableCell = ({
         inspector.refreshInspector(rawValue, valueType);
     }, [rawValue, valueType, cellId, inspector]);
 
-    // Both render branches wrap in the same Fluent Tooltip when there IS
-    // tooltip content; collect the props once so the two call sites can't
-    // drift apart. A null tooltipContent means the cell has nothing to
-    // surface (non-inspectable cell without a support-field explanation) —
-    // skip the Tooltip wrapper entirely so hover and focus don't produce an
-    // empty tooltip.
-    const tooltipProps = tooltipContent
-        ? {
-              content: tooltipContent,
-              relationship: 'description' as const,
-              withArrow: true,
-              mountNode: tooltipMountNode
-          }
-        : null;
-
     if (!canInspect || !cellId || !inspector) {
-        const cellBody = <div>{displayValue}</div>;
-        return tooltipProps ? (
-            <Tooltip {...tooltipProps}>{cellBody}</Tooltip>
-        ) : (
-            cellBody
+        return (
+            <DataTableTooltip content={tooltipContent}>
+                <div>{displayValue}</div>
+            </DataTableTooltip>
         );
     }
 
@@ -212,30 +195,27 @@ export const DataTableCell = ({
         keyboard?.setActiveCell(cellId);
     };
 
-    const cellBody = (
-        <div
-            ref={cellRef}
-            role='button'
-            tabIndex={isActive ? 0 : -1}
-            aria-haspopup='dialog'
-            aria-expanded={isOpen}
-            aria-label={getDenebState().i18n.translate(
-                'Table_Aria_InspectCell',
-                [field]
-            )}
-            data-inspector-cell=''
-            className={classes.cell}
-            onClick={handleClick}
-            onKeyDown={handleKeyDown}
-            onFocus={handleFocus}
-        >
-            {displayValue}
-        </div>
-    );
-    return tooltipProps ? (
-        <Tooltip {...tooltipProps}>{cellBody}</Tooltip>
-    ) : (
-        cellBody
+    return (
+        <DataTableTooltip content={tooltipContent}>
+            <div
+                ref={cellRef}
+                role='button'
+                tabIndex={isActive ? 0 : -1}
+                aria-haspopup='dialog'
+                aria-expanded={isOpen}
+                aria-label={getDenebState().i18n.translate(
+                    'Table_Aria_InspectCell',
+                    [field]
+                )}
+                data-inspector-cell=''
+                className={classes.cell}
+                onClick={handleClick}
+                onKeyDown={handleKeyDown}
+                onFocus={handleFocus}
+            >
+                {displayValue}
+            </div>
+        </DataTableTooltip>
     );
 };
 

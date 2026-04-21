@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
-import { makeStyles, Tooltip } from '@fluentui/react-components';
 
-import { useDataTableTooltip } from './data-table-tooltip-context';
+import { DataTableTooltip } from './data-table-tooltip';
 
 type DataTableHeaderCellProps = {
     label: ReactNode;
@@ -13,40 +12,17 @@ type DataTableHeaderCellProps = {
     tooltip?: string | null;
 };
 
-const useStyles = makeStyles({
-    // Fluent's default tooltip content collapses `\n` to whitespace because
-    // the container inherits `white-space: normal`. `pre-line` preserves
-    // explicit line breaks from the i18n string while still allowing soft
-    // wrapping when the line exceeds the tooltip width.
-    tooltipContent: {
-        whiteSpace: 'pre-line'
-    }
-});
-
 /**
- * Renders a column header with an optional help tooltip. Uses the same
- * Fluent `<Tooltip>` + shared mount-node pattern as `DataTableCell`, so
- * header tooltips portal alongside cell tooltips instead of falling back to
- * the browser-native `title` attribute (which can't be dismissed
- * programmatically and conflicts with the inspector popover).
+ * Renders a column header with an optional help tooltip. Delegates to
+ * `DataTableTooltip` so header tooltips portal alongside cell tooltips
+ * (via the shared `DataTableTooltipProvider` mount node) and honour `\n`
+ * line breaks uniformly with the rest of the debug-area table.
  */
 export const DataTableHeaderCell = ({
     label,
     tooltip
-}: DataTableHeaderCellProps) => {
-    const mountNode = useDataTableTooltip();
-    const classes = useStyles();
-    if (!tooltip) {
-        return <span>{label}</span>;
-    }
-    return (
-        <Tooltip
-            content={<span className={classes.tooltipContent}>{tooltip}</span>}
-            relationship='description'
-            withArrow
-            mountNode={mountNode}
-        >
-            <span>{label}</span>
-        </Tooltip>
-    );
-};
+}: DataTableHeaderCellProps) => (
+    <DataTableTooltip content={tooltip}>
+        <span>{label}</span>
+    </DataTableTooltip>
+);
