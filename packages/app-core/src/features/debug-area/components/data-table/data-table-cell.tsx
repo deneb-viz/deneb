@@ -86,7 +86,12 @@ export const DataTableCell = ({
     const effectiveColumnId = columnId ?? field;
     const classes = useDataTableCellStyles();
     const tooltipMountNode = useDataTableTooltip();
-    const tooltipContent = getCellTooltip(field, rawValue, tooLong);
+    const tooltipContent = getCellTooltip(
+        field,
+        rawValue,
+        tooLong,
+        inspectable
+    );
 
     const inspector = useDataTableInspector();
     const keyboard = useDataTableKeyboardActions();
@@ -119,20 +124,27 @@ export const DataTableCell = ({
         return keyboard.registerCell(cellId, cellRef);
     }, [cellId, keyboard]);
 
-    // Both render branches wrap in the same Fluent Tooltip; collect the props
-    // once so the two call sites can't drift apart.
-    const tooltipProps = {
-        content: tooltipContent ?? '',
-        relationship: 'description' as const,
-        withArrow: true,
-        mountNode: tooltipMountNode
-    };
+    // Both render branches wrap in the same Fluent Tooltip when there IS
+    // tooltip content; collect the props once so the two call sites can't
+    // drift apart. A null tooltipContent means the cell has nothing to
+    // surface (non-inspectable cell without a support-field explanation) —
+    // skip the Tooltip wrapper entirely so hover and focus don't produce an
+    // empty tooltip.
+    const tooltipProps = tooltipContent
+        ? {
+              content: tooltipContent,
+              relationship: 'description' as const,
+              withArrow: true,
+              mountNode: tooltipMountNode
+          }
+        : null;
 
     if (!canInspect || !cellId || !inspector) {
-        return (
-            <Tooltip {...tooltipProps}>
-                <div>{displayValue}</div>
-            </Tooltip>
+        const cellBody = <div>{displayValue}</div>;
+        return tooltipProps ? (
+            <Tooltip {...tooltipProps}>{cellBody}</Tooltip>
+        ) : (
+            cellBody
         );
     }
 
@@ -172,45 +184,52 @@ export const DataTableCell = ({
         keyboard?.setActiveCell(cellId);
     };
 
-    return (
-        <Tooltip {...tooltipProps}>
-            <div
-                ref={cellRef}
-                role='button'
-                tabIndex={isActive ? 0 : -1}
-                aria-haspopup='dialog'
-                aria-expanded={isOpen}
-                aria-label={getDenebState().i18n.translate(
-                    'Table_Aria_InspectCell',
-                    [field]
-                )}
-                data-inspector-cell=''
-                className={classes.cell}
-                onClick={handleClick}
-                onKeyDown={handleKeyDown}
-                onFocus={handleFocus}
-            >
-                {displayValue}
-            </div>
-        </Tooltip>
+    const cellBody = (
+        <div
+            ref={cellRef}
+            role='button'
+            tabIndex={isActive ? 0 : -1}
+            aria-haspopup='dialog'
+            aria-expanded={isOpen}
+            aria-label={getDenebState().i18n.translate(
+                'Table_Aria_InspectCell',
+                [field]
+            )}
+            data-inspector-cell=''
+            className={classes.cell}
+            onClick={handleClick}
+            onKeyDown={handleKeyDown}
+            onFocus={handleFocus}
+        >
+            {displayValue}
+        </div>
+    );
+    return tooltipProps ? (
+        <Tooltip {...tooltipProps}>{cellBody}</Tooltip>
+    ) : (
+        cellBody
     );
 };
 
 /**
- * Returns the tooltip content for a cell. Support/interactivity fields
- * (cross-filter and cross-highlight) surface a translated explanation of
- * their enum value because the raw `on`/`off`/`eq`/`lt`/… display text is
- * meaningless on its own. Truncated cells (`tooLong`) advertise that the
- * inspector shows a shallow representation of the value, since the cell's
- * displayed placeholder (`{...}`) hides the real content. All other cells
- * get a generic discoverability hint directing the user to the inspector.
+ * Returns the tooltip content for a cell, or `null` when the cell has no
+ * tooltip to show. Support/interactivity fields (cross-filter and cross-
+ * highlight) surface a translated explanation of their enum value because
+ * the raw `on`/`off`/`eq`/`lt`/… display text is meaningless on its own.
+ * Truncated cells (`tooLong`) advertise that the inspector shows a shallow
+ * representation of the value, since the cell's displayed placeholder
+ * (`{...}`) hides the real content. Inspectable cells get a generic "Select
+ * to inspect" discoverability hint. Non-inspectable cells (e.g. the signal
+ * viewer's key column) that aren't support fields get no tooltip — the hint
+ * would claim an interaction they can't perform.
  */
 const getCellTooltip = (
     field: string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value: any,
-    tooLong: boolean
-) => {
+    tooLong: boolean,
+    inspectable: boolean
+): string | null => {
     const { translate } = getDenebState().i18n;
     switch (true) {
         case field === SELECTED_ROW_FIELD_NAME:
@@ -222,7 +241,7 @@ const getCellTooltip = (
         case tooLong:
             return translate('Table_Tooltip_InspectShallow');
         default:
-            return translate('Table_Tooltip_Inspect');
+            return inspectable ? translate('Table_Tooltip_Inspect') : null;
     }
 };
 

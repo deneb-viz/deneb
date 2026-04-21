@@ -164,21 +164,29 @@ export const InspectorPopover = ({
         [isOpen, closeInspector]
     );
 
-    // Coordinate-based outside-click dismissal. Fluent's light dismiss uses
-    // DOM-target containment, which misfires because Monaco's `.lines-content`
-    // IS a DOM descendant of the PopoverSurface (click registered as inside
-    // even when visually outside). `elementFromPoint` uses visual hit testing
-    // — constrained to the editor box by `contain: strict` on the container
-    // — and also respects the CSS zoom Power BI applies to the visual iframe.
+    // Coordinate-rect outside-click dismissal. Fluent's light dismiss and
+    // `elementFromPoint` both rely on the click target, which fails for
+    // Monaco: its compositor layers (`transform: translate3d`) extend the
+    // hit-testable area visually below the container, so a click under the
+    // popover returns Monaco's `.lines-content` — a DOM descendant of the
+    // PopoverSurface — and registers as "inside". Compare the click's
+    // `clientX`/`clientY` to the PopoverSurface's bounding rect directly,
+    // which ignores DOM/hit-testing and treats anything visually outside
+    // the rectangle as outside.
     useEffect(() => {
         if (!isOpen) return;
         const handleDocumentMouseDown = (event: MouseEvent) => {
             const surfaceEl = editorContainerRef.current?.closest(
                 '.fui-PopoverSurface'
             );
-            if (!surfaceEl) return;
-            const hit = document.elementFromPoint(event.clientX, event.clientY);
-            if (hit instanceof Element && surfaceEl.contains(hit)) return;
+            const rect = surfaceEl?.getBoundingClientRect();
+            if (!rect) return;
+            const insideSurface =
+                event.clientX >= rect.left &&
+                event.clientX <= rect.right &&
+                event.clientY >= rect.top &&
+                event.clientY <= rect.bottom;
+            if (insideSurface) return;
             // Click is visually outside the popover. If it landed on another
             // inspectable cell, let that cell's onClick retarget the
             // inspector instead of closing.
@@ -196,24 +204,16 @@ export const InspectorPopover = ({
     }, [isOpen, closeInspector]);
 
     // Stop Escape from reaching the Power BI host (which shifts focus to
-    // "Back to report"). Previously this was a React-synthetic onKeyDown on
-    // `PopoverSurface`, but React 17+ delegates synthetic events at the root
-    // — if Monaco's own native listeners on descendant elements call
-    // `stopPropagation` for Escape (e.g., closing the find widget), the
-    // synthetic handler at the root never fires. A native bubble-phase
-    // listener scoped to `editorContainer` always runs for Escape keys that
-    // make it past Monaco, catching them before they reach the host without
-    // interfering with Monaco's internal Escape handling.
-    useEffect(() => {
-        if (!isOpen) return;
-        const container = editorContainerRef.current;
-        if (!container) return;
-        const onKeyDown = (event: KeyboardEvent) => {
+    // "Back to report"), but let it propagate up to the PopoverSurface so
+    // Fluent's own Escape handler can dismiss the popover. Scoped to the
+    // PopoverSurface node because a listener on the editor container would
+    // fire before Fluent's handler bubble-wise and swallow the dismiss.
+    const handleSurfaceKeyDown = useCallback(
+        (event: React.KeyboardEvent<HTMLDivElement>) => {
             if (event.key === 'Escape') event.stopPropagation();
-        };
-        container.addEventListener('keydown', onKeyDown);
-        return () => container.removeEventListener('keydown', onKeyDown);
-    }, [isOpen]);
+        },
+        []
+    );
 
     return (
         <Popover
@@ -222,7 +222,10 @@ export const InspectorPopover = ({
             withArrow
             positioning={{ target: anchorRef?.current ?? null }}
         >
-            <PopoverSurface className={classes.popoverSurface}>
+            <PopoverSurface
+                className={classes.popoverSurface}
+                onKeyDown={handleSurfaceKeyDown}
+            >
                 <div
                     ref={editorContainerRef}
                     className={classes.editorContainer}
