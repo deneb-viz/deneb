@@ -137,6 +137,15 @@ export const InspectorPopover = ({
     // true — on initial open `handleEditorMount` already focuses Monaco once
     // mounted, and firing here would either double-focus or focus a stale
     // editor instance before Monaco finishes constructing.
+    //
+    // Invariant this guard depends on: live-refresh (DataTableCell's effect
+    // that re-dispatches `refreshInspector` on rawValue/valueType changes)
+    // never changes `cellId` — `refreshInspector` takes only (rawValue,
+    // valueType) and spreads the existing stateRef, so `cellId` is
+    // structurally stable across refreshes. If a future change ever
+    // bypassed `refreshInspector` and called `openInspector` directly with
+    // a different cellId, `wasOpenRef.current` would already be true and
+    // the focus call here would be wrongly suppressed on the retarget.
     const wasOpenRef = useRef(false);
     useEffect(() => {
         if (!isOpen) {
@@ -231,7 +240,15 @@ export const InspectorPopover = ({
             open={isOpen}
             onOpenChange={handleOpenChange}
             withArrow
-            positioning={{ target: anchorRef?.current ?? null }}
+            // `above-start` anchors the popover to the cell's top-left.
+            // Cells are left-aligned, so the popover's left edge stays put
+            // even when the rendered value width changes (e.g. a ticking
+            // numeric signal whose decimal-place count fluctuates).
+            positioning={{
+                target: anchorRef?.current ?? null,
+                position: 'above',
+                align: 'start'
+            }}
         >
             <PopoverSurface
                 className={classes.popoverSurface}

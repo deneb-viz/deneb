@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, type KeyboardEvent } from 'react';
-import { makeStyles, Tooltip } from '@fluentui/react-components';
+import { makeStyles } from '@fluentui/react-components';
 
 import {
     isCrossHighlightComparatorField,
@@ -14,6 +14,7 @@ import type { WorkerDatasetViewerValueType } from '../../workers/types';
 import { getDenebState } from '../../../../state';
 import {
     isOpenForCellId,
+    shouldRefreshInspector,
     useDataTableInspector
 } from './inspector-popover-context';
 import {
@@ -22,7 +23,7 @@ import {
     useIsDataTableCellActive
 } from './data-table-keyboard-context';
 import { resolveCellKeyAction } from './data-table-keyboard-utils';
-import { useDataTableTooltip } from './data-table-tooltip-context';
+import { DataTableTooltip } from './data-table-tooltip';
 
 const useDataTableCellStyles = makeStyles({
     cell: {
@@ -85,7 +86,6 @@ export const DataTableCell = ({
 }: DataTableCellProps) => {
     const effectiveColumnId = columnId ?? field;
     const classes = useDataTableCellStyles();
-    const tooltipMountNode = useDataTableTooltip();
     const tooltipContent = getCellTooltip(
         field,
         rawValue,
@@ -124,27 +124,38 @@ export const DataTableCell = ({
         return keyboard.registerCell(cellId, cellRef);
     }, [cellId, keyboard]);
 
-    // Both render branches wrap in the same Fluent Tooltip when there IS
-    // tooltip content; collect the props once so the two call sites can't
-    // drift apart. A null tooltipContent means the cell has nothing to
-    // surface (non-inspectable cell without a support-field explanation) —
-    // skip the Tooltip wrapper entirely so hover and focus don't produce an
-    // empty tooltip.
-    const tooltipProps = tooltipContent
-        ? {
-              content: tooltipContent,
-              relationship: 'description' as const,
-              withArrow: true,
-              mountNode: tooltipMountNode
-          }
-        : null;
+    // Keep the inspector's snapshot in sync with live cell updates. The
+    // inspector captures rawValue/valueType at click time; without this
+    // effect, a cell whose value changes beneath it (e.g. the signal-
+    // viewer's currentDate signal ticking every second) would show stale
+    // content until the user re-clicks. Only the currently-targeted cell
+    // dispatches a refresh, so ticks from unrelated cells don't stomp the
+    // inspector. The Object.is guard suppresses the redundant re-dispatch
+    // that would otherwise fire immediately after click (when state is
+    // already current). `refreshInspector` internally checks
+    // `stateRef.current.isOpen` so a close fired earlier in the same tick
+    // cannot be undone — the cell's React-context snapshot is one render
+    // stale relative to the ref, and the dispatch has to be authoritative.
+    useEffect(() => {
+        if (!cellId || !inspector) return;
+        // `cellId` non-null implies `canInspect` was true at memo time,
+        // which implies `valueType !== undefined` — but React can't follow
+        // that inference across render boundaries, so if a parent flips
+        // valueType to undefined in the same render that commits the
+        // effect, cellId may still be non-null. Guard explicitly rather
+        // than leaning on a non-null assertion.
+        if (valueType === undefined) return;
+        if (!shouldRefreshInspector(inspector, cellId, rawValue, valueType)) {
+            return;
+        }
+        inspector.refreshInspector(rawValue, valueType);
+    }, [rawValue, valueType, cellId, inspector]);
 
     if (!canInspect || !cellId || !inspector) {
-        const cellBody = <div>{displayValue}</div>;
-        return tooltipProps ? (
-            <Tooltip {...tooltipProps}>{cellBody}</Tooltip>
-        ) : (
-            cellBody
+        return (
+            <DataTableTooltip content={tooltipContent}>
+                <div>{displayValue}</div>
+            </DataTableTooltip>
         );
     }
 
@@ -155,7 +166,13 @@ export const DataTableCell = ({
     const isOpen = isOpenForCellId(inspector, cellId);
 
     const openForThisCell = () => {
-        inspector.openInspector(cellRef, rawValue, valueType!, cellId);
+        // Same pattern as the live-refresh effect's guard: `canInspect`
+        // (and therefore the cellId memo) implies `valueType !== undefined`,
+        // but TypeScript can't follow that inference across closure
+        // boundaries. Narrow via control flow rather than a non-null
+        // assertion so the invariant is visible at the call site.
+        if (valueType === undefined) return;
+        inspector.openInspector(cellRef, rawValue, valueType, cellId);
     };
 
     const handleClick = () => {
@@ -184,30 +201,27 @@ export const DataTableCell = ({
         keyboard?.setActiveCell(cellId);
     };
 
-    const cellBody = (
-        <div
-            ref={cellRef}
-            role='button'
-            tabIndex={isActive ? 0 : -1}
-            aria-haspopup='dialog'
-            aria-expanded={isOpen}
-            aria-label={getDenebState().i18n.translate(
-                'Table_Aria_InspectCell',
-                [field]
-            )}
-            data-inspector-cell=''
-            className={classes.cell}
-            onClick={handleClick}
-            onKeyDown={handleKeyDown}
-            onFocus={handleFocus}
-        >
-            {displayValue}
-        </div>
-    );
-    return tooltipProps ? (
-        <Tooltip {...tooltipProps}>{cellBody}</Tooltip>
-    ) : (
-        cellBody
+    return (
+        <DataTableTooltip content={tooltipContent}>
+            <div
+                ref={cellRef}
+                role='button'
+                tabIndex={isActive ? 0 : -1}
+                aria-haspopup='dialog'
+                aria-expanded={isOpen}
+                aria-label={getDenebState().i18n.translate(
+                    'Table_Aria_InspectCell',
+                    [field]
+                )}
+                data-inspector-cell=''
+                className={classes.cell}
+                onClick={handleClick}
+                onKeyDown={handleKeyDown}
+                onFocus={handleFocus}
+            >
+                {displayValue}
+            </div>
+        </DataTableTooltip>
     );
 };
 
