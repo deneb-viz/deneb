@@ -118,14 +118,18 @@ export const DataTableCell = ({
         return keyboard.registerCell(cellId, cellRef);
     }, [cellId, keyboard]);
 
+    // Both render branches wrap in the same Fluent Tooltip; collect the props
+    // once so the two call sites can't drift apart.
+    const tooltipProps = {
+        content: tooltipContent ?? '',
+        relationship: 'description' as const,
+        withArrow: true,
+        mountNode: tooltipMountNode
+    };
+
     if (!canInspect || !cellId || !inspector) {
         return (
-            <Tooltip
-                content={tooltipContent ?? ''}
-                relationship='description'
-                withArrow
-                mountNode={tooltipMountNode}
-            >
+            <Tooltip {...tooltipProps}>
                 <div>{displayValue}</div>
             </Tooltip>
         );
@@ -185,12 +189,7 @@ export const DataTableCell = ({
     };
 
     return (
-        <Tooltip
-            content={tooltipContent ?? ''}
-            relationship='description'
-            withArrow
-            mountNode={tooltipMountNode}
-        >
+        <Tooltip {...tooltipProps}>
             <div
                 ref={cellRef}
                 role='button'

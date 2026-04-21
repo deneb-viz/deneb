@@ -257,6 +257,25 @@ describe('pickDefaultActiveCell', () => {
         expect(pickDefaultActiveCell(colOrder, cells)).toBe('2:region');
     });
 
+    it('picks the lowest-row, earliest-column cell regardless of insertion order', () => {
+        // Insertion order here is deliberately reversed so Set iteration
+        // would yield '3:sales' first. Result must still be '1:country'.
+        const cells = new Set([
+            '3:sales',
+            '3:region',
+            '2:sales',
+            '1:sales',
+            '1:region',
+            '1:country'
+        ]);
+        expect(pickDefaultActiveCell(colOrder, cells)).toBe('1:country');
+    });
+
+    it('ignores registered cells whose field is not in colOrder', () => {
+        const cells = new Set(['2:ghost', '3:region']);
+        expect(pickDefaultActiveCell(colOrder, cells)).toBe('3:region');
+    });
+
     it('returns null when no cells are registered', () => {
         expect(pickDefaultActiveCell(colOrder, new Set())).toBeNull();
     });

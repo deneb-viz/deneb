@@ -35,16 +35,12 @@ const useInspectorPopoverStyles = makeStyles({
     },
     editorContainer: {
         border: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke2}`,
-        // Monaco renders its scroll/line layers on their own compositor
-        // layers (via `transform: translate3d`) to accelerate scrolling. That
-        // means plain `overflow: hidden` on an ancestor clips them visually
-        // but not for hit-testing — clicks outside the visible editor bounds
-        // can still land on Monaco's `.lines-content`. `contain: strict`
-        // constrains paint AND hit-testing to the element's box, which is
-        // what actually prevents Monaco from swallowing those outside
-        // clicks.
         overflow: 'hidden',
         position: 'relative',
+        // `contain: strict` constrains hit-testing to this box. Without it
+        // Monaco's compositor-layer scroll/line elements remain hit-testable
+        // outside the visible container, swallowing clicks that are visually
+        // below the popover.
         contain: 'strict'
     }
 });
@@ -161,17 +157,11 @@ export const InspectorPopover = ({
         editorRef.current?.focus();
     }, [isOpen, cellId]);
 
-    // Handle Fluent's close-intent events. Fluent fires onOpenChange(false)
-    // on both Escape and outside-click dismissal. For outside clicks that
-    // land on another inspectable cell, the cell's own onClick has already
-    // dispatched `openInspector` for the new target — treating the dismiss
-    // as a close would stomp that retarget and leave the popover closed.
-    // Ignore the dismiss in that case so the retarget wins; otherwise
-    // proceed with the usual close behaviour. Bail out early when the
+    // Handle Fluent's close-intent events. Skip the close if the dismiss
+    // target is another inspectable cell so that cell's own click handler
+    // can retarget the popover without us stomping it. Also skip when the
     // inspector is already closed — the coordinate-based mousedown handler
-    // may have closed it before Fluent's own onOpenChange fires for the same
-    // gesture, and a redundant close-when-already-closed would re-queue the
-    // focus-restore work in `closeInspector`.
+    // below may have fired first for the same gesture.
     const handleOpenChange = useCallback(
         (event: OpenPopoverEvents, data: OnOpenChangeData) => {
             if (data.open) return;
@@ -189,17 +179,12 @@ export const InspectorPopover = ({
         [isOpen, closeInspector]
     );
 
-    // Coordinate-based outside-click dismissal. Fluent's built-in light
-    // dismiss relies on DOM-target containment ("is `e.target` inside the
-    // PopoverSurface's subtree?"). That check fails when Monaco escapes its
-    // container for pointer events: a click visually below the popover lands
-    // on Monaco's `.lines-content`, which IS a DOM descendant of the surface,
-    // so Fluent keeps the popover open and Monaco scrolls as if the click
-    // were interior. `document.elementFromPoint` uses visual hit testing
-    // (which `contain: strict` on the editor container correctly constrains)
-    // and respects CSS zoom — Power BI scales the visual iframe, and a
-    // `getBoundingClientRect`-vs-`clientX/Y` comparison would drift because
-    // the rect is zoom-scaled while the client coordinates are not.
+    // Coordinate-based outside-click dismissal. Fluent's light dismiss uses
+    // DOM-target containment, which misfires because Monaco's `.lines-content`
+    // IS a DOM descendant of the PopoverSurface (click registered as inside
+    // even when visually outside). `elementFromPoint` uses visual hit testing
+    // — constrained to the editor box by `contain: strict` on the container
+    // — and also respects the CSS zoom Power BI applies to the visual iframe.
     useEffect(() => {
         if (!isOpen) return;
         const handleDocumentMouseDown = (event: MouseEvent) => {

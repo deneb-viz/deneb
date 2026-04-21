@@ -124,8 +124,13 @@ export const resolveRowEndpoint = (
  * Pick a sensible default active cell when one is needed — either because no
  * cell is yet active, or because the previously-active cell unregistered
  * (pagination change). Returns the first registered cell in row 0 column
- * order, falling back to the first registered cell in any row if row 0 has
- * no inspectable cells, or `null` if nothing is registered.
+ * order, falling back to the lowest-row / earliest-column registered cell
+ * when row 0 has no inspectable cells, or `null` if nothing is registered.
+ *
+ * The fallback selection is computed by parsing each registered id rather
+ * than trusting `Set` insertion order. Insertion order tracks render
+ * registration order, which depends on React rendering behaviour (StrictMode
+ * double-invoke, concurrent rendering) and is not an interface contract.
  */
 export const pickDefaultActiveCell = (
     colOrder: string[],
@@ -135,9 +140,23 @@ export const pickDefaultActiveCell = (
         const candidate = buildCellId(0, fieldName);
         if (registeredCellIds.has(candidate)) return candidate;
     }
-    // Row 0 is empty; fall back to the lowest-row lowest-column registered
-    // cell. Use the first item from the iterator since Sets preserve
-    // insertion order and cells register bottom-up during render.
-    const first = registeredCellIds.values().next().value;
-    return first ?? null;
+    let best: {
+        cellId: CellId;
+        rowIndex: number;
+        colIdx: number;
+    } | null = null;
+    for (const cellId of registeredCellIds) {
+        const coord = parseCellId(cellId);
+        if (!coord) continue;
+        const colIdx = colOrder.indexOf(coord.fieldName);
+        if (colIdx === -1) continue;
+        if (
+            best === null ||
+            coord.rowIndex < best.rowIndex ||
+            (coord.rowIndex === best.rowIndex && colIdx < best.colIdx)
+        ) {
+            best = { cellId, rowIndex: coord.rowIndex, colIdx };
+        }
+    }
+    return best?.cellId ?? null;
 };
