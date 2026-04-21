@@ -67,16 +67,3 @@ export const getApplicableFlags = (
     }
     return flags;
 };
-
-/** Separator used to encode field name + flag key in TreeItem values. */
-export const VALUE_SEPARATOR = '::';
-
-/** Encode a TreeItem value from field name and flag key. */
-export const encodeValue = (fieldName: string, flag: string): string =>
-    `${fieldName}${VALUE_SEPARATOR}${flag}`;
-
-/** Decode a TreeItem value into [fieldName, flagKey]. */
-export const decodeValue = (value: string): [string, string] => {
-    const idx = value.lastIndexOf(VALUE_SEPARATOR);
-    return [value.slice(0, idx), value.slice(idx + VALUE_SEPARATOR.length)];
-};
