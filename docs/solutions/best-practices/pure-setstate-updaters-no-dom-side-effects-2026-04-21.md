@@ -1,6 +1,7 @@
 ---
 title: "React setState updaters must be pure: use render-synced refs for DOM side effects"
 date: 2026-04-21
+last_updated: 2026-04-22
 category: best-practices
 module: react-state-management
 problem_type: best_practice
@@ -11,16 +12,16 @@ applies_when:
   - Focus management must run after a state dispatch but relies on a value that was in state at dispatch time
   - Components run under React StrictMode, where updater double-invocation is intentional and will expose impure updaters
   - Keyboard navigation handlers dispatch state updates and must also move DOM focus in the same logical operation
-  - Any callback that would otherwise capture stale state via closure and is also responsible for a DOM mutation or imperative API call
+  - A context provider exposes both a dismiss action and a refresh/reopen action that can fire in the same event-loop tick from different sources (a user event and a subscription tick)
 tags:
   - react
   - setstate
   - pure-functions
-  - focus-management
   - useref
   - strict-mode
   - concurrent-rendering
-  - keyboard-navigation
+  - race-condition
+  - context-actions
 ---
 
 # React setState updaters must be pure: use render-synced refs for DOM side effects
@@ -77,6 +78,8 @@ The render-body line `stateRef.current = state` is the key idiom. It runs on eve
 **Concurrent rendering.** In concurrent mode React may interrupt, replay, or re-order work. A pending updater can be re-invoked between scheduling and commit. DOM mutations inside an updater can therefore fire at arbitrary points relative to the DOM's actual committed state, meaning the element being focused may no longer be in the position the updater expects.
 
 **Same-tick duplicate calls.** When two separate event handlers both call the same closing/resetting action in a single event-loop tick (a common pattern with Fluent UI popover `onOpenChange` and a manual outside-click listener), an impure updater has no safe way to detect it has already run. The `prev` snapshot passed to the second invocation may still show `isOpen: true` if the first `setState` has not yet been processed. See Example 2 for the idempotence pattern that solves this.
+
+**Same-tick cross-action races.** The same problem extends to different actions on the same state. When a context provider exposes both a close action and a refresh (or reopen) action, and the refresh is callable from a `useEffect` reacting to external-source updates (a Vega signal tick, a `setInterval`, a WebSocket message — anything not originating inside a React event handler), the two updates are not batched into a single render. They commit in the same tick but carry independent render-closure snapshots. A `useEffect` that reads `isOpen` from `useContext` to decide whether to refresh sees the snapshot from its render, which may predate the close. The refresh dispatches, and the popover reopens after the user dismissed it. See Example 3 for the `refreshInspector` pattern that solves this with the same `stateRef` primitive plus a narrow action signature.
 
 ## Examples
 
@@ -146,7 +149,77 @@ const closeInspector = useCallback(() => {
 
 The critical line is `stateRef.current = INSPECTOR_POPOVER_CLOSED_STATE` placed before `setState`. Because `setState` is asynchronous and `stateRef.current` is a mutable object, the synchronous assignment makes the closed state immediately visible to any code that reads the ref within the same synchronous execution context. A second call to `closeInspector` in the same tick reads `stateRef.current.isOpen === false` and returns early, preventing the focus side effect from firing twice.
 
+### Example 3 — Cross-action race: `refreshInspector` vs `closeInspector` (second follow-up round)
+
+A later PR added a live-refresh path: cells whose underlying values change beneath an already-open inspector (a signal-viewer cell whose Vega signal ticks every second) dispatch a refresh from a `useEffect`. The first attempt reused `openInspector` with a React-context-sourced `isOpenForCellId` guard at the effect boundary — and hit the same stale-closure problem as Example 2, just across two different actions instead of two invocations of the same action.
+
+```tsx
+// BROKEN: the guard reads React context — one render stale relative to stateRef.
+useEffect(() => {
+    if (!cellId || !inspector) return;
+    if (!isOpenForCellId(inspector, cellId)) return;   // ← stale snapshot
+    inspector.openInspector(cellRef, rawValue, valueType, cellId);
+}, [rawValue, valueType, cellId, inspector]);
+```
+
+If `closeInspector` commits in the same tick as a signal update, the effect from the pre-close render runs with `inspector.isOpen === true` in its closure. The guard passes. `openInspector` is dispatched. The popover reopens after dismissal.
+
+The fix pairs the `stateRef` primitive from Example 2 with a narrow, purpose-built action:
+
+```tsx
+// In the provider — `refreshInspector` is the authoritative gate.
+const refreshInspector = useCallback(
+    (rawValue: unknown, valueType: WorkerDatasetViewerValueType) => {
+        // Read isOpen from the synchronously-maintained ref, not from
+        // closure or React state. `closeInspector` has already flipped
+        // this to false before scheduling its setState, so any
+        // concurrent refresh in the same tick bails.
+        if (!stateRef.current.isOpen) return;
+        const next = { ...stateRef.current, rawValue, valueType };
+        stateRef.current = next;   // mirror before dispatch, as in Example 2
+        setState(next);
+    },
+    []
+);
+```
+
+```tsx
+// In the cell — the cross-cell scoping check still runs at the effect
+// boundary, but the authoritative isOpen check happens inside the dispatch.
+useEffect(() => {
+    if (!cellId || !inspector) return;
+    if (valueType === undefined) return;
+    if (!shouldRefreshInspector(inspector, cellId, rawValue, valueType)) return;
+    inspector.refreshInspector(rawValue, valueType);
+}, [rawValue, valueType, cellId, inspector]);
+```
+
+Two design points beyond the `stateRef` read:
+
+**Narrow signature as compile-time invariant.** `refreshInspector(rawValue, valueType)` has no `anchorRef` parameter and no `cellId` parameter. It spreads `stateRef.current` for the other fields, so identity fields are structurally immutable across any refresh. A future caller cannot accidentally route a retarget through this path with a different `cellId`, because the TypeScript signature does not permit it. The runtime invariant ("refresh never changes which cell is open") becomes a compile-time guarantee.
+
+**Extracted predicate for unit testing.** The three-branch cross-cell scoping logic is extracted as a pure function alongside `isOpenForCellId`:
+
+```tsx
+export const shouldRefreshInspector = (
+    state: Pick<InspectorPopoverState, 'isOpen' | 'cellId' | 'rawValue' | 'valueType'>,
+    cellId: string,
+    rawValue: unknown,
+    valueType: WorkerDatasetViewerValueType
+): boolean => {
+    if (!isOpenForCellId(state, cellId)) return false;
+    if (
+        Object.is(state.rawValue, rawValue) &&
+        state.valueType === valueType
+    ) return false;
+    return true;
+};
+```
+
+`Object.is` is used rather than `===` because it handles `NaN` correctly (a tick from `NaN` to `NaN` is a no-op, where `===` would treat them as different and dispatch a redundant refresh). The predicate is fully testable without mounting React. The authoritative `isOpen` check remains inside `refreshInspector` itself — the effect-boundary predicate suppresses spurious dispatch work, but the race guard is at the dispatch layer where `stateRef` is accessible.
+
 ## Related
 
 - [`docs/solutions/ui-bugs/modal-dialog-tab-trapped-by-keyboard-focus-handler-2026-04-10.md`](../ui-bugs/modal-dialog-tab-trapped-by-keyboard-focus-handler-2026-04-10.md) — covers the document-level keyboard handler side of the same focus feature this learning addresses (the React callback side). Together they form a complete picture of the focus feature's two problem zones.
 - Commits in `feat/additional-complex-object-debugging`: `689c7d77` (Wave 1 — initial fix across both contexts), `fd6f9237` (self-idempotent `closeInspector`).
+- Commits in `fix/inspector-testing-remediations`: `0c578f06` (Example 3 — `refreshInspector` action with synchronous close guard and extracted `shouldRefreshInspector` predicate).
