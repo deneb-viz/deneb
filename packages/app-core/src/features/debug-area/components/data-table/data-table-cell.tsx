@@ -14,6 +14,7 @@ import type { WorkerDatasetViewerValueType } from '../../workers/types';
 import { getDenebState } from '../../../../state';
 import {
     isOpenForCellId,
+    shouldRefreshInspector,
     useDataTableInspector
 } from './inspector-popover-context';
 import {
@@ -125,14 +126,17 @@ export const DataTableCell = ({
     }, [cellId, keyboard]);
 
     // Keep the inspector's snapshot in sync with live cell updates. The
-    // inspector captures rawValue/valueType at click time via openInspector;
-    // without this effect, a cell whose value changes beneath it (e.g. the
-    // signal-viewer's currentDate signal ticking every second) would show
-    // stale content until the user re-clicks. Only the currently-targeted
-    // cell dispatches a refresh, so ticks from unrelated cells don't stomp
-    // the inspector. The Object.is guard suppresses the redundant
-    // re-dispatch that would otherwise fire immediately after click (when
-    // state is already current).
+    // inspector captures rawValue/valueType at click time; without this
+    // effect, a cell whose value changes beneath it (e.g. the signal-
+    // viewer's currentDate signal ticking every second) would show stale
+    // content until the user re-clicks. Only the currently-targeted cell
+    // dispatches a refresh, so ticks from unrelated cells don't stomp the
+    // inspector. The Object.is guard suppresses the redundant re-dispatch
+    // that would otherwise fire immediately after click (when state is
+    // already current). `refreshInspector` internally checks
+    // `stateRef.current.isOpen` so a close fired earlier in the same tick
+    // cannot be undone — the cell's React-context snapshot is one render
+    // stale relative to the ref, and the dispatch has to be authoritative.
     useEffect(() => {
         if (!cellId || !inspector) return;
         // `cellId` non-null implies `canInspect` was true at memo time,
@@ -142,14 +146,10 @@ export const DataTableCell = ({
         // effect, cellId may still be non-null. Guard explicitly rather
         // than leaning on a non-null assertion.
         if (valueType === undefined) return;
-        if (!isOpenForCellId(inspector, cellId)) return;
-        if (
-            Object.is(inspector.rawValue, rawValue) &&
-            inspector.valueType === valueType
-        ) {
+        if (!shouldRefreshInspector(inspector, cellId, rawValue, valueType)) {
             return;
         }
-        inspector.openInspector(cellRef, rawValue, valueType, cellId);
+        inspector.refreshInspector(rawValue, valueType);
     }, [rawValue, valueType, cellId, inspector]);
 
     // Both render branches wrap in the same Fluent Tooltip when there IS
