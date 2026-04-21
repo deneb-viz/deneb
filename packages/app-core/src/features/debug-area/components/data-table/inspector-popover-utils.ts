@@ -2,6 +2,28 @@ import { formatJson } from '@deneb-viz/utils/object';
 import type { WorkerDatasetViewerValueType } from '../../workers/types';
 
 /**
+ * Attribute applied to every inspectable DataTableCell div. Lives in this
+ * helper module so the cell renderer and the popover's close-path guards
+ * reference the same source of truth.
+ */
+export const INSPECTABLE_CELL_ATTRIBUTE = 'data-inspector-cell';
+const INSPECTABLE_CELL_SELECTOR = `[${INSPECTABLE_CELL_ATTRIBUTE}]`;
+
+/**
+ * Predicate used by the popover's close-path guards to decide whether a
+ * dismiss-event target is one of our own inspectable cells — in which case
+ * that cell's own onClick will retarget the popover and the dismiss must
+ * not fire. Requires `isConnected` so a detached target (e.g. an already-
+ * unmounted cell from a previous render) falls through to close.
+ */
+export const isDismissTargetInspectableCell = (
+    target: EventTarget | null | undefined
+): boolean =>
+    target instanceof Element &&
+    target.isConnected &&
+    target.closest(INSPECTABLE_CELL_SELECTOR) !== null;
+
+/**
  * Popover dimensions for values that should render in a compact container.
  * Single-line fit for scalar value types.
  */

@@ -2,15 +2,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePrevious } from '@uidotdev/usehooks';
 
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
-import { getPrunedObject, stringifyPruned } from '@deneb-viz/utils/object';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
-import {
-    DATA_TABLE_VALUE_MAX_DEPTH,
-    DATA_TABLE_VALUE_MAX_LENGTH
-} from '../../constants';
-import { getValueType } from '../../workers/get-value-type';
 import { DataTableCell } from '../data-table/data-table-cell';
 import { useDenebState } from '../../../../state';
+import {
+    computeSignalDisplay,
+    INVALID_SIGNAL_DISPLAY
+} from './signal-value-utils';
 
 type SignalValueProps = {
     signalName: string;
@@ -132,31 +130,13 @@ export const SignalValue = ({
     };
     const getSignalValues = useCallback(() => {
         try {
-            // Capture the value type from the unpruned value so the inspector
-            // can size its popover and pick its Monaco language based on the
-            // original shape (e.g., an object with depth beyond the pruning
-            // limit still registers as 'object').
             const unpruned = VegaViewServices.getSignalByName(signalName);
-            const valueType = getValueType(unpruned);
-            const raw = getPrunedObject(unpruned, {
-                maxDepth: DATA_TABLE_VALUE_MAX_DEPTH
-            });
-            const stringified = stringifyPruned(raw) ?? '';
-            const tooLong = stringified.length > DATA_TABLE_VALUE_MAX_LENGTH;
-            const display = tooLong
-                ? translate('Table_Placeholder_TooLong')
-                : stringified;
-            return { raw, display, valueType, tooLong };
+            return computeSignalDisplay(unpruned, translate);
         } catch {
             logDebug(
                 `Could not retrieve value for signal ${signalName}. It may not exist in the current view scope.`
             );
-            return {
-                raw: null,
-                display: '',
-                valueType: 'invalid' as const,
-                tooLong: false
-            };
+            return INVALID_SIGNAL_DISPLAY;
         }
     }, [signalName, translate]);
     /**

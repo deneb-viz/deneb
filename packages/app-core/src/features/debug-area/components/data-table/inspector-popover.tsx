@@ -17,17 +17,9 @@ import { useDataTableInspector } from './inspector-popover-context';
 import {
     formatInspectorValue,
     getInspectorDimensions,
-    getInspectorLanguage
+    getInspectorLanguage,
+    isDismissTargetInspectableCell
 } from './inspector-popover-utils';
-
-// Selector used by both close-path guards to recognise a click that landed on
-// another inspectable DataTableCell — those cells carry their own onClick that
-// retargets the shared popover, so dismissing would stomp the retarget. The
-// matching `data-inspector-cell` attribute is applied by `DataTableCell` only
-// in its inspectable render branch, which scopes the guard to our own cells
-// (rather than any ambient `role=button aria-haspopup=dialog` element such as
-// an unrelated Fluent `PopoverTrigger`).
-const INSPECTABLE_CELL_SELECTOR = '[data-inspector-cell]';
 
 const useInspectorPopoverStyles = makeStyles({
     popoverSurface: {
@@ -166,14 +158,7 @@ export const InspectorPopover = ({
         (event: OpenPopoverEvents, data: OnOpenChangeData) => {
             if (data.open) return;
             if (!isOpen) return;
-            const target = event.target;
-            if (
-                target instanceof Element &&
-                target.isConnected &&
-                target.closest(INSPECTABLE_CELL_SELECTOR)
-            ) {
-                return;
-            }
+            if (isDismissTargetInspectableCell(event.target)) return;
             closeInspector();
         },
         [isOpen, closeInspector]
@@ -197,13 +182,7 @@ export const InspectorPopover = ({
             // Click is visually outside the popover. If it landed on another
             // inspectable cell, let that cell's onClick retarget the
             // inspector instead of closing.
-            const target = event.target;
-            if (
-                target instanceof Element &&
-                target.closest(INSPECTABLE_CELL_SELECTOR)
-            ) {
-                return;
-            }
+            if (isDismissTargetInspectableCell(event.target)) return;
             closeInspector();
         };
         document.addEventListener('mousedown', handleDocumentMouseDown, true);

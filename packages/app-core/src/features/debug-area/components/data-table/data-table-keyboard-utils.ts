@@ -15,6 +15,43 @@ export type ArrowDirection = 'up' | 'down' | 'left' | 'right';
 export type RowEndpoint = 'home' | 'end';
 
 /**
+ * Discriminated action a `DataTableCell` should perform in response to a
+ * keyboard event. Surfaced as a pure value so the dispatch rules can be
+ * unit-tested without rendering the cell.
+ */
+export type CellKeyAction =
+    | { kind: 'open' }
+    | { kind: 'move'; direction: ArrowDirection }
+    | { kind: 'rowEndpoint'; endpoint: RowEndpoint };
+
+/**
+ * Map a `KeyboardEvent.key` value to the action an inspectable DataTableCell
+ * should take, or `null` for any key the cell doesn't claim (caller should
+ * let the event propagate unchanged).
+ */
+export const resolveCellKeyAction = (key: string): CellKeyAction | null => {
+    switch (key) {
+        case 'Enter':
+        case ' ':
+            return { kind: 'open' };
+        case 'ArrowLeft':
+            return { kind: 'move', direction: 'left' };
+        case 'ArrowRight':
+            return { kind: 'move', direction: 'right' };
+        case 'ArrowUp':
+            return { kind: 'move', direction: 'up' };
+        case 'ArrowDown':
+            return { kind: 'move', direction: 'down' };
+        case 'Home':
+            return { kind: 'rowEndpoint', endpoint: 'home' };
+        case 'End':
+            return { kind: 'rowEndpoint', endpoint: 'end' };
+        default:
+            return null;
+    }
+};
+
+/**
  * Encode a `(rowIndex, fieldName)` pair as a stable cell identifier. The
  * separator `:` is chosen to match the plan's convention; field names in this
  * project never contain literal `:` in a way that would collide with a row

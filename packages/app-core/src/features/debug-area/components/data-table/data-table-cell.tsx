@@ -21,6 +21,7 @@ import {
     useDataTableKeyboardActions,
     useIsDataTableCellActive
 } from './data-table-keyboard-context';
+import { resolveCellKeyAction } from './data-table-keyboard-utils';
 import { useDataTableTooltip } from './data-table-tooltip-context';
 
 const useDataTableCellStyles = makeStyles({
@@ -151,35 +152,18 @@ export const DataTableCell = ({
     };
 
     const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-        switch (event.key) {
-            case 'Enter':
-            case ' ':
-                event.preventDefault();
+        const action = resolveCellKeyAction(event.key);
+        if (!action) return;
+        event.preventDefault();
+        switch (action.kind) {
+            case 'open':
                 openForThisCell();
                 return;
-            case 'ArrowLeft':
-                event.preventDefault();
-                keyboard?.moveActive('left');
+            case 'move':
+                keyboard?.moveActive(action.direction);
                 return;
-            case 'ArrowRight':
-                event.preventDefault();
-                keyboard?.moveActive('right');
-                return;
-            case 'ArrowUp':
-                event.preventDefault();
-                keyboard?.moveActive('up');
-                return;
-            case 'ArrowDown':
-                event.preventDefault();
-                keyboard?.moveActive('down');
-                return;
-            case 'Home':
-                event.preventDefault();
-                keyboard?.moveToRowEndpoint('home');
-                return;
-            case 'End':
-                event.preventDefault();
-                keyboard?.moveToRowEndpoint('end');
+            case 'rowEndpoint':
+                keyboard?.moveToRowEndpoint(action.endpoint);
                 return;
         }
     };

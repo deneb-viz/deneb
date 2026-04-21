@@ -1,11 +1,14 @@
-import { describe, expect, it } from 'vitest';
+// @vitest-environment jsdom
+import { afterEach, describe, expect, it } from 'vitest';
 
 import {
     formatInspectorValue,
     getInspectorDimensions,
     getInspectorLanguage,
+    INSPECTABLE_CELL_ATTRIBUTE,
     INSPECTOR_COMPACT_DIMENSIONS,
-    INSPECTOR_FULL_DIMENSIONS
+    INSPECTOR_FULL_DIMENSIONS,
+    isDismissTargetInspectableCell
 } from '../inspector-popover-utils';
 
 describe('getInspectorLanguage', () => {
@@ -133,5 +136,54 @@ describe('formatInspectorValue', () => {
             circular.self = circular;
             expect(formatInspectorValue(circular, 'object')).toBe('');
         });
+    });
+});
+
+describe('isDismissTargetInspectableCell', () => {
+    afterEach(() => {
+        document.body.innerHTML = '';
+    });
+
+    const mountCell = (options: { connect?: boolean } = {}) => {
+        const cell = document.createElement('div');
+        cell.setAttribute(INSPECTABLE_CELL_ATTRIBUTE, '');
+        if (options.connect !== false) document.body.appendChild(cell);
+        return cell;
+    };
+
+    it('returns true when the target is an inspectable cell', () => {
+        const cell = mountCell();
+        expect(isDismissTargetInspectableCell(cell)).toBe(true);
+    });
+
+    it('returns true when the target is a descendant of an inspectable cell', () => {
+        const cell = mountCell();
+        const child = document.createElement('span');
+        child.textContent = 'value';
+        cell.appendChild(child);
+        expect(isDismissTargetInspectableCell(child)).toBe(true);
+    });
+
+    it('returns false when the target is outside any inspectable cell', () => {
+        mountCell();
+        const sibling = document.createElement('button');
+        sibling.setAttribute('role', 'button');
+        sibling.setAttribute('aria-haspopup', 'dialog');
+        document.body.appendChild(sibling);
+        expect(isDismissTargetInspectableCell(sibling)).toBe(false);
+    });
+
+    it('returns false for a detached element even if it has the attribute', () => {
+        const cell = mountCell({ connect: false });
+        expect(isDismissTargetInspectableCell(cell)).toBe(false);
+    });
+
+    it('returns false for null or non-Element targets', () => {
+        expect(isDismissTargetInspectableCell(null)).toBe(false);
+        expect(isDismissTargetInspectableCell(undefined)).toBe(false);
+        // A bare EventTarget that isn't an Element — simulated with a new
+        // EventTarget instance — must not match.
+        const bareTarget = new EventTarget();
+        expect(isDismissTargetInspectableCell(bareTarget)).toBe(false);
     });
 });

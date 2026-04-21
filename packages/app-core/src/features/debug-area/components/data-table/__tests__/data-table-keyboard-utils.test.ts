@@ -5,6 +5,7 @@ import {
     parseCellId,
     pickDefaultActiveCell,
     resolveArrowTarget,
+    resolveCellKeyAction,
     resolveRowEndpoint
 } from '../data-table-keyboard-utils';
 
@@ -278,5 +279,44 @@ describe('pickDefaultActiveCell', () => {
 
     it('returns null when no cells are registered', () => {
         expect(pickDefaultActiveCell(colOrder, new Set())).toBeNull();
+    });
+});
+
+describe('resolveCellKeyAction', () => {
+    it('maps Enter to open', () => {
+        expect(resolveCellKeyAction('Enter')).toEqual({ kind: 'open' });
+    });
+
+    it('maps Space to open', () => {
+        expect(resolveCellKeyAction(' ')).toEqual({ kind: 'open' });
+    });
+
+    it.each([
+        ['ArrowLeft', 'left'],
+        ['ArrowRight', 'right'],
+        ['ArrowUp', 'up'],
+        ['ArrowDown', 'down']
+    ] as const)('maps %s to move %s', (key, direction) => {
+        expect(resolveCellKeyAction(key)).toEqual({
+            kind: 'move',
+            direction
+        });
+    });
+
+    it.each([
+        ['Home', 'home'],
+        ['End', 'end']
+    ] as const)('maps %s to rowEndpoint %s', (key, endpoint) => {
+        expect(resolveCellKeyAction(key)).toEqual({
+            kind: 'rowEndpoint',
+            endpoint
+        });
+    });
+
+    it('returns null for any key the cell does not claim', () => {
+        expect(resolveCellKeyAction('Tab')).toBeNull();
+        expect(resolveCellKeyAction('Escape')).toBeNull();
+        expect(resolveCellKeyAction('a')).toBeNull();
+        expect(resolveCellKeyAction('PageDown')).toBeNull();
     });
 });
