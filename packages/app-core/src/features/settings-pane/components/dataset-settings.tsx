@@ -315,7 +315,10 @@ export const DatasetSettings = () => {
                                 {applicableFlags.map((flag) => {
                                     const infoKey = FLAG_INFO[flag];
                                     const label = translate(FLAG_LABELS[flag]);
-                                    const checkboxId = `${checkboxIdPrefix}-${name}-${flag}`;
+                                    // Sanitize whitespace out of the field name so the
+                                    // constructed id remains valid HTML5 and the htmlFor
+                                    // association on InfoLabel/Label resolves correctly.
+                                    const checkboxId = `${checkboxIdPrefix}-${name.replace(/\s+/g, '_')}-${flag}`;
                                     const checked = fieldFlags?.[flag] === true;
                                     return (
                                         <TreeItem

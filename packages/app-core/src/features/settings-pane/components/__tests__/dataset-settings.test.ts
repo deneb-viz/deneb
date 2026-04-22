@@ -50,9 +50,11 @@ describe('flag applicability', () => {
     });
 });
 
+const ALL_FLAG_KEYS = [...MEASURE_FLAGS, 'names', 'treatAsParameter'] as const;
+
 describe('FLAG_LABELS coverage', () => {
-    it('every MEASURE_FLAGS entry has a corresponding key in FLAG_LABELS', () => {
-        for (const flag of MEASURE_FLAGS) {
+    it('every applicable flag key has a corresponding entry in FLAG_LABELS', () => {
+        for (const flag of ALL_FLAG_KEYS) {
             expect(FLAG_LABELS).toHaveProperty(flag);
             expect(typeof FLAG_LABELS[flag]).toBe('string');
             expect(FLAG_LABELS[flag].length).toBeGreaterThan(0);
@@ -61,8 +63,8 @@ describe('FLAG_LABELS coverage', () => {
 });
 
 describe('FLAG_INFO coverage', () => {
-    it('every MEASURE_FLAGS entry has a corresponding key in FLAG_INFO', () => {
-        for (const flag of MEASURE_FLAGS) {
+    it('every applicable flag key has a corresponding entry in FLAG_INFO', () => {
+        for (const flag of ALL_FLAG_KEYS) {
             expect(FLAG_INFO).toHaveProperty(flag);
             expect(typeof FLAG_INFO[flag]).toBe('string');
             expect(FLAG_INFO[flag]!.length).toBeGreaterThan(0);
