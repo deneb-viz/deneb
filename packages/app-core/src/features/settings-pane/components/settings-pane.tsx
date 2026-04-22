@@ -17,7 +17,6 @@ import { SettingsAccordionItem } from './settings-accordion-item';
 import { SettingsPaneTooltipProvider } from './settings-pane-tooltip-context';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 import { useDenebState } from '../../../state';
-import { BeakerRegular } from '@fluentui/react-icons';
 
 const DEFAULT_OPEN_ITEMS: string[] = [];
 
@@ -67,7 +66,6 @@ export const SettingsPane = () => {
                     <SettingsAccordionItem
                         value='performance'
                         heading={translate('Text_Vega_Performance')}
-                        icon={<BeakerRegular />}
                     >
                         <PerformanceSettings />
                     </SettingsAccordionItem>

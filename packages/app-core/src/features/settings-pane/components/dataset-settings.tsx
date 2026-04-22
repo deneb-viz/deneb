@@ -1,7 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
     Button,
+    Checkbox,
     InfoLabel,
+    Label,
     makeStyles,
     MessageBar,
     MessageBarActions,
@@ -11,9 +13,8 @@ import {
     Tree,
     TreeItem,
     TreeItemLayout,
+    useId,
     type TreeItemValue,
-    type TreeCheckedChangeData,
-    type TreeCheckedChangeEvent,
     type TreeOpenChangeData,
     type TreeOpenChangeEvent
 } from '@fluentui/react-components';
@@ -33,7 +34,6 @@ const TableColumnQuestion16Regular = () => (
 );
 import {
     resolveFieldDefaults,
-    type SupportFieldConfiguration,
     type SupportFieldFlags
 } from '@deneb-viz/data-core/support-fields';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
@@ -45,10 +45,10 @@ import {
     COLUMN_FLAGS,
     FLAG_LABELS,
     FLAG_INFO,
-    VALUE_SEPARATOR,
-    encodeValue,
-    decodeValue,
-    getApplicableFlags
+    computeToggledConfig,
+    getApplicableFlags,
+    hasAnyEnabledFlag,
+    removeFieldFromConfig
 } from './dataset-settings-utils';
 
 const useDatasetSettingsStyles = makeStyles({
@@ -58,25 +58,39 @@ const useDatasetSettingsStyles = makeStyles({
     fieldItem: {
         fontWeight: tokens.fontWeightSemibold
     },
-    asideContainer: {
+    fieldNameRow: {
         display: 'inline-flex',
         alignItems: 'center',
         gap: tokens.spacingHorizontalXS
     },
+    enabledFlagHint: {
+        display: 'inline-block',
+        width: '6px',
+        height: '6px',
+        borderRadius: '50%',
+        backgroundColor: tokens.colorBrandForeground1,
+        flexShrink: 0
+    },
     roleIcon: {
         display: 'inline-flex',
         alignItems: 'center'
+    },
+    leafLayout: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: tokens.spacingHorizontalS
     }
 });
 
 /**
  * Dataset settings component for the settings pane. Renders a Fluent UI Tree
- * with checkbox selection showing source dataset fields and their applicable
- * support field toggles.
+ * showing source dataset fields and their applicable support field toggles.
+ * Each leaf renders its own checkbox; there is no field-level bulk toggle.
  */
 export const DatasetSettings = () => {
     const classes = useDatasetSettingsStyles();
     const tooltipMountNode = useSettingsPaneTooltip();
+    const checkboxIdPrefix = useId('support-field-checkbox');
     const { onEnableCrossHighlight, onDisableCrossHighlight } =
         useDenebPlatformProvider();
 
@@ -164,121 +178,22 @@ export const DatasetSettings = () => {
         return result;
     }, [sourceFields, config, masterSettings, isLegacy]);
 
-    // Build the checkedItems Map for the Tree (includes parent node state)
-    const checkedItems = useMemo(() => {
-        const map = new Map<TreeItemValue, 'mixed' | boolean>();
-        for (const [name, field] of sourceFields) {
-            const flags = resolvedFlags[name];
-            const isMeasure = (field.role ?? 'grouping') === 'aggregation';
-            const isFieldParameter = field.role === 'field-parameter';
-            const isTreatedAs = resolvedFlags[name]?.treatAsParameter === true;
-            const isParameter = isFieldParameter || isTreatedAs;
-            const baseFlags =
-                isMeasure || isFieldParameter
-                    ? highlightEnabled
-                        ? MEASURE_FLAGS
-                        : COLUMN_FLAGS
-                    : COLUMN_FLAGS;
-            const applicableFlags = getApplicableFlags(
-                baseFlags,
-                isFieldParameter,
-                isTreatedAs,
-                isParameter,
-                consolidateFieldParameters
+    const toggleFlag = useCallback(
+        (
+            fieldName: string,
+            flag: keyof SupportFieldFlags,
+            checked: boolean
+        ): void => {
+            const next = computeToggledConfig(
+                config,
+                resolvedFlags,
+                fieldName,
+                flag,
+                checked
             );
-            let checkedCount = 0;
-            for (const flag of applicableFlags) {
-                if (flags[flag]) {
-                    map.set(encodeValue(name, flag), true);
-                    checkedCount++;
-                }
-            }
-            // Parent node: all checked, some checked (mixed), or none (absent)
-            if (checkedCount === applicableFlags.length) {
-                map.set(name, true);
-            } else if (checkedCount > 0) {
-                map.set(name, 'mixed');
-            }
-        }
-        return map;
-    }, [
-        sourceFields,
-        resolvedFlags,
-        highlightEnabled,
-        consolidateFieldParameters
-    ]);
-
-    // Handle checkbox toggle — supports both parent (field) and leaf (flag) nodes
-    const onCheckedChange = useCallback(
-        (_event: TreeCheckedChangeEvent, data: TreeCheckedChangeData): void => {
-            const value = data.value as string;
-            const isParent = !value.includes(VALUE_SEPARATOR);
-
-            if (isParent) {
-                // Parent node: toggle all applicable flags for this field
-                const fieldName = value;
-                const currentFlags = resolvedFlags[fieldName];
-                if (!currentFlags) return;
-
-                const field = sourceFields.find(([n]) => n === fieldName);
-                if (!field) return;
-                const isMeasure =
-                    (field[1].role ?? 'grouping') === 'aggregation';
-                const isFieldParameter = field[1].role === 'field-parameter';
-                const isTreatedAs =
-                    resolvedFlags[fieldName]?.treatAsParameter === true;
-                const isParameter = isFieldParameter || isTreatedAs;
-                const baseFlags =
-                    (isMeasure || isFieldParameter) && highlightEnabled
-                        ? MEASURE_FLAGS
-                        : COLUMN_FLAGS;
-                const applicableFlags = getApplicableFlags(
-                    baseFlags,
-                    isFieldParameter,
-                    isTreatedAs,
-                    isParameter,
-                    consolidateFieldParameters
-                );
-
-                const newChecked = data.checked === true;
-                const updatedFlags = { ...currentFlags };
-                for (const flag of applicableFlags) {
-                    updatedFlags[flag] = newChecked;
-                }
-
-                const updatedConfig: SupportFieldConfiguration = {
-                    ...config,
-                    [fieldName]: updatedFlags
-                };
-                setConfig(updatedConfig);
-            } else {
-                // Leaf node: toggle a single flag
-                const [fieldName, flagKey] = decodeValue(value);
-
-                const currentFlags = resolvedFlags[fieldName];
-                if (!currentFlags) return;
-
-                const isCurrentlyChecked = data.checked === true;
-                const updatedFlags: SupportFieldFlags = {
-                    ...currentFlags,
-                    [flagKey]: isCurrentlyChecked
-                };
-
-                const updatedConfig: SupportFieldConfiguration = {
-                    ...config,
-                    [fieldName]: updatedFlags
-                };
-                setConfig(updatedConfig);
-            }
+            if (next) setConfig(next);
         },
-        [
-            highlightEnabled,
-            consolidateFieldParameters,
-            resolvedFlags,
-            config,
-            setConfig,
-            sourceFields
-        ]
+        [resolvedFlags, config, setConfig]
     );
 
     // Determine Case 2: highlight enabled but no measure fields have any
@@ -304,13 +219,11 @@ export const DatasetSettings = () => {
             <Tree
                 className={classes.tree}
                 aria-label={translate('Text_Settings_Dataset')}
-                checkedItems={checkedItems}
-                onCheckedChange={onCheckedChange}
                 openItems={openItems}
                 onOpenChange={onOpenChange}
-                selectionMode='multiselect'
             >
-                {sourceFields.map(([name, field]) => {
+                {sourceFields.map(([name, field], fieldIndex) => {
+                    const fieldFlags = resolvedFlags[name];
                     const isMeasure =
                         (field.role ?? 'grouping') === 'aggregation';
                     const isFieldParameter = field.role === 'field-parameter';
@@ -320,8 +233,7 @@ export const DatasetSettings = () => {
                                 ? MEASURE_FLAGS
                                 : COLUMN_FLAGS
                             : COLUMN_FLAGS;
-                    const isTreatedAs =
-                        resolvedFlags[name]?.treatAsParameter === true;
+                    const isTreatedAs = fieldFlags?.treatAsParameter === true;
                     const isParameter = isFieldParameter || isTreatedAs;
                     const applicableFlags = getApplicableFlags(
                         baseFlags,
@@ -344,11 +256,14 @@ export const DatasetSettings = () => {
                           : TableFreezeColumn16Regular;
 
                     const isExplicitlyConfigured = name in config;
+                    const hasEnabledFlags = hasAnyEnabledFlag(
+                        fieldFlags,
+                        applicableFlags
+                    );
 
                     const handleReset = (e: React.MouseEvent) => {
                         e.stopPropagation();
-                        const { [name]: _, ...rest } = config;
-                        setConfig(rest);
+                        setConfig(removeFieldFromConfig(config, name));
                     };
 
                     return (
@@ -386,39 +301,75 @@ export const DatasetSettings = () => {
                                     </Tooltip>
                                 }
                             >
-                                {name}
+                                <span className={classes.fieldNameRow}>
+                                    {name}
+                                    {hasEnabledFlags && (
+                                        <span
+                                            className={classes.enabledFlagHint}
+                                            aria-hidden='true'
+                                        />
+                                    )}
+                                </span>
                             </TreeItemLayout>
                             <Tree>
                                 {applicableFlags.map((flag) => {
                                     const infoKey = FLAG_INFO[flag];
                                     const label = translate(FLAG_LABELS[flag]);
+                                    // Index-based id so collisions can't occur for field
+                                    // names that differ only by whitespace or punctuation.
+                                    const checkboxId = `${checkboxIdPrefix}-${fieldIndex}-${flag}`;
+                                    const checked = fieldFlags?.[flag] === true;
                                     return (
                                         <TreeItem
                                             key={flag}
                                             itemType='leaf'
-                                            value={encodeValue(name, flag)}
+                                            // Opaque identity for Fluent Tree; not decoded anywhere.
+                                            value={`${name}/${flag}`}
                                         >
                                             <TreeItemLayout>
-                                                {infoKey ? (
-                                                    <InfoLabel
-                                                        info={translate(
-                                                            infoKey
-                                                        )}
-                                                        infoButton={{
-                                                            inline: false,
-                                                            popover: {
-                                                                mountNode:
-                                                                    tooltipMountNode
-                                                            },
-                                                            onClick: (e) =>
-                                                                e.stopPropagation()
-                                                        }}
-                                                    >
-                                                        {label}
-                                                    </InfoLabel>
-                                                ) : (
-                                                    label
-                                                )}
+                                                <span
+                                                    className={
+                                                        classes.leafLayout
+                                                    }
+                                                >
+                                                    <Checkbox
+                                                        id={checkboxId}
+                                                        checked={checked}
+                                                        onChange={(_, data) =>
+                                                            toggleFlag(
+                                                                name,
+                                                                flag,
+                                                                data.checked ===
+                                                                    true
+                                                            )
+                                                        }
+                                                    />
+                                                    {infoKey ? (
+                                                        <InfoLabel
+                                                            htmlFor={checkboxId}
+                                                            info={translate(
+                                                                infoKey
+                                                            )}
+                                                            infoButton={{
+                                                                inline: false,
+                                                                popover: {
+                                                                    mountNode:
+                                                                        tooltipMountNode
+                                                                },
+                                                                onClick: (e) =>
+                                                                    e.stopPropagation()
+                                                            }}
+                                                        >
+                                                            {label}
+                                                        </InfoLabel>
+                                                    ) : (
+                                                        <Label
+                                                            htmlFor={checkboxId}
+                                                        >
+                                                            {label}
+                                                        </Label>
+                                                    )}
+                                                </span>
                                             </TreeItemLayout>
                                         </TreeItem>
                                     );

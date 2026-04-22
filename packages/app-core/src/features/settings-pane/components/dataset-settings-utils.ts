@@ -1,4 +1,7 @@
-import { type SupportFieldFlags } from '@deneb-viz/data-core/support-fields';
+import {
+    type SupportFieldConfiguration,
+    type SupportFieldFlags
+} from '@deneb-viz/data-core/support-fields';
 
 /**
  * The support field flag keys applicable to measures (all flags).
@@ -68,15 +71,52 @@ export const getApplicableFlags = (
     return flags;
 };
 
-/** Separator used to encode field name + flag key in TreeItem values. */
-export const VALUE_SEPARATOR = '::';
+/**
+ * Compute the next `SupportFieldConfiguration` after toggling a single flag.
+ *
+ * Returns `null` when the field has no entry in `resolvedFlags` — this is the
+ * stale-render guard for the rare case where a checkbox onChange fires after
+ * the field has been removed from `sourceFields`.
+ */
+export const computeToggledConfig = (
+    config: SupportFieldConfiguration,
+    resolvedFlags: Record<string, SupportFieldFlags>,
+    fieldName: string,
+    flag: keyof SupportFieldFlags,
+    checked: boolean
+): SupportFieldConfiguration | null => {
+    const currentFlags = resolvedFlags[fieldName];
+    if (!currentFlags) return null;
+    return {
+        ...config,
+        [fieldName]: { ...currentFlags, [flag]: checked }
+    };
+};
 
-/** Encode a TreeItem value from field name and flag key. */
-export const encodeValue = (fieldName: string, flag: string): string =>
-    `${fieldName}${VALUE_SEPARATOR}${flag}`;
+/**
+ * True when any of `applicableFlags` is currently enabled in `flags`.
+ *
+ * Drives the "this field will produce support fields" hint on the field
+ * header row. Intentionally decoupled from `name in config` (which drives
+ * the Reset button) — a field whose resolved defaults produce support
+ * fields shows the hint even without an explicit config record.
+ */
+export const hasAnyEnabledFlag = (
+    flags: SupportFieldFlags | undefined,
+    applicableFlags: readonly (keyof SupportFieldFlags)[]
+): boolean => {
+    if (!flags) return false;
+    return applicableFlags.some((flag) => flags[flag] === true);
+};
 
-/** Decode a TreeItem value into [fieldName, flagKey]. */
-export const decodeValue = (value: string): [string, string] => {
-    const idx = value.lastIndexOf(VALUE_SEPARATOR);
-    return [value.slice(0, idx), value.slice(idx + VALUE_SEPARATOR.length)];
+/**
+ * Return `config` without the named field's entry.
+ */
+export const removeFieldFromConfig = (
+    config: SupportFieldConfiguration,
+    fieldName: string
+): SupportFieldConfiguration => {
+    const next: SupportFieldConfiguration = { ...config };
+    delete next[fieldName];
+    return next;
 };

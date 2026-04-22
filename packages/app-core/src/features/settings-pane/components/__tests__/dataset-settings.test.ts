@@ -1,52 +1,24 @@
 import { describe, expect, it } from 'vitest';
+import type { SupportFieldFlags } from '@deneb-viz/data-core/support-fields';
 import {
-    encodeValue,
-    decodeValue,
     MEASURE_FLAGS,
     COLUMN_FLAGS,
     FLAG_LABELS,
     FLAG_INFO,
-    VALUE_SEPARATOR
+    computeToggledConfig,
+    hasAnyEnabledFlag,
+    removeFieldFromConfig
 } from '../dataset-settings-utils';
 
-describe('encodeValue / decodeValue round-trip', () => {
-    it('should encode and decode a basic field name and flag', () => {
-        const encoded = encodeValue('Sales', 'highlight');
-        expect(encoded).toBe('Sales::highlight');
-        expect(decodeValue(encoded)).toEqual(['Sales', 'highlight']);
-    });
-
-    it('should handle field names with spaces', () => {
-        const encoded = encodeValue('$ Sales', 'format');
-        expect(encoded).toBe('$ Sales::format');
-        expect(decodeValue(encoded)).toEqual(['$ Sales', 'format']);
-    });
-
-    it('should handle field names with special characters', () => {
-        const encoded = encodeValue('Amount (USD)', 'formatted');
-        expect(encoded).toBe('Amount (USD)::formatted');
-        expect(decodeValue(encoded)).toEqual(['Amount (USD)', 'formatted']);
-    });
-
-    it('should round-trip all MEASURE_FLAGS correctly', () => {
-        const fieldName = 'TestField';
-        for (const flag of MEASURE_FLAGS) {
-            const encoded = encodeValue(fieldName, flag);
-            const [decodedField, decodedFlag] = decodeValue(encoded);
-            expect(decodedField).toBe(fieldName);
-            expect(decodedFlag).toBe(flag);
-        }
-    });
-});
-
-describe('decodeValue with ambiguous separators', () => {
-    it('should use lastIndexOf to split field names containing the separator', () => {
-        const value = `weird${VALUE_SEPARATOR}name${VALUE_SEPARATOR}highlight`;
-        const [fieldName, flag] = decodeValue(value);
-        expect(fieldName).toBe('weird::name');
-        expect(flag).toBe('highlight');
-    });
-});
+const baseFlags: SupportFieldFlags = {
+    highlight: false,
+    highlightStatus: false,
+    highlightComparator: false,
+    format: true,
+    formatted: true,
+    names: false,
+    treatAsParameter: false
+};
 
 describe('flag applicability', () => {
     it('MEASURE_FLAGS has exactly 5 entries', () => {
@@ -78,9 +50,11 @@ describe('flag applicability', () => {
     });
 });
 
+const ALL_FLAG_KEYS = [...MEASURE_FLAGS, 'names', 'treatAsParameter'] as const;
+
 describe('FLAG_LABELS coverage', () => {
-    it('every MEASURE_FLAGS entry has a corresponding key in FLAG_LABELS', () => {
-        for (const flag of MEASURE_FLAGS) {
+    it('every applicable flag key has a corresponding entry in FLAG_LABELS', () => {
+        for (const flag of ALL_FLAG_KEYS) {
             expect(FLAG_LABELS).toHaveProperty(flag);
             expect(typeof FLAG_LABELS[flag]).toBe('string');
             expect(FLAG_LABELS[flag].length).toBeGreaterThan(0);
@@ -89,11 +63,156 @@ describe('FLAG_LABELS coverage', () => {
 });
 
 describe('FLAG_INFO coverage', () => {
-    it('every MEASURE_FLAGS entry has a corresponding key in FLAG_INFO', () => {
-        for (const flag of MEASURE_FLAGS) {
+    it('every applicable flag key has a corresponding entry in FLAG_INFO', () => {
+        for (const flag of ALL_FLAG_KEYS) {
             expect(FLAG_INFO).toHaveProperty(flag);
             expect(typeof FLAG_INFO[flag]).toBe('string');
             expect(FLAG_INFO[flag]!.length).toBeGreaterThan(0);
         }
+    });
+});
+
+describe('computeToggledConfig', () => {
+    it('returns a config with the target flag flipped and peer flags preserved', () => {
+        const config = { Sales: baseFlags };
+        const resolved = { Sales: baseFlags };
+
+        const next = computeToggledConfig(
+            config,
+            resolved,
+            'Sales',
+            'highlight',
+            true
+        );
+
+        expect(next).not.toBeNull();
+        expect(next!.Sales.highlight).toBe(true);
+        expect(next!.Sales.format).toBe(true);
+        expect(next!.Sales.formatted).toBe(true);
+    });
+
+    it('creates a field entry from resolved defaults when none exists in config', () => {
+        const config = {};
+        const resolved = { Sales: baseFlags };
+
+        const next = computeToggledConfig(
+            config,
+            resolved,
+            'Sales',
+            'highlight',
+            true
+        );
+
+        expect(next).not.toBeNull();
+        expect(next!.Sales).toBeDefined();
+        expect(next!.Sales.highlight).toBe(true);
+        expect(next!.Sales.format).toBe(true);
+    });
+
+    it('does not mutate other field entries', () => {
+        const other = { ...baseFlags, format: false };
+        const config = { A: baseFlags, B: other };
+        const resolved = config;
+
+        const next = computeToggledConfig(
+            config,
+            resolved,
+            'A',
+            'highlight',
+            true
+        );
+
+        expect(next!.B).toBe(other);
+    });
+
+    it('returns null when the field has no resolved flags (stale-render guard)', () => {
+        const result = computeToggledConfig(
+            {},
+            {},
+            'Unknown',
+            'highlight',
+            true
+        );
+        expect(result).toBeNull();
+    });
+
+    it('can turn a flag off just as cleanly as on', () => {
+        const config = { Sales: { ...baseFlags, highlight: true } };
+        const resolved = config;
+
+        const next = computeToggledConfig(
+            config,
+            resolved,
+            'Sales',
+            'highlight',
+            false
+        );
+
+        expect(next!.Sales.highlight).toBe(false);
+    });
+});
+
+describe('hasAnyEnabledFlag', () => {
+    it('returns true when at least one applicable flag is enabled', () => {
+        expect(hasAnyEnabledFlag(baseFlags, ['format', 'formatted'])).toBe(
+            true
+        );
+    });
+
+    it('returns false when every applicable flag is disabled', () => {
+        const allOff: SupportFieldFlags = {
+            ...baseFlags,
+            format: false,
+            formatted: false
+        };
+        expect(hasAnyEnabledFlag(allOff, ['format', 'formatted'])).toBe(false);
+    });
+
+    it('ignores flags that are enabled but not in applicableFlags', () => {
+        expect(hasAnyEnabledFlag(baseFlags, ['highlight'])).toBe(false);
+    });
+
+    it('returns false when flags is undefined (stale-render guard)', () => {
+        expect(hasAnyEnabledFlag(undefined, ['format'])).toBe(false);
+    });
+
+    it('returns false when applicableFlags is empty', () => {
+        expect(hasAnyEnabledFlag(baseFlags, [])).toBe(false);
+    });
+
+    it('lights the hint when only a parameter metadata flag is enabled (e.g. treatAsParameter)', () => {
+        const onlyTreated: SupportFieldFlags = {
+            ...baseFlags,
+            format: false,
+            formatted: false,
+            treatAsParameter: true
+        };
+        expect(hasAnyEnabledFlag(onlyTreated, ['treatAsParameter'])).toBe(true);
+    });
+});
+
+describe('removeFieldFromConfig', () => {
+    it('removes the named field and preserves the rest', () => {
+        const config = {
+            A: baseFlags,
+            B: { ...baseFlags, format: false }
+        };
+
+        const next = removeFieldFromConfig(config, 'A');
+
+        expect(next).not.toHaveProperty('A');
+        expect(next.B).toBe(config.B);
+    });
+
+    it('is a no-op when the field is not present', () => {
+        const config = { A: baseFlags };
+        const next = removeFieldFromConfig(config, 'Missing');
+        expect(next).toEqual(config);
+    });
+
+    it('does not mutate the input config', () => {
+        const config = { A: baseFlags };
+        removeFieldFromConfig(config, 'A');
+        expect(config).toHaveProperty('A');
     });
 });
