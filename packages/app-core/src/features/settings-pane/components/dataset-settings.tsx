@@ -222,7 +222,7 @@ export const DatasetSettings = () => {
                 openItems={openItems}
                 onOpenChange={onOpenChange}
             >
-                {sourceFields.map(([name, field]) => {
+                {sourceFields.map(([name, field], fieldIndex) => {
                     const fieldFlags = resolvedFlags[name];
                     const isMeasure =
                         (field.role ?? 'grouping') === 'aggregation';
@@ -315,10 +315,9 @@ export const DatasetSettings = () => {
                                 {applicableFlags.map((flag) => {
                                     const infoKey = FLAG_INFO[flag];
                                     const label = translate(FLAG_LABELS[flag]);
-                                    // Sanitize whitespace out of the field name so the
-                                    // constructed id remains valid HTML5 and the htmlFor
-                                    // association on InfoLabel/Label resolves correctly.
-                                    const checkboxId = `${checkboxIdPrefix}-${name.replace(/\s+/g, '_')}-${flag}`;
+                                    // Index-based id so collisions can't occur for field
+                                    // names that differ only by whitespace or punctuation.
+                                    const checkboxId = `${checkboxIdPrefix}-${fieldIndex}-${flag}`;
                                     const checked = fieldFlags?.[flag] === true;
                                     return (
                                         <TreeItem
