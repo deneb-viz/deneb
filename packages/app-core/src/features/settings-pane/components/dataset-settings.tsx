@@ -34,7 +34,6 @@ const TableColumnQuestion16Regular = () => (
 );
 import {
     resolveFieldDefaults,
-    type SupportFieldConfiguration,
     type SupportFieldFlags
 } from '@deneb-viz/data-core/support-fields';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
@@ -46,7 +45,10 @@ import {
     COLUMN_FLAGS,
     FLAG_LABELS,
     FLAG_INFO,
-    getApplicableFlags
+    computeToggledConfig,
+    getApplicableFlags,
+    hasAnyEnabledFlag,
+    removeFieldFromConfig
 } from './dataset-settings-utils';
 
 const useDatasetSettingsStyles = makeStyles({
@@ -68,11 +70,6 @@ const useDatasetSettingsStyles = makeStyles({
         borderRadius: '50%',
         backgroundColor: tokens.colorBrandForeground1,
         flexShrink: 0
-    },
-    asideContainer: {
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: tokens.spacingHorizontalXS
     },
     roleIcon: {
         display: 'inline-flex',
@@ -181,25 +178,20 @@ export const DatasetSettings = () => {
         return result;
     }, [sourceFields, config, masterSettings, isLegacy]);
 
-    // Toggle a single flag for a field. Guards against stale renders where the
-    // field no longer exists in resolvedFlags.
     const toggleFlag = useCallback(
         (
             fieldName: string,
             flag: keyof SupportFieldFlags,
             checked: boolean
         ): void => {
-            const currentFlags = resolvedFlags[fieldName];
-            if (!currentFlags) return;
-            const updatedFlags: SupportFieldFlags = {
-                ...currentFlags,
-                [flag]: checked
-            };
-            const updatedConfig: SupportFieldConfiguration = {
-                ...config,
-                [fieldName]: updatedFlags
-            };
-            setConfig(updatedConfig);
+            const next = computeToggledConfig(
+                config,
+                resolvedFlags,
+                fieldName,
+                flag,
+                checked
+            );
+            if (next) setConfig(next);
         },
         [resolvedFlags, config, setConfig]
     );
@@ -231,6 +223,7 @@ export const DatasetSettings = () => {
                 onOpenChange={onOpenChange}
             >
                 {sourceFields.map(([name, field]) => {
+                    const fieldFlags = resolvedFlags[name];
                     const isMeasure =
                         (field.role ?? 'grouping') === 'aggregation';
                     const isFieldParameter = field.role === 'field-parameter';
@@ -240,8 +233,7 @@ export const DatasetSettings = () => {
                                 ? MEASURE_FLAGS
                                 : COLUMN_FLAGS
                             : COLUMN_FLAGS;
-                    const isTreatedAs =
-                        resolvedFlags[name]?.treatAsParameter === true;
+                    const isTreatedAs = fieldFlags?.treatAsParameter === true;
                     const isParameter = isFieldParameter || isTreatedAs;
                     const applicableFlags = getApplicableFlags(
                         baseFlags,
@@ -264,15 +256,14 @@ export const DatasetSettings = () => {
                           : TableFreezeColumn16Regular;
 
                     const isExplicitlyConfigured = name in config;
-                    const hasEnabledFlags = applicableFlags.some(
-                        (flag) => resolvedFlags[name]?.[flag] === true
+                    const hasEnabledFlags = hasAnyEnabledFlag(
+                        fieldFlags,
+                        applicableFlags
                     );
 
                     const handleReset = (e: React.MouseEvent) => {
                         e.stopPropagation();
-                        const next: SupportFieldConfiguration = { ...config };
-                        delete next[name];
-                        setConfig(next);
+                        setConfig(removeFieldFromConfig(config, name));
                     };
 
                     return (
@@ -325,13 +316,13 @@ export const DatasetSettings = () => {
                                     const infoKey = FLAG_INFO[flag];
                                     const label = translate(FLAG_LABELS[flag]);
                                     const checkboxId = `${checkboxIdPrefix}-${name}-${flag}`;
-                                    const checked =
-                                        resolvedFlags[name]?.[flag] === true;
+                                    const checked = fieldFlags?.[flag] === true;
                                     return (
                                         <TreeItem
                                             key={flag}
                                             itemType='leaf'
-                                            value={`${name}::${flag}`}
+                                            // Opaque identity for Fluent Tree; not decoded anywhere.
+                                            value={`${name}/${flag}`}
                                         >
                                             <TreeItemLayout>
                                                 <span
