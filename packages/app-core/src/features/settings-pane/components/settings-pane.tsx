@@ -412,7 +412,11 @@ export const SettingsPane = () => {
                                 }
                             >
                                 <DatasetSettings
-                                    datasetMatchView={matchView.datasetTree}
+                                    datasetMatchView={
+                                        isSearching
+                                            ? matchView.datasetTree
+                                            : null
+                                    }
                                     expandAllEpoch={expandAllEpoch}
                                     collapseAllEpoch={collapseAllEpoch}
                                 />

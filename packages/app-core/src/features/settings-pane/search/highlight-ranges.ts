@@ -69,7 +69,7 @@ const mergeAdjacentRanges = (
     ranges: readonly HighlightRange[]
 ): HighlightRange[] => {
     if (ranges.length <= 1) return ranges.slice();
-    const merged: HighlightRange[] = [ranges[0]];
+    const merged: HighlightRange[] = [{ ...ranges[0] }];
     for (let i = 1; i < ranges.length; i++) {
         const last = merged[merged.length - 1];
         const next = ranges[i];
