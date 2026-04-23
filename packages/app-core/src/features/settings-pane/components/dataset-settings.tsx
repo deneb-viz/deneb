@@ -32,23 +32,19 @@ import FabricTableColumnQuestion16Regular from '@fabric-msft/svg-icons/dist/Tabl
 const TableColumnQuestion16Regular = () => (
     <FabricTableColumnQuestion16Regular width={16} height={16} />
 );
-import {
-    resolveFieldDefaults,
-    type SupportFieldFlags
-} from '@deneb-viz/data-core/support-fields';
+import { type SupportFieldFlags } from '@deneb-viz/data-core/support-fields';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 import { useDenebState } from '../../../state';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 import { useSettingsPaneTooltip } from './settings-pane-tooltip-context';
 import {
-    MEASURE_FLAGS,
-    COLUMN_FLAGS,
     FLAG_LABELS,
     FLAG_INFO,
     computeToggledConfig,
-    getApplicableFlags,
     hasAnyEnabledFlag,
-    removeFieldFromConfig
+    removeFieldFromConfig,
+    resolveFieldApplicability,
+    resolveFieldFlagsForConfig
 } from './dataset-settings-utils';
 import { HighlightText } from './highlight-text';
 import { AssistivePreview } from './assistive-preview';
@@ -189,10 +185,13 @@ export const DatasetSettings = ({
     // user's Expand/Collapse-all intent post-filter.
     //
     // Each effect tracks the last-applied epoch via a ref so that
-    // StrictMode's double-invoke or a DatasetSettings remount while the
-    // counter is non-zero does not replay the bulk toggle. `sourceFields`
-    // is listed as a dep so an expand-all queued before fields arrive
-    // still opens them once they do.
+    // StrictMode's unmount/remount cycle (where refs survive) does not
+    // replay the bulk toggle. A *genuine* remount — e.g. the outer
+    // accordion collapses and re-mounts the Dataset panel — resets the
+    // ref to 0 and will replay; this is idempotent in practice
+    // (re-opening already-open fields or re-clearing an already-empty
+    // set). `sourceFields` is listed as a dep so an expand-all queued
+    // before fields arrive still opens them once they do.
     const lastExpandAllEpochRef = useRef(0);
     useEffect(() => {
         if (expandAllEpoch === undefined) return;
@@ -242,20 +241,19 @@ export const DatasetSettings = ({
     );
 
     // Resolve flags for each source field (explicit config or defaults).
-    // Returns a record keyed by field name.
+    // Returns a record keyed by field name. Delegates the per-field
+    // resolution to `resolveFieldFlagsForConfig` so the search indexer
+    // shares the same contract by construction.
     const resolvedFlags = useMemo(() => {
         const result: Record<string, SupportFieldFlags> = {};
         for (const [name, field] of sourceFields) {
-            const explicit = config[name];
-            if (explicit) {
-                result[name] = explicit;
-            } else {
-                result[name] = resolveFieldDefaults({
-                    masterSettings,
-                    fieldRole: field.role ?? 'grouping',
-                    isLegacy
-                });
-            }
+            result[name] = resolveFieldFlagsForConfig(
+                field,
+                config,
+                name,
+                masterSettings,
+                isLegacy
+            );
         }
         return result;
     }, [sourceFields, config, masterSettings, isLegacy]);
@@ -321,24 +319,16 @@ export const DatasetSettings = ({
                     const fieldMatch = filterIsActive
                         ? (datasetMatchView.matchedFields.get(name) ?? null)
                         : null;
-                    const isMeasure =
-                        (field.role ?? 'grouping') === 'aggregation';
-                    const isFieldParameter = field.role === 'field-parameter';
-                    const baseFlags =
-                        isMeasure || isFieldParameter
-                            ? highlightEnabled
-                                ? MEASURE_FLAGS
-                                : COLUMN_FLAGS
-                            : COLUMN_FLAGS;
-                    const isTreatedAs = fieldFlags?.treatAsParameter === true;
-                    const isParameter = isFieldParameter || isTreatedAs;
-                    const allApplicableFlags = getApplicableFlags(
-                        baseFlags,
-                        isFieldParameter,
-                        isTreatedAs,
+                    const {
+                        isMeasure,
                         isParameter,
+                        applicableFlags: allApplicableFlags
+                    } = resolveFieldApplicability({
+                        field,
+                        fieldFlags,
+                        highlightEnabled,
                         consolidateFieldParameters
-                    );
+                    });
                     // When the field matched on its own name (or there's no
                     // active filter), every applicable flag stays visible.
                     // When it matched on one or more flags, only those

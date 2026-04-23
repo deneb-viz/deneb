@@ -12,7 +12,6 @@
  * single locale.
  */
 import {
-    resolveFieldDefaults,
     type SupportFieldConfiguration,
     type SupportFieldFlags,
     type SupportFieldMasterSettings
@@ -20,11 +19,10 @@ import {
 import type { DatasetField } from '@deneb-viz/data-core/field';
 
 import {
-    COLUMN_FLAGS,
     FLAG_INFO,
     FLAG_LABELS,
-    MEASURE_FLAGS,
-    getApplicableFlags
+    resolveFieldApplicability,
+    resolveFieldFlagsForConfig
 } from '../components/dataset-settings-utils';
 import type {
     ResolvedDatasetDescriptor,
@@ -64,57 +62,6 @@ export type BuildResolvedDatasetDescriptorInput = {
     translate: TranslateFn;
     /** i18n key for the section heading (typically `Text_Settings_Dataset`). */
     headingKey: string;
-};
-
-/**
- * Resolve the flag set that will actually drive the rendered UI for a
- * single source field. Mirrors the logic inside `DatasetSettings` —
- * keep the two in sync.
- */
-const resolveFieldFlags = (
-    field: DatasetField,
-    config: SupportFieldConfiguration,
-    name: string,
-    masterSettings: SupportFieldMasterSettings,
-    isLegacy: boolean
-): SupportFieldFlags => {
-    const explicit = config[name];
-    if (explicit) return explicit;
-    return resolveFieldDefaults({
-        masterSettings,
-        fieldRole: field.role ?? 'grouping',
-        isLegacy
-    });
-};
-
-/**
- * Produce the list of applicable flag keys for a field given its role
- * and the current consolidation setting. Mirrors the selection logic
- * inside the `DatasetSettings` component render.
- */
-const resolveApplicableFlagKeys = (
-    field: DatasetField,
-    fieldFlags: SupportFieldFlags,
-    highlightEnabled: boolean,
-    consolidateFieldParameters: boolean
-): (keyof SupportFieldFlags)[] => {
-    const isMeasure = (field.role ?? 'grouping') === 'aggregation';
-    const isFieldParameter = field.role === 'field-parameter';
-    const baseFlags =
-        isMeasure || isFieldParameter
-            ? highlightEnabled
-                ? MEASURE_FLAGS
-                : COLUMN_FLAGS
-            : COLUMN_FLAGS;
-    const isTreatedAs = fieldFlags.treatAsParameter === true;
-    const isParameter = isFieldParameter || isTreatedAs;
-    return getApplicableFlags(
-        baseFlags,
-        isFieldParameter,
-        isTreatedAs,
-        isParameter,
-        consolidateFieldParameters
-    );
 };
 
 /**
@@ -164,19 +111,20 @@ export const buildResolvedDatasetDescriptor = ({
 }: BuildResolvedDatasetDescriptorInput): ResolvedDatasetDescriptor => {
     const fields: ResolvedFieldDescriptor[] = sourceFields.map(
         ([name, field]) => {
-            const fieldFlags = resolveFieldFlags(
+            const fieldFlags = resolveFieldFlagsForConfig(
                 field,
                 config,
                 name,
                 masterSettings,
                 isLegacy
             );
-            const applicableKeys = resolveApplicableFlagKeys(
-                field,
-                fieldFlags,
-                highlightEnabled,
-                consolidateFieldParameters
-            );
+            const { applicableFlags: applicableKeys } =
+                resolveFieldApplicability({
+                    field,
+                    fieldFlags,
+                    highlightEnabled,
+                    consolidateFieldParameters
+                });
             const applicableFlags = applicableKeys.map((key) =>
                 resolveFlagDescriptor(key, translate)
             );

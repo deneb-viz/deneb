@@ -1,7 +1,10 @@
 import {
+    resolveFieldDefaults,
     type SupportFieldConfiguration,
-    type SupportFieldFlags
+    type SupportFieldFlags,
+    type SupportFieldMasterSettings
 } from '@deneb-viz/data-core/support-fields';
+import type { DatasetField } from '@deneb-viz/data-core/field';
 
 /**
  * The support field flag keys applicable to measures (all flags).
@@ -44,6 +47,89 @@ export const FLAG_INFO: Partial<Record<string, string>> = {
     formatted: 'Assistive_Text_SupportField_Formatted',
     names: 'Assistive_Text_SupportField_Names',
     treatAsParameter: 'Assistive_Text_SupportField_TreatAsParameter'
+};
+
+/**
+ * Resolve the concrete flag set that drives a single source field's UI
+ * row. Returns the caller's explicit config entry when present, else
+ * falls back to role + master-settings defaults.
+ *
+ * Called by both the render path in `DatasetSettings` and the dataset
+ * indexer used by settings-pane search. Kept here so the two consumers
+ * cannot drift.
+ */
+export const resolveFieldFlagsForConfig = (
+    field: DatasetField,
+    config: SupportFieldConfiguration,
+    name: string,
+    masterSettings: SupportFieldMasterSettings,
+    isLegacy: boolean
+): SupportFieldFlags => {
+    const explicit = config[name];
+    if (explicit) return explicit;
+    return resolveFieldDefaults({
+        masterSettings,
+        fieldRole: field.role ?? 'grouping',
+        isLegacy
+    });
+};
+
+/**
+ * Role / parameter / applicability descriptor for a single source
+ * field. `applicableFlags` is the list of flag keys that the UI row
+ * will render; the four booleans capture the role classification the
+ * component uses to drive its tooltip and icon.
+ */
+export type FieldApplicability = {
+    isMeasure: boolean;
+    isFieldParameter: boolean;
+    isTreatedAs: boolean;
+    isParameter: boolean;
+    applicableFlags: (keyof SupportFieldFlags)[];
+};
+
+/**
+ * Compute the applicability descriptor for a field. Encapsulates the
+ * role / parameter / base-flag lookup that both the render path in
+ * `DatasetSettings` and the search indexer need to agree on.
+ *
+ * Indexer consumers typically only read `applicableFlags`; the render
+ * path additionally reads the role booleans to pick its icon, tooltip,
+ * and heading. Returning the full set avoids either caller having to
+ * recompute values the other already has.
+ */
+export const resolveFieldApplicability = (input: {
+    field: DatasetField;
+    fieldFlags: SupportFieldFlags;
+    highlightEnabled: boolean;
+    consolidateFieldParameters: boolean;
+}): FieldApplicability => {
+    const { field, fieldFlags, highlightEnabled, consolidateFieldParameters } =
+        input;
+    const isMeasure = (field.role ?? 'grouping') === 'aggregation';
+    const isFieldParameter = field.role === 'field-parameter';
+    const baseFlags =
+        isMeasure || isFieldParameter
+            ? highlightEnabled
+                ? MEASURE_FLAGS
+                : COLUMN_FLAGS
+            : COLUMN_FLAGS;
+    const isTreatedAs = fieldFlags.treatAsParameter === true;
+    const isParameter = isFieldParameter || isTreatedAs;
+    const applicableFlags = getApplicableFlags(
+        baseFlags,
+        isFieldParameter,
+        isTreatedAs,
+        isParameter,
+        consolidateFieldParameters
+    );
+    return {
+        isMeasure,
+        isFieldParameter,
+        isTreatedAs,
+        isParameter,
+        applicableFlags
+    };
 };
 
 /**

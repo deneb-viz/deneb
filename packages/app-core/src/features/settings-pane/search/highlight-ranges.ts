@@ -41,9 +41,19 @@ export const computeHighlightRanges = (
  * calls per keystroke on constant translated text.
  *
  * Returns an empty array when either side is empty or there are no
- * matches. Output byte offsets are valid against the original (unfolded)
- * string because `String.prototype.toLowerCase()` is length-preserving
- * for the BMP locales we support.
+ * matches.
+ *
+ * Length-preservation invariant. Output offsets are computed against
+ * `textLower` and applied verbatim to the original unfolded string.
+ * This relies on `String.prototype.toLowerCase()` being length-preserving
+ * — true for BMP Latin and the locales Deneb currently ships, but
+ * *not* universally true. Known violators include U+0130 LATIN CAPITAL
+ * LETTER I WITH DOT ABOVE (lowers to the two code units `i\u0307` in
+ * most engines) and the Turkish locale forms reached via
+ * `toLocaleLowerCase('tr-TR')`. Supplementary-plane casemap pairs are
+ * mostly length-preserving today but not guaranteed by spec.
+ * Introducing new locales or switching to a locale-aware folder would
+ * require revisiting this helper.
  */
 export const computeHighlightRangesLowered = (
     textLower: string,
