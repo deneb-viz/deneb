@@ -35,7 +35,6 @@ import { generalSchema } from '../search/general-schema';
 import { performanceSchema } from '../search/performance-schema';
 import { computeVisibleSectionIds } from '../search/compute-visible-section-ids';
 import type { MatchView, SectionMatchView } from '../search/types';
-import { useFocusSearchShortcut } from '../hooks/use-focus-search-shortcut';
 import { useFocusRecovery } from '../hooks/use-focus-recovery';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 
@@ -214,6 +213,14 @@ export const SettingsPane = () => {
     // currently-visible sections. Both handlers mutate the pane's local
     // `openItems` state (and its persistence ref) without touching the
     // Zustand slice.
+    // Monotonically bumped counters that child sections can watch to
+    // drive their internal "expand everything / collapse everything"
+    // behaviour. The Dataset section has its own inner tree whose open
+    // state the pane cannot reach directly; it subscribes to these
+    // epochs and applies them locally. Unrelated to `openItems`.
+    const [expandAllEpoch, setExpandAllEpoch] = useState(0);
+    const [collapseAllEpoch, setCollapseAllEpoch] = useState(0);
+
     const handleExpandAll = useCallback(() => {
         const ids = computeVisibleSectionIds({
             query,
@@ -223,10 +230,12 @@ export const SettingsPane = () => {
         });
         setOpenItems(ids);
         persistedOpenItems = ids;
+        setExpandAllEpoch((n) => n + 1);
     }, [query, matchView, platformSectionIds, registeredPlatformIds]);
     const handleCollapseAll = useCallback(() => {
         setOpenItems([]);
         persistedOpenItems = [];
+        setCollapseAllEpoch((n) => n + 1);
     }, []);
 
     // Right-click: open menu anchored at the pointer.
@@ -261,10 +270,6 @@ export const SettingsPane = () => {
     // Focus recovery — when the focused row vanishes, return focus to
     // the SearchBox.
     useFocusRecovery(matchView, searchBoxRef);
-
-    // `/` shortcut: focus SearchBox from anywhere outside a text-entry
-    // surface. Enabled whenever the settings pane is mounted.
-    useFocusSearchShortcut(searchBoxRef, true);
 
     const generalView = pickSectionView(matchView, 'general');
     const performanceView = pickSectionView(matchView, 'performance');
@@ -403,6 +408,8 @@ export const SettingsPane = () => {
                             >
                                 <DatasetSettings
                                     datasetMatchView={matchView.datasetTree}
+                                    expandAllEpoch={expandAllEpoch}
+                                    collapseAllEpoch={collapseAllEpoch}
                                 />
                             </SettingsAccordionItem>
                         ) : null}

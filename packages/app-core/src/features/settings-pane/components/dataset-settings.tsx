@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     Button,
     Checkbox,
@@ -93,9 +93,17 @@ const useDatasetSettingsStyles = makeStyles({
  * before — no filter, no highlights, no assistive preview. When
  * non-null, the R4 tree-filter rule applies: only matched fields
  * appear, and flag-match fields show only the matched flag leaves.
+ *
+ * `expandAllEpoch` / `collapseAllEpoch` are monotonically incremented
+ * by the pane's context menu actions. When they change, the dataset
+ * tree either expands all of its currently-rendered fields or
+ * collapses them. Unrelated to the outer accordion's openItems; lets
+ * Expand-all / Collapse-all reach into the inner Tree.
  */
 export type DatasetSettingsProps = {
     datasetMatchView?: DatasetMatchView | null;
+    expandAllEpoch?: number;
+    collapseAllEpoch?: number;
 };
 
 /**
@@ -104,7 +112,9 @@ export type DatasetSettingsProps = {
  * Each leaf renders its own checkbox; there is no field-level bulk toggle.
  */
 export const DatasetSettings = ({
-    datasetMatchView
+    datasetMatchView,
+    expandAllEpoch,
+    collapseAllEpoch
 }: DatasetSettingsProps = {}) => {
     const classes = useDatasetSettingsStyles();
     const tooltipMountNode = useSettingsPaneTooltip();
@@ -141,7 +151,9 @@ export const DatasetSettings = ({
         [fields]
     );
 
-    // Open/collapse state for field tree nodes — collapsed by default
+    // Open/collapse state for field tree nodes — collapsed by default.
+    // Only consulted when no search filter is active; otherwise the
+    // effective open set is derived from `datasetMatchView`.
     const [openItems, setOpenItems] = useState<Set<TreeItemValue>>(
         () => new Set()
     );
@@ -151,6 +163,40 @@ export const DatasetSettings = ({
         },
         []
     );
+
+    // During an active filter, field rows that matched should be open so
+    // the matched flags / highlights are visible immediately. Chevrons
+    // become read-only (consistent with the outer accordion's filter
+    // behaviour — users clear the query to interact manually).
+    const effectiveOpenItems = useMemo<Set<TreeItemValue>>(() => {
+        if (!datasetMatchView) return openItems;
+        return new Set<TreeItemValue>(datasetMatchView.matchedFields.keys());
+    }, [datasetMatchView, openItems]);
+
+    const effectiveOnOpenChange = useCallback(
+        (event: TreeOpenChangeEvent, data: TreeOpenChangeData) => {
+            if (datasetMatchView) return;
+            onOpenChange(event, data);
+        },
+        [datasetMatchView, onOpenChange]
+    );
+
+    // Expand-all / Collapse-all epoch listeners. The pane bumps these
+    // counters when the user picks the corresponding context-menu item;
+    // we react by opening every rendered field or collapsing them. We
+    // intentionally write to `openItems` (not `effectiveOpenItems`), so
+    // during search the change is queued: clearing the query exposes the
+    // user's Expand/Collapse-all intent post-filter.
+    useEffect(() => {
+        if (expandAllEpoch === undefined || expandAllEpoch === 0) return;
+        setOpenItems(
+            new Set<TreeItemValue>(sourceFields.map(([name]) => name))
+        );
+    }, [expandAllEpoch]);
+    useEffect(() => {
+        if (collapseAllEpoch === undefined || collapseAllEpoch === 0) return;
+        setOpenItems(new Set());
+    }, [collapseAllEpoch]);
 
     const highlightEnabled = interactivity?.highlight ?? false;
 
@@ -248,8 +294,8 @@ export const DatasetSettings = ({
             <Tree
                 className={classes.tree}
                 aria-label={translate('Text_Settings_Dataset')}
-                openItems={openItems}
-                onOpenChange={onOpenChange}
+                openItems={effectiveOpenItems}
+                onOpenChange={effectiveOnOpenChange}
                 data-settings-section-id='dataset'
             >
                 {visibleFields.map(([name, field], fieldIndex) => {
