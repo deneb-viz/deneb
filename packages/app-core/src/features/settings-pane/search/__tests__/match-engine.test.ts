@@ -393,6 +393,22 @@ describe('buildMatchView: Dataset tree (R4)', () => {
         });
         expect(view.datasetTree).toBeNull();
     });
+
+    it('surfaces the Dataset section when the heading matches and the field list is empty', () => {
+        const emptyDataset = makeResolvedDataset({
+            heading: 'Dataset',
+            fields: []
+        });
+        const view = buildMatchView({
+            query: 'dataset',
+            sections: [],
+            dataset: emptyDataset
+        });
+        expect(view.matchedSections.has('dataset')).toBe(true);
+        expect(view.datasetTree).not.toBeNull();
+        expect(view.datasetTree!.headingHighlights).not.toBeNull();
+        expect(view.datasetTree!.matchedFields.size).toBe(0);
+    });
 });
 
 describe('buildMatchView: invariants', () => {

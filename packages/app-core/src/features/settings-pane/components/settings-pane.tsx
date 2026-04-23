@@ -213,16 +213,12 @@ export const SettingsPane = () => {
     }, [isSearching, openItems, matchView, alwaysVisiblePlatformIds]);
     const effectiveOnToggle = isSearching ? undefined : onToggle;
 
-    // Context menu handlers. "Expand all" is filter-aware via
-    // `computeVisibleSectionIds` — during an active search it expands only
-    // currently-visible sections. Both handlers mutate the pane's local
-    // `openItems` state (and its persistence ref) without touching the
-    // Zustand slice.
-    // Monotonically bumped counters that child sections can watch to
-    // drive their internal "expand everything / collapse everything"
-    // behaviour. The Dataset section has its own inner tree whose open
-    // state the pane cannot reach directly; it subscribes to these
-    // epochs and applies them locally. Unrelated to `openItems`.
+    // Expand-all is filter-aware via `computeVisibleSectionIds`: during
+    // an active query it expands only currently-matched sections. Both
+    // handlers drive the slice's `setOpenItems`.
+    // Monotonic counters the Dataset tree subscribes to — the pane can't
+    // reach its inner field-level open state directly, so it bumps an
+    // epoch and the tree applies the bulk toggle locally.
     const [expandAllEpoch, setExpandAllEpoch] = useState(0);
     const [collapseAllEpoch, setCollapseAllEpoch] = useState(0);
 

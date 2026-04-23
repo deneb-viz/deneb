@@ -237,7 +237,11 @@ export const buildMatchView = (input: MatchEngineInput): MatchView => {
     let datasetTree: DatasetMatchView | null = null;
     if (input.dataset) {
         datasetTree = matchDataset(input.dataset, input.query);
-        if (datasetTree && datasetTree.matchedFields.size > 0) {
+        if (
+            datasetTree &&
+            (datasetTree.matchedFields.size > 0 ||
+                datasetTree.headingHighlights !== null)
+        ) {
             matchedSections.add('dataset');
         }
     }
