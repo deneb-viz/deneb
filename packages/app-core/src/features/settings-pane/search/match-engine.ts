@@ -1,4 +1,4 @@
-import { computeHighlightRanges } from './highlight-ranges';
+import { computeHighlightRangesLowered } from './highlight-ranges';
 import type {
     DatasetMatchView,
     FieldMatch,
@@ -31,14 +31,18 @@ const fullyVisibleRow = (): RowMatch => ({
 /**
  * Compute a `SectionMatchView` for a flat section given the current query.
  *
+ * `queryLower` is the already-folded query from `resolveQuery`; every
+ * comparison uses the `*Lower` surfaces on the descriptor so no
+ * per-keystroke `.toLowerCase()` calls happen here.
+ *
  * Returns `null` when the section has no matches (section gets hidden).
  */
 const matchSection = (
     section: ResolvedSectionDescriptor,
-    query: string
+    queryLower: string
 ): SectionMatchView | null => {
     const headingRanges = rangesOrNull(
-        computeHighlightRanges(section.heading, query)
+        computeHighlightRangesLowered(section.headingLower, queryLower)
     );
 
     if (isNonEmpty(headingRanges)) {
@@ -53,11 +57,16 @@ const matchSection = (
     let anyRowMatched = false;
     for (const row of section.rows) {
         const labelRanges = rangesOrNull(
-            computeHighlightRanges(row.label, query)
+            computeHighlightRangesLowered(row.labelLower, queryLower)
         );
         const assistiveRanges =
-            row.assistive !== null
-                ? rangesOrNull(computeHighlightRanges(row.assistive, query))
+            row.assistiveLower !== null
+                ? rangesOrNull(
+                      computeHighlightRangesLowered(
+                          row.assistiveLower,
+                          queryLower
+                      )
+                  )
                 : null;
         const visible = isNonEmpty(labelRanges) || isNonEmpty(assistiveRanges);
         if (!visible) continue;
@@ -75,15 +84,18 @@ const matchSection = (
 /**
  * Compute the `DatasetMatchView` for the given query.
  *
+ * `queryLower` is the already-folded query from `resolveQuery`; every
+ * comparison uses the `*Lower` surfaces on the descriptor.
+ *
  * Returns `null` when the dataset section has no matches (section is
  * hidden alongside the flat sections).
  */
 const matchDataset = (
     dataset: ResolvedDatasetDescriptor,
-    query: string
+    queryLower: string
 ): DatasetMatchView | null => {
     const headingRanges = rangesOrNull(
-        computeHighlightRanges(dataset.heading, query)
+        computeHighlightRangesLowered(dataset.headingLower, queryLower)
     );
 
     if (isNonEmpty(headingRanges)) {
@@ -105,7 +117,7 @@ const matchDataset = (
     const matchedFields = new Map<string, FieldMatch>();
     for (const field of dataset.fields) {
         const fieldNameRanges = rangesOrNull(
-            computeHighlightRanges(field.name, query)
+            computeHighlightRangesLowered(field.nameLower, queryLower)
         );
 
         if (isNonEmpty(fieldNameRanges)) {
@@ -130,12 +142,15 @@ const matchDataset = (
         const flagHighlights = new Map<string, RowHighlights>();
         for (const flag of field.applicableFlags) {
             const labelRanges = rangesOrNull(
-                computeHighlightRanges(flag.label, query)
+                computeHighlightRangesLowered(flag.labelLower, queryLower)
             );
             const assistiveRanges =
-                flag.assistive !== null
+                flag.assistiveLower !== null
                     ? rangesOrNull(
-                          computeHighlightRanges(flag.assistive, query)
+                          computeHighlightRangesLowered(
+                              flag.assistiveLower,
+                              queryLower
+                          )
                       )
                     : null;
             const visible =
@@ -196,6 +211,10 @@ const buildAllVisibleMatchView = (input: MatchEngineInput): MatchView => {
 /**
  * Compute the `MatchView` for the given query against a set of resolved
  * section descriptors and an optional resolved dataset descriptor.
+ *
+ * `input.query` MUST already be case-folded by `resolveQuery` — the
+ * engine compares against the pre-lowered `*Lower` surfaces on each
+ * descriptor and does no folding itself. This is the fast path.
  *
  * When `query` is empty, returns an all-visible sentinel so render layers
  * do not need to special-case "no active filter". Otherwise applies the

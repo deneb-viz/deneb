@@ -1,8 +1,11 @@
 import {
     forwardRef,
+    startTransition,
     useCallback,
+    useEffect,
     useImperativeHandle,
     useRef,
+    useState,
     type ChangeEvent
 } from 'react';
 import {
@@ -16,9 +19,9 @@ import {
 import { useDenebState } from '../../../state';
 
 /**
- * Imperative handle exposed to parents — lets the `/` hotkey focus
- * the SearchBox without leaking the underlying DOM node or Fluent
- * ref implementation.
+ * Imperative handle exposed to parents — lets any focus-source (e.g. the
+ * focus-recovery layout effect) focus the SearchBox without leaking the
+ * underlying DOM node or Fluent ref implementation.
  */
 export type SettingsSearchBoxHandle = {
     focus: () => void;
@@ -38,6 +41,15 @@ const useStyles = makeStyles({
 /**
  * Search box rendered above the settings-pane accordion. Bound to the
  * session-scoped query slice (`state.settingsPane.query`).
+ *
+ * Typing updates a local controlled value synchronously so the caret
+ * stays in sync with keystrokes even under load. The store write is
+ * routed through React's `startTransition` so the expensive matchView
+ * rebuild, HighlightText re-renders, and dataset-tree recomputations
+ * happen as a non-urgent transition — React can discard intermediate
+ * values and commit only the latest, keeping the input responsive on
+ * large datasets. External query changes (`clearQuery`, debug-driven
+ * writes) sync back into the local value via `useEffect`.
  */
 export const SettingsSearchBox = forwardRef<SettingsSearchBoxHandle>(
     (_props, ref) => {
@@ -48,6 +60,13 @@ export const SettingsSearchBox = forwardRef<SettingsSearchBoxHandle>(
             translate: state.i18n.translate
         }));
         const inputRef = useRef<HTMLInputElement>(null);
+        const [localValue, setLocalValue] = useState(query);
+
+        // Sync local value when the store-side query changes from a
+        // source other than typing (e.g. programmatic clear).
+        useEffect(() => {
+            setLocalValue(query);
+        }, [query]);
 
         useImperativeHandle(
             ref,
@@ -62,7 +81,11 @@ export const SettingsSearchBox = forwardRef<SettingsSearchBoxHandle>(
                 _event: SearchBoxChangeEvent | ChangeEvent<HTMLInputElement>,
                 data: InputOnChangeData
             ) => {
-                setQuery(data.value ?? '');
+                const next = data.value ?? '';
+                setLocalValue(next);
+                startTransition(() => {
+                    setQuery(next);
+                });
             },
             [setQuery]
         );
@@ -72,7 +95,7 @@ export const SettingsSearchBox = forwardRef<SettingsSearchBoxHandle>(
                 <SearchBox
                     ref={inputRef}
                     className={classes.searchBox}
-                    value={query}
+                    value={localValue}
                     onChange={onChange}
                     placeholder={translate('Text_Settings_Search_Placeholder')}
                     aria-label={translate('Text_Settings_Search_AriaLabel')}

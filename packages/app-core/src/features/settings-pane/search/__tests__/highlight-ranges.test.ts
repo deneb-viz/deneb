@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { computeHighlightRanges } from '../highlight-ranges';
+import {
+    computeHighlightRanges,
+    computeHighlightRangesLowered
+} from '../highlight-ranges';
 
 describe('computeHighlightRanges', () => {
     it('returns a single range for a single substring match', () => {
@@ -59,6 +62,49 @@ describe('computeHighlightRanges', () => {
     it('handles special characters without throwing', () => {
         expect(computeHighlightRanges('dataset/columns', '/')).toEqual([
             { start: 7, end: 8 }
+        ]);
+    });
+});
+
+describe('computeHighlightRangesLowered', () => {
+    it('returns ranges for an exact (already-lowered) match', () => {
+        expect(
+            computeHighlightRangesLowered('format string', 'format')
+        ).toEqual([{ start: 0, end: 6 }]);
+    });
+
+    it('does NOT lowercase its inputs — raw-case inputs miss the match', () => {
+        // Caller contract: both inputs MUST already be folded. Passing
+        // raw "Format" against already-lowered "format" is a caller bug
+        // and returns no match (no implicit folding).
+        expect(
+            computeHighlightRangesLowered('Format string', 'format')
+        ).toEqual([]);
+        expect(
+            computeHighlightRangesLowered('format string', 'Format')
+        ).toEqual([]);
+        expect(
+            computeHighlightRangesLowered('FORMAT string', 'format')
+        ).toEqual([]);
+    });
+
+    it('returns a range for each non-overlapping match', () => {
+        expect(
+            computeHighlightRangesLowered('highlight highlight', 'light')
+        ).toEqual([
+            { start: 4, end: 9 },
+            { start: 14, end: 19 }
+        ]);
+    });
+
+    it('returns an empty array when either input is empty', () => {
+        expect(computeHighlightRangesLowered('', 'format')).toEqual([]);
+        expect(computeHighlightRangesLowered('format', '')).toEqual([]);
+    });
+
+    it('merges overlapping / adjacent ranges', () => {
+        expect(computeHighlightRangesLowered('aaaa', 'aa')).toEqual([
+            { start: 0, end: 4 }
         ]);
     });
 });

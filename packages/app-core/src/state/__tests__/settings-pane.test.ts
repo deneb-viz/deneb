@@ -58,4 +58,28 @@ describe('settingsPane slice', () => {
         // Action identities are stable across updates.
         expect(secondRef.setQuery).toBe(firstRef.setQuery);
     });
+
+    it('defaults openItems to an empty array', () => {
+        expect(store.getState().settingsPane.openItems).toEqual([]);
+    });
+
+    it('setOpenItems replaces the open accordion section ids', () => {
+        store.getState().settingsPane.setOpenItems(['general', 'performance']);
+        expect(store.getState().settingsPane.openItems).toEqual([
+            'general',
+            'performance'
+        ]);
+    });
+
+    it('setQuery does not mutate openItems (separate concerns)', () => {
+        store.getState().settingsPane.setOpenItems(['dataset']);
+        store.getState().settingsPane.setQuery('foo');
+        expect(store.getState().settingsPane.openItems).toEqual(['dataset']);
+    });
+
+    it('setOpenItems does not mutate query (separate concerns)', () => {
+        store.getState().settingsPane.setQuery('foo');
+        store.getState().settingsPane.setOpenItems(['general']);
+        expect(store.getState().settingsPane.query).toBe('foo');
+    });
 });

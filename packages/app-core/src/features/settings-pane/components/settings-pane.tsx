@@ -38,11 +38,6 @@ import type { MatchView, SectionMatchView } from '../search/types';
 import { useFocusRecovery } from '../hooks/use-focus-recovery';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 
-const DEFAULT_OPEN_ITEMS: string[] = [];
-
-/** Memoize open items across remounts (module-level ref). */
-let persistedOpenItems: string[] | null = null;
-
 const useSettingsPaneLayoutStyles = makeStyles({
     root: {
         overflow: 'overlay',
@@ -85,6 +80,8 @@ export const SettingsPane = () => {
     const {
         translate,
         query,
+        openItems,
+        setOpenItems,
         datasetFields,
         supportFieldConfiguration,
         spec,
@@ -94,6 +91,8 @@ export const SettingsPane = () => {
     } = useDenebState((state) => ({
         translate: state.i18n.translate,
         query: state.settingsPane.query,
+        openItems: state.settingsPane.openItems,
+        setOpenItems: state.settingsPane.setOpenItems,
         datasetFields: state.dataset.fields,
         supportFieldConfiguration: state.project.supportFieldConfiguration,
         spec: state.project.spec,
@@ -101,16 +100,15 @@ export const SettingsPane = () => {
         interactivity: state.project.interactivity,
         consolidateFieldParameters: state.project.consolidateFieldParameters
     }));
-    const [openItems, setOpenItems] = useState<string[]>(
-        () => persistedOpenItems ?? DEFAULT_OPEN_ITEMS
-    );
+    // Accordion controlled-toggle handler delegates to the slice so that
+    // closing / reopening the pane (or remounting the visual host) within
+    // a session preserves the user's open sections. No module-level ref;
+    // the Zustand store is the module singleton here.
     const onToggle = useCallback(
         (_event: AccordionToggleEvent, data: AccordionToggleData<string>) => {
-            const items = data.openItems;
-            setOpenItems(items);
-            persistedOpenItems = items;
+            setOpenItems(data.openItems);
         },
-        []
+        [setOpenItems]
     );
     const searchBoxRef = useRef<SettingsSearchBoxHandle>(null);
     const paneRootRef = useRef<HTMLDivElement>(null);
@@ -236,14 +234,18 @@ export const SettingsPane = () => {
             registeredPlatformIds
         });
         setOpenItems(ids);
-        persistedOpenItems = ids;
         setExpandAllEpoch((n) => n + 1);
-    }, [query, matchView, platformSectionIds, registeredPlatformIds]);
+    }, [
+        query,
+        matchView,
+        platformSectionIds,
+        registeredPlatformIds,
+        setOpenItems
+    ]);
     const handleCollapseAll = useCallback(() => {
         setOpenItems([]);
-        persistedOpenItems = [];
         setCollapseAllEpoch((n) => n + 1);
-    }, []);
+    }, [setOpenItems]);
 
     // Right-click: open menu anchored at the pointer.
     const handleContextMenu = useCallback(

@@ -30,37 +30,73 @@ export type RowHighlights = {
     assistive?: HighlightRange[];
 };
 
-/** Resolved descriptor for a single row (setting) inside a flat section. */
+/**
+ * Resolved descriptor for a single row (setting) inside a flat section.
+ *
+ * Searchable surfaces are pre-lowered at resolve time so the match engine
+ * can compare against `*Lower` fields directly (single fold per string per
+ * resolve, instead of re-folding on every keystroke). Display surfaces
+ * (`label`, `assistive`) keep original case — consumers doing substring
+ * matching MUST compare against the `*Lower` fields; the originals are for
+ * rendering and for range-offset accuracy (offsets computed on the lowered
+ * string are valid against the original because `toLowerCase()` is
+ * length-preserving for the BMP locales we support).
+ */
 export type ResolvedRowDescriptor = {
     id: string;
     label: string;
+    labelLower: string;
     assistive: string | null;
+    assistiveLower: string | null;
 };
 
-/** Resolved descriptor for a flat (non-Dataset) section. */
+/**
+ * Resolved descriptor for a flat (non-Dataset) section.
+ *
+ * See {@link ResolvedRowDescriptor} note on `*Lower` semantics — the engine
+ * compares against `headingLower`, not `heading`.
+ */
 export type ResolvedSectionDescriptor = {
     id: string;
     heading: string;
+    headingLower: string;
     rows: ResolvedRowDescriptor[];
 };
 
-/** A single applicable flag on a dataset field, with resolved labels. */
+/**
+ * A single applicable flag on a dataset field, with resolved labels.
+ *
+ * See {@link ResolvedRowDescriptor} note on `*Lower` semantics.
+ */
 export type ResolvedFlagDescriptor = {
     key: string;
     label: string;
+    labelLower: string;
     assistive: string | null;
+    assistiveLower: string | null;
 };
 
-/** Resolved descriptor for a single dataset source field. */
+/**
+ * Resolved descriptor for a single dataset source field.
+ *
+ * See {@link ResolvedRowDescriptor} note on `*Lower` semantics — the engine
+ * compares against `nameLower`, not `name`.
+ */
 export type ResolvedFieldDescriptor = {
     name: string;
+    nameLower: string;
     applicableFlags: ResolvedFlagDescriptor[];
 };
 
-/** Resolved descriptor for the Dataset section. */
+/**
+ * Resolved descriptor for the Dataset section.
+ *
+ * See {@link ResolvedRowDescriptor} note on `*Lower` semantics.
+ */
 export type ResolvedDatasetDescriptor = {
     sectionId: 'dataset';
     heading: string;
+    headingLower: string;
     fields: ResolvedFieldDescriptor[];
 };
 

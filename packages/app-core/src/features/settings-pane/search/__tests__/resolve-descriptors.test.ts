@@ -31,14 +31,27 @@ describe('resolveSectionSchema', () => {
         expect(resolved).toEqual({
             id: 'general',
             heading: 'tr:HEAD',
+            headingLower: 'tr:head',
             rows: [
-                { id: 'a', label: 'tr:L_A', assistive: 'tr:AS_A' },
-                { id: 'b', label: 'tr:L_B', assistive: null }
+                {
+                    id: 'a',
+                    label: 'tr:L_A',
+                    labelLower: 'tr:l_a',
+                    assistive: 'tr:AS_A',
+                    assistiveLower: 'tr:as_a'
+                },
+                {
+                    id: 'b',
+                    label: 'tr:L_B',
+                    labelLower: 'tr:l_b',
+                    assistive: null,
+                    assistiveLower: null
+                }
             ]
         });
     });
 
-    it('omits assistive as null when assistiveKey is absent', () => {
+    it('omits assistive as null (and assistiveLower as null) when assistiveKey is absent', () => {
         const schema = {
             id: 'performance',
             headingKey: 'H',
@@ -46,6 +59,30 @@ describe('resolveSectionSchema', () => {
         } as const satisfies SectionSchema;
         const resolved = resolveSectionSchema(schema, fakeTranslate);
         expect(resolved.rows[0].assistive).toBeNull();
+        expect(resolved.rows[0].assistiveLower).toBeNull();
+    });
+
+    it('pre-lowers every searchable surface so the match engine can compare without re-folding', () => {
+        const schema = {
+            id: 'general',
+            headingKey: 'Mixed-Case HEADING',
+            rows: [
+                {
+                    id: 'a',
+                    labelKey: 'Mixed-Case LABEL',
+                    assistiveKey: 'Mixed-Case ASSISTIVE'
+                }
+            ]
+        } as const satisfies SectionSchema;
+        // Translate identity — keeps the mixed case intact.
+        const resolved = resolveSectionSchema(schema, (k) => k);
+        expect(resolved.headingLower).toBe(resolved.heading.toLowerCase());
+        expect(resolved.rows[0].labelLower).toBe(
+            resolved.rows[0].label.toLowerCase()
+        );
+        expect(resolved.rows[0].assistiveLower).toBe(
+            resolved.rows[0].assistive!.toLowerCase()
+        );
     });
 });
 
@@ -80,11 +117,14 @@ describe('resolvePlatformSearchable', () => {
         expect(resolved).toEqual({
             id: 'platform',
             heading: 'tr:Text_Platform',
+            headingLower: 'tr:text_platform',
             rows: [
                 {
                     id: 'row-1',
                     label: 'tr:Text_Row1',
-                    assistive: 'tr:Assistive_Row1'
+                    labelLower: 'tr:text_row1',
+                    assistive: 'tr:Assistive_Row1',
+                    assistiveLower: 'tr:assistive_row1'
                 }
             ]
         });
@@ -105,6 +145,10 @@ describe('resolvePlatformSearchable', () => {
         expect(resolved?.heading).toBe('Already localised heading');
         expect(resolved?.rows[0].label).toBe('Already localised label');
         expect(resolved?.rows[0].assistive).toBeNull();
+        // Pre-lowered counterparts are populated for the search engine.
+        expect(resolved?.headingLower).toBe('already localised heading');
+        expect(resolved?.rows[0].labelLower).toBe('already localised label');
+        expect(resolved?.rows[0].assistiveLower).toBeNull();
     });
 
     it('supports mixed raw + { key } entries within one contribution', () => {
@@ -123,7 +167,9 @@ describe('resolvePlatformSearchable', () => {
         expect(resolved?.rows[0]).toEqual({
             id: 'r',
             label: 'tr:L',
-            assistive: 'raw assistive'
+            labelLower: 'tr:l',
+            assistive: 'raw assistive',
+            assistiveLower: 'raw assistive'
         });
     });
 });
@@ -161,25 +207,60 @@ describe('resolvePlatformSearchables', () => {
         expect(resolved[0]).toEqual({
             id: 'tooltips',
             heading: 'tr:Text_Tooltips',
+            headingLower: 'tr:text_tooltips',
             rows: [
                 {
                     id: 'enable-tooltips',
                     label: 'tr:Text_Enable',
-                    assistive: null
+                    labelLower: 'tr:text_enable',
+                    assistive: null,
+                    assistiveLower: null
                 }
             ]
         });
         expect(resolved[1]).toEqual({
             id: 'crosshighlight',
             heading: 'Cross-highlighting',
+            headingLower: 'cross-highlighting',
             rows: [
                 {
                     id: 'enable-highlight',
                     label: 'Enable highlight',
-                    assistive: null
+                    labelLower: 'enable highlight',
+                    assistive: null,
+                    assistiveLower: null
                 }
             ]
         });
+    });
+
+    it('pre-lowers every searchable surface on each resolved contribution', () => {
+        const contributions: PlatformSearchContribution[] = [
+            {
+                id: 'x',
+                heading: 'Mixed-CASE Heading',
+                rows: [
+                    {
+                        id: 'r',
+                        label: 'Mixed-CASE Label',
+                        assistive: 'Mixed-CASE Assistive'
+                    }
+                ]
+            }
+        ];
+        const resolved = resolvePlatformSearchables(
+            contributions,
+            fakeTranslate
+        );
+        expect(resolved[0].headingLower).toBe(
+            resolved[0].heading.toLowerCase()
+        );
+        expect(resolved[0].rows[0].labelLower).toBe(
+            resolved[0].rows[0].label.toLowerCase()
+        );
+        expect(resolved[0].rows[0].assistiveLower).toBe(
+            resolved[0].rows[0].assistive!.toLowerCase()
+        );
     });
 
     it('skips contributions with zero rows', () => {

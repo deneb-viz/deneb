@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+    DEFAULT_PACKAGE,
     EXIT_ERROR,
     EXIT_OK,
     EXIT_REGRESSION,
     EXIT_SKIP,
     MASS_MISMATCH_FRACTION,
     MIN_SAMPLE_COUNT,
+    PACKAGE_REGISTRY,
     buildBaselinePayload,
     buildMeta,
     classifyResults,
@@ -20,6 +22,7 @@ import {
     renderDriftWarnings,
     renderSummary,
     renderTable,
+    resolvePackageArgs,
     validateHz
 } from '../compare.mjs';
 
@@ -681,5 +684,137 @@ describe('handleUpdate', () => {
             forceNonCi: true
         });
         expect(result).toBe(EXIT_ERROR);
+    });
+});
+
+// =========================================================================
+// resolvePackageArgs — --package shortcut resolution
+// =========================================================================
+
+describe('resolvePackageArgs', () => {
+    it('defaults to data-core when nothing is supplied (backward compat)', () => {
+        const res = resolvePackageArgs();
+        expect(res.ok).toBe(true);
+        expect(res.package).toBe(DEFAULT_PACKAGE);
+        expect(DEFAULT_PACKAGE).toBe('data-core');
+        expect(res.results).toBe(PACKAGE_REGISTRY['data-core'].results);
+        expect(res.baseline).toBe(PACKAGE_REGISTRY['data-core'].baseline);
+    });
+
+    it('resolves --package app-core to the app-core registry paths', () => {
+        const res = resolvePackageArgs({ package: 'app-core' });
+        expect(res.ok).toBe(true);
+        expect(res.package).toBe('app-core');
+        expect(res.results).toBe(PACKAGE_REGISTRY['app-core'].results);
+        expect(res.baseline).toBe(PACKAGE_REGISTRY['app-core'].baseline);
+    });
+
+    it('returns ok:false with descriptive error for unknown package', () => {
+        const res = resolvePackageArgs({ package: 'nope' });
+        expect(res.ok).toBe(false);
+        expect(res.error).toContain('unknown --package');
+        expect(res.error).toContain('nope');
+        expect(res.error).toContain('data-core');
+        expect(res.error).toContain('app-core');
+    });
+
+    it('lets explicit --results override the package default', () => {
+        const res = resolvePackageArgs({
+            package: 'data-core',
+            results: '/custom/results.json'
+        });
+        expect(res.ok).toBe(true);
+        expect(res.results).toBe('/custom/results.json');
+        expect(res.baseline).toBe(PACKAGE_REGISTRY['data-core'].baseline);
+    });
+
+    it('lets explicit --baseline override the package default', () => {
+        const res = resolvePackageArgs({
+            package: 'app-core',
+            baseline: '/custom/baseline.json'
+        });
+        expect(res.ok).toBe(true);
+        expect(res.results).toBe(PACKAGE_REGISTRY['app-core'].results);
+        expect(res.baseline).toBe('/custom/baseline.json');
+    });
+
+    it('treats null package same as omitted (falls back to default)', () => {
+        const res = resolvePackageArgs({
+            package: null,
+            results: null,
+            baseline: null
+        });
+        expect(res.ok).toBe(true);
+        expect(res.package).toBe(DEFAULT_PACKAGE);
+    });
+
+    it('registry contains app-core alongside data-core', () => {
+        expect(Object.keys(PACKAGE_REGISTRY).sort()).toEqual([
+            'app-core',
+            'data-core'
+        ]);
+        // Sanity: registry paths are non-empty strings.
+        for (const [, paths] of Object.entries(PACKAGE_REGISTRY)) {
+            expect(typeof paths.results).toBe('string');
+            expect(typeof paths.baseline).toBe('string');
+            expect(paths.results.length).toBeGreaterThan(0);
+            expect(paths.baseline.length).toBeGreaterThan(0);
+        }
+    });
+});
+
+// =========================================================================
+// bootstrap baseline sentinel — `_meta.bootstrap: true` → EXIT_SKIP
+// =========================================================================
+
+describe('handleCompare bootstrap sentinel', () => {
+    it('returns EXIT_SKIP when baseline has _meta.bootstrap: true even with 0 benchmarks', async () => {
+        const baseline = {
+            _meta: { bootstrap: true, runnerImage: 'bootstrap' },
+            benchmarks: {}
+        };
+        const current = makeCurrent({ a: { hz: 100 } });
+        const result = await handleCompare({
+            current: { entries: current.entries, warnings: [], errors: [] },
+            baseline,
+            baselinePath: 'benchmarks/baselines/app-core.json',
+            defaultThreshold: 20
+        });
+        expect(result).toBe(EXIT_SKIP);
+    });
+
+    it('returns EXIT_SKIP for bootstrap baseline even when current has entries (no false PASS)', async () => {
+        const baseline = {
+            _meta: { bootstrap: true },
+            benchmarks: {}
+        };
+        const current = {
+            entries: new Map([['a', { hz: 100, mean_ms: 1, p75_ms: 1.2, sampleCount: 50 }]]),
+            warnings: [],
+            errors: []
+        };
+        const result = await handleCompare({
+            current,
+            baseline,
+            baselinePath: 'benchmarks/baselines/app-core.json',
+            defaultThreshold: 20
+        });
+        expect(result).toBe(EXIT_SKIP);
+    });
+
+    it('does NOT treat a baseline without the bootstrap flag as skip-worthy', async () => {
+        const baseline = makeBaseline({ a: { hz: 100 } }); // no bootstrap flag
+        const current = {
+            entries: new Map([['a', { hz: 100, mean_ms: 1, p75_ms: 1.2, sampleCount: 50 }]]),
+            warnings: [],
+            errors: []
+        };
+        const result = await handleCompare({
+            current,
+            baseline,
+            baselinePath: 'test.json',
+            defaultThreshold: 20
+        });
+        expect(result).toBe(EXIT_OK);
     });
 });

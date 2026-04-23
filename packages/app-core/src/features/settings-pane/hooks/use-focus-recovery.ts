@@ -2,6 +2,7 @@ import { useLayoutEffect, type RefObject } from 'react';
 
 import type { MatchView } from '../search/types';
 import type { SettingsSearchBoxHandle } from '../components/settings-search-box';
+import { useSettingsPaneTooltip } from '../components/settings-pane-tooltip-context';
 
 /** Data attribute used to tag focusable settings rows in the DOM. */
 export const SETTINGS_ROW_DATA_ATTR = 'data-settings-row-id';
@@ -71,7 +72,18 @@ export const useFocusRecovery = (
     matchView: MatchView,
     searchBoxRef: RefObject<SettingsSearchBoxHandle | null>
 ) => {
+    const tooltipMountNode = useSettingsPaneTooltip();
     useLayoutEffect(() => {
+        if (typeof document === 'undefined') return;
+        const active = document.activeElement;
+        // When a Fluent `InfoLabel` / `Tooltip` popover owns focus, its
+        // content is portaled into `tooltipMountNode` — outside the
+        // pane's DOM subtree. Skip recovery so a matchView commit that
+        // lands while the user is reading the popover does not yank
+        // focus away and close it.
+        if (active && tooltipMountNode && tooltipMountNode.contains(active)) {
+            return;
+        }
         const focusedKey = currentFocusedRowKey();
         if (focusedKey === null) return;
         const visible = collectVisibleRowKeys(matchView);
@@ -88,5 +100,5 @@ export const useFocusRecovery = (
             if (key.startsWith(`${focusedKey}/`)) return;
         }
         searchBoxRef.current?.focus();
-    }, [matchView, searchBoxRef]);
+    }, [matchView, searchBoxRef, tooltipMountNode]);
 };

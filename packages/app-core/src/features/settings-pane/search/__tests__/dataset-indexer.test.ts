@@ -202,6 +202,52 @@ describe('buildResolvedDatasetDescriptor', () => {
         expect(descriptor.fields.map((f) => f.name)).toEqual(['売上', '日付']);
     });
 
+    it('populates pre-lowered `*Lower` fields on every surface', () => {
+        // The P2 #3 refactor exposes pre-folded counterpart fields so
+        // the match engine can compare without re-folding on every
+        // keystroke. This test locks in the invariant that the
+        // indexer is the single point of truth for the folding.
+        const sourceFields: SourceFieldEntry[] = [
+            makeEntry('Sales Amount', { role: 'aggregation' }),
+            makeEntry('Category', { role: 'grouping' })
+        ];
+
+        const descriptor = buildResolvedDatasetDescriptor({
+            sourceFields,
+            config: {},
+            masterSettings: defaultMasterSettings,
+            isLegacy: false,
+            highlightEnabled: true,
+            consolidateFieldParameters: true,
+            translate: (key) => `T:${key}`,
+            headingKey: 'Text_Settings_Dataset'
+        });
+
+        // Section heading.
+        expect(descriptor.headingLower).toBe(descriptor.heading.toLowerCase());
+        expect(descriptor.headingLower).toBe('t:text_settings_dataset');
+
+        // Every field carries a pre-lowered name alongside the original.
+        for (const field of descriptor.fields) {
+            expect(field.nameLower).toBe(field.name.toLowerCase());
+            // Flag labels + assistive text too.
+            for (const flag of field.applicableFlags) {
+                expect(flag.labelLower).toBe(flag.label.toLowerCase());
+                if (flag.assistive !== null) {
+                    expect(flag.assistiveLower).toBe(
+                        flag.assistive.toLowerCase()
+                    );
+                } else {
+                    expect(flag.assistiveLower).toBeNull();
+                }
+            }
+        }
+
+        // Spot check one specific field.
+        const sales = descriptor.fields.find((f) => f.name === 'Sales Amount')!;
+        expect(sales.nameLower).toBe('sales amount');
+    });
+
     it('routes every flag label through translate(FLAG_LABELS[key]) and assistive text through translate(FLAG_INFO[key])', () => {
         const translate = vi.fn((key: string) => `[${key}]`);
         const sourceFields: SourceFieldEntry[] = [

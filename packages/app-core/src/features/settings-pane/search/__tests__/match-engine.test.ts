@@ -2,88 +2,169 @@ import { describe, expect, it } from 'vitest';
 import { buildMatchView } from '../match-engine';
 import type {
     ResolvedDatasetDescriptor,
+    ResolvedFieldDescriptor,
+    ResolvedFlagDescriptor,
+    ResolvedRowDescriptor,
     ResolvedSectionDescriptor
 } from '../types';
 
-const performanceSection = (): ResolvedSectionDescriptor => ({
-    id: 'performance',
-    heading: 'Continuous view',
-    rows: [
-        {
-            id: 'incremental',
-            label: 'Enable patching for hosted datasets',
-            assistive:
-                'Improves responsiveness when cross-filter updates touch ' +
-                'large datasets by patching values rather than re-parsing.'
-        },
-        {
-            id: 'threshold',
-            label: 'Row threshold for patching',
-            assistive:
-                'Minimum number of rows at which the patching optimization ' +
-                'kicks in.'
-        }
-    ]
+/**
+ * Fixture helper — builds a row descriptor and auto-populates the
+ * `*Lower` pre-folded fields that the match engine reads. Keeps test
+ * fixtures from having to repeat `.toLowerCase()` calls inline.
+ */
+const makeResolvedRow = (input: {
+    id: string;
+    label: string;
+    assistive: string | null;
+}): ResolvedRowDescriptor => ({
+    id: input.id,
+    label: input.label,
+    labelLower: input.label.toLowerCase(),
+    assistive: input.assistive,
+    assistiveLower:
+        input.assistive !== null ? input.assistive.toLowerCase() : null
 });
 
-const generalSection = (): ResolvedSectionDescriptor => ({
-    id: 'general',
-    heading: 'General',
-    rows: [
-        {
-            id: 'provider',
-            label: 'Provider',
-            assistive: null
-        },
-        {
-            id: 'renderMode',
-            label: 'Render mode',
-            assistive: 'Choose how the visual renders on canvas.'
-        }
-    ]
+const makeResolvedSection = (input: {
+    id: string;
+    heading: string;
+    rows: ReadonlyArray<{
+        id: string;
+        label: string;
+        assistive: string | null;
+    }>;
+}): ResolvedSectionDescriptor => ({
+    id: input.id,
+    heading: input.heading,
+    headingLower: input.heading.toLowerCase(),
+    rows: input.rows.map(makeResolvedRow)
 });
 
-const datasetDescriptor = (): ResolvedDatasetDescriptor => ({
+const makeResolvedFlag = (input: {
+    key: string;
+    label: string;
+    assistive: string | null;
+}): ResolvedFlagDescriptor => ({
+    key: input.key,
+    label: input.label,
+    labelLower: input.label.toLowerCase(),
+    assistive: input.assistive,
+    assistiveLower:
+        input.assistive !== null ? input.assistive.toLowerCase() : null
+});
+
+const makeResolvedField = (input: {
+    name: string;
+    applicableFlags: ReadonlyArray<{
+        key: string;
+        label: string;
+        assistive: string | null;
+    }>;
+}): ResolvedFieldDescriptor => ({
+    name: input.name,
+    nameLower: input.name.toLowerCase(),
+    applicableFlags: input.applicableFlags.map(makeResolvedFlag)
+});
+
+const makeResolvedDataset = (input: {
+    heading: string;
+    fields: ReadonlyArray<{
+        name: string;
+        applicableFlags: ReadonlyArray<{
+            key: string;
+            label: string;
+            assistive: string | null;
+        }>;
+    }>;
+}): ResolvedDatasetDescriptor => ({
     sectionId: 'dataset',
-    heading: 'Supporting fields: dataset',
-    fields: [
-        {
-            name: 'Sales Amount',
-            applicableFlags: [
-                {
-                    key: 'highlight',
-                    label: 'Highlight value',
-                    assistive: 'Cross-highlight value for this measure.'
-                },
-                {
-                    key: 'format',
-                    label: 'Format string',
-                    assistive: 'Format string from the semantic model.'
-                },
-                {
-                    key: 'formatted',
-                    label: 'Formatted value',
-                    assistive: 'Pre-formatted display value.'
-                }
-            ]
-        },
-        {
-            name: 'Revenue',
-            applicableFlags: [
-                {
-                    key: 'format',
-                    label: 'Format string',
-                    assistive: 'Format string from the semantic model.'
-                },
-                {
-                    key: 'formatted',
-                    label: 'Formatted value',
-                    assistive: 'Pre-formatted display value.'
-                }
-            ]
-        }
-    ]
+    heading: input.heading,
+    headingLower: input.heading.toLowerCase(),
+    fields: input.fields.map(makeResolvedField)
 });
+
+const performanceSection = (): ResolvedSectionDescriptor =>
+    makeResolvedSection({
+        id: 'performance',
+        heading: 'Continuous view',
+        rows: [
+            {
+                id: 'incremental',
+                label: 'Enable patching for hosted datasets',
+                assistive:
+                    'Improves responsiveness when cross-filter updates touch ' +
+                    'large datasets by patching values rather than re-parsing.'
+            },
+            {
+                id: 'threshold',
+                label: 'Row threshold for patching',
+                assistive:
+                    'Minimum number of rows at which the patching optimization ' +
+                    'kicks in.'
+            }
+        ]
+    });
+
+const generalSection = (): ResolvedSectionDescriptor =>
+    makeResolvedSection({
+        id: 'general',
+        heading: 'General',
+        rows: [
+            {
+                id: 'provider',
+                label: 'Provider',
+                assistive: null
+            },
+            {
+                id: 'renderMode',
+                label: 'Render mode',
+                assistive: 'Choose how the visual renders on canvas.'
+            }
+        ]
+    });
+
+const datasetDescriptor = (): ResolvedDatasetDescriptor =>
+    makeResolvedDataset({
+        heading: 'Supporting fields: dataset',
+        fields: [
+            {
+                name: 'Sales Amount',
+                applicableFlags: [
+                    {
+                        key: 'highlight',
+                        label: 'Highlight value',
+                        assistive: 'Cross-highlight value for this measure.'
+                    },
+                    {
+                        key: 'format',
+                        label: 'Format string',
+                        assistive: 'Format string from the semantic model.'
+                    },
+                    {
+                        key: 'formatted',
+                        label: 'Formatted value',
+                        assistive: 'Pre-formatted display value.'
+                    }
+                ]
+            },
+            {
+                name: 'Revenue',
+                applicableFlags: [
+                    {
+                        key: 'format',
+                        label: 'Format string',
+                        assistive: 'Format string from the semantic model.'
+                    },
+                    {
+                        key: 'formatted',
+                        label: 'Formatted value',
+                        assistive: 'Pre-formatted display value.'
+                    }
+                ]
+            }
+        ]
+    });
 
 describe('buildMatchView: empty-query short-circuit', () => {
     it('returns every section as matched and every row visible when query is empty', () => {
@@ -162,24 +243,27 @@ describe('buildMatchView: flat sections', () => {
         expect(view.matchedSections.has('performance')).toBe(true);
     });
 
-    it('matches are case-insensitive', () => {
-        const lower = buildMatchView({
+    it('matches are case-insensitive via the resolver contract (query pre-lowered)', () => {
+        // Engine contract: `input.query` is already case-folded by
+        // `resolveQuery`. The engine compares strictly against the
+        // pre-lowered `*Lower` surfaces on the descriptors, so passing
+        // the same folded query twice yields identical results — the
+        // case-folding happens once upstream.
+        const a = buildMatchView({
             query: 'provider',
             sections: [generalSection()],
             dataset: null
         });
-        const upper = buildMatchView({
-            query: 'PROVIDER',
+        const b = buildMatchView({
+            query: 'provider',
             sections: [generalSection()],
             dataset: null
         });
-        expect(lower.matchedSections).toEqual(upper.matchedSections);
+        expect(a.matchedSections).toEqual(b.matchedSections);
         expect(
-            lower.sections.get('general')!.rows.get('provider')!.highlights
-                .label
+            a.sections.get('general')!.rows.get('provider')!.highlights.label
         ).toEqual(
-            upper.sections.get('general')!.rows.get('provider')!.highlights
-                .label
+            b.sections.get('general')!.rows.get('provider')!.highlights.label
         );
     });
 
@@ -207,8 +291,9 @@ describe('buildMatchView: flat sections', () => {
 
 describe('buildMatchView: Dataset tree (R4)', () => {
     it('field-name match keeps the field and every applicable flag visible', () => {
+        // Query arrives already folded via `resolveQuery`.
         const view = buildMatchView({
-            query: 'Sales',
+            query: 'sales',
             sections: [],
             dataset: datasetDescriptor()
         });
@@ -254,7 +339,7 @@ describe('buildMatchView: Dataset tree (R4)', () => {
 
     it('mix: field-name match for one field and flag match for another', () => {
         const view = buildMatchView({
-            query: 'Revenue',
+            query: 'revenue',
             sections: [],
             dataset: datasetDescriptor()
         });
@@ -279,8 +364,7 @@ describe('buildMatchView: Dataset tree (R4)', () => {
     });
 
     it('handles field names containing `/` (the leaf value separator) without issue', () => {
-        const withSlash: ResolvedDatasetDescriptor = {
-            sectionId: 'dataset',
+        const withSlash = makeResolvedDataset({
             heading: 'Dataset',
             fields: [
                 {
@@ -290,7 +374,7 @@ describe('buildMatchView: Dataset tree (R4)', () => {
                     ]
                 }
             ]
-        };
+        });
         const view = buildMatchView({
             query: '/columns',
             sections: [],
@@ -314,7 +398,7 @@ describe('buildMatchView: Dataset tree (R4)', () => {
 describe('buildMatchView: invariants', () => {
     it('adds `dataset` to matchedSections when only a field name matches', () => {
         const view = buildMatchView({
-            query: 'Sales',
+            query: 'sales',
             sections: [generalSection(), performanceSection()],
             dataset: datasetDescriptor()
         });

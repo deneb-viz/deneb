@@ -122,6 +122,10 @@ const resolveApplicableFlagKeys = (
  * route through `translate(FLAG_LABELS[key])` and assistive text
  * through `translate(FLAG_INFO[key])`; flags without assistive text
  * get `assistive: null`.
+ *
+ * Populates the `*Lower` pre-folded variants alongside the display
+ * strings so the match engine can compare without re-folding on every
+ * keystroke (see P2 #3 refactor).
  */
 const resolveFlagDescriptor = (
     key: keyof SupportFieldFlags,
@@ -129,10 +133,14 @@ const resolveFlagDescriptor = (
 ): ResolvedFlagDescriptor => {
     const labelKey = FLAG_LABELS[key];
     const assistiveKey = FLAG_INFO[key];
+    const label = labelKey ? translate(labelKey) : key;
+    const assistive = assistiveKey ? translate(assistiveKey) : null;
     return {
         key,
-        label: labelKey ? translate(labelKey) : key,
-        assistive: assistiveKey ? translate(assistiveKey) : null
+        label,
+        labelLower: label.toLowerCase(),
+        assistive,
+        assistiveLower: assistive !== null ? assistive.toLowerCase() : null
     };
 };
 
@@ -172,12 +180,14 @@ export const buildResolvedDatasetDescriptor = ({
             const applicableFlags = applicableKeys.map((key) =>
                 resolveFlagDescriptor(key, translate)
             );
-            return { name, applicableFlags };
+            return { name, nameLower: name.toLowerCase(), applicableFlags };
         }
     );
+    const heading = translate(headingKey);
     return {
         sectionId: 'dataset',
-        heading: translate(headingKey),
+        heading,
+        headingLower: heading.toLowerCase(),
         fields
     };
 };
