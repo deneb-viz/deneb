@@ -230,5 +230,10 @@
     "Text_SupportField_Names": "Field names",
     "Assistive_Text_SupportField_Names": "Adds a companion __names field containing the display names of the component fields in the parameter. Useful for axis titles, tooltips, and flatten transforms, if using multiple parameter values.",
     "Text_SupportField_TreatAsParameter": "Treat as field parameter",
-    "Assistive_Text_SupportField_TreatAsParameter": "Wraps this field's values in a single-element array, making it compatible with specifications designed for field parameters. For compatibility and debugging purposes. Will be exported as a parameter field in templates."
+    "Assistive_Text_SupportField_TreatAsParameter": "Wraps this field's values in a single-element array, making it compatible with specifications designed for field parameters. For compatibility and debugging purposes. Will be exported as a parameter field in templates.",
+    "Text_Settings_Search_Placeholder": "Search settings\u2026",
+    "Text_Settings_Search_AriaLabel": "Search settings",
+    "Text_Settings_Search_NoMatches": "No settings match \"{0}\".",
+    "Text_Settings_ExpandAll": "Expand all categories",
+    "Text_Settings_CollapseAll": "Collapse all categories"
 }

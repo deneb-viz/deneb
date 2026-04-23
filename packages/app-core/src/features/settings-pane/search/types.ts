@@ -7,8 +7,16 @@
  * invoking `buildMatchView`.
  */
 
-/** Stable identifiers for the top-level settings-pane sections. */
-export type SectionId = 'general' | 'performance' | 'dataset' | 'platform';
+/**
+ * Stable identifiers for top-level settings-pane sections.
+ *
+ * Kept as an open `string` because platform contributors may register any
+ * number of sibling sections (one per injected accordion item), each with
+ * its own arbitrary id. The engine treats all ids opaquely; only the
+ * dataset section has any special behaviour, and it's distinguished via
+ * the separate `ResolvedDatasetDescriptor` shape, not the `SectionId` union.
+ */
+export type SectionId = string;
 
 /** A character range inside a string, as `[start, end)`. */
 export type HighlightRange = {
@@ -31,7 +39,7 @@ export type ResolvedRowDescriptor = {
 
 /** Resolved descriptor for a flat (non-Dataset) section. */
 export type ResolvedSectionDescriptor = {
-    id: Exclude<SectionId, 'dataset'>;
+    id: string;
     heading: string;
     rows: ResolvedRowDescriptor[];
 };
@@ -98,8 +106,8 @@ export type DatasetMatchView = {
  * `matchedSections` includes `'dataset'`.
  */
 export type MatchView = {
-    matchedSections: Set<SectionId>;
-    sections: Map<Exclude<SectionId, 'dataset'>, SectionMatchView>;
+    matchedSections: Set<string>;
+    sections: Map<string, SectionMatchView>;
     datasetTree: DatasetMatchView | null;
 };
 

@@ -9,7 +9,6 @@ import type {
     ResolvedSectionDescriptor,
     RowHighlights,
     RowMatch,
-    SectionId,
     SectionMatchView
 } from './types';
 
@@ -167,8 +166,8 @@ const matchDataset = (
  * Every section is visible with every row unfiltered and no highlights.
  */
 const buildAllVisibleMatchView = (input: MatchEngineInput): MatchView => {
-    const matchedSections = new Set<SectionId>();
-    const sections = new Map<Exclude<SectionId, 'dataset'>, SectionMatchView>();
+    const matchedSections = new Set<string>();
+    const sections = new Map<string, SectionMatchView>();
     for (const section of input.sections) {
         matchedSections.add(section.id);
         const rows = new Map<string, RowMatch>();
@@ -206,8 +205,8 @@ const buildAllVisibleMatchView = (input: MatchEngineInput): MatchView => {
 export const buildMatchView = (input: MatchEngineInput): MatchView => {
     if (input.query === '') return buildAllVisibleMatchView(input);
 
-    const matchedSections = new Set<SectionId>();
-    const sections = new Map<Exclude<SectionId, 'dataset'>, SectionMatchView>();
+    const matchedSections = new Set<string>();
+    const sections = new Map<string, SectionMatchView>();
 
     for (const section of input.sections) {
         const view = matchSection(section, input.query);

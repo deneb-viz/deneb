@@ -43,6 +43,7 @@ export const DenebPlatformProvider = ({
     onRenderingStarted,
     settingsPaneFooter,
     settingsPanePlatformComponent = [],
+    settingsPanePlatformSearchable = [],
     tooltipHandler,
     vegaLoader = null,
     viewEventBinders = [],
@@ -62,6 +63,7 @@ export const DenebPlatformProvider = ({
             onRenderingStarted,
             settingsPaneFooter,
             settingsPanePlatformComponent,
+            settingsPanePlatformSearchable,
             tooltipHandler,
             vegaLoader,
             viewEventBinders,
@@ -79,6 +81,7 @@ export const DenebPlatformProvider = ({
             onRenderingStarted,
             settingsPaneFooter,
             settingsPanePlatformComponent,
+            settingsPanePlatformSearchable,
             tooltipHandler,
             vegaLoader,
             viewEventBinders

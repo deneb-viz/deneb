@@ -50,6 +50,9 @@ import {
     hasAnyEnabledFlag,
     removeFieldFromConfig
 } from './dataset-settings-utils';
+import { HighlightText } from './highlight-text';
+import { AssistivePreview } from './assistive-preview';
+import type { DatasetMatchView } from '../search/types';
 
 const useDatasetSettingsStyles = makeStyles({
     tree: {
@@ -83,11 +86,26 @@ const useDatasetSettingsStyles = makeStyles({
 });
 
 /**
+ * Props for {@link DatasetSettings}.
+ *
+ * `datasetMatchView` is threaded in by the settings pane when a query
+ * is active. When `null | undefined`, the tree renders exactly as
+ * before — no filter, no highlights, no assistive preview. When
+ * non-null, the R4 tree-filter rule applies: only matched fields
+ * appear, and flag-match fields show only the matched flag leaves.
+ */
+export type DatasetSettingsProps = {
+    datasetMatchView?: DatasetMatchView | null;
+};
+
+/**
  * Dataset settings component for the settings pane. Renders a Fluent UI Tree
  * showing source dataset fields and their applicable support field toggles.
  * Each leaf renders its own checkbox; there is no field-level bulk toggle.
  */
-export const DatasetSettings = () => {
+export const DatasetSettings = ({
+    datasetMatchView
+}: DatasetSettingsProps = {}) => {
     const classes = useDatasetSettingsStyles();
     const tooltipMountNode = useSettingsPaneTooltip();
     const checkboxIdPrefix = useId('support-field-checkbox');
@@ -214,6 +232,17 @@ export const DatasetSettings = () => {
         });
     }, [highlightEnabled, sourceFields, resolvedFlags]);
 
+    // When a match view is supplied, walk only the fields the engine
+    // picked. When null/undefined, fall back to the full sourceFields
+    // (behaviour is identical to pre-search renders).
+    const filterIsActive =
+        datasetMatchView !== null && datasetMatchView !== undefined;
+    const visibleFields = filterIsActive
+        ? sourceFields.filter(([name]) =>
+              datasetMatchView.matchedFields.has(name)
+          )
+        : sourceFields;
+
     return (
         <>
             <Tree
@@ -221,9 +250,13 @@ export const DatasetSettings = () => {
                 aria-label={translate('Text_Settings_Dataset')}
                 openItems={openItems}
                 onOpenChange={onOpenChange}
+                data-settings-section-id='dataset'
             >
-                {sourceFields.map(([name, field], fieldIndex) => {
+                {visibleFields.map(([name, field], fieldIndex) => {
                     const fieldFlags = resolvedFlags[name];
+                    const fieldMatch = filterIsActive
+                        ? (datasetMatchView.matchedFields.get(name) ?? null)
+                        : null;
                     const isMeasure =
                         (field.role ?? 'grouping') === 'aggregation';
                     const isFieldParameter = field.role === 'field-parameter';
@@ -235,13 +268,26 @@ export const DatasetSettings = () => {
                             : COLUMN_FLAGS;
                     const isTreatedAs = fieldFlags?.treatAsParameter === true;
                     const isParameter = isFieldParameter || isTreatedAs;
-                    const applicableFlags = getApplicableFlags(
+                    const allApplicableFlags = getApplicableFlags(
                         baseFlags,
                         isFieldParameter,
                         isTreatedAs,
                         isParameter,
                         consolidateFieldParameters
                     );
+                    // When the field matched on its own name (or there's no
+                    // active filter), every applicable flag stays visible.
+                    // When it matched on one or more flags, only those
+                    // specific flags render — parent field retained for
+                    // context per R4.
+                    const applicableFlags =
+                        fieldMatch && fieldMatch.matchReason === 'flag'
+                            ? allApplicableFlags.filter((flag) =>
+                                  fieldMatch.visibleFlags.has(flag)
+                              )
+                            : allApplicableFlags;
+                    const fieldNameRanges =
+                        fieldMatch?.highlights.field ?? undefined;
                     const roleTooltip = translate(
                         isParameter
                             ? 'Text_SupportField_RoleTooltip_Parameter'
@@ -267,7 +313,12 @@ export const DatasetSettings = () => {
                     };
 
                     return (
-                        <TreeItem key={name} itemType='branch' value={name}>
+                        <TreeItem
+                            key={name}
+                            itemType='branch'
+                            value={name}
+                            data-settings-row-id={`dataset-field-${name}`}
+                        >
                             <TreeItemLayout
                                 className={classes.fieldItem}
                                 iconBefore={
@@ -302,7 +353,10 @@ export const DatasetSettings = () => {
                                 }
                             >
                                 <span className={classes.fieldNameRow}>
-                                    {name}
+                                    <HighlightText
+                                        text={name}
+                                        ranges={fieldNameRanges}
+                                    />
                                     {hasEnabledFlags && (
                                         <span
                                             className={classes.enabledFlagHint}
@@ -319,12 +373,36 @@ export const DatasetSettings = () => {
                                     // names that differ only by whitespace or punctuation.
                                     const checkboxId = `${checkboxIdPrefix}-${fieldIndex}-${flag}`;
                                     const checked = fieldFlags?.[flag] === true;
+                                    const flagHighlights =
+                                        fieldMatch?.highlights.flags.get(
+                                            flag
+                                        ) ?? null;
+                                    const labelRanges = flagHighlights?.label;
+                                    const assistiveRanges =
+                                        flagHighlights?.assistive;
+                                    // Assistive-only match: show a caption
+                                    // beneath the label so the user can see
+                                    // what matched. Label-match or no-match:
+                                    // no preview.
+                                    const showAssistivePreview =
+                                        assistiveRanges !== undefined &&
+                                        assistiveRanges.length > 0 &&
+                                        (labelRanges === undefined ||
+                                            labelRanges.length === 0) &&
+                                        infoKey !== undefined;
+                                    const labelNode = (
+                                        <HighlightText
+                                            text={label}
+                                            ranges={labelRanges}
+                                        />
+                                    );
                                     return (
                                         <TreeItem
                                             key={flag}
                                             itemType='leaf'
                                             // Opaque identity for Fluent Tree; not decoded anywhere.
                                             value={`${name}/${flag}`}
+                                            data-settings-row-id={`dataset-field-${name}-flag-${flag}`}
                                         >
                                             <TreeItemLayout>
                                                 <span
@@ -344,31 +422,49 @@ export const DatasetSettings = () => {
                                                             )
                                                         }
                                                     />
-                                                    {infoKey ? (
-                                                        <InfoLabel
-                                                            htmlFor={checkboxId}
-                                                            info={translate(
-                                                                infoKey
-                                                            )}
-                                                            infoButton={{
-                                                                inline: false,
-                                                                popover: {
-                                                                    mountNode:
-                                                                        tooltipMountNode
-                                                                },
-                                                                onClick: (e) =>
-                                                                    e.stopPropagation()
-                                                            }}
-                                                        >
-                                                            {label}
-                                                        </InfoLabel>
-                                                    ) : (
-                                                        <Label
-                                                            htmlFor={checkboxId}
-                                                        >
-                                                            {label}
-                                                        </Label>
-                                                    )}
+                                                    <span>
+                                                        {infoKey ? (
+                                                            <InfoLabel
+                                                                htmlFor={
+                                                                    checkboxId
+                                                                }
+                                                                info={translate(
+                                                                    infoKey
+                                                                )}
+                                                                infoButton={{
+                                                                    inline: false,
+                                                                    popover: {
+                                                                        mountNode:
+                                                                            tooltipMountNode
+                                                                    },
+                                                                    onClick: (
+                                                                        e
+                                                                    ) =>
+                                                                        e.stopPropagation()
+                                                                }}
+                                                            >
+                                                                {labelNode}
+                                                            </InfoLabel>
+                                                        ) : (
+                                                            <Label
+                                                                htmlFor={
+                                                                    checkboxId
+                                                                }
+                                                            >
+                                                                {labelNode}
+                                                            </Label>
+                                                        )}
+                                                        {showAssistivePreview ? (
+                                                            <AssistivePreview
+                                                                text={translate(
+                                                                    infoKey
+                                                                )}
+                                                                ranges={
+                                                                    assistiveRanges
+                                                                }
+                                                            />
+                                                        ) : null}
+                                                    </span>
                                                 </span>
                                             </TreeItemLayout>
                                         </TreeItem>

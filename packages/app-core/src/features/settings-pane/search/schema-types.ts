@@ -1,5 +1,3 @@
-import type { SectionId } from './types';
-
 /**
  * Static schema describing a single row within a flat (non-dataset)
  * section. Schemas hold i18n keys only — no resolved strings — so they
@@ -19,9 +17,14 @@ export type SectionRowSchema = {
 
 /**
  * Static schema describing a single flat section in the settings pane.
+ *
+ * `id` is a plain string — section ids are opaque to the match engine and
+ * platform contributions can register arbitrary ids (see
+ * `resolvePlatformSearchables`). The dataset section is modelled via a
+ * separate descriptor shape, not via a union member here.
  */
 export type SectionSchema = {
-    id: Exclude<SectionId, 'dataset'>;
+    id: string;
     headingKey: string;
     rows: readonly SectionRowSchema[];
 };

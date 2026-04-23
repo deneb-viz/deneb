@@ -140,51 +140,58 @@ export const PerformanceSettings = ({
     return (
         <>
             {showIncrementalRow ? (
-                <Switch
-                    label={
-                        <>
-                            <InfoLabel
-                                info={
-                                    <>
-                                        {incrementalAssistiveText}{' '}
-                                        <Hyperlink
-                                            href={
-                                                PROVIDER_RESOURCE_CONFIGURATION
-                                                    .deneb
-                                                    .datasetDocumentationUrl
-                                            }
-                                            inline
-                                        >
-                                            {translate('Text_Link_Learn_More')}
-                                        </Hyperlink>
-                                    </>
-                                }
-                                infoButton={{
-                                    inline: false,
-                                    popover: { mountNode: tooltipMountNode }
-                                }}
-                            >
-                                <HighlightText
-                                    text={incrementalLabelText}
-                                    ranges={incrementalLabelRanges}
-                                />
-                            </InfoLabel>
-                            {showIncrementalAssistivePreview ? (
-                                <AssistivePreview
-                                    text={incrementalAssistiveText}
-                                    ranges={incrementalAssistiveRanges}
-                                />
-                            ) : null}
-                        </>
-                    }
-                    checked={enableIncrementalDataUpdates}
-                    onChange={(_, data) =>
-                        setEnableIncrementalDataUpdates(data.checked)
-                    }
-                />
+                <div data-settings-row-id='incremental-updates'>
+                    <Switch
+                        label={
+                            <>
+                                <InfoLabel
+                                    info={
+                                        <>
+                                            {incrementalAssistiveText}{' '}
+                                            <Hyperlink
+                                                href={
+                                                    PROVIDER_RESOURCE_CONFIGURATION
+                                                        .deneb
+                                                        .datasetDocumentationUrl
+                                                }
+                                                inline
+                                            >
+                                                {translate(
+                                                    'Text_Link_Learn_More'
+                                                )}
+                                            </Hyperlink>
+                                        </>
+                                    }
+                                    infoButton={{
+                                        inline: false,
+                                        popover: { mountNode: tooltipMountNode }
+                                    }}
+                                >
+                                    <HighlightText
+                                        text={incrementalLabelText}
+                                        ranges={incrementalLabelRanges}
+                                    />
+                                </InfoLabel>
+                                {showIncrementalAssistivePreview ? (
+                                    <AssistivePreview
+                                        text={incrementalAssistiveText}
+                                        ranges={incrementalAssistiveRanges}
+                                    />
+                                ) : null}
+                            </>
+                        }
+                        checked={enableIncrementalDataUpdates}
+                        onChange={(_, data) =>
+                            setEnableIncrementalDataUpdates(data.checked)
+                        }
+                    />
+                </div>
             ) : null}
             {showThresholdRow ? (
-                <div className={classes.spinButtonContainer}>
+                <div
+                    data-settings-row-id='incremental-threshold'
+                    className={classes.spinButtonContainer}
+                >
                     <Label htmlFor={spinButtonId}>
                         <HighlightText
                             text={thresholdLabelText}

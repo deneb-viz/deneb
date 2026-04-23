@@ -58,14 +58,19 @@ const getRowMatch = (
     return match.visible ? match : null;
 };
 
+type SettingsRadioGroupWithRowProps = SettingsRadioGroupProps & {
+    rowId: string;
+};
+
 const SettingsRadioGroup = ({
     infoKey,
     labelKey,
     value,
     onValueChange,
     options,
-    rowMatch
-}: SettingsRadioGroupProps) => {
+    rowMatch,
+    rowId
+}: SettingsRadioGroupWithRowProps) => {
     const translate = useDenebState((state) => state.i18n.translate);
     const classes = useSettingsPaneStyles();
     const tooltipMountNode = useSettingsPaneTooltip();
@@ -103,23 +108,25 @@ const SettingsRadioGroup = ({
         </>
     );
     return (
-        <Field label={labelNode}>
-            <div className={classes.radioGroupHorizontal}>
-                <RadioGroup
-                    layout='horizontal'
-                    onChange={onChange}
-                    value={value}
-                >
-                    {options.map((opt) => (
-                        <Radio
-                            key={opt.value}
-                            value={opt.value}
-                            label={translate(opt.labelKey)}
-                        />
-                    ))}
-                </RadioGroup>
-            </div>
-        </Field>
+        <div data-settings-row-id={rowId}>
+            <Field label={labelNode}>
+                <div className={classes.radioGroupHorizontal}>
+                    <RadioGroup
+                        layout='horizontal'
+                        onChange={onChange}
+                        value={value}
+                    >
+                        {options.map((opt) => (
+                            <Radio
+                                key={opt.value}
+                                value={opt.value}
+                                label={translate(opt.labelKey)}
+                            />
+                        ))}
+                    </RadioGroup>
+                </div>
+            </Field>
+        </div>
     );
 };
 
@@ -146,6 +153,7 @@ export const ProviderSettings = ({ sectionMatchView }: RowComponentProps) => {
     if (rowMatch === null) return null;
     return (
         <SettingsRadioGroup
+            rowId='provider'
             infoKey='Assistive_Text_Provider'
             labelKey='Text_Vega_Provider'
             value={provider ?? ''}
@@ -169,6 +177,7 @@ export const RenderModeSettings = ({ sectionMatchView }: RowComponentProps) => {
     if (rowMatch === null) return null;
     return (
         <SettingsRadioGroup
+            rowId='render-mode'
             infoKey='Assistive_Text_RenderMode'
             labelKey='Text_Vega_RenderMode'
             value={renderMode as SpecRenderMode}
@@ -207,33 +216,38 @@ export const ScaleToZoomSettings = ({
         assistiveRanges &&
         assistiveRanges.length > 0;
     return (
-        <Field
-            label={
-                <>
-                    <InfoLabel
-                        info={assistiveText}
-                        infoButton={{
-                            inline: false,
-                            popover: { mountNode: tooltipMountNode }
-                        }}
-                    >
-                        <HighlightText text={labelText} ranges={labelRanges} />
-                    </InfoLabel>
-                    {showAssistivePreview ? (
-                        <AssistivePreview
-                            text={assistiveText}
-                            ranges={assistiveRanges}
-                        />
-                    ) : null}
-                </>
-            }
-        >
-            <Switch
-                checked={scaleToZoom}
-                onChange={onChange}
-                disabled={!isCanvas}
-            />
-        </Field>
+        <div data-settings-row-id='scale-to-zoom'>
+            <Field
+                label={
+                    <>
+                        <InfoLabel
+                            info={assistiveText}
+                            infoButton={{
+                                inline: false,
+                                popover: { mountNode: tooltipMountNode }
+                            }}
+                        >
+                            <HighlightText
+                                text={labelText}
+                                ranges={labelRanges}
+                            />
+                        </InfoLabel>
+                        {showAssistivePreview ? (
+                            <AssistivePreview
+                                text={assistiveText}
+                                ranges={assistiveRanges}
+                            />
+                        ) : null}
+                    </>
+                }
+            >
+                <Switch
+                    checked={scaleToZoom}
+                    onChange={onChange}
+                    disabled={!isCanvas}
+                />
+            </Field>
+        </div>
     );
 };
 
