@@ -1040,3 +1040,4 @@ state and computes visibleSectionIds from `matchView`).
 - i18n catalog: [packages/app-core/src/i18n/en-US.json](packages/app-core/src/i18n/en-US.json)
 - Institutional learning — pure setState updaters: [docs/solutions/best-practices/pure-setstate-updaters-no-dom-side-effects-2026-04-21.md](docs/solutions/best-practices/pure-setstate-updaters-no-dom-side-effects-2026-04-21.md)
 - Institutional learning — type widening: [docs/solutions/best-practices/type-widening-requires-call-site-audit-2026-04-16.md](docs/solutions/best-practices/type-widening-requires-call-site-audit-2026-04-16.md)
+- Institutional learning (post-implementation, captured from review feedback) — extract shared semantics into pure helpers when parallel index/render paths must agree: [docs/solutions/best-practices/extract-shared-semantics-to-avoid-dual-maintenance-2026-04-24.md](docs/solutions/best-practices/extract-shared-semantics-to-avoid-dual-maintenance-2026-04-24.md)
