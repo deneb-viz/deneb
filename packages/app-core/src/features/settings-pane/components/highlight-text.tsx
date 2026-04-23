@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, memo } from 'react';
 import { makeStyles, mergeClasses, tokens } from '@fluentui/react-components';
 
 import type { HighlightRange } from '../search/types';
@@ -71,12 +71,12 @@ type HighlightTextProps = {
  * `ranges` is undefined or empty, renders plain text. Pure presentation;
  * no hooks besides the Fluent style hook.
  */
-export const HighlightText = ({
+export const HighlightText = memo(function HighlightText({
     text,
     ranges,
     className,
     markClassName
-}: HighlightTextProps) => {
+}: HighlightTextProps) {
     const classes = useHighlightStyles();
     const segments = splitTextIntoSegments(text, ranges);
     if (segments.length === 0) {
@@ -101,4 +101,4 @@ export const HighlightText = ({
             )}
         </span>
     );
-};
+});

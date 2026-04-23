@@ -175,7 +175,7 @@ const buildAllVisibleMatchView = (input: MatchEngineInput): MatchView => {
         sections.set(section.id, { headingHighlights: null, rows });
     }
     let datasetTree: DatasetMatchView | null = null;
-    if (input.dataset) {
+    if (input.dataset && input.dataset.fields.length > 0) {
         matchedSections.add('dataset');
         const matchedFields = new Map<string, FieldMatch>();
         for (const field of input.dataset.fields) {

@@ -7,9 +7,9 @@ import { ReportViewRouter } from './report-view-router';
 import {
     DenebProvider,
     useDenebState,
-    type PlatformSearchContribution,
     type ViewEventBinder
 } from '@deneb-viz/app-core';
+import { platformSearchContributions } from './platform-search-contributions';
 import { DenebEditor } from '@deneb-viz/app-core/editor';
 import {
     FetchingMessage,
@@ -40,75 +40,6 @@ import { handlePersistBooleanProperty } from '../features/settings/helpers';
 type AppProps = {
     host: powerbi.extensibility.visual.IVisualHost;
 };
-
-/**
- * Search contributions for each platform-injected AccordionItem in the
- * settings pane. One contribution per element in
- * `settingsPanePlatformComponent`, with `id` matching the React `key` so
- * the pane can filter and expand the corresponding element by id. Module
- * scope keeps the reference identity stable across renders — the
- * `useMemo` inside app-core's SettingsPane re-runs only when the value
- * reference changes.
- */
-const platformSearchContributions: PlatformSearchContribution[] = [
-    {
-        id: 'semantic-model',
-        heading: { key: 'Text_Settings_SemanticModel' },
-        rows: [
-            {
-                id: 'consolidate-field-parameters',
-                label: { key: 'Text_Setting_ConsolidateFieldParameters' },
-                assistive: { key: 'Assistive_Text_ConsolidateFieldParameters' }
-            }
-        ]
-    },
-    {
-        id: 'tooltips',
-        heading: { key: 'PowerBI_Objects_Vega_Tooltips' },
-        rows: [
-            {
-                id: 'enable-tooltips',
-                label: { key: 'PowerBI_Objects_Vega_EnableTooltips' }
-            }
-        ]
-    },
-    {
-        id: 'contextmenu',
-        heading: { key: 'PowerBI_Objects_Vega_ContextMenu' },
-        rows: [
-            {
-                id: 'enable-contextmenu',
-                label: { key: 'PowerBI_Objects_Vega_EnableContextMenu' }
-            },
-            {
-                id: 'enable-contextmenu-selector',
-                label: {
-                    key: 'PowerBI_Objects_Vega_EnableContextMenuSelector'
-                }
-            }
-        ]
-    },
-    {
-        id: 'crossfilter',
-        heading: { key: 'PowerBI_Objects_Vega_CrossFiltering' },
-        rows: [
-            {
-                id: 'enable-selection',
-                label: { key: 'PowerBI_Objects_Vega_EnableSelection' }
-            }
-        ]
-    },
-    {
-        id: 'crosshighlight',
-        heading: { key: 'PowerBI_Objects_Vega_CrossHighlighting' },
-        rows: [
-            {
-                id: 'enable-highlight',
-                label: { key: 'PowerBI_Objects_Vega_EnableHighlight' }
-            }
-        ]
-    }
-];
 
 export const App = ({ host }: AppProps) => {
     const [isDownloadPermitted, setIsDownloadPermitted] = useState<

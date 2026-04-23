@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     Button,
     Checkbox,
@@ -187,14 +187,28 @@ export const DatasetSettings = ({
     // intentionally write to `openItems` (not `effectiveOpenItems`), so
     // during search the change is queued: clearing the query exposes the
     // user's Expand/Collapse-all intent post-filter.
+    //
+    // Each effect tracks the last-applied epoch via a ref so that
+    // StrictMode's double-invoke or a DatasetSettings remount while the
+    // counter is non-zero does not replay the bulk toggle. `sourceFields`
+    // is listed as a dep so an expand-all queued before fields arrive
+    // still opens them once they do.
+    const lastExpandAllEpochRef = useRef(0);
     useEffect(() => {
-        if (expandAllEpoch === undefined || expandAllEpoch === 0) return;
+        if (expandAllEpoch === undefined) return;
+        if (expandAllEpoch === lastExpandAllEpochRef.current) return;
+        lastExpandAllEpochRef.current = expandAllEpoch;
+        if (expandAllEpoch === 0) return;
         setOpenItems(
             new Set<TreeItemValue>(sourceFields.map(([name]) => name))
         );
-    }, [expandAllEpoch]);
+    }, [expandAllEpoch, sourceFields]);
+    const lastCollapseAllEpochRef = useRef(0);
     useEffect(() => {
-        if (collapseAllEpoch === undefined || collapseAllEpoch === 0) return;
+        if (collapseAllEpoch === undefined) return;
+        if (collapseAllEpoch === lastCollapseAllEpochRef.current) return;
+        lastCollapseAllEpochRef.current = collapseAllEpoch;
+        if (collapseAllEpoch === 0) return;
         setOpenItems(new Set());
     }, [collapseAllEpoch]);
 
@@ -217,9 +231,13 @@ export const DatasetSettings = ({
         [sourceFields]
     );
 
-    // A spec is legacy if it has non-default content but denebMetaVersion < 2
+    // A spec is legacy if it has non-default content but denebMetaVersion < 2.
+    // Treat an unset denebMetaVersion as 0 so this stays in sync with the
+    // pane's resolver (see settings-pane.tsx — both sides feed the same
+    // `resolveFieldDefaults`, mismatched legacy classification produces
+    // different applicable-flag sets between match view and render).
     const isLegacy = useMemo(
-        () => spec !== PROJECT_DEFAULTS.spec && denebMetaVersion < 2,
+        () => spec !== PROJECT_DEFAULTS.spec && (denebMetaVersion ?? 0) < 2,
         [spec, denebMetaVersion]
     );
 
@@ -363,7 +381,7 @@ export const DatasetSettings = ({
                             key={name}
                             itemType='branch'
                             value={name}
-                            data-settings-row-id={`dataset-field-${name}`}
+                            data-settings-row-id={name}
                         >
                             <TreeItemLayout
                                 className={classes.fieldItem}
@@ -448,7 +466,7 @@ export const DatasetSettings = ({
                                             itemType='leaf'
                                             // Opaque identity for Fluent Tree; not decoded anywhere.
                                             value={`${name}/${flag}`}
-                                            data-settings-row-id={`dataset-field-${name}-flag-${flag}`}
+                                            data-settings-row-id={`${name}/${flag}`}
                                         >
                                             <TreeItemLayout>
                                                 <span

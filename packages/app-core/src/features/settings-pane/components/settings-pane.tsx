@@ -65,7 +65,14 @@ const pickSectionView = (
  */
 const getElementKey = (element: unknown): string | null => {
     if (!isValidElement(element)) return null;
-    return typeof element.key === 'string' ? element.key : null;
+    // React keys round-trip as strings even when authored as numbers;
+    // normalise both forms so platform consumers using numeric keys
+    // participate in the filter rather than being silently dropped.
+    const key = element.key;
+    if (key === null) return null;
+    return typeof key === 'string' || typeof key === 'number'
+        ? String(key)
+        : null;
 };
 
 export const SettingsPane = () => {

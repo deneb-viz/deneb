@@ -139,8 +139,13 @@ export const resolvePlatformSearchables = (
  * Normalise a raw query into the form the match engine expects.
  *
  * The engine compares case-folded strings strictly, so the pane
- * trims and lower-cases the user input here. `locale` routes through
- * `toLocaleLowerCase` so locale-specific casing rules apply.
+ * trims and lower-cases the user input here. Uses plain `toLowerCase`
+ * to stay consistent with the engine's `computeHighlightRanges` (both
+ * sides of the comparison must fold identically, or Turkish /
+ * German edge cases produce spurious non-matches). Locale-bound search
+ * is a documented scope boundary (see origin brainstorm).
+ *
+ * `locale` is accepted for forward compatibility but ignored today.
  */
-export const resolveQuery = (raw: string, locale?: string): string =>
-    raw.trim().toLocaleLowerCase(locale);
+export const resolveQuery = (raw: string, _locale?: string): string =>
+    raw.trim().toLowerCase();
