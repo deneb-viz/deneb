@@ -59,15 +59,15 @@ export const SettingsPane = () => {
                         value='general'
                         heading={translate('Text_Vega_Provider_And_Rendering')}
                     >
-                        <ProviderSettings />
-                        <RenderModeSettings />
-                        <ScaleToZoomSettings />
+                        <ProviderSettings sectionMatchView={null} />
+                        <RenderModeSettings sectionMatchView={null} />
+                        <ScaleToZoomSettings sectionMatchView={null} />
                     </SettingsAccordionItem>
                     <SettingsAccordionItem
                         value='performance'
                         heading={translate('Text_Vega_Performance')}
                     >
-                        <PerformanceSettings />
+                        <PerformanceSettings sectionMatchView={null} />
                     </SettingsAccordionItem>
                     <SettingsAccordionItem
                         value='dataset'

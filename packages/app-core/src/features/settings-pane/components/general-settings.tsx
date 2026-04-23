@@ -1,4 +1,4 @@
-import { type FormEvent, useCallback } from 'react';
+import { type FormEvent, type ReactNode, useCallback } from 'react';
 import {
     Field,
     InfoLabel,
@@ -15,6 +15,10 @@ import {
 import { useSettingsPaneTooltip } from './settings-pane-tooltip-context';
 import { useDenebState } from '../../../state';
 import { useSettingsPaneStyles } from '../styles';
+import { AssistivePreview } from './assistive-preview';
+import { HighlightText } from './highlight-text';
+import { generalSchema } from '../search/general-schema';
+import type { RowMatch, SectionMatchView } from '../search/types';
 
 type RadioOption = {
     value: string;
@@ -27,6 +31,31 @@ type SettingsRadioGroupProps = {
     value: string;
     onValueChange: (value: string) => void;
     options: RadioOption[];
+    rowMatch?: RowMatch;
+};
+
+/**
+ * Row components receive `sectionMatchView` (already filtered to this
+ * section) plus the row's own schema id. They look up their own
+ * `RowMatch` so the section-level prop drilling stays simple.
+ */
+type RowComponentProps = {
+    sectionMatchView?: SectionMatchView | null;
+};
+
+/**
+ * Look up the row match for a given row id. Returns `undefined` when
+ * the view is absent (no active filter) and `null` when the row is
+ * explicitly filtered out.
+ */
+const getRowMatch = (
+    view: SectionMatchView | null | undefined,
+    rowId: string
+): RowMatch | undefined | null => {
+    if (!view) return undefined;
+    const match = view.rows.get(rowId);
+    if (!match) return null;
+    return match.visible ? match : null;
 };
 
 const SettingsRadioGroup = ({
@@ -34,7 +63,8 @@ const SettingsRadioGroup = ({
     labelKey,
     value,
     onValueChange,
-    options
+    options,
+    rowMatch
 }: SettingsRadioGroupProps) => {
     const translate = useDenebState((state) => state.i18n.translate);
     const classes = useSettingsPaneStyles();
@@ -45,20 +75,35 @@ const SettingsRadioGroup = ({
         },
         [onValueChange]
     );
+    const labelText = translate(labelKey);
+    const assistiveText = translate(infoKey);
+    const labelRanges = rowMatch?.highlights.label;
+    const assistiveRanges = rowMatch?.highlights.assistive;
+    const showAssistivePreview =
+        (!labelRanges || labelRanges.length === 0) &&
+        assistiveRanges &&
+        assistiveRanges.length > 0;
+    const labelNode: ReactNode = (
+        <>
+            <InfoLabel
+                info={assistiveText}
+                infoButton={{
+                    inline: false,
+                    popover: { mountNode: tooltipMountNode }
+                }}
+            >
+                <HighlightText text={labelText} ranges={labelRanges} />
+            </InfoLabel>
+            {showAssistivePreview ? (
+                <AssistivePreview
+                    text={assistiveText}
+                    ranges={assistiveRanges}
+                />
+            ) : null}
+        </>
+    );
     return (
-        <Field
-            label={
-                <InfoLabel
-                    info={translate(infoKey)}
-                    infoButton={{
-                        inline: false,
-                        popover: { mountNode: tooltipMountNode }
-                    }}
-                >
-                    {translate(labelKey)}
-                </InfoLabel>
-            }
-        >
+        <Field label={labelNode}>
             <div className={classes.radioGroupHorizontal}>
                 <RadioGroup
                     layout='horizontal'
@@ -88,7 +133,7 @@ const RENDER_MODE_OPTIONS: RadioOption[] = [
     { value: 'svg', labelKey: 'Enum_Grammar_RenderMode_Svg' }
 ];
 
-export const ProviderSettings = () => {
+export const ProviderSettings = ({ sectionMatchView }: RowComponentProps) => {
     const { provider, setProvider } = useDenebState((state) => ({
         provider: state.project.provider,
         setProvider: state.project.setProvider
@@ -97,6 +142,8 @@ export const ProviderSettings = () => {
         (value: string) => setProvider(value as SpecProvider),
         [setProvider]
     );
+    const rowMatch = getRowMatch(sectionMatchView, 'provider');
+    if (rowMatch === null) return null;
     return (
         <SettingsRadioGroup
             infoKey='Assistive_Text_Provider'
@@ -104,11 +151,12 @@ export const ProviderSettings = () => {
             value={provider ?? ''}
             onValueChange={onValueChange}
             options={PROVIDER_OPTIONS}
+            rowMatch={rowMatch ?? undefined}
         />
     );
 };
 
-export const RenderModeSettings = () => {
+export const RenderModeSettings = ({ sectionMatchView }: RowComponentProps) => {
     const { renderMode, setRenderMode } = useDenebState((state) => ({
         renderMode: state.project.renderMode,
         setRenderMode: state.project.setRenderMode
@@ -117,6 +165,8 @@ export const RenderModeSettings = () => {
         (value: string) => setRenderMode(value as SpecRenderMode),
         [setRenderMode]
     );
+    const rowMatch = getRowMatch(sectionMatchView, 'render-mode');
+    if (rowMatch === null) return null;
     return (
         <SettingsRadioGroup
             infoKey='Assistive_Text_RenderMode'
@@ -124,11 +174,14 @@ export const RenderModeSettings = () => {
             value={renderMode as SpecRenderMode}
             onValueChange={onValueChange}
             options={RENDER_MODE_OPTIONS}
+            rowMatch={rowMatch ?? undefined}
         />
     );
 };
 
-export const ScaleToZoomSettings = () => {
+export const ScaleToZoomSettings = ({
+    sectionMatchView
+}: RowComponentProps) => {
     const { scaleToZoom, renderMode, setScaleToZoom, translate } =
         useDenebState((state) => ({
             scaleToZoom: state.project.scaleToZoom,
@@ -143,18 +196,36 @@ export const ScaleToZoomSettings = () => {
             setScaleToZoom(data.checked),
         [setScaleToZoom]
     );
+    const rowMatch = getRowMatch(sectionMatchView, 'scale-to-zoom');
+    if (rowMatch === null) return null;
+    const labelText = translate('Text_Setting_ScaleToZoom');
+    const assistiveText = translate('Assistive_Text_ScaleToZoom');
+    const labelRanges = rowMatch?.highlights.label;
+    const assistiveRanges = rowMatch?.highlights.assistive;
+    const showAssistivePreview =
+        (!labelRanges || labelRanges.length === 0) &&
+        assistiveRanges &&
+        assistiveRanges.length > 0;
     return (
         <Field
             label={
-                <InfoLabel
-                    info={translate('Assistive_Text_ScaleToZoom')}
-                    infoButton={{
-                        inline: false,
-                        popover: { mountNode: tooltipMountNode }
-                    }}
-                >
-                    {translate('Text_Setting_ScaleToZoom')}
-                </InfoLabel>
+                <>
+                    <InfoLabel
+                        info={assistiveText}
+                        infoButton={{
+                            inline: false,
+                            popover: { mountNode: tooltipMountNode }
+                        }}
+                    >
+                        <HighlightText text={labelText} ranges={labelRanges} />
+                    </InfoLabel>
+                    {showAssistivePreview ? (
+                        <AssistivePreview
+                            text={assistiveText}
+                            ranges={assistiveRanges}
+                        />
+                    ) : null}
+                </>
             }
         >
             <Switch
@@ -165,3 +236,9 @@ export const ScaleToZoomSettings = () => {
         </Field>
     );
 };
+
+/**
+ * Re-exported so callers outside this module (notably `settings-pane.tsx`
+ * in Unit 3) can resolve every row's i18n keys in a single pass.
+ */
+export { generalSchema };
