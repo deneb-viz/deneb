@@ -10,21 +10,28 @@
  *   0 — all benchmarks pass (including NEW / MISSING)
  *   1 — at least one REGRESSION
  *   2 — script error (malformed input, invalid hz, duplicate keys, file
- *       missing, CLI parse error). CI treats this as a hard failure even
- *       during advisory rollout.
+ *       missing, CLI parse error, unknown --package). CI treats this as a
+ *       hard failure even during advisory rollout.
  *   3 — no baseline found (first run). Comparison skipped. Distinct from
  *       exit 0 so callers can tell "all pass" from "nothing to compare".
  *
  * Usage:
  *   node benchmarks/compare.mjs \
- *     --results <path> \
- *     --baseline <path> \
+ *     [--package data-core|app-core] \
+ *     [--results <path>] \
+ *     [--baseline <path>] \
  *     [--threshold 20] \
  *     [--format markdown|json] \
  *     [--update] \
  *     [--allow-removed-benches] \
  *     [--force-non-ci] \
  *     [--help]
+ *
+ * `--package` is a shortcut that resolves `--results` and `--baseline` to
+ * conventional per-package locations so callers don't have to repeat the
+ * paths. Explicit `--results` / `--baseline` win if both forms are passed.
+ * Defaults to `data-core` when neither is supplied (backward compat with
+ * the single-package rollout).
  *
  * See docs/plans/2026-04-16-001-feat-performance-benchmarks-plan.md (Unit 4).
  */
@@ -44,6 +51,59 @@ export const EXIT_SKIP = 3;
 export const SCHEMA_SEPARATOR = ' > ';
 export const MIN_SAMPLE_COUNT = 5;
 export const MASS_MISMATCH_FRACTION = 0.5;
+
+/**
+ * Registry of packages that publish benchmarks. Each entry maps the
+ * `--package` flag value to the conventional per-package results and
+ * baseline paths, so the CLI can resolve both from a single arg.
+ *
+ * Keep this in sync with the `outputJson` value in each package's
+ * `vitest.config.ts` and the filenames under `benchmarks/baselines/`.
+ * Adding a new package here is enough to wire it up — no CLI logic
+ * changes are needed.
+ */
+export const PACKAGE_REGISTRY = {
+    'data-core': {
+        results: 'packages/data-core/benchmarks/results/data-core.json',
+        baseline: 'benchmarks/baselines/data-core.json'
+    },
+    'app-core': {
+        results: 'packages/app-core/benchmarks/results/app-core.json',
+        baseline: 'benchmarks/baselines/app-core.json'
+    }
+};
+
+export const DEFAULT_PACKAGE = 'data-core';
+
+/**
+ * Resolve `--results` / `--baseline` from a combination of explicit CLI
+ * paths and the `--package` shortcut. Explicit paths always win;
+ * otherwise fall back to the registry entry for the named package.
+ *
+ * @param {{ package?: string|null, results?: string|null, baseline?: string|null }} args
+ * @returns {{ ok: true, results: string, baseline: string, package: string }
+ *         | { ok: false, error: string }}
+ */
+export function resolvePackageArgs({
+    package: pkg = null,
+    results = null,
+    baseline = null
+} = {}) {
+    const resolvedPackage = pkg ?? DEFAULT_PACKAGE;
+    const registry = PACKAGE_REGISTRY[resolvedPackage];
+    if (!registry) {
+        return {
+            ok: false,
+            error: `unknown --package "${resolvedPackage}". Known packages: ${Object.keys(PACKAGE_REGISTRY).join(', ')}.`
+        };
+    }
+    return {
+        ok: true,
+        package: resolvedPackage,
+        results: results ?? registry.results,
+        baseline: baseline ?? registry.baseline
+    };
+}
 
 // =========================================================================
 // Ingest — Vitest outputJson → flat key map with validation
@@ -430,11 +490,17 @@ export function readCommitSha() {
 // CLI entrypoint
 // =========================================================================
 
-const USAGE = `Usage: node benchmarks/compare.mjs --results <path> --baseline <path> [options]
+const USAGE = `Usage: node benchmarks/compare.mjs [--package <name>] [options]
 
 Options:
-  --results <path>          Path to Vitest bench --outputJson file (required)
-  --baseline <path>         Path to committed baseline JSON (required)
+  --package <name>          Package whose benchmarks to compare. Resolves
+                            --results and --baseline to conventional
+                            per-package paths. Known: ${Object.keys(PACKAGE_REGISTRY).join(', ')}.
+                            Default: ${DEFAULT_PACKAGE}.
+  --results <path>          Path to Vitest bench --outputJson file
+                            (overrides --package)
+  --baseline <path>         Path to committed baseline JSON
+                            (overrides --package)
   --threshold <number>      Regression threshold as a percentage (default: 20)
   --format <markdown|json>  Output format (default: markdown)
   --update                  Write current results as the new baseline
@@ -445,7 +511,7 @@ Options:
 Exit codes:
   0  All benchmarks pass
   1  At least one regression detected
-  2  Script error (malformed input, invalid data, file missing)
+  2  Script error (malformed input, invalid data, file missing, unknown package)
   3  No baseline found (first run, comparison skipped)`;
 
 async function main(argv) {
@@ -454,6 +520,7 @@ async function main(argv) {
         ({ values } = parseArgs({
             args: argv.slice(2),
             options: {
+                package: { type: 'string' },
                 results: { type: 'string' },
                 baseline: { type: 'string' },
                 threshold: { type: 'string', default: '20' },
@@ -477,14 +544,18 @@ async function main(argv) {
         return EXIT_OK;
     }
 
-    if (!values.results) {
-        console.error('--results <path> is required');
+    const resolvedPaths = resolvePackageArgs({
+        package: values.package ?? null,
+        results: values.results ?? null,
+        baseline: values.baseline ?? null
+    });
+    if (!resolvedPaths.ok) {
+        console.error(resolvedPaths.error);
+        console.error(USAGE);
         return EXIT_ERROR;
     }
-    if (!values.baseline) {
-        console.error('--baseline <path> is required');
-        return EXIT_ERROR;
-    }
+    values.results = resolvedPaths.results;
+    values.baseline = resolvedPaths.baseline;
 
     const format = values.format;
     if (format !== 'markdown' && format !== 'json') {
@@ -558,12 +629,20 @@ async function main(argv) {
 }
 
 export async function handleCompare({ current, baseline, baselinePath, defaultThreshold, format = 'markdown' }) {
-    if (!baseline) {
-        const msg = `no baseline found at ${baselinePath} — treating as first run.`;
+    // A baseline with `_meta.bootstrap: true` is a placeholder committed
+    // to register the package with CI before any real data has been
+    // captured. The first successful `bench-update-baseline` workflow run
+    // overwrites it. Treat it the same as a missing file — exit 3 so
+    // advisory CI stays green until a real baseline lands.
+    const isBootstrap = Boolean(baseline?._meta?.bootstrap);
+    if (!baseline || isBootstrap) {
+        const reason = isBootstrap
+            ? `baseline at ${baselinePath} is a bootstrap placeholder — treating as first run.`
+            : `no baseline found at ${baselinePath} — treating as first run.`;
         if (format === 'json') {
-            console.log(JSON.stringify({ skipped: true, reason: msg }, null, 2));
+            console.log(JSON.stringify({ skipped: true, reason }, null, 2));
         } else {
-            console.log(msg);
+            console.log(reason);
         }
         return EXIT_SKIP;
     }

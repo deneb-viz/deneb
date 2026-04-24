@@ -12,6 +12,19 @@ name: Bench — Update Baseline
 
 on:
     workflow_dispatch:
+        inputs:
+            package:
+                description: >-
+                    Package whose baseline to refresh. `all` iterates every
+                    registered package. Keep this list in sync with
+                    PACKAGE_REGISTRY in benchmarks/compare.mjs.
+                required: false
+                default: all
+                type: choice
+                options:
+                    - all
+                    - data-core
+                    - app-core
 
 jobs:
     update-baseline:
@@ -44,27 +57,47 @@ jobs:
               run: npm run build
             - name: Run benchmarks
               run: npm run bench
-            - name: Verify results file exists
+            - name: Refresh baselines
+              shell: bash
+              env:
+                  SELECTED_PACKAGE: ${{ inputs.package }}
               run: |
-                  RESULTS="packages/data-core/benchmarks/results/data-core.json"
-                  if [ ! -s "$RESULTS" ]; then
-                    echo "::error::Bench results file missing or empty at $RESULTS. Check that vitest bench matched at least one .bench.ts file."
-                    exit 1
+                  set -e
+                  # Expand `all` to every registered package. Keep this
+                  # list in sync with PACKAGE_REGISTRY in
+                  # benchmarks/compare.mjs and the `package` input options.
+                  if [ "$SELECTED_PACKAGE" = "all" ] || [ -z "$SELECTED_PACKAGE" ]; then
+                    PACKAGES=(data-core app-core)
+                  else
+                    PACKAGES=("$SELECTED_PACKAGE")
                   fi
-            - name: Write new baseline
-              run: npm run bench:update-baseline
-            - name: Upload refreshed baseline
+                  for pkg in "${PACKAGES[@]}"; do
+                    echo "::group::Refresh baseline for $pkg"
+                    RESULTS="packages/$pkg/benchmarks/results/$pkg.json"
+                    if [ ! -s "$RESULTS" ]; then
+                      echo "::error::Bench results file missing or empty at $RESULTS. Check that vitest bench matched at least one .bench.ts file for $pkg."
+                      exit 1
+                    fi
+                    node benchmarks/compare.mjs --package "$pkg" --update
+                    echo "::endgroup::"
+                  done
+            - name: Upload refreshed baselines
               uses: actions/upload-artifact@v4
               with:
                   name: refreshed-baseline-${{ github.sha }}
-                  path: benchmarks/baselines/data-core.json
+                  path: benchmarks/baselines/*.json
                   retention-days: 30
                   if-no-files-found: error
             - name: Summary
+              shell: bash
+              env:
+                  SELECTED_PACKAGE: ${{ inputs.package }}
               run: |
                   echo "### Baseline refreshed" >> "$GITHUB_STEP_SUMMARY"
                   echo "" >> "$GITHUB_STEP_SUMMARY"
-                  echo "Download the \`refreshed-baseline-${{ github.sha }}\` artifact from this run and commit it to \`benchmarks/baselines/data-core.json\` via a PR." >> "$GITHUB_STEP_SUMMARY"
+                  echo "Packages refreshed: \`${SELECTED_PACKAGE:-all}\`" >> "$GITHUB_STEP_SUMMARY"
+                  echo "" >> "$GITHUB_STEP_SUMMARY"
+                  echo "Download the \`refreshed-baseline-${{ github.sha }}\` artifact from this run and commit the updated file(s) under \`benchmarks/baselines/\` via a PR." >> "$GITHUB_STEP_SUMMARY"
                   echo "" >> "$GITHUB_STEP_SUMMARY"
                   echo "Commit SHA: \`${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
                   echo "Runner image: \`$ImageOS-$ImageVersion\`" >> "$GITHUB_STEP_SUMMARY"

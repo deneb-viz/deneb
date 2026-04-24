@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { SupportFieldFlags } from '@deneb-viz/data-core/support-fields';
+import type {
+    SupportFieldFlags,
+    SupportFieldMasterSettings
+} from '@deneb-viz/data-core/support-fields';
+import type { DatasetField } from '@deneb-viz/data-core/field';
 import {
     MEASURE_FLAGS,
     COLUMN_FLAGS,
@@ -7,7 +11,9 @@ import {
     FLAG_INFO,
     computeToggledConfig,
     hasAnyEnabledFlag,
-    removeFieldFromConfig
+    removeFieldFromConfig,
+    resolveFieldApplicability,
+    resolveFieldFlagsForConfig
 } from '../dataset-settings-utils';
 
 const baseFlags: SupportFieldFlags = {
@@ -214,5 +220,123 @@ describe('removeFieldFromConfig', () => {
         const config = { A: baseFlags };
         removeFieldFromConfig(config, 'A');
         expect(config).toHaveProperty('A');
+    });
+});
+
+const masterOn: SupportFieldMasterSettings = {
+    crossHighlightEnabled: true,
+    crossFilterEnabled: true
+};
+
+const field = (role: DatasetField['role']): DatasetField =>
+    ({ role }) as DatasetField;
+
+describe('resolveFieldFlagsForConfig', () => {
+    it('returns the explicit config entry when present', () => {
+        const explicit: SupportFieldFlags = { ...baseFlags, highlight: true };
+        const config = { Sales: explicit };
+        const out = resolveFieldFlagsForConfig(
+            field('aggregation'),
+            config,
+            'Sales',
+            masterOn,
+            false
+        );
+        expect(out).toBe(explicit);
+    });
+
+    it('falls back to resolveFieldDefaults when the field has no explicit entry', () => {
+        const out = resolveFieldFlagsForConfig(
+            field('aggregation'),
+            {},
+            'Sales',
+            masterOn,
+            false
+        );
+        // Defaults for a measure with cross-highlight enabled enable `highlight`.
+        expect(out.highlight).toBe(true);
+    });
+
+    it('legacy classification produces different defaults than current', () => {
+        const current = resolveFieldFlagsForConfig(
+            field('aggregation'),
+            {},
+            'Sales',
+            masterOn,
+            false
+        );
+        const legacy = resolveFieldFlagsForConfig(
+            field('aggregation'),
+            {},
+            'Sales',
+            masterOn,
+            true
+        );
+        expect(legacy).not.toEqual(current);
+    });
+});
+
+describe('resolveFieldApplicability', () => {
+    const run = (
+        role: DatasetField['role'],
+        flags: SupportFieldFlags,
+        highlightEnabled: boolean,
+        consolidateFieldParameters: boolean
+    ) =>
+        resolveFieldApplicability({
+            field: field(role),
+            fieldFlags: flags,
+            highlightEnabled,
+            consolidateFieldParameters
+        });
+
+    it('measure + highlight enabled exposes every MEASURE_FLAG', () => {
+        const out = run('aggregation', baseFlags, true, false);
+        expect(out.isMeasure).toBe(true);
+        expect(out.isFieldParameter).toBe(false);
+        expect(out.isParameter).toBe(false);
+        for (const flag of MEASURE_FLAGS) {
+            expect(out.applicableFlags).toContain(flag);
+        }
+    });
+
+    it('measure + highlight disabled collapses to COLUMN_FLAGS', () => {
+        const out = run('aggregation', baseFlags, false, false);
+        expect(out.applicableFlags).toEqual([...COLUMN_FLAGS]);
+    });
+
+    it('grouping (non-measure, non-parameter) always collapses to COLUMN_FLAGS', () => {
+        const out = run('grouping', baseFlags, true, false);
+        expect(out.isMeasure).toBe(false);
+        expect(out.applicableFlags).toEqual([...COLUMN_FLAGS]);
+    });
+
+    it('field-parameter role is classified as a parameter', () => {
+        const out = run('field-parameter', baseFlags, true, false);
+        expect(out.isFieldParameter).toBe(true);
+        expect(out.isParameter).toBe(true);
+    });
+
+    it('treatAsParameter lifts a grouping field into parameter classification', () => {
+        const out = run(
+            'grouping',
+            { ...baseFlags, treatAsParameter: true },
+            true,
+            false
+        );
+        expect(out.isFieldParameter).toBe(false);
+        expect(out.isTreatedAs).toBe(true);
+        expect(out.isParameter).toBe(true);
+    });
+
+    it('consolidation appends treatAsParameter / names for a grouping field', () => {
+        const out = run('grouping', baseFlags, true, true);
+        expect(out.applicableFlags).toContain('treatAsParameter');
+        expect(out.applicableFlags).not.toContain('names');
+    });
+
+    it('consolidation + parameter classification appends names', () => {
+        const out = run('field-parameter', baseFlags, true, true);
+        expect(out.applicableFlags).toContain('names');
     });
 });

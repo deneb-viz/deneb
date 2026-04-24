@@ -84,6 +84,9 @@ packages/configuration/src/generated.ts
 # Temporary benchmark harness for cross-version captures (deleted after use)
 /benchmarks-temp/
 
+# Compound engineering
+.context/
+
 # Windows Shell Cache (created when dev server accesses icon files)
 # This folder is created because Node.js/PowerShell doesn't expand %SystemDrive%
 # properly when Windows Shell creates icon/thumbnail cache during pbiviz:start

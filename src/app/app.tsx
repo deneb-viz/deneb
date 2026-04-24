@@ -9,6 +9,10 @@ import {
     useDenebState,
     type ViewEventBinder
 } from '@deneb-viz/app-core';
+import {
+    PLATFORM_SECTION_KEYS,
+    platformSearchContributions
+} from './platform-search-contributions';
 import { DenebEditor } from '@deneb-viz/app-core/editor';
 import {
     FetchingMessage,
@@ -182,12 +186,13 @@ export const App = ({ host }: AppProps) => {
                 onRenderingFinished,
                 settingsPaneFooter: <InteractivityFooter />,
                 settingsPanePlatformComponent: [
-                    <SemanticModelSettings key='semantic-model' />,
-                    <TooltipSettings key='tooltips' />,
-                    <ContextMenuSettings key='contextmenu' />,
-                    <CrossFilterSettings key='crossfilter' />,
-                    <CrossHighlightSettings key='crosshighlight' />
+                    <SemanticModelSettings key={PLATFORM_SECTION_KEYS[0]} />,
+                    <TooltipSettings key={PLATFORM_SECTION_KEYS[1]} />,
+                    <ContextMenuSettings key={PLATFORM_SECTION_KEYS[2]} />,
+                    <CrossFilterSettings key={PLATFORM_SECTION_KEYS[3]} />,
+                    <CrossHighlightSettings key={PLATFORM_SECTION_KEYS[4]} />
                 ],
+                settingsPanePlatformSearchable: platformSearchContributions,
                 tooltipHandler: pbiTooltipHandler,
                 vegaLoader,
                 viewEventBinders,

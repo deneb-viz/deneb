@@ -21,11 +21,31 @@ import { useDenebState } from '../../../state';
 import { useSettingsPaneStyles } from '../styles';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { INCREMENTAL_UPDATE_CONFIGURATION } from '../../../lib/vega/incremental-update-configuration';
+import { AssistivePreview } from './assistive-preview';
+import { HighlightText } from './highlight-text';
+import { performanceSchema } from '../search/performance-schema';
+import type { RowMatch, SectionMatchView } from '../search/types';
+
+type PerformanceSettingsProps = {
+    sectionMatchView?: SectionMatchView | null;
+};
+
+const getRowMatch = (
+    view: SectionMatchView | null | undefined,
+    rowId: string
+): RowMatch | undefined | null => {
+    if (!view) return undefined;
+    const match = view.rows.get(rowId);
+    if (!match) return null;
+    return match.visible ? match : null;
+};
 
 /**
  * Performance settings panel for compilation and rendering optimizations.
  */
-export const PerformanceSettings = () => {
+export const PerformanceSettings = ({
+    sectionMatchView
+}: PerformanceSettingsProps) => {
     const classes = useSettingsPaneStyles();
     const tooltipMountNode = useSettingsPaneTooltip();
 
@@ -93,42 +113,90 @@ export const PerformanceSettings = () => {
 
     const spinButtonId = useId();
 
+    const incrementalRow = getRowMatch(sectionMatchView, 'incremental-updates');
+    const thresholdRow = getRowMatch(sectionMatchView, 'incremental-threshold');
+
+    const incrementalLabelText = translate(
+        'Text_Vega_Performance_IncrementalUpdates'
+    );
+    const incrementalAssistiveText = translate('Assistive_Text_Performance');
+    const incrementalLabelRanges = incrementalRow?.highlights.label;
+    const incrementalAssistiveRanges = incrementalRow?.highlights.assistive;
+    const showIncrementalAssistivePreview =
+        (!incrementalLabelRanges || incrementalLabelRanges.length === 0) &&
+        incrementalAssistiveRanges &&
+        incrementalAssistiveRanges.length > 0;
+
+    const thresholdLabelText = translate('Text_Vega_Performance_Threshold');
+    const thresholdLabelRanges = thresholdRow?.highlights.label;
+
+    const showIncrementalRow = incrementalRow !== null;
+    const showThresholdRow =
+        enableIncrementalDataUpdates && thresholdRow !== null;
+    // Only show the active/inactive message bar when the toggle row itself
+    // is visible — otherwise the bar would float with no context.
+    const showMessageBar = enableIncrementalDataUpdates && showIncrementalRow;
+
     return (
         <>
-            <Switch
-                label={
-                    <InfoLabel
-                        info={
+            {showIncrementalRow ? (
+                <div data-settings-row-id='incremental-updates'>
+                    <Switch
+                        label={
                             <>
-                                {translate('Assistive_Text_Performance')}{' '}
-                                <Hyperlink
-                                    href={
-                                        PROVIDER_RESOURCE_CONFIGURATION.deneb
-                                            .datasetDocumentationUrl
+                                <InfoLabel
+                                    info={
+                                        <>
+                                            {incrementalAssistiveText}{' '}
+                                            <Hyperlink
+                                                href={
+                                                    PROVIDER_RESOURCE_CONFIGURATION
+                                                        .deneb
+                                                        .datasetDocumentationUrl
+                                                }
+                                                inline
+                                            >
+                                                {translate(
+                                                    'Text_Link_Learn_More'
+                                                )}
+                                            </Hyperlink>
+                                        </>
                                     }
-                                    inline
+                                    infoButton={{
+                                        inline: false,
+                                        popover: { mountNode: tooltipMountNode }
+                                    }}
                                 >
-                                    {translate('Text_Link_Learn_More')}
-                                </Hyperlink>
+                                    <HighlightText
+                                        text={incrementalLabelText}
+                                        ranges={incrementalLabelRanges}
+                                    />
+                                </InfoLabel>
+                                {showIncrementalAssistivePreview ? (
+                                    <AssistivePreview
+                                        text={incrementalAssistiveText}
+                                        ranges={incrementalAssistiveRanges}
+                                    />
+                                ) : null}
                             </>
                         }
-                        infoButton={{
-                            inline: false,
-                            popover: { mountNode: tooltipMountNode }
-                        }}
-                    >
-                        {translate('Text_Vega_Performance_IncrementalUpdates')}
-                    </InfoLabel>
-                }
-                checked={enableIncrementalDataUpdates}
-                onChange={(_, data) =>
-                    setEnableIncrementalDataUpdates(data.checked)
-                }
-            />
-            {enableIncrementalDataUpdates && (
-                <div className={classes.spinButtonContainer}>
+                        checked={enableIncrementalDataUpdates}
+                        onChange={(_, data) =>
+                            setEnableIncrementalDataUpdates(data.checked)
+                        }
+                    />
+                </div>
+            ) : null}
+            {showThresholdRow ? (
+                <div
+                    data-settings-row-id='incremental-threshold'
+                    className={classes.spinButtonContainer}
+                >
                     <Label htmlFor={spinButtonId}>
-                        {translate('Text_Vega_Performance_Threshold')}
+                        <HighlightText
+                            text={thresholdLabelText}
+                            ranges={thresholdLabelRanges}
+                        />
                     </Label>
                     <div>
                         <SpinButton
@@ -156,8 +224,8 @@ export const PerformanceSettings = () => {
                         </Tooltip>
                     </div>
                 </div>
-            )}
-            {enableIncrementalDataUpdates && (
+            ) : null}
+            {showMessageBar ? (
                 <MessageBar
                     shape='rounded'
                     intent={isIncrementalActive ? 'success' : 'warning'}
@@ -170,7 +238,7 @@ export const PerformanceSettings = () => {
                         )}
                     </MessageBarBody>
                 </MessageBar>
-            )}
+            ) : null}
         </>
     );
 };
@@ -192,3 +260,9 @@ const getResolvedValue = (data: SpinButtonOnChangeData): number => {
     }
     return INCREMENTAL_UPDATE_CONFIGURATION.defaultThreshold;
 };
+
+/**
+ * Re-exported so callers outside this module (notably `settings-pane.tsx`
+ * in Unit 3) can resolve every row's i18n keys in a single pass.
+ */
+export { performanceSchema };

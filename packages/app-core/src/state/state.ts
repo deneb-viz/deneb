@@ -22,6 +22,10 @@ import { createInterfaceSlice, type InterfaceSlice } from './interface';
 import { createMigrationSlice, type MigrationSlice } from './migration';
 import { createProjectSlice, type ProjectSlice } from './project';
 import {
+    createSettingsPaneSlice,
+    type SettingsPaneSlice
+} from './settings-pane';
+import {
     createVisualRenderSlice,
     type VisualRenderSlice
 } from './visual-render';
@@ -41,6 +45,7 @@ export type StoreState = CommandsSlice &
     InterfaceSlice &
     MigrationSlice &
     ProjectSlice &
+    SettingsPaneSlice &
     VisualRenderSlice;
 
 export type StateDependencies = {
@@ -75,6 +80,7 @@ export const createDenebState = (dependencies: StateDependencies) =>
                 ...createInterfaceSlice()(...a),
                 ...createMigrationSlice()(...a),
                 ...createProjectSlice()(...a),
+                ...createSettingsPaneSlice()(...a),
                 ...createVisualRenderSlice()(...a)
             }),
             { enabled: toBoolean(process.env.ZUSTAND_DEV_TOOLS) }

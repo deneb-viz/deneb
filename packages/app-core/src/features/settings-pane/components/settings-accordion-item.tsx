@@ -29,6 +29,13 @@ const useStyles = makeStyles({
 type SettingsAccordionItemProps = {
     value: string;
     heading: string;
+    /**
+     * Optional rich heading node rendered in place of the plain `heading`
+     * string. When supplied, used for the visible AccordionHeader content
+     * (e.g. to apply search-match highlights). `heading` remains required
+     * as the accessible plain-text fallback.
+     */
+    highlightedHeading?: ReactNode;
     icon?: AccordionHeaderProps['icon'];
     children: ReactNode;
 };
@@ -41,6 +48,7 @@ type SettingsAccordionItemProps = {
 export const SettingsAccordionItem = ({
     value,
     heading,
+    highlightedHeading,
     icon,
     children
 }: SettingsAccordionItemProps) => {
@@ -48,7 +56,7 @@ export const SettingsAccordionItem = ({
     return (
         <AccordionItem value={value} className={classes.item}>
             <AccordionHeader className={classes.header} icon={icon}>
-                {heading}
+                {highlightedHeading ?? heading}
             </AccordionHeader>
             <AccordionPanel className={classes.panel}>
                 {children}

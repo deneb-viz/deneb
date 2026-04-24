@@ -3,6 +3,14 @@ import { type Loader, type TooltipHandler, type View } from 'vega';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { type SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 
+import { type PlatformSearchContribution } from '../../features/settings-pane/search/resolve-descriptors';
+
+export type {
+    PlatformSearchContribution,
+    PlatformSearchRow,
+    LocalisableText
+} from '../../features/settings-pane/search/resolve-descriptors';
+
 /**
  * A function that binds platform-specific event listeners to a Vega view.
  * Implementations should close over any required dependencies (dataset, translations, etc.).
@@ -55,6 +63,16 @@ export type DenebPlatformProviderProps = {
      * A component to display and manage platform-specific settings, that will be added to the Settings pane.
      */
     settingsPanePlatformComponent?: JSX.Element[];
+    /**
+     * Optional opt-in contributions that let the platform participate
+     * in the settings-pane search filter. Supply one entry per injected
+     * AccordionItem in `settingsPanePlatformComponent`, with each
+     * contribution's `id` matching the React `key` of its corresponding
+     * element. Unregistered elements stay always-visible (legacy
+     * behaviour); registered elements are shortlisted by the match
+     * engine like any core section.
+     */
+    settingsPanePlatformSearchable?: PlatformSearchContribution[];
     /**
      * A platform-specific tooltip handler for Vega. If not provided, default Vega tooltips will be used.
      */

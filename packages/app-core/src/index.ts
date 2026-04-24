@@ -1,7 +1,10 @@
 export * from './app';
 export {
     useDenebPlatformProvider,
+    type LocalisableText,
     type OnCreateProjectPayload,
+    type PlatformSearchContribution,
+    type PlatformSearchRow,
     type ViewEventBinder
 } from './components/deneb-platform';
 export {
