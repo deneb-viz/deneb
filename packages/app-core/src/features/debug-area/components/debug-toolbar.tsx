@@ -98,7 +98,7 @@ export const DebugToolbar = () => {
                     size='small'
                     icon={<Table16Regular />}
                 >
-                    Data
+                    {translate('Pivot_Debug_VegaData')}
                 </ToolbarRadioButton>
                 <ToolbarRadioButton
                     name='debugMode'
@@ -107,7 +107,7 @@ export const DebugToolbar = () => {
                     size='small'
                     icon={<Communication16Regular />}
                 >
-                    Signals
+                    {translate('Pivot_Debug_VegaSignals')}
                 </ToolbarRadioButton>
                 <ToolbarRadioButton
                     name='debugMode'
@@ -116,7 +116,7 @@ export const DebugToolbar = () => {
                     size='small'
                     icon={<Notebook16Regular />}
                 >
-                    Logs &nbsp;
+                    {translate('Pivot_Debug_VegaLogs')}
                     <LogErrorIndicator />
                 </ToolbarRadioButton>
             </ToolbarRadioGroup>
