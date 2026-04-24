@@ -4,6 +4,7 @@ import type {
     CompilationResult,
     CompileSpecOptions
 } from '@deneb-viz/vega-runtime/compilation';
+import { getNewUuid } from '@deneb-viz/utils/crypto';
 import { type StoreState, type SyncableSlice } from './state';
 import { INCREMENTAL_UPDATE_CONFIGURATION } from '../lib/vega/incremental-update-configuration';
 
@@ -313,6 +314,12 @@ const handleCompile = (
 
     return {
         debug: { ...state.debug, logAttention: hasErrors },
+        // Bump renderId so the dataset-viewer listener cycles on compile
+        // completion. Historically this was triggered implicitly by the
+        // `logAttention` flip; Unit 6 decouples the viewer from
+        // `logAttention`, so this slice now takes explicit responsibility
+        // for signalling "new view, re-attach" via `renderId`.
+        interface: { ...state.interface, renderId: getNewUuid() },
         compilation: {
             ...state.compilation,
             result,
@@ -380,6 +387,10 @@ const handleLogError = (
     );
     return {
         debug: { ...state.debug, logAttention: runtimeErrors.length > 0 },
+        // Bump renderId for the same reason as `handleCompile`: the
+        // dataset-viewer listener cycles on `renderId` change, not on
+        // `logAttention` change (Unit 6).
+        interface: { ...state.interface, renderId: getNewUuid() },
         compilation: {
             ...state.compilation,
             runtimeErrors

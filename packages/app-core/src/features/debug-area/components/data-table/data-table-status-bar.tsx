@@ -46,11 +46,14 @@ export const DataTableStatusBar = ({
     onChangeRowsPerPage,
     currentPage
 }: PaginationComponentProps) => {
-    const { rowsPerPageSetting, mode, translate } = useDenebState((state) => ({
-        rowsPerPageSetting: state.editorPreferences.dataViewerRowsPerPage,
-        mode: state.editorPreviewAreaSelectedPivot,
-        translate: state.i18n.translate
-    }));
+    const { rowsPerPageSetting, mode, dataPivot, translate } = useDenebState(
+        (state) => ({
+            rowsPerPageSetting: state.editorPreferences.dataViewerRowsPerPage,
+            mode: state.editorPreviewAreaSelectedPivot,
+            dataPivot: state.debug.dataPivot,
+            translate: state.i18n.translate
+        })
+    );
     useEffect(() => {
         if (rowsPerPage !== rowsPerPageSetting) {
             onChangeRowsPerPage(rowsPerPageSetting as number, currentPage);
@@ -87,13 +90,15 @@ export const DataTableStatusBar = ({
     const rowsPerPageId = useId();
     const rowsPerPageEntries = useMemo(() => getRowsPerPageValues(), []);
     const optionComponent = useMemo(() => {
-        switch (mode) {
-            case 'data':
-                return <DatasetSelect />;
-            default:
-                return null;
+        // Root-level `DatasetSelect` is only meaningful on the Data inner
+        // tab. The Source tab reads from `state.dataset.values` directly
+        // and has no dataset-name axis to switch between, so we hide the
+        // selector when `dataPivot === 'source'` (per plan Unit 5).
+        if (mode === 'data' && dataPivot === 'data') {
+            return <DatasetSelect />;
         }
-    }, [mode]);
+        return null;
+    }, [mode, dataPivot]);
 
     return (
         <StatusBarContainer
