@@ -8,8 +8,6 @@ import type { EmptyStateReason } from './empty-state-reason';
  */
 export const getMessageKey = (reason: EmptyStateReason): string => {
     switch (reason) {
-        case 'source-loading':
-            return 'Text_Debug_Source_Loading';
         case 'source-unavailable':
             return 'Text_Debug_Source_No_Data';
         case 'view-unavailable':

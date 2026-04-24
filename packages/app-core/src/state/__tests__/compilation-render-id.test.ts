@@ -53,7 +53,6 @@ const makeStateFixture = (overrides: Partial<Record<string, unknown>> = {}) =>
         debug: {
             datasetName: '',
             logAttention: false,
-            dataPivot: 'source',
             dataPivotSort: { source: null, data: null },
             dataPivotPage: { source: 1, data: 1 }
         },

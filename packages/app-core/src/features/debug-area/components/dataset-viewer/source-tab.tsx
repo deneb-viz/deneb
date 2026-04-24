@@ -20,11 +20,7 @@ import { DataTableViewer } from '../data-table/data-table';
 import { ProcessingDataMessage } from '../data-table/processing-data-message';
 import { NoDataMessage } from '../no-data-message';
 import { useDebugWrapperStyles } from '../styles';
-import { MetadataStrip } from './metadata-strip';
-import {
-    buildSourceMetadataSpec,
-    resolveSourceTabReason
-} from './source-tab-utils';
+import { resolveSourceTabReason } from './source-tab-utils';
 import {
     buildDatasetViewerColumns,
     getDatasetViewerCharWidth,
@@ -32,7 +28,7 @@ import {
 } from './dataset-viewer-worker-helpers';
 
 /**
- * Renders the Source inner tab of the Debug Area's `data` pivot.
+ * Renders the Source outer pivot of the Debug Area.
  *
  * Reads `state.dataset.values` — the dataset Vega receives, with support
  * fields intact. Processing goes through the same web-worker pipeline as
@@ -55,10 +51,6 @@ export const SourceTab = () => {
         }));
 
     const reason = resolveSourceTabReason(values);
-    const metadataSpec = useMemo(
-        () => buildSourceMetadataSpec(values),
-        [values]
-    );
 
     // Hash pruned values so the worker only reruns when the underlying rows
     // actually change (cross-filter selection counts as a change — rewriting
@@ -177,7 +169,6 @@ export const SourceTab = () => {
         return (
             <div className={classes.container}>
                 <div className={classes.wrapper}>
-                    <MetadataStrip spec={metadataSpec} />
                     <div className={classes.details}>
                         <ProcessingDataMessage />
                     </div>
@@ -189,7 +180,6 @@ export const SourceTab = () => {
     return (
         <div className={classes.container}>
             <div className={classes.wrapper}>
-                <MetadataStrip spec={metadataSpec} />
                 <div className={classes.details}>
                     <DataTableViewer
                         columns={tableState.columns ?? []}

@@ -9,11 +9,6 @@ import type { EmptyStateReason } from '../empty-state-reason';
  * error.
  */
 describe('EmptyStateReason', () => {
-    it('"source-loading" is a valid reason value', () => {
-        const value: EmptyStateReason = 'source-loading';
-        expect(value).toBe('source-loading');
-    });
-
     it('"source-unavailable" is a valid reason value', () => {
         const value: EmptyStateReason = 'source-unavailable';
         expect(value).toBe('source-unavailable');

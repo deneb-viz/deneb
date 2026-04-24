@@ -2,12 +2,6 @@ import { type StateCreator } from 'zustand';
 import { type StoreState } from './state';
 
 /**
- * Inner-tab identifier for the Debug Area's `data` pivot. The pivot splits
- * into Source (the dataset Vega receives) and Data (Vega-view-named dataset).
- */
-export type DataPivotTab = 'source' | 'data';
-
-/**
  * Per-tab sort descriptor. `null` indicates no active sort for that tab.
  */
 export type DataPivotSortEntry = {
@@ -45,12 +39,6 @@ export type DebugSliceProperties = {
      */
     logAttention: boolean;
     /**
-     * Which inner tab of the `data` pivot is currently active. Transient
-     * in-memory state; not persisted across sessions (per the focus-mode
-     * viewport-overwrite learning).
-     */
-    dataPivot: DataPivotTab;
-    /**
      * Per-tab sort state for the Source and Data inner tabs. Each tab's
      * sort is independent; clearing one tab's sort does not affect the
      * other.
@@ -64,10 +52,6 @@ export type DebugSliceProperties = {
      * Set the current dataset for the data viewer.
      */
     setDatasetName: (datasetName: string) => void;
-    /**
-     * Set the active inner tab for the `data` pivot.
-     */
-    setDataPivot: (dataPivot: DataPivotTab) => void;
     /**
      * Set the Data tab's sort descriptor (or `null` to clear). Does not
      * affect the Source tab's sort.
@@ -105,7 +89,6 @@ export const createDebugSlice =
         debug: {
             datasetName: '',
             logAttention: false,
-            dataPivot: 'source',
             dataPivotSort: {
                 source: null,
                 data: null
@@ -119,12 +102,6 @@ export const createDebugSlice =
                     (state) => handleSetDatasetName(state, datasetName),
                     false,
                     'debug.setDatasetName'
-                ),
-            setDataPivot: (dataPivot: DataPivotTab) =>
-                set(
-                    (state) => handleSetDataPivot(state, dataPivot),
-                    false,
-                    'debug.setDataPivot'
                 ),
             setDataTabSort: (sort: DataPivotSortEntry) =>
                 set(
@@ -161,16 +138,6 @@ const handleSetDatasetName = (
     datasetName: string
 ): Partial<StoreState> => ({
     debug: { ...state.debug, datasetName }
-});
-
-/**
- * Sets the active inner tab for the `data` pivot.
- */
-const handleSetDataPivot = (
-    state: StoreState,
-    dataPivot: DataPivotTab
-): Partial<StoreState> => ({
-    debug: { ...state.debug, dataPivot }
 });
 
 /**

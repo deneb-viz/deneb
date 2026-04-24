@@ -28,13 +28,12 @@ import { NoDataMessage } from '../no-data-message';
 import { DataTableViewer } from '../data-table/data-table';
 import { ProcessingDataMessage } from '../data-table/processing-data-message';
 import { useDebugWrapperStyles } from '../styles';
-import { MetadataStrip } from './metadata-strip';
 import {
     buildDatasetViewerColumns,
     getDatasetViewerCharWidth,
     getDatasetViewerWorkerTranslations
 } from './dataset-viewer-worker-helpers';
-import { buildDataMetadataSpec, resolveDataTabReason } from './data-tab-utils';
+import { resolveDataTabReason } from './data-tab-utils';
 
 type DataTabProps = {
     datasetName: string;
@@ -44,7 +43,7 @@ type DataTabProps = {
 const DATA_LISTENER_DEBOUNCE_INTERVAL = 100;
 
 /**
- * Renders the Data inner tab of the Debug Area's `data` pivot.
+ * Renders the Data outer pivot of the Debug Area.
  *
  * Reads rows from `VegaViewServices.getDataByName(datasetName)` — the
  * post-transform, Vega-view-scoped dataset. When the view is unavailable or
@@ -60,7 +59,7 @@ const DATA_LISTENER_DEBOUNCE_INTERVAL = 100;
  *
  * Per-tab sort and page state live under `state.debug.dataPivotSort.data` /
  * `state.debug.dataPivotPage.data`, so the Source tab's sort/page are
- * preserved when the user toggles the inner pivot.
+ * preserved when the user toggles the outer pivot.
  */
 export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
     const { sortEntry, page, setDataTabSort, setDataTabPage, logError } =
@@ -107,10 +106,6 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
         viewAvailable,
         datasetName,
         currentValues
-    );
-    const metadataSpec = useMemo(
-        () => buildDataMetadataSpec(currentValues, reason !== null),
-        [currentValues, reason]
     );
 
     /**
@@ -416,7 +411,6 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
         return (
             <div className={classes.container}>
                 <div className={classes.wrapper}>
-                    <MetadataStrip spec={metadataSpec} />
                     <div className={classes.details}>
                         <ProcessingDataMessage />
                     </div>
@@ -427,12 +421,9 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
 
     if (!datasetState.values?.length) {
         // View + name + defined values, but worker produced no rows yet.
-        // Show the metadata strip alongside the processing message so the
-        // user still sees the row count + error badge context.
         return (
             <div className={classes.container}>
                 <div className={classes.wrapper}>
-                    <MetadataStrip spec={metadataSpec} />
                     <div className={classes.details}>
                         <ProcessingDataMessage />
                     </div>
@@ -444,7 +435,6 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
     return (
         <div className={classes.container}>
             <div className={classes.wrapper}>
-                <MetadataStrip spec={metadataSpec} />
                 <div className={classes.details}>
                     <DataTableViewer
                         columns={

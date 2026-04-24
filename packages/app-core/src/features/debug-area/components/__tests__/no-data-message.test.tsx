@@ -39,12 +39,6 @@ describe('NoDataMessage helpers', () => {
             );
         });
 
-        it('maps "source-loading" to a distinct, transient loading key', () => {
-            const loadingKey = getMessageKey('source-loading');
-            expect(loadingKey).toBe('Text_Debug_Source_Loading');
-            expect(loadingKey).not.toBe(getMessageKey('source-unavailable'));
-        });
-
         it('maps "no-signals" to the signal-viewer no-signals key', () => {
             expect(getMessageKey('no-signals')).toBe(
                 'Text_Debug_Signal_No_Signals'
@@ -53,7 +47,6 @@ describe('NoDataMessage helpers', () => {
 
         it('returns a distinct key for every EmptyStateReason value', () => {
             const reasons: EmptyStateReason[] = [
-                'source-loading',
                 'source-unavailable',
                 'view-unavailable',
                 'dataset-unavailable',
@@ -65,7 +58,6 @@ describe('NoDataMessage helpers', () => {
 
         it('returns keys that exist in the en-US i18n catalog', () => {
             const reasons: EmptyStateReason[] = [
-                'source-loading',
                 'source-unavailable',
                 'view-unavailable',
                 'dataset-unavailable',
@@ -99,10 +91,6 @@ describe('NoDataMessage helpers', () => {
 
         it('returns false for "source-unavailable"', () => {
             expect(shouldEmbedDatasetSelect('source-unavailable')).toBe(false);
-        });
-
-        it('returns false for "source-loading"', () => {
-            expect(shouldEmbedDatasetSelect('source-loading')).toBe(false);
         });
 
         it('returns false for "no-signals" (signal viewer no longer carries a DatasetSelect)', () => {

@@ -16,20 +16,17 @@ import {
 
 import { useDenebState } from '../../../state';
 import {
-    handleDataInnerData,
-    handleDataInnerSource,
     handleDebugPaneData,
     handleDebugPaneLog,
     handleDebugPaneSignal,
+    handleDebugPaneSource,
     type DebugPaneRole
 } from '../../../lib';
-import type { DataPivotTab } from '../../../state/debug';
 import { LogErrorIndicator } from './log-viewer/log-error-indicator';
 import { ToolbarButtonStandard } from '../../../components/ui';
 import { ZoomSlider } from './zoom-controls/zoom-slider';
 import { ZoomLevelPopover } from './zoom-controls/zoom-level-popover';
 import { DEBUG_PANE_CONFIGURATION } from '@deneb-viz/configuration';
-import { shouldRenderInnerToolbar } from './debug-area-inner-tab-switcher-utils';
 
 const useToolbarStyles = makeStyles({
     root: {
@@ -48,13 +45,13 @@ const useToolbarStyles = makeStyles({
 });
 
 export const DebugToolbar = () => {
-    const { editorPreviewAreaSelectedPivot, dataPivot, translate } =
-        useDenebState((state) => ({
+    const { editorPreviewAreaSelectedPivot, translate } = useDenebState(
+        (state) => ({
             editorPreviewAreaSelectedPivot:
                 state.editorPreviewAreaSelectedPivot,
-            dataPivot: state.debug.dataPivot,
             translate: state.i18n.translate
-        }));
+        })
+    );
     const classes = useToolbarStyles();
     const onDebugModeChange: ToolbarProps['onCheckedValueChange'] = (
         e,
@@ -62,6 +59,9 @@ export const DebugToolbar = () => {
     ) => {
         const role = checkedItems[0] as DebugPaneRole;
         switch (role) {
+            case 'source':
+                handleDebugPaneSource();
+                break;
             case 'data':
                 handleDebugPaneData();
                 break;
@@ -73,104 +73,61 @@ export const DebugToolbar = () => {
                 break;
         }
     };
-    const onDataPivotChange: ToolbarProps['onCheckedValueChange'] = (
-        e,
-        { checkedItems }
-    ) => {
-        const next = checkedItems[0] as DataPivotTab;
-        switch (next) {
-            case 'source':
-                handleDataInnerSource();
-                break;
-            case 'data':
-                handleDataInnerData();
-                break;
-        }
-    };
-    const showInnerToolbar = shouldRenderInnerToolbar(
-        editorPreviewAreaSelectedPivot
-    );
     return (
-        <>
-            <Toolbar
-                aria-label='Debug view'
-                size='small'
-                className={classes.root}
-                onCheckedValueChange={onDebugModeChange}
-                checkedValues={{ debugMode: [editorPreviewAreaSelectedPivot] }}
-            >
-                <ToolbarRadioGroup className={classes.group}>
-                    <ToolbarRadioButton
-                        name='debugMode'
-                        value='data'
-                        appearance='subtle'
-                        size='small'
-                        icon={<Table16Regular />}
-                    >
-                        Data
-                    </ToolbarRadioButton>
-                    <ToolbarRadioButton
-                        name='debugMode'
-                        value='signal'
-                        appearance='subtle'
-                        size='small'
-                        icon={<Communication16Regular />}
-                    >
-                        Signals
-                    </ToolbarRadioButton>
-                    <ToolbarRadioButton
-                        name='debugMode'
-                        value='log'
-                        appearance='subtle'
-                        size='small'
-                        icon={<Notebook16Regular />}
-                    >
-                        Logs &nbsp;
-                        <LogErrorIndicator />
-                    </ToolbarRadioButton>
-                </ToolbarRadioGroup>
-                <ToolbarGroup className={classes.group}>
-                    <ToolbarButtonStandard command='zoomOut' role='debug' />
-                    <ZoomSlider />
-                    <ToolbarButtonStandard command='zoomIn' role='debug' />
-                    <ZoomLevelPopover />
-                    <ToolbarButtonStandard command='zoomFit' role='debug' />
-                    <ToolbarButtonStandard
-                        command='debugPaneToggle'
-                        role='debug'
-                    />
-                </ToolbarGroup>
-            </Toolbar>
-            {showInnerToolbar && (
-                <Toolbar
-                    aria-label='Data source view'
+        <Toolbar
+            aria-label='Debug view'
+            size='small'
+            className={classes.root}
+            onCheckedValueChange={onDebugModeChange}
+            checkedValues={{ debugMode: [editorPreviewAreaSelectedPivot] }}
+        >
+            <ToolbarRadioGroup className={classes.group}>
+                <ToolbarRadioButton
+                    name='debugMode'
+                    value='source'
+                    appearance='subtle'
                     size='small'
-                    className={classes.root}
-                    onCheckedValueChange={onDataPivotChange}
-                    checkedValues={{ dataPivot: [dataPivot] }}
+                    icon={<DatabaseLinkRegular />}
                 >
-                    <ToolbarRadioGroup className={classes.group}>
-                        <ToolbarRadioButton
-                            name='dataPivot'
-                            value='source'
-                            appearance='subtle'
-                            size='small'
-                            icon={<DatabaseLinkRegular />}
-                        >
-                            {translate('Pivot_Data_Source')}
-                        </ToolbarRadioButton>
-                        <ToolbarRadioButton
-                            name='dataPivot'
-                            value='data'
-                            appearance='subtle'
-                            size='small'
-                            icon={<Table16Regular />}
-                        >
-                            {translate('Pivot_Data_Data')}
-                        </ToolbarRadioButton>
-                    </ToolbarRadioGroup>
-                </Toolbar>
-            )}
-        </>
+                    {translate('Pivot_Debug_Source')}
+                </ToolbarRadioButton>
+                <ToolbarRadioButton
+                    name='debugMode'
+                    value='data'
+                    appearance='subtle'
+                    size='small'
+                    icon={<Table16Regular />}
+                >
+                    Data
+                </ToolbarRadioButton>
+                <ToolbarRadioButton
+                    name='debugMode'
+                    value='signal'
+                    appearance='subtle'
+                    size='small'
+                    icon={<Communication16Regular />}
+                >
+                    Signals
+                </ToolbarRadioButton>
+                <ToolbarRadioButton
+                    name='debugMode'
+                    value='log'
+                    appearance='subtle'
+                    size='small'
+                    icon={<Notebook16Regular />}
+                >
+                    Logs &nbsp;
+                    <LogErrorIndicator />
+                </ToolbarRadioButton>
+            </ToolbarRadioGroup>
+            <ToolbarGroup className={classes.group}>
+                <ToolbarButtonStandard command='zoomOut' role='debug' />
+                <ZoomSlider />
+                <ToolbarButtonStandard command='zoomIn' role='debug' />
+                <ZoomLevelPopover />
+                <ToolbarButtonStandard command='zoomFit' role='debug' />
+                <ToolbarButtonStandard command='debugPaneToggle' role='debug' />
+            </ToolbarGroup>
+        </Toolbar>
     );
 };

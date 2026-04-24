@@ -106,19 +106,12 @@ export const handleDebugPaneData = () => {
 };
 
 /**
- * Switches the inner `data` pivot to the Source tab. Mirrors the
- * `handleDebugPaneData` action-creator style, dispatching via the debug
- * slice's `setDataPivot` setter.
+ * Switches the outer Debug Area pivot to the Source tab. Mirrors the
+ * `handleDebugPaneData` / `handleDebugPaneLog` / `handleDebugPaneSignal`
+ * action-creator style.
  */
-export const handleDataInnerSource = () => {
-    getDenebState().debug.setDataPivot('source');
-};
-
-/**
- * Switches the inner `data` pivot to the Data tab.
- */
-export const handleDataInnerData = () => {
-    getDenebState().debug.setDataPivot('data');
+export const handleDebugPaneSource = () => {
+    setDebugPivotItem('source');
 };
 
 export const handleDebugPaneLog = () => {

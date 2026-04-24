@@ -30,10 +30,6 @@ describe('debug slice', () => {
             expect(store.getState().debug.logAttention).toBe(false);
         });
 
-        it("defaults dataPivot to 'source'", () => {
-            expect(store.getState().debug.dataPivot).toBe('source');
-        });
-
         it('defaults dataPivotSort to null for both tabs', () => {
             expect(store.getState().debug.dataPivotSort).toEqual({
                 source: null,
@@ -55,9 +51,8 @@ describe('debug slice', () => {
             expect(store.getState().debug.datasetName).toBe('customers');
         });
 
-        it('leaves dataPivot, dataPivotSort, and dataPivotPage untouched', () => {
+        it('leaves dataPivotSort and dataPivotPage untouched', () => {
             // Seed widened fields so we can detect any clobber.
-            store.getState().debug.setDataPivot('data');
             store
                 .getState()
                 .debug.setDataTabSort({ colId: 'value', asc: false });
@@ -65,42 +60,11 @@ describe('debug slice', () => {
 
             store.getState().debug.setDatasetName('customers');
 
-            expect(store.getState().debug.dataPivot).toBe('data');
             expect(store.getState().debug.dataPivotSort.data).toEqual({
                 colId: 'value',
                 asc: false
             });
             expect(store.getState().debug.dataPivotPage.source).toBe(3);
-        });
-    });
-
-    describe('setDataPivot', () => {
-        it("updates dataPivot to 'data'", () => {
-            store.getState().debug.setDataPivot('data');
-            expect(store.getState().debug.dataPivot).toBe('data');
-        });
-
-        it('leaves other debug fields intact', () => {
-            store.getState().debug.setDatasetName('customers');
-            store.getState().debug.setDataPivot('data');
-            expect(store.getState().debug.datasetName).toBe('customers');
-            expect(store.getState().debug.logAttention).toBe(false);
-        });
-
-        it('is idempotent when called with the already-active value', () => {
-            const firstRef = store.getState().debug;
-            store.getState().debug.setDataPivot('source');
-            const afterRef = store.getState().debug;
-            // Action identities remain stable and the scalar is unchanged.
-            expect(afterRef.dataPivot).toBe('source');
-            expect(afterRef.setDataPivot).toBe(firstRef.setDataPivot);
-        });
-
-        it("switches between 'source' and 'data' freely", () => {
-            store.getState().debug.setDataPivot('data');
-            expect(store.getState().debug.dataPivot).toBe('data');
-            store.getState().debug.setDataPivot('source');
-            expect(store.getState().debug.dataPivot).toBe('source');
         });
     });
 
@@ -231,9 +195,10 @@ describe('debug slice', () => {
     describe('store identity', () => {
         it('preserves action identities across updates', () => {
             const firstRef = store.getState().debug;
-            store.getState().debug.setDataPivot('data');
+            store
+                .getState()
+                .debug.setDataTabSort({ colId: 'value', asc: true });
             const secondRef = store.getState().debug;
-            expect(secondRef.setDataPivot).toBe(firstRef.setDataPivot);
             expect(secondRef.setDataTabSort).toBe(firstRef.setDataTabSort);
             expect(secondRef.setSourceTabSort).toBe(firstRef.setSourceTabSort);
             expect(secondRef.setDataTabPage).toBe(firstRef.setDataTabPage);

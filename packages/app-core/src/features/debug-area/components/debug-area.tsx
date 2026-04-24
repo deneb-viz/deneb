@@ -10,7 +10,6 @@ import { SignalViewer } from './signal-viewer/signal-viewer';
 import { DebugToolbar } from './debug-toolbar';
 import { FullContainerLayoutNoOverflow } from '../../../components/ui';
 import { DatasetSelectInitializer } from './dataset-viewer/dataset-select';
-import { resolveInnerTabContent } from './debug-area-inner-tab-switcher-utils';
 
 const DEBUG_AREA_CLASS_NAME = 'deneb-debug-area';
 const DEBUG_AREA_CONTENT_CLASS_NAME = `${DEBUG_AREA_CLASS_NAME}-content`;
@@ -21,31 +20,6 @@ const useDebugAreaStyles = makeStyles({
         overflow: 'hidden'
     }
 });
-
-/**
- * Switches between the Source and Data inner tabs of the `data` outer
- * pivot. Reads the current inner-tab selection from `state.debug.dataPivot`.
- *
- * `DataTab` no longer accepts a `logAttention` prop — Unit 6 decoupled the
- * Data tab from the attention flag. Compile-recovery listener rebinds now
- * piggy-back on `renderId` bumps from `compilation.ts`.
- */
-const InnerDataArea = ({
-    datasetName,
-    renderId
-}: {
-    datasetName: string;
-    renderId: string;
-}) => {
-    const dataPivot = useDenebState((state) => state.debug.dataPivot);
-    const contentKey = resolveInnerTabContent(dataPivot);
-    switch (contentKey) {
-        case 'source':
-            return <SourceTab />;
-        case 'data':
-            return <DataTab datasetName={datasetName} renderId={renderId} />;
-    }
-};
 
 export const DebugArea = () => {
     const {
@@ -70,12 +44,11 @@ export const DebugArea = () => {
         switch (editorPreviewAreaSelectedPivot) {
             case 'log':
                 return <LogViewer />;
+            case 'source':
+                return <SourceTab />;
             case 'data':
                 return (
-                    <InnerDataArea
-                        datasetName={datasetName}
-                        renderId={renderId}
-                    />
+                    <DataTab datasetName={datasetName} renderId={renderId} />
                 );
             case 'signal':
                 return <SignalViewer renderId={renderId} />;

@@ -1,4 +1,4 @@
-export type DebugPaneRole = 'log' | 'data' | 'signal';
+export type DebugPaneRole = 'log' | 'source' | 'data' | 'signal';
 
 /**
  * Deneb theming variants.
