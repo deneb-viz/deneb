@@ -111,7 +111,9 @@ export const handleDebugPaneData = () => {
  * action-creator style.
  */
 export const handleDebugPaneSource = () => {
-    setDebugPivotItem('source');
+    executeCommand('debugPaneShowSource', () => {
+        setDebugPivotItem('source');
+    });
 };
 
 export const handleDebugPaneLog = () => {

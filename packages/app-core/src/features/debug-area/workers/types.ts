@@ -3,7 +3,7 @@
  */
 export interface IWorkerDatasetViewer extends Omit<
     Worker,
-    'onmessage,postMessage'
+    'onmessage' | 'postMessage'
 > {
     onmessage:
         | ((

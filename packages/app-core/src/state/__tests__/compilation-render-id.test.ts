@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { compileSpec } from '@deneb-viz/vega-runtime/compilation';
 
 /**
  * Characterizes the compilation slice's behaviour of bumping
@@ -152,6 +153,29 @@ describe('compilation slice — renderId bump on recovery paths', () => {
         expect(next.debug.logAttention).toBe(false);
     });
 
+    it('flips logAttention to true and bumps renderId when compile returns errors (hasErrors branch)', () => {
+        // Override the default success mock for this test only — exercise
+        // the `hasCompilationErrors` branch in `handleCompile` that flips
+        // `state.debug.logAttention` to true.
+        vi.mocked(compileSpec).mockReturnValueOnce({
+            errors: ['boom'],
+            warnings: [],
+            embedOptions: {},
+            spec: {}
+        } as never);
+        const harness = makeSliceHarness();
+        const before = (
+            harness.getState() as { interface: { renderId: string } }
+        ).interface.renderId;
+        harness.actions.compile({} as never);
+        const next = harness.getState() as {
+            debug: { logAttention: boolean };
+            interface: { renderId: string };
+        };
+        expect(next.debug.logAttention).toBe(true);
+        expect(next.interface.renderId).not.toBe(before);
+    });
+
     it('keeps the logAttention flag behaviour intact after renderId bump (logError sets it true)', () => {
         const harness = makeSliceHarness();
         harness.actions.logError('fail');
@@ -173,6 +197,12 @@ describe('compilation slice — renderId bump on recovery paths', () => {
         expect(after).not.toBe(before);
     });
 
+    // The two tests below also serve as the unit-level guard against the
+    // `DataTab` catch-block retry-loop hazard: when `getDataByName` throws,
+    // `data-tab.tsx` calls `logError(...)`, which used to bump `renderId`
+    // unconditionally and re-trigger the same `useEffect` (potential loop).
+    // The dedup guard keeps repeated identical errors from bumping `renderId`
+    // — and therefore from re-firing the listener — preventing the loop.
     it('does NOT bump renderId for a DUPLICATE error message (already in runtimeErrors)', () => {
         const harness = makeSliceHarness();
         // First call seeds the message and bumps renderId.

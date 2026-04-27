@@ -19,8 +19,11 @@ type SignalViewerProps = {
  */
 type SignalTableDataRow = {
     key: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    value: any;
+    /**
+     * Always `null` at the row-data layer; the actual signal value is fetched
+     * lazily by the `SignalValue` cell component using the row's `key`.
+     */
+    value: null;
 };
 
 /**

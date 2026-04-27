@@ -22,19 +22,14 @@ const useDebugAreaStyles = makeStyles({
 });
 
 export const DebugArea = () => {
-    const {
-        datasetName,
-        editorPreviewAreaSelectedPivot,
-        isDebugPaneMinimized,
-        renderId,
-        translate
-    } = useDenebState((state) => ({
-        datasetName: state.debug.datasetName,
-        editorPreviewAreaSelectedPivot: state.editorPreviewAreaSelectedPivot,
-        isDebugPaneMinimized: state.editor.isDebugPaneMinimized,
-        renderId: state.interface.renderId,
-        translate: state.i18n.translate
-    }));
+    const { datasetName, editorPreviewAreaSelectedPivot, renderId, translate } =
+        useDenebState((state) => ({
+            datasetName: state.debug.datasetName,
+            editorPreviewAreaSelectedPivot:
+                state.editorPreviewAreaSelectedPivot,
+            renderId: state.interface.renderId,
+            translate: state.i18n.translate
+        }));
     const classes = useDebugAreaStyles();
     const contentClasses = mergeClasses(
         DEBUG_AREA_CONTENT_CLASS_NAME,
@@ -55,12 +50,7 @@ export const DebugArea = () => {
             default:
                 return <Caption1>{translate('Pivot_Mode_Unknown')}</Caption1>;
         }
-    }, [
-        datasetName,
-        editorPreviewAreaSelectedPivot,
-        isDebugPaneMinimized,
-        renderId
-    ]);
+    }, [datasetName, editorPreviewAreaSelectedPivot, renderId, translate]);
     logRender('DebugAreaContent');
     return (
         <FullContainerLayoutNoOverflow className={DEBUG_AREA_CLASS_NAME}>

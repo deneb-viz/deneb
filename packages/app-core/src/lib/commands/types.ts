@@ -9,6 +9,7 @@ export type Command =
     | 'debugPaneShowData'
     | 'debugPaneShowLogs'
     | 'debugPaneShowSignals'
+    | 'debugPaneShowSource'
     | 'debugPaneToggle'
     | 'discardChanges'
     | 'editorFocusOut'
