@@ -89,11 +89,11 @@ describe('Data tab listener rebind — characterization (pure dep-array model)',
          * changes: because `logAttention` is not in `buildDataTabDeps`, the
          * resulting deps are identical and the rebind does not fire.
          *
-         * The compilation-slice's `handleCompile` and `handleLogError` have
-         * been updated to ALSO bump `renderId` alongside flipping
-         * `logAttention`, so the real-world listener rebind is still
-         * triggered on compilation transitions — just via `renderId`, not
-         * `logAttention`. See `compilation-render-id.test.ts`.
+         * `renderId` is bumped from `vega-embed.tsx#handleEmbed` after
+         * `vegaEmbed()` resolves and the new `View` is attached — that's
+         * the single edge that drives a real-world listener rebind on the
+         * post-refactor codebase (P3). The compilation slice itself does
+         * not bump `renderId`. See `compilation-render-id.test.ts`.
          */
         it('does NOT cycle the listener when only logAttention changes (renderId + datasetName constant)', () => {
             // Notional user-level action: logAttention flips true → false.

@@ -35,10 +35,6 @@ export type DebugSliceProperties = {
      */
     datasetName: string;
     /**
-     * Whether the log pane should be in an attention state (due to errors).
-     */
-    logAttention: boolean;
-    /**
      * Per-tab sort state for the Source and Data inner tabs. Each tab's
      * sort is independent; clearing one tab's sort does not affect the
      * other.
@@ -88,7 +84,6 @@ export const createDebugSlice =
     (set) => ({
         debug: {
             datasetName: '',
-            logAttention: false,
             dataPivotSort: {
                 source: null,
                 data: null

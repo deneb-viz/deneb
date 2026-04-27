@@ -51,11 +51,13 @@ const DATA_LISTENER_DEBOUNCE_INTERVAL = 100;
  * explicit reason instead of silently substituting a source-level fallback
  * (the old `getDatasetValues` behaviour, removed in Unit 6).
  *
- * The listener rebinds on `datasetName` or `renderId` change. Previously
- * `logAttention` was in the dep array as an implicit trigger for
- * compile-recovery rebinds; that's been replaced by an explicit `renderId`
- * bump in `compilation.ts` (Unit 6), decoupling the tab from the attention
- * flag entirely.
+ * The listener rebinds on `datasetName` or `renderId` change. `renderId`
+ * is bumped by `vega-embed.tsx#handleEmbed` AFTER `vegaEmbed()` resolves
+ * and the new `View` instance is attached — i.e. the bump tracks actual
+ * view replacement, not compile events. (Pre-P3, the bump fired at
+ * compile time, which was both racy — DataTab effect ran before the view
+ * existed — and noisy: every debounced keystroke compile cycled the
+ * listener even when the same view was reused.)
  *
  * Per-tab sort and page state live under `state.debug.dataPivotSort.data` /
  * `state.debug.dataPivotPage.data`, so the Source tab's sort/page are
@@ -291,11 +293,10 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
     /**
      * Ensure that listener is added/removed when the data might change or we re-render (new view).
      *
-     * Dep array is `[datasetName, renderId]` — `logAttention` was removed
-     * in Unit 6. Compile recovery now bumps `renderId` explicitly (see
-     * `compilation.ts` `handleCompile` / `handleLogError`), so the load-
-     * bearing rebind-on-recovery invariant is preserved without the
-     * attention-flag coupling.
+     * Dep array is `[datasetName, renderId]`. `renderId` is bumped from
+     * `vega-embed.tsx#handleEmbed` post-embed, so this effect runs only
+     * when an actual fresh `View` instance has been attached — the
+     * load-bearing "rebind on view replacement" invariant.
      */
     useEffect(() => {
         // Reset the listener hash ref when dataset or view changes to ensure first listener event is processed

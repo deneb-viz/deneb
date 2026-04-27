@@ -26,10 +26,6 @@ describe('debug slice', () => {
             expect(store.getState().debug.datasetName).toBe('');
         });
 
-        it('defaults logAttention to false', () => {
-            expect(store.getState().debug.logAttention).toBe(false);
-        });
-
         it('defaults dataPivotSort to null for both tabs', () => {
             expect(store.getState().debug.dataPivotSort).toEqual({
                 source: null,

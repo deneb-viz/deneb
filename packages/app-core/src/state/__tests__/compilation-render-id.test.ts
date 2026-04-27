@@ -2,26 +2,32 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { compileSpec } from '@deneb-viz/vega-runtime/compilation';
 
 /**
- * Characterizes the compilation slice's behaviour of bumping
- * `state.interface.renderId` on the two recovery paths that flip
- * `logAttention` (`handleCompile` at compilation.ts:~315 and `handleLogError`
- * at compilation.ts:~382).
+ * Characterizes the compilation slice's behaviour around
+ * `state.interface.renderId` and runtime-error recording.
  *
- * Unit 6 adds the `renderId` bump to those two paths BEFORE removing the
- * `logAttention` dep from the dataset viewer's listener `useEffect`. The
- * viewer's listener rebind used to be triggered implicitly by `logAttention`
- * flipping; after the refactor it relies on `renderId` changing. These
- * tests lock in that invariant.
+ * Post-cleanup contract (P3, JFR-003 + REL-003):
+ * - `handleCompile` does NOT bump `state.interface.renderId`. The
+ *   listener-rebind contract is owned by `vega-embed.tsx#handleEmbed`'s
+ *   post-embed `generateRenderId()` call, which fires AFTER the new
+ *   `View` instance is attached. Bumping at compile time was both racy
+ *   (effect fired before the view existed) and noisy (every debounced
+ *   keystroke compile cycled the listener even though the same view was
+ *   reused).
+ * - `handleLogError` does NOT bump `renderId` either. Runtime errors
+ *   arrive on the existing view; they do not signal view replacement.
+ *   The dedup guard against repeat messages still applies (Vega can pulse
+ *   the same error every tick).
+ * - `state.debug.logAttention` was deleted in P3 — these tests no longer
+ *   assert against it.
  *
  * Notes:
- * - We do not spin up the full `StoreState`. The slice handlers that do the
- *   bumping are pure state-shape transformers, so we exercise them directly
- *   by constructing a minimal `StoreState`-shaped input and asserting the
- *   returned `Partial<StoreState>` contains the expected `interface.renderId`
- *   shape.
+ * - We do not spin up the full `StoreState`. The slice handlers that do
+ *   the work are pure state-shape transformers, so we exercise them
+ *   directly by constructing a minimal `StoreState`-shaped input and
+ *   asserting the returned `Partial<StoreState>` shape.
  * - `compileSpec` is mocked because we only care about the post-compile
- *   state merge behaviour — the actual compilation result is covered by
- *   tests in `@deneb-viz/vega-runtime`.
+ *   state merge behaviour — actual compilation result handling is covered
+ *   by tests in `@deneb-viz/vega-runtime`.
  */
 
 vi.mock('@deneb-viz/vega-runtime/compilation', () => ({
@@ -53,7 +59,6 @@ const makeStateFixture = (overrides: Partial<Record<string, unknown>> = {}) =>
         },
         debug: {
             datasetName: '',
-            logAttention: false,
             dataPivotSort: { source: null, data: null },
             dataPivotPage: { source: 1, data: 1 }
         },
@@ -90,12 +95,12 @@ const makeSliceHarness = () => {
     };
 };
 
-describe('compilation slice — renderId bump on recovery paths', () => {
+describe('compilation slice — renderId is owned by the embed lifecycle, not by compile', () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });
 
-    it('bumps interface.renderId when compile succeeds (recovery path ~line 315)', () => {
+    it('does NOT bump interface.renderId on a successful compile (view replacement is signalled by vega-embed)', () => {
         const harness = makeSliceHarness();
         const before = (
             harness.getState() as { interface: { renderId: string } }
@@ -104,59 +109,13 @@ describe('compilation slice — renderId bump on recovery paths', () => {
         const after = (
             harness.getState() as { interface: { renderId: string } }
         ).interface.renderId;
-        expect(after).not.toBe(before);
-        expect(typeof after).toBe('string');
-        expect(after.length).toBeGreaterThan(0);
+        expect(after).toBe(before);
     });
 
-    it('bumps interface.renderId when logError records a new error (~line 382)', () => {
-        const harness = makeSliceHarness();
-        const before = (
-            harness.getState() as { interface: { renderId: string } }
-        ).interface.renderId;
-        harness.actions.logError('boom');
-        const after = (
-            harness.getState() as { interface: { renderId: string } }
-        ).interface.renderId;
-        expect(after).not.toBe(before);
-    });
-
-    it('emits a new renderId on each logError call (distinct each time)', () => {
-        const harness = makeSliceHarness();
-        harness.actions.logError('first');
-        const afterFirst = (
-            harness.getState() as { interface: { renderId: string } }
-        ).interface.renderId;
-        harness.actions.logError('second');
-        const afterSecond = (
-            harness.getState() as { interface: { renderId: string } }
-        ).interface.renderId;
-        expect(afterSecond).not.toBe(afterFirst);
-    });
-
-    it('preserves other compilation fields when bumping renderId on compile', () => {
-        const harness = makeSliceHarness();
-        harness.actions.compile({} as never);
-        const next = harness.getState() as {
-            compilation: { isCompiling: boolean; lastCompiled: number | null };
-        };
-        expect(next.compilation.isCompiling).toBe(false);
-        expect(typeof next.compilation.lastCompiled).toBe('number');
-    });
-
-    it('keeps the logAttention flag behaviour intact after renderId bump (compile with no errors clears it)', () => {
-        const harness = makeSliceHarness();
-        harness.actions.compile({} as never);
-        const next = harness.getState() as {
-            debug: { logAttention: boolean };
-        };
-        expect(next.debug.logAttention).toBe(false);
-    });
-
-    it('flips logAttention to true and bumps renderId when compile returns errors (hasErrors branch)', () => {
+    it('does NOT bump interface.renderId when compile returns errors', () => {
         // Override the default success mock for this test only — exercise
-        // the `hasCompilationErrors` branch in `handleCompile` that flips
-        // `state.debug.logAttention` to true.
+        // the error branch in `handleCompile`. Even on errors, the slice
+        // does not bump renderId; the embed lifecycle owns that.
         vi.mocked(compileSpec).mockReturnValueOnce({
             errors: ['boom'],
             warnings: [],
@@ -168,50 +127,30 @@ describe('compilation slice — renderId bump on recovery paths', () => {
             harness.getState() as { interface: { renderId: string } }
         ).interface.renderId;
         harness.actions.compile({} as never);
-        const next = harness.getState() as {
-            debug: { logAttention: boolean };
-            interface: { renderId: string };
-        };
-        expect(next.debug.logAttention).toBe(true);
-        expect(next.interface.renderId).not.toBe(before);
+        const after = (
+            harness.getState() as { interface: { renderId: string } }
+        ).interface.renderId;
+        expect(after).toBe(before);
     });
 
-    it('keeps the logAttention flag behaviour intact after renderId bump (logError sets it true)', () => {
-        const harness = makeSliceHarness();
-        harness.actions.logError('fail');
-        const next = harness.getState() as {
-            debug: { logAttention: boolean };
-        };
-        expect(next.debug.logAttention).toBe(true);
-    });
-
-    it('bumps renderId for a NEW error message (deduplication guard miss)', () => {
+    it('does NOT bump interface.renderId when logError records a new error', () => {
         const harness = makeSliceHarness();
         const before = (
             harness.getState() as { interface: { renderId: string } }
         ).interface.renderId;
-        harness.actions.logError('vega: invalid expression');
+        harness.actions.logError('boom');
         const after = (
             harness.getState() as { interface: { renderId: string } }
         ).interface.renderId;
-        expect(after).not.toBe(before);
+        expect(after).toBe(before);
     });
 
-    // The two tests below also serve as the unit-level guard against the
-    // `DataTab` catch-block retry-loop hazard: when `getDataByName` throws,
-    // `data-tab.tsx` calls `logError(...)`, which used to bump `renderId`
-    // unconditionally and re-trigger the same `useEffect` (potential loop).
-    // The dedup guard keeps repeated identical errors from bumping `renderId`
-    // — and therefore from re-firing the listener — preventing the loop.
-    it('does NOT bump renderId for a DUPLICATE error message (already in runtimeErrors)', () => {
+    it('does NOT bump interface.renderId on a duplicate logError (dedup preserved)', () => {
         const harness = makeSliceHarness();
-        // First call seeds the message and bumps renderId.
         harness.actions.logError('vega: invalid expression');
         const afterFirst = (
             harness.getState() as { interface: { renderId: string } }
         ).interface.renderId;
-        // Second call with the same message must NOT bump renderId — the
-        // viewer listener should not rebind on a repeated pulse-level error.
         harness.actions.logError('vega: invalid expression');
         const afterDuplicate = (
             harness.getState() as { interface: { renderId: string } }
@@ -219,17 +158,43 @@ describe('compilation slice — renderId bump on recovery paths', () => {
         expect(afterDuplicate).toBe(afterFirst);
     });
 
-    it('still bumps renderId for a different error after a duplicate is suppressed', () => {
+    it('preserves other compilation fields when handling compile', () => {
+        const harness = makeSliceHarness();
+        harness.actions.compile({} as never);
+        const next = harness.getState() as {
+            compilation: { isCompiling: boolean; lastCompiled: number | null };
+        };
+        expect(next.compilation.isCompiling).toBe(false);
+        expect(typeof next.compilation.lastCompiled).toBe('number');
+    });
+
+    it('appends a new error message to runtimeErrors', () => {
+        const harness = makeSliceHarness();
+        harness.actions.logError('first');
+        const next = harness.getState() as {
+            compilation: { runtimeErrors: string[] };
+        };
+        expect(next.compilation.runtimeErrors).toEqual(['first']);
+    });
+
+    it('does NOT append a duplicate error message to runtimeErrors', () => {
+        const harness = makeSliceHarness();
+        harness.actions.logError('boom');
+        harness.actions.logError('boom');
+        const next = harness.getState() as {
+            compilation: { runtimeErrors: string[] };
+        };
+        expect(next.compilation.runtimeErrors).toEqual(['boom']);
+    });
+
+    it('appends distinct error messages in order', () => {
         const harness = makeSliceHarness();
         harness.actions.logError('first');
         harness.actions.logError('first'); // duplicate, suppressed
-        const beforeDistinct = (
-            harness.getState() as { interface: { renderId: string } }
-        ).interface.renderId;
         harness.actions.logError('second');
-        const afterDistinct = (
-            harness.getState() as { interface: { renderId: string } }
-        ).interface.renderId;
-        expect(afterDistinct).not.toBe(beforeDistinct);
+        const next = harness.getState() as {
+            compilation: { runtimeErrors: string[] };
+        };
+        expect(next.compilation.runtimeErrors).toEqual(['first', 'second']);
     });
 });
