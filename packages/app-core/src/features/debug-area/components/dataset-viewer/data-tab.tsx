@@ -141,34 +141,48 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
 
     /**
      * When we get a response from our worker, we need to update our state with the processed data table output.
+     *
+     * The dataset worker is a module-level singleton shared with `SourceTab`,
+     * so we attach via `addEventListener` rather than the property-assignment
+     * `onmessage = ...` (which would let the second-mounted tab silently
+     * clobber the first's handler). To stay safe under concurrent mounts
+     * (Strict Mode double-invoke, Source <-> Data toggling with a job in
+     * flight), the handler ignores responses whose `jobId` it does not own —
+     * `jobQueue` membership is the per-tab ownership filter.
+     *
+     * State reads inside the handler use the functional-updater form
+     * (`setDatasetState((prev) => ...)`) so we always observe the latest
+     * `jobQueue` rather than the closure value captured at mount.
      */
     useEffect(() => {
-        if (window.Worker) {
-            datasetWorker.onmessage = (e) => {
-                const { jobId, values, maxWidths } = e.data;
+        if (!window.Worker) return;
+        const handler = (e: MessageEvent) => {
+            const { jobId, values, maxWidths } = e.data;
+            setDatasetState((prev) => {
+                // Drop responses that belong to another tab's worker round-trip.
+                if (!prev.jobQueue.includes(jobId)) {
+                    return prev;
+                }
+                const newJobQueue = prev.jobQueue.filter((id) => id !== jobId);
+                const complete = newJobQueue.length === 0;
                 logDebug('DataTab: worker response received', {
                     jobId,
-                    values,
-                    datasetRaw,
-                    datasetState
-                });
-                const columns = buildDatasetViewerColumns(values, maxWidths);
-                const { jobQueue } = datasetState;
-                const newJobQueue = jobQueue.filter((id) => id !== jobId);
-                const complete = newJobQueue.length === 0;
-                logDebug('DataTab: job queue status', {
-                    prev: jobQueue,
-                    next: newJobQueue,
+                    prevQueue: prev.jobQueue,
+                    nextQueue: newJobQueue,
                     complete
                 });
-                setDatasetState(() => ({
-                    columns,
+                return {
+                    columns: buildDatasetViewerColumns(values, maxWidths),
                     jobQueue: newJobQueue,
                     processing: !complete,
                     values
-                }));
-            };
-        }
+                };
+            });
+        };
+        datasetWorker.addEventListener('message', handler);
+        return () => {
+            datasetWorker.removeEventListener('message', handler);
+        };
     }, [datasetWorker]);
 
     /**
@@ -235,10 +249,10 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
     const lastListenerHashRef = useRef<string | null>(null);
 
     /**
-     * Handler for dataset listener events.
+     * Handler for dataset listener events. Vega exposes the `value` parameter
+     * as `object` in its public typings, so we follow suit rather than `any`.
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const dataListener = useCallback((name: string, value: any) => {
+    const dataListener = useCallback((name: string, value: object) => {
         const newDataset = getPrunedObject(value);
         const hashValue = getDataHash(newDataset);
 
@@ -333,7 +347,7 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
                 datasetRaw,
                 latestDatasetRaw
             });
-            if (latestHash != datasetRaw?.hashValue) {
+            if (latestHash !== datasetRaw?.hashValue) {
                 logDebug(
                     `DataTab: change necessitates dataset update. Updating...`,
                     {
@@ -407,20 +421,11 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
         return <NoDataMessage reason={reason} />;
     }
 
-    if (datasetState.processing) {
-        return (
-            <div className={classes.container}>
-                <div className={classes.wrapper}>
-                    <div className={classes.details}>
-                        <ProcessingDataMessage />
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    if (!datasetState.values?.length) {
-        // View + name + defined values, but worker produced no rows yet.
+    // Either the worker is still processing, or it hasn't produced any rows
+    // yet (view + name + defined values, but no rows in `datasetState.values`).
+    // Collapsed into a single guard — both branches rendered byte-identical
+    // markup before. Mirrors the consolidated check in `SourceTab`.
+    if (datasetState.processing || !datasetState.values?.length) {
         return (
             <div className={classes.container}>
                 <div className={classes.wrapper}>

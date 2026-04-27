@@ -112,11 +112,20 @@ export const SourceTab = () => {
     // Listen for worker responses. Column generation mirrors the Data tab's
     // shape (tooltip per header, inspector-enabled cells, monospace-measured
     // widths) so the two tabs feel identical to the user.
+    //
+    // The dataset worker is a module-level singleton shared with `DataTab`.
+    // We attach via `addEventListener` (not `worker.onmessage = ...`) so the
+    // two tabs do not last-writer-wins clobber each other when both are
+    // mounted. The handler ignores any response whose `jobId` is not in this
+    // tab's `jobQueue` — that's how each tab filters out the other's traffic.
     useEffect(() => {
         if (!window.Worker) return;
-        worker.onmessage = (e) => {
+        const handler = (e: MessageEvent) => {
             const { jobId, values: rows, maxWidths } = e.data;
             setTableState((prev) => {
+                if (!prev.jobQueue.includes(jobId)) {
+                    return prev;
+                }
                 const newQueue = prev.jobQueue.filter((id) => id !== jobId);
                 return {
                     columns: buildDatasetViewerColumns(rows, maxWidths),
@@ -125,6 +134,10 @@ export const SourceTab = () => {
                     rows
                 };
             });
+        };
+        worker.addEventListener('message', handler);
+        return () => {
+            worker.removeEventListener('message', handler);
         };
     }, [worker]);
 

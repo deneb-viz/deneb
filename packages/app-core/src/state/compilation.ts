@@ -377,24 +377,43 @@ const handleSyncPerformanceSettings = (
 
 /**
  * Record a (deduplicated) runtime error message.
+ *
+ * Vega can emit the same runtime error on every pulse — without a duplicate
+ * guard each repetition would bump `interface.renderId` and force the
+ * dataset-viewer listener to tear down and re-attach, even though nothing
+ * actually changed. We only bump `renderId` when the message is genuinely
+ * new (not already present in `runtimeErrors`); duplicates pass through with
+ * `state.interface` untouched so React doesn't see a no-op re-render cascade.
  */
 const handleLogError = (
     state: StoreState,
     message: string
 ): Partial<StoreState> => {
-    const runtimeErrors = Array.from(
-        new Set<string>([...state.compilation.runtimeErrors, message])
-    );
-    return {
-        debug: { ...state.debug, logAttention: runtimeErrors.length > 0 },
-        // Bump renderId for the same reason as `handleCompile`: the
-        // dataset-viewer listener cycles on `renderId` change, not on
-        // `logAttention` change (Unit 6).
-        interface: { ...state.interface, renderId: getNewUuid() },
+    const isDuplicate = state.compilation.runtimeErrors.includes(message);
+    const runtimeErrors = isDuplicate
+        ? state.compilation.runtimeErrors
+        : [...state.compilation.runtimeErrors, message];
+    const compilationPartial = {
         compilation: {
             ...state.compilation,
             runtimeErrors
         }
+    };
+    if (isDuplicate) {
+        // Same message arriving again — keep `logAttention` consistent with
+        // the existing list (it cannot have shrunk) and leave `renderId` as
+        // is so the viewer doesn't rebind for nothing.
+        return {
+            debug: { ...state.debug, logAttention: runtimeErrors.length > 0 },
+            ...compilationPartial
+        };
+    }
+    return {
+        debug: { ...state.debug, logAttention: runtimeErrors.length > 0 },
+        // New error — bump renderId so the dataset-viewer listener cycles
+        // (same reason as `handleCompile`; see Unit 6).
+        interface: { ...state.interface, renderId: getNewUuid() },
+        ...compilationPartial
     };
 };
 

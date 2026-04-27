@@ -16,6 +16,8 @@ export default defineConfig((options: Options) => ({
         '@deneb-viz/powerbi-compat/*',
         '@deneb-viz/vega-runtime',
         '@deneb-viz/vega-runtime/*',
+        '@deneb-viz/vega-react',
+        '@deneb-viz/vega-react/*',
         '@deneb-viz/json-processing',
         '@deneb-viz/json-processing/*',
         // Monaco - externalized so webpack can tree-shake it from viewer-only builds.

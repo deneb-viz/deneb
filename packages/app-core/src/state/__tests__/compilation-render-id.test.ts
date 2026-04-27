@@ -160,4 +160,46 @@ describe('compilation slice — renderId bump on recovery paths', () => {
         };
         expect(next.debug.logAttention).toBe(true);
     });
+
+    it('bumps renderId for a NEW error message (deduplication guard miss)', () => {
+        const harness = makeSliceHarness();
+        const before = (
+            harness.getState() as { interface: { renderId: string } }
+        ).interface.renderId;
+        harness.actions.logError('vega: invalid expression');
+        const after = (
+            harness.getState() as { interface: { renderId: string } }
+        ).interface.renderId;
+        expect(after).not.toBe(before);
+    });
+
+    it('does NOT bump renderId for a DUPLICATE error message (already in runtimeErrors)', () => {
+        const harness = makeSliceHarness();
+        // First call seeds the message and bumps renderId.
+        harness.actions.logError('vega: invalid expression');
+        const afterFirst = (
+            harness.getState() as { interface: { renderId: string } }
+        ).interface.renderId;
+        // Second call with the same message must NOT bump renderId — the
+        // viewer listener should not rebind on a repeated pulse-level error.
+        harness.actions.logError('vega: invalid expression');
+        const afterDuplicate = (
+            harness.getState() as { interface: { renderId: string } }
+        ).interface.renderId;
+        expect(afterDuplicate).toBe(afterFirst);
+    });
+
+    it('still bumps renderId for a different error after a duplicate is suppressed', () => {
+        const harness = makeSliceHarness();
+        harness.actions.logError('first');
+        harness.actions.logError('first'); // duplicate, suppressed
+        const beforeDistinct = (
+            harness.getState() as { interface: { renderId: string } }
+        ).interface.renderId;
+        harness.actions.logError('second');
+        const afterDistinct = (
+            harness.getState() as { interface: { renderId: string } }
+        ).interface.renderId;
+        expect(afterDistinct).not.toBe(beforeDistinct);
+    });
 });

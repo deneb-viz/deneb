@@ -156,7 +156,5 @@ const getDatasetNames = () => {
         (key) => key !== DEBUG_ROOT_DATASET_NAME
     );
     logDebug('DatasetSelect: filtered datasets', { datasets });
-    return (datasets.length === 0 ? [DATASET_DEFAULT_NAME] : datasets).map(
-        (key) => key
-    );
+    return datasets.length === 0 ? [DATASET_DEFAULT_NAME] : datasets;
 };
