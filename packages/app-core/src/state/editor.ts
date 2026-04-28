@@ -216,7 +216,7 @@ export const createEditorSlice =
                     'editor.updateIsDirty'
                 )
         },
-        editorPreviewAreaSelectedPivot: 'data',
+        editorPreviewAreaSelectedPivot: 'source',
         editorSelectedOperation: 'Spec',
         editorZoomLevel: VISUAL_PREVIEW_ZOOM_CONFIGURATION.default,
         updateEditorSelectedOperation: (role) =>

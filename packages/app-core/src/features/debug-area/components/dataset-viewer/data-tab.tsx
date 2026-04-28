@@ -34,6 +34,7 @@ import {
     getDatasetViewerWorkerTranslations
 } from './dataset-viewer-worker-helpers';
 import { resolveDataTabReason } from './data-tab-utils';
+import { LOADING_INDICATOR_DEBOUNCE_MS } from './loading-debounce-constants';
 
 type DataTabProps = {
     datasetName: string;
@@ -408,6 +409,13 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
     );
 
     const classes = useDebugWrapperStyles();
+    // Debounce the `processing` term only — the "no rows yet" term stays
+    // raw so first-load shows the spinner immediately. See
+    // `loading-debounce-constants.ts` for the threshold rationale.
+    const debouncedProcessing = useDebounce(
+        datasetState.processing,
+        LOADING_INDICATOR_DEBOUNCE_MS
+    );
 
     logRender('DataTab', {
         datasetState,
@@ -422,11 +430,16 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
         return <NoDataMessage reason={reason} />;
     }
 
-    // Either the worker is still processing, or it hasn't produced any rows
-    // yet (view + name + defined values, but no rows in `datasetState.values`).
-    // Collapsed into a single guard — both branches rendered byte-identical
-    // markup before. Mirrors the consolidated check in `SourceTab`.
-    if (datasetState.processing || !datasetState.values?.length) {
+    // Either the worker is still processing (debounced — fast round-trips
+    // don't flicker the spinner), or it hasn't produced any rows yet
+    // (view + name + defined values, but no rows in `datasetState.values`).
+    // The empty-rows term is NOT debounced so first-load shows the spinner
+    // immediately. Mirrors the consolidated check in `SourceTab`.
+    //
+    // Inline rather than via `shouldShowLoadingIndicator` so TypeScript can
+    // narrow `datasetState.values` from `… | null` to `…[]` past the guard.
+    // The helper exists for unit-test ergonomics; behaviour is identical.
+    if (debouncedProcessing || !datasetState.values?.length) {
         return (
             <div className={classes.container}>
                 <div className={classes.wrapper}>

@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import {
     makeStyles,
     tokens,
@@ -5,7 +6,8 @@ import {
     ToolbarGroup,
     ToolbarProps,
     ToolbarRadioButton,
-    ToolbarRadioGroup
+    ToolbarRadioGroup,
+    Tooltip
 } from '@fluentui/react-components';
 import {
     Communication16Regular,
@@ -23,10 +25,17 @@ import {
     type DebugPaneRole
 } from '../../../lib';
 import { LogErrorIndicator } from './log-viewer/log-error-indicator';
-import { ToolbarButtonStandard } from '../../../components/ui';
+import {
+    ToolbarButtonStandard,
+    TooltipCustomMount
+} from '../../../components/ui';
 import { ZoomSlider } from './zoom-controls/zoom-slider';
 import { ZoomLevelPopover } from './zoom-controls/zoom-level-popover';
 import { DEBUG_PANE_CONFIGURATION } from '@deneb-viz/configuration';
+import {
+    ARIA_KEYSHORTCUTS_BY_PIVOT,
+    TOOLTIP_KEY_BY_PIVOT
+} from './debug-toolbar-lookups';
 
 const useToolbarStyles = makeStyles({
     root: {
@@ -53,6 +62,18 @@ export const DebugToolbar = () => {
         })
     );
     const classes = useToolbarStyles();
+    /**
+     * One ref object holds the four `<TooltipCustomMount>` DOM nodes (one per
+     * pivot). Mount nodes don't drive re-renders, so a single `useRef` is
+     * simpler than four `useState` pairs and keeps render output stable.
+     * Each `<TooltipCustomMount setRef={...}>` writes into its own slot.
+     */
+    const mountRefs = useRef<Record<DebugPaneRole, HTMLElement | null>>({
+        source: null,
+        data: null,
+        signal: null,
+        log: null
+    });
     const onDebugModeChange: ToolbarProps['onCheckedValueChange'] = (
         e,
         { checkedItems }
@@ -82,43 +103,95 @@ export const DebugToolbar = () => {
             checkedValues={{ debugMode: [editorPreviewAreaSelectedPivot] }}
         >
             <ToolbarRadioGroup className={classes.group}>
-                <ToolbarRadioButton
-                    name='debugMode'
-                    value='source'
-                    appearance='subtle'
-                    size='small'
-                    icon={<DatabaseLinkRegular />}
+                <Tooltip
+                    relationship='label'
+                    withArrow
+                    content={translate(TOOLTIP_KEY_BY_PIVOT.source)}
+                    mountNode={mountRefs.current.source}
                 >
-                    {translate('Pivot_Debug_Source')}
-                </ToolbarRadioButton>
-                <ToolbarRadioButton
-                    name='debugMode'
-                    value='data'
-                    appearance='subtle'
-                    size='small'
-                    icon={<Table16Regular />}
+                    <ToolbarRadioButton
+                        name='debugMode'
+                        value='source'
+                        appearance='subtle'
+                        size='small'
+                        icon={<DatabaseLinkRegular />}
+                        aria-keyshortcuts={ARIA_KEYSHORTCUTS_BY_PIVOT.source}
+                    >
+                        {translate('Pivot_Debug_Source')}
+                    </ToolbarRadioButton>
+                </Tooltip>
+                <TooltipCustomMount
+                    setRef={(el) => {
+                        mountRefs.current.source = el;
+                    }}
+                />
+                <Tooltip
+                    relationship='label'
+                    withArrow
+                    content={translate(TOOLTIP_KEY_BY_PIVOT.data)}
+                    mountNode={mountRefs.current.data}
                 >
-                    {translate('Pivot_Debug_VegaData')}
-                </ToolbarRadioButton>
-                <ToolbarRadioButton
-                    name='debugMode'
-                    value='signal'
-                    appearance='subtle'
-                    size='small'
-                    icon={<Communication16Regular />}
+                    <ToolbarRadioButton
+                        name='debugMode'
+                        value='data'
+                        appearance='subtle'
+                        size='small'
+                        icon={<Table16Regular />}
+                        aria-keyshortcuts={ARIA_KEYSHORTCUTS_BY_PIVOT.data}
+                    >
+                        {translate('Pivot_Debug_VegaData')}
+                    </ToolbarRadioButton>
+                </Tooltip>
+                <TooltipCustomMount
+                    setRef={(el) => {
+                        mountRefs.current.data = el;
+                    }}
+                />
+                <Tooltip
+                    relationship='label'
+                    withArrow
+                    content={translate(TOOLTIP_KEY_BY_PIVOT.signal)}
+                    mountNode={mountRefs.current.signal}
                 >
-                    {translate('Pivot_Debug_VegaSignals')}
-                </ToolbarRadioButton>
-                <ToolbarRadioButton
-                    name='debugMode'
-                    value='log'
-                    appearance='subtle'
-                    size='small'
-                    icon={<Notebook16Regular />}
+                    <ToolbarRadioButton
+                        name='debugMode'
+                        value='signal'
+                        appearance='subtle'
+                        size='small'
+                        icon={<Communication16Regular />}
+                        aria-keyshortcuts={ARIA_KEYSHORTCUTS_BY_PIVOT.signal}
+                    >
+                        {translate('Pivot_Debug_VegaSignals')}
+                    </ToolbarRadioButton>
+                </Tooltip>
+                <TooltipCustomMount
+                    setRef={(el) => {
+                        mountRefs.current.signal = el;
+                    }}
+                />
+                <Tooltip
+                    relationship='label'
+                    withArrow
+                    content={translate(TOOLTIP_KEY_BY_PIVOT.log)}
+                    mountNode={mountRefs.current.log}
                 >
-                    {translate('Pivot_Debug_VegaLogs')}
-                    <LogErrorIndicator />
-                </ToolbarRadioButton>
+                    <ToolbarRadioButton
+                        name='debugMode'
+                        value='log'
+                        appearance='subtle'
+                        size='small'
+                        icon={<Notebook16Regular />}
+                        aria-keyshortcuts={ARIA_KEYSHORTCUTS_BY_PIVOT.log}
+                    >
+                        {translate('Pivot_Debug_VegaLogs')}
+                        <LogErrorIndicator />
+                    </ToolbarRadioButton>
+                </Tooltip>
+                <TooltipCustomMount
+                    setRef={(el) => {
+                        mountRefs.current.log = el;
+                    }}
+                />
             </ToolbarRadioGroup>
             <ToolbarGroup className={classes.group}>
                 <ToolbarButtonStandard command='zoomOut' role='debug' />
