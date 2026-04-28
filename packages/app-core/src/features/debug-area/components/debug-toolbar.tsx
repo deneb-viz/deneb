@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
     makeStyles,
     tokens,
@@ -5,7 +6,8 @@ import {
     ToolbarGroup,
     ToolbarProps,
     ToolbarRadioButton,
-    ToolbarRadioGroup
+    ToolbarRadioGroup,
+    Tooltip
 } from '@fluentui/react-components';
 import {
     Communication16Regular,
@@ -23,10 +25,17 @@ import {
     type DebugPaneRole
 } from '../../../lib';
 import { LogErrorIndicator } from './log-viewer/log-error-indicator';
-import { ToolbarButtonStandard } from '../../../components/ui';
+import {
+    ToolbarButtonStandard,
+    TooltipCustomMount
+} from '../../../components/ui';
 import { ZoomSlider } from './zoom-controls/zoom-slider';
 import { ZoomLevelPopover } from './zoom-controls/zoom-level-popover';
 import { DEBUG_PANE_CONFIGURATION } from '@deneb-viz/configuration';
+import {
+    ARIA_KEYSHORTCUTS_BY_PIVOT,
+    TOOLTIP_KEY_BY_PIVOT
+} from './debug-toolbar-lookups';
 
 const useToolbarStyles = makeStyles({
     root: {
@@ -53,6 +62,19 @@ export const DebugToolbar = () => {
         })
     );
     const classes = useToolbarStyles();
+    /**
+     * Four separate `useState` pairs for the `<TooltipCustomMount>` mount
+     * nodes — one per pivot. Matches the canonical pattern in
+     * `toolbar-button-standard.tsx`. We pass the state setter directly to
+     * `setRef`, which is identity-stable across renders. A single
+     * `useState<Record<...>>` with inline callbacks creates a new closure
+     * each render, and React's ref-callback contract then triggers an
+     * infinite detach/reattach loop on commit.
+     */
+    const [sourceMount, setSourceMount] = useState<HTMLElement | null>(null);
+    const [dataMount, setDataMount] = useState<HTMLElement | null>(null);
+    const [signalMount, setSignalMount] = useState<HTMLElement | null>(null);
+    const [logMount, setLogMount] = useState<HTMLElement | null>(null);
     const onDebugModeChange: ToolbarProps['onCheckedValueChange'] = (
         e,
         { checkedItems }
@@ -82,44 +104,87 @@ export const DebugToolbar = () => {
             checkedValues={{ debugMode: [editorPreviewAreaSelectedPivot] }}
         >
             <ToolbarRadioGroup className={classes.group}>
-                <ToolbarRadioButton
-                    name='debugMode'
-                    value='source'
-                    appearance='subtle'
-                    size='small'
-                    icon={<DatabaseLinkRegular />}
+                <Tooltip
+                    relationship='label'
+                    withArrow
+                    content={translate(TOOLTIP_KEY_BY_PIVOT.source)}
+                    mountNode={sourceMount}
                 >
-                    {translate('Pivot_Debug_Source')}
-                </ToolbarRadioButton>
-                <ToolbarRadioButton
-                    name='debugMode'
-                    value='data'
-                    appearance='subtle'
-                    size='small'
-                    icon={<Table16Regular />}
+                    <ToolbarRadioButton
+                        name='debugMode'
+                        value='source'
+                        appearance='subtle'
+                        size='small'
+                        icon={<DatabaseLinkRegular />}
+                        aria-keyshortcuts={ARIA_KEYSHORTCUTS_BY_PIVOT.source}
+                    >
+                        {translate('Pivot_Debug_Source')}
+                    </ToolbarRadioButton>
+                </Tooltip>
+                <Tooltip
+                    relationship='label'
+                    withArrow
+                    content={translate(TOOLTIP_KEY_BY_PIVOT.data)}
+                    mountNode={dataMount}
                 >
-                    {translate('Pivot_Debug_VegaData')}
-                </ToolbarRadioButton>
-                <ToolbarRadioButton
-                    name='debugMode'
-                    value='signal'
-                    appearance='subtle'
-                    size='small'
-                    icon={<Communication16Regular />}
+                    <ToolbarRadioButton
+                        name='debugMode'
+                        value='data'
+                        appearance='subtle'
+                        size='small'
+                        icon={<Table16Regular />}
+                        aria-keyshortcuts={ARIA_KEYSHORTCUTS_BY_PIVOT.data}
+                    >
+                        {translate('Pivot_Debug_VegaData')}
+                    </ToolbarRadioButton>
+                </Tooltip>
+                <Tooltip
+                    relationship='label'
+                    withArrow
+                    content={translate(TOOLTIP_KEY_BY_PIVOT.signal)}
+                    mountNode={signalMount}
                 >
-                    {translate('Pivot_Debug_VegaSignals')}
-                </ToolbarRadioButton>
-                <ToolbarRadioButton
-                    name='debugMode'
-                    value='log'
-                    appearance='subtle'
-                    size='small'
-                    icon={<Notebook16Regular />}
+                    <ToolbarRadioButton
+                        name='debugMode'
+                        value='signal'
+                        appearance='subtle'
+                        size='small'
+                        icon={<Communication16Regular />}
+                        aria-keyshortcuts={ARIA_KEYSHORTCUTS_BY_PIVOT.signal}
+                    >
+                        {translate('Pivot_Debug_VegaSignals')}
+                    </ToolbarRadioButton>
+                </Tooltip>
+                <Tooltip
+                    relationship='label'
+                    withArrow
+                    content={translate(TOOLTIP_KEY_BY_PIVOT.log)}
+                    mountNode={logMount}
                 >
-                    {translate('Pivot_Debug_VegaLogs')}
-                    <LogErrorIndicator />
-                </ToolbarRadioButton>
+                    <ToolbarRadioButton
+                        name='debugMode'
+                        value='log'
+                        appearance='subtle'
+                        size='small'
+                        icon={<Notebook16Regular />}
+                        aria-keyshortcuts={ARIA_KEYSHORTCUTS_BY_PIVOT.log}
+                    >
+                        {translate('Pivot_Debug_VegaLogs')}
+                        <LogErrorIndicator />
+                    </ToolbarRadioButton>
+                </Tooltip>
             </ToolbarRadioGroup>
+            {/*
+             * Tooltip mount nodes live as siblings of `<ToolbarRadioGroup>`
+             * (not inside it) so Fluent's roving-tabindex implementation
+             * doesn't see non-radio siblings inside the group. The
+             * `mountNode` prop on each `<Tooltip>` portals correctly
+             * regardless of where the mount div lives in the tree.
+             */}
+            <TooltipCustomMount setRef={setSourceMount} />
+            <TooltipCustomMount setRef={setDataMount} />
+            <TooltipCustomMount setRef={setSignalMount} />
+            <TooltipCustomMount setRef={setLogMount} />
             <ToolbarGroup className={classes.group}>
                 <ToolbarButtonStandard command='zoomOut' role='debug' />
                 <ZoomSlider />

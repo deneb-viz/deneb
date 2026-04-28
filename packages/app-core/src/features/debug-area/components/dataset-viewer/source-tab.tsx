@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { SortOrder, TableColumn } from 'react-data-table-component';
+import { useDebounce } from '@uidotdev/usehooks';
 
 import { getHashValue, getNewUuid } from '@deneb-viz/utils/crypto';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
@@ -26,6 +27,7 @@ import {
     getDatasetViewerCharWidth,
     getDatasetViewerWorkerTranslations
 } from './dataset-viewer-worker-helpers';
+import { LOADING_INDICATOR_DEBOUNCE_MS } from './loading-debounce-constants';
 
 /**
  * Renders the Source outer pivot of the Debug Area.
@@ -167,6 +169,13 @@ export const SourceTab = () => {
     );
 
     const classes = useDebugWrapperStyles();
+    // Debounce the `processing` term only — the "no rows yet" term stays
+    // raw so first-load shows the spinner immediately. See
+    // `loading-debounce-constants.ts` for the threshold rationale.
+    const debouncedProcessing = useDebounce(
+        tableState.processing,
+        LOADING_INDICATOR_DEBOUNCE_MS
+    );
     logRender('SourceTab', {
         rowCount: values.length,
         reason,
@@ -178,16 +187,11 @@ export const SourceTab = () => {
         return <NoDataMessage reason={reason} />;
     }
 
-    if (tableState.processing || !tableState.rows) {
-        return (
-            <div className={classes.container}>
-                <div className={classes.wrapper}>
-                    <div className={classes.details}>
-                        <ProcessingDataMessage />
-                    </div>
-                </div>
-            </div>
-        );
+    // Inline rather than via `shouldShowLoadingIndicator` so TypeScript can
+    // narrow `tableState.rows` from `… | null` to `…[]` past the guard.
+    // The helper exists for unit-test ergonomics; behaviour is identical.
+    if (debouncedProcessing || !tableState.rows) {
+        return <ProcessingDataMessage />;
     }
 
     return (
@@ -202,7 +206,7 @@ export const SourceTab = () => {
                         onSort={handleSort}
                         onChangePage={handleChangePage}
                         paginationDefaultPage={page}
-                        progressPending={tableState.processing}
+                        progressPending={debouncedProcessing}
                     />
                 </div>
             </div>
