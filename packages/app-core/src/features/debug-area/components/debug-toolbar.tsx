@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useState } from 'react';
 import {
     makeStyles,
     tokens,
@@ -63,12 +63,17 @@ export const DebugToolbar = () => {
     );
     const classes = useToolbarStyles();
     /**
-     * One ref object holds the four `<TooltipCustomMount>` DOM nodes (one per
-     * pivot). Mount nodes don't drive re-renders, so a single `useRef` is
-     * simpler than four `useState` pairs and keeps render output stable.
-     * Each `<TooltipCustomMount setRef={...}>` writes into its own slot.
+     * One state object holds the four `<TooltipCustomMount>` DOM nodes (one per
+     * pivot). Each `<TooltipCustomMount setRef={...}>` writes into its own slot
+     * via a functional updater. Must be `useState` (not `useRef`) so the
+     * post-commit assignment triggers a re-render — Fluent's `<Tooltip>` reads
+     * `mountNode` from props on each render, so we need the second pass to
+     * pick up the populated DOM node rather than the `null` from initial mount.
+     * Matches the canonical pattern in `toolbar-button-standard.tsx`.
      */
-    const mountRefs = useRef<Record<DebugPaneRole, HTMLElement | null>>({
+    const [mountNodes, setMountNodes] = useState<
+        Record<DebugPaneRole, HTMLElement | null>
+    >({
         source: null,
         data: null,
         signal: null,
@@ -107,7 +112,7 @@ export const DebugToolbar = () => {
                     relationship='label'
                     withArrow
                     content={translate(TOOLTIP_KEY_BY_PIVOT.source)}
-                    mountNode={mountRefs.current.source}
+                    mountNode={mountNodes.source}
                 >
                     <ToolbarRadioButton
                         name='debugMode'
@@ -122,14 +127,14 @@ export const DebugToolbar = () => {
                 </Tooltip>
                 <TooltipCustomMount
                     setRef={(el) => {
-                        mountRefs.current.source = el;
+                        setMountNodes((prev) => ({ ...prev, source: el }));
                     }}
                 />
                 <Tooltip
                     relationship='label'
                     withArrow
                     content={translate(TOOLTIP_KEY_BY_PIVOT.data)}
-                    mountNode={mountRefs.current.data}
+                    mountNode={mountNodes.data}
                 >
                     <ToolbarRadioButton
                         name='debugMode'
@@ -144,14 +149,14 @@ export const DebugToolbar = () => {
                 </Tooltip>
                 <TooltipCustomMount
                     setRef={(el) => {
-                        mountRefs.current.data = el;
+                        setMountNodes((prev) => ({ ...prev, data: el }));
                     }}
                 />
                 <Tooltip
                     relationship='label'
                     withArrow
                     content={translate(TOOLTIP_KEY_BY_PIVOT.signal)}
-                    mountNode={mountRefs.current.signal}
+                    mountNode={mountNodes.signal}
                 >
                     <ToolbarRadioButton
                         name='debugMode'
@@ -166,14 +171,14 @@ export const DebugToolbar = () => {
                 </Tooltip>
                 <TooltipCustomMount
                     setRef={(el) => {
-                        mountRefs.current.signal = el;
+                        setMountNodes((prev) => ({ ...prev, signal: el }));
                     }}
                 />
                 <Tooltip
                     relationship='label'
                     withArrow
                     content={translate(TOOLTIP_KEY_BY_PIVOT.log)}
-                    mountNode={mountRefs.current.log}
+                    mountNode={mountNodes.log}
                 >
                     <ToolbarRadioButton
                         name='debugMode'
@@ -189,7 +194,7 @@ export const DebugToolbar = () => {
                 </Tooltip>
                 <TooltipCustomMount
                     setRef={(el) => {
-                        mountRefs.current.log = el;
+                        setMountNodes((prev) => ({ ...prev, log: el }));
                     }}
                 />
             </ToolbarRadioGroup>

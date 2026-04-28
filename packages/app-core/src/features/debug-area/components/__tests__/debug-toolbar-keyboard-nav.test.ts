@@ -1,9 +1,27 @@
 import { describe, expect, it } from 'vitest';
 
+import { HOTKEY_BINDINGS } from '../../../../lib/commands/constants';
+import type { DebugPaneRole } from '../../../../lib';
 import {
     ARIA_KEYSHORTCUTS_BY_PIVOT,
     TOOLTIP_KEY_BY_PIVOT
 } from '../debug-toolbar-lookups';
+
+/**
+ * Maps each pivot role to the `HOTKEY_BINDINGS` command name. Lets the
+ * cross-check test below derive the expected ARIA shortcut from the live
+ * binding instead of duplicating the hotkey number — if anyone renumbers
+ * a binding, the test catches the drift.
+ */
+const HOTKEY_COMMAND_BY_PIVOT: Record<
+    DebugPaneRole,
+    keyof typeof HOTKEY_BINDINGS
+> = {
+    source: 'debugPaneShowSource',
+    data: 'debugPaneShowData',
+    signal: 'debugPaneShowSignals',
+    log: 'debugPaneShowLogs'
+};
 
 /**
  * Keyboard navigation verification (Unit 5 of
@@ -64,4 +82,26 @@ describe('debug toolbar keyboard navigation (regression cross-coverage)', () => 
             expect(value).toMatch(ariaShortcutPattern);
         }
     });
+
+    it.each(['source', 'data', 'signal', 'log'] satisfies DebugPaneRole[])(
+        'aria-keyshortcuts for "%s" matches the live HOTKEY_BINDINGS combination',
+        (role) => {
+            // Extract the digit from the react-hotkeys-hook combination string
+            // (e.g. "ctrl|alt|6,ctrl|alt|num_6" → "6"). If a future change
+            // renumbers a binding without updating ARIA_KEYSHORTCUTS_BY_PIVOT,
+            // the announced shortcut would silently drift from the installed
+            // handler — this test catches that.
+            const command = HOTKEY_COMMAND_BY_PIVOT[role];
+            const combination = HOTKEY_BINDINGS[command].combination;
+            const match = combination.match(/ctrl\|alt\|(\d)/);
+            expect(
+                match,
+                `Unexpected combination shape: ${combination}`
+            ).not.toBeNull();
+            const digit = match![1];
+            expect(ARIA_KEYSHORTCUTS_BY_PIVOT[role]).toBe(
+                `Control+Alt+${digit}`
+            );
+        }
+    );
 });
