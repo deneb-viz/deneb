@@ -56,14 +56,16 @@ vi.mock('@deneb-viz/vega-runtime/compilation', async () => {
 });
 
 import { compileSpec } from '@deneb-viz/vega-runtime/compilation';
+import { VISUAL_PREVIEW_ZOOM_CONFIGURATION } from '@deneb-viz/configuration';
 import { createDenebState } from '../state';
 
-// Mirror the `VISUAL_PREVIEW_ZOOM_CONFIGURATION` constants used by the
-// predicates so test intent is unambiguous. If these change in
-// configuration, update them here too.
-const ZOOM_MIN = 10;
-const ZOOM_MAX = 400;
-const ZOOM_MID = 100;
+// Source the boundaries from the same configuration constant the
+// predicates use. Mirrors the sibling helper-unit test in
+// `lib/commands/__tests__/state.test.ts` and keeps boundary assertions
+// in sync with config changes automatically.
+const ZOOM_MIN = VISUAL_PREVIEW_ZOOM_CONFIGURATION.min;
+const ZOOM_MAX = VISUAL_PREVIEW_ZOOM_CONFIGURATION.max;
+const ZOOM_MID = VISUAL_PREVIEW_ZOOM_CONFIGURATION.default;
 
 /**
  * Build a fresh, fully-wired Deneb state store per test. Using the real
