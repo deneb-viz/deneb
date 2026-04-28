@@ -440,15 +440,7 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
     // narrow `datasetState.values` from `… | null` to `…[]` past the guard.
     // The helper exists for unit-test ergonomics; behaviour is identical.
     if (debouncedProcessing || !datasetState.values?.length) {
-        return (
-            <div className={classes.container}>
-                <div className={classes.wrapper}>
-                    <div className={classes.details}>
-                        <ProcessingDataMessage />
-                    </div>
-                </div>
-            </div>
-        );
+        return <ProcessingDataMessage />;
     }
 
     return (

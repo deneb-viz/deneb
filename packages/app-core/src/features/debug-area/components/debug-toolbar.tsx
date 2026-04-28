@@ -121,7 +121,6 @@ export const DebugToolbar = () => {
                         {translate('Pivot_Debug_Source')}
                     </ToolbarRadioButton>
                 </Tooltip>
-                <TooltipCustomMount setRef={setSourceMount} />
                 <Tooltip
                     relationship='label'
                     withArrow
@@ -139,7 +138,6 @@ export const DebugToolbar = () => {
                         {translate('Pivot_Debug_VegaData')}
                     </ToolbarRadioButton>
                 </Tooltip>
-                <TooltipCustomMount setRef={setDataMount} />
                 <Tooltip
                     relationship='label'
                     withArrow
@@ -157,7 +155,6 @@ export const DebugToolbar = () => {
                         {translate('Pivot_Debug_VegaSignals')}
                     </ToolbarRadioButton>
                 </Tooltip>
-                <TooltipCustomMount setRef={setSignalMount} />
                 <Tooltip
                     relationship='label'
                     withArrow
@@ -176,8 +173,18 @@ export const DebugToolbar = () => {
                         <LogErrorIndicator />
                     </ToolbarRadioButton>
                 </Tooltip>
-                <TooltipCustomMount setRef={setLogMount} />
             </ToolbarRadioGroup>
+            {/*
+             * Tooltip mount nodes live as siblings of `<ToolbarRadioGroup>`
+             * (not inside it) so Fluent's roving-tabindex implementation
+             * doesn't see non-radio siblings inside the group. The
+             * `mountNode` prop on each `<Tooltip>` portals correctly
+             * regardless of where the mount div lives in the tree.
+             */}
+            <TooltipCustomMount setRef={setSourceMount} />
+            <TooltipCustomMount setRef={setDataMount} />
+            <TooltipCustomMount setRef={setSignalMount} />
+            <TooltipCustomMount setRef={setLogMount} />
             <ToolbarGroup className={classes.group}>
                 <ToolbarButtonStandard command='zoomOut' role='debug' />
                 <ZoomSlider />

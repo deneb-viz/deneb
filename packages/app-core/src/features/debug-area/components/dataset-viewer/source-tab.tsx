@@ -191,15 +191,7 @@ export const SourceTab = () => {
     // narrow `tableState.rows` from `… | null` to `…[]` past the guard.
     // The helper exists for unit-test ergonomics; behaviour is identical.
     if (debouncedProcessing || !tableState.rows) {
-        return (
-            <div className={classes.container}>
-                <div className={classes.wrapper}>
-                    <div className={classes.details}>
-                        <ProcessingDataMessage />
-                    </div>
-                </div>
-            </div>
-        );
+        return <ProcessingDataMessage />;
     }
 
     return (

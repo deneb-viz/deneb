@@ -55,10 +55,12 @@ const HOTKEY_COMMAND_BY_PIVOT: Record<
  *      `<TooltipCustomMount>` mount node (no DOM-position regressions, no
  *      truncation against the toolbar edge).
  *
- * If any of the above fails, the most likely culprit is the
- * `<TooltipCustomMount>` siblings disturbing the `<ToolbarRadioGroup>`'s
- * roving-tabindex behavior. Reopen Unit 1's mount-node placement and consider
- * moving the mount nodes outside the radio group as siblings of the group.
+ * The four `<TooltipCustomMount>` nodes are siblings of `<ToolbarRadioGroup>`
+ * (not children of it) precisely so Fluent's roving-tabindex implementation
+ * cannot see non-radio siblings inside the group. If keyboard navigation
+ * regresses, the most likely culprit is upstream — either Fluent's traversal
+ * strategy changed, or another non-radio child was inadvertently nested
+ * inside the radio group.
  */
 describe('debug toolbar keyboard navigation (regression cross-coverage)', () => {
     const expectedRoles = ['data', 'log', 'signal', 'source'];
