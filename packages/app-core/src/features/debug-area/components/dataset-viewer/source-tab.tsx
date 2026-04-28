@@ -214,7 +214,7 @@ export const SourceTab = () => {
                         onSort={handleSort}
                         onChangePage={handleChangePage}
                         paginationDefaultPage={page}
-                        progressPending={tableState.processing}
+                        progressPending={debouncedProcessing}
                     />
                 </div>
             </div>

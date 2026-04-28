@@ -466,7 +466,7 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
                         onSort={handleSort}
                         onChangePage={handleChangePage}
                         paginationDefaultPage={page}
-                        progressPending={datasetState.processing}
+                        progressPending={debouncedProcessing}
                     />
                 </div>
             </div>
