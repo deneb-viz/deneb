@@ -63,22 +63,18 @@ export const DebugToolbar = () => {
     );
     const classes = useToolbarStyles();
     /**
-     * One state object holds the four `<TooltipCustomMount>` DOM nodes (one per
-     * pivot). Each `<TooltipCustomMount setRef={...}>` writes into its own slot
-     * via a functional updater. Must be `useState` (not `useRef`) so the
-     * post-commit assignment triggers a re-render — Fluent's `<Tooltip>` reads
-     * `mountNode` from props on each render, so we need the second pass to
-     * pick up the populated DOM node rather than the `null` from initial mount.
-     * Matches the canonical pattern in `toolbar-button-standard.tsx`.
+     * Four separate `useState` pairs for the `<TooltipCustomMount>` mount
+     * nodes — one per pivot. Matches the canonical pattern in
+     * `toolbar-button-standard.tsx`. We pass the state setter directly to
+     * `setRef`, which is identity-stable across renders. A single
+     * `useState<Record<...>>` with inline callbacks creates a new closure
+     * each render, and React's ref-callback contract then triggers an
+     * infinite detach/reattach loop on commit.
      */
-    const [mountNodes, setMountNodes] = useState<
-        Record<DebugPaneRole, HTMLElement | null>
-    >({
-        source: null,
-        data: null,
-        signal: null,
-        log: null
-    });
+    const [sourceMount, setSourceMount] = useState<HTMLElement | null>(null);
+    const [dataMount, setDataMount] = useState<HTMLElement | null>(null);
+    const [signalMount, setSignalMount] = useState<HTMLElement | null>(null);
+    const [logMount, setLogMount] = useState<HTMLElement | null>(null);
     const onDebugModeChange: ToolbarProps['onCheckedValueChange'] = (
         e,
         { checkedItems }
@@ -112,7 +108,7 @@ export const DebugToolbar = () => {
                     relationship='label'
                     withArrow
                     content={translate(TOOLTIP_KEY_BY_PIVOT.source)}
-                    mountNode={mountNodes.source}
+                    mountNode={sourceMount}
                 >
                     <ToolbarRadioButton
                         name='debugMode'
@@ -125,16 +121,12 @@ export const DebugToolbar = () => {
                         {translate('Pivot_Debug_Source')}
                     </ToolbarRadioButton>
                 </Tooltip>
-                <TooltipCustomMount
-                    setRef={(el) => {
-                        setMountNodes((prev) => ({ ...prev, source: el }));
-                    }}
-                />
+                <TooltipCustomMount setRef={setSourceMount} />
                 <Tooltip
                     relationship='label'
                     withArrow
                     content={translate(TOOLTIP_KEY_BY_PIVOT.data)}
-                    mountNode={mountNodes.data}
+                    mountNode={dataMount}
                 >
                     <ToolbarRadioButton
                         name='debugMode'
@@ -147,16 +139,12 @@ export const DebugToolbar = () => {
                         {translate('Pivot_Debug_VegaData')}
                     </ToolbarRadioButton>
                 </Tooltip>
-                <TooltipCustomMount
-                    setRef={(el) => {
-                        setMountNodes((prev) => ({ ...prev, data: el }));
-                    }}
-                />
+                <TooltipCustomMount setRef={setDataMount} />
                 <Tooltip
                     relationship='label'
                     withArrow
                     content={translate(TOOLTIP_KEY_BY_PIVOT.signal)}
-                    mountNode={mountNodes.signal}
+                    mountNode={signalMount}
                 >
                     <ToolbarRadioButton
                         name='debugMode'
@@ -169,16 +157,12 @@ export const DebugToolbar = () => {
                         {translate('Pivot_Debug_VegaSignals')}
                     </ToolbarRadioButton>
                 </Tooltip>
-                <TooltipCustomMount
-                    setRef={(el) => {
-                        setMountNodes((prev) => ({ ...prev, signal: el }));
-                    }}
-                />
+                <TooltipCustomMount setRef={setSignalMount} />
                 <Tooltip
                     relationship='label'
                     withArrow
                     content={translate(TOOLTIP_KEY_BY_PIVOT.log)}
-                    mountNode={mountNodes.log}
+                    mountNode={logMount}
                 >
                     <ToolbarRadioButton
                         name='debugMode'
@@ -192,11 +176,7 @@ export const DebugToolbar = () => {
                         <LogErrorIndicator />
                     </ToolbarRadioButton>
                 </Tooltip>
-                <TooltipCustomMount
-                    setRef={(el) => {
-                        setMountNodes((prev) => ({ ...prev, log: el }));
-                    }}
-                />
+                <TooltipCustomMount setRef={setLogMount} />
             </ToolbarRadioGroup>
             <ToolbarGroup className={classes.group}>
                 <ToolbarButtonStandard command='zoomOut' role='debug' />
