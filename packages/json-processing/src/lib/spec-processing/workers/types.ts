@@ -12,8 +12,10 @@ import {
  * Represents the worker that processes the JSON in a specification. Because these are typically very expensive, we
  * want to run them in a separate thread to avoid blocking the main thread.
  */
-export interface IDenebSpecJsonWorker
-    extends Omit<Worker, 'onmessage,postMessage'> {
+export interface IDenebSpecJsonWorker extends Omit<
+    Worker,
+    'onmessage' | 'postMessage'
+> {
     onmessage:
         | ((
               this: Worker,

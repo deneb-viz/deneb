@@ -296,23 +296,31 @@ export const createCompilationSlice =
  * - updates state with compilation result or errors
  * - clears previous runtime errors/warnings since we're starting fresh
  * - merges any durable warnings (from previous operations) into runtime warnings, then clears them
+ *
+ * NOTE: this handler intentionally does NOT bump `state.interface.renderId`.
+ * The dataset-viewer listener-rebind contract is now driven by the post-
+ * embed `generateRenderId()` call in `vega-embed.tsx#handleEmbed`, which
+ * fires AFTER `vegaEmbed()` resolves and `setViewReady(true)` runs — i.e.
+ * when the new Vega view actually exists. Bumping at compile time was
+ * (a) a JFR-003 race (the DataTab effect would fire before `vegaEmbed()`
+ * had created a view, so `getView()` returned null) and
+ * (b) a REL-003 churn source (every keystroke-triggered debounced compile
+ * cycled the listener even when the view object was unchanged from the
+ * tab's point of view). Driving the bump from the embed lifecycle gives
+ * us one source of truth: renderId changes iff a fresh `View` instance
+ * has just been attached.
  */
 const handleCompile = (
     state: StoreState,
     options: CompileSpecOptions
 ): Partial<StoreState> => {
     const result = compileSpec(options);
-    const hasCompilationErrors = (result.errors?.length ?? 0) > 0;
 
     // Merge durable errors/warnings into runtime errors/warnings (they survive this compile, then get cleared)
     const runtimeErrors = [...state.compilation.durableErrors];
     const runtimeWarnings = [...state.compilation.durableWarnings];
 
-    // Show attention indicator if there are compilation errors OR durable errors
-    const hasErrors = hasCompilationErrors || runtimeErrors.length > 0;
-
     return {
-        debug: { ...state.debug, logAttention: hasErrors },
         compilation: {
             ...state.compilation,
             result,
@@ -370,16 +378,29 @@ const handleSyncPerformanceSettings = (
 
 /**
  * Record a (deduplicated) runtime error message.
+ *
+ * Runtime errors arrive on the existing Vega view — they do NOT signal a
+ * fresh `View` instance, so this handler does not bump
+ * `state.interface.renderId`. The dataset-viewer listener-rebind contract
+ * is owned by `vega-embed.tsx#handleEmbed`'s post-embed `generateRenderId()`
+ * call (driven by view replacement, not by error logging). Compile-time
+ * recovery flows still cycle the listener correctly because compile errors
+ * → recovery results in a re-embed, which calls `generateRenderId()` from
+ * the embed lifecycle.
+ *
+ * Deduplication of repeat messages is preserved: Vega can emit the same
+ * runtime error on every pulse, so we keep the runtimeErrors list a Set-
+ * style append.
  */
 const handleLogError = (
     state: StoreState,
     message: string
 ): Partial<StoreState> => {
-    const runtimeErrors = Array.from(
-        new Set<string>([...state.compilation.runtimeErrors, message])
-    );
+    const isDuplicate = state.compilation.runtimeErrors.includes(message);
+    const runtimeErrors = isDuplicate
+        ? state.compilation.runtimeErrors
+        : [...state.compilation.runtimeErrors, message];
     return {
-        debug: { ...state.debug, logAttention: runtimeErrors.length > 0 },
         compilation: {
             ...state.compilation,
             runtimeErrors

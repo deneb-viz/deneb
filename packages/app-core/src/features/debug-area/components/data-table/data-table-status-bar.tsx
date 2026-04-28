@@ -87,12 +87,14 @@ export const DataTableStatusBar = ({
     const rowsPerPageId = useId();
     const rowsPerPageEntries = useMemo(() => getRowsPerPageValues(), []);
     const optionComponent = useMemo(() => {
-        switch (mode) {
-            case 'data':
-                return <DatasetSelect />;
-            default:
-                return null;
+        // Root-level `DatasetSelect` is only meaningful on the Data outer
+        // pivot. The Source tab reads from `state.dataset.values` directly
+        // and has no dataset-name axis to switch between, so we hide the
+        // selector everywhere except the Data tab.
+        if (mode === 'data') {
+            return <DatasetSelect />;
         }
+        return null;
     }, [mode]);
 
     return (

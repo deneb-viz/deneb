@@ -30,7 +30,7 @@ const useDatasetSelectStyles = makeStyles({
 
 /**
  * Headless component that ensures the dataset name is initialized when the Vega view is ready. This runs before
- * `DatasetViewer` renders to avoid the chicken-and-egg problem where `DatasetViewer` needs a dataset name, but
+ * `DataTab` renders to avoid the chicken-and-egg problem where `DataTab` needs a dataset name, but
  * `DatasetSelect` (which sets it) only renders after data is loaded.
  *
  * @remarks We only reset the dataset name when:
@@ -156,7 +156,5 @@ const getDatasetNames = () => {
         (key) => key !== DEBUG_ROOT_DATASET_NAME
     );
     logDebug('DatasetSelect: filtered datasets', { datasets });
-    return (datasets.length === 0 ? [DATASET_DEFAULT_NAME] : datasets).map(
-        (key) => key
-    );
+    return datasets.length === 0 ? [DATASET_DEFAULT_NAME] : datasets;
 };

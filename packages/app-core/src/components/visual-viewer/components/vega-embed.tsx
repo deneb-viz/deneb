@@ -199,7 +199,7 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
      * via `view.data()` API. VegaEmbed only re-embeds when compilation changes.
      */
     const spec = useMemo(() => {
-        if (!compilation || compilation.status !== 'ready') {
+        if (!compilation || compilation.status !== 'ready' || !provider) {
             return null;
         }
 

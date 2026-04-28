@@ -19,8 +19,11 @@ type SignalViewerProps = {
  */
 type SignalTableDataRow = {
     key: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    value: any;
+    /**
+     * Always `null` at the row-data layer; the actual signal value is fetched
+     * lazily by the `SignalValue` cell component using the row's `key`.
+     */
+    value: null;
 };
 
 /**
@@ -35,21 +38,24 @@ export const SignalViewer = ({ renderId }: SignalViewerProps) => {
         values,
         renderId
     });
-    return values?.length ? (
-        <div className={classes.container}>
-            <div className={classes.wrapper}>
-                <div className={classes.details}>
-                    <DataTableViewer
-                        columns={columns}
-                        data={values}
-                        defaultSortFieldId={undefined}
-                    />
+    if (values?.length) {
+        return (
+            <div className={classes.container}>
+                <div className={classes.wrapper}>
+                    <div className={classes.details}>
+                        <DataTableViewer
+                            columns={columns}
+                            data={values}
+                            defaultSortFieldId={undefined}
+                        />
+                    </div>
                 </div>
             </div>
-        </div>
-    ) : (
-        <NoDataMessage />
-    );
+        );
+    }
+    const reason =
+        VegaViewServices.getView() === null ? 'view-unavailable' : 'no-signals';
+    return <NoDataMessage reason={reason} />;
 };
 
 /**

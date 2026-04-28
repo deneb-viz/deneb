@@ -9,6 +9,7 @@ import {
 } from '@fluentui/react-components';
 import {
     Communication16Regular,
+    DatabaseLinkRegular,
     Notebook16Regular,
     Table16Regular
 } from '@fluentui/react-icons';
@@ -18,6 +19,7 @@ import {
     handleDebugPaneData,
     handleDebugPaneLog,
     handleDebugPaneSignal,
+    handleDebugPaneSource,
     type DebugPaneRole
 } from '../../../lib';
 import { LogErrorIndicator } from './log-viewer/log-error-indicator';
@@ -43,9 +45,13 @@ const useToolbarStyles = makeStyles({
 });
 
 export const DebugToolbar = () => {
-    const { editorPreviewAreaSelectedPivot } = useDenebState((state) => ({
-        editorPreviewAreaSelectedPivot: state.editorPreviewAreaSelectedPivot
-    }));
+    const { editorPreviewAreaSelectedPivot, translate } = useDenebState(
+        (state) => ({
+            editorPreviewAreaSelectedPivot:
+                state.editorPreviewAreaSelectedPivot,
+            translate: state.i18n.translate
+        })
+    );
     const classes = useToolbarStyles();
     const onDebugModeChange: ToolbarProps['onCheckedValueChange'] = (
         e,
@@ -53,6 +59,9 @@ export const DebugToolbar = () => {
     ) => {
         const role = checkedItems[0] as DebugPaneRole;
         switch (role) {
+            case 'source':
+                handleDebugPaneSource();
+                break;
             case 'data':
                 handleDebugPaneData();
                 break;
@@ -66,6 +75,7 @@ export const DebugToolbar = () => {
     };
     return (
         <Toolbar
+            aria-label='Debug view'
             size='small'
             className={classes.root}
             onCheckedValueChange={onDebugModeChange}
@@ -74,12 +84,21 @@ export const DebugToolbar = () => {
             <ToolbarRadioGroup className={classes.group}>
                 <ToolbarRadioButton
                     name='debugMode'
+                    value='source'
+                    appearance='subtle'
+                    size='small'
+                    icon={<DatabaseLinkRegular />}
+                >
+                    {translate('Pivot_Debug_Source')}
+                </ToolbarRadioButton>
+                <ToolbarRadioButton
+                    name='debugMode'
                     value='data'
                     appearance='subtle'
                     size='small'
                     icon={<Table16Regular />}
                 >
-                    Data
+                    {translate('Pivot_Debug_VegaData')}
                 </ToolbarRadioButton>
                 <ToolbarRadioButton
                     name='debugMode'
@@ -88,7 +107,7 @@ export const DebugToolbar = () => {
                     size='small'
                     icon={<Communication16Regular />}
                 >
-                    Signals
+                    {translate('Pivot_Debug_VegaSignals')}
                 </ToolbarRadioButton>
                 <ToolbarRadioButton
                     name='debugMode'
@@ -97,7 +116,7 @@ export const DebugToolbar = () => {
                     size='small'
                     icon={<Notebook16Regular />}
                 >
-                    Logs &nbsp;
+                    {translate('Pivot_Debug_VegaLogs')}
                     <LogErrorIndicator />
                 </ToolbarRadioButton>
             </ToolbarRadioGroup>

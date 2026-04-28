@@ -240,7 +240,7 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 
 ## Important Constraints
 
-**Bundle Size:** ~1MB max (Power BI limit) - use `npm run webpack:analyze` to inspect
+**Bundle Size:** ~2MB max - use `npm run webpack:analyze` to inspect
 
 **TypeScript Const Enums:** `powerbi-visuals-api` enums are inlined at compile time (no runtime dependency)
 
@@ -252,6 +252,8 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 - `ALLOW_EXTERNAL_URI=false`, `LOG_LEVEL=0`, all dev toggles off
 
 **Persisted visual state (`stateManagement`):** Stores viewport dimensions and `supportFieldConfiguration` — the per-field flags controlling which support fields are generated. This property is part of the visual's persistent JSON and grows as new per-spec configuration is added.
+
+Prefer readable and self-documenting code over elegant solutions even if it increases verbosity.
 
 ## Troubleshooting
 

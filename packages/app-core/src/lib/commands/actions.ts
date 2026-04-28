@@ -105,6 +105,17 @@ export const handleDebugPaneData = () => {
     });
 };
 
+/**
+ * Switches the outer Debug Area pivot to the Source tab. Mirrors the
+ * `handleDebugPaneData` / `handleDebugPaneLog` / `handleDebugPaneSignal`
+ * action-creator style.
+ */
+export const handleDebugPaneSource = () => {
+    executeCommand('debugPaneShowSource', () => {
+        setDebugPivotItem('source');
+    });
+};
+
 export const handleDebugPaneLog = () => {
     executeCommand('debugPaneShowLogs', () => {
         setDebugPivotItem('log');
