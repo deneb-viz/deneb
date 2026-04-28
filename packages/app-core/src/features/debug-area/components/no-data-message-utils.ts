@@ -20,10 +20,11 @@ export const getMessageKey = (reason: EmptyStateReason): string => {
 };
 
 /**
- * Data-tab reasons embed a `DatasetSelect` in the status bar so the user can
- * pick a different named dataset from the Vega view without leaving the empty
- * state. Source-tab and signal reasons do not — no selector is meaningful in
- * those contexts.
+ * The `DatasetSelect` is only meaningful when a Vega view exists and a
+ * different named dataset can be chosen — i.e. the `'dataset-unavailable'`
+ * case. With no view (`'view-unavailable'`), the selector's options come from
+ * the absent view, so picking from a stale or empty list has no actionable
+ * effect; the selector is suppressed alongside source-tab and signal reasons.
  */
 export const shouldEmbedDatasetSelect = (reason: EmptyStateReason): boolean =>
-    reason === 'view-unavailable' || reason === 'dataset-unavailable';
+    reason === 'dataset-unavailable';

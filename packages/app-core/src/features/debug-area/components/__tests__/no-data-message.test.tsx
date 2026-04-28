@@ -81,11 +81,11 @@ describe('NoDataMessage helpers', () => {
     });
 
     describe('shouldEmbedDatasetSelect', () => {
-        it('returns true for "view-unavailable" (data-tab reason)', () => {
-            expect(shouldEmbedDatasetSelect('view-unavailable')).toBe(true);
+        it('returns false for "view-unavailable" (no view = stale/empty selector options)', () => {
+            expect(shouldEmbedDatasetSelect('view-unavailable')).toBe(false);
         });
 
-        it('returns true for "dataset-unavailable" (data-tab reason)', () => {
+        it('returns true for "dataset-unavailable" (view live; user can pick a valid name)', () => {
             expect(shouldEmbedDatasetSelect('dataset-unavailable')).toBe(true);
         });
 
