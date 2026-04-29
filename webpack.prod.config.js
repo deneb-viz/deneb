@@ -24,6 +24,7 @@ module.exports = merge(
             minimize: true,
             minimizer: [
                 new TerserPlugin({
+                    minify: TerserPlugin.swcMinify,
                     parallel: true,
                     terserOptions: {
                         compress: {
