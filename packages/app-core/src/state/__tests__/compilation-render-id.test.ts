@@ -65,6 +65,13 @@ const makeStateFixture = (overrides: Partial<Record<string, unknown>> = {}) =>
         interface: {
             renderId: 'initial-render-id'
         },
+        // `handleCompile` re-evaluates compilation-gated commands on every
+        // compile via the helpers in `lib/commands/state.ts`, reading these
+        // three fields. Fixture provides safe defaults; tests in this file
+        // don't assert on commands but the code path needs the inputs.
+        editorZoomLevel: 100,
+        editor: { isDirty: false },
+        commands: {},
         ...overrides
     }) as never;
 

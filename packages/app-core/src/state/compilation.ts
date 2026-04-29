@@ -6,6 +6,11 @@ import type {
 } from '@deneb-viz/vega-runtime/compilation';
 import { type StoreState, type SyncableSlice } from './state';
 import { INCREMENTAL_UPDATE_CONFIGURATION } from '../lib/vega/incremental-update-configuration';
+import {
+    evaluateExportSpecCommandState,
+    evaluateZoomCommandsState,
+    isCompilationReady
+} from '../lib/commands/state';
 
 /**
  * Performance settings that control compilation and rendering behavior.
@@ -320,7 +325,7 @@ const handleCompile = (
     const runtimeErrors = [...state.compilation.durableErrors];
     const runtimeWarnings = [...state.compilation.durableWarnings];
 
-    return {
+    const compilationUpdate: Partial<StoreState> = {
         compilation: {
             ...state.compilation,
             result,
@@ -332,6 +337,27 @@ const handleCompile = (
             // Clear durable errors/warnings - they've been merged into runtime errors/warnings
             durableErrors: [],
             durableWarnings: []
+        }
+    };
+
+    // Always re-evaluate compilation-gated commands on compile. Both
+    // helpers handle the not-ready case correctly (returning `false` for
+    // gated commands), so writing unconditionally:
+    //   - re-enables flags on success (recovery from error states)
+    //   - disables flags on error (parity with how exportSpecification
+    //     already disables via continuous editor writes; without this,
+    //     zoom would only disable after the user clicks a zoom control,
+    //     because handleUpdateEditorZoomLevel is its sole writer).
+    // The asymmetry the error-branch-skip preserved was actually the bug
+    // for zoom: editor-edit writers fire continuously and self-correct
+    // exportSpec; zoom has no parallel cadence, so the recovery-only
+    // write left zoom enabled-looking until clicked.
+    return {
+        ...compilationUpdate,
+        commands: {
+            ...state.commands,
+            ...evaluateZoomCommandsState(state.editorZoomLevel, result),
+            ...evaluateExportSpecCommandState(state.editor.isDirty, result)
         }
     };
 };

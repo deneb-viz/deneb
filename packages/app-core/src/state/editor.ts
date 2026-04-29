@@ -1,14 +1,10 @@
 import { getUpdatedExportMetadata } from '@deneb-viz/json-processing';
 import type { monaco } from '../components/code-editor/monaco-integration';
 import {
-    getNextApplyMode,
-    isExportSpecCommandEnabled,
-    isZoomInCommandEnabled,
-    isZoomOtherCommandsEnabled,
-    isZoomOutCommandEnabled,
-    type ZoomLevelCommandTestOptions,
-    type ZoomOtherCommandTestOptions
-} from '../lib';
+    evaluateExportSpecCommandState,
+    evaluateZoomCommandsState,
+    getNextApplyMode
+} from '../lib/commands/state';
 import {
     type ContainerViewport,
     type DebugPaneRole,
@@ -305,10 +301,7 @@ const handleUpdateChanges = (
     return {
         commands: {
             ...state.commands,
-            exportSpecification: isExportSpecCommandEnabled({
-                editorIsDirty: isDirty,
-                compilationResult: state.compilation.result
-            })
+            ...evaluateExportSpecCommandState(isDirty, state.compilation.result)
         },
         editor: {
             ...state.editor,
@@ -332,10 +325,7 @@ const handleUpdateIsDirty = (
 ): Partial<StoreState> => ({
     commands: {
         ...state.commands,
-        exportSpecification: isExportSpecCommandEnabled({
-            editorIsDirty: isDirty,
-            compilationResult: state.compilation.result
-        })
+        ...evaluateExportSpecCommandState(isDirty, state.compilation.result)
     },
     editor: {
         ...state.editor,
@@ -362,22 +352,10 @@ const handleUpdateEditorSelectedPreviewRole = (
 const handleUpdateEditorZoomLevel = (
     state: StoreState,
     zoomLevel: number
-): Partial<StoreState> => {
-    const zoomOtherCommandTest: ZoomOtherCommandTestOptions = {
-        compilationResult: state.compilation.result
-    };
-    const zoomLevelCommandTest: ZoomLevelCommandTestOptions = {
-        value: zoomLevel,
-        compilationResult: state.compilation.result
-    };
-    return {
-        commands: {
-            ...state.commands,
-            zoomFit: isZoomOtherCommandsEnabled(zoomOtherCommandTest),
-            zoomIn: isZoomInCommandEnabled(zoomLevelCommandTest),
-            zoomOut: isZoomOutCommandEnabled(zoomLevelCommandTest),
-            zoomReset: isZoomOtherCommandsEnabled(zoomOtherCommandTest)
-        },
-        editorZoomLevel: zoomLevel
-    };
-};
+): Partial<StoreState> => ({
+    commands: {
+        ...state.commands,
+        ...evaluateZoomCommandsState(zoomLevel, state.compilation.result)
+    },
+    editorZoomLevel: zoomLevel
+});
