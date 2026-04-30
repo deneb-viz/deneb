@@ -14,7 +14,7 @@ import {
     PLATFORM_SECTION_KEYS,
     platformSearchContributions
 } from './platform-search-contributions';
-import { DenebEditor } from '@deneb-viz/app-core/editor';
+import { RetainedDenebEditor } from '@deneb-viz/app-core/editor';
 import {
     FetchingMessage,
     LandingPage,
@@ -176,7 +176,11 @@ export const App = ({ host }: AppProps) => {
             case 'transition-editor-viewer':
                 return null;
             case 'editor':
-                return <DenebEditor />;
+                // Editor mode is rendered by `<RetainedDenebEditor />`
+                // alongside the main component so the editor tree is
+                // retained across viewer↔editor toggles after the
+                // first open. See packages/app-core/src/app/retained-deneb-editor.tsx.
+                return null;
             case 'viewer':
                 return <ReportViewRouter />;
             default:
@@ -219,6 +223,7 @@ export const App = ({ host }: AppProps) => {
                 }
             }}
         >
+            <RetainedDenebEditor isEditorMode={mode === 'editor'} />
             {mainComponent}
             <NotificationToaster />
             <VisualUpdateHistoryOverlay />
