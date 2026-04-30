@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react';
 import { makeStyles } from '@fluentui/react-components';
 
 import { logRender } from '@deneb-viz/utils/logging';
@@ -6,6 +7,7 @@ import { CommandBar } from '../../../features/command-bar';
 import { FullContainerLayoutNoOverflow } from '../../../components/ui';
 import { PortalRoot } from './portal-root';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
+import { markEditorOpenStage } from '../../../lib/perf';
 import { useEditorHotkeys, useEditorPaneLayout } from '../hooks';
 import { EditorPaneLayout } from './editor-pane-layout';
 
@@ -44,6 +46,23 @@ export const EditorContent = () => {
         previewAreaViewport,
         position
     } = useEditorPaneLayout();
+
+    // Marker for the viewport-freeze investigation: this fires the first
+    // time the inner pane layout becomes renderable (container measured
+    // and viewports hydrated). Only fires once per mount; subsequent
+    // resizes don't re-emit.
+    const hasMarkedContentPaint = useRef(false);
+    useLayoutEffect(() => {
+        if (
+            !hasMarkedContentPaint.current &&
+            containerWidth &&
+            containerHeight &&
+            hasHydratedViewports
+        ) {
+            hasMarkedContentPaint.current = true;
+            markEditorOpenStage('content-paint');
+        }
+    }, [containerWidth, containerHeight, hasHydratedViewports]);
 
     logRender('EditorContent');
     return (

@@ -10,6 +10,7 @@ import 'allotment/dist/style.css';
 import { logRender } from '@deneb-viz/utils/logging';
 import { useDenebState } from '../../../state';
 import { getDenebTheme } from '../../../lib';
+import { markEditorOpenStage } from '../../../lib/perf';
 import { ModalDialog } from '../../../components/ui';
 import { EditorContentLoader } from './editor-content-loader';
 import { EditorErrorBoundary } from './editor-error-boundary';
@@ -69,6 +70,12 @@ export const Editor = () => {
             tokens.colorNeutralStroke2
         );
     }, [editorContentRef, theme]);
+
+    // Marker for the viewport-freeze investigation: this fires when the
+    // editor tree commits its first mount of the current open cycle.
+    useLayoutEffect(() => {
+        markEditorOpenStage('editor-mount');
+    }, []);
 
     logRender('Editor');
     return (

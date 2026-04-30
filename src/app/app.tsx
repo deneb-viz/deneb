@@ -6,6 +6,7 @@ import { logHost, logRender } from '@deneb-viz/utils/logging';
 import { ReportViewRouter } from './report-view-router';
 import {
     DenebProvider,
+    markEditorOpenStart,
     useDenebState,
     type ViewEventBinder
 } from '@deneb-viz/app-core';
@@ -49,6 +50,17 @@ export const App = ({ host }: AppProps) => {
         boolean | undefined
     >(undefined);
     const mode = useDenebVisualState((state) => state.interface.mode);
+    // Marker for the viewport-freeze investigation: detect the transition
+    // INTO editor mode during render (before children commit) so the start
+    // mark precedes the editor-mount layout effect. Adjusting state during
+    // render is the React-blessed pattern for "react to a prop change".
+    const [previousMode, setPreviousMode] = useState(mode);
+    if (mode !== previousMode) {
+        if (mode === 'editor' && previousMode !== 'editor') {
+            markEditorOpenStart();
+        }
+        setPreviousMode(mode);
+    }
     const fields = useDenebVisualState((state) => state.dataset.fields);
     const values = useDenebVisualState((state) => state.dataset.values);
     const visualUpdateOptions = useDenebVisualState(

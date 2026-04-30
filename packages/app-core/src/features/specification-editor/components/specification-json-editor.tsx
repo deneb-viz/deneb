@@ -5,6 +5,7 @@ import Editor, { OnChange, OnMount } from '@monaco-editor/react';
 
 import { logDebug } from '@deneb-viz/utils/logging';
 import { handlePersistSpecification, type EditorPaneRole } from '../../../lib';
+import { flushEditorOpenTimings, markEditorOpenStage } from '../../../lib/perf';
 import { monaco } from '../../../components/code-editor/monaco-integration';
 import { buildEditorProps } from '../../../components/code-editor/editor-configuration';
 import { getDenebState, useDenebState } from '../../../state';
@@ -126,6 +127,14 @@ export const SpecificationJsonEditor = ({
         editor.onContextMenu(() => removeContextMenuItems(editor));
         addHyperlinkOverride(editor, launchUrl);
         handleFocus();
+        // Marker for the viewport-freeze investigation: the Spec editor is
+        // the default visible surface, so its mount marks the user-visible
+        // "editor is interactive" moment. The Config editor mounts in
+        // parallel and is intentionally not measured here.
+        if (thisEditorRole === 'Spec') {
+            markEditorOpenStage('monaco-ready');
+            flushEditorOpenTimings();
+        }
     };
     // Handle change events within editor
     const handleOnChange = useCallback<OnChange>((value) => {
