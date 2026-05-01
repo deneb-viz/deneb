@@ -125,6 +125,7 @@ export const RetainedDenebEditor = ({
     const setModalDialogRole = useDenebState(
         (state) => state.interface.setModalDialogRole
     );
+    const setInterfaceType = useDenebState((state) => state.interface.setType);
     const isProjectInitialized = useDenebState(
         (state) => state.project.__isInitialized__
     );
@@ -233,6 +234,20 @@ export const RetainedDenebEditor = ({
             requestEditorFocus();
         }
     }, [isEditorMode, isPendingSettle, hasOpenedOnce, requestEditorFocus]);
+
+    // Sync `interface.type` with editor visibility on every transition
+    // into editor mode. `useDenebAppSetup('editor')` inside `<DenebEditor>`
+    // dispatches `setType('editor')` only on first mount; with retention
+    // the editor stays mounted and that hook does not re-run, so on the
+    // SECOND open the type is still 'viewer' (left over from the
+    // intervening `<DenebViewer>` mount). Anything reading
+    // `interface.type` to gate UI (e.g. the unapplied-changes toast)
+    // would mis-fire.
+    useEffect(() => {
+        if (isEditorMode) {
+            setInterfaceType('editor');
+        }
+    }, [isEditorMode, setInterfaceType]);
 
     // Close any open ModalDialog when leaving editor mode. The dialog
     // surface is portaled by Fluent UI to document.body, so the
