@@ -53,6 +53,10 @@
             "types": "./dist/lib/versioning.d.ts",
             "default": "./dist/lib/versioning.js"
         },
+        "./escaping": {
+            "types": "./dist/lib/escaping.d.ts",
+            "default": "./dist/lib/escaping.js"
+        },
         "./worker": {
             "types": "./dist/lib/worker.d.ts",
             "default": "./dist/lib/worker.js"
