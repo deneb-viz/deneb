@@ -172,14 +172,26 @@ export const createInterfaceSlice =
             setType: (type: InterfaceType) =>
                 set(
                     (state) => {
+                        // Note: do NOT auto-compute `modalDialogRole` here
+                        // (e.g. via `getModalDialogRole`). On entering editor
+                        // mode for a no-project visual the modal would otherwise
+                        // open immediately, while the Power BI host is still
+                        // pacing the iframe expansion. Fluent v9 dialogs
+                        // portal to `document.body` and bypass the editor
+                        // wrapper's visibility gate, so the dialog renders
+                        // mis-sized at the pre-expansion viewport.
+                        //
+                        // The auto-open is moved to `RetainedDenebEditor`,
+                        // which dispatches `setModalDialogRole('Create')`
+                        // when its match-based gate releases — i.e. once
+                        // the iframe matches the host-reported viewport.
+                        // Other triggers for `'Create'` (project change,
+                        // field usage change, migration) still go through
+                        // `getModalDialogRole` in their own slices because
+                        // they fire after the iframe is already settled.
                         return {
                             interface: {
                                 ...state.interface,
-                                modalDialogRole: getModalDialogRole(
-                                    state.project.__isInitialized__,
-                                    type,
-                                    state.interface.modalDialogRole
-                                ),
                                 renderId: getNewUuid(),
                                 type
                             }

@@ -125,6 +125,9 @@ export const RetainedDenebEditor = ({
     const setModalDialogRole = useDenebState(
         (state) => state.interface.setModalDialogRole
     );
+    const isProjectInitialized = useDenebState(
+        (state) => state.project.__isInitialized__
+    );
 
     // Latest viewport, kept in a ref so the per-toggle gate effect can
     // re-check it without restarting (which would reset the start
@@ -240,6 +243,31 @@ export const RetainedDenebEditor = ({
             setModalDialogRole('None');
         }
     }, [isEditorMode, hasOpenedOnce, setModalDialogRole]);
+
+    // Auto-open the new-project ('Create') modal once the gate has
+    // released for a no-project visual. Previously this was triggered
+    // synchronously by `interface.setType('editor')`, which fires when
+    // `<DenebEditor />` mounts — long before the iframe has expanded.
+    // Fluent v9 dialogs portal to `document.body` and bypass our
+    // wrapper's visibility gate, so opening it pre-expansion produced a
+    // mis-sized dialog. Deferring to gate-release ensures the dialog
+    // opens at the final viewport.
+    useEffect(() => {
+        if (
+            isEditorMode &&
+            !isPendingSettle &&
+            hasOpenedOnce &&
+            !isProjectInitialized
+        ) {
+            setModalDialogRole('Create');
+        }
+    }, [
+        isEditorMode,
+        isPendingSettle,
+        hasOpenedOnce,
+        isProjectInitialized,
+        setModalDialogRole
+    ]);
 
     const { shouldRender, isVisible } = computeRetentionState(
         hasOpenedOnce,
