@@ -1,9 +1,10 @@
 ---
 title: "perf: Resolve freeze during viewer/editor transition"
 type: perf
-status: active
+status: complete
 date: 2026-05-01
 deepened: 2026-05-01
+solution: docs/solutions/ui-bugs/freeze-on-viewer-editor-transition-2026-05-01.md
 ---
 
 # perf: Resolve freeze during viewer/editor transition
@@ -106,7 +107,7 @@ These hypotheses came from earlier rounds of investigation and proved wrong agai
 
 ### Remaining work
 
-- [ ] **Unit 6: Defer auto-opening of new-project modal until gate releases**
+- [x] **Unit 6: Defer auto-opening of new-project modal until gate releases**
 
 **Goal:** Prevent the new-project picker (which opens automatically on a fresh visual entering edit mode) from rendering at the iframe's pre-expansion size.
 
@@ -130,7 +131,7 @@ These hypotheses came from earlier rounds of investigation and proved wrong agai
 - The mis-sizing of the new-project dialog at cold open is gone.
 - The dialog still appears reliably for fresh visuals.
 
-- [ ] **Unit 7: Cleanup — remove diagnostic instrumentation**
+- [x] **Unit 7: Cleanup — remove diagnostic instrumentation**
 
 **Goal:** Remove the temporary diagnostic code added during the investigation. Production code should not ship with these.
 
@@ -152,7 +153,7 @@ Test expectation: none — pure deletion of dev-only instrumentation.
 - No `[edit-transition-trace]` or `[host-events]` log lines appear at any `LOG_LEVEL`
 - Type-check, lint, prettier all clean
 
-- [ ] **Unit 8: Cleanup — remove redundant first-mount `<ViewportSettleGate>`**
+- [x] **Unit 8: Cleanup — remove redundant first-mount `<ViewportSettleGate>`**
 
 **Goal:** Remove the now-superseded gate inside `<DenebEditor>`. `<RetainedDenebEditor>`'s match-based gate covers every transition (including the first), so the inner gate adds 50–500ms of latency without value.
 
@@ -176,7 +177,7 @@ Test expectation: none — pure deletion of dev-only instrumentation.
 - Type-check, lint, prettier all clean
 - Manual cold + warm open behaviour unchanged
 
-- [ ] **Unit 9: Memory and documentation refresh**
+- [x] **Unit 9: Memory and documentation refresh**
 
 **Goal:** Update memory files so a future session inherits the correct mental model.
 
