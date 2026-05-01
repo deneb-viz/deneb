@@ -54,6 +54,20 @@ export const HIGHLIGHT_COMPARATOR_SUFFIX = `${HIGHLIGHT_FIELD_SUFFIX}Comparator`
 export const ROW_INDEX_FIELD_NAME = '__row__';
 
 /**
+ * Validate that a `__row__` value is a non-negative integer within the
+ * bounds of the dataset. Returns `true` only when the value can be safely
+ * used as a row index into `dataset.values`.
+ */
+export const isValidRowIndex = (
+    value: unknown,
+    datasetLength: number
+): value is number =>
+    typeof value === 'number' &&
+    Number.isInteger(value) &&
+    value >= 0 &&
+    value < datasetLength;
+
+/**
  * The name we use to denote a data point's selection status within the dataset.
  */
 export const SELECTED_ROW_FIELD_NAME = '__selected__';
