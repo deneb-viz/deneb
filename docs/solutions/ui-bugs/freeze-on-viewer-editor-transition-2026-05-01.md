@@ -83,8 +83,13 @@ The breakthrough came from instrumenting the actual visual properties (not just 
 
 Future similar investigations: when an internal-metric fix (markers, React lifecycle hooks) doesn't move the user-visible symptom, instrument the actual visible properties (`getBoundingClientRect`, `window.innerWidth`, paint events) before designing more fixes. See also [feedback_validate-root-cause.md](../../../C:/Users/.../memory/feedback_validate-root-cause.md) (private memory — won't be in repo) for the broader lesson.
 
+## Known follow-ups
+
+- **Viewer "bounce" on editor → viewer exit.** Asymmetric retention (editor retained, viewer not) leaves a small visible artefact on exit: the viewer's Vega view briefly renders at a larger-than-viewer intermediate size, then snaps to the actual viewer viewport. Smaller and faster than the original freeze, but observable. Captured for the next iteration in [docs/brainstorms/2026-05-01-viewer-bounce-on-editor-exit-followup.md](../../brainstorms/2026-05-01-viewer-bounce-on-editor-exit-followup.md). **Do not retread without instrumentation first** — see the parent investigation's lesson about hypothesis-driven drift.
+- **`renderingStarted` / `renderingFinished` contract.** Tracked separately based on correspondence with the Power BI visuals team. Our visual fires `renderingStarted` per `update()` but `renderingFinished` only on Vega view render events, so the pairs do not always match. Likely landing alongside or near the viewer-bounce work.
+
 ## Related
 
 - Plan: [docs/plans/2026-05-01-001-perf-resolve-freeze-on-transition-plan.md](../../plans/2026-05-01-001-perf-resolve-freeze-on-transition-plan.md)
+- Next-effort brainstorm: [docs/brainstorms/2026-05-01-viewer-bounce-on-editor-exit-followup.md](../../brainstorms/2026-05-01-viewer-bounce-on-editor-exit-followup.md)
 - Branch: `perf/resolve-freeze-on-transition`
-- Out-of-scope but related: the `renderingStarted`/`renderingFinished` contract concerns are tracked separately based on correspondence with the Power BI visuals team.
