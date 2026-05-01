@@ -1,6 +1,5 @@
 import { useDenebAppSetup } from './use-deneb-app-setup';
 import { Editor } from './editor/components/editor';
-import { ViewportSettleGate } from './editor/components/viewport-settle-gate';
 
 /**
  * Editor entry point. Importing this component pulls in the full editor
@@ -8,18 +7,13 @@ import { ViewportSettleGate } from './editor/components/viewport-settle-gate';
  * need the viewer should import DenebViewer instead — the editor tree
  * will be eliminated by tree-shaking.
  *
- * The `<ViewportSettleGate>` wrapper holds the heavy editor tree
- * (FluentProvider, Allotment, Monaco) back from synchronous mount until
- * the Power BI host has finished animating the visual frame to its
- * final size. Without it the editor first paints at a transient
- * mid-animation viewport and freezes there until the synchronous mount
- * cost clears the main thread.
+ * Mount-time gating is handled by `<RetainedDenebEditor>` one level up,
+ * which holds the wrapper at `display: none` until `window.innerWidth`
+ * matches the host-reported `options.viewport.width`. By the time
+ * `<DenebEditor />` renders here, the iframe is at its final size, so
+ * no further gating is needed at this level.
  */
 export const DenebEditor = () => {
     useDenebAppSetup('editor');
-    return (
-        <ViewportSettleGate>
-            <Editor />
-        </ViewportSettleGate>
-    );
+    return <Editor />;
 };
