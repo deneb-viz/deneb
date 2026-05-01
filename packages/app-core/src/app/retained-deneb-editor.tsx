@@ -1,17 +1,64 @@
-import { type CSSProperties, useState } from 'react';
+import { type CSSProperties, useEffect, useRef, useState } from 'react';
 
 import { DenebEditor } from './deneb-editor';
 import { computeRetentionState } from './retained-deneb-editor-state';
+import { useDenebState } from '../state';
 
 export { computeRetentionState } from './retained-deneb-editor-state';
 
-const wrapperStyle = (isVisible: boolean): CSSProperties => ({
+/**
+ * Upper-bound timeout for the per-toggle viewport-match gate. Single
+ * tunable for how long the editor stays hidden after a viewer↔editor
+ * toggle when the host's iframe doesn't reach the reported viewport
+ * within the expected window.
+ *
+ * Set from observed cold-open iframe-expansion timing (~1500ms) plus
+ * margin. On extreme slow-host scenarios the timer fires and the
+ * editor mounts at whatever size the iframe currently is — strictly
+ * worse than a clean match release, but still better than no gate.
+ */
+const VIEWPORT_SETTLE_TIMEOUT_MS = 3000;
+
+const wrapperStyle = (isVisuallyShown: boolean): CSSProperties => ({
     boxSizing: 'border-box',
-    display: isVisible ? 'flex' : 'none',
+    display: 'flex',
     flexDirection: 'column',
     height: '100%',
-    width: '100%'
+    width: '100%',
+    visibility: isVisuallyShown ? 'visible' : 'hidden'
 });
+
+const placeholderContainerStyle: CSSProperties = {
+    alignItems: 'center',
+    boxSizing: 'border-box',
+    display: 'flex',
+    flex: '1 1 0',
+    fontFamily:
+        'Segoe UI, system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+    fontSize: '14px',
+    justifyContent: 'center',
+    minHeight: 0,
+    minWidth: 0,
+    opacity: 0.6,
+    position: 'absolute',
+    inset: 0,
+    pointerEvents: 'none'
+};
+
+/**
+ * Lightweight placeholder shown during gate-pending. Sits absolutely
+ * positioned so it overlays the (visibility:hidden) editor wrapper
+ * without competing for layout. Reuses the existing i18n string so
+ * the user sees one continuous "Preparing editor" surface.
+ */
+const Placeholder = ({ message }: { message: string }) => (
+    <div
+        style={placeholderContainerStyle}
+        data-testid='deneb-retained-editor-placeholder'
+    >
+        <span>{message}</span>
+    </div>
+);
 
 interface RetainedDenebEditorProps {
     /**
@@ -22,56 +69,215 @@ interface RetainedDenebEditorProps {
      * the root visual).
      */
     isEditorMode: boolean;
+    /**
+     * Host-reported viewport width from `VisualUpdateOptions`. The
+     * match-based gate releases when `window.innerWidth` equals this
+     * value AND it has changed since the gate engaged — meaning the
+     * Power BI host has both told us the new size and physically
+     * resized the iframe to match. Undefined before the first update.
+     */
+    hostViewportWidth: number | undefined;
+    /**
+     * Host-reported viewport height from `VisualUpdateOptions`. See
+     * `hostViewportWidth` for semantics.
+     */
+    hostViewportHeight: number | undefined;
 }
 
 /**
  * Retains the editor tree across viewer↔editor toggles after the first
- * successful open in the session.
+ * successful open in the session, and gates the wrapper's visibility
+ * on the iframe physically reaching the host-reported viewport size on
+ * every transition into editor mode.
  *
- * Initial state (before any editor open): renders nothing — the editor
- * tree is not mounted, schemas/Monaco/Allotment are not constructed,
- * and the viewer-only path remains as light as possible.
+ * Behaviour summary:
+ *  - Before any editor open: renders nothing.
+ *  - On the first transition into editor mode the latch flips and
+ *    `<DenebEditor />` is mounted permanently.
+ *  - On every transition into editor mode the wrapper is held at
+ *    `display: none` until either:
+ *      a) `window.innerWidth/Height` matches the latest
+ *         `hostViewportWidth/Height` AND the host viewport has changed
+ *         since the gate engaged (proving the host has paced through
+ *         its transition), OR
+ *      b) `VIEWPORT_SETTLE_TIMEOUT_MS` elapses (safety net).
+ *  - When the gate releases, `requestEditorFocus()` fires so the
+ *    active Monaco editor takes focus back from the Power BI chrome.
  *
- * After the first transition into editor mode the latch flips and
- * `<DenebEditor />` is mounted permanently for the rest of the visual's
- * lifetime. Subsequent viewer↔editor toggles flip the wrapper between
- * `display: flex` and `display: none` rather than unmounting and
- * remounting the entire tree, eliminating the ~500ms warm-open mount
- * cost (Allotment construction, Monaco editor instances, Vega view
- * setup).
- *
- * The first-open path still goes through `<ViewportSettleGate>` inside
- * `<DenebEditor />`, so the user-perceived experience on the first
- * editor open is unchanged.
+ * The match-based signal replaces the previous `ResizeObserver`
+ * stability detection. RO can tell us "the size stopped changing"
+ * but not "the size matches the host's intent" — and during the
+ * initial period when the iframe hasn't yet been resized, RO reports
+ * "stable" at the wrong size. Comparing against the host-reported
+ * viewport is a positive signal that the iframe has caught up.
  */
 export const RetainedDenebEditor = ({
-    isEditorMode
+    isEditorMode,
+    hostViewportWidth,
+    hostViewportHeight
 }: RetainedDenebEditorProps) => {
     const [hasOpenedOnce, setHasOpenedOnce] = useState(false);
+    const [isPendingSettle, setIsPendingSettle] = useState(false);
+    const previousIsEditorMode = useRef(false);
+    const requestEditorFocus = useDenebState(
+        (state) => state.requestEditorFocus
+    );
+    const setModalDialogRole = useDenebState(
+        (state) => state.interface.setModalDialogRole
+    );
 
-    // Adjusting state during render is the React-blessed pattern for
-    // "react to a prop change synchronously before children commit".
-    // The set call schedules an immediate re-render with the new latch
-    // value, so the very same commit shows DenebEditor (no flash of
-    // null between the latch flip and the mount).
+    // Latest viewport, kept in a ref so the per-toggle gate effect can
+    // re-check it without restarting (which would reset the start
+    // snapshot and the upper-bound timer).
+    const viewportRef = useRef({
+        w: hostViewportWidth,
+        h: hostViewportHeight
+    });
+    viewportRef.current = { w: hostViewportWidth, h: hostViewportHeight };
+
+    // Latch — once true, never flips back.
     if (!hasOpenedOnce && isEditorMode) {
         setHasOpenedOnce(true);
     }
+
+    // Detect transitions into editor mode and start a fresh per-toggle
+    // gate cycle. Done during render so the wrapper is hidden in the
+    // very same commit that flips into editor mode — no flash of
+    // editor-at-compressed-size.
+    if (previousIsEditorMode.current !== isEditorMode) {
+        if (isEditorMode) {
+            setIsPendingSettle(true);
+        }
+        previousIsEditorMode.current = isEditorMode;
+    }
+
+    // Per-toggle gate. Each time `isPendingSettle` flips true, snapshot
+    // the host viewport at gate engage and watch for the iframe to
+    // catch up to a CHANGED host viewport.
+    useEffect(() => {
+        if (!isPendingSettle) return;
+        if (typeof window === 'undefined') {
+            setIsPendingSettle(false);
+            return;
+        }
+
+        const startViewport = {
+            w: viewportRef.current.w,
+            h: viewportRef.current.h
+        };
+        let hostViewportHasChanged = false;
+        let cancelled = false;
+
+        const matches = (): boolean => {
+            const v = viewportRef.current;
+            if (v.w === undefined) return false;
+            if (v.w !== startViewport.w) {
+                hostViewportHasChanged = true;
+            }
+            // Width-only match. Empirically the host frequently reports
+            // a `viewport.height` that does not equal `window.innerHeight`
+            // (a ~36px persistent offset, likely host chrome). Width is
+            // a reliable equality signal in observed traces.
+            //
+            // Both conditions must hold:
+            //  (1) the host has reported a NEW viewport width since the
+            //      gate engaged — protects against the stale match
+            //      where the iframe is at viewer-mode size and the
+            //      host has not yet sent the edit-mode viewport;
+            //  (2) the iframe interior width matches the host's claim.
+            return hostViewportHasChanged && window.innerWidth === v.w;
+        };
+
+        const trySettle = () => {
+            if (cancelled) return;
+            if (matches()) {
+                setIsPendingSettle(false);
+            }
+        };
+
+        trySettle();
+
+        window.addEventListener('resize', trySettle);
+
+        // The host viewport can change without firing a window resize
+        // event, so a short animation-frame poll while pending is the
+        // simplest way to catch prop updates without coupling the
+        // effect's deps to the viewport (which would reset the start
+        // snapshot and timer on every host update).
+        const pollFrame = () => {
+            if (cancelled) return;
+            trySettle();
+            if (!cancelled) requestAnimationFrame(pollFrame);
+        };
+        requestAnimationFrame(pollFrame);
+
+        const upperBoundId = window.setTimeout(() => {
+            if (!cancelled) setIsPendingSettle(false);
+        }, VIEWPORT_SETTLE_TIMEOUT_MS);
+
+        return () => {
+            cancelled = true;
+            window.removeEventListener('resize', trySettle);
+            window.clearTimeout(upperBoundId);
+        };
+    }, [isPendingSettle]);
+
+    // Focus restoration: when the gate has just released after a
+    // transition into editor mode, dispatch a focus request so the
+    // active Monaco editor takes focus back from the Power BI chrome.
+    useEffect(() => {
+        if (isEditorMode && !isPendingSettle && hasOpenedOnce) {
+            requestEditorFocus();
+        }
+    }, [isEditorMode, isPendingSettle, hasOpenedOnce, requestEditorFocus]);
+
+    // Close any open ModalDialog when leaving editor mode. The dialog
+    // surface is portaled by Fluent UI to document.body, so the
+    // `display: none` on the shell does not hide it. Dispatching
+    // `setModalDialogRole('None')` unmounts the portal cleanly.
+    useEffect(() => {
+        if (!isEditorMode && hasOpenedOnce) {
+            setModalDialogRole('None');
+        }
+    }, [isEditorMode, hasOpenedOnce, setModalDialogRole]);
 
     const { shouldRender, isVisible } = computeRetentionState(
         hasOpenedOnce,
         isEditorMode
     );
+    const isVisuallyShown = isVisible && !isPendingSettle;
 
-    if (!shouldRender) return null;
+    const placeholderMessage = useDenebState((state) =>
+        state.i18n.translate('Text_Editor_Suspense_Message')
+    );
+
+    if (!shouldRender) {
+        return isEditorMode ? (
+            <Placeholder message={placeholderMessage} />
+        ) : null;
+    }
 
     return (
         <div
-            style={wrapperStyle(isVisible)}
-            data-testid='deneb-retained-editor'
-            aria-hidden={!isVisible}
+            style={{
+                display: isEditorMode ? 'flex' : 'none',
+                flexDirection: 'column',
+                height: '100%',
+                position: 'relative',
+                width: '100%'
+            }}
+            data-testid='deneb-retained-editor-shell'
         >
-            <DenebEditor />
+            <div
+                style={wrapperStyle(isVisuallyShown)}
+                data-testid='deneb-retained-editor'
+                aria-hidden={!isVisuallyShown}
+            >
+                <DenebEditor />
+            </div>
+            {!isVisuallyShown && isEditorMode && (
+                <Placeholder message={placeholderMessage} />
+            )}
         </div>
     );
 };

@@ -45,6 +45,7 @@ export const SpecificationJsonEditor = ({
         applyMode,
         current,
         debouncePeriod,
+        focusTick,
         fontSize,
         provider,
         showLineNumbers,
@@ -58,6 +59,7 @@ export const SpecificationJsonEditor = ({
         applyMode: state.editor.applyMode,
         current: state.editorSelectedOperation,
         debouncePeriod: state.editorPreferences.jsonEditorDebouncePeriod,
+        focusTick: state.editorFocusTick,
         fontSize: state.editorPreferences.jsonEditorFontSize,
         provider: state.project.provider,
         showLineNumbers: state.editorPreferences.jsonEditorShowLineNumbers,
@@ -89,10 +91,14 @@ export const SpecificationJsonEditor = ({
     const { setCursor } = useCursorContext();
     const handleFocus = () => isActiveEditor && ref?.current?.focus();
     // Ensure that we update key dependencies/events if we change the editor.
+    // The `focusTick` dep lets `RetainedDenebEditor` request a re-focus
+    // when the editor becomes visible after a viewer↔editor toggle —
+    // mount-time auto-focus only fires once, and retention skips that
+    // path on subsequent opens.
     useEffect(() => {
         handleFocus();
         addHyperlinkOverride(ref.current, launchUrl);
-    }, [provider, current]);
+    }, [provider, current, focusTick]);
     // Bootstrap the editor
     const handleOnMount: OnMount = (editor) => {
         ref.current = editor;

@@ -52,9 +52,19 @@ type EditorSliceProperties = {
 
 export type EditorSlice = {
     editor: EditorSliceProperties;
+    editorFocusTick: number;
     editorPreviewAreaSelectedPivot: DebugPaneRole;
     editorSelectedOperation: EditorPaneRole;
     editorZoomLevel: number;
+    /**
+     * Increment the editor focus tick. Listeners (e.g. the active
+     * `<SpecificationJsonEditor>`) re-focus their underlying Monaco
+     * instance when this value changes. Used by `RetainedDenebEditor`
+     * to restore focus when the editor becomes visible again — the
+     * mount-time auto-focus only fires on first mount, so retained
+     * subsequent opens need an explicit re-focus signal.
+     */
+    requestEditorFocus: () => void;
     updateEditorSelectedOperation: (role: EditorPaneRole) => void;
     updateEditorSelectedPreviewRole: (role: DebugPaneRole) => void;
     updateEditorZoomLevel: (zoomLevel: number) => void;
@@ -212,9 +222,18 @@ export const createEditorSlice =
                     'editor.updateIsDirty'
                 )
         },
+        editorFocusTick: 0,
         editorPreviewAreaSelectedPivot: 'source',
         editorSelectedOperation: 'Spec',
         editorZoomLevel: VISUAL_PREVIEW_ZOOM_CONFIGURATION.default,
+        requestEditorFocus: () =>
+            set(
+                (state) => ({
+                    editorFocusTick: state.editorFocusTick + 1
+                }),
+                false,
+                'requestEditorFocus'
+            ),
         updateEditorSelectedOperation: (role) =>
             set(
                 (state) => handleUpdateEditorSelectedOperation(state, role),

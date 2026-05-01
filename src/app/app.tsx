@@ -223,7 +223,11 @@ export const App = ({ host }: AppProps) => {
                 }
             }}
         >
-            <RetainedDenebEditor isEditorMode={mode === 'editor'} />
+            <RetainedDenebEditor
+                isEditorMode={mode === 'editor'}
+                hostViewportWidth={visualUpdateOptions?.viewport?.width}
+                hostViewportHeight={visualUpdateOptions?.viewport?.height}
+            />
             {mainComponent}
             <NotificationToaster />
             <VisualUpdateHistoryOverlay />
