@@ -89,7 +89,22 @@ export const SpecificationJsonEditor = ({
     const debouncedEditorText = useDebounce(editorText, debouncePeriod);
     const isFirstDebounce = useRef(true);
     const { setCursor } = useCursorContext();
-    const handleFocus = () => isActiveEditor && ref?.current?.focus();
+    // `pendingFocusRequestRef` is set when a focus request arrives
+    // before Monaco has mounted (no `ref.current` yet). `handleOnMount`
+    // consumes it once the editor is ready, so a focus tick fired
+    // during the gate-pending window — common on the first cold-open
+    // because gate release dispatches `requestEditorFocus` while
+    // Monaco is still bootstrapping — is not silently dropped.
+    const pendingFocusRequestRef = useRef(false);
+    const handleFocus = () => {
+        if (!isActiveEditor) return;
+        if (ref?.current) {
+            ref.current.focus();
+            pendingFocusRequestRef.current = false;
+        } else {
+            pendingFocusRequestRef.current = true;
+        }
+    };
     // Ensure that we update key dependencies/events if we change the editor.
     // The `focusTick` dep lets `RetainedDenebEditor` request a re-focus
     // when the editor becomes visible after a viewer↔editor toggle —
