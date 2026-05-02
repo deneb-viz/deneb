@@ -7,6 +7,7 @@ import {
     type CrossFilterOptions,
     type InteractivityLookupDataset
 } from '../interactivity';
+import { escapeVegaExpressionString } from '@deneb-viz/utils/escaping';
 import { logDebug, logWarning } from '@deneb-viz/utils/logging';
 import { getDenebState } from '@deneb-viz/app-core';
 import { useDenebVisualState } from '../../state';
@@ -174,9 +175,9 @@ const getResolvedFilterExpressionForPlaceholder = (
             return `${value}`;
         }
         if (value instanceof Date) {
-            return `toDate('${value}')`;
+            return `toDate('${escapeVegaExpressionString(String(value))}')`;
         }
-        return `'${datum?.[m1]}'`;
+        return `'${escapeVegaExpressionString(String(datum?.[m1]))}'`;
     });
 
 /**
