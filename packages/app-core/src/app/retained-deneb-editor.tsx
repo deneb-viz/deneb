@@ -214,6 +214,11 @@ export const RetainedDenebEditor = ({
         const trySettle = () => {
             if (cancelled) return;
             if (matches()) {
+                // Set `cancelled` synchronously so any in-flight tick
+                // (interval poll, queued resize event) that runs before
+                // React processes the state update exits cleanly
+                // instead of calling `setIsPendingSettle(false)` again.
+                cancelled = true;
                 setIsPendingSettle(false);
             }
         };
@@ -223,24 +228,26 @@ export const RetainedDenebEditor = ({
         window.addEventListener('resize', trySettle);
 
         // The host viewport can change without firing a window resize
-        // event, so a short animation-frame poll while pending is the
+        // event, so a coarse interval poll while pending is the
         // simplest way to catch prop updates without coupling the
         // effect's deps to the viewport (which would reset the start
-        // snapshot and timer on every host update).
-        const pollFrame = () => {
-            if (cancelled) return;
-            trySettle();
-            if (!cancelled) requestAnimationFrame(pollFrame);
-        };
-        requestAnimationFrame(pollFrame);
+        // snapshot and timer on every host update). 100ms granularity
+        // is well below the iframe-resize latency we are detecting
+        // (~300ms warm, ~1500ms cold) and avoids the per-frame
+        // scheduling pressure of a `requestAnimationFrame` chain.
+        const pollIntervalId = window.setInterval(trySettle, 100);
 
         const upperBoundId = window.setTimeout(() => {
-            if (!cancelled) setIsPendingSettle(false);
+            if (!cancelled) {
+                cancelled = true;
+                setIsPendingSettle(false);
+            }
         }, VIEWPORT_SETTLE_TIMEOUT_MS);
 
         return () => {
             cancelled = true;
             window.removeEventListener('resize', trySettle);
+            window.clearInterval(pollIntervalId);
             window.clearTimeout(upperBoundId);
         };
     }, [isPendingSettle]);
