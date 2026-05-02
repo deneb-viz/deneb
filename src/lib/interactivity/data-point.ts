@@ -6,6 +6,7 @@ import { logDebug } from '@deneb-viz/utils/logging';
 import {
     type DatasetField,
     type DatasetFields,
+    isValidRowIndex,
     ROW_INDEX_FIELD_NAME
 } from '@deneb-viz/data-core/field';
 import { type VegaDatum } from '@deneb-viz/data-core/value';
@@ -41,17 +42,21 @@ export const getResolvedRowIdentities = (
         //logDebug(`${LOG_PREFIX} no data supplied, returning empty array`);
         return [];
     }
-    // Single, identifiable datum
+    // Single, identifiable datum — validate __row__ before trusting it
     if (data.length === 1 && data[0]?.[ROW_INDEX_FIELD_NAME] !== undefined) {
-        // logDebug(`${LOG_PREFIX} single datum with identity field found`, {
-        //     datum: data[0]
-        // });
-        return [data[0][ROW_INDEX_FIELD_NAME]];
+        const rawRow = data[0][ROW_INDEX_FIELD_NAME];
+        if (isValidRowIndex(rawRow, dataset.values.length)) {
+            return [rawRow];
+        }
+        // Invalid __row__: fall through to field-matching below
     }
     // Multiple values; all with identifiable row indices
     if (allValuesHaveIdentityField(data)) {
-        // logDebug(`${LOG_PREFIX} all datum have identity field`, { data });
-        return getRowNumbersFromData(data);
+        const validated = getRowNumbersFromData(data, dataset.values.length);
+        if (validated.length > 0) {
+            return validated;
+        }
+        // All __row__ values were invalid: fall through to field-matching
     }
     // Otherwise, panic mode: try to identify from the matched values
     // logDebug(`${LOG_PREFIX} attempting to resolve via field matching`, {
@@ -98,16 +103,23 @@ const getMatchedValues = (
 };
 
 /**
- * From an array of Vega datum, extract unique row numbers, provided that they exist.
+ * From an array of Vega datum, extract unique row numbers, provided that they exist and are valid indices.
  */
-export const getRowNumbersFromData = (data: VegaDatum[]) => {
+export const getRowNumbersFromData = (
+    data: VegaDatum[],
+    datasetLength?: number
+) => {
     const resolvedIndices: number[] = [];
     data.forEach((d) => {
         const rowIndex = d[ROW_INDEX_FIELD_NAME];
+        if (rowIndex === undefined) return;
         if (
-            rowIndex !== undefined &&
-            resolvedIndices.indexOf(rowIndex as number) === -1
+            datasetLength !== undefined &&
+            !isValidRowIndex(rowIndex, datasetLength)
         ) {
+            return;
+        }
+        if (resolvedIndices.indexOf(rowIndex as number) === -1) {
             resolvedIndices.push(rowIndex as number);
         }
     });
