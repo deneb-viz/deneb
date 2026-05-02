@@ -322,13 +322,25 @@ export const RetainedDenebEditor = ({
     // wrapper's visibility gate, so opening it pre-expansion produced a
     // mis-sized dialog. Deferring to gate-release ensures the dialog
     // opens at the final viewport.
+    //
+    // Fire-once latch: a user who dismisses the Create dialog without
+    // creating a project leaves `isProjectInitialized = false`. Without
+    // the latch, every subsequent gate release would re-open the dialog
+    // — including the one that fires immediately after exit-and-reentry,
+    // producing a None→Create oscillation that surprises the user.
+    // Once the dialog has been auto-opened it is the user's choice
+    // whether to engage with it; the editor command bar still exposes
+    // "New project" if they want to reopen it explicitly.
+    const hasAutoOpenedCreateRef = useRef(false);
     useEffect(() => {
         if (
             isEditorMode &&
             !isPendingSettle &&
             hasOpenedOnce &&
-            !isProjectInitialized
+            !isProjectInitialized &&
+            !hasAutoOpenedCreateRef.current
         ) {
+            hasAutoOpenedCreateRef.current = true;
             setModalDialogRole('Create');
         }
     }, [
