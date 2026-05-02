@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
     Button,
     Dialog,
@@ -55,19 +55,26 @@ export const ModalDialog = () => {
     const isOpen = modalDialogRole !== 'None';
     const closeLabel = useMemo(() => translate('Text_Button_Close'), []);
     // Title resolves via i18n key `Text_Dialog_Title_${role}`. `'None'`
-    // means the dialog is dismissed). However the Dialog stays mounted
-    // briefly while Fluent runs its dismissal animation, so without this
-    // cache the user would see the literal i18n key flash for a frame between
-    // dispatch of `setModalDialogRole('None')` and unmount. Holding the
-    // last non-None title in a ref keeps the same title visible through
-    // the dismissal animation.
-    const lastTitleLabelRef = useRef('');
-    const titleLabel = useMemo(() => {
-        if (modalDialogRole === 'None') return lastTitleLabelRef.current;
-        const next = translate(`Text_Dialog_Title_${modalDialogRole}`);
-        lastTitleLabelRef.current = next;
-        return next;
+    // means the dialog is dismissed, but the Dialog stays mounted
+    // briefly while Fluent runs its dismissal animation — so without
+    // a cache the user would see the literal i18n key flash for a
+    // frame between dispatch of `setModalDialogRole('None')` and
+    // unmount. Keep the last non-None title in `useState` so React's
+    // render-discard semantics keep the cache consistent across
+    // concurrent-mode retries; mutating a ref during render (the
+    // previous shape) could leak a stale value into a replay.
+    const [cachedTitleLabel, setCachedTitleLabel] = useState('');
+    useEffect(() => {
+        if (modalDialogRole !== 'None') {
+            setCachedTitleLabel(
+                translate(`Text_Dialog_Title_${modalDialogRole}`)
+            );
+        }
     }, [modalDialogRole, translate]);
+    const titleLabel = useMemo(() => {
+        if (modalDialogRole === 'None') return cachedTitleLabel;
+        return translate(`Text_Dialog_Title_${modalDialogRole}`);
+    }, [modalDialogRole, translate, cachedTitleLabel]);
     const content = getDialogContent(modalDialogRole);
     const onClose = () => {
         // For version dialog, we update the version in properties
