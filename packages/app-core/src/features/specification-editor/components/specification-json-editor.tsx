@@ -96,7 +96,7 @@ export const SpecificationJsonEditor = ({
     // because gate release dispatches `requestEditorFocus` while
     // Monaco is still bootstrapping — is not silently dropped.
     const pendingFocusRequestRef = useRef(false);
-    const handleFocus = () => {
+    const handleFocus = useCallback(() => {
         if (!isActiveEditor) return;
         if (ref?.current) {
             ref.current.focus();
@@ -104,7 +104,7 @@ export const SpecificationJsonEditor = ({
         } else {
             pendingFocusRequestRef.current = true;
         }
-    };
+    }, [isActiveEditor, ref]);
     // Stable bound click handler for the hyperlink override. The
     // previous implementation called `onLinkClick(launchUrl)` to
     // build a fresh handler for both `removeEventListener` and
@@ -120,11 +120,14 @@ export const SpecificationJsonEditor = ({
     // The `focusTick` dep lets `RetainedDenebEditor` request a re-focus
     // when the editor becomes visible after a viewer↔editor toggle —
     // mount-time auto-focus only fires once, and retention skips that
-    // path on subsequent opens.
+    // path on subsequent opens. `handleFocus` and `linkClickHandler`
+    // are stabilised via `useCallback` / `useMemo` above so listing
+    // them here does not cause spurious re-runs — exhaustive-deps
+    // wants them in scope for refactor safety.
     useEffect(() => {
         handleFocus();
         addHyperlinkOverride(ref.current, linkClickHandler);
-    }, [provider, current, focusTick, linkClickHandler]);
+    }, [provider, current, focusTick, ref, linkClickHandler, handleFocus]);
     // Bootstrap the editor
     const handleOnMount: OnMount = (editor) => {
         ref.current = editor;
