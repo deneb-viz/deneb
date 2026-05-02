@@ -19,6 +19,19 @@ export { computeRetentionState } from './retained-deneb-editor-state';
  */
 const VIEWPORT_SETTLE_TIMEOUT_MS = 3000;
 
+/**
+ * Stale-match bypass for the case where the host has already reported
+ * the post-transition viewport before the gate engages — typically a
+ * race where the host's `update()` viewport prop arrives in the same
+ * render that flips `isEditorMode`, so `startViewport` snapshots the
+ * already-final value and a "viewport has changed since engage" check
+ * never fires. After this many ms with `window.innerWidth` matching
+ * the latest reported viewport, accept the match without requiring a
+ * change-from-start. 150ms is well above a typical render commit and
+ * well below the iframe-expansion latency we are guarding against.
+ */
+const STALE_MATCH_BYPASS_MS = 150;
+
 const wrapperStyle = (isVisuallyShown: boolean): CSSProperties => ({
     boxSizing: 'border-box',
     display: 'flex',
@@ -188,27 +201,43 @@ export const RetainedDenebEditor = ({
             w: viewportRef.current.w,
             h: viewportRef.current.h
         };
-        let hostViewportHasChanged = false;
+        const engagedAt =
+            typeof performance !== 'undefined' &&
+            typeof performance.now === 'function'
+                ? performance.now()
+                : Date.now();
         let cancelled = false;
 
         const matches = (): boolean => {
             const v = viewportRef.current;
             if (v.w === undefined) return false;
-            if (v.w !== startViewport.w) {
-                hostViewportHasChanged = true;
-            }
             // Width-only match. Empirically the host frequently reports
             // a `viewport.height` that does not equal `window.innerHeight`
             // (a ~36px persistent offset, likely host chrome). Width is
             // a reliable equality signal in observed traces.
-            //
-            // Both conditions must hold:
-            //  (1) the host has reported a NEW viewport width since the
-            //      gate engaged — protects against the stale match
-            //      where the iframe is at viewer-mode size and the
-            //      host has not yet sent the edit-mode viewport;
-            //  (2) the iframe interior width matches the host's claim.
-            return hostViewportHasChanged && window.innerWidth === v.w;
+            if (window.innerWidth !== v.w) return false;
+            // Two acceptance paths:
+            //  (1) the LATEST reported viewport differs from the gate-
+            //      engage snapshot. Comparing the latest (rather than
+            //      tracking a monotonic "has ever changed" flag) is
+            //      flap-safe: a host that oscillates 800 → 805 → 800
+            //      will not falsely release the gate when it returns
+            //      to the engage value while the iframe is still
+            //      pre-expansion at 800.
+            //  (2) more than STALE_MATCH_BYPASS_MS has passed since
+            //      gate engage. Protects against the race where the
+            //      host had already reported the post-transition
+            //      viewport before the gate engaged (so startViewport
+            //      contains the post-transition value and (1) can
+            //      never fire), and against the rare case where the
+            //      viewer and editor modes share the same width.
+            if (v.w !== startViewport.w) return true;
+            const nowMs =
+                typeof performance !== 'undefined' &&
+                typeof performance.now === 'function'
+                    ? performance.now()
+                    : Date.now();
+            return nowMs - engagedAt > STALE_MATCH_BYPASS_MS;
         };
 
         const trySettle = () => {
