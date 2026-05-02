@@ -105,6 +105,17 @@ export const SpecificationJsonEditor = ({
             pendingFocusRequestRef.current = true;
         }
     };
+    // Stable bound click handler for the hyperlink override. The
+    // previous implementation called `onLinkClick(launchUrl)` to
+    // build a fresh handler for both `removeEventListener` and
+    // `addEventListener` on every effect run, which meant the
+    // remove never matched (different function reference each call)
+    // and a new listener was attached on every focus-tick / provider
+    // change. With editor-tree retention the Monaco DOM node lives
+    // for the visual lifetime, so listeners accumulated indefinitely.
+    // Memoising on `launchUrl` produces a single stable reference
+    // that `addHyperlinkOverride` can correctly remove and re-add.
+    const linkClickHandler = useMemo(() => onLinkClick(launchUrl), [launchUrl]);
     // Ensure that we update key dependencies/events if we change the editor.
     // The `focusTick` dep lets `RetainedDenebEditor` request a re-focus
     // when the editor becomes visible after a viewer↔editor toggle —
@@ -112,8 +123,8 @@ export const SpecificationJsonEditor = ({
     // path on subsequent opens.
     useEffect(() => {
         handleFocus();
-        addHyperlinkOverride(ref.current, launchUrl);
-    }, [provider, current, focusTick]);
+        addHyperlinkOverride(ref.current, linkClickHandler);
+    }, [provider, current, focusTick, linkClickHandler]);
     // Bootstrap the editor
     const handleOnMount: OnMount = (editor) => {
         ref.current = editor;
@@ -146,7 +157,7 @@ export const SpecificationJsonEditor = ({
         );
         // Process context menu
         editor.onContextMenu(() => removeContextMenuItems(editor));
-        addHyperlinkOverride(editor, launchUrl);
+        addHyperlinkOverride(editor, linkClickHandler);
         handleFocus();
         // Marker for the viewport-freeze investigation: the Spec editor is
         // the default visible surface, so its mount marks the user-visible
@@ -218,13 +229,21 @@ export const SpecificationJsonEditor = ({
 
 /**
  * Intercept click events on markdown tooltips and delegate to the host.
+ *
+ * The handler must be a STABLE reference across calls — the previous
+ * implementation built a fresh closure for both `removeEventListener`
+ * and `addEventListener`, so the remove never matched and a new
+ * listener was registered every call. Browsers dedupe identical
+ * `(target, type, listener, capture)` tuples, so re-passing the same
+ * reference is a no-op even if `addEventListener` runs more than once
+ * for the same node.
  */
 const addHyperlinkOverride = (
     editor: monaco.editor.IStandaloneCodeEditor | null,
-    launchUrl: (url: string) => void
+    handler: (e: MouseEvent) => void
 ) => {
-    editor?.getDomNode()?.removeEventListener('click', onLinkClick(launchUrl));
-    editor?.getDomNode()?.addEventListener('click', onLinkClick(launchUrl));
+    editor?.getDomNode()?.removeEventListener('click', handler);
+    editor?.getDomNode()?.addEventListener('click', handler);
 };
 
 /**
