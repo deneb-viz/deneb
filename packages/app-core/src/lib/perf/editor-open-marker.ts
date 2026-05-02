@@ -1,4 +1,4 @@
-import { logDebug } from '@deneb-viz/utils/logging';
+import { logDebug, logWarning } from '@deneb-viz/utils/logging';
 
 /**
  * Lightweight performance instrumentation for the viewer > editor open path.
@@ -18,9 +18,26 @@ import { logDebug } from '@deneb-viz/utils/logging';
  * `LOG_LEVEL` env var via `logDebug`, so the marker is invisible at the
  * default log level and free in production builds where `LOG_LEVEL=0`.
  *
+ * Misuse warnings (stage/flush called without a prior start) route
+ * through `logWarning` so they are also gated by `LOG_LEVEL` — visible
+ * to a developer running with `LOG_LEVEL=WARN`+ but never emitted from
+ * a certified build.
+ *
  * The module is self-contained singleton state — there is exactly one open
  * cycle in flight per visual instance, and any second start is treated as a
  * soft reset of the prior cycle.
+ *
+ * Retention note: with `<RetainedDenebEditor>` the `editor-mount`,
+ * `content-paint`, and `monaco-ready` stages only fire on the FIRST
+ * editor open per visual instance — Monaco, Allotment, and the editor
+ * pane layout are all retained and do not re-mount. `markEditorOpenStart`
+ * is still called on every transition into editor mode, but the cycle
+ * it begins for retained reopens never reaches a flush. The next
+ * `markEditorOpenStart` soft-resets the prior cycle's start time. This
+ * is intentional: the marker exists to instrument the first-open cold
+ * path, which is where the freeze symptom lives. Retained-reopen
+ * timings would need a separate signal (e.g. `gate-released`) if a
+ * later effort needs to capture them.
  */
 
 const LOG_LABEL = '[editor-open-marker]';
@@ -59,12 +76,13 @@ export const markEditorOpenStart = (): void => {
  * Record a named stage of the in-flight open cycle.
  *
  * If no prior `markEditorOpenStart` has happened the call is dropped with a
- * `console.warn` so the misuse is visible during development without
- * disturbing the user-facing flow.
+ * `logWarning` (gated by `LOG_LEVEL`) so the misuse is visible during
+ * development without disturbing the user-facing flow or leaking into
+ * certified builds.
  */
 export const markEditorOpenStage = (stage: EditorOpenStage): void => {
     if (startTime === null) {
-        console.warn(
+        logWarning(
             `${LOG_LABEL} stage "${stage}" recorded with no active open cycle — call markEditorOpenStart first.`
         );
         return;
@@ -77,11 +95,11 @@ export const markEditorOpenStage = (stage: EditorOpenStage): void => {
  * state so the next start begins a fresh cycle.
  *
  * If no prior `markEditorOpenStart` has happened the call is dropped with a
- * `console.warn`.
+ * `logWarning` (gated by `LOG_LEVEL`).
  */
 export const flushEditorOpenTimings = (): void => {
     if (startTime === null) {
-        console.warn(
+        logWarning(
             `${LOG_LABEL} flush called with no active open cycle — call markEditorOpenStart first.`
         );
         return;

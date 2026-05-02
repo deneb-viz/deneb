@@ -27,9 +27,11 @@ import {
  */
 
 const logDebugMock = vi.fn();
+const logWarningMock = vi.fn();
 
 vi.mock('@deneb-viz/utils/logging', () => ({
-    logDebug: (...args: unknown[]) => logDebugMock(...args)
+    logDebug: (...args: unknown[]) => logDebugMock(...args),
+    logWarning: (...args: unknown[]) => logWarningMock(...args)
 }));
 
 type EditorOpenMarkerModule = typeof import('../editor-open-marker');
@@ -41,11 +43,10 @@ const loadModule = async (): Promise<EditorOpenMarkerModule> => {
 
 describe('editor-open-marker', () => {
     let nowSpy: Mock | undefined;
-    let warnSpy: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
         logDebugMock.mockReset();
-        warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        logWarningMock.mockReset();
     });
 
     afterEach(() => {
@@ -53,7 +54,6 @@ describe('editor-open-marker', () => {
             nowSpy.mockRestore?.();
             nowSpy = undefined;
         }
-        warnSpy?.mockRestore();
     });
 
     /**
@@ -99,7 +99,7 @@ describe('editor-open-marker', () => {
                 0
             );
             expect(payload.durations['monaco-ready']).toBeGreaterThanOrEqual(0);
-            expect(warnSpy).not.toHaveBeenCalled();
+            expect(logWarningMock).not.toHaveBeenCalled();
         });
 
         it('reports stages individually so a partial flush still surfaces the slowest leg', async () => {
@@ -180,7 +180,7 @@ describe('editor-open-marker', () => {
             expect(() =>
                 marker.markEditorOpenStage('editor-mount')
             ).not.toThrow();
-            expect(warnSpy).toHaveBeenCalledTimes(1);
+            expect(logWarningMock).toHaveBeenCalledTimes(1);
             expect(logDebugMock).not.toHaveBeenCalled();
         });
 
@@ -188,7 +188,7 @@ describe('editor-open-marker', () => {
             const marker = await loadModule();
 
             expect(() => marker.flushEditorOpenTimings()).not.toThrow();
-            expect(warnSpy).toHaveBeenCalledTimes(1);
+            expect(logWarningMock).toHaveBeenCalledTimes(1);
             expect(logDebugMock).not.toHaveBeenCalled();
         });
     });
