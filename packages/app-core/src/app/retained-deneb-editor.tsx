@@ -118,7 +118,15 @@ export const RetainedDenebEditor = ({
 }: RetainedDenebEditorProps) => {
     const [hasOpenedOnce, setHasOpenedOnce] = useState(false);
     const [isPendingSettle, setIsPendingSettle] = useState(false);
-    const previousIsEditorMode = useRef(false);
+    // The previous-mode tracker is `useState` rather than `useRef` so
+    // that React's render-discard semantics keep it consistent with the
+    // rest of the component's state. A ref mutated during render would
+    // persist its mutation through a discarded render in concurrent
+    // mode, causing the transition to be missed on replay and the gate
+    // never to engage. State updates during render are concurrent-safe:
+    // React schedules an immediate re-render with the new state and
+    // rolls discarded updates back.
+    const [previousIsEditorMode, setPreviousIsEditorMode] = useState(false);
     const requestEditorFocus = useDenebState(
         (state) => state.requestEditorFocus
     );
@@ -139,20 +147,31 @@ export const RetainedDenebEditor = ({
     });
     viewportRef.current = { w: hostViewportWidth, h: hostViewportHeight };
 
-    // Latch — once true, never flips back.
+    // Latch — once true, never flips back. `useState` (not a ref) so
+    // discarded renders correctly roll back.
     if (!hasOpenedOnce && isEditorMode) {
         setHasOpenedOnce(true);
     }
 
-    // Detect transitions into editor mode and start a fresh per-toggle
-    // gate cycle. Done during render so the wrapper is hidden in the
-    // very same commit that flips into editor mode — no flash of
-    // editor-at-compressed-size.
-    if (previousIsEditorMode.current !== isEditorMode) {
-        if (isEditorMode) {
-            setIsPendingSettle(true);
-        }
-        previousIsEditorMode.current = isEditorMode;
+    // Detect viewer↔editor transitions during render so the wrapper is
+    // hidden in the very same commit that flips into editor mode — no
+    // flash of editor-at-compressed-size.
+    //
+    // `setIsPendingSettle(isEditorMode)` covers both directions:
+    //   isEditorMode → true:  engage gate, hide editor until match
+    //   isEditorMode → false: reset the flag so a subsequent re-entry
+    //     can flip it from false to true again. Without this reset,
+    //     `setIsPendingSettle(true)` on re-entry is a same-value React
+    //     no-op, the gate effect's [isPendingSettle] dep does not
+    //     change, the effect never re-runs, and the editor stays
+    //     `visibility: hidden` for the rest of the session.
+    //
+    // Convergence invariant: each branch fires exactly once per edge
+    // (false→true or true→false). Widening either guard (e.g. dropping
+    // the `!== isEditorMode` check) would loop.
+    if (previousIsEditorMode !== isEditorMode) {
+        setIsPendingSettle(isEditorMode);
+        setPreviousIsEditorMode(isEditorMode);
     }
 
     // Per-toggle gate. Each time `isPendingSettle` flips true, snapshot
