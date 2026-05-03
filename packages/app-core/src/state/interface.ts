@@ -94,7 +94,7 @@ export const createInterfaceSlice =
         [],
         InterfaceSlice
     > =>
-    (set) => ({
+    (set, get) => ({
         interface: {
             embedContainerSetByHost: false,
             embedViewport: EMBED_DEFAULTS.viewport,
@@ -169,7 +169,19 @@ export const createInterfaceSlice =
                     false,
                     'interface.setRemapState'
                 ),
-            setType: (type: InterfaceType) =>
+            setType: (type: InterfaceType) => {
+                // Idempotent: skip the dispatch entirely when the type
+                // is unchanged. `<RetainedDenebEditor>` calls
+                // `setType('editor')` on every transition into editor
+                // mode (so the unapplied-changes toast and other
+                // type-gated UI surfaces stay aligned with retention),
+                // and a viewer↔editor cycle that exits and re-enters
+                // editor mode within one React commit can dispatch
+                // back-to-back. Without this guard each redundant
+                // dispatch regenerates `renderId`, forcing a Vega
+                // rerender on every reopen even when the spec is
+                // unchanged.
+                if (get().interface.type === type) return;
                 set(
                     (state) => {
                         // Note: do NOT auto-compute `modalDialogRole` here
@@ -199,7 +211,8 @@ export const createInterfaceSlice =
                     },
                     false,
                     'interface.setType'
-                )
+                );
+            }
         }
     });
 
