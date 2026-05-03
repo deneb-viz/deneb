@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-import { useDenebState } from '../state';
+import { getDenebState, useDenebState } from '../state';
 
 /**
  * Wires `<RetainedDenebEditor>`'s mode/gate state to the global
@@ -52,6 +52,26 @@ export const useEditorModeSync = ({
 
     useEffect(() => {
         if (!isEditorMode && hasOpenedOnce) {
+            // Skip the close when an in-progress operation would
+            // be interrupted by losing the dialog. Today the only
+            // such state is Export tokenization (alert-modal mode
+            // in `<ModalDialog>`) — letting the dialog persist
+            // through the editor exit means the user sees the
+            // tokenization complete (the surface portals to
+            // `document.body` so it remains visible over the
+            // viewer) and dismisses it normally afterwards.
+            // Without this guard, exiting editor mode mid-
+            // tokenization clears `modalDialogRole` to `'None'`
+            // while `exportProcessingState` stays `'Tokenizing'`,
+            // desynchronising the two and orphaning the in-flight
+            // tokenization in the worker.
+            const { interface: iface } = getDenebState();
+            if (
+                iface.modalDialogRole === 'Export' &&
+                iface.exportProcessingState === 'Tokenizing'
+            ) {
+                return;
+            }
             setModalDialogRole('None');
         }
     }, [isEditorMode, hasOpenedOnce, setModalDialogRole]);
