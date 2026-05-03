@@ -286,20 +286,37 @@ const onLinkClick = (launchUrl: (url: string) => void) => (e: MouseEvent) => {
  * @privateRemarks
  * As Monaco doesn't have an API for this, it's a bit of a hack.
  * This has been taken from https://github.com/microsoft/monaco-editor/issues/1567
+ *
+ * `_getMenuActions` is a private method on the contextmenu
+ * contribution (the underscore prefix is Monaco's internal-API
+ * convention) and is therefore not exposed in `IEditorContribution`.
+ * The local `MonacoContextMenuContribution` type narrows the
+ * unknown return of `getContribution` to the shape we monkey-patch
+ * — keeping the unsafe boundary localised rather than threading
+ * `any` through the implementation. The shape is unstable across
+ * Monaco major versions; if a future upgrade renames or removes
+ * the method, the runtime will throw and the type assertion will
+ * need to be revisited.
  */
+type MonacoMenuAction = { readonly id: string };
+type MonacoGetMenuActions = (...args: unknown[]) => MonacoMenuAction[];
+type MonacoContextMenuContribution = monaco.editor.IEditorContribution & {
+    _getMenuActions: MonacoGetMenuActions;
+};
 const removeContextMenuItems = (
     editor: monaco.editor.IStandaloneCodeEditor
 ) => {
-    const contextmenu = editor.getContribution('editor.contrib.contextmenu');
+    const contextmenu = editor.getContribution<MonacoContextMenuContribution>(
+        'editor.contrib.contextmenu'
+    );
+    if (!contextmenu) return;
     const removableIds = [
         'editor.action.clipboardCutAction',
         'editor.action.clipboardPasteAction'
     ];
-    const realMethod = (contextmenu as any)._getMenuActions;
-    (contextmenu as any)._getMenuActions = (...args: any[]) => {
+    const realMethod = contextmenu._getMenuActions;
+    contextmenu._getMenuActions = (...args) => {
         const items = realMethod.apply(contextmenu, args);
-        return items.filter((item: any) => {
-            return !removableIds.includes(item.id);
-        });
+        return items.filter((item) => !removableIds.includes(item.id));
     };
 };
