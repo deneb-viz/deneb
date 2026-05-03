@@ -1,11 +1,12 @@
 import powerbi from 'powerbi-visuals-api';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type View } from 'vega';
 
 import { logHost, logRender } from '@deneb-viz/utils/logging';
 import { ReportViewRouter } from './report-view-router';
 import {
     DenebProvider,
+    markEditorOpenStart,
     useDenebState,
     type ViewEventBinder
 } from '@deneb-viz/app-core';
@@ -13,7 +14,7 @@ import {
     PLATFORM_SECTION_KEYS,
     platformSearchContributions
 } from './platform-search-contributions';
-import { DenebEditor } from '@deneb-viz/app-core/editor';
+import { RetainedDenebEditor } from '@deneb-viz/app-core/editor';
 import {
     FetchingMessage,
     LandingPage,
@@ -49,6 +50,29 @@ export const App = ({ host }: AppProps) => {
         boolean | undefined
     >(undefined);
     const mode = useDenebVisualState((state) => state.interface.mode);
+    // Marker for the viewport-freeze investigation: detect the
+    // transition INTO editor mode and dispatch `markEditorOpenStart`.
+    // Lives in `useEffect` rather than render-body so the module-
+    // level mutation in the marker store is not triggered by a
+    // discarded concurrent-mode render or by Strict Mode's double-
+    // invocation. The previous-mode tracker is a ref because it is
+    // only read from the post-commit effect; refs mutated during
+    // effects (not during render) are concurrent-safe.
+    //
+    // Trade-off: child layout effects (e.g. `editor.tsx`'s
+    // `markEditorOpenStage('editor-mount')`) run before parent
+    // post-commit effects, so on a first cold open the
+    // `editor-mount` stage may fire before this `start` and be
+    // dropped by the marker module's "no active cycle" guard. This
+    // is acceptable — the marker is dev-only instrumentation and
+    // subsequent stages plus flush continue to work.
+    const previousModeRef = useRef(mode);
+    useEffect(() => {
+        if (mode === 'editor' && previousModeRef.current !== 'editor') {
+            markEditorOpenStart();
+        }
+        previousModeRef.current = mode;
+    }, [mode]);
     const fields = useDenebVisualState((state) => state.dataset.fields);
     const values = useDenebVisualState((state) => state.dataset.values);
     const visualUpdateOptions = useDenebVisualState(
@@ -164,7 +188,11 @@ export const App = ({ host }: AppProps) => {
             case 'transition-editor-viewer':
                 return null;
             case 'editor':
-                return <DenebEditor />;
+                // Editor mode is rendered by `<RetainedDenebEditor />`
+                // alongside the main component so the editor tree is
+                // retained across viewer↔editor toggles after the
+                // first open. See packages/app-core/src/app/retained-deneb-editor.tsx.
+                return null;
             case 'viewer':
                 return <ReportViewRouter />;
             default:
@@ -207,6 +235,11 @@ export const App = ({ host }: AppProps) => {
                 }
             }}
         >
+            <RetainedDenebEditor
+                isEditorMode={mode === 'editor'}
+                hostViewportWidth={visualUpdateOptions?.viewport?.width}
+                hostViewportHeight={visualUpdateOptions?.viewport?.height}
+            />
             {mainComponent}
             <NotificationToaster />
             <VisualUpdateHistoryOverlay />

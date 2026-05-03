@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
     Button,
     Dialog,
@@ -53,11 +53,31 @@ export const ModalDialog = () => {
         }
     }, [modalDialogRole]);
     const isOpen = modalDialogRole !== 'None';
-    const closeLabel = useMemo(() => translate('Text_Button_Close'), []);
-    const titleLabel = useMemo(
-        () => translate(`Text_Dialog_Title_${modalDialogRole}`),
-        [modalDialogRole]
+    const closeLabel = useMemo(
+        () => translate('Text_Button_Close'),
+        [translate]
     );
+    // Title resolves via i18n key `Text_Dialog_Title_${role}`. `'None'`
+    // means the dialog is dismissed, but the Dialog stays mounted
+    // briefly while Fluent runs its dismissal animation — so without
+    // a cache the user would see the literal i18n key flash for a
+    // frame between dispatch of `setModalDialogRole('None')` and
+    // unmount. Keep the last non-None title in `useState` so React's
+    // render-discard semantics keep the cache consistent across
+    // concurrent-mode retries; mutating a ref during render (the
+    // previous shape) could leak a stale value into a replay.
+    const [cachedTitleLabel, setCachedTitleLabel] = useState('');
+    useEffect(() => {
+        if (modalDialogRole !== 'None') {
+            setCachedTitleLabel(
+                translate(`Text_Dialog_Title_${modalDialogRole}`)
+            );
+        }
+    }, [modalDialogRole, translate]);
+    const titleLabel = useMemo(() => {
+        if (modalDialogRole === 'None') return cachedTitleLabel;
+        return translate(`Text_Dialog_Title_${modalDialogRole}`);
+    }, [modalDialogRole, translate, cachedTitleLabel]);
     const content = getDialogContent(modalDialogRole);
     const onClose = () => {
         // For version dialog, we update the version in properties

@@ -80,6 +80,24 @@ export type InterfaceSliceProperties = {
      * Sets the remap state.
      */
     setRemapState: (state: RemapState) => void;
+    /**
+     * Sets the interface type and regenerates `renderId` (Vega-view
+     * rerender trigger) when the type actually changes. Idempotent: a
+     * dispatch with `type === state.interface.type` is a no-op so
+     * `<RetainedDenebEditor>`'s per-entry sync does not regenerate
+     * `renderId` on every reopen.
+     *
+     * Note: `setType('editor')` no longer auto-opens the new-project
+     * (`'Create'`) `ModalDialog`. That dispatch lives in
+     * `<RetainedDenebEditor>`'s gate-release effect because Fluent v9
+     * dialogs portal to `document.body` and bypass the editor
+     * wrapper's visibility gate — opening at `setType('editor')` time
+     * (i.e. before the iframe has expanded) produced a mis-sized
+     * dialog. Other triggers for `'Create'` (project change, field-
+     * usage change, migration) still go through `getModalDialogRole`
+     * in their own slices because they fire after the iframe is
+     * already settled.
+     */
     setType: (type: InterfaceType) => void;
 };
 
@@ -94,7 +112,7 @@ export const createInterfaceSlice =
         [],
         InterfaceSlice
     > =>
-    (set) => ({
+    (set, get) => ({
         interface: {
             embedContainerSetByHost: false,
             embedViewport: EMBED_DEFAULTS.viewport,
@@ -169,17 +187,41 @@ export const createInterfaceSlice =
                     false,
                     'interface.setRemapState'
                 ),
-            setType: (type: InterfaceType) =>
+            setType: (type: InterfaceType) => {
+                // Idempotent: skip the dispatch entirely when the type
+                // is unchanged. `<RetainedDenebEditor>` calls
+                // `setType('editor')` on every transition into editor
+                // mode (so the unapplied-changes toast and other
+                // type-gated UI surfaces stay aligned with retention),
+                // and a viewer↔editor cycle that exits and re-enters
+                // editor mode within one React commit can dispatch
+                // back-to-back. Without this guard each redundant
+                // dispatch regenerates `renderId`, forcing a Vega
+                // rerender on every reopen even when the spec is
+                // unchanged.
+                if (get().interface.type === type) return;
                 set(
                     (state) => {
+                        // Note: do NOT auto-compute `modalDialogRole` here
+                        // (e.g. via `getModalDialogRole`). On entering editor
+                        // mode for a no-project visual the modal would otherwise
+                        // open immediately, while the Power BI host is still
+                        // pacing the iframe expansion. Fluent v9 dialogs
+                        // portal to `document.body` and bypass the editor
+                        // wrapper's visibility gate, so the dialog renders
+                        // mis-sized at the pre-expansion viewport.
+                        //
+                        // The auto-open is moved to `RetainedDenebEditor`,
+                        // which dispatches `setModalDialogRole('Create')`
+                        // when its match-based gate releases — i.e. once
+                        // the iframe matches the host-reported viewport.
+                        // Other triggers for `'Create'` (project change,
+                        // field usage change, migration) still go through
+                        // `getModalDialogRole` in their own slices because
+                        // they fire after the iframe is already settled.
                         return {
                             interface: {
                                 ...state.interface,
-                                modalDialogRole: getModalDialogRole(
-                                    state.project.__isInitialized__,
-                                    type,
-                                    state.interface.modalDialogRole
-                                ),
                                 renderId: getNewUuid(),
                                 type
                             }
@@ -187,7 +229,8 @@ export const createInterfaceSlice =
                     },
                     false,
                     'interface.setType'
-                )
+                );
+            }
         }
     });
 

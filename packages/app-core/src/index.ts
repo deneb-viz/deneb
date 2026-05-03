@@ -26,4 +26,10 @@ export { useSpecificationEditor } from './features/specification-editor/hooks/us
 
 export { updateFieldTracking } from './lib/field-processing';
 export * from './lib/interface';
+export {
+    markEditorOpenStart,
+    markEditorOpenStage,
+    flushEditorOpenTimings,
+    type EditorOpenStage
+} from './lib/perf';
 export { INCREMENTAL_UPDATE_CONFIGURATION } from './lib/vega/incremental-update-configuration';
