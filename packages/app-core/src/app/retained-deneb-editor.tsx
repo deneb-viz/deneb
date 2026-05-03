@@ -286,11 +286,12 @@ export const RetainedDenebEditor = ({
     );
     const isVisuallyShown = isVisible && !isPendingSettle;
 
-    if (!shouldRender) {
-        return isEditorMode ? (
-            <Placeholder message={placeholderMessage} />
-        ) : null;
-    }
+    // shouldRender = hasOpenedOnce || isEditorMode, so when this guard
+    // is true both are false - the editor has never been opened in
+    // this session AND the user is not currently in editor mode.
+    // Nothing to render. The placeholder is rendered below as part
+    // of the retained shell once `shouldRender` is true.
+    if (!shouldRender) return null;
 
     return (
         <div
