@@ -76,7 +76,26 @@ export const useEditorModeSync = ({
         }
     }, [isEditorMode, hasOpenedOnce, setModalDialogRole]);
 
+    // The auto-open latch is per "fresh project" rather than per
+    // session. Reset when `isProjectInitialized` transitions from
+    // true back to false — the user has genuinely started over (e.g.
+    // all columns removed in the data well), and the Create dialog
+    // is the same expected affordance as on the very first open.
+    // Without this reset, a session that has already auto-opened
+    // once would silently skip the dialog after the user dropped
+    // their data.
     const hasAutoOpenedCreateRef = useRef(false);
+    const previousIsProjectInitializedRef = useRef(isProjectInitialized);
+    useEffect(() => {
+        if (
+            previousIsProjectInitializedRef.current === true &&
+            isProjectInitialized === false
+        ) {
+            hasAutoOpenedCreateRef.current = false;
+        }
+        previousIsProjectInitializedRef.current = isProjectInitialized;
+    }, [isProjectInitialized]);
+
     useEffect(() => {
         if (
             isEditorMode &&
