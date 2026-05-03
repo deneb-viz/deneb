@@ -2,6 +2,7 @@ import { type CSSProperties, useEffect, useRef, useState } from 'react';
 
 import { DenebEditor } from './deneb-editor';
 import { computeRetentionState } from './retained-deneb-editor-state';
+import { useEditorModeSync } from './use-editor-mode-sync';
 import { useDenebState } from '../state';
 
 export { computeRetentionState } from './retained-deneb-editor-state';
@@ -143,13 +144,6 @@ export const RetainedDenebEditor = ({
     const requestEditorFocus = useDenebState(
         (state) => state.requestEditorFocus
     );
-    const setModalDialogRole = useDenebState(
-        (state) => state.interface.setModalDialogRole
-    );
-    const setInterfaceType = useDenebState((state) => state.interface.setType);
-    const isProjectInitialized = useDenebState(
-        (state) => state.project.__isInitialized__
-    );
 
     // Latest viewport, kept in a ref so the per-toggle gate effect can
     // re-check it without restarting (which would reset the start
@@ -290,66 +284,12 @@ export const RetainedDenebEditor = ({
         }
     }, [isEditorMode, isPendingSettle, hasOpenedOnce, requestEditorFocus]);
 
-    // Sync `interface.type` with editor visibility on every transition
-    // into editor mode. `useDenebAppSetup('editor')` inside `<DenebEditor>`
-    // dispatches `setType('editor')` only on first mount; with retention
-    // the editor stays mounted and that hook does not re-run, so on the
-    // SECOND open the type is still 'viewer' (left over from the
-    // intervening `<DenebViewer>` mount). Anything reading
-    // `interface.type` to gate UI (e.g. the unapplied-changes toast)
-    // would mis-fire.
-    useEffect(() => {
-        if (isEditorMode) {
-            setInterfaceType('editor');
-        }
-    }, [isEditorMode, setInterfaceType]);
-
-    // Close any open ModalDialog when leaving editor mode. The dialog
-    // surface is portaled by Fluent UI to document.body, so the
-    // `display: none` on the shell does not hide it. Dispatching
-    // `setModalDialogRole('None')` unmounts the portal cleanly.
-    useEffect(() => {
-        if (!isEditorMode && hasOpenedOnce) {
-            setModalDialogRole('None');
-        }
-    }, [isEditorMode, hasOpenedOnce, setModalDialogRole]);
-
-    // Auto-open the new-project ('Create') modal once the gate has
-    // released for a no-project visual. Previously this was triggered
-    // synchronously by `interface.setType('editor')`, which fires when
-    // `<DenebEditor />` mounts — long before the iframe has expanded.
-    // Fluent v9 dialogs portal to `document.body` and bypass our
-    // wrapper's visibility gate, so opening it pre-expansion produced a
-    // mis-sized dialog. Deferring to gate-release ensures the dialog
-    // opens at the final viewport.
-    //
-    // Fire-once latch: a user who dismisses the Create dialog without
-    // creating a project leaves `isProjectInitialized = false`. Without
-    // the latch, every subsequent gate release would re-open the dialog
-    // — including the one that fires immediately after exit-and-reentry,
-    // producing a None→Create oscillation that surprises the user.
-    // Once the dialog has been auto-opened it is the user's choice
-    // whether to engage with it; the editor command bar still exposes
-    // "New project" if they want to reopen it explicitly.
-    const hasAutoOpenedCreateRef = useRef(false);
-    useEffect(() => {
-        if (
-            isEditorMode &&
-            !isPendingSettle &&
-            hasOpenedOnce &&
-            !isProjectInitialized &&
-            !hasAutoOpenedCreateRef.current
-        ) {
-            hasAutoOpenedCreateRef.current = true;
-            setModalDialogRole('Create');
-        }
-    }, [
-        isEditorMode,
-        isPendingSettle,
-        hasOpenedOnce,
-        isProjectInitialized,
-        setModalDialogRole
-    ]);
+    // Side-effect bridge to the global stores (interface.type sync,
+    // modal close on exit, deferred Create modal auto-open). Lifted
+    // into a sibling hook so this component stays focused on render
+    // and gate decisions; see use-editor-mode-sync.ts for the per-
+    // effect rationale.
+    useEditorModeSync({ isEditorMode, isPendingSettle, hasOpenedOnce });
 
     const { shouldRender, isVisible } = computeRetentionState(
         hasOpenedOnce,
