@@ -1,7 +1,10 @@
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
 
 import { DenebEditor } from './deneb-editor';
-import { computeRetentionState } from './retained-deneb-editor-state';
+import {
+    computeGateMatch,
+    computeRetentionState
+} from './retained-deneb-editor-state';
 import { useEditorModeSync } from './use-editor-mode-sync';
 import { useDenebState } from '../state';
 
@@ -205,37 +208,20 @@ export const RetainedDenebEditor = ({
                 : Date.now();
         let cancelled = false;
 
-        const matches = (): boolean => {
-            const v = viewportRef.current;
-            if (v.w === undefined) return false;
-            // Width-only match. Empirically the host frequently reports
-            // a `viewport.height` that does not equal `window.innerHeight`
-            // (a ~36px persistent offset, likely host chrome). Width is
-            // a reliable equality signal in observed traces.
-            if (window.innerWidth !== v.w) return false;
-            // Two acceptance paths:
-            //  (1) the LATEST reported viewport differs from the gate-
-            //      engage snapshot. Comparing the latest (rather than
-            //      tracking a monotonic "has ever changed" flag) is
-            //      flap-safe: a host that oscillates 800 → 805 → 800
-            //      will not falsely release the gate when it returns
-            //      to the engage value while the iframe is still
-            //      pre-expansion at 800.
-            //  (2) more than STALE_MATCH_BYPASS_MS has passed since
-            //      gate engage. Protects against the race where the
-            //      host had already reported the post-transition
-            //      viewport before the gate engaged (so startViewport
-            //      contains the post-transition value and (1) can
-            //      never fire), and against the rare case where the
-            //      viewer and editor modes share the same width.
-            if (v.w !== startViewport.w) return true;
-            const nowMs =
-                typeof performance !== 'undefined' &&
-                typeof performance.now === 'function'
-                    ? performance.now()
-                    : Date.now();
-            return nowMs - engagedAt > STALE_MATCH_BYPASS_MS;
-        };
+        const nowMs = (): number =>
+            typeof performance !== 'undefined' &&
+            typeof performance.now === 'function'
+                ? performance.now()
+                : Date.now();
+
+        const matches = (): boolean =>
+            computeGateMatch({
+                startWidth: startViewport.w,
+                currentWidth: viewportRef.current.w,
+                iframeInnerWidth: window.innerWidth,
+                elapsedMs: nowMs() - engagedAt,
+                bypassMs: STALE_MATCH_BYPASS_MS
+            });
 
         const trySettle = () => {
             if (cancelled) return;

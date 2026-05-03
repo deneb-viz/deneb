@@ -26,3 +26,71 @@ export const computeRetentionState = (
     shouldRender: hasOpenedOnce || isEditorMode,
     isVisible: isEditorMode
 });
+
+/**
+ * Inputs to `computeGateMatch`, separated so the call site can pass
+ * `undefined` viewports cleanly (Power BI only has the host viewport
+ * available after the first `update()`).
+ */
+export type GateMatchInput = {
+    /**
+     * Host-reported viewport width at the moment the gate engaged.
+     * Captured when `isPendingSettle` flips true. May be `undefined`
+     * if the visual has not yet received any host update.
+     */
+    startWidth: number | undefined;
+    /**
+     * Latest host-reported viewport width at the moment of evaluation.
+     */
+    currentWidth: number | undefined;
+    /**
+     * Iframe interior width — `window.innerWidth`. Only the iframe's
+     * actual physical size confirms that the host has paced through
+     * its CSS resize.
+     */
+    iframeInnerWidth: number;
+    /**
+     * Milliseconds elapsed since gate engage.
+     */
+    elapsedMs: number;
+    /**
+     * Stale-match bypass window in ms. Past this point a width match
+     * alone is sufficient even if the host has not reported a viewport
+     * change since engage (covers the race where the post-transition
+     * viewport was already reported before the gate engaged, and the
+     * rare same-width viewer/editor case).
+     */
+    bypassMs: number;
+};
+
+/**
+ * Predicate returning whether the per-toggle viewport-match gate
+ * should release given the current measurements.
+ *
+ * Three guards combine:
+ *   1. Width must be defined.
+ *   2. The iframe interior width must equal the latest host-reported
+ *      viewport width — confirms the iframe has caught up to host
+ *      intent (height has a persistent ~36px chrome offset and is
+ *      not a reliable equality signal).
+ *   3. Either the latest viewport differs from the engage snapshot
+ *      (the host has paced through a transition), OR more than
+ *      `bypassMs` has elapsed (stale-snapshot / same-width fallback).
+ *
+ * The latest-vs-start comparison is flap-safe by design: a host that
+ * oscillates `viewport.width` 800 → 805 → 800 will not falsely
+ * release the gate when the latest value equals the engage value
+ * while the iframe is still pre-expansion at 800.
+ */
+export const computeGateMatch = ({
+    startWidth,
+    currentWidth,
+    iframeInnerWidth,
+    elapsedMs,
+    bypassMs
+}: GateMatchInput): boolean => {
+    if (currentWidth === undefined) return false;
+    if (iframeInnerWidth !== currentWidth) return false;
+    if (currentWidth !== startWidth) return true;
+    return elapsedMs > bypassMs;
+};
