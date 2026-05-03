@@ -144,6 +144,9 @@ export const RetainedDenebEditor = ({
     const requestEditorFocus = useDenebState(
         (state) => state.requestEditorFocus
     );
+    const placeholderMessage = useDenebState((state) =>
+        state.i18n.translate('Text_Editor_Suspense_Message')
+    );
 
     // Latest viewport, kept in a ref so the per-toggle gate effect can
     // re-check it without restarting (which would reset the start
@@ -296,10 +299,6 @@ export const RetainedDenebEditor = ({
         isEditorMode
     );
     const isVisuallyShown = isVisible && !isPendingSettle;
-
-    const placeholderMessage = useDenebState((state) =>
-        state.i18n.translate('Text_Editor_Suspense_Message')
-    );
 
     if (!shouldRender) {
         return isEditorMode ? (

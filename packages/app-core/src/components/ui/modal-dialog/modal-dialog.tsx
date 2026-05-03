@@ -53,7 +53,10 @@ export const ModalDialog = () => {
         }
     }, [modalDialogRole]);
     const isOpen = modalDialogRole !== 'None';
-    const closeLabel = useMemo(() => translate('Text_Button_Close'), []);
+    const closeLabel = useMemo(
+        () => translate('Text_Button_Close'),
+        [translate]
+    );
     // Title resolves via i18n key `Text_Dialog_Title_${role}`. `'None'`
     // means the dialog is dismissed, but the Dialog stays mounted
     // briefly while Fluent runs its dismissal animation — so without

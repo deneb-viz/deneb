@@ -80,6 +80,24 @@ export type InterfaceSliceProperties = {
      * Sets the remap state.
      */
     setRemapState: (state: RemapState) => void;
+    /**
+     * Sets the interface type and regenerates `renderId` (Vega-view
+     * rerender trigger) when the type actually changes. Idempotent: a
+     * dispatch with `type === state.interface.type` is a no-op so
+     * `<RetainedDenebEditor>`'s per-entry sync does not regenerate
+     * `renderId` on every reopen.
+     *
+     * Note: `setType('editor')` no longer auto-opens the new-project
+     * (`'Create'`) `ModalDialog`. That dispatch lives in
+     * `<RetainedDenebEditor>`'s gate-release effect because Fluent v9
+     * dialogs portal to `document.body` and bypass the editor
+     * wrapper's visibility gate — opening at `setType('editor')` time
+     * (i.e. before the iframe has expanded) produced a mis-sized
+     * dialog. Other triggers for `'Create'` (project change, field-
+     * usage change, migration) still go through `getModalDialogRole`
+     * in their own slices because they fire after the iframe is
+     * already settled.
+     */
     setType: (type: InterfaceType) => void;
 };
 
