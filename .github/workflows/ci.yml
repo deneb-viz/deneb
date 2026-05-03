@@ -154,6 +154,21 @@ jobs:
               run: npm ci
             - name: Build packages
               run: npm run build
+            # Guard the published artifact against a tampered `.env.ci`.
+            # `package-alpha` deliberately skips the validator locally so
+            # that maintainers can produce one-off debug builds (e.g.
+            # with ALLOW_EXTERNAL_URI=true) for issue triage. CI does
+            # not need that flexibility — anything published to a
+            # GitHub release under an `alpha` tag must satisfy the same
+            # configuration invariants as the certified `package`
+            # script. Running the validator here asserts that the
+            # on-disk `.env` (copied from `.env.ci` above) holds the
+            # approved safe values before `package-alpha` bakes them
+            # into the artifact.
+            #
+            # See https://github.com/deneb-viz/deneb/issues/651.
+            - name: Validate CI configuration before alpha packaging
+              run: npm run validate-config-for-commit
             - name: Build Alpha Package
               run: npm run package-alpha
             - name: Delete existing alpha release
