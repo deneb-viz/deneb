@@ -25,7 +25,10 @@ import {
     PLATFORM_SECTION_KEYS,
     platformSearchContributions
 } from './platform-search-contributions';
-import { RetainedDenebEditor } from '@deneb-viz/app-core/editor';
+import {
+    RetainedDenebEditor,
+    RetainedDenebViewer
+} from '@deneb-viz/app-core/editor';
 import {
     FetchingMessage,
     LandingPage,
@@ -248,8 +251,13 @@ export const App = ({ host }: AppProps) => {
                 // retained across viewer↔editor toggles after the
                 // first open. See packages/app-core/src/app/retained-deneb-editor.tsx.
                 return null;
+            // Viewer mode is rendered by `<RetainedDenebViewer />`
+            // alongside the main component so the viewer's Vega
+            // mount can be gated until the iframe has physically
+            // shrunk to the new viewer-mode width on editor → viewer
+            // transitions. See packages/app-core/src/app/retained-deneb-viewer.tsx.
             case 'viewer':
-                return <ReportViewRouter />;
+                return null;
             default:
                 return null;
         }
@@ -295,6 +303,14 @@ export const App = ({ host }: AppProps) => {
                 hostViewportWidth={visualUpdateOptions?.viewport?.width}
                 hostViewportHeight={visualUpdateOptions?.viewport?.height}
             />
+            <RetainedDenebViewer
+                isViewerMode={mode === 'viewer'}
+                isEditorMode={mode === 'editor'}
+                hostViewportWidth={visualUpdateOptions?.viewport?.width}
+                hostViewportHeight={visualUpdateOptions?.viewport?.height}
+            >
+                <ReportViewRouter />
+            </RetainedDenebViewer>
             {mainComponent}
             <NotificationToaster />
             <VisualUpdateHistoryOverlay />
