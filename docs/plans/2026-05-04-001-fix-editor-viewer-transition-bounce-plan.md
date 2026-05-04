@@ -1,8 +1,9 @@
 ---
 title: "fix: Resolve viewer bounce on editor → viewer transition"
 type: fix
-status: active
+status: completed
 date: 2026-05-04
+solution: docs/solutions/ui-bugs/viewer-bounce-on-editor-exit-2026-05-04.md
 origin: docs/brainstorms/2026-05-01-viewer-bounce-on-editor-exit-followup.md
 ---
 
