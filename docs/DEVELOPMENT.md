@@ -29,6 +29,25 @@ Deneb uses a custom Webpack 5 toolchain (replacing pbiviz CLI) for faster rebuil
 
 ## 2. Local Development Workflow
 
+### Branching model
+
+Deneb uses a two-branch trunk:
+
+- **`main`** is kept as close as possible to the version currently published on AppSource. It is the safety net for production issues that need a swift hotfix without dragging along untested in-flight changes.
+- **`next`** is the active integration branch. New features, fixes, refactors, and most day-to-day work land here.
+
+**Working on a feature or fix:**
+
+1. Branch off `next`, not `main`: `git checkout next && git pull && git checkout -b <type>/<short-name>`.
+2. Open the PR against `next` (e.g. `gh pr create --base next`).
+3. When a hotfix lands on `main`, it is merged or rebased forward into `next` — moving change in that direction is cheap; pushing untested `next` work back into an AppSource release is not.
+
+**Implications:**
+
+- Rebases, `git diff` baselines, and `git rebase --exec` operations for current work should target `next` (or the feature branch's actual fork point such as `HEAD~N`), **not `main`**. `main` is typically far behind `next` and will produce a massive replay if used as the rebase base.
+- AI assistants and contributors new to the repo should treat `next` as the working trunk. Reach for `main` only when the work is genuinely a production hotfix that needs to ship to AppSource ahead of the next release cut.
+- A new release cut promotes `next` → `main` (typically via a release PR), at which point `main` once again mirrors the published AppSource state and the cycle repeats.
+
 ### First-time setup
 
 Copy `.env.example` to `.env` (see ".env Setup" below) so local dev toggles like `LOG_LEVEL` are picked up.
