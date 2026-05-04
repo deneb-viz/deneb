@@ -3,38 +3,14 @@ import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import { DenebEditor } from './deneb-editor';
 import {
     computeGateMatch,
-    computeRetentionState
+    computeRetentionState,
+    STALE_MATCH_BYPASS_MS,
+    VIEWPORT_SETTLE_TIMEOUT_MS
 } from './retained-deneb-editor-state';
 import { useEditorModeSync } from './use-editor-mode-sync';
 import { useDenebState } from '../state';
 
 export { computeRetentionState } from './retained-deneb-editor-state';
-
-/**
- * Upper-bound timeout for the per-toggle viewport-match gate. Single
- * tunable for how long the editor stays hidden after a viewer↔editor
- * toggle when the host's iframe doesn't reach the reported viewport
- * within the expected window.
- *
- * Set from observed cold-open iframe-expansion timing (~1500ms) plus
- * margin. On extreme slow-host scenarios the timer fires and the
- * editor mounts at whatever size the iframe currently is — strictly
- * worse than a clean match release, but still better than no gate.
- */
-const VIEWPORT_SETTLE_TIMEOUT_MS = 3000;
-
-/**
- * Stale-match bypass for the case where the host has already reported
- * the post-transition viewport before the gate engages — typically a
- * race where the host's `update()` viewport prop arrives in the same
- * render that flips `isEditorMode`, so `startViewport` snapshots the
- * already-final value and a "viewport has changed since engage" check
- * never fires. After this many ms with `window.innerWidth` matching
- * the latest reported viewport, accept the match without requiring a
- * change-from-start. 150ms is well above a typical render commit and
- * well below the iframe-expansion latency we are guarding against.
- */
-const STALE_MATCH_BYPASS_MS = 150;
 
 const wrapperStyle = (isVisuallyShown: boolean): CSSProperties => ({
     boxSizing: 'border-box',
