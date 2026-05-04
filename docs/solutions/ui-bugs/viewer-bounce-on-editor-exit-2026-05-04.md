@@ -6,20 +6,20 @@ module: app-core
 problem_type: ui_bug
 component: viewer
 symptoms:
-  - Click "Back to report" from editor mode; the visual briefly renders at a larger-than-viewer intermediate size for a frame or two before snapping to the actual viewer-mode viewport
-  - Smaller and faster than the original cold-open freeze (parent issue), but observable
-  - Asymmetric retention — `<DenebEditor>` is retained across viewer↔editor toggles after PR #657, but `<DenebViewer>` is not, so every editor → viewer transition mounts a fresh `<VegaEmbed>`
+    - Click "Back to report" from editor mode; the visual briefly renders at a larger-than-viewer intermediate size for a frame or two before snapping to the actual viewer-mode viewport
+    - Smaller and faster than the original cold-open freeze (parent issue), but observable
+    - Asymmetric retention — `<DenebEditor>` is retained across viewer↔editor toggles after PR #657, but `<DenebViewer>` is not, so every editor → viewer transition mounts a fresh `<VegaEmbed>`
 root_cause: host_paced_iframe_shrink_pre_viewer_mount
 resolution_type: code_fix
 severity: low
 tags:
-  - viewer
-  - viewport
-  - retention
-  - iframe
-  - power-bi-host
-  - shrink
-status: investigating
+    - viewer
+    - viewport
+    - retention
+    - iframe
+    - power-bi-host
+    - shrink
+status: resolved
 ---
 
 # Viewer bounce on editor → viewer transition
@@ -32,7 +32,7 @@ The bounce is a residual artefact of asymmetric retention — the editor has a m
 
 ## Root cause
 
-The Power BI host paces the iframe's CSS resize on the **shrinking** direction with the same shape it paces expansion: the host reports the new (smaller) `viewport.width` to the visual *before* it physically shrinks the iframe. There is a window of tens to ~150ms during which `options.viewport.width` is the new viewer-mode width but `window.innerWidth` is still the editor-pane width. Anything that mounts and reads its DOM container during this window renders at the wrong size; when the iframe finishes shrinking, `ResizeObserver` fires and Vega re-lays-out — the visible bounce.
+The Power BI host paces the iframe's CSS resize on the **shrinking** direction with the same shape it paces expansion: the host reports the new (smaller) `viewport.width` to the visual _before_ it physically shrinks the iframe. There is a window of tens to ~150ms during which `options.viewport.width` is the new viewer-mode width but `window.innerWidth` is still the editor-pane width. Anything that mounts and reads its DOM container during this window renders at the wrong size; when the iframe finishes shrinking, `ResizeObserver` fires and Vega re-lays-out — the visible bounce.
 
 The reliable positive signal is the same as the entry direction: `window.innerWidth === options.viewport.width`.
 
@@ -84,7 +84,28 @@ Cost of the gate: up to ~150ms of gate-pending (nothing rendered) per editor →
 
 ## Resolution
 
-*Pending — implemented in U3/U4 of [docs/plans/2026-05-04-001-fix-editor-viewer-transition-bounce-plan.md](../../plans/2026-05-04-001-fix-editor-viewer-transition-bounce-plan.md). This document will be updated with the shipped resolution and final manual-verification notes once U4 lands.*
+A viewer-side mount gate that mirrors `<RetainedDenebEditor>` on the opposite (shrinking) direction:
+
+1. **`<RetainedDenebViewer>`** ([packages/app-core/src/app/retained-deneb-viewer.tsx](../../../packages/app-core/src/app/retained-deneb-viewer.tsx)) holds the viewer subtree unmounted on every editor → viewer transition until ALL of:
+    - `window.innerWidth === options.viewport.width` (iframe has caught up to the viewer-mode width)
+    - `options.viewport.width` has changed since the gate engaged, OR `STALE_MATCH_BYPASS_MS` (150ms) has elapsed with the width matching (covers the common exit case where the host had already reported the new viewport before the gate engaged)
+    - OR `VIEWPORT_SETTLE_TIMEOUT_MS` (3000ms) elapses (safety net)
+
+2. **`hasBeenInEditor` latch** — the gate only engages on viewer-mode entries that follow an editor session in the same visual instance. Cold viewer loads (no prior editor) take the fast path with no gate-pending delay; there is no host-paced shrink to wait for.
+
+3. **Asymmetric-but-compatible** — the viewer is mounted fresh each editor → viewer transition (unlike the editor, which is retained). Symmetric retention (Option B from the brainstorm) is the right long-term shape but a much larger routing rewrite. The mount gate is surgical, removes the visible bounce, and is compatible with later layering retention on top — at which point this gate becomes redundant and can be removed.
+
+4. **Reused predicate** — `computeGateMatch` from [packages/app-core/src/app/retained-deneb-editor-state.ts](../../../packages/app-core/src/app/retained-deneb-editor-state.ts) is shared with the editor entry gate. The constants `VIEWPORT_SETTLE_TIMEOUT_MS` and `STALE_MATCH_BYPASS_MS` live alongside the predicate and are imported by both gate components.
+
+5. **Routing wiring** — `<RetainedDenebViewer>` lives as a sibling of `<RetainedDenebEditor>` in [src/app/app.tsx](../../../src/app/app.tsx). The `viewer` case in `mainComponent` returns `null`; the wrapper owns the viewer rendering and gates mounting `<ReportViewRouter />` until the gate releases.
+
+### Cost of the gate
+
+Up to ~150ms of gate-pending (nothing rendered) per editor → viewer transition that follows an editor session. Compared to a visible bounce, this is the right trade. Post-fix manual verification on cold and warm round trips showed the bounce is gone; the gate-pending window is barely perceptible.
+
+### Post-fix verification (2026-05-04)
+
+Manual round-trip testing across cold open and warm re-entries confirmed: no visible bounce on editor → viewer exit. Diagnostic traces still show the same iw/vw shape (host reports new viewport before iframe shrinks; iframe catches up at ~105–115ms post-mode-change), but the viewer's first paint now lands at the correct viewer-mode size because the mount gate held it back until `iw === vw`.
 
 ## Limitations of this measurement
 
