@@ -43,7 +43,6 @@ import {
     hasDataViewChanged
 } from './lib/dataset';
 import { I18N_TRANSLATIONS } from './i18n';
-import { logHostEvent } from './lib/diagnostics/edit-transition-trace';
 import { initializeStoreSynchronization } from './lib/state';
 import {
     createCrossFilterApplyHandler,
@@ -127,14 +126,6 @@ export class Deneb implements IVisual {
         // Handle main update flow
         try {
             logTimeStart('update');
-            logHostEvent('update', {
-                type: options.type,
-                operationKind: options.operationKind,
-                editMode: options.editMode,
-                viewMode: options.viewMode,
-                isInFocus: options.isInFocus,
-                viewport: options.viewport
-            });
             this.resolveUpdateOptions(options);
             logTimeEnd('update');
             return;
@@ -142,7 +133,6 @@ export class Deneb implements IVisual {
             // Signal that we've encountered an error
             logDebug('Error during visual update.', { error: e });
             logHost('Rendering event failed:', e.message);
-            logHostEvent('rendering-failed-host', { message: e.message });
             this.#host.eventService.renderingFailed(options);
         }
     }
@@ -159,7 +149,6 @@ export class Deneb implements IVisual {
         const { settings } = getDenebVisualState();
         // Signal we've begun rendering
         logHost('Rendering event started.');
-        logHostEvent('rendering-started');
         this.#host.eventService.renderingStarted(options);
         // Perform any necessary property migrations
         handlePropertyMigration(settings);
