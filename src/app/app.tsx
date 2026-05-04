@@ -1,8 +1,19 @@
 import powerbi from 'powerbi-visuals-api';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    useCallback,
+    useEffect,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+    useState
+} from 'react';
 import { type View } from 'vega';
 
 import { logHost, logRender } from '@deneb-viz/utils/logging';
+import {
+    logHostEvent,
+    startEditTransitionTrace
+} from '../lib/diagnostics/edit-transition-trace';
 import { ReportViewRouter } from './report-view-router';
 import {
     DenebProvider,
@@ -73,11 +84,53 @@ export const App = ({ host }: AppProps) => {
         }
         previousModeRef.current = mode;
     }, [mode]);
+    // Diagnostic trace for the editor↔viewer transition bounce
+    // investigation. Captures iw/vw timelines and host events for
+    // ~2 seconds after a transition trigger. Gated by `LOG_LEVEL`
+    // via `logDebug` in the trace module. Removed in U6 of
+    // docs/plans/2026-05-04-001-fix-editor-viewer-transition-bounce-plan.md.
+    const visualUpdateOptionsRef = useRef<
+        powerbi.extensibility.visual.VisualUpdateOptions | undefined
+    >(undefined);
+    const traceModeRef = useRef(mode);
     const fields = useDenebVisualState((state) => state.dataset.fields);
     const values = useDenebVisualState((state) => state.dataset.values);
     const visualUpdateOptions = useDenebVisualState(
         (state) => state.updates.options
     );
+    // Keep the latest visualUpdateOptions in a ref so the trace
+    // sampler can read host viewport per-frame without re-running
+    // on every options change. Layout effect commits before paint
+    // so the ref reflects the same options the trace will see.
+    useLayoutEffect(() => {
+        visualUpdateOptionsRef.current = visualUpdateOptions;
+    }, [visualUpdateOptions]);
+    // Fire the diagnostic trace on either direction of an
+    // editor↔viewer transition. Triggered on the first mode change
+    // out of the prior surface (i.e. when leaving `viewer` toward
+    // editor mode, OR leaving `editor` toward viewer mode) so the
+    // trace window opens before the host paces the iframe resize.
+    useLayoutEffect(() => {
+        const previous = traceModeRef.current;
+        traceModeRef.current = mode;
+        const isEntering =
+            previous === 'viewer' &&
+            (mode === 'transition-viewer-editor' || mode === 'editor');
+        const isExiting =
+            previous === 'editor' &&
+            (mode === 'transition-editor-viewer' || mode === 'viewer');
+        if (isEntering) {
+            startEditTransitionTrace(
+                'editor-entry',
+                () => visualUpdateOptionsRef.current?.viewport
+            );
+        } else if (isExiting) {
+            startEditTransitionTrace(
+                'editor-exit',
+                () => visualUpdateOptionsRef.current?.viewport
+            );
+        }
+    }, [mode]);
     const selectionMode = useDenebVisualState(
         (state) =>
             state.settings?.vega?.interactivity?.selectionMode
@@ -147,6 +200,7 @@ export const App = ({ host }: AppProps) => {
     const onRenderingFinished = useCallback(() => {
         if (visualUpdateOptions) {
             logHost('Rendering event finished.');
+            logHostEvent('rendering-finished');
             host.eventService.renderingFinished(visualUpdateOptions);
         }
     }, [host, visualUpdateOptions]);
@@ -155,6 +209,7 @@ export const App = ({ host }: AppProps) => {
         (error: Error) => {
             if (visualUpdateOptions) {
                 logHost('Rendering event failed:', error.message);
+                logHostEvent('rendering-error', { message: error.message });
                 host.eventService.renderingFailed(visualUpdateOptions);
             }
         },
