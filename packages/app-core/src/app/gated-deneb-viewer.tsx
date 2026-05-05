@@ -1,5 +1,6 @@
 import { type ReactNode, useRef, useState } from 'react';
 
+import { useDenebState } from '../state';
 import { useViewportMatchGate } from './viewport-match-gate-state';
 
 interface GatedDenebViewerProps {
@@ -16,24 +17,9 @@ interface GatedDenebViewerProps {
      */
     isEditorMode: boolean;
     /**
-     * Host-reported viewport width from `VisualUpdateOptions`. The
-     * match-based gate releases when `window.innerWidth` equals this
-     * value AND it has changed since the gate engaged — meaning the
-     * Power BI host has both told us the new size and physically
-     * resized the iframe to match. Undefined before the first update.
-     */
-    hostViewportWidth: number | undefined;
-    /**
-     * Host-reported viewport height from `VisualUpdateOptions`. See
-     * `hostViewportWidth` for semantics. Carried for parity with
-     * `<RetainedDenebEditor>` even though only width is used by the
-     * gate predicate (height has a persistent ~36px chrome offset
-     * and is not a reliable equality signal).
-     */
-    hostViewportHeight: number | undefined;
-    /**
      * The viewer subtree to mount when the gate is released. Held
-     * back until `iw === vw` for the new viewer-mode width.
+     * back until `window.innerWidth` matches the canvas width
+     * captured in `state.interface.embedViewport`.
      */
     children: ReactNode;
 }
@@ -62,39 +48,49 @@ export const computeViewerGateEngage = (
 
 /**
  * Gates the viewer subtree's mount on the iframe physically reaching
- * the host-reported viewport width when the user transitions from
- * editor mode back to viewer mode. Mirrors `<RetainedDenebEditor>`'s
- * match-based gate on the opposite (shrinking) direction.
+ * the canvas width recorded in `state.interface.embedViewport` when
+ * the user transitions from editor mode back to viewer mode. Mirrors
+ * `<RetainedDenebEditor>`'s match-based gate on the opposite
+ * (shrinking) direction.
+ *
+ * Why `embedViewport` and not the live `options.viewport`:
+ * `embedViewport` is the canvas size we know the visual reaches in
+ * viewer mode — captured during a prior viewer-mode `ResizeEnd` and
+ * frozen during editor/transition modes via
+ * `doesModeAllowEmbedViewportSet`. It is the size the iframe is
+ * coming back TO. Comparing `window.innerWidth` against the live
+ * `options.viewport.width` fails on Power BI Desktop where WebView2
+ * reports a small consistent offset between the two (chrome inset,
+ * scrollbar reservation, DPI rounding) that strict equality never
+ * reconciles — the success path never fires and the user sees a
+ * 3-second blank until the safety timer releases. Comparing against
+ * `embedViewport.width`, which was sampled the last time the iframe
+ * was actually in viewer mode, makes the match meaningful.
  *
  * The component itself is not retained — every viewer-mode entry
- * remounts the children fresh. Symmetric retention is the right long-
- * term shape (per the parent brainstorm) but a much larger routing
- * rewrite. The mount gate is surgical, removes the visible bounce,
- * and is compatible with later layering retention on top — at which
- * point this gate becomes redundant and can be removed.
+ * remounts the children fresh. Symmetric retention is the right
+ * long-term shape (per the parent brainstorm) but a much larger
+ * routing rewrite. The mount gate is surgical, removes the visible
+ * bounce, and is compatible with later layering retention on top —
+ * at which point this gate becomes redundant and can be removed.
  *
  * Behaviour summary:
  *  - Cold load (no editor opened in this session yet): renders
  *    children as soon as `isViewerMode` is true. No gate, no delay.
  *  - On every viewer-mode entry AFTER the first editor open: holds
  *    the children unmounted until either:
- *      a) `window.innerWidth` matches the latest `hostViewportWidth`
- *         AND the host viewport has changed since the gate engaged
- *         (proving the host has paced through its shrink), OR
- *      b) `STALE_MATCH_BYPASS_MS` has elapsed with the width matching
- *         (covers the race where the post-transition viewport was
- *         already reported before the gate engaged — common on the
- *         editor → viewer direction since the host typically reports
- *         the new smaller `viewport.width` in the same `update()`
- *         that flips mode), OR
+ *      a) `window.innerWidth` matches `state.interface.embedViewport.width`
+ *         (the canvas size the iframe is returning to) AND that
+ *         value has changed since the gate engaged (proving the
+ *         iframe has paced through its shrink), OR
+ *      b) `STALE_MATCH_BYPASS_MS` has elapsed with the width
+ *         matching, OR
  *      c) `VIEWPORT_SETTLE_TIMEOUT_MS` has elapsed (safety net).
  *  - When `isViewerMode` is false: renders nothing.
  */
 export const GatedDenebViewer = ({
     isViewerMode,
     isEditorMode,
-    hostViewportWidth,
-    hostViewportHeight,
     children
 }: GatedDenebViewerProps) => {
     // Latch — once the editor has been opened in this session, every
@@ -137,14 +133,31 @@ export const GatedDenebViewer = ({
         setPreviousIsViewerMode(isViewerMode);
     }
 
-    // Latest viewport, kept in a ref so the per-toggle gate effect
-    // can re-check it without restarting (which would reset the
-    // start snapshot and the upper-bound timer).
+    // The canvas size the iframe is expected to return to in viewer
+    // mode — captured during prior viewer-mode `ResizeEnd` updates
+    // and frozen during editor/transition modes by
+    // `doesModeAllowEmbedViewportSet`. This is the right reference
+    // for the exit-direction gate: we want the iframe interior to
+    // settle to whatever it was last in viewer mode, not whatever
+    // the live `options.viewport` currently reports (which on
+    // Desktop carries a chrome-inset offset that strict equality
+    // would never match). Subscribing here keeps the ref fresh as
+    // `embedViewport` updates after the gate releases.
+    const embedViewportWidth = useDenebState(
+        (state) => state.interface.embedViewport?.width
+    );
+    const embedViewportHeight = useDenebState(
+        (state) => state.interface.embedViewport?.height
+    );
+
+    // Latest viewport target, kept in a ref so the per-toggle gate
+    // effect can re-check it without restarting (which would reset
+    // the start snapshot and the upper-bound timer).
     const viewportRef = useRef({
-        w: hostViewportWidth,
-        h: hostViewportHeight
+        w: embedViewportWidth,
+        h: embedViewportHeight
     });
-    viewportRef.current = { w: hostViewportWidth, h: hostViewportHeight };
+    viewportRef.current = { w: embedViewportWidth, h: embedViewportHeight };
 
     // Per-toggle gate. Each time `isPendingSettle` flips true,
     // snapshot the host viewport at gate engage and watch for the

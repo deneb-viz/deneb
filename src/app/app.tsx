@@ -251,8 +251,6 @@ export const App = ({ host }: AppProps) => {
             <GatedDenebViewer
                 isViewerMode={mode === 'viewer'}
                 isEditorMode={mode === 'editor'}
-                hostViewportWidth={visualUpdateOptions?.viewport?.width}
-                hostViewportHeight={visualUpdateOptions?.viewport?.height}
             >
                 <ReportViewRouter />
             </GatedDenebViewer>
