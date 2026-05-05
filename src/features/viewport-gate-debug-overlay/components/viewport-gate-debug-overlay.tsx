@@ -16,7 +16,9 @@ import { useDenebVisualState } from '../../../state';
  * stored embedViewport, and the iframe's `window.innerWidth` /
  * `Height`, plus the deltas the gate predicate cares about.
  */
-const IS_OVERLAY_ENABLED = toBoolean(process.env.PBIVIZ_VIEWPORT_GATE_OVERLAY);
+export const IS_OVERLAY_ENABLED = toBoolean(
+    process.env.PBIVIZ_VIEWPORT_GATE_OVERLAY
+);
 
 const POLL_INTERVAL_MS = 100;
 
@@ -78,8 +80,6 @@ export const ViewportGateDebugOverlay = () => {
             window.removeEventListener('resize', tick);
         };
     }, []);
-
-    if (!IS_OVERLAY_ENABLED) return null;
 
     const ovw = optionsViewport?.width;
     const ovh = optionsViewport?.height;
