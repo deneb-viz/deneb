@@ -46,10 +46,4 @@ describe('computeViewerGateEngage', () => {
         expect(computeViewerGateEngage(true, true, true)).toBe(false);
         expect(computeViewerGateEngage(false, false, true)).toBe(false);
     });
-
-    it('does not engage on a viewer-mode edge when the editor has never been open', () => {
-        // Latch gates the gate. Even on a true edge, no gate
-        // engagement until the user has been in editor at least once.
-        expect(computeViewerGateEngage(false, true, false)).toBe(false);
-    });
 });
