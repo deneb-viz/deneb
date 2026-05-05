@@ -43,7 +43,7 @@ const formatNumber = (value: number | undefined): string =>
 
 const formatDelta = (iframe: number, target: number | undefined): string => {
     if (target === undefined) return '—';
-    const delta = iframe - target;
+    const delta = Math.round(iframe - target);
     return `${delta >= 0 ? '+' : ''}${delta}`;
 };
 
