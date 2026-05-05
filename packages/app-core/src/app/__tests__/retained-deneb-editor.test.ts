@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-    computeGateMatch,
-    computeRetentionState
-} from '../retained-deneb-editor-state';
+import { computeRetentionState } from '../retained-deneb-editor-state';
+import { computeGateMatch } from '../viewport-match-gate-state';
 
 /**
  * Tests for the pure retention-state helper that drives
