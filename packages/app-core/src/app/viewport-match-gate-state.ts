@@ -275,5 +275,6 @@ export const useViewportMatchGate = ({
         // renders. Coupling deps to the viewport would reset the
         // engage snapshot and the upper-bound timer on every host
         // update, breaking the change-from-start guard.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isPendingSettle]);
 };
