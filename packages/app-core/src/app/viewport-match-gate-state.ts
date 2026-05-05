@@ -93,6 +93,18 @@ export type GateMatchInput = {
  * that oscillates the target 800 → 805 → 800 will not falsely
  * release the gate when the latest value equals the engage value
  * while the iframe is still at 800.
+ *
+ * Precision normalization: `window.innerWidth` is integer per the
+ * DOM spec, but `options.viewport.width` from Power BI can carry
+ * sub-pixel precision (e.g., when snap-to-grid is off in the
+ * report). Without normalization a host-reported `286.4729` would
+ * never strictly-equal the iframe's `286`, the success path would
+ * never fire, and the gate would always release via the safety
+ * timer. All inputs are rounded to integers before comparison so
+ * strict equality is semantically meaningful regardless of source
+ * precision. Storage paths (`updates.ts` setting `embedViewport`)
+ * also round at write time; the predicate's defensive rounding
+ * covers callers that pass the live `options.viewport` directly.
  */
 export const computeGateMatch = ({
     startWidth,
@@ -102,8 +114,11 @@ export const computeGateMatch = ({
     bypassMs
 }: GateMatchInput): boolean => {
     if (currentWidth === undefined) return false;
-    if (iframeInnerWidth !== currentWidth) return false;
-    if (currentWidth !== startWidth) return true;
+    const iw = Math.round(iframeInnerWidth);
+    const cw = Math.round(currentWidth);
+    const sw = startWidth === undefined ? undefined : Math.round(startWidth);
+    if (iw !== cw) return false;
+    if (cw !== sw) return true;
     return elapsedMs > bypassMs;
 };
 

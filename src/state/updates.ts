@@ -97,19 +97,34 @@ export const createUpdatesSlice = (): StateCreator<
                     settings.stateManagement.viewport.viewportWidth.value
                 );
                 const persistedViewport = {
-                    height: Number.isFinite(parsedHeight) ? parsedHeight : 0,
-                    width: Number.isFinite(parsedWidth) ? parsedWidth : 0
+                    height: Number.isFinite(parsedHeight)
+                        ? Math.round(parsedHeight)
+                        : 0,
+                    width: Number.isFinite(parsedWidth)
+                        ? Math.round(parsedWidth)
+                        : 0
                 };
-                // Use live viewport as primary, fall back to persisted values only if viewport is exactly 0
+                // Use live viewport as primary, fall back to persisted values only if viewport is exactly 0.
+                //
+                // Round live viewport dimensions to integers. Power BI can
+                // report sub-pixel viewport dimensions (e.g. 286.4729) when
+                // snap-to-grid is off in the report, while
+                // `window.innerWidth` is integer per DOM spec. Storing
+                // floats in `embedViewport` makes downstream strict-equality
+                // comparisons (notably `<GatedDenebViewer>`'s match gate)
+                // never hold, leaving the viewer unmounted until the 3000ms
+                // safety timer fires.
                 const targetViewport = {
-                    height:
+                    height: Math.round(
                         viewport.height === 0
                             ? persistedViewport.height
-                            : viewport.height,
-                    width:
+                            : viewport.height
+                    ),
+                    width: Math.round(
                         viewport.width === 0
                             ? persistedViewport.width
-                            : viewport.width,
+                            : viewport.width
+                    ),
                     scale:
                         (viewport as { scale?: number }).scale ??
                         DEFAULT_VIEWPORT_SCALE
