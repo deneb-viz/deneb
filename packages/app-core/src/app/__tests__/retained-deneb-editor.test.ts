@@ -81,8 +81,7 @@ describe('computeGateMatch', () => {
         // Host has reported the new viewport (1200) but the iframe
         // is still at the pre-expansion size (800). The original
         // freeze symptom — releasing the gate here would mount the
-        // editor at the compressed size. 400px delta is well outside
-        // the WIDTH_MATCH_TOLERANCE_PX window.
+        // editor at the compressed size.
         expect(computeGateMatch({ ...baseInput, iframeInnerWidth: 800 })).toBe(
             false
         );
@@ -92,57 +91,6 @@ describe('computeGateMatch', () => {
         // The standard happy path — host paced through a transition
         // and the iframe has caught up.
         expect(computeGateMatch(baseInput)).toBe(true);
-    });
-
-    it('releases when the iframe is within tolerance of the viewport width (Desktop chrome inset)', () => {
-        // Power BI Desktop reports `window.innerWidth` and
-        // `options.viewport.width` with a small but consistent offset
-        // (chrome inset, scrollbar reservation, DPI rounding) that
-        // strict equality would never reconcile. Accepting any
-        // |iw - vw| <= WIDTH_MATCH_TOLERANCE_PX (80px default) lets
-        // the success path fire on the actual host without false-
-        // releasing during transitions, where deltas are in the
-        // hundreds of pixels.
-        expect(
-            computeGateMatch({
-                startWidth: 800,
-                currentWidth: 300,
-                iframeInnerWidth: 283,
-                elapsedMs: 50,
-                bypassMs: 150
-            })
-        ).toBe(true);
-    });
-
-    it('does not release when the iframe is just outside tolerance of the viewport width', () => {
-        // 81px delta sits one px above the default tolerance — the
-        // gate must not release. Documents the boundary so a future
-        // refactor that lowers the tolerance does not silently widen
-        // the false-release window.
-        expect(
-            computeGateMatch({
-                startWidth: 800,
-                currentWidth: 300,
-                iframeInnerWidth: 219,
-                elapsedMs: 50,
-                bypassMs: 150
-            })
-        ).toBe(false);
-    });
-
-    it('honours an explicit widthTolerancePx override', () => {
-        // The default is 80px; passing 0 collapses behaviour to
-        // strict equality (the original predicate). A 17px delta
-        // releases at the default but not at 0.
-        const input = {
-            startWidth: 800,
-            currentWidth: 300,
-            iframeInnerWidth: 283,
-            elapsedMs: 50,
-            bypassMs: 150
-        };
-        expect(computeGateMatch(input)).toBe(true);
-        expect(computeGateMatch({ ...input, widthTolerancePx: 0 })).toBe(false);
     });
 
     it('does not release when the latest viewport equals the engage snapshot and the iframe is at that same width', () => {

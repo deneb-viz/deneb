@@ -33,34 +33,6 @@ export const VIEWPORT_SETTLE_TIMEOUT_MS = 3000;
 export const STALE_MATCH_BYPASS_MS = 150;
 
 /**
- * Maximum allowed difference between `window.innerWidth` and
- * `options.viewport.width` when treating them as "matched" for gate
- * release. Strict equality fails on Power BI Desktop, where WebView2
- * reports a `window.innerWidth` that differs from the host-reported
- * `viewport.width` by a small but consistent offset (chrome inset,
- * scrollbar reservation, DPI rounding). Without tolerance the gate's
- * success path never fires in Desktop and the safety timer (`VIEWPORT_SETTLE_TIMEOUT_MS`)
- * becomes the only release path, leaving the user-facing surface
- * blank for several seconds.
- *
- * The parent solution documented the same shape on the height axis
- * (`viewport.height` is ~36px less than `window.innerHeight` due to
- * host chrome offset). Width is the matching axis, but Desktop adds
- * its own offset that browser dev mode does not exhibit.
- *
- * 80px chosen to sit comfortably above plausible chrome insets
- * (scrollbar ~17px, DPI rounding ≤4px, host chrome border ≤8px) and
- * comfortably below mid-transition deltas (which are in the hundreds
- * of pixels — viewer-mode ~286 vs editor-pane ~1438 is a 1152px
- * difference). A mid-transition false-release would require the
- * iframe to be within 80px of its final viewer width, which only
- * happens after the iframe has effectively completed its resize.
- *
- * @internal
- */
-export const WIDTH_MATCH_TOLERANCE_PX = 80;
-
-/**
  * Inputs to `computeGateMatch`, separated so the call site can pass
  * `undefined` viewports cleanly (Power BI only has the host viewport
  * available after the first `update()`).
@@ -94,13 +66,6 @@ export type GateMatchInput = {
      * rare same-width viewer/editor case).
      */
     bypassMs: number;
-    /**
-     * Maximum allowed difference between `iframeInnerWidth` and
-     * `currentWidth` when treating them as "matched". Optional;
-     * defaults to `WIDTH_MATCH_TOLERANCE_PX`. See that constant's
-     * docstring for rationale.
-     */
-    widthTolerancePx?: number;
 };
 
 /**
@@ -109,33 +74,35 @@ export type GateMatchInput = {
  *
  * Three guards combine:
  *   1. Width must be defined.
- *   2. The iframe interior width must be within `widthTolerancePx`
- *      of the latest host-reported viewport width — confirms the
- *      iframe has caught up to host intent. Strict equality fails on
- *      Power BI Desktop, where WebView2 reports a small consistent
- *      offset between `window.innerWidth` and `viewport.width`. See
- *      `WIDTH_MATCH_TOLERANCE_PX`. (Height has a persistent ~36px
- *      chrome offset and is not a reliable equality signal at all.)
- *   3. Either the latest viewport differs from the engage snapshot
+ *   2. The iframe interior width must equal the latest target
+ *      viewport width — confirms the iframe has caught up to the
+ *      expected size. The two gate sites use different sources for
+ *      the target: `<RetainedDenebEditor>` compares against the
+ *      live `options.viewport.width` (the editor-pane size we are
+ *      expanding to), while `<GatedDenebViewer>` compares against
+ *      `state.interface.embedViewport.width` (the canvas size the
+ *      iframe is returning to in viewer mode). Picking the right
+ *      target per direction is what makes strict equality reliable.
+ *      (Height has a persistent ~36px chrome offset and is not a
+ *      reliable equality signal at all.)
+ *   3. Either the latest target differs from the engage snapshot
  *      (the host has paced through a transition), OR more than
  *      `bypassMs` has elapsed (stale-snapshot / same-width fallback).
  *
- * The latest-vs-start comparison is flap-safe by design: a host that
- * oscillates `viewport.width` 800 → 805 → 800 will not falsely
+ * The latest-vs-start comparison is flap-safe by design: a host
+ * that oscillates the target 800 → 805 → 800 will not falsely
  * release the gate when the latest value equals the engage value
- * while the iframe is still pre-expansion at 800.
+ * while the iframe is still at 800.
  */
 export const computeGateMatch = ({
     startWidth,
     currentWidth,
     iframeInnerWidth,
     elapsedMs,
-    bypassMs,
-    widthTolerancePx = WIDTH_MATCH_TOLERANCE_PX
+    bypassMs
 }: GateMatchInput): boolean => {
     if (currentWidth === undefined) return false;
-    if (Math.abs(iframeInnerWidth - currentWidth) > widthTolerancePx)
-        return false;
+    if (iframeInnerWidth !== currentWidth) return false;
     if (currentWidth !== startWidth) return true;
     return elapsedMs > bypassMs;
 };
