@@ -32,7 +32,10 @@ import {
     SemanticModelSettings
 } from '../features/settings';
 import { NotificationToaster } from '../features/toaster';
-import { ViewportGateDebugOverlay } from '../features/viewport-gate-debug-overlay';
+import {
+    IS_OVERLAY_ENABLED as IS_VIEWPORT_GATE_OVERLAY_ENABLED,
+    ViewportGateDebugOverlay
+} from '../features/viewport-gate-debug-overlay';
 import { VisualUpdateHistoryOverlay } from '../features/visual-update-history-overlay';
 import { getVegaLoader } from '../lib/vega-embed';
 import { useDenebVisualState } from '../state';
@@ -258,7 +261,7 @@ export const App = ({ host }: AppProps) => {
             {mainComponent}
             <NotificationToaster />
             <VisualUpdateHistoryOverlay />
-            <ViewportGateDebugOverlay />
+            {IS_VIEWPORT_GATE_OVERLAY_ENABLED && <ViewportGateDebugOverlay />}
         </DenebProvider>
     );
 };
