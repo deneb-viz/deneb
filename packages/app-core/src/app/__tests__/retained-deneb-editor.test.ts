@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-    computeGateMatch,
-    computeRetentionState
-} from '../retained-deneb-editor-state';
+import { computeRetentionState } from '../retained-deneb-editor-state';
+import { computeGateMatch } from '../viewport-match-gate-state';
 
 /**
  * Tests for the pure retention-state helper that drives
@@ -93,6 +91,39 @@ describe('computeGateMatch', () => {
         // The standard happy path — host paced through a transition
         // and the iframe has caught up.
         expect(computeGateMatch(baseInput)).toBe(true);
+    });
+
+    it('matches when the host reports sub-pixel precision but the iframe is at the rounded width', () => {
+        // Power BI can report fractional viewport dimensions when
+        // snap-to-grid is off in the report (e.g. 286.4729). Without
+        // rounding, strict equality with `window.innerWidth` (which
+        // is integer per DOM spec) never holds and the gate hangs
+        // until the safety timer fires. The predicate normalizes both
+        // sides before comparison.
+        expect(
+            computeGateMatch({
+                startWidth: 800,
+                currentWidth: 286.4729,
+                iframeInnerWidth: 286,
+                elapsedMs: 50,
+                bypassMs: 150
+            })
+        ).toBe(true);
+    });
+
+    it('does not match when the rounded widths differ by more than half a pixel', () => {
+        // A 286.6 host viewport rounds to 287; an iframe at 286 does
+        // not match. Documents the rounding boundary so a regression
+        // that swaps `Math.round` for `Math.floor` is caught.
+        expect(
+            computeGateMatch({
+                startWidth: 800,
+                currentWidth: 286.6,
+                iframeInnerWidth: 286,
+                elapsedMs: 50,
+                bypassMs: 150
+            })
+        ).toBe(false);
     });
 
     it('does not release when the latest viewport equals the engage snapshot and the iframe is at that same width', () => {

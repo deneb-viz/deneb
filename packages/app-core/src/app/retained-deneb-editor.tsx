@@ -1,40 +1,12 @@
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
 
 import { DenebEditor } from './deneb-editor';
-import {
-    computeGateMatch,
-    computeRetentionState
-} from './retained-deneb-editor-state';
+import { computeRetentionState } from './retained-deneb-editor-state';
+import { useViewportMatchGate } from './viewport-match-gate-state';
 import { useEditorModeSync } from './use-editor-mode-sync';
 import { useDenebState } from '../state';
 
 export { computeRetentionState } from './retained-deneb-editor-state';
-
-/**
- * Upper-bound timeout for the per-toggle viewport-match gate. Single
- * tunable for how long the editor stays hidden after a viewer↔editor
- * toggle when the host's iframe doesn't reach the reported viewport
- * within the expected window.
- *
- * Set from observed cold-open iframe-expansion timing (~1500ms) plus
- * margin. On extreme slow-host scenarios the timer fires and the
- * editor mounts at whatever size the iframe currently is — strictly
- * worse than a clean match release, but still better than no gate.
- */
-const VIEWPORT_SETTLE_TIMEOUT_MS = 3000;
-
-/**
- * Stale-match bypass for the case where the host has already reported
- * the post-transition viewport before the gate engages — typically a
- * race where the host's `update()` viewport prop arrives in the same
- * render that flips `isEditorMode`, so `startViewport` snapshots the
- * already-final value and a "viewport has changed since engage" check
- * never fires. After this many ms with `window.innerWidth` matching
- * the latest reported viewport, accept the match without requiring a
- * change-from-start. 150ms is well above a typical render commit and
- * well below the iframe-expansion latency we are guarding against.
- */
-const STALE_MATCH_BYPASS_MS = 150;
 
 const wrapperStyle = (isVisuallyShown: boolean): CSSProperties => ({
     boxSizing: 'border-box',
@@ -189,80 +161,13 @@ export const RetainedDenebEditor = ({
 
     // Per-toggle gate. Each time `isPendingSettle` flips true, snapshot
     // the host viewport at gate engage and watch for the iframe to
-    // catch up to a CHANGED host viewport.
-    useEffect(() => {
-        if (!isPendingSettle) return;
-        if (typeof window === 'undefined') {
-            setIsPendingSettle(false);
-            return;
-        }
-
-        const startViewport = {
-            w: viewportRef.current.w,
-            h: viewportRef.current.h
-        };
-        const engagedAt =
-            typeof performance !== 'undefined' &&
-            typeof performance.now === 'function'
-                ? performance.now()
-                : Date.now();
-        let cancelled = false;
-
-        const nowMs = (): number =>
-            typeof performance !== 'undefined' &&
-            typeof performance.now === 'function'
-                ? performance.now()
-                : Date.now();
-
-        const matches = (): boolean =>
-            computeGateMatch({
-                startWidth: startViewport.w,
-                currentWidth: viewportRef.current.w,
-                iframeInnerWidth: window.innerWidth,
-                elapsedMs: nowMs() - engagedAt,
-                bypassMs: STALE_MATCH_BYPASS_MS
-            });
-
-        const trySettle = () => {
-            if (cancelled) return;
-            if (matches()) {
-                // Set `cancelled` synchronously so any in-flight tick
-                // (interval poll, queued resize event) that runs before
-                // React processes the state update exits cleanly
-                // instead of calling `setIsPendingSettle(false)` again.
-                cancelled = true;
-                setIsPendingSettle(false);
-            }
-        };
-
-        trySettle();
-
-        window.addEventListener('resize', trySettle);
-
-        // The host viewport can change without firing a window resize
-        // event, so a coarse interval poll while pending is the
-        // simplest way to catch prop updates without coupling the
-        // effect's deps to the viewport (which would reset the start
-        // snapshot and timer on every host update). 100ms granularity
-        // is well below the iframe-resize latency we are detecting
-        // (~300ms warm, ~1500ms cold) and avoids the per-frame
-        // scheduling pressure of a `requestAnimationFrame` chain.
-        const pollIntervalId = window.setInterval(trySettle, 100);
-
-        const upperBoundId = window.setTimeout(() => {
-            if (!cancelled) {
-                cancelled = true;
-                setIsPendingSettle(false);
-            }
-        }, VIEWPORT_SETTLE_TIMEOUT_MS);
-
-        return () => {
-            cancelled = true;
-            window.removeEventListener('resize', trySettle);
-            window.clearInterval(pollIntervalId);
-            window.clearTimeout(upperBoundId);
-        };
-    }, [isPendingSettle]);
+    // catch up to a CHANGED host viewport. Wired identically in
+    // `<GatedDenebViewer />` for the opposite (shrinking) direction.
+    useViewportMatchGate({
+        isPendingSettle,
+        viewportRef,
+        onSettled: setIsPendingSettle
+    });
 
     // Focus restoration: when the gate has just released after a
     // transition into editor mode, dispatch a focus request so the

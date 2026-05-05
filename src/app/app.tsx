@@ -14,7 +14,10 @@ import {
     PLATFORM_SECTION_KEYS,
     platformSearchContributions
 } from './platform-search-contributions';
-import { RetainedDenebEditor } from '@deneb-viz/app-core/editor';
+import {
+    GatedDenebViewer,
+    RetainedDenebEditor
+} from '@deneb-viz/app-core/editor';
 import {
     FetchingMessage,
     LandingPage,
@@ -29,6 +32,7 @@ import {
     SemanticModelSettings
 } from '../features/settings';
 import { NotificationToaster } from '../features/toaster';
+import { ViewportGateDebugOverlay } from '../features/viewport-gate-debug-overlay';
 import { VisualUpdateHistoryOverlay } from '../features/visual-update-history-overlay';
 import { getVegaLoader } from '../lib/vega-embed';
 import { useDenebVisualState } from '../state';
@@ -193,8 +197,13 @@ export const App = ({ host }: AppProps) => {
                 // retained across viewer↔editor toggles after the
                 // first open. See packages/app-core/src/app/retained-deneb-editor.tsx.
                 return null;
+            // Viewer mode is rendered by `<GatedDenebViewer />`
+            // alongside the main component so the viewer's Vega
+            // mount can be gated until the iframe has physically
+            // shrunk to the new viewer-mode width on editor → viewer
+            // transitions. See packages/app-core/src/app/gated-deneb-viewer.tsx.
             case 'viewer':
-                return <ReportViewRouter />;
+                return null;
             default:
                 return null;
         }
@@ -240,9 +249,16 @@ export const App = ({ host }: AppProps) => {
                 hostViewportWidth={visualUpdateOptions?.viewport?.width}
                 hostViewportHeight={visualUpdateOptions?.viewport?.height}
             />
+            <GatedDenebViewer
+                isViewerMode={mode === 'viewer'}
+                isEditorMode={mode === 'editor'}
+            >
+                <ReportViewRouter />
+            </GatedDenebViewer>
             {mainComponent}
             <NotificationToaster />
             <VisualUpdateHistoryOverlay />
+            <ViewportGateDebugOverlay />
         </DenebProvider>
     );
 };

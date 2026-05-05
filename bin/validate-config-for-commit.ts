@@ -9,6 +9,9 @@ const LOG_LEVEL = parseLogLevel(process.env.LOG_LEVEL, 0);
 const REDUX_DEV_TOOLS = toBoolean(process.env.ZUSTAND_DEV_TOOLS);
 const PBIVIZ_DEV_MODE = toBoolean(process.env.PBIVIZ_DEV_MODE);
 const PBIVIZ_DEV_OVERLAY = toBoolean(process.env.PBIVIZ_DEV_OVERLAY);
+const PBIVIZ_VIEWPORT_GATE_OVERLAY = toBoolean(
+    process.env.PBIVIZ_VIEWPORT_GATE_OVERLAY
+);
 const ALLOW_EXTERNAL_URI = toBoolean(process.env.ALLOW_EXTERNAL_URI);
 const allowExternalUri = MODE === 'standalone';
 const errors: string[] = [];
@@ -27,6 +30,12 @@ if (PBIVIZ_DEV_MODE) {
 if (PBIVIZ_DEV_OVERLAY) {
     errors.push(
         '❌ .env PBIVIZ_DEV_OVERLAY flag is true; this should be false.'
+    );
+}
+// Viewport-gate debug overlay: Should not be set in committed code
+if (PBIVIZ_VIEWPORT_GATE_OVERLAY) {
+    errors.push(
+        '❌ .env PBIVIZ_VIEWPORT_GATE_OVERLAY flag is true; this should be false.'
     );
 }
 // Log level: should be 0 (NONE) in committed code

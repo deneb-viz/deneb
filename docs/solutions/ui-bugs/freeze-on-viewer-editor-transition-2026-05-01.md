@@ -34,13 +34,13 @@ Clicking **Edit** on the visual produced a visible "freeze" at the report-view s
 
 Three rounds of hypothesis-driven fixes were applied before the actual cause was measured. None of them moved the user-visible needle. They are recorded here as cautionary detail.
 
-| Approach | Why rejected |
-|---|---|
+| Approach                                                                            | Why rejected                                                                                                                                                                                                                 |
+| ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `<ViewportSettleGate>` inside `<DenebEditor>` using `ResizeObserver` quiet-debounce | RO can detect "the size stopped changing" but not "the size matches the host's intent". During the iframe's pre-expansion period the size IS stable (at the wrong value), so RO falsely settled and the gate released early. |
-| Per-toggle gate with `ResizeObserver` on an always-rendered probe element | Same fundamental issue — RO is the wrong signal for "host has applied its CSS resize". |
-| Match on both width AND height | Power BI's host reports a `viewport.height` that is consistently ~36px less than `window.innerHeight` (host chrome offset). The height-equality check essentially never holds. |
-| 500ms upper-bound timer | Cold-open iframe expansion was observed at ~1500ms. The timer fired far before the iframe expanded, mounting the editor at the wrong size. Raised to 3000ms in the final fix. |
-| Signalling `renderingFinished` earlier to influence the host's expansion timing | Confirmed by traces: the Power BI host does NOT gate iframe expansion on our `renderingFinished` signal. Iframe expansion happened in cycles where no `renderingFinished` was fired. |
+| Per-toggle gate with `ResizeObserver` on an always-rendered probe element           | Same fundamental issue — RO is the wrong signal for "host has applied its CSS resize".                                                                                                                                       |
+| Match on both width AND height                                                      | Power BI's host reports a `viewport.height` that is consistently ~36px less than `window.innerHeight` (host chrome offset). The height-equality check essentially never holds.                                               |
+| 500ms upper-bound timer                                                             | Cold-open iframe expansion was observed at ~1500ms. The timer fired far before the iframe expanded, mounting the editor at the wrong size. Raised to 3000ms in the final fix.                                                |
+| Signalling `renderingFinished` earlier to influence the host's expansion timing     | Confirmed by traces: the Power BI host does NOT gate iframe expansion on our `renderingFinished` signal. Iframe expansion happened in cycles where no `renderingFinished` was fired.                                         |
 
 ## Root cause
 
@@ -49,7 +49,7 @@ The Power BI host **paces the iframe's CSS resize on its own schedule**, indepen
 The reliable positive signal that "the iframe has caught up" is **width equality**:
 
 ```ts
-window.innerWidth === options.viewport.width
+window.innerWidth === options.viewport.width;
 ```
 
 This compares the iframe's actual interior width against the host's reported viewport. When they match, the host has finished its CSS resize. (Height is not reliable — see chrome-offset note above.)
@@ -59,9 +59,9 @@ This compares the iframe's actual interior width against the host's reported vie
 A per-toggle viewport-match gate plus retention of the editor tree across viewer↔editor cycles. Specifically:
 
 1. **`<RetainedDenebEditor>`** ([packages/app-core/src/app/retained-deneb-editor.tsx](../../../packages/app-core/src/app/retained-deneb-editor.tsx)) holds the editor wrapper at `display: none` until ALL of:
-   - `window.innerWidth === options.viewport.width` (iframe has caught up)
-   - `options.viewport.width` has changed since the gate engaged (protects against stale match where the iframe is at viewer-mode size and the host has not yet sent the edit-mode viewport)
-   - OR `VIEWPORT_SETTLE_TIMEOUT_MS` (3000ms) elapses (safety net)
+    - `window.innerWidth === options.viewport.width` (iframe has caught up)
+    - `options.viewport.width` has changed since the gate engaged (protects against stale match where the iframe is at viewer-mode size and the host has not yet sent the edit-mode viewport)
+    - OR `VIEWPORT_SETTLE_TIMEOUT_MS` (3000ms) elapses (safety net)
 
 2. **Retention via `display: none`** — `<DenebEditor>` mounts once on the first open and stays mounted for the lifetime of the visual instance. The outer shell uses `display: none` when not in editor mode so the viewer's main component fills the pane normally; the inner wrapper toggles `visibility` during the gate-pending window so children measurements stay live.
 
@@ -85,8 +85,8 @@ Future similar investigations: when an internal-metric fix (markers, React lifec
 
 ## Known follow-ups
 
-- **Viewer "bounce" on editor → viewer exit.** Asymmetric retention (editor retained, viewer not) leaves a small visible artefact on exit: the viewer's Vega view briefly renders at a larger-than-viewer intermediate size, then snaps to the actual viewer viewport. Smaller and faster than the original freeze, but observable. Captured for the next iteration in [docs/brainstorms/2026-05-01-viewer-bounce-on-editor-exit-followup.md](../../brainstorms/2026-05-01-viewer-bounce-on-editor-exit-followup.md). **Do not retread without instrumentation first** — see the parent investigation's lesson about hypothesis-driven drift.
-- **`renderingStarted` / `renderingFinished` contract.** Tracked separately based on correspondence with the Power BI visuals team. Our visual fires `renderingStarted` per `update()` but `renderingFinished` only on Vega view render events, so the pairs do not always match. Likely landing alongside or near the viewer-bounce work.
+- ~~**Viewer "bounce" on editor → viewer exit.**~~ **Resolved 2026-05-04** with a viewer-side mount gate (`<RetainedDenebViewer>`) that mirrors this entry gate on the shrinking direction. See [docs/solutions/ui-bugs/viewer-bounce-on-editor-exit-2026-05-04.md](viewer-bounce-on-editor-exit-2026-05-04.md). The asymmetric-retention shape persists (editor retained, viewer not) — symmetric retention (Option B from the brainstorm) remains the right long-term shape and is deferred to its own branch, likely paired with the rendering-events refactor.
+- **`renderingStarted` / `renderingFinished` contract.** Tracked separately based on correspondence with the Power BI visuals team. Our visual fires `renderingStarted` per `update()` but `renderingFinished` only on Vega view render events, so the pairs do not always match. Likely landing alongside the deferred Option B viewer retention.
 
 ## Related
 

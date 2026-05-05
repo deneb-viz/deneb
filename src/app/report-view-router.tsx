@@ -1,28 +1,18 @@
-import { useMemo } from 'react';
-
-import { FetchingMessage, SplashInitial } from '../features/status';
 import { logRender } from '@deneb-viz/utils/logging';
 import { DenebViewer } from '@deneb-viz/app-core';
-import { useDenebVisualState } from '../state';
 
 /**
  * Handles routing of the main visual display, when in report view.
+ *
+ * Mounted only by `<GatedDenebViewer />` after the gate releases (and
+ * `app.tsx` only routes to it via `<GatedDenebViewer>` when
+ * `mode === 'viewer'`), so all other modes — `initializing`,
+ * `fetching`, `landing`, `no-project`, `editor`, transitions — are
+ * already handled upstream in `mainComponent`. This component is a
+ * thin marker for render telemetry and a single mount point for the
+ * Deneb viewer.
  */
 export const ReportViewRouter = () => {
-    const mode = useDenebVisualState((state) => state.interface.mode);
-    const component = useMemo(() => {
-        switch (mode) {
-            case 'initializing': {
-                return <SplashInitial />;
-            }
-            case 'fetching': {
-                return <FetchingMessage />;
-            }
-            default: {
-                return <DenebViewer />;
-            }
-        }
-    }, [mode]);
-    logRender('ReportViewRouter', { mode });
-    return component;
+    logRender('ReportViewRouter', 'viewer');
+    return <DenebViewer />;
 };
