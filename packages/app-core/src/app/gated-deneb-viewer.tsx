@@ -1,12 +1,8 @@
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useRef, useState } from 'react';
 
-import {
-    computeGateMatch,
-    STALE_MATCH_BYPASS_MS,
-    VIEWPORT_SETTLE_TIMEOUT_MS
-} from './retained-deneb-editor-state';
+import { useViewportMatchGate } from './viewport-match-gate-state';
 
-interface RetainedDenebViewerProps {
+interface GatedDenebViewerProps {
     /**
      * `true` exactly when the visual's display mode is `'viewer'`.
      */
@@ -43,10 +39,39 @@ interface RetainedDenebViewerProps {
 }
 
 /**
+ * Pure decision: should the per-toggle viewport-match gate engage on
+ * a viewer-mode edge?
+ *
+ * The gate only makes sense AFTER the user has opened the editor at
+ * least once in the session. Before that there is no host-paced
+ * shrink to wait for, so a cold-load viewer mount should take the
+ * fast path with no gate-pending delay.
+ *
+ * Returns `true` exactly on the false→true edge of `isViewerMode`
+ * AND when `hasBeenInEditor` is set. The viewer→editor disengage
+ * direction is handled by the caller (`computeViewerGateEngage` does
+ * not concern itself with the false branch — engage is the only
+ * decision the helper covers).
+ */
+export const computeViewerGateEngage = (
+    previousIsViewerMode: boolean,
+    isViewerMode: boolean,
+    hasBeenInEditor: boolean
+): boolean =>
+    previousIsViewerMode !== isViewerMode && isViewerMode && hasBeenInEditor;
+
+/**
  * Gates the viewer subtree's mount on the iframe physically reaching
  * the host-reported viewport width when the user transitions from
  * editor mode back to viewer mode. Mirrors `<RetainedDenebEditor>`'s
  * match-based gate on the opposite (shrinking) direction.
+ *
+ * The component itself is not retained — every viewer-mode entry
+ * remounts the children fresh. Symmetric retention is the right long-
+ * term shape (per the parent brainstorm) but a much larger routing
+ * rewrite. The mount gate is surgical, removes the visible bounce,
+ * and is compatible with later layering retention on top — at which
+ * point this gate becomes redundant and can be removed.
  *
  * Behaviour summary:
  *  - Cold load (no editor opened in this session yet): renders
@@ -64,21 +89,14 @@ interface RetainedDenebViewerProps {
  *         that flips mode), OR
  *      c) `VIEWPORT_SETTLE_TIMEOUT_MS` has elapsed (safety net).
  *  - When `isViewerMode` is false: renders nothing.
- *
- * Why a fresh mount each time rather than retaining the viewer:
- * symmetric retention is the right long-term shape (per the parent
- * brainstorm) but a much larger routing rewrite. The mount gate is
- * surgical, removes the visible bounce, and is compatible with later
- * layering retention on top — at which point this gate becomes
- * redundant and can be removed.
  */
-export const RetainedDenebViewer = ({
+export const GatedDenebViewer = ({
     isViewerMode,
     isEditorMode,
     hostViewportWidth,
     hostViewportHeight,
     children
-}: RetainedDenebViewerProps) => {
+}: GatedDenebViewerProps) => {
     // Latch — once the editor has been opened in this session, every
     // subsequent viewer-mode entry needs the gate. State (not a ref)
     // for concurrent-mode safety, mirroring `RetainedDenebEditor`'s
@@ -99,15 +117,19 @@ export const RetainedDenebViewer = ({
     // the very same commit that flips into viewer mode — no flash of
     // viewer-at-stale-size.
     //
-    // Engage only when `hasBeenInEditor` — otherwise cold-load viewer
-    // mounts pay the bypass-window cost (~150ms of nothing rendered)
-    // for no benefit, since there is no host-paced shrink to wait
-    // for. Disengage on leaving viewer mode so a subsequent re-entry
-    // can flip the flag from false → true again. Without the reset,
-    // `setIsPendingSettle(true)` on re-entry is a same-value no-op
-    // and the gate effect's `[isPendingSettle]` dep does not change.
+    // Engage decision is delegated to `computeViewerGateEngage` so it
+    // is independently testable. Disengage on leaving viewer mode is
+    // inlined here — without it, `setIsPendingSettle(true)` on
+    // re-entry is a same-value no-op and the gate effect's
+    // `[isPendingSettle]` dep does not change.
     if (previousIsViewerMode !== isViewerMode) {
-        if (isViewerMode && hasBeenInEditor) {
+        if (
+            computeViewerGateEngage(
+                previousIsViewerMode,
+                isViewerMode,
+                hasBeenInEditor
+            )
+        ) {
             setIsPendingSettle(true);
         } else if (!isViewerMode) {
             setIsPendingSettle(false);
@@ -126,76 +148,13 @@ export const RetainedDenebViewer = ({
 
     // Per-toggle gate. Each time `isPendingSettle` flips true,
     // snapshot the host viewport at gate engage and watch for the
-    // iframe to catch up. Effect body mirrors `RetainedDenebEditor`
-    // — same wiring (resize listener + 100ms poll + safety timeout)
-    // and same predicate (`computeGateMatch`).
-    useEffect(() => {
-        if (!isPendingSettle) return;
-        if (typeof window === 'undefined') {
-            setIsPendingSettle(false);
-            return;
-        }
-
-        const startViewport = {
-            w: viewportRef.current.w,
-            h: viewportRef.current.h
-        };
-        const engagedAt =
-            typeof performance !== 'undefined' &&
-            typeof performance.now === 'function'
-                ? performance.now()
-                : Date.now();
-        let cancelled = false;
-
-        const nowMs = (): number =>
-            typeof performance !== 'undefined' &&
-            typeof performance.now === 'function'
-                ? performance.now()
-                : Date.now();
-
-        const matches = (): boolean =>
-            computeGateMatch({
-                startWidth: startViewport.w,
-                currentWidth: viewportRef.current.w,
-                iframeInnerWidth: window.innerWidth,
-                elapsedMs: nowMs() - engagedAt,
-                bypassMs: STALE_MATCH_BYPASS_MS
-            });
-
-        const trySettle = () => {
-            if (cancelled) return;
-            if (matches()) {
-                cancelled = true;
-                setIsPendingSettle(false);
-            }
-        };
-
-        trySettle();
-
-        window.addEventListener('resize', trySettle);
-
-        // Coarse interval poll: host viewport prop can change without
-        // firing a `resize` event. 100ms granularity is well below
-        // the iframe-resize latency we are detecting (~52ms cold,
-        // ~117ms warm on the shrinking direction) without coupling
-        // the effect's deps to the viewport (which would reset the
-        // start snapshot and timer on every host update).
-        const pollIntervalId = window.setInterval(trySettle, 100);
-
-        const upperBoundId = window.setTimeout(() => {
-            if (!cancelled) {
-                cancelled = true;
-                setIsPendingSettle(false);
-            }
-        }, VIEWPORT_SETTLE_TIMEOUT_MS);
-
-        return () => {
-            cancelled = true;
-            window.removeEventListener('resize', trySettle);
-            window.clearInterval(pollIntervalId);
-            window.clearTimeout(upperBoundId);
-        };
-    }, [isPendingSettle]);
+    // iframe to catch up. Wired identically in `<RetainedDenebEditor />`
+    // for the opposite (expanding) direction.
+    useViewportMatchGate({
+        isPendingSettle,
+        viewportRef,
+        onSettled: setIsPendingSettle
+    });
 
     if (!isViewerMode || isPendingSettle) return null;
     return <>{children}</>;

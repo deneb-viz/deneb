@@ -15,8 +15,8 @@ import {
     platformSearchContributions
 } from './platform-search-contributions';
 import {
-    RetainedDenebEditor,
-    RetainedDenebViewer
+    GatedDenebViewer,
+    RetainedDenebEditor
 } from '@deneb-viz/app-core/editor';
 import {
     FetchingMessage,
@@ -196,11 +196,11 @@ export const App = ({ host }: AppProps) => {
                 // retained across viewer↔editor toggles after the
                 // first open. See packages/app-core/src/app/retained-deneb-editor.tsx.
                 return null;
-            // Viewer mode is rendered by `<RetainedDenebViewer />`
+            // Viewer mode is rendered by `<GatedDenebViewer />`
             // alongside the main component so the viewer's Vega
             // mount can be gated until the iframe has physically
             // shrunk to the new viewer-mode width on editor → viewer
-            // transitions. See packages/app-core/src/app/retained-deneb-viewer.tsx.
+            // transitions. See packages/app-core/src/app/gated-deneb-viewer.tsx.
             case 'viewer':
                 return null;
             default:
@@ -248,14 +248,14 @@ export const App = ({ host }: AppProps) => {
                 hostViewportWidth={visualUpdateOptions?.viewport?.width}
                 hostViewportHeight={visualUpdateOptions?.viewport?.height}
             />
-            <RetainedDenebViewer
+            <GatedDenebViewer
                 isViewerMode={mode === 'viewer'}
                 isEditorMode={mode === 'editor'}
                 hostViewportWidth={visualUpdateOptions?.viewport?.width}
                 hostViewportHeight={visualUpdateOptions?.viewport?.height}
             >
                 <ReportViewRouter />
-            </RetainedDenebViewer>
+            </GatedDenebViewer>
             {mainComponent}
             <NotificationToaster />
             <VisualUpdateHistoryOverlay />
