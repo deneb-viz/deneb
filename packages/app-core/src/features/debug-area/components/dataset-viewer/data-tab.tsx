@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TableColumn, TableProps } from 'react-data-table-component';
 import { useDebounce } from '@uidotdev/usehooks';
+import { type View } from 'vega';
 
 import { getHashValue, getNewUuid } from '@deneb-viz/utils/crypto';
 import {
@@ -205,17 +206,20 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
     }, [datasetWorker]);
 
     /**
-     * Attempt to add specified data listener to the Vega view.
+     * Attempt to add specified data listener to the supplied Vega view.
+     *
+     * Callers pass the View explicitly so add/remove always target the same
+     * instance — `VegaViewServices.getView()` is a live singleton and may
+     * return a replacement view by the time this runs (renderId-driven view
+     * swap on spec recompile). The default falls back to the singleton for
+     * any non-effect caller.
      */
-    const addListener = () => {
+    const addListener = (view: View | null = VegaViewServices.getView()) => {
         try {
             logDebug(
                 `DataTab: attempting to add listener for dataset [${datasetName}]...`
             );
-            VegaViewServices.getView()?.addDataListener(
-                datasetName,
-                dataListener
-            );
+            view?.addDataListener(datasetName, dataListener);
             logDebug(`DataTab: listener for dataset [${datasetName}] added.`);
         } catch {
             logDebug(
@@ -225,17 +229,17 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
     };
 
     /**
-     * Attempt to remove specified data listener from the Vega view.
+     * Attempt to remove specified data listener from the supplied Vega view.
+     * See `addListener` for the rationale on the explicit `view` parameter.
      */
-    const removeListener = () => {
+    const removeListener = (
+        view: View | null = VegaViewServices.getView()
+    ) => {
         try {
             logDebug(
                 `DataTab: attempting to remove listener for dataset [${datasetName}]...`
             );
-            VegaViewServices.getView()?.removeDataListener(
-                datasetName,
-                dataListener
-            );
+            view?.removeDataListener(datasetName, dataListener);
             logDebug(`DataTab: listener for dataset [${datasetName}] removed.`);
         } catch {
             logDebug(
@@ -245,12 +249,15 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
     };
 
     /**
-     * Attempt to cycle (add/remove) listeners for the specified dataset.
+     * Attempt to cycle (add/remove) listeners for the specified dataset on
+     * the supplied view.
      */
-    const cycleListeners = () => {
+    const cycleListeners = (
+        view: View | null = VegaViewServices.getView()
+    ) => {
         logDebug(`DataTab: cycling listeners for dataset: [${datasetName}]...`);
-        removeListener();
-        addListener();
+        removeListener(view);
+        addListener(view);
     };
 
     /**
@@ -314,10 +321,19 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
      * `vega-embed.tsx#handleEmbed` post-embed, so this effect runs only
      * when an actual fresh `View` instance has been attached — the
      * load-bearing "rebind on view replacement" invariant.
+     *
+     * `viewAtEntry` is captured here and threaded through `cycleListeners`
+     * (entry) and `removeListener` (cleanup) so add/remove always target
+     * the SAME View instance. Without the capture, cleanup would call
+     * `VegaViewServices.getView()` and operate on the post-replacement
+     * singleton, leaving the listener attached to the old (now garbage-
+     * collectable) View — and the cleanup itself would attempt to remove
+     * a listener that the new view never had.
      */
     useEffect(() => {
         // Reset the listener hash ref when dataset or view changes to ensure first listener event is processed
         lastListenerHashRef.current = null;
+        const viewAtEntry = VegaViewServices.getView();
 
         try {
             logDebug(
@@ -380,7 +396,7 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
                 );
             }
             // Always cycle listeners when this effect runs (renderId change means new view)
-            cycleListeners();
+            cycleListeners(viewAtEntry);
         } catch (e) {
             logDebug(`DataTab: error getting latest dataset from view.`, {
                 e
@@ -390,7 +406,7 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
             );
         }
         return () => {
-            removeListener();
+            removeListener(viewAtEntry);
         };
     }, [datasetName, renderId]);
 
