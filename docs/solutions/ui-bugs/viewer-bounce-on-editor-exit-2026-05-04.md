@@ -164,4 +164,5 @@ Reset both env vars to `false` / `NONE` before packaging certified.
 - Gate primitive: [packages/app-core/src/app/viewport-match-gate-state.ts](../../../packages/app-core/src/app/viewport-match-gate-state.ts)
 - Viewport storage rounding: [src/state/updates.ts](../../../src/state/updates.ts)
 - Debug overlay: [src/features/viewport-gate-debug-overlay/](../../../src/features/viewport-gate-debug-overlay/)
+- Pattern (call-site gate for build-time-flagged components): [docs/solutions/best-practices/gate-feature-flagged-react-components-at-call-site-2026-05-06.md](../best-practices/gate-feature-flagged-react-components-at-call-site-2026-05-06.md)
 - Branch: `fix/editor-viewer-transition-bounce`
