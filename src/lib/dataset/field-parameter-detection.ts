@@ -37,8 +37,13 @@ export type FieldParameterDetectionResult = {
 
 /**
  * Detect field parameter groups from an array of detectable fields.
- * Fields are grouped by the first entry in their `sourceFieldParameters`
- * array. Fields without `sourceFieldParameters` are classified as regular.
+ * Each field is registered as a component of every parameter named in its
+ * `sourceFieldParameters` array — a single source field can therefore appear
+ * in multiple parameter groups, and the same `componentFieldIndices` value
+ * can recur across groups. Fields with no `sourceFieldParameters` (or an
+ * empty array) are classified as regular. Duplicate `displayName` entries
+ * within one field's array are deduped so the field appears at most once
+ * per group.
  *
  * Pure function — no side effects, fully testable.
  */
@@ -50,35 +55,59 @@ export const detectFieldParameterGroups = (
 
     for (let i = 0; i < fields.length; i++) {
         const field = fields[i];
-        const paramName = field.sourceFieldParameters?.[0]?.displayName;
+        const paramEntries = field.sourceFieldParameters ?? [];
 
-        if (!paramName) {
+        if (paramEntries.length === 0) {
             regularFieldIndices.push(i);
             continue;
         }
 
-        if (!parameterGroups[paramName]) {
-            parameterGroups[paramName] = {
-                parameterName: paramName,
-                componentNames: [],
-                componentFieldIndices: [],
-                componentRoles: [],
-                hasMixedRoles: false
-            };
+        // Dedup parameter names within this field's entries — defends
+        // against the unlikely case where Power BI lists the same parameter
+        // twice for one field, which would otherwise double-count the
+        // field inside the corresponding group.
+        const seenParamNames = new Set<string>();
+        let registeredInAnyGroup = false;
+
+        for (const entry of paramEntries) {
+            const paramName = entry?.displayName;
+            if (!paramName || seenParamNames.has(paramName)) continue;
+            seenParamNames.add(paramName);
+
+            if (!parameterGroups[paramName]) {
+                parameterGroups[paramName] = {
+                    parameterName: paramName,
+                    componentNames: [],
+                    componentFieldIndices: [],
+                    componentRoles: [],
+                    hasMixedRoles: false
+                };
+            }
+
+            const group = parameterGroups[paramName];
+            group.componentNames.push(field.displayName);
+            group.componentFieldIndices.push(i);
+            group.componentRoles.push(
+                field.isMeasure ? 'aggregation' : 'grouping'
+            );
+
+            // Check for mixed roles (columns + measures in same parameter)
+            if (group.componentFieldIndices.length > 1) {
+                const firstIsMeasure =
+                    fields[group.componentFieldIndices[0]].isMeasure;
+                if (field.isMeasure !== firstIsMeasure) {
+                    group.hasMixedRoles = true;
+                }
+            }
+
+            registeredInAnyGroup = true;
         }
 
-        const group = parameterGroups[paramName];
-        group.componentNames.push(field.displayName);
-        group.componentFieldIndices.push(i);
-        group.componentRoles.push(field.isMeasure ? 'aggregation' : 'grouping');
-
-        // Check for mixed roles (columns + measures in same parameter)
-        if (group.componentFieldIndices.length > 1) {
-            const firstIsMeasure =
-                fields[group.componentFieldIndices[0]].isMeasure;
-            if (field.isMeasure !== firstIsMeasure) {
-                group.hasMixedRoles = true;
-            }
+        // Fall back to regular when every entry was missing a usable
+        // displayName — preserves prior behavior for fields whose
+        // `sourceFieldParameters` array contains only empty entries.
+        if (!registeredInAnyGroup) {
+            regularFieldIndices.push(i);
         }
     }
 
