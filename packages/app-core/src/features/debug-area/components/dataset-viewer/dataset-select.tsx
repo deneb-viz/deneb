@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useLayoutEffect, useMemo } from 'react';
 import {
     Label,
     useId,
@@ -8,15 +8,9 @@ import {
     tokens
 } from '@fluentui/react-components';
 
-import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
-import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 import { useDenebState } from '../../../../state';
-
-/**
- * The name of the root dataset that Vega generates, to filter out when deriving from the view.
- */
-const DEBUG_ROOT_DATASET_NAME = 'root';
+import { getAvailableDatasetNames } from './dataset-discovery';
 
 const useDatasetSelectStyles = makeStyles({
     statusBar: {
@@ -39,6 +33,13 @@ const useDatasetSelectStyles = makeStyles({
  * 2. The current `datasetName` is empty OR not in the available datasets
  *
  * This prevents resetting the user's selection when the view is still initializing.
+ *
+ * Uses `useLayoutEffect` (not `useEffect`) so the dataset-name reset
+ * commits synchronously before the browser paints. With `useEffect`, the
+ * Data tab's first render would commit and paint with `datasetName === ''`
+ * before this effect ran — surfacing as a one-frame flash of "Dataset ''
+ * is not available..." or a brief stale-name dropdown value. Layout-effect
+ * timing collapses that to a single visible state.
  */
 export const DatasetSelectInitializer = () => {
     const { renderId, datasetName, setDataset, viewReady } = useDenebState(
@@ -50,11 +51,11 @@ export const DatasetSelectInitializer = () => {
         })
     );
     const datasets = useMemo(
-        () => (viewReady ? getDatasetNames() : []),
+        () => (viewReady ? getAvailableDatasetNames() : []),
         [renderId, viewReady]
     );
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         // Only initialize when view is ready to avoid resetting during transitions
         if (!viewReady) {
             logDebug(
@@ -85,8 +86,11 @@ export const DatasetSelectInitializer = () => {
 };
 
 /**
- * Provides the ability to select a dataset from the Vega view. If no datasets are available, then will default to and
- * read from the visual.store dataset.
+ * Provides the ability to select a dataset from the Vega view. Renders no
+ * options when the view exposes no addressable named datasets — that case
+ * is surfaced via the Data tab's `'no-datasets'` empty-state, which
+ * suppresses this selector entirely (`shouldEmbedDatasetSelect`), so the
+ * user is never presented with an option-less dropdown.
  *
  * @remarks Dataset initialization is handled by `DatasetSelectInitializer`. This component only handles user selection
  * changes. We deliberately don't have an effect here that resets the dataset name, as that caused duplicate resets
@@ -104,7 +108,7 @@ export const DatasetSelect = () => {
     const datasetSelectId = useId();
     const classes = useDatasetSelectStyles();
     const datasets = useMemo(
-        () => (viewReady ? getDatasetNames() : []),
+        () => (viewReady ? getAvailableDatasetNames() : []),
         [renderId, viewReady]
     );
     const datasetOptions = useMemo(
@@ -142,19 +146,3 @@ export const DatasetSelect = () => {
     );
 };
 
-/**
- * Gets the list of datasets that should be present in the Vega view. If none can be found, the view is not bound, or
- * the previously selected dataset has been removed, then we return the default dataset name.
- */
-const getDatasetNames = () => {
-    const allData = VegaViewServices.getAllData();
-    logDebug('DatasetSelect: getAllData result', {
-        allData,
-        keys: Object.keys(allData)
-    });
-    const datasets = Object.keys(allData).filter(
-        (key) => key !== DEBUG_ROOT_DATASET_NAME
-    );
-    logDebug('DatasetSelect: filtered datasets', { datasets });
-    return datasets.length === 0 ? [DATASET_DEFAULT_NAME] : datasets;
-};

@@ -19,14 +19,15 @@ import type { EmptyStateReason } from '../empty-state-reason';
  * is the expected size, and assert no two values collide.
  */
 describe('EmptyStateReason', () => {
-    it('exposes exactly four distinct reason values', () => {
+    it('exposes exactly five distinct reason values', () => {
         const reasons: EmptyStateReason[] = [
             'source-unavailable',
             'view-unavailable',
+            'no-datasets',
             'dataset-unavailable',
             'no-signals'
         ];
         expect(new Set(reasons).size).toBe(reasons.length);
-        expect(reasons.length).toBe(4);
+        expect(reasons.length).toBe(5);
     });
 });

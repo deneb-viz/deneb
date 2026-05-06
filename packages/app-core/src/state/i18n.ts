@@ -97,9 +97,18 @@ export const createI18nSlice = (): StateCreator<
                     key;
                 if (tokens && tokens.length > 0) {
                     tokens.forEach((token, index) => {
+                        // Function-form replacement: the second arg of
+                        // String.prototype.replace is interpreted as a
+                        // pattern when it is a string ($&, $', $`, $1, $$),
+                        // which corrupts the output for tokens that happen
+                        // to contain those sequences. Returning the value
+                        // from a callback bypasses pattern interpretation
+                        // and substitutes verbatim. First-occurrence-only
+                        // semantics are preserved (the search arg is still
+                        // a string, not a /g regex).
                         translation = translation.replace(
                             `{${index}}`,
-                            String(token)
+                            () => String(token)
                         );
                     });
                 }
