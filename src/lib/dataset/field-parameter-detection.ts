@@ -1,12 +1,16 @@
+import type powerbi from 'powerbi-visuals-api';
+
 /**
  * Minimal field shape needed for parameter detection.
- * Avoids coupling to the full Power BI DataViewMetadataColumn type.
+ * Avoids coupling to the full Power BI DataViewMetadataColumn type while
+ * still using the SDK's own `DataViewSourceFieldParameterMetadata` shape
+ * for the parameter list, so call sites do not need an `as`-cast.
  */
 export type DetectableField = {
     displayName: string;
     sourceIndex: number;
     isMeasure: boolean;
-    sourceFieldParameters?: Array<{ displayName: string }>;
+    sourceFieldParameters?: powerbi.DataViewSourceFieldParameterMetadata[];
 };
 
 /**
@@ -70,7 +74,7 @@ export const detectFieldParameterGroups = (
         let registeredInAnyGroup = false;
 
         for (const entry of paramEntries) {
-            const paramName = entry?.displayName;
+            const paramName = entry.displayName;
             if (!paramName || seenParamNames.has(paramName)) continue;
             seenParamNames.add(paramName);
 

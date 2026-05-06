@@ -9,27 +9,21 @@ const makeField = (
     displayName: string,
     sourceIndex: number,
     isMeasure: boolean,
-    parameterName?: string
-): DetectableField => ({
-    displayName,
-    sourceIndex,
-    isMeasure,
-    sourceFieldParameters: parameterName
-        ? [{ displayName: parameterName }]
-        : undefined
-});
-
-const makeFieldWithParams = (
-    displayName: string,
-    sourceIndex: number,
-    isMeasure: boolean,
-    parameterNames: string[]
-): DetectableField => ({
-    displayName,
-    sourceIndex,
-    isMeasure,
-    sourceFieldParameters: parameterNames.map((displayName) => ({ displayName }))
-});
+    parameterNames?: string | string[]
+): DetectableField => {
+    const names =
+        parameterNames === undefined
+            ? undefined
+            : typeof parameterNames === 'string'
+            ? [parameterNames]
+            : parameterNames;
+    return {
+        displayName,
+        sourceIndex,
+        isMeasure,
+        sourceFieldParameters: names?.map((displayName) => ({ displayName }))
+    };
+};
 
 describe('detectFieldParameterGroups', () => {
     it('should return empty groups when no fields have parameters', () => {
@@ -134,7 +128,7 @@ describe('detectFieldParameterGroups', () => {
 
     it('should register a field in every parameter group named in sourceFieldParameters', () => {
         const fields: DetectableField[] = [
-            makeFieldWithParams('Shared Field', 0, false, [
+            makeField('Shared Field', 0, false, [
                 'Param A',
                 'Param B'
             ])
@@ -163,11 +157,11 @@ describe('detectFieldParameterGroups', () => {
 
     it('should register two fields each belonging to the same two parameters in DataView order', () => {
         const fields: DetectableField[] = [
-            makeFieldWithParams('Field One', 0, false, [
+            makeField('Field One', 0, false, [
                 'Param A',
                 'Param B'
             ]),
-            makeFieldWithParams('Field Two', 1, false, [
+            makeField('Field Two', 1, false, [
                 'Param A',
                 'Param B'
             ])
@@ -191,7 +185,7 @@ describe('detectFieldParameterGroups', () => {
 
     it('should support a shared field plus distinct fields across parameters', () => {
         const fields: DetectableField[] = [
-            makeFieldWithParams('Shared', 0, false, ['P', 'Q']),
+            makeField('Shared', 0, false, ['P', 'Q']),
             makeField('Only P', 1, false, 'P'),
             makeField('Only Q', 2, false, 'Q')
         ];
@@ -229,7 +223,7 @@ describe('detectFieldParameterGroups', () => {
 
     it('should dedup duplicate parameter-name entries within a single field', () => {
         const fields: DetectableField[] = [
-            makeFieldWithParams('Doubled Field', 0, false, [
+            makeField('Doubled Field', 0, false, [
                 'Param A',
                 'Param A'
             ])
@@ -246,7 +240,7 @@ describe('detectFieldParameterGroups', () => {
 
     it('should not flag hasMixedRoles for a measure shared across parameters', () => {
         const fields: DetectableField[] = [
-            makeFieldWithParams('Shared Measure', 0, true, [
+            makeField('Shared Measure', 0, true, [
                 'Selected Metric',
                 'Secondary Metric'
             ])
@@ -268,8 +262,8 @@ describe('detectFieldParameterGroups', () => {
 
     it('should preserve first-occurrence ordering of parameter group keys across fields', () => {
         const fields: DetectableField[] = [
-            makeFieldWithParams('F1', 0, false, ['Beta', 'Alpha']),
-            makeFieldWithParams('F2', 1, false, ['Alpha', 'Gamma'])
+            makeField('F1', 0, false, ['Beta', 'Alpha']),
+            makeField('F2', 1, false, ['Alpha', 'Gamma'])
         ];
         const result = detectFieldParameterGroups(fields);
         expect(Object.keys(result.parameterGroups)).toEqual([

@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildProcessingPlan } from '../build-processing-plan';
-import type {
-    SupportFieldConfiguration,
-    FieldProcessingInstruction,
-    ParameterProcessingInstruction
-} from '../types';
+import type { SupportFieldConfiguration } from '../types';
 
 describe('buildProcessingPlan — field parameters', () => {
     const masterSettings = {
@@ -164,6 +160,7 @@ describe('buildProcessingPlan — field parameters', () => {
         });
 
         const instr = plan.fields[0];
+        expect(instr.kind).toBe('parameter');
         if (instr.kind === 'parameter') {
             expect(instr.formatStringsArray).toEqual(['', '$#,0']);
         }
