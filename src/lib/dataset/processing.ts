@@ -309,8 +309,7 @@ export const getMappedDataset = (
                         displayName: c.column.displayName,
                         sourceIndex: c.sourceIndex,
                         isMeasure: c.column.isMeasure ?? false,
-                        sourceFieldParameters:
-                            c.column.sourceFieldParameters
+                        sourceFieldParameters: c.column.sourceFieldParameters
                     }));
                 const detection = detectFieldParameterGroups(detectableFields);
 

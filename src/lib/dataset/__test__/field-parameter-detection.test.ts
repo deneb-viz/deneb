@@ -15,8 +15,8 @@ const makeField = (
         parameterNames === undefined
             ? undefined
             : typeof parameterNames === 'string'
-            ? [parameterNames]
-            : parameterNames;
+              ? [parameterNames]
+              : parameterNames;
     return {
         displayName,
         sourceIndex,
@@ -128,10 +128,7 @@ describe('detectFieldParameterGroups', () => {
 
     it('should register a field in every parameter group named in sourceFieldParameters', () => {
         const fields: DetectableField[] = [
-            makeField('Shared Field', 0, false, [
-                'Param A',
-                'Param B'
-            ])
+            makeField('Shared Field', 0, false, ['Param A', 'Param B'])
         ];
         const result = detectFieldParameterGroups(fields);
         expect(Object.keys(result.parameterGroups)).toEqual([
@@ -157,14 +154,8 @@ describe('detectFieldParameterGroups', () => {
 
     it('should register two fields each belonging to the same two parameters in DataView order', () => {
         const fields: DetectableField[] = [
-            makeField('Field One', 0, false, [
-                'Param A',
-                'Param B'
-            ]),
-            makeField('Field Two', 1, false, [
-                'Param A',
-                'Param B'
-            ])
+            makeField('Field One', 0, false, ['Param A', 'Param B']),
+            makeField('Field Two', 1, false, ['Param A', 'Param B'])
         ];
         const result = detectFieldParameterGroups(fields);
         expect(result.parameterGroups['Param A'].componentNames).toEqual([
@@ -223,10 +214,7 @@ describe('detectFieldParameterGroups', () => {
 
     it('should dedup duplicate parameter-name entries within a single field', () => {
         const fields: DetectableField[] = [
-            makeField('Doubled Field', 0, false, [
-                'Param A',
-                'Param A'
-            ])
+            makeField('Doubled Field', 0, false, ['Param A', 'Param A'])
         ];
         const result = detectFieldParameterGroups(fields);
         expect(Object.keys(result.parameterGroups)).toEqual(['Param A']);
@@ -249,15 +237,15 @@ describe('detectFieldParameterGroups', () => {
         expect(
             result.parameterGroups['Selected Metric'].componentRoles
         ).toEqual(['aggregation']);
-        expect(
-            result.parameterGroups['Selected Metric'].hasMixedRoles
-        ).toBe(false);
+        expect(result.parameterGroups['Selected Metric'].hasMixedRoles).toBe(
+            false
+        );
         expect(
             result.parameterGroups['Secondary Metric'].componentRoles
         ).toEqual(['aggregation']);
-        expect(
-            result.parameterGroups['Secondary Metric'].hasMixedRoles
-        ).toBe(false);
+        expect(result.parameterGroups['Secondary Metric'].hasMixedRoles).toBe(
+            false
+        );
     });
 
     it('should preserve first-occurrence ordering of parameter group keys across fields', () => {
