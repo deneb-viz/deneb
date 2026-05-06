@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildProcessingPlan } from '../build-processing-plan';
-import type {
-    SupportFieldConfiguration,
-    FieldProcessingInstruction,
-    ParameterProcessingInstruction
-} from '../types';
+import type { SupportFieldConfiguration } from '../types';
 
 describe('buildProcessingPlan — field parameters', () => {
     const masterSettings = {
@@ -164,6 +160,7 @@ describe('buildProcessingPlan — field parameters', () => {
         });
 
         const instr = plan.fields[0];
+        expect(instr.kind).toBe('parameter');
         if (instr.kind === 'parameter') {
             expect(instr.formatStringsArray).toEqual(['', '$#,0']);
         }
@@ -266,6 +263,108 @@ describe('buildProcessingPlan — field parameters', () => {
             expect(instr.emitHighlightComparator).toBe(false);
             expect(instr.componentRoles).toEqual(['grouping', 'aggregation']);
         }
+    });
+
+    it('should emit independent parameter instructions when two groups share a component index', () => {
+        const plan = buildProcessingPlan({
+            fields: [
+                { encodedName: 'Sales', sourceIndex: 0, role: 'aggregation' },
+                { encodedName: 'Profit', sourceIndex: 1, role: 'aggregation' },
+                { encodedName: 'Year', sourceIndex: 2, role: 'grouping' }
+            ],
+            configuration: {},
+            masterSettings,
+            hasHighlights: false,
+            isLegacy: false,
+            parameterGroups: [
+                {
+                    parameterName: 'Selected Metric',
+                    componentFieldIndices: [0, 1],
+                    componentNames: ['Sales', 'Profit'],
+                    componentRoles: ['aggregation', 'aggregation'],
+                    formatStrings: undefined
+                },
+                {
+                    parameterName: 'Secondary Metric',
+                    componentFieldIndices: [0, 2],
+                    componentNames: ['Sales', 'Year'],
+                    componentRoles: ['aggregation', 'grouping'],
+                    formatStrings: undefined
+                }
+            ]
+        });
+
+        // Both parameter instructions emit; no regular field instruction is
+        // emitted because every input field is consumed by at least one
+        // parameter group (index 0 by both, indices 1 and 2 by one each).
+        expect(plan.fields).toHaveLength(2);
+        expect(plan.fields.every((f) => f.kind === 'parameter')).toBe(true);
+
+        const selected = plan.fields[0];
+        const secondary = plan.fields[1];
+        if (
+            selected.kind === 'parameter' &&
+            secondary.kind === 'parameter'
+        ) {
+            expect(selected.encodedName).toBe('Selected Metric');
+            expect(selected.componentIndices).toEqual([0, 1]);
+            expect(selected.namesArray).toEqual(['Sales', 'Profit']);
+
+            expect(secondary.encodedName).toBe('Secondary Metric');
+            expect(secondary.componentIndices).toEqual([0, 2]);
+            expect(secondary.namesArray).toEqual(['Sales', 'Year']);
+
+            // Each instruction's namesArray must be its own reference — not
+            // a shared array — so a future mutation in one path cannot leak
+            // into another parameter's row output.
+            expect(selected.namesArray).not.toBe(secondary.namesArray);
+        }
+    });
+
+    it('should skip a shared component index exactly once in the regular field loop', () => {
+        const plan = buildProcessingPlan({
+            fields: [
+                { encodedName: 'Sales', sourceIndex: 0, role: 'aggregation' },
+                { encodedName: 'Profit', sourceIndex: 1, role: 'aggregation' },
+                { encodedName: 'Year', sourceIndex: 2, role: 'grouping' },
+                {
+                    encodedName: 'NonParam',
+                    sourceIndex: 3,
+                    role: 'grouping'
+                }
+            ],
+            configuration: {},
+            masterSettings,
+            hasHighlights: false,
+            isLegacy: false,
+            parameterGroups: [
+                {
+                    parameterName: 'Selected Metric',
+                    componentFieldIndices: [0, 1],
+                    componentNames: ['Sales', 'Profit'],
+                    componentRoles: ['aggregation', 'aggregation'],
+                    formatStrings: undefined
+                },
+                {
+                    parameterName: 'Secondary Metric',
+                    componentFieldIndices: [0, 2],
+                    componentNames: ['Sales', 'Year'],
+                    componentRoles: ['aggregation', 'grouping'],
+                    formatStrings: undefined
+                }
+            ]
+        });
+
+        // Two parameter instructions plus exactly one regular field
+        // instruction — proving the shared index is excluded from the
+        // regular loop without being skipped twice (which would otherwise
+        // also drop NonParam).
+        expect(plan.fields).toHaveLength(3);
+        const fieldInstructions = plan.fields.filter(
+            (f) => f.kind === 'field'
+        );
+        expect(fieldInstructions).toHaveLength(1);
+        expect(fieldInstructions[0].encodedName).toBe('NonParam');
     });
 
     it('should disable highlight emit flags when crossHighlight is off', () => {
