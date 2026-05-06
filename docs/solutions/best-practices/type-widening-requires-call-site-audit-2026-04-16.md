@@ -19,8 +19,8 @@ tags:
     - immutability
     - refactor-audit
     - code-review
+    - cardinality
     - zustand
-    - schema-evolution
 related_components:
     - frontend_stimulus
     - testing_framework
@@ -217,5 +217,6 @@ Any hit that does none of these three is a bug.
 - [docs/brainstorms/2026-04-14-multi-dataset-template-structure-requirements.md](../../brainstorms/2026-04-14-multi-dataset-template-structure-requirements.md) — the requirements that drove the type widen, including the design decisions about dataset key naming and placeholder format.
 - [docs/plans/2026-04-14-001-refactor-multi-dataset-template-schema-plan.md](../../plans/2026-04-14-001-refactor-multi-dataset-template-schema-plan.md) — the implementation plan (session history: the plan explicitly called out the read-side slice but did not enumerate the write-side sites; the review filled that gap).
 - [docs/solutions/ui-bugs/export-dialog-empty-dataset-fields-2026-04-13.md](../ui-bugs/export-dialog-empty-dataset-fields-2026-04-13.md) — sibling bug in the same template-dataset/export subsystem. Note: its code snippets reference the pre-refactor singular `metadata.dataset` paths; the underlying diagnosis is still valid but the field names are now `metadata.datasets[DATASET_DEFAULT_NAME]`.
+- [docs/solutions/logic-errors/field-parameter-multi-name-detection-2026-05-07.md](../logic-errors/field-parameter-multi-name-detection-2026-05-07.md) — the symmetric read-side case of the same cardinality-of-one hazard class. This doc covers write-side bugs introduced by a type-widening event; the field-parameter doc covers read-side bugs (`array[0]` on a plural-typed field) where no widening occurred — the type was always plural and a consumer made the cardinality-of-one assumption from day one. Different triggers, same underlying mental error.
 - [PR #619](https://github.com/deneb-viz/deneb/pull/619) — the refactor PR, including the `/ce:review` synthesis that surfaced the six-site pattern.
 - [PR #615](https://github.com/deneb-viz/deneb/pull/615) — prior fix that introduced `updateExportDataset`; one of the six write sites corrected in #619 (session history).
