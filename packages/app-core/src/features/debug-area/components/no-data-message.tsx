@@ -7,6 +7,7 @@ import { useDebugWrapperStyles } from './styles';
 import type { EmptyStateReason } from './empty-state-reason';
 import {
     getMessageKey,
+    getMessageTokens,
     shouldEmbedDatasetSelect
 } from './no-data-message-utils';
 
@@ -27,13 +28,23 @@ export type NoDataMessageProps = {
 
 /**
  * Displays when no data is available in the data table. Callers pass the
- * `reason` explicitly so the rendered copy matches the actual cause.
+ * `reason` explicitly so the rendered copy matches the actual cause. The
+ * `'dataset-unavailable'` copy substitutes the currently-selected dataset
+ * name into its `{0}` placeholder; tokens are resolved via
+ * `getMessageTokens` so the substitution contract is exercised in unit
+ * tests without rendering the component.
  */
 export const NoDataMessage = ({ reason }: NoDataMessageProps) => {
-    const translate = useDenebState((state) => state.i18n.translate);
+    const { translate, datasetName } = useDenebState((state) => ({
+        translate: state.i18n.translate,
+        datasetName: state.debug.datasetName
+    }));
     const classes = useNoDataMessageStyles();
     const wrapperClasses = useDebugWrapperStyles();
-    const message = translate(getMessageKey(reason));
+    const message = translate(
+        getMessageKey(reason),
+        getMessageTokens(reason, datasetName)
+    );
     const options = shouldEmbedDatasetSelect(reason) ? <DatasetSelect /> : null;
     return (
         <div className={wrapperClasses.container}>

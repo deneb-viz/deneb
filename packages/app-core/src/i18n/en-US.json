@@ -112,6 +112,7 @@
     "Text_Debug_Data_Processing": "Selected data set is being processed and formatted for the table. This may take a while for large data sets, but you can continue to use the editor while this is in progress. Please wait...",
     "Text_Debug_Data_View_Unavailable": "The Vega view is not available. See the Log tab for details.",
     "Text_Debug_Data_Dataset_Unavailable": "Dataset '{0}' is not available in the current Vega view. See the Log tab for details.",
+    "Text_Debug_Data_No_Datasets_In_View": "The current Vega view has no datasets to inspect. Check that your specification defines a data source and that it is referenced by a mark or layer. See the Source tab for the raw data passed to Deneb.",
     "Text_Debug_Signal_No_Data": "No signal data was found in the Vega view. Please ensure that your specification has parsed correctly and is free of errors.",
     "Text_Debug_Signal_No_Signals": "This Vega view has no signals.",
     "Text_Debug_Signal_View_Unavailable": "The Vega view is not available. See the Log tab for details.",

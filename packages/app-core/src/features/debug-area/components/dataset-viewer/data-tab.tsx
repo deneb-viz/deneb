@@ -34,6 +34,7 @@ import {
     getDatasetViewerWorkerTranslations
 } from './dataset-viewer-worker-helpers';
 import { resolveDataTabReason } from './data-tab-utils';
+import { getAvailableDatasetNames } from './dataset-discovery';
 import { LOADING_INDICATOR_DEBOUNCE_MS } from './loading-debounce-constants';
 
 type DataTabProps = {
@@ -94,19 +95,34 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
     });
     const datasetWorker = useMemo(() => datasetViewerWorker, []);
 
-    // Resolve the current empty-state reason from the view + name + values.
-    // Two-way mapping (view-unavailable / dataset-unavailable / null) —
-    // `getDataByName` swallows internal errors and returns `undefined` for
-    // both "not registered" and "transform failure", so the call site
-    // cannot distinguish them (see plan Unit 6).
+    // Resolve the current empty-state reason from the view + addressable
+    // dataset count + name + values. `getDataByName` swallows internal errors
+    // and returns `undefined` for both "not registered" and "transform
+    // failure", so the call site cannot distinguish those two — they collapse
+    // into `'dataset-unavailable'`. The `'no-datasets'` branch fires when the
+    // view compiled but exposes no addressable named datasets (e.g. an empty
+    // Vega-Lite `layer: []` whose only data source was stripped).
+    //
+    // `availableDatasets` is memoised on `[renderId, viewAvailable]` to
+    // mirror the pattern in `dataset-select.tsx` — `getAvailableDatasetNames`
+    // calls `VegaViewServices.getAllData()` (a `view.getState()` round-trip),
+    // and the same query also runs inside `DatasetSelect` and
+    // `DatasetSelectInitializer`. Without the memo, this is the third
+    // `getState` per Data-tab render.
     const view = VegaViewServices.getView();
     const viewAvailable = view !== null;
+    const availableDatasets = useMemo(
+        () => (viewAvailable ? getAvailableDatasetNames() : []),
+        [renderId, viewAvailable]
+    );
+    const availableDatasetCount = availableDatasets.length;
     const currentValues =
         viewAvailable && datasetName !== ''
             ? VegaViewServices.getDataByName(datasetName)
             : undefined;
     const reason = resolveDataTabReason(
         viewAvailable,
+        availableDatasetCount,
         datasetName,
         currentValues
     );
