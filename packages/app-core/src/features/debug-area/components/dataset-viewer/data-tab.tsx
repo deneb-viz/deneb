@@ -110,8 +110,7 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
     // and the same query also runs inside `DatasetSelect` and
     // `DatasetSelectInitializer`. Without the memo, this is the third
     // `getState` per Data-tab render.
-    const view = VegaViewServices.getView();
-    const viewAvailable = view !== null;
+    const viewAvailable = VegaViewServices.getView() !== null;
     const availableDatasets = useMemo(
         () => (viewAvailable ? getAvailableDatasetNames() : []),
         [renderId, viewAvailable]
