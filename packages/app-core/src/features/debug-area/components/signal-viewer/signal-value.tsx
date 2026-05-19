@@ -162,14 +162,13 @@ export const SignalValue = ({
             removeListener();
         };
     }, [signalName, getSignalValues]);
-    // Only re-read the Vega view when something observably relevant has
-    // changed: the signal name, the translator, or signalValue (the state
-    // flag listener events flip to trigger a re-render for the current
-    // signal). Unrelated render triggers no longer re-run the
-    // prune/stringify pipeline on every pass.
+    // Re-read on signalName/translator change (via getSignalValues
+    // identity), listener-fired updates (signalValue), or view replacement
+    // (renderId - component instances outlive the View, so a fresh
+    // renderId means the memoised display is from a stale View).
     const currentValues = useMemo(
         () => getSignalValues(),
-        [getSignalValues, signalValue]
+        [getSignalValues, signalValue, renderId]
     );
     logRender('SignalValue', {
         signalName,
