@@ -84,6 +84,18 @@ describe('SignalValue currentValues memo — dep-array characterization', () => 
         expect(shouldMemoRecompute(prev, next)).toBe(false);
     });
 
+    it('recomputes when getSignalValues changes (signal name or translator changed)', () => {
+        // Guards against a future "optimisation" that narrows deps to
+        // `[signalValue, renderId]`: dropping `getSignalValues` from slot 0
+        // would silently stop invalidating the memo on signalName or
+        // translator change, with no listener event to compensate.
+        const fn1 = () => null;
+        const fn2 = () => null;
+        const prev = buildPostFixDeps(fn1, 5, 'render-1');
+        const next = buildPostFixDeps(fn2, 5, 'render-1');
+        expect(shouldMemoRecompute(prev, next)).toBe(true);
+    });
+
     it('a renderId-only change does NOT recompute under the pre-fix deps (locks the bug shape)', () => {
         // signalName, translate, and signalValue all constant; only the
         // underlying view was replaced. Pre-fix this returned the stale
