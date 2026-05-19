@@ -281,7 +281,7 @@ vega-embed has a bug where `actions: false` doesn't prevent the `.has-actions` c
 vegaEmbed(ref.current, spec, { ...options, actions: false });
 ```
 
-This is combined with CSS safety in `app-core/vega-embed.tsx`:
+This is combined with CSS safety in `app-core/visual-viewer/components/vega-embed-styles.ts` (the `VEGA_EMBED_ROOT_STYLE` slot consumed by `vega-embed.tsx`):
 
 ```typescript
 '& .vega-actions': { display: 'none !important' },
