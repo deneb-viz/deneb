@@ -38,7 +38,7 @@ When a user clicks Apply in the Deneb editor, the visual briefly jumps — rende
 ## What Didn't Work
 
 - **Removing `defer: true` on `OverlayScrollbarsComponent`** — no effect on the triple render; the scrollbar component is downstream of compilation
-- **Investigating SVG `display: inline` line-box gap** — this was a different 4px bug (fixed separately), not the triple render
+- **Investigating SVG `display: inline` line-box gap** — this was a different 4px bug (fixed separately as part of #480 / PR #611, written up alongside its canvas-renderer counterpart in [`docs/solutions/ui-bugs/vega-canvas-renderer-vertical-overflow-2026-05-20.md`](../ui-bugs/vega-canvas-renderer-vertical-overflow-2026-05-20.md)), not the triple render
 - **Checking container unmount/remount** — DOM identity check confirmed the container element is stable across the jump; the SVG inside is re-embedded, not the container
 - **Checking viewport dimension changes** — `viewportHeight`/`viewportWidth` identical across all three fires
 - **Checking Monaco editor flush** — only one `setContent` call per Apply, confirmed by code search
