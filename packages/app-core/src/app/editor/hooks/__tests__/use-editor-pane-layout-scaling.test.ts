@@ -234,12 +234,14 @@ describe('scalePaneSizesForContainerResize', () => {
         ).toBe(800);
     });
 
-    it('preserves latch height (scaled) when debug pane is minimized', () => {
-        // When minimized, `getDebugPaneLatchHeight` returns the supplied
-        // latch verbatim — but we scale it before passing in so the
-        // restore-target tracks container height. Container doubles in
-        // height ⇒ latch doubles, even though the debug pane itself is
-        // at toolbarMinSize on screen.
+    it('preserves debug height at toolbarMinSize exactly when minimized', () => {
+        // Critical invariant: the toggle-expand effect checks
+        // `debugPaneViewport.height === toolbarMinSize` (strict equality)
+        // to decide whether to fire the programmatic expand. Deriving the
+        // debug height from a proportionally-scaled preview height drifts
+        // (doubling the container produces 2 * toolbarMinSize, not
+        // toolbarMinSize) and silently breaks user-driven expand for the
+        // rest of the session.
         const result = scalePaneSizesForContainerResize({
             prev: { width: 1500, height: 800 },
             current: { width: 1500, height: 1600 },
@@ -248,7 +250,50 @@ describe('scalePaneSizesForContainerResize', () => {
             debugPaneLatchHeight: 320,
             isDebugPaneMinimized: true
         });
+        expect(result.debugPaneViewport.height).toBe(
+            DEBUG_PANE_CONFIGURATION.toolbarMinSize
+        );
+        expect(result.previewAreaViewport.height).toBe(
+            1600 - DEBUG_PANE_CONFIGURATION.toolbarMinSize
+        );
+        // Latch is scaled so the restore target tracks the new container.
+        // `getDebugPaneLatchHeight` passes the latch through verbatim when
+        // minimized, so the scaled value reaches the output.
         expect(result.debugPaneLatchHeight).toBe(640);
+    });
+
+    it('falls back to scale=1 on non-positive prev dimensions instead of producing NaN', () => {
+        // The pure helper is exported for testing. The production caller
+        // already guards against this via the `!prev` check and the
+        // hydration-time seed. For unexpected callers (tests, future bugs
+        // in the seeding path), emit a warning and fall back to scale=1
+        // rather than producing NaN / Infinity outputs. The rest of the
+        // function (minSize clamp, latch routing) still applies.
+        const result = scalePaneSizesForContainerResize({
+            prev: { width: 0, height: 0 },
+            current: { width: 1500, height: 800 },
+            editorPaneWidth: 600,
+            previewAreaHeight: 480,
+            debugPaneLatchHeight: 320,
+            isDebugPaneMinimized: false
+        });
+        // scale=1 ⇒ inputs pass through; preview height absorbs the rest
+        // of the container height; minSize clamp not engaged here.
+        expect(result.editorPaneViewport.width).toBe(600);
+        expect(result.previewAreaViewport.width).toBe(900);
+        expect(result.previewAreaViewport.height).toBe(480);
+        expect(result.debugPaneViewport.height).toBe(320);
+        // No NaN / Infinity in any output value.
+        Object.values(result.editorPaneViewport).forEach((v) => {
+            expect(Number.isFinite(v)).toBe(true);
+        });
+        Object.values(result.previewAreaViewport).forEach((v) => {
+            expect(Number.isFinite(v)).toBe(true);
+        });
+        Object.values(result.debugPaneViewport).forEach((v) => {
+            expect(Number.isFinite(v)).toBe(true);
+        });
+        expect(Number.isFinite(result.debugPaneLatchHeight)).toBe(true);
     });
 
     it('falls back to default percentage latch when scaled debug height is below areaMinSize', () => {

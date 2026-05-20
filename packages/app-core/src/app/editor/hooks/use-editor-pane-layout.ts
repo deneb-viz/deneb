@@ -11,7 +11,7 @@ import { usePrevious } from '@uidotdev/usehooks';
 import useResizeObserver from 'use-resize-observer';
 import type { AllotmentHandle } from 'allotment';
 
-import { logDebug } from '@deneb-viz/utils/logging';
+import { logDebug, logWarning } from '@deneb-viz/utils/logging';
 import {
     DEBUG_PANE_CONFIGURATION,
     SPLIT_PANE_CONFIGURATION
@@ -407,8 +407,20 @@ export const scalePaneSizesForContainerResize = ({
     debugPaneLatchHeight: number;
     isDebugPaneMinimized: boolean;
 }) => {
-    const scaleX = current.width / prev.width;
-    const scaleY = current.height / prev.height;
+    if (prev.width <= 0 || prev.height <= 0) {
+        logWarning(
+            `[${LOG_PREFIX}] scalePaneSizesForContainerResize: prev dimensions must be > 0; falling back to scale=1`,
+            { prev, current }
+        );
+    }
+    // Fall back to scale=1 on a non-positive `prev`. The production caller
+    // already guards via the `!prev` check and the hydration-time seed, so
+    // this branch only triggers for direct (test) callers or future bugs in
+    // the seeding path - emit the warning above and let the rest of the
+    // function produce a no-op rescale (clamps and latch routing still
+    // apply) rather than NaN / Infinity outputs.
+    const scaleX = prev.width > 0 ? current.width / prev.width : 1;
+    const scaleY = prev.height > 0 ? current.height / prev.height : 1;
     const proposedEditorW = Math.round(editorPaneWidth * scaleX);
     const proposedRightW = Math.max(0, current.width - proposedEditorW);
     const newRightW = Math.max(
@@ -416,8 +428,16 @@ export const scalePaneSizesForContainerResize = ({
         DEBUG_PANE_CONFIGURATION.minWidth
     );
     const newEditorW = Math.max(0, current.width - newRightW);
-    const newPreviewH = Math.round(previewAreaHeight * scaleY);
-    const newDebugH = Math.max(0, current.height - newPreviewH);
+    // When minimized, debug pane height MUST be exactly `toolbarMinSize` -
+    // the toggle effect's expand branch checks `=== toolbarMinSize` (strict
+    // equality) before firing the programmatic resize. Deriving it from the
+    // proportionally-scaled preview height drifts (e.g., doubling container
+    // height yields debug = 2 * toolbarMinSize) and silently breaks
+    // user-driven expand for the rest of the session.
+    const newDebugH = isDebugPaneMinimized
+        ? DEBUG_PANE_CONFIGURATION.toolbarMinSize
+        : Math.max(0, current.height - Math.round(previewAreaHeight * scaleY));
+    const newPreviewH = Math.max(0, current.height - newDebugH);
     const newLatch = getDebugPaneLatchHeight(
         newDebugH,
         Math.round(debugPaneLatchHeight * scaleY),
