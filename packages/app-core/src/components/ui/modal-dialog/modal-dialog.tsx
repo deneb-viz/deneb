@@ -12,7 +12,7 @@ import {
 
 import { logRender } from '@deneb-viz/utils/logging';
 import { useDenebState } from '../../../state';
-import { useSpecificationEditor } from '../../../features/specification-editor';
+import { useSpecificationEditor } from '../../../context/specification-editor';
 import { useModalDialogStyles } from './styles';
 import {
     handleCloseCreateDialog,

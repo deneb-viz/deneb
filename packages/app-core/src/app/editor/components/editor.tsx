@@ -15,7 +15,7 @@ import { ModalDialog } from '../../../components/ui';
 import { EditorContentLoader } from './editor-content-loader';
 import { EditorErrorBoundary } from './editor-error-boundary';
 import { EditorSuspense } from './editor-suspense';
-import { SpecificationEditorProvider } from '../../../features/specification-editor';
+import { SpecificationEditorProvider } from '../../../context/specification-editor';
 
 const EDITOR_INTERFACE_ID = 'deneb-editor-interface';
 
