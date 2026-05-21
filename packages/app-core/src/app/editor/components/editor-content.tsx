@@ -87,7 +87,7 @@ export const EditorContent = () => {
             >
                 {hasRenderedLayout && (
                     <FullContainerLayoutNoOverflow id={EDITOR_PANE_CONTENT_ID}>
-                        <CommandBar />
+                        <CommandBar editorRefs={editorRefs} />
                         <EditorPaneLayout
                             paneHandleRefVertical={paneHandleRefVertical}
                             editorPaneViewport={editorPaneViewport}
