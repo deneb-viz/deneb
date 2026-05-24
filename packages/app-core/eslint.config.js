@@ -8,6 +8,11 @@ export default [
         files: ['src/**/*.{ts,tsx}'],
         plugins: { boundaries },
         settings: {
+            'import/resolver': {
+                typescript: { project: './tsconfig.json' },
+                node: true
+            },
+            'boundaries/root-path': '.',
             'boundaries/include': ['src/**/*.{ts,tsx}'],
             'boundaries/ignore': [
                 'src/**/__tests__/**',
@@ -30,6 +35,10 @@ export default [
             ]
         },
         rules: {
+            // Layering model: lib/i18n/catalog are the lowest-level utility layers
+            // everyone may depend on. state/context sit above lib (state slices and
+            // contexts import from lib for sync, persistence, and constants).
+            // features/components/app form the UI composition stack on top.
             'boundaries/element-types': ['error', {
                 default: 'disallow',
                 rules: [
@@ -37,11 +46,11 @@ export default [
                     { from: ['app'], allow: ['app', 'feature', 'components', 'lib', 'state', 'context', 'i18n', 'catalog'] },
                     { from: ['feature'], allow: ['components', 'lib', 'state', 'context', 'i18n', 'catalog'] },
                     { from: ['components'], allow: ['components', 'lib', 'state', 'context', 'i18n', 'catalog'] },
+                    { from: ['state'], allow: ['state', 'lib', 'context', 'i18n', 'catalog'] },
+                    { from: ['context'], allow: ['context', 'lib', 'state', 'i18n', 'catalog'] },
+                    { from: ['catalog'], allow: ['catalog', 'lib', 'i18n'] },
                     { from: ['lib'], allow: ['lib', 'state', 'context', 'i18n', 'catalog'] },
-                    { from: ['state'], allow: ['state', 'context', 'i18n', 'catalog'] },
-                    { from: ['context'], allow: ['context', 'i18n', 'catalog'] },
-                    { from: ['i18n'], allow: ['i18n', 'catalog'] },
-                    { from: ['catalog'], allow: ['catalog'] }
+                    { from: ['i18n'], allow: ['i18n'] }
                 ]
             }],
             'boundaries/no-unknown': 'off',
