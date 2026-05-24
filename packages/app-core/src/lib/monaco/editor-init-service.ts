@@ -19,7 +19,7 @@ import {
 import {
     monaco,
     setupMonacoWorker
-} from '../../components/code-editor/monaco-integration';
+} from './monaco-integration';
 import { getDenebState } from '../../state';
 import { getFieldDocumentationByName } from '../../lib/dataset';
 import { initializeSchemas, getProcessedSchema } from '../schema';

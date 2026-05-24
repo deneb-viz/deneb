@@ -17,7 +17,7 @@ const mockRegisterCompletionItemProvider = vi
 const mockAddKeybindingRules = vi.fn();
 const mockSetupMonacoWorker = vi.fn();
 
-vi.mock('../../../components/code-editor/monaco-integration', () => ({
+vi.mock('../monaco-integration', () => ({
     monaco: {
         languages: {
             json: {

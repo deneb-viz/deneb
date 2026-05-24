@@ -1,5 +1,5 @@
 import { parseTree, findNodeAtLocation, modify } from 'jsonc-parser';
-import { monaco } from '../../components/code-editor/monaco-integration';
+import { monaco } from '../monaco/monaco-integration';
 import { getDenebState } from '../../state';
 
 const DIAGNOSTIC_SOURCE = 'deneb';
