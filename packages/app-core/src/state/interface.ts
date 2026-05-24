@@ -9,7 +9,7 @@ import { type RemapState } from '@deneb-viz/json-processing/field-tracking';
 import { StoreState } from './state';
 import { getNewUuid } from '@deneb-viz/utils/crypto';
 import { StateCreator } from 'zustand';
-import { getModalDialogRole } from '../lib/interface/state';
+import { getModalDialogRole } from '../lib/interface/modal-dialog-role';
 
 export type InterfaceSliceProperties = {
     /**
