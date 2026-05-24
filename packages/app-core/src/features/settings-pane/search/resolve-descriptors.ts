@@ -9,43 +9,19 @@
  */
 import type { SectionSchema } from './schema-types';
 import type { ResolvedSectionDescriptor } from './types';
+import type {
+    TranslateFn,
+    LocalisableText,
+    PlatformSearchRow,
+    PlatformSearchContribution
+} from '../../../lib/platform-search-contract';
 
-/**
- * Translation function contract — matches the shape exposed by the
- * i18n slice of the Deneb state store.
- */
-export type TranslateFn = (key: string) => string;
-
-/**
- * Either a raw already-localised string, or a `{ key }` wrapper that
- * tells the resolver to call `translate(key)` instead.
- */
-export type LocalisableText = string | { key: string };
-
-/**
- * A single row in the platform contribution.
- */
-export type PlatformSearchRow = {
-    id: string;
-    label: LocalisableText;
-    assistive?: LocalisableText;
-};
-
-/**
- * Shape a platform provider supplies via
- * `settingsPanePlatformSearchable` to participate in the settings-pane
- * search filter.
- *
- * `id` must match the React `key` prop of the corresponding AccordionItem
- * element in `settingsPanePlatformComponent`. The pane uses that id to
- * decide whether the platform element is shortlisted by an active query
- * and to include it in the context menu's "Expand all" action.
- */
-export type PlatformSearchContribution = {
-    id: string;
-    heading: LocalisableText;
-    rows: readonly PlatformSearchRow[];
-};
+export type {
+    TranslateFn,
+    LocalisableText,
+    PlatformSearchRow,
+    PlatformSearchContribution
+} from '../../../lib/platform-search-contract';
 
 /**
  * Resolve a {@link LocalisableText} into a concrete string. Raw strings
