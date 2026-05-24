@@ -11,7 +11,7 @@ import { logRender } from '@deneb-viz/utils/logging';
 import { useDenebState } from '../../../state';
 import { getDenebTheme } from '../../../lib';
 import { markEditorOpenStage } from '../../../lib/perf';
-import { ModalDialog } from '../../../components/ui';
+import { ModalDialog } from './modal-dialog';
 import { EditorContentLoader } from './editor-content-loader';
 import { EditorErrorBoundary } from './editor-error-boundary';
 import { EditorSuspense } from './editor-suspense';

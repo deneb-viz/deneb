@@ -11,19 +11,19 @@ import {
 } from '@fluentui/react-components';
 
 import { logRender } from '@deneb-viz/utils/logging';
-import { useDenebState } from '../../../state';
-import { useSpecificationEditor } from '../../../context/specification-editor';
-import { useModalDialogStyles } from './styles';
+import { useDenebState } from '../../../../state';
+import { useSpecificationEditor } from '../../../../context/specification-editor';
+import { useModalDialogStyles } from '../../../../components/ui';
 import {
     handleCloseCreateDialog,
     handleSetFocusToActiveEditor,
     ModalDialogRole
-} from '../../../lib';
+} from '../../../../lib';
 import {
     CreateButton,
     VisualCreatePane
-} from '../../../features/project-create';
-import { ExportButtons, ExportPane } from '../../../features/project-export';
+} from '../../../../features/project-create';
+import { ExportButtons, ExportPane } from '../../../../features/project-export';
 import { VersionChangeContent } from './version-change-content';
 
 export const ModalDialog = () => {
