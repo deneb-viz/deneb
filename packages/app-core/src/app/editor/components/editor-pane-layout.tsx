@@ -3,7 +3,7 @@ import { Allotment, type AllotmentHandle } from 'allotment';
 
 import { DEBUG_PANE_CONFIGURATION } from '@deneb-viz/configuration';
 import type { EditorPanePosition } from '../../../lib';
-import { EditorArea } from '../../../features/editor-area';
+import { EditorArea } from './editor-area';
 import { PreviewArea } from '../../../features/preview-area';
 import { DebugArea } from '../../../features/debug-area';
 

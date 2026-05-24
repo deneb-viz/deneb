@@ -7,9 +7,11 @@ import {
     DEBUG_PANE_CONFIGURATION,
     SPLIT_PANE_CONFIGURATION
 } from '@deneb-viz/configuration';
-import { ActiveEditorPaneRouter } from '../../specification-editor';
-import { SpecificationEditorStatusBar } from '../../specification-editor/components/specification-editor-status-bar';
-import { CompiledVegaPane } from '../../compiled-vega';
+import {
+    ActiveEditorPaneRouter,
+    SpecificationEditorStatusBar
+} from '../../../features/specification-editor';
+import { CompiledVegaPane } from '../../../features/compiled-vega';
 import { useDenebState } from '../../../state';
 import { CursorProvider, useCursorContext } from '../../../context';
 
