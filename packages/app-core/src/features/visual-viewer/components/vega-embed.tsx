@@ -13,7 +13,7 @@ import {
 import { patchSpecWithData } from '@deneb-viz/vega-runtime/spec-processing';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
 import { useDenebState } from '../../../state';
-import { type ViewEventBinder } from '../../deneb-platform';
+import { type ViewEventBinder } from '../../../components/deneb-platform';
 import { VEGA_EMBED_ROOT_STYLE } from './vega-embed-styles';
 
 type VegaEmbedProps = {
