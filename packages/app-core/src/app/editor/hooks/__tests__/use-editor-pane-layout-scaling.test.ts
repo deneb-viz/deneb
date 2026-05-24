@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { DEBUG_PANE_CONFIGURATION } from '@deneb-viz/configuration';
-import { scalePaneSizesForContainerResize } from '../use-editor-pane-layout';
+import { scalePaneSizesForContainerResize } from '../pane-layout-helpers';
 
 /**
  * Pure-helper tests for the proportional pane-rescaling math that
