@@ -85,6 +85,10 @@ npm run dev       # Start development (auto-primes assets if needed)
 
 **Documented Solutions (`docs/solutions/`):** Past problems diagnosed and solved, organized by category with YAML frontmatter (`module`, `tags`, `problem_type`). Relevant when debugging or implementing in documented areas.
 
+### app-core Layering
+
+`@deneb-viz/app-core` follows a strict layered model: `app/ → features/ → components/ → lib/ → state/context/i18n/catalog`. Cross-feature imports and upward imports are rejected by `eslint-plugin-boundaries` (configured in [packages/app-core/eslint.config.js](packages/app-core/eslint.config.js)) and gated by a vitest canary at [packages/app-core/src/__tests__/architecture-boundaries.test.ts](packages/app-core/src/__tests__/architecture-boundaries.test.ts). Full details — including the per-layer dependency matrix and a decision guide for where new code goes — live in [packages/app-core/ARCHITECTURE.md](packages/app-core/ARCHITECTURE.md).
+
 ### Critical: Singleton Package Pattern
 
 `@deneb-viz/powerbi-compat` MUST remain a singleton to maintain shared runtime state:
