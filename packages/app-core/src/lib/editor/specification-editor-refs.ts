@@ -7,7 +7,7 @@
  * The specification-editor feature is the authoritative implementer.
  */
 import { type RefObject } from 'react';
-import type { monaco } from '../../components/code-editor/monaco-integration';
+import type { monaco } from '../monaco/types';
 
 export type SpecificationEditorRefs = {
     spec: RefObject<monaco.editor.IStandaloneCodeEditor | null>;
