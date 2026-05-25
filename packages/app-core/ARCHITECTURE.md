@@ -65,7 +65,7 @@ A short decision guide:
 
 - New piece of UI used by only one feature → put it inside that feature's folder.
 - New piece of UI used by two or more features → promote it to `components/`.
-- New cross-cutting React context provider → `context/`.
+- New cross-cutting React context provider → `context/`. When the consumer hook should throw outside its Provider, follow the [nullable-default pattern](../../docs/solutions/design-patterns/usecontext-guard-needs-nullable-default-2026-05-26.md) so the guard actually fires.
 - New pure helper or shared contract type (no React) → `lib/`.
 - New Zustand slice or store wiring → `state/`.
 - New static lookup table (operators, templates, registry entries) → `catalog/`.
