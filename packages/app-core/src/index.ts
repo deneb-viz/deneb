@@ -22,7 +22,11 @@ export {
     useSettingsPaneStyles,
     useSettingsPaneTooltip
 } from './features/settings-pane';
-export { useSpecificationEditor } from './context/specification-editor';
+export {
+    specificationEditorRefs,
+    useSpecificationEditor
+} from './context/specification-editor';
+export { type SpecificationEditorRefs } from './lib/editor/specification-editor-refs';
 
 export { updateFieldTracking } from './lib/field-processing';
 export * from './lib/interface';
