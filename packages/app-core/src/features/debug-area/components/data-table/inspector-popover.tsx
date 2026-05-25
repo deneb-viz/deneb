@@ -12,7 +12,7 @@ import type { editor as monacoEditor } from 'monaco-editor';
 
 import { POPOVER_Z_INDEX } from '../../../../lib';
 import { useDenebState } from '../../../../state';
-import { buildEditorProps } from '../../../../components/code-editor/editor-configuration';
+import { buildEditorProps } from '../../../../lib/monaco';
 import { useDataTableInspector } from './inspector-popover-context';
 import {
     formatInspectorValue,

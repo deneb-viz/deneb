@@ -4,10 +4,8 @@ import { Button } from '@fluentui/react-components';
 import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 import { type TrackedFields } from '@deneb-viz/json-processing/field-tracking';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
-import {
-    type SpecificationEditorRefs,
-    useSpecificationEditor
-} from '../../specification-editor';
+import { type SpecificationEditorRefs } from '../../../lib/editor/specification-editor-refs';
+import { useSpecificationEditor } from '../../../context/specification-editor';
 import { getDenebState, useDenebState } from '../../../state';
 import { updateFieldTokenization } from '../../../lib/field-processing';
 import { getRemappedSpecification } from '../../../lib/field-processing/tokenization';

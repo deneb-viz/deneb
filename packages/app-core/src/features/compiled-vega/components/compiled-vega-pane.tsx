@@ -28,7 +28,7 @@ import {
     stripConfigFromSpec,
     stripSchemaFromSpec
 } from '../../../lib/spec-utils';
-import { buildEditorProps } from '../../../components/code-editor/editor-configuration';
+import { buildEditorProps } from '../../../lib/monaco';
 
 const useCompiledVegaPaneStyles = makeStyles({
     root: {

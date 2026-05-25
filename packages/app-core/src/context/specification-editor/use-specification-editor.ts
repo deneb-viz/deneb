@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 
-import { SpecificationEditorContext } from '../components/specification-editor-provider';
+import { SpecificationEditorContext } from './specification-editor-context';
 
 export const useSpecificationEditor = () => {
     const context = useContext(SpecificationEditorContext);

@@ -15,7 +15,6 @@ import {
 } from '@fluentui/react-icons';
 
 import { useDenebState } from '../../../state';
-import { useSpecificationEditor } from '../../specification-editor';
 import {
     type EditorPaneRole,
     handleEditorPaneConfig,
@@ -24,6 +23,7 @@ import {
     POPOVER_Z_INDEX,
     PREVIEW_PANE_TOOLBAR_BUTTON_PADDING
 } from '../../../lib';
+import type { SpecificationEditorRefs } from '../../../lib/editor/specification-editor-refs';
 import { ToolbarButtonStandard } from '../../../components/ui';
 import { DEBUG_PANE_CONFIGURATION } from '@deneb-viz/configuration';
 
@@ -100,12 +100,15 @@ const useCommandBarStyles = makeStyles({
     }
 });
 
-export const CommandBar = () => {
+interface CommandBarProps {
+    editorRefs: SpecificationEditorRefs;
+}
+
+export const CommandBar = ({ editorRefs }: CommandBarProps) => {
     const { editorSelectedOperation, translate } = useDenebState((state) => ({
         editorSelectedOperation: state.editorSelectedOperation,
         translate: state.i18n.translate
     }));
-    const editorRefs = useSpecificationEditor();
     const classes = useCommandBarStyles();
     const onPaneModeChange: ToolbarProps['onCheckedValueChange'] = (
         e,

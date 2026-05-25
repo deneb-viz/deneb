@@ -1,5 +1,5 @@
 import { getUpdatedExportMetadata } from '@deneb-viz/json-processing';
-import type { monaco } from '../components/code-editor/monaco-integration';
+import type { monaco } from '../lib/monaco/types';
 import {
     evaluateExportSpecCommandState,
     evaluateZoomCommandsState,

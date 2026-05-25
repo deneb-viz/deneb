@@ -2,7 +2,7 @@ import { useLayoutEffect, useState } from 'react';
 import { makeStyles } from '@fluentui/react-components';
 
 import { logRender } from '@deneb-viz/utils/logging';
-import { useSpecificationEditor } from '../../../features/specification-editor';
+import { useSpecificationEditor } from '../../../context/specification-editor';
 import { CommandBar } from '../../../features/command-bar';
 import { FullContainerLayoutNoOverflow } from '../../../components/ui';
 import { PortalRoot } from './portal-root';
@@ -87,7 +87,7 @@ export const EditorContent = () => {
             >
                 {hasRenderedLayout && (
                     <FullContainerLayoutNoOverflow id={EDITOR_PANE_CONTENT_ID}>
-                        <CommandBar />
+                        <CommandBar editorRefs={editorRefs} />
                         <EditorPaneLayout
                             paneHandleRefVertical={paneHandleRefVertical}
                             editorPaneViewport={editorPaneViewport}

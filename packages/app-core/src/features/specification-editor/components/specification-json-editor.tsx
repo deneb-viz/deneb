@@ -6,10 +6,9 @@ import Editor, { OnChange, OnMount } from '@monaco-editor/react';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { handlePersistSpecification, type EditorPaneRole } from '../../../lib';
 import { flushEditorOpenTimings, markEditorOpenStage } from '../../../lib/perf';
-import { monaco } from '../../../components/code-editor/monaco-integration';
-import { buildEditorProps } from '../../../components/code-editor/editor-configuration';
+import { monaco, buildEditorProps } from '../../../lib/monaco';
 import { getDenebState, useDenebState } from '../../../state';
-import { useSpecificationEditor } from '../hooks/use-specification-editor';
+import { useSpecificationEditor } from '../../../context/specification-editor';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 import { useCursorContext } from '../../../context';
 import {

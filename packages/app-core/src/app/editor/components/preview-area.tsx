@@ -12,7 +12,7 @@ import { VegaViewProvider } from '@deneb-viz/vega-react';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { DEBUG_PANE_CONFIGURATION } from '@deneb-viz/configuration';
 import { logRender } from '@deneb-viz/utils/logging';
-import { VisualViewer } from '../../../components/visual-viewer';
+import { VisualViewer } from '../../../features/visual-viewer';
 import { createSchemaValidator } from '../../../lib/vega/compilation';
 import { useDenebState } from '../../../state';
 import { COMPILATION_STATUS_DEFAULT } from '@deneb-viz/vega-runtime/compilation';

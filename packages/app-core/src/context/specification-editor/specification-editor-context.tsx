@@ -1,9 +1,9 @@
-import React, { createContext, createRef, useContext } from 'react';
-import { type SpecificationEditorRefs } from '../types';
-import type { monaco } from '../../../components/code-editor/monaco-integration';
+import React, { createContext, createRef } from 'react';
+import { type SpecificationEditorRefs } from '../../lib/editor/specification-editor-refs';
+import type { monaco } from '../../lib/monaco/types';
 
 export const SpecificationEditorContext =
-    createContext<SpecificationEditorRefs>({} as SpecificationEditorRefs);
+    createContext<SpecificationEditorRefs | null>(null);
 const specEditorMonacoRef =
     createRef<monaco.editor.IStandaloneCodeEditor | null>();
 const configEditorMonacoRef =
@@ -27,6 +27,3 @@ export const SpecificationEditorProvider = (
         </SpecificationEditorContext.Provider>
     );
 };
-
-export const useJsonEditorContext = () =>
-    useContext(SpecificationEditorContext);

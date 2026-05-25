@@ -37,7 +37,7 @@ import {
 } from '../../../lib';
 import { type ToolbarRole } from './types';
 import { getDenebState, useDenebState } from '../../../state';
-import { useSpecificationEditor } from '../../../features/specification-editor';
+import { useSpecificationEditor } from '../../../context/specification-editor';
 import { TooltipCustomMount } from '../tooltip-custom-mount';
 import { useDenebPlatformProvider } from '../../deneb-platform';
 

@@ -3,9 +3,9 @@ import { useMemo } from 'react';
 import { Link } from '@fluentui/react-components';
 import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import { useDenebState } from '../../../state';
-import { getVegaProviderI18n } from '../../../lib/vega/i18n';
-import { useDenebPlatformProvider } from '../../deneb-platform';
+import { useDenebState } from '../../../../state';
+import { getVegaProviderI18n } from '../../../../lib/vega/i18n';
+import { useDenebPlatformProvider } from '../../../../components/deneb-platform';
 
 export const VersionChangeContent = () => {
     const {

@@ -6,8 +6,8 @@ import {
 import { getDenebState } from '../../state';
 import { type DebugPaneRole, type EditorPaneRole } from '../interface';
 import { type Command } from './types';
-import { type SpecificationEditorRefs } from '../../features/specification-editor';
-import type { monaco } from '../../components/code-editor/monaco-integration';
+import { type SpecificationEditorRefs } from '../editor/specification-editor-refs';
+import type { monaco } from '../monaco/types';
 import { HOTKEY_BINDINGS } from './constants';
 import { getZoomToFitScale } from '../interface/layout';
 import {} from '../../../package.json';

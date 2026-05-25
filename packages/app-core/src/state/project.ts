@@ -7,7 +7,7 @@ import {
     type SpecRenderMode
 } from '@deneb-viz/vega-runtime/embed';
 import { isProjectInitialized, type DenebProject } from '../lib/project';
-import { getModalDialogRole } from '../lib/interface/state';
+import { getModalDialogRole } from '../lib/interface/modal-dialog-role';
 import { getUpdatedExportMetadata } from '@deneb-viz/json-processing';
 import {
     TEMPLATE_USERMETA_VERSION,

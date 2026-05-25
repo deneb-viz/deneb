@@ -11,7 +11,7 @@ import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 import { StoreState } from './state';
 import { isExportSpecCommandEnabled, ModalDialogRole } from '../lib';
 import { StateCreator } from 'zustand';
-import { getModalDialogRole } from '../lib/interface/state';
+import { getModalDialogRole } from '../lib/interface/modal-dialog-role';
 
 /**
  * Represents the create slice in the visual store.

@@ -3,13 +3,13 @@ import { type Loader, type TooltipHandler, type View } from 'vega';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { type SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 
-import { type PlatformSearchContribution } from '../../features/settings-pane/search/resolve-descriptors';
+import { type PlatformSearchContribution } from '../../lib/platform-search-contract';
 
 export type {
     PlatformSearchContribution,
     PlatformSearchRow,
     LocalisableText
-} from '../../features/settings-pane/search/resolve-descriptors';
+} from '../../lib/platform-search-contract';
 
 /**
  * A function that binds platform-specific event listeners to a Vega view.

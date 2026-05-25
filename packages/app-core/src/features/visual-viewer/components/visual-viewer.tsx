@@ -20,7 +20,7 @@ import { VegaEmbedErrorBoundary } from './vega-embed-error-boundary';
 import { VEGA_CONTAINER_ID } from '../constants';
 import { performIncrementalUpdate } from '../incremental-update';
 import { useDenebState } from '../../../state';
-import { useDenebPlatformProvider } from '../../deneb-platform';
+import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 import { INCREMENTAL_UPDATE_CONFIGURATION } from '../../../lib/vega/incremental-update-configuration';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 import {

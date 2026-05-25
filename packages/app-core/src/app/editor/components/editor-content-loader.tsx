@@ -1,6 +1,6 @@
 import { use } from 'react';
 
-import { initializeEditorDependencies } from '../../../lib/editor-init';
+import { initializeEditorDependencies } from '../../../lib/monaco';
 import { EditorContent } from './editor-content';
 
 /**
