@@ -3,7 +3,7 @@ import { type SpecificationEditorRefs } from '../../lib/editor/specification-edi
 import type { monaco } from '../../lib/monaco/types';
 
 export const SpecificationEditorContext =
-    createContext<SpecificationEditorRefs>({} as SpecificationEditorRefs);
+    createContext<SpecificationEditorRefs | null>(null);
 const specEditorMonacoRef =
     createRef<monaco.editor.IStandaloneCodeEditor | null>();
 const configEditorMonacoRef =
