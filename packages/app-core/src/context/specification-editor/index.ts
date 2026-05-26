@@ -1,5 +1,6 @@
 export {
     SpecificationEditorContext,
-    SpecificationEditorProvider
+    SpecificationEditorProvider,
+    specificationEditorRefs
 } from './specification-editor-context';
 export { useSpecificationEditor } from './use-specification-editor';

@@ -11,8 +11,8 @@ import { NotificationToast } from './notification-toast';
 import {
     handleDiscardChanges,
     handlePersistSpecification,
-    useDenebState,
-    useSpecificationEditor
+    specificationEditorRefs,
+    useDenebState
 } from '@deneb-viz/app-core';
 
 export const NotificationApplyChanges = ({ toasterId }: NotificationProps) => {
@@ -26,10 +26,21 @@ export const NotificationApplyChanges = ({ toasterId }: NotificationProps) => {
     );
     const toastId = useId(TOAST_NOTIFICATION_ID_APPLY_CHANGES);
     const { dispatchToast, dismissToast } = useToastController(toasterId);
-    const { spec, config } = useSpecificationEditor();
+    // Use the module-level singleton refs directly rather than
+    // `useSpecificationEditor()`. This component is mounted on the App
+    // shell (sibling of `RetainedDenebEditor`), so the
+    // `SpecificationEditorProvider` is not in its ancestor chain on a
+    // cold viewer load — calling the hook would (correctly) throw and
+    // unmount the entire App. The refs are module-level singletons
+    // populated by the Monaco instances when the editor mounts;
+    // reading their `.current` lazily inside the click handlers
+    // gracefully no-ops before the editor has ever been opened
+    // (matching the prior behaviour when the context was wrongly
+    // defaulted to a truthy sentinel).
+    const { spec, config } = specificationEditorRefs;
     const handleApply = () => {
         dismissToast(toastId);
-        handlePersistSpecification(spec?.current, config?.current, false);
+        handlePersistSpecification(spec.current, config.current, false);
     };
     const handleDiscard = () => {
         dismissToast(toastId);
