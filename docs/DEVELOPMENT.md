@@ -52,7 +52,14 @@ Deneb uses a two-branch trunk:
 
 Copy `.env.example` to `.env` (see ".env Setup" below) so local dev toggles like `LOG_LEVEL` are picked up.
 
-> **Note:** The `npm run dev` command automatically detects if required assets are missing and runs a one-time build to generate them. You no longer need to manually run `npm run package` before first dev run.
+> **Note:** The `npm run dev` command performs the following steps automatically each time it runs:
+>
+> 1. **Clears `.tmp/`** for a predictable starting state. This avoids stale webpack persistent cache (which can survive branch switches and report ghost errors against source that no longer exists), plus stale prime artefacts under `.tmp/precompile` and `.tmp/drop`.
+> 2. **Builds workspace packages** via `npm run build:package` so webpack can resolve `@deneb-viz/*` imports (their `exports` map points at `dist/`). Turbo's cache makes this near-instant when packages are unchanged.
+> 3. **Primes dev assets** (`.tmp/precompile/visualPlugin.ts` and `.tmp/drop/pbiviz.json`).
+> 4. **Starts the dev server** alongside the workspace package watchers.
+>
+> Cost: ~22s first build per dev session (one-off; in-session rebuilds are still ~1–2s via webpack's in-memory cache). Benefit: no manual cache clearing, no missing-export warnings from old cache, no need to pre-build packages on a fresh clone.
 
 ### Typical development
 
