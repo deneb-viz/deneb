@@ -25,11 +25,24 @@ const path = require('path');
 const repoRoot = path.join(__dirname, '..');
 const tmpDir = path.join(repoRoot, '.tmp');
 
+// Distinguish clean shutdown (Ctrl+C, SIGTERM) from a real failure so outer
+// wrappers (CI gates, agent harnesses) see the genuine exit code.
+// POSIX: SIGINT/SIGTERM set error.signal, or the shell propagates 130.
+// Windows: Ctrl+C surfaces as status 3221225786 (0xC000013A — STATUS_CONTROL_C_EXIT).
+const isCleanShutdown = (error) =>
+    error.signal === 'SIGINT' ||
+    error.signal === 'SIGTERM' ||
+    error.status === 130 ||
+    error.status === 3221225786;
+
 const run = (label, command) => {
     console.log(`\n→ ${label}`);
     try {
         execSync(command, { stdio: 'inherit', cwd: repoRoot });
     } catch (error) {
+        if (isCleanShutdown(error)) {
+            process.exit(0);
+        }
         console.error(`✗ ${label} failed`);
         if (error.message) console.error(error.message);
         process.exit(error.status ?? 1);
@@ -67,16 +80,7 @@ try {
         { stdio: 'inherit', cwd: repoRoot }
     );
 } catch (error) {
-    // Distinguish clean shutdown (Ctrl+C, SIGTERM) from a real failure so
-    // outer wrappers (CI gates, agent harnesses) see the genuine exit code.
-    // POSIX: SIGINT/SIGTERM set error.signal, or the shell propagates 130.
-    // Windows: Ctrl+C surfaces as status 3221225786 (0xC000013A — STATUS_CONTROL_C_EXIT).
-    const isCleanShutdown =
-        error.signal === 'SIGINT' ||
-        error.signal === 'SIGTERM' ||
-        error.status === 130 ||
-        error.status === 3221225786;
-    if (isCleanShutdown) {
+    if (isCleanShutdown(error)) {
         process.exit(0);
     }
     console.error('✗ Dev server exited with error');
