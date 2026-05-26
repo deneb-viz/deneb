@@ -272,7 +272,7 @@ Common issues:
 
 - **Constructor not firing** → Check `_DEBUG` suffix in webpack.common.config.js
 - **Slow rebuilds (>5s)** → Ensure `certificationFix: false` in dev mode
-- **Visual doesn't load** → Clear `.tmp/`, restart `npm run dev` (auto-primes)
+- **Visual doesn't load** → Restart `npm run dev` (it clears `.tmp/`, rebuilds packages, and re-primes on every start)
 - **Type errors unnoticed** → Run `npm run webpack:package` or `npx tsc --noEmit`
 
 ## Known Workarounds

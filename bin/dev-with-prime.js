@@ -1,56 +1,68 @@
 #!/usr/bin/env node
 /**
- * Dev script that primes assets if needed, then starts dev server
+ * Dev script that ensures a predictable starting state for `npm run dev`:
+ *
+ *   1. Clears `.tmp/` so each session starts free of stale webpack persistent
+ *      cache, stale `.tmp/precompile` / `.tmp/drop` assets, and any leftover
+ *      state from previous branches.
+ *   2. Builds the workspace packages so webpack can resolve `@deneb-viz/*`
+ *      imports during the prime step (workspace exports point at `dist/`).
+ *      Turbo's task cache makes this near-instant when nothing has changed.
+ *   3. Primes dev assets (`.tmp/precompile/visualPlugin.ts` and
+ *      `.tmp/drop/pbiviz.json`).
+ *   4. Starts the dev server alongside the package watchers.
+ *
+ * The trade-off for clearing `.tmp/` is a ~22s first build per session
+ * versus the unpredictable warnings/errors that result from stale cache
+ * (e.g. cross-branch webpack cache reporting missing re-exports that exist
+ * in the current source).
  */
 
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const pbivizPath = path.join(__dirname, '..', '.tmp', 'drop', 'pbiviz.json');
-const pluginPath = path.join(
-    __dirname,
-    '..',
-    '.tmp',
-    'precompile',
-    'visualPlugin.ts'
-);
+const repoRoot = path.join(__dirname, '..');
+const tmpDir = path.join(repoRoot, '.tmp');
 
-// Check if assets exist AND pbiviz.json has resources (not just metadata)
-let allExist = fs.existsSync(pbivizPath) && fs.existsSync(pluginPath);
-
-if (allExist) {
-    // Verify pbiviz.json has stringResources (means it was fully generated)
+const run = (label, command) => {
+    console.log(`\n→ ${label}`);
     try {
-        const pbiviz = JSON.parse(fs.readFileSync(pbivizPath, 'utf8'));
-        if (!pbiviz.stringResources || Object.keys(pbiviz.stringResources).length === 0) {
-            console.log('⚠ pbiviz.json exists but lacks resources');
-            allExist = false;
-        }
+        execSync(command, { stdio: 'inherit', cwd: repoRoot });
     } catch (error) {
-        console.log('⚠ pbiviz.json is invalid or corrupted');
-        allExist = false;
-    }
-}
-
-if (!allExist) {
-    console.log('⚠ Dev assets missing, priming...');
-    try {
-        execSync('npm run webpack:prime', { stdio: 'inherit' });
-        console.log('✓ Assets primed successfully');
-    } catch (error) {
-        console.error('✗ Failed to prime assets');
+        console.error(`✗ ${label} failed`);
         process.exit(1);
     }
-} else {
-    console.log('✓ Dev assets already exist, skipping prime step');
+};
+
+// 1. Clear .tmp for a predictable dev start.
+if (fs.existsSync(tmpDir)) {
+    console.log('🧹 Clearing .tmp for a predictable dev start...');
+    try {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+    } catch (error) {
+        console.error(
+            '✗ Failed to clear .tmp — close any processes using files inside it and retry'
+        );
+        console.error(error.message);
+        process.exit(1);
+    }
 }
 
-// Now start the dev server
-console.log('Starting dev server...');
+// 2. Build workspace packages so webpack can resolve @deneb-viz/* imports.
+//    turbo's cache makes this fast (~1-2s) when packages are unchanged.
+run('Building workspace packages', 'npm run build:package');
+
+// 3. Prime dev assets.
+run('Priming dev assets', 'npm run webpack:prime');
+console.log('✓ Assets primed successfully');
+
+// 4. Start the dev server alongside package watchers.
+console.log('\n→ Starting dev server...');
 try {
     execSync('turbo run dev webpack:start --parallel --concurrency=25', {
-        stdio: 'inherit'
+        stdio: 'inherit',
+        cwd: repoRoot
     });
 } catch (error) {
     // User likely pressed Ctrl+C to stop the server
