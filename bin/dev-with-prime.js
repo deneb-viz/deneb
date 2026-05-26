@@ -31,22 +31,22 @@ const run = (label, command) => {
         execSync(command, { stdio: 'inherit', cwd: repoRoot });
     } catch (error) {
         console.error(`✗ ${label} failed`);
-        process.exit(1);
+        if (error.message) console.error(error.message);
+        process.exit(error.status ?? 1);
     }
 };
 
-// 1. Clear .tmp for a predictable dev start.
-if (fs.existsSync(tmpDir)) {
-    console.log('🧹 Clearing .tmp for a predictable dev start...');
-    try {
-        fs.rmSync(tmpDir, { recursive: true, force: true });
-    } catch (error) {
-        console.error(
-            '✗ Failed to clear .tmp — close any processes using files inside it and retry'
-        );
-        console.error(error.message);
-        process.exit(1);
-    }
+// 1. Reset .tmp for a predictable dev start. rmSync with force:true no-ops
+//    on ENOENT, so no existsSync guard is needed.
+console.log('🧹 Resetting .tmp for a predictable dev start...');
+try {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+} catch (error) {
+    console.error(
+        '✗ Failed to clear .tmp — close any processes using files inside it and retry'
+    );
+    console.error(error.message);
+    process.exit(1);
 }
 
 // 2. Build workspace packages so webpack can resolve @deneb-viz/* imports.
@@ -57,14 +57,29 @@ run('Building workspace packages', 'npm run build:package');
 run('Priming dev assets', 'npm run webpack:prime');
 console.log('✓ Assets primed successfully');
 
-// 4. Start the dev server alongside package watchers.
+// 4. Start the dev server alongside package watchers. `npx --no` resolves
+//    `turbo` through node_modules/.bin regardless of whether the script was
+//    invoked via `npm run dev` (PATH set) or directly (PATH not set).
 console.log('\n→ Starting dev server...');
 try {
-    execSync('turbo run dev webpack:start --parallel --concurrency=25', {
-        stdio: 'inherit',
-        cwd: repoRoot
-    });
+    execSync(
+        'npx --no turbo run dev webpack:start --parallel --concurrency=25',
+        { stdio: 'inherit', cwd: repoRoot }
+    );
 } catch (error) {
-    // User likely pressed Ctrl+C to stop the server
-    process.exit(0);
+    // Distinguish clean shutdown (Ctrl+C, SIGTERM) from a real failure so
+    // outer wrappers (CI gates, agent harnesses) see the genuine exit code.
+    // POSIX: SIGINT/SIGTERM set error.signal, or the shell propagates 130.
+    // Windows: Ctrl+C surfaces as status 3221225786 (0xC000013A — STATUS_CONTROL_C_EXIT).
+    const isCleanShutdown =
+        error.signal === 'SIGINT' ||
+        error.signal === 'SIGTERM' ||
+        error.status === 130 ||
+        error.status === 3221225786;
+    if (isCleanShutdown) {
+        process.exit(0);
+    }
+    console.error('✗ Dev server exited with error');
+    if (error.message) console.error(error.message);
+    process.exit(error.status ?? 1);
 }

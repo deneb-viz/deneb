@@ -51,7 +51,7 @@ npm run sync-packages                # Sync package versions across monorepo
 
 ```bash
 npm install       # Install dependencies
-npm run dev       # Start development (auto-primes assets if needed)
+npm run dev       # Start development (clears .tmp/, builds packages, primes assets, starts server)
 ```
 
 > **Details**: See [First-time setup](doc/DEVELOPMENT.md#first-time-setup) in DEVELOPMENT.md
@@ -241,7 +241,7 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 
 **Quick Start:**
 
-1. `npm run dev` → auto-primes assets, starts watchers + dev server
+1. `npm run dev` → clears `.tmp/`, builds packages, primes assets, starts watchers + dev server (~22s first build per session)
 2. Open Power BI pointing to `https://localhost:8080/assets/visual.js`
 3. Edit code → webpack auto-rebuilds (~1-2s) → page reloads
 
