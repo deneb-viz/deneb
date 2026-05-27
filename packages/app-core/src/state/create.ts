@@ -69,7 +69,7 @@ export type CreateSliceSetImportState = {
 /**
  * Represents the payload for a selected template (included in visual).
  */
-export interface ICreateSliceSetTemplate {
+interface ICreateSliceSetTemplate {
     candidates: DenebTemplateAllocationComponents;
     metadata: UsermetaTemplate;
 }

@@ -7,7 +7,7 @@ import {
 import { getValueType } from '../../workers/get-value-type';
 import type { WorkerDatasetViewerValueType } from '../../workers/types';
 
-export interface SignalDisplay {
+interface SignalDisplay {
     raw: unknown;
     display: string;
     valueType: WorkerDatasetViewerValueType;
