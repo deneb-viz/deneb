@@ -59,7 +59,7 @@ const MAX_UPDATE_HISTORY_RETENTION = 100;
  *    correct committed viewport is set when fetch completes and mode
  *    resolves to `viewer`/`no-project`.
  */
-export const doesModeAllowEmbedViewportSet = (mode: DisplayMode) => {
+export const doesModeAllowEmbedViewportSet = (mode: DisplayMode): boolean => {
     return (
         mode !== 'editor' &&
         mode !== 'transition-viewer-editor' &&

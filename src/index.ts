@@ -359,6 +359,7 @@ export class Deneb implements IVisual {
             }
             default: {
                 const _exhaustive: never = action.reason;
+                logTimeEnd('processDataset');
                 throw new Error(
                     `Unhandled finalise reason: ${String(_exhaustive)}`
                 );
