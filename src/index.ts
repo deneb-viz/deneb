@@ -40,7 +40,8 @@ import {
     getCategoricalDataViewFromOptions,
     getCategoricalRowCount,
     getMappedDataset,
-    hasDataViewChanged
+    hasDataViewChanged,
+    resolveDatasetUpdateAction
 } from './lib/dataset';
 import { I18N_TRANSLATIONS } from './i18n';
 import { initializeStoreSynchronization } from './lib/state';
@@ -161,9 +162,12 @@ export class Deneb implements IVisual {
      * Resolve the dataset for the visual update, based on the current state and the incoming options.
      */
     private resolveDataset(options: VisualUpdateOptions) {
-        let fetchSuccess = false;
         const {
-            dataset: { shouldProcess, setDataset, setIsFetchingAdditional },
+            dataset: {
+                isFetchingAdditional,
+                setDataset,
+                setIsFetchingAdditional
+            },
             settings
         } = getDenebVisualState();
         const {
@@ -186,8 +190,7 @@ export class Deneb implements IVisual {
         );
         // Always run change detection — interactivity setting changes (cross-filter,
         // cross-highlight) affect the processing plan and must trigger reprocessing
-        // even when the data itself hasn't changed (shouldProcess may be false for
-        // property-only updates).
+        // even when the data itself hasn't changed.
         const supportFieldConfig: SupportFieldConfiguration =
             getDenebState().project.supportFieldConfiguration ?? {};
         const consolidateFieldParameters =
@@ -200,42 +203,166 @@ export class Deneb implements IVisual {
             supportFieldConfig,
             consolidateFieldParameters
         );
-        logDebug('Data changed check', { shouldProcess, dataChanged });
+        const isInitialSegment =
+            options.operationKind === VisualDataChangeOperationKind.Create;
+        const action = resolveDatasetUpdateAction({
+            dataChanged,
+            canFetchMore,
+            isFetchingAdditional,
+            isInitialSegment
+        });
+        logDebug('Resolved dataset update action', {
+            action,
+            dataChanged,
+            canFetchMore,
+            isFetchingAdditional,
+            isInitialSegment
+        });
 
-        if (dataChanged) {
-            logDebug('Visual dataset has changed and should be re-processed.');
-            logTimeStart('processDataset');
-            const rowsLoaded = getCategoricalRowCount(categorical);
-            // If first segment, we test and set state accordingly for user feedback
-            if (
-                options.operationKind === VisualDataChangeOperationKind.Create
-            ) {
-                logDebug('Initial data segment.');
-            }
-            if (canFetchMore) {
-                logDebug(
-                    `${rowsLoaded} row(s) loaded. Attempting to fetch more data...`
-                );
+        if (action.kind === 'skip') {
+            logDebug('Visual dataset has not changed. No need to process.');
+            return;
+        }
+
+        logTimeStart('processDataset');
+        const rowsLoaded = getCategoricalRowCount(categorical);
+        if (isInitialSegment) {
+            logDebug('Initial data segment.');
+        }
+
+        if (action.kind === 'fetch-more') {
+            logDebug(
+                `${rowsLoaded} row(s) loaded. Attempting to fetch more data...`
+            );
+            setIsFetchingAdditional({
+                isFetchingAdditional: true,
+                rowsLoaded
+            });
+            // Defensive try/catch: if the host throws synchronously from
+            // fetchMoreData, the outer update() catch logs the failure
+            // but the isFetchingAdditional flag we just set would stay
+            // true forever — visual stuck on FetchingMessage with no
+            // recovery short of a hard restart. Clear the flag before
+            // re-throwing so subsequent updates can recover normally.
+            let fetchSuccess: boolean;
+            try {
+                fetchSuccess = this.#host.fetchMoreData(true);
+            } catch (e) {
                 setIsFetchingAdditional({
-                    isFetchingAdditional: true,
+                    isFetchingAdditional: false,
                     rowsLoaded
                 });
-                fetchSuccess = this.#host.fetchMoreData(true);
+                logTimeEnd('processDataset');
+                throw e;
             }
-            if (!fetchSuccess) {
+            if (fetchSuccess) {
+                logTimeEnd('processDataset');
+                return;
+            }
+            // Host declined the fetch — fall through to finalise/normal
+            // semantics with the segments we have so far.
+            logDebug(
+                'Host declined fetchMoreData. Finalising current dataset.'
+            );
+            setIsFetchingAdditional({
+                isFetchingAdditional: false,
+                rowsLoaded
+            });
+            setDataset(getMappedDataset(categorical, locale));
+            logTimeEnd('processDataset');
+            return;
+        }
+
+        // At this point `action.kind === 'finalise'` — `skip` returned
+        // at the top of the method and `fetch-more` returned/threw
+        // above. The switch below exhausts `action.reason`; a future
+        // reason added to the union surfaces here at compile time via
+        // the `never` assertion in `default`, preventing a silent
+        // fall-through into the wrong setDataset semantics.
+        switch (action.reason) {
+            case 'recover-interrupted-fetch': {
+                // A non-volatile update (typically a viewer↔editor or
+                // focus-mode transition) arrived while still flagged
+                // as fetching. Power BI has aborted the segmented
+                // Append chain and will not honour a resume during
+                // the transition.
+                //
+                // Critically, Power BI may also re-send a *reduced*
+                // categorical during the transition (e.g. editor mode
+                // resets segmented-fetch state and ships only the
+                // initial window). Calling `setDataset(getMappedDataset(...))`
+                // here would overwrite a fully-loaded dataset with
+                // that reduced payload and silently lose rows.
+                // Preserve the existing dataset slice; only clear the
+                // stuck flag so the loading screen goes away.
+                // Subsequent property persists, cross-filter events,
+                // or real data changes will re-enter the normal
+                // change-detection path on their own.
+                //
+                // Trade-off: if recovery fires before any setDataset
+                // has run (cold-load fetch interrupted at the very
+                // first segment), the user sees blank Vega rather
+                // than partial data. Acceptable — blank-with-
+                // recoverable beats wrong-data-without-recovery, and
+                // a user action (refresh/filter) retriggers the fetch.
+                //
+                // rowsLoaded: preserve the slice's current value
+                // (`Math.max` against the current update's count) so
+                // we never shrink the displayed row count below what
+                // actually sits in `dataset.values`. Power BI's
+                // reduced restart payload would otherwise rewrite
+                // rowsLoaded to e.g. 10K while the preserved values
+                // still hold 27K rows.
+                //
+                // Bounded-invariant note: `hasDataViewChanged` (in
+                // `src/lib/dataset/processing.ts`) returns its result
+                // by mutating module-level `prev*` references first.
+                // On the host-restart guard path the call returned
+                // true and already updated the cache to the reduced
+                // restart payload — so after the recovery branch
+                // preserves `dataset.values`, the change-detection
+                // cache and the slice deliberately diverge (cache
+                // points at the 10K refs, values still hold 27K).
+                // This is bounded and self-healing: any subsequent
+                // update with the same reduced refs is correctly
+                // skipped, and any subsequent update with new refs
+                // triggers a fresh fetch chain that re-syncs the
+                // slice. The lighter snapshot/restore alternative
+                // would require exposing module-level cache state
+                // from `processing.ts`; not worth the surface for an
+                // invariant that doesn't manifest as user-visible
+                // behaviour.
+                logDebug(
+                    'Non-volatile update arrived while flagged as fetching. ' +
+                        'Escaping stuck-fetching state — preserving current dataset.'
+                );
+                const currentStateRowsLoaded =
+                    getDenebVisualState().dataset.rowsLoaded;
+                setIsFetchingAdditional({
+                    isFetchingAdditional: false,
+                    rowsLoaded: Math.max(currentStateRowsLoaded, rowsLoaded)
+                });
+                logTimeEnd('processDataset');
+                return;
+            }
+            case 'normal': {
                 logDebug('No more data to fetch. Processing dataset...');
                 setIsFetchingAdditional({
                     isFetchingAdditional: false,
                     rowsLoaded
                 });
-                const dataset = getMappedDataset(categorical, locale);
-                setDataset(dataset);
+                setDataset(getMappedDataset(categorical, locale));
                 // Tracking is now only used for export (#486)
                 // this.updateTracking();
+                logTimeEnd('processDataset');
+                return;
             }
-            logTimeEnd('processDataset');
-        } else {
-            logDebug('Visual dataset has not changed. No need to process.');
+            default: {
+                const _exhaustive: never = action.reason;
+                throw new Error(
+                    `Unhandled finalise reason: ${String(_exhaustive)}`
+                );
+            }
         }
     }
 

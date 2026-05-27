@@ -41,11 +41,30 @@ export type GetUpdatedHistoryListPayload = {
  */
 const MAX_UPDATE_HISTORY_RETENTION = 100;
 
+/**
+ * Whether the current display mode is one where the embed viewport may
+ * be committed from the live host viewport.
+ *
+ * Excluded modes report a host viewport that does not match the canvas
+ * size the viewer should be rendered at:
+ *  - `editor` and the two `transition-*` modes report the editor's
+ *    full-screen area; committing it would resize the viewer to the
+ *    editor pane on the next viewer entry.
+ *  - `fetching` is a transient state during segmented data loads. If a
+ *    viewer↔editor transition arrives mid-fetch, the host viewport is
+ *    the editor's area, but the resolved mode is still `fetching` (the
+ *    transition detector is masked by the stuck flag). Treating
+ *    `fetching` as commit-safe pollutes `embedViewport` with the editor
+ *    viewport, which then survives into the viewer post-fetch. The
+ *    correct committed viewport is set when fetch completes and mode
+ *    resolves to `viewer`/`no-project`.
+ */
 export const doesModeAllowEmbedViewportSet = (mode: DisplayMode) => {
     return (
         mode !== 'editor' &&
         mode !== 'transition-viewer-editor' &&
-        mode !== 'transition-editor-viewer'
+        mode !== 'transition-editor-viewer' &&
+        mode !== 'fetching'
     );
 };
 
