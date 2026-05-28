@@ -6,7 +6,7 @@
 
 export type CellId = string;
 
-export interface CellCoord {
+interface CellCoord {
     rowIndex: number;
     fieldName: string;
 }

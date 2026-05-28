@@ -28,7 +28,7 @@ import {
  * their `useEffect` dependencies without triggering register/unregister
  * churn on every keystroke.
  */
-export interface DataTableKeyboardActions {
+interface DataTableKeyboardActions {
     /**
      * Register an inspectable cell as a focus target. Returns a cleanup
      * function suitable for a `useEffect` return value.
@@ -83,7 +83,7 @@ export const useIsDataTableCellActive = (cellId: CellId | null): boolean => {
     return cellId !== null && active === cellId;
 };
 
-export interface DataTableKeyboardProviderProps {
+interface DataTableKeyboardProviderProps {
     /**
      * The field names in render order. Used to compute the target cell for
      * left/right/home/end navigation. Changes to this array (e.g., column

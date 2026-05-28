@@ -38,7 +38,7 @@ const useInspectorPopoverStyles = makeStyles({
     }
 });
 
-export interface InspectorPopoverProps {
+interface InspectorPopoverProps {
     /**
      * Element whose scroll events dismiss the inspector. Typically the
      * `DataTableViewer` enclosure, so that scrolls in a sibling viewer (e.g.

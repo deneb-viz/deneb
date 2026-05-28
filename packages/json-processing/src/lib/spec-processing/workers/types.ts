@@ -52,7 +52,7 @@ export type IDenebJsonProcessingWorkerResponse =
 /**
  * The message format for a request to remap fields in a JSON specification.
  */
-export interface IDenebRemapRequestMessage {
+interface IDenebRemapRequestMessage {
     type: 'remapping';
     payload: IDenebRemapRequestPayload;
 }
@@ -84,7 +84,7 @@ export interface IDenebRemapResponsePayload {
 /**
  * The message format for a request to tokenize a JSON specification.
  */
-export interface IDenebTokenizationRequestMessage {
+interface IDenebTokenizationRequestMessage {
     type: 'tokenization';
     payload: IDenebTokenizationRequestPayload;
 }
@@ -118,7 +118,7 @@ export interface IDenebTokenizationResponsePayload {
  * The message format for a request to get tracking information from a JSON specification, based on the current
  * dataset.
  */
-export interface IDenebTrackingRequestMessage {
+interface IDenebTrackingRequestMessage {
     type: 'tracking';
     payload: IDenebTrackingRequestPayload;
 }

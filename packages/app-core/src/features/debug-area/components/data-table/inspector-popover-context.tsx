@@ -16,7 +16,7 @@ import type { WorkerDatasetViewerValueType } from '../../workers/types';
  * A single cell at a time can be the inspector's target — opening a new cell
  * replaces the state, ensuring there is only ever one popover open.
  */
-export interface InspectorPopoverState {
+interface InspectorPopoverState {
     isOpen: boolean;
     anchorRef: RefObject<HTMLElement | null> | null;
     rawValue: unknown;
@@ -24,7 +24,7 @@ export interface InspectorPopoverState {
     cellId: string | null;
 }
 
-export interface InspectorPopoverContextValue extends InspectorPopoverState {
+interface InspectorPopoverContextValue extends InspectorPopoverState {
     /**
      * Open the inspector on the given cell. Replaces any previously open state
      * so that at most one inspector is visible at a time.

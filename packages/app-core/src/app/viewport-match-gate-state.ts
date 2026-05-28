@@ -144,7 +144,7 @@ export type ViewportRef = RefObject<{
  * `<GatedDenebViewer />` wire this hook with their per-toggle
  * `isPendingSettle` flag and a setter that releases the gate.
  */
-export interface UseViewportMatchGateOptions {
+interface UseViewportMatchGateOptions {
     /**
      * Whether the gate is currently engaged. Each `false → true`
      * transition starts a fresh engage cycle (snapshot + timers); each
