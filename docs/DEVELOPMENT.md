@@ -112,6 +112,7 @@ Key toggles you'll likely set in `.env`:
 - `ZUSTAND_DEV_TOOLS`: enable Redux/Zustand devtools if you have the extension.
 - `PBIVIZ_DEV_MODE`: enable developer-specific visual behaviors.
 - `PBIVIZ_DEV_OVERLAY`: enable debugging overlay to view most recent visual update information (typically used for quick debugging of this info in Power BI Desktop, where developer tools are unavailable).
+- `PBIVIZ_DEV_FORCE_READ_MODE`: dev-only override that makes `isReportInReadMode` always return `true`, regardless of `options.viewMode`. Useful for exercising the read-mode persist gate and the in-memory migration mutations from Power BI Desktop (which only ever reports `viewMode === Edit`) without temporarily editing `display-mode.ts`. Must be `false` for committed builds; enforced by `npm run validate-config-for-commit`.
 
 Validate your setup any time with:
 

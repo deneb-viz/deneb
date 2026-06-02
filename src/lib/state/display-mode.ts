@@ -3,6 +3,27 @@ import powerbi from 'powerbi-visuals-api';
 import { type VisualFormattingSettingsModel } from '../../lib/persistence';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 import { logDebug } from '@deneb-viz/utils/logging';
+import { toBoolean } from '@deneb-viz/utils/type-conversion';
+
+/**
+ * Dev-only override for {@link isReportInReadMode}. When the
+ * `PBIVIZ_DEV_FORCE_READ_MODE` env flag is set, the helper unconditionally
+ * reports "read mode" regardless of `viewMode`. This is the local-test
+ * substitute for a real published-service deployment — flipping it in
+ * `.env` lets a developer exercise the read-mode persist gate and the
+ * in-memory migration mutations from Power BI Desktop (which always
+ * reports `viewMode === Edit`) without temporarily editing the helper
+ * itself.
+ *
+ * The flag is enforced to `false` in committed code by
+ * `bin/validate-config-for-commit.ts`, so a packaged build cannot
+ * accidentally ship with the override on. In production, the constant
+ * resolves to `false` at compile time via the webpack DefinePlugin
+ * substitution and the comparison short-circuits — no runtime cost.
+ */
+const IS_DEV_FORCE_READ_MODE = toBoolean(
+    process.env.PBIVIZ_DEV_FORCE_READ_MODE
+);
 
 /**
  * Resolved display mode for the Deneb visual; will dictate what UI and processing is performed.
@@ -69,6 +90,16 @@ export const doesModeAllowEmbedViewportSet = (mode: DisplayMode): boolean => {
 };
 
 /**
+ * Numeric value of `powerbi.ViewMode.View` (the published-report
+ * consumption mode). Compared against directly rather than via the
+ * `powerbi.ViewMode.View` const-enum reference so the comparison
+ * survives test environments where the `powerbi` namespace import is
+ * shimmed and the const-enum lookup returns undefined. Matches the
+ * pattern used elsewhere in this file (e.g. `editMode === 1`).
+ */
+const VIEW_MODE_VIEW = 0 satisfies powerbi.ViewMode;
+
+/**
  * Whether the visual is being consumed in read mode (a published or
  * embedded report being viewed, not authored). This is the gate the
  * property-migration code uses to decide whether to persist migrated
@@ -88,25 +119,20 @@ export const doesModeAllowEmbedViewportSet = (mode: DisplayMode): boolean => {
  * any real host scenario today; the gate falls through to "not read"
  * for it, which is the symbolically-correct edit-context treatment.
  *
+ * When the `PBIVIZ_DEV_FORCE_READ_MODE` env flag is set
+ * (see {@link IS_DEV_FORCE_READ_MODE}), the helper unconditionally
+ * reports read mode regardless of `viewMode`. The override is
+ * dev-only and is enforced to `false` in committed builds.
+ *
  * This helper is intentionally separate from the existing `isEditMode`
  * computation (which keys off `editMode === Advanced` and answers a
  * different question — whether the visual itself is in advanced edit
  * pane mode). The two coexist: `isEditMode` drives the Deneb editor
  * UI; `isReportInReadMode` drives the persistence gate.
  */
-/**
- * Numeric value of `powerbi.ViewMode.View` (the published-report
- * consumption mode). Compared against directly rather than via the
- * `powerbi.ViewMode.View` const-enum reference so the comparison
- * survives test environments where the `powerbi` namespace import is
- * shimmed and the const-enum lookup returns undefined. Matches the
- * pattern used elsewhere in this file (e.g. `editMode === 1`).
- */
-const VIEW_MODE_VIEW = 0 satisfies powerbi.ViewMode;
-
 export const isReportInReadMode = (
     options: powerbi.extensibility.visual.VisualUpdateOptions
-): boolean => options.viewMode === VIEW_MODE_VIEW;
+): boolean => IS_DEV_FORCE_READ_MODE || options.viewMode === VIEW_MODE_VIEW;
 
 /**
  * Generate an updated display history list based on the current history and new update payload.

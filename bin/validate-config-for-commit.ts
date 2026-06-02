@@ -12,6 +12,9 @@ const PBIVIZ_DEV_OVERLAY = toBoolean(process.env.PBIVIZ_DEV_OVERLAY);
 const PBIVIZ_VIEWPORT_GATE_OVERLAY = toBoolean(
     process.env.PBIVIZ_VIEWPORT_GATE_OVERLAY
 );
+const PBIVIZ_DEV_FORCE_READ_MODE = toBoolean(
+    process.env.PBIVIZ_DEV_FORCE_READ_MODE
+);
 const ALLOW_EXTERNAL_URI = toBoolean(process.env.ALLOW_EXTERNAL_URI);
 const allowExternalUri = MODE === 'standalone';
 const errors: string[] = [];
@@ -36,6 +39,13 @@ if (PBIVIZ_DEV_OVERLAY) {
 if (PBIVIZ_VIEWPORT_GATE_OVERLAY) {
     errors.push(
         '❌ .env PBIVIZ_VIEWPORT_GATE_OVERLAY flag is true; this should be false.'
+    );
+}
+// Dev force-read-mode override: only for local read-mode persist-gate
+// testing — never ship a build that pretends every update is read mode.
+if (PBIVIZ_DEV_FORCE_READ_MODE) {
+    errors.push(
+        '❌ .env PBIVIZ_DEV_FORCE_READ_MODE flag is true; this should be false.'
     );
 }
 // Log level: should be 0 (NONE) in committed code
