@@ -69,6 +69,46 @@ export const doesModeAllowEmbedViewportSet = (mode: DisplayMode): boolean => {
 };
 
 /**
+ * Whether the visual is being consumed in read mode (a published or
+ * embedded report being viewed, not authored). This is the gate the
+ * property-migration code uses to decide whether to persist migrated
+ * values back to the host: in read mode persistence is suppressed
+ * because (a) the reader has no intent to mutate the report, (b) host
+ * persists during read may be silently dropped or surface to the user
+ * as a stale-state warning, and (c) the snapshot/export service expects
+ * each `update()` to complete without side effects that trigger
+ * follow-up host updates.
+ *
+ * `viewMode === ViewMode.View` (the official "read" value) is the
+ * authoritative signal. The host-reported `isInFocus` flag carries
+ * separately — focus mode within a viewer (a reader clicking the
+ * "focus on this visual" control on a published report) keeps
+ * `viewMode === View`, so this helper correctly treats it as read mode.
+ * `InFocusEdit` is defined in the Power BI API but is not emitted by
+ * any real host scenario today; the gate falls through to "not read"
+ * for it, which is the symbolically-correct edit-context treatment.
+ *
+ * This helper is intentionally separate from the existing `isEditMode`
+ * computation (which keys off `editMode === Advanced` and answers a
+ * different question — whether the visual itself is in advanced edit
+ * pane mode). The two coexist: `isEditMode` drives the Deneb editor
+ * UI; `isReportInReadMode` drives the persistence gate.
+ */
+/**
+ * Numeric value of `powerbi.ViewMode.View` (the published-report
+ * consumption mode). Compared against directly rather than via the
+ * `powerbi.ViewMode.View` const-enum reference so the comparison
+ * survives test environments where the `powerbi` namespace import is
+ * shimmed and the const-enum lookup returns undefined. Matches the
+ * pattern used elsewhere in this file (e.g. `editMode === 1`).
+ */
+const VIEW_MODE_VIEW = 0 satisfies powerbi.ViewMode;
+
+export const isReportInReadMode = (
+    options: powerbi.extensibility.visual.VisualUpdateOptions
+): boolean => options.viewMode === VIEW_MODE_VIEW;
+
+/**
  * Generate an updated display history list based on the current history and new update payload.
  */
 export const getUpdatedDisplayHistoryList = (

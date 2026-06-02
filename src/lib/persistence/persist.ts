@@ -1,16 +1,24 @@
 import { logDebug } from '@deneb-viz/utils/logging';
 import { getDenebVisualState } from '../../state';
 import { getVisualHost } from '../host';
+import { isReadModePersistSuppressed } from './read-mode-gate';
 import { type PersistenceObject } from './types';
 
 /**
  * Manage persistence of content to the visual's data view `objects`.
  * Skips the call if the proposed changes match the current dataview values,
- * avoiding a superfluous update cycle from the Power BI host.
+ * avoiding a superfluous update cycle from the Power BI host. Also
+ * short-circuits when the read-mode persist gate is active — the visual
+ * never writes back to the host during a read-mode update, regardless of
+ * which call path produced the change (see read-mode-gate.ts).
  */
 export const persistProperties = (
     changes: powerbi.VisualObjectInstancesToPersist
 ) => {
+    if (isReadModePersistSuppressed()) {
+        logDebug('persistProperties: read-mode persist gate active, skipping');
+        return;
+    }
     if (!hasPropertyChanges(changes)) {
         logDebug('persistProperties: no changes detected, skipping');
         return;

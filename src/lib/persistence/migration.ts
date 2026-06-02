@@ -105,9 +105,29 @@ const getVersionChangeDetail = (
 /**
  * For updates, we need to be able to manage property migration between versions as necessary, just in case we're editing
  * a visual that hasn't caught up with the functionality we need in v-latest.
+ *
+ * Behaviour is split by mode:
+ *
+ *  - **Edit mode** (the historical default): on the first qualifying update
+ *    of the session, persist version stamps and any runtime-affecting
+ *    remaps via `persistProperties`, flip the `migrationCheckPerformed`
+ *    flag so the work doesn't re-run, and signal the version-change modal
+ *    via `updateMigrationDetails`.
+ *  - **Read mode** (`isReadMode === true`): never persist; never flip the
+ *    flag; never open the modal. Instead apply the runtime-affecting parts
+ *    of the migration directly to the in-memory settings model so the
+ *    read render still honours migrated values (e.g. the pre-1.10
+ *    `enableContextMenu` split). The `migrationCheckPerformed` flag is
+ *    intentionally NOT consulted in read mode — the flag lives in a
+ *    separate Zustand slice that is not reset between updates, so if a
+ *    prior edit-mode session flipped it the read-mode path would
+ *    otherwise become a no-op forever afterwards. Running every
+ *    read-mode update is cheap (a couple of property reads + a possible
+ *    assignment) and correct.
  */
 export const handlePropertyMigration = (
-    visualSettings: VisualFormattingSettingsModel
+    visualSettings: VisualFormattingSettingsModel,
+    isReadMode: boolean
 ) => {
     const {
         vega: {
@@ -116,6 +136,13 @@ export const handlePropertyMigration = (
             }
         }
     } = visualSettings;
+    if (isReadMode) {
+        applyRuntimeAffectingMigrationsInMemory(
+            visualSettings,
+            <SpecProvider>provider
+        );
+        return;
+    }
     const {
         migration: { migrationCheckPerformed, updateMigrationDetails }
     } = getDenebState();
@@ -140,6 +167,78 @@ export const handlePropertyMigration = (
             default:
                 break;
         }
+    }
+};
+
+/**
+ * Apply the migration's runtime-affecting mutations directly to the
+ * in-memory `VisualFormattingSettingsModel` reference, mirroring the
+ * branching of the edit-mode path so a read-mode render honours the
+ * same values the edit-mode persist round-trip would have produced.
+ *
+ * Mutating the live settings object is intentional: consumers (e.g.
+ * `src/lib/interactivity/context-menu.ts`) read these values lazily via
+ * `getDenebVisualState().settings.<...>.value`, so the mutation is
+ * visible to whichever code reads next in the same update. The
+ * mutation does not survive into the next update — the visual store's
+ * `setVisualUpdateOptions` rebuilds the settings model on every update
+ * from the host-shipped data view — which is exactly why read-mode
+ * migration must run every update.
+ */
+const applyRuntimeAffectingMigrationsInMemory = (
+    visualSettings: VisualFormattingSettingsModel,
+    provider: SpecProvider
+): void => {
+    if (isUnversionedSpec()) {
+        // Mirrors `migrateUnversionedSpec`: stamp current versions so
+        // downstream consumers and the slice-sync mapping see the
+        // correct values. No context-menu remap on this branch — the
+        // edit-mode equivalent does not include one here either.
+        applyVersionStampsInMemory(visualSettings, provider);
+        return;
+    }
+    const versionComparator = getVersionComparatorInfo(visualSettings);
+    const changeType = getVersionChangeDetail(versionComparator);
+    if (changeType !== 'equal') {
+        // Mirrors `migrateWithNoChanges`: capture the previous version
+        // BEFORE stamping, then apply the optional context-menu remap
+        // against the captured value, then stamp the new versions.
+        const previousVersion = getLastVersionInfo(visualSettings).denebVersion;
+        applyContextMenuRemapInMemory(visualSettings, previousVersion);
+        applyVersionStampsInMemory(visualSettings, provider);
+    }
+};
+
+/**
+ * Stamp the current Deneb and provider versions onto the in-memory
+ * settings model. Idempotent — repeated application on the same model
+ * (e.g. across consecutive read-mode updates) is a no-op once the
+ * values match.
+ */
+const applyVersionStampsInMemory = (
+    visualSettings: VisualFormattingSettingsModel,
+    provider: SpecProvider
+): void => {
+    visualSettings.developer.versioning.version.value = APPLICATION_VERSION;
+    visualSettings.vega.output.version.value = getVegaVersion(provider);
+};
+
+/**
+ * Apply the pre-1.10 context-menu split to the in-memory settings
+ * model when the legacy `enableContextMenu: false` /
+ * `enableContextMenuSelector: true` state qualifies. Mirrors the
+ * persist-payload built by `getContextMenuMigrationProperties` exactly.
+ */
+const applyContextMenuRemapInMemory = (
+    visualSettings: VisualFormattingSettingsModel,
+    previousVersion: string
+): void => {
+    if (!isNewerVersion(previousVersion, CONTEXT_MENU_SPLIT_VERSION)) return;
+    const { enableContextMenu, enableContextMenuSelector } =
+        visualSettings.vega.interactivity;
+    if (!enableContextMenu.value && enableContextMenuSelector.value) {
+        enableContextMenu.value = true;
+        enableContextMenuSelector.value = false;
     }
 };
 

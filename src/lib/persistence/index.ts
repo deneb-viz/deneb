@@ -7,4 +7,8 @@ export {
     type PersistPropertiesHost
 } from './properties';
 export { persistOnCreateFromTemplate } from './project';
+export {
+    isReadModePersistSuppressed,
+    setReadModePersistSuppressed
+} from './read-mode-gate';
 export type * from './types';

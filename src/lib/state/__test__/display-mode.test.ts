@@ -1,6 +1,10 @@
+import powerbi from 'powerbi-visuals-api';
 import { describe, expect, it } from 'vitest';
 
-import { doesModeAllowEmbedViewportSet } from '../display-mode';
+import {
+    doesModeAllowEmbedViewportSet,
+    isReportInReadMode
+} from '../display-mode';
 import type { DisplayMode } from '../display-mode';
 
 /**
@@ -63,6 +67,54 @@ describe('doesModeAllowEmbedViewportSet', () => {
         ];
         expect(cases.map((c) => c.mode).sort()).toEqual(
             [...allKnownModes].sort()
+        );
+    });
+});
+
+/**
+ * `isReportInReadMode` is the authoritative gate the persistence
+ * suppression layer consults: it must return true only when the report
+ * is being consumed in read mode (a published or embedded report being
+ * viewed, not authored). The Power BI `ViewMode` enum has three values
+ * — View, Edit, InFocusEdit — and the test pins all three plus a
+ * focus-mode-on-viewer scenario (which keeps `viewMode === View`).
+ */
+describe('isReportInReadMode', () => {
+    // ViewMode enum values from powerbi-visuals-api. Hard-coded rather
+    // than referenced as `powerbi.ViewMode.<name>` because the namespace
+    // is shimmed in the test environment and const-enum lookups return
+    // undefined. Matches the raw-numeric comparison used elsewhere in
+    // display-mode.ts (e.g. `editMode === 1`).
+    const VIEW_MODE_VIEW = 0 satisfies powerbi.ViewMode;
+    const VIEW_MODE_EDIT = 1 satisfies powerbi.ViewMode;
+    const VIEW_MODE_IN_FOCUS_EDIT = 2 satisfies powerbi.ViewMode;
+
+    const buildOptions = (
+        viewMode: powerbi.ViewMode,
+        isInFocus = false
+    ): powerbi.extensibility.visual.VisualUpdateOptions =>
+        ({
+            viewMode,
+            isInFocus
+        }) as powerbi.extensibility.visual.VisualUpdateOptions;
+
+    it('returns true for ViewMode.View', () => {
+        expect(isReportInReadMode(buildOptions(VIEW_MODE_VIEW))).toBe(true);
+    });
+
+    it('returns false for ViewMode.Edit', () => {
+        expect(isReportInReadMode(buildOptions(VIEW_MODE_EDIT))).toBe(false);
+    });
+
+    it('returns false for ViewMode.InFocusEdit', () => {
+        expect(isReportInReadMode(buildOptions(VIEW_MODE_IN_FOCUS_EDIT))).toBe(
+            false
+        );
+    });
+
+    it('treats focus mode on a viewer as read mode (viewMode stays View, isInFocus is true)', () => {
+        expect(isReportInReadMode(buildOptions(VIEW_MODE_VIEW, true))).toBe(
+            true
         );
     });
 });
