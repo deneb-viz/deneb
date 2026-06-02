@@ -62,6 +62,26 @@ import {
 const IS_DEVELOPER_MODE = toBoolean(process.env.PBIVIZ_DEV_MODE);
 
 /**
+ * Inputs the {@link Deneb.resolveDataset} dispatch handlers consume. Built
+ * once per update by {@link Deneb.gatherDatasetUpdateContext} and passed
+ * unchanged into each handler. `rowsLoaded` is computed in the dispatcher
+ * after the skip-return so the skip path does not pay for the row count;
+ * handlers that need it receive it as a separate argument.
+ */
+type DatasetUpdateContext = {
+    action: DatasetUpdateAction;
+    categorical: ReturnType<typeof getCategoricalDataViewFromOptions>;
+    locale: I18nLocale;
+    isInitialSegment: boolean;
+    setDataset: ReturnType<
+        typeof getDenebVisualState
+    >['dataset']['setDataset'];
+    setIsFetchingAdditional: ReturnType<
+        typeof getDenebVisualState
+    >['dataset']['setIsFetchingAdditional'];
+};
+
+/**
  * Run to indicate that the visual has started.
  */
 IS_DEVELOPER_MODE && console.clear();
@@ -163,14 +183,8 @@ export class Deneb implements IVisual {
      * Resolve the dataset for the visual update, based on the current state and the incoming options.
      */
     private resolveDataset(options: VisualUpdateOptions) {
-        const {
-            action,
-            categorical,
-            locale,
-            isInitialSegment,
-            setDataset,
-            setIsFetchingAdditional
-        } = this.gatherDatasetUpdateContext(options);
+        const context = this.gatherDatasetUpdateContext(options);
+        const { action, categorical, locale, isInitialSegment, setDataset, setIsFetchingAdditional } = context;
 
         if (action.kind === 'skip') {
             logDebug('Visual dataset has not changed. No need to process.');
@@ -184,45 +198,7 @@ export class Deneb implements IVisual {
         }
 
         if (action.kind === 'fetch-more') {
-            logDebug(
-                `${rowsLoaded} row(s) loaded. Attempting to fetch more data...`
-            );
-            setIsFetchingAdditional({
-                isFetchingAdditional: true,
-                rowsLoaded
-            });
-            // Defensive try/catch: if the host throws synchronously from
-            // fetchMoreData, the outer update() catch logs the failure
-            // but the isFetchingAdditional flag we just set would stay
-            // true forever — visual stuck on FetchingMessage with no
-            // recovery short of a hard restart. Clear the flag before
-            // re-throwing so subsequent updates can recover normally.
-            let fetchSuccess: boolean;
-            try {
-                fetchSuccess = this.#host.fetchMoreData(true);
-            } catch (e) {
-                setIsFetchingAdditional({
-                    isFetchingAdditional: false,
-                    rowsLoaded
-                });
-                logTimeEnd('processDataset');
-                throw e;
-            }
-            if (fetchSuccess) {
-                logTimeEnd('processDataset');
-                return;
-            }
-            // Host declined the fetch — fall through to finalise/normal
-            // semantics with the segments we have so far.
-            logDebug(
-                'Host declined fetchMoreData. Finalising current dataset.'
-            );
-            setIsFetchingAdditional({
-                isFetchingAdditional: false,
-                rowsLoaded
-            });
-            setDataset(getMappedDataset(categorical, locale));
-            logTimeEnd('processDataset');
+            this.handleFetchMore(context, rowsLoaded);
             return;
         }
 
@@ -321,13 +297,68 @@ export class Deneb implements IVisual {
     }
 
     /**
+     * Handle the `fetch-more` dispatch action: flag the visual as fetching,
+     * request the next segment from the host, and either return (segment
+     * accepted) or fall through to a normal-finalise with the segments we
+     * already have (host declined). Behaviour mirrors the original inline
+     * branch verbatim — the defensive try/catch around `fetchMoreData` and
+     * its rationale comment are preserved on the lines they originally sat on.
+     */
+    private handleFetchMore(
+        context: DatasetUpdateContext,
+        rowsLoaded: number
+    ): void {
+        const { categorical, locale, setDataset, setIsFetchingAdditional } =
+            context;
+        logDebug(
+            `${rowsLoaded} row(s) loaded. Attempting to fetch more data...`
+        );
+        setIsFetchingAdditional({
+            isFetchingAdditional: true,
+            rowsLoaded
+        });
+        // Defensive try/catch: if the host throws synchronously from
+        // fetchMoreData, the outer update() catch logs the failure
+        // but the isFetchingAdditional flag we just set would stay
+        // true forever — visual stuck on FetchingMessage with no
+        // recovery short of a hard restart. Clear the flag before
+        // re-throwing so subsequent updates can recover normally.
+        let fetchSuccess: boolean;
+        try {
+            fetchSuccess = this.#host.fetchMoreData(true);
+        } catch (e) {
+            setIsFetchingAdditional({
+                isFetchingAdditional: false,
+                rowsLoaded
+            });
+            logTimeEnd('processDataset');
+            throw e;
+        }
+        if (fetchSuccess) {
+            logTimeEnd('processDataset');
+            return;
+        }
+        // Host declined the fetch — fall through to finalise/normal
+        // semantics with the segments we have so far.
+        logDebug('Host declined fetchMoreData. Finalising current dataset.');
+        setIsFetchingAdditional({
+            isFetchingAdditional: false,
+            rowsLoaded
+        });
+        setDataset(getMappedDataset(categorical, locale));
+        logTimeEnd('processDataset');
+    }
+
+    /**
      * Resolve all inputs required by {@link resolveDataset}'s dispatch: extract
      * the relevant state and settings, compute change detection over the
      * incoming categorical, and resolve which dispatch action to take. The
      * returned object carries only what the dispatch handlers consume
      * downstream (no intermediate values like `dataChanged` / `canFetchMore`).
      */
-    private gatherDatasetUpdateContext(options: VisualUpdateOptions) {
+    private gatherDatasetUpdateContext(
+        options: VisualUpdateOptions
+    ): DatasetUpdateContext {
         const {
             dataset: {
                 isFetchingAdditional,
@@ -391,13 +422,6 @@ export class Deneb implements IVisual {
             isInitialSegment,
             setDataset,
             setIsFetchingAdditional
-        } satisfies {
-            action: DatasetUpdateAction;
-            categorical: ReturnType<typeof getCategoricalDataViewFromOptions>;
-            locale: typeof locale;
-            isInitialSegment: boolean;
-            setDataset: typeof setDataset;
-            setIsFetchingAdditional: typeof setIsFetchingAdditional;
         };
     }
 
