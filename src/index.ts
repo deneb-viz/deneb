@@ -184,7 +184,7 @@ export class Deneb implements IVisual {
      */
     private resolveDataset(options: VisualUpdateOptions) {
         const context = this.gatherDatasetUpdateContext(options);
-        const { action, categorical, locale, isInitialSegment, setDataset, setIsFetchingAdditional } = context;
+        const { action, categorical, isInitialSegment } = context;
 
         if (action.kind === 'skip') {
             logDebug('Visual dataset has not changed. No need to process.');
@@ -210,80 +210,11 @@ export class Deneb implements IVisual {
         // fall-through into the wrong setDataset semantics.
         switch (action.reason) {
             case 'recover-interrupted-fetch': {
-                // A non-volatile update (typically a viewer↔editor or
-                // focus-mode transition) arrived while still flagged
-                // as fetching. Power BI has aborted the segmented
-                // Append chain and will not honour a resume during
-                // the transition.
-                //
-                // Critically, Power BI may also re-send a *reduced*
-                // categorical during the transition (e.g. editor mode
-                // resets segmented-fetch state and ships only the
-                // initial window). Calling `setDataset(getMappedDataset(...))`
-                // here would overwrite a fully-loaded dataset with
-                // that reduced payload and silently lose rows.
-                // Preserve the existing dataset slice; only clear the
-                // stuck flag so the loading screen goes away.
-                // Subsequent property persists, cross-filter events,
-                // or real data changes will re-enter the normal
-                // change-detection path on their own.
-                //
-                // Trade-off: if recovery fires before any setDataset
-                // has run (cold-load fetch interrupted at the very
-                // first segment), the user sees blank Vega rather
-                // than partial data. Acceptable — blank-with-
-                // recoverable beats wrong-data-without-recovery, and
-                // a user action (refresh/filter) retriggers the fetch.
-                //
-                // rowsLoaded: preserve the slice's current value
-                // (`Math.max` against the current update's count) so
-                // we never shrink the displayed row count below what
-                // actually sits in `dataset.values`. Power BI's
-                // reduced restart payload would otherwise rewrite
-                // rowsLoaded to e.g. 10K while the preserved values
-                // still hold 27K rows.
-                //
-                // Bounded-invariant note: `hasDataViewChanged` (in
-                // `src/lib/dataset/processing.ts`) returns its result
-                // by mutating module-level `prev*` references first.
-                // On the host-restart guard path the call returned
-                // true and already updated the cache to the reduced
-                // restart payload — so after the recovery branch
-                // preserves `dataset.values`, the change-detection
-                // cache and the slice deliberately diverge (cache
-                // points at the 10K refs, values still hold 27K).
-                // This is bounded and self-healing: any subsequent
-                // update with the same reduced refs is correctly
-                // skipped, and any subsequent update with new refs
-                // triggers a fresh fetch chain that re-syncs the
-                // slice. The lighter snapshot/restore alternative
-                // would require exposing module-level cache state
-                // from `processing.ts`; not worth the surface for an
-                // invariant that doesn't manifest as user-visible
-                // behaviour.
-                logDebug(
-                    'Non-volatile update arrived while flagged as fetching. ' +
-                        'Escaping stuck-fetching state — preserving current dataset.'
-                );
-                const currentStateRowsLoaded =
-                    getDenebVisualState().dataset.rowsLoaded;
-                setIsFetchingAdditional({
-                    isFetchingAdditional: false,
-                    rowsLoaded: Math.max(currentStateRowsLoaded, rowsLoaded)
-                });
-                logTimeEnd('processDataset');
+                this.handleRecoverInterruptedFetch(context, rowsLoaded);
                 return;
             }
             case 'normal': {
-                logDebug('No more data to fetch. Processing dataset...');
-                setIsFetchingAdditional({
-                    isFetchingAdditional: false,
-                    rowsLoaded
-                });
-                setDataset(getMappedDataset(categorical, locale));
-                // Tracking is now only used for export (#486)
-                // this.updateTracking();
-                logTimeEnd('processDataset');
+                this.handleNormalFinalise(context, rowsLoaded);
                 return;
             }
             default: {
@@ -346,6 +277,107 @@ export class Deneb implements IVisual {
             rowsLoaded
         });
         setDataset(getMappedDataset(categorical, locale));
+        logTimeEnd('processDataset');
+    }
+
+    /**
+     * Handle the `finalise: recover-interrupted-fetch` dispatch action: a
+     * non-volatile update arrived while still flagged as fetching, so the
+     * host has aborted the segmented Append chain. Preserve the existing
+     * dataset slice (Power BI may have re-sent a reduced categorical that
+     * would overwrite a fully-loaded dataset with that reduced payload);
+     * only clear the stuck `isFetchingAdditional` flag so the loading
+     * screen goes away. All inline rationale comments are preserved
+     * verbatim on the lines they originally occupied.
+     */
+    private handleRecoverInterruptedFetch(
+        context: DatasetUpdateContext,
+        rowsLoaded: number
+    ): void {
+        const { setIsFetchingAdditional } = context;
+        // A non-volatile update (typically a viewer↔editor or
+        // focus-mode transition) arrived while still flagged
+        // as fetching. Power BI has aborted the segmented
+        // Append chain and will not honour a resume during
+        // the transition.
+        //
+        // Critically, Power BI may also re-send a *reduced*
+        // categorical during the transition (e.g. editor mode
+        // resets segmented-fetch state and ships only the
+        // initial window). Calling `setDataset(getMappedDataset(...))`
+        // here would overwrite a fully-loaded dataset with
+        // that reduced payload and silently lose rows.
+        // Preserve the existing dataset slice; only clear the
+        // stuck flag so the loading screen goes away.
+        // Subsequent property persists, cross-filter events,
+        // or real data changes will re-enter the normal
+        // change-detection path on their own.
+        //
+        // Trade-off: if recovery fires before any setDataset
+        // has run (cold-load fetch interrupted at the very
+        // first segment), the user sees blank Vega rather
+        // than partial data. Acceptable — blank-with-
+        // recoverable beats wrong-data-without-recovery, and
+        // a user action (refresh/filter) retriggers the fetch.
+        //
+        // rowsLoaded: preserve the slice's current value
+        // (`Math.max` against the current update's count) so
+        // we never shrink the displayed row count below what
+        // actually sits in `dataset.values`. Power BI's
+        // reduced restart payload would otherwise rewrite
+        // rowsLoaded to e.g. 10K while the preserved values
+        // still hold 27K rows.
+        //
+        // Bounded-invariant note: `hasDataViewChanged` (in
+        // `src/lib/dataset/processing.ts`) returns its result
+        // by mutating module-level `prev*` references first.
+        // On the host-restart guard path the call returned
+        // true and already updated the cache to the reduced
+        // restart payload — so after the recovery branch
+        // preserves `dataset.values`, the change-detection
+        // cache and the slice deliberately diverge (cache
+        // points at the 10K refs, values still hold 27K).
+        // This is bounded and self-healing: any subsequent
+        // update with the same reduced refs is correctly
+        // skipped, and any subsequent update with new refs
+        // triggers a fresh fetch chain that re-syncs the
+        // slice. The lighter snapshot/restore alternative
+        // would require exposing module-level cache state
+        // from `processing.ts`; not worth the surface for an
+        // invariant that doesn't manifest as user-visible
+        // behaviour.
+        logDebug(
+            'Non-volatile update arrived while flagged as fetching. ' +
+                'Escaping stuck-fetching state — preserving current dataset.'
+        );
+        const currentStateRowsLoaded =
+            getDenebVisualState().dataset.rowsLoaded;
+        setIsFetchingAdditional({
+            isFetchingAdditional: false,
+            rowsLoaded: Math.max(currentStateRowsLoaded, rowsLoaded)
+        });
+        logTimeEnd('processDataset');
+    }
+
+    /**
+     * Handle the `finalise: normal` dispatch action: no more data to
+     * fetch, so process the current categorical into the dataset slice,
+     * clear the fetching flag, and close the processing timing span.
+     */
+    private handleNormalFinalise(
+        context: DatasetUpdateContext,
+        rowsLoaded: number
+    ): void {
+        const { categorical, locale, setDataset, setIsFetchingAdditional } =
+            context;
+        logDebug('No more data to fetch. Processing dataset...');
+        setIsFetchingAdditional({
+            isFetchingAdditional: false,
+            rowsLoaded
+        });
+        setDataset(getMappedDataset(categorical, locale));
+        // Tracking is now only used for export (#486)
+        // this.updateTracking();
         logTimeEnd('processDataset');
     }
 
