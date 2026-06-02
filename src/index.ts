@@ -73,9 +73,7 @@ type DatasetUpdateContext = {
     categorical: ReturnType<typeof getCategoricalDataViewFromOptions>;
     locale: I18nLocale;
     isInitialSegment: boolean;
-    setDataset: ReturnType<
-        typeof getDenebVisualState
-    >['dataset']['setDataset'];
+    setDataset: ReturnType<typeof getDenebVisualState>['dataset']['setDataset'];
     setIsFetchingAdditional: ReturnType<
         typeof getDenebVisualState
     >['dataset']['setIsFetchingAdditional'];
@@ -350,8 +348,7 @@ export class Deneb implements IVisual {
             'Non-volatile update arrived while flagged as fetching. ' +
                 'Escaping stuck-fetching state — preserving current dataset.'
         );
-        const currentStateRowsLoaded =
-            getDenebVisualState().dataset.rowsLoaded;
+        const currentStateRowsLoaded = getDenebVisualState().dataset.rowsLoaded;
         setIsFetchingAdditional({
             isFetchingAdditional: false,
             rowsLoaded: Math.max(currentStateRowsLoaded, rowsLoaded)
