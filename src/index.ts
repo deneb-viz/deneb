@@ -41,7 +41,8 @@ import {
     getCategoricalRowCount,
     getMappedDataset,
     hasDataViewChanged,
-    resolveDatasetUpdateAction
+    resolveDatasetUpdateAction,
+    type DatasetUpdateAction
 } from './lib/dataset';
 import { I18N_TRANSLATIONS } from './i18n';
 import { initializeStoreSynchronization } from './lib/state';
@@ -163,61 +164,13 @@ export class Deneb implements IVisual {
      */
     private resolveDataset(options: VisualUpdateOptions) {
         const {
-            dataset: {
-                isFetchingAdditional,
-                setDataset,
-                setIsFetchingAdditional
-            },
-            settings
-        } = getDenebVisualState();
-        const {
-            vega: {
-                interactivity: {
-                    enableHighlight: { value: enableHighlight },
-                    enableSelection: { value: enableSelection }
-                }
-            }
-        } = settings;
-        const {
-            i18n: { locale }
-        } = getDenebState();
-        const categorical = getCategoricalDataViewFromOptions(options);
-
-        // Do a quick check of the data view to see if it should be processed, to avoid unnecessary processing/syncing
-        const canFetchMore = canFetchMoreFromDataview(
-            settings,
-            options?.dataViews?.[0]?.metadata
-        );
-        // Always run change detection — interactivity setting changes (cross-filter,
-        // cross-highlight) affect the processing plan and must trigger reprocessing
-        // even when the data itself hasn't changed.
-        const supportFieldConfig: SupportFieldConfiguration =
-            getDenebState().project.supportFieldConfiguration ?? {};
-        const consolidateFieldParameters =
-            getDenebState().project.consolidateFieldParameters ?? true;
-
-        const dataChanged = hasDataViewChanged(
-            categorical,
-            enableSelection,
-            enableHighlight,
-            supportFieldConfig,
-            consolidateFieldParameters
-        );
-        const isInitialSegment =
-            options.operationKind === VisualDataChangeOperationKind.Create;
-        const action = resolveDatasetUpdateAction({
-            dataChanged,
-            canFetchMore,
-            isFetchingAdditional,
-            isInitialSegment
-        });
-        logDebug('Resolved dataset update action', {
             action,
-            dataChanged,
-            canFetchMore,
-            isFetchingAdditional,
-            isInitialSegment
-        });
+            categorical,
+            locale,
+            isInitialSegment,
+            setDataset,
+            setIsFetchingAdditional
+        } = this.gatherDatasetUpdateContext(options);
 
         if (action.kind === 'skip') {
             logDebug('Visual dataset has not changed. No need to process.');
@@ -365,6 +318,87 @@ export class Deneb implements IVisual {
                 );
             }
         }
+    }
+
+    /**
+     * Resolve all inputs required by {@link resolveDataset}'s dispatch: extract
+     * the relevant state and settings, compute change detection over the
+     * incoming categorical, and resolve which dispatch action to take. The
+     * returned object carries only what the dispatch handlers consume
+     * downstream (no intermediate values like `dataChanged` / `canFetchMore`).
+     */
+    private gatherDatasetUpdateContext(options: VisualUpdateOptions) {
+        const {
+            dataset: {
+                isFetchingAdditional,
+                setDataset,
+                setIsFetchingAdditional
+            },
+            settings
+        } = getDenebVisualState();
+        const {
+            vega: {
+                interactivity: {
+                    enableHighlight: { value: enableHighlight },
+                    enableSelection: { value: enableSelection }
+                }
+            }
+        } = settings;
+        const {
+            i18n: { locale }
+        } = getDenebState();
+        const categorical = getCategoricalDataViewFromOptions(options);
+
+        // Do a quick check of the data view to see if it should be processed, to avoid unnecessary processing/syncing
+        const canFetchMore = canFetchMoreFromDataview(
+            settings,
+            options?.dataViews?.[0]?.metadata
+        );
+        // Always run change detection — interactivity setting changes (cross-filter,
+        // cross-highlight) affect the processing plan and must trigger reprocessing
+        // even when the data itself hasn't changed.
+        const supportFieldConfig: SupportFieldConfiguration =
+            getDenebState().project.supportFieldConfiguration ?? {};
+        const consolidateFieldParameters =
+            getDenebState().project.consolidateFieldParameters ?? true;
+
+        const dataChanged = hasDataViewChanged(
+            categorical,
+            enableSelection,
+            enableHighlight,
+            supportFieldConfig,
+            consolidateFieldParameters
+        );
+        const isInitialSegment =
+            options.operationKind === VisualDataChangeOperationKind.Create;
+        const action = resolveDatasetUpdateAction({
+            dataChanged,
+            canFetchMore,
+            isFetchingAdditional,
+            isInitialSegment
+        });
+        logDebug('Resolved dataset update action', {
+            action,
+            dataChanged,
+            canFetchMore,
+            isFetchingAdditional,
+            isInitialSegment
+        });
+        return {
+            action,
+            categorical,
+            locale,
+            isInitialSegment,
+            setDataset,
+            setIsFetchingAdditional
+        } satisfies {
+            action: DatasetUpdateAction;
+            categorical: ReturnType<typeof getCategoricalDataViewFromOptions>;
+            locale: typeof locale;
+            isInitialSegment: boolean;
+            setDataset: typeof setDataset;
+            setIsFetchingAdditional: typeof setIsFetchingAdditional;
+        };
     }
 
     /**
