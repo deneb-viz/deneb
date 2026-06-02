@@ -62,11 +62,14 @@ import {
 const IS_DEVELOPER_MODE = toBoolean(process.env.PBIVIZ_DEV_MODE);
 
 /**
- * Inputs the {@link Deneb.resolveDataset} dispatch handlers consume. Built
- * once per update by {@link Deneb.gatherDatasetUpdateContext} and passed
- * unchanged into each handler. `rowsLoaded` is computed in the dispatcher
- * after the skip-return so the skip path does not pay for the row count;
- * handlers that need it receive it as a separate argument.
+ * Inputs consumed by {@link Deneb.resolveDataset} and the private dispatch
+ * handlers it calls. Built once per update by
+ * {@link Deneb.gatherDatasetUpdateContext}. `isInitialSegment` is used by
+ * the dispatcher only (initial-segment debug log); the other fields flow
+ * into the handlers via the `context` argument. `rowsLoaded` is computed
+ * in the dispatcher after the skip-return so the skip path does not pay
+ * for the row count; handlers that need it receive it as a separate
+ * argument.
  */
 type DatasetUpdateContext = {
     action: DatasetUpdateAction;
