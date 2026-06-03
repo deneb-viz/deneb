@@ -156,7 +156,7 @@ describe('handlePropertyMigration — edit mode', () => {
         expect(vega?.properties?.version).toBe('6.4.0');
     });
 
-    it('persists context-menu remap when migrating from pre-1.10 with legacy state', () => {
+    it('persists context-menu remap when migrating from pre-2.0 with legacy state', () => {
         mockVisualSettings = buildSettings({
             denebVersion: '1.9.0',
             providerVersion: '6.0.0',
@@ -217,7 +217,7 @@ describe('handlePropertyMigration — read mode', () => {
         expect(mockVisualSettings.vega.output.version.value).toBe('6.4.0');
     });
 
-    it('applies context-menu remap in-memory when migrating from pre-1.10 with legacy state', () => {
+    it('applies context-menu remap in-memory when migrating from pre-2.0 with legacy state', () => {
         mockVisualSettings = buildSettings({
             denebVersion: '1.9.0',
             providerVersion: '6.0.0',
@@ -236,9 +236,9 @@ describe('handlePropertyMigration — read mode', () => {
         ).toBe(false);
     });
 
-    it('does not remap context-menu when previous version is already >= 1.10', () => {
+    it('does not remap context-menu when previous version is already >= 2.0', () => {
         mockVisualSettings = buildSettings({
-            denebVersion: '1.10.0',
+            denebVersion: '2.0.0',
             providerVersion: '6.0.0',
             enableContextMenu: false,
             enableContextMenuSelector: true

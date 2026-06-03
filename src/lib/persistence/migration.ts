@@ -116,7 +116,7 @@ const getVersionChangeDetail = (
  *  - **Read mode** (`isReadMode === true`): never persist; never flip the
  *    flag; never open the modal. Instead apply the runtime-affecting parts
  *    of the migration directly to the in-memory settings model so the
- *    read render still honours migrated values (e.g. the pre-1.10
+ *    read render still honours migrated values (e.g. the pre-2.0
  *    `enableContextMenu` split). The `migrationCheckPerformed` flag is
  *    intentionally NOT consulted in read mode — the flag lives in a
  *    separate Zustand slice that is not reset between updates, so if a
@@ -224,7 +224,7 @@ const applyVersionStampsInMemory = (
 };
 
 /**
- * Single source of truth for whether the pre-1.10 context-menu split
+ * Single source of truth for whether the pre-2.0 context-menu split
  * remap applies to the current settings model. Shared between the
  * persist-payload builder (`getContextMenuMigrationProperties`) and the
  * in-memory mutation (`applyContextMenuRemapInMemory`) so the two
@@ -247,7 +247,7 @@ const isLegacyContextMenuRemapApplicable = (
 };
 
 /**
- * Apply the pre-1.10 context-menu split to the in-memory settings
+ * Apply the pre-2.0 context-menu split to the in-memory settings
  * model when the legacy state qualifies. Mirrors the persist payload
  * built by `getContextMenuMigrationProperties` exactly — both delegate
  * to `isLegacyContextMenuRemapApplicable` for the decision.
@@ -389,10 +389,15 @@ const migrateWithNoChanges = (
 };
 
 /**
- * The version that introduced the context menu property split. Only visuals
- * upgrading from before this version need the legacy migration.
+ * The version that introduced the context-menu property split. Only
+ * visuals upgrading from before this version need the legacy migration.
+ *
+ * Note: this was originally targeted at 1.10 when the two-toggle split
+ * landed in #599, but the 1.10 release was skipped and the split is
+ * shipping in 2.0 — there are no 1.10 visuals in the wild. The
+ * threshold is anchored to the actual shipping version.
  */
-const CONTEXT_MENU_SPLIT_VERSION = '1.10.0';
+const CONTEXT_MENU_SPLIT_VERSION = '2.0.0';
 
 /**
  * Pre-migration visuals had enableContextMenu: false to disable data point
