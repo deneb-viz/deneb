@@ -224,22 +224,44 @@ const applyVersionStampsInMemory = (
 };
 
 /**
+ * Single source of truth for whether the pre-1.10 context-menu split
+ * remap applies to the current settings model. Shared between the
+ * persist-payload builder (`getContextMenuMigrationProperties`) and the
+ * in-memory mutation (`applyContextMenuRemapInMemory`) so the two
+ * cannot drift as new properties are added to the legacy remap.
+ *
+ * Legacy state qualifies when the visual was last persisted before the
+ * split version AND the persisted interactivity matches the legacy
+ * `enableContextMenu: false` / `enableContextMenuSelector: true`
+ * (default) pair.
+ */
+const isLegacyContextMenuRemapApplicable = (
+    visualSettings: VisualFormattingSettingsModel,
+    previousVersion: string
+): boolean => {
+    if (!isNewerVersion(previousVersion, CONTEXT_MENU_SPLIT_VERSION))
+        return false;
+    const { enableContextMenu, enableContextMenuSelector } =
+        visualSettings.vega.interactivity;
+    return !enableContextMenu.value && enableContextMenuSelector.value;
+};
+
+/**
  * Apply the pre-1.10 context-menu split to the in-memory settings
- * model when the legacy `enableContextMenu: false` /
- * `enableContextMenuSelector: true` state qualifies. Mirrors the
- * persist-payload built by `getContextMenuMigrationProperties` exactly.
+ * model when the legacy state qualifies. Mirrors the persist payload
+ * built by `getContextMenuMigrationProperties` exactly — both delegate
+ * to `isLegacyContextMenuRemapApplicable` for the decision.
  */
 const applyContextMenuRemapInMemory = (
     visualSettings: VisualFormattingSettingsModel,
     previousVersion: string
 ): void => {
-    if (!isNewerVersion(previousVersion, CONTEXT_MENU_SPLIT_VERSION)) return;
+    if (!isLegacyContextMenuRemapApplicable(visualSettings, previousVersion))
+        return;
     const { enableContextMenu, enableContextMenuSelector } =
         visualSettings.vega.interactivity;
-    if (!enableContextMenu.value && enableContextMenuSelector.value) {
-        enableContextMenu.value = true;
-        enableContextMenuSelector.value = false;
-    }
+    enableContextMenu.value = true;
+    enableContextMenuSelector.value = false;
 };
 
 /**
@@ -384,18 +406,13 @@ const getContextMenuMigrationProperties = (
     visualSettings: VisualFormattingSettingsModel,
     previousVersion: string
 ): PersistenceProperty[] => {
-    if (!isNewerVersion(previousVersion, CONTEXT_MENU_SPLIT_VERSION)) {
+    if (!isLegacyContextMenuRemapApplicable(visualSettings, previousVersion)) {
         return [];
     }
-    const { enableContextMenu, enableContextMenuSelector } =
-        visualSettings.vega.interactivity;
-    if (!enableContextMenu.value && enableContextMenuSelector.value) {
-        return [
-            { name: 'enableContextMenu', value: true },
-            { name: 'enableContextMenuSelector', value: false }
-        ];
-    }
-    return [];
+    return [
+        { name: 'enableContextMenu', value: true },
+        { name: 'enableContextMenuSelector', value: false }
+    ];
 };
 
 /**

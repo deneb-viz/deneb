@@ -33,16 +33,18 @@ related_components:
 
 Power BI keys persisted `objects` (the formatting model bag — version stamps, every `enable*` toggle, anything else stored via `IVisualHost.persistProperties`) to the visual's class GUID. Deneb's packaging modes emit different GUIDs:
 
-| Mode       | GUID                                        |
-| ---------- | ------------------------------------------- |
-| Certified  | `deneb7E15AEF80B9E4D4F8E12924291ECE89A`     |
-| Alpha      | `ALPHAdeneb7E15AEF80B9E4D4F8E12924291ECE89A` (or similar) |
-| Beta       | `BETAdeneb7E15AEF80B9E4D4F8E12924291ECE89A` |
-| Standalone | unrelated dev GUID                          |
+| Mode       | GUID prefix                                  |
+| ---------- | -------------------------------------------- |
+| Certified  | `deneb7E15AEF80B9E4D4F8E12924291ECE89A`      |
+| Alpha      | `ALPHAdeneb7E15AEF80B9E4D4F8E12924291ECE89A` |
+| Beta       | `BETAdeneb7E15AEF80B9E4D4F8E12924291ECE89A`  |
+| Standalone | unrelated dev GUID configured per workspace  |
+
+(See `bin/package-custom.ts` and the channel-specific scripts under `package.json` for the authoritative prefix mechanism.)
 
 When a report contains a visual authored on one GUID and the developer drops in a `.pbiviz` with a different GUID (the typical "let me load this in Desktop alongside my dev build" workflow), Power BI treats them as two distinct visual classes. The persisted `objects` for the original GUID are **not** carried over to the new GUID — the developer sees the new visual rendered with an effectively empty `dataView.metadata.objects` for everything that lives under the formatting model.
 
-The spec / config strings travel because they're stored in the dataView differently, so the visual still *renders* its content. That makes the failure mode subtle: the visual looks broadly correct (right spec, right data), but every formatting-pane setting reads as default and every `developer.versioning.version` / `vega.output.version` stamp reads as `null` / empty.
+The spec / config strings travel because they're stored in the dataView differently, so the visual still _renders_ its content. That makes the failure mode subtle: the visual looks broadly correct (right spec, right data), but every formatting-pane setting reads as default and every `developer.versioning.version` / `vega.output.version` stamp reads as `null` / empty.
 
 ## Why this matters
 

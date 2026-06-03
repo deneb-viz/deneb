@@ -96,6 +96,11 @@ export const doesModeAllowEmbedViewportSet = (mode: DisplayMode): boolean => {
  * survives test environments where the `powerbi` namespace import is
  * shimmed and the const-enum lookup returns undefined. Matches the
  * pattern used elsewhere in this file (e.g. `editMode === 1`).
+ *
+ * The `satisfies powerbi.ViewMode` clause is load-bearing: if a future
+ * `powerbi-visuals-api` upgrade ever reassigns `ViewMode.View` to a
+ * non-zero value, this declaration fails to compile, surfacing the
+ * drift instead of silently mismatching at runtime.
  */
 const VIEW_MODE_VIEW = 0 satisfies powerbi.ViewMode;
 
