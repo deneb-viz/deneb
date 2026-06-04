@@ -75,26 +75,29 @@ const IS_DEVELOPER_MODE = toBoolean(process.env.PBIVIZ_DEV_MODE);
  * (`state.renderStarted === false`), the safety-net closes it as an
  * orphan; if a render is in flight, the close is deferred.
  *
- * Tuning rationale: vega-embed's setup pipeline (parse → compile →
- * embed → run → paint) can take several seconds on cold-start for
- * complex specs against large datasets, and the `onRenderingStarted`
- * callback that flips `renderStarted = true` is fired at the END of
- * that chain (vega-embed.tsx invokes it inside `view.runAsync().then`
- * — see packages/app-core/src/features/visual-viewer/components/vega-embed.tsx).
- * The bound must therefore exceed the worst-case legitimate render
- * time, not the typical one — otherwise the safety-net races a
- * slow-but-valid render and emits a premature `renderingFinished`.
+ * **10s is a Power BI certification ceiling** — values above this are
+ * rejected by the cert team, so this is not a tuning knob we can
+ * trade off against worst-case render time. Whatever genuinely
+ * legitimate-but-slow paths exist must close themselves before the
+ * bound, not rely on a longer safety-net.
  *
- * 30s is generous enough that any render reaching the safety-net
- * tick is almost certainly genuinely stuck (the embed setup never
- * reached its `.then` handler — e.g., promise rejected without
- * surfacing through `onRenderingError`, or React never mounted the
- * embed component), while still short enough to surface a hung
- * update during a dev session rather than waiting on a Power BI
- * tab change. U11's dev overlay will surface every safety-net
- * tick so we can tune this against real-world observations.
+ * Known close paths that fall through to the safety-net today:
+ *  - Incremental data-update path (`performIncrementalUpdate` in
+ *    `packages/app-core/src/features/visual-viewer/components/visual-viewer.tsx`)
+ *    — Vega view is updated in place via `view.data()`, so
+ *    `vega-embed.tsx`'s `onRenderingStarted` / `onRenderingFinished`
+ *    never fire (those only fire on a full embed). Currently closes
+ *    via safety-net; **U10 wires `onSuccess` / `onFailure` of
+ *    `performIncrementalUpdate` through the coordinator's
+ *    `*PendingRender` adapters so these close synchronously and the
+ *    safety-net falls back to a true-orphan-only role.**
+ *
+ * U11's dev overlay will surface every safety-net tick so we can
+ * observe whether any legitimate path exceeds 10s. If one does, the
+ * fix lives in that path (close it synchronously / wire it through
+ * the coordinator), not in raising this constant.
  */
-const SAFETY_NET_BOUND_MS = 30_000;
+const SAFETY_NET_BOUND_MS = 10_000;
 
 /**
  * Real-`setTimeout` scheduler for the rendering-lifecycle coordinator.
