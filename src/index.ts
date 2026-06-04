@@ -141,7 +141,14 @@ export class Deneb implements IVisual {
             this.#coordinator = createRenderingLifecycleCoordinator({
                 emitter: host.eventService,
                 scheduler: renderingLifecycleScheduler,
-                logger: (message, detail) => logHost(message, detail)
+                // `logHost` is variadic; forwarding it directly lets
+                // the coordinator's one-arg `log(message)` calls reach
+                // the underlying `console.debug(...args)` cleanly. The
+                // earlier `(message, detail) => logHost(message, detail)`
+                // wiring forwarded `detail` unconditionally and printed
+                // a literal `undefined` after every lifecycle line
+                // (e.g. "[lifecycle] renderingStarted id=1 undefined").
+                logger: logHost
             });
             const {
                 dataset: { setSelectors },
@@ -282,6 +289,15 @@ export class Deneb implements IVisual {
 
         if (action.kind === 'skip') {
             logDebug('Visual dataset has not changed. No need to process.');
+            // Skip is a non-rendering dispatch — no async render will
+            // follow to close this update's lifecycle. Close
+            // synchronously here so the host sees a balanced
+            // renderingStarted / renderingFinished pair (R2, AE1). If
+            // a persist was issued earlier in this update (e.g. an
+            // edit-mode migration), the host's follow-up update
+            // closes on its own dispatch path — no special branch
+            // needed here.
+            this.#coordinator.closeCurrent();
             return;
         }
 
@@ -361,6 +377,14 @@ export class Deneb implements IVisual {
         }
         if (fetchSuccess) {
             logTimeEnd('processDataset');
+            // Host accepted the segment — no render will follow for
+            // this update; the next segment arrives as its own
+            // `update()`. Close this update's lifecycle synchronously
+            // so each segment update produces its own 1:1
+            // started/finished pair (R8, AE2). Order: after the
+            // `processDataset` timing close so the existing diagnostic
+            // pairing is preserved.
+            this.#coordinator.closeCurrent();
             return;
         }
         // Host declined the fetch — fall through to finalise/normal
@@ -450,6 +474,13 @@ export class Deneb implements IVisual {
             rowsLoaded: Math.max(currentStateRowsLoaded, rowsLoaded)
         });
         logTimeEnd('processDataset');
+        // Recover-interrupted-fetch is non-rendering — no setDataset
+        // ran, the existing slice is preserved, and the visual will
+        // re-enter the normal change-detection path on the next
+        // update. Close this update's lifecycle synchronously so it
+        // doesn't orphan a renderingStarted (R2, AE1's recover
+        // variant).
+        this.#coordinator.closeCurrent();
     }
 
     /**
