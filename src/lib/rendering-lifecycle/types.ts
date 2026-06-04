@@ -172,6 +172,20 @@ export type RenderingLifecycleCoordinator = {
      */
     bindPendingRender: (id: RenderingLifecycleId) => void;
     /**
+     * No-arg variant of {@link bindPendingRender} that targets
+     * whichever id is currently open (per invariant #1, at most one
+     * is). Mirrors the {@link closeCurrent} / {@link closePendingRender}
+     * shape — production callers inside the visual's dispatch
+     * handlers don't have direct access to the opened id (it is
+     * minted inside `update()`'s try and captured in a local), so
+     * threading it through `resolveUpdateOptions` → `resolveDataset`
+     * → each handler would require a chain of optional parameters.
+     * The current-open id lookup is identical to what
+     * `closeCurrent` performs internally. No-op when nothing is
+     * open (e.g. `open()` threw before recording the id).
+     */
+    bindPendingRenderCurrent: () => void;
+    /**
      * Arm the bounded safety-net for an id. If the id is still open
      * (no close / no fail) when the bound elapses, the safety-net
      * checks whether the render ever began: if `renderStarted ===

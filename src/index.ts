@@ -71,14 +71,30 @@ const IS_DEVELOPER_MODE = toBoolean(process.env.PBIVIZ_DEV_MODE);
 
 /**
  * Bound (ms) after which the rendering-lifecycle safety-net checks an
- * armed id. If the id is still open and no render ever began, the
- * safety-net closes it as an orphan; if a render is in flight
- * (`renderStarted === true`), the close is deferred to the render's
- * own callback chain. Tuned generously against observed render timing
- * — 5 seconds is well beyond the cert-blocking orphan window while
- * staying short enough to surface a broken update path during dev.
+ * armed id. If the id is still open and no render ever began
+ * (`state.renderStarted === false`), the safety-net closes it as an
+ * orphan; if a render is in flight, the close is deferred.
+ *
+ * Tuning rationale: vega-embed's setup pipeline (parse → compile →
+ * embed → run → paint) can take several seconds on cold-start for
+ * complex specs against large datasets, and the `onRenderingStarted`
+ * callback that flips `renderStarted = true` is fired at the END of
+ * that chain (vega-embed.tsx invokes it inside `view.runAsync().then`
+ * — see packages/app-core/src/features/visual-viewer/components/vega-embed.tsx).
+ * The bound must therefore exceed the worst-case legitimate render
+ * time, not the typical one — otherwise the safety-net races a
+ * slow-but-valid render and emits a premature `renderingFinished`.
+ *
+ * 30s is generous enough that any render reaching the safety-net
+ * tick is almost certainly genuinely stuck (the embed setup never
+ * reached its `.then` handler — e.g., promise rejected without
+ * surfacing through `onRenderingError`, or React never mounted the
+ * embed component), while still short enough to surface a hung
+ * update during a dev session rather than waiting on a Power BI
+ * tab change. U11's dev overlay will surface every safety-net
+ * tick so we can tune this against real-world observations.
  */
-const SAFETY_NET_BOUND_MS = 5000;
+const SAFETY_NET_BOUND_MS = 30_000;
 
 /**
  * Real-`setTimeout` scheduler for the rendering-lifecycle coordinator.
@@ -128,6 +144,15 @@ export class Deneb implements IVisual {
     #root: ReturnType<typeof createRoot>;
     #host: powerbi.extensibility.visual.IVisualHost;
     #coordinator: RenderingLifecycleCoordinator;
+    // Render-callback adapters built once in the constructor (see U9
+    // wiring below). Stored as fields so the same function references
+    // are passed to <App> on the initial render; React then forwards
+    // them through the platform provider's `onRendering*` slots
+    // unchanged across re-renders. App-core never sees the
+    // coordinator itself.
+    #onRenderingStartedAdapter: () => void;
+    #onRenderingFinishedAdapter: () => void;
+    #onRenderingErrorAdapter: (error: Error) => void;
 
     constructor(options: VisualConstructorOptions) {
         logHost('Constructor has been called.', { options });
@@ -150,6 +175,22 @@ export class Deneb implements IVisual {
                 // (e.g. "[lifecycle] renderingStarted id=1 undefined").
                 logger: logHost
             });
+            // U9: render-callback adapters routed through the
+            // coordinator. App-core never imports the coordinator —
+            // these no-arg / one-arg adapters are constructed here
+            // and passed as props to <App>, which threads them to
+            // the platform-provider's `onRendering*` slots. The
+            // pending-render binding is performed synchronously in
+            // the dispatch handlers (see `handleNormalFinalise` and
+            // `handleFetchMore`); React fires these adapters AFTER
+            // the dispatch returns, by which point `pendingRenderId`
+            // is set to this update's id.
+            this.#onRenderingStartedAdapter = () =>
+                this.#coordinator.markPendingRenderStarted();
+            this.#onRenderingFinishedAdapter = () =>
+                this.#coordinator.closePendingRender();
+            this.#onRenderingErrorAdapter = (error: Error) =>
+                this.#coordinator.failPendingRender(error);
             const {
                 dataset: { setSelectors },
                 host: { setHost },
@@ -186,7 +227,14 @@ export class Deneb implements IVisual {
             this.handleSuppressOnObjectFormatting();
             this.bindTabCycling();
             this.#root = createRoot(this.#applicationWrapper);
-            this.#root.render(createElement(App, { host }));
+            this.#root.render(
+                createElement(App, {
+                    host,
+                    onRenderingStarted: this.#onRenderingStartedAdapter,
+                    onRenderingFinished: this.#onRenderingFinishedAdapter,
+                    onRenderingError: this.#onRenderingErrorAdapter
+                })
+            );
             element.oncontextmenu = (ev) => {
                 ev.preventDefault();
             };
@@ -227,31 +275,32 @@ export class Deneb implements IVisual {
             this.#coordinator.failCurrent(e);
             logDebug('Error during visual update.', { error: e });
         } finally {
-            // TODO(U9): Arm the safety-net here once the async render
-            // close paths in `src/app/app.tsx` route through the
-            // coordinator instead of calling `host.eventService`
-            // directly. Arming now would cause every successful render
-            // to emit a duplicate `renderingFinished` ~5s after start
-            // — the coordinator's safety-net would mistakenly classify
-            // the id as an orphan (renderStarted is never flipped
-            // until U9 adds the `onRenderingStarted` adapter), while
-            // app.tsx has already emitted the host's terminal.
+            // Arm the safety-net for this update's id. The safety-net
+            // is the backstop for rendering paths: if React's async
+            // render callback never fires (the embed got stuck, the
+            // page navigated away, the view threw without surfacing),
+            // the safety-net closes the id after a bounded wait so
+            // the host doesn't see an orphan `renderingStarted`.
             //
-            //     if (openId !== undefined) {
-            //         this.#coordinator.armSafetyNet(openId);
-            //     }
-            //
-            // The coordinator's `openIds` map holds at most one
-            // entry (the active id) at any time — terminal paths
-            // delete the entry, and supersede displaces the prior id
-            // before minting the new one. The previously-noted
-            // "accumulates until visual restart" concern was real
-            // before deletion-on-terminal landed and no longer
-            // applies; the only id that can linger at session end is
-            // the very last update's id (never closed via coordinator
-            // because app.tsx's direct host call doesn't route
-            // through it until U9).
-            void openId;
+            // - When the dispatch was a non-rendering path (skip,
+            //   fetch-more success, recover — U8), `closeCurrent` has
+            //   already fired and deleted the id from `openIds`;
+            //   `armSafetyNet` looks up the id, finds nothing, and
+            //   no-ops.
+            // - When the dispatch was a rendering path (normal-
+            //   finalise, fetch-more host-decline — U9), the id stays
+            //   open, the safety-net is armed, the React render
+            //   eventually calls `markPendingRenderStarted()` (so
+            //   the safety-net defers on tick instead of closing
+            //   in-flight work), then `closePendingRender()` fires
+            //   and cancels the safety-net handle as part of the
+            //   close.
+            // - When `open()` itself threw (host rejected
+            //   `renderingStarted`), `openId` stayed `undefined` and
+            //   the guard skips arming.
+            if (openId !== undefined) {
+                this.#coordinator.armSafetyNet(openId);
+            }
         }
     }
 
@@ -396,6 +445,14 @@ export class Deneb implements IVisual {
         });
         setDataset(getMappedDataset(categorical, locale));
         logTimeEnd('processDataset');
+        // Rendering branch: bind the pending-render id BEFORE
+        // returning so the React-side `onRendering*` callbacks
+        // (fired async after Vega embeds and paints) route through
+        // the coordinator's `*PendingRender` adapters and target the
+        // correct id. Without this, the coordinator's id for this
+        // update stays open, and the next `update()` supersede-fails
+        // it (the U7/U8 transition behaviour).
+        this.#coordinator.bindPendingRenderCurrent();
     }
 
     /**
@@ -503,6 +560,11 @@ export class Deneb implements IVisual {
         // Tracking is now only used for export (#486)
         // this.updateTracking();
         logTimeEnd('processDataset');
+        // Rendering branch: bind the pending-render id BEFORE
+        // returning. See the matching call in `handleFetchMore`'s
+        // host-decline branch for the full rationale. Any future
+        // rendering branch added to the dispatch MUST also call this.
+        this.#coordinator.bindPendingRenderCurrent();
     }
 
     /**
