@@ -2,7 +2,11 @@ import { getDenebState, useDenebState } from '@deneb-viz/app-core';
 import { useDenebVisualState } from '../../state';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { deepEqual, shallowEqual } from 'fast-equals';
-import { persistProjectProperties, type PropertyChange } from '../persistence';
+import {
+    isReadModePersistSuppressed,
+    persistProjectProperties,
+    type PropertyChange
+} from '../persistence';
 import {
     PENDING_PERSIST_TIMEOUT_MS,
     type PendingPersistEntry,
@@ -142,6 +146,21 @@ export const createSliceSync = <TSlice, TSliceKey extends string, TSyncPayload>(
             if (isApplyingInboundSync) {
                 logDebug(
                     `[StoreSynchronization:${name}] Skipping persistence - currently applying inbound sync`
+                );
+                return;
+            }
+
+            // Skip persistence (and pendingPersists tracking) when the
+            // read-mode persist gate is active. `persistProjectProperties`
+            // already short-circuits inside the gate, so the host write
+            // would be a no-op, but populating `pendingPersists` against
+            // an un-persisted value would cause the next inbound sync to
+            // treat the (correct) host value as a stale echo until the
+            // pending entry expires. Returning early here keeps the
+            // pending-map and the host's actual state in lockstep.
+            if (isReadModePersistSuppressed()) {
+                logDebug(
+                    `[StoreSynchronization:${name}] Skipping persistence - read-mode persist gate active`
                 );
                 return;
             }

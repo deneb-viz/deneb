@@ -15,9 +15,11 @@ import { getDenebVisualState, useDenebVisualState } from './state';
 import {
     handlePropertyMigration,
     bindPersistPropertiesHost,
+    setReadModePersistSuppressed,
     VisualFormattingSettingsService,
     getVisualFormattingService
 } from './lib/persistence';
+import { isReportInReadMode } from './lib/state/display-mode';
 import { VisualHostServices } from './lib/host';
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
 import {
@@ -149,7 +151,15 @@ export class Deneb implements IVisual {
         // Handle main update flow
         try {
             logTimeStart('update');
-            this.resolveUpdateOptions(options);
+            // Set the read-mode persist gate before anything in the update
+            // path can call persistProperties / persistProjectProperties.
+            // The migration code and the project-sync subscriber both observe
+            // this flag and short-circuit while it is true, so a read-mode
+            // update never writes back to the host regardless of what the
+            // downstream slice mutations imply.
+            const isReadMode = isReportInReadMode(options);
+            setReadModePersistSuppressed(isReadMode);
+            this.resolveUpdateOptions(options, isReadMode);
             logTimeEnd('update');
             return;
         } catch (e) {
@@ -160,8 +170,11 @@ export class Deneb implements IVisual {
         }
     }
 
-    private resolveUpdateOptions(options: VisualUpdateOptions) {
-        logDebug('Resolving update options...', { options });
+    private resolveUpdateOptions(
+        options: VisualUpdateOptions,
+        isReadMode: boolean
+    ) {
+        logDebug('Resolving update options...', { options, isReadMode });
         logTimeStart('resolveUpdateOptions');
         // Provide initial update options to store
         // TODO: we're side-loading these for now until we can refactor the Deneb app store and app to be less reliant
@@ -174,7 +187,7 @@ export class Deneb implements IVisual {
         logHost('Rendering event started.');
         this.#host.eventService.renderingStarted(options);
         // Perform any necessary property migrations
-        handlePropertyMigration(settings);
+        handlePropertyMigration(settings, isReadMode);
         // Data change or re-processing required?
         this.resolveDataset(options);
         logTimeEnd('resolveUpdateOptions');

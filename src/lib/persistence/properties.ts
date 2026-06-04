@@ -1,4 +1,5 @@
 import { logDebug } from '@deneb-viz/utils/logging';
+import { isReadModePersistSuppressed } from './read-mode-gate';
 import { type PropertyChange } from './types';
 
 /**
@@ -29,6 +30,13 @@ export const bindPersistPropertiesHost = (host: PersistPropertiesHost) => {
  */
 export const persistProjectProperties = (changes: PropertyChange[]) => {
     if (changes.length === 0) return;
+
+    if (isReadModePersistSuppressed()) {
+        logDebug(
+            '[Persistence] read-mode persist gate active, skipping project persistence'
+        );
+        return;
+    }
 
     if (!persistPropertiesHost) {
         logDebug(
