@@ -141,7 +141,14 @@ export class Deneb implements IVisual {
             this.#coordinator = createRenderingLifecycleCoordinator({
                 emitter: host.eventService,
                 scheduler: renderingLifecycleScheduler,
-                logger: (message, detail) => logHost(message, detail)
+                // `logHost` is variadic; forwarding it directly lets
+                // the coordinator's one-arg `log(message)` calls reach
+                // the underlying `console.debug(...args)` cleanly. The
+                // earlier `(message, detail) => logHost(message, detail)`
+                // wiring forwarded `detail` unconditionally and printed
+                // a literal `undefined` after every lifecycle line
+                // (e.g. "[lifecycle] renderingStarted id=1 undefined").
+                logger: logHost
             });
             const {
                 dataset: { setSelectors },
