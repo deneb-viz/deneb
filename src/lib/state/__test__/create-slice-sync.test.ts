@@ -14,6 +14,11 @@ let capturedAppCoreSubscriber: (state: Record<string, unknown>) => void;
 
 const mockPersistProjectProperties = vi.fn();
 
+// Default the read-mode persist gate to inactive so existing slice-sync
+// tests run as if the visual is in edit mode. The read-mode-suppression
+// branch is exercised by a dedicated test below.
+let mockIsReadModePersistSuppressed = false;
+
 vi.mock('@deneb-viz/app-core', () => ({
     getDenebState: vi.fn(() => mockAppCoreState),
     useDenebState: {
@@ -48,7 +53,8 @@ vi.mock('../../../state', () => ({
 
 vi.mock('../../persistence', () => ({
     persistProjectProperties: (...args: unknown[]) =>
-        mockPersistProjectProperties(...args)
+        mockPersistProjectProperties(...args),
+    isReadModePersistSuppressed: () => mockIsReadModePersistSuppressed
 }));
 
 vi.mock('@deneb-viz/utils/logging', () => ({
@@ -184,6 +190,10 @@ describe('createSliceSync', () => {
         mockAppCoreState = {
             test: createSliceState()
         };
+        // Read-mode persist gate defaults to inactive (edit-mode
+        // behavior). The dedicated read-mode test flips this and
+        // relies on beforeEach to reset it between tests.
+        mockIsReadModePersistSuppressed = false;
     });
 
     afterEach(() => {
@@ -656,6 +666,48 @@ describe('createSliceSync', () => {
             fireAppCoreSubscriber(unchangedSlice);
 
             expect(mockPersistProjectProperties).not.toHaveBeenCalled();
+        });
+
+        it('should short-circuit without persisting or recording pending when the read-mode persist gate is active', () => {
+            // Simulate the U5 read-mode gate being live for this
+            // update. Even when the app-core slice changes (here:
+            // user-input-equivalent app-core mutation), the outbound
+            // subscriber must not enqueue host persist work AND must
+            // not record a pendingPersists entry — otherwise the next
+            // inbound sync would treat the genuine host value as a
+            // stale echo against an entry that never landed.
+            mockIsReadModePersistSuppressed = true;
+
+            const initialSlice = createSliceState({
+                __hasHydrated__: true,
+                spec: 'oldSpec'
+            });
+            mockAppCoreState = { test: initialSlice };
+            mockVisualSettings = {
+                ...DEFAULT_VISUAL_SETTINGS,
+                vega: { ...DEFAULT_VISUAL_SETTINGS.vega, spec: 'oldSpec' }
+            };
+            createSliceSync(createTestConfig());
+
+            const changedSlice = createSliceState({
+                __hasHydrated__: true,
+                spec: 'newSpec'
+            });
+            fireAppCoreSubscriber(changedSlice);
+
+            expect(mockPersistProjectProperties).not.toHaveBeenCalled();
+
+            // A subsequent inbound sync with the (unchanged) host value
+            // must NOT be filtered as a stale echo — because the gate
+            // returned early before recording a pending entry.
+            fireVisualSubscriber(
+                {
+                    ...DEFAULT_VISUAL_SETTINGS,
+                    vega: { ...DEFAULT_VISUAL_SETTINGS.vega, spec: 'oldSpec' }
+                },
+                true
+            );
+            expect(mockSyncFn).toHaveBeenCalled();
         });
     });
 
