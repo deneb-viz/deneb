@@ -137,6 +137,14 @@ export const SUPERSEDED_FAILURE_REASON = 'superseded';
  * through the `*PendingRender` no-arg variants; synchronous code in
  * `Deneb.update()` and its dispatch handlers use the `*Current`
  * no-arg variants.
+ *
+ * **Production code MUST type its coordinator reference with this
+ * narrower type** — not {@link RenderingLifecycleCoordinatorTestSurface}.
+ * The id-bearing variants exist on the runtime object for unit-test
+ * determinism but are intentionally absent from this type so the
+ * type system rejects production calls that would otherwise produce
+ * observer events with a hard-coded (and therefore misleading)
+ * `via: 'sync-current'` discriminator regardless of actual context.
  */
 export type RenderingLifecycleCoordinator = {
     /**
@@ -199,13 +207,27 @@ export type RenderingLifecycleCoordinator = {
      * to distinguish orphan vs. in-flight. Idempotent.
      */
     markPendingRenderStarted: () => void;
-    /**
-     * Id-bearing variants. Exposed for unit-test determinism and for
-     * the supersede loop's internal use. Production callers OUTSIDE
-     * the coordinator use the no-arg `*Current` / `*PendingRender`
-     * variants instead.
-     */
-    close: (id: RenderingLifecycleId) => void;
-    fail: (id: RenderingLifecycleId, error: unknown) => void;
-    markRenderStarted: (id: RenderingLifecycleId) => void;
 };
+
+/**
+ * Test-only superset of {@link RenderingLifecycleCoordinator} adding
+ * id-bearing variants of close / fail / markRenderStarted. These
+ * exist so unit-test scenarios can drive deterministic supersede
+ * orderings, late-callback races, and safety-net edge cases without
+ * round-tripping through `pendingRenderId` / `currentOpenId`. They
+ * hard-code their observer event's `via` discriminator to
+ * `sync-current`, which is appropriate for the test-determinism use
+ * case but would be misleading from any other context. Keeping them
+ * off the production {@link RenderingLifecycleCoordinator} type
+ * makes that constraint type-enforced rather than convention-enforced.
+ *
+ * The factory returns this superset; production callers narrow to
+ * {@link RenderingLifecycleCoordinator} at the field declaration
+ * (`src/index.ts`'s `#coordinator: RenderingLifecycleCoordinator`).
+ */
+export type RenderingLifecycleCoordinatorTestSurface =
+    RenderingLifecycleCoordinator & {
+        close: (id: RenderingLifecycleId) => void;
+        fail: (id: RenderingLifecycleId, error: unknown) => void;
+        markRenderStarted: (id: RenderingLifecycleId) => void;
+    };

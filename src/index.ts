@@ -234,11 +234,16 @@ export class Deneb implements IVisual {
             //         this.#coordinator.armSafetyNet(openId);
             //     }
             //
-            // The coordinator's internal `openIds` map will accumulate
-            // entries during the U7-to-U9 window. In practice this is
-            // bounded — Power BI Desktop restarts visual instances on
-            // tab change, refresh, and dataset changes, so the map
-            // does not grow indefinitely within a single session.
+            // The coordinator's `openIds` map holds at most one
+            // entry (the active id) at any time — terminal paths
+            // delete the entry, and supersede displaces the prior id
+            // before minting the new one. The previously-noted
+            // "accumulates until visual restart" concern was real
+            // before deletion-on-terminal landed and no longer
+            // applies; the only id that can linger at session end is
+            // the very last update's id (never closed via coordinator
+            // because app.tsx's direct host call doesn't route
+            // through it until U9).
             void openId;
         }
     }

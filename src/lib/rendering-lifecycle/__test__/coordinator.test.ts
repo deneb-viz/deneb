@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRenderingLifecycleCoordinator } from '../coordinator';
 import {
     SUPERSEDED_FAILURE_REASON,
-    type RenderingLifecycleCoordinator,
+    type RenderingLifecycleCoordinatorTestSurface,
     type RenderingLifecycleEmitter,
     type RenderingLifecycleEvent,
     type RenderingLifecycleObserver,
@@ -102,7 +102,7 @@ const buildHarness = (config?: { emitterThrowsOn?: EmitterThrowSpec }) => {
         events.push(event);
     };
 
-    const coordinator: RenderingLifecycleCoordinator =
+    const coordinator: RenderingLifecycleCoordinatorTestSurface =
         createRenderingLifecycleCoordinator({
             emitter,
             scheduler,

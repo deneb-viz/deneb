@@ -5,6 +5,7 @@ export {
 export {
     SUPERSEDED_FAILURE_REASON,
     type RenderingLifecycleCoordinator,
+    type RenderingLifecycleCoordinatorTestSurface,
     type RenderingLifecycleEmitter,
     type RenderingLifecycleEvent,
     type RenderingLifecycleId,
