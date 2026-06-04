@@ -57,11 +57,42 @@ import {
     handleTabWrapAround,
     shouldYieldToFocusScope
 } from './lib/keyboard-focus';
+import {
+    createRenderingLifecycleCoordinator,
+    type RenderingLifecycleCoordinator,
+    type RenderingLifecycleId,
+    type SafetyNetScheduler
+} from './lib/rendering-lifecycle';
 
 /**
  * Centralize/report developer mode from environment.
  */
 const IS_DEVELOPER_MODE = toBoolean(process.env.PBIVIZ_DEV_MODE);
+
+/**
+ * Bound (ms) after which the rendering-lifecycle safety-net checks an
+ * armed id. If the id is still open and no render ever began, the
+ * safety-net closes it as an orphan; if a render is in flight
+ * (`renderStarted === true`), the close is deferred to the render's
+ * own callback chain. Tuned generously against observed render timing
+ * — 5 seconds is well beyond the cert-blocking orphan window while
+ * staying short enough to surface a broken update path during dev.
+ */
+const SAFETY_NET_BOUND_MS = 5000;
+
+/**
+ * Real-`setTimeout` scheduler for the rendering-lifecycle coordinator.
+ * Unit tests inject a synthetic scheduler that exposes the pending
+ * callback directly; production uses this one.
+ */
+const renderingLifecycleScheduler: SafetyNetScheduler = {
+    schedule: (callback) => {
+        const handle = setTimeout(callback, SAFETY_NET_BOUND_MS);
+        return {
+            cancel: () => clearTimeout(handle)
+        };
+    }
+};
 
 /**
  * Inputs consumed by {@link Deneb.resolveDataset} and the private dispatch
@@ -96,12 +127,22 @@ export class Deneb implements IVisual {
     #applicationWrapper: HTMLElement;
     #root: ReturnType<typeof createRoot>;
     #host: powerbi.extensibility.visual.IVisualHost;
+    #coordinator: RenderingLifecycleCoordinator;
 
     constructor(options: VisualConstructorOptions) {
         logHost('Constructor has been called.', { options });
         try {
             const { host } = options;
             this.#host = host;
+            // Coordinator owns ALL host.eventService.rendering* emission
+            // from this point forward. The host event service is the
+            // structural emitter; the safety-net uses real setTimeout in
+            // prod. U11 will inject an observer for the dev overlay.
+            this.#coordinator = createRenderingLifecycleCoordinator({
+                emitter: host.eventService,
+                scheduler: renderingLifecycleScheduler,
+                logger: (message, detail) => logHost(message, detail)
+            });
             const {
                 dataset: { setSelectors },
                 host: { setHost },
@@ -148,8 +189,16 @@ export class Deneb implements IVisual {
     }
 
     public update(options: VisualUpdateOptions) {
-        // Handle main update flow
+        // The coordinator's `open()` is the FIRST statement inside the
+        // try so `renderingStarted` is emitted before anything else can
+        // throw (R1). If `open()` itself throws (the host throws on
+        // `renderingStarted` emission), the catch routes to
+        // `failCurrent()` which no-ops because the id was never
+        // recorded — no orphan accumulates and the safety-net is never
+        // armed for a never-opened id (`openId` stays `undefined`).
+        let openId: RenderingLifecycleId | undefined;
         try {
+            openId = this.#coordinator.open(options);
             logTimeStart('update');
             // Set the read-mode persist gate before anything in the update
             // path can call persistProperties / persistProjectProperties.
@@ -161,12 +210,36 @@ export class Deneb implements IVisual {
             setReadModePersistSuppressed(isReadMode);
             this.resolveUpdateOptions(options, isReadMode);
             logTimeEnd('update');
-            return;
         } catch (e) {
-            // Signal that we've encountered an error
+            // Coordinator records the failure (host emission + observer
+            // event for the dev overlay) and derives the reason from
+            // the error. logDebug adds the forensic detail (stack /
+            // structured payload) for dev-time inspection — the only
+            // permitted surface beyond the cert-allowed host channel,
+            // since console.error is forbidden in certified builds.
+            this.#coordinator.failCurrent(e);
             logDebug('Error during visual update.', { error: e });
-            logHost('Rendering event failed:', e.message);
-            this.#host.eventService.renderingFailed(options);
+        } finally {
+            // TODO(U9): Arm the safety-net here once the async render
+            // close paths in `src/app/app.tsx` route through the
+            // coordinator instead of calling `host.eventService`
+            // directly. Arming now would cause every successful render
+            // to emit a duplicate `renderingFinished` ~5s after start
+            // — the coordinator's safety-net would mistakenly classify
+            // the id as an orphan (renderStarted is never flipped
+            // until U9 adds the `onRenderingStarted` adapter), while
+            // app.tsx has already emitted the host's terminal.
+            //
+            //     if (openId !== undefined) {
+            //         this.#coordinator.armSafetyNet(openId);
+            //     }
+            //
+            // The coordinator's internal `openIds` map will accumulate
+            // entries during the U7-to-U9 window. In practice this is
+            // bounded — Power BI Desktop restarts visual instances on
+            // tab change, refresh, and dataset changes, so the map
+            // does not grow indefinitely within a single session.
+            void openId;
         }
     }
 
@@ -183,9 +256,11 @@ export class Deneb implements IVisual {
         setVisualUpdateOptions({ options, isDeveloperMode: IS_DEVELOPER_MODE });
         this.resolveLocale();
         const { settings } = getDenebVisualState();
-        // Signal we've begun rendering
-        logHost('Rendering event started.');
-        this.#host.eventService.renderingStarted(options);
+        // `renderingStarted` is now emitted by the coordinator at the
+        // top of `update()`'s try (see `Deneb.update`). Keeping it out
+        // of this method satisfies R1 (start fires before any code
+        // that can throw in the update body — including this method
+        // itself).
         // Perform any necessary property migrations
         handlePropertyMigration(settings, isReadMode);
         // Data change or re-processing required?
