@@ -323,24 +323,20 @@ export const VisualViewer = ({
                     translate('Text_Warn_Incremental_Update_Failure', [reason])
                 );
 
-                // Close this update's lifecycle BEFORE triggering the
-                // re-compile fallback. The re-compile causes
-                // VegaEmbed to re-embed, whose `handleEmbed` fires
-                // `onRenderingFinished` at the end — that call
-                // routes to `coordinator.closePendingRender()` which
-                // looks up `pendingRenderId`. If we are still in the
-                // same `update()` boundary, the current
-                // pending-render id has already been closed (the
-                // exactly-once guard inside the coordinator no-ops
-                // the second close). If a newer `update()` arrived
-                // in between, U7's supersede already failed the old
-                // id and bound the new one — the re-embed's close
-                // attributes correctly to the newest pending-render.
-                // From the host's perspective, the update succeeded
-                // (the re-compile ultimately renders successfully),
-                // so `renderingFinished` is the correct terminal —
-                // not `renderingFailed`.
-                onRenderingFinished?.();
+                // Do NOT close the lifecycle here. The re-compile
+                // below triggers VegaEmbed to re-embed, whose
+                // `handleEmbed` fires `onRenderingFinished` at the
+                // end of `view.runAsync()` — that is the correct
+                // terminal because it fires AFTER the recompile
+                // actually paints. Closing here instead would mean
+                // emitting `renderingFinished(options)` to the host
+                // while the recompile is still in flight; Power BI
+                // export / snapshot captures sample visual state on
+                // `renderingFinished`, so an early close would let
+                // them capture the pre-update content. If the
+                // recompile itself fails to ever paint (a real
+                // orphan), the coordinator's 10s safety-net is the
+                // deterministic backstop.
 
                 // Trigger full re-compile as fallback
                 compileSpec({

@@ -206,11 +206,41 @@ export const App = ({
      *     change → vega-embed's `useEffect` doesn't re-fire → no
      *     `onRenderingFinished` callback. The incremental update
      *     path may also short-circuit if values are deeply equal.
-     *     A short {@link RENDERING_MODE_SETTLE_MS} timer here closes
-     *     these updates well before the 10s safety-net would.
-     *     Idempotent against the U9/U10 async-close paths via the
-     *     coordinator's exactly-once guard — whichever fires first
-     *     wins, the rest no-op.
+     *     A {@link RENDERING_MODE_SETTLE_MS} timer here closes these
+     *     updates well before the 10s safety-net would.
+     *
+     * **Timer cancellation semantics — important.** The settle
+     * timer is NOT cancelled when U9 (vega-embed) or U10
+     * (performIncrementalUpdate) closes the pending render first.
+     * Those close paths run inside app-core and don't reach back
+     * into this effect; the only cancellation path is React's
+     * built-in effect cleanup, which fires when `visualUpdateOptions`
+     * / `mode` change for the next update.
+     *
+     * So the actual behavior is:
+     *  - **Isolated update**: Vega closes the pending render via
+     *    U9/U10 within typical render time (<200ms); the settle
+     *    timer continues for the remaining ~300ms and then fires
+     *    `onRenderingFinished()`, which is a no-op via the
+     *    coordinator's exactly-once guard (the bound id has already
+     *    been deleted from the openIds map). One wasted timer per
+     *    update — negligible.
+     *  - **Storm of N updates** (resize burst, live-data refresh):
+     *    each new update's effect cleanup `clearTimeout`s the
+     *    previous timer before scheduling a new one, so at most ONE
+     *    settle timer is in flight at any moment regardless of N.
+     *    React effect cleanup is the cap.
+     *  - **Settle wins**: when neither U9 nor U10 closes within the
+     *    bound (the editor-theme-via-formatting-pane case this
+     *    effect targets), the timer fires and emits
+     *    `renderingFinished` via the coordinator. This is the
+     *    designed close path for non-Vega-affecting updates in
+     *    rendering modes.
+     *
+     * A first-class cancellation token keyed on the coordinator's
+     * observer stream would eliminate the wasted-timer-per-update
+     * cost, but the perf impact is negligible and the indirection
+     * isn't worth it until U11's observer wiring is in place.
      *
      * `bindPendingRenderCurrent` fires in `handleNormalFinalise` /
      * `handleFetchMore` host-decline before the resolved display
