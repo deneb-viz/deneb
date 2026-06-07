@@ -177,6 +177,39 @@ export const App = ({
         }
     }, [host]);
 
+    /**
+     * Close the pending lifecycle for updates that resolve to a
+     * renderless display mode — landing, no-project, initializing,
+     * fetching, and the two transition states. `bindPendingRenderCurrent`
+     * fires in `handleNormalFinalise` / `handleFetchMore` host-decline
+     * before the resolved display mode is known; for these modes Vega
+     * never embeds, so `vega-embed.tsx`'s `onRenderingFinished` callback
+     * never fires and the lifecycle would otherwise wait the full 10s
+     * safety-net bound. Closing here makes the host's
+     * `renderingFinished` arrive within ms of paint instead.
+     *
+     * The effect's deps include `visualUpdateOptions` (changes per
+     * update — new reference is the per-update fingerprint) and `mode`
+     * (changes on transitions). `onRenderingFinished` is a stable
+     * reference from `src/index.ts` so it adds no spurious re-runs.
+     * The coordinator's `closePendingRender` is idempotent — no-op
+     * when no pending-render is bound or the bound id has already
+     * closed — so firing this effect for an update that already
+     * closed via another path (e.g. U8 skip) is safe.
+     */
+    useEffect(() => {
+        const isRenderlessMode =
+            mode === 'initializing' ||
+            mode === 'landing' ||
+            mode === 'no-project' ||
+            mode === 'fetching' ||
+            mode === 'transition-viewer-editor' ||
+            mode === 'transition-editor-viewer';
+        if (isRenderlessMode) {
+            onRenderingFinished();
+        }
+    }, [visualUpdateOptions, mode, onRenderingFinished]);
+
     const mainComponent = useMemo(() => {
         switch (mode) {
             case 'initializing':
