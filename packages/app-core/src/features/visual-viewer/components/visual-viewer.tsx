@@ -160,6 +160,21 @@ export const VisualViewer = ({
         translate: state.i18n.translate
     }));
 
+    // Hoisted from below the incremental-update effect so the effect's
+    // dependency array can reference `onRenderingFinished` without
+    // tripping the const Temporal Dead Zone at render time. Previously
+    // declared near the JSX return, but the data-change effect (~line
+    // 198) depends on it for the U10 incremental close — and the deps
+    // array is evaluated synchronously during the component body.
+    const {
+        onRenderingError,
+        onRenderingFinished,
+        onRenderingStarted,
+        tooltipHandler,
+        vegaLoader,
+        viewEventBinders
+    } = useDenebPlatformProvider();
+
     const embedScaleFactor = useMemo(() => {
         if (!scaleToZoom || renderMode !== 'canvas') return undefined;
         const editorScale = isEmbeddedInEditor
@@ -308,6 +323,21 @@ export const VisualViewer = ({
                     translate('Text_Warn_Incremental_Update_Failure', [reason])
                 );
 
+                // Do NOT close the lifecycle here. The re-compile
+                // below triggers VegaEmbed to re-embed, whose
+                // `handleEmbed` fires `onRenderingFinished` at the
+                // end of `view.runAsync()` — that is the correct
+                // terminal because it fires AFTER the recompile
+                // actually paints. Closing here instead would mean
+                // emitting `renderingFinished(options)` to the host
+                // while the recompile is still in flight; Power BI
+                // export / snapshot captures sample visual state on
+                // `renderingFinished`, so an early close would let
+                // them capture the pre-update content. If the
+                // recompile itself fails to ever paint (a real
+                // orphan), the coordinator's 10s safety-net is the
+                // deterministic backstop.
+
                 // Trigger full re-compile as fallback
                 compileSpec({
                     spec,
@@ -331,6 +361,13 @@ export const VisualViewer = ({
                 logDebug(
                     'VisualViewer: INCREMENTAL UPDATE SUCCESS - Data updated via view.data() API'
                 );
+                // Incremental data update reconciled in place via
+                // `view.data()` — no re-embed, so vega-embed.tsx's
+                // `onRenderingFinished` never fires. Close the
+                // lifecycle here instead so the update's
+                // pending-render id terminates cleanly (R12 / AE2 /
+                // U10) rather than waiting for the 10s safety-net.
+                onRenderingFinished?.();
             }
         });
     }, [
@@ -350,7 +387,8 @@ export const VisualViewer = ({
         schemaValidator,
         logDurableError,
         logDurableWarn,
-        translate
+        translate,
+        onRenderingFinished
     ]);
 
     const useScrollbars = useMemo(
@@ -367,14 +405,6 @@ export const VisualViewer = ({
         scrollEventThrottle
     );
     const classes = useVisualViewerStyles();
-    const {
-        onRenderingError,
-        onRenderingFinished,
-        onRenderingStarted,
-        tooltipHandler,
-        vegaLoader,
-        viewEventBinders
-    } = useDenebPlatformProvider();
 
     /**
      * Trigger initial compilation when spec, config, provider, or viewport changes.

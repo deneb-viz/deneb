@@ -48,6 +48,19 @@ import { persistOnCreateFromTemplate } from '../lib/persistence';
 import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 import { handlePersistBooleanProperty } from '../features/settings/helpers';
 
+/**
+ * Delay (ms) before the app-level rendering-lifecycle settle close
+ * fires for updates in rendering modes (viewer / editor) that did
+ * not trigger Vega's own callback chain. Typical Vega renders for
+ * non-pathological specs complete in under 200ms; 500ms gives any
+ * legitimate render comfortable headroom while closing
+ * non-Vega-affecting property updates (which would otherwise wait
+ * the full 10s safety-net bound) within half a second. Idempotent
+ * against the U9/U10 close paths — whichever closes the
+ * pending-render id first wins.
+ */
+const RENDERING_MODE_SETTLE_MS = 500;
+
 type AppProps = {
     host: powerbi.extensibility.visual.IVisualHost;
     /**
@@ -176,6 +189,84 @@ export const App = ({
             });
         }
     }, [host]);
+
+    /**
+     * Close the pending lifecycle for updates that won't reach (or
+     * have already finished with) a Vega render. Two cases:
+     *
+     *  1. **Renderless modes** — landing, no-project, initializing,
+     *     fetching, and the two transition states. Vega never
+     *     embeds in these modes so `vega-embed.tsx`'s callbacks
+     *     never fire. Close synchronously when the effect runs.
+     *
+     *  2. **Rendering modes with no Vega-affecting change** — e.g.
+     *     a "non-destructive" formatting property (editor theme,
+     *     log level) routed through `handleNormalFinalise` →
+     *     `bindPendingRenderCurrent`. Vega's input deps don't
+     *     change → vega-embed's `useEffect` doesn't re-fire → no
+     *     `onRenderingFinished` callback. The incremental update
+     *     path may also short-circuit if values are deeply equal.
+     *     A {@link RENDERING_MODE_SETTLE_MS} timer here closes these
+     *     updates well before the 10s safety-net would.
+     *
+     * **Timer cancellation semantics — important.** The settle
+     * timer is NOT cancelled when U9 (vega-embed) or U10
+     * (performIncrementalUpdate) closes the pending render first.
+     * Those close paths run inside app-core and don't reach back
+     * into this effect; the only cancellation path is React's
+     * built-in effect cleanup, which fires when `visualUpdateOptions`
+     * / `mode` change for the next update.
+     *
+     * So the actual behavior is:
+     *  - **Isolated update**: Vega closes the pending render via
+     *    U9/U10 within typical render time (<200ms); the settle
+     *    timer continues for the remaining ~300ms and then fires
+     *    `onRenderingFinished()`, which is a no-op via the
+     *    coordinator's exactly-once guard (the bound id has already
+     *    been deleted from the openIds map). One wasted timer per
+     *    update — negligible.
+     *  - **Storm of N updates** (resize burst, live-data refresh):
+     *    each new update's effect cleanup `clearTimeout`s the
+     *    previous timer before scheduling a new one, so at most ONE
+     *    settle timer is in flight at any moment regardless of N.
+     *    React effect cleanup is the cap.
+     *  - **Settle wins**: when neither U9 nor U10 closes within the
+     *    bound (the editor-theme-via-formatting-pane case this
+     *    effect targets), the timer fires and emits
+     *    `renderingFinished` via the coordinator. This is the
+     *    designed close path for non-Vega-affecting updates in
+     *    rendering modes.
+     *
+     * A first-class cancellation token keyed on the coordinator's
+     * observer stream would eliminate the wasted-timer-per-update
+     * cost, but the perf impact is negligible and the indirection
+     * isn't worth it until U11's observer wiring is in place.
+     *
+     * `bindPendingRenderCurrent` fires in `handleNormalFinalise` /
+     * `handleFetchMore` host-decline before the resolved display
+     * mode is known; `onRenderingFinished` is a stable reference
+     * from `src/index.ts` so the effect's deps add no spurious
+     * re-runs.
+     */
+    useEffect(() => {
+        const isRenderlessMode =
+            mode === 'initializing' ||
+            mode === 'landing' ||
+            mode === 'no-project' ||
+            mode === 'fetching' ||
+            mode === 'transition-viewer-editor' ||
+            mode === 'transition-editor-viewer';
+        if (isRenderlessMode) {
+            onRenderingFinished();
+            return;
+        }
+        const settleId = window.setTimeout(() => {
+            onRenderingFinished();
+        }, RENDERING_MODE_SETTLE_MS);
+        return () => {
+            window.clearTimeout(settleId);
+        };
+    }, [visualUpdateOptions, mode, onRenderingFinished]);
 
     const mainComponent = useMemo(() => {
         switch (mode) {
