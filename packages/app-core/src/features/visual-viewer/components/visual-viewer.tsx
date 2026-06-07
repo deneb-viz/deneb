@@ -308,6 +308,25 @@ export const VisualViewer = ({
                     translate('Text_Warn_Incremental_Update_Failure', [reason])
                 );
 
+                // Close this update's lifecycle BEFORE triggering the
+                // re-compile fallback. The re-compile causes
+                // VegaEmbed to re-embed, whose `handleEmbed` fires
+                // `onRenderingFinished` at the end — that call
+                // routes to `coordinator.closePendingRender()` which
+                // looks up `pendingRenderId`. If we are still in the
+                // same `update()` boundary, the current
+                // pending-render id has already been closed (the
+                // exactly-once guard inside the coordinator no-ops
+                // the second close). If a newer `update()` arrived
+                // in between, U7's supersede already failed the old
+                // id and bound the new one — the re-embed's close
+                // attributes correctly to the newest pending-render.
+                // From the host's perspective, the update succeeded
+                // (the re-compile ultimately renders successfully),
+                // so `renderingFinished` is the correct terminal —
+                // not `renderingFailed`.
+                onRenderingFinished?.();
+
                 // Trigger full re-compile as fallback
                 compileSpec({
                     spec,
@@ -331,6 +350,13 @@ export const VisualViewer = ({
                 logDebug(
                     'VisualViewer: INCREMENTAL UPDATE SUCCESS - Data updated via view.data() API'
                 );
+                // Incremental data update reconciled in place via
+                // `view.data()` — no re-embed, so vega-embed.tsx's
+                // `onRenderingFinished` never fires. Close the
+                // lifecycle here instead so the update's
+                // pending-render id terminates cleanly (R12 / AE2 /
+                // U10) rather than waiting for the 10s safety-net.
+                onRenderingFinished?.();
             }
         });
     }, [
@@ -350,7 +376,8 @@ export const VisualViewer = ({
         schemaValidator,
         logDurableError,
         logDurableWarn,
-        translate
+        translate,
+        onRenderingFinished
     ]);
 
     const useScrollbars = useMemo(
