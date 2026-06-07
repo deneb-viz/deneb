@@ -351,6 +351,42 @@ describe('createRenderingLifecycleCoordinator — pending-render binding', () =>
             1
         );
     });
+
+    it('bindPendingRenderCurrent targets the current open id (no-arg variant for dispatch handlers)', () => {
+        const { coordinator, calls } = buildHarness();
+        coordinator.open(FAKE_OPTIONS_A);
+        // Dispatch handler does not have direct access to the minted
+        // id — uses the no-arg variant to bind whichever id is open.
+        coordinator.bindPendingRenderCurrent();
+        coordinator.closePendingRender();
+        const finishes = calls.filter((c) => c.method === 'renderingFinished');
+        expect(finishes).toHaveLength(1);
+        expect(finishes[0].options).toBe(FAKE_OPTIONS_A);
+    });
+
+    it('bindPendingRenderCurrent with no current open id → no-op', () => {
+        const { coordinator, calls, events } = buildHarness();
+        // No prior open; the dispatch handler's call should not raise
+        // or bind anything stale.
+        coordinator.bindPendingRenderCurrent();
+        coordinator.closePendingRender();
+        expect(calls).toEqual([]);
+        expect(events).toEqual([]);
+    });
+
+    it('bindPendingRenderCurrent after supersede rebinds to the new id', () => {
+        const { coordinator, calls } = buildHarness();
+        coordinator.open(FAKE_OPTIONS_A);
+        coordinator.bindPendingRenderCurrent();
+        // Supersede A with B; the dispatch handler for B's update
+        // calls bindPendingRenderCurrent again — should retarget to B.
+        coordinator.open(FAKE_OPTIONS_B);
+        coordinator.bindPendingRenderCurrent();
+        coordinator.closePendingRender();
+        const finishes = calls.filter((c) => c.method === 'renderingFinished');
+        expect(finishes).toHaveLength(1);
+        expect(finishes[0].options).toBe(FAKE_OPTIONS_B);
+    });
 });
 
 describe('createRenderingLifecycleCoordinator — safety-net', () => {

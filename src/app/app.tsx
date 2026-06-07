@@ -1,8 +1,8 @@
 import powerbi from 'powerbi-visuals-api';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { type View } from 'vega';
 
-import { logHost, logRender } from '@deneb-viz/utils/logging';
+import { logRender } from '@deneb-viz/utils/logging';
 import { ReportViewRouter } from './report-view-router';
 import {
     DenebProvider,
@@ -50,9 +50,28 @@ import { handlePersistBooleanProperty } from '../features/settings/helpers';
 
 type AppProps = {
     host: powerbi.extensibility.visual.IVisualHost;
+    /**
+     * Rendering-lifecycle adapters built in `src/index.ts` and passed
+     * down through the platform provider. App-core / vega-embed call
+     * these without arguments (or with an `Error` for the error
+     * variant); the adapters route to the coordinator's
+     * `*PendingRender` methods. No `visualUpdateOptions` capture is
+     * needed here — the pending-render binding is performed
+     * synchronously in the visual's dispatch handlers BEFORE
+     * `update()` returns, so by the time these async callbacks fire
+     * the coordinator already knows which id they target.
+     */
+    onRenderingStarted: () => void;
+    onRenderingFinished: () => void;
+    onRenderingError: (error: Error) => void;
 };
 
-export const App = ({ host }: AppProps) => {
+export const App = ({
+    host,
+    onRenderingStarted,
+    onRenderingFinished,
+    onRenderingError
+}: AppProps) => {
     const [isDownloadPermitted, setIsDownloadPermitted] = useState<
         boolean | undefined
     >(undefined);
@@ -147,27 +166,6 @@ export const App = ({ host }: AppProps) => {
         return binders;
     }, [fields, values, selectionMode, translate]);
 
-    /**
-     * Rendering lifecycle callbacks for Power BI visual host.
-     * These call the event service directly rather than through powerbi-compat.
-     */
-    const onRenderingFinished = useCallback(() => {
-        if (visualUpdateOptions) {
-            logHost('Rendering event finished.');
-            host.eventService.renderingFinished(visualUpdateOptions);
-        }
-    }, [host, visualUpdateOptions]);
-
-    const onRenderingError = useCallback(
-        (error: Error) => {
-            if (visualUpdateOptions) {
-                logHost('Rendering event failed:', error.message);
-                host.eventService.renderingFailed(visualUpdateOptions);
-            }
-        },
-        [host, visualUpdateOptions]
-    );
-
     // Ensure that download permissions are evaluated against the current tenant and sent to the core app
     useEffect(() => {
         if (host) {
@@ -224,6 +222,7 @@ export const App = ({ host }: AppProps) => {
                     handlePersistBooleanProperty('enableHighlight', false),
                 onRenderingError,
                 onRenderingFinished,
+                onRenderingStarted,
                 settingsPaneFooter: <InteractivityFooter />,
                 settingsPanePlatformComponent: [
                     <SemanticModelSettings key={PLATFORM_SECTION_KEYS[0]} />,

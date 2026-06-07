@@ -223,6 +223,13 @@ export const createRenderingLifecycleCoordinator = (
             pendingRenderId = id;
         };
 
+    const bindPendingRenderCurrent: RenderingLifecycleCoordinator['bindPendingRenderCurrent'] =
+        () => {
+            const id = currentOpenId();
+            if (id === null) return;
+            pendingRenderId = id;
+        };
+
     const armSafetyNet: RenderingLifecycleCoordinator['armSafetyNet'] = (
         id
     ) => {
@@ -290,6 +297,7 @@ export const createRenderingLifecycleCoordinator = (
     return {
         open,
         bindPendingRender,
+        bindPendingRenderCurrent,
         armSafetyNet,
         closeCurrent,
         failCurrent,
