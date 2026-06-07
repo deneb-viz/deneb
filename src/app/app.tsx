@@ -48,6 +48,19 @@ import { persistOnCreateFromTemplate } from '../lib/persistence';
 import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 import { handlePersistBooleanProperty } from '../features/settings/helpers';
 
+/**
+ * Delay (ms) before the app-level rendering-lifecycle settle close
+ * fires for updates in rendering modes (viewer / editor) that did
+ * not trigger Vega's own callback chain. Typical Vega renders for
+ * non-pathological specs complete in under 200ms; 500ms gives any
+ * legitimate render comfortable headroom while closing
+ * non-Vega-affecting property updates (which would otherwise wait
+ * the full 10s safety-net bound) within half a second. Idempotent
+ * against the U9/U10 close paths — whichever closes the
+ * pending-render id first wins.
+ */
+const RENDERING_MODE_SETTLE_MS = 500;
+
 type AppProps = {
     host: powerbi.extensibility.visual.IVisualHost;
     /**
@@ -178,24 +191,32 @@ export const App = ({
     }, [host]);
 
     /**
-     * Close the pending lifecycle for updates that resolve to a
-     * renderless display mode — landing, no-project, initializing,
-     * fetching, and the two transition states. `bindPendingRenderCurrent`
-     * fires in `handleNormalFinalise` / `handleFetchMore` host-decline
-     * before the resolved display mode is known; for these modes Vega
-     * never embeds, so `vega-embed.tsx`'s `onRenderingFinished` callback
-     * never fires and the lifecycle would otherwise wait the full 10s
-     * safety-net bound. Closing here makes the host's
-     * `renderingFinished` arrive within ms of paint instead.
+     * Close the pending lifecycle for updates that won't reach (or
+     * have already finished with) a Vega render. Two cases:
      *
-     * The effect's deps include `visualUpdateOptions` (changes per
-     * update — new reference is the per-update fingerprint) and `mode`
-     * (changes on transitions). `onRenderingFinished` is a stable
-     * reference from `src/index.ts` so it adds no spurious re-runs.
-     * The coordinator's `closePendingRender` is idempotent — no-op
-     * when no pending-render is bound or the bound id has already
-     * closed — so firing this effect for an update that already
-     * closed via another path (e.g. U8 skip) is safe.
+     *  1. **Renderless modes** — landing, no-project, initializing,
+     *     fetching, and the two transition states. Vega never
+     *     embeds in these modes so `vega-embed.tsx`'s callbacks
+     *     never fire. Close synchronously when the effect runs.
+     *
+     *  2. **Rendering modes with no Vega-affecting change** — e.g.
+     *     a "non-destructive" formatting property (editor theme,
+     *     log level) routed through `handleNormalFinalise` →
+     *     `bindPendingRenderCurrent`. Vega's input deps don't
+     *     change → vega-embed's `useEffect` doesn't re-fire → no
+     *     `onRenderingFinished` callback. The incremental update
+     *     path may also short-circuit if values are deeply equal.
+     *     A short {@link RENDERING_MODE_SETTLE_MS} timer here closes
+     *     these updates well before the 10s safety-net would.
+     *     Idempotent against the U9/U10 async-close paths via the
+     *     coordinator's exactly-once guard — whichever fires first
+     *     wins, the rest no-op.
+     *
+     * `bindPendingRenderCurrent` fires in `handleNormalFinalise` /
+     * `handleFetchMore` host-decline before the resolved display
+     * mode is known; `onRenderingFinished` is a stable reference
+     * from `src/index.ts` so the effect's deps add no spurious
+     * re-runs.
      */
     useEffect(() => {
         const isRenderlessMode =
@@ -207,7 +228,14 @@ export const App = ({
             mode === 'transition-editor-viewer';
         if (isRenderlessMode) {
             onRenderingFinished();
+            return;
         }
+        const settleId = window.setTimeout(() => {
+            onRenderingFinished();
+        }, RENDERING_MODE_SETTLE_MS);
+        return () => {
+            window.clearTimeout(settleId);
+        };
     }, [visualUpdateOptions, mode, onRenderingFinished]);
 
     const mainComponent = useMemo(() => {
