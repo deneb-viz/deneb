@@ -12,13 +12,41 @@ import {
     isVisualUpdateTypeVolatile,
     type DisplayHistoryRecord
 } from '../lib/state';
+import { type RenderingLifecycleEvent } from '../lib/rendering-lifecycle';
+
+/**
+ * Maximum number of rendering-lifecycle events retained in the
+ * `UpdatesSlice.lifecycleEvents` ring buffer. Sized so a typical
+ * resize storm (10-20 events per second) leaves several seconds of
+ * history without unbounded memory growth across a long session.
+ */
+const LIFECYCLE_EVENTS_RING_LIMIT = 200;
 
 export type UpdatesSlice = {
     __hydrated__: boolean;
     count: number;
     history: DisplayHistoryRecord[];
     options: powerbi.extensibility.visual.VisualUpdateOptions | null;
+    /**
+     * Bounded ring of recent rendering-lifecycle observer events. The
+     * coordinator (constructed in `src/index.ts`) is wired to push
+     * each event into this slice; the dev-overlay tally
+     * (`src/features/visual-update-history-overlay`) reads it to
+     * compute and render a live start-vs-close tally for Desktop
+     * export testing. Capped at {@link LIFECYCLE_EVENTS_RING_LIMIT}
+     * — older events are dropped from the head.
+     */
+    lifecycleEvents: RenderingLifecycleEvent[];
     setVisualUpdateOptions: (payload: VisualUpdateDataPayload) => Promise<void>;
+    /**
+     * Append a single observer event to {@link lifecycleEvents}. The
+     * ring is trimmed from the head to maintain its bound. Designed
+     * for the coordinator's observer callback — production code in
+     * `src/index.ts` captures this setter once at constructor time
+     * and passes it directly into
+     * {@link createRenderingLifecycleCoordinator}'s `observer` slot.
+     */
+    recordLifecycleEvent: (event: RenderingLifecycleEvent) => void;
 };
 
 export type VisualUpdateDataPayload = {
@@ -37,6 +65,29 @@ export const createUpdatesSlice = (): StateCreator<
         count: 0,
         history: [],
         options: null,
+        lifecycleEvents: [],
+        recordLifecycleEvent: (event: RenderingLifecycleEvent) =>
+            set(
+                (state) => {
+                    const next = [...state.updates.lifecycleEvents, event];
+                    // Trim from the head — JS Array.slice is O(n) but
+                    // for n ≤ 200 the cost is trivial and predictable.
+                    const trimmed =
+                        next.length > LIFECYCLE_EVENTS_RING_LIMIT
+                            ? next.slice(
+                                  next.length - LIFECYCLE_EVENTS_RING_LIMIT
+                              )
+                            : next;
+                    return {
+                        updates: {
+                            ...state.updates,
+                            lifecycleEvents: trimmed
+                        }
+                    };
+                },
+                false,
+                'updates.recordLifecycleEvent'
+            ),
         setVisualUpdateOptions: async (payload) => {
             const { options, isDeveloperMode } = payload;
             const settings = getVisualFormattingModel(options?.dataViews?.[0]);
