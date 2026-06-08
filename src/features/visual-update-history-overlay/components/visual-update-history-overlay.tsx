@@ -103,7 +103,6 @@ export const VisualUpdateHistoryOverlay = () => {
             title='lifecycle + history'
             position='top-left'
             maxWidth={520}
-            maxHeight={420}
         >
             <div style={SECTION_HEADING_STYLE}>lifecycle tally</div>
             <pre style={HISTORY_PRE_STYLE}>{tallyText}</pre>

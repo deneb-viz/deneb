@@ -18,12 +18,6 @@ export type DevOverlayShellProps = {
      * depending on its own styling.
      */
     maxWidth?: number;
-    /**
-     * Maximum height (px) for the expanded body. Content beyond this
-     * scrolls vertically. The title bar is excluded from this
-     * measurement.
-     */
-    maxHeight?: number;
     /** Optional initial collapsed state (default: false). */
     initiallyCollapsed?: boolean;
     children: ReactNode;
@@ -58,22 +52,37 @@ const TITLE_BAR_HEIGHT = 22;
  * + failures, top-left) and {@link ViewportGateDebugOverlay}
  * (viewport-match debug, top-right).
  */
+const INSET_PX = 8;
+
 export const DevOverlayShell = ({
     title,
     position,
     maxWidth,
-    maxHeight,
     initiallyCollapsed = false,
     children
 }: DevOverlayShellProps) => {
     const [collapsed, setCollapsed] = useState(initiallyCollapsed);
 
     const positionStyle: CSSProperties =
-        position === 'top-left' ? { top: 8, left: 8 } : { top: 8, right: 8 };
+        position === 'top-left'
+            ? { top: INSET_PX, left: INSET_PX }
+            : { top: INSET_PX, right: INSET_PX };
 
     const shellStyle: CSSProperties = {
         position: 'fixed',
         ...positionStyle,
+        // Anchor vertical sizing to the iframe viewport. The shell
+        // can grow to its content's natural height, capped at the
+        // visual's available height (minus an 8px inset top and
+        // bottom). When the content exceeds the cap, the body's
+        // overflow-y handles scroll. Critically this means the
+        // scrollbar engages in small visuals too — the previous
+        // fixed `maxHeight={420}` left small visuals with no
+        // scroll because the shell extended past the visible
+        // bottom edge before its own cap kicked in.
+        maxHeight: `calc(100vh - ${INSET_PX * 2}px)`,
+        display: 'flex',
+        flexDirection: 'column',
         backgroundColor: PALETTE.background,
         color: PALETTE.foreground,
         fontFamily: FONT_FAMILY,
@@ -89,6 +98,7 @@ export const DevOverlayShell = ({
     };
 
     const titleBarStyle: CSSProperties = {
+        flex: '0 0 auto',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -113,8 +123,14 @@ export const DevOverlayShell = ({
     };
 
     const bodyStyle: CSSProperties = {
+        // `flex: 1 1 auto` lets the body fill the remaining shell
+        // height; `minHeight: 0` is the flex-child trick that allows
+        // a child of a flex column to shrink past its content's
+        // intrinsic height — without it `overflow-y: auto` does
+        // nothing because the body refuses to shrink below content.
+        flex: '1 1 auto',
+        minHeight: 0,
         padding: '6px 8px',
-        maxHeight,
         overflowY: 'auto',
         overflowX: 'hidden',
         whiteSpace: 'pre-wrap'
