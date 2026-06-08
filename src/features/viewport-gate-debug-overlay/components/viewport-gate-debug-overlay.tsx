@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
 import { useDenebVisualState } from '../../../state';
+import { DevOverlayShell } from '../../dev-overlay-shell';
 
 /**
  * Read-only HUD that surfaces the live values consumed by the
@@ -22,22 +23,11 @@ export const IS_OVERLAY_ENABLED = toBoolean(
 
 const POLL_INTERVAL_MS = 100;
 
-const overlayStyle: React.CSSProperties = {
-    position: 'fixed',
-    top: '8px',
-    right: '8px',
-    zIndex: 999999,
-    backgroundColor: 'rgba(0, 0, 0, 0.78)',
-    color: '#fff',
-    fontFamily:
-        'Consolas, "Courier New", Menlo, monospace, ui-monospace, SFMono-Regular',
+const PRE_STYLE: CSSProperties = {
+    margin: 0,
     fontSize: '11px',
     lineHeight: 1.35,
-    padding: '6px 8px',
-    borderRadius: '4px',
-    pointerEvents: 'none',
-    whiteSpace: 'pre',
-    userSelect: 'none'
+    whiteSpace: 'pre'
 };
 
 const formatNumber = (value: number | undefined): string =>
@@ -96,5 +86,13 @@ export const ViewportGateDebugOverlay = () => {
         `ev.h      ${formatNumber(evh)}    Δ ${formatDelta(ih, evh)}`
     ];
 
-    return <div style={overlayStyle}>{lines.join('\n')}</div>;
+    return (
+        <DevOverlayShell
+            title='viewport gate'
+            position='top-right'
+            maxWidth={240}
+        >
+            <pre style={PRE_STYLE}>{lines.join('\n')}</pre>
+        </DevOverlayShell>
+    );
 };
