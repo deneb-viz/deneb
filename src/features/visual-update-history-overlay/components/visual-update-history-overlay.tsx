@@ -2,7 +2,7 @@ import { useMemo, type CSSProperties } from 'react';
 
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
 import { useDenebVisualState } from '../../../state';
-import { DevOverlayShell } from '../../dev-overlay-shell';
+import { CollapsibleSection, DevOverlayShell } from '../../dev-overlay-shell';
 import { computeLifecycleTally } from '../lib/compute-tally';
 
 const IS_OVERLAY_ENABLED = toBoolean(process.env.PBIVIZ_DEV_OVERLAY);
@@ -127,10 +127,11 @@ export const VisualUpdateHistoryOverlay = () => {
             )}
 
             <hr style={HR_STYLE} />
-            <div style={SECTION_HEADING_STYLE}>update history</div>
-            <pre style={HISTORY_PRE_STYLE}>
-                {JSON.stringify(history, null, 2)}
-            </pre>
+            <CollapsibleSection title='update history' initiallyCollapsed>
+                <pre style={HISTORY_PRE_STYLE}>
+                    {JSON.stringify(history, null, 2)}
+                </pre>
+            </CollapsibleSection>
         </DevOverlayShell>
     );
 };

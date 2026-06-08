@@ -156,3 +156,63 @@ export const DevOverlayShell = ({
         </div>
     );
 };
+
+// ─── CollapsibleSection ──────────────────────────────────────────────────────
+
+export type CollapsibleSectionProps = {
+    /** Header label. */
+    title: string;
+    /** Default collapsed state (default: false). */
+    initiallyCollapsed?: boolean;
+    children: ReactNode;
+};
+
+const SECTION_HEADER_STYLE: CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    cursor: 'pointer',
+    fontWeight: 600,
+    marginBottom: 4,
+    color: 'rgba(255, 255, 255, 0.7)',
+    userSelect: 'none'
+};
+
+const SECTION_DISCLOSURE_STYLE: CSSProperties = {
+    fontSize: '9px',
+    lineHeight: 1,
+    opacity: 0.6,
+    marginLeft: 6
+};
+
+/**
+ * Single-section disclosure inside a {@link DevOverlayShell}. Click
+ * the header to toggle. Used to keep noisy panels (update history,
+ * verbose state dumps) hidden by default so the developer sees the
+ * compact summary first and expands only when they need detail.
+ * Component-local collapse state — same lifetime semantics as the
+ * shell's minimize state.
+ */
+export const CollapsibleSection = ({
+    title,
+    initiallyCollapsed = false,
+    children
+}: CollapsibleSectionProps) => {
+    const [collapsed, setCollapsed] = useState(initiallyCollapsed);
+    return (
+        <div>
+            <div
+                style={SECTION_HEADER_STYLE}
+                onClick={() => setCollapsed((current) => !current)}
+                role='button'
+                aria-expanded={!collapsed}
+            >
+                <span>{title}</span>
+                <span style={SECTION_DISCLOSURE_STYLE}>
+                    {collapsed ? '▶' : '▼'}
+                </span>
+            </div>
+            {!collapsed && <div>{children}</div>}
+        </div>
+    );
+};
