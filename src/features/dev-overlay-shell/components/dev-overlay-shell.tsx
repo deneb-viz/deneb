@@ -199,12 +199,24 @@ export const CollapsibleSection = ({
     children
 }: CollapsibleSectionProps) => {
     const [collapsed, setCollapsed] = useState(initiallyCollapsed);
+    const toggle = () => setCollapsed((current) => !current);
     return (
         <div>
             <div
                 style={SECTION_HEADER_STYLE}
-                onClick={() => setCollapsed((current) => !current)}
+                onClick={toggle}
+                // role='button' requires both Tab reachability
+                // (tabIndex={0}) and Enter/Space activation per ARIA
+                // authoring practices. Without these, keyboard users
+                // and screen readers can't toggle the section.
+                onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        toggle();
+                    }
+                }}
                 role='button'
+                tabIndex={0}
                 aria-expanded={!collapsed}
             >
                 <span>{title}</span>

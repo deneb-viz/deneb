@@ -3,6 +3,7 @@ import { useMemo, type CSSProperties } from 'react';
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
 import { useDenebVisualState } from '../../../state';
 import { CollapsibleSection, DevOverlayShell } from '../../dev-overlay-shell';
+import { type RenderingLifecycleEvent } from '../../../lib/rendering-lifecycle';
 import { computeLifecycleTally } from '../lib/compute-tally';
 
 const IS_OVERLAY_ENABLED = toBoolean(process.env.PBIVIZ_DEV_OVERLAY);
@@ -70,7 +71,14 @@ export const VisualUpdateHistoryOverlay = () => {
     const recentFailures = useMemo(
         () =>
             lifecycleEvents
-                .filter((event) => event.kind === 'failed')
+                .filter(
+                    (
+                        event
+                    ): event is Extract<
+                        RenderingLifecycleEvent,
+                        { kind: 'failed' }
+                    > => event.kind === 'failed'
+                )
                 .slice(-6),
         [lifecycleEvents]
     );
@@ -111,18 +119,14 @@ export const VisualUpdateHistoryOverlay = () => {
                 <>
                     <hr style={HR_STYLE} />
                     <div style={SECTION_HEADING_STYLE}>recent failures</div>
-                    {recentFailures.map((event, index) => {
-                        if (event.kind !== 'failed') return null;
-                        return (
-                            <div
-                                key={`${event.id}-${index}`}
-                                style={FAILURE_LINE_STYLE}
-                            >
-                                id={event.id} via={event.via} reason=
-                                {event.reason}
-                            </div>
-                        );
-                    })}
+                    {recentFailures.map((event, index) => (
+                        <div
+                            key={`${event.id}-${index}`}
+                            style={FAILURE_LINE_STYLE}
+                        >
+                            id={event.id} via={event.via} reason={event.reason}
+                        </div>
+                    ))}
                 </>
             )}
 
