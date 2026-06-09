@@ -70,6 +70,17 @@ import {
 const IS_DEVELOPER_MODE = toBoolean(process.env.PBIVIZ_DEV_MODE);
 
 /**
+ * Gate for the rendering-lifecycle coordinator's observer wiring.
+ * When the dev-overlay env var is on, every coordinator event is
+ * pushed into the visual store's bounded ring (the tally surface
+ * consumed by `VisualUpdateHistoryOverlay`). When off, the observer
+ * slot is left undefined and the coordinator's internal observe
+ * call is a typed no-op — production builds pay no per-event
+ * cost.
+ */
+const IS_LIFECYCLE_OBSERVER_ENABLED = toBoolean(process.env.PBIVIZ_DEV_OVERLAY);
+
+/**
  * Bound (ms) after which the rendering-lifecycle safety-net checks an
  * armed id. If the id is still open and no render ever began
  * (`state.renderStarted === false`), the safety-net closes it as an
@@ -156,10 +167,13 @@ export class Deneb implements IVisual {
         try {
             const { host } = options;
             this.#host = host;
-            // Coordinator owns ALL host.eventService.rendering* emission
-            // from this point forward. The host event service is the
-            // structural emitter; the safety-net uses real setTimeout in
-            // prod. U11 will inject an observer for the dev overlay.
+            // Coordinator owns ALL host.eventService.rendering*
+            // emission from this point forward. The host event
+            // service is the structural emitter; the safety-net uses
+            // real setTimeout in prod; the observer is gated by
+            // PBIVIZ_DEV_OVERLAY so the dev overlay's tally surface
+            // is fed without paying the per-event store-write cost in
+            // production builds.
             this.#coordinator = createRenderingLifecycleCoordinator({
                 emitter: host.eventService,
                 scheduler: renderingLifecycleScheduler,
@@ -170,7 +184,20 @@ export class Deneb implements IVisual {
                 // wiring forwarded `detail` unconditionally and printed
                 // a literal `undefined` after every lifecycle line
                 // (e.g. "[lifecycle] renderingStarted id=1 undefined").
-                logger: logHost
+                logger: logHost,
+                // U11: forward every coordinator event into the
+                // visual store's bounded ring so the dev overlay can
+                // compute a live start-vs-close tally. The setter is
+                // a stable closure created once when the store
+                // hydrates, so capturing it via `.getState()` here
+                // is safe — subsequent slice rebuilds do not replace
+                // it. Left undefined when the env gate is off (the
+                // coordinator's optional observer slot skips the
+                // call entirely).
+                observer: IS_LIFECYCLE_OBSERVER_ENABLED
+                    ? useDenebVisualState.getState().updates
+                          .recordLifecycleEvent
+                    : undefined
             });
             // U9: render-callback adapters routed through the
             // coordinator. App-core never imports the coordinator —
