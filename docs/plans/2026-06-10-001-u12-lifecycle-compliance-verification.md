@@ -123,6 +123,13 @@ The umbrella requirement. Verified by Phase 1's collective tally observations.
 - [ ] **Sustained session:** open the visual, interact with it normally for 5 minutes (changes, resizes, filters). At the end, `opens === closes.total + fails.total` exactly.
 - [ ] **Pending count returns to 0** during idle moments — sustained `pending > 1` indicates an undiagnosed orphan path.
 
+### R11 — Coordinated single effort
+
+Process/meta requirement from the plan (this work landed as a single
+coordinated sequence rather than as ad-hoc fixes), satisfied by the
+plan structure itself and by U5-U12's linked commit history. **No
+standalone UAT scenario.**
+
 ### R13 / R14 — Dev-overlay tally available
 
 - [ ] **Scenario:** with `PBIVIZ_DEV_OVERLAY=true`, the lifecycle + history overlay appears top-left; the tally updates live across all scenarios above. Minimize/restore works. History section can be expanded for forensic detail.

@@ -28,8 +28,14 @@ tags:
     - observability
     - power-bi-host
 related_components:
-    - development_workflow
-    - documentation
+    - src/lib/rendering-lifecycle/coordinator.ts
+    - src/lib/rendering-lifecycle/types.ts
+    - src/index.ts
+    - src/app/app.tsx
+    - packages/app-core/src/features/visual-viewer/components/vega-embed.tsx
+    - packages/app-core/src/features/visual-viewer/components/visual-viewer.tsx
+    - src/features/visual-update-history-overlay
+    - src/features/dev-overlay-shell
 ---
 
 # Rendering Lifecycle Coordinator — single-owner host-event pattern for Power BI custom visuals
