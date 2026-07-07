@@ -15,6 +15,12 @@ import { persistProperties, resolveObjectProperties } from './persist';
 import { getDenebState } from '@deneb-viz/app-core';
 import { getDenebVisualState } from '../../state';
 import { APPLICATION_VERSION } from '../application';
+import {
+    hasProjectContent,
+    runStateManagementLoadTimeMigrations,
+    type StateManagementLoadMigrationResult,
+    type StateManagementPayload
+} from './state-management-migration';
 
 /**
  * Current visual and provider information
@@ -129,6 +135,12 @@ export const handlePropertyMigration = (
     visualSettings: VisualFormattingSettingsModel,
     isReadMode: boolean
 ) => {
+    // Schema-versioned `stateManagement` payload migrations run first, in
+    // BOTH modes, on every update: the settings model is rebuilt from the
+    // host data view each update, so in-memory application must re-run
+    // (mirroring the read-mode pattern below). With no registered
+    // load-time entries this is a cheap parse + classify.
+    runStateManagementSchemaMigrations(visualSettings);
     const {
         vega: {
             output: {
@@ -166,6 +178,108 @@ export const handlePropertyMigration = (
             }
             default:
                 break;
+        }
+    }
+};
+
+/**
+ * Execution point for class `'load-time'` (payload-shape) migrations of
+ * the persisted `stateManagement` payload — see
+ * `./state-management-migration.ts`, which owns the registry and ALL
+ * version comparison for that payload.
+ *
+ * Applies pending load-time entries in registry order to the in-memory
+ * settings model (merge semantics — present keys are never wiped). The
+ * returned result carries the typed corrupt-key signals and the ids of
+ * pending first-dataview (data-dependent) entries, which execute later
+ * from the dataset mapping pass.
+ *
+ * Persistence note: application here is in-memory only, matching the
+ * settings-model lifecycle (rebuilt every update). Durable persistence of
+ * migration output — batched into a single store update so the sync layer
+ * emits one persist — is wired by the data-dependent execution point
+ * (see U3 of the audit remediation program); durable UI surfacing of
+ * corrupt-key signals lands there too.
+ */
+export const runStateManagementSchemaMigrations = (
+    visualSettings: VisualFormattingSettingsModel
+): StateManagementLoadMigrationResult => {
+    const payload = getStateManagementPayloadFromSettings(visualSettings);
+    const jsonSpec = visualSettings.vega?.output?.jsonSpec?.value ?? '';
+    const result = runStateManagementLoadTimeMigrations(payload, {
+        hasProjectContent: hasProjectContent(jsonSpec)
+    });
+    if (result.corruptKeys.length > 0) {
+        logDebug(
+            'runStateManagementSchemaMigrations: corrupt persisted key(s) detected',
+            { corruptKeys: result.corruptKeys }
+        );
+    }
+    if (result.applied.length > 0) {
+        logDebug('runStateManagementSchemaMigrations: applied migrations', {
+            applied: result.applied,
+            version: result.version
+        });
+        applyStateManagementPayloadToSettings(visualSettings, result.payload);
+    }
+    return result;
+};
+
+/**
+ * Extract the raw persisted `stateManagement` payload from the settings
+ * model. Values stay in their persisted (serialized) form — parsing and
+ * corruption detection belong to the registry.
+ */
+export const getStateManagementPayloadFromSettings = (
+    visualSettings: VisualFormattingSettingsModel
+): StateManagementPayload => {
+    const projectMetadata = visualSettings.stateManagement?.projectMetadata;
+    const viewport = visualSettings.stateManagement?.viewport;
+    return {
+        viewportHeight: viewport?.viewportHeight?.value,
+        viewportWidth: viewport?.viewportWidth?.value,
+        supportFieldConfiguration:
+            projectMetadata?.supportFieldConfiguration?.value,
+        denebMetaVersion: projectMetadata?.denebMetaVersion?.value,
+        scaleToZoom: projectMetadata?.scaleToZoom?.value,
+        consolidateFieldParameters:
+            projectMetadata?.consolidateFieldParameters?.value
+    };
+};
+
+/**
+ * Write a migrated `stateManagement` payload back onto the in-memory
+ * settings model. Only keys present on the payload are written — absent
+ * keys leave the model untouched (merge, never replace).
+ */
+export const applyStateManagementPayloadToSettings = (
+    visualSettings: VisualFormattingSettingsModel,
+    payload: StateManagementPayload
+): void => {
+    const projectMetadata = visualSettings.stateManagement?.projectMetadata;
+    const viewport = visualSettings.stateManagement?.viewport;
+    if (viewport) {
+        if (payload.viewportHeight !== undefined) {
+            viewport.viewportHeight.value = payload.viewportHeight;
+        }
+        if (payload.viewportWidth !== undefined) {
+            viewport.viewportWidth.value = payload.viewportWidth;
+        }
+    }
+    if (projectMetadata) {
+        if (payload.supportFieldConfiguration !== undefined) {
+            projectMetadata.supportFieldConfiguration.value =
+                payload.supportFieldConfiguration;
+        }
+        if (payload.denebMetaVersion !== undefined) {
+            projectMetadata.denebMetaVersion.value = payload.denebMetaVersion;
+        }
+        if (payload.scaleToZoom !== undefined) {
+            projectMetadata.scaleToZoom.value = payload.scaleToZoom;
+        }
+        if (payload.consolidateFieldParameters !== undefined) {
+            projectMetadata.consolidateFieldParameters.value =
+                payload.consolidateFieldParameters;
         }
     }
 };

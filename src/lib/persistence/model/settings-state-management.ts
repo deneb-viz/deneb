@@ -22,6 +22,18 @@ class SettingsStateManagementGroupProjectMetadata
             'Objects_StateManagement_SupportFieldConfiguration_Description',
         value: DEFAULTS.stateManagement.supportFieldConfiguration
     });
+    /**
+     * Schema-version stamp for the persisted `stateManagement` payload.
+     *
+     * OWNED by the ordered migration registry in
+     * `src/lib/persistence/state-management-migration.ts` — all version
+     * comparison for this payload goes through that registry
+     * (`isStateManagementMigrationPending` /
+     * `runStateManagementLoadTimeMigrations`); never compare this value
+     * directly. Empty/absent means unversioned (pre-2.0 — the last shape
+     * that ever has to be sniffed); completed migrations stamp the
+     * registry's `toVersion` for the entry that ran.
+     */
     denebMetaVersion = new formattingSettings.ReadOnlyText({
         name: 'denebMetaVersion',
         displayNameKey: 'Objects_StateManagement_DenebMetaVersion',

@@ -1,0 +1,18 @@
+{
+    "description": "Partially-populated payload — the split the audit's M10 finding describes: supportFieldConfiguration (and other keys) persisted, but denebMetaVersion absent because the stamps were persisted piecemeal and one write was lost. The payload classifies as unversioned-legacy (project content present, no stamp), the first-dataview migration is pending, and CRITICALLY the present keys must survive untouched — merged, never wiped.",
+    "jsonSpec": "{\"data\":{\"name\":\"dataset\"},\"mark\":\"area\",\"encoding\":{\"x\":{\"field\":\"Month\",\"type\":\"ordinal\"},\"y\":{\"field\":\"Units\",\"type\":\"quantitative\"}}}",
+    "stateManagement": {
+        "supportFieldConfiguration": "{\"Units\":{\"highlight\":false,\"highlightStatus\":false,\"highlightComparator\":false,\"format\":true,\"formatted\":true}}",
+        "scaleToZoom": true
+    },
+    "expected": {
+        "classification": "unversioned-legacy",
+        "applied": [],
+        "pendingFirstDataview": ["support-field-legacy-defaults"],
+        "corruptKeys": [],
+        "payload": {
+            "supportFieldConfiguration": "{\"Units\":{\"highlight\":false,\"highlightStatus\":false,\"highlightComparator\":false,\"format\":true,\"formatted\":true}}",
+            "scaleToZoom": true
+        }
+    }
+}
