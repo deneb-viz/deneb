@@ -63,11 +63,11 @@ export type GetUpdatedHistoryListPayload = {
 const MAX_UPDATE_HISTORY_RETENTION = 100;
 
 /**
- * Whether the current display mode is one where the embed viewport may
- * be committed from the live host viewport.
+ * Whether each display mode is one where the embed viewport may be
+ * committed from the live host viewport.
  *
- * Excluded modes report a host viewport that does not match the canvas
- * size the viewer should be rendered at:
+ * Modes mapped to `false` report a host viewport that does not match
+ * the canvas size the viewer should be rendered at:
  *  - `editor` and the two `transition-*` modes report the editor's
  *    full-screen area; committing it would resize the viewer to the
  *    editor pane on the next viewer entry.
@@ -79,15 +79,30 @@ const MAX_UPDATE_HISTORY_RETENTION = 100;
  *    viewport, which then survives into the viewer post-fetch. The
  *    correct committed viewport is set when fetch completes and mode
  *    resolves to `viewer`/`no-project`.
+ *
+ * The `Record<DisplayMode, boolean>` shape is a compile-time
+ * exhaustiveness guard: adding a member to the `DisplayMode` union
+ * fails compilation here, forcing an explicit commit-safe/unsafe
+ * decision for the new mode instead of a silent default.
  */
-export const doesModeAllowEmbedViewportSet = (mode: DisplayMode): boolean => {
-    return (
-        mode !== 'editor' &&
-        mode !== 'transition-viewer-editor' &&
-        mode !== 'transition-editor-viewer' &&
-        mode !== 'fetching'
-    );
+const EMBED_VIEWPORT_COMMIT_ALLOWED: Record<DisplayMode, boolean> = {
+    initializing: true,
+    landing: true,
+    'no-project': true,
+    fetching: false,
+    viewer: true,
+    'transition-viewer-editor': false,
+    'transition-editor-viewer': false,
+    editor: false
 };
+
+/**
+ * Whether the current display mode is one where the embed viewport may
+ * be committed from the live host viewport. See
+ * {@link EMBED_VIEWPORT_COMMIT_ALLOWED} for the per-mode rationale.
+ */
+export const doesModeAllowEmbedViewportSet = (mode: DisplayMode): boolean =>
+    EMBED_VIEWPORT_COMMIT_ALLOWED[mode];
 
 /**
  * Numeric value of `powerbi.ViewMode.View` (the published-report
