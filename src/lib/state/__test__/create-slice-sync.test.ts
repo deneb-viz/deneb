@@ -645,6 +645,62 @@ describe('createSliceSync', () => {
             );
         });
 
+        it('should emit ONE batched persistProjectProperties call when multiple keys change in a single slice update (M10)', () => {
+            // The legacy support-field migration commits its three
+            // properties through one combined store setter — the
+            // subscriber must observe one slice change and emit one
+            // batched host persist, never one call per property.
+            const initialSlice = createSliceState({
+                __hasHydrated__: true,
+                spec: '{"data":{}}',
+                config: '{}',
+                fontSize: 14
+            });
+            mockAppCoreState = { test: initialSlice };
+            mockVisualSettings = DEFAULT_VISUAL_SETTINGS;
+            createSliceSync(createTestConfig());
+
+            const migratedSlice = createSliceState({
+                __hasHydrated__: true,
+                spec: 'migratedSpec',
+                config: 'migratedConfig',
+                fontSize: 99
+            });
+            fireAppCoreSubscriber(migratedSlice);
+
+            expect(mockPersistProjectProperties).toHaveBeenCalledTimes(1);
+            const changes = mockPersistProjectProperties.mock.calls[0][0];
+            expect(changes).toHaveLength(3);
+            expect(changes).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        objectName: 'vega',
+                        propertyName: 'jsonSpec',
+                        value: 'migratedSpec'
+                    }),
+                    expect.objectContaining({
+                        objectName: 'vega',
+                        propertyName: 'jsonConfig',
+                        value: 'migratedConfig'
+                    }),
+                    expect.objectContaining({
+                        objectName: 'editor',
+                        propertyName: 'fontSize',
+                        value: '99'
+                    })
+                ])
+            );
+
+            // All three keys have pending entries: a stale echo for any of
+            // them must be suppressed until Power BI confirms.
+            const staleSettings = {
+                vega: { spec: '{"data":{}}', config: '{}', fontSize: 14 },
+                interactivity: { tooltip: true }
+            };
+            fireVisualSubscriber(staleSettings);
+            expect(mockSyncFn).not.toHaveBeenCalled();
+        });
+
         it('should not persist or record pending when no values have changed', () => {
             const slice = createSliceState({
                 __hasHydrated__: true,

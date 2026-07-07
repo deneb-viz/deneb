@@ -63,6 +63,8 @@
     "PowerBI_Toast_Title_Cross_Filter_Limit_Reached": "Cross-filter limit exceeded",
     "PowerBI_Toast_Title_Unapplied_Changes": "Your JSON has changed",
     "PowerBI_Tooltip_Setting_Reset": "Reset to default",
+    "Text_Error_Dataset_Mapping_Failed": "Your data could not be processed into the visual's dataset, so the visual is showing an empty dataset to keep its output consistent. Please check your visual's fields and any recent changes to them, then try again.",
+    "Text_Warn_Persisted_Property_Unreadable": "A persisted visual property ({0}) could not be read and has been ignored. Default behavior applies for this property, and any previous customizations to it may need to be re-applied.",
     "PowerBI_Vega_Loader_Warning_HoverText": "Remote resources cannot be loaded in the AppSource version.",
     "PowerBI_Vega_Loader_Warning_DetailedText": "Due to certification requirements, the AppSource version of Deneb does not permit loading from external URLs. This can be done with the standalone version, available from Deneb's GitHub repository. You can learn more about the standalone version on the Getting Started page on Deneb's website (https://deneb.guide/getting-started#standalone-version)."
 }
