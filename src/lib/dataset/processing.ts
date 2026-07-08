@@ -575,10 +575,19 @@ export const getMappedDataset = (
             // invisible at certified LOG_LEVEL=0. The message is generic
             // and localized; raw exception text and data payloads are
             // deliberately NOT echoed into the UI.
-            const { compilation, i18n } = getDenebState();
-            compilation.logDurableError(
-                i18n.translate('Text_Error_Dataset_Mapping_Failed')
-            );
+            try {
+                const { compilation, i18n } = getDenebState();
+                compilation.logDurableError(
+                    i18n.translate('Text_Error_Dataset_Mapping_Failed')
+                );
+            } catch (durableError) {
+                // Store may be unavailable (teardown, pre-init) — never let
+                // the durable-error path bury the original exception `e`.
+                logError(
+                    'getMappedDataset: failed to surface durable error',
+                    durableError
+                );
+            }
             return empty;
         }
     }
