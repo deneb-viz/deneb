@@ -45,17 +45,36 @@ export const useVegaEmbed = ({
     onError
 }: UseVegaEmbedOptions) => {
     const embedResultRef = useRef<{ finalize: () => void } | null>(null);
-    const warningsRef = useRef<string[]>([]);
+    /**
+     * Monotonic token identifying the embed run that is currently allowed to
+     * publish its result. Every effect run (and unmount) bumps it and captures
+     * the new value; when an asynchronous `vegaEmbed()` settles it compares the
+     * generation it captured against the live one. If they differ, a newer
+     * respec — or an unmount — has superseded this embed, so it must finalize
+     * its own (now-orphaned) view instead of storing it, rebinding the view
+     * singleton, or firing callbacks. This makes late-resolving stale embeds
+     * safe regardless of the order in which their promises settle.
+     */
+    const generationRef = useRef(0);
 
-    // Cleanup on unmount
+    // Cleanup on unmount: supersede any in-flight embed (so its late
+    // resolution finalizes itself and fires no callbacks) and finalize the
+    // currently-stored result against the live generation.
     useEffect(() => {
         return () => {
+            generationRef.current += 1;
             embedResultRef.current?.finalize();
+            embedResultRef.current = null;
         };
     }, []);
 
     // Embed when spec or options change (deep comparison)
     useDeepCompareEffect(() => {
+        // Supersede every prior embed run before doing anything else. A prior
+        // embed still in flight will observe that its captured generation is
+        // now stale and finalize itself in its own `.then`/`.catch`.
+        const generation = (generationRef.current += 1);
+
         // If spec is null/undefined, clean up previous embed and clear the container
         if (!spec) {
             if (embedResultRef.current) {
@@ -75,16 +94,6 @@ export const useVegaEmbed = ({
         embedResultRef.current?.finalize();
         embedResultRef.current = null;
 
-        // Reset warnings
-        warningsRef.current = [];
-
-        // Capture console.warn for warnings collection
-        const originalWarn = console.warn;
-        console.warn = (...args: any[]) => {
-            warningsRef.current.push(args.join(' '));
-            originalWarn.apply(console, args);
-        };
-
         /**
          * It's been observed that when we embed with `actions: false`, this seems to be ignored, unless we spread this
          * in directly at the embed call site. We also need to perform some downstream CSS overrides. This may well be
@@ -92,15 +101,25 @@ export const useVegaEmbed = ({
          */
         vegaEmbed(ref.current, spec, { ...options, actions: false })
             .then((result) => {
+                // Stale resolution: a newer respec or an unmount has bumped the
+                // generation since this embed started. Finalize the orphaned
+                // view immediately so its timers, event listeners and DOM are
+                // released, then bail without storing it or firing `onEmbed`.
+                if (generation !== generationRef.current) {
+                    result.finalize();
+                    return;
+                }
                 embedResultRef.current = result;
                 onEmbed?.({ view: result.view, vgSpec: result.vgSpec });
             })
             .catch((error) => {
+                // Stale rejection: this embed was superseded, so nobody is
+                // waiting on its outcome. Swallow the error rather than
+                // reporting a failure for a generation that no longer matters.
+                if (generation !== generationRef.current) {
+                    return;
+                }
                 onError?.(error);
-            })
-            .finally(() => {
-                // Restore original console.warn
-                console.warn = originalWarn;
             });
     }, [spec, options]);
 };
