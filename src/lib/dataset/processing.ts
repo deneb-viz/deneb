@@ -333,9 +333,15 @@ export const getMappedDataset = (
                     isSourceField(c.source)
             );
 
-            // Detect field parameters when consolidation is enabled
-            const consolidate =
-                state.project.consolidateFieldParameters ?? true;
+            // Detect field parameters when consolidation is enabled. A
+            // legacy pass must use the value the migration just stamped
+            // (false) rather than the pre-migration store snapshot in
+            // `state`, which still reports the old value. This also covers
+            // read mode, where persistence is suppressed and the migration
+            // re-runs (and re-stamps) on every pass.
+            const consolidate = legacy
+                ? false
+                : (state.project.consolidateFieldParameters ?? true);
             let planParameterGroups: PlanParameterGroup[] | undefined;
 
             if (consolidate) {

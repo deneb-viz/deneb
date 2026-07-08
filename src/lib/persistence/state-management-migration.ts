@@ -113,6 +113,17 @@ interface StateManagementMigrationEntryBase {
      * When `true`, the entry only applies to payloads belonging to a real
      * project (see `StateManagementMigrationContext.hasProjectContent`).
      * Fresh visuals and cross-GUID imports skip it — they are not legacy.
+     *
+     * IMPORTANT — this flag is ADDITIVE on top of payload classification,
+     * not an independent gate. A project-less payload below the current
+     * version classifies as `'empty-or-cross-guid'` and returns before the
+     * load-time loop runs (see `runStateManagementLoadTimeMigrations`), so a
+     * `'load-time'` entry with `requiresProjectContent: false` still does
+     * NOT run for such payloads — the classification guard is the primary
+     * gate and this flag only tightens it further when project content IS
+     * present. A migration that must run for ALL payloads regardless of
+     * project content (e.g. a viewport-dimension schema change) would need
+     * the classification step revisited, not just this flag cleared.
      */
     requiresProjectContent: boolean;
 }
@@ -315,6 +326,15 @@ export const assertStateManagementRegistryIntegrity = (
 };
 
 /**
+ * Validate the canonical registry ONCE at import. It is a module-level
+ * `const` and cannot change between calls, so query paths that default to
+ * it (`getEntryById`) skip the per-call O(n) re-scan — the check has already
+ * fired here. Custom registries passed explicitly (by tests) are still
+ * validated on use. Throws at import if the shipped registry is malformed.
+ */
+assertStateManagementRegistryIntegrity(STATE_MANAGEMENT_MIGRATIONS);
+
+/**
  * The current `stateManagement` schema version — the last registry entry's
  * `toVersion`. This is the value newly-completed migrations stamp.
  */
@@ -412,7 +432,11 @@ const getEntryById = (
     id: string,
     entries: readonly StateManagementMigrationEntry[]
 ): StateManagementMigrationEntry => {
-    assertStateManagementRegistryIntegrity(entries);
+    // The canonical registry is validated once at import; only re-validate a
+    // caller-supplied (test) registry, which may be malformed by design.
+    if (entries !== STATE_MANAGEMENT_MIGRATIONS) {
+        assertStateManagementRegistryIntegrity(entries);
+    }
     const entry = entries.find((e) => e.id === id);
     if (!entry) {
         throw new StateManagementRegistryError(`Unknown migration id '${id}'.`);
@@ -516,9 +540,15 @@ export const runStateManagementLoadTimeMigrations = (
             // Already migrated past this entry (idempotency / stale echo).
             continue;
         }
-        // Note: `requiresProjectContent` needs no per-entry check here —
-        // every payload without project content classifies as
-        // `'empty-or-cross-guid'` above and never reaches this loop.
+        // `requiresProjectContent` is primarily enforced by classification:
+        // a project-less payload below the current version is
+        // `'empty-or-cross-guid'` above and never reaches this loop. This
+        // per-entry guard is the defensive backstop — it keeps the loop
+        // honouring the flag if a future entry is ever reached with it set,
+        // rather than relying solely on the earlier classification return.
+        if (entry.requiresProjectContent && !context.hasProjectContent) {
+            continue;
+        }
         if (entry.migrationClass === 'first-dataview') {
             // Data-dependent: executes later from the mapping pass. Later
             // entries assume its output shape, so stop here.
