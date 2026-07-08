@@ -1,0 +1,20 @@
+{
+    "description": "Corrupt version stamp: denebMetaVersion holds a non-numeric value. The payload version is indeterminate, so the pipeline fails safe — it runs NOTHING (re-running migrations against possibly-already-migrated state risks double application), surfaces the typed corrupt-key signal, and leaves the payload untouched.",
+    "jsonSpec": "{\"data\":{\"name\":\"dataset\"},\"mark\":\"bar\",\"encoding\":{\"x\":{\"field\":\"Category\",\"type\":\"nominal\"},\"y\":{\"field\":\"Sales\",\"type\":\"quantitative\"}}}",
+    "stateManagement": {
+        "supportFieldConfiguration": "{\"Sales\":{\"highlight\":true,\"highlightStatus\":true,\"highlightComparator\":true,\"format\":true,\"formatted\":true}}",
+        "denebMetaVersion": "not-a-version",
+        "consolidateFieldParameters": true
+    },
+    "expected": {
+        "classification": "indeterminate",
+        "applied": [],
+        "pendingFirstDataview": [],
+        "corruptKeys": ["denebMetaVersion"],
+        "payload": {
+            "supportFieldConfiguration": "{\"Sales\":{\"highlight\":true,\"highlightStatus\":true,\"highlightComparator\":true,\"format\":true,\"formatted\":true}}",
+            "denebMetaVersion": "not-a-version",
+            "consolidateFieldParameters": true
+        }
+    }
+}

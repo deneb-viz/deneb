@@ -1,0 +1,26 @@
+{
+    "description": "Visual already at the current schema version (denebMetaVersion 2, fully-populated payload). Everything is a no-op: no entries apply, nothing is pending, and the output payload deep-equals the input.",
+    "jsonSpec": "{\"data\":{\"name\":\"dataset\"},\"mark\":\"line\",\"encoding\":{\"x\":{\"field\":\"Date\",\"type\":\"temporal\"},\"y\":{\"field\":\"Sales\",\"type\":\"quantitative\"}}}",
+    "stateManagement": {
+        "viewportHeight": "480",
+        "viewportWidth": "640",
+        "supportFieldConfiguration": "{\"Sales\":{\"highlight\":true,\"highlightStatus\":true,\"highlightComparator\":true,\"format\":true,\"formatted\":true},\"Category\":{\"highlight\":true,\"highlightStatus\":false,\"highlightComparator\":false,\"format\":false,\"formatted\":false}}",
+        "denebMetaVersion": "2",
+        "scaleToZoom": true,
+        "consolidateFieldParameters": false
+    },
+    "expected": {
+        "classification": "current",
+        "applied": [],
+        "pendingFirstDataview": [],
+        "corruptKeys": [],
+        "payload": {
+            "viewportHeight": "480",
+            "viewportWidth": "640",
+            "supportFieldConfiguration": "{\"Sales\":{\"highlight\":true,\"highlightStatus\":true,\"highlightComparator\":true,\"format\":true,\"formatted\":true},\"Category\":{\"highlight\":true,\"highlightStatus\":false,\"highlightComparator\":false,\"format\":false,\"formatted\":false}}",
+            "denebMetaVersion": "2",
+            "scaleToZoom": true,
+            "consolidateFieldParameters": false
+        }
+    }
+}

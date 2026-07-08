@@ -1,0 +1,12 @@
+{
+    "description": "Genuine pre-2.0 visual: real project content persisted in vega.jsonSpec, but the stateManagement object was never written (the payload's keys did not exist before 2.0). This is the genuinely-unversioned legacy case — the support-field first-dataview migration is pending; the load-time pipeline itself applies nothing.",
+    "jsonSpec": "{\"data\":{\"name\":\"dataset\"},\"mark\":\"bar\",\"encoding\":{\"x\":{\"field\":\"Category\",\"type\":\"nominal\"},\"y\":{\"field\":\"Sales\",\"type\":\"quantitative\"}}}",
+    "stateManagement": {},
+    "expected": {
+        "classification": "unversioned-legacy",
+        "applied": [],
+        "pendingFirstDataview": ["support-field-legacy-defaults"],
+        "corruptKeys": [],
+        "payload": {}
+    }
+}
