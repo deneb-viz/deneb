@@ -37,7 +37,16 @@ export type UpdatesSlice = {
      * — older events are dropped from the head.
      */
     lifecycleEvents: RenderingLifecycleEvent[];
-    setVisualUpdateOptions: (payload: VisualUpdateDataPayload) => Promise<void>;
+    /**
+     * Synchronous (M4). This setter is called from `update()`'s try (via
+     * `Deneb.resolveUpdateOptions`) and does not await anything
+     * internally, so it is intentionally NOT `async`: a synchronous
+     * throw inside (e.g. `getVisualFormattingModel`) must propagate into
+     * `update()`'s try/catch → `coordinator.failCurrent`, rather than
+     * becoming an unhandled rejection on a fire-and-forget promise that
+     * bypasses the catch and lets the update close on the success path.
+     */
+    setVisualUpdateOptions: (payload: VisualUpdateDataPayload) => void;
     /**
      * Append a single observer event to {@link lifecycleEvents}. The
      * ring is trimmed from the head to maintain its bound. Designed
@@ -88,7 +97,7 @@ export const createUpdatesSlice = (): StateCreator<
                 false,
                 'updates.recordLifecycleEvent'
             ),
-        setVisualUpdateOptions: async (payload) => {
+        setVisualUpdateOptions: (payload) => {
             const { options, isDeveloperMode } = payload;
             const settings = getVisualFormattingModel(options?.dataViews?.[0]);
             settings.resolveDeveloperSettings(isDeveloperMode);

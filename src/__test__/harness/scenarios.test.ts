@@ -473,6 +473,28 @@ describe('scenario: update() throws', () => {
         expect(driver.host.countEmitterCalls('renderingFailed')).toBe(1);
     });
 
+    it('M4: a synchronous throw from the (de-asynced) settings-model resolution routes to failCurrent — one renderingFailed, no success-path close', async () => {
+        // `setVisualUpdateOptions` (src/state/updates.ts) is synchronous
+        // after M4, so a throw from `getVisualFormattingModel` propagates
+        // into `update()`'s try instead of rejecting a fire-and-forget
+        // promise the catch never sees. The queued fault stands in for
+        // that synchronous throw at the settings-resolution point. Today
+        // (async setter) the same throw would be an unhandled rejection
+        // and the update would close on the success path.
+        const driver = await createDriver();
+        driver.queueFault(new Error('getVisualFormattingModel failed'));
+        driver.update(
+            buildUpdateOptions({
+                dataView: buildDataView({ categorical: buildCategorical(10) })
+            })
+        );
+        expect(driver.caughtErrors).toHaveLength(1);
+        expect(driver.host.countEmitterCalls('renderingStarted')).toBe(1);
+        expect(driver.host.countEmitterCalls('renderingFinished')).toBe(0);
+        expect(driver.host.countEmitterCalls('renderingFailed')).toBe(1);
+        expect(driver.getOpenLifecycleIds()).toEqual([]);
+    });
+
     it('fetchMoreData throwing synchronously clears the fetching flag before failing the lifecycle (no permanent FetchingMessage)', async () => {
         const driver = await createDriver({
             fetchMoreResponses: [new Error('host exploded')]
@@ -497,5 +519,160 @@ describe('scenario: update() throws', () => {
         expect(driver.host.countEmitterCalls('renderingFailed')).toBe(1);
         expect(driver.host.countEmitterCalls('renderingFinished')).toBe(0);
         expect(driver.getOpenLifecycleIds()).toEqual([]);
+    });
+});
+
+// ─── Scenario 6: construction failure (L5) ────────────────────────────────────
+//
+// The Deneb class has heavy constructor side effects (React root, host
+// services, i18n, store wiring), so construction failure is DRIVEN
+// against the coordinator + host emitter and MIRRORED for the
+// `update()` construction-failure guard (a faithful transcription of
+// the top of `Deneb.update` + `Deneb.handleConstructionFailure`; see
+// the driver). Reverting the mirror's guard turns these red — a
+// `renderingStarted` is emitted and a lifecycle id opens; in production
+// the reverted path additionally throws a secondary TypeError on the
+// undefined coordinator (the audit's L5 failure mode).
+
+describe('scenario: constructor failed → update() short-circuits (L5)', () => {
+    it('emits renderingFailed directly via the host without opening a lifecycle; no secondary throw', async () => {
+        const driver = await createDriver();
+        driver.failConstruction(new Error('bind chain exploded'));
+
+        driver.update(
+            buildUpdateOptions({
+                dataView: buildDataView({ categorical: buildCategorical(10) })
+            })
+        );
+
+        // The coordinator's open() was never reached: no renderingStarted,
+        // no open id.
+        expect(driver.host.countEmitterCalls('renderingStarted')).toBe(0);
+        expect(driver.getOpenLifecycleIds()).toEqual([]);
+        // renderingFailed emitted DIRECTLY through the host event service.
+        expect(driver.host.countEmitterCalls('renderingFailed')).toBe(1);
+        const failed = driver.host.emitterCalls.filter(
+            (c) => c.method === 'renderingFailed'
+        );
+        expect(failed[0].method === 'renderingFailed' && failed[0].reason).toBe(
+            'bind chain exploded'
+        );
+        // No throw reached the mirrored try/catch; no safety-net armed.
+        expect(driver.caughtErrors).toEqual([]);
+        expect(driver.pendingSafetyNetCount()).toBe(0);
+        // Static error element rendered.
+        expect(driver.constructionErrorRenderCount()).toBe(1);
+    });
+
+    it('re-reports renderingFailed on every subsequent update but renders the error element only once', async () => {
+        const driver = await createDriver();
+        driver.failConstruction(new Error('boom'));
+        const mk = () =>
+            buildUpdateOptions({
+                dataView: buildDataView({ categorical: buildCategorical(5) })
+            });
+
+        driver.update(mk());
+        driver.update(mk());
+        driver.update(mk());
+
+        expect(driver.host.countEmitterCalls('renderingFailed')).toBe(3);
+        expect(driver.host.countEmitterCalls('renderingStarted')).toBe(0);
+        expect(driver.constructionErrorRenderCount()).toBe(1);
+        expect(driver.getOpenLifecycleIds()).toEqual([]);
+    });
+});
+
+// ─── Scenario 7: destroy() teardown (M8) ──────────────────────────────────────
+//
+// The coordinator + safety-net are REAL in the harness, so the
+// "no orphaned id / no post-destroy emission" guarantees are genuinely
+// exercised. The keydown-listener / React-root / view-clear steps are
+// production-only side effects the driver records as spy counters (a
+// faithful transcription of `Deneb.destroy`).
+
+describe('scenario: destroy() teardown (M8)', () => {
+    it('after a completed render: listener removed, root unmounted, view cleared, no further emissions', async () => {
+        const driver = await createDriver();
+        driver.update(
+            buildUpdateOptions({
+                dataView: buildDataView({ categorical: buildCategorical(100) })
+            })
+        );
+        driver.startRender();
+        driver.completeRender();
+        const finishedBefore =
+            driver.host.countEmitterCalls('renderingFinished');
+        const failedBefore = driver.host.countEmitterCalls('renderingFailed');
+        expect(finishedBefore).toBe(1);
+
+        driver.destroy();
+
+        // All production-only teardown side effects ran exactly once.
+        expect(driver.teardown.keydownListenerRemoved).toBe(1);
+        expect(driver.teardown.reactRootUnmounted).toBe(1);
+        expect(driver.teardown.viewCleared).toBe(1);
+        // Render already completed → failCurrent no-op → no new emission.
+        expect(driver.host.countEmitterCalls('renderingFinished')).toBe(
+            finishedBefore
+        );
+        expect(driver.host.countEmitterCalls('renderingFailed')).toBe(
+            failedBefore
+        );
+        expect(driver.getOpenLifecycleIds()).toEqual([]);
+        // Late callbacks / safety-nets after destroy stay inert.
+        driver.completeRender();
+        driver.fireSafetyNets();
+        expect(driver.host.countEmitterCalls('renderingFinished')).toBe(
+            finishedBefore
+        );
+    });
+
+    it('with a render in flight: open id failed exactly once, safety-net cancelled, no post-destroy renderingFinished', async () => {
+        const driver = await createDriver();
+        driver.update(
+            buildUpdateOptions({
+                dataView: buildDataView({ categorical: buildCategorical(100) })
+            })
+        );
+        // Render started but never completes (in flight); safety-net armed.
+        driver.startRender();
+        expect(driver.getOpenLifecycleIds()).toHaveLength(1);
+        expect(driver.pendingSafetyNetCount()).toBe(1);
+
+        driver.destroy();
+
+        // Open id failed exactly once (the teardown terminal); the armed
+        // safety-net was cancelled as part of the fail.
+        expect(driver.host.countEmitterCalls('renderingFailed')).toBe(1);
+        expect(driver.pendingSafetyNetCount()).toBe(0);
+        expect(driver.getOpenLifecycleIds()).toEqual([]);
+
+        // Post-destroy: a late render-complete callback and any leftover
+        // safety-net tick must NOT emit renderingFinished.
+        driver.completeRender();
+        driver.fireSafetyNets();
+        expect(driver.host.countEmitterCalls('renderingFinished')).toBe(0);
+        expect(driver.host.countEmitterCalls('renderingFailed')).toBe(1);
+        expect(driver.getOpenLifecycleIds()).toEqual([]);
+    });
+
+    it('full construct → update → destroy cycle leaves zero timers and zero open ids', async () => {
+        const driver = await createDriver();
+        driver.update(
+            buildUpdateOptions({
+                dataView: buildDataView({ categorical: buildCategorical(100) })
+            })
+        );
+        driver.startRender();
+        driver.completeRender();
+
+        driver.destroy();
+
+        expect(driver.pendingSafetyNetCount()).toBe(0);
+        expect(driver.getOpenLifecycleIds()).toEqual([]);
+        expect(driver.host.countEmitterCalls('renderingStarted')).toBe(1);
+        expect(driver.host.countEmitterCalls('renderingFinished')).toBe(1);
+        expect(driver.host.countEmitterCalls('renderingFailed')).toBe(0);
     });
 });
