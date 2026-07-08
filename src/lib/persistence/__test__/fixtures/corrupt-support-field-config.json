@@ -1,0 +1,20 @@
+{
+    "description": "Corrupt JSON in a persisted key: supportFieldConfiguration was truncated mid-write. The pipeline surfaces a typed corrupt-key signal for the caller to act on and leaves the raw value in place — NOT a silent reset. The version stamp is intact so classification is otherwise normal.",
+    "jsonSpec": "{\"data\":{\"name\":\"dataset\"},\"mark\":\"point\",\"encoding\":{\"x\":{\"field\":\"Region\",\"type\":\"nominal\"},\"y\":{\"field\":\"Margin\",\"type\":\"quantitative\"}}}",
+    "stateManagement": {
+        "supportFieldConfiguration": "{\"Margin\":{\"highlight\":true,\"highlightStatus\":tr",
+        "denebMetaVersion": "2",
+        "scaleToZoom": false
+    },
+    "expected": {
+        "classification": "current",
+        "applied": [],
+        "pendingFirstDataview": [],
+        "corruptKeys": ["supportFieldConfiguration"],
+        "payload": {
+            "supportFieldConfiguration": "{\"Margin\":{\"highlight\":true,\"highlightStatus\":tr",
+            "denebMetaVersion": "2",
+            "scaleToZoom": false
+        }
+    }
+}

@@ -66,7 +66,13 @@ vi.mock('../../host', () => ({
     }))
 }));
 
-import { handlePropertyMigration } from '../migration';
+import {
+    applyStateManagementPayloadToSettings,
+    getStateManagementPayloadFromSettings,
+    handlePropertyMigration,
+    runStateManagementSchemaMigrations
+} from '../migration';
+import { SUPPORT_FIELD_LEGACY_MIGRATION_ID } from '../state-management-migration';
 import { setReadModePersistSuppressed } from '../read-mode-gate';
 
 // ─── Test fixture types ──────────────────────────────────────────────────────
@@ -79,6 +85,18 @@ import { setReadModePersistSuppressed } from '../read-mode-gate';
  * is enough for these tests.
  */
 type TestField<T> = { value: T };
+type TestStateManagement = {
+    viewport: {
+        viewportHeight: TestField<string | null>;
+        viewportWidth: TestField<string | null>;
+    };
+    projectMetadata: {
+        supportFieldConfiguration: TestField<string>;
+        denebMetaVersion: TestField<string>;
+        scaleToZoom: TestField<boolean>;
+        consolidateFieldParameters: TestField<boolean>;
+    };
+};
 type TestSettings = {
     developer: { versioning: { version: TestField<string> } };
     vega: {
@@ -93,6 +111,7 @@ type TestSettings = {
             enableContextMenuSelector: TestField<boolean>;
         };
     };
+    stateManagement?: TestStateManagement;
 };
 
 const buildSettings = (overrides: {
@@ -120,6 +139,32 @@ const buildSettings = (overrides: {
             enableContextMenuSelector: {
                 value: overrides.enableContextMenuSelector ?? true
             }
+        }
+    }
+});
+
+const buildStateManagement = (
+    overrides: {
+        viewportHeight?: string | null;
+        viewportWidth?: string | null;
+        supportFieldConfiguration?: string;
+        denebMetaVersion?: string;
+        scaleToZoom?: boolean;
+        consolidateFieldParameters?: boolean;
+    } = {}
+): TestStateManagement => ({
+    viewport: {
+        viewportHeight: { value: overrides.viewportHeight ?? null },
+        viewportWidth: { value: overrides.viewportWidth ?? null }
+    },
+    projectMetadata: {
+        supportFieldConfiguration: {
+            value: overrides.supportFieldConfiguration ?? ''
+        },
+        denebMetaVersion: { value: overrides.denebMetaVersion ?? '' },
+        scaleToZoom: { value: overrides.scaleToZoom ?? false },
+        consolidateFieldParameters: {
+            value: overrides.consolidateFieldParameters ?? true
         }
     }
 });
@@ -280,5 +325,121 @@ describe('handlePropertyMigration — read mode', () => {
         ).toBe(false);
         // And the flag stayed where it was — read mode never touches it.
         expect(mockUpdateMigrationDetails).not.toHaveBeenCalled();
+    });
+});
+
+describe('stateManagement schema migrations — load-time wiring', () => {
+    it('reports the pending first-dataview support-field migration for a legacy visual', () => {
+        const settings = {
+            ...buildSettings({ denebVersion: '1.9.0' }),
+            stateManagement: buildStateManagement()
+        };
+        const result = runStateManagementSchemaMigrations(settings as never);
+        expect(result.classification).toBe('unversioned-legacy');
+        expect(result.pendingFirstDataview).toEqual([
+            SUPPORT_FIELD_LEGACY_MIGRATION_ID
+        ]);
+        expect(result.applied).toEqual([]);
+        // Nothing applied → the settings model is untouched.
+        expect(
+            settings.stateManagement.projectMetadata.denebMetaVersion.value
+        ).toBe('');
+    });
+
+    it('classifies a factory-default spec as empty/cross-GUID, not legacy', () => {
+        const settings = {
+            ...buildSettings({ jsonSpec: '__default_spec__' }),
+            stateManagement: buildStateManagement()
+        };
+        const result = runStateManagementSchemaMigrations(settings as never);
+        expect(result.classification).toBe('empty-or-cross-guid');
+        expect(result.pendingFirstDataview).toEqual([]);
+    });
+
+    it('surfaces corrupt persisted JSON as a typed signal and leaves the raw value in place', () => {
+        const corruptRaw = '{"Sales":{"highlight":tru';
+        const settings = {
+            ...buildSettings({}),
+            stateManagement: buildStateManagement({
+                supportFieldConfiguration: corruptRaw,
+                denebMetaVersion: '2'
+            })
+        };
+        const result = runStateManagementSchemaMigrations(settings as never);
+        expect(result.corruptKeys).toHaveLength(1);
+        expect(result.corruptKeys[0]).toMatchObject({
+            key: 'supportFieldConfiguration',
+            rawValue: corruptRaw
+        });
+        // NOT a silent reset — the raw value stays put.
+        expect(
+            settings.stateManagement.projectMetadata.supportFieldConfiguration
+                .value
+        ).toBe(corruptRaw);
+    });
+
+    it('tolerates a settings model without the stateManagement card', () => {
+        mockVisualSettings = buildSettings({});
+        expect(() =>
+            runStateManagementSchemaMigrations(mockVisualSettings as never)
+        ).not.toThrow();
+    });
+
+    it('handlePropertyMigration invokes the schema pipeline without throwing on legacy settings', () => {
+        mockVisualSettings = {
+            ...buildSettings({ denebVersion: '', providerVersion: '' }),
+            stateManagement: buildStateManagement()
+        };
+        expect(() =>
+            handlePropertyMigration(mockVisualSettings as never, false)
+        ).not.toThrow();
+    });
+
+    it('getStateManagementPayloadFromSettings extracts raw persisted values', () => {
+        const settings = {
+            ...buildSettings({}),
+            stateManagement: buildStateManagement({
+                viewportHeight: '480',
+                viewportWidth: '640',
+                supportFieldConfiguration: '{"Sales":{"highlight":true}}',
+                denebMetaVersion: '2',
+                scaleToZoom: true,
+                consolidateFieldParameters: false
+            })
+        };
+        expect(
+            getStateManagementPayloadFromSettings(settings as never)
+        ).toEqual({
+            viewportHeight: '480',
+            viewportWidth: '640',
+            supportFieldConfiguration: '{"Sales":{"highlight":true}}',
+            denebMetaVersion: '2',
+            scaleToZoom: true,
+            consolidateFieldParameters: false
+        });
+    });
+
+    it('applyStateManagementPayloadToSettings writes only the keys present on the payload (merge, never replace)', () => {
+        const stateManagement = buildStateManagement({
+            supportFieldConfiguration: '{"Sales":{"highlight":true}}',
+            scaleToZoom: false
+        });
+        const settings = { ...buildSettings({}), stateManagement };
+        applyStateManagementPayloadToSettings(settings as never, {
+            denebMetaVersion: '2',
+            scaleToZoom: true
+        });
+        expect(stateManagement.projectMetadata.denebMetaVersion.value).toBe(
+            '2'
+        );
+        expect(stateManagement.projectMetadata.scaleToZoom.value).toBe(true);
+        // Keys absent from the payload are untouched.
+        expect(
+            stateManagement.projectMetadata.supportFieldConfiguration.value
+        ).toBe('{"Sales":{"highlight":true}}');
+        expect(stateManagement.viewport.viewportHeight.value).toBeNull();
+        expect(
+            stateManagement.projectMetadata.consolidateFieldParameters.value
+        ).toBe(true);
     });
 });
