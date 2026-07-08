@@ -32,6 +32,9 @@ export type ProjectSliceProperties = SyncableSlice &
             config: SupportFieldConfiguration
         ) => void;
         setDenebMetaVersion: (version: number) => void;
+        applySupportFieldMigrationStamp: (
+            payload: SupportFieldMigrationStampPayload
+        ) => void;
         setScaleToZoom: (scaleToZoom: boolean) => void;
         setConsolidateFieldParameters: (value: boolean) => void;
         syncProjectData: (payload: ProjectSyncPayload) => void;
@@ -68,6 +71,22 @@ export type InitializeFromTemplatePayload = {
 export type SetContentPayload = {
     spec: string;
     config: string;
+};
+
+/**
+ * Payload for committing the one-time legacy support-field migration in a
+ * SINGLE store update. The dataset mapping pass (the class
+ * `'first-dataview'` execution point for the migration registry in the
+ * hosting visual) computes all three values and commits them together so
+ * the app-core → host sync subscriber observes ONE slice change and emits
+ * ONE batched persist — three separate setter calls would emit three
+ * non-atomic host persists, and a session ending between them leaves a
+ * half-committed migration (M10).
+ */
+export type SupportFieldMigrationStampPayload = {
+    supportFieldConfiguration: SupportFieldConfiguration;
+    denebMetaVersion: number;
+    consolidateFieldParameters: boolean;
 };
 
 export type ProjectSlice = {
@@ -325,6 +344,60 @@ export const createProjectSlice =
                     false,
                     'project.setDenebMetaVersion'
                 ),
+            applySupportFieldMigrationStamp: (
+                payload: SupportFieldMigrationStampPayload
+            ) =>
+                set(
+                    (state) => {
+                        // Embed support field config into dataset entries
+                        // for export metadata (same semantics as
+                        // setSupportFieldConfiguration).
+                        const currentDataset =
+                            state.export.metadata?.datasets?.[
+                                DATASET_DEFAULT_NAME
+                            ] ?? [];
+                        const updatedDataset = currentDataset.map((d) => {
+                            const fieldConfig =
+                                payload.supportFieldConfiguration[
+                                    d.namePlaceholder ?? d.name
+                                ];
+                            if (fieldConfig) {
+                                return {
+                                    ...d,
+                                    supportFieldConfiguration: fieldConfig
+                                };
+                            }
+                            // Remove stale config from field if it was previously set
+                            const { supportFieldConfiguration: _, ...rest } = d;
+                            return rest as typeof d;
+                        });
+                        const exportMetadata = getUpdatedExportMetadata(
+                            state.export.metadata as UsermetaTemplate,
+                            {
+                                datasets: {
+                                    ...state.export.metadata?.datasets,
+                                    [DATASET_DEFAULT_NAME]: updatedDataset
+                                }
+                            }
+                        );
+                        return {
+                            project: {
+                                ...state.project,
+                                supportFieldConfiguration:
+                                    payload.supportFieldConfiguration,
+                                denebMetaVersion: payload.denebMetaVersion,
+                                consolidateFieldParameters:
+                                    payload.consolidateFieldParameters
+                            },
+                            export: {
+                                ...state.export,
+                                metadata: exportMetadata
+                            }
+                        };
+                    },
+                    false,
+                    'project.applySupportFieldMigrationStamp'
+                ),
             setScaleToZoom: (scaleToZoom: boolean) =>
                 set(
                     (state) => ({
@@ -372,20 +445,25 @@ const handleSyncProjectData = (
     const definedPayload = Object.fromEntries(
         Object.entries(payload).filter(([, value]) => value !== undefined)
     );
-    const __isInitialized__ = isProjectInitialized(payload);
+
+    // Build the updated (merged) project state FIRST, so initialization is
+    // computed on the merged result rather than the partial sync payload
+    // (M12): a partial payload leaves unrelated keys `undefined`, and
+    // `undefined !== default` made ANY partial sync (e.g. logLevel only)
+    // flip `__isInitialized__` to true on a brand-new visual, suppressing
+    // the Create-dialog auto-open.
+    const updatedProject = {
+        ...state.project,
+        ...definedPayload,
+        __hasHydrated__: true
+    };
+    const __isInitialized__ = isProjectInitialized(updatedProject);
+    updatedProject.__isInitialized__ = __isInitialized__;
     const modalDialogRole = getModalDialogRole(
         __isInitialized__,
         state.interface.type,
         state.interface.modalDialogRole
     );
-
-    // Build the updated project state
-    const updatedProject = {
-        ...state.project,
-        ...definedPayload,
-        __hasHydrated__: true,
-        __isInitialized__
-    };
 
     // Embed support field config into dataset entries for export metadata
     const currentDataset =

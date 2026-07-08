@@ -11,7 +11,8 @@ export type {
 export type {
     InitializeFromTemplatePayload,
     ProjectSliceProperties,
-    ProjectSyncPayload
+    ProjectSyncPayload,
+    SupportFieldMigrationStampPayload
 } from './project';
 export type {
     VisualRenderSliceProperties,

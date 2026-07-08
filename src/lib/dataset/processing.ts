@@ -61,7 +61,11 @@ import {
     type FieldSourceMapping
 } from './support-field-provider';
 import { isLegacySpec } from './support-field-migration';
-import { TEMPLATE_USERMETA_VERSION } from '@deneb-viz/template-usermeta';
+import {
+    getStateManagementVersionToStamp,
+    SUPPORT_FIELD_LEGACY_MIGRATION_ID
+} from '../persistence/state-management-migration';
+import type { SupportFieldMigrationStampPayload } from '@deneb-viz/app-core';
 import {
     detectFieldParameterGroups,
     type DetectableField
@@ -252,19 +256,40 @@ export const getMappedDataset = (
             };
 
             const state = getDenebState();
-            const supportFieldConfig: SupportFieldConfiguration =
+            const existingSupportFieldConfig: SupportFieldConfiguration =
                 state.project.supportFieldConfiguration ?? {};
 
-            const legacy = isLegacySpec(
+            // WHETHER the one-time legacy stamping migration is pending is
+            // owned by the migration registry (isLegacySpec delegates to
+            // it — see ../persistence/state-management-migration.ts).
+            const isMigrationPending = isLegacySpec(
                 state.project.spec,
                 state.project.denebMetaVersion
             );
 
-            // One-time migration: stamp resolved legacy defaults into config
-            // so that isLegacySpec returns false from this point on. This
-            // ensures reset-to-default gives new-spec behavior, not legacy.
-            if (legacy) {
-                const migratedConfig: SupportFieldConfiguration = {};
+            // A non-empty persisted configuration is evidence the visual
+            // has already operated with configured (non-legacy) support
+            // fields — e.g. the config half of a previous migration's
+            // persist landed but the version stamp did not (M10's
+            // partial-persist split). In that case legacy semantics must
+            // not be re-applied: existing entries win and unconfigured
+            // fields resolve with new-spec defaults.
+            const hasExistingConfig =
+                Object.keys(existingSupportFieldConfig).length > 0;
+            const legacy = isMigrationPending && !hasExistingConfig;
+
+            // One-time migration (M10/M11): compute resolved defaults up
+            // front and merge any existing explicit entries OVER them, so
+            // interim user edits are preserved on re-migration. The stamp
+            // is COMMITTED only after row building succeeds (see the end
+            // of this try block) — a mapping failure must never leave a
+            // half-committed migration (version stamped with no dataset,
+            // or config without version). Once committed, isLegacySpec
+            // returns false from that point on, so reset-to-default gives
+            // new-spec behavior, not legacy.
+            let migrationStamp: SupportFieldMigrationStampPayload | undefined;
+            if (isMigrationPending) {
+                const migratedDefaults: SupportFieldConfiguration = {};
                 const sourceColumns = columns.filter(
                     (c) =>
                         c.column.roles?.[DATASET_DEFAULT_NAME] &&
@@ -274,22 +299,32 @@ export const getMappedDataset = (
                     const encodedName =
                         c.encodedName ??
                         getEncodedFieldName(c.column.displayName);
-                    migratedConfig[encodedName] = resolveFieldDefaults({
+                    migratedDefaults[encodedName] = resolveFieldDefaults({
                         masterSettings,
                         fieldRole: c.column.isMeasure
                             ? 'aggregation'
                             : 'grouping',
-                        isLegacy: true
+                        isLegacy: legacy
                     });
                 }
-                state.project.setSupportFieldConfiguration(migratedConfig);
-                state.project.setDenebMetaVersion(TEMPLATE_USERMETA_VERSION);
-                state.project.setConsolidateFieldParameters(false);
-                logDebug(
-                    'getMappedDataset: migrated legacy support field config',
-                    { migratedConfig }
-                );
+                migrationStamp = {
+                    supportFieldConfiguration: {
+                        ...migratedDefaults,
+                        ...existingSupportFieldConfig
+                    },
+                    denebMetaVersion: getStateManagementVersionToStamp(
+                        SUPPORT_FIELD_LEGACY_MIGRATION_ID
+                    ),
+                    consolidateFieldParameters: false
+                };
             }
+
+            // The configuration this pass processes with: the (merged)
+            // migration output when migrating, the persisted configuration
+            // otherwise.
+            const supportFieldConfig: SupportFieldConfiguration =
+                migrationStamp?.supportFieldConfiguration ??
+                existingSupportFieldConfig;
 
             // Filter to source fields and build plan inputs + field source mappings
             const planSourceColumns = columns.filter(
@@ -516,6 +551,22 @@ export const getMappedDataset = (
                 values.push(row);
             }
             logTimeEnd('getMappedDataset values');
+
+            // M11: commit the migration stamp only now that row building
+            // has succeeded — a throw above leaves persisted state
+            // untouched, so the migration simply re-runs (idempotently)
+            // on the next successful pass. M10: all three properties are
+            // committed in a SINGLE store update so the sync layer
+            // observes one slice change and emits one batched host
+            // persist (no partial-persist split).
+            if (migrationStamp) {
+                state.project.applySupportFieldMigrationStamp(migrationStamp);
+                logDebug(
+                    'getMappedDataset: committed legacy support field migration',
+                    { migrationStamp }
+                );
+            }
+
             logTimeEnd('getMappedDataset');
             return {
                 hasDrilldown,
@@ -526,6 +577,23 @@ export const getMappedDataset = (
             };
         } catch (e) {
             logError('getMappedDataset failure', e);
+            // Surface a durable, user-visible signal — console logging is
+            // invisible at certified LOG_LEVEL=0. The message is generic
+            // and localized; raw exception text and data payloads are
+            // deliberately NOT echoed into the UI.
+            try {
+                const { compilation, i18n } = getDenebState();
+                compilation.logDurableError(
+                    i18n.translate('Text_Error_Dataset_Mapping_Failed')
+                );
+            } catch (durableError) {
+                // Store may be unavailable (teardown, pre-init) — never let
+                // the durable-error path bury the original exception `e`.
+                logError(
+                    'getMappedDataset: failed to surface durable error',
+                    durableError
+                );
+            }
             return empty;
         }
     }
