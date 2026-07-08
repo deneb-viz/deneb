@@ -26,21 +26,33 @@ import type { DisplayMode } from '../display-mode';
  * stuck flag.
  */
 describe('doesModeAllowEmbedViewportSet', () => {
-    const cases: Array<{ mode: DisplayMode; expected: boolean }> = [
+    // `Record<DisplayMode, boolean>` is the exhaustiveness guard: if a
+    // new DisplayMode is added to the union, this literal (and the
+    // production `EMBED_VIEWPORT_COMMIT_ALLOWED` record in
+    // display-mode.ts, which the compiler also checks) fails to
+    // compile, forcing the author to make an explicit commit/exclude
+    // decision rather than silently defaulting to "allowed". This
+    // replaces the earlier array-comparison runtime check flagged in
+    // the segmented-fetch learning doc.
+    const expectedGateByMode: Record<DisplayMode, boolean> = {
         // Allowed — modes where the host viewport is the correct
         // committed value for the embed canvas.
-        { mode: 'initializing', expected: true },
-        { mode: 'landing', expected: true },
-        { mode: 'no-project', expected: true },
-        { mode: 'viewer', expected: true },
+        initializing: true,
+        landing: true,
+        'no-project': true,
+        viewer: true,
         // Excluded — host viewport at this moment is wrong for the
-        // viewer's eventual canvas. See JSDoc on the function for
-        // per-mode rationale.
-        { mode: 'editor', expected: false },
-        { mode: 'transition-viewer-editor', expected: false },
-        { mode: 'transition-editor-viewer', expected: false },
-        { mode: 'fetching', expected: false }
-    ];
+        // viewer's eventual canvas. See JSDoc on the production record
+        // for per-mode rationale.
+        editor: false,
+        'transition-viewer-editor': false,
+        'transition-editor-viewer': false,
+        fetching: false
+    };
+
+    const cases = (
+        Object.entries(expectedGateByMode) as Array<[DisplayMode, boolean]>
+    ).map(([mode, expected]) => ({ mode, expected }));
 
     it.each(cases)(
         'returns $expected for mode "$mode"',
@@ -48,27 +60,6 @@ describe('doesModeAllowEmbedViewportSet', () => {
             expect(doesModeAllowEmbedViewportSet(mode)).toBe(expected);
         }
     );
-
-    it('covers every DisplayMode value (exhaustiveness guard)', () => {
-        // If a new DisplayMode is added to the union, this array literal
-        // must include it; the type assertion below will fail to compile
-        // (or the runtime length check will fail) and force the author
-        // to make an explicit commit/exclude decision rather than
-        // silently defaulting to "allowed".
-        const allKnownModes: DisplayMode[] = [
-            'initializing',
-            'landing',
-            'no-project',
-            'fetching',
-            'viewer',
-            'transition-viewer-editor',
-            'transition-editor-viewer',
-            'editor'
-        ];
-        expect(cases.map((c) => c.mode).sort()).toEqual(
-            [...allKnownModes].sort()
-        );
-    });
 });
 
 /**

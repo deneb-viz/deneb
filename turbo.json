@@ -25,7 +25,17 @@
             "dependsOn": ["^eslint"]
         },
         "test": {
+            "dependsOn": ["//#test:root"],
             "outputs": ["coverage/**"]
+        },
+        "//#test:root": {
+            "inputs": [
+                "src/**",
+                "vitest.root.config.ts",
+                "package.json",
+                "tsconfig.json"
+            ],
+            "outputs": []
         },
         "bench": {
             "cache": false

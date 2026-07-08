@@ -82,7 +82,22 @@ vi.mock('@deneb-viz/app-core', () => ({
             }),
             setConsolidateFieldParameters: vi.fn((value: boolean) => {
                 mockProject.consolidateFieldParameters = value;
-            })
+            }),
+            // Single transactional commit for the legacy migration (#689):
+            // stamps all three fields in one store update.
+            applySupportFieldMigrationStamp: vi.fn(
+                (payload: {
+                    supportFieldConfiguration: object;
+                    denebMetaVersion: number;
+                    consolidateFieldParameters: boolean;
+                }) => {
+                    mockProject.supportFieldConfiguration =
+                        payload.supportFieldConfiguration;
+                    mockProject.denebMetaVersion = payload.denebMetaVersion;
+                    mockProject.consolidateFieldParameters =
+                        payload.consolidateFieldParameters;
+                }
+            )
         }
     }))
 }));
