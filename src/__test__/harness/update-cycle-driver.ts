@@ -275,9 +275,11 @@ export const createUpdateCycleDriver = (
     const resolveDataset = (
         options: powerbi.extensibility.visual.VisualUpdateOptions
     ): void => {
-        const categorical = getCategoricalDataViewFromOptions(
-            options
-        ) as powerbi.DataViewCategorical;
+        const categorical = getCategoricalDataViewFromOptions(options);
+        if (!categorical) {
+            coordinator.closeCurrent();
+            return;
+        }
         const canFetchMore = canFetchMoreFromDataview(
             settings,
             options?.dataViews?.[0]?.metadata as powerbi.DataViewMetadata
