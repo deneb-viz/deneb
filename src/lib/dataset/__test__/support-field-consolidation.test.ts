@@ -73,8 +73,7 @@ vi.mock('@deneb-viz/app-core', () => ({
             spec: mockProject.spec,
             denebMetaVersion: mockProject.denebMetaVersion,
             supportFieldConfiguration: mockProject.supportFieldConfiguration,
-            consolidateFieldParameters:
-                mockProject.consolidateFieldParameters,
+            consolidateFieldParameters: mockProject.consolidateFieldParameters,
             setSupportFieldConfiguration: vi.fn((config: object) => {
                 mockProject.supportFieldConfiguration = config;
             }),
@@ -152,8 +151,7 @@ const makePlainCategorical = () =>
 const setProjectState = (overrides: Partial<typeof mockProject>) => {
     mockProject.spec = overrides.spec ?? '';
     mockProject.denebMetaVersion = overrides.denebMetaVersion ?? 0;
-    mockProject.supportFieldConfiguration =
-        overrides.supportFieldConfiguration;
+    mockProject.supportFieldConfiguration = overrides.supportFieldConfiguration;
     mockProject.consolidateFieldParameters =
         overrides.consolidateFieldParameters;
 };
@@ -194,9 +192,7 @@ describe('getMappedDataset — legacy migration vs field parameter consolidation
         expect(mockProject.supportFieldConfiguration).toHaveProperty(
             'Country Code'
         );
-        expect(mockProject.supportFieldConfiguration).toHaveProperty(
-            'Segment'
-        );
+        expect(mockProject.supportFieldConfiguration).toHaveProperty('Segment');
     });
 
     it('produces the flat shape on every pass in read mode, where persistence is suppressed and the migration re-runs each time', () => {
@@ -236,14 +232,9 @@ describe('getMappedDataset — legacy migration vs field parameter consolidation
         expect(result.rowsLoaded).toBe(2);
         // Consolidated parameter arrays in the rows
         expect(result.values[0]['Dynamic Category']).toEqual(['CA', 'Gov']);
-        expect(result.values[1]['Dynamic Category']).toEqual([
-            'US',
-            'Retail'
-        ]);
+        expect(result.values[1]['Dynamic Category']).toEqual(['US', 'Retail']);
         // Parameter registered as a dataset field; components hidden
-        expect(result.fields['Dynamic Category']?.role).toBe(
-            'field-parameter'
-        );
+        expect(result.fields['Dynamic Category']?.role).toBe('field-parameter');
         expect(result.fields['Country Code']?.isSupportField).toBe(true);
         expect(result.fields['Segment']?.isSupportField).toBe(true);
         // No migration side effects
@@ -272,8 +263,6 @@ describe('getMappedDataset — legacy migration vs field parameter consolidation
         expect(mockProject.supportFieldConfiguration).toHaveProperty(
             'Country Code'
         );
-        expect(mockProject.supportFieldConfiguration).toHaveProperty(
-            'Segment'
-        );
+        expect(mockProject.supportFieldConfiguration).toHaveProperty('Segment');
     });
 });
