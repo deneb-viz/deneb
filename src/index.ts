@@ -82,9 +82,14 @@ const IS_LIFECYCLE_OBSERVER_ENABLED = toBoolean(process.env.PBIVIZ_DEV_OVERLAY);
 
 /**
  * Bound (ms) after which the rendering-lifecycle safety-net checks an
- * armed id. If the id is still open and no render ever began
- * (`state.renderStarted === false`), the safety-net closes it as an
- * orphan; if a render is in flight, the close is deferred.
+ * armed id. If the id is still open at the bound the safety-net closes
+ * it terminally (`renderingFinished`) — whether the render never began
+ * (orphan) or began but never signalled completion (started-but-stuck).
+ * Reaching the bound while still open means no other terminal fired, so
+ * closing here is the only thing standing between the host and an
+ * orphaned `renderingStarted`. (Before U5 an in-flight id was deferred
+ * here; that left started-but-stuck renders relying on app.tsx's settle
+ * timer as their accidental terminal — which H2 removed.)
  *
  * Known close paths that fall through to the safety-net today:
  *  - Incremental data-update path (`performIncrementalUpdate` in
@@ -160,6 +165,14 @@ export class Deneb implements IVisual {
     // coordinator itself.
     #onRenderingStartedAdapter: () => void;
     #onRenderingFinishedAdapter: () => void;
+    // Distinct settle-close adapter (H2 / U5). app.tsx's settle timer
+    // uses THIS one — routed to the coordinator's deferring
+    // `closePendingRenderSettle` so a settle firing mid-render no-ops
+    // instead of emitting `renderingFinished` early. It must NOT share
+    // `#onRenderingFinishedAdapter`: that adapter is also the embed
+    // path's real render-complete close and must stay terminal, or
+    // every real close would defer to the 10s safety-net.
+    #onSettleCloseAdapter: () => void;
     #onRenderingErrorAdapter: (error: Error) => void;
 
     constructor(options: VisualConstructorOptions) {
@@ -211,8 +224,15 @@ export class Deneb implements IVisual {
             // is set to this update's id.
             this.#onRenderingStartedAdapter = () =>
                 this.#coordinator.markPendingRenderStarted();
+            // Embed-path REAL render-complete close — terminal, closes
+            // the pending render regardless of in-flight state.
             this.#onRenderingFinishedAdapter = () =>
                 this.#coordinator.closePendingRender();
+            // Settle-timer close (app.tsx) — DEFERS to the real close /
+            // safety-net when a render is in flight (H2). Separate
+            // reference so the embed path above stays terminal.
+            this.#onSettleCloseAdapter = () =>
+                this.#coordinator.closePendingRenderSettle();
             this.#onRenderingErrorAdapter = (error: Error) =>
                 this.#coordinator.failPendingRender(error);
             const {
@@ -256,6 +276,7 @@ export class Deneb implements IVisual {
                     host,
                     onRenderingStarted: this.#onRenderingStartedAdapter,
                     onRenderingFinished: this.#onRenderingFinishedAdapter,
+                    onSettleClose: this.#onSettleCloseAdapter,
                     onRenderingError: this.#onRenderingErrorAdapter
                 })
             );
@@ -315,10 +336,11 @@ export class Deneb implements IVisual {
             //   finalise, fetch-more host-decline — U9), the id stays
             //   open, the safety-net is armed, the React render
             //   eventually calls `markPendingRenderStarted()` (so
-            //   the safety-net defers on tick instead of closing
-            //   in-flight work), then `closePendingRender()` fires
-            //   and cancels the safety-net handle as part of the
-            //   close.
+            //   app.tsx's settle timer defers instead of closing
+            //   in-flight work — H2), then `closePendingRender()` fires
+            //   and cancels the safety-net handle as part of the close.
+            //   If that real close never arrives, the safety-net closes
+            //   the still-open id terminally at the bound.
             // - When `open()` itself threw (host rejected
             //   `renderingStarted`), `openId` stayed `undefined` and
             //   the guard skips arming.

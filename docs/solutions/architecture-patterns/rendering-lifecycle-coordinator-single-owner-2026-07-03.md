@@ -114,13 +114,14 @@ The narrower type omits the id-bearing methods, so the type system rejects produ
 
 ### 5. Bounded safety-net — cert ceiling, not a tuning knob
 
-The coordinator can arm a bounded timer per id. When it fires:
+The coordinator can arm a bounded timer per id. It is a **true backstop**: reaching the bound while the id is still open means no other terminal fired, so the safety-net closes it. When it fires:
 
-- If the id already closed normally, the map lookup misses — inert.
-- If `renderStarted === false`, the render never began — close it as an orphan.
-- If `renderStarted === true`, the render is in-flight — trust it, don't close.
+- If the id already closed normally, the map lookup misses — inert (the normal close cancelled the armed handle).
+- Otherwise the id is still open — close it terminally (`renderingFinished`, `via: 'safety-net'`), whether the render never began (orphan) or began but never signalled completion (started-but-stuck).
 
-The bound in `src/index.ts` is `SAFETY_NET_BOUND_MS = 10_000`. **This is the Power BI certification ceiling, not a tunable.** If a legitimate path is exceeding the bound, the fix is to wire that path through the coordinator, not to raise the constant.
+An earlier iteration **deferred** an in-flight (`renderStarted === true`) render here — "trust it, don't close". That was safe only by accident: `app.tsx`'s 500 ms settle timer was the sole terminal for a started-but-stuck render. Once the settle timer correctly defers on an in-flight render (the H2 fix — see the settle-timer note under _App-side adapters_ below), deferring here too would leave a stuck render's `renderingStarted` orphaned forever — cert-blocking. So the tick now closes terminally at the bound instead of deferring. `renderStarted` is still tracked, but the safety-net no longer branches on it; it is consumed by the settle-close variant (`closePendingRenderSettle`).
+
+The bound in `src/index.ts` is `SAFETY_NET_BOUND_MS = 10_000`. **This is the Power BI certification ceiling, not a tunable.** The H2 fix changed the tick's _decision_ (defer → terminal close), not the bound, and added no re-arm or longer wait. If a legitimate path is exceeding the bound, the fix is to wire that path through the coordinator, not to raise the constant.
 
 ### 6. Dependency injection at the seams
 
@@ -180,22 +181,29 @@ If `open()` itself throws (host rejected the `renderingStarted` emission), `open
 
 ### App-side adapters
 
-The React app never imports the coordinator. `src/index.ts` builds three no-arg / one-arg adapters in the constructor and hands them to `<App>` as props:
+The React app never imports the coordinator. `src/index.ts` builds four no-arg / one-arg adapters in the constructor and hands them to `<App>` as props:
 
 ```ts
 this.#onRenderingStartedAdapter = () =>
     this.#coordinator.markPendingRenderStarted();
+// Embed-path REAL render-complete close — terminal.
 this.#onRenderingFinishedAdapter = () => this.#coordinator.closePendingRender();
+// Settle-timer close (app.tsx) — DEFERS to the real close / safety-net
+// when a render is in flight (H2). MUST be a distinct reference.
+this.#onSettleCloseAdapter = () =>
+    this.#coordinator.closePendingRenderSettle();
 this.#onRenderingErrorAdapter = (error) =>
     this.#coordinator.failPendingRender(error);
 ```
 
-`app.tsx` threads these unchanged through the platform provider's `onRendering*` slots. There's no `visualUpdateOptions` capture and no risk of stale attribution — the id was bound before `update()` returned.
+`app.tsx` threads `onRenderingStarted` / `onRenderingFinished` / `onRenderingError` unchanged through the platform provider's `onRendering*` slots (the embed path). There's no `visualUpdateOptions` capture and no risk of stale attribution — the id was bound before `update()` returned. `onSettleClose` is used only by the settle timer below; it is **not** threaded to the embed path.
+
+**Why the settle-close adapter is a distinct reference (H2).** A single `onRenderingFinished` adapter used to serve _both_ the embed-path real close and `app.tsx`'s settle timer. Pointing that shared reference at the deferring variant would make _every_ real render close defer to the 10 s safety-net — a severe regression. So the settle timer gets its own `onSettleClose` adapter routed to `closePendingRenderSettle`, while the embed path keeps the terminal `closePendingRender`.
 
 A companion `useEffect` in `app.tsx` handles the two paths Vega's callbacks can't cover:
 
-- **Renderless modes** close synchronously when the effect runs.
-- **Rendering modes with no Vega-affecting change** get a 500 ms settle timer that closes via `onRenderingFinished()`. React's built-in effect cleanup caps in-flight timers at one regardless of update storm size. When Vega does close first, the timer eventually fires against a coordinator that already deleted the id — the exactly-once guard makes it a no-op.
+- **Renderless modes** close synchronously via the terminal `onRenderingFinished()` when the effect runs — Vega never embeds in these modes, so there is never an in-flight render to protect and the close is unambiguously correct.
+- **Rendering modes with no Vega-affecting change** get a 500 ms settle timer that closes via `onSettleClose()` — the **deferring** variant. The earlier claim that "when Vega does close first, the timer fires against an already-deleted id so the exactly-once guard makes it a no-op" is only true for a _fast_ render; it is **false for a slow render**, where at the 500 ms mark Vega has _not_ finished (`renderStarted === true`). Closing there would emit `renderingFinished` mid-render and let Power BI's export/snapshot service capture pre-render content (audit finding H2). The deferring variant fixes this: if a render is in flight the settle close **defers** (no-op, no emission), and the terminal belongs to Vega's own `onRenderingFinished` when the embed completes — or the safety-net at its bound if it never does. When _no_ Vega render starts for the update (the non-Vega-affecting formatting-change case this timer targets, `renderStarted === false`), the settle close closes terminally, as designed. React's built-in effect cleanup still caps in-flight timers at one regardless of update-storm size.
 
 ## Why This Matters
 
