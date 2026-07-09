@@ -145,6 +145,34 @@ describe('useVegaEmbed', () => {
         expect(mockFinalize).toHaveBeenCalled();
     });
 
+    it('should finalize previous embed when ref.current becomes null while spec stays set', async () => {
+        const spec = { $schema: 'https://vega.github.io/schema/vega/v5.json' };
+
+        const { rerender } = renderHook(
+            ({ spec }) =>
+                useVegaEmbed({
+                    ref: mockRef,
+                    spec,
+                    options: {}
+                }),
+            { initialProps: { spec: spec as any } }
+        );
+
+        await vi.waitFor(() => {
+            expect(vegaEmbed).toHaveBeenCalled();
+        });
+        await flushMicrotasks();
+
+        // Container removed from the tree, but a (new) spec is still present so
+        // the effect re-runs and must release the orphaned embed.
+        mockRef.current = null;
+        rerender({
+            spec: { ...spec, description: 'respec' } as any
+        });
+
+        expect(mockFinalize).toHaveBeenCalledTimes(1);
+    });
+
     it('should handle spec becoming null when no previous embed exists', () => {
         // Start with null spec
         const { rerender } = renderHook(

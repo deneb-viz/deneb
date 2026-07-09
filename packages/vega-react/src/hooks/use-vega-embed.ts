@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react';
 import vegaEmbed from 'vega-embed';
 import useDeepCompareEffect from 'use-deep-compare-effect';
+import { logDebug } from '@deneb-viz/utils/logging';
 import type { UseVegaEmbedOptions } from '../types';
 
 /**
@@ -88,7 +89,14 @@ export const useVegaEmbed = ({
             return;
         }
 
-        if (!ref.current) return;
+        // Container gone (e.g. conditionally unmounted while spec stays set):
+        // finalize and clear the stored embed just like the `!spec` branch, so
+        // its view/timers/listeners are released instead of leaking.
+        if (!ref.current) {
+            embedResultRef.current?.finalize();
+            embedResultRef.current = null;
+            return;
+        }
 
         // Cleanup previous embed
         embedResultRef.current?.finalize();
@@ -115,8 +123,11 @@ export const useVegaEmbed = ({
             .catch((error) => {
                 // Stale rejection: this embed was superseded, so nobody is
                 // waiting on its outcome. Swallow the error rather than
-                // reporting a failure for a generation that no longer matters.
+                // reporting a failure for a generation that no longer matters,
+                // but leave a debug-level trace so a systematic failure (every
+                // respec rejecting) is observable during diagnosis.
                 if (generation !== generationRef.current) {
+                    logDebug('useVegaEmbed: stale embed rejection suppressed', error);
                     return;
                 }
                 onError?.(error);
