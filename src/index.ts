@@ -37,6 +37,7 @@ import {
 } from '@deneb-viz/app-core';
 import type { SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 import { VegaExtensibilityServices } from '@deneb-viz/vega-runtime/extensibility';
+import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 import {
     canFetchMoreFromDataview,
     getCategoricalDataViewFromOptions,
@@ -110,6 +111,15 @@ const IS_LIFECYCLE_OBSERVER_ENABLED = toBoolean(process.env.PBIVIZ_DEV_OVERLAY);
 const SAFETY_NET_BOUND_MS = 10_000;
 
 /**
+ * Reason string emitted to the host's `renderingFailed` when
+ * {@link Deneb.destroy} tears the visual down with a render still in
+ * flight (M8). Distinguishes a teardown-aborted render from a genuine
+ * render error in host telemetry / the dev overlay.
+ */
+const VISUAL_DESTROYED_FAILURE_REASON =
+    'Visual destroyed before render completed.';
+
+/**
  * Real-`setTimeout` scheduler for the rendering-lifecycle coordinator.
  * Unit tests inject a synthetic scheduler that exposes the pending
  * callback directly; production uses this one.
@@ -174,12 +184,39 @@ export class Deneb implements IVisual {
     // every real close would defer to the 10s safety-net.
     #onSettleCloseAdapter: () => void;
     #onRenderingErrorAdapter: (error: Error) => void;
+    // Root element captured up front (L5) so the construction-failure
+    // path can still render a static error element even when a later
+    // constructor step throws before `#applicationWrapper` is built.
+    #hostElement: HTMLElement | undefined;
+    // Keydown handler reference retained (M8) so `destroy()` can remove
+    // the document-level listener that `bindTabCycling` attaches.
+    #handleTabCycleKeydown: ((event: KeyboardEvent) => void) | undefined;
+    // Construction-failure state (L5). When the constructor's catch
+    // fires, `#coordinator` / `#root` may be undefined; `update()`
+    // checks this flag at the top and routes to a degraded handler
+    // instead of dereferencing a half-built visual.
+    #constructionFailed = false;
+    #constructionError: unknown;
+    #constructionFailureRendered = false;
+    // Teardown state (M8). `destroy()` sets this; `update()` checks it at
+    // the top and returns inertly. Power BI's contract does not call
+    // `update()` after `destroy()`, but rapid re-mounts can — and the
+    // coordinator object is still live (only its `openIds` map was
+    // cleared), so an unguarded post-destroy update would emit a fresh
+    // `renderingStarted` on a torn-down visual (root unmounted, view
+    // cleared).
+    #destroyed = false;
 
     constructor(options: VisualConstructorOptions) {
         logHost('Constructor has been called.', { options });
         try {
-            const { host } = options;
+            const { host, element } = options;
             this.#host = host;
+            // Capture the root element up front so the
+            // construction-failure path (see `update()` /
+            // `handleConstructionFailure`) can still render a static
+            // error element even if a later constructor step throws.
+            this.#hostElement = element;
             // Coordinator owns ALL host.eventService.rendering*
             // emission from this point forward. The host event
             // service is the structural emitter; the safety-net uses
@@ -264,7 +301,6 @@ export class Deneb implements IVisual {
                 options.host.createLocalizationManager()
             );
             initializeStoreSynchronization();
-            const { element } = options;
             this.#applicationWrapper = document.createElement('div');
             this.#applicationWrapper.id = 'deneb-application-wrapper';
             element.appendChild(this.#applicationWrapper);
@@ -284,11 +320,43 @@ export class Deneb implements IVisual {
                 ev.preventDefault();
             };
         } catch (e) {
-            console?.error('Error', e);
+            // Construction failed (L5). Do NOT `console.error` — it is
+            // banned on certified paths (see the note in `update()`'s
+            // catch). Record the failure so `update()` short-circuits
+            // into `handleConstructionFailure` instead of dereferencing
+            // a half-built visual (`#coordinator` / `#root` may be
+            // undefined here, which would otherwise make every later
+            // `update()` throw a secondary TypeError). Forensic detail
+            // goes to the dev-time log gate.
+            this.#constructionFailed = true;
+            this.#constructionError = e;
+            logDebug('Error during visual construction.', { error: e });
         }
     }
 
     public update(options: VisualUpdateOptions) {
+        // M8: a destroyed visual is inert. `destroy()` cleared the
+        // coordinator's open-id map but the coordinator object is still
+        // live, so an unguarded `update()` here would `open()` a fresh
+        // id and emit `renderingStarted` on a torn-down visual. Return
+        // silently — no emission, no render. (Power BI's contract does
+        // not call `update()` after `destroy()`, but rapid re-mounts
+        // can.)
+        if (this.#destroyed) {
+            return;
+        }
+        // L5: if construction failed, the coordinator (and the React
+        // root) may never have been built. Short-circuit BEFORE
+        // touching `#coordinator` — otherwise this update, and every
+        // one after it, throws a secondary TypeError on the undefined
+        // coordinator and the visual stays permanently blank.
+        // `handleConstructionFailure` emits a renderingStarted →
+        // renderingFailed pair directly through the host event service
+        // and renders a static error element instead.
+        if (this.#constructionFailed) {
+            this.handleConstructionFailure(options);
+            return;
+        }
         // The coordinator's `open()` is the FIRST statement inside the
         // try so `renderingStarted` is emitted before anything else can
         // throw (R1). If `open()` itself throws (the host throws on
@@ -347,6 +415,139 @@ export class Deneb implements IVisual {
             if (openId !== undefined) {
                 this.#coordinator.armSafetyNet(openId);
             }
+        }
+    }
+
+    /**
+     * Tear the visual down cleanly (IVisual contract, M8). Power BI does
+     * not expect `destroy()` to throw, so each step is isolated: a throw
+     * in one does not prevent the others and none propagates out.
+     *
+     * Teardown guarantees (per the rendering-lifecycle coordinator
+     * solution doc): no orphaned open lifecycle id and no `rendering*`
+     * emission after destroy.
+     *  - `failCurrent` fails any still-open id (a single terminal),
+     *    cancels its armed safety-net handle, and deletes the id from
+     *    the coordinator's map — so a late React render callback
+     *    (`closePendingRender`) or a safety-net tick that fires after
+     *    destroy finds nothing open and no-ops. When the render already
+     *    completed there is no open id and `failCurrent` no-ops (no
+     *    emission).
+     *  - The document keydown listener added by `bindTabCycling` is
+     *    removed so it cannot fire against a torn-down wrapper.
+     *  - The React root is unmounted and the Vega view cleared so no
+     *    stale view state survives into a subsequent visual instance.
+     *
+     * All references are read defensively (`?.`) because a failed
+     * construction may leave `#coordinator` / `#root` /
+     * `#handleTabCycleKeydown` undefined.
+     */
+    public destroy(): void {
+        logHost('Destroy has been called.');
+        // Set first, before any teardown step that could throw, so a
+        // post-destroy `update()` is guaranteed inert even if a step
+        // below fails (each is best-effort and swallows its own error).
+        this.#destroyed = true;
+        try {
+            this.#coordinator?.failCurrent(
+                new Error(VISUAL_DESTROYED_FAILURE_REASON)
+            );
+        } catch (e) {
+            logDebug('Error failing open lifecycle during destroy.', {
+                error: e
+            });
+        }
+        try {
+            if (this.#handleTabCycleKeydown) {
+                document.removeEventListener(
+                    'keydown',
+                    this.#handleTabCycleKeydown
+                );
+                this.#handleTabCycleKeydown = undefined;
+            }
+        } catch (e) {
+            logDebug('Error removing keydown listener during destroy.', {
+                error: e
+            });
+        }
+        try {
+            this.#root?.unmount();
+        } catch (e) {
+            logDebug('Error unmounting React root during destroy.', {
+                error: e
+            });
+        }
+        try {
+            VegaViewServices.clearView();
+        } catch (e) {
+            logDebug('Error clearing Vega view during destroy.', { error: e });
+        }
+    }
+
+    /**
+     * Degraded-mode handler invoked from the top of `update()` when the
+     * constructor failed (L5). The coordinator may never have been
+     * constructed, so this bypasses it entirely: it emits a balanced
+     * `renderingStarted` → `renderingFailed` pair DIRECTLY through the
+     * host event service (so the host sees a terminal for this update
+     * rather than waiting on a render that will never come) and renders
+     * a minimal static error element into the root element once.
+     * Best-effort throughout — the host reference may be absent if the
+     * failure preceded its capture, and this path must never itself
+     * throw. Emission is per-update (truthful: the host asked us to
+     * render and we cannot); the error element is rendered only once.
+     */
+    private handleConstructionFailure(options: VisualUpdateOptions): void {
+        logDebug('Visual update called after construction failure.', {
+            error: this.#constructionError
+        });
+        const reason =
+            this.#constructionError instanceof Error
+                ? this.#constructionError.message
+                : String(this.#constructionError);
+        try {
+            // Emit a balanced renderingStarted → renderingFailed pair.
+            // IVisualEventService pairs a start with a terminal; a lone
+            // renderingFailed (no preceding start) can leave the host's
+            // per-visual render tracker — which export / print-to-PDF
+            // rely on to know a visual has settled — inconsistent across
+            // repeated post-failure updates. Emitted directly, not via
+            // the coordinator (which may never have constructed), so no
+            // lifecycle id is opened.
+            this.#host?.eventService?.renderingStarted(options);
+            this.#host?.eventService?.renderingFailed(options, reason);
+        } catch (e) {
+            logDebug(
+                'Failed to emit rendering events after construction failure.',
+                { error: e }
+            );
+        }
+        this.renderConstructionFailureElement();
+    }
+
+    /**
+     * Render a minimal, non-localized error element into the root
+     * element exactly once. i18n and React may have failed to
+     * initialize during a construction failure, so this uses plain DOM
+     * and a static string (no store, no Fluent, no translation
+     * catalog). Guarded so repeated `update()` calls after a
+     * construction failure do not stack elements.
+     */
+    private renderConstructionFailureElement(): void {
+        if (this.#constructionFailureRendered) return;
+        if (!this.#hostElement) return;
+        try {
+            const errorElement = document.createElement('div');
+            errorElement.className = 'deneb-construction-error';
+            errorElement.setAttribute('role', 'alert');
+            errorElement.textContent =
+                'Deneb failed to initialize. Please reload the visual.';
+            this.#hostElement.replaceChildren(errorElement);
+            this.#constructionFailureRendered = true;
+        } catch (e) {
+            logDebug('Failed to render construction-failure element.', {
+                error: e
+            });
         }
     }
 
@@ -736,7 +937,11 @@ export class Deneb implements IVisual {
      * wraps to the last. Esc is not intercepted — Power BI handles exiting the visual.
      */
     private bindTabCycling() {
-        document.addEventListener('keydown', (event) => {
+        // Retain the handler reference (M8) so `destroy()` can remove
+        // this document-level listener; an anonymous inline handler
+        // could never be removed and would leak across visual
+        // teardown/re-create cycles.
+        this.#handleTabCycleKeydown = (event) => {
             if (event.key !== 'Tab') return;
             // When an overlay that manages its own focus is present (modal
             // dialog, Fluent UI PopoverSurface, etc.), yield to it — the
@@ -752,7 +957,8 @@ export class Deneb implements IVisual {
             ) {
                 event.preventDefault();
             }
-        });
+        };
+        document.addEventListener('keydown', this.#handleTabCycleKeydown);
     }
 
     /**

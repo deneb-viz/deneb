@@ -125,6 +125,33 @@ export type UpdateCycleDriver = {
     dataset: MockDatasetSlice;
     /** Ids opened but not yet terminally closed/failed (must be empty at scenario end). */
     getOpenLifecycleIds: () => RenderingLifecycleId[];
+    /**
+     * Mark construction as having failed (L5 mirror). Models the
+     * constructor's catch setting `#constructionFailed` in src/index.ts.
+     * Subsequent `update()` calls route through the construction-failure
+     * guard instead of opening a lifecycle.
+     */
+    failConstruction: (error?: unknown) => void;
+    /**
+     * Tear the mirrored visual down (M8 mirror of `Deneb.destroy`).
+     * Fails any open lifecycle id through the REAL coordinator (single
+     * terminal + safety-net cancel + map delete), then records the
+     * production-only teardown side effects (keydown-listener removal,
+     * React-root unmount, Vega-view clear) as spy counters.
+     */
+    destroy: () => void;
+    /** Recorded production-only teardown side effects (see `destroy`). */
+    teardown: {
+        keydownListenerRemoved: number;
+        reactRootUnmounted: number;
+        viewCleared: number;
+    };
+    /**
+     * Times the static construction-failure element was (re)rendered.
+     * Mirrors `renderConstructionFailureElement`'s render-once guard —
+     * must be at most 1 no matter how many post-failure updates arrive.
+     */
+    constructionErrorRenderCount: () => number;
 };
 
 /**
@@ -203,6 +230,17 @@ export const createUpdateCycleDriver = (
     const actions: DatasetUpdateAction[] = [];
     const caughtErrors: unknown[] = [];
     let queuedFault: Error | null = null;
+    // L5 / M8 mirror state (see `failConstruction`, `destroy`,
+    // `dispatchConstructionFailure`).
+    let constructionFailed = false;
+    let constructionError: unknown = undefined;
+    let constructionErrorRenders = 0;
+    let destroyed = false;
+    const teardown = {
+        keydownListenerRemoved: 0,
+        reactRootUnmounted: 0,
+        viewCleared: 0
+    };
 
     /**
      * Mirrors `Deneb.handleFetchMore` (src/index.ts): set the fetching
@@ -337,13 +375,53 @@ export const createUpdateCycleDriver = (
     };
 
     /**
-     * Mirrors `Deneb.update` (src/index.ts): open the lifecycle FIRST
-     * inside the try, dispatch, route any throw to `failCurrent`, and
-     * arm the safety-net in the finally for whichever id was opened.
+     * Mirrors `Deneb.handleConstructionFailure` (src/index.ts): the
+     * coordinator may never have constructed, so emit a balanced
+     * `renderingStarted` → `renderingFailed` pair DIRECTLY through the
+     * host event service (bypassing the coordinator) and record the
+     * static error element as rendered once. Emission is per-update; the
+     * render is once.
+     */
+    const dispatchConstructionFailure = (
+        options: powerbi.extensibility.visual.VisualUpdateOptions
+    ): void => {
+        const reason =
+            constructionError instanceof Error
+                ? constructionError.message
+                : String(constructionError);
+        host.host.eventService.renderingStarted(options);
+        host.host.eventService.renderingFailed(options, reason);
+        if (constructionErrorRenders === 0) {
+            constructionErrorRenders = 1;
+        }
+    };
+
+    /**
+     * Mirrors `Deneb.update` (src/index.ts): short-circuit through the
+     * construction-failure guard if construction failed (L5); otherwise
+     * open the lifecycle FIRST inside the try, dispatch, route any throw
+     * to `failCurrent`, and arm the safety-net in the finally for
+     * whichever id was opened.
      */
     const update = (
         options: powerbi.extensibility.visual.VisualUpdateOptions
     ): void => {
+        // M8 guard: mirrors the top of `Deneb.update`. A destroyed
+        // visual is inert — no coordinator open, no emission.
+        if (destroyed) {
+            return;
+        }
+        // L5 guard: mirrors the top of `Deneb.update`. When construction
+        // failed the coordinator is never touched — the failure is
+        // reported directly via the host event service. Reverting this
+        // guard makes the L5 scenarios red (a `renderingStarted` is
+        // emitted and a lifecycle id opens); in production the reverted
+        // path additionally throws a secondary TypeError on the
+        // undefined coordinator.
+        if (constructionFailed) {
+            dispatchConstructionFailure(options);
+            return;
+        }
         let openId: RenderingLifecycleId | undefined;
         try {
             openId = coordinator.open(options);
@@ -374,6 +452,25 @@ export const createUpdateCycleDriver = (
         return [...opened];
     };
 
+    /**
+     * Mirrors `Deneb.destroy` (src/index.ts). The coordinator +
+     * safety-net are REAL in the harness, so failing any open id (which
+     * cancels its armed safety-net handle and deletes the id from the
+     * coordinator's map) is genuinely exercised — this is what proves
+     * the "no orphaned id / no post-destroy emission" guarantee. The
+     * React-root / keydown-listener / view-clear steps are
+     * production-only side effects recorded here as spy counters.
+     */
+    const destroy = (): void => {
+        destroyed = true;
+        coordinator.failCurrent(
+            new Error('Visual destroyed before render completed.')
+        );
+        teardown.keydownListenerRemoved++;
+        teardown.reactRootUnmounted++;
+        teardown.viewCleared++;
+    };
+
     return {
         update,
         queueFault: (error) => {
@@ -390,6 +487,13 @@ export const createUpdateCycleDriver = (
         actions,
         caughtErrors,
         dataset,
-        getOpenLifecycleIds
+        getOpenLifecycleIds,
+        failConstruction: (error) => {
+            constructionFailed = true;
+            constructionError = error;
+        },
+        destroy,
+        teardown,
+        constructionErrorRenderCount: () => constructionErrorRenders
     };
 };
