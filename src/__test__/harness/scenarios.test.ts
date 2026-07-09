@@ -188,7 +188,7 @@ describe('scenario: single update → compile → render-start → close', () =>
         expect(driver.host.countEmitterCalls('renderingFinished')).toBe(1);
     });
 
-    it('safety-net defers while a render is in flight; the render close then lands exactly once', async () => {
+    it('safety-net terminally closes an in-flight render at the bound; a late embed close then no-ops (U5 true backstop)', async () => {
         const driver = await createDriver();
         driver.update(
             buildUpdateOptions({
@@ -196,8 +196,14 @@ describe('scenario: single update → compile → render-start → close', () =>
             })
         );
         driver.startRender();
+        // Render began but never signalled completion. At the 10s bound
+        // the safety-net is the TRUE backstop: it closes the still-open
+        // id exactly once (before U5 it deferred here, leaving the id
+        // open forever).
         driver.fireSafetyNets();
-        expect(driver.host.countEmitterCalls('renderingFinished')).toBe(0);
+        expect(driver.host.countEmitterCalls('renderingFinished')).toBe(1);
+        expect(driver.getOpenLifecycleIds()).toEqual([]);
+        // A late embed completion after the bound finds the id gone.
         driver.completeRender();
         expect(driver.host.countEmitterCalls('renderingFinished')).toBe(1);
     });
@@ -496,6 +502,122 @@ describe('scenario: update() throws', () => {
         expect(driver.caughtErrors).toHaveLength(1);
         expect(driver.host.countEmitterCalls('renderingFailed')).toBe(1);
         expect(driver.host.countEmitterCalls('renderingFinished')).toBe(0);
+        expect(driver.getOpenLifecycleIds()).toEqual([]);
+    });
+});
+
+// ─── Scenario 6: settle-timer close defers to the render (H2 / U5) ───────────
+//
+// The app-side 500ms settle timer (`app.tsx` → `onSettleClose`) is
+// modelled by `driver.settleClose()`, which routes to the coordinator's
+// DEFERRING `closePendingRenderSettle`. `driver.completeRender()` still
+// models the embed-path terminal close. These scenarios pin the H2 fix:
+// a settle firing mid-render must never emit `renderingFinished` early,
+// yet a non-Vega-affecting update must still close promptly at the
+// settle bound, and a started-but-stuck render must still reach exactly
+// one terminal at the 10s safety-net bound.
+
+describe('scenario: settle-timer close vs. in-flight render (H2 / U5)', () => {
+    it('(a) non-Vega-affecting update → settle closes; exactly one renderingFinished, no open ids', async () => {
+        const driver = await createDriver();
+        driver.update(
+            buildUpdateOptions({
+                dataView: buildDataView({ categorical: buildCategorical(100) })
+            })
+        );
+        // Rendering dispatch bound a pending render, but Vega's input
+        // deps did not change (formatting-only update) so no embed
+        // callback fires and no render starts. The settle timer is the
+        // designed close path here.
+        expect(driver.host.countEmitterCalls('renderingFinished')).toBe(0);
+        driver.settleClose();
+        expect(driver.host.countEmitterCalls('renderingFinished')).toBe(1);
+        expect(driver.getOpenLifecycleIds()).toEqual([]);
+        // Leftover async callbacks / safety-net are inert (exactly-once).
+        driver.completeRender();
+        driver.fireSafetyNets();
+        expect(driver.host.countEmitterCalls('renderingFinished')).toBe(1);
+    });
+
+    it('(b) slow render (>500ms) → settle no-ops mid-render; renderingFinished only when the embed completes', async () => {
+        const driver = await createDriver();
+        driver.update(
+            buildUpdateOptions({
+                dataView: buildDataView({ categorical: buildCategorical(100) })
+            })
+        );
+        // Render started but is slow — still in flight when the settle
+        // timer fires.
+        driver.startRender();
+        driver.settleClose();
+        // H2: the settle close must DEFER — no renderingFinished
+        // mid-render. (This assertion is red on the pre-U5 code, where
+        // the settle path closed unconditionally.)
+        expect(driver.host.countEmitterCalls('renderingFinished')).toBe(0);
+        expect(driver.getOpenLifecycleIds()).toHaveLength(1);
+        // The embed finally completes → the real close emits the terminal.
+        driver.completeRender();
+        expect(driver.host.countEmitterCalls('renderingFinished')).toBe(1);
+        expect(driver.getOpenLifecycleIds()).toEqual([]);
+    });
+
+    it('(c) render starts and completes before the bound → real close wins; the settle then no-ops', async () => {
+        const driver = await createDriver();
+        driver.update(
+            buildUpdateOptions({
+                dataView: buildDataView({ categorical: buildCategorical(100) })
+            })
+        );
+        // Fast render: starts and completes before the 500ms timer.
+        driver.startRender();
+        driver.completeRender();
+        expect(driver.host.countEmitterCalls('renderingFinished')).toBe(1);
+        // The settle timer fires later against an already-closed id.
+        driver.settleClose();
+        expect(driver.host.countEmitterCalls('renderingFinished')).toBe(1);
+        expect(driver.getOpenLifecycleIds()).toEqual([]);
+    });
+
+    it('(d) render starts but never completes → settle defers, safety-net is the sole terminal at the bound (exactly once)', async () => {
+        const driver = await createDriver();
+        driver.update(
+            buildUpdateOptions({
+                dataView: buildDataView({ categorical: buildCategorical(100) })
+            })
+        );
+        driver.startRender();
+        // Settle fires mid-render → defers (H2).
+        driver.settleClose();
+        expect(driver.host.countEmitterCalls('renderingFinished')).toBe(0);
+        expect(driver.getOpenLifecycleIds()).toHaveLength(1);
+        // The embed never completes. The 10s safety-net is the true
+        // backstop and closes the still-open id exactly once. (Red on
+        // the pre-U5 code, where the safety-net deferred forever on a
+        // started render and the id never closed.)
+        driver.fireSafetyNets();
+        expect(driver.host.countEmitterCalls('renderingFinished')).toBe(1);
+        expect(driver.host.countEmitterCalls('renderingFailed')).toBe(0);
+        expect(driver.getOpenLifecycleIds()).toEqual([]);
+        // Nothing left to fire.
+        expect(driver.pendingSafetyNetCount()).toBe(0);
+    });
+
+    it('(e) render fails after the settle timer is scheduled → renderingFailed, never renderingFinished', async () => {
+        const driver = await createDriver();
+        driver.update(
+            buildUpdateOptions({
+                dataView: buildDataView({ categorical: buildCategorical(100) })
+            })
+        );
+        driver.startRender();
+        // Embed errors out — the failure terminal must win.
+        driver.failRender(new Error('embed blew up'));
+        expect(driver.host.countEmitterCalls('renderingFailed')).toBe(1);
+        // The settle timer (scheduled earlier) fires against the now-
+        // closed id → no-op; it must NOT convert a failure into a finish.
+        driver.settleClose();
+        expect(driver.host.countEmitterCalls('renderingFinished')).toBe(0);
+        expect(driver.host.countEmitterCalls('renderingFailed')).toBe(1);
         expect(driver.getOpenLifecycleIds()).toEqual([]);
     });
 });

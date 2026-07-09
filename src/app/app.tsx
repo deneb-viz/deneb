@@ -55,9 +55,16 @@ import { handlePersistBooleanProperty } from '../features/settings/helpers';
  * non-pathological specs complete in under 200ms; 500ms gives any
  * legitimate render comfortable headroom while closing
  * non-Vega-affecting property updates (which would otherwise wait
- * the full 10s safety-net bound) within half a second. Idempotent
- * against the U9/U10 close paths — whichever closes the
- * pending-render id first wins.
+ * the full 10s safety-net bound) within half a second.
+ *
+ * The settle close is DEFERRING (H2 / U5): it fires through
+ * `onSettleClose`, which no-ops when a render is already in flight
+ * (`renderStarted === true`). So the 500ms bound is a lower bound on
+ * "how long before we conclude no Vega render is coming", NOT a
+ * deadline that can pre-empt a slow render — a render taking longer
+ * than 500ms is closed by its own embed callback, not by this timer.
+ * Idempotent against the U9/U10 close paths via the coordinator's
+ * exactly-once guard.
  */
 const RENDERING_MODE_SETTLE_MS = 500;
 
@@ -76,6 +83,17 @@ type AppProps = {
      */
     onRenderingStarted: () => void;
     onRenderingFinished: () => void;
+    /**
+     * Settle-timer close (H2 / U5). DISTINCT from
+     * {@link onRenderingFinished}: this adapter routes to the
+     * coordinator's deferring `closePendingRenderSettle`, so if the
+     * settle timer fires while a Vega render is still in flight it
+     * NO-OPS (the real embed close or the safety-net owns the terminal)
+     * instead of emitting `renderingFinished` mid-render. Used ONLY by
+     * the settle timer below — never by the embed path, which keeps the
+     * terminal {@link onRenderingFinished}.
+     */
+    onSettleClose: () => void;
     onRenderingError: (error: Error) => void;
 };
 
@@ -83,6 +101,7 @@ export const App = ({
     host,
     onRenderingStarted,
     onRenderingFinished,
+    onSettleClose,
     onRenderingError
 }: AppProps) => {
     const [isDownloadPermitted, setIsDownloadPermitted] = useState<
@@ -217,36 +236,51 @@ export const App = ({
      * built-in effect cleanup, which fires when `visualUpdateOptions`
      * / `mode` change for the next update.
      *
-     * So the actual behavior is:
-     *  - **Isolated update**: Vega closes the pending render via
-     *    U9/U10 within typical render time (<200ms); the settle
-     *    timer continues for the remaining ~300ms and then fires
-     *    `onRenderingFinished()`, which is a no-op via the
-     *    coordinator's exactly-once guard (the bound id has already
-     *    been deleted from the openIds map). One wasted timer per
-     *    update — negligible.
+     * So the actual behavior is (H2 / U5 — the settle timer calls
+     * `onSettleClose`, the coordinator's DEFERRING close variant, NOT
+     * the terminal `onRenderingFinished`):
+     *  - **Isolated fast render** (<{@link RENDERING_MODE_SETTLE_MS}):
+     *    Vega closes the pending render via U9/U10 within typical
+     *    render time (<200ms); the settle timer fires ~300ms later and
+     *    is a no-op via the coordinator's exactly-once guard (the id
+     *    was already deleted from the openIds map). One wasted timer
+     *    per update — negligible.
+     *  - **Isolated SLOW render** (>{@link RENDERING_MODE_SETTLE_MS}):
+     *    the render is still in flight when the settle timer fires.
+     *    Because `markPendingRenderStarted` has run, `onSettleClose`
+     *    DEFERS (no-op) — it does NOT emit `renderingFinished`
+     *    mid-render. The terminal is owned by Vega's own
+     *    `onRenderingFinished` when the embed completes (or the 10s
+     *    safety-net if it never does). This is the H2 fix: previously
+     *    the settle timer closed unconditionally here, letting Power
+     *    BI's export/snapshot capture pre-render content.
      *  - **Storm of N updates** (resize burst, live-data refresh):
      *    each new update's effect cleanup `clearTimeout`s the
      *    previous timer before scheduling a new one, so at most ONE
      *    settle timer is in flight at any moment regardless of N.
      *    React effect cleanup is the cap.
-     *  - **Settle wins**: when neither U9 nor U10 closes within the
-     *    bound (the editor-theme-via-formatting-pane case this
-     *    effect targets), the timer fires and emits
-     *    `renderingFinished` via the coordinator. This is the
-     *    designed close path for non-Vega-affecting updates in
-     *    rendering modes.
+     *  - **Settle wins**: when no Vega render starts for this update
+     *    (the non-Vega-affecting editor-theme-via-formatting-pane case
+     *    this effect targets — `renderStarted` stays false), the timer
+     *    fires and `onSettleClose` closes terminally via the
+     *    coordinator. This is the designed close path for
+     *    non-Vega-affecting updates in rendering modes.
      *
      * A first-class cancellation token keyed on the coordinator's
      * observer stream would eliminate the wasted-timer-per-update
      * cost, but the perf impact is negligible and the indirection
      * isn't worth it until U11's observer wiring is in place.
      *
+     * Renderless modes still use the terminal `onRenderingFinished`
+     * (closed synchronously): Vega never embeds in those modes, so
+     * there is never an in-flight render to protect and the close is
+     * unambiguously correct.
+     *
      * `bindPendingRenderCurrent` fires in `handleNormalFinalise` /
      * `handleFetchMore` host-decline before the resolved display
-     * mode is known; `onRenderingFinished` is a stable reference
-     * from `src/index.ts` so the effect's deps add no spurious
-     * re-runs.
+     * mode is known; `onRenderingFinished` / `onSettleClose` are
+     * stable references from `src/index.ts` so the effect's deps add
+     * no spurious re-runs.
      */
     useEffect(() => {
         const isRenderlessMode =
@@ -261,12 +295,12 @@ export const App = ({
             return;
         }
         const settleId = window.setTimeout(() => {
-            onRenderingFinished();
+            onSettleClose();
         }, RENDERING_MODE_SETTLE_MS);
         return () => {
             window.clearTimeout(settleId);
         };
-    }, [visualUpdateOptions, mode, onRenderingFinished]);
+    }, [visualUpdateOptions, mode, onRenderingFinished, onSettleClose]);
 
     const mainComponent = useMemo(() => {
         switch (mode) {

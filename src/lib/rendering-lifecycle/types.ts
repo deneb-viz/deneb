@@ -113,7 +113,13 @@ export type RenderingLifecycleEvent =
     | {
           kind: 'safety-net-tick';
           id: RenderingLifecycleId;
-          result: 'closed' | 'deferred' | 'inert';
+          // The safety-net is a true backstop that terminally closes any
+          // still-open id at the bound (see `onSafetyNetTick`), so a tick
+          // resolves to `'closed'` (still open → closed) or `'inert'`
+          // (already closed). The in-flight defer moved to the
+          // settle-close variant, which emits no observer event on defer,
+          // so there is no `'deferred'` tick result.
+          result: 'closed' | 'inert';
       };
 
 export type RenderingLifecycleObserver = (
@@ -186,14 +192,19 @@ export type RenderingLifecycleCoordinator = {
      */
     bindPendingRenderCurrent: () => void;
     /**
-     * Arm the bounded safety-net for an id. If the id is still open
-     * (no close / no fail) when the bound elapses, the safety-net
-     * checks whether the render ever began: if `renderStarted ===
-     * false`, it's an orphan and the safety-net closes it with
-     * `renderingFinished`; if `renderStarted === true`, the render is
-     * in flight and the safety-net waits (no close emitted). The
-     * exactly-once guard inside `close` / `fail` makes the safety-net
-     * inert against ids that already closed normally.
+     * Arm the bounded safety-net for an id. The safety-net is a TRUE
+     * backstop: if the id is STILL OPEN (no close / no fail) when the
+     * bound elapses, the safety-net closes it with `renderingFinished`
+     * — regardless of whether the render began. Whether the id is an
+     * orphan (`renderStarted === false`, render never started) or a
+     * started-but-stuck render (`renderStarted === true`, render began
+     * but never signalled completion), the fact that it is still open
+     * at the bound means no other terminal fired, so the host would
+     * otherwise be left with an orphaned `renderingStarted` — which is
+     * cert-blocking. The exactly-once guard inside `close` / `fail`
+     * makes the safety-net inert against ids that already closed
+     * normally (the healthy path, where the close cancels the armed
+     * handle before the bound can elapse).
      */
     armSafetyNet: (id: RenderingLifecycleId) => void;
     /**
@@ -206,19 +217,50 @@ export type RenderingLifecycleCoordinator = {
     /** Fail the currently-open id. Counterpart to `closeCurrent`. */
     failCurrent: (error: unknown) => void;
     /**
-     * Close the pending-render id (used by async React callbacks via
-     * `app.tsx`'s no-arg adapters). No-op if no pending-render is
-     * bound, or the pending-render id has already closed (e.g.
-     * superseded by a later `open`).
+     * Close the pending-render id (used by the async embed-path
+     * render-complete callback via `app.tsx`'s `onRenderingFinished`
+     * adapter — the REAL render close). Terminal regardless of
+     * `renderStarted`. No-op if no pending-render is bound, or the
+     * pending-render id has already closed (e.g. superseded by a later
+     * `open`).
      */
     closePendingRender: () => void;
+    /**
+     * Settle-timer close variant for the pending-render id, used ONLY
+     * by `app.tsx`'s {@link RENDERING_MODE_SETTLE_MS} settle timer (via
+     * a DISTINCT settle-close adapter in `src/index.ts` — never by the
+     * embed-path real close above).
+     *
+     * Behaves like {@link closePendingRender} EXCEPT it DEFERS (no-ops,
+     * with no re-arm) when the render has already started
+     * (`markPendingRenderStarted` has fired for the pending id).
+     * Rationale (audit H2): the settle timer fires on a fixed
+     * wall-clock delay shorter than a slow Vega render; closing
+     * unconditionally would emit `renderingFinished` mid-render and
+     * Power BI's export/snapshot service could capture pre-render
+     * content. While a render is in flight the terminal belongs to the
+     * embed's own `onRenderingFinished` (real close) or, if that never
+     * arrives, to the safety-net at its bound.
+     *
+     * When no render has started (`renderStarted === false` — the
+     * non-Vega-affecting formatting-change case this settle path
+     * targets), it closes exactly as {@link closePendingRender} does.
+     * No-op if no pending-render is bound or the pending-render id has
+     * already closed (exactly-once guard). Mirroring the safety-net's
+     * defer, the deferred branch deliberately emits no observer event:
+     * nothing mutates and the dev-overlay start-vs-close tally must not
+     * count a deferred settle as a close.
+     */
+    closePendingRenderSettle: () => void;
     /** Fail the pending-render id. Counterpart to `closePendingRender`. */
     failPendingRender: (error: unknown) => void;
     /**
      * Mark the pending-render id as having started rendering. The
      * host does NOT see a second `renderingStarted`; this flag is
-     * internal to the coordinator and is consumed by the safety-net
-     * to distinguish orphan vs. in-flight. Idempotent.
+     * internal to the coordinator and is consumed by
+     * {@link closePendingRenderSettle} to DEFER the settle-timer close
+     * of an in-flight render (so the settle timer cannot emit
+     * `renderingFinished` mid-render). Idempotent.
      */
     markPendingRenderStarted: () => void;
 };

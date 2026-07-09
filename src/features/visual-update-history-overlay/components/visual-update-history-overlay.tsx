@@ -98,7 +98,6 @@ export const VisualUpdateHistoryOverlay = () => {
             ` sup: ${tally.fails.superseded})`,
         `safety-net:   armed ${tally.safetyNet.armed}` +
             ` / ticks: closed ${tally.safetyNet.closedByTick},` +
-            ` def ${tally.safetyNet.deferred},` +
             ` inert ${tally.safetyNet.inert}`,
         `pending:      ${tally.pending}` +
             (tally.pendingIds.length > 0
