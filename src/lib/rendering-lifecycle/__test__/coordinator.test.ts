@@ -400,17 +400,21 @@ describe('createRenderingLifecycleCoordinator — safety-net', () => {
         ).toHaveLength(1);
     });
 
-    it('safety-net does NOT close in-flight render (renderStarted=true defers the close)', () => {
+    it('safety-net terminally closes an in-flight render at the bound (started-but-stuck), then a late real close no-ops', () => {
         const { coordinator, calls, tick } = buildHarness();
         const id = coordinator.open(FAKE_OPTIONS_A);
         coordinator.bindPendingRender(id);
         coordinator.markPendingRenderStarted();
         coordinator.armSafetyNet(id);
+        // The render started but never signalled completion. At the
+        // bound the safety-net is the TRUE backstop (U5): it closes the
+        // still-open id exactly once rather than deferring forever.
         tick();
         expect(
             calls.filter((c) => c.method === 'renderingFinished')
-        ).toHaveLength(0);
-        // The pending-render close should still work afterward.
+        ).toHaveLength(1);
+        // A late real close (embed finally resolves after the bound)
+        // finds the id already deleted and no-ops — exactly-once holds.
         coordinator.closePendingRender();
         expect(
             calls.filter((c) => c.method === 'renderingFinished')
@@ -442,7 +446,7 @@ describe('createRenderingLifecycleCoordinator — safety-net', () => {
         expect(ticked && 'result' in ticked && ticked.result).toBe('closed');
     });
 
-    it('open with no close, render-started, then tick → safety-net defers (in-flight)', () => {
+    it('open with no close, render-started, then tick → safety-net tick reports closed (terminal backstop, no longer deferred)', () => {
         const { coordinator, events, tick } = buildHarness();
         const id = coordinator.open(FAKE_OPTIONS_A);
         coordinator.bindPendingRender(id);
@@ -450,7 +454,7 @@ describe('createRenderingLifecycleCoordinator — safety-net', () => {
         coordinator.armSafetyNet(id);
         tick();
         const ticked = events.find((e) => e.kind === 'safety-net-tick');
-        expect(ticked && 'result' in ticked && ticked.result).toBe('deferred');
+        expect(ticked && 'result' in ticked && ticked.result).toBe('closed');
     });
 
     it('tick after a separate close path resolved → safety-net tick reports inert (already closed)', () => {
@@ -463,6 +467,90 @@ describe('createRenderingLifecycleCoordinator — safety-net', () => {
         tick();
         const ticks = events.filter((e) => e.kind === 'safety-net-tick');
         expect(ticks).toHaveLength(0);
+    });
+});
+
+describe('createRenderingLifecycleCoordinator — settle-timer close (closePendingRenderSettle)', () => {
+    it('no render started → closes terminally like closePendingRender (one renderingFinished, via=async-pending-render)', () => {
+        const { coordinator, calls, events } = buildHarness();
+        const id = coordinator.open(FAKE_OPTIONS_A);
+        coordinator.bindPendingRender(id);
+        // renderStarted is false (markPendingRenderStarted never fired)
+        // — the non-Vega-affecting formatting-change case this settle
+        // path targets. It closes exactly as the real pending close.
+        coordinator.closePendingRenderSettle();
+        expect(
+            calls.filter((c) => c.method === 'renderingFinished')
+        ).toHaveLength(1);
+        const closed = events.find((e) => e.kind === 'closed');
+        expect(closed && 'via' in closed && closed.via).toBe(
+            'async-pending-render'
+        );
+    });
+
+    it('render already started → DEFERS (no emission, id stays open); the later real close then lands exactly once', () => {
+        const { coordinator, calls } = buildHarness();
+        const id = coordinator.open(FAKE_OPTIONS_A);
+        coordinator.bindPendingRender(id);
+        coordinator.markPendingRenderStarted();
+        // Settle timer fires WHILE the render is in flight — must NOT
+        // emit renderingFinished mid-render (H2).
+        coordinator.closePendingRenderSettle();
+        expect(
+            calls.filter((c) => c.method === 'renderingFinished')
+        ).toHaveLength(0);
+        // The embed's own real render-complete close terminates it.
+        coordinator.closePendingRender();
+        expect(
+            calls.filter((c) => c.method === 'renderingFinished')
+        ).toHaveLength(1);
+    });
+
+    it('deferred settle emits no observer event (start-vs-close tally must not count it)', () => {
+        const { coordinator, events } = buildHarness();
+        const id = coordinator.open(FAKE_OPTIONS_A);
+        coordinator.bindPendingRender(id);
+        coordinator.markPendingRenderStarted();
+        const eventCountBefore = events.length;
+        coordinator.closePendingRenderSettle();
+        expect(events.length).toBe(eventCountBefore);
+    });
+
+    it('no pending-render bound → no-op (no host emission, no observer event)', () => {
+        const { coordinator, calls, events } = buildHarness();
+        coordinator.closePendingRenderSettle();
+        expect(calls).toEqual([]);
+        expect(events).toEqual([]);
+    });
+
+    it('already-closed pending id → no-op via exactly-once guard', () => {
+        const { coordinator, calls } = buildHarness();
+        const id = coordinator.open(FAKE_OPTIONS_A);
+        coordinator.bindPendingRender(id);
+        // Real close deletes the id from the map first.
+        coordinator.closePendingRender();
+        // A settle timer firing afterward finds nothing and no-ops.
+        coordinator.closePendingRenderSettle();
+        expect(
+            calls.filter((c) => c.method === 'renderingFinished')
+        ).toHaveLength(1);
+    });
+
+    it('terminal settle close cancels the armed safety-net (no second terminal on a later tick)', () => {
+        const { coordinator, calls, tick } = buildHarness();
+        const id = coordinator.open(FAKE_OPTIONS_A);
+        coordinator.bindPendingRender(id);
+        coordinator.armSafetyNet(id);
+        // No render started → settle closes terminally; closeInternal
+        // must cancel the armed safety-net handle.
+        coordinator.closePendingRenderSettle();
+        expect(
+            calls.filter((c) => c.method === 'renderingFinished')
+        ).toHaveLength(1);
+        tick();
+        expect(
+            calls.filter((c) => c.method === 'renderingFinished')
+        ).toHaveLength(1);
     });
 });
 

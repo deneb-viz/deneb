@@ -20,8 +20,10 @@ import {
  * ever hold open ids. No separate `closed` flag is needed.
  *
  *  - `renderStarted` flips true via `markRenderStarted` /
- *    `markPendingRenderStarted`; consumed by the safety-net to
- *    distinguish orphan vs. in-flight.
+ *    `markPendingRenderStarted`; consumed by
+ *    `closePendingRenderSettle` to DEFER the settle-timer close of an
+ *    in-flight render (the safety-net no longer branches on it — it
+ *    terminally closes any still-open id at the bound).
  *  - `safetyNet` holds the cancellation handle while the safety-net
  *    is armed and not yet fired/cancelled.
  */
@@ -154,20 +156,30 @@ export const createRenderingLifecycleCoordinator = (
     const onSafetyNetTick = (id: RenderingLifecycleId): void => {
         const state = openIds.get(id);
         if (!state) {
+            // Already closed normally — the close cancelled this
+            // handle, so reaching here means the map entry is gone.
+            // Inert.
             observe({ kind: 'safety-net-tick', id, result: 'inert' });
             return;
         }
-        if (state.renderStarted) {
-            // In-flight render — extend the wait by NOT closing. The
-            // caller (the render's own callback chain) will emit the
-            // terminal in due course; or, if it never does, a future
-            // arming would re-evaluate. For U7 there's no auto-rearm;
-            // the practical safety case for in-flight is "the render
-            // is happening, trust it" since the cert-blocking failure
-            // mode is orphans, not slow renders.
-            observe({ kind: 'safety-net-tick', id, result: 'deferred' });
-            return;
-        }
+        // TRUE backstop (audit H2): the id is STILL OPEN at the bound,
+        // so no other terminal fired — close it now, whether the render
+        // started or not. Reaching this point means either the render
+        // never began (orphan) OR it began but never signalled
+        // completion (started-but-stuck); both leave the host with an
+        // orphaned `renderingStarted` unless closed here.
+        //
+        // Before U5 an in-flight (`renderStarted === true`) id was
+        // DEFERRED here (returned without closing, no re-arm). That was
+        // only safe because the 500ms settle timer was accidentally
+        // acting as the terminal for started-but-stuck renders. Now that
+        // the settle timer itself defers on in-flight (its own H2 fix,
+        // `closePendingRenderSettle`), deferring here too would leave a
+        // stuck render's lifecycle open forever — replacing early-finish
+        // with never-finish. The bound is unchanged (R9,
+        // `SAFETY_NET_BOUND_MS = 10_000`); only the tick's decision
+        // changes from defer to terminal close. No re-arm, no longer
+        // wait.
         observe({ kind: 'safety-net-tick', id, result: 'closed' });
         closeInternal(id, 'safety-net');
     };
@@ -260,6 +272,30 @@ export const createRenderingLifecycleCoordinator = (
             closeInternal(pendingRenderId, 'async-pending-render');
         };
 
+    const closePendingRenderSettle: RenderingLifecycleCoordinator['closePendingRenderSettle'] =
+        () => {
+            if (pendingRenderId === null) return;
+            const state = openIds.get(pendingRenderId);
+            // Already closed (exactly-once guard) or never opened —
+            // no-op, exactly like `closePendingRender`.
+            if (!state) return;
+            // H2 defer: a render is in flight. Closing here would emit
+            // `renderingFinished` mid-render, and Power BI's
+            // export/snapshot service could capture pre-render content.
+            // Leave the id open — the embed's own `onRenderingFinished`
+            // (real close via `closePendingRender`) or the safety-net's
+            // terminal-at-bound will close it. No re-arm; the settle
+            // timer does not fire again for this id. Emits no observer
+            // event by design (see `closePendingRenderSettle` on the
+            // coordinator type: nothing mutates and the start-vs-close
+            // tally must not count a deferred settle).
+            if (state.renderStarted) return;
+            // No render started (the non-Vega-affecting formatting-
+            // change case this settle path targets): close terminally,
+            // identical to `closePendingRender`.
+            closeInternal(pendingRenderId, 'async-pending-render');
+        };
+
     const failPendingRender: RenderingLifecycleCoordinator['failPendingRender'] =
         (error) => {
             if (pendingRenderId === null) return;
@@ -302,6 +338,7 @@ export const createRenderingLifecycleCoordinator = (
         closeCurrent,
         failCurrent,
         closePendingRender,
+        closePendingRenderSettle,
         failPendingRender,
         markPendingRenderStarted,
         close,

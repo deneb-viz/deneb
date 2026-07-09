@@ -8,6 +8,34 @@ import type { View } from 'vega';
 // Mock vega-embed
 vi.mock('vega-embed');
 
+/**
+ * A promise whose settlement is driven by the test, so we can control the
+ * order in which concurrent `vegaEmbed()` calls resolve/reject.
+ */
+function createDeferred<T = unknown>() {
+    let resolve!: (value: T) => void;
+    let reject!: (reason?: unknown) => void;
+    const promise = new Promise<T>((res, rej) => {
+        resolve = res;
+        reject = rej;
+    });
+    return { promise, resolve, reject };
+}
+
+/**
+ * Build a distinct fake embed result (its own view + finalize spy) so a test
+ * can assert exactly which embed's view was published or finalized.
+ */
+function makeResult(name: string) {
+    const view = { runAsync: vi.fn().mockResolvedValue(undefined) } as unknown as View;
+    const finalize = vi.fn();
+    const result = { view, vgSpec: { name }, finalize, spec: {} } as any;
+    return { view, finalize, result };
+}
+
+/** Let queued promise callbacks (the embed `.then`/`.catch`) run. */
+const flushMicrotasks = () => new Promise((resolve) => setTimeout(resolve, 0));
+
 describe('useVegaEmbed', () => {
     let mockRef: { current: HTMLDivElement | null };
     let mockView: View;
@@ -115,6 +143,34 @@ describe('useVegaEmbed', () => {
 
         // Finalize should be called
         expect(mockFinalize).toHaveBeenCalled();
+    });
+
+    it('should finalize previous embed when ref.current becomes null while spec stays set', async () => {
+        const spec = { $schema: 'https://vega.github.io/schema/vega/v5.json' };
+
+        const { rerender } = renderHook(
+            ({ spec }) =>
+                useVegaEmbed({
+                    ref: mockRef,
+                    spec,
+                    options: {}
+                }),
+            { initialProps: { spec: spec as any } }
+        );
+
+        await vi.waitFor(() => {
+            expect(vegaEmbed).toHaveBeenCalled();
+        });
+        await flushMicrotasks();
+
+        // Container removed from the tree, but a (new) spec is still present so
+        // the effect re-runs and must release the orphaned embed.
+        mockRef.current = null;
+        rerender({
+            spec: { ...spec, description: 'respec' } as any
+        });
+
+        expect(mockFinalize).toHaveBeenCalledTimes(1);
     });
 
     it('should handle spec becoming null when no previous embed exists', () => {
@@ -247,37 +303,50 @@ describe('useVegaEmbed', () => {
         expect(mockFinalize).toHaveBeenCalled();
     });
 
-    it('should capture and restore console warnings', async () => {
-        const spec = { $schema: 'https://vega.github.io/schema/vega/v5.json' };
-        const capturedWarnings: string[] = [];
+    it('never patches console.warn during or after concurrent embeds', async () => {
+        // The console.warn capture apparatus was removed: it had no consumer
+        // and its restore was not overlap-safe (two concurrent embeds could
+        // leave the patch installed permanently). console.warn identity must
+        // therefore be stable before, during, and after embedding - including
+        // while two embeds overlap in flight.
+        const originalWarn = console.warn;
+        const specA = {
+            $schema: 'https://vega.github.io/schema/vega/v5.json',
+            width: 1
+        };
+        const specB = {
+            $schema: 'https://vega.github.io/schema/vega/v5.json',
+            width: 2
+        };
 
-        vi.mocked(vegaEmbed).mockImplementation(async () => {
-            // These warnings should be captured by the hook
-            console.warn('Test warning 1');
-            console.warn('Test warning 2');
-            return {
-                view: mockView,
-                vgSpec: {},
-                finalize: mockFinalize,
-                spec: {}
-            } as any;
-        });
+        // Keep both embeds pending so a monkey-patch would still be installed.
+        const deferredA = createDeferred();
+        const deferredB = createDeferred();
+        vi.mocked(vegaEmbed)
+            .mockReturnValueOnce(deferredA.promise as any)
+            .mockReturnValueOnce(deferredB.promise as any);
 
-        renderHook(() =>
-            useVegaEmbed({
-                ref: mockRef,
-                spec,
-                options: {}
-            })
+        const { rerender } = renderHook(
+            ({ spec }) => useVegaEmbed({ ref: mockRef, spec, options: {} }),
+            { initialProps: { spec: specA } }
         );
 
-        await vi.waitFor(() => {
-            expect(vegaEmbed).toHaveBeenCalled();
-        });
+        // First embed in flight.
+        expect(console.warn).toBe(originalWarn);
 
-        // The hook should handle console.warn restoration internally
-        // Just verify the mock was called
-        expect(vegaEmbed).toHaveBeenCalledTimes(1);
+        // Second embed overlaps the first in flight.
+        rerender({ spec: specB });
+        expect(console.warn).toBe(originalWarn);
+
+        await vi.waitFor(() => expect(vegaEmbed).toHaveBeenCalledTimes(2));
+        expect(console.warn).toBe(originalWarn);
+
+        // Settle both; identity must remain the native reference throughout.
+        deferredB.resolve(makeResult('B').result);
+        deferredA.resolve(makeResult('A').result);
+        await flushMicrotasks();
+
+        expect(console.warn).toBe(originalWarn);
     });
 
     it('should use deep comparison for spec changes', async () => {
@@ -398,6 +467,199 @@ describe('useVegaEmbed', () => {
 
         await vi.waitFor(() => {
             expect(vegaEmbed).toHaveBeenCalled();
+        });
+    });
+
+    describe('stale embed generation guard (H1)', () => {
+        it('finalizes a stale embed that resolves after a newer embed, retaining only the newer result', async () => {
+            // Embed A (older) is superseded by embed B (newer) via a respec,
+            // then A resolves LAST. A must finalize itself and never publish;
+            // B must remain the live, retained result.
+            const a = makeResult('A');
+            const b = makeResult('B');
+            const deferredA = createDeferred();
+            const deferredB = createDeferred();
+            vi.mocked(vegaEmbed)
+                .mockReturnValueOnce(deferredA.promise as any)
+                .mockReturnValueOnce(deferredB.promise as any);
+
+            const onEmbed = vi.fn();
+            const specA = {
+                $schema: 'https://vega.github.io/schema/vega/v5.json',
+                width: 1
+            };
+            const specB = {
+                $schema: 'https://vega.github.io/schema/vega/v5.json',
+                width: 2
+            };
+
+            const { rerender } = renderHook(
+                ({ spec }) =>
+                    useVegaEmbed({ ref: mockRef, spec, options: {}, onEmbed }),
+                { initialProps: { spec: specA } }
+            );
+            await vi.waitFor(() =>
+                expect(vegaEmbed).toHaveBeenCalledTimes(1)
+            );
+
+            rerender({ spec: specB });
+            await vi.waitFor(() =>
+                expect(vegaEmbed).toHaveBeenCalledTimes(2)
+            );
+
+            // Newer embed (B) settles first and is published.
+            deferredB.resolve(b.result);
+            await vi.waitFor(() => expect(onEmbed).toHaveBeenCalledTimes(1));
+            expect(onEmbed).toHaveBeenCalledWith({
+                view: b.view,
+                vgSpec: { name: 'B' }
+            });
+
+            // Older embed (A) settles later - stale, so it finalizes itself.
+            deferredA.resolve(a.result);
+            await flushMicrotasks();
+
+            expect(a.finalize).toHaveBeenCalledTimes(1);
+            expect(b.finalize).not.toHaveBeenCalled();
+            expect(onEmbed).toHaveBeenCalledTimes(1);
+            expect(onEmbed).not.toHaveBeenCalledWith({
+                view: a.view,
+                vgSpec: { name: 'A' }
+            });
+        });
+
+        it('finalizes an in-flight embed that resolves after unmount without firing callbacks', async () => {
+            // Unmount while an embed is still pending; its later resolution
+            // must finalize the orphaned view and perform no callback/state
+            // write (no onEmbed, no onError).
+            const r = makeResult('A');
+            const deferred = createDeferred();
+            vi.mocked(vegaEmbed).mockReturnValueOnce(deferred.promise as any);
+
+            const onEmbed = vi.fn();
+            const onError = vi.fn();
+            const spec = { $schema: 'https://vega.github.io/schema/vega/v5.json' };
+
+            const { unmount } = renderHook(() =>
+                useVegaEmbed({
+                    ref: mockRef,
+                    spec,
+                    options: {},
+                    onEmbed,
+                    onError
+                })
+            );
+            await vi.waitFor(() =>
+                expect(vegaEmbed).toHaveBeenCalledTimes(1)
+            );
+
+            unmount();
+            deferred.resolve(r.result);
+            await flushMicrotasks();
+
+            expect(r.finalize).toHaveBeenCalledTimes(1);
+            expect(onEmbed).not.toHaveBeenCalled();
+            expect(onError).not.toHaveBeenCalled();
+        });
+
+        it('keeps exactly one live view after a rapid triple respec and finalizes both stale results', async () => {
+            const a = makeResult('A');
+            const b = makeResult('B');
+            const c = makeResult('C');
+            const deferredA = createDeferred();
+            const deferredB = createDeferred();
+            const deferredC = createDeferred();
+            vi.mocked(vegaEmbed)
+                .mockReturnValueOnce(deferredA.promise as any)
+                .mockReturnValueOnce(deferredB.promise as any)
+                .mockReturnValueOnce(deferredC.promise as any);
+
+            const onEmbed = vi.fn();
+            const specFor = (width: number) => ({
+                $schema: 'https://vega.github.io/schema/vega/v5.json',
+                width
+            });
+
+            const { rerender } = renderHook(
+                ({ spec }) =>
+                    useVegaEmbed({ ref: mockRef, spec, options: {}, onEmbed }),
+                { initialProps: { spec: specFor(1) } }
+            );
+            await vi.waitFor(() =>
+                expect(vegaEmbed).toHaveBeenCalledTimes(1)
+            );
+            rerender({ spec: specFor(2) });
+            await vi.waitFor(() =>
+                expect(vegaEmbed).toHaveBeenCalledTimes(2)
+            );
+            rerender({ spec: specFor(3) });
+            await vi.waitFor(() =>
+                expect(vegaEmbed).toHaveBeenCalledTimes(3)
+            );
+
+            // Settle out of order; only the final generation (C) is live.
+            deferredA.resolve(a.result);
+            deferredB.resolve(b.result);
+            deferredC.resolve(c.result);
+            await flushMicrotasks();
+
+            expect(a.finalize).toHaveBeenCalledTimes(1);
+            expect(b.finalize).toHaveBeenCalledTimes(1);
+            expect(c.finalize).not.toHaveBeenCalled();
+            expect(onEmbed).toHaveBeenCalledTimes(1);
+            expect(onEmbed).toHaveBeenCalledWith({
+                view: c.view,
+                vgSpec: { name: 'C' }
+            });
+        });
+
+        it('does not fire onError for a stale embed that rejects after a newer embed resolves', async () => {
+            const b = makeResult('B');
+            const deferredA = createDeferred();
+            const deferredB = createDeferred();
+            vi.mocked(vegaEmbed)
+                .mockReturnValueOnce(deferredA.promise as any)
+                .mockReturnValueOnce(deferredB.promise as any);
+
+            const onEmbed = vi.fn();
+            const onError = vi.fn();
+            const specA = {
+                $schema: 'https://vega.github.io/schema/vega/v5.json',
+                width: 1
+            };
+            const specB = {
+                $schema: 'https://vega.github.io/schema/vega/v5.json',
+                width: 2
+            };
+
+            const { rerender } = renderHook(
+                ({ spec }) =>
+                    useVegaEmbed({
+                        ref: mockRef,
+                        spec,
+                        options: {},
+                        onEmbed,
+                        onError
+                    }),
+                { initialProps: { spec: specA } }
+            );
+            await vi.waitFor(() =>
+                expect(vegaEmbed).toHaveBeenCalledTimes(1)
+            );
+            rerender({ spec: specB });
+            await vi.waitFor(() =>
+                expect(vegaEmbed).toHaveBeenCalledTimes(2)
+            );
+
+            // Live embed (B) resolves and publishes.
+            deferredB.resolve(b.result);
+            await vi.waitFor(() => expect(onEmbed).toHaveBeenCalledTimes(1));
+
+            // Stale embed (A) rejects afterwards - its error must be swallowed.
+            deferredA.reject(new Error('stale embed failed'));
+            await flushMicrotasks();
+
+            expect(onError).not.toHaveBeenCalled();
         });
     });
 });

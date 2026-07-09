@@ -98,6 +98,15 @@ export type UpdateCycleDriver = {
     startRender: () => void;
     /** Async render side: embed completed — close the pending render. */
     completeRender: () => void;
+    /**
+     * App-side settle timer fired (mirrors `app.tsx`'s
+     * {@link RENDERING_MODE_SETTLE_MS} `setTimeout` → `onSettleClose`).
+     * Routes to the coordinator's DEFERRING `closePendingRenderSettle`:
+     * closes the pending render only if no render is in flight, else
+     * no-ops (H2 / U5). Distinct from {@link completeRender}, which
+     * mirrors the embed-path terminal close.
+     */
+    settleClose: () => void;
     /** Async render side: embed errored — fail the pending render. */
     failRender: (error: unknown) => void;
     /** Fire every armed (uncancelled) safety-net callback. */
@@ -460,6 +469,7 @@ export const createUpdateCycleDriver = (
         },
         startRender: () => coordinator.markPendingRenderStarted(),
         completeRender: () => coordinator.closePendingRender(),
+        settleClose: () => coordinator.closePendingRenderSettle(),
         failRender: (error) => coordinator.failPendingRender(error),
         fireSafetyNets: safetyNet.fireAll,
         pendingSafetyNetCount: safetyNet.pendingCount,
