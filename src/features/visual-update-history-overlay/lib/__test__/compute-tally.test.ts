@@ -194,17 +194,17 @@ describe('computeLifecycleTally — resilience to stale events', () => {
         // that increments `closes.safetyNet`. The tally surfaces
         // both — `closedByTick` is the safety-net's perspective,
         // `closes.safetyNet` is the close surface's perspective.
-        // A tick with result `deferred` or `inert` is observed but
-        // does NOT emit a separate `closed` event.
+        // A tick with result `inert` is observed but does NOT emit a
+        // separate `closed` event.
         const events: RenderingLifecycleEvent[] = [
             { kind: 'opened', id: id(1), options: FAKE_OPTIONS },
             { kind: 'safety-net-armed', id: id(1) },
-            { kind: 'safety-net-tick', id: id(1), result: 'deferred' },
+            { kind: 'safety-net-tick', id: id(1), result: 'inert' },
             { kind: 'safety-net-tick', id: id(1), result: 'closed' },
             { kind: 'closed', id: id(1), via: 'safety-net' }
         ];
         const tally = computeLifecycleTally(events);
-        expect(tally.safetyNet.deferred).toBe(1);
+        expect(tally.safetyNet.inert).toBe(1);
         expect(tally.safetyNet.closedByTick).toBe(1);
         expect(tally.closes.safetyNet).toBe(1);
         expect(tally.closes.total).toBe(1);

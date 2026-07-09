@@ -34,7 +34,6 @@ export type FailTally = {
 export type SafetyNetTally = {
     armed: number;
     closedByTick: number;
-    deferred: number;
     inert: number;
 };
 
@@ -92,7 +91,6 @@ export const computeLifecycleTally = (
         safetyNet: {
             armed: 0,
             closedByTick: 0,
-            deferred: 0,
             inert: 0
         },
         pending: 0,
@@ -145,9 +143,6 @@ export const computeLifecycleTally = (
                 switch (event.result) {
                     case 'closed':
                         tally.safetyNet.closedByTick++;
-                        break;
-                    case 'deferred':
-                        tally.safetyNet.deferred++;
                         break;
                     case 'inert':
                         tally.safetyNet.inert++;

@@ -113,14 +113,13 @@ export type RenderingLifecycleEvent =
     | {
           kind: 'safety-net-tick';
           id: RenderingLifecycleId;
-          // `'deferred'` is retained for shape/back-compat but is no
-          // longer emitted after U5 (H2): the safety-net is now a true
-          // backstop that terminally closes any still-open id at the
-          // bound (see `onSafetyNetTick`), so a tick resolves to
-          // `'closed'` (still open → closed) or `'inert'` (already
-          // closed). The in-flight defer moved to the settle-close
-          // variant, which emits no observer event on defer.
-          result: 'closed' | 'deferred' | 'inert';
+          // The safety-net is a true backstop that terminally closes any
+          // still-open id at the bound (see `onSafetyNetTick`), so a tick
+          // resolves to `'closed'` (still open → closed) or `'inert'`
+          // (already closed). The in-flight defer moved to the
+          // settle-close variant, which emits no observer event on defer,
+          // so there is no `'deferred'` tick result.
+          result: 'closed' | 'inert';
       };
 
 export type RenderingLifecycleObserver = (
