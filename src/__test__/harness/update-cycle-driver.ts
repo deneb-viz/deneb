@@ -235,6 +235,7 @@ export const createUpdateCycleDriver = (
     let constructionFailed = false;
     let constructionError: unknown = undefined;
     let constructionErrorRenders = 0;
+    let destroyed = false;
     const teardown = {
         keydownListenerRemoved: 0,
         reactRootUnmounted: 0,
@@ -375,10 +376,11 @@ export const createUpdateCycleDriver = (
 
     /**
      * Mirrors `Deneb.handleConstructionFailure` (src/index.ts): the
-     * coordinator may never have constructed, so emit `renderingFailed`
-     * DIRECTLY through the host event service (bypassing the
-     * coordinator) and record the static error element as rendered
-     * once. Emission is per-update; the render is once.
+     * coordinator may never have constructed, so emit a balanced
+     * `renderingStarted` → `renderingFailed` pair DIRECTLY through the
+     * host event service (bypassing the coordinator) and record the
+     * static error element as rendered once. Emission is per-update; the
+     * render is once.
      */
     const dispatchConstructionFailure = (
         options: powerbi.extensibility.visual.VisualUpdateOptions
@@ -387,6 +389,7 @@ export const createUpdateCycleDriver = (
             constructionError instanceof Error
                 ? constructionError.message
                 : String(constructionError);
+        host.host.eventService.renderingStarted(options);
         host.host.eventService.renderingFailed(options, reason);
         if (constructionErrorRenders === 0) {
             constructionErrorRenders = 1;
@@ -403,6 +406,11 @@ export const createUpdateCycleDriver = (
     const update = (
         options: powerbi.extensibility.visual.VisualUpdateOptions
     ): void => {
+        // M8 guard: mirrors the top of `Deneb.update`. A destroyed
+        // visual is inert — no coordinator open, no emission.
+        if (destroyed) {
+            return;
+        }
         // L5 guard: mirrors the top of `Deneb.update`. When construction
         // failed the coordinator is never touched — the failure is
         // reported directly via the host event service. Reverting this
@@ -454,6 +462,7 @@ export const createUpdateCycleDriver = (
      * production-only side effects recorded here as spy counters.
      */
     const destroy = (): void => {
+        destroyed = true;
         coordinator.failCurrent(
             new Error('Visual destroyed before render completed.')
         );

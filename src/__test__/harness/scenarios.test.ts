@@ -635,7 +635,7 @@ describe('scenario: settle-timer close vs. in-flight render (H2 / U5)', () => {
 // undefined coordinator (the audit's L5 failure mode).
 
 describe('scenario: constructor failed → update() short-circuits (L5)', () => {
-    it('emits renderingFailed directly via the host without opening a lifecycle; no secondary throw', async () => {
+    it('emits a balanced renderingStarted/renderingFailed pair directly via the host without opening a lifecycle; no secondary throw', async () => {
         const driver = await createDriver();
         driver.failConstruction(new Error('bind chain exploded'));
 
@@ -645,11 +645,12 @@ describe('scenario: constructor failed → update() short-circuits (L5)', () => 
             })
         );
 
-        // The coordinator's open() was never reached: no renderingStarted,
-        // no open id.
-        expect(driver.host.countEmitterCalls('renderingStarted')).toBe(0);
+        // The coordinator's open() was never reached, so no lifecycle id
+        // is opened — but a balanced renderingStarted → renderingFailed
+        // pair is emitted DIRECTLY via the host event service so the host
+        // never sees an unpaired terminal.
         expect(driver.getOpenLifecycleIds()).toEqual([]);
-        // renderingFailed emitted DIRECTLY through the host event service.
+        expect(driver.host.countEmitterCalls('renderingStarted')).toBe(1);
         expect(driver.host.countEmitterCalls('renderingFailed')).toBe(1);
         const failed = driver.host.emitterCalls.filter(
             (c) => c.method === 'renderingFailed'
@@ -676,8 +677,9 @@ describe('scenario: constructor failed → update() short-circuits (L5)', () => 
         driver.update(mk());
         driver.update(mk());
 
+        // Each post-failure update emits its own balanced pair.
         expect(driver.host.countEmitterCalls('renderingFailed')).toBe(3);
-        expect(driver.host.countEmitterCalls('renderingStarted')).toBe(0);
+        expect(driver.host.countEmitterCalls('renderingStarted')).toBe(3);
         expect(driver.constructionErrorRenderCount()).toBe(1);
         expect(driver.getOpenLifecycleIds()).toEqual([]);
     });
@@ -774,5 +776,31 @@ describe('scenario: destroy() teardown (M8)', () => {
         expect(driver.host.countEmitterCalls('renderingStarted')).toBe(1);
         expect(driver.host.countEmitterCalls('renderingFinished')).toBe(1);
         expect(driver.host.countEmitterCalls('renderingFailed')).toBe(0);
+    });
+
+    it('update() after destroy() is inert: no new renderingStarted, no open id', async () => {
+        const driver = await createDriver();
+        driver.update(
+            buildUpdateOptions({
+                dataView: buildDataView({ categorical: buildCategorical(100) })
+            })
+        );
+        driver.startRender();
+        driver.completeRender();
+        driver.destroy();
+        const startedBefore = driver.host.countEmitterCalls('renderingStarted');
+
+        // Contract-forbidden, but a rapid re-mount can deliver an
+        // update() after destroy(). It must not open the coordinator or
+        // emit a fresh renderingStarted on the torn-down visual.
+        driver.update(
+            buildUpdateOptions({
+                dataView: buildDataView({ categorical: buildCategorical(100) })
+            })
+        );
+        expect(driver.host.countEmitterCalls('renderingStarted')).toBe(
+            startedBefore
+        );
+        expect(driver.getOpenLifecycleIds()).toEqual([]);
     });
 });

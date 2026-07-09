@@ -198,6 +198,14 @@ export class Deneb implements IVisual {
     #constructionFailed = false;
     #constructionError: unknown;
     #constructionFailureRendered = false;
+    // Teardown state (M8). `destroy()` sets this; `update()` checks it at
+    // the top and returns inertly. Power BI's contract does not call
+    // `update()` after `destroy()`, but rapid re-mounts can — and the
+    // coordinator object is still live (only its `openIds` map was
+    // cleared), so an unguarded post-destroy update would emit a fresh
+    // `renderingStarted` on a torn-down visual (root unmounted, view
+    // cleared).
+    #destroyed = false;
 
     constructor(options: VisualConstructorOptions) {
         logHost('Constructor has been called.', { options });
@@ -327,14 +335,24 @@ export class Deneb implements IVisual {
     }
 
     public update(options: VisualUpdateOptions) {
+        // M8: a destroyed visual is inert. `destroy()` cleared the
+        // coordinator's open-id map but the coordinator object is still
+        // live, so an unguarded `update()` here would `open()` a fresh
+        // id and emit `renderingStarted` on a torn-down visual. Return
+        // silently — no emission, no render. (Power BI's contract does
+        // not call `update()` after `destroy()`, but rapid re-mounts
+        // can.)
+        if (this.#destroyed) {
+            return;
+        }
         // L5: if construction failed, the coordinator (and the React
         // root) may never have been built. Short-circuit BEFORE
         // touching `#coordinator` — otherwise this update, and every
         // one after it, throws a secondary TypeError on the undefined
         // coordinator and the visual stays permanently blank.
-        // `handleConstructionFailure` emits `renderingFailed` directly
-        // through the host event service and renders a static error
-        // element instead.
+        // `handleConstructionFailure` emits a renderingStarted →
+        // renderingFailed pair directly through the host event service
+        // and renders a static error element instead.
         if (this.#constructionFailed) {
             this.handleConstructionFailure(options);
             return;
@@ -426,6 +444,10 @@ export class Deneb implements IVisual {
      */
     public destroy(): void {
         logHost('Destroy has been called.');
+        // Set first, before any teardown step that could throw, so a
+        // post-destroy `update()` is guaranteed inert even if a step
+        // below fails (each is best-effort and swallows its own error).
+        this.#destroyed = true;
         try {
             this.#coordinator?.failCurrent(
                 new Error(VISUAL_DESTROYED_FAILURE_REASON)
@@ -465,15 +487,15 @@ export class Deneb implements IVisual {
     /**
      * Degraded-mode handler invoked from the top of `update()` when the
      * constructor failed (L5). The coordinator may never have been
-     * constructed, so this bypasses it entirely: it emits
-     * `renderingFailed` DIRECTLY through the host event service (so the
-     * host sees a terminal for this update rather than waiting on a
-     * render that will never come) and renders a minimal static error
-     * element into the root element once. Best-effort throughout — the
-     * host reference may be absent if the failure preceded its capture,
-     * and this path must never itself throw. Emission is per-update
-     * (truthful: the host asked us to render and we cannot); the error
-     * element is rendered only once.
+     * constructed, so this bypasses it entirely: it emits a balanced
+     * `renderingStarted` → `renderingFailed` pair DIRECTLY through the
+     * host event service (so the host sees a terminal for this update
+     * rather than waiting on a render that will never come) and renders
+     * a minimal static error element into the root element once.
+     * Best-effort throughout — the host reference may be absent if the
+     * failure preceded its capture, and this path must never itself
+     * throw. Emission is per-update (truthful: the host asked us to
+     * render and we cannot); the error element is rendered only once.
      */
     private handleConstructionFailure(options: VisualUpdateOptions): void {
         logDebug('Visual update called after construction failure.', {
@@ -484,10 +506,19 @@ export class Deneb implements IVisual {
                 ? this.#constructionError.message
                 : String(this.#constructionError);
         try {
+            // Emit a balanced renderingStarted → renderingFailed pair.
+            // IVisualEventService pairs a start with a terminal; a lone
+            // renderingFailed (no preceding start) can leave the host's
+            // per-visual render tracker — which export / print-to-PDF
+            // rely on to know a visual has settled — inconsistent across
+            // repeated post-failure updates. Emitted directly, not via
+            // the coordinator (which may never have constructed), so no
+            // lifecycle id is opened.
+            this.#host?.eventService?.renderingStarted(options);
             this.#host?.eventService?.renderingFailed(options, reason);
         } catch (e) {
             logDebug(
-                'Failed to emit renderingFailed after construction failure.',
+                'Failed to emit rendering events after construction failure.',
                 { error: e }
             );
         }
