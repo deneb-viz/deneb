@@ -99,9 +99,8 @@ describe('updates slice: setVisualUpdateOptions (M4 — truthful synchronous set
         vi.mocked(getVisualFormattingModel).mockImplementation(() =>
             buildSuccessSettingsStub()
         );
-        const setVisualUpdateOptions = buildSetVisualUpdateOptions(
-            buildSuccessGetState
-        );
+        const setVisualUpdateOptions =
+            buildSetVisualUpdateOptions(buildSuccessGetState);
         const result = setVisualUpdateOptions(buildPayload());
         expect(result).toBeUndefined();
         expect(result).not.toBeInstanceOf(Promise);
