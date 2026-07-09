@@ -18,7 +18,10 @@ import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 import { VegaEmbed } from './vega-embed';
 import { VegaEmbedErrorBoundary } from './vega-embed-error-boundary';
 import { VEGA_CONTAINER_ID } from '../constants';
-import { performIncrementalUpdate } from '../incremental-update';
+import {
+    performIncrementalUpdate,
+    resolveDataChangeAction
+} from '../incremental-update';
 import { useDenebState } from '../../../state';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 import { INCREMENTAL_UPDATE_CONFIGURATION } from '../../../lib/vega/incremental-update-configuration';
@@ -125,6 +128,7 @@ export const VisualViewer = ({
         enableIncrementalDataUpdates,
         incrementalUpdateThreshold,
         viewReady,
+        logError,
         logDurableError,
         logDurableWarn,
         translate
@@ -155,6 +159,7 @@ export const VisualViewer = ({
         incrementalUpdateThreshold:
             state.compilation.incrementalUpdateThreshold,
         viewReady: state.compilation.viewReady,
+        logError: state.compilation.logError,
         logDurableError: state.compilation.logDurableError,
         logDurableWarn: state.compilation.logDurableWarn,
         translate: state.i18n.translate
@@ -245,31 +250,43 @@ export const VisualViewer = ({
             return;
         }
 
-        if (
-            VegaViewServices.getDataByName(DATASET_DEFAULT_NAME) === undefined
-        ) {
-            logDebug(
-                'VisualViewer: Spec uses inline data (no dataset binding) - ignoring data change'
-            );
-            return;
-        }
-
         // Do "recompile threshold" checks
         const effectiveThreshold = Math.min(
             incrementalUpdateThreshold,
             INCREMENTAL_UPDATE_CONFIGURATION.maxThreshold
         );
 
-        if (
-            !enableIncrementalDataUpdates ||
-            values.length > effectiveThreshold
-        ) {
+        // Distinguish "the spec has no `dataset` binding (inline/remote data)"
+        // from "the dataset lookup failed" (L3). `getDataByName` swallows both
+        // into `undefined`; `getDatasetPresence` separates them so a genuine
+        // failure falls through to a full re-compile below instead of being
+        // mistaken for inline data and silently dropping the update.
+        const datasetPresence =
+            VegaViewServices.getDatasetPresence(DATASET_DEFAULT_NAME);
+        const dataChangeAction = resolveDataChangeAction(
+            datasetPresence,
+            enableIncrementalDataUpdates,
+            values.length,
+            effectiveThreshold
+        );
+
+        if (dataChangeAction === 'ignore') {
+            logDebug(
+                'VisualViewer: Spec uses inline data (no dataset binding) - ignoring data change'
+            );
+            return;
+        }
+
+        if (dataChangeAction === 'recompile') {
             logDebug(
                 'VisualViewer: Data changed - triggering full re-compile',
                 {
-                    reason: !enableIncrementalDataUpdates
-                        ? 'incremental updates disabled'
-                        : 'dataset too large',
+                    reason:
+                        datasetPresence === 'error'
+                            ? 'dataset lookup failed'
+                            : !enableIncrementalDataUpdates
+                              ? 'incremental updates disabled'
+                              : 'dataset too large',
                     rowCount: values.length,
                     threshold: effectiveThreshold
                 }
@@ -549,8 +566,14 @@ export const VisualViewer = ({
                 scrollLeft: throttledScrollPosition.scrollLeft
             }
         });
-        VegaViewServices.setSignalByName(signal.name, signal.value);
-    }, [throttledScrollPosition, viewReady]);
+        VegaViewServices.setSignalByName(signal.name, signal.value, (error) => {
+            logError(
+                `VisualViewer: Failed to update scroll signal: ${
+                    error instanceof Error ? error.message : String(error)
+                }`
+            );
+        });
+    }, [throttledScrollPosition, viewReady, logError]);
 
     const scrollbarStyleVars = getScrollbarStyleVars(
         scrollbarColor,
