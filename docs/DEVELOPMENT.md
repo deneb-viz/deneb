@@ -232,7 +232,7 @@ Retention policy: Remove stale flags + tests in the next minor/major release aft
 
 ## 7. Logging & Diagnostics
 
-Logging utilities live under `src/features/logging`. The active log level is set via the `LOG_LEVEL` environment variable in your local `.env` (loaded by `@dotenvx/dotenvx`) using numeric thresholds (see table below). In packaged/certified visuals, the level is forced to `None` to avoid telemetry noise and is guarded by the commit validation script.
+Logging utilities live in `@deneb-viz/utils` (`packages/utils/src/lib/logging.ts`). The active log level is set via the `LOG_LEVEL` environment variable in your local `.env` (loaded by `@dotenvx/dotenvx`) using numeric thresholds (see table below). Set it explicitly: if `LOG_LEVEL` is absent, empty, or unrecognized, the runtime **fails closed to `None`** (no console output) rather than defaulting to `Info`, so you must set a level to see any logs. For a committed/certified baseline the value must be pinned to `0` (`None`), and the commit validation script **fails loud** if it is missing or non-zero — logging can never be enabled by omission.
 
 | Level | Name   | Typical Use                                             |
 | ----- | ------ | ------------------------------------------------------- |
@@ -257,7 +257,7 @@ ZUSTAND_DEV_TOOLS=true  # Enable Redux/Zustand devtools integration
 PBIVIZ_DEV_MODE=false   # Disable PBIVIZ developer-only behaviors
 ```
 
-Validation: `npm run validate-config-for-commit` loads `.env` and fails if `LOG_LEVEL` is non-zero for committed baselines or if dev-only toggles are enabled in non-standalone packaging.
+Validation: `npm run validate-config-for-commit` loads `.env` and fails if `LOG_LEVEL` is **missing or non-zero** for committed baselines, or if dev-only toggles are enabled in non-standalone packaging. (`ci:local` and CI run this against `.env.ci`, which pins `LOG_LEVEL=NONE`.)
 
 ## 8. Production Packaging
 

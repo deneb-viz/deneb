@@ -55,7 +55,14 @@ export const parseLogLevel = (input: unknown, fallback: LogLevel): LogLevel => {
     return fallback;
 };
 
-const DEFAULT_LOG_LEVEL = LogLevel.INFO;
+/**
+ * Fail-closed default (M14): when `LOG_LEVEL` is absent, empty, or an
+ * unrecognized value, logging is OFF rather than defaulting to INFO. A build
+ * that ships without an explicit `LOG_LEVEL` therefore emits nothing; the
+ * packaging validator separately fails loud so the value is always pinned
+ * explicitly for certified baselines.
+ */
+const DEFAULT_LOG_LEVEL = LogLevel.NONE;
 
 const LOG_LEVEL: LogLevel = parseLogLevel(
     process.env?.['LOG_LEVEL'],
@@ -130,13 +137,17 @@ const getPaddedImportance = (level: LogLevel) => {
 };
 
 /**
- * Special method to provide decorated log entries in the console.
+ * Special method to provide decorated log entries in the console. Gated at INFO
+ * (L6) so it honours `LOG_LEVEL` like every other log call — a certified build
+ * (`LOG_LEVEL=NONE`) emits no heading banner.
  */
-export const logHeading = (message: string, size = 20) =>
+export const logHeading = (message: string, size = 20) => {
+    if (LOG_LEVEL < LogLevel.INFO) return;
     console.info(
         `%c${message}`,
         `font-family: Segoe UI, wf_segoe-ui_normal, helvetica, arial, sans-serif; font-size:${size}px; font-weight:600`
     );
+};
 
 /**
  * Debug-level logging to the console.
