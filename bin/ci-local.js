@@ -24,7 +24,14 @@ const steps = [
         cmd: 'npm run validate-config-for-commit'
     },
     { name: 'Linting Checks', cmd: 'npm run eslint' },
-    { name: 'Prettier Checks', cmd: 'npm run prettier-check' },
+    // --end-of-line auto so this matches CI's post-normalization result: git
+    // stores/checks out LF (CI), but a Windows working tree may hold CRLF, which
+    // the strict `prettier-check` (endOfLine: lf) would flag as false failures.
+    // This still catches real content-formatting drift.
+    {
+        name: 'Prettier Checks',
+        cmd: 'npm run prettier-check -- --end-of-line auto'
+    },
     { name: 'Tests', cmd: 'npm run test' },
     {
         name: 'Confirm pbiviz package (AppSource Version)',
