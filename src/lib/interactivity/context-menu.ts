@@ -4,7 +4,6 @@ import { getResolvedRowIdentities, resolveDatumFromItem } from './data-point';
 import { InteractivityManager } from './interactivity-manager';
 
 import { resolveCoordinates } from './event';
-import { type InteractivityLookupDataset } from './types';
 import { getDenebVisualState } from '../../state';
 
 /**
@@ -16,17 +15,19 @@ import { getDenebVisualState } from '../../state';
  * only return a selector if it resolves to a single entry, otherwise drill
  * through doesn't actually result in the correct data being displayed.
  */
-export const contextMenuHandler = (
-    dataset: InteractivityLookupDataset
-): EventListenerHandler => {
+export const contextMenuHandler = (): EventListenerHandler => {
     return (event, item) => {
         event.stopPropagation();
         event.preventDefault();
         if (!isContextMenuEnabled()) return;
         const coordinates = resolveCoordinates(event as MouseEvent);
         const data = resolveDatumFromItem(item);
+        // Read the current dataset lazily from the store at invocation time, so
+        // an incremental data update between embed and click doesn't leave this
+        // handler resolving row identities against a stale embed-time snapshot.
+        const { fields, values } = getDenebVisualState().dataset;
         const rowNumber = isContextMenuSelectorEnabled()
-            ? getResolvedRowIdentities(data, dataset)
+            ? getResolvedRowIdentities(data, { fields, values })
             : undefined;
         InteractivityManager.showContextMenu(
             rowNumber?.length === 1 ? rowNumber[0] : undefined,
