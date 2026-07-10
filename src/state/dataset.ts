@@ -20,7 +20,7 @@ export type DatasetSlice = {
     version: number;
     setDataset: (payload: SetDatasetPayload) => void;
     setIsFetchingAdditional: (payload: SetIsFetchingAdditionalPayload) => void;
-    setSelectors: (selectorMap: SelectorStatus) => Promise<void>;
+    setSelectors: (selectorMap: SelectorStatus) => void;
 };
 
 export type SetDatasetPayload = {
@@ -95,7 +95,7 @@ export const createDatasetSlice = (): StateCreator<
                 'dataset.setIsFetchingAdditional'
             );
         },
-        setSelectors: async (selectorMap: SelectorStatus) => {
+        setSelectors: (selectorMap: SelectorStatus) => {
             set(
                 (state) => ({
                     dataset: {

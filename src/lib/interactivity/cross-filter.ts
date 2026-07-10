@@ -16,7 +16,8 @@ import type {
     CrossFilterSelectionDirective,
     CrossFilterTranslate
 } from './types';
-import { logDebug } from '@deneb-viz/utils/logging';
+import { logDebug, logWarning } from '@deneb-viz/utils/logging';
+import { getDenebState } from '@deneb-viz/app-core';
 import { isPotentialCrossFilterMultiSelectEvent } from './event';
 import { InteractivityManager } from './interactivity-manager';
 import {
@@ -36,14 +37,17 @@ const LOG_PREFIX = '[crossFilterHandler]';
  * Creates a Vega event handler function that can be bound to visual elements for cross-filtering behavior.
  */
 export const crossFilterHandler = (
-    dataset: InteractivityLookupDataset,
     translate: CrossFilterTranslate,
     crossFilterOptions?: CrossFilterOptions
 ): EventListenerHandler => {
     return (event, item) => {
         event.stopPropagation();
         event.preventDefault();
+        // Read the current dataset lazily from the store at invocation time, so
+        // an incremental data update between embed and click doesn't leave this
+        // handler resolving row identities against a stale embed-time snapshot.
         const {
+            dataset: { fields, values },
             settings: {
                 vega: {
                     interactivity: {
@@ -56,12 +60,38 @@ export const crossFilterHandler = (
             const result = getResolvedCrossFilterResult(
                 event,
                 item ?? ({} as Item),
-                dataset,
+                { fields, values },
                 translate,
                 crossFilterOptions
             );
             logDebug(`${LOG_PREFIX} final cross-filter result`, { result });
-            InteractivityManager.crossFilter(result);
+            const {
+                compilation: { logWarn }
+            } = getDenebState();
+            // A resolution warning means we couldn't map the event to row
+            // identities; surface it and keep the current selection rather than
+            // silently clearing (matching the advanced-mode path).
+            if (result.warning) {
+                logWarn(result.warning);
+                return result;
+            }
+            InteractivityManager.crossFilter(result).catch((e) => {
+                logWarn(
+                    translate(
+                        'PowerBI_Text_Warning_Invalid_Cross_Filter_Not_Applied'
+                    )
+                );
+                logWarn(
+                    translate(
+                        'PowerBI_Text_Warning_Invalid_Cross_Filter_General_Error',
+                        [(e as Error).message]
+                    )
+                );
+                logWarning(
+                    `${LOG_PREFIX} cross-filter host operation failed`,
+                    (e as Error).message
+                );
+            });
             return result;
         }
     };

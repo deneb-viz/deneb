@@ -96,7 +96,7 @@ export type InteractivityManagerBindOptions = {
     /**
      * Optional callback to notify when selector statuses are updated.
      */
-    selectorUpdateCallback?: (selectorMap: SelectorStatus) => Promise<void>;
+    selectorUpdateCallback?: (selectorMap: SelectorStatus) => void;
 };
 
 /**

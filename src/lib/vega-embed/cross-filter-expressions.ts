@@ -43,7 +43,17 @@ type CrossFilterApplyHandler = (
  * Creates a handler for clearing cross-filter selection via the InteractivityManager.
  */
 export const createCrossFilterClearHandler = (): CrossFilterClearHandler => {
-    return () => InteractivityManager.crossFilter();
+    return () => {
+        // Clearing selection is a fire-and-forget host call; a failure here is
+        // operational (not an authoring error), so route it to the dev channel
+        // rather than the user-facing warning pane.
+        InteractivityManager.crossFilter().catch((e) =>
+            logWarning(
+                '[pbiCrossFilterClear] failed to clear selection',
+                (e as Error).message
+            )
+        );
+    };
 };
 
 /**
@@ -137,7 +147,26 @@ export const createCrossFilterApplyHandler = (): CrossFilterApplyHandler => {
             if (result.warning) {
                 throw new Error(result.warning);
             }
-            InteractivityManager.crossFilter(result);
+            // Not awaited (handler is sync); attach a catch so a host selection
+            // failure surfaces through the warning channel instead of becoming
+            // an unhandled rejection.
+            InteractivityManager.crossFilter(result).catch((e) => {
+                logWarn(
+                    translate(
+                        'PowerBI_Text_Warning_Invalid_Cross_Filter_Not_Applied'
+                    )
+                );
+                logWarn(
+                    translate(
+                        'PowerBI_Text_Warning_Invalid_Cross_Filter_General_Error',
+                        [(e as Error).message]
+                    )
+                );
+                logWarning(
+                    `${LOG_PREFIX} cross-filter host operation failed`,
+                    (e as Error).message
+                );
+            });
             return result;
         } catch (e) {
             logWarn(
@@ -164,7 +193,7 @@ export const createCrossFilterApplyHandler = (): CrossFilterApplyHandler => {
  * Substitute any placeholders in the filter expression with actual values from the datum. We also consider the type
  * of a resolved property from the datum, to ensure that we replace with the correct criteria.
  */
-const getResolvedFilterExpressionForPlaceholder = (
+export const getResolvedFilterExpressionForPlaceholder = (
     filterExpr: string,
     datum: Record<string, unknown>
 ) =>
@@ -176,14 +205,18 @@ const getResolvedFilterExpressionForPlaceholder = (
         if (value instanceof Date) {
             return `toDate('${value}')`;
         }
-        return `'${datum?.[m1]}'`;
+        // Escape backslashes first, then single quotes, so datum values that
+        // contain either (e.g. O'Brien) produce a valid Vega string literal
+        // instead of a parse error or an injected expression.
+        const escaped = `${value}`.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        return `'${escaped}'`;
     });
 
 /**
  * Create the correctly structured options object for advanced cross-filtering, based on what is supplied by the user
  * vs. defaults.
  */
-const getResolvedCrossFilterOptions = (
+export const getResolvedCrossFilterOptions = (
     expr: string,
     options: CrossFilterOptions
 ): CrossFilterOptions => {

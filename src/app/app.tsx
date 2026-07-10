@@ -45,7 +45,6 @@ import {
     tooltipHandler
 } from '../lib/interactivity';
 import { persistOnCreateFromTemplate } from '../lib/persistence';
-import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 import { handlePersistBooleanProperty } from '../features/settings/helpers';
 
 /**
@@ -131,15 +130,8 @@ export const App = ({
         }
         previousModeRef.current = mode;
     }, [mode]);
-    const fields = useDenebVisualState((state) => state.dataset.fields);
-    const values = useDenebVisualState((state) => state.dataset.values);
     const visualUpdateOptions = useDenebVisualState(
         (state) => state.updates.options
-    );
-    const selectionMode = useDenebVisualState(
-        (state) =>
-            state.settings?.vega?.interactivity?.selectionMode
-                ?.value as SelectionMode
     );
     const enableTooltips = useDenebVisualState(
         (state) => state.settings?.vega?.interactivity?.enableTooltips?.value
@@ -180,23 +172,23 @@ export const App = ({
      */
     const viewEventBinders = useMemo<ViewEventBinder[]>(() => {
         const binders: ViewEventBinder[] = [];
-        const dataset = { fields, values };
+
+        // Both handlers read the current dataset from the store at invocation
+        // time, so their identity stays stable across data changes and the
+        // binder memo no longer needs fields/values (or selectionMode) as deps.
 
         // Context menu handler (right-click)
         binders.push((view: View) => {
-            view.addEventListener('contextmenu', contextMenuHandler(dataset));
+            view.addEventListener('contextmenu', contextMenuHandler());
         });
 
         // Cross-filter handler (click for selection)
         binders.push((view: View) => {
-            view.addEventListener(
-                'click',
-                crossFilterHandler(dataset, translate)
-            );
+            view.addEventListener('click', crossFilterHandler(translate));
         });
 
         return binders;
-    }, [fields, values, selectionMode, translate]);
+    }, [translate]);
 
     // Ensure that download permissions are evaluated against the current tenant and sent to the core app
     useEffect(() => {
