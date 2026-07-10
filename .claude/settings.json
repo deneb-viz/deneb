@@ -1,0 +1,16 @@
+{
+    "hooks": {
+        "PreToolUse": [
+            {
+                "matcher": "Bash",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "node .claude/hooks/ci-local-before-pr.js",
+                        "timeout": 900
+                    }
+                ]
+            }
+        ]
+    }
+}
