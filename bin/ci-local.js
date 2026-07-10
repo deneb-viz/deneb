@@ -89,4 +89,15 @@ if (failed) {
     process.exit(1);
 } else {
     log('CI LOCAL: ALL CHECKS PASSED');
+    console.log(
+        [
+            '',
+            'Note: the Prettier step ran with --end-of-line auto, but remote CI',
+            'uses endOfLine: lf. A file committed with CRLF passes here yet fails',
+            'CI, so ci:local can go green while CI goes red on the same change.',
+            'The repo .gitattributes normalizes to LF on commit, so this is rare —',
+            'but if CI fails on Prettier alone, check the committed line endings',
+            '(git add --renormalize <file>).'
+        ].join('\n')
+    );
 }

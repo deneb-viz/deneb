@@ -64,27 +64,29 @@ function isPrCreate(payload) {
         process.exit(0);
     }
 
+    process.stderr.write(
+        '[ci:local hook] Running `npm run ci:local` before proposing the PR. ' +
+            'This runs the full CI job (build -> eslint -> prettier -> tests -> ' +
+            'package) and can take several minutes; its output streams below. ' +
+            'Bypass with CI_LOCAL_HOOK_SKIP=1.\n'
+    );
+
     try {
-        execSync('npm run ci:local', {
-            cwd: repoRoot,
-            stdio: 'pipe',
-            maxBuffer: 64 * 1024 * 1024
-        });
-    } catch (err) {
-        const out = `${(err && err.stdout) || ''}${(err && err.stderr) || ''}`;
-        const tail = out.split(/\r?\n/).slice(-40).join('\n');
+        // stdio: 'inherit' streams the child's output live so progress is
+        // visible during the multi-minute run, rather than buffered until it
+        // exits. The failing step's output therefore appears as it happens.
+        execSync('npm run ci:local', { cwd: repoRoot, stdio: 'inherit' });
+    } catch {
         process.stderr.write(
-            'Blocked `gh pr create`: `npm run ci:local` failed. Fix the failures ' +
-                'below (or set CI_LOCAL_HOOK_SKIP=1 to bypass intentionally), then ' +
-                'propose the PR again.\n\n' +
-                tail +
-                '\n'
+            '\nBlocked `gh pr create`: `npm run ci:local` failed (see its output ' +
+                'above). Fix the failures, or set CI_LOCAL_HOOK_SKIP=1 to bypass ' +
+                'intentionally, then propose the PR again.\n'
         );
         process.exit(2);
     }
 
     process.stderr.write(
-        '[ci:local hook] local CI passed — proposing the PR.\n'
+        '\n[ci:local hook] local CI passed — proposing the PR.\n'
     );
     process.exit(0);
 })();
