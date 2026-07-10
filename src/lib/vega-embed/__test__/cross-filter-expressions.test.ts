@@ -1,5 +1,32 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { parseExpression } from 'vega';
+
+// The module under test imports the interactivity barrel (which re-exports
+// `tooltip.ts` → `@deneb-viz/powerbi-compat/formatting`), `@deneb-viz/app-core`,
+// and the visual `state` module — all gateways to the Power BI formatting-model
+// / json-processing-worker graph (extensionless ESM that fails to resolve under
+// CI's Node). Mock them so only the pure functions under test load. The two
+// functions exercised here (placeholder escaping, options resolution) don't use
+// any of the mocked surface.
+vi.mock('../../interactivity', () => ({
+    CROSS_FILTER_LIMITS: {
+        minDataPointsValue: 1,
+        maxDataPointsAdvancedValue: 250
+    },
+    getResolvedCrossFilterResult: vi.fn(),
+    InteractivityManager: { crossFilter: vi.fn(() => Promise.resolve()) }
+}));
+vi.mock('@deneb-viz/app-core', () => ({
+    getDenebState: vi.fn(() => ({
+        compilation: { logWarn: vi.fn() },
+        i18n: { translate: (key: string) => key }
+    }))
+}));
+vi.mock('../../../state', () => ({
+    useDenebVisualState: {
+        getState: vi.fn(() => ({ dataset: { fields: {}, values: [] } }))
+    }
+}));
 
 import { INTERACTIVITY_DEFAULTS } from '@deneb-viz/powerbi-compat/interactivity';
 import {

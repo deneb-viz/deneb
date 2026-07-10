@@ -1,6 +1,22 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type powerbi from 'powerbi-visuals-api';
 
+// The manager transitively imports `./cross-filter`, which imports
+// `@deneb-viz/app-core` and the visual `state` module. Both pull the Power BI
+// formatting-model / json-processing-worker graph (extensionless ESM that fails
+// to resolve under CI's Node). Mock them so only the manager's own logic loads;
+// neither is used by the manager — they live in the cross-filter event handler,
+// which these tests never invoke.
+vi.mock('@deneb-viz/app-core', () => ({
+    getDenebState: vi.fn(() => ({
+        compilation: { logWarn: vi.fn() },
+        i18n: { translate: (key: string) => key }
+    }))
+}));
+vi.mock('../../../state', () => ({
+    getDenebVisualState: vi.fn(() => ({}))
+}));
+
 import { InteractivityManager } from '../interactivity-manager';
 import { type SelectionIdQueueEntry } from '../types';
 
