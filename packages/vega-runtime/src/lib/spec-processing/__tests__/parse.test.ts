@@ -1,6 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
+
+// Spy on the legacy-signal deprecation warning without disabling the real
+// migration. The warning is gated + latched (covered by the signals migration
+// suite); here we only assert that parseSpec invokes it.
+vi.mock('../../signals', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('../../signals')>();
+    return { ...actual, logLegacySignalWarning: vi.fn() };
+});
+
 import { parseSpec, validateSpec, compileCleanVgSpec } from '../parse';
-import { SIGNAL_DENEB_CONTAINER } from '../../signals';
+import { SIGNAL_DENEB_CONTAINER, logLegacySignalWarning } from '../../signals';
 
 describe('parseSpec', () => {
     it('should parse valid Vega spec', () => {
@@ -154,7 +163,8 @@ describe('parseSpec', () => {
     });
 
     it('should return error for invalid JSON in config', () => {
-        const spec = '{"$schema": "https://vega.github.io/schema/vega/v5.json", "marks": []}';
+        const spec =
+            '{"$schema": "https://vega.github.io/schema/vega/v5.json", "marks": []}';
         const invalidConfig = '{"mark": invalid}';
 
         const result = parseSpec({
@@ -332,8 +342,8 @@ describe('parseSpec', () => {
         expect(result.errors).toHaveLength(0);
     });
 
-    it('should log warning for legacy pbiContainer references', () => {
-        // Spec with pbiContainer signal name
+    it('invokes the legacy-signal deprecation warning when migrating pbiContainer references', () => {
+        // Spec with a legacy pbiContainer reference (in the description).
         const spec = `{
             "$schema": "https://vega.github.io/schema/vega/v5.json",
             "width": 400,
@@ -341,28 +351,24 @@ describe('parseSpec', () => {
             "signals": [{"name": "customSignal", "value": 1}],
             "marks": []
         }`;
-
-        // Add a legacy reference in a comment-like area (description)
         const specWithLegacy = spec.replace(
             '"width"',
             '"description": "Uses pbiContainer signal", "width"'
         );
 
-        const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation();
+        // Isolate this parse's call from any earlier legacy-spec test (the spy
+        // is module-scoped for the file).
+        vi.mocked(logLegacySignalWarning).mockClear();
 
         parseSpec({
             spec: specWithLegacy,
             provider: 'vega'
         });
 
-        expect(consoleWarnSpy).toHaveBeenCalled();
-        const warningCall = consoleWarnSpy.mock.calls.find((call) =>
-            call[0].includes('pbiContainer')
-        );
-        expect(warningCall).toBeDefined();
-        expect(warningCall[0]).toContain('denebContainer');
-
-        consoleWarnSpy.mockRestore();
+        expect(logLegacySignalWarning).toHaveBeenCalledTimes(1);
+        expect(
+            vi.mocked(logLegacySignalWarning).mock.calls[0][0]
+        ).toBeGreaterThan(0);
     });
 
     it('should validate post-patch Vega-Lite spec via compilation', () => {

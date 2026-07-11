@@ -1,3 +1,4 @@
+import { logWarning } from '@deneb-viz/utils/logging';
 import {
     SIGNAL_DENEB_CONTAINER,
     SIGNAL_PBI_CONTAINER_LEGACY,
@@ -73,7 +74,10 @@ export const replaceLegacySignalReferences = (
     const heightMatches = migratedSpec.match(heightPattern);
     if (heightMatches) {
         totalReplacementCount += heightMatches.length;
-        migratedSpec = migratedSpec.replace(heightPattern, containerRefs.height);
+        migratedSpec = migratedSpec.replace(
+            heightPattern,
+            containerRefs.height
+        );
     }
 
     // Migration 3: pbiContainer → denebContainer (the main signal object)
@@ -98,13 +102,22 @@ export const replaceLegacySignalReferences = (
 };
 
 /**
- * Log a deprecation warning when legacy signal references are detected.
- * Should be called once per parsing session when migration occurs.
+ * Latch so the legacy-signal deprecation warning is emitted at most once per
+ * session, matching this function's contract (L12).
+ */
+let legacySignalWarningIssued = false;
+
+/**
+ * Log a deprecation warning when legacy signal references are detected. Routed
+ * through the gated `logWarning` (L7) so it honours `LOG_LEVEL`, and latched so
+ * it fires only once per session (L12) no matter how many specs are parsed.
  *
  * @param replacementCount Number of replacements made
  */
 export const logLegacySignalWarning = (replacementCount: number) => {
-    console.warn(
+    if (legacySignalWarningIssued) return;
+    legacySignalWarningIssued = true;
+    logWarning(
         `[Deneb Migration] Deprecated signal 'pbiContainer' detected (${replacementCount} reference${replacementCount === 1 ? '' : 's'}). ` +
             `This has been automatically replaced with 'denebContainer'. ` +
             `Please update your specification to use 'denebContainer' instead. ` +

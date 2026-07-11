@@ -1,10 +1,22 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+// Spy on the gated logWarning without losing the rest of the logging surface,
+// so the once-per-session latch can be asserted by call count (L7/L12).
+vi.mock('@deneb-viz/utils/logging', async (importOriginal) => {
+    const actual =
+        await importOriginal<typeof import('@deneb-viz/utils/logging')>();
+    return { ...actual, logWarning: vi.fn() };
+});
+
 import {
     replaceLegacySignalReferences,
     hasLegacySignalReferences,
     type SignalMigrationResult
 } from '../migration';
-import { SIGNAL_DENEB_CONTAINER, SIGNAL_PBI_CONTAINER_LEGACY } from '../deneb-container';
+import {
+    SIGNAL_DENEB_CONTAINER,
+    SIGNAL_PBI_CONTAINER_LEGACY
+} from '../deneb-container';
 
 describe('replaceLegacySignalReferences', () => {
     it('should replace single legacy signal reference', () => {
@@ -14,7 +26,8 @@ describe('replaceLegacySignalReferences', () => {
             ]
         }`;
 
-        const result: SignalMigrationResult = replaceLegacySignalReferences(spec);
+        const result: SignalMigrationResult =
+            replaceLegacySignalReferences(spec);
 
         expect(result.spec).toContain(SIGNAL_DENEB_CONTAINER);
         expect(result.spec).not.toContain(SIGNAL_PBI_CONTAINER_LEGACY);
@@ -284,7 +297,9 @@ describe('Signal Migration Integration', () => {
         }`;
 
         const firstMigration = replaceLegacySignalReferences(spec);
-        const secondMigration = replaceLegacySignalReferences(firstMigration.spec);
+        const secondMigration = replaceLegacySignalReferences(
+            firstMigration.spec
+        );
 
         expect(firstMigration.hadLegacyReferences).toBe(true);
         expect(secondMigration.hadLegacyReferences).toBe(false);
@@ -353,5 +368,33 @@ describe('Signal Migration Integration', () => {
 
         const parsed = JSON.parse(result.spec);
         expect(parsed.signals[0].name).toBe(SIGNAL_DENEB_CONTAINER);
+    });
+});
+
+describe('logLegacySignalWarning (L7/L12)', () => {
+    // The once-per-session guard is module-level state (migration.ts). Reload
+    // the module before each test so the latch always starts un-issued — the
+    // call-count assertion must not silently depend on this being the only
+    // test in the block that invokes the function.
+    let logLegacySignalWarning: (replacementCount: number) => void;
+    let logWarning: ReturnType<typeof vi.fn>;
+
+    beforeEach(async () => {
+        vi.resetModules();
+        // Re-acquire both from the same freshly-reset module graph so the mock
+        // that migration closes over is the one asserted on. The factory
+        // re-runs on each reset, yielding a fresh vi.fn() per test.
+        logWarning = (await import('@deneb-viz/utils/logging'))
+            .logWarning as unknown as ReturnType<typeof vi.fn>;
+        ({ logLegacySignalWarning } = await import('../migration'));
+    });
+
+    it('routes through the gated logWarning and warns at most once per session', () => {
+        logLegacySignalWarning(2);
+        logLegacySignalWarning(3);
+        logLegacySignalWarning(1);
+
+        expect(logWarning).toHaveBeenCalledTimes(1);
+        expect(logWarning.mock.calls[0][0]).toContain("'pbiContainer'");
     });
 });
