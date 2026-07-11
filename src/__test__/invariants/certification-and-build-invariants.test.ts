@@ -29,6 +29,12 @@ describe('production `package` script ordering (audit R9)', () => {
             scripts: Record<string, string>;
         }
     ).scripts.package;
+    // Fail loud if the script is renamed/removed rather than let the indexOf
+    // checks below throw an opaque TypeError (mirrors the SAFETY_NET_BOUND_MS
+    // guard above).
+    if (!pkgScript) {
+        throw new Error('scripts.package not found in package.json');
+    }
 
     it('builds packages before running webpack', () => {
         expect(pkgScript.indexOf('build:package')).toBeGreaterThanOrEqual(0);

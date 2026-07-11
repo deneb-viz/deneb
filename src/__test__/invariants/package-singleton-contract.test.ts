@@ -53,8 +53,15 @@ describe('powerbi-compat singleton contract', () => {
         consumers.filter((pkg) => existsSync(join(pkg.path, 'tsup.config.ts')))
     )('$dir (tsup-bundled) externalizes powerbi-compat', (pkg) => {
         const tsup = readFileSync(join(pkg.path, 'tsup.config.ts'), 'utf8');
-        expect(tsup).toContain(`'${SINGLETON}'`);
-        expect(tsup).toContain(`'${SINGLETON}/*'`);
+        // Anchor to the `external` array and accept either quote style, so the
+        // check verifies placement (not a bare substring that a comment could
+        // satisfy) and survives a reformat between single/double quotes.
+        expect(tsup).toMatch(
+            /external\s*:\s*\[[\s\S]*?['"]@deneb-viz\/powerbi-compat['"]/
+        );
+        expect(tsup).toMatch(
+            /external\s*:\s*\[[\s\S]*?['"]@deneb-viz\/powerbi-compat\/\*['"]/
+        );
     });
 });
 
