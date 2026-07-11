@@ -21,7 +21,8 @@
         "clean": "rimraf dist",
         "test": "vitest run --coverage",
         "test:watch": "vitest",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --noEmit",
+        "eslint": "node ../../bin/workspace-eslint.js"
     },
     "peerDependencies": {
         "@deneb-viz/vega-runtime": "*",
@@ -34,6 +35,7 @@
         "use-deep-compare-effect": "^1.8.1"
     },
     "devDependencies": {
+        "@deneb-viz/eslint-config": "*",
         "@deneb-viz/typescript-config": "*",
         "@testing-library/dom": "^10.4.0",
         "@testing-library/react": "^16.1.0",
