@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Spy on the gated logWarning without losing the rest of the logging surface,
 // so the once-per-session latch can be asserted by call count (L7/L12).
@@ -11,10 +11,8 @@ vi.mock('@deneb-viz/utils/logging', async (importOriginal) => {
 import {
     replaceLegacySignalReferences,
     hasLegacySignalReferences,
-    logLegacySignalWarning,
     type SignalMigrationResult
 } from '../migration';
-import { logWarning } from '@deneb-viz/utils/logging';
 import {
     SIGNAL_DENEB_CONTAINER,
     SIGNAL_PBI_CONTAINER_LEGACY
@@ -374,16 +372,29 @@ describe('Signal Migration Integration', () => {
 });
 
 describe('logLegacySignalWarning (L7/L12)', () => {
+    // The once-per-session guard is module-level state (migration.ts). Reload
+    // the module before each test so the latch always starts un-issued — the
+    // call-count assertion must not silently depend on this being the only
+    // test in the block that invokes the function.
+    let logLegacySignalWarning: (replacementCount: number) => void;
+    let logWarning: ReturnType<typeof vi.fn>;
+
+    beforeEach(async () => {
+        vi.resetModules();
+        // Re-acquire both from the same freshly-reset module graph so the mock
+        // that migration closes over is the one asserted on. The factory
+        // re-runs on each reset, yielding a fresh vi.fn() per test.
+        logWarning = (await import('@deneb-viz/utils/logging'))
+            .logWarning as unknown as ReturnType<typeof vi.fn>;
+        ({ logLegacySignalWarning } = await import('../migration'));
+    });
+
     it('routes through the gated logWarning and warns at most once per session', () => {
-        // The latch is module state; this is the only test that calls it, so it
-        // starts un-issued. Three calls must produce exactly one warning.
         logLegacySignalWarning(2);
         logLegacySignalWarning(3);
         logLegacySignalWarning(1);
 
         expect(logWarning).toHaveBeenCalledTimes(1);
-        expect(vi.mocked(logWarning).mock.calls[0][0]).toContain(
-            "'pbiContainer'"
-        );
+        expect(logWarning.mock.calls[0][0]).toContain("'pbiContainer'");
     });
 });
