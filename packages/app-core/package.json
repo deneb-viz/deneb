@@ -58,8 +58,6 @@
         "@deneb-viz/json-processing": "*",
         "@deneb-viz/template-usermeta": "*",
         "@deneb-viz/utils": "*",
-        "@deneb-viz/vega-react": "*",
-        "@deneb-viz/vega-runtime": "*",
         "@fabric-msft/svg-icons": "^7.0.0",
         "@monaco-editor/react": "^4.6.0",
         "@uidotdev/usehooks": "^2.4.1",
