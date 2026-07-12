@@ -19,6 +19,7 @@ export * from './components/template-metadata';
 export * from './components/ui';
 export {
     SettingsAccordionItem,
+    spinButtonStyleSlots,
     useSettingsPaneStyles,
     useSettingsPaneTooltip
 } from './features/settings-pane';

@@ -9,8 +9,8 @@ import {
 
 import { VISUAL_PREVIEW_ZOOM_CONFIGURATION } from '@deneb-viz/configuration';
 import { TooltipCustomMount } from '../../../../components/ui';
-import { useDenebState } from '../../../../state';
 import { logRender } from '@deneb-viz/utils/logging';
+import { useZoomControlState } from './use-zoom-control-state';
 
 export const useZoomSliderStyles = makeStyles({
     slider: {
@@ -29,12 +29,7 @@ export const ZoomSlider = () => {
         zoomFitEnabled,
         translate,
         updateEditorZoomLevel
-    } = useDenebState((state) => ({
-        editorZoomLevel: state.editorZoomLevel,
-        zoomFitEnabled: state.commands.zoomFit,
-        translate: state.i18n.translate,
-        updateEditorZoomLevel: state.updateEditorZoomLevel
-    }));
+    } = useZoomControlState();
     const i18nText = translate('Text_Slider_Zoom_Level');
     const onChange: SliderProps['onChange'] = (event, data) =>
         updateEditorZoomLevel(data.value);

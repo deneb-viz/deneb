@@ -8,7 +8,7 @@ import { type SpecificationEditorRefs } from '../../../lib/editor/specification-
 import { useSpecificationEditor } from '../../../context/specification-editor';
 import { getDenebState, useDenebState } from '../../../state';
 import { updateFieldTokenization } from '../../../lib/field-processing';
-import { getRemappedSpecification } from '../../../lib/field-processing/tokenization';
+import { requestRemappedSpecification } from '../../../lib/field-processing/tokenization';
 import {
     handlePersistSpecification,
     handleSetFocusToActiveEditor
@@ -78,7 +78,7 @@ export const applyRemappedFields = async (
     } = getDenebState();
     logDebug('[applyRemappedFields] tokenized spec', { tokenizedSpec });
     setRemapState('Replacing');
-    const mappedSpec = await getRemappedSpecification(
+    const mappedSpec = await requestRemappedSpecification(
         tokenizedSpec,
         remapFields,
         trackedFields

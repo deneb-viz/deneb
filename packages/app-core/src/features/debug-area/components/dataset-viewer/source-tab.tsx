@@ -28,6 +28,7 @@ import {
     getDatasetViewerWorkerTranslations
 } from './dataset-viewer-worker-helpers';
 import { LOADING_INDICATOR_DEBOUNCE_MS } from './loading-debounce-constants';
+import { getSharedDataTableViewerProps } from './data-table-viewer-props';
 
 /**
  * Renders the Source outer pivot of the Debug Area.
@@ -201,12 +202,13 @@ export const SourceTab = () => {
                     <DataTableViewer
                         columns={tableState.columns ?? []}
                         data={tableState.rows}
-                        defaultSortFieldId={sortEntry?.colId ?? null}
-                        defaultSortAsc={sortEntry?.asc ?? false}
-                        onSort={handleSort}
-                        onChangePage={handleChangePage}
-                        paginationDefaultPage={page}
-                        progressPending={debouncedProcessing}
+                        {...getSharedDataTableViewerProps({
+                            sortEntry,
+                            onSort: handleSort,
+                            onChangePage: handleChangePage,
+                            page,
+                            progressPending: debouncedProcessing
+                        })}
                     />
                 </div>
             </div>

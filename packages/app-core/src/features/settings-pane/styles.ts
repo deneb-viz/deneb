@@ -1,10 +1,15 @@
-import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
+import {
+    GriffelStyle,
+    makeStyles,
+    shorthands,
+    tokens
+} from '@fluentui/react-components';
 
-export const useSettingsPaneStyles = makeStyles({
-    radioGroupHorizontal: {
-        display: 'grid',
-        gridRowGap: tokens.spacingVerticalS
-    },
+/**
+ * Fluent style slots for the spin-button rows, shared by the app-core settings
+ * pane and the root visual's settings UI so the two panes can't drift apart.
+ */
+export const spinButtonStyleSlots = {
     spinButtonContainer: {
         display: 'flex',
         flexBasis: '100%',
@@ -18,4 +23,12 @@ export const useSettingsPaneStyles = makeStyles({
     spinButtonControl: {
         width: '80px'
     }
+} satisfies Record<string, GriffelStyle>;
+
+export const useSettingsPaneStyles = makeStyles({
+    radioGroupHorizontal: {
+        display: 'grid',
+        gridRowGap: tokens.spacingVerticalS
+    },
+    ...spinButtonStyleSlots
 });
