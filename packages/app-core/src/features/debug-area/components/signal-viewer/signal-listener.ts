@@ -34,6 +34,10 @@ export const attachSignalListener = (
     signalName: string,
     listener: SignalListenerFn
 ): ActiveSignalListener => {
-    view?.addSignalListener(signalName, listener);
+    // Only report an active record when the listener was actually attached.
+    // Returning a record for a null view would leave `activeListenerRef`
+    // claiming a live listener that was never registered.
+    if (!view) return null;
+    view.addSignalListener(signalName, listener);
     return { signalName, listener };
 };

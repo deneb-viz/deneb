@@ -36,6 +36,8 @@ export const getVegaLoader = (options: LoaderInitializationOptions): Loader => {
             case 'href': {
                 if (isHttpUri(uri)) {
                     options.host.launchUrl(uri);
+                } else {
+                    logDebug(`Blocked non-http(s) href from launchUrl: ${uri}`);
                 }
                 return Promise.reject({ href: uri });
             }

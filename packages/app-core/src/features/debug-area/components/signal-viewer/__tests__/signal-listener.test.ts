@@ -40,6 +40,11 @@ describe('signal listener attach/detach (L4 — capture view at effect entry)', 
         expect(liveView.removeSignalListener).not.toHaveBeenCalled();
     });
 
+    it('returns null when the view is null (nothing was attached)', () => {
+        const listener = vi.fn();
+        expect(attachSignalListener(null, 'sig', listener)).toBeNull();
+    });
+
     it('is a no-op when there is no active listener', () => {
         const view = makeView();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
