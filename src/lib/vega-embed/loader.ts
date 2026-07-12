@@ -3,6 +3,7 @@ import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { LoaderInitializationOptions } from './types';
+import { isHttpUri } from './is-http-uri';
 
 /**
  * Custom Vega loader for Power BI.
@@ -28,9 +29,16 @@ export const getVegaLoader = (options: LoaderInitializationOptions): Loader => {
     // Handle regular requests for images and hyperlinks.
     thisLoader.sanitize = (uri, sanitizeOptions) => {
         switch (sanitizeOptions?.context) {
-            // Hyperlinks will be delegated to the visual host
+            // Hyperlinks will be delegated to the visual host — but only
+            // http(s) links. A spec-authored `javascript:` or other non-web
+            // scheme must never reach launchUrl (the host is expected to
+            // reject these, but we don't rely on it).
             case 'href': {
-                options.host.launchUrl(uri);
+                if (isHttpUri(uri)) {
+                    options.host.launchUrl(uri);
+                } else {
+                    logDebug(`Blocked non-http(s) href from launchUrl: ${uri}`);
+                }
                 return Promise.reject({ href: uri });
             }
             // Default assumes we're loading images. If we're blocking

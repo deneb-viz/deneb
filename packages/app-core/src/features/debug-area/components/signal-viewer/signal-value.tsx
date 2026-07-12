@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePrevious } from '@uidotdev/usehooks';
+import { type View } from 'vega';
 
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
@@ -9,6 +10,11 @@ import {
     computeSignalDisplay,
     INVALID_SIGNAL_DISPLAY
 } from './signal-value-utils';
+import {
+    attachSignalListener,
+    detachSignalListener,
+    type ActiveSignalListener
+} from './signal-listener';
 
 type SignalValueProps = {
     signalName: string;
@@ -68,11 +74,7 @@ export const SignalValue = ({
     // Hold the currently-registered listener plus the signal name it was
     // registered against so a mid-flight signalName change still detaches
     // from the correct signal.
-    const activeListenerRef = useRef<{
-        signalName: string;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        listener: (name: string, value: any) => void;
-    } | null>(null);
+    const activeListenerRef = useRef<ActiveSignalListener>(null);
     // Expose the latest renderId to the listener closure without rebuilding
     // (and re-registering) the listener every time the id changes.
     const renderIdRef = useRef(renderId);
@@ -81,14 +83,11 @@ export const SignalValue = ({
      * Detach the currently-registered listener, if any, using the signal
      * name it was originally registered against.
      */
-    const removeListener = () => {
+    const removeListener = (view: View | null) => {
         const entry = activeListenerRef.current;
         if (!entry) return;
         try {
-            VegaViewServices.getView()?.removeSignalListener(
-                entry.signalName,
-                entry.listener
-            );
+            detachSignalListener(view, entry);
         } catch {
             logDebug(
                 `Listener for signal ${entry.signalName} could not be removed.`
@@ -102,8 +101,8 @@ export const SignalValue = ({
      * registered listener is detached first to guarantee at most one
      * registration is active per component instance.
      */
-    const addListener = () => {
-        removeListener();
+    const addListener = (view: View | null) => {
+        removeListener(view);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const listener = (name: string, value: any) => {
             setSignalValue(() => value);
@@ -113,8 +112,11 @@ export const SignalValue = ({
             );
         };
         try {
-            VegaViewServices.getView()?.addSignalListener(signalName, listener);
-            activeListenerRef.current = { signalName, listener };
+            activeListenerRef.current = attachSignalListener(
+                view,
+                signalName,
+                listener
+            );
         } catch {
             logDebug(`Listener for signal ${signalName} could not be added.`);
         }
@@ -124,9 +126,9 @@ export const SignalValue = ({
      * `addListener()` (which is itself idempotent), kept as a named helper
      * for call-site clarity in the effects below.
      */
-    const cycleListeners = () => {
+    const cycleListeners = (view: View | null) => {
         logDebug(`Cycling listeners for signal: ${signalName}...`);
-        addListener();
+        addListener(view);
     };
     const getSignalValues = useCallback(() => {
         try {
@@ -143,23 +145,27 @@ export const SignalValue = ({
      * Ensure that listener is added/removed when the view changes between renders.
      */
     useEffect(() => {
+        // Capture the view live at effect entry so cleanup detaches from the
+        // SAME instance even after a view replacement bumps the singleton.
+        const viewAtEntry = VegaViewServices.getView();
         logDebug(`Render ID has changed to ${renderId}. Updating...`);
-        cycleListeners();
+        cycleListeners(viewAtEntry);
         return () => {
-            removeListener();
+            removeListener(viewAtEntry);
         };
     }, [renderId]);
     /**
      * Ensure that if the name changes (i.e. # of signals or a sort), then we update value and cycle listeners.
      */
     useEffect(() => {
+        const viewAtEntry = VegaViewServices.getView();
         logDebug(
             `Signal name has changed from ${previousSignalName} to ${signalName}. Updating...`
         );
         setSignalValue(() => getSignalValues().display);
-        cycleListeners();
+        cycleListeners(viewAtEntry);
         return () => {
-            removeListener();
+            removeListener(viewAtEntry);
         };
     }, [signalName, getSignalValues]);
     // Re-read on signalName/translator change (via getSignalValues

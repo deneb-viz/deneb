@@ -15,6 +15,7 @@ import { logDebug, logRender } from '@deneb-viz/utils/logging';
 import { useDenebState } from '../../../state';
 import { type ViewEventBinder } from '../../../components/deneb-platform';
 import { VEGA_EMBED_ROOT_STYLE } from './vega-embed-styles';
+import { getRestrictiveVegaLoader } from './restrictive-loader';
 
 type VegaEmbedProps = {
     onRenderingError?: (error: Error) => void;
@@ -210,7 +211,10 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
         return {
             ...compilation.embedOptions,
             tooltip: tooltipHandler,
-            loader: vegaLoader ?? undefined
+            // Fail closed: if the platform supplies no loader, fall back to a
+            // restrictive one (data: URIs only) rather than Vega's permissive
+            // default, which would fetch arbitrary external URLs (L9).
+            loader: vegaLoader ?? getRestrictiveVegaLoader()
         };
     }, [compilation]);
 

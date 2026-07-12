@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { type View } from 'vega';
 
 import { logRender } from '@deneb-viz/utils/logging';
+import { resolveDownloadPermitted } from './download-permission';
 import { ReportViewRouter } from './report-view-router';
 import {
     DenebProvider,
@@ -193,11 +194,10 @@ export const App = ({
     // Ensure that download permissions are evaluated against the current tenant and sent to the core app
     useEffect(() => {
         if (host) {
-            host.downloadService.exportStatus().then((status) => {
-                const isDownloadPermitted =
-                    status === powerbi.PrivilegeStatus.Allowed;
-                setIsDownloadPermitted(isDownloadPermitted);
-            });
+            resolveDownloadPermitted(
+                () => host.downloadService.exportStatus(),
+                powerbi.PrivilegeStatus.Allowed
+            ).then(setIsDownloadPermitted);
         }
     }, [host]);
 
