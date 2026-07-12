@@ -12,6 +12,13 @@ export const getHighlightComparatorValue = (
     comparatorValue: PrimitiveValue
 ): DataPointHighlightComparator => {
     switch (true) {
+        // Symmetric with getHighlightStatusValue's L13 guard: an `undefined`
+        // comparator (an out-of-bounds read of a short highlights array) has no
+        // value to compare against. DataPointHighlightComparator has no
+        // "absent" member, so it deliberately resolves to 'neq' — the paired
+        // __highlight_status__ field carries the on/off distinction.
+        case comparatorValue === undefined:
+            return 'neq';
         case fieldValue == comparatorValue:
             return 'eq';
         case comparatorValue < fieldValue:
@@ -34,6 +41,13 @@ export const getHighlightStatusValue = (
     switch (true) {
         case !hasHighlights:
             return 'neutral';
+        // Defensive (audit L13): Power BI supplies a highlights array that is
+        // row-length and null-padded, so an `undefined` comparator can only
+        // arise from an out-of-bounds read (a highlights array shorter than
+        // values — a contract we could not verify). Treat it as "not
+        // highlighted" so a row with no highlight datum is never reported 'on'.
+        case comparatorValue === undefined:
+            return 'off';
         case hasHighlights && fieldValue === null && comparatorValue !== null:
             return 'off';
         default:
