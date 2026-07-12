@@ -66,7 +66,6 @@
         "@fluentui/react-icons": "^2.0.313",
         "@swc/core": "^1.15.32",
         "@types/d3": "^7.1.0",
-        "@types/jsum": "^0.1.0",
         "@types/lodash": "^4.14.202",
         "@types/minimist": "^1.2.5",
         "@types/node": "^22.15.33",

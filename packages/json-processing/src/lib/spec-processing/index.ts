@@ -5,4 +5,3 @@ export {
     type IDenebTokenizationResponseMessage,
     type IDenebTrackingResponseMessage
 } from './workers';
-export type * from './types';
