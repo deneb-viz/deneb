@@ -17,7 +17,7 @@ const JSONC_EMPTY_OBJECT = '{}';
  */
 export interface JsoncParseResult {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    result: any | null;
+    result: any;
     errors: string[];
 }
 
