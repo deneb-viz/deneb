@@ -1,7 +1,7 @@
 import powerbi from 'powerbi-visuals-api';
 
 import { logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
-import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
+import { getValueFormatter } from '@deneb-viz/powerbi-compat/formatting';
 import { doesDataViewHaveHighlights } from './data-view';
 import type { AugmentedMetadataField } from './types';
 import { isFieldEligibleForFormatting } from './fields';
@@ -56,17 +56,35 @@ const getFormattingStringValueEntries = (
     locale: string
 ): powerbi.PrimitiveValue[][] => {
     logTimeStart('getFormattingStringEntries');
+    // Reuse one formatter per distinct format string across the whole dataview.
+    // getFormattedValue creates a new Power BI valueFormatter on every call, so
+    // formatting N rows naively costs N heavyweight create() calls even though a
+    // column's format string is usually constant. Memoise by the resolved
+    // format string (which still varies per row for dynamic format strings) so
+    // identical strings share a formatter — turning ~rows creations into
+    // ~distinct-format-strings.
+    const formatterByString = new Map<
+        string,
+        ReturnType<typeof getValueFormatter>
+    >();
+    const formatterFor = (format: string | undefined) => {
+        const key = format ?? '';
+        let formatter = formatterByString.get(key);
+        if (!formatter) {
+            formatter = getValueFormatter(format, { cultureSelector: locale });
+            formatterByString.set(key, formatter);
+        }
+        return formatter;
+    };
     const entries =
         values?.reduce<powerbi.PrimitiveValue[][]>((acc, v) => {
             if (isFieldEligibleForFormatting(v)) {
-                const values = v.values;
-                const formatStrings = values.map((vv, vvi) =>
+                const columnValues = v.values;
+                const formatStrings = columnValues.map((vv, vvi) =>
                     getFormatStringForValueByIndex(v, vvi)
                 );
-                const formattedValues = values.map((vv, vvi) =>
-                    getFormattedValue(vv, formatStrings[vvi], {
-                        cultureSelector: locale
-                    })
+                const formattedValues = columnValues.map((vv, vvi) =>
+                    formatterFor(formatStrings[vvi]).format(vv)
                 );
                 acc.push(formatStrings);
                 acc.push(formattedValues);

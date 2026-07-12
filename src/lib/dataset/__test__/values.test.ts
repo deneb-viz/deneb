@@ -12,7 +12,12 @@ vi.mock('@deneb-viz/utils/logging', () => ({
     logTimeEnd: vi.fn()
 }));
 vi.mock('powerbi-visuals-api', () => ({}));
+const getValueFormatter = vi.fn(() => ({
+    format: vi.fn((v: unknown) => `f(${v})`)
+}));
 vi.mock('@deneb-viz/powerbi-compat/formatting', () => ({
+    getValueFormatter: (format?: string, options?: unknown) =>
+        getValueFormatter(format, options),
     getFormattedValue: vi.fn((v) => v)
 }));
 
@@ -26,9 +31,12 @@ vi.mock('../data-view', () => ({
     doesDataViewHaveHighlights: () => doesDataViewHaveHighlights()
 }));
 
-// Keep the formatting-string branch out of these fixtures.
+// Formatting-string branch: default off for the highlight fixtures, toggled on
+// for the formatter-reuse tests.
+const isFieldEligibleForFormatting = vi.fn((_v: unknown) => false);
 vi.mock('../fields', () => ({
-    isFieldEligibleForFormatting: vi.fn(() => false)
+    isFieldEligibleForFormatting: (v: unknown) =>
+        isFieldEligibleForFormatting(v)
 }));
 
 import {
@@ -45,10 +53,23 @@ const cols = (...columns: powerbi.DataViewValueColumn[]) =>
 
 const cell = (v: unknown) => v as powerbi.PrimitiveValue;
 
+const colFmt = (values: unknown[], format: string) =>
+    ({ values, source: { format } }) as unknown as powerbi.DataViewValueColumn;
+
+const colDynamic = (values: unknown[], perRowFormats: string[]) =>
+    ({
+        values,
+        source: {},
+        objects: perRowFormats.map((formatString) => ({
+            general: { formatString }
+        }))
+    }) as unknown as powerbi.DataViewValueColumn;
+
 describe('getDatumValueEntriesFromDataview — mixed highlights (M9)', () => {
     beforeEach(() => {
         isCrossHighlightPropSet.mockReturnValue(false);
         doesDataViewHaveHighlights.mockReturnValue(true);
+        isFieldEligibleForFormatting.mockReturnValue(false);
     });
 
     it('falls back to a column’s own values when it has no highlights (auto-substitution path)', () => {
@@ -110,5 +131,37 @@ describe('getCastedPrimitiveValue — undefined dateTime cell (L14)', () => {
             column: { type: {} }
         } as unknown as AugmentedMetadataField;
         expect(getCastedPrimitiveValue(numField, 42)).toBe(42);
+    });
+});
+
+describe('getFormattingStringValueEntries — formatter reuse (perf)', () => {
+    beforeEach(() => {
+        isCrossHighlightPropSet.mockReturnValue(false);
+        doesDataViewHaveHighlights.mockReturnValue(false);
+        isFieldEligibleForFormatting.mockReturnValue(true);
+        getValueFormatter.mockClear();
+    });
+
+    it('creates one formatter for a column with a constant format string', () => {
+        const values = cols(colFmt([1, 2, 3, 4], '#,##0'));
+
+        const entries = getDatumValueEntriesFromDataview([], values, 'en-US');
+
+        // One formatter for the four same-format rows, not four.
+        expect(getValueFormatter).toHaveBeenCalledTimes(1);
+        // Format strings + formatted values are still emitted per row.
+        expect(entries).toContainEqual(['#,##0', '#,##0', '#,##0', '#,##0']);
+        expect(entries).toContainEqual(['f(1)', 'f(2)', 'f(3)', 'f(4)']);
+    });
+
+    it('creates one formatter per distinct dynamic format string', () => {
+        const values = cols(
+            colDynamic([10, 20, 30], ['#,##0', '0.00', '#,##0'])
+        );
+
+        getDatumValueEntriesFromDataview([], values, 'en-US');
+
+        // Two distinct format strings across three rows → two formatters.
+        expect(getValueFormatter).toHaveBeenCalledTimes(2);
     });
 });
