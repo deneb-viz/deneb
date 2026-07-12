@@ -3,10 +3,6 @@ import type powerbi from 'powerbi-visuals-api';
 import type { ValueFormatterOptions } from 'powerbi-visuals-utils-formattingutils/lib/src/valueFormatter';
 
 /**
- * Convenience function that creates a Power BI `valueFormatter.IValueFormatter` using the supplied format string, with
- * optional overrides. This helper is host-agnostic and can be safely used outside of Power BI (types only).
- */
-/**
  * Create a Power BI `valueFormatter.IValueFormatter` for the supplied format
  * string. Exposed so hot paths that format many values sharing one format
  * string can create the formatter once and reuse it, rather than paying
