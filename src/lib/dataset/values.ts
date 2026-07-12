@@ -14,8 +14,8 @@ export const getCastedPrimitiveValue = (
     field: AugmentedMetadataField,
     value: powerbi.PrimitiveValue
 ) =>
-    field?.column?.type?.dateTime && value !== null
-        ? new Date(value?.toString())
+    field?.column?.type?.dateTime && value != null
+        ? new Date(value.toString())
         : value;
 
 /**
@@ -84,11 +84,11 @@ const getFormattingStringValueEntries = (
 const getFormatStringForValueByIndex = (
     valueColumn: powerbi.DataViewValueColumn,
     index: number
-): string =>
-    <string>(
-        (valueColumn?.source?.format ??
-            valueColumn?.objects?.[index]?.general?.formatString)
-    );
+): string | undefined =>
+    valueColumn?.source?.format ??
+    (valueColumn?.objects?.[index]?.general?.formatString as
+        | string
+        | undefined);
 
 /**
  * If we're using cross-highlight functionality, we need to get/set the highlight entries accordingly. If no highlights
@@ -98,11 +98,17 @@ const getHighlightValueEntries = (
     values: powerbi.DataViewValueColumns
 ): powerbi.PrimitiveValue[][] => {
     logTimeStart('getHighlightValueEntries');
-    const entries = (values?.map((v) =>
-        isCrossHighlightPropSet() && doesDataViewHaveHighlights(values)
-            ? v.highlights
-            : v.values
-    ) || []) as powerbi.PrimitiveValue[][];
+    // Per-column highlight fallback (M9): a mixed-highlight dataview can have
+    // some value columns with a `highlights` array and some without. A column
+    // without highlights yields `undefined` here, which becomes an undefined
+    // entry that crashes row building and silently drops the whole dataset.
+    // Fall back to that column's own values so it still contributes a row.
+    const entries =
+        values?.map((v) =>
+            isCrossHighlightPropSet() && doesDataViewHaveHighlights(values)
+                ? (v.highlights ?? v.values)
+                : v.values
+        ) || [];
     logTimeEnd('getHighlightValueEntries');
     return entries;
 };
@@ -116,11 +122,18 @@ const getMeasureValueEntries = (
     values: powerbi.DataViewValueColumns
 ): powerbi.PrimitiveValue[][] => {
     logTimeStart('getMeasureValueEntries');
-    const entries = (values?.map((v) => {
-        const useHighlights =
-            doesDataViewHaveHighlights(values) && !isCrossHighlightPropSet();
-        return useHighlights ? v.highlights : v.values;
-    }) || []) as powerbi.PrimitiveValue[][];
+    // Per-column highlight fallback (M9): see getHighlightValueEntries. When
+    // Power BI supplies highlights but the creator hasn't opted into
+    // cross-highlighting, we substitute highlight values — but a column that
+    // has no highlights would otherwise inject `undefined` and drop the
+    // dataset, so fall back to that column's values.
+    const entries =
+        values?.map((v) => {
+            const useHighlights =
+                doesDataViewHaveHighlights(values) &&
+                !isCrossHighlightPropSet();
+            return useHighlights ? (v.highlights ?? v.values) : v.values;
+        }) || [];
     logTimeEnd('getMeasureValueEntries');
     return entries;
 };
