@@ -6,12 +6,18 @@ import {
 } from './deneb-container';
 
 /**
- * Legacy standalone signals from Deneb versions < 2.0.
- * These were separate signals, not properties of pbiContainer.
- * @deprecated Since 2.0; migrated to `denebContainer.width` /
- * `denebContainer.height`. Removal target: 3.0. See `docs/DEPRECATIONS.md`.
+ * Legacy width signal from Deneb versions < 2.0 (a standalone signal, not a
+ * property of pbiContainer).
+ * @deprecated Since 2.0; migrated to `denebContainer.width`. Removal target:
+ * 3.0. See `docs/DEPRECATIONS.md`.
  */
 const SIGNAL_PBI_CONTAINER_WIDTH_LEGACY = 'pbiContainerWidth';
+/**
+ * Legacy height signal from Deneb versions < 2.0 (a standalone signal, not a
+ * property of pbiContainer).
+ * @deprecated Since 2.0; migrated to `denebContainer.height`. Removal target:
+ * 3.0. See `docs/DEPRECATIONS.md`.
+ */
 const SIGNAL_PBI_CONTAINER_HEIGHT_LEGACY = 'pbiContainerHeight';
 
 /**
