@@ -28,7 +28,7 @@ import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 /**
  * For a Vega expression AST node, check if it has an occurrence of a field from the visual dataset.
  */
-export const doesExpressionContainField = (
+const doesExpressionContainField = (
     json: object,
     fieldName: string,
     supplementaryPatterns: string[]
@@ -82,7 +82,7 @@ const doesLiteralContainField = (
  * Produces a simple RegExp pattern for matching drilldown field usage.
  * TODO: should probably be in the Power BI-specific module.
  */
-export const getDrilldownFieldExpression = () =>
+const getDrilldownFieldExpression = () =>
     new RegExp(`(__drilldown(_flat)?__)`);
 
 /**
@@ -304,7 +304,7 @@ export const getTrackingDataFromSpecification = (
  * included in their declaration, so we should avoid inspecting them. This method tests the path to see if it's a
  * candidate for avoiding inspection, so that we can take note of it for later on.
  */
-export const isExpensivePath = (path: JSONPath) => {
+const isExpensivePath = (path: JSONPath) => {
     switch (true) {
         // Vega data[]/values constructor
         case path.length > 2 &&
@@ -327,7 +327,7 @@ export const isExpensivePath = (path: JSONPath) => {
 /**
  * Tests the supplied string to see if it evaluates as a valid Vega expression.
  */
-export const isExpressionField = (detail: string) => {
+const isExpressionField = (detail: string) => {
     if (!isLiteralEligibleForTesting(detail)) return false;
     try {
         const node = parseExpression(detail);
@@ -348,7 +348,7 @@ const isLiteralEligibleForTesting = (value: string) =>
  * For previous and current field candidate maps, get a merged object that should be used for testing against the
  * specification.
  */
-export const getTrackedFieldMapMerged = (
+const getTrackedFieldMapMerged = (
     fieldMapPrev: TrackedFieldCandidates,
     fieldMapCurrent: TrackedFieldCandidates
 ) => mergician(fieldMapPrev, fieldMapCurrent);
@@ -357,5 +357,5 @@ export const getTrackedFieldMapMerged = (
  * Test if a path should be avoided when inspecting a JSON object for field tracking. If a path being tested contains
  * the same elements at the start of the path as an expensive path, then we should avoid inspecting it.
  */
-export const shouldAvoidPath = (path: JSONPath, expensivePaths: JSONPath[]) =>
+const shouldAvoidPath = (path: JSONPath, expensivePaths: JSONPath[]) =>
     expensivePaths.some((p) => p.every((v, i) => v === path[i]));

@@ -1,7 +1,3 @@
-export {
-    DispatchingVegaLoggerService,
-    LocalVegaLoggerService
-} from './logging';
 export { VegaExtensibilityServices } from './service';
 export {
     VEGA_LITE_SCHEME_ADDITIONS,

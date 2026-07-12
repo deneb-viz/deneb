@@ -191,7 +191,7 @@ export const getThemeColorByName = (name: string) =>
  * provide a layer where we can manage situations such as the typo for maximum
  * in the (unsupported) `host.colorPalette` object.
  */
-export const getNamedColors = () => ({
+const getNamedColors = () => ({
     max: getThemeDivergentMax(),
     min: getThemeDivergentMin(),
     middle: getThemeDivergentMed(),

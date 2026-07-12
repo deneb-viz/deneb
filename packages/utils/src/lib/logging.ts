@@ -175,11 +175,6 @@ export const logHost = _log(LogLevel.HOST);
 export const logRender = _log(LogLevel.RENDER);
 
 /**
- * Hook-level logging to the console.
- */
-export const logHook = _log(LogLevel.HOOK);
-
-/**
  * For debug-level logging, start a timer.
  */
 export const logTimeStart = _logTimeStart();
