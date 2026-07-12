@@ -24,6 +24,8 @@ related_components:
     - packages/app-core/src/features/debug-area/components/log-viewer/log-viewer.tsx
 ---
 
+# Reader-mode blank on spec-compile error is by design — no in-canvas error surface
+
 ## Decision
 
 When a Deneb specification fails to parse or compile, the visual renders **blank**
