@@ -37,6 +37,7 @@ import {
 import { resolveDataTabReason } from './data-tab-utils';
 import { getAvailableDatasetNames } from './dataset-discovery';
 import { LOADING_INDICATOR_DEBOUNCE_MS } from './loading-debounce-constants';
+import { getSharedDataTableViewerProps } from './data-table-viewer-props';
 
 type DataTabProps = {
     datasetName: string;
@@ -484,12 +485,13 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
                                 []) as TableColumn<IWorkerDatasetViewerDataTableRow>[]
                         }
                         data={datasetState.values}
-                        defaultSortFieldId={sortEntry?.colId ?? null}
-                        defaultSortAsc={sortEntry?.asc ?? false}
-                        onSort={handleSort}
-                        onChangePage={handleChangePage}
-                        paginationDefaultPage={page}
-                        progressPending={debouncedProcessing}
+                        {...getSharedDataTableViewerProps({
+                            sortEntry,
+                            onSort: handleSort,
+                            onChangePage: handleChangePage,
+                            page,
+                            progressPending: debouncedProcessing
+                        })}
                     />
                 </div>
             </div>

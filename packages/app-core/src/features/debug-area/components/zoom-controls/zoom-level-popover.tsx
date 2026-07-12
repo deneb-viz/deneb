@@ -31,9 +31,9 @@ import {
     POPOVER_Z_INDEX,
     PREVIEW_PANE_TOOLBAR_BUTTON_PADDING
 } from '../../../../lib';
-import { useDenebState } from '../../../../state';
 import { TooltipCustomMount } from '../../../../components/ui';
 import { getZoomToFitScale } from '../../../../lib/interface/layout';
+import { useZoomControlState } from './use-zoom-control-state';
 
 const useToolbarStyles = makeStyles({
     buttonSmall: {
@@ -64,12 +64,7 @@ export const ZoomLevelPopover = () => {
         zoomFitEnabled,
         translate,
         updateEditorZoomLevel
-    } = useDenebState((state) => ({
-        editorZoomLevel: state.editorZoomLevel,
-        zoomFitEnabled: state.commands.zoomFit,
-        translate: state.i18n.translate,
-        updateEditorZoomLevel: state.updateEditorZoomLevel
-    }));
+    } = useZoomControlState();
     const id = useId();
     const caption = `${editorZoomLevel}%`;
     const classes = useToolbarStyles();

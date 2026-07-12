@@ -1,4 +1,5 @@
-import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
+import { makeStyles } from '@fluentui/react-components';
+import { spinButtonStyleSlots } from '@deneb-viz/app-core';
 
 export const useSettingsStyles = makeStyles({
     radioGroupLabel: {
@@ -10,17 +11,5 @@ export const useSettingsStyles = makeStyles({
     sectionItem: {
         display: 'flex'
     },
-    spinButtonContainer: {
-        display: 'flex',
-        flexBasis: '100%',
-        flexDirection: 'row',
-        '> label': {
-            marginRight: tokens.spacingHorizontalM
-        },
-        alignItems: 'center',
-        ...shorthands.padding('5px', tokens.spacingHorizontalNone)
-    },
-    spinButtonControl: {
-        width: '80px'
-    }
+    ...spinButtonStyleSlots
 });

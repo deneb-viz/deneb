@@ -6,27 +6,10 @@ import {
     VEGA_SCHEMA_URL
 } from '.';
 import { getNewIncludedTemplateMetadata } from '..';
-import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
+import { getStandardBarDataset } from '../standard-bar-dataset';
 
-const dataset: UsermetaDatasetField[] = [
-    {
-        key: `__${DATASET_DEFAULT_NAME}.0__`,
-        name: 'Category',
-        description:
-            "Select a column that will be displayed on the chart's Y-Axis",
-        type: 'text',
-        kind: 'column'
-    },
-    {
-        key: `__${DATASET_DEFAULT_NAME}.1__`,
-        name: 'Measure',
-        description:
-            "Select a measure that will be displayed on the chart's X-Axis",
-        type: 'numeric',
-        kind: 'measure'
-    }
-];
+const dataset = getStandardBarDataset();
 
 export const vBarSimple = (): Spec => ({
     $schema: VEGA_SCHEMA_URL,
