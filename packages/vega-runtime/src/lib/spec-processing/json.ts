@@ -1,45 +1,22 @@
-import { stripComments } from 'jsonc-parser';
+import { parseJsoncWithResult } from '@deneb-viz/utils/jsonc';
 import type { ContentPatchResult } from './types';
 
 /**
- * Character to replace comments with when stripping them from JSONC.
- * Using space preserves line numbers for error reporting.
- */
-const JSONC_COMMENT_REPLACE_CHAR = ' ';
-
-/**
- * Empty JSON object string used as fallback when input is empty.
- */
-const JSONC_EMPTY_OBJECT = '{}';
-
-/**
- * Parse JSONC (JSON with Comments) with error handling and line number extraction.
- * Returns a result object with the parsed content or error messages.
- *
- * Comments are stripped before parsing, with line numbers preserved.
+ * Parse JSONC (JSON with Comments) with error handling and line-number
+ * enrichment. Thin decorator over the shared `parseJsoncWithResult` core
+ * (`@deneb-viz/utils`); the only local behaviour is enriching parse-error
+ * messages with a line number.
  *
  * @param content JSONC string to parse
  * @returns Parsed result or error information
  */
 export const parseJsonWithResult = (content: string): ContentPatchResult => {
-    try {
-        // Strip comments while preserving line numbers (replace with spaces)
-        const pureJson = stripComments(
-            content || JSONC_EMPTY_OBJECT,
-            JSONC_COMMENT_REPLACE_CHAR
-        );
-        const parsed = JSON.parse(pureJson);
-        return {
-            result: parsed,
-            errors: []
-        };
-    } catch (e) {
-        const message = e instanceof Error ? e.message : String(e);
-        return {
-            result: null,
-            errors: [getErrorLine(content, message)]
-        };
-    }
+    const { result, errors } = parseJsoncWithResult(content);
+    if (errors.length === 0) return { result, errors };
+    return {
+        result: null,
+        errors: errors.map((message) => getErrorLine(content, message))
+    };
 };
 
 /**

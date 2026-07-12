@@ -37,6 +37,10 @@
             "types": "./dist/lib/inspection.d.ts",
             "default": "./dist/lib/inspection.js"
         },
+        "./jsonc": {
+            "types": "./dist/lib/jsonc.d.ts",
+            "default": "./dist/lib/jsonc.js"
+        },
         "./logging": {
             "types": "./dist/lib/logging.d.ts",
             "default": "./dist/lib/logging.js"
@@ -77,6 +81,7 @@
     },
     "dependencies": {
         "json-stringify-pretty-compact": "^4.0.0",
+        "jsonc-parser": "^3.3.1",
         "simple-sha1": "^3.1.0"
     }
 }

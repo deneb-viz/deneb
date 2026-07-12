@@ -4,16 +4,10 @@ import {
     getNodeValue,
     modify,
     parseTree,
-    stripComments,
     Node
 } from 'jsonc-parser';
 import { JSONPath } from 'vscode-json-languageservice';
-import { type IJsonParseResult } from './lib/spec-processing';
-
-/**
- * When converting JSONC to JSON, this is the character to replace comments with.
- */
-const JSONC_TO_JSON_COMMENT_REPLACE_CHAR = ' ';
+import { stripJsoncComments } from '@deneb-viz/utils/jsonc';
 
 /**
  * For the supplied JSONC tree, return the JavaScript object value of the node.
@@ -53,8 +47,8 @@ export const getJsoncTree = (content: string) => parseTree(content) as Node;
  */
 export const getJsonPureString = (
     content: string | undefined | null,
-    replaceCh: string = JSONC_TO_JSON_COMMENT_REPLACE_CHAR
-) => stripComments(content || '{}', replaceCh);
+    replaceCh?: string
+) => stripJsoncComments(content, replaceCh);
 
 /**
  * For the supplied content, JSONPath, and value, return the modified JSONC string as of that location.
@@ -66,22 +60,6 @@ export const getModifiedJsoncByPath = (
 ) => {
     const edits = modify(content, path, value, {});
     return applyEdits(content, edits);
-};
-
-/**
- * Intended to be used as a substitute for `JSON.parse`; will ensure that any supplied `content` is tested as JSONC.
- * Any parsing issues are included in the returned `errors` array.
- */
-export const getParsedJsonWithResult = (
-    content: string,
-    fallback?: string
-): IJsonParseResult => {
-    try {
-        return { result: JSON.parse(getJsonPureString(content)), errors: [] };
-    } catch (e: unknown) {
-        if (!fallback) return { result: null, errors: [(<Error>e).message] };
-        return { result: JSON.parse(fallback), errors: [] };
-    }
 };
 
 /**

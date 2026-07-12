@@ -9,7 +9,6 @@ export {
     getJsoncStringAsObject,
     getJsoncTree,
     getModifiedJsoncByPath,
-    getParsedJsonWithResult,
     getTextFormattedAsJsonC
 } from './processing';
 export { areAllCreateDataRequirementsMet } from './template-dataset';
