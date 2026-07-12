@@ -1,7 +1,7 @@
 # Execution Handoff — 2026-07-03 Audit Remediation Program
 
 **For:** the next agent session (any model) continuing this program.
-**Authoritative plan:** `docs/plans/2026-07-03-001-fix-audit-remediation-program-plan.md` — read it fully before executing anything. Finding IDs (H/M/L/P5-*) resolve against `docs/audit-findings.md`. Both files plus this one are deliberately **untracked** — do not commit them with unit work.
+**Authoritative plan:** `docs/plans/2026-07-03-001-fix-audit-remediation-program-plan.md` — read it fully before executing anything. Finding IDs (H/M/L/P5-*) resolve against `docs/audits/2026-07-03-readonly-audit/findings.md`. These audit/plan docs were kept untracked during unit execution and committed together once the program completed (#707).
 **Skill:** execution runs under `/ce-work` conventions (task list, serial subagent per unit, orchestrator owns git).
 
 ## Program state (as of 2026-07-06)
@@ -79,7 +79,7 @@ Recommended order: **U5 (stack on U4) → U6 (off next) → U7 (stack on U4) →
 
 U1–U17 merged to `next` (+ perf #701). **U18 shipped as open PR #706** (`fix/audit-u18-async-hardening`) — the final unit: async & hardening guards L1/L2/L4/L8/L9/L10, each with a failing-before/passing-after test (pure helpers / dep-array characterization — app-core has no RTL). Once #706 merges, the **18-unit 2026-07-03 audit remediation program is complete**.
 
-U18 resolved the two residual UNVERIFIED items defensively: **L4** — the signal listener now detaches from the view captured at effect entry (extracted `attach/detachSignalListener` in `signal-viewer/signal-listener.ts`), so correctness no longer depends on what vega `finalize()` neutralizes; **L10** — `http:`/`https:` are allowlisted (`is-http-uri.ts`) before `host.launchUrl` regardless of host scheme handling. Any audit LOW findings not mapped to a unit (see `docs/audit-findings.md`) remain as future triage, not regressions.
+U18 resolved the two residual UNVERIFIED items defensively: **L4** — the signal listener now detaches from the view captured at effect entry (extracted `attach/detachSignalListener` in `signal-viewer/signal-listener.ts`), so correctness no longer depends on what vega `finalize()` neutralizes; **L10** — `http:`/`https:` are allowlisted (`is-http-uri.ts`) before `host.launchUrl` regardless of host scheme handling. Any audit LOW findings not mapped to a unit (see `docs/audits/2026-07-03-readonly-audit/findings.md`) remain as future triage, not regressions.
 
 ### U18 facts for future units
 - **`src/app/download-permission.ts` `resolveDownloadPermitted(exportStatusThunk, allowedStatus)`** — deny-by-default async wrapper (thunk + sentinel args so it imports neither `powerbi-visuals-api` nor needs its mock; typed `PromiseLike<T>` because the host's `exportStatus()` returns powerbi's `IPromise`, not a `Promise` — a mismatch only the production type-check catches, not vitest).

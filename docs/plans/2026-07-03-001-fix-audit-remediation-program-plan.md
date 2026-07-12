@@ -3,7 +3,7 @@ title: "fix: 2026-07-03 audit remediation program with protective infrastructure
 type: fix
 status: active
 date: 2026-07-03
-origin: docs/audit-findings.md
+origin: docs/audits/2026-07-03-readonly-audit/findings.md
 ---
 
 # fix: 2026-07-03 Audit Remediation Program with Protective Infrastructure
@@ -16,7 +16,7 @@ Remediate every finding from the 2026-07-03 read-only audit (3 HIGH, 17 MEDIUM, 
 
 ## Problem Frame
 
-A full read-only audit of the codebase ([docs/audit-findings.md](../audit-findings.md)) surfaced traced, confirmed defects concentrated in the rendering lifecycle, Vega embed race handling, legacy persisted-state migration, and error propagation — plus a long quality tail. Independently, an abandoned pre-2.0 refactoring ideation pass ([docs/ideation/2026-06-13-pre-2.0-refactoring-ideation.md](../ideation/2026-06-13-pre-2.0-refactoring-ideation.md)) was cross-validated as still byte-accurate: its top-ranked infrastructure ideas predicted exactly the defect classes the audit found. The 2.0 release cut (`next` → `main`) is imminent; whatever migration shape ships at the cut locks into users' saved reports permanently. The goal is to ship 2.0 with as many remediations as possible, chipped off as independent PRs.
+A full read-only audit of the codebase ([docs/audits/2026-07-03-readonly-audit/findings.md](../audits/2026-07-03-readonly-audit/findings.md)) surfaced traced, confirmed defects concentrated in the rendering lifecycle, Vega embed race handling, legacy persisted-state migration, and error propagation — plus a long quality tail. Independently, an abandoned pre-2.0 refactoring ideation pass ([docs/ideation/2026-06-13-pre-2.0-refactoring-ideation.md](../ideation/2026-06-13-pre-2.0-refactoring-ideation.md)) was cross-validated as still byte-accurate: its top-ranked infrastructure ideas predicted exactly the defect classes the audit found. The 2.0 release cut (`next` → `main`) is imminent; whatever migration shape ships at the cut locks into users' saved reports permanently. The goal is to ship 2.0 with as many remediations as possible, chipped off as independent PRs.
 
 ---
 
@@ -702,7 +702,7 @@ Phases order by release-coupling (A hardest-coupled, E loosest), but units in di
 
 ## Sources & References
 
-- **Origin documents:** [docs/audit-findings.md](../audit-findings.md) (finding IDs H1–H3, M1–M17, L1–L18, P5-D/E series used throughout); [docs/ideation/2026-06-13-pre-2.0-refactoring-ideation.md](../ideation/2026-06-13-pre-2.0-refactoring-ideation.md) (ideas #1, #2, #3, #5)
-- Audit instructions (method): [docs/audit-instructions.md](../audit-instructions.md)
+- **Origin documents:** [docs/audits/2026-07-03-readonly-audit/findings.md](../audits/2026-07-03-readonly-audit/findings.md) (finding IDs H1–H3, M1–M17, L1–L18, P5-D/E series used throughout); [docs/ideation/2026-06-13-pre-2.0-refactoring-ideation.md](../ideation/2026-06-13-pre-2.0-refactoring-ideation.md) (ideas #1, #2, #3, #5)
+- Audit instructions (method): [docs/audits/2026-07-03-readonly-audit/instructions.md](../audits/2026-07-03-readonly-audit/instructions.md)
 - Institutional learnings: listed per-doc in Context & Research
 - Related plan: [docs/plans/2026-06-10-001-u12-lifecycle-compliance-verification.md](2026-06-10-001-u12-lifecycle-compliance-verification.md) (manual counterpart to U4)

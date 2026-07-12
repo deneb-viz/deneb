@@ -1,7 +1,7 @@
 # Deneb Read-Only Audit — Findings Report
 
 **Date:** 2026-07-03 · **Branch:** docs/u12-verification-checklist · **Engagement:** read-only; no fixes applied.
-**Method:** baseline signal (`npx tsc --noEmit`: clean; `npm run eslint`: 9/9 packages pass) followed by four parallel traced audit passes per `docs/audit-instructions.md`: P1 async/lifecycle, P2 cross-package contracts, P3 data/logic integrity, P4 scoped security. P5 (quality) completed in a follow-up run (section below), alongside a cross-validation of `docs/ideation/2026-06-13-pre-2.0-refactoring-ideation.md` against the current tree.
+**Method:** baseline signal (`npx tsc --noEmit`: clean; `npm run eslint`: 9/9 packages pass) followed by four parallel traced audit passes per `instructions.md` (this directory): P1 async/lifecycle, P2 cross-package contracts, P3 data/logic integrity, P4 scoped security. P5 (quality) completed in a follow-up run (section below), alongside a cross-validation of `docs/ideation/2026-06-13-pre-2.0-refactoring-ideation.md` against the current tree.
 
 **Tally:** 0 CRITICAL · 3 HIGH · 17 MEDIUM · ~40 LOW/informational. Every finding below includes the traced evidence chain; items that could not be fully traced are labeled UNVERIFIED.
 

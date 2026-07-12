@@ -5,7 +5,7 @@ Perform a prioritized audit of the Deneb repository (c:\Repos\deneb) and produce
 findings report. This is a READ-ONLY engagement: you analyze and report; you do not fix.
 
 ## Hard constraints (non-negotiable)
-- WRITE exactly one file: `docs/audit-findings.md`. No other Edit/Write calls, anywhere.
+- WRITE exactly one file: `docs/audit-findings.md` (the report was filed alongside these instructions at `findings.md`). No other Edit/Write calls, anywhere.
 - Do NOT stage, commit, push, branch, checkout, rebase, or reset. Git is read-only
   (`git log`, `git blame`, `git diff` are fine). Never touch the `main` branch.
 - Do NOT run `npm install`, `npm update`, `npm audit fix`, or modify any
