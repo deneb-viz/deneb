@@ -154,3 +154,4 @@ When you see `createContext<T>(...)` paired with a `!context` guard:
 
 - Commits `b8ca90e6` (fix) and `f1f5d925` (test) on the `refactor/app-core-normalization` branch documented in [`docs/plans/2026-05-21-app-core-architecture-normalization.md`](../../plans/2026-05-21-app-core-architecture-normalization.md).
 - [`packages/app-core/ARCHITECTURE.md`](../../../packages/app-core/ARCHITECTURE.md) documents `context/` as a layer that hosts cross-cutting React providers like the one this pattern applies to.
+- [`docs/solutions/best-practices/local-green-is-not-ci-or-production-green-2026-07-13.md`](../best-practices/local-green-is-not-ci-or-production-green-2026-07-13.md) — the canonical node-env-vitest reference. It reuses the `vi.mock` hoisting + exact-import-path mechanics written up here, and adds the CI-Node-22 / gateway-module dimension (why an unmocked workspace import can pass locally yet fail CI).

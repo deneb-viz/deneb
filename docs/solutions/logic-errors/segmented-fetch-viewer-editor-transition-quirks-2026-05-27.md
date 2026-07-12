@@ -320,3 +320,4 @@ The workspace lacks `@testing-library/react` in the node test env (see `packages
 - [[focus-mode-viewport-overwrites-persisted-dimensions-2026-04-16]] — two-part separation pattern (clear transient flag; preserve stable state). The recovery branch here is the direct dataset-domain application.
 - [`packages/app-core/ARCHITECTURE.md`](../../../packages/app-core/ARCHITECTURE.md) — context for where dataset/state/orchestrator boundaries live.
 - Commit `687ffe17` on the `fix/fetching-status-confusion` branch.
+- [`docs/solutions/best-practices/local-green-is-not-ci-or-production-green-2026-07-13.md`](../best-practices/local-green-is-not-ci-or-production-green-2026-07-13.md) — the canonical write-up of the node-env / no-`@testing-library/react` convention the "defer component-tree tests" note above applies (characterize with a pure model rather than render).
