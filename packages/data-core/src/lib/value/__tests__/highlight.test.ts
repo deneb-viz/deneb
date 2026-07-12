@@ -51,4 +51,13 @@ describe('getHighlightComparatorValue', () => {
             'gt'
         );
     });
+
+    // L13 symmetry: an absent (undefined) comparator has no value to compare
+    // against; 'neq' is the deliberate fallback (there is no 'absent' member),
+    // mirroring getHighlightStatusValue's undefined → 'off' guard.
+    it('returns neq for an undefined out-of-bounds comparator', () => {
+        expect(
+            getHighlightComparatorValue(asValue(100), asValue(undefined))
+        ).toBe('neq');
+    });
 });

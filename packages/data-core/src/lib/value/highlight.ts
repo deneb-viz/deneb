@@ -12,6 +12,13 @@ export const getHighlightComparatorValue = (
     comparatorValue: PrimitiveValue
 ): DataPointHighlightComparator => {
     switch (true) {
+        // Symmetric with getHighlightStatusValue's L13 guard: an `undefined`
+        // comparator (an out-of-bounds read of a short highlights array) has no
+        // value to compare against. DataPointHighlightComparator has no
+        // "absent" member, so it deliberately resolves to 'neq' — the paired
+        // __highlight_status__ field carries the on/off distinction.
+        case comparatorValue === undefined:
+            return 'neq';
         case fieldValue == comparatorValue:
             return 'eq';
         case comparatorValue < fieldValue:
