@@ -8,7 +8,8 @@ import {
 /**
  * Legacy standalone signals from Deneb versions < 2.0.
  * These were separate signals, not properties of pbiContainer.
- * @deprecated These are migrated to denebContainer.width and denebContainer.height
+ * @deprecated Since 2.0; migrated to `denebContainer.width` /
+ * `denebContainer.height`. Removal target: 3.0. See `docs/DEPRECATIONS.md`.
  */
 const SIGNAL_PBI_CONTAINER_WIDTH_LEGACY = 'pbiContainerWidth';
 const SIGNAL_PBI_CONTAINER_HEIGHT_LEGACY = 'pbiContainerHeight';

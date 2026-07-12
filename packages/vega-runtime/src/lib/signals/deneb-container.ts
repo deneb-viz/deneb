@@ -41,7 +41,9 @@ export const SIGNAL_DENEB_CONTAINER = 'denebContainer';
 
 /**
  * Legacy signal name (deprecated).
- * @deprecated Use SIGNAL_DENEB_CONTAINER instead.
+ * @deprecated Since 2.0; use {@link SIGNAL_DENEB_CONTAINER} (`denebContainer`)
+ * instead. Removal target: 3.0. Specs are auto-migrated at parse via
+ * `replaceLegacySignalReferences`. See `docs/DEPRECATIONS.md`.
  */
 export const SIGNAL_PBI_CONTAINER_LEGACY = 'pbiContainer';
 
