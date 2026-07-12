@@ -7,7 +7,7 @@ import {
     tokens
 } from '@fluentui/react-components';
 
-import { logRender } from '@deneb-viz/utils/logging';
+import { logRender, logWarning } from '@deneb-viz/utils/logging';
 import {
     getBase64ImagePngBlank,
     getBase64MimeType
@@ -93,9 +93,12 @@ export const ExportInformation = () => {
                     : TEMPLATE_PREVIEW_IMAGE_MAX_SIZE / height;
             VegaViewServices.getView()
                 ?.toImageURL(IMAGE_TYPE, scale)
-                .then((i) => (img.src = i));
+                .then((i) => (img.src = i))
+                .catch((e) => {
+                    logWarning('Export preview image generation failed.', e);
+                });
         },
-        []
+        [embedViewport, setPreviewImage]
     );
     logRender('VisualExportInformation');
     return (
