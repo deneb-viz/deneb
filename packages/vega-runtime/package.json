@@ -70,7 +70,6 @@
         "@deneb-viz/utils": "*",
         "d3-interpolate": "^3.0.1",
         "d3-selection": "^3.0.0",
-        "jsonc-parser": "^3.3.1",
         "mergician": "^2.0.2",
         "powerbi-visuals-utils-formattingutils": "^6.1.2"
     },
