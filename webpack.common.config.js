@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const webpack = require('webpack');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const {
@@ -61,7 +62,20 @@ function getCommonConfig(options = {}) {
     // committed/packaged build. See docs/DEVELOPMENT.md "Testing local builds
     // of Vega and Vega-Lite".
     const localLibraryAliases = {};
-    const addLocalLibraryAliases = (name, bundlePath, schemaFile) => {
+    const addLocalLibraryAliases = (name, envVar, schemaFile) => {
+        const bundlePath = process.env[envVar];
+        if (!bundlePath) {
+            return;
+        }
+        // Fail fast on a stale/missing path (e.g. after a clean in the
+        // library repo) — webpack's downstream module-not-found error would
+        // not point back to the offending env var.
+        // eslint-disable-next-line powerbi-visuals/non-literal-fs-path -- build-time guard on a developer-supplied .env path; webpack config is not part of the packaged visual
+        if (!fs.existsSync(bundlePath)) {
+            throw new Error(
+                `[webpack] ${envVar}=${bundlePath} does not exist. Rebuild the local library, or unset the variable in .env.`
+            );
+        }
         localLibraryAliases[`${name}$`] = bundlePath;
         // The editor's JSON schemas are deep-imported (e.g.
         // 'vega/vega-schema.json'), which the exact-match bundle alias does
@@ -74,20 +88,12 @@ function getCommonConfig(options = {}) {
             schemaFile
         );
     };
-    if (process.env.VEGA_LOCAL_PATH) {
-        addLocalLibraryAliases(
-            'vega',
-            process.env.VEGA_LOCAL_PATH,
-            'vega-schema.json'
-        );
-    }
-    if (process.env.VEGA_LITE_LOCAL_PATH) {
-        addLocalLibraryAliases(
-            'vega-lite',
-            process.env.VEGA_LITE_LOCAL_PATH,
-            'vega-lite-schema.json'
-        );
-    }
+    addLocalLibraryAliases('vega', 'VEGA_LOCAL_PATH', 'vega-schema.json');
+    addLocalLibraryAliases(
+        'vega-lite',
+        'VEGA_LITE_LOCAL_PATH',
+        'vega-lite-schema.json'
+    );
     Object.entries(localLibraryAliases).forEach(([name, target]) =>
         console.log(
             `[webpack] LOCAL LIBRARY OVERRIDE: ${name} -> ${target} (do not package/commit with this active)`
