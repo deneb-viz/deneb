@@ -139,6 +139,48 @@ Key points:
 - **Polyfills**: `ProvidePlugin` injects `Buffer` and `process` for dependencies expecting Node-like globals.
 - **Performance**: ~22s initial dev build, ~1-2s rebuilds (down from ~30-40s). See [WEBPACK-OPTIMIZATIONS.md](WEBPACK-OPTIMIZATIONS.md) for details.
 
+### Testing local builds of Vega and Vega-Lite
+
+When developing or verifying an in-progress Vega or Vega-Lite change (e.g. an upstream feature branch), you can point the visual's bundle at a locally-built copy of the library instead of the version in `node_modules`. This is driven entirely by `.env`, so no source changes are needed (and nothing can be accidentally committed).
+
+**How it works:** `webpack.common.config.js` reads `VEGA_LOCAL_PATH` / `VEGA_LITE_LOCAL_PATH` and, when set, adds exact-match resolve aliases (`vega$` / `vega-lite$`) targeting those paths. Because Vega and Vega-Lite are bundled at the root webpack step (workspace packages don't bundle their own copies), a single alias redirects every import across the monorepo.
+
+**Editor JSON schemas** are covered too: the editor deep-imports `vega/vega-schema.json` / `vega-lite/vega-lite-schema.json` (see `packages/app-core/src/lib/schema/schema-service.ts`), and both repos emit the schema next to the built bundle. When a schema file is found beside the bundle the env var points at, it is aliased automatically — so editor validation/completion reflects the local build. If no sibling schema exists, the npm package's schema is used and the build log says so.
+
+**Steps:**
+
+1. Clone and build the library locally, e.g. for Vega:
+
+    ```powershell
+    git clone https://github.com/vega/vega C:\Repos\vega
+    cd C:\Repos\vega
+    git checkout <feature-branch>
+    npm install
+    npm run build
+    ```
+
+2. Set the path(s) in `.env`, pointing at the built ESM bundle:
+
+    ```env
+    VEGA_LOCAL_PATH=C:/Repos/vega/packages/vega/build/vega.module.js
+    # and/or
+    VEGA_LITE_LOCAL_PATH=C:/Repos/vega-lite/build/vega-lite.js
+    ```
+
+3. Restart `npm run dev`. The build log confirms the override is active:
+
+    ```
+    [webpack] LOCAL LIBRARY OVERRIDE: vega$ -> C:/Repos/vega/packages/vega/build/vega.module.js (do not package/commit with this active)
+    ```
+
+4. After making further changes in the library repo, rebuild it there and let webpack rebuild (restart `npm run dev` if the change isn't picked up — the library repo is outside the dev server's watch scope).
+
+**Caveats:**
+
+- **Never package with an override active.** The log line above prints for packaging builds too — if you see it during `npm run package*`, comment the variable out of `.env` and re-run. A certified submission must ship the pinned npm versions.
+- Keep the local library close to the version pinned in `package.json`; a large version gap can surface type or runtime mismatches unrelated to the change under test.
+- TypeScript types still come from the installed `node_modules` package — only the bundled runtime code is swapped. New APIs on the local build may need `// @ts-expect-error` or a temporary type shim while testing.
+
 ## 5. Monorepo & Turbo Integration
 
 `turbo.json` wires visual tasks to build dependency graph. Package dev tasks (tsup watchers) emit to `packages/**/dist/**`. Webpack dev server watches these outputs, enabling near-immediate refresh when shared libraries change.

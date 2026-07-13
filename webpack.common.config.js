@@ -56,6 +56,47 @@ function getCommonConfig(options = {}) {
     console.log(
         `[webpack] certificationFix=${certificationFix} (mode=${mode ?? 'unset'})`
     );
+    // Optional local overrides for testing in-development builds of Vega and
+    // Vega-Lite. Set VEGA_LOCAL_PATH / VEGA_LITE_LOCAL_PATH in .env to the
+    // absolute path of a locally-built library bundle. Must be unset for any
+    // committed/packaged build. See docs/DEVELOPMENT.md "Testing local builds
+    // of Vega and Vega-Lite".
+    const localLibraryAliases = {};
+    const addLocalLibraryAliases = (name, bundlePath, schemaFile) => {
+        localLibraryAliases[`${name}$`] = bundlePath;
+        // The editor's JSON schemas are deep-imported (e.g.
+        // 'vega/vega-schema.json'), which the exact-match bundle alias does
+        // not cover. Both repos emit the schema beside the built bundle, so
+        // pick it up from there when present; otherwise the npm package's
+        // schema continues to be used.
+        const schemaPath = path.join(path.dirname(bundlePath), schemaFile);
+        if (fs.existsSync(schemaPath)) {
+            localLibraryAliases[`${name}/${schemaFile}$`] = schemaPath;
+        } else {
+            console.log(
+                `[webpack] no ${schemaFile} found beside local ${name} bundle; editor will use the npm package schema`
+            );
+        }
+    };
+    if (process.env.VEGA_LOCAL_PATH) {
+        addLocalLibraryAliases(
+            'vega',
+            process.env.VEGA_LOCAL_PATH,
+            'vega-schema.json'
+        );
+    }
+    if (process.env.VEGA_LITE_LOCAL_PATH) {
+        addLocalLibraryAliases(
+            'vega-lite',
+            process.env.VEGA_LITE_LOCAL_PATH,
+            'vega-lite-schema.json'
+        );
+    }
+    Object.entries(localLibraryAliases).forEach(([name, target]) =>
+        console.log(
+            `[webpack] LOCAL LIBRARY OVERRIDE: ${name} -> ${target} (do not package/commit with this active)`
+        )
+    );
     return {
         context: __dirname,
         entry: {
@@ -81,6 +122,7 @@ function getCommonConfig(options = {}) {
             // Without this, npm hoists separate copies into app-core and
             // json-processing because root node_modules has ajv@6 (ESLint).
             alias: {
+                ...localLibraryAliases,
                 ajv: path.resolve(
                     __dirname,
                     'packages',
