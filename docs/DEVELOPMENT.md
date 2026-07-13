@@ -145,7 +145,7 @@ When developing or verifying an in-progress Vega or Vega-Lite change (e.g. an up
 
 **How it works:** `webpack.common.config.js` reads `VEGA_LOCAL_PATH` / `VEGA_LITE_LOCAL_PATH` and, when set, adds exact-match resolve aliases (`vega$` / `vega-lite$`) targeting those paths. Because Vega and Vega-Lite are bundled at the root webpack step (workspace packages don't bundle their own copies), a single alias redirects every import across the monorepo.
 
-**Editor JSON schemas** are covered too: the editor deep-imports `vega/vega-schema.json` / `vega-lite/vega-lite-schema.json` (see `packages/app-core/src/lib/schema/schema-service.ts`), and both repos emit the schema next to the built bundle. When a schema file is found beside the bundle the env var points at, it is aliased automatically — so editor validation/completion reflects the local build. If no sibling schema exists, the npm package's schema is used and the build log says so.
+**Editor JSON schemas** are covered too: the editor deep-imports `vega/vega-schema.json` / `vega-lite/vega-lite-schema.json` (see `packages/app-core/src/lib/schema/schema-service.ts`), and both repos emit the schema next to the built bundle. The schema alias is derived automatically from the bundle path, so editor validation/completion reflects the local build. If the build fails with a module-not-found error for the schema path, the local library build hasn't generated its schema — re-run its full build.
 
 **Steps:**
 

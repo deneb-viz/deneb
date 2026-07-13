@@ -1,5 +1,4 @@
 const path = require('path');
-const fs = require('fs');
 const webpack = require('webpack');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const {
@@ -67,16 +66,13 @@ function getCommonConfig(options = {}) {
         // The editor's JSON schemas are deep-imported (e.g.
         // 'vega/vega-schema.json'), which the exact-match bundle alias does
         // not cover. Both repos emit the schema beside the built bundle, so
-        // pick it up from there when present; otherwise the npm package's
-        // schema continues to be used.
-        const schemaPath = path.join(path.dirname(bundlePath), schemaFile);
-        if (fs.existsSync(schemaPath)) {
-            localLibraryAliases[`${name}/${schemaFile}$`] = schemaPath;
-        } else {
-            console.log(
-                `[webpack] no ${schemaFile} found beside local ${name} bundle; editor will use the npm package schema`
-            );
-        }
+        // alias it from there too. If the local build has not generated its
+        // schema, webpack fails with a clear module-not-found error for this
+        // path.
+        localLibraryAliases[`${name}/${schemaFile}$`] = path.join(
+            path.dirname(bundlePath),
+            schemaFile
+        );
     };
     if (process.env.VEGA_LOCAL_PATH) {
         addLocalLibraryAliases(
