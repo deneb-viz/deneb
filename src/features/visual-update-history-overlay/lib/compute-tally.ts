@@ -53,6 +53,15 @@ export type LifecycleTally = {
     fails: FailTally;
     safetyNet: SafetyNetTally;
     /**
+     * Number of `stale-close` events — async pending-render terminals
+     * suppressed by the coordinator's in-flight render-epoch guard
+     * (Important #6). A sustained non-zero value across updates is
+     * expected during rapid supersede storms; it does NOT indicate an
+     * orphan (the suppressed terminal left the freshly-bound render
+     * intact, to be closed by its own real terminal).
+     */
+    staleCloses: number;
+    /**
      * Number of ids that received an `opened` event but no matching
      * `closed` / `failed` terminal — i.e. ids still in flight from
      * the slice's perspective. For a healthy run with the overlay
@@ -93,6 +102,7 @@ export const computeLifecycleTally = (
             closedByTick: 0,
             inert: 0
         },
+        staleCloses: 0,
         pending: 0,
         pendingIds: []
     };
@@ -148,6 +158,13 @@ export const computeLifecycleTally = (
                         tally.safetyNet.inert++;
                         break;
                 }
+                break;
+            case 'stale-close':
+                // Suppressed async terminal (Important #6). Counted, but
+                // deliberately NOT applied to the `open` set: the stale
+                // terminal was a no-op, so the freshly-bound id remains
+                // legitimately pending until its own real terminal fires.
+                tally.staleCloses++;
                 break;
         }
     }

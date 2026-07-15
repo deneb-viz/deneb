@@ -90,6 +90,47 @@ export const createRenderingLifecycleCoordinator = (
     let nextId = 1;
     let pendingRenderId: RenderingLifecycleId | null = null;
 
+    // ─── In-flight render epoch guard (Important #6) ─────────────────────────
+    //
+    // The async terminals (`closePendingRender` / `failPendingRender`)
+    // act on whatever id currently sits in `pendingRenderId`. That is
+    // wrong when a superseded update's late in-flight embed callback
+    // fires AFTER a newer update has rebound the slot: the stale callback
+    // would terminate the freshly-bound render before it has painted,
+    // firing `renderingFinished` early inside Power BI's export /
+    // print-to-PDF window (exactly-once balance is preserved, so it is
+    // not a certification violation — but it captures pre-render content).
+    //
+    // `pendingEpoch` is a monotonic counter bumped on EVERY pending-render
+    // (re)binding (`bindPendingRender` / `bindPendingRenderCurrent`).
+    // `inFlightEpoch` captures the `pendingEpoch` value in effect when the
+    // current render signalled its start (`markPendingRenderStarted`); it
+    // is `null` whenever no render is in flight.
+    //
+    // Guard rule (in both async terminals): if `inFlightEpoch !== null &&
+    // inFlightEpoch < pendingEpoch`, the render that is finishing started
+    // under a binding that has since been superseded → silent no-op plus a
+    // `stale-close` observer event; the currently-bound pending id is left
+    // untouched.
+    //
+    // `inFlightEpoch` is cleared on EVERY real terminal (see
+    // `closeInternal` / `failInternal`) so a completed / failed render
+    // never leaves a stale epoch behind that could wrongly gate a later
+    // legitimate close. It is deliberately NOT cleared on the supersede
+    // path in `open()`: the superseded render's own late callback is
+    // precisely what the guard must catch, so its epoch must survive the
+    // supersede until the newer render starts (and overwrites it) or a
+    // real terminal fires.
+    //
+    // Accepted residual: a stale finish arriving AFTER the newer render's
+    // own `markPendingRenderStarted` has run matches epochs
+    // (`inFlightEpoch === pendingEpoch`), so the guard is inert and that
+    // finish closes the newer render early. That narrow ordering is
+    // complementary-guarded by vega-react's own generation suppression on
+    // real re-embeds (`use-vega-embed.ts`), and is accepted scope.
+    let pendingEpoch = 0;
+    let inFlightEpoch: number | null = null;
+
     const mintId = (): RenderingLifecycleId => {
         const id = nextId as RenderingLifecycleId;
         nextId++;
@@ -121,6 +162,10 @@ export const createRenderingLifecycleCoordinator = (
         // subsequent attempt (e.g. update()'s catch routing to
         // failCurrent) finds nothing and no-ops. See invariant #3.
         openIds.delete(id);
+        // A real terminal fired: clear any in-flight render epoch so it
+        // cannot wrongly gate a later legit pending-render close. See the
+        // epoch-guard note near the state declarations.
+        inFlightEpoch = null;
         log(`[lifecycle] renderingFinished id=${id} via=${via}`);
         observe({ kind: 'closed', id, via });
         emitter.renderingFinished(state.options);
@@ -138,6 +183,9 @@ export const createRenderingLifecycleCoordinator = (
             state.safetyNet = null;
         }
         openIds.delete(id);
+        // Real terminal — clear the in-flight render epoch (see
+        // `closeInternal` and the epoch-guard note above).
+        inFlightEpoch = null;
         const reason = deriveReason(error);
         log(`[lifecycle] renderingFailed id=${id} reason=${reason} via=${via}`);
         observe({ kind: 'failed', id, reason, error, via });
@@ -233,6 +281,7 @@ export const createRenderingLifecycleCoordinator = (
     const bindPendingRender: RenderingLifecycleCoordinator['bindPendingRender'] =
         (id) => {
             pendingRenderId = id;
+            pendingEpoch++;
         };
 
     const bindPendingRenderCurrent: RenderingLifecycleCoordinator['bindPendingRenderCurrent'] =
@@ -240,6 +289,7 @@ export const createRenderingLifecycleCoordinator = (
             const id = currentOpenId();
             if (id === null) return;
             pendingRenderId = id;
+            pendingEpoch++;
         };
 
     const armSafetyNet: RenderingLifecycleCoordinator['armSafetyNet'] = (
@@ -266,10 +316,31 @@ export const createRenderingLifecycleCoordinator = (
         failInternal(id, error, 'sync-current');
     };
 
+    /**
+     * True when the async terminal being processed belongs to a render
+     * that started under a since-superseded pending-render binding — the
+     * in-flight epoch is set (a render is/was in flight) and predates the
+     * current binding. See the epoch-guard note near the state
+     * declarations.
+     */
+    const isStaleInFlightTerminal = (): boolean =>
+        inFlightEpoch !== null && inFlightEpoch < pendingEpoch;
+
     const closePendingRender: RenderingLifecycleCoordinator['closePendingRender'] =
         () => {
-            if (pendingRenderId === null) return;
-            closeInternal(pendingRenderId, 'async-pending-render');
+            const id = pendingRenderId;
+            if (id === null) return;
+            if (isStaleInFlightTerminal()) {
+                // Late in-flight finish from a superseded binding — do NOT
+                // close the freshly-bound render. Record the suppression.
+                observe({
+                    kind: 'stale-close',
+                    id,
+                    via: 'async-pending-render'
+                });
+                return;
+            }
+            closeInternal(id, 'async-pending-render');
         };
 
     const closePendingRenderSettle: RenderingLifecycleCoordinator['closePendingRenderSettle'] =
@@ -298,14 +369,30 @@ export const createRenderingLifecycleCoordinator = (
 
     const failPendingRender: RenderingLifecycleCoordinator['failPendingRender'] =
         (error) => {
-            if (pendingRenderId === null) return;
-            failInternal(pendingRenderId, error, 'async-pending-render');
+            const id = pendingRenderId;
+            if (id === null) return;
+            if (isStaleInFlightTerminal()) {
+                // Late in-flight error from a superseded binding — do NOT
+                // fail the freshly-bound render. Record the suppression.
+                observe({
+                    kind: 'stale-close',
+                    id,
+                    via: 'async-pending-render'
+                });
+                return;
+            }
+            failInternal(id, error, 'async-pending-render');
         };
 
     const markPendingRenderStarted: RenderingLifecycleCoordinator['markPendingRenderStarted'] =
         () => {
             if (pendingRenderId === null) return;
             markRenderStartedInternal(pendingRenderId);
+            // The render is now in flight under the current binding. Any
+            // async terminal whose captured epoch is older than
+            // `pendingEpoch` at close time belongs to a superseded binding
+            // and is gated (see the epoch-guard note above).
+            inFlightEpoch = pendingEpoch;
         };
 
     // Id-bearing test-surface variants. Production code outside the
