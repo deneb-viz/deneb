@@ -120,6 +120,34 @@ export type RenderingLifecycleEvent =
           // settle-close variant, which emits no observer event on defer,
           // so there is no `'deferred'` tick result.
           result: 'closed' | 'inert';
+      }
+    | {
+          // Emitted when an async pending-render terminal
+          // (`closePendingRender` / `failPendingRender`) is gated by the
+          // coordinator's in-flight render-epoch guard: the terminal
+          // belongs to a render that STARTED under a since-superseded
+          // pending-render binding (`inFlightEpoch < pendingEpoch`).
+          // Acting on it would terminate the freshly-bound render before
+          // it has painted (Important #6 — the export/print-to-PDF
+          // early-`renderingFinished` window). The terminal is a silent
+          // no-op; this event records that a stale close/fail was
+          // suppressed so the dev overlay can surface it.
+          //
+          // `id` is the CURRENTLY-BOUND pending id — the id the stale
+          // terminal WOULD have wrongly closed — NOT the superseded id
+          // whose late callback triggered it (that id is already
+          // terminally failed and no longer tracked in `openIds`). This
+          // mirrors the other terminal events, whose `id` names the id
+          // actually affected by the decision, and is the id a consumer
+          // cares about protecting.
+          //
+          // `via` distinguishes which terminal was suppressed: the async
+          // embed-callback path (`closePendingRender`/`failPendingRender`)
+          // or the settle timer's not-started terminal branch
+          // (`closePendingRenderSettle`).
+          kind: 'stale-close';
+          id: RenderingLifecycleId;
+          via: 'async-pending-render' | 'settle-pending-render';
       };
 
 export type RenderingLifecycleObserver = (

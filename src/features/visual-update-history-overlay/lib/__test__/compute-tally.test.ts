@@ -188,6 +188,45 @@ describe('computeLifecycleTally — resilience to stale events', () => {
         expect(tally.pendingIds).toEqual([]);
     });
 
+    it('counts stale-close events without disturbing pending tracking', () => {
+        // Important #6: a superseded binding's late in-flight terminal is
+        // suppressed and emits a `stale-close` against the freshly-bound
+        // id. It must be tallied but must NOT close that id — the id stays
+        // pending until its own real terminal fires.
+        const events: RenderingLifecycleEvent[] = [
+            { kind: 'opened', id: id(1), options: FAKE_OPTIONS },
+            {
+                kind: 'failed',
+                id: id(1),
+                reason: SUPERSEDED_FAILURE_REASON,
+                via: 'superseded'
+            },
+            { kind: 'opened', id: id(2), options: FAKE_OPTIONS },
+            // A's late in-flight finish, suppressed against B (id 2).
+            { kind: 'stale-close', id: id(2), via: 'async-pending-render' },
+            // B's own real close then lands.
+            { kind: 'closed', id: id(2), via: 'async-pending-render' }
+        ];
+        const tally = computeLifecycleTally(events);
+        expect(tally.staleCloses).toBe(1);
+        expect(tally.closes.total).toBe(1);
+        expect(tally.closes.asyncPendingRender).toBe(1);
+        expect(tally.fails.superseded).toBe(1);
+        expect(tally.pending).toBe(0);
+        expect(tally.pendingIds).toEqual([]);
+    });
+
+    it('a stale-close before the freshly-bound id closes leaves it pending', () => {
+        const events: RenderingLifecycleEvent[] = [
+            { kind: 'opened', id: id(2), options: FAKE_OPTIONS },
+            { kind: 'stale-close', id: id(2), via: 'async-pending-render' }
+        ];
+        const tally = computeLifecycleTally(events);
+        expect(tally.staleCloses).toBe(1);
+        expect(tally.pending).toBe(1);
+        expect(tally.pendingIds).toEqual([2]);
+    });
+
     it('counts safety-net-tick results separately from closes', () => {
         // A tick with result `closed` increments `safetyNet.closedByTick`
         // AND emits a separate `closed` event with `via: 'safety-net'`
