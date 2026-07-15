@@ -1,4 +1,11 @@
-import { isValidElement, useCallback, useMemo, useRef, useState } from 'react';
+import {
+    isValidElement,
+    useCallback,
+    useDeferredValue,
+    useMemo,
+    useRef,
+    useState
+} from 'react';
 import {
     Accordion,
     type AccordionToggleData,
@@ -119,11 +126,19 @@ export const SettingsPane = () => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [menuAnchor, setMenuAnchor] = useState<DOMRect | null>(null);
 
-    // Resolve schemas + platform contribution + dataset descriptor,
-    // then run the match engine. The dataset indexer mirrors the
-    // render-time logic in DatasetSettings so match results line up
-    // with what the tree actually shows.
-    const matchView = useMemo<MatchView>(() => {
+    // Resolve schemas + platform contribution + dataset descriptor.
+    // Deliberately excludes `query` from its dependency list:
+    // `resolveSectionSchema` / `resolvePlatformSearchables` (translate) and
+    // `buildResolvedDatasetDescriptor` (a `.toLowerCase()` per row/flag —
+    // see `resolve-descriptors.ts`'s docs) are exactly the per-render cost
+    // the search design pre-lowers surfaces to avoid paying on every
+    // keystroke. Before this split, `query` sat in the same `useMemo` deps
+    // as these translate-heavy inputs, so every keystroke rebuilt every
+    // descriptor from scratch (Important #9) even though none of them
+    // depend on the query text. The dataset indexer mirrors the
+    // render-time logic in DatasetSettings so match results line up with
+    // what the tree actually shows.
+    const descriptors = useMemo(() => {
         const resolvedSections = [
             resolveSectionSchema(generalSchema, translate),
             resolveSectionSchema(performanceSchema, translate)
@@ -158,13 +173,8 @@ export const SettingsPane = () => {
             translate,
             headingKey: 'Text_Settings_Dataset'
         });
-        return buildMatchView({
-            query: resolveQuery(query),
-            sections: resolvedSections,
-            dataset: datasetDescriptor
-        });
+        return { resolvedSections, datasetDescriptor };
     }, [
-        query,
         translate,
         settingsPanePlatformSearchable,
         datasetFields,
@@ -174,6 +184,31 @@ export const SettingsPane = () => {
         interactivity,
         consolidateFieldParameters
     ]);
+
+    // Deferred so a fast typist's keystrokes commit to the input
+    // immediately while the match-view recompute below (the actual
+    // per-keystroke filtering work) trails slightly behind at lower
+    // priority — React re-renders once the deferred value catches up.
+    // `startTransition` around the store write in `settings-search-box.tsx`
+    // did not achieve this: that write flows through a Zustand
+    // `useSyncExternalStore` subscription, which transitions don't defer
+    // (see that file's updated comment).
+    const deferredQuery = useDeferredValue(query);
+
+    // Only re-runs the match engine — the actual per-keystroke filtering
+    // work — when the resolved descriptors change (rare: locale, platform
+    // contribution, dataset fields, support-field config) or the deferred
+    // query changes (every keystroke, but now doing filtering only, not
+    // re-translating/re-lowering every descriptor).
+    const matchView = useMemo<MatchView>(
+        () =>
+            buildMatchView({
+                query: resolveQuery(deferredQuery),
+                sections: descriptors.resolvedSections,
+                dataset: descriptors.datasetDescriptor
+            }),
+        [descriptors, deferredQuery]
+    );
 
     // Platform elements are a heterogeneous list of sibling
     // AccordionItems. Each element's React `key` is taken as its section
