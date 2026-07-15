@@ -294,23 +294,23 @@ const handleUpdateChanges = (
     payload: EditorSliceUpdateChangesPayload
 ): Partial<StoreState> => {
     const { role, text, viewState } = payload;
-    const existingViewState =
-        role === 'Spec'
-            ? state.editor.viewStateSpec
-            : state.editor.viewStateConfig;
     const isDirty =
         (role === 'Spec'
             ? state.project.spec !== text
             : state.project.config !== text) &&
         state.editor.applyMode !== 'Auto';
+    // Each role falls back to ITS OWN stored view state when no fresh one is
+    // supplied. Using the active role's view state as the fallback for the
+    // OTHER role cross-contaminates them — every Spec edit would overwrite the
+    // Config editor's saved cursor/scroll state, and vice versa.
     const viewStateConfig =
         role === 'Config'
             ? (viewState ?? state.editor.viewStateConfig)
-            : existingViewState;
+            : state.editor.viewStateConfig;
     const viewStateSpec =
         role === 'Spec'
             ? (viewState ?? state.editor.viewStateSpec)
-            : existingViewState;
+            : state.editor.viewStateSpec;
     const stagedConfig = role === 'Config' ? text : state.editor.stagedConfig;
     const stagedSpec = role === 'Spec' ? text : state.editor.stagedSpec;
     const exportMetadata = getUpdatedExportMetadata(
