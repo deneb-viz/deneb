@@ -56,15 +56,6 @@ const cell = (v: unknown) => v as powerbi.PrimitiveValue;
 const colFmt = (values: unknown[], format: string) =>
     ({ values, source: { format } }) as unknown as powerbi.DataViewValueColumn;
 
-const colDynamic = (values: unknown[], perRowFormats: string[]) =>
-    ({
-        values,
-        source: {},
-        objects: perRowFormats.map((formatString) => ({
-            general: { formatString }
-        }))
-    }) as unknown as powerbi.DataViewValueColumn;
-
 describe('getDatumValueEntriesFromDataview — mixed highlights (M9)', () => {
     beforeEach(() => {
         isCrossHighlightPropSet.mockReturnValue(false);
@@ -77,7 +68,7 @@ describe('getDatumValueEntriesFromDataview — mixed highlights (M9)', () => {
         // dataview that produced `undefined` entries and dropped the dataset.
         const values = cols(col([10, 20], [10, null]), col([30, 40]));
 
-        const entries = getDatumValueEntriesFromDataview([], values, 'en-US');
+        const entries = getDatumValueEntriesFromDataview([], values);
 
         expect(entries.every((e) => Array.isArray(e))).toBe(true);
         expect(entries).toContainEqual([30, 40]);
@@ -87,7 +78,7 @@ describe('getDatumValueEntriesFromDataview — mixed highlights (M9)', () => {
         isCrossHighlightPropSet.mockReturnValue(true);
         const values = cols(col([10, 20], [10, null]), col([30, 40]));
 
-        const entries = getDatumValueEntriesFromDataview([], values, 'en-US');
+        const entries = getDatumValueEntriesFromDataview([], values);
 
         expect(entries.every((e) => Array.isArray(e))).toBe(true);
     });
@@ -96,7 +87,7 @@ describe('getDatumValueEntriesFromDataview — mixed highlights (M9)', () => {
         doesDataViewHaveHighlights.mockReturnValue(false);
         const values = cols(col([10, 20]), col([30, 40]));
 
-        const entries = getDatumValueEntriesFromDataview([], values, 'en-US');
+        const entries = getDatumValueEntriesFromDataview([], values);
 
         expect(entries).toEqual([
             [10, 20],
@@ -134,7 +125,7 @@ describe('getCastedPrimitiveValue — undefined dateTime cell (L14)', () => {
     });
 });
 
-describe('getFormattingStringValueEntries — formatter reuse (perf)', () => {
+describe('getFormattingStringValueEntries — parity placeholders (perf)', () => {
     beforeEach(() => {
         isCrossHighlightPropSet.mockReturnValue(false);
         doesDataViewHaveHighlights.mockReturnValue(false);
@@ -142,26 +133,41 @@ describe('getFormattingStringValueEntries — formatter reuse (perf)', () => {
         getValueFormatter.mockClear();
     });
 
-    it('creates one formatter for a column with a constant format string', () => {
+    it('emits two parity slots per eligible measure without constructing a formatter', () => {
         const values = cols(colFmt([1, 2, 3, 4], '#,##0'));
 
-        const entries = getDatumValueEntriesFromDataview([], values, 'en-US');
+        const entries = getDatumValueEntriesFromDataview([], values);
 
-        // One formatter for the four same-format rows, not four.
-        expect(getValueFormatter).toHaveBeenCalledTimes(1);
-        // Format strings + formatted values are still emitted per row.
-        expect(entries).toContainEqual(['#,##0', '#,##0', '#,##0', '#,##0']);
-        expect(entries).toContainEqual(['f(1)', 'f(2)', 'f(3)', 'f(4)']);
+        // One measure value entry + two formatting-parity slots = 3 entries.
+        // Index parity with the columns array is preserved.
+        expect(entries).toHaveLength(3);
+        // The measure section is unchanged (raw value array passes through).
+        expect(entries[0]).toEqual([1, 2, 3, 4]);
+        // Every entry is an array — the row builder never faults on undefined.
+        expect(entries.every((e) => Array.isArray(e))).toBe(true);
+        // The discarded formatted-value computation is gone: no Power BI value
+        // formatter is constructed during value-entry extraction.
+        expect(getValueFormatter).not.toHaveBeenCalled();
     });
 
-    it('creates one formatter per distinct dynamic format string', () => {
-        const values = cols(
-            colDynamic([10, 20, 30], ['#,##0', '0.00', '#,##0'])
-        );
+    it('emits two parity slots for each of several eligible measures', () => {
+        const values = cols(colFmt([1, 2], '#,##0'), colFmt([3, 4], '0.00'));
 
-        getDatumValueEntriesFromDataview([], values, 'en-US');
+        const entries = getDatumValueEntriesFromDataview([], values);
 
-        // Two distinct format strings across three rows → two formatters.
-        expect(getValueFormatter).toHaveBeenCalledTimes(2);
+        // 2 measure entries + 2 × 2 formatting-parity slots.
+        expect(entries).toHaveLength(6);
+        expect(getValueFormatter).not.toHaveBeenCalled();
+    });
+
+    it('emits no formatting slots when no measure is eligible for formatting', () => {
+        isFieldEligibleForFormatting.mockReturnValue(false);
+        const values = cols(colFmt([1, 2], '#,##0'));
+
+        const entries = getDatumValueEntriesFromDataview([], values);
+
+        // Just the single measure entry, no formatting slots.
+        expect(entries).toHaveLength(1);
+        expect(getValueFormatter).not.toHaveBeenCalled();
     });
 });

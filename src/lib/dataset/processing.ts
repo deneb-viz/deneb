@@ -242,8 +242,7 @@ export const getMappedDataset = (
                     ?.length > 0;
             const fieldValues = getDatumValueEntriesFromDataview(
                 dvCategories,
-                dvValues,
-                locale
+                dvValues
             );
             const fields = getDatumFieldsFromMetadata(columns);
 
