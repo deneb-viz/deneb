@@ -68,22 +68,20 @@ export const getDatumValueEntriesFromDataview = (
  */
 const getFormattingStringValueEntries = (
     values: powerbi.DataViewValueColumns
-): powerbi.PrimitiveValue[][] => {
-    logTimeStart('getFormattingStringEntries');
-    const entries =
-        values?.reduce<powerbi.PrimitiveValue[][]>((acc, v) => {
-            if (isFieldEligibleForFormatting(v)) {
-                // Two parity placeholders (was: format strings + formatted
-                // values). The raw value array reference is never read — it only
-                // keeps the index alignment with the columns array intact.
-                acc.push(v.values);
-                acc.push(v.values);
-            }
-            return acc;
-        }, []) || [];
-    logTimeEnd('getFormattingStringEntries');
-    return entries;
-};
+): powerbi.PrimitiveValue[][] =>
+    // No timing instrumentation: the body is two array pushes per eligible
+    // measure — the logTime overhead would exceed the measured work and skew
+    // profiling output.
+    values?.reduce<powerbi.PrimitiveValue[][]>((acc, v) => {
+        if (isFieldEligibleForFormatting(v)) {
+            // Two parity placeholders (was: format strings + formatted
+            // values). The raw value array reference is never read — it only
+            // keeps the index alignment with the columns array intact.
+            acc.push(v.values);
+            acc.push(v.values);
+        }
+        return acc;
+    }, []) || [];
 
 /**
  * If we're using cross-highlight functionality, we need to get/set the highlight entries accordingly. If no highlights

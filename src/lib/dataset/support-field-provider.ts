@@ -127,11 +127,19 @@ export const createPbiSupportFieldProvider = (
  * column as 'categories' would make `mapping.index` (its dvValues index) point
  * into the dvCategories array instead, silently yielding the wrong format
  * strings and highlights.
+ *
+ * The parameter type constrains `source` to the two source provenances so the
+ * pre-filtering invariant (callers pass only `isSourceField` columns) is
+ * compiler-enforced — an unfiltered 'highlights'/'formatting'/'none' column
+ * would otherwise be silently mapped to 'categories' and index the wrong
+ * DataView array.
  */
 export const buildFieldSourceMappings = (
-    planSourceColumns: AugmentedMetadataField[]
+    planSourceColumns: Array<
+        AugmentedMetadataField & { source: 'categories' | 'values' }
+    >
 ): FieldSourceMapping[] =>
     planSourceColumns.map((c) => ({
-        source: c.source === 'values' ? 'values' : 'categories',
+        source: c.source,
         index: c.sourceIndex
     }));

@@ -325,10 +325,17 @@ export const getMappedDataset = (
                 migrationStamp?.supportFieldConfiguration ??
                 existingSupportFieldConfig;
 
-            // Filter to source fields and build plan inputs + field source mappings
+            // Filter to source fields and build plan inputs + field source
+            // mappings. The predicate narrows `source` to
+            // 'categories' | 'values', which `buildFieldSourceMappings`'s
+            // parameter type requires (compiler-enforced pre-filtering).
             const planSourceColumns = columns.filter(
-                (c) =>
-                    c.column.roles?.[DATASET_DEFAULT_NAME] &&
+                (
+                    c
+                ): c is (typeof columns)[number] & {
+                    source: 'categories' | 'values';
+                } =>
+                    !!c.column.roles?.[DATASET_DEFAULT_NAME] &&
                     isSourceField(c.source)
             );
 

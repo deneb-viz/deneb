@@ -199,6 +199,11 @@ export const isFieldEligibleForFormatting = (
 
 /**
  * Allows us to test that a field should have template metadata and/or eligible for deriving selection IDs.
+ * Typed as a predicate so filters narrow `source` to the two source
+ * provenances (see `buildFieldSourceMappings`, whose parameter type
+ * enforces pre-filtering).
  */
-export const isSourceField = (source: DatasetFieldValueSource) =>
+export const isSourceField = (
+    source: DatasetFieldValueSource
+): source is 'categories' | 'values' =>
     (<DatasetFieldValueSource[]>['categories', 'values']).includes(source);
