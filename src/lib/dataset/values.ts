@@ -1,7 +1,6 @@
 import powerbi from 'powerbi-visuals-api';
 
 import { logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
-import { getValueFormatter } from '@deneb-viz/powerbi-compat/formatting';
 import { doesDataViewHaveHighlights } from './data-view';
 import type { AugmentedMetadataField } from './types';
 import { isFieldEligibleForFormatting } from './fields';
@@ -36,77 +35,53 @@ const getCategoryValueEntries = (
  */
 export const getDatumValueEntriesFromDataview = (
     categories: powerbi.DataViewCategoryColumn[],
-    values: powerbi.DataViewValueColumns,
-    locale: string
+    values: powerbi.DataViewValueColumns
 ) => {
     return [
         ...getCategoryValueEntries(categories),
         ...((isCrossHighlightPropSet() && getHighlightValueEntries(values)) ||
             []),
         ...getMeasureValueEntries(values),
-        ...getFormattingStringValueEntries(values, locale)
+        ...getFormattingStringValueEntries(values)
     ];
 };
 
 /**
- * For measures, return the formatting string per row, and the formatted value.
+ * Emit two PARITY PLACEHOLDER slots per formatting-eligible measure.
+ *
+ * These slots historically held the resolved format string and the formatted
+ * value for every row of each numeric/dateTime measure. They are appended after
+ * every column entry in `getDatumValueEntriesFromDataview` and are therefore
+ * index-parallel with the trailing `getMeasureFormatEntries` columns produced by
+ * `getDatumFieldMetadataFromDataView` (source: 'formatting'). No consumer reads
+ * them: `buildDataRow` sources dataset values via `planFieldIndices` — which
+ * selects only source columns ('categories'/'values'), never 'formatting' — and
+ * the __format__/__formatted__ support fields are derived per-row by the
+ * support-field provider instead. Drilldown reads only columns carrying the
+ * drill role, which are grouping categories, never these measure-derived slots.
+ *
+ * So the format-string resolution and per-row formatting done here were pure
+ * discarded work (and, for a legacy spec that emits __formatted__ everywhere,
+ * duplicated the provider's per-row cost). We now emit the raw value-array
+ * reference twice as a zero-cost placeholder, purely to keep `fieldValues` the
+ * same length as (and index-parallel with) the `columns` array.
  */
 const getFormattingStringValueEntries = (
-    values: powerbi.DataViewValueColumns,
-    locale: string
-): powerbi.PrimitiveValue[][] => {
-    logTimeStart('getFormattingStringEntries');
-    // Reuse one formatter per distinct format string across the whole dataview.
-    // getFormattedValue creates a new Power BI valueFormatter on every call, so
-    // formatting N rows naively costs N heavyweight create() calls even though a
-    // column's format string is usually constant. Memoise by the resolved
-    // format string (which still varies per row for dynamic format strings) so
-    // identical strings share a formatter — turning ~rows creations into
-    // ~distinct-format-strings.
-    const formatterByString = new Map<
-        string,
-        ReturnType<typeof getValueFormatter>
-    >();
-    const formatterFor = (format: string | undefined) => {
-        const key = format ?? '';
-        let formatter = formatterByString.get(key);
-        if (!formatter) {
-            formatter = getValueFormatter(format, { cultureSelector: locale });
-            formatterByString.set(key, formatter);
+    values: powerbi.DataViewValueColumns
+): powerbi.PrimitiveValue[][] =>
+    // No timing instrumentation: the body is two array pushes per eligible
+    // measure — the logTime overhead would exceed the measured work and skew
+    // profiling output.
+    values?.reduce<powerbi.PrimitiveValue[][]>((acc, v) => {
+        if (isFieldEligibleForFormatting(v)) {
+            // Two parity placeholders (was: format strings + formatted
+            // values). The raw value array reference is never read — it only
+            // keeps the index alignment with the columns array intact.
+            acc.push(v.values);
+            acc.push(v.values);
         }
-        return formatter;
-    };
-    const entries =
-        values?.reduce<powerbi.PrimitiveValue[][]>((acc, v) => {
-            if (isFieldEligibleForFormatting(v)) {
-                const columnValues = v.values;
-                const formatStrings = columnValues.map((vv, vvi) =>
-                    getFormatStringForValueByIndex(v, vvi)
-                );
-                const formattedValues = columnValues.map((vv, vvi) =>
-                    formatterFor(formatStrings[vvi]).format(vv)
-                );
-                acc.push(formatStrings);
-                acc.push(formattedValues);
-            }
-            return acc;
-        }, []) || [];
-    logTimeEnd('getFormattingStringEntries');
-    return entries;
-};
-
-/**
- * For a given value column and row index, extract the formatting string. Order of precedence is the column definition,
- * and then the object definition at row level (as a dynamic format string may be possible).
- */
-const getFormatStringForValueByIndex = (
-    valueColumn: powerbi.DataViewValueColumn,
-    index: number
-): string | undefined =>
-    valueColumn?.source?.format ??
-    (valueColumn?.objects?.[index]?.general?.formatString as
-        | string
-        | undefined);
+        return acc;
+    }, []) || [];
 
 /**
  * If we're using cross-highlight functionality, we need to get/set the highlight entries accordingly. If no highlights

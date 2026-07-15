@@ -57,8 +57,8 @@ import {
     type SelectorStatus
 } from '../interactivity';
 import {
-    createPbiSupportFieldProvider,
-    type FieldSourceMapping
+    buildFieldSourceMappings,
+    createPbiSupportFieldProvider
 } from './support-field-provider';
 import { isLegacySpec } from './support-field-migration';
 import {
@@ -242,8 +242,7 @@ export const getMappedDataset = (
                     ?.length > 0;
             const fieldValues = getDatumValueEntriesFromDataview(
                 dvCategories,
-                dvValues,
-                locale
+                dvValues
             );
             const fields = getDatumFieldsFromMetadata(columns);
 
@@ -334,10 +333,17 @@ export const getMappedDataset = (
                 migrationStamp?.supportFieldConfiguration ??
                 existingSupportFieldConfig;
 
-            // Filter to source fields and build plan inputs + field source mappings
+            // Filter to source fields and build plan inputs + field source
+            // mappings. The predicate narrows `source` to
+            // 'categories' | 'values', which `buildFieldSourceMappings`'s
+            // parameter type requires (compiler-enforced pre-filtering).
             const planSourceColumns = columns.filter(
-                (c) =>
-                    c.column.roles?.[DATASET_DEFAULT_NAME] &&
+                (
+                    c
+                ): c is (typeof columns)[number] & {
+                    source: 'categories' | 'values';
+                } =>
+                    !!c.column.roles?.[DATASET_DEFAULT_NAME] &&
                     isSourceField(c.source)
             );
 
@@ -411,11 +417,8 @@ export const getMappedDataset = (
                 }
             }
 
-            const fieldSourceMappings: FieldSourceMapping[] =
-                planSourceColumns.map((c) => ({
-                    source: c.column.isMeasure ? 'values' : 'categories',
-                    index: c.sourceIndex
-                }));
+            const fieldSourceMappings =
+                buildFieldSourceMappings(planSourceColumns);
 
             const pbiProvider = createPbiSupportFieldProvider({
                 categories: dvCategories,
