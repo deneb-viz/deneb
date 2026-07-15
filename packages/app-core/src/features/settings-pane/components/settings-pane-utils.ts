@@ -6,8 +6,11 @@
 
 /** Selector matching the elements whose native browser context menu (cut /
  * copy / paste, spellcheck suggestions, etc.) must be preserved rather than
- * replaced by the pane's custom context menu. */
-const EDITABLE_TARGET_SELECTOR = 'input, textarea, [contenteditable="true"]';
+ * replaced by the pane's custom context menu. Both `contenteditable="true"`
+ * and the spec-recognized empty-string form (`contenteditable=""`, emitted
+ * by some rich-text libraries) count as enabled. */
+const EDITABLE_TARGET_SELECTOR =
+    'input, textarea, [contenteditable="true"], [contenteditable=""]';
 
 /**
  * Whether a context-menu (right-click or Shift+F10 / ContextMenu key)

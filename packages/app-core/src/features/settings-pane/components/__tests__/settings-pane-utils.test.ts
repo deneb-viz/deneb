@@ -27,6 +27,14 @@ describe('isEditableEventTarget', () => {
         expect(isEditableEventTarget(div)).toBe(true);
     });
 
+    it('returns true for the empty-string contenteditable form (contenteditable="")', () => {
+        // The HTML spec recognizes contenteditable="" as enabled; some
+        // rich-text libraries emit exactly this form.
+        const div = document.createElement('div');
+        div.setAttribute('contenteditable', '');
+        expect(isEditableEventTarget(div)).toBe(true);
+    });
+
     it('returns true for a descendant of an <input> (e.g. an internal wrapper span)', () => {
         const input = document.createElement('input');
         const span = document.createElement('span');
