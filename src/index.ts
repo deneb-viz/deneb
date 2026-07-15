@@ -532,6 +532,24 @@ export class Deneb implements IVisual {
      * and a static string (no store, no Fluent, no translation
      * catalog). Guarded so repeated `update()` calls after a
      * construction failure do not stack elements.
+     *
+     * Maintainer sanction (2026-07-15, binding — remediation WP8/#8):
+     * this static "Deneb failed to initialize…" element is sanctioned
+     * ONLY for visual CONSTRUCTION failure (the constructor `catch` at
+     * L322 flips `#constructionFailed`, and `handleConstructionFailure`
+     * is the sole caller of this method — verified by tracing every
+     * call path; there is no other production caller). It must not be
+     * reused for any other failure class:
+     *   - Vega VIEW-INIT failures (e.g. `useVegaEmbed`'s `onError` in
+     *     `vega-embed.tsx`) already stay blank: `handleError` clears
+     *     the view and the compilation-error effect in `vega-embed.tsx`
+     *     tears down the DOM — no reader-facing text. If a view-init
+     *     failure path is ever found to reach reader-facing text, it
+     *     must be rerouted to blank + `host.displayWarningIcon(...)`
+     *     instead of this element.
+     *   - Spec-compile errors stay fully blank — no text, no icon.
+     *     This is unchanged standing policy; see
+     *     `docs/solutions/design-patterns/viewer-blank-on-spec-error-by-design-2026-07-12.md`.
      */
     private renderConstructionFailureElement(): void {
         if (this.#constructionFailureRendered) return;
