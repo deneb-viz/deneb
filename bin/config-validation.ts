@@ -69,5 +69,16 @@ export const collectConfigErrors = (env: NodeJS.ProcessEnv): string[] => {
         );
     }
 
+    // Local Vega/Vega-Lite build overrides (webpack.common.config.js) must never
+    // reach a committed or packaged build — a certified .pbiviz would silently
+    // bundle unvetted library code.
+    for (const key of ['VEGA_LOCAL_PATH', 'VEGA_LITE_LOCAL_PATH'] as const) {
+        if (env[key]?.trim()) {
+            errors.push(
+                `❌ .env ${key} is set ('${env[key]}'). Local Vega build overrides must be unset for committed/packaged builds.`
+            );
+        }
+    }
+
     return errors;
 };

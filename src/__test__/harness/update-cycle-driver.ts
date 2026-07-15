@@ -323,10 +323,6 @@ export const createUpdateCycleDriver = (
         options: powerbi.extensibility.visual.VisualUpdateOptions
     ): void => {
         const categorical = getCategoricalDataViewFromOptions(options);
-        if (!categorical) {
-            coordinator.closeCurrent();
-            return;
-        }
         const canFetchMore = canFetchMoreFromDataview(
             settings,
             options?.dataViews?.[0]?.metadata as powerbi.DataViewMetadata
