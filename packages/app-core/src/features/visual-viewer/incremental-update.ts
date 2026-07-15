@@ -215,3 +215,65 @@ export const resolveDataChangeAction = (
     }
     return 'incremental';
 };
+
+/**
+ * How the data-change effect should treat one host data update, decided BEFORE
+ * it works out how to apply the change (that second decision is
+ * `resolveDataChangeAction`).
+ *
+ * - `'initialize'` — first observation: record the baseline values and take no
+ *   action (there is nothing yet to diff against).
+ * - `'unchanged'`  — the values reference is identical to the last one seen;
+ *   nothing to do.
+ * - `'inactive'`   — this embed instance is not the single live one (defect C1);
+ *   it must run no side effects.
+ * - `'defer'`      — the view is mid-embed (`viewReady` is false). The update is
+ *   NOT consumed and the baseline is NOT advanced; because `viewReady` is a
+ *   dependency of the effect, it re-runs and applies the update once the embed
+ *   completes, so a change that lands during an in-flight embed is not dropped
+ *   (defect #7).
+ * - `'no-view'`    — no Vega view is bound yet; nothing to update.
+ * - `'act'`        — apply the data change (the ignore/recompile/incremental
+ *   choice is resolved downstream by `resolveDataChangeAction`).
+ */
+export type DataChangeGate =
+    | 'initialize'
+    | 'unchanged'
+    | 'inactive'
+    | 'defer'
+    | 'no-view'
+    | 'act';
+
+/**
+ * Decide how the data-change effect should treat a host data update.
+ *
+ * The ordering is deliberate. `'inactive'` and `'defer'` are checked before any
+ * action is taken, and both leave the previous-values baseline untouched (see
+ * `shouldAdvancePrevValues`). Leaving the baseline untouched on `'defer'` is the
+ * crux of defect #7: an update that arrives while the view is mid-embed is
+ * re-evaluated — not swallowed — when `viewReady` flips true.
+ */
+export const resolveDataChangeGate = (params: {
+    prevValues: readonly unknown[] | null;
+    values: readonly unknown[];
+    isActive: boolean;
+    viewReady: boolean;
+    hasView: boolean;
+}): DataChangeGate => {
+    const { prevValues, values, isActive, viewReady, hasView } = params;
+    if (prevValues === null) return 'initialize';
+    if (prevValues === values) return 'unchanged';
+    if (!isActive) return 'inactive';
+    if (!viewReady) return 'defer';
+    if (!hasView) return 'no-view';
+    return 'act';
+};
+
+/**
+ * Whether the data-change effect should advance its previous-values baseline for
+ * a given gate. Only `'initialize'` (record the first baseline) and `'act'` (an
+ * update was consumed) advance it; every "did not apply" gate leaves the
+ * baseline untouched so the update can be re-evaluated on a later effect run.
+ */
+export const shouldAdvancePrevValues = (gate: DataChangeGate): boolean =>
+    gate === 'initialize' || gate === 'act';

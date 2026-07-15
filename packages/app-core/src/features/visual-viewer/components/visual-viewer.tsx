@@ -20,8 +20,11 @@ import { VegaEmbedErrorBoundary } from './vega-embed-error-boundary';
 import { VEGA_CONTAINER_ID } from '../constants';
 import {
     performIncrementalUpdate,
-    resolveDataChangeAction
+    resolveDataChangeAction,
+    resolveDataChangeGate,
+    shouldAdvancePrevValues
 } from '../incremental-update';
+import { computeEmbedActive } from '../embed-active';
 import { useDenebState } from '../../../state';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 import { INCREMENTAL_UPDATE_CONFIGURATION } from '../../../lib/vega/incremental-update-configuration';
@@ -39,13 +42,31 @@ const originalDevicePixelRatio = window.devicePixelRatio;
 
 /**
  * Module-level effective DPR, read by the devicePixelRatio getter override.
- * Updated synchronously during render by any VisualViewer instance.
+ * Updated synchronously during render by the active VisualViewer instance.
  */
 let effectiveDevicePixelRatio = originalDevicePixelRatio;
-Object.defineProperty(window, 'devicePixelRatio', {
-    get: () => effectiveDevicePixelRatio,
-    configurable: true
-});
+
+/**
+ * Whether the `window.devicePixelRatio` getter override has been installed.
+ * The override is installed lazily on the first VisualViewer mount rather than
+ * at import time, so merely importing this module never mutates global
+ * `window`. Guarded by this flag so repeated mounts (multiple instances,
+ * remounts) install it exactly once.
+ */
+let devicePixelRatioOverrideInstalled = false;
+
+/**
+ * Install the `window.devicePixelRatio` getter override, once. Idempotent: safe
+ * to call from every VisualViewer mount.
+ */
+const installDevicePixelRatioOverride = () => {
+    if (devicePixelRatioOverrideInstalled) return;
+    devicePixelRatioOverrideInstalled = true;
+    Object.defineProperty(window, 'devicePixelRatio', {
+        get: () => effectiveDevicePixelRatio,
+        configurable: true
+    });
+};
 
 type ScrollPosition = { scrollTop: number; scrollLeft: number };
 
@@ -128,6 +149,7 @@ export const VisualViewer = ({
         enableIncrementalDataUpdates,
         incrementalUpdateThreshold,
         viewReady,
+        interfaceType,
         logError,
         logDurableError,
         logDurableWarn,
@@ -159,6 +181,7 @@ export const VisualViewer = ({
         incrementalUpdateThreshold:
             state.compilation.incrementalUpdateThreshold,
         viewReady: state.compilation.viewReady,
+        interfaceType: state.interface.type,
         logError: state.compilation.logError,
         logDurableError: state.compilation.logDurableError,
         logDurableWarn: state.compilation.logDurableWarn,
@@ -179,6 +202,21 @@ export const VisualViewer = ({
         vegaLoader,
         viewEventBinders
     } = useDenebPlatformProvider();
+
+    // Whether THIS instance is the single live embed. The retained (hidden)
+    // editor instance and the standalone viewer instance can both be mounted at
+    // once; exactly one runs live, chosen by the current interface mode (defect
+    // C1). The inactive instance runs no compile/data/DPR side effects and
+    // renders a `null` spec (see `VegaEmbed`).
+    const isActive = computeEmbedActive(interfaceType, !!isEmbeddedInEditor);
+
+    // Install the devicePixelRatio getter override on first mount (idempotent),
+    // rather than at module import time. Installed unconditionally regardless of
+    // `isActive` — the getter merely reads `effectiveDevicePixelRatio`, which
+    // only the active instance writes.
+    useLayoutEffect(() => {
+        installDevicePixelRatioOverride();
+    }, []);
 
     const embedScaleFactor = useMemo(() => {
         if (!scaleToZoom || renderMode !== 'canvas') return undefined;
@@ -203,11 +241,15 @@ export const VisualViewer = ({
     // (scaleFactor in embed options only affects exports).
     // Uses useLayoutEffect to run synchronously after commit but before paint.
     useLayoutEffect(() => {
+        // Only the live instance writes the shared module-level DPR, so the two
+        // mounted instances never fight over `effectiveDevicePixelRatio` (defect
+        // C1).
+        if (!isActive) return;
         effectiveDevicePixelRatio =
             embedScaleFactor !== undefined
                 ? originalDevicePixelRatio * embedScaleFactor
                 : originalDevicePixelRatio;
-    }, [embedScaleFactor]);
+    }, [embedScaleFactor, isActive]);
 
     // Track previous values reference for incremental update detection
     const prevValuesRef = useRef<unknown[] | null>(null);
@@ -216,39 +258,52 @@ export const VisualViewer = ({
      * Handle data changes from host/'known' datasets.
      */
     useEffect(() => {
-        // Skip on initial mount - wait for first embed to complete
-        if (prevValuesRef.current === null) {
-            prevValuesRef.current = values;
-            logDebug(
-                'VisualViewer: Initial values set, waiting for first embed'
-            );
-            return;
-        }
-
-        // Skip if values reference hasn't changed
-        if (prevValuesRef.current === values) {
-            return;
-        }
-
-        // Update ref immediately
-        const previousValues = prevValuesRef.current;
-        prevValuesRef.current = values;
-
-        // Skip if view is not ready yet (runAsync() hasn't completed)
-        // This is critical - the view's datasets/signals are only populated AFTER runAsync() finishes
-        if (!viewReady) {
-            logDebug(
-                'VisualViewer: View not ready yet (runAsync in progress), skipping data change'
-            );
-            return;
-        }
-
-        // Get the current view
         const view = VegaViewServices.getView();
-        if (!view) {
-            logDebug('VisualViewer: No view yet, skipping data change');
-            return;
+        const previousValues = prevValuesRef.current;
+        const gate = resolveDataChangeGate({
+            prevValues: previousValues,
+            values,
+            isActive,
+            viewReady,
+            hasView: !!view
+        });
+
+        // Advance the baseline ONLY when an update is actually consumed
+        // ('initialize' records the first baseline; 'act' consumes a change).
+        // Critically, 'defer' (view mid-embed) does NOT advance — so when
+        // `viewReady` (a dependency of this effect) flips true, the effect
+        // re-runs and applies the update instead of dropping it (defect #7).
+        if (shouldAdvancePrevValues(gate)) {
+            prevValuesRef.current = values;
         }
+
+        switch (gate) {
+            case 'initialize':
+                logDebug(
+                    isActive
+                        ? 'VisualViewer: Initial values set, waiting for first embed'
+                        : 'VisualViewer: Initial values set (inactive instance, baseline recorded)'
+                );
+                return;
+            case 'unchanged':
+                return;
+            case 'inactive':
+                // Not the single live instance (defect C1): run no side effects.
+                return;
+            case 'defer':
+                logDebug(
+                    'VisualViewer: View not ready yet (runAsync in progress), skipping data change'
+                );
+                return;
+            case 'no-view':
+                logDebug('VisualViewer: No view yet, skipping data change');
+                return;
+        }
+
+        // gate === 'act': an active, ready, view-bound instance is consuming a
+        // data change. `view` is guaranteed non-null here (the 'no-view' gate
+        // covers the null case); this guard only narrows the type.
+        if (!view) return;
 
         // Do "recompile threshold" checks
         const effectiveThreshold = Math.min(
@@ -317,7 +372,7 @@ export const VisualViewer = ({
             {
                 datasetName: DATASET_DEFAULT_NAME,
                 rowCount: values.length,
-                previousCount: previousValues.length
+                previousCount: previousValues?.length ?? 0
             }
         );
 
@@ -390,6 +445,7 @@ export const VisualViewer = ({
     }, [
         values,
         viewReady,
+        isActive,
         enableIncrementalDataUpdates,
         incrementalUpdateThreshold,
         spec,
@@ -431,6 +487,11 @@ export const VisualViewer = ({
      * existing view without triggering a full re-compile/re-embed.
      */
     useEffect(() => {
+        // Only the single live instance compiles (defect C1). When this instance
+        // becomes active, `isActive` flips true and the effect re-fires,
+        // producing the instance-appropriate scaleFactor from `embedScaleFactor`.
+        if (!isActive) return;
+
         logDebug('VisualViewer: Triggering compilation', {
             hasSpec: !!spec,
             hasConfig: !!config,
@@ -465,7 +526,8 @@ export const VisualViewer = ({
         logLevel,
         renderMode,
         embedScaleFactor,
-        schemaValidator
+        schemaValidator,
+        isActive
     ]);
 
     /**
@@ -475,6 +537,7 @@ export const VisualViewer = ({
         () => (
             <VegaEmbedErrorBoundary onError={onRenderingError}>
                 <VegaEmbed
+                    isActive={isActive}
                     onRenderingError={onRenderingError}
                     onRenderingFinished={onRenderingFinished}
                     onRenderingStarted={onRenderingStarted}
@@ -487,6 +550,7 @@ export const VisualViewer = ({
             </VegaEmbedErrorBoundary>
         ),
         [
+            isActive,
             onRenderingError,
             onRenderingFinished,
             onRenderingStarted,
