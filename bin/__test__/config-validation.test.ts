@@ -83,3 +83,38 @@ describe('collectConfigErrors — dev toggles and external URIs', () => {
         ).toBe(false);
     });
 });
+
+describe('collectConfigErrors — local Vega/Vega-Lite build overrides (C2)', () => {
+    const safe = { LOG_LEVEL: '0' };
+
+    it('errors when VEGA_LOCAL_PATH is set', () => {
+        expect(
+            collectConfigErrors(
+                env({ ...safe, VEGA_LOCAL_PATH: 'C:/builds/vega/vega.js' })
+            ).some((e) => /VEGA_LOCAL_PATH/.test(e))
+        ).toBe(true);
+    });
+
+    it('errors when VEGA_LITE_LOCAL_PATH is set', () => {
+        expect(
+            collectConfigErrors(
+                env({
+                    ...safe,
+                    VEGA_LITE_LOCAL_PATH: 'C:/builds/vega-lite/vega-lite.js'
+                })
+            ).some((e) => /VEGA_LITE_LOCAL_PATH/.test(e))
+        ).toBe(true);
+    });
+
+    it('passes when VEGA_LOCAL_PATH / VEGA_LITE_LOCAL_PATH are empty or whitespace', () => {
+        expect(
+            collectConfigErrors(
+                env({
+                    ...safe,
+                    VEGA_LOCAL_PATH: '',
+                    VEGA_LITE_LOCAL_PATH: '   '
+                })
+            ).some((e) => /VEGA_LOCAL_PATH|VEGA_LITE_LOCAL_PATH/.test(e))
+        ).toBe(false);
+    });
+});
