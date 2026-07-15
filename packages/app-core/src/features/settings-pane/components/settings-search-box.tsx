@@ -1,6 +1,5 @@
 import {
     forwardRef,
-    startTransition,
     useCallback,
     useEffect,
     useImperativeHandle,
@@ -42,14 +41,20 @@ const useStyles = makeStyles({
  * Search box rendered above the settings-pane accordion. Bound to the
  * session-scoped query slice (`state.settingsPane.query`).
  *
- * Typing updates a local controlled value synchronously so the caret
- * stays in sync with keystrokes even under load. The store write is
- * routed through React's `startTransition` so the expensive matchView
- * rebuild, HighlightText re-renders, and dataset-tree recomputations
- * happen as a non-urgent transition — React can discard intermediate
- * values and commit only the latest, keeping the input responsive on
- * large datasets. External query changes (`clearQuery`, debug-driven
- * writes) sync back into the local value via `useEffect`.
+ * Typing updates a local controlled value synchronously so the caret stays
+ * in sync with keystrokes even under load, and writes straight through to
+ * the store on every change. The write used to be wrapped in React's
+ * `startTransition`, on the theory that it would let React defer the
+ * expensive matchView rebuild as a non-urgent update — but the store is a
+ * Zustand slice consumed via `useSyncExternalStore`
+ * (`state.settingsPane.query` in `settings-pane.tsx`), and
+ * `useSyncExternalStore` subscriptions always apply synchronously
+ * regardless of the transition/priority the triggering update ran under;
+ * `startTransition` had no effect here and only obscured the actual fix
+ * (see `settings-pane.tsx`, which now defers the expensive match-view
+ * recompute itself via `useDeferredValue`). External query changes
+ * (`clearQuery`, debug-driven writes) sync back into the local value via
+ * `useEffect`.
  */
 export const SettingsSearchBox = forwardRef<SettingsSearchBoxHandle>(
     (_props, ref) => {
@@ -83,9 +88,7 @@ export const SettingsSearchBox = forwardRef<SettingsSearchBoxHandle>(
             ) => {
                 const next = data.value ?? '';
                 setLocalValue(next);
-                startTransition(() => {
-                    setQuery(next);
-                });
+                setQuery(next);
             },
             [setQuery]
         );

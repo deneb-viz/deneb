@@ -4,7 +4,7 @@ import {
     useContext,
     useMemo,
     useRef,
-    useState,
+    useSyncExternalStore,
     type ReactNode,
     type RefObject
 } from 'react';
@@ -22,37 +22,6 @@ interface InspectorPopoverState {
     rawValue: unknown;
     valueType: WorkerDatasetViewerValueType | null;
     cellId: string | null;
-}
-
-interface InspectorPopoverContextValue extends InspectorPopoverState {
-    /**
-     * Open the inspector on the given cell. Replaces any previously open state
-     * so that at most one inspector is visible at a time.
-     */
-    openInspector: (
-        anchorRef: RefObject<HTMLElement | null>,
-        rawValue: unknown,
-        valueType: WorkerDatasetViewerValueType,
-        cellId: string
-    ) => void;
-    /**
-     * Close the inspector and restore focus to the previously opening cell if
-     * the anchor element is still connected to the DOM.
-     */
-    closeInspector: () => void;
-    /**
-     * Update the currently-open inspector's `rawValue` / `valueType` without
-     * touching `anchorRef` or `cellId`. Used when the cell behind an open
-     * inspector has its value change beneath it (e.g. a signal-viewer cell
-     * whose signal ticks while inspected). No-ops when the inspector is
-     * already closed, reading from a synchronous internal ref so a dismiss
-     * fired earlier in the same event-loop tick cannot be undone by a
-     * refresh dispatched against the pre-dismiss context snapshot.
-     */
-    refreshInspector: (
-        rawValue: unknown,
-        valueType: WorkerDatasetViewerValueType
-    ) => void;
 }
 
 export const INSPECTOR_POPOVER_CLOSED_STATE: InspectorPopoverState = {
@@ -101,107 +70,218 @@ export const shouldRefreshInspector = (
     return true;
 };
 
-const InspectorPopoverContext =
-    createContext<InspectorPopoverContextValue | null>(null);
+/**
+ * Minimal external store (subscribe/getState/setState) backing the
+ * inspector popover's state. The store OBJECT — not a plain state value —
+ * is what travels through `InspectorStoreContext`, and its identity never
+ * changes across renders. That's what lets `useIsInspectorOpenForCell`
+ * subscribe via `useSyncExternalStore`: each cell computes its own
+ * boolean slice of the state and React bails out of re-rendering that cell
+ * when the slice is unchanged (`Object.is` on the returned boolean),
+ * instead of every consumer re-rendering whenever ANY field of the shared
+ * state changes (which is what a plain `useContext(fullStateContext)`
+ * cannot avoid).
+ */
+interface InspectorStore {
+    getState: () => InspectorPopoverState;
+    setState: (next: InspectorPopoverState) => void;
+    subscribe: (listener: () => void) => () => void;
+}
+
+const createInspectorStore = (
+    initial: InspectorPopoverState
+): InspectorStore => {
+    let state = initial;
+    const listeners = new Set<() => void>();
+    return {
+        getState: () => state,
+        setState: (next) => {
+            state = next;
+            listeners.forEach((listener) => listener());
+        },
+        subscribe: (listener) => {
+            listeners.add(listener);
+            return () => listeners.delete(listener);
+        }
+    };
+};
+
+/** No-op subscription used by the selector hooks outside a provider. */
+const emptySubscribe = () => () => {};
 
 /**
- * Hook for cells and the inspector itself to consume the shared popover state.
- * Returns `null` outside a provider so cells with `inspectable={false}` (the
- * signal-viewer key column, or cells rendered in isolated test harnesses) can
- * mount without a `DataTableInspectorProvider`. Consumers that genuinely
- * require the provider (e.g. `InspectorPopover`) should short-circuit when
- * this returns null rather than throwing deep inside a render tree.
+ * Stable action surface exposed to cells for dispatching to the shared
+ * inspector popover. Mirrors the keyboard context's action/state split
+ * (`data-table-keyboard-context.tsx`): the identity of this object and its
+ * methods never changes for the lifetime of the provider, so a cell's
+ * `useEffect` dependency arrays that list these actions don't churn (or
+ * force a re-render) on every popover state change.
+ *
+ * `getSnapshot` is a non-reactive escape hatch: cells use it inside the
+ * live-refresh effect to read the inspector's CURRENTLY stored value (the
+ * comparison target for `shouldRefreshInspector`) without subscribing to
+ * state changes at the component level. Subscribing there — as the
+ * predecessor single-context design did, by listing the whole context
+ * value as an effect dependency — is what caused every mounted cell to
+ * re-render on every popover state change, including a signal ticking
+ * under an open inspector re-rendering every row on every tick (Important
+ * #12).
  */
-export const useDataTableInspector = (): InspectorPopoverContextValue | null =>
-    useContext(InspectorPopoverContext);
+interface InspectorPopoverActions {
+    openInspector: (
+        anchorRef: RefObject<HTMLElement | null>,
+        rawValue: unknown,
+        valueType: WorkerDatasetViewerValueType,
+        cellId: string
+    ) => void;
+    closeInspector: () => void;
+    refreshInspector: (
+        rawValue: unknown,
+        valueType: WorkerDatasetViewerValueType
+    ) => void;
+    getSnapshot: () => InspectorPopoverState;
+}
+
+const InspectorActionsContext = createContext<InspectorPopoverActions | null>(
+    null
+);
+const InspectorStoreContext = createContext<InspectorStore | null>(null);
+
+/**
+ * Hook for cells (and the inspector itself) to obtain the stable action
+ * callbacks, plus a non-reactive snapshot getter. Returns `null` outside a
+ * provider so cells with `inspectable={false}` (the signal-viewer key
+ * column, or cells rendered in isolated test harnesses) can mount without a
+ * `DataTableInspectorProvider`. Consumers that genuinely require the
+ * provider (e.g. `InspectorPopover`) should short-circuit when this returns
+ * null rather than throwing deep inside a render tree.
+ */
+export const useDataTableInspectorActions =
+    (): InspectorPopoverActions | null => useContext(InspectorActionsContext);
+
+/**
+ * Selector-based subscription: re-renders the calling cell only when
+ * whether-THIS-cell-is-open flips — not on every popover state change (a
+ * ticking signal's `rawValue` update while a different cell is inspected,
+ * or even while the popover is closed entirely). `useSyncExternalStore`
+ * bails out of the re-render when the selected boolean is unchanged, which
+ * a plain context subscription to the full state object cannot do (a new
+ * state object is a new reference every time, so every subscriber would
+ * re-render regardless of whether ITS derived value changed).
+ */
+export const useIsInspectorOpenForCell = (cellId: string | null): boolean => {
+    const store = useContext(InspectorStoreContext);
+    return useSyncExternalStore(store?.subscribe ?? emptySubscribe, () =>
+        store && cellId ? isOpenForCellId(store.getState(), cellId) : false
+    );
+};
+
+/**
+ * Full reactive inspector state. Intended for `InspectorPopover` only — the
+ * single instance per `DataTableViewer` that actually renders the popover
+ * surface and legitimately needs every field. Per-cell consumers should use
+ * `useIsInspectorOpenForCell` instead; subscribing to the full state here
+ * from every cell is exactly the fan-out re-render this module's split
+ * exists to avoid.
+ */
+export const useDataTableInspectorState = (): InspectorPopoverState | null => {
+    const store = useContext(InspectorStoreContext);
+    return useSyncExternalStore(
+        store?.subscribe ?? emptySubscribe,
+        () => store?.getState() ?? null
+    );
+};
 
 /**
  * Provides shared state for a single inspector popover hosted at the
- * `DataTableViewer` level. Cells call `openInspector` to target the popover;
- * the popover reads `isOpen`, `anchorRef`, `rawValue`, and `valueType` from
- * this provider.
+ * `DataTableViewer` level. Cells call `openInspector` (via
+ * `useDataTableInspectorActions`) to target the popover; `InspectorPopover`
+ * reads the reactive state via `useDataTableInspectorState`.
  */
 export const DataTableInspectorProvider = ({
     children
 }: {
     children: ReactNode;
 }) => {
-    const [state, setState] = useState<InspectorPopoverState>(
-        INSPECTOR_POPOVER_CLOSED_STATE
+    // The store is created once and its identity never changes — it is
+    // deliberately NOT React state. `setState` mutates a closure variable
+    // and synchronously notifies listeners, so `getState()` immediately
+    // after a `setState` call always reflects the latest value, with no
+    // dependency on React's render/commit timing (the predecessor
+    // `stateRef` mirror existed only to work around that timing; a plain
+    // closure variable sidesteps the problem entirely).
+    const storeRef = useRef<InspectorStore | null>(null);
+    if (!storeRef.current) {
+        storeRef.current = createInspectorStore(INSPECTOR_POPOVER_CLOSED_STATE);
+    }
+    const store = storeRef.current;
+
+    const openInspector = useCallback<InspectorPopoverActions['openInspector']>(
+        (anchorRef, rawValue, valueType, cellId) => {
+            store.setState({
+                isOpen: true,
+                anchorRef,
+                rawValue,
+                valueType,
+                cellId
+            });
+        },
+        [store]
     );
-
-    // Mirror state into a ref so `closeInspector` can read the current anchor
-    // without performing the focus side effect inside a `setState` updater.
-    // React treats updater callbacks as pure; in StrictMode (and under
-    // concurrent rendering) they may run more than once per dispatch, which
-    // would double-fire `anchorEl.focus()` and produce duplicate screen-reader
-    // announcements or a momentary flicker back to the cell.
-    const stateRef = useRef<InspectorPopoverState>(state);
-    stateRef.current = state;
-
-    const openInspector = useCallback<
-        InspectorPopoverContextValue['openInspector']
-    >((anchorRef, rawValue, valueType, cellId) => {
-        setState({
-            isOpen: true,
-            anchorRef,
-            rawValue,
-            valueType,
-            cellId
-        });
-    }, []);
 
     const closeInspector = useCallback(() => {
         // Idempotent: the coordinate-rect mousedown handler and Fluent's
         // own `onOpenChange` can both fire `closeInspector` for the same
-        // outside-click gesture in the same event-loop tick. The `isOpen`
-        // closure in `handleOpenChange` reads a stale render's value, so
-        // its `if (!isOpen) return` guard won't suppress the second call.
-        // Update `stateRef` synchronously so any follow-up call sees the
-        // closed state before React commits the next render, and
-        // `anchorEl.focus()` fires only once per dismissal.
-        if (!stateRef.current.isOpen) return;
-        const anchorEl = stateRef.current.anchorRef?.current;
-        stateRef.current = INSPECTOR_POPOVER_CLOSED_STATE;
-        setState(INSPECTOR_POPOVER_CLOSED_STATE);
+        // outside-click gesture in the same event-loop tick. Reading
+        // `store.getState()` (rather than a closed-over `state` value)
+        // means the second call in the same tick observes the first
+        // call's synchronous update and no-ops.
+        const current = store.getState();
+        if (!current.isOpen) return;
+        const anchorEl = current.anchorRef?.current;
+        store.setState(INSPECTOR_POPOVER_CLOSED_STATE);
         if (anchorEl?.isConnected) {
             anchorEl.focus({ preventScroll: true });
         }
-    }, []);
+    }, [store]);
 
     const refreshInspector = useCallback<
-        InspectorPopoverContextValue['refreshInspector']
-    >((rawValue, valueType) => {
-        // Read from `stateRef` rather than closing over `state` so a
-        // `closeInspector` call earlier in the same event-loop tick
-        // (which synchronously flips `stateRef.current.isOpen` to false)
-        // prevents a refresh dispatched against a pre-close context
-        // snapshot from reopening the popover. Cells see the open state
-        // via React context — which is one render stale relative to the
-        // ref — so the dispatch has to be the authoritative check.
-        if (!stateRef.current.isOpen) return;
-        const next: InspectorPopoverState = {
-            ...stateRef.current,
-            rawValue,
-            valueType
-        };
-        stateRef.current = next;
-        setState(next);
-    }, []);
+        InspectorPopoverActions['refreshInspector']
+    >(
+        (rawValue, valueType) => {
+            // Read from `store.getState()` rather than a closed-over
+            // `state` so a `closeInspector` call earlier in the same
+            // event-loop tick (which updates the store synchronously)
+            // prevents a refresh dispatched against a pre-close snapshot
+            // from reopening the popover.
+            const current = store.getState();
+            if (!current.isOpen) return;
+            store.setState({
+                ...current,
+                rawValue,
+                valueType
+            });
+        },
+        [store]
+    );
 
-    const value = useMemo<InspectorPopoverContextValue>(
+    const getSnapshot = useCallback(() => store.getState(), [store]);
+
+    const actions = useMemo<InspectorPopoverActions>(
         () => ({
-            ...state,
             openInspector,
             closeInspector,
-            refreshInspector
+            refreshInspector,
+            getSnapshot
         }),
-        [state, openInspector, closeInspector, refreshInspector]
+        [openInspector, closeInspector, refreshInspector, getSnapshot]
     );
 
     return (
-        <InspectorPopoverContext.Provider value={value}>
-            {children}
-        </InspectorPopoverContext.Provider>
+        <InspectorStoreContext.Provider value={store}>
+            <InspectorActionsContext.Provider value={actions}>
+                {children}
+            </InspectorActionsContext.Provider>
+        </InspectorStoreContext.Provider>
     );
 };

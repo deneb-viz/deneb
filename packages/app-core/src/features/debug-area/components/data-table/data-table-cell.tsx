@@ -13,9 +13,9 @@ import {
 import type { WorkerDatasetViewerValueType } from '../../workers/types';
 import { getDenebState } from '../../../../state';
 import {
-    isOpenForCellId,
     shouldRefreshInspector,
-    useDataTableInspector
+    useDataTableInspectorActions,
+    useIsInspectorOpenForCell
 } from './inspector-popover-context';
 import {
     buildCellId,
@@ -93,17 +93,17 @@ export const DataTableCell = ({
         inspectable
     );
 
-    const inspector = useDataTableInspector();
+    const inspectorActions = useDataTableInspectorActions();
     const keyboard = useDataTableKeyboardActions();
     const cellRef = useRef<HTMLDivElement>(null);
 
-    // `inspector` may be null if the cell is rendered outside a
+    // `inspectorActions` may be null if the cell is rendered outside a
     // `DataTableInspectorProvider` (isolated test harness, signal-viewer key
     // column, etc.). In that case click-to-inspect is unavailable and the
     // cell renders in the non-inspectable branch below.
     const canInspect =
         inspectable &&
-        inspector !== null &&
+        inspectorActions !== null &&
         valueType !== undefined &&
         rowIndex !== undefined;
 
@@ -113,6 +113,15 @@ export const DataTableCell = ({
     }, [canInspect, rowIndex, effectiveColumnId]);
 
     const isActiveCell = useIsDataTableCellActive(cellId);
+
+    // Selector-based subscription: this cell re-renders only when whether
+    // IT is the open cell flips, not on every popover state change (e.g. a
+    // ticking signal's rawValue update in a DIFFERENT cell, or this cell's
+    // own live-refresh dispatch while the popover targets someone else).
+    // See `inspector-popover-context.tsx` for why the predecessor
+    // full-state context caused every mounted cell to re-render on every
+    // popover state change (Important #12).
+    const isInspectorOpen = useIsInspectorOpenForCell(cellId);
 
     // Register this cell with the keyboard provider for roving tabindex
     // tracking. Non-inspectable cells skip registration so arrow-key
@@ -130,14 +139,19 @@ export const DataTableCell = ({
     // viewer's currentDate signal ticking every second) would show stale
     // content until the user re-clicks. Only the currently-targeted cell
     // dispatches a refresh, so ticks from unrelated cells don't stomp the
-    // inspector. The Object.is guard suppresses the redundant re-dispatch
-    // that would otherwise fire immediately after click (when state is
-    // already current). `refreshInspector` internally checks
-    // `stateRef.current.isOpen` so a close fired earlier in the same tick
-    // cannot be undone — the cell's React-context snapshot is one render
-    // stale relative to the ref, and the dispatch has to be authoritative.
+    // inspector. The Object.is guard (inside `shouldRefreshInspector`)
+    // suppresses the redundant re-dispatch that would otherwise fire
+    // immediately after click (when state is already current).
+    // `inspectorActions.getSnapshot()` reads the store directly rather than
+    // subscribing to it — `refreshInspector` internally re-checks the
+    // store's current `isOpen` before writing, so a close fired earlier in
+    // the same tick cannot be undone by a stale snapshot read here.
+    // `inspectorActions` is identity-stable for the provider's lifetime, so
+    // listing it as a dependency does not cause this effect to re-run on
+    // every popover state change — only when this cell's own `rawValue` /
+    // `valueType` / `cellId` change.
     useEffect(() => {
-        if (!cellId || !inspector) return;
+        if (!cellId || !inspectorActions) return;
         // `cellId` non-null implies `canInspect` was true at memo time,
         // which implies `valueType !== undefined` — but React can't follow
         // that inference across render boundaries, so if a parent flips
@@ -145,13 +159,14 @@ export const DataTableCell = ({
         // effect, cellId may still be non-null. Guard explicitly rather
         // than leaning on a non-null assertion.
         if (valueType === undefined) return;
-        if (!shouldRefreshInspector(inspector, cellId, rawValue, valueType)) {
+        const snapshot = inspectorActions.getSnapshot();
+        if (!shouldRefreshInspector(snapshot, cellId, rawValue, valueType)) {
             return;
         }
-        inspector.refreshInspector(rawValue, valueType);
-    }, [rawValue, valueType, cellId, inspector]);
+        inspectorActions.refreshInspector(rawValue, valueType);
+    }, [rawValue, valueType, cellId, inspectorActions]);
 
-    if (!canInspect || !cellId || !inspector) {
+    if (!canInspect || !cellId || !inspectorActions) {
         return (
             <DataTableTooltip content={tooltipContent}>
                 <div>{displayValue}</div>
@@ -163,7 +178,7 @@ export const DataTableCell = ({
     // `DataTableViewer`), fall back to always-tabbable so the cell is at
     // least reachable.
     const isActive = keyboard ? isActiveCell : true;
-    const isOpen = isOpenForCellId(inspector, cellId);
+    const isOpen = isInspectorOpen;
 
     const openForThisCell = () => {
         // Same pattern as the live-refresh effect's guard: `canInspect`
@@ -172,7 +187,7 @@ export const DataTableCell = ({
         // boundaries. Narrow via control flow rather than a non-null
         // assertion so the invariant is visible at the call site.
         if (valueType === undefined) return;
-        inspector.openInspector(cellRef, rawValue, valueType, cellId);
+        inspectorActions.openInspector(cellRef, rawValue, valueType, cellId);
     };
 
     const handleClick = () => {

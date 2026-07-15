@@ -13,7 +13,10 @@ import type { editor as monacoEditor } from 'monaco-editor';
 import { POPOVER_Z_INDEX } from '../../../../lib';
 import { useDenebState } from '../../../../state';
 import { buildEditorProps } from '../../../../lib/monaco';
-import { useDataTableInspector } from './inspector-popover-context';
+import {
+    useDataTableInspectorActions,
+    useDataTableInspectorState
+} from './inspector-popover-context';
 import {
     formatInspectorValue,
     getInspectorDimensions,
@@ -65,16 +68,17 @@ export const InspectorPopover = ({
         fontSize: state.editorPreferences.jsonEditorFontSize,
         theme: state.editorPreferences.theme
     }));
-    const inspector = useDataTableInspector();
-    if (!inspector) {
+    const inspectorState = useDataTableInspectorState();
+    const inspectorActions = useDataTableInspectorActions();
+    if (!inspectorState || !inspectorActions) {
         // InspectorPopover is only valid inside DataTableInspectorProvider.
         // Fail here rather than downstream with a less actionable error.
         throw new Error(
             'InspectorPopover must be mounted inside DataTableInspectorProvider'
         );
     }
-    const { isOpen, anchorRef, cellId, rawValue, valueType, closeInspector } =
-        inspector;
+    const { isOpen, anchorRef, cellId, rawValue, valueType } = inspectorState;
+    const { closeInspector } = inspectorActions;
     const editorContainerRef = useRef<HTMLDivElement>(null);
     const editorRef = useRef<monacoEditor.IStandaloneCodeEditor | null>(null);
 

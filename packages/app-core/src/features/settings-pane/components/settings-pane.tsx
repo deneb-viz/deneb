@@ -1,4 +1,11 @@
-import { isValidElement, useCallback, useMemo, useRef, useState } from 'react';
+import {
+    isValidElement,
+    useCallback,
+    useDeferredValue,
+    useMemo,
+    useRef,
+    useState
+} from 'react';
 import {
     Accordion,
     type AccordionToggleData,
@@ -21,6 +28,7 @@ import {
 } from './settings-search-box';
 import { SettingsEmptyState } from './settings-empty-state';
 import { SettingsPaneContextMenu } from './settings-pane-context-menu';
+import { isEditableEventTarget } from './settings-pane-utils';
 import { HighlightText } from './highlight-text';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 import { useDenebState } from '../../../state';
@@ -119,11 +127,19 @@ export const SettingsPane = () => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [menuAnchor, setMenuAnchor] = useState<DOMRect | null>(null);
 
-    // Resolve schemas + platform contribution + dataset descriptor,
-    // then run the match engine. The dataset indexer mirrors the
-    // render-time logic in DatasetSettings so match results line up
-    // with what the tree actually shows.
-    const matchView = useMemo<MatchView>(() => {
+    // Resolve schemas + platform contribution + dataset descriptor.
+    // Deliberately excludes `query` from its dependency list:
+    // `resolveSectionSchema` / `resolvePlatformSearchables` (translate) and
+    // `buildResolvedDatasetDescriptor` (a `.toLowerCase()` per row/flag —
+    // see `resolve-descriptors.ts`'s docs) are exactly the per-render cost
+    // the search design pre-lowers surfaces to avoid paying on every
+    // keystroke. Before this split, `query` sat in the same `useMemo` deps
+    // as these translate-heavy inputs, so every keystroke rebuilt every
+    // descriptor from scratch (Important #9) even though none of them
+    // depend on the query text. The dataset indexer mirrors the
+    // render-time logic in DatasetSettings so match results line up with
+    // what the tree actually shows.
+    const descriptors = useMemo(() => {
         const resolvedSections = [
             resolveSectionSchema(generalSchema, translate),
             resolveSectionSchema(performanceSchema, translate)
@@ -158,13 +174,8 @@ export const SettingsPane = () => {
             translate,
             headingKey: 'Text_Settings_Dataset'
         });
-        return buildMatchView({
-            query: resolveQuery(query),
-            sections: resolvedSections,
-            dataset: datasetDescriptor
-        });
+        return { resolvedSections, datasetDescriptor };
     }, [
-        query,
         translate,
         settingsPanePlatformSearchable,
         datasetFields,
@@ -174,6 +185,31 @@ export const SettingsPane = () => {
         interactivity,
         consolidateFieldParameters
     ]);
+
+    // Deferred so a fast typist's keystrokes commit to the input
+    // immediately while the match-view recompute below (the actual
+    // per-keystroke filtering work) trails slightly behind at lower
+    // priority — React re-renders once the deferred value catches up.
+    // `startTransition` around the store write in `settings-search-box.tsx`
+    // did not achieve this: that write flows through a Zustand
+    // `useSyncExternalStore` subscription, which transitions don't defer
+    // (see that file's updated comment).
+    const deferredQuery = useDeferredValue(query);
+
+    // Only re-runs the match engine — the actual per-keystroke filtering
+    // work — when the resolved descriptors change (rare: locale, platform
+    // contribution, dataset fields, support-field config) or the deferred
+    // query changes (every keystroke, but now doing filtering only, not
+    // re-translating/re-lowering every descriptor).
+    const matchView = useMemo<MatchView>(
+        () =>
+            buildMatchView({
+                query: resolveQuery(deferredQuery),
+                sections: descriptors.resolvedSections,
+                dataset: descriptors.datasetDescriptor
+            }),
+        [descriptors, deferredQuery]
+    );
 
     // Platform elements are a heterogeneous list of sibling
     // AccordionItems. Each element's React `key` is taken as its section
@@ -243,9 +279,14 @@ export const SettingsPane = () => {
         setCollapseAllEpoch((n) => n + 1);
     }, [setOpenItems]);
 
-    // Right-click: open menu anchored at the pointer.
+    // Right-click: open menu anchored at the pointer. Skips (and lets the
+    // browser's native menu through) when the target is an editable
+    // control — the search box `<input>` needs its native cut/copy/paste
+    // menu, which the pane-wide `preventDefault()` used to suppress
+    // unconditionally (Important #10).
     const handleContextMenu = useCallback(
         (event: React.MouseEvent<HTMLDivElement>) => {
+            if (isEditableEventTarget(event.target)) return;
             event.preventDefault();
             const rect = new DOMRect(event.clientX, event.clientY, 1, 1);
             setMenuAnchor(rect);
@@ -255,11 +296,15 @@ export const SettingsPane = () => {
     );
     // Keyboard equivalent: Shift+F10 / ContextMenu key. Anchor at the
     // focused element's bounding rect, or the pane root as a fallback.
+    // Same editable-target guard as `handleContextMenu` — without it,
+    // Shift+F10 inside the search box would replace the input's own
+    // editing menu with the pane's section menu.
     const handleKeyDown = useCallback(
         (event: React.KeyboardEvent<HTMLDivElement>) => {
             const isShiftF10 = event.shiftKey && event.key === 'F10';
             const isContextMenuKey = event.key === 'ContextMenu';
             if (!isShiftF10 && !isContextMenuKey) return;
+            if (isEditableEventTarget(event.target)) return;
             event.preventDefault();
             const active =
                 (document.activeElement as HTMLElement | null) ??
