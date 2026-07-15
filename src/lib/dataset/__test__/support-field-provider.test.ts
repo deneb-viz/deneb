@@ -3,11 +3,21 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 vi.mock('powerbi-visuals-api', () => ({}));
 
+// The provider now creates ONE Power BI value formatter per (locale, format
+// string) pair and reuses it, so spy on the formatter FACTORY (getValueFormatter)
+// rather than the per-call getFormattedValue convenience wrapper it replaced.
+// The returned formatter echoes its construction args so output can be pinned.
+const getValueFormatter = vi.fn(
+    (format?: string, options?: { cultureSelector?: string }) => ({
+        format: (value: unknown) =>
+            `[${options?.cultureSelector}|${format}|${value}]`
+    })
+);
 vi.mock('@deneb-viz/powerbi-compat/formatting', () => ({
-    getFormattedValue: vi.fn()
+    getValueFormatter: (format?: string, options?: unknown) =>
+        getValueFormatter(format, options)
 }));
 
-import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
 import {
     createPbiSupportFieldProvider,
     type CreatePbiProviderParams
@@ -115,31 +125,60 @@ describe('createPbiSupportFieldProvider', () => {
     });
 
     describe('getFormattedValue', () => {
-        it('should delegate to powerbi-compat getFormattedValue with cultureSelector', () => {
-            vi.mocked(getFormattedValue).mockReturnValue('1,234.56');
-            const params = makeParams();
-            const provider = createPbiSupportFieldProvider(params);
+        it('should construct a formatter for the format string + locale and format the value', () => {
+            const provider = createPbiSupportFieldProvider(makeParams());
             const result = provider.getFormattedValue(
                 1234.56,
                 '#,##0.00',
                 'en-US'
             );
-            expect(getFormattedValue).toHaveBeenCalledWith(
-                1234.56,
-                '#,##0.00',
-                { cultureSelector: 'en-US' }
-            );
-            expect(result).toBe('1,234.56');
+            expect(getValueFormatter).toHaveBeenCalledWith('#,##0.00', {
+                cultureSelector: 'en-US'
+            });
+            expect(result).toBe('[en-US|#,##0.00|1234.56]');
         });
 
-        it('should pass empty format string through to powerbi-compat', () => {
-            vi.mocked(getFormattedValue).mockReturnValue('42');
-            const params = makeParams();
-            const provider = createPbiSupportFieldProvider(params);
-            provider.getFormattedValue(42, '', 'de-DE');
-            expect(getFormattedValue).toHaveBeenCalledWith(42, '', {
+        it('should construct ONE formatter for repeated calls with the same format string', () => {
+            const provider = createPbiSupportFieldProvider(makeParams());
+            for (let i = 0; i < 5; i++) {
+                provider.getFormattedValue(i, '#,##0.00', 'en-US');
+            }
+            expect(getValueFormatter).toHaveBeenCalledTimes(1);
+        });
+
+        it('should construct a distinct formatter per distinct format string', () => {
+            const provider = createPbiSupportFieldProvider(makeParams());
+            provider.getFormattedValue(1, '#,##0.00', 'en-US');
+            provider.getFormattedValue(2, '0%', 'en-US');
+            provider.getFormattedValue(3, '#,##0.00', 'en-US');
+            // Two distinct strings across three calls → two formatters.
+            expect(getValueFormatter).toHaveBeenCalledTimes(2);
+        });
+
+        it('should key the cache on locale as well as format string', () => {
+            const provider = createPbiSupportFieldProvider(makeParams());
+            provider.getFormattedValue(1, '#,##0.00', 'en-US');
+            provider.getFormattedValue(2, '#,##0.00', 'de-DE');
+            // Same format string, different locale → two formatters.
+            expect(getValueFormatter).toHaveBeenCalledTimes(2);
+        });
+
+        it('should preserve the empty-format-string semantics (missing format string)', () => {
+            const provider = createPbiSupportFieldProvider(makeParams());
+            const result = provider.getFormattedValue(42, '', 'de-DE');
+            expect(getValueFormatter).toHaveBeenCalledWith('', {
                 cultureSelector: 'de-DE'
             });
+            expect(result).toBe('[de-DE||42]');
+        });
+
+        it('should not share a formatter cache across separate providers', () => {
+            const a = createPbiSupportFieldProvider(makeParams());
+            const b = createPbiSupportFieldProvider(makeParams());
+            a.getFormattedValue(1, '#,##0.00', 'en-US');
+            b.getFormattedValue(2, '#,##0.00', 'en-US');
+            // Cache lifetime is per-provider (per getMappedDataset call).
+            expect(getValueFormatter).toHaveBeenCalledTimes(2);
         });
     });
 
