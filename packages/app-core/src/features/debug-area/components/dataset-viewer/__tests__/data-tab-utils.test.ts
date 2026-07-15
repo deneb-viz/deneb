@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveDataTabReason } from '../data-tab-utils';
+import {
+    resolveDataTabReason,
+    resolveDataTabRenderState
+} from '../data-tab-utils';
 
 /**
  * The Data tab's reason mapping has four outcomes: view-unavailable,
@@ -28,9 +31,9 @@ describe('resolveDataTabReason', () => {
         });
 
         it('view not available, even when values are defined', () => {
-            expect(
-                resolveDataTabReason(false, 0, 'dataset', [{ a: 1 }])
-            ).toBe('view-unavailable');
+            expect(resolveDataTabReason(false, 0, 'dataset', [{ a: 1 }])).toBe(
+                'view-unavailable'
+            );
         });
 
         it("view not available wins over a non-zero dataset count (a stale or impossible mix shouldn't downgrade the reason)", () => {
@@ -80,7 +83,9 @@ describe('resolveDataTabReason', () => {
         });
 
         it('valid view + name + populated array', () => {
-            expect(resolveDataTabReason(true, 1, 'name', [{ a: 1 }])).toBeNull();
+            expect(
+                resolveDataTabReason(true, 1, 'name', [{ a: 1 }])
+            ).toBeNull();
         });
 
         it('valid view + name + multi-row array', () => {
@@ -92,5 +97,38 @@ describe('resolveDataTabReason', () => {
                 ])
             ).toBeNull();
         });
+    });
+});
+
+/**
+ * C3: `values === null` (worker hasn't produced a result yet) and
+ * `values === []` (worker produced zero rows — e.g. a spec whose filters
+ * remove every row) both collapsed into a truthy `!values?.length` check
+ * that kept the spinner on screen forever for the zero-row case. These
+ * cases must resolve to distinct render states.
+ */
+describe('resolveDataTabRenderState', () => {
+    it('values === null → loading (worker has not produced a result yet)', () => {
+        expect(resolveDataTabRenderState(false, null)).toBe('loading');
+    });
+
+    it('values === [] → empty (zero-row result is not "still loading")', () => {
+        expect(resolveDataTabRenderState(false, [])).toBe('empty');
+    });
+
+    it('values with rows → data', () => {
+        expect(resolveDataTabRenderState(false, [{ a: 1 }])).toBe('data');
+    });
+
+    it('processing === true wins over a populated values array', () => {
+        expect(resolveDataTabRenderState(true, [{ a: 1 }])).toBe('loading');
+    });
+
+    it('processing === true wins over an empty values array', () => {
+        expect(resolveDataTabRenderState(true, [])).toBe('loading');
+    });
+
+    it('processing === true wins over null values', () => {
+        expect(resolveDataTabRenderState(true, null)).toBe('loading');
     });
 });

@@ -34,7 +34,10 @@ import {
     getDatasetViewerCharWidth,
     getDatasetViewerWorkerTranslations
 } from './dataset-viewer-worker-helpers';
-import { resolveDataTabReason } from './data-tab-utils';
+import {
+    resolveDataTabReason,
+    resolveDataTabRenderState
+} from './data-tab-utils';
 import { getAvailableDatasetNames } from './dataset-discovery';
 import { LOADING_INDICATOR_DEBOUNCE_MS } from './loading-debounce-constants';
 import { getSharedDataTableViewerProps } from './data-table-viewer-props';
@@ -232,9 +235,7 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
      * Attempt to remove specified data listener from the supplied Vega view.
      * See `addListener` for the rationale on the explicit `view` parameter.
      */
-    const removeListener = (
-        view: View | null = VegaViewServices.getView()
-    ) => {
+    const removeListener = (view: View | null = VegaViewServices.getView()) => {
         try {
             logDebug(
                 `DataTab: attempting to remove listener for dataset [${datasetName}]...`
@@ -252,9 +253,7 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
      * Attempt to cycle (add/remove) listeners for the specified dataset on
      * the supplied view.
      */
-    const cycleListeners = (
-        view: View | null = VegaViewServices.getView()
-    ) => {
+    const cycleListeners = (view: View | null = VegaViewServices.getView()) => {
         logDebug(`DataTab: cycling listeners for dataset: [${datasetName}]...`);
         removeListener(view);
         addListener(view);
@@ -462,16 +461,17 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
         return <NoDataMessage reason={reason} />;
     }
 
-    // Either the worker is still processing (debounced — fast round-trips
-    // don't flicker the spinner), or it hasn't produced any rows yet
-    // (view + name + defined values, but no rows in `datasetState.values`).
-    // The empty-rows term is NOT debounced so first-load shows the spinner
-    // immediately. Mirrors the consolidated check in `SourceTab`.
-    //
-    // Inline rather than via `shouldShowLoadingIndicator` so TypeScript can
-    // narrow `datasetState.values` from `… | null` to `…[]` past the guard.
-    // The helper exists for unit-test ergonomics; behaviour is identical.
-    if (debouncedProcessing || !datasetState.values?.length) {
+    // 'loading' covers both "the worker is still processing" (debounced —
+    // fast round-trips don't flicker the spinner) and "no result yet"
+    // (`datasetState.values === null`). A worker result of `[]` (zero rows
+    // — e.g. a spec whose filters remove every row) is a distinct 'empty'
+    // state and falls through to `DataTableViewer` below, which renders its
+    // own zero-rows presentation rather than spinning forever (C3).
+    const renderState = resolveDataTabRenderState(
+        debouncedProcessing,
+        datasetState.values
+    );
+    if (renderState === 'loading') {
         return <ProcessingDataMessage />;
     }
 
@@ -484,7 +484,7 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
                             (datasetState.columns ??
                                 []) as TableColumn<IWorkerDatasetViewerDataTableRow>[]
                         }
-                        data={datasetState.values}
+                        data={datasetState.values ?? []}
                         {...getSharedDataTableViewerProps({
                             sortEntry,
                             onSort: handleSort,
