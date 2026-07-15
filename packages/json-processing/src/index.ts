@@ -18,10 +18,8 @@ export {
     getNewTemplateMetadata,
     getTemplateMetadata,
     getTemplateReplacedForDataset,
-    getTemplateResolvedForLegacyDataset,
     getTemplateResolvedForPlaceholderAssignment,
     getUpdatedExportMetadata,
-    getValidatedTemplate,
-    remapSupportFieldConfigurationForImport
+    getValidatedTemplate
 } from './template-usermeta';
 export { getProviderValidator } from './validation';

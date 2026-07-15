@@ -157,24 +157,6 @@ export const getNewTemplateMetadata = (options: {
 });
 
 /**
- * Extract per-field support field configuration from dataset entries and remap to actual
- * encoded field names supplied by the user during import. Each dataset entry may carry an
- * inline `supportFieldConfiguration` (the new template format). The `suppliedObjectName`
- * becomes the key in the returned record. Returns an empty object when no entries carry config.
- */
-export const remapSupportFieldConfigurationForImport = (
-    dataset: UsermetaDatasetField[]
-): SupportFieldConfiguration => {
-    const result: SupportFieldConfiguration = {};
-    for (const field of dataset) {
-        if (field.supportFieldConfiguration && field.suppliedObjectName) {
-            result[field.suppliedObjectName] = field.supportFieldConfiguration;
-        }
-    }
-    return result;
-};
-
-/**
  * Build a lookup from display name → TrackedFieldProperties. TrackedFields is keyed by
  * `field.id` (queryName), which differs from the display name used in supportFieldConfiguration
  * and in the export dataset array. This helper enables name-based lookups.
