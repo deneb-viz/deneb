@@ -387,6 +387,99 @@ describe('createRenderingLifecycleCoordinator — pending-render binding', () =>
         expect(finishes).toHaveLength(1);
         expect(finishes[0].options).toBe(FAKE_OPTIONS_B);
     });
+
+    // ─── In-flight render epoch guard (Important #6) ─────────────────────────
+    //
+    // A's embed starts (markPendingRenderStarted) → B supersedes A and
+    // rebinds the pending slot BEFORE B has started its own render → A's
+    // late in-flight embed fires onRenderingFinished → closePendingRender
+    // must NOT terminate B (which has not painted). The render epoch
+    // guard recognises the terminal belongs to a render started under a
+    // superseded binding and no-ops, recording a `stale-close` event.
+
+    it('stale in-flight embed close after supersede+rebind no-ops against the freshly-bound id', () => {
+        const { coordinator, calls, events } = buildHarness();
+        const idA = coordinator.open(FAKE_OPTIONS_A);
+        coordinator.bindPendingRender(idA);
+        coordinator.markPendingRenderStarted(); // A's embed render in flight
+        // B arrives before A's render finished → A is supersede-failed.
+        const idB = coordinator.open(FAKE_OPTIONS_B);
+        coordinator.bindPendingRender(idB); // B bound; B's render NOT started
+        // A's late in-flight embed fires onRenderingFinished. Without the
+        // epoch guard this closes B before it has painted (the defect).
+        coordinator.closePendingRender();
+        expect(
+            calls.filter(
+                (c) =>
+                    c.method === 'renderingFinished' &&
+                    c.options === FAKE_OPTIONS_B
+            )
+        ).toHaveLength(0);
+        // The suppressed terminal is recorded as a stale-close against the
+        // freshly-bound id (B) — the id it would have wrongly closed.
+        const staleClose = events.find((e) => e.kind === 'stale-close');
+        expect(staleClose).toBeDefined();
+        expect(staleClose && 'via' in staleClose && staleClose.via).toBe(
+            'async-pending-render'
+        );
+        expect(staleClose && 'id' in staleClose && staleClose.id).toBe(idB);
+        // B's own render then starts and completes → exactly one finish
+        // targeting B's options.
+        coordinator.markPendingRenderStarted();
+        coordinator.closePendingRender();
+        expect(
+            calls.filter(
+                (c) =>
+                    c.method === 'renderingFinished' &&
+                    c.options === FAKE_OPTIONS_B
+            )
+        ).toHaveLength(1);
+    });
+
+    it('stale in-flight embed FAIL after supersede+rebind no-ops against the freshly-bound id', () => {
+        const { coordinator, calls, events } = buildHarness();
+        const idA = coordinator.open(FAKE_OPTIONS_A);
+        coordinator.bindPendingRender(idA);
+        coordinator.markPendingRenderStarted();
+        const idB = coordinator.open(FAKE_OPTIONS_B);
+        coordinator.bindPendingRender(idB);
+        // A's late embed error must not FAIL B.
+        coordinator.failPendingRender(new Error('A late embed error'));
+        expect(
+            calls.filter(
+                (c) =>
+                    c.method === 'renderingFailed' &&
+                    c.options === FAKE_OPTIONS_B
+            )
+        ).toHaveLength(0);
+        const staleClose = events.find((e) => e.kind === 'stale-close');
+        expect(staleClose).toBeDefined();
+        expect(staleClose && 'id' in staleClose && staleClose.id).toBe(idB);
+        // B's own render then fails cleanly → exactly one renderingFailed
+        // targeting B's options.
+        coordinator.markPendingRenderStarted();
+        coordinator.failPendingRender(new Error('B real error'));
+        expect(
+            calls.filter(
+                (c) =>
+                    c.method === 'renderingFailed' &&
+                    c.options === FAKE_OPTIONS_B
+            )
+        ).toHaveLength(1);
+    });
+
+    it('renderless pending close (no render started, inFlightEpoch null) closes normally with no stale-close', () => {
+        const { coordinator, calls, events } = buildHarness();
+        const id = coordinator.open(FAKE_OPTIONS_A);
+        coordinator.bindPendingRender(id);
+        // markPendingRenderStarted never fires → inFlightEpoch stays null
+        // → the epoch guard is inert and the close lands exactly as before.
+        coordinator.closePendingRender();
+        expect(
+            calls.filter((c) => c.method === 'renderingFinished')
+        ).toHaveLength(1);
+        expect(events.some((e) => e.kind === 'stale-close')).toBe(false);
+    });
 });
 
 describe('createRenderingLifecycleCoordinator — safety-net', () => {
