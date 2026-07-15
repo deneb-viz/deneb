@@ -16,6 +16,7 @@ import { useDenebState } from '../../../state';
 import { type ViewEventBinder } from '../../../components/deneb-platform';
 import { VEGA_EMBED_ROOT_STYLE } from './vega-embed-styles';
 import { getRestrictiveVegaLoader } from './restrictive-loader';
+import { shouldOpenEmbedWindow } from '../embed-window';
 
 type VegaEmbedProps = {
     /**
@@ -105,11 +106,11 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
             logDebug('VegaEmbed: New view created');
 
             // NOTE: `setViewReady(false)` is NOT called here. It is driven by a
-            // separate effect keyed on the memoized `spec` identity (below), so
-            // the false→true transition spans two renders and the in-flight
-            // window actually exists. Toggling false→true in this single
-            // synchronous callback batched into a no-op, erasing the window
-            // (defect #7).
+            // separate effect that deep-compares the memoized `spec` (below,
+            // mirroring `useVegaEmbed`'s re-embed semantics), so the false→true
+            // transition spans two renders and the in-flight window actually
+            // exists. Toggling false→true in this single synchronous callback
+            // batched into a no-op, erasing the window (defect #7).
 
             // Bind view to services singleton
             VegaViewServices.bind(result.view);
@@ -262,22 +263,50 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
     });
 
     /**
+     * The last spec for which this instance opened the embed-in-flight window.
+     * Compared DEEPLY against the next memoized spec (see below) so the window
+     * only opens when `useVegaEmbed` — which re-embeds on deep inequality — will
+     * actually re-embed. NOT reset to `null` on deactivation: see the
+     * reactivation reasoning in the effect below.
+     */
+    const lastEmbedWindowSpecRef = useRef<object | null>(null);
+
+    /**
      * Open the "embed in flight" window before a new spec embeds.
      *
-     * Keyed on the memoized `spec` identity: when a new non-null spec is about
-     * to embed, mark the view not-ready. `handleEmbed` flips it back to true
-     * once `runAsync()` completes. Because this runs in a separate render from
-     * `handleEmbed`, the false→true transition actually spans time (defect #7) —
-     * previously both calls happened in one synchronous callback and React
-     * batched them into a no-op, so the window never existed and updates landing
-     * mid-embed were dropped.
+     * When a genuinely different spec is about to embed, mark the view
+     * not-ready; `handleEmbed` flips it back to true once `runAsync()`
+     * completes. Because this runs in a separate render from `handleEmbed`, the
+     * false→true transition actually spans time (defect #7) — previously both
+     * calls happened in one synchronous callback and React batched them into a
+     * no-op, so the window never existed and updates landing mid-embed were
+     * dropped.
+     *
+     * The gate MUST mirror `useVegaEmbed`'s DEEP-compare semantics, not spec
+     * identity: `handleCompile` in the compilation slice creates a fresh result
+     * object on every `compile()` call even when the compiled content is
+     * unchanged, so the memo can yield a new-identity, deep-equal spec that
+     * `useVegaEmbed` will NOT re-embed. Opening the window on identity would set
+     * `viewReady = false` with no re-embed to ever set it true again,
+     * deadlocking every subsequent data update into 'defer'.
+     * `shouldOpenEmbedWindow` deep-compares, so the window opens exactly when a
+     * real re-embed will follow.
+     *
+     * Deactivation/reactivation: `lastEmbedWindowSpecRef` is deliberately NOT
+     * reset when `spec` goes `null`. After reactivation with deep-equal content
+     * this effect therefore does not fire — but `useVegaEmbed` WILL re-embed
+     * (its deep-compare deps saw `null` while inactive), and the window is
+     * already open because the deactivation-clear effect (or the other
+     * instance's deactivation) set `viewReady` false before this instance's
+     * spec became non-null. The re-embed's `handleEmbed` then closes it.
      *
      * Data-only changes do NOT recompute `spec` (its memo deps are
      * `[compilation, provider, isActive]`, not `values`), so this does not fire
      * on the incremental-update path.
      */
     useEffect(() => {
-        if (spec) {
+        if (shouldOpenEmbedWindow(lastEmbedWindowSpecRef.current, spec)) {
+            lastEmbedWindowSpecRef.current = spec;
             setViewReady(false);
         }
     }, [spec, setViewReady]);
