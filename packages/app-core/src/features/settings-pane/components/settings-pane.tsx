@@ -28,6 +28,7 @@ import {
 } from './settings-search-box';
 import { SettingsEmptyState } from './settings-empty-state';
 import { SettingsPaneContextMenu } from './settings-pane-context-menu';
+import { isEditableEventTarget } from './settings-pane-utils';
 import { HighlightText } from './highlight-text';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 import { useDenebState } from '../../../state';
@@ -278,9 +279,14 @@ export const SettingsPane = () => {
         setCollapseAllEpoch((n) => n + 1);
     }, [setOpenItems]);
 
-    // Right-click: open menu anchored at the pointer.
+    // Right-click: open menu anchored at the pointer. Skips (and lets the
+    // browser's native menu through) when the target is an editable
+    // control — the search box `<input>` needs its native cut/copy/paste
+    // menu, which the pane-wide `preventDefault()` used to suppress
+    // unconditionally (Important #10).
     const handleContextMenu = useCallback(
         (event: React.MouseEvent<HTMLDivElement>) => {
+            if (isEditableEventTarget(event.target)) return;
             event.preventDefault();
             const rect = new DOMRect(event.clientX, event.clientY, 1, 1);
             setMenuAnchor(rect);
@@ -290,11 +296,15 @@ export const SettingsPane = () => {
     );
     // Keyboard equivalent: Shift+F10 / ContextMenu key. Anchor at the
     // focused element's bounding rect, or the pane root as a fallback.
+    // Same editable-target guard as `handleContextMenu` — without it,
+    // Shift+F10 inside the search box would replace the input's own
+    // editing menu with the pane's section menu.
     const handleKeyDown = useCallback(
         (event: React.KeyboardEvent<HTMLDivElement>) => {
             const isShiftF10 = event.shiftKey && event.key === 'F10';
             const isContextMenuKey = event.key === 'ContextMenu';
             if (!isShiftF10 && !isContextMenuKey) return;
+            if (isEditableEventTarget(event.target)) return;
             event.preventDefault();
             const active =
                 (document.activeElement as HTMLElement | null) ??
