@@ -45,9 +45,13 @@ const getInitialSignalValue = (signalName: string) => {
  * @privateRemarks [DM-P]: there is some technical debt here, where we're using `signalValue` as a triggering mechanism
  * for renders, but not for displaying its actual value (opting to go directly to the view instead).
  *
- * There seem to be some edge cases where the correct value is not returned, despite events and hooks lining-up
- * correctly. This needs more time to investigate (and is likely programmer error on my part), but as the render
- * happens anyway and it only affects dynamic signal values, this is an acceptable risk for now.
+ * The listener used to call `setSignalValue(() => value)` directly with the raw value Vega handed back. `useState`
+ * bails out of the re-render via `Object.is(next, prev)` — fine for primitives, but Vega signals backed by an object
+ * or array can be mutated in place and re-emitted under the SAME reference (e.g. a signal whose value is a shared
+ * data-derived object). `Object.is` then reports "unchanged" even though the content did change, the state update is
+ * dropped, and the cell shows a stale value until some unrelated re-render happens to occur. The listener now wraps
+ * the incoming value in a fresh `{ value }` object on every emit (see below) so the reference is always new and the
+ * triggering re-render always fires, regardless of what Vega does with the underlying value's identity.
  */
 // eslint-disable-next-line max-lines-per-function
 export const SignalValue = ({
@@ -105,7 +109,15 @@ export const SignalValue = ({
         removeListener(view);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const listener = (name: string, value: any) => {
-            setSignalValue(() => value);
+            // Wrap in a fresh object on every emit rather than passing
+            // `value` straight through. Vega signals backed by an object or
+            // array can be mutated in place and re-emitted under the SAME
+            // reference; `useState`'s `Object.is` bail-out would then treat
+            // a real content change as a no-op and skip the re-render that
+            // drives this cell's display. The wrapper is always a new
+            // reference, so the triggering re-render always fires. See the
+            // `@privateRemarks` above for the full rationale.
+            setSignalValue(() => ({ value }));
             logDebug(
                 `[${renderIdRef.current}] Signal value for ${name} has changed`,
                 value
