@@ -18,6 +18,12 @@ import { VEGA_EMBED_ROOT_STYLE } from './vega-embed-styles';
 import { getRestrictiveVegaLoader } from './restrictive-loader';
 
 type VegaEmbedProps = {
+    /**
+     * Whether this is the single live embed instance (defect C1). When false,
+     * the `spec` memo returns `null` so `useVegaEmbed` finalizes and clears the
+     * view, and this instance runs no view side effects.
+     */
+    isActive: boolean;
     onRenderingError?: (error: Error) => void;
     onRenderingFinished?: () => void;
     onRenderingStarted?: () => void;
@@ -45,6 +51,7 @@ const useVegaEmbedStyles = makeStyles({
  * VisualViewer triggers a re-compile for large datasets).
  */
 export const VegaEmbed: React.FC<VegaEmbedProps> = ({
+    isActive,
     onRenderingError,
     onRenderingFinished,
     onRenderingStarted,
@@ -62,6 +69,13 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
 
     // Track whether we've done the initial embed (to distinguish first render from updates)
     const hasEmbeddedRef = useRef(false);
+
+    // The view THIS instance last bound to the shared `VegaViewServices`
+    // singleton. Used as an ownership token: the deactivation-clear effect only
+    // wipes the singleton if it still points at this instance's own view, so an
+    // inactive/unmounting instance can never clear the OTHER instance's
+    // freshly-bound view (defect C1).
+    const ownViewRef = useRef<View | null>(null);
 
     const {
         compilation,
@@ -90,11 +104,19 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
         (result: { view: View; vgSpec?: object }) => {
             logDebug('VegaEmbed: New view created');
 
-            // Mark view as NOT ready - datasets/signals won't be populated until runAsync completes
-            setViewReady(false);
+            // NOTE: `setViewReady(false)` is NOT called here. It is driven by a
+            // separate effect keyed on the memoized `spec` identity (below), so
+            // the false→true transition spans two renders and the in-flight
+            // window actually exists. Toggling false→true in this single
+            // synchronous callback batched into a no-op, erasing the window
+            // (defect #7).
 
             // Bind view to services singleton
             VegaViewServices.bind(result.view);
+
+            // Record this instance's own view for the ownership-guarded
+            // deactivation clear (defect C1).
+            ownViewRef.current = result.view;
 
             // Update pattern fill services for dynamic pattern fills
             VegaPatternFillServices.update();
@@ -171,6 +193,13 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
      * via `view.data()` API. VegaEmbed only re-embeds when compilation changes.
      */
     const spec = useMemo(() => {
+        // Inactive instance embeds nothing (defect C1). A `null` spec makes
+        // `useVegaEmbed` finalize the current view, clear the container, and bump
+        // its generation token, so only the live instance holds a running view.
+        if (!isActive) {
+            return null;
+        }
+
         if (!compilation || compilation.status !== 'ready' || !provider) {
             return null;
         }
@@ -195,7 +224,7 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
         });
 
         return patchedSpec;
-    }, [compilation, provider]);
+    }, [compilation, provider, isActive]);
 
     /**
      * Get the embed options. Returns empty object if compilation not ready.
@@ -231,6 +260,54 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
         onEmbed: handleEmbed,
         onError: handleError
     });
+
+    /**
+     * Open the "embed in flight" window before a new spec embeds.
+     *
+     * Keyed on the memoized `spec` identity: when a new non-null spec is about
+     * to embed, mark the view not-ready. `handleEmbed` flips it back to true
+     * once `runAsync()` completes. Because this runs in a separate render from
+     * `handleEmbed`, the false→true transition actually spans time (defect #7) —
+     * previously both calls happened in one synchronous callback and React
+     * batched them into a no-op, so the window never existed and updates landing
+     * mid-embed were dropped.
+     *
+     * Data-only changes do NOT recompute `spec` (its memo deps are
+     * `[compilation, provider, isActive]`, not `values`), so this does not fire
+     * on the incremental-update path.
+     */
+    useEffect(() => {
+        if (spec) {
+            setViewReady(false);
+        }
+    }, [spec, setViewReady]);
+
+    /**
+     * Deactivation clear (defect C1). When this instance stops being the live
+     * one, its `spec` goes `null` and `useVegaEmbed` finalizes the view — but
+     * the shared `VegaViewServices` singleton and React view state still point
+     * at it. Clear them here so a single live view remains.
+     *
+     * Ownership guard: only clear if the singleton STILL points at the view this
+     * instance bound. Otherwise an inactive (or never-active) instance could
+     * wipe the OTHER instance's freshly-bound view. Skipped entirely when this
+     * instance never bound a view.
+     */
+    useEffect(() => {
+        if (isActive) return;
+        if (
+            ownViewRef.current &&
+            VegaViewServices.getView() === ownViewRef.current
+        ) {
+            logDebug('VegaEmbed: Deactivated - clearing owned view');
+            VegaViewServices.clearView();
+            setView(null);
+            setViewReady(false);
+        }
+        // Drop our reference either way: our view (if any) has been finalized by
+        // the `spec === null` path in `useVegaEmbed`.
+        ownViewRef.current = null;
+    }, [isActive, setView, setViewReady]);
 
     /**
      * Clear view state when compilation has errors (ensures stale view references don't persist when spec is invalid).
