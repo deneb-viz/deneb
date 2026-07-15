@@ -57,8 +57,8 @@ import {
     type SelectorStatus
 } from '../interactivity';
 import {
-    createPbiSupportFieldProvider,
-    type FieldSourceMapping
+    buildFieldSourceMappings,
+    createPbiSupportFieldProvider
 } from './support-field-provider';
 import { isLegacySpec } from './support-field-migration';
 import {
@@ -402,11 +402,8 @@ export const getMappedDataset = (
                 }
             }
 
-            const fieldSourceMappings: FieldSourceMapping[] =
-                planSourceColumns.map((c) => ({
-                    source: c.column.isMeasure ? 'values' : 'categories',
-                    index: c.sourceIndex
-                }));
+            const fieldSourceMappings =
+                buildFieldSourceMappings(planSourceColumns);
 
             const pbiProvider = createPbiSupportFieldProvider({
                 categories: dvCategories,

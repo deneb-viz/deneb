@@ -19,9 +19,11 @@ vi.mock('@deneb-viz/powerbi-compat/formatting', () => ({
 }));
 
 import {
+    buildFieldSourceMappings,
     createPbiSupportFieldProvider,
     type CreatePbiProviderParams
 } from '../support-field-provider';
+import type { AugmentedMetadataField } from '../types';
 
 // ─── Fixture helpers ──────────────────────────────────────────────────────────
 
@@ -235,5 +237,55 @@ describe('createPbiSupportFieldProvider', () => {
             const provider = createPbiSupportFieldProvider(params);
             expect(provider.getHighlightValue(0, 0, 42)).toBe(42);
         });
+    });
+});
+
+describe('buildFieldSourceMappings', () => {
+    const column = (
+        source: 'categories' | 'values',
+        sourceIndex: number,
+        isMeasure: boolean | undefined
+    ) =>
+        ({
+            source,
+            sourceIndex,
+            column: { isMeasure }
+        }) as unknown as AugmentedMetadataField;
+
+    it('classifies a values-bucket column as "values" even when column.isMeasure is falsy', () => {
+        // Field-parameter / group-on-keys shape: the column lives in the values
+        // bucket (source: 'values') but reports isMeasure undefined/false. It
+        // must still map to 'values' so mapping.index addresses dvValues.
+        const columns = [
+            column('values', 0, undefined),
+            column('values', 1, false)
+        ];
+
+        expect(buildFieldSourceMappings(columns)).toEqual([
+            { source: 'values', index: 0 },
+            { source: 'values', index: 1 }
+        ]);
+    });
+
+    it('classifies a categories column as "categories"', () => {
+        const columns = [column('categories', 3, false)];
+
+        expect(buildFieldSourceMappings(columns)).toEqual([
+            { source: 'categories', index: 3 }
+        ]);
+    });
+
+    it('preserves per-column provenance and sourceIndex across a mixed set', () => {
+        const columns = [
+            column('categories', 0, false),
+            column('values', 0, true),
+            column('values', 1, undefined)
+        ];
+
+        expect(buildFieldSourceMappings(columns)).toEqual([
+            { source: 'categories', index: 0 },
+            { source: 'values', index: 0 },
+            { source: 'values', index: 1 }
+        ]);
     });
 });

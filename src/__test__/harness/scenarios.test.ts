@@ -48,7 +48,8 @@ vi.mock('../../lib/dataset/fields', () => ({
     isSourceField: vi.fn(() => true)
 }));
 vi.mock('../../lib/dataset/support-field-provider', () => ({
-    createPbiSupportFieldProvider: vi.fn()
+    createPbiSupportFieldProvider: vi.fn(),
+    buildFieldSourceMappings: vi.fn(() => [])
 }));
 vi.mock('../../lib/dataset/support-field-migration', () => ({
     isLegacySpec: vi.fn(() => false)
