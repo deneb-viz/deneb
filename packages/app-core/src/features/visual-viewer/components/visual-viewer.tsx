@@ -280,7 +280,9 @@ export const VisualViewer = ({
         switch (gate) {
             case 'initialize':
                 logDebug(
-                    'VisualViewer: Initial values set, waiting for first embed'
+                    isActive
+                        ? 'VisualViewer: Initial values set, waiting for first embed'
+                        : 'VisualViewer: Initial values set (inactive instance, baseline recorded)'
                 );
                 return;
             case 'unchanged':
