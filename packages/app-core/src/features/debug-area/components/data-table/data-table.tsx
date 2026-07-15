@@ -79,7 +79,7 @@ export const DataTableViewer = ({
                                 data={data}
                                 fixedHeader
                                 sortIcon={<ArrowSortDown16Regular />}
-                                defaultSortFieldId={columns[0].id}
+                                defaultSortFieldId={columns[0]?.id}
                                 pagination
                                 paginationComponent={DataTableStatusBar}
                                 paginationPerPage={
