@@ -46,19 +46,19 @@ describe('resolveContextMenuProperties', () => {
         ]);
     });
 
-    it('should default to contextMenu: false and contextMenuSelector: true when interactivity is undefined', () => {
+    it('should migrate to show menu without selector when interactivity is undefined (no interactivity block at all)', () => {
         const result = resolveContextMenuProperties(undefined);
         expect(result).toEqual([
-            { name: 'enableContextMenu', value: false },
-            { name: 'enableContextMenuSelector', value: true }
+            { name: 'enableContextMenu', value: true },
+            { name: 'enableContextMenuSelector', value: false }
         ]);
     });
 
-    it('should default to contextMenu: false and contextMenuSelector: true for empty object', () => {
+    it('should migrate to show menu without selector for empty object (contextMenu unspecified)', () => {
         const result = resolveContextMenuProperties({});
         expect(result).toEqual([
-            { name: 'enableContextMenu', value: false },
-            { name: 'enableContextMenuSelector', value: true }
+            { name: 'enableContextMenu', value: true },
+            { name: 'enableContextMenuSelector', value: false }
         ]);
     });
 });
