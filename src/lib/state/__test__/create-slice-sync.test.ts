@@ -908,7 +908,18 @@ describe('createSliceSync', () => {
                 spec: 'oldSpec'
             });
             mockAppCoreState = { test: initialSlice };
+            mockVisualSettings = {
+                ...DEFAULT_VISUAL_SETTINGS,
+                vega: { ...DEFAULT_VISUAL_SETTINGS.vega, spec: 'oldSpec' }
+            };
             const cleanup = createSliceSync(createTestConfig());
+
+            // Capture the unsubscribe fns each store's subscribe() returned for
+            // THIS instance (one subscribe call per store, cleared per test).
+            const appCoreUnsub = vi.mocked(useDenebState.subscribe).mock
+                .results[0].value;
+            const visualUnsub = vi.mocked(useDenebVisualState.subscribe).mock
+                .results[0].value;
 
             // Create a pending entry (different reference triggers persist)
             const changedSlice = createSliceState({
@@ -916,76 +927,82 @@ describe('createSliceSync', () => {
                 spec: 'newSpec'
             });
             fireAppCoreSubscriber(changedSlice);
-            expect(mockPersistProjectProperties).toHaveBeenCalled();
+            expect(mockPersistProjectProperties).toHaveBeenCalledTimes(1);
 
-            // Cleanup should not throw and should clear pending state
             cleanup();
 
-            // After cleanup, a stale echo should sync normally (pending was cleared)
-            // Re-create the sync to get a fresh subscriber
-            const cleanup2 = createSliceSync(createTestConfig());
-            const postCleanupSlice = createSliceState({
-                __hasHydrated__: true,
-                spec: 'newSpec'
-            });
-            mockAppCoreState = { test: postCleanupSlice };
+            // Both store subscriptions were torn down exactly once.
+            expect(appCoreUnsub).toHaveBeenCalledTimes(1);
+            expect(visualUnsub).toHaveBeenCalledTimes(1);
+
+            // Fire THIS SAME instance's captured inbound subscriber with a value
+            // that WOULD have been suppressed as a stale echo had the pending
+            // map survived cleanup. Because cleanup cleared it, the spec syncs —
+            // proving the pending map was cleared — and no persist is triggered
+            // by an inbound sync.
+            mockPersistProjectProperties.mockClear();
+            mockSyncFn.mockClear();
             fireVisualSubscriber({
                 vega: { spec: 'fromPBI', config: '{}', fontSize: 14 },
                 interactivity: { tooltip: true }
             });
-            // Should sync — no pending entries blocking
             expect(mockSyncFn).toHaveBeenCalledWith(
                 expect.objectContaining({ spec: 'fromPBI' })
             );
-            cleanup2();
+            expect(mockPersistProjectProperties).not.toHaveBeenCalled();
         });
 
-        it('should confirm pending via deepEqual for nested objects (JSON round-trip)', () => {
-            const nestedValue = { field1: { highlight: true, format: false } };
+        it('should confirm pending via deepEqual for nested objects (fresh reference, identical content)', () => {
+            // Nested-object value rebuilt per call (real supportFieldConfiguration
+            // shape). Because every getVisualValue re-parses into a NEW object
+            // graph, reference equality would treat the host echo as stale;
+            // only deepEqual confirms the pending persist.
+            const buildConfig = () => ({
+                field1: { highlight: true, format: false }
+            });
             const oldSlice = createSliceState({
                 __hasHydrated__: true,
-                spec: JSON.stringify({ old: true })
+                supportConfig: { field0: { highlight: false } }
             });
             mockAppCoreState = { test: oldSlice };
             mockVisualSettings = {
-                ...DEFAULT_VISUAL_SETTINGS,
                 vega: {
-                    ...DEFAULT_VISUAL_SETTINGS.vega,
-                    spec: JSON.stringify({ old: true })
+                    supportConfigRaw: JSON.stringify({
+                        field0: { highlight: false }
+                    })
                 }
             };
-            createSliceSync(createTestConfig());
+            createSliceSync(createTestConfig({ mappings: [OBJECT_MAPPING] }));
 
-            // Persist the nested spec (different reference triggers persist)
+            // Persist a new nested-object config (different reference triggers persist)
             const newSlice = createSliceState({
                 __hasHydrated__: true,
-                spec: JSON.stringify(nestedValue)
+                supportConfig: buildConfig()
             });
             fireAppCoreSubscriber(newSlice);
-            expect(mockPersistProjectProperties).toHaveBeenCalled();
+            expect(mockPersistProjectProperties).toHaveBeenCalledTimes(1);
 
-            // Visual returns the same value (simulating JSON round-trip — same content, new ref)
-            const confirmedSettings = {
-                vega: {
-                    spec: JSON.stringify(nestedValue),
-                    config: '{}',
-                    fontSize: 14
-                },
-                interactivity: { tooltip: true }
-            };
-            fireVisualSubscriber(confirmedSettings);
+            // Power BI echoes back a FRESH object graph with identical content.
+            fireVisualSubscriber({
+                vega: { supportConfigRaw: JSON.stringify(buildConfig()) }
+            });
 
-            // deepEqual should confirm (same string content)
-            // No sync call — confirmed and cleared
+            // deepEqual confirms (identical content, distinct references) —
+            // pending cleared, no sync (app-core already correct).
             expect(mockSyncFn).not.toHaveBeenCalled();
 
-            // Subsequent different value syncs normally
+            // A genuinely different nested value now syncs normally.
             fireVisualSubscriber({
-                vega: { spec: 'different', config: '{}', fontSize: 14 },
-                interactivity: { tooltip: true }
+                vega: {
+                    supportConfigRaw: JSON.stringify({
+                        field1: { highlight: false, format: false }
+                    })
+                }
             });
             expect(mockSyncFn).toHaveBeenCalledWith(
-                expect.objectContaining({ spec: 'different' })
+                expect.objectContaining({
+                    supportConfig: { field1: { highlight: false, format: false } }
+                })
             );
         });
     });
