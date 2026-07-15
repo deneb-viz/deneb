@@ -2,7 +2,10 @@ import { describe, expect, it, vi } from 'vitest';
 import type { View } from 'vega';
 import {
     performIncrementalUpdate,
-    resolveDataChangeAction
+    resolveDataChangeAction,
+    resolveDataChangeGate,
+    shouldAdvancePrevValues,
+    type DataChangeGate
 } from '../incremental-update';
 
 // incremental-update.ts imports only `logDebug` from this module.
@@ -249,5 +252,136 @@ describe('resolveDataChangeAction (L3 routing)', () => {
         expect(resolveDataChangeAction('present', true, 500, 500)).toBe(
             'incremental'
         );
+    });
+});
+
+describe('resolveDataChangeGate (defect C1 activation + defect #7 deferral)', () => {
+    const active = {
+        isActive: true,
+        viewReady: true,
+        hasView: true
+    };
+
+    it("returns 'initialize' on the first observation (null baseline)", () => {
+        expect(
+            resolveDataChangeGate({
+                prevValues: null,
+                values: [{ a: 1 }],
+                ...active
+            })
+        ).toBe('initialize');
+    });
+
+    it("returns 'unchanged' when the values reference is identical", () => {
+        const values = [{ a: 1 }];
+        expect(
+            resolveDataChangeGate({ prevValues: values, values, ...active })
+        ).toBe('unchanged');
+    });
+
+    it("returns 'inactive' when this instance is not the live one, even with a changed reference", () => {
+        expect(
+            resolveDataChangeGate({
+                prevValues: [{ a: 1 }],
+                values: [{ a: 2 }],
+                isActive: false,
+                viewReady: true,
+                hasView: true
+            })
+        ).toBe('inactive');
+    });
+
+    it("returns 'defer' when the view is mid-embed (viewReady false)", () => {
+        expect(
+            resolveDataChangeGate({
+                prevValues: [{ a: 1 }],
+                values: [{ a: 2 }],
+                isActive: true,
+                viewReady: false,
+                hasView: true
+            })
+        ).toBe('defer');
+    });
+
+    it("returns 'no-view' when active and ready but no view is bound", () => {
+        expect(
+            resolveDataChangeGate({
+                prevValues: [{ a: 1 }],
+                values: [{ a: 2 }],
+                isActive: true,
+                viewReady: true,
+                hasView: false
+            })
+        ).toBe('no-view');
+    });
+
+    it("returns 'act' when active, ready, bound, and the reference changed", () => {
+        expect(
+            resolveDataChangeGate({
+                prevValues: [{ a: 1 }],
+                values: [{ a: 2 }],
+                ...active
+            })
+        ).toBe('act');
+    });
+
+    it('an inactive instance never reaches an action (defect C1: no side effects)', () => {
+        const gate = resolveDataChangeGate({
+            prevValues: [{ a: 1 }],
+            values: [{ a: 2 }],
+            isActive: false,
+            viewReady: true,
+            hasView: true
+        });
+        expect(gate).toBe('inactive');
+        expect(shouldAdvancePrevValues(gate)).toBe(false);
+    });
+
+    it('an update landing mid-embed is deferred, then applied once viewReady flips (defect #7)', () => {
+        const prevValues = [{ a: 1 }];
+        const values = [{ a: 2 }];
+
+        // Update lands while the view is still embedding.
+        const deferred = resolveDataChangeGate({
+            prevValues,
+            values,
+            isActive: true,
+            viewReady: false,
+            hasView: true
+        });
+        expect(deferred).toBe('defer');
+        // Baseline is NOT advanced, so the SAME values are re-evaluated later.
+        expect(shouldAdvancePrevValues(deferred)).toBe(false);
+
+        // Embed completes -> viewReady flips true, effect re-runs with the
+        // unchanged baseline and the same values: now the update is applied.
+        const applied = resolveDataChangeGate({
+            prevValues,
+            values,
+            isActive: true,
+            viewReady: true,
+            hasView: true
+        });
+        expect(applied).toBe('act');
+        expect(shouldAdvancePrevValues(applied)).toBe(true);
+    });
+});
+
+describe('shouldAdvancePrevValues', () => {
+    const advancing: DataChangeGate[] = ['initialize', 'act'];
+    const notAdvancing: DataChangeGate[] = [
+        'unchanged',
+        'inactive',
+        'defer',
+        'no-view'
+    ];
+
+    it('advances the baseline only for initialize and act', () => {
+        for (const gate of advancing) {
+            expect(shouldAdvancePrevValues(gate)).toBe(true);
+        }
+        for (const gate of notAdvancing) {
+            expect(shouldAdvancePrevValues(gate)).toBe(false);
+        }
     });
 });
