@@ -10,8 +10,30 @@ import {
 import {
     PENDING_PERSIST_TIMEOUT_MS,
     type PendingPersistEntry,
-    type SliceSyncConfig
+    type SliceSyncConfig,
+    type SliceSyncMapping
 } from './sync-types';
+
+/**
+ * Select the equality function used for a mapping's change detection.
+ *
+ * Mappings that carry `serializeForPersistence` hold deserialized-object
+ * values — e.g. `supportFieldConfiguration` is `JSON.parse`d fresh on every
+ * `getVisualValue` call — so the app-core and visual values are distinct
+ * references with identical content. `shallowEqual` reports these as changed
+ * on every pass, causing inbound re-sync churn (a full project-slice rebuild
+ * per visual update, including resize storms) and spurious outbound persists
+ * (bundling an unchanged value and registering a stale-echo pending entry).
+ * `deepEqual` — the same comparison used for pending-persist confirmation
+ * below — detects content-equality. Primitive mappings keep the cheaper
+ * `shallowEqual`.
+ */
+const areMappingValuesEqual = <TSliceKey extends string>(
+    mapping: SliceSyncMapping<TSliceKey>,
+    a: unknown,
+    b: unknown
+): boolean =>
+    mapping.serializeForPersistence ? deepEqual(a, b) : shallowEqual(a, b);
 
 /**
  * Creates a bidirectional sync subscription for a slice.
@@ -107,7 +129,11 @@ export const createSliceSync = <TSlice, TSliceKey extends string, TSyncPayload>(
                     // After hydration, only sync if values have changed.
                     if (
                         isFirstHydration ||
-                        !shallowEqual(visualValue, appCoreValue)
+                        !areMappingValuesEqual(
+                            mapping,
+                            visualValue,
+                            appCoreValue
+                        )
                     ) {
                         payload[mapping.sliceKey] = visualValue;
                     }
@@ -182,7 +208,9 @@ export const createSliceSync = <TSlice, TSliceKey extends string, TSyncPayload>(
                 const appCoreValue = getSliceValue(slice, mapping.sliceKey);
                 const visualValue = mapping.getVisualValue(settings);
 
-                if (!shallowEqual(appCoreValue, visualValue)) {
+                if (
+                    !areMappingValuesEqual(mapping, appCoreValue, visualValue)
+                ) {
                     // Determine the value to persist: use serializeForPersistence
                     // if available, otherwise use the raw app-core value
                     const persistValue = mapping.serializeForPersistence

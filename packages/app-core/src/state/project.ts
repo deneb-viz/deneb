@@ -16,6 +16,31 @@ import {
 import { logDebug } from '@deneb-viz/utils/logging';
 import { type SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
+import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
+
+/**
+ * Project each export dataset entry's per-field support configuration into its
+ * `supportFieldConfiguration` slot, and STRIP the slot from any field that is
+ * no longer present in `config`. This is the single, canonical implementation
+ * shared by every site that embeds support-field config into export metadata
+ * (template init, setter, migration stamp, host sync). Previously duplicated
+ * four times with two divergent semantics: two variants stripped stale config,
+ * two left it embedded on removed fields — corrupting export/template
+ * integrity when a field was reconfigured to defaults or removed.
+ */
+const embedSupportFieldConfig = (
+    dataset: UsermetaDatasetField[],
+    config: SupportFieldConfiguration | undefined
+): UsermetaDatasetField[] =>
+    dataset.map((d) => {
+        const fieldConfig = config?.[d.namePlaceholder ?? d.name];
+        if (fieldConfig) {
+            return { ...d, supportFieldConfiguration: fieldConfig };
+        }
+        // Remove stale config from a field that is no longer configured.
+        const { supportFieldConfiguration: _, ...rest } = d;
+        return rest as UsermetaDatasetField;
+    });
 
 export type ProjectSliceProperties = SyncableSlice &
     DenebProject & {
@@ -147,22 +172,12 @@ export const createProjectSlice =
                             __isInitialized__: true
                         };
                         // Embed support field config into dataset entries for export metadata
-                        const datasetWithConfig = (
+                        const datasetWithConfig = embedSupportFieldConfig(
                             state.export.metadata?.datasets?.[
                                 DATASET_DEFAULT_NAME
-                            ] ?? []
-                        ).map((d) => {
-                            const fieldConfig =
-                                updatedProject.supportFieldConfiguration?.[
-                                    d.namePlaceholder ?? d.name
-                                ];
-                            return fieldConfig
-                                ? {
-                                      ...d,
-                                      supportFieldConfiguration: fieldConfig
-                                  }
-                                : d;
-                        });
+                            ] ?? [],
+                            updatedProject.supportFieldConfiguration
+                        );
                         // Update export metadata for template creation
                         const exportMetadata = getUpdatedExportMetadata(
                             state.export.metadata as UsermetaTemplate,
@@ -293,23 +308,12 @@ export const createProjectSlice =
             setSupportFieldConfiguration: (config: SupportFieldConfiguration) =>
                 set(
                     (state) => {
-                        const currentDataset =
+                        const updatedDataset = embedSupportFieldConfig(
                             state.export.metadata?.datasets?.[
                                 DATASET_DEFAULT_NAME
-                            ] ?? [];
-                        const updatedDataset = currentDataset.map((d) => {
-                            const fieldConfig =
-                                config[d.namePlaceholder ?? d.name];
-                            if (fieldConfig) {
-                                return {
-                                    ...d,
-                                    supportFieldConfiguration: fieldConfig
-                                };
-                            }
-                            // Remove stale config from field if it was previously set
-                            const { supportFieldConfiguration: _, ...rest } = d;
-                            return rest as typeof d;
-                        });
+                            ] ?? [],
+                            config
+                        );
                         const exportMetadata = getUpdatedExportMetadata(
                             state.export.metadata as UsermetaTemplate,
                             {
@@ -352,25 +356,12 @@ export const createProjectSlice =
                         // Embed support field config into dataset entries
                         // for export metadata (same semantics as
                         // setSupportFieldConfiguration).
-                        const currentDataset =
+                        const updatedDataset = embedSupportFieldConfig(
                             state.export.metadata?.datasets?.[
                                 DATASET_DEFAULT_NAME
-                            ] ?? [];
-                        const updatedDataset = currentDataset.map((d) => {
-                            const fieldConfig =
-                                payload.supportFieldConfiguration[
-                                    d.namePlaceholder ?? d.name
-                                ];
-                            if (fieldConfig) {
-                                return {
-                                    ...d,
-                                    supportFieldConfiguration: fieldConfig
-                                };
-                            }
-                            // Remove stale config from field if it was previously set
-                            const { supportFieldConfiguration: _, ...rest } = d;
-                            return rest as typeof d;
-                        });
+                            ] ?? [],
+                            payload.supportFieldConfiguration
+                        );
                         const exportMetadata = getUpdatedExportMetadata(
                             state.export.metadata as UsermetaTemplate,
                             {
@@ -466,17 +457,10 @@ const handleSyncProjectData = (
     );
 
     // Embed support field config into dataset entries for export metadata
-    const currentDataset =
-        state.export.metadata?.datasets?.[DATASET_DEFAULT_NAME] ?? [];
-    const datasetWithConfig = currentDataset.map((d) => {
-        const fieldConfig =
-            updatedProject.supportFieldConfiguration?.[
-                d.namePlaceholder ?? d.name
-            ];
-        return fieldConfig
-            ? { ...d, supportFieldConfiguration: fieldConfig }
-            : d;
-    });
+    const datasetWithConfig = embedSupportFieldConfig(
+        state.export.metadata?.datasets?.[DATASET_DEFAULT_NAME] ?? [],
+        updatedProject.supportFieldConfiguration
+    );
 
     // Update export metadata for template export functionality
     const exportMetadata = getUpdatedExportMetadata(

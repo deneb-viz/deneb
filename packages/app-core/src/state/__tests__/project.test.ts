@@ -84,6 +84,48 @@ describe('project slice — syncProjectData initialization (M12)', () => {
 
         expect(store.getState().project.__isInitialized__).toBe(false);
     });
+
+    it('strips stale embedded support-field config from export dataset entries when a field is no longer configured (parity with setter/migration-stamp)', () => {
+        const store = makeStore();
+        // Seed an export dataset entry that already carries embedded config,
+        // as if a prior sync had configured this field.
+        store.setState((state) => ({
+            export: {
+                ...state.export,
+                metadata: {
+                    ...state.export.metadata!,
+                    datasets: {
+                        dataset: [
+                            {
+                                key: '__0__',
+                                name: 'Category',
+                                namePlaceholder: 'Category',
+                                type: 'text',
+                                supportFieldConfiguration: {
+                                    highlight: true,
+                                    format: true,
+                                    formatted: true
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }));
+
+        // Sync a project whose supportFieldConfiguration no longer includes
+        // 'Category'. The host-sync embed variant used to leave the stale
+        // embedded config in place; it must now be stripped.
+        store.getState().project.syncProjectData(
+            partialSync({
+                spec: '{"mark":"bar"}',
+                supportFieldConfiguration: {}
+            })
+        );
+
+        const entry = store.getState().export.metadata?.datasets?.dataset?.[0];
+        expect(entry?.supportFieldConfiguration).toBeUndefined();
+    });
 });
 
 describe('project slice — applySupportFieldMigrationStamp (M10)', () => {

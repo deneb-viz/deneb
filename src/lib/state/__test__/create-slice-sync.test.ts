@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createSliceSync } from '../create-slice-sync';
 import { PENDING_PERSIST_TIMEOUT_MS } from '../sync-types';
 import type { SliceSyncConfig, SliceSyncMapping } from '../sync-types';
+import { useDenebState } from '@deneb-viz/app-core';
+import { useDenebVisualState } from '../../../state';
 
 // ─── Mock Setup ──────────────────────────────────────────────────────────────
 
@@ -69,10 +71,18 @@ type TestSlice = {
     config: string;
     fontSize: number;
     interactivity: { tooltip: boolean };
+    // Deserialized-object value (nested per-field config), mirroring
+    // supportFieldConfiguration. Optional so existing fixtures are unaffected.
+    supportConfig?: Record<string, unknown>;
     syncData: (payload: Partial<TestSlice>) => void;
 };
 
-type TestSliceKey = 'spec' | 'config' | 'fontSize' | 'interactivity';
+type TestSliceKey =
+    | 'spec'
+    | 'config'
+    | 'fontSize'
+    | 'interactivity'
+    | 'supportConfig';
 
 let mockAppCoreState: Record<string, unknown>;
 let mockVisualSettings: Record<string, unknown>;
@@ -125,6 +135,23 @@ const TEST_MAPPINGS: SliceSyncMapping<TestSliceKey>[] = [
             (s as typeof DEFAULT_VISUAL_SETTINGS).interactivity
     }
 ];
+
+// Deserialized-object mapping: getVisualValue returns a FRESH object on every
+// call (JSON.parse), exactly like supportFieldConfiguration. shallowEqual
+// always reports a change for such values (new nested references); only
+// deepEqual detects content-equality.
+const OBJECT_MAPPING: SliceSyncMapping<TestSliceKey> = {
+    sliceKey: 'supportConfig',
+    getVisualValue: (s: Record<string, unknown>) =>
+        JSON.parse(
+            (s as { vega: { supportConfigRaw: string } }).vega.supportConfigRaw
+        ),
+    persistence: {
+        objectName: 'stateManagement',
+        propertyName: 'supportFieldConfiguration'
+    },
+    serializeForPersistence: (value) => JSON.stringify(value)
+};
 
 const CROSS_PROPERTY_MAPPINGS: SliceSyncMapping<TestSliceKey>[] = [
     {
@@ -881,7 +908,18 @@ describe('createSliceSync', () => {
                 spec: 'oldSpec'
             });
             mockAppCoreState = { test: initialSlice };
+            mockVisualSettings = {
+                ...DEFAULT_VISUAL_SETTINGS,
+                vega: { ...DEFAULT_VISUAL_SETTINGS.vega, spec: 'oldSpec' }
+            };
             const cleanup = createSliceSync(createTestConfig());
+
+            // Capture the unsubscribe fns each store's subscribe() returned for
+            // THIS instance (one subscribe call per store, cleared per test).
+            const appCoreUnsub = vi.mocked(useDenebState.subscribe).mock
+                .results[0].value;
+            const visualUnsub = vi.mocked(useDenebVisualState.subscribe).mock
+                .results[0].value;
 
             // Create a pending entry (different reference triggers persist)
             const changedSlice = createSliceState({
@@ -889,76 +927,164 @@ describe('createSliceSync', () => {
                 spec: 'newSpec'
             });
             fireAppCoreSubscriber(changedSlice);
-            expect(mockPersistProjectProperties).toHaveBeenCalled();
+            expect(mockPersistProjectProperties).toHaveBeenCalledTimes(1);
 
-            // Cleanup should not throw and should clear pending state
             cleanup();
 
-            // After cleanup, a stale echo should sync normally (pending was cleared)
-            // Re-create the sync to get a fresh subscriber
-            const cleanup2 = createSliceSync(createTestConfig());
-            const postCleanupSlice = createSliceState({
-                __hasHydrated__: true,
-                spec: 'newSpec'
-            });
-            mockAppCoreState = { test: postCleanupSlice };
+            // Both store subscriptions were torn down exactly once.
+            expect(appCoreUnsub).toHaveBeenCalledTimes(1);
+            expect(visualUnsub).toHaveBeenCalledTimes(1);
+
+            // Fire THIS SAME instance's captured inbound subscriber with a value
+            // that WOULD have been suppressed as a stale echo had the pending
+            // map survived cleanup. Because cleanup cleared it, the spec syncs —
+            // proving the pending map was cleared — and no persist is triggered
+            // by an inbound sync.
+            mockPersistProjectProperties.mockClear();
+            mockSyncFn.mockClear();
             fireVisualSubscriber({
                 vega: { spec: 'fromPBI', config: '{}', fontSize: 14 },
                 interactivity: { tooltip: true }
             });
-            // Should sync — no pending entries blocking
             expect(mockSyncFn).toHaveBeenCalledWith(
                 expect.objectContaining({ spec: 'fromPBI' })
             );
-            cleanup2();
+            expect(mockPersistProjectProperties).not.toHaveBeenCalled();
         });
 
-        it('should confirm pending via deepEqual for nested objects (JSON round-trip)', () => {
-            const nestedValue = { field1: { highlight: true, format: false } };
+        it('should confirm pending via deepEqual for nested objects (fresh reference, identical content)', () => {
+            // Nested-object value rebuilt per call (real supportFieldConfiguration
+            // shape). Because every getVisualValue re-parses into a NEW object
+            // graph, reference equality would treat the host echo as stale;
+            // only deepEqual confirms the pending persist.
+            const buildConfig = () => ({
+                field1: { highlight: true, format: false }
+            });
             const oldSlice = createSliceState({
                 __hasHydrated__: true,
-                spec: JSON.stringify({ old: true })
+                supportConfig: { field0: { highlight: false } }
             });
             mockAppCoreState = { test: oldSlice };
             mockVisualSettings = {
-                ...DEFAULT_VISUAL_SETTINGS,
                 vega: {
-                    ...DEFAULT_VISUAL_SETTINGS.vega,
-                    spec: JSON.stringify({ old: true })
+                    supportConfigRaw: JSON.stringify({
+                        field0: { highlight: false }
+                    })
                 }
             };
-            createSliceSync(createTestConfig());
+            createSliceSync(createTestConfig({ mappings: [OBJECT_MAPPING] }));
 
-            // Persist the nested spec (different reference triggers persist)
+            // Persist a new nested-object config (different reference triggers persist)
             const newSlice = createSliceState({
                 __hasHydrated__: true,
-                spec: JSON.stringify(nestedValue)
+                supportConfig: buildConfig()
             });
             fireAppCoreSubscriber(newSlice);
-            expect(mockPersistProjectProperties).toHaveBeenCalled();
+            expect(mockPersistProjectProperties).toHaveBeenCalledTimes(1);
 
-            // Visual returns the same value (simulating JSON round-trip — same content, new ref)
-            const confirmedSettings = {
-                vega: {
-                    spec: JSON.stringify(nestedValue),
-                    config: '{}',
-                    fontSize: 14
-                },
-                interactivity: { tooltip: true }
-            };
-            fireVisualSubscriber(confirmedSettings);
+            // Power BI echoes back a FRESH object graph with identical content.
+            fireVisualSubscriber({
+                vega: { supportConfigRaw: JSON.stringify(buildConfig()) }
+            });
 
-            // deepEqual should confirm (same string content)
-            // No sync call — confirmed and cleared
+            // deepEqual confirms (identical content, distinct references) —
+            // pending cleared, no sync (app-core already correct).
             expect(mockSyncFn).not.toHaveBeenCalled();
 
-            // Subsequent different value syncs normally
+            // A genuinely different nested value now syncs normally.
             fireVisualSubscriber({
-                vega: { spec: 'different', config: '{}', fontSize: 14 },
-                interactivity: { tooltip: true }
+                vega: {
+                    supportConfigRaw: JSON.stringify({
+                        field1: { highlight: false, format: false }
+                    })
+                }
             });
             expect(mockSyncFn).toHaveBeenCalledWith(
-                expect.objectContaining({ spec: 'different' })
+                expect.objectContaining({
+                    supportConfig: {
+                        field1: { highlight: false, format: false }
+                    }
+                })
+            );
+        });
+    });
+
+    describe('per-mapping deep equality (deserialized-object mappings)', () => {
+        it('should NOT sync a deserialized-object mapping when content is identical (deepEqual — no inbound churn)', () => {
+            // Inbound: app-core already holds content-identical config.
+            // getVisualValue re-parses fresh each call, so shallowEqual would
+            // always report a change and re-sync (churn on every update).
+            // deepEqual detects equality → no sync.
+            const slice = createSliceState({
+                __hasHydrated__: true,
+                supportConfig: { f1: { highlight: true, format: false } }
+            });
+            mockAppCoreState = { test: slice };
+            createSliceSync(createTestConfig({ mappings: [OBJECT_MAPPING] }));
+
+            fireVisualSubscriber({
+                vega: {
+                    supportConfigRaw: JSON.stringify({
+                        f1: { highlight: true, format: false }
+                    })
+                }
+            });
+
+            expect(mockSyncFn).not.toHaveBeenCalled();
+        });
+
+        it('should NOT bundle an unchanged deserialized-object mapping (nor record pending) when an unrelated key persists', () => {
+            // Outbound: only `spec` genuinely changes. The unchanged
+            // supportConfig must not be bundled into the persist and must not
+            // register a pendingPersists entry (which would put it under
+            // stale-echo suppression on the next inbound sync).
+            const specMapping = TEST_MAPPINGS[0]; // spec
+            const initialSlice = createSliceState({
+                __hasHydrated__: true,
+                spec: 'oldSpec',
+                supportConfig: { f1: { highlight: true } }
+            });
+            mockAppCoreState = { test: initialSlice };
+            mockVisualSettings = {
+                vega: {
+                    spec: 'oldSpec',
+                    supportConfigRaw: JSON.stringify({
+                        f1: { highlight: true }
+                    })
+                }
+            };
+            createSliceSync(
+                createTestConfig({ mappings: [specMapping, OBJECT_MAPPING] })
+            );
+
+            const changedSlice = createSliceState({
+                __hasHydrated__: true,
+                spec: 'newSpec',
+                supportConfig: { f1: { highlight: true } } // content-identical, fresh ref
+            });
+            fireAppCoreSubscriber(changedSlice);
+
+            // Exactly one change — spec only, supportConfig NOT bundled.
+            expect(mockPersistProjectProperties).toHaveBeenCalledTimes(1);
+            const changes = mockPersistProjectProperties.mock.calls[0][0];
+            expect(changes).toHaveLength(1);
+            expect(changes[0]).toMatchObject({ propertyName: 'jsonSpec' });
+
+            // No pending entry for supportConfig: a genuine host change to it
+            // must sync (not be suppressed as a stale echo).
+            mockSyncFn.mockClear();
+            fireVisualSubscriber({
+                vega: {
+                    spec: 'newSpec',
+                    supportConfigRaw: JSON.stringify({
+                        f1: { highlight: false }
+                    })
+                }
+            });
+            expect(mockSyncFn).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    supportConfig: { f1: { highlight: false } }
+                })
             );
         });
     });
