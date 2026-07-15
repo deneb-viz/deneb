@@ -361,6 +361,31 @@ export const createRenderingLifecycleCoordinator = (
             // coordinator type: nothing mutates and the start-vs-close
             // tally must not count a deferred settle).
             if (state.renderStarted) return;
+            // Stale-timer guard. The PRIMARY protection against a stale
+            // settle timer is caller-side: the arming effect in
+            // `src/app/app.tsx` is keyed on `visualUpdateOptions`, so every
+            // new update's commit clears the previous timer before arming
+            // its own (at most one timer in flight). The residual window is
+            // the gap between an update's SYNCHRONOUS bind (inside
+            // `update()`) and that asynchronous React cleanup — an
+            // already-expired timer for the superseded update can fire
+            // there. When the superseded render had STARTED, the epoch
+            // guard below catches it (its `inFlightEpoch` predates the
+            // fresh binding), same as the async terminals. When the
+            // superseded render never started, `inFlightEpoch` is null and
+            // this close is indistinguishable from a legitimate settle —
+            // that sub-case (a renderless update superseded within the
+            // settle delay, with the timer expiring inside the sub-frame
+            // gap) is accepted as out of scope, per the caller-owned
+            // cancellation contract above.
+            if (isStaleInFlightTerminal()) {
+                observe({
+                    kind: 'stale-close',
+                    id: pendingRenderId,
+                    via: 'settle-pending-render'
+                });
+                return;
+            }
             // No render started (the non-Vega-affecting formatting-
             // change case this settle path targets): close terminally,
             // identical to `closePendingRender`.

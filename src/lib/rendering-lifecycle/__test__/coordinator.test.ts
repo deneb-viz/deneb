@@ -599,6 +599,45 @@ describe('createRenderingLifecycleCoordinator — settle-timer close (closePendi
         ).toHaveLength(1);
     });
 
+    it('stale settle after supersede+rebind (previous render had started) no-ops against the freshly-bound id', () => {
+        const { coordinator, calls, events } = buildHarness();
+        const idA = coordinator.open(FAKE_OPTIONS_A);
+        coordinator.bindPendingRender(idA);
+        coordinator.markPendingRenderStarted(); // A's render in flight
+        // B arrives before A's settle timer was cleared by the caller's
+        // effect cleanup (the sub-frame gap between B's synchronous bind
+        // and React's asynchronous cleanup) → A supersede-failed, B bound
+        // but NOT started.
+        const idB = coordinator.open(FAKE_OPTIONS_B);
+        coordinator.bindPendingRender(idB);
+        // A's expired settle timer fires. Without the epoch guard the
+        // not-started terminal branch would close B before it painted.
+        coordinator.closePendingRenderSettle();
+        expect(
+            calls.filter(
+                (c) =>
+                    c.method === 'renderingFinished' &&
+                    c.options === FAKE_OPTIONS_B
+            )
+        ).toHaveLength(0);
+        const staleClose = events.find((e) => e.kind === 'stale-close');
+        expect(staleClose).toBeDefined();
+        expect(staleClose && 'via' in staleClose && staleClose.via).toBe(
+            'settle-pending-render'
+        );
+        expect(staleClose && 'id' in staleClose && staleClose.id).toBe(idB);
+        // B's own lifecycle then completes normally — exactly one finish.
+        coordinator.markPendingRenderStarted();
+        coordinator.closePendingRender();
+        expect(
+            calls.filter(
+                (c) =>
+                    c.method === 'renderingFinished' &&
+                    c.options === FAKE_OPTIONS_B
+            )
+        ).toHaveLength(1);
+    });
+
     it('deferred settle emits no observer event (start-vs-close tally must not count it)', () => {
         const { coordinator, events } = buildHarness();
         const id = coordinator.open(FAKE_OPTIONS_A);

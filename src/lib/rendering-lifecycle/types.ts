@@ -140,9 +140,14 @@ export type RenderingLifecycleEvent =
           // mirrors the other terminal events, whose `id` names the id
           // actually affected by the decision, and is the id a consumer
           // cares about protecting.
+          //
+          // `via` distinguishes which terminal was suppressed: the async
+          // embed-callback path (`closePendingRender`/`failPendingRender`)
+          // or the settle timer's not-started terminal branch
+          // (`closePendingRenderSettle`).
           kind: 'stale-close';
           id: RenderingLifecycleId;
-          via: 'async-pending-render';
+          via: 'async-pending-render' | 'settle-pending-render';
       };
 
 export type RenderingLifecycleObserver = (
