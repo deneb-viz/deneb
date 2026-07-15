@@ -251,6 +251,41 @@ describe('getMappedDataset — legacy support-field migration integrity (U3)', (
             expect(stamp.denebMetaVersion).toBe(2);
         });
 
+        it('preserves the user-chosen consolidateFieldParameters=true in the stamp (partial-persist recovery)', () => {
+            mockProject = makeProject({
+                denebMetaVersion: 0,
+                supportFieldConfiguration: {
+                    Category: USER_EDIT_CATEGORY,
+                    Sales: USER_EDIT_SALES
+                },
+                consolidateFieldParameters: true
+            });
+
+            getMappedDataset(CATEGORICAL, 'en-US');
+
+            const stamp = mockApplySupportFieldMigrationStamp.mock.calls[0][0];
+            // Processing used consolidateFieldParameters=true for this pass
+            // (non-legacy, existing config present) — the stamp must carry
+            // the same value, not unconditionally false.
+            expect(stamp.consolidateFieldParameters).toBe(true);
+        });
+
+        it('stamps consolidateFieldParameters=false when the user had it off (partial-persist recovery)', () => {
+            mockProject = makeProject({
+                denebMetaVersion: 0,
+                supportFieldConfiguration: {
+                    Category: USER_EDIT_CATEGORY,
+                    Sales: USER_EDIT_SALES
+                },
+                consolidateFieldParameters: false
+            });
+
+            getMappedDataset(CATEGORICAL, 'en-US');
+
+            const stamp = mockApplySupportFieldMigrationStamp.mock.calls[0][0];
+            expect(stamp.consolidateFieldParameters).toBe(false);
+        });
+
         it('treats a non-empty persisted configuration as non-legacy evidence: unconfigured fields get new-spec defaults', () => {
             getMappedDataset(CATEGORICAL, 'en-US');
 

@@ -315,7 +315,15 @@ export const getMappedDataset = (
                     denebMetaVersion: getStateManagementVersionToStamp(
                         SUPPORT_FIELD_LEGACY_MIGRATION_ID
                     ),
-                    consolidateFieldParameters: false
+                    // Must match the value this pass processes with (see
+                    // `consolidate` below): a fresh-legacy pass (no existing
+                    // config) forces false, but a partial-persist recovery
+                    // pass (existing config present) is non-legacy and must
+                    // preserve the user's chosen setting rather than
+                    // silently discarding it on the next update.
+                    consolidateFieldParameters: hasExistingConfig
+                        ? (state.project.consolidateFieldParameters ?? true)
+                        : false
                 };
             }
 
