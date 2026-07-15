@@ -34,6 +34,10 @@ const steps = [
     },
     { name: 'Tests', cmd: 'npm run test' },
     {
+        name: 'Tests (benchmarks compare script)',
+        cmd: 'npm run test:benchmarks'
+    },
+    {
         name: 'Confirm pbiviz package (AppSource Version)',
         cmd: 'npm run package'
     }
