@@ -1001,7 +1001,9 @@ describe('createSliceSync', () => {
             });
             expect(mockSyncFn).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    supportConfig: { field1: { highlight: false, format: false } }
+                    supportConfig: {
+                        field1: { highlight: false, format: false }
+                    }
                 })
             );
         });
@@ -1046,7 +1048,9 @@ describe('createSliceSync', () => {
             mockVisualSettings = {
                 vega: {
                     spec: 'oldSpec',
-                    supportConfigRaw: JSON.stringify({ f1: { highlight: true } })
+                    supportConfigRaw: JSON.stringify({
+                        f1: { highlight: true }
+                    })
                 }
             };
             createSliceSync(
@@ -1072,7 +1076,9 @@ describe('createSliceSync', () => {
             fireVisualSubscriber({
                 vega: {
                     spec: 'newSpec',
-                    supportConfigRaw: JSON.stringify({ f1: { highlight: false } })
+                    supportConfigRaw: JSON.stringify({
+                        f1: { highlight: false }
+                    })
                 }
             });
             expect(mockSyncFn).toHaveBeenCalledWith(

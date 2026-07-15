@@ -129,7 +129,11 @@ export const createSliceSync = <TSlice, TSliceKey extends string, TSyncPayload>(
                     // After hydration, only sync if values have changed.
                     if (
                         isFirstHydration ||
-                        !areMappingValuesEqual(mapping, visualValue, appCoreValue)
+                        !areMappingValuesEqual(
+                            mapping,
+                            visualValue,
+                            appCoreValue
+                        )
                     ) {
                         payload[mapping.sliceKey] = visualValue;
                     }
@@ -204,7 +208,9 @@ export const createSliceSync = <TSlice, TSliceKey extends string, TSyncPayload>(
                 const appCoreValue = getSliceValue(slice, mapping.sliceKey);
                 const visualValue = mapping.getVisualValue(settings);
 
-                if (!areMappingValuesEqual(mapping, appCoreValue, visualValue)) {
+                if (
+                    !areMappingValuesEqual(mapping, appCoreValue, visualValue)
+                ) {
                     // Determine the value to persist: use serializeForPersistence
                     // if available, otherwise use the raw app-core value
                     const persistValue = mapping.serializeForPersistence
