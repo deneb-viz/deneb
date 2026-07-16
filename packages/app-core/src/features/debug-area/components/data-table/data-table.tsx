@@ -24,7 +24,11 @@ const useDataTableStyles = makeStyles({
         flexDirection: 'column',
         height: '100%',
         overflow: 'hidden',
-        width: '100%'
+        width: '100%',
+        // v8 draws its own cell-level divider (--rdt-color-divider fallback);
+        // Deneb's row-level Fluent border in customStyles is the single
+        // source of truth for dividers, so suppress the built-in one.
+        '--rdt-color-divider': 'transparent'
     }
 });
 
