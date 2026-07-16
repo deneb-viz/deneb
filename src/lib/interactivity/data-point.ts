@@ -99,6 +99,7 @@ export const getResolvedRowIdentities = (
         return [];
     }
     logDebug(`${LOG_PREFIX} fall-through case`, { foundValues });
+    // foundValues come from dataset.values itself (host-generated __row__), so no bounds check is needed here.
     return foundValues ? getRowNumbersFromData(foundValues) : [];
 };
 

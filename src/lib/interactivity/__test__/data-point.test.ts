@@ -39,10 +39,14 @@ describe('getResolvedRowIdentities', () => {
         ['out of range', 99],
         ['negative', -1],
         ['non-integer', 1.5],
-        ['non-number', '1']
+        ['non-number', '1'],
+        ['NaN', NaN]
     ])('single datum with %s __row__ never surfaces it', (_label, bad) => {
         const result = getResolvedRowIdentities([{ [ROW]: bad }], dataset);
-        expect(result).not.toContain(bad);
+        // With the fixture's empty `fields`, field-matching matches all rows,
+        // hitting the "all rows selected -> clear" path. NaN can't be checked
+        // via `not.toContain` (NaN !== NaN), so pin the actual result instead.
+        expect(result).toEqual([]);
     });
     it('multi-datum keeps only valid indices', () => {
         const result = getResolvedRowIdentities(
