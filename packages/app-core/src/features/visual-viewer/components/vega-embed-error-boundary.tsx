@@ -8,7 +8,6 @@ interface Props {
 
 interface State {
     hasError: boolean;
-    error: Error | null;
 }
 
 /**
@@ -48,11 +47,14 @@ interface State {
 export class VegaEmbedErrorBoundary extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
-        this.state = { hasError: false, error: null };
+        this.state = { hasError: false };
     }
 
-    static getDerivedStateFromError(error: Error): State {
-        return { hasError: true, error };
+    // React passes the thrown error; it is intentionally not captured —
+    // `componentDidCatch` owns logging via its own parameter, and the
+    // blank fallback renders nothing that could use it.
+    static getDerivedStateFromError(): State {
+        return { hasError: true };
     }
 
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
