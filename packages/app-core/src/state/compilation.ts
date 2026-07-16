@@ -108,11 +108,6 @@ export type CompilationSliceProperties = SyncableSlice &
         clear: () => void;
 
         /**
-         * Reset the compilation state to initial values.
-         */
-        reset: () => void;
-
-        /**
          * Sync performance settings from external source (localStorage, Power BI properties).
          */
         syncPerformanceSettings: (
@@ -183,7 +178,6 @@ const initialState: Omit<
     CompilationSliceProperties,
     | 'compile'
     | 'clear'
-    | 'reset'
     | 'syncPerformanceSettings'
     | 'setEnableIncrementalDataUpdates'
     | 'setIncrementalUpdateThreshold'
@@ -226,7 +220,6 @@ export const createCompilationSlice =
                     'compilation.compile'
                 ),
             clear: () => set(handleClear, false, 'compilation.clear'),
-            reset: () => set(handleReset, false, 'compilation.reset'),
             syncPerformanceSettings: (payload) =>
                 set(
                     (state) => handleSyncPerformanceSettings(state, payload),
@@ -368,16 +361,6 @@ const handleClear = (state: StoreState): Partial<StoreState> => ({
     compilation: {
         ...state.compilation,
         result: null
-    }
-});
-
-/**
- * Reset compilation state to initial values.
- */
-const handleReset = (state: StoreState): Partial<StoreState> => ({
-    compilation: {
-        ...state.compilation,
-        ...initialState
     }
 });
 
