@@ -1,6 +1,7 @@
 ---
 title: 'Rendering Lifecycle Coordinator — single-owner host-event pattern for Power BI custom visuals'
 date: 2026-07-03
+last_updated: 2026-07-16
 category: architecture-patterns
 module: rendering-lifecycle
 problem_type: architecture_pattern
@@ -123,11 +124,17 @@ An earlier iteration **deferred** an in-flight (`renderStarted === true`) render
 
 The bound in `src/index.ts` is `SAFETY_NET_BOUND_MS = 10_000`. **This is the Power BI certification ceiling, not a tunable.** The H2 fix changed the tick's _decision_ (defer → terminal close), not the bound, and added no re-arm or longer wait. If a legitimate path is exceeding the bound, the fix is to wire that path through the coordinator, not to raise the constant.
 
-### 6. Dependency injection at the seams
+### 6. In-flight render epoch — stale async terminals are no-ops (added 2026-07-16, PR #712)
+
+The no-arg async terminals (`closePendingRender`/`failPendingRender`) act on whatever id sits in the single pending-render slot. A superseded update's late in-flight embed callback could therefore terminally close the **freshly-bound** render before it painted — `renderingFinished` firing early in exactly the window Power BI export/print-to-PDF captures (exactly-once balance preserved, so never a cert violation; just untruthful timing).
+
+The guard: `pendingEpoch` bumps on every pending-render (re)binding; `markPendingRenderStarted` captures it as `inFlightEpoch`; an async terminal whose `inFlightEpoch` predates the current binding is a silent no-op that emits a `stale-close` observer event. `inFlightEpoch` clears on every real terminal and — deliberately — **not** on the supersede path: the superseded render's late callback is precisely what the guard must catch, so its epoch must survive the supersede (the design-phase suggestion to clear there was proven incompatible by the mandated failing test). The settle-close variant applies the same guard on its not-started terminal branch; its primary protection remains caller-side (the `app.tsx` arming effect is keyed on `visualUpdateOptions`, so each update's cleanup clears the prior timer), with the sub-frame gap between an update's synchronous bind and React's asynchronous cleanup as the guarded window. Accepted residual (documented in-line): a stale finish arriving after the newer render's own start matches epochs and closes early — that ordering is complementary-guarded by vega-react's generation suppression on real re-embeds.
+
+### 7. Dependency injection at the seams
 
 The factory takes `{ emitter, scheduler, logger?, observer? }`. Production wires the real host event service and `setTimeout`; unit tests inject a synthetic scheduler that exposes the pending callback for deterministic ticks and a plain mock emitter — no need to instantiate a full `IVisualHost`.
 
-### 7. Observer as the cert-permitted diagnostic channel
+### 8. Observer as the cert-permitted diagnostic channel
 
 Every state transition emits a structured event into an optional observer:
 
@@ -146,6 +153,11 @@ type RenderingLifecycleEvent =
           reason;
           error?;
           via: 'sync-current' | 'async-pending-render' | 'superseded';
+      }
+    | {
+          kind: 'stale-close'; // suppressed stale terminal (see §6)
+          id; // the id it WOULD have wrongly closed
+          via: 'async-pending-render' | 'settle-pending-render';
       }
     | { kind: 'safety-net-armed'; id }
     | {
@@ -190,8 +202,7 @@ this.#onRenderingStartedAdapter = () =>
 this.#onRenderingFinishedAdapter = () => this.#coordinator.closePendingRender();
 // Settle-timer close (app.tsx) — DEFERS to the real close / safety-net
 // when a render is in flight (H2). MUST be a distinct reference.
-this.#onSettleCloseAdapter = () =>
-    this.#coordinator.closePendingRenderSettle();
+this.#onSettleCloseAdapter = () => this.#coordinator.closePendingRenderSettle();
 this.#onRenderingErrorAdapter = (error) =>
     this.#coordinator.failPendingRender(error);
 ```
@@ -209,17 +220,17 @@ A companion `useEffect` in `app.tsx` handles the two paths Vega's callbacks can'
 
 Each property protects against a specific failure mode observed in Deneb:
 
-| Property | Failure mode when absent |
-|---|---|
-| Single owner of `rendering*` | Modules drift; some paths emit `renderingStarted` without any matching terminal. PDF export breaks. |
-| Delete before host emission | Host throws on emission → visual believes id is still open → follow-up `failCurrent` also emits → host contract violated twice. |
-| Supersede as failed | Prior orphan never closes; a burst of resize updates leaves one dangling `renderingStarted` per burst. |
-| `*Current` no-arg surface | Handlers need the id threaded through every call site; refactor pressure to route the id via globals or captured locals; attribution drift. |
-| `*PendingRender` no-arg surface | React callback captures a `visualUpdateOptions` from N updates ago and emits `renderingFinished(stale)`. Host sees terminal for the wrong id. |
-| Split test-surface type | Production code hard-codes `via: 'sync-current'` observer events from an async context; dev-overlay tally becomes actively misleading. |
-| Dep injection | Unit tests can't drive supersede/race/safety-net orderings deterministically; test complexity forces the coordinator to grow test-only branches. |
-| Safety-net at cert ceiling | If bound > 10s, cert reviewers observe an orphan window; if the bound is tuned per-path, the "raise the number" fix hides genuine wiring bugs. |
-| Observer | No cert-permitted way to surface `renderingFailed` error context during a certified build (host `reason` is write-only; `console.error` forbidden). |
+| Property                        | Failure mode when absent                                                                                                                            |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Single owner of `rendering*`    | Modules drift; some paths emit `renderingStarted` without any matching terminal. PDF export breaks.                                                 |
+| Delete before host emission     | Host throws on emission → visual believes id is still open → follow-up `failCurrent` also emits → host contract violated twice.                     |
+| Supersede as failed             | Prior orphan never closes; a burst of resize updates leaves one dangling `renderingStarted` per burst.                                              |
+| `*Current` no-arg surface       | Handlers need the id threaded through every call site; refactor pressure to route the id via globals or captured locals; attribution drift.         |
+| `*PendingRender` no-arg surface | React callback captures a `visualUpdateOptions` from N updates ago and emits `renderingFinished(stale)`. Host sees terminal for the wrong id.       |
+| Split test-surface type         | Production code hard-codes `via: 'sync-current'` observer events from an async context; dev-overlay tally becomes actively misleading.              |
+| Dep injection                   | Unit tests can't drive supersede/race/safety-net orderings deterministically; test complexity forces the coordinator to grow test-only branches.    |
+| Safety-net at cert ceiling      | If bound > 10s, cert reviewers observe an orphan window; if the bound is tuned per-path, the "raise the number" fix hides genuine wiring bugs.      |
+| Observer                        | No cert-permitted way to surface `renderingFailed` error context during a certified build (host `reason` is write-only; `console.error` forbidden). |
 
 ## When to Apply
 
@@ -247,8 +258,7 @@ After — no options capture; the coordinator remembers the id:
 
 ```tsx
 // src/index.ts constructor
-this.#onRenderingFinishedAdapter = () =>
-    this.#coordinator.closePendingRender();
+this.#onRenderingFinishedAdapter = () => this.#coordinator.closePendingRender();
 // app.tsx: passed as prop, threaded through provider unchanged
 ```
 
