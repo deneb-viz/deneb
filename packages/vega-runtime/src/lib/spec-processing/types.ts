@@ -39,8 +39,6 @@ export interface ParseSpecOptions {
         width: number;
         height: number;
     };
-    /** Log level for Vega logger */
-    logLevel?: number;
 }
 
 /**
