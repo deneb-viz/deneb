@@ -8,8 +8,7 @@ import { type StoreState, type SyncableSlice } from './state';
 import { INCREMENTAL_UPDATE_CONFIGURATION } from '../lib/vega/incremental-update-configuration';
 import {
     evaluateExportSpecCommandState,
-    evaluateZoomCommandsState,
-    isCompilationReady
+    evaluateZoomCommandsState
 } from '../lib/commands/state';
 
 /**
