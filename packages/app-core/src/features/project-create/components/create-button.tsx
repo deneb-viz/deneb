@@ -1,15 +1,13 @@
 import { Button } from '@fluentui/react-components';
 
-import {
-    getTemplateReplacedForDataset,
-    remapSupportFieldConfigurationForImport
-} from '@deneb-viz/json-processing';
+import { getTemplateReplacedForDataset } from '@deneb-viz/json-processing';
 import { logDebug, logRender, logWarning } from '@deneb-viz/utils/logging';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 import { useSpecificationEditor } from '../../../context/specification-editor';
 import { getDenebState, useDenebState } from '../../../state';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
+import { remapSupportFieldConfigurationForImport } from '../../../lib/project';
 
 /**
  * Displays the content for creating a specification using the selected
