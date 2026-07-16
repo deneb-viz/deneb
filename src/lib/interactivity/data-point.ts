@@ -55,17 +55,25 @@ export const getResolvedRowIdentities = (
         //logDebug(`${LOG_PREFIX} no data supplied, returning empty array`);
         return [];
     }
-    // Single, identifiable datum
-    if (data.length === 1 && data[0]?.[ROW_INDEX_FIELD_NAME] !== undefined) {
-        // logDebug(`${LOG_PREFIX} single datum with identity field found`, {
-        //     datum: data[0]
-        // });
-        return [data[0][ROW_INDEX_FIELD_NAME]];
+    // Single, identifiable datum — only if the identity survives validation;
+    // a spoofed/mutated __row__ falls through to field matching instead.
+    if (data.length === 1) {
+        const rowIndex = data[0]?.[ROW_INDEX_FIELD_NAME];
+        if (isValidRowIndex(rowIndex, dataset.values.length)) {
+            // logDebug(`${LOG_PREFIX} single datum with identity field found`, {
+            //     datum: data[0]
+            // });
+            return [rowIndex];
+        }
     }
-    // Multiple values; all with identifiable row indices
+    // Multiple values; all with identifiable row indices. Invalid entries are
+    // skipped; if none survive, fall through to field matching.
     if (allValuesHaveIdentityField(data)) {
         // logDebug(`${LOG_PREFIX} all datum have identity field`, { data });
-        return getRowNumbersFromData(data);
+        const rowNumbers = getRowNumbersFromData(data, dataset.values.length);
+        if (rowNumbers.length > 0) {
+            return rowNumbers;
+        }
     }
     // Otherwise, panic mode: try to identify from the matched values
     // logDebug(`${LOG_PREFIX} attempting to resolve via field matching`, {

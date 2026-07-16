@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { getRowNumbersFromData } from '../data-point';
+import {
+    getResolvedRowIdentities,
+    getRowNumbersFromData
+} from '../data-point';
 
 const ROW = '__row__';
 
@@ -21,5 +24,31 @@ describe('getRowNumbersFromData', () => {
     });
     it('with datasetLength 0, returns empty', () => {
         expect(getRowNumbersFromData([{ [ROW]: 0 }], 0)).toEqual([]);
+    });
+});
+
+describe('getResolvedRowIdentities', () => {
+    const dataset = {
+        fields: {},
+        values: [{ [ROW]: 0 }, { [ROW]: 1 }, { [ROW]: 2 }]
+    } as never;
+    it('single datum with valid __row__ returns it', () => {
+        expect(getResolvedRowIdentities([{ [ROW]: 1 }], dataset)).toEqual([1]);
+    });
+    it.each([
+        ['out of range', 99],
+        ['negative', -1],
+        ['non-integer', 1.5],
+        ['non-number', '1']
+    ])('single datum with %s __row__ never surfaces it', (_label, bad) => {
+        const result = getResolvedRowIdentities([{ [ROW]: bad }], dataset);
+        expect(result).not.toContain(bad);
+    });
+    it('multi-datum keeps only valid indices', () => {
+        const result = getResolvedRowIdentities(
+            [{ [ROW]: 0 }, { [ROW]: 99 }],
+            dataset
+        );
+        expect(result).toEqual([0]);
     });
 });
