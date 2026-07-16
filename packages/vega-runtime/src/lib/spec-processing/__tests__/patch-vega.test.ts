@@ -57,6 +57,36 @@ describe('patchVegaSpec', () => {
         );
     });
 
+    it('should preserve explicit zero width instead of substituting a responsive signal', () => {
+        const spec: Spec = {
+            $schema: 'https://vega.github.io/schema/vega/v5.json',
+            width: 0,
+            height: 200,
+            marks: []
+        };
+
+        const patched = patchVegaSpec(spec, {
+            containerDimensions: { width: 800, height: 600 }
+        });
+
+        expect(patched.width).toBe(0);
+    });
+
+    it('should preserve explicit zero height instead of substituting a responsive signal', () => {
+        const spec: Spec = {
+            $schema: 'https://vega.github.io/schema/vega/v5.json',
+            width: 400,
+            height: 0,
+            marks: []
+        };
+
+        const patched = patchVegaSpec(spec, {
+            containerDimensions: { width: 800, height: 600 }
+        });
+
+        expect(patched.height).toBe(0);
+    });
+
     it('should preserve user-specified width', () => {
         const spec: Spec = {
             $schema: 'https://vega.github.io/schema/vega/v5.json',
