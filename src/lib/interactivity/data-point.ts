@@ -20,6 +20,20 @@ const allValuesHaveIdentityField = (data: VegaDatum[]) =>
     )?.length === data?.length;
 
 /**
+ * A row identity supplied by a Vega datum is only trustworthy if it is an
+ * integer within the bounds of the visual's current dataset — specs can
+ * mutate `__row__`, so an unchecked value enables spoofed selection (#650).
+ */
+const isValidRowIndex = (
+    value: unknown,
+    datasetLength: number
+): value is number =>
+    typeof value === 'number' &&
+    Number.isInteger(value) &&
+    value >= 0 &&
+    value < datasetLength;
+
+/**
  * Get a reduced set of fields based on an array of key names from the dataset fields.
  */
 export const getDatasetFieldsBySelectionKeys = (
@@ -98,16 +112,22 @@ const getMatchedValues = (
 };
 
 /**
- * From an array of Vega datum, extract unique row numbers, provided that they exist.
+ * From an array of Vega datum, extract unique row numbers, provided that they exist. When
+ * `datasetLength` is supplied, each candidate row index is additionally validated as an integer
+ * within the bounds of the dataset — spec-mutated/spoofed values are skipped rather than trusted.
  */
-export const getRowNumbersFromData = (data: VegaDatum[]) => {
+export const getRowNumbersFromData = (
+    data: VegaDatum[],
+    datasetLength?: number
+) => {
     const resolvedIndices: number[] = [];
     data.forEach((d) => {
         const rowIndex = d[ROW_INDEX_FIELD_NAME];
-        if (
-            rowIndex !== undefined &&
-            resolvedIndices.indexOf(rowIndex as number) === -1
-        ) {
+        const isUsable =
+            datasetLength === undefined
+                ? rowIndex !== undefined
+                : isValidRowIndex(rowIndex, datasetLength);
+        if (isUsable && resolvedIndices.indexOf(rowIndex as number) === -1) {
             resolvedIndices.push(rowIndex as number);
         }
     });
