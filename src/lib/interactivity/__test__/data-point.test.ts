@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-    getResolvedRowIdentities,
-    getRowNumbersFromData
-} from '../data-point';
+import { getResolvedRowIdentities, getRowNumbersFromData } from '../data-point';
 
 const ROW = '__row__';
 
