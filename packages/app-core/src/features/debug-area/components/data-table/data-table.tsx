@@ -72,7 +72,8 @@ const useDataTableStyles = makeStyles({
         color: tokens.colorNeutralForeground1,
         fontWeight: tokens.fontWeightBold,
         fontSize: `${DATA_TABLE_FONT_SIZE}px`,
-        backgroundColor: tokens.colorNeutralBackground1
+        backgroundColor: tokens.colorNeutralBackground1,
+        whiteSpace: 'nowrap'
     },
     row: {
         paddingLeft: `${DATA_TABLE_ROW_PADDING_LEFT}px`,
@@ -82,9 +83,14 @@ const useDataTableStyles = makeStyles({
         borderBottomStyle: 'solid',
         borderBottomColor: tokens.colorNeutralStroke3
     },
+    // Single-line cells with clipping, matching rdt's built-in cell chrome
+    // (`overflow: hidden; white-space: nowrap`). Content never wraps — a
+    // column narrower than its content clips instead of growing the row.
     cell: {
         fontSize: `${DATA_TABLE_FONT_SIZE}px`,
-        alignItems: 'center'
+        alignItems: 'center',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden'
     }
 });
 
@@ -254,7 +260,19 @@ export const DataTableViewer = ({
                                 sortState={sortState}
                                 onSortChange={handleSortChange}
                                 resizableColumns
+                                // Honour the worker-measured widths instead of
+                                // compressing columns to fit the container —
+                                // cumulative overflow scrolls horizontally in
+                                // the enclosure, matching the previous rdt
+                                // behaviour.
+                                resizableColumnsOptions={{
+                                    autoFitColumns: false
+                                }}
                                 columnSizingOptions={sizingOptions}
+                                // 24px rows — matches DATA_TABLE_ROW_HEIGHT
+                                // and rdt's `dense` chrome; Fluent's default
+                                // `medium` renders 44px rows.
+                                size='extra-small'
                                 focusMode='none'
                                 // No getRowId: Fluent's default rowId is the
                                 // index within `items` (= pageRows), which is
