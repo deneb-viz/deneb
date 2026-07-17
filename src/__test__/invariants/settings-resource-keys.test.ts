@@ -71,7 +71,13 @@ const enUsResources = JSON.parse(
 
 describe('settings resource keys resolve to en-US entries', () => {
     it('finds referenced keys (guards against a vacuous canary)', () => {
-        expect(referencedKeys.length).toBeGreaterThan(0);
+        // Floor, not just non-zero: 99 distinct keys are referenced at the
+        // time of writing, so a regex/scan-path drift that silently drops
+        // keys from the extraction fails loudly here rather than shrinking
+        // the canary's coverage unnoticed. Lower this floor only
+        // deliberately (i.e. when keys are genuinely removed from the
+        // settings models / configuration).
+        expect(referencedKeys.length).toBeGreaterThanOrEqual(90);
     });
 
     it.each(referencedKeys)('%s resolves to an en-US entry', (key) => {

@@ -10,6 +10,8 @@ import type { PatchVegaLiteOptions } from './types';
 
 /**
  * Check if a param with the given name exists in the spec's params array.
+ * Checks top-level `spec.params` only (mirroring `hasSignalNamed`
+ * semantics); nested layer/unit params are out of scope.
  */
 const hasParamNamed = (spec: TopLevelSpec, name: string): boolean => {
     return (

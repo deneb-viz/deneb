@@ -459,7 +459,7 @@ export const createUpdateCycleDriver = (
      * cancels its armed safety-net handle and deletes the id from the
      * coordinator's map) is genuinely exercised — this is what proves
      * the "no orphaned id / no post-destroy emission" guarantee. The
-     * React-root / keydown-listener / view-clear/ contextmenu-handler /
+     * React-root / keydown-listener / view-clear / contextmenu-handler /
      * application-wrapper steps are production-only side effects
      * recorded here as spy counters.
      */

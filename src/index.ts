@@ -437,6 +437,10 @@ export class Deneb implements IVisual {
      *    removed so it cannot fire against a torn-down wrapper.
      *  - The React root is unmounted and the Vega view cleared so no
      *    stale view state survives into a subsequent visual instance.
+     *  - The root element's `oncontextmenu` handler is released so it
+     *    cannot fire against (or retain) the torn-down visual.
+     *  - The application wrapper is detached from the DOM so a
+     *    subsequent visual instance starts from a clean root element.
      *
      * All references are read defensively (`?.`) because a failed
      * construction may leave `#coordinator` / `#root` /
