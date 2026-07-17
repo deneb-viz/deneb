@@ -8,8 +8,6 @@ import {
     tokens,
     useId
 } from '@fluentui/react-components';
-import { type PaginationComponentProps } from 'react-data-table-component';
-
 import { DATA_VIEWER_CONFIGURATION } from '@deneb-viz/configuration';
 import { useDenebState } from '../../../../state';
 import { handleDataTableRowsPerPageChange } from '../../../../lib';
@@ -36,6 +34,28 @@ const useDataTableStatusBarStyles = makeStyles({
 });
 
 /**
+ * Pagination contract consumed by the status bar. Field names and call
+ * signatures match what react-data-table-component's `PaginationComponentProps`
+ * exposed previously, so the component internals are unchanged; the type is now
+ * owned locally rather than imported from the (removed) table library.
+ */
+export interface DataTableStatusBarProps {
+    /** Total row count across all pages. */
+    rowCount: number;
+    /** Rows shown per page. */
+    rowsPerPage: number;
+    /** Current (1-based) page. */
+    currentPage: number;
+    /** Navigate to a page. The second arg (total rows) is unused by callers. */
+    onChangePage: (page: number, totalRows: number) => void;
+    /** Change the rows-per-page, preserving the caller's current page arg. */
+    onChangeRowsPerPage: (
+        currentRowsPerPage: number,
+        currentPage: number
+    ) => void;
+}
+
+/**
  * Displays at the footer of the data table, and used to control pagination and other options.
  */
 // eslint-disable-next-line max-lines-per-function
@@ -45,7 +65,7 @@ export const DataTableStatusBar = ({
     onChangePage,
     onChangeRowsPerPage,
     currentPage
-}: PaginationComponentProps) => {
+}: DataTableStatusBarProps) => {
     const { rowsPerPageSetting, mode, translate } = useDenebState((state) => ({
         rowsPerPageSetting: state.editorPreferences.dataViewerRowsPerPage,
         mode: state.editorPreviewAreaSelectedPivot,
