@@ -18,6 +18,7 @@ import { useSettingsPaneStyles } from '../styles';
 import { AssistivePreview } from './assistive-preview';
 import { HighlightText } from './highlight-text';
 import { generalSchema } from '../search/general-schema';
+import { getRowMatch } from '../search/get-row-match';
 import type { RowMatch, SectionMatchView } from '../search/types';
 
 type RadioOption = {
@@ -41,21 +42,6 @@ type SettingsRadioGroupProps = {
  */
 type RowComponentProps = {
     sectionMatchView?: SectionMatchView | null;
-};
-
-/**
- * Look up the row match for a given row id. Returns `undefined` when
- * the view is absent (no active filter) and `null` when the row is
- * explicitly filtered out.
- */
-const getRowMatch = (
-    view: SectionMatchView | null | undefined,
-    rowId: string
-): RowMatch | undefined | null => {
-    if (!view) return undefined;
-    const match = view.rows.get(rowId);
-    if (!match) return null;
-    return match.visible ? match : null;
 };
 
 type SettingsRadioGroupWithRowProps = SettingsRadioGroupProps & {

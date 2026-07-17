@@ -24,20 +24,11 @@ import { INCREMENTAL_UPDATE_CONFIGURATION } from '../../../lib/vega/incremental-
 import { AssistivePreview } from './assistive-preview';
 import { HighlightText } from './highlight-text';
 import { performanceSchema } from '../search/performance-schema';
-import type { RowMatch, SectionMatchView } from '../search/types';
+import { getRowMatch } from '../search/get-row-match';
+import type { SectionMatchView } from '../search/types';
 
 type PerformanceSettingsProps = {
     sectionMatchView?: SectionMatchView | null;
-};
-
-const getRowMatch = (
-    view: SectionMatchView | null | undefined,
-    rowId: string
-): RowMatch | undefined | null => {
-    if (!view) return undefined;
-    const match = view.rows.get(rowId);
-    if (!match) return null;
-    return match.visible ? match : null;
 };
 
 /**
