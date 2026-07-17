@@ -400,7 +400,9 @@ export const App = ({
             </GatedDenebViewer>
             {mainComponent}
             <NotificationToaster />
-            {IS_UPDATE_HISTORY_OVERLAY_ENABLED && <VisualUpdateHistoryOverlay />}
+            {IS_UPDATE_HISTORY_OVERLAY_ENABLED && (
+                <VisualUpdateHistoryOverlay />
+            )}
             {IS_VIEWPORT_GATE_OVERLAY_ENABLED && <ViewportGateDebugOverlay />}
         </DenebProvider>
     );

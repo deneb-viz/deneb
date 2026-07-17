@@ -53,15 +53,19 @@ describe('VisualUpdateHistoryOverlay call-site gating', () => {
         expect(indexSource).toMatch(/\bIS_OVERLAY_ENABLED\b/);
     });
 
+    // Prettier may wrap the gated JSX in parentheses, so the pattern
+    // tolerates `{FLAG && <Overlay />}` and `{FLAG && (\n<Overlay />\n)}`.
+    const gatedMountPattern =
+        /\{IS_UPDATE_HISTORY_OVERLAY_ENABLED\s*&&\s*\(?\s*<VisualUpdateHistoryOverlay\s*\/>\s*\)?\s*\}/g;
+
     it('app.tsx gates the mount with `{FLAG && <VisualUpdateHistoryOverlay />}` rather than mounting unconditionally', () => {
-        expect(appSource).toMatch(
-            /\{IS_UPDATE_HISTORY_OVERLAY_ENABLED\s*&&\s*<VisualUpdateHistoryOverlay\s*\/>\}/
-        );
+        expect(appSource).toMatch(gatedMountPattern);
     });
 
-    it('app.tsx does not mount VisualUpdateHistoryOverlay unconditionally', () => {
-        expect(appSource).not.toMatch(
-            /^\s*<VisualUpdateHistoryOverlay\s*\/>\s*$/m
+    it('app.tsx does not mount VisualUpdateHistoryOverlay outside the gate', () => {
+        // Remove every gated occurrence; any tag left over is ungated.
+        expect(appSource.replace(gatedMountPattern, '')).not.toContain(
+            '<VisualUpdateHistoryOverlay'
         );
     });
 });

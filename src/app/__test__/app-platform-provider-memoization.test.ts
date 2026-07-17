@@ -20,10 +20,7 @@ import { resolve } from 'node:path';
  * memoization and its dependency array rather than a render harness.
  */
 describe('App platformProvider memoization', () => {
-    const source = readFileSync(
-        resolve(__dirname, '..', 'app.tsx'),
-        'utf8'
-    );
+    const source = readFileSync(resolve(__dirname, '..', 'app.tsx'), 'utf8');
 
     it('wraps platformProvider in useMemo rather than an inline object literal', () => {
         expect(source).toMatch(
@@ -73,9 +70,10 @@ describe('App platformProvider memoization', () => {
 
 const extractPlatformProviderMemoBlock = (source: string): string => {
     const start = source.indexOf('const platformProvider = useMemo(');
-    expect(start, 'could not find the platformProvider useMemo in app.tsx').toBeGreaterThan(
-        -1
-    );
+    expect(
+        start,
+        'could not find the platformProvider useMemo in app.tsx'
+    ).toBeGreaterThan(-1);
     const end = source.indexOf('\n    return (', start);
     expect(
         end,
@@ -91,7 +89,10 @@ const extractDepsArray = (source: string): string[] => {
     // matching the `settingsPanePlatformComponent` array literal inside
     // the factory body.
     const match = block.match(/\}\),\s*\[\s*([\s\S]*?)\s*\]\s*\)\s*;/);
-    expect(match, 'could not locate the useMemo dependency array').not.toBeNull();
+    expect(
+        match,
+        'could not locate the useMemo dependency array'
+    ).not.toBeNull();
     return match![1]
         .split(',')
         .map((entry) => entry.trim())
