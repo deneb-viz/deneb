@@ -362,9 +362,13 @@ const handleCompile = (
  * (it only opens for a non-null spec) and no forthcoming `handleEmbed` call
  * will flip `viewReady` back to true on its own. Without this, a stale
  * `viewReady: true` would let incremental updates target a view that
- * `useVegaEmbed` has already finalized. The sole caller (`CompiledVegaPane`'s
- * "switch to Vega" flow) always follows `clear()` with a content change that
- * triggers a fresh compile, so this does not deadlock `viewReady` false.
+ * `useVegaEmbed` has already finalized.
+ *
+ * Caller contract: `clear()` MUST be followed by a compile-triggering content
+ * change. `viewReady` is reset here and only a fresh compile (whose re-embed
+ * calls `setViewReady(true)` from the embed lifecycle) re-enables the view;
+ * calling `clear()` without a follow-up compile leaves the slice with no
+ * result and `viewReady` permanently false.
  */
 const handleClear = (state: StoreState): Partial<StoreState> => ({
     compilation: {
