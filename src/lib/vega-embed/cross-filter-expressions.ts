@@ -203,7 +203,11 @@ export const getResolvedFilterExpressionForPlaceholder = (
             return `${value}`;
         }
         if (value instanceof Date) {
-            return `toDate('${value}')`;
+            // ISO 8601 parses deterministically via Date.parse (which Vega's toDate
+            // delegates to), unlike Date.prototype.toString(), which is
+            // locale/timezone-dependent and would produce a different filter
+            // expression string depending on the host machine's locale.
+            return `toDate('${value.toISOString()}')`;
         }
         // Escape backslashes first, then single quotes, so datum values that
         // contain either (e.g. O'Brien) produce a valid Vega string literal
