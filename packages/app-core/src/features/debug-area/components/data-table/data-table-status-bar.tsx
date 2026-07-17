@@ -58,7 +58,6 @@ export interface DataTableStatusBarProps {
 /**
  * Displays at the footer of the data table, and used to control pagination and other options.
  */
-// eslint-disable-next-line max-lines-per-function
 export const DataTableStatusBar = ({
     rowCount,
     rowsPerPage,

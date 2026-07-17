@@ -96,7 +96,6 @@ type LocalSortState = NonNullable<DataGridProps['sortState']>;
  * locally (external to the grid) so the FULL dataset is sorted before being
  * paged — matching the previous react-data-table-component behaviour.
  */
-// eslint-disable-next-line max-lines-per-function
 export const DataTableViewer = ({
     columns,
     data,
