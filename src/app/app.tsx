@@ -37,7 +37,10 @@ import {
     IS_OVERLAY_ENABLED as IS_VIEWPORT_GATE_OVERLAY_ENABLED,
     ViewportGateDebugOverlay
 } from '../features/viewport-gate-debug-overlay';
-import { VisualUpdateHistoryOverlay } from '../features/visual-update-history-overlay';
+import {
+    IS_OVERLAY_ENABLED as IS_UPDATE_HISTORY_OVERLAY_ENABLED,
+    VisualUpdateHistoryOverlay
+} from '../features/visual-update-history-overlay';
 import { getVegaLoader } from '../lib/vega-embed';
 import { useDenebVisualState } from '../state';
 import {
@@ -376,7 +379,7 @@ export const App = ({
             </GatedDenebViewer>
             {mainComponent}
             <NotificationToaster />
-            <VisualUpdateHistoryOverlay />
+            {IS_UPDATE_HISTORY_OVERLAY_ENABLED && <VisualUpdateHistoryOverlay />}
             {IS_VIEWPORT_GATE_OVERLAY_ENABLED && <ViewportGateDebugOverlay />}
         </DenebProvider>
     );
