@@ -72,11 +72,9 @@
         "monaco-editor": "0.46.0",
         "overlayscrollbars": "^2.10.1",
         "overlayscrollbars-react": "^0.5.6",
-        "react-data-table-component": "^7.7.0",
         "react-dropzone": "^14.2.3",
         "react-hotkeys-hook": "^5.2.0",
         "react-vega": "7.6.0",
-        "styled-components": "^6.1.19",
         "use-resize-observer": "^9.1.0",
         "zustand": "^4.5.5"
     },
