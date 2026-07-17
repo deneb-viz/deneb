@@ -715,6 +715,8 @@ describe('scenario: destroy() teardown (M8)', () => {
         expect(driver.teardown.keydownListenerRemoved).toBe(1);
         expect(driver.teardown.reactRootUnmounted).toBe(1);
         expect(driver.teardown.viewCleared).toBe(1);
+        expect(driver.teardown.contextMenuHandlerReleased).toBe(1);
+        expect(driver.teardown.applicationWrapperDetached).toBe(1);
         // Render already completed → failCurrent no-op → no new emission.
         expect(driver.host.countEmitterCalls('renderingFinished')).toBe(
             finishedBefore

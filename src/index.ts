@@ -482,6 +482,22 @@ export class Deneb implements IVisual {
         } catch (e) {
             logDebug('Error clearing Vega view during destroy.', { error: e });
         }
+        try {
+            if (this.#hostElement) {
+                this.#hostElement.oncontextmenu = null;
+            }
+        } catch (e) {
+            logDebug('Error releasing contextmenu handler during destroy.', {
+                error: e
+            });
+        }
+        try {
+            this.#applicationWrapper?.remove();
+        } catch (e) {
+            logDebug('Error detaching application wrapper during destroy.', {
+                error: e
+            });
+        }
     }
 
     /**
