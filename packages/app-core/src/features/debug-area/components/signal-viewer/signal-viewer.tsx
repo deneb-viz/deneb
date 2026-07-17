@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
-import { TableColumn } from 'react-data-table-component';
 
 import { logRender } from '@deneb-viz/utils/logging';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 import { DataTableViewer } from '../data-table/data-table';
+import { type DataTableViewerColumn } from '../data-table/data-table-viewer-types';
 import { NoDataMessage } from '../no-data-message';
 import { DataTableCell } from '../data-table/data-table-cell';
 import { SignalValue } from './signal-value';
@@ -76,7 +76,7 @@ const getSignalTableValues = () => {
  */
 const getTableColumns = (
     renderId: string
-): TableColumn<SignalTableDataRow>[] => {
+): DataTableViewerColumn<SignalTableDataRow>[] => {
     const { translate } = getDenebState().i18n;
     return [
         {
@@ -84,7 +84,10 @@ const getTableColumns = (
             id: 'key',
             selector: (row) => row.key,
             sortable: true,
-            grow: 2,
+            // Ideal widths in a ~2:5 ratio preserve the previous `grow`
+            // proportions; the DataGrid auto-fits columns to the container,
+            // so these act as relative weights rather than fixed sizes.
+            width: SIGNAL_KEY_COLUMN_WIDTH,
             cell: (row) => (
                 <DataTableCell
                     displayValue={row.key}
@@ -97,7 +100,7 @@ const getTableColumns = (
         {
             name: translate('Pivot_Signals_ValueColumn'),
             id: 'value',
-            grow: 5,
+            width: SIGNAL_VALUE_COLUMN_WIDTH,
             selector: (row) => row.key, // Use key for sorting since value is fetched dynamically
             cell: (row, rowIndex) => (
                 <SignalValue
@@ -109,3 +112,7 @@ const getTableColumns = (
         }
     ];
 };
+
+/** Relative column weights approximating the former `grow: 2` / `grow: 5`. */
+const SIGNAL_KEY_COLUMN_WIDTH = 200;
+const SIGNAL_VALUE_COLUMN_WIDTH = 500;

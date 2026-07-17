@@ -1,4 +1,4 @@
-import { type TableProps } from 'react-data-table-component';
+import { type DataTableViewerProps } from '../data-table/data-table-viewer-types';
 
 /**
  * The `DataTableViewer` prop-wiring shared by the Data and Source tabs: the sort
@@ -11,12 +11,12 @@ import { type TableProps } from 'react-data-table-component';
  */
 export const getSharedDataTableViewerProps = <T>(args: {
     sortEntry: { colId: string; asc: boolean } | null;
-    onSort: TableProps<T>['onSort'];
-    onChangePage: TableProps<T>['onChangePage'];
-    page: TableProps<T>['paginationDefaultPage'];
+    onSort: DataTableViewerProps<T>['onSort'];
+    onChangePage: DataTableViewerProps<T>['onChangePage'];
+    page: DataTableViewerProps<T>['paginationDefaultPage'];
     progressPending: boolean;
 }): Pick<
-    TableProps<T>,
+    DataTableViewerProps<T>,
     | 'defaultSortFieldId'
     | 'defaultSortAsc'
     | 'onSort'

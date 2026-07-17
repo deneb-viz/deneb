@@ -1,6 +1,6 @@
-import { type TableColumn } from 'react-data-table-component';
 import { type IWorkerDatasetViewerDataTableRow } from '../../workers';
 import { type VegaDatum } from '@deneb-viz/data-core/value';
+import { type DataTableViewerColumn } from '../data-table/data-table-viewer-types';
 
 export type DatasetRaw = {
     hashValue: string | null;
@@ -8,7 +8,7 @@ export type DatasetRaw = {
 };
 
 export type DatasetState = {
-    columns: TableColumn<IWorkerDatasetViewerDataTableRow>[] | null;
+    columns: DataTableViewerColumn<IWorkerDatasetViewerDataTableRow>[] | null;
     jobQueue: string[];
     processing: boolean;
     values: IWorkerDatasetViewerDataTableRow[] | null;

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { TableColumn, TableProps } from 'react-data-table-component';
 import { useDebounce } from '@uidotdev/usehooks';
 import { type View } from 'vega';
 
@@ -17,7 +16,6 @@ import { type VegaDatum } from '@deneb-viz/data-core/value';
 import { type DatasetRaw, type DatasetState } from './types';
 import {
     datasetViewerWorker,
-    IWorkerDatasetViewerDataTableRow,
     type IWorkerDatasetViewerMessage
 } from '../../workers';
 import {
@@ -414,22 +412,13 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
      * sort record (`state.debug.dataPivotSort.data`). The Source tab's
      * sort is untouched.
      */
-    const handleSort: TableProps<
-        IWorkerDatasetViewerDataTableRow[]
-    >['onSort'] = (column, sortDirection) => {
-        logDebug('DataTab: setting sort columns...', {
-            column,
-            sortDirection
-        });
-        const colId = column?.id ?? null;
+    const handleSort = (colId: string, asc: boolean) => {
+        logDebug('DataTab: setting sort columns...', { colId, asc });
         if (!colId) {
             setDataTabSort(null);
             return;
         }
-        setDataTabSort({
-            colId: String(colId),
-            asc: sortDirection === 'asc'
-        });
+        setDataTabSort({ colId, asc });
     };
 
     const handleChangePage = useCallback(
@@ -480,10 +469,7 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
             <div className={classes.wrapper}>
                 <div className={classes.details}>
                     <DataTableViewer
-                        columns={
-                            (datasetState.columns ??
-                                []) as TableColumn<IWorkerDatasetViewerDataTableRow>[]
-                        }
+                        columns={datasetState.columns ?? []}
                         data={datasetState.values ?? []}
                         {...getSharedDataTableViewerProps({
                             sortEntry,
