@@ -256,7 +256,10 @@ export const DataTableViewer = ({
                                 resizableColumns
                                 columnSizingOptions={sizingOptions}
                                 focusMode='none'
-                                getRowId={undefined}
+                                // No getRowId: Fluent's default rowId is the
+                                // index within `items` (= pageRows), which is
+                                // exactly the page-relative index the cell
+                                // renderers expect (rdt parity).
                             >
                                 <DataGridHeader className={classes.header}>
                                     <DataGridRow className={classes.headerRow}>
