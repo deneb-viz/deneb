@@ -292,13 +292,18 @@ export const DataTableViewer = ({
                                 </DataGridBody>
                             </DataGrid>
                         </div>
-                        <DataTableStatusBar
-                            rowCount={rowCount}
-                            rowsPerPage={perPage}
-                            currentPage={page}
-                            onChangePage={handleChangePage}
-                            onChangeRowsPerPage={handleChangeRowsPerPage}
-                        />
+                        {/* Match rdt: the pagination bar is hidden when there
+                            are zero rows (rdt's `enabledPagination` required
+                            `data.length > 0`). */}
+                        {rowCount > 0 && (
+                            <DataTableStatusBar
+                                rowCount={rowCount}
+                                rowsPerPage={perPage}
+                                currentPage={page}
+                                onChangePage={handleChangePage}
+                                onChangeRowsPerPage={handleChangeRowsPerPage}
+                            />
+                        )}
                     </div>
                 </DataTableTooltipProvider>
                 <InspectorPopover scrollContainerRef={enclosureRef} />
