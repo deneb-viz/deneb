@@ -94,6 +94,20 @@ describe('useVegaEmbed', () => {
         expect(vegaEmbed).not.toHaveBeenCalled();
     });
 
+    it('should not throw when options is omitted and spec is null', () => {
+        expect(() => {
+            renderHook(() =>
+                useVegaEmbed({
+                    ref: mockRef,
+                    spec: null as any
+                    // No options - relies on the hook's own default
+                })
+            );
+        }).not.toThrow();
+
+        expect(vegaEmbed).not.toHaveBeenCalled();
+    });
+
     it('should clear container when spec becomes null', async () => {
         const spec = { $schema: 'https://vega.github.io/schema/vega/v5.json' };
 

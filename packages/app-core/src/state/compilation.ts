@@ -8,8 +8,7 @@ import { type StoreState, type SyncableSlice } from './state';
 import { INCREMENTAL_UPDATE_CONFIGURATION } from '../lib/vega/incremental-update-configuration';
 import {
     evaluateExportSpecCommandState,
-    evaluateZoomCommandsState,
-    isCompilationReady
+    evaluateZoomCommandsState
 } from '../lib/commands/state';
 
 /**
@@ -109,11 +108,6 @@ export type CompilationSliceProperties = SyncableSlice &
         clear: () => void;
 
         /**
-         * Reset the compilation state to initial values.
-         */
-        reset: () => void;
-
-        /**
          * Sync performance settings from external source (localStorage, Power BI properties).
          */
         syncPerformanceSettings: (
@@ -184,7 +178,6 @@ const initialState: Omit<
     CompilationSliceProperties,
     | 'compile'
     | 'clear'
-    | 'reset'
     | 'syncPerformanceSettings'
     | 'setEnableIncrementalDataUpdates'
     | 'setIncrementalUpdateThreshold'
@@ -227,7 +220,6 @@ export const createCompilationSlice =
                     'compilation.compile'
                 ),
             clear: () => set(handleClear, false, 'compilation.clear'),
-            reset: () => set(handleReset, false, 'compilation.reset'),
             syncPerformanceSettings: (payload) =>
                 set(
                     (state) => handleSyncPerformanceSettings(state, payload),
@@ -364,21 +356,25 @@ const handleCompile = (
 
 /**
  * Clear the current compilation result.
+ *
+ * Also resets `viewReady` to false: a cleared compilation has no spec to
+ * embed, so `VegaEmbed`'s embed-window effect will never re-open the window
+ * (it only opens for a non-null spec) and no forthcoming `handleEmbed` call
+ * will flip `viewReady` back to true on its own. Without this, a stale
+ * `viewReady: true` would let incremental updates target a view that
+ * `useVegaEmbed` has already finalized.
+ *
+ * Caller contract: `clear()` MUST be followed by a compile-triggering content
+ * change. `viewReady` is reset here and only a fresh compile (whose re-embed
+ * calls `setViewReady(true)` from the embed lifecycle) re-enables the view;
+ * calling `clear()` without a follow-up compile leaves the slice with no
+ * result and `viewReady` permanently false.
  */
 const handleClear = (state: StoreState): Partial<StoreState> => ({
     compilation: {
         ...state.compilation,
-        result: null
-    }
-});
-
-/**
- * Reset compilation state to initial values.
- */
-const handleReset = (state: StoreState): Partial<StoreState> => ({
-    compilation: {
-        ...state.compilation,
-        ...initialState
+        result: null,
+        viewReady: false
     }
 });
 

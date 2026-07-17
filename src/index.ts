@@ -30,11 +30,7 @@ import {
     logTimeStart
 } from '@deneb-viz/utils/logging';
 import { InteractivityManager } from './lib/interactivity';
-import {
-    getDenebState,
-    type I18nLocale,
-    updateFieldTracking
-} from '@deneb-viz/app-core';
+import { getDenebState, type I18nLocale } from '@deneb-viz/app-core';
 import type { SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 import { VegaExtensibilityServices } from '@deneb-viz/vega-runtime/extensibility';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
@@ -822,8 +818,6 @@ export class Deneb implements IVisual {
             rowsLoaded
         });
         setDataset(getMappedDataset(categorical, locale));
-        // Tracking is now only used for export (#486)
-        // this.updateTracking();
         logTimeEnd('processDataset');
         // Rendering branch: bind the pending-render id BEFORE
         // returning. See the matching call in `handleFetchMore`'s
@@ -927,25 +921,6 @@ export class Deneb implements IVisual {
                 locale: localeNext as I18nLocale
             });
         }
-    }
-
-    /**'
-     * Perform the necessary tracking updates for the visual data and spec.
-     */
-    private async updateTracking() {
-        logDebug('[Visual Update] Updating tracking and tokens...');
-        const { settings } = getDenebVisualState();
-        const {
-            vega: {
-                output: {
-                    jsonSpec: { value: spec }
-                }
-            }
-        } = settings;
-        const {
-            fieldUsage: { dataset: trackedFieldsCurrent }
-        } = getDenebState();
-        updateFieldTracking(spec, trackedFieldsCurrent);
     }
 
     /**
