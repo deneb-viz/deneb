@@ -10,6 +10,7 @@ import { DataTableTooltipProvider } from './data-table-tooltip-context';
 import { DataTableInspectorProvider } from './inspector-popover-context';
 import { DataTableKeyboardProvider } from './data-table-keyboard-context';
 import { InspectorPopover } from './inspector-popover';
+import { ensureSandboxSafeLocalStorage } from './sandbox-safe-local-storage';
 import {
     DATA_TABLE_FONT_FAMILY,
     DATA_TABLE_FONT_SIZE,
@@ -43,6 +44,10 @@ export const DataTableViewer = ({
     ...props
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
 }: TableProps<any>) => {
+    // Must run before <DataTable> mounts: rdt v8's useColorMode reads
+    // localStorage in a useState initializer, which throws in Power BI's
+    // sandboxed iframe. Idempotent and near-free once shadowed.
+    ensureSandboxSafeLocalStorage();
     const { debugTableRowsPerPage } = useDenebState((state) => ({
         debugTableRowsPerPage: state.editorPreferences.dataViewerRowsPerPage
     }));
