@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { SortOrder, TableColumn } from 'react-data-table-component';
 import { useDebounce } from '@uidotdev/usehooks';
 
 import { getHashValue, getNewUuid } from '@deneb-viz/utils/crypto';
@@ -18,6 +17,7 @@ import {
     type IWorkerDatasetViewerMessage
 } from '../../workers';
 import { DataTableViewer } from '../data-table/data-table';
+import { type DataTableViewerColumn } from '../data-table/data-table-viewer-types';
 import { ProcessingDataMessage } from '../data-table/processing-data-message';
 import { NoDataMessage } from '../no-data-message';
 import { useDebugWrapperStyles } from '../styles';
@@ -68,7 +68,9 @@ export const SourceTab = () => {
     const hashValue = useMemo(() => getHashValue(prunedValues), [prunedValues]);
 
     const [tableState, setTableState] = useState<{
-        columns: TableColumn<IWorkerDatasetViewerDataTableRow>[] | null;
+        columns:
+            | DataTableViewerColumn<IWorkerDatasetViewerDataTableRow>[]
+            | null;
         jobQueue: string[];
         processing: boolean;
         rows: IWorkerDatasetViewerDataTableRow[] | null;
@@ -145,19 +147,12 @@ export const SourceTab = () => {
     }, [worker]);
 
     const handleSort = useCallback(
-        (
-            column: TableColumn<IWorkerDatasetViewerDataTableRow>,
-            sortDirection: SortOrder
-        ) => {
-            const colId = column?.id ?? null;
+        (colId: string, asc: boolean) => {
             if (!colId) {
                 setSourceTabSort(null);
                 return;
             }
-            setSourceTabSort({
-                colId: String(colId),
-                asc: sortDirection === 'asc'
-            });
+            setSourceTabSort({ colId, asc });
         },
         [setSourceTabSort]
     );
@@ -206,8 +201,7 @@ export const SourceTab = () => {
                             sortEntry,
                             onSort: handleSort,
                             onChangePage: handleChangePage,
-                            page,
-                            progressPending: debouncedProcessing
+                            page
                         })}
                     />
                 </div>

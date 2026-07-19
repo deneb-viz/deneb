@@ -1,4 +1,3 @@
-import type { TableColumn } from 'react-data-table-component';
 import { textMeasurementService } from 'powerbi-visuals-utils-formattingutils';
 
 import { getDenebState } from '../../../../state';
@@ -11,6 +10,7 @@ import type {
 } from '../../workers';
 import { DataTableCell } from '../data-table/data-table-cell';
 import { DataTableHeaderCell } from '../data-table/data-table-header-cell';
+import type { DataTableViewerColumn } from '../data-table/data-table-viewer-types';
 
 /**
  * Shared worker + column helpers used by both the Source and Data tabs.
@@ -21,15 +21,17 @@ import { DataTableHeaderCell } from '../data-table/data-table-header-cell';
  */
 
 /**
- * Build the react-data-table column definitions for a processed set of
+ * Build the `DataTableViewer` column definitions for a processed set of
  * dataset rows. Widths are monospace-derived from the worker's per-column
  * `maxWidths`; header labels pull documentation tooltips from the field
- * registry so support fields render their descriptions.
+ * registry so support fields render their descriptions. The `selector`
+ * returns the raw value so sorting matches the previous rawValue-based
+ * comparator (the visible text is produced by the `cell` renderer).
  */
 export const buildDatasetViewerColumns = (
     rows: IWorkerDatasetViewerDataTableRow[],
     maxLengths: IWorkerDatasetViewerMaxDisplayWidths
-): TableColumn<IWorkerDatasetViewerDataTableRow>[] => {
+): DataTableViewerColumn<IWorkerDatasetViewerDataTableRow>[] => {
     return Object.keys(rows?.[0] ?? {}).map((c) => ({
         id: c,
         name: (
@@ -49,24 +51,15 @@ export const buildDatasetViewerColumns = (
             />
         ),
         sortable: true,
-        selector: (row) => row[c]?.displayValue,
-        reorder: true,
-        compact: true,
-        width: `${calculateDatasetViewerMaxWidth(c, maxLengths[c])}px`,
-        sortFunction: (rowA, rowB) => {
-            const a = rowA[c]?.rawValue as string | number | Date;
-            const b = rowB[c]?.rawValue as string | number | Date;
-            if (a < b) return -1;
-            if (a > b) return 1;
-            return 0;
-        }
+        selector: (row) => row[c]?.rawValue,
+        width: calculateDatasetViewerMaxWidth(c, maxLengths[c])
     }));
 };
 
 /**
- * react-data-table has no dynamic sizing, so we pre-compute the max width
- * for each column from the worker-measured value widths plus the header
- * label width.
+ * We pre-compute the max width for each column from the worker-measured
+ * value widths plus the header label width, and feed it to the DataGrid's
+ * `columnSizingOptions` as the column's ideal width.
  */
 export const calculateDatasetViewerMaxWidth = (
     fieldName: string,
