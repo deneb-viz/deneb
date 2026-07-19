@@ -68,7 +68,9 @@ export const SourceTab = () => {
     const hashValue = useMemo(() => getHashValue(prunedValues), [prunedValues]);
 
     const [tableState, setTableState] = useState<{
-        columns: DataTableViewerColumn<IWorkerDatasetViewerDataTableRow>[] | null;
+        columns:
+            | DataTableViewerColumn<IWorkerDatasetViewerDataTableRow>[]
+            | null;
         jobQueue: string[];
         processing: boolean;
         rows: IWorkerDatasetViewerDataTableRow[] | null;
@@ -199,8 +201,7 @@ export const SourceTab = () => {
                             sortEntry,
                             onSort: handleSort,
                             onChangePage: handleChangePage,
-                            page,
-                            progressPending: debouncedProcessing
+                            page
                         })}
                     />
                 </div>

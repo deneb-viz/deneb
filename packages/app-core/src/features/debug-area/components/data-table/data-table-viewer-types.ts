@@ -12,10 +12,8 @@ export interface DataTableViewerColumn<T> {
     /** Header content (JSX via `DataTableHeaderCell`). */
     name: ReactNode;
     /**
-     * Raw value accessor. Used for sorting (and, in principle, default cell
-     * text — though every viewer supplies an explicit `cell`, so the text
-     * role is unused today). Returns the underlying raw value so sorting
-     * matches the previous rawValue-based `sortFunction` behaviour.
+     * Raw value accessor used for sorting (matches the previous
+     * rawValue-based `sortFunction` behaviour).
      */
     selector: (row: T) => unknown;
     /** When `false`/absent, the column header does not toggle sort. */
@@ -58,11 +56,4 @@ export interface DataTableViewerProps<T> {
     onChangePage?: (page: number) => void;
     /** Initial (1-based) page to display. */
     paginationDefaultPage?: number;
-    /**
-     * Retained for API parity with the previous contract. In practice the
-     * tabs gate the loading state at the tab level (rendering
-     * `ProcessingDataMessage`) so the viewer only mounts once processing is
-     * complete; this flag is therefore always false at render time.
-     */
-    progressPending?: boolean;
 }

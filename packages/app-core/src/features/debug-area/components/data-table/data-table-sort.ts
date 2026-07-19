@@ -1,9 +1,11 @@
+import type { DataGridProps } from '@fluentui/react-components';
 import type { DataTableViewerColumn } from './data-table-viewer-types';
 
-export interface ViewerSortState {
-    sortColumn: string | number | undefined;
-    sortDirection: 'ascending' | 'descending';
-}
+/**
+ * The DataGrid's controlled sort-state shape (type-only import; this module
+ * stays runtime-dependency-free).
+ */
+export type ViewerSortState = NonNullable<DataGridProps['sortState']>;
 
 /**
  * Resolve the next controlled sort state from a DataGrid header click,
@@ -54,21 +56,11 @@ export const sortRows = <T>(
     }
     const selector = column.selector;
     const direction = asc ? 1 : -1;
+    // Array.prototype.sort is spec-stable (ES2019+), so ties keep their
+    // original input order without a manual index tie-break.
     return rows
-        .map((row, index) => ({ row, index }))
-        .sort((a, b) => {
-            const compared = compareValues(
-                selector(a.row),
-                selector(b.row),
-                direction
-            );
-            if (compared !== 0) {
-                return compared;
-            }
-            // Stable tie-break on original position.
-            return a.index - b.index;
-        })
-        .map((entry) => entry.row);
+        .slice()
+        .sort((a, b) => compareValues(selector(a), selector(b), direction));
 };
 
 /**

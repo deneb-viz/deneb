@@ -19,7 +19,11 @@ import { DataTableTooltipProvider } from './data-table-tooltip-context';
 import { DataTableInspectorProvider } from './inspector-popover-context';
 import { DataTableKeyboardProvider } from './data-table-keyboard-context';
 import { InspectorPopover } from './inspector-popover';
-import { resolveNextSortState, sortRows } from './data-table-sort';
+import {
+    resolveNextSortState,
+    sortRows,
+    type ViewerSortState
+} from './data-table-sort';
 import { getPageSlice } from './data-table-pagination';
 import type {
     DataTableViewerColumn,
@@ -100,8 +104,6 @@ const useDataTableStyles = makeStyles({
     }
 });
 
-type LocalSortState = NonNullable<DataGridProps['sortState']>;
-
 /**
  * Displays a table of data, either for a dataset or the signals in the Vega
  * view. Built on Fluent UI's `DataGrid`, with sorting and pagination owned
@@ -116,9 +118,6 @@ export const DataTableViewer = ({
     onSort,
     onChangePage,
     paginationDefaultPage
-    // `progressPending` is intentionally not consumed: the tabs gate the
-    // loading state upstream (rendering `ProcessingDataMessage`), so the
-    // viewer only mounts with real rows. Kept in the prop contract for parity.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
 }: DataTableViewerProps<any>) => {
     const { debugTableRowsPerPage } = useDenebState((state) => ({
@@ -196,7 +195,7 @@ export const DataTableViewer = ({
     // Controlled sort state, seeded once from the persisted default. Header
     // clicks update it (and report up via `onSort`); the actual row ordering
     // is applied by `sortRows` over the full dataset.
-    const [sortState, setSortState] = useState<LocalSortState>(() =>
+    const [sortState, setSortState] = useState<ViewerSortState>(() =>
         defaultSortFieldId
             ? {
                   sortColumn: defaultSortFieldId,

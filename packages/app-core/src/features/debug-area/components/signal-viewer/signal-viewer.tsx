@@ -84,9 +84,9 @@ const getTableColumns = (
             id: 'key',
             selector: (row) => row.key,
             sortable: true,
-            // Ideal widths in a ~2:5 ratio preserve the previous `grow`
-            // proportions; the DataGrid auto-fits columns to the container,
-            // so these act as relative weights rather than fixed sizes.
+            // Fixed ideal widths in a ~2:5 ratio replace the previous
+            // `grow` weights (auto-fit is disabled grid-wide, so these are
+            // actual pixel sizes, user-resizable).
             width: SIGNAL_KEY_COLUMN_WIDTH,
             cell: (row) => (
                 <DataTableCell
@@ -113,6 +113,6 @@ const getTableColumns = (
     ];
 };
 
-/** Relative column weights approximating the former `grow: 2` / `grow: 5`. */
+/** Fixed pixel widths replacing the former `grow: 2` / `grow: 5` weights. */
 const SIGNAL_KEY_COLUMN_WIDTH = 200;
 const SIGNAL_VALUE_COLUMN_WIDTH = 500;

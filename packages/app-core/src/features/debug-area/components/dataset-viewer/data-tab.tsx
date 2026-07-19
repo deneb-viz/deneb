@@ -522,8 +522,7 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
                             sortEntry,
                             onSort: handleSort,
                             onChangePage: handleChangePage,
-                            page,
-                            progressPending: debouncedProcessing
+                            page
                         })}
                     />
                 </div>
