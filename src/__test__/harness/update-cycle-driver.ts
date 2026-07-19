@@ -137,7 +137,8 @@ export type UpdateCycleDriver = {
      * Fails any open lifecycle id through the REAL coordinator (single
      * terminal + safety-net cancel + map delete), then records the
      * production-only teardown side effects (keydown-listener removal,
-     * React-root unmount, Vega-view clear) as spy counters.
+     * React-root unmount, Vega-view clear, contextmenu handler release,
+     * application-wrapper detach) as spy counters.
      */
     destroy: () => void;
     /** Recorded production-only teardown side effects (see `destroy`). */
@@ -145,6 +146,8 @@ export type UpdateCycleDriver = {
         keydownListenerRemoved: number;
         reactRootUnmounted: number;
         viewCleared: number;
+        contextMenuHandlerReleased: number;
+        applicationWrapperDetached: number;
     };
     /**
      * Times the static construction-failure element was (re)rendered.
@@ -239,7 +242,9 @@ export const createUpdateCycleDriver = (
     const teardown = {
         keydownListenerRemoved: 0,
         reactRootUnmounted: 0,
-        viewCleared: 0
+        viewCleared: 0,
+        contextMenuHandlerReleased: 0,
+        applicationWrapperDetached: 0
     };
 
     /**
@@ -454,8 +459,9 @@ export const createUpdateCycleDriver = (
      * cancels its armed safety-net handle and deletes the id from the
      * coordinator's map) is genuinely exercised — this is what proves
      * the "no orphaned id / no post-destroy emission" guarantee. The
-     * React-root / keydown-listener / view-clear steps are
-     * production-only side effects recorded here as spy counters.
+     * React-root / keydown-listener / view-clear / contextmenu-handler /
+     * application-wrapper steps are production-only side effects
+     * recorded here as spy counters.
      */
     const destroy = (): void => {
         destroyed = true;
@@ -465,6 +471,8 @@ export const createUpdateCycleDriver = (
         teardown.keydownListenerRemoved++;
         teardown.reactRootUnmounted++;
         teardown.viewCleared++;
+        teardown.contextMenuHandlerReleased++;
+        teardown.applicationWrapperDetached++;
     };
 
     return {

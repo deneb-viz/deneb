@@ -2,8 +2,22 @@
 import type { TopLevelSpec } from 'vega-lite';
 import { normalize } from 'vega-lite';
 import { mergician } from 'mergician';
-import { getDenebContainerSignalFromDimensions } from '../signals';
+import {
+    getDenebContainerSignalFromDimensions,
+    SIGNAL_DENEB_CONTAINER
+} from '../signals';
 import type { PatchVegaLiteOptions } from './types';
+
+/**
+ * Check if a param with the given name exists in the spec's params array.
+ * Checks top-level `spec.params` only (mirroring `hasSignalNamed`
+ * semantics); nested layer/unit params are out of scope.
+ */
+const hasParamNamed = (spec: TopLevelSpec, name: string): boolean => {
+    return (
+        (spec as any).params?.some((param: any) => param.name === name) ?? false
+    );
+};
 
 /**
  * Check if a Vega-Lite spec uses non-standard layout (concat, hconcat, vconcat, facet).
@@ -107,11 +121,18 @@ export const patchVegaLiteSpec = (
     // Apply responsive sizing first
     const sized = patchVegaLiteResponsiveSizing(spec);
 
-    // Add denebContainer param and any additional params
+    // Add denebContainer param (unless the user spec already defines one - user
+    // definition wins, consistent with the Vega path) and any additional params
     const patches: Partial<TopLevelSpec> = {
         params: [
             ...(sized.params || []),
-            getDenebContainerSignalFromDimensions(containerDimensions) as any,
+            ...(hasParamNamed(sized, SIGNAL_DENEB_CONTAINER)
+                ? []
+                : [
+                      getDenebContainerSignalFromDimensions(
+                          containerDimensions
+                      ) as any
+                  ]),
             ...additionalParams
         ]
     };

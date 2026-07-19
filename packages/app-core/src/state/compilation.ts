@@ -53,11 +53,6 @@ export type CompilationSliceProperties = SyncableSlice &
         result: CompilationResult | null;
 
         /**
-         * Whether a compilation is currently in progress.
-         */
-        isCompiling: boolean;
-
-        /**
          * Timestamp of the last successful compilation.
          * Used for cache invalidation and change detection.
          */
@@ -190,7 +185,6 @@ const initialState: Omit<
 > = {
     __hasHydrated__: false,
     result: null,
-    isCompiling: false,
     lastCompiled: null,
     viewReady: false,
     runtimeErrors: [],
@@ -321,7 +315,6 @@ const handleCompile = (
         compilation: {
             ...state.compilation,
             result,
-            isCompiling: false,
             lastCompiled: Date.now(),
             // Clear runtime logs on new compilation - they'll be repopulated if errors occur during render
             runtimeErrors,

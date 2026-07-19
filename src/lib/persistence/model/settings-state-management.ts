@@ -4,7 +4,7 @@ import { DEFAULTS } from './constants';
 export class SettingsStateManagement extends formattingSettings.CompositeCard {
     name = 'stateManagement';
     displayNameKey = 'Objects_StateManagement';
-    descriptionKey = 'Objects_StateManagementDisplay_Description';
+    descriptionKey = 'Objects_StateManagement_Description';
     viewport = new SettingsStateManagementGroupViewport(Object());
     projectMetadata = new SettingsStateManagementGroupProjectMetadata(Object());
     groups = [this.viewport, this.projectMetadata];

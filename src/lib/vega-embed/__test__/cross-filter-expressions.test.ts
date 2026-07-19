@@ -94,7 +94,20 @@ describe('getResolvedFilterExpressionForPlaceholder', () => {
             'datum.d == _{d}_',
             { d }
         );
-        expect(expr).toBe(`datum.d == toDate('${d}')`);
+        expect(expr).toBe(`datum.d == toDate('${d.toISOString()}')`);
+    });
+
+    it('serializes Date datum values as ISO 8601, not locale toString (timezone-invariant)', () => {
+        // Constructed from local-time components (not a UTC string), to prove
+        // the emitted expression does not depend on Date.prototype.toString(),
+        // which is locale/timezone-dependent. ISO output is invariant for a
+        // given instant, regardless of the host's timezone.
+        const d = new Date(2026, 6, 10, 13, 30, 0);
+        const expr = getResolvedFilterExpressionForPlaceholder(
+            'datum.d == _{d}_',
+            { d }
+        );
+        expect(expr).toBe(`datum.d == toDate('${d.toISOString()}')`);
     });
 });
 

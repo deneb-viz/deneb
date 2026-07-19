@@ -2,7 +2,8 @@ import type { Spec } from 'vega';
 import { mergician } from 'mergician';
 import {
     getDenebContainerSignalFromDimensions,
-    getContainerSignalReferences
+    getContainerSignalReferences,
+    SIGNAL_DENEB_CONTAINER
 } from '../signals';
 import type { PatchVegaOptions } from './types';
 
@@ -43,21 +44,32 @@ export const patchVegaSpec = (
 
     // Build patches object
     const patches: Partial<Spec> = {
-        // Add denebContainer signal
+        // Add denebContainer signal, unless the user spec already defines one
+        // (user definition wins, consistent with width/height handling below)
         signals: [
             ...(spec.signals || []),
-            getDenebContainerSignalFromDimensions(containerDimensions),
+            ...(hasSignalNamed(spec, SIGNAL_DENEB_CONTAINER)
+                ? []
+                : [getDenebContainerSignalFromDimensions(containerDimensions)]),
             ...additionalSignals
         ]
     };
 
     // Set responsive dimensions if not already specified as a top-level property
     // or as a user-defined signal (to avoid conflicts with init/update expressions)
-    if (spec.width == null && !hasSignalNamed(spec, 'width') && containerDimensions) {
+    if (
+        spec.width == null &&
+        !hasSignalNamed(spec, 'width') &&
+        containerDimensions
+    ) {
         patches.width = { signal: containerRefs.width };
     }
 
-    if (spec.height == null && !hasSignalNamed(spec, 'height') && containerDimensions) {
+    if (
+        spec.height == null &&
+        !hasSignalNamed(spec, 'height') &&
+        containerDimensions
+    ) {
         patches.height = { signal: containerRefs.height };
     }
 

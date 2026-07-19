@@ -473,3 +473,36 @@ describe('patchVegaLiteSpec Integration', () => {
         expect(patched.height).toBe('container');
     });
 });
+
+describe('patchVegaLiteSpec denebContainer guard', () => {
+    it('should not inject a duplicate denebContainer param when the user spec defines one', () => {
+        const spec: TopLevelSpec = {
+            $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+            params: [
+                {
+                    name: SIGNAL_DENEB_CONTAINER,
+                    value: { width: 42, height: 24 }
+                } as any
+            ],
+            data: { name: 'table' },
+            mark: 'bar',
+            encoding: {}
+        };
+
+        const patched = patchVegaLiteSpec(spec, {
+            containerDimensions: { width: 800, height: 600 }
+        });
+
+        const denebParams = patched.params?.filter(
+            (p: any) => p.name === SIGNAL_DENEB_CONTAINER
+        );
+
+        // Exactly one param named denebContainer - no duplicate-name error
+        expect(denebParams).toHaveLength(1);
+        // The user's definition wins (matches width/height precedent)
+        expect((denebParams?.[0] as any).value).toEqual({
+            width: 42,
+            height: 24
+        });
+    });
+});

@@ -132,8 +132,12 @@ describe('patchVegaSpec', () => {
         const patched = patchVegaSpec(spec);
 
         expect(patched.signals).toHaveLength(3); // 2 custom + 1 denebContainer
-        expect(patched.signals?.find((s: any) => s.name === 'customSignal')).toBeDefined();
-        expect(patched.signals?.find((s: any) => s.name === 'anotherSignal')).toBeDefined();
+        expect(
+            patched.signals?.find((s: any) => s.name === 'customSignal')
+        ).toBeDefined();
+        expect(
+            patched.signals?.find((s: any) => s.name === 'anotherSignal')
+        ).toBeDefined();
         expect(
             patched.signals?.find((s: any) => s.name === SIGNAL_DENEB_CONTAINER)
         ).toBeDefined();
@@ -155,8 +159,12 @@ describe('patchVegaSpec', () => {
         const patched = patchVegaSpec(spec, { additionalSignals });
 
         expect(patched.signals).toHaveLength(3); // denebContainer + 2 additional
-        expect(patched.signals?.find((s: any) => s.name === 'zoomLevel')).toBeDefined();
-        expect(patched.signals?.find((s: any) => s.name === 'panX')).toBeDefined();
+        expect(
+            patched.signals?.find((s: any) => s.name === 'zoomLevel')
+        ).toBeDefined();
+        expect(
+            patched.signals?.find((s: any) => s.name === 'panX')
+        ).toBeDefined();
     });
 
     it('should use container dimensions in denebContainer signal', () => {
@@ -405,8 +413,38 @@ describe('patchVegaSpec', () => {
         expect(patched.width).toBeUndefined();
         expect(patched.height).toBeUndefined();
         // User signals should be preserved
-        expect(patched.signals?.find((s: any) => s.name === 'width')).toBeDefined();
-        expect(patched.signals?.find((s: any) => s.name === 'height')).toBeDefined();
+        expect(
+            patched.signals?.find((s: any) => s.name === 'width')
+        ).toBeDefined();
+        expect(
+            patched.signals?.find((s: any) => s.name === 'height')
+        ).toBeDefined();
+    });
+
+    it('should not inject a duplicate denebContainer signal when the user spec defines one', () => {
+        const spec: Spec = {
+            $schema: 'https://vega.github.io/schema/vega/v5.json',
+            signals: [
+                {
+                    name: SIGNAL_DENEB_CONTAINER,
+                    value: { width: 42, height: 24 }
+                }
+            ],
+            marks: []
+        };
+
+        const patched = patchVegaSpec(spec, {
+            containerDimensions: { width: 800, height: 600 }
+        });
+
+        const denebSignals = patched.signals?.filter(
+            (s: any) => s.name === SIGNAL_DENEB_CONTAINER
+        );
+
+        // Exactly one signal named denebContainer - no duplicate-name Vega error
+        expect(denebSignals).toHaveLength(1);
+        // The user's definition wins (matches width/height precedent)
+        expect(denebSignals?.[0].value).toEqual({ width: 42, height: 24 });
     });
 });
 

@@ -46,7 +46,6 @@ const makeStateFixture = (overrides: Partial<Record<string, unknown>> = {}) =>
     ({
         compilation: {
             result: null,
-            isCompiling: false,
             lastCompiled: null,
             viewReady: false,
             runtimeErrors: [],
@@ -169,9 +168,8 @@ describe('compilation slice — renderId is owned by the embed lifecycle, not by
         const harness = makeSliceHarness();
         harness.actions.compile({} as never);
         const next = harness.getState() as {
-            compilation: { isCompiling: boolean; lastCompiled: number | null };
+            compilation: { lastCompiled: number | null };
         };
-        expect(next.compilation.isCompiling).toBe(false);
         expect(typeof next.compilation.lastCompiled).toBe('number');
     });
 
