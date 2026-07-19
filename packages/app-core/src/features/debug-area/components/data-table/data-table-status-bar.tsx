@@ -119,47 +119,52 @@ export const DataTableStatusBar = ({
     return (
         <StatusBarContainer
             nearItems={<div>{optionComponent}</div>}
+            // The pagination cluster is meaningless at zero rows (rdt hid
+            // its whole bar; we keep the bar for the dataset selector and
+            // hide only this side).
             farItems={
-                <div className={classes.navigation}>
-                    <div>
-                        <Label htmlFor={rowsPerPageId} size='small'>
-                            {translate('Text_Data_Table_Navigation_Rows')}
-                        </Label>
+                rowCount === 0 ? null : (
+                    <div className={classes.navigation}>
+                        <div>
+                            <Label htmlFor={rowsPerPageId} size='small'>
+                                {translate('Text_Data_Table_Navigation_Rows')}
+                            </Label>
+                        </div>
+                        <div>
+                            <Select
+                                id={rowsPerPageId}
+                                value={rowsPerPageSetting}
+                                onChange={handleChangeRowsPerPage}
+                                size='small'
+                            >
+                                {rowsPerPageEntries}
+                            </Select>
+                        </div>
+                        <div>
+                            <Caption1>{range}</Caption1>
+                        </div>
+                        <DataTableNavigationButton
+                            type='first'
+                            onClick={handleFirstPageButtonClick}
+                            disabled={currentPage === 1}
+                        />
+                        <DataTableNavigationButton
+                            type='previous'
+                            onClick={handlePreviousButtonClick}
+                            disabled={currentPage === 1}
+                        />
+                        <DataTableNavigationButton
+                            type='next'
+                            onClick={handleNextButtonClick}
+                            disabled={currentPage === numPages}
+                        />
+                        <DataTableNavigationButton
+                            type='last'
+                            onClick={handleLastPageButtonClick}
+                            disabled={currentPage === numPages}
+                        />
                     </div>
-                    <div>
-                        <Select
-                            id={rowsPerPageId}
-                            value={rowsPerPageSetting}
-                            onChange={handleChangeRowsPerPage}
-                            size='small'
-                        >
-                            {rowsPerPageEntries}
-                        </Select>
-                    </div>
-                    <div>
-                        <Caption1>{range}</Caption1>
-                    </div>
-                    <DataTableNavigationButton
-                        type='first'
-                        onClick={handleFirstPageButtonClick}
-                        disabled={currentPage === 1}
-                    />
-                    <DataTableNavigationButton
-                        type='previous'
-                        onClick={handlePreviousButtonClick}
-                        disabled={currentPage === 1}
-                    />
-                    <DataTableNavigationButton
-                        type='next'
-                        onClick={handleNextButtonClick}
-                        disabled={currentPage === numPages}
-                    />
-                    <DataTableNavigationButton
-                        type='last'
-                        onClick={handleLastPageButtonClick}
-                        disabled={currentPage === numPages}
-                    />
-                </div>
+                )
             }
         />
     );

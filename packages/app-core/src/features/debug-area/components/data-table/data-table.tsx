@@ -334,18 +334,18 @@ export const DataTableViewer = ({
                                 </DataGridBody>
                             </DataGrid>
                         </div>
-                        {/* Match rdt: the pagination bar is hidden when there
-                            are zero rows (rdt's `enabledPagination` required
-                            `data.length > 0`). */}
-                        {rowCount > 0 && (
-                            <DataTableStatusBar
-                                rowCount={rowCount}
-                                rowsPerPage={perPage}
-                                currentPage={page}
-                                onChangePage={handleChangePage}
-                                onChangeRowsPerPage={handleChangeRowsPerPage}
-                            />
-                        )}
+                        {/* Always mounted: the status bar hosts the dataset
+                            selector, which must stay reachable even for an
+                            empty dataset (e.g. a param populated on hover)
+                            so the user can switch away. The bar itself hides
+                            its pagination cluster at zero rows. */}
+                        <DataTableStatusBar
+                            rowCount={rowCount}
+                            rowsPerPage={perPage}
+                            currentPage={page}
+                            onChangePage={handleChangePage}
+                            onChangeRowsPerPage={handleChangeRowsPerPage}
+                        />
                     </div>
                 </DataTableTooltipProvider>
                 <InspectorPopover scrollContainerRef={enclosureRef} />
