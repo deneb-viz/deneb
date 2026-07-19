@@ -19,7 +19,7 @@ import { DataTableTooltipProvider } from './data-table-tooltip-context';
 import { DataTableInspectorProvider } from './inspector-popover-context';
 import { DataTableKeyboardProvider } from './data-table-keyboard-context';
 import { InspectorPopover } from './inspector-popover';
-import { sortRows } from './data-table-sort';
+import { resolveNextSortState, sortRows } from './data-table-sort';
 import { getPageSlice } from './data-table-pagination';
 import type {
     DataTableViewerColumn,
@@ -157,12 +157,19 @@ export const DataTableViewer = ({
     // Fluent column definitions. `renderCell`/`compare` are intentionally
     // inert: cells are rendered directly in the DataGridRow body below (so we
     // can pass the row index), and sorting is external (see `sortedRows`).
+    // CAUTION: Fluent decides header sortability by the DECLARED ARITY of
+    // `compare` (`isColumnSortable` is `column.compare.length > 0`), so the
+    // no-op must take two parameters for sortable columns — an arity-0 no-op
+    // silently disables header clicks. Non-sortable columns get the arity-0
+    // form deliberately, which also suppresses their sort affordance.
     const gridColumns = useMemo<TableColumnDefinition<unknown>[]>(
         () =>
             columns.map((column) =>
                 createTableColumn<unknown>({
                     columnId: column.id,
-                    compare: () => 0,
+                    compare: column.sortable
+                        ? (_a: unknown, _b: unknown) => 0
+                        : () => 0,
                     renderHeaderCell: () => column.name,
                     renderCell: () => null
                 })
@@ -204,10 +211,18 @@ export const DataTableViewer = ({
         // Only sortable columns participate — mirrors rdt, where the signal
         // "value" column (no `sortable`) ignores header clicks.
         if (!column?.sortable) return;
-        setSortState(nextSort);
+        // Tri-state cycle: unsorted → ascending → descending → unsorted.
+        const resolved = resolveNextSortState(sortState, nextSort);
+        setSortState(resolved);
+        if (resolved.sortColumn === undefined) {
+            // Cleared — the tabs' handlers treat a falsy colId as "remove
+            // the persisted sort entry" (rows return to dataset order).
+            onSort?.('', false);
+            return;
+        }
         onSort?.(
-            String(nextSort.sortColumn),
-            nextSort.sortDirection === 'ascending'
+            String(resolved.sortColumn),
+            resolved.sortDirection === 'ascending'
         );
     };
 

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { sortRows } from '../data-table-sort';
+import { resolveNextSortState, sortRows } from '../data-table-sort';
 import type { DataTableViewerColumn } from '../data-table-viewer-types';
 
 type Row = { id: string; v: unknown };
@@ -29,7 +29,11 @@ describe('sortRows', () => {
     });
 
     it('sorts strings via localeCompare (case-insensitive-ish ordering)', () => {
-        const result = sortRows(rows('banana', 'apple', 'cherry'), bySelector, true);
+        const result = sortRows(
+            rows('banana', 'apple', 'cherry'),
+            bySelector,
+            true
+        );
         expect(result.map((r) => r.v)).toEqual(['apple', 'banana', 'cherry']);
     });
 
@@ -42,12 +46,20 @@ describe('sortRows', () => {
     });
 
     it('places null and undefined last on ascending sort', () => {
-        const result = sortRows(rows(3, null, 1, undefined, 2), bySelector, true);
+        const result = sortRows(
+            rows(3, null, 1, undefined, 2),
+            bySelector,
+            true
+        );
         expect(result.map((r) => r.v)).toEqual([1, 2, 3, null, undefined]);
     });
 
     it('places null and undefined last on descending sort too', () => {
-        const result = sortRows(rows(3, null, 1, undefined, 2), bySelector, false);
+        const result = sortRows(
+            rows(3, null, 1, undefined, 2),
+            bySelector,
+            false
+        );
         // nulls stay last regardless of direction
         expect(result.slice(0, 3).map((r) => r.v)).toEqual([3, 2, 1]);
         expect(result.slice(3).map((r) => r.v)).toEqual([null, undefined]);
@@ -85,5 +97,42 @@ describe('sortRows', () => {
         const result = sortRows(rows(2, NaN, 1), bySelector, true);
         expect(result.slice(0, 2).map((r) => r.v)).toEqual([1, 2]);
         expect(Number.isNaN(result[2].v)).toBe(true);
+    });
+});
+
+describe('resolveNextSortState', () => {
+    const asc = 'ascending' as const;
+    const desc = 'descending' as const;
+    it('unsorted -> first click sorts ascending', () => {
+        expect(
+            resolveNextSortState(
+                { sortColumn: undefined, sortDirection: asc },
+                { sortColumn: 'a', sortDirection: asc }
+            )
+        ).toEqual({ sortColumn: 'a', sortDirection: asc });
+    });
+    it('ascending -> second click sorts descending', () => {
+        expect(
+            resolveNextSortState(
+                { sortColumn: 'a', sortDirection: asc },
+                { sortColumn: 'a', sortDirection: desc }
+            )
+        ).toEqual({ sortColumn: 'a', sortDirection: desc });
+    });
+    it('descending -> third click clears the sort', () => {
+        expect(
+            resolveNextSortState(
+                { sortColumn: 'a', sortDirection: desc },
+                { sortColumn: 'a', sortDirection: asc }
+            )
+        ).toEqual({ sortColumn: undefined, sortDirection: asc });
+    });
+    it('descending -> clicking a DIFFERENT column starts its ascending sort', () => {
+        expect(
+            resolveNextSortState(
+                { sortColumn: 'a', sortDirection: desc },
+                { sortColumn: 'b', sortDirection: asc }
+            )
+        ).toEqual({ sortColumn: 'b', sortDirection: asc });
     });
 });

@@ -1,5 +1,31 @@
 import type { DataTableViewerColumn } from './data-table-viewer-types';
 
+export interface ViewerSortState {
+    sortColumn: string | number | undefined;
+    sortDirection: 'ascending' | 'descending';
+}
+
+/**
+ * Resolve the next controlled sort state from a DataGrid header click,
+ * upgrading Fluent's native two-state toggle to a tri-state cycle:
+ * unsorted → ascending → descending → unsorted.
+ *
+ * Fluent's `toggleColumnSort` emits `ascending` for a newly-clicked column
+ * and flips direction on repeat clicks — it never emits "unsorted". Because
+ * the viewer controls `sortState`, a desc→asc flip on the SAME column is
+ * interpreted as the third click and clears the sort instead.
+ */
+export const resolveNextSortState = (
+    current: ViewerSortState,
+    next: ViewerSortState
+): ViewerSortState =>
+    current.sortColumn !== undefined &&
+    current.sortColumn === next.sortColumn &&
+    current.sortDirection === 'descending' &&
+    next.sortDirection === 'ascending'
+        ? { sortColumn: undefined, sortDirection: 'ascending' }
+        : next;
+
 /**
  * Sort the FULL row set by a column's `selector`, external to the DataGrid.
  *

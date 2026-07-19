@@ -48,7 +48,11 @@ export interface DataTableViewerProps<T> {
     defaultSortFieldId?: string | null;
     /** Initial sort direction when `defaultSortFieldId` is set. */
     defaultSortAsc?: boolean;
-    /** Reports a sort change up so it can be persisted in debug state. */
+    /**
+     * Reports a sort change up so it can be persisted in debug state. An
+     * empty `colId` signals the tri-state cycle returned to "unsorted"
+     * (consumers clear their persisted sort entry).
+     */
     onSort?: (colId: string, asc: boolean) => void;
     /** Reports a page change up so it can be persisted in debug state. */
     onChangePage?: (page: number) => void;
