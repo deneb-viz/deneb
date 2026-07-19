@@ -238,9 +238,17 @@ export const DataTableViewer = ({
     const perPage = debugTableRowsPerPage as number;
     const [page, setPage] = useState<number>(paginationDefaultPage ?? 1);
 
+    // A dataset shrink (or perPage growth) can leave the raw `page` beyond
+    // the last page. Deriving the effective page at render time keeps the
+    // row slice, the status bar's range display, and the nav-button
+    // disabled states mutually consistent — without a corrective effect.
+    // The raw intent self-heals on the next user navigation.
+    const numPages = Math.max(1, Math.ceil(rowCount / perPage));
+    const effectivePage = Math.min(page, numPages);
+
     const pageRows = useMemo(
-        () => getPageSlice(sortedRows, page, perPage),
-        [sortedRows, page, perPage]
+        () => getPageSlice(sortedRows, effectivePage, perPage),
+        [sortedRows, effectivePage, perPage]
     );
 
     const handleChangePage = (nextPage: number) => {
@@ -340,8 +348,7 @@ export const DataTableViewer = ({
                             its pagination cluster at zero rows. */}
                         <DataTableStatusBar
                             rowCount={rowCount}
-                            rowsPerPage={perPage}
-                            currentPage={page}
+                            currentPage={effectivePage}
                             onChangePage={handleChangePage}
                             onChangeRowsPerPage={handleChangeRowsPerPage}
                         />
