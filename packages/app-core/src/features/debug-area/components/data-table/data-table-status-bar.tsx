@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import {
     Caption1,
     Label,
@@ -42,8 +42,6 @@ const useDataTableStatusBarStyles = makeStyles({
 export interface DataTableStatusBarProps {
     /** Total row count across all pages. */
     rowCount: number;
-    /** Rows shown per page. */
-    rowsPerPage: number;
     /** Current (1-based) page. */
     currentPage: number;
     /** Navigate to a page. The second arg (total rows) is unused by callers. */
@@ -60,7 +58,6 @@ export interface DataTableStatusBarProps {
  */
 export const DataTableStatusBar = ({
     rowCount,
-    rowsPerPage,
     onChangePage,
     onChangeRowsPerPage,
     currentPage
@@ -70,11 +67,6 @@ export const DataTableStatusBar = ({
         mode: state.editorPreviewAreaSelectedPivot,
         translate: state.i18n.translate
     }));
-    useEffect(() => {
-        if (rowsPerPage !== rowsPerPageSetting) {
-            onChangeRowsPerPage(rowsPerPageSetting as number, currentPage);
-        }
-    }, [rowsPerPage, rowsPerPageSetting]);
     const handleFirstPageButtonClick = () => {
         onChangePage(1, rowCount);
     };
