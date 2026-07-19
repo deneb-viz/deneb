@@ -26,16 +26,10 @@ import { REPO_ROOT } from './_packages';
 const RESOURCE_KEY_PATTERN =
     /(?:displayNameKey|descriptionKey|i18n)\s*[:=]\s*\r?\n?\s*'([^']+)'/g;
 
-const extractKeys = (source: string): string[] => {
-    const found: string[] = [];
-    let match: RegExpExecArray | null;
-    // Reset lastIndex-bearing global regex state per call.
-    RESOURCE_KEY_PATTERN.lastIndex = 0;
-    while ((match = RESOURCE_KEY_PATTERN.exec(source)) !== null) {
-        found.push(match[1]);
-    }
-    return found;
-};
+// matchAll iterates on an internal clone of the regex, so the shared
+// pattern's lastIndex is never mutated across calls.
+const extractKeys = (source: string): string[] =>
+    [...source.matchAll(RESOURCE_KEY_PATTERN)].map((match) => match[1]);
 
 const SETTINGS_MODEL_DIR = join(
     REPO_ROOT,
