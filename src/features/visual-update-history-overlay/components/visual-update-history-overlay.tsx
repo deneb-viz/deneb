@@ -6,7 +6,7 @@ import { CollapsibleSection, DevOverlayShell } from '../../dev-overlay-shell';
 import { type RenderingLifecycleEvent } from '../../../lib/rendering-lifecycle';
 import { computeLifecycleTally } from '../lib/compute-tally';
 
-const IS_OVERLAY_ENABLED = toBoolean(process.env.PBIVIZ_DEV_OVERLAY);
+export const IS_OVERLAY_ENABLED = toBoolean(process.env.PBIVIZ_DEV_OVERLAY);
 
 const SECTION_HEADING_STYLE: CSSProperties = {
     fontWeight: 600,
@@ -82,8 +82,6 @@ export const VisualUpdateHistoryOverlay = () => {
                 .slice(-6),
         [lifecycleEvents]
     );
-
-    if (!IS_OVERLAY_ENABLED) return <></>;
 
     const tallyText = [
         `opens:        ${tally.opens}`,

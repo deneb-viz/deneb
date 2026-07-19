@@ -37,7 +37,10 @@ import {
     IS_OVERLAY_ENABLED as IS_VIEWPORT_GATE_OVERLAY_ENABLED,
     ViewportGateDebugOverlay
 } from '../features/viewport-gate-debug-overlay';
-import { VisualUpdateHistoryOverlay } from '../features/visual-update-history-overlay';
+import {
+    IS_OVERLAY_ENABLED as IS_UPDATE_HISTORY_OVERLAY_ENABLED,
+    VisualUpdateHistoryOverlay
+} from '../features/visual-update-history-overlay';
 import { getVegaLoader } from '../lib/vega-embed';
 import { useDenebVisualState } from '../state';
 import {
@@ -327,42 +330,63 @@ export const App = ({
         }
     }, [mode]);
     logRender('App', mode);
+    /**
+     * Memoized so `DenebProvider` consumers (context readers deep in the
+     * component tree) keep a stable `platformProvider` reference across
+     * `App` renders that don't touch any of the values this object
+     * closes over. Without this, the object literal was rebuilt on every
+     * render, breaking reference equality for anything comparing it
+     * (e.g. a `useMemo`/`useEffect` dependency, or `React.memo` props
+     * equality) further down the tree.
+     */
+    const platformProvider = useMemo(
+        () => ({
+            embedContainerSetByHost: true,
+            isDownloadPermitted,
+            onCreateProject: persistOnCreateFromTemplate,
+            onEnableCrossHighlight: () =>
+                handlePersistBooleanProperty('enableHighlight', true),
+            onDisableCrossHighlight: () =>
+                handlePersistBooleanProperty('enableHighlight', false),
+            onRenderingError,
+            onRenderingFinished,
+            onRenderingStarted,
+            settingsPaneFooter: <InteractivityFooter />,
+            settingsPanePlatformComponent: [
+                <SemanticModelSettings key={PLATFORM_SECTION_KEYS[0]} />,
+                <TooltipSettings key={PLATFORM_SECTION_KEYS[1]} />,
+                <ContextMenuSettings key={PLATFORM_SECTION_KEYS[2]} />,
+                <CrossFilterSettings key={PLATFORM_SECTION_KEYS[3]} />,
+                <CrossHighlightSettings key={PLATFORM_SECTION_KEYS[4]} />
+            ],
+            settingsPanePlatformSearchable: platformSearchContributions,
+            tooltipHandler: pbiTooltipHandler,
+            vegaLoader,
+            viewEventBinders,
+            launchUrl,
+            downloadJsonFile: (content, filename, description) => {
+                host.downloadService.exportVisualsContentExtended(
+                    content,
+                    filename,
+                    'json',
+                    description
+                );
+            }
+        }),
+        [
+            host,
+            isDownloadPermitted,
+            launchUrl,
+            onRenderingError,
+            onRenderingFinished,
+            onRenderingStarted,
+            pbiTooltipHandler,
+            vegaLoader,
+            viewEventBinders
+        ]
+    );
     return (
-        <DenebProvider
-            platformProvider={{
-                embedContainerSetByHost: true,
-                isDownloadPermitted,
-                onCreateProject: persistOnCreateFromTemplate,
-                onEnableCrossHighlight: () =>
-                    handlePersistBooleanProperty('enableHighlight', true),
-                onDisableCrossHighlight: () =>
-                    handlePersistBooleanProperty('enableHighlight', false),
-                onRenderingError,
-                onRenderingFinished,
-                onRenderingStarted,
-                settingsPaneFooter: <InteractivityFooter />,
-                settingsPanePlatformComponent: [
-                    <SemanticModelSettings key={PLATFORM_SECTION_KEYS[0]} />,
-                    <TooltipSettings key={PLATFORM_SECTION_KEYS[1]} />,
-                    <ContextMenuSettings key={PLATFORM_SECTION_KEYS[2]} />,
-                    <CrossFilterSettings key={PLATFORM_SECTION_KEYS[3]} />,
-                    <CrossHighlightSettings key={PLATFORM_SECTION_KEYS[4]} />
-                ],
-                settingsPanePlatformSearchable: platformSearchContributions,
-                tooltipHandler: pbiTooltipHandler,
-                vegaLoader,
-                viewEventBinders,
-                launchUrl,
-                downloadJsonFile: (content, filename, description) => {
-                    host.downloadService.exportVisualsContentExtended(
-                        content,
-                        filename,
-                        'json',
-                        description
-                    );
-                }
-            }}
-        >
+        <DenebProvider platformProvider={platformProvider}>
             <RetainedDenebEditor
                 isEditorMode={mode === 'editor'}
                 hostViewportWidth={visualUpdateOptions?.viewport?.width}
@@ -376,7 +400,9 @@ export const App = ({
             </GatedDenebViewer>
             {mainComponent}
             <NotificationToaster />
-            <VisualUpdateHistoryOverlay />
+            {IS_UPDATE_HISTORY_OVERLAY_ENABLED && (
+                <VisualUpdateHistoryOverlay />
+            )}
             {IS_VIEWPORT_GATE_OVERLAY_ENABLED && <ViewportGateDebugOverlay />}
         </DenebProvider>
     );
