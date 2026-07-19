@@ -272,6 +272,20 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
     const lastListenerHashRef = useRef<string | null>(null);
 
     /**
+     * Pending deferred verification of an empty listener payload (see
+     * `dataListener`). Held so a superseding non-empty event, a listener
+     * cycle, or unmount can cancel it.
+     */
+    const emptyVerifyTimerRef = useRef<number | null>(null);
+
+    const cancelPendingEmptyVerify = useCallback(() => {
+        if (emptyVerifyTimerRef.current !== null) {
+            window.clearTimeout(emptyVerifyTimerRef.current);
+            emptyVerifyTimerRef.current = null;
+        }
+    }, []);
+
+    /**
      * Handler for dataset listener events. Vega exposes the `value` parameter
      * as `object` in its public typings, so we follow suit rather than `any`.
      */
@@ -287,17 +301,47 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
             return;
         }
 
-        // Skip processing if we have data but the listener returns an empty array - likely an incremental update in progress
+        // An empty payload while we hold data is ambiguous: it can be a
+        // transient artifact of an in-flight incremental update, OR a
+        // legitimate clear (e.g. a param-driven dataset emptying on
+        // hover-out). Defer one tick and re-read the view: still empty
+        // means a real clear and the table empties; repopulated means it
+        // was transient and the non-empty listener event supersedes this.
         if (
             Array.isArray(newDataset) &&
             newDataset.length === 0 &&
             lastListenerHashRef.current !== null
         ) {
             logDebug(
-                `DataTab: dataset ${name} listener received empty array while we have existing data, skipping (likely incremental update in progress)`
+                `DataTab: dataset ${name} listener received empty array while we have existing data; deferring verification (incremental update vs. genuine clear)`
             );
+            cancelPendingEmptyVerify();
+            emptyVerifyTimerRef.current = window.setTimeout(() => {
+                emptyVerifyTimerRef.current = null;
+                const latest = getPrunedObject(
+                    (VegaViewServices.getDataByName(name) as object) ?? []
+                );
+                if (Array.isArray(latest) && latest.length === 0) {
+                    const emptyHash = getDataHash(latest);
+                    logDebug(
+                        `DataTab: dataset ${name} verified empty — applying clear`
+                    );
+                    lastListenerHashRef.current = emptyHash;
+                    setDatasetRawPending(() => ({
+                        hashValue: emptyHash,
+                        values: latest
+                    }));
+                } else {
+                    logDebug(
+                        `DataTab: dataset ${name} repopulated — transient empty ignored`
+                    );
+                }
+            }, 0);
             return;
         }
+
+        // A non-empty event supersedes any pending empty verification.
+        cancelPendingEmptyVerify();
 
         logDebug(`DataTab: dataset ${name} has changed`, {
             previousHash: lastListenerHashRef.current,
@@ -404,6 +448,9 @@ export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
         }
         return () => {
             removeListener(viewAtEntry);
+            // A pending empty-verify belongs to the outgoing view/dataset;
+            // never let it fire against the successor.
+            cancelPendingEmptyVerify();
         };
     }, [datasetName, renderId]);
 
