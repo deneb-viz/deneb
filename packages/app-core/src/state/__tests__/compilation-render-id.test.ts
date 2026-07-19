@@ -203,3 +203,27 @@ describe('compilation slice — renderId is owned by the embed lifecycle, not by
         expect(next.compilation.runtimeErrors).toEqual(['first', 'second']);
     });
 });
+
+describe('compilation slice — clear() resets viewReady', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it('resets viewReady to false so a cleared view cannot accept incremental updates', () => {
+        const harness = makeSliceHarness();
+        // Simulate a view that has already completed its initial run.
+        harness.actions.setViewReady(true);
+        expect(
+            (harness.getState() as { compilation: { viewReady: boolean } })
+                .compilation.viewReady
+        ).toBe(true);
+
+        harness.actions.clear();
+
+        const next = harness.getState() as {
+            compilation: { viewReady: boolean; result: unknown };
+        };
+        expect(next.compilation.viewReady).toBe(false);
+        expect(next.compilation.result).toBeNull();
+    });
+});

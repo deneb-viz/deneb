@@ -228,7 +228,10 @@ const getCrossFilterSelectionAdvanced = (
             .hover()
             .run()
             .data(datasetName);
-        const rowNumbers = getRowNumbersFromData(filteredData);
+        const rowNumbers = getRowNumbersFromData(
+            filteredData,
+            dataset.values.length
+        );
         logDebug(`${LOG_PREFIX} headless validation complete`, {
             filteredData,
             rowNumbers

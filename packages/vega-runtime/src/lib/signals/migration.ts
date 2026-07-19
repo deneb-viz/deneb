@@ -43,6 +43,13 @@ export interface SignalMigrationResult {
  * This migration is automatic and backward-compatible. Specs using legacy signal names will
  * continue to work, but developers should update to use the modern names.
  *
+ * **Text-scope caveat:** replacement runs over the raw spec text via regex, not over a parsed
+ * AST, so it has no notion of expression vs. non-expression context. Legacy names appearing
+ * inside string literals that are not signal expressions — e.g. a mark's `text`/`tooltip`
+ * content, a chart title, or a comment — are rewritten identically to references inside actual
+ * signal expressions. Scoping replacement to expression contexts only is a known, deferred
+ * improvement.
+ *
  * @param specText The specification text (JSON as string)
  * @returns Migration result with updated spec and metadata about changes
  *
@@ -135,6 +142,12 @@ export const logLegacySignalWarning = (replacementCount: number) => {
 /**
  * Check if a spec contains legacy signal references without performing replacement.
  * Checks for all legacy signal names: pbiContainer, pbiContainerWidth, pbiContainerHeight.
+ *
+ * **Text-scope caveat:** detection runs over the raw spec text via regex, the same scope as
+ * `replaceLegacySignalReferences`. A legacy name occurring inside a string literal that is not
+ * a signal expression (mark text, tooltip content, a title) will match here too, even though it
+ * is not actually a legacy signal reference. Scoping detection to expression contexts only is a
+ * known, deferred improvement.
  *
  * @param specText The specification text to check
  * @returns True if any legacy references are found

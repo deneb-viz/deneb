@@ -21,7 +21,7 @@
         },
         "./index.css": "./dist/index.css"
     },
-    "types": "dist/src/index.d.ts",
+    "types": "dist/index.d.ts",
     "type": "module",
     "scripts": {
         "build": "npm run build:worker && npm run build:package",

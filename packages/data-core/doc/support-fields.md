@@ -597,6 +597,8 @@ The `denebMetaVersion` is stamped automatically:
 - On template creation: set to `TEMPLATE_USERMETA_VERSION` (currently `2`)
 - On legacy migration: set to `TEMPLATE_USERMETA_VERSION` after stamping legacy defaults
 
+**Legacy migration parity semantics:** `resolveFieldDefaults` gates the legacy `format`/`formatted` defaults on `isMeasure` (`fieldRole === 'aggregation'`) alone — there is no data-type check. This means legacy migration stamps `format: true, formatted: true` on **every** measure, including text and boolean measures, not just numeric/dateTime ones. Combined with the provider contract described above (`getFormatString` returns `''`, never `undefined`, when no format string is available), a legacy measure with no format string still emits a `__format__` column populated with `''` rather than omitting the column or writing `undefined`.
+
 ### Template author guidance
 
 **Clean-slate templates** (e.g., empty, simple bar): Omit `supportFieldConfiguration` on each dataset entry entirely. All fields get dynamic defaults — measures and parameters automatically gain highlight support when the user enables cross-highlighting. This is the recommended approach for templates that don't require specific support field behavior.

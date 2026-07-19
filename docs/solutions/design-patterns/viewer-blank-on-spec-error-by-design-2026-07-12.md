@@ -55,6 +55,19 @@ decision (2026-07-12) is to **keep the reader experience blank**.
   `compilation.result.status === 'error'`. The editor debug area is the intended
   error surface and stays as-is.
 
+## Enforcement in the wild (2026-07-16)
+
+The 2.0 pre-merge review found `VegaEmbedErrorBoundary` rendering a "Vega
+Rendering Error" panel with the raw `error.message` to readers on any
+render-phase throw in the embed subtree — a real violation of both this rule
+and the message-hygiene rule, fixed in PR #716 by rendering blank (logging and
+the `renderingFailed` lifecycle signal preserved). Maintainer refinement,
+2026-07-15: the static construction-failure text in `src/index.ts` is
+sanctioned for **constructor-catch failures only**; Vega **view-init** failures
+must stay blank (with `displayWarningIcon` approved for that specific case,
+pending an accurate localized string); spec-compile errors remain fully blank
+per this document.
+
 ## If a minimal signal is ever wanted
 
 The sanctioned minimal approach is the host-native

@@ -41,7 +41,7 @@ import type { UseVegaEmbedOptions } from '../types';
 export const useVegaEmbed = ({
     ref,
     spec,
-    options,
+    options = {},
     onEmbed,
     onError
 }: UseVegaEmbedOptions) => {

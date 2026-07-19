@@ -57,12 +57,16 @@ export const patchVegaSpec = (
 
     // Set responsive dimensions if not already specified as a top-level property
     // or as a user-defined signal (to avoid conflicts with init/update expressions)
-    if (!spec.width && !hasSignalNamed(spec, 'width') && containerDimensions) {
+    if (
+        spec.width == null &&
+        !hasSignalNamed(spec, 'width') &&
+        containerDimensions
+    ) {
         patches.width = { signal: containerRefs.width };
     }
 
     if (
-        !spec.height &&
+        spec.height == null &&
         !hasSignalNamed(spec, 'height') &&
         containerDimensions
     ) {
