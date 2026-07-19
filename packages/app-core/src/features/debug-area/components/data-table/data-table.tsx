@@ -64,9 +64,15 @@ const useDataTableStyles = makeStyles({
         zIndex: 1,
         backgroundColor: tokens.colorNeutralBackground1
     },
+    // Fluent's `extra-small` size variant drops the built-in row
+    // borderBottom that medium/small carry, so the header/body divider is
+    // restated here (mirrors the old rdt `headRow` customStyles).
     headerRow: {
         paddingLeft: `${DATA_TABLE_ROW_PADDING_LEFT}px`,
-        minHeight: `${DATA_TABLE_ROW_HEIGHT}px`
+        minHeight: `${DATA_TABLE_ROW_HEIGHT}px`,
+        borderBottomWidth: '1px',
+        borderBottomStyle: 'solid',
+        borderBottomColor: tokens.colorNeutralStroke3
     },
     headerCell: {
         color: tokens.colorNeutralForeground1,
