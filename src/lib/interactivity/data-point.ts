@@ -20,6 +20,20 @@ const allValuesHaveIdentityField = (data: VegaDatum[]) =>
     )?.length === data?.length;
 
 /**
+ * A row identity supplied by a Vega datum is only trustworthy if it is an
+ * integer within the bounds of the visual's current dataset — specs can
+ * mutate `__row__`, so an unchecked value enables spoofed selection (#650).
+ */
+const isValidRowIndex = (
+    value: unknown,
+    datasetLength: number
+): value is number =>
+    typeof value === 'number' &&
+    Number.isInteger(value) &&
+    value >= 0 &&
+    value < datasetLength;
+
+/**
  * Get a reduced set of fields based on an array of key names from the dataset fields.
  */
 export const getDatasetFieldsBySelectionKeys = (
@@ -41,17 +55,27 @@ export const getResolvedRowIdentities = (
         //logDebug(`${LOG_PREFIX} no data supplied, returning empty array`);
         return [];
     }
-    // Single, identifiable datum
-    if (data.length === 1 && data[0]?.[ROW_INDEX_FIELD_NAME] !== undefined) {
-        // logDebug(`${LOG_PREFIX} single datum with identity field found`, {
-        //     datum: data[0]
-        // });
-        return [data[0][ROW_INDEX_FIELD_NAME]];
+    // Single, identifiable datum — only if the identity survives validation;
+    // a spoofed/mutated __row__ falls through to field matching instead.
+    if (data.length === 1) {
+        const rowIndex = data[0]?.[ROW_INDEX_FIELD_NAME];
+        if (isValidRowIndex(rowIndex, dataset.values.length)) {
+            // logDebug(`${LOG_PREFIX} single datum with identity field found`, {
+            //     datum: data[0]
+            // });
+            return [rowIndex];
+        }
     }
-    // Multiple values; all with identifiable row indices
+    // All datum carry an identity field — including a single datum whose
+    // __row__ failed validation above, since presence (not validity) is what
+    // gets us here. Invalid entries are skipped; if none survive, fall
+    // through to field matching.
     if (allValuesHaveIdentityField(data)) {
         // logDebug(`${LOG_PREFIX} all datum have identity field`, { data });
-        return getRowNumbersFromData(data);
+        const rowNumbers = getRowNumbersFromData(data, dataset.values.length);
+        if (rowNumbers.length > 0) {
+            return rowNumbers;
+        }
     }
     // Otherwise, panic mode: try to identify from the matched values
     // logDebug(`${LOG_PREFIX} attempting to resolve via field matching`, {
@@ -77,6 +101,7 @@ export const getResolvedRowIdentities = (
         return [];
     }
     logDebug(`${LOG_PREFIX} fall-through case`, { foundValues });
+    // foundValues come from dataset.values itself (host-generated __row__), so no bounds check is needed here.
     return foundValues ? getRowNumbersFromData(foundValues) : [];
 };
 
@@ -98,16 +123,22 @@ const getMatchedValues = (
 };
 
 /**
- * From an array of Vega datum, extract unique row numbers, provided that they exist.
+ * From an array of Vega datum, extract unique row numbers, provided that they exist. When
+ * `datasetLength` is supplied, each candidate row index is additionally validated as an integer
+ * within the bounds of the dataset — spec-mutated/spoofed values are skipped rather than trusted.
  */
-export const getRowNumbersFromData = (data: VegaDatum[]) => {
+export const getRowNumbersFromData = (
+    data: VegaDatum[],
+    datasetLength?: number
+) => {
     const resolvedIndices: number[] = [];
     data.forEach((d) => {
         const rowIndex = d[ROW_INDEX_FIELD_NAME];
-        if (
-            rowIndex !== undefined &&
-            resolvedIndices.indexOf(rowIndex as number) === -1
-        ) {
+        const isUsable =
+            datasetLength === undefined
+                ? rowIndex !== undefined
+                : isValidRowIndex(rowIndex, datasetLength);
+        if (isUsable && resolvedIndices.indexOf(rowIndex as number) === -1) {
             resolvedIndices.push(rowIndex as number);
         }
     });
