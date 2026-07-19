@@ -66,8 +66,10 @@ export const getResolvedRowIdentities = (
             return [rowIndex];
         }
     }
-    // Multiple values; all with identifiable row indices. Invalid entries are
-    // skipped; if none survive, fall through to field matching.
+    // All datum carry an identity field — including a single datum whose
+    // __row__ failed validation above, since presence (not validity) is what
+    // gets us here. Invalid entries are skipped; if none survive, fall
+    // through to field matching.
     if (allValuesHaveIdentityField(data)) {
         // logDebug(`${LOG_PREFIX} all datum have identity field`, { data });
         const rowNumbers = getRowNumbersFromData(data, dataset.values.length);

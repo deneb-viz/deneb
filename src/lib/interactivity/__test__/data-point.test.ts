@@ -45,6 +45,23 @@ describe('getResolvedRowIdentities', () => {
         // via `not.toContain` (NaN !== NaN), so pin the actual result instead.
         expect(result).toEqual([]);
     });
+    it('single datum with invalid __row__ resolves the right row via field matching', () => {
+        // Unlike the empty-fields fixture above (which matches all rows and
+        // exercises the clear path), a real field must match only its own row.
+        const fieldedDataset = {
+            fields: { category: {} },
+            values: [
+                { category: 'A', [ROW]: 0 },
+                { category: 'B', [ROW]: 1 },
+                { category: 'C', [ROW]: 2 }
+            ]
+        } as never;
+        const result = getResolvedRowIdentities(
+            [{ category: 'B', [ROW]: 99 }],
+            fieldedDataset
+        );
+        expect(result).toEqual([1]);
+    });
     it('multi-datum keeps only valid indices', () => {
         const result = getResolvedRowIdentities(
             [{ [ROW]: 0 }, { [ROW]: 99 }],
