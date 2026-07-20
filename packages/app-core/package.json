@@ -74,7 +74,6 @@
         "overlayscrollbars-react": "^0.5.6",
         "react-dropzone": "^14.2.3",
         "react-hotkeys-hook": "^5.2.0",
-        "react-vega": "7.6.0",
         "use-resize-observer": "^9.1.0",
         "zustand": "^4.5.5"
     },
