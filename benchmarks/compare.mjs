@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Benchmark comparison and baseline management script.
  *
