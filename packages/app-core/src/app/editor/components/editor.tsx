@@ -10,9 +10,12 @@ import 'allotment/dist/style.css';
 import { logRender } from '@deneb-viz/utils/logging';
 import { useDenebState } from '../../../state';
 import { getDenebTheme } from '../../../lib';
-import { EditorContent } from './editor-content';
+import { markEditorOpenStage } from '../../../lib/perf';
+import { ModalDialog } from './modal-dialog';
+import { EditorContentLoader } from './editor-content-loader';
+import { EditorErrorBoundary } from './editor-error-boundary';
 import { EditorSuspense } from './editor-suspense';
-import { SpecificationEditorProvider } from '../../../features/specification-editor';
+import { SpecificationEditorProvider } from '../../../context/specification-editor';
 
 const EDITOR_INTERFACE_ID = 'deneb-editor-interface';
 
@@ -68,6 +71,12 @@ export const Editor = () => {
         );
     }, [editorContentRef, theme]);
 
+    // Marker for the viewport-freeze investigation: this fires when the
+    // editor tree commits its first mount of the current open cycle.
+    useLayoutEffect(() => {
+        markEditorOpenStage('editor-mount');
+    }, []);
+
     logRender('Editor');
     return (
         <FluentProvider
@@ -76,11 +85,14 @@ export const Editor = () => {
             ref={editorContentRef}
             id={EDITOR_INTERFACE_ID}
         >
-            <Suspense fallback={<EditorSuspense />}>
-                <SpecificationEditorProvider>
-                    <EditorContent />
-                </SpecificationEditorProvider>
-            </Suspense>
+            <SpecificationEditorProvider>
+                <EditorErrorBoundary>
+                    <Suspense fallback={<EditorSuspense />}>
+                        <EditorContentLoader />
+                    </Suspense>
+                </EditorErrorBoundary>
+                <ModalDialog />
+            </SpecificationEditorProvider>
         </FluentProvider>
     );
 };

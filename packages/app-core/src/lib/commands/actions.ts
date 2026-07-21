@@ -6,8 +6,8 @@ import {
 import { getDenebState } from '../../state';
 import { type DebugPaneRole, type EditorPaneRole } from '../interface';
 import { type Command } from './types';
-import { type SpecificationEditorRefs } from '../../features/specification-editor';
-import { monaco } from '../../components/code-editor/monaco-integration';
+import { type SpecificationEditorRefs } from '../editor/specification-editor-refs';
+import type { monaco } from '../monaco/types';
 import { HOTKEY_BINDINGS } from './constants';
 import { getZoomToFitScale } from '../interface/layout';
 import {} from '../../../package.json';
@@ -102,6 +102,17 @@ export const handleDataTableRowsPerPageChange = (value: number) => {
 export const handleDebugPaneData = () => {
     executeCommand('debugPaneShowData', () => {
         setDebugPivotItem('data');
+    });
+};
+
+/**
+ * Switches the outer Debug Area pivot to the Source tab. Mirrors the
+ * `handleDebugPaneData` / `handleDebugPaneLog` / `handleDebugPaneSignal`
+ * action-creator style.
+ */
+export const handleDebugPaneSource = () => {
+    executeCommand('debugPaneShowSource', () => {
+        setDebugPivotItem('source');
     });
 };
 

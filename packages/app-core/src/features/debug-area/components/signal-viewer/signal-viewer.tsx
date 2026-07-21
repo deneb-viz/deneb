@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
-import { TableColumn } from 'react-data-table-component';
 
 import { logRender } from '@deneb-viz/utils/logging';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 import { DataTableViewer } from '../data-table/data-table';
+import { type DataTableViewerColumn } from '../data-table/data-table-viewer-types';
 import { NoDataMessage } from '../no-data-message';
 import { DataTableCell } from '../data-table/data-table-cell';
 import { SignalValue } from './signal-value';
@@ -19,8 +19,11 @@ type SignalViewerProps = {
  */
 type SignalTableDataRow = {
     key: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    value: any;
+    /**
+     * Always `null` at the row-data layer; the actual signal value is fetched
+     * lazily by the `SignalValue` cell component using the row's `key`.
+     */
+    value: null;
 };
 
 /**
@@ -35,21 +38,24 @@ export const SignalViewer = ({ renderId }: SignalViewerProps) => {
         values,
         renderId
     });
-    return values?.length ? (
-        <div className={classes.container}>
-            <div className={classes.wrapper}>
-                <div className={classes.details}>
-                    <DataTableViewer
-                        columns={columns}
-                        data={values}
-                        defaultSortFieldId={undefined}
-                    />
+    if (values?.length) {
+        return (
+            <div className={classes.container}>
+                <div className={classes.wrapper}>
+                    <div className={classes.details}>
+                        <DataTableViewer
+                            columns={columns}
+                            data={values}
+                            defaultSortFieldId={undefined}
+                        />
+                    </div>
                 </div>
             </div>
-        </div>
-    ) : (
-        <NoDataMessage />
-    );
+        );
+    }
+    const reason =
+        VegaViewServices.getView() === null ? 'view-unavailable' : 'no-signals';
+    return <NoDataMessage reason={reason} />;
 };
 
 /**
@@ -70,7 +76,7 @@ const getSignalTableValues = () => {
  */
 const getTableColumns = (
     renderId: string
-): TableColumn<SignalTableDataRow>[] => {
+): DataTableViewerColumn<SignalTableDataRow>[] => {
     const { translate } = getDenebState().i18n;
     return [
         {
@@ -78,23 +84,35 @@ const getTableColumns = (
             id: 'key',
             selector: (row) => row.key,
             sortable: true,
-            grow: 2,
+            // Fixed ideal widths in a ~2:5 ratio replace the previous
+            // `grow` weights (auto-fit is disabled grid-wide, so these are
+            // actual pixel sizes, user-resizable).
+            width: SIGNAL_KEY_COLUMN_WIDTH,
             cell: (row) => (
                 <DataTableCell
                     displayValue={row.key}
                     field={row.key}
                     rawValue={row.key}
+                    inspectable={false}
                 />
             )
         },
         {
             name: translate('Pivot_Signals_ValueColumn'),
             id: 'value',
-            grow: 5,
+            width: SIGNAL_VALUE_COLUMN_WIDTH,
             selector: (row) => row.key, // Use key for sorting since value is fetched dynamically
-            cell: (row) => (
-                <SignalValue signalName={row.key} renderId={renderId} />
+            cell: (row, rowIndex) => (
+                <SignalValue
+                    signalName={row.key}
+                    renderId={renderId}
+                    rowIndex={rowIndex}
+                />
             )
         }
     ];
 };
+
+/** Fixed pixel widths replacing the former `grow: 2` / `grow: 5` weights. */
+const SIGNAL_KEY_COLUMN_WIDTH = 200;
+const SIGNAL_VALUE_COLUMN_WIDTH = 500;

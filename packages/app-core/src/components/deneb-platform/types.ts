@@ -1,6 +1,15 @@
-import { type JSX } from 'react';
+import { type JSX, type ReactNode } from 'react';
 import { type Loader, type TooltipHandler, type View } from 'vega';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
+import { type SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
+
+import { type PlatformSearchContribution } from '../../lib/platform-search-contract';
+
+export type {
+    PlatformSearchContribution,
+    PlatformSearchRow,
+    LocalisableText
+} from '../../lib/platform-search-contract';
 
 /**
  * A function that binds platform-specific event listeners to a Vega view.
@@ -14,6 +23,11 @@ export type ViewEventBinder = (view: View) => void;
  */
 export type OnCreateProjectPayload = {
     metadata: UsermetaTemplate;
+    /**
+     * Support field configuration remapped from template placeholders to actual field names.
+     * Optional — when absent the project starts with an empty configuration (defaults apply).
+     */
+    supportFieldConfiguration?: SupportFieldConfiguration;
     spec: string;
     config: string;
 };
@@ -42,9 +56,23 @@ export type DenebPlatformProviderProps = {
      */
     onRenderingStarted?: () => void;
     /**
+     * A component to display below the settings pane accordion, e.g. for generic guidance or links.
+     */
+    settingsPaneFooter?: ReactNode;
+    /**
      * A component to display and manage platform-specific settings, that will be added to the Settings pane.
      */
-    settingsPanePlatformComponent?: JSX.Element;
+    settingsPanePlatformComponent?: JSX.Element[];
+    /**
+     * Optional opt-in contributions that let the platform participate
+     * in the settings-pane search filter. Supply one entry per injected
+     * AccordionItem in `settingsPanePlatformComponent`, with each
+     * contribution's `id` matching the React `key` of its corresponding
+     * element. Unregistered elements stay always-visible (legacy
+     * behaviour); registered elements are shortlisted by the match
+     * engine like any core section.
+     */
+    settingsPanePlatformSearchable?: PlatformSearchContribution[];
     /**
      * A platform-specific tooltip handler for Vega. If not provided, default Vega tooltips will be used.
      */
@@ -72,6 +100,16 @@ export type DenebPlatformProviderProps = {
      * How the action of launching a URL should be handled.
      */
     launchUrl?: (url: string) => void;
+    /**
+     * Callback to enable cross-highlighting from within the app-core UI (e.g., the Dataset
+     * settings MessageBar action). Platforms implement this to persist the setting change.
+     */
+    onEnableCrossHighlight?: () => void;
+    /**
+     * Callback to disable cross-highlighting from within the app-core UI (e.g., the Dataset
+     * settings MessageBar action when no highlight fields are selected).
+     */
+    onDisableCrossHighlight?: () => void;
     /**
      * Callback invoked when a project is created from a template.
      * Platforms can use this to persist project and interactivity settings, or perform other platform-specific

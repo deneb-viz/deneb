@@ -4,6 +4,12 @@ import { useDenebState } from '../../../state';
 import { DatasetSelect } from './dataset-viewer/dataset-select';
 import { StatusBarContainer } from '../../../components/ui';
 import { useDebugWrapperStyles } from './styles';
+import type { EmptyStateReason } from './empty-state-reason';
+import {
+    getMessageKey,
+    getMessageTokens,
+    shouldEmbedDatasetSelect
+} from './no-data-message-utils';
 
 const useNoDataMessageStyles = makeStyles({
     dataTableNoDataMessage: {
@@ -16,22 +22,30 @@ const useNoDataMessageStyles = makeStyles({
     }
 });
 
+export type NoDataMessageProps = {
+    reason: EmptyStateReason;
+};
+
 /**
- * Displays when no data is available in the data table.
+ * Displays when no data is available in the data table. Callers pass the
+ * `reason` explicitly so the rendered copy matches the actual cause. The
+ * `'dataset-unavailable'` copy substitutes the currently-selected dataset
+ * name into its `{0}` placeholder; tokens are resolved via
+ * `getMessageTokens` so the substitution contract is exercised in unit
+ * tests without rendering the component.
  */
-export const NoDataMessage = () => {
-    const { mode, translate } = useDenebState((state) => ({
-        mode: state.editorPreviewAreaSelectedPivot,
-        translate: state.i18n.translate
+export const NoDataMessage = ({ reason }: NoDataMessageProps) => {
+    const { translate, datasetName } = useDenebState((state) => ({
+        translate: state.i18n.translate,
+        datasetName: state.debug.datasetName
     }));
     const classes = useNoDataMessageStyles();
     const wrapperClasses = useDebugWrapperStyles();
     const message = translate(
-        mode === 'data'
-            ? 'Text_Debug_Data_No_Data'
-            : 'Text_Debug_Signal_No_Data'
+        getMessageKey(reason),
+        getMessageTokens(reason, datasetName)
     );
-    const options = mode === 'data' ? <DatasetSelect /> : null;
+    const options = shouldEmbedDatasetSelect(reason) ? <DatasetSelect /> : null;
     return (
         <div className={wrapperClasses.container}>
             <div className={wrapperClasses.wrapper}>

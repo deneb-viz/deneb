@@ -4,29 +4,31 @@ import { getResolvedRowIdentities, resolveDatumFromItem } from './data-point';
 import { InteractivityManager } from './interactivity-manager';
 
 import { resolveCoordinates } from './event';
-import { type InteractivityLookupDataset } from './types';
 import { getDenebVisualState } from '../../state';
 
 /**
- * If a context menu event is fired over the visual, attempt to retrieve any datum and associated identity, before
- * displaying the context menu.
+ * If a context menu event is fired over the visual, check whether the context
+ * menu is enabled. If disabled, silently consume the event. If enabled, attempt
+ * to retrieve any datum and associated identity before displaying the menu.
  *
- * Note that the context menu can only work with a single selector, so we will only return a selector if it resolves to
- * a single entry, otherwise drill through doesn't actually result in the correct data being displayed in the D/T page.
- * This is currently observed in Charticulator and it looks like the core visuals avoid this situation, so we'll try to
- * do the same for now.
+ * Note that the context menu can only work with a single selector, so we will
+ * only return a selector if it resolves to a single entry, otherwise drill
+ * through doesn't actually result in the correct data being displayed.
  */
-export const contextMenuHandler = (
-    dataset: InteractivityLookupDataset
-): EventListenerHandler => {
+export const contextMenuHandler = (): EventListenerHandler => {
     return (event, item) => {
         event.stopPropagation();
+        event.preventDefault();
+        if (!isContextMenuEnabled()) return;
         const coordinates = resolveCoordinates(event as MouseEvent);
         const data = resolveDatumFromItem(item);
-        const rowNumber = isContextMenuPropSet()
-            ? getResolvedRowIdentities(data, dataset)
+        // Read the current dataset lazily from the store at invocation time, so
+        // an incremental data update between embed and click doesn't leave this
+        // handler resolving row identities against a stale embed-time snapshot.
+        const { fields, values } = getDenebVisualState().dataset;
+        const rowNumber = isContextMenuSelectorEnabled()
+            ? getResolvedRowIdentities(data, { fields, values })
             : undefined;
-        event.preventDefault();
         InteractivityManager.showContextMenu(
             rowNumber?.length === 1 ? rowNumber[0] : undefined,
             {
@@ -38,9 +40,9 @@ export const contextMenuHandler = (
 };
 
 /**
- * Allows us to validate for all key pre-requisites before we can bind a context menu event to the visual.
+ * Check whether the context menu should be shown at all.
  */
-const isContextMenuPropSet = () => {
+const isContextMenuEnabled = () => {
     const {
         host: { allowInteractions },
         settings: {
@@ -52,4 +54,22 @@ const isContextMenuPropSet = () => {
         }
     } = getDenebVisualState();
     return (enableContextMenu && allowInteractions) || false;
+};
+
+/**
+ * Check whether data point resolution should be included in the context menu.
+ */
+const isContextMenuSelectorEnabled = () => {
+    const {
+        settings: {
+            vega: {
+                interactivity: {
+                    enableContextMenuSelector: {
+                        value: enableContextMenuSelector
+                    }
+                }
+            }
+        }
+    } = getDenebVisualState();
+    return enableContextMenuSelector || false;
 };

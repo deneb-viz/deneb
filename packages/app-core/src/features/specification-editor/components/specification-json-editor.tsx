@@ -1,57 +1,23 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce } from '@uidotdev/usehooks';
 import { makeStyles, useUncontrolledFocus } from '@fluentui/react-components';
-import Editor, { loader, OnChange, OnMount } from '@monaco-editor/react';
+import Editor, { OnChange, OnMount } from '@monaco-editor/react';
 
-import { ptToPx } from '@deneb-viz/utils/dom';
-import { toBoolean } from '@deneb-viz/utils/type-conversion';
-import { getProviderSchema } from '@deneb-viz/json-processing';
-import {
-    getProviderSchemaUrl,
-    type SpecProvider
-} from '@deneb-viz/vega-runtime/embed';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { handlePersistSpecification, type EditorPaneRole } from '../../../lib';
-import {
-    monaco,
-    setupMonacoWorker
-} from '../../../components/code-editor/monaco-integration';
+import { flushEditorOpenTimings, markEditorOpenStage } from '../../../lib/perf';
+import { monaco, buildEditorProps } from '../../../lib/monaco';
 import { getDenebState, useDenebState } from '../../../state';
-import { useSpecificationEditor } from '../hooks/use-specification-editor';
-import { SpecificationEditorStatusBar } from './specification-editor-status-bar';
-import { updateFieldTracking } from '../../../lib/field-processing';
+import { useSpecificationEditor } from '../../../context/specification-editor';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
-import { DatasetField } from '@deneb-viz/data-core/field';
-import { EDITOR_DEFAULTS } from '@deneb-viz/configuration';
-import { getFieldDocumentationByName } from '../../../lib/dataset';
-
-/**
- * Initialize Monaco editor on first mount. This is deferred from module load time to only run when the editor is
- * actually needed (Editor mode).
- */
-let monacoInitialized = false;
-const initializeMonaco = () => {
-    if (monacoInitialized) return;
-    monacoInitialized = true;
-    loader.init().then(() => {
-        logDebug('Monaco Editor initialized');
-        setMonacoCompletionProvider();
-        setMonacoDiagnosticsOptions();
-        setMonacoKeyBindingRules();
-    });
-};
+import { useCursorContext } from '../../../context';
+import {
+    updateSchemaPropertyMarkers,
+    registerSchemaPropertyCodeActionProvider
+} from '../../../lib/editor/schema-property-diagnostic';
 
 type JsonEditorProps = {
     thisEditorRole: EditorPaneRole;
-};
-
-/**
- * Handles everything we need to manage for the status bar.
- */
-type JsonEditorStatusState = {
-    cursor: monaco.Position;
-    role: EditorPaneRole;
-    selectedText: string;
 };
 
 const useSpecificationJsonEditorStyles = makeStyles({
@@ -78,6 +44,7 @@ export const SpecificationJsonEditor = ({
         applyMode,
         current,
         debouncePeriod,
+        focusTick,
         fontSize,
         provider,
         showLineNumbers,
@@ -91,8 +58,9 @@ export const SpecificationJsonEditor = ({
         applyMode: state.editor.applyMode,
         current: state.editorSelectedOperation,
         debouncePeriod: state.editorPreferences.jsonEditorDebouncePeriod,
+        focusTick: state.editorFocusTick,
         fontSize: state.editorPreferences.jsonEditorFontSize,
-        provider: state.project.provider as SpecProvider,
+        provider: state.project.provider,
         showLineNumbers: state.editorPreferences.jsonEditorShowLineNumbers,
         theme: state.editorPreferences.theme,
         viewStateConfig: state.editor.viewStateConfig,
@@ -102,17 +70,12 @@ export const SpecificationJsonEditor = ({
         updateChanges: state.editor.updateChanges
     }));
     const { launchUrl } = useDenebPlatformProvider();
-    // Override default Monaco worker lookup to use bundled worker
-    useEffect(() => {
-        setupMonacoWorker();
-    }, []);
-    // Initialize Monaco editor on first mount (deferred from module load)
-    useEffect(() => {
-        initializeMonaco();
-    }, []);
     const attr = useUncontrolledFocus();
     const classes = useSpecificationJsonEditorStyles();
-    const isActiveEditor = useMemo(() => current === thisEditorRole, [current]);
+    const isActiveEditor = useMemo(
+        () => current === thisEditorRole,
+        [current, thisEditorRole]
+    );
     const display = useMemo(
         () => (isActiveEditor ? 'flex' : 'none'),
         [isActiveEditor]
@@ -124,23 +87,56 @@ export const SpecificationJsonEditor = ({
     const [editorText, setEditorText] = useState(ref?.current?.getValue());
     const debouncedEditorText = useDebounce(editorText, debouncePeriod);
     const isFirstDebounce = useRef(true);
-    const [status, setStatus] = useState<JsonEditorStatusState>({
-        cursor: {
-            lineNumber: viewState?.cursorState?.[0]?.position?.lineNumber ?? 1,
-            column: viewState?.cursorState?.[0]?.position?.column ?? 1
-        } as monaco.Position,
-        role: thisEditorRole,
-        selectedText: ''
-    });
-    const handleFocus = () => isActiveEditor && ref?.current?.focus();
+    const { setCursor } = useCursorContext();
+    // `pendingFocusRequestRef` is set when a focus request arrives
+    // before Monaco has mounted (no `ref.current` yet). `handleOnMount`
+    // consumes it once the editor is ready, so a focus tick fired
+    // during the gate-pending window — common on the first cold-open
+    // because gate release dispatches `requestEditorFocus` while
+    // Monaco is still bootstrapping — is not silently dropped.
+    const pendingFocusRequestRef = useRef(false);
+    const handleFocus = useCallback(() => {
+        if (!isActiveEditor) return;
+        if (ref?.current) {
+            ref.current.focus();
+            pendingFocusRequestRef.current = false;
+        } else {
+            pendingFocusRequestRef.current = true;
+        }
+    }, [isActiveEditor, ref]);
+    // Stable bound click handler for the hyperlink override. The
+    // previous implementation called `onLinkClick(launchUrl)` to
+    // build a fresh handler for both `removeEventListener` and
+    // `addEventListener` on every effect run, which meant the
+    // remove never matched (different function reference each call)
+    // and a new listener was attached on every focus-tick / provider
+    // change. With editor-tree retention the Monaco DOM node lives
+    // for the visual lifetime, so listeners accumulated indefinitely.
+    // Memoising on `launchUrl` produces a single stable reference
+    // that `addHyperlinkOverride` can correctly remove and re-add.
+    const linkClickHandler = useMemo(() => onLinkClick(launchUrl), [launchUrl]);
     // Ensure that we update key dependencies/events if we change the editor.
+    // The `focusTick` dep lets `RetainedDenebEditor` request a re-focus
+    // when the editor becomes visible after a viewer↔editor toggle —
+    // mount-time auto-focus only fires once, and retention skips that
+    // path on subsequent opens. `handleFocus` and `linkClickHandler`
+    // are stabilised via `useCallback` / `useMemo` above so listing
+    // them here does not cause spurious re-runs — exhaustive-deps
+    // wants them in scope for refactor safety.
     useEffect(() => {
         handleFocus();
-        addHyperlinkOverride(ref.current, launchUrl);
-    }, [provider, current]);
+        addHyperlinkOverride(ref.current, linkClickHandler);
+    }, [provider, current, focusTick, ref, linkClickHandler, handleFocus]);
     // Bootstrap the editor
     const handleOnMount: OnMount = (editor) => {
         ref.current = editor;
+        // Register $schema quick fix provider (idempotent — guarded by module-level flag)
+        registerSchemaPropertyCodeActionProvider();
+        // Check for $schema on initial load
+        const model = editor.getModel();
+        if (model) {
+            updateSchemaPropertyMarkers(model);
+        }
         if (viewState) {
             editor.restoreViewState(viewState);
         }
@@ -148,27 +144,40 @@ export const SpecificationJsonEditor = ({
         editor.onDidChangeHiddenAreas(() => {
             setViewState(ref.current?.saveViewState());
         });
-        // Tracking of cursor position for status bar
+        // Tracking of cursor position for status bar (via context)
         editor.onDidChangeCursorPosition(
             (e: monaco.editor.ICursorPositionChangedEvent) => {
                 const range = editor.getSelection();
-                setStatus({
-                    ...status,
-                    cursor: e.position,
-                    selectedText:
-                        (range && editor.getModel()?.getValueInRange(range)) ||
-                        ''
+                const selectedText =
+                    (range && editor.getModel()?.getValueInRange(range)) || '';
+                setCursor({
+                    lineNumber: e.position.lineNumber,
+                    column: e.position.column,
+                    selectedText
                 });
             }
         );
         // Process context menu
         editor.onContextMenu(() => removeContextMenuItems(editor));
-        addHyperlinkOverride(editor, launchUrl);
+        addHyperlinkOverride(editor, linkClickHandler);
         handleFocus();
+        // Marker for the viewport-freeze investigation: the Spec editor is
+        // the default visible surface, so its mount marks the user-visible
+        // "editor is interactive" moment. The Config editor mounts in
+        // parallel and is intentionally not measured here.
+        if (thisEditorRole === 'Spec') {
+            markEditorOpenStage('monaco-ready');
+            flushEditorOpenTimings();
+        }
     };
     // Handle change events within editor
     const handleOnChange = useCallback<OnChange>((value) => {
         setEditorText(() => value);
+        // Refresh $schema markers on every content change
+        const model = ref.current?.getModel();
+        if (model) {
+            updateSchemaPropertyMarkers(model);
+        }
     }, []);
 
     useEffect(() => {
@@ -184,8 +193,6 @@ export const SpecificationJsonEditor = ({
             text: debouncedEditorText,
             viewState: ref.current?.saveViewState()
         });
-        // Tracking is now only used for export (#486)
-        // updateTracking(debouncedEditorText, thisEditorRole);
         if (applyMode === 'Auto') {
             logDebug('Auto-apply changes');
             handlePersistSpecification(spec.current, config.current);
@@ -203,45 +210,42 @@ export const SpecificationJsonEditor = ({
         <div style={{ display }} className={classes.container} {...attr}>
             <div className={classes.editor}>
                 <Editor
+                    {...buildEditorProps({
+                        theme,
+                        fontSize,
+                        wordWrap,
+                        showLineNumbers,
+                        quickSuggestions: true,
+                        fixedOverflowWidgets: true
+                    })}
+                    key={`${thisEditorRole}-${provider}`}
                     onMount={handleOnMount}
                     onChange={handleOnChange}
-                    width='100%'
-                    defaultLanguage='json'
                     path={`deneb://${thisEditorRole}-${provider}.json`}
-                    theme={theme === 'dark' ? 'vs-dark' : 'light'}
                     defaultValue={getDefaultValue(thisEditorRole)}
-                    options={{
-                        cursorBlinking: 'smooth',
-                        fixedOverflowWidgets: true,
-                        folding: true,
-                        fontSize: ptToPx(fontSize),
-                        lineNumbers: showLineNumbers ? 'on' : 'off',
-                        lineNumbersMinChars: 2,
-                        minimap: { enabled: false },
-                        quickSuggestions: true,
-                        scrollBeyondLastLine: false,
-                        tabSize: EDITOR_DEFAULTS.tabSize,
-                        wordWrap: wordWrap ? 'on' : 'off'
-                    }}
                 />
             </div>
-            <SpecificationEditorStatusBar
-                position={status.cursor}
-                selectedText={status.selectedText}
-            />
         </div>
     );
 };
 
 /**
  * Intercept click events on markdown tooltips and delegate to the host.
+ *
+ * The handler must be a STABLE reference across calls — the previous
+ * implementation built a fresh closure for both `removeEventListener`
+ * and `addEventListener`, so the remove never matched and a new
+ * listener was registered every call. Browsers dedupe identical
+ * `(target, type, listener, capture)` tuples, so re-passing the same
+ * reference is a no-op even if `addEventListener` runs more than once
+ * for the same node.
  */
 const addHyperlinkOverride = (
     editor: monaco.editor.IStandaloneCodeEditor | null,
-    launchUrl: (url: string) => void
+    handler: (e: MouseEvent) => void
 ) => {
-    editor?.getDomNode()?.removeEventListener('click', onLinkClick(launchUrl));
-    editor?.getDomNode()?.addEventListener('click', onLinkClick(launchUrl));
+    editor?.getDomNode()?.removeEventListener('click', handler);
+    editor?.getDomNode()?.addEventListener('click', handler);
 };
 
 /**
@@ -281,153 +285,37 @@ const onLinkClick = (launchUrl: (url: string) => void) => (e: MouseEvent) => {
  * @privateRemarks
  * As Monaco doesn't have an API for this, it's a bit of a hack.
  * This has been taken from https://github.com/microsoft/monaco-editor/issues/1567
+ *
+ * `_getMenuActions` is a private method on the contextmenu
+ * contribution (the underscore prefix is Monaco's internal-API
+ * convention) and is therefore not exposed in `IEditorContribution`.
+ * The local `MonacoContextMenuContribution` type narrows the
+ * unknown return of `getContribution` to the shape we monkey-patch
+ * — keeping the unsafe boundary localised rather than threading
+ * `any` through the implementation. The shape is unstable across
+ * Monaco major versions; if a future upgrade renames or removes
+ * the method, the runtime will throw and the type assertion will
+ * need to be revisited.
  */
+type MonacoMenuAction = { readonly id: string };
+type MonacoGetMenuActions = (...args: unknown[]) => MonacoMenuAction[];
+type MonacoContextMenuContribution = monaco.editor.IEditorContribution & {
+    _getMenuActions: MonacoGetMenuActions;
+};
 const removeContextMenuItems = (
     editor: monaco.editor.IStandaloneCodeEditor
 ) => {
-    const contextmenu = editor.getContribution('editor.contrib.contextmenu');
+    const contextmenu = editor.getContribution<MonacoContextMenuContribution>(
+        'editor.contrib.contextmenu'
+    );
+    if (!contextmenu) return;
     const removableIds = [
         'editor.action.clipboardCutAction',
         'editor.action.clipboardPasteAction'
     ];
-    const realMethod = (contextmenu as any)._getMenuActions;
-    (contextmenu as any)._getMenuActions = (...args: any[]) => {
+    const realMethod = contextmenu._getMenuActions;
+    contextmenu._getMenuActions = (...args) => {
         const items = realMethod.apply(contextmenu, args);
-        return items.filter((item: any) => {
-            return !removableIds.includes(item.id);
-        });
+        return items.filter((item) => !removableIds.includes(item.id));
     };
-};
-
-/**
- * Set up the completion item provider for the Monaco editor. This will return fields from the dataset as snippets
- * in the completion list, in addition to the Vega completers. This returns the disposable completion provider, so that
- * it can be cleaned up when the component is unmounted.
- * @privateRemarks
- * If we want to call this more than once per editor setup, it will need to be disposed of, otherwise we'll end up
- * with multiple entries for each list.
- */
-const setMonacoCompletionProvider = () => {
-    return monaco.languages.registerCompletionItemProvider('json', {
-        provideCompletionItems: async (model, position) => {
-            const { editorSelectedOperation } = getDenebState();
-            if (editorSelectedOperation !== 'Spec') {
-                return null;
-            }
-            const word = model.getWordUntilPosition(position);
-            const range = {
-                startLineNumber: position.lineNumber,
-                endLineNumber: position.lineNumber,
-                startColumn: word.startColumn,
-                endColumn: word.endColumn
-            };
-            const fields: monaco.languages.CompletionItem[] = [];
-            Object.entries(getDenebState().dataset.fields).forEach(
-                ([key, field]) => {
-                    fields.push({
-                        label: key,
-                        insertText: key,
-                        documentation: getSnippetFieldMetadata(field),
-                        kind: monaco.languages.CompletionItemKind.Field,
-                        range,
-                        sortText: `zzzzz__${key}`
-                    });
-                }
-            );
-            return {
-                suggestions: fields
-            };
-        }
-    });
-};
-
-/**
- * Set up the diagnostics options for the Monaco editor. This will allow us to provide schema-based validation for the
- * JSON editor.
- */
-const setMonacoDiagnosticsOptions = () => {
-    const enableSchemaRequest =
-        toBoolean(process.env.ALLOW_EXTERNAL_URI) ?? false;
-    monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
-        allowComments: true,
-        enableSchemaRequest,
-        schemas: [
-            {
-                schema: getProviderSchema({ provider: 'vegaLite' }),
-                uri: getProviderSchemaUrl('vegaLite'),
-                fileMatch: [
-                    monaco.Uri.parse('deneb://Spec-vegaLite.json').toString()
-                ]
-            },
-            {
-                schema: getProviderSchema({ provider: 'vega' }),
-                uri: getProviderSchemaUrl('vega'),
-                fileMatch: [
-                    monaco.Uri.parse('deneb://Spec-vega.json').toString()
-                ]
-            }
-        ]
-    });
-};
-
-/**
- * Override the default key bindings for the Monaco editor that will clash with the Deneb hotkeys.
- */
-const setMonacoKeyBindingRules = () => {
-    monaco.editor.addKeybindingRules([
-        {
-            keybinding:
-                monaco.KeyMod.CtrlCmd |
-                monaco.KeyMod.Shift |
-                monaco.KeyCode.Enter,
-            command: null
-        },
-        {
-            keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
-            command: null
-        },
-        {
-            keybinding:
-                monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyR,
-            command: 'editor.action.formatDocument'
-        },
-        {
-            keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.F1,
-            command: 'editor.action.quickCommand'
-        }
-    ]);
-};
-
-/**
- * For any data-based completers in the editor, provide a qualifier denoting whether it's a column, measure or
- * something else.
- */
-const getSnippetFieldMetadata = (field: DatasetField) => {
-    return getFieldDocumentationByName(field.name);
-};
-
-/**
- * Do the necessary tests and then call the tracking /tokenization workers, if needed.
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const updateTracking = async (spec: string, editorRole: EditorPaneRole) => {
-    logDebug(
-        '[Spec Editor] Checking to see if tracking and tokenization is needed...'
-    );
-    const {
-        fieldUsage: { dataset: trackedFieldsCurrent, editorShouldSkipRemap },
-        project: { spec: currentSpec }
-    } = getDenebState();
-    if (
-        editorRole === 'Config' ||
-        (editorRole === 'Spec' &&
-            (spec === currentSpec || editorShouldSkipRemap))
-    ) {
-        logDebug(
-            "[Spec Editor] Spec hasn't changed, skipping tracking and tokens..."
-        );
-        return;
-    }
-    logDebug('[Spec Editor] Updating tracking and tokens...');
-    updateFieldTracking(spec, trackedFieldsCurrent);
 };

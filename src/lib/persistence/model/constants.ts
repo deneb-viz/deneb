@@ -37,7 +37,24 @@ export const DEFAULTS = {
         /**
          * Persisted width of visual viewport in view mode (should preserve width on re-init)
          */
-        viewportWidth: null
+        viewportWidth: null,
+        /**
+         * Persisted support field configuration as a JSON string.
+         */
+        supportFieldConfiguration: '',
+        /**
+         * Persisted deneb metadata version for legacy detection.
+         */
+        denebMetaVersion: '',
+        /**
+         * Persisted scale-to-zoom setting (canvas DPI compensation).
+         */
+        scaleToZoom: false,
+        /**
+         * Whether to consolidate field parameter component fields into
+         * parameter-named array columns (true) or pass through individually (false).
+         */
+        consolidateFieldParameters: true
     },
     unitSymbols: {
         milliseconds: 'ms',

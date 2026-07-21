@@ -1,0 +1,542 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useDebounce } from '@uidotdev/usehooks';
+import { type View } from 'vega';
+
+import { getHashValue, getNewUuid } from '@deneb-viz/utils/crypto';
+import {
+    logDebug,
+    logRender,
+    logTimeEnd,
+    logTimeStart
+} from '@deneb-viz/utils/logging';
+import { getPrunedObject } from '@deneb-viz/utils/object';
+import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
+import { type VegaDatum } from '@deneb-viz/data-core/value';
+
+import { type DatasetRaw, type DatasetState } from './types';
+import {
+    datasetViewerWorker,
+    type IWorkerDatasetViewerMessage
+} from '../../workers';
+import {
+    DATA_TABLE_VALUE_MAX_DEPTH,
+    DATA_TABLE_VALUE_MAX_LENGTH
+} from '../../constants';
+import { useDenebState } from '../../../../state';
+import { NoDataMessage } from '../no-data-message';
+import { DataTableViewer } from '../data-table/data-table';
+import { ProcessingDataMessage } from '../data-table/processing-data-message';
+import { useDebugWrapperStyles } from '../styles';
+import {
+    buildDatasetViewerColumns,
+    getDatasetViewerCharWidth,
+    getDatasetViewerWorkerTranslations
+} from './dataset-viewer-worker-helpers';
+import {
+    resolveDataTabReason,
+    resolveDataTabRenderState
+} from './data-tab-utils';
+import { getAvailableDatasetNames } from './dataset-discovery';
+import { LOADING_INDICATOR_DEBOUNCE_MS } from './loading-debounce-constants';
+import { getSharedDataTableViewerProps } from './data-table-viewer-props';
+
+type DataTabProps = {
+    datasetName: string;
+    renderId: string;
+};
+
+const DATA_LISTENER_DEBOUNCE_INTERVAL = 100;
+
+/**
+ * Renders the Data outer pivot of the Debug Area.
+ *
+ * Reads rows from `VegaViewServices.getDataByName(datasetName)` — the
+ * post-transform, Vega-view-scoped dataset. When the view is unavailable or
+ * the named dataset can't be resolved, renders `NoDataMessage` with an
+ * explicit reason instead of silently substituting a source-level fallback
+ * (the old `getDatasetValues` behaviour, removed in Unit 6).
+ *
+ * The listener rebinds on `datasetName` or `renderId` change. `renderId`
+ * is bumped by `vega-embed.tsx#handleEmbed` AFTER `vegaEmbed()` resolves
+ * and the new `View` instance is attached — i.e. the bump tracks actual
+ * view replacement, not compile events. (Pre-P3, the bump fired at
+ * compile time, which was both racy — DataTab effect ran before the view
+ * existed — and noisy: every debounced keystroke compile cycled the
+ * listener even when the same view was reused.)
+ *
+ * Per-tab sort and page state live under `state.debug.dataPivotSort.data` /
+ * `state.debug.dataPivotPage.data`, so the Source tab's sort/page are
+ * preserved when the user toggles the outer pivot.
+ */
+export const DataTab = ({ datasetName, renderId }: DataTabProps) => {
+    const { sortEntry, page, setDataTabSort, setDataTabPage, logError } =
+        useDenebState((state) => ({
+            sortEntry: state.debug.dataPivotSort.data,
+            page: state.debug.dataPivotPage.data,
+            setDataTabSort: state.debug.setDataTabSort,
+            setDataTabPage: state.debug.setDataTabPage,
+            logError: state.compilation.logError
+        }));
+
+    const [datasetRaw, setDatasetRaw] = useState<DatasetRaw>({
+        hashValue: null,
+        values: []
+    });
+    const [datasetRawPending, setDatasetRawPending] = useState<DatasetRaw>({
+        hashValue: null,
+        values: []
+    });
+    const debouncedDatasetRaw = useDebounce(
+        datasetRawPending,
+        DATA_LISTENER_DEBOUNCE_INTERVAL
+    );
+    const [datasetState, setDatasetState] = useState<DatasetState>({
+        columns: null,
+        jobQueue: [],
+        processing: true,
+        values: null
+    });
+    const datasetWorker = useMemo(() => datasetViewerWorker, []);
+
+    // Resolve the current empty-state reason from the view + addressable
+    // dataset count + name + values. `getDataByName` swallows internal errors
+    // and returns `undefined` for both "not registered" and "transform
+    // failure", so the call site cannot distinguish those two — they collapse
+    // into `'dataset-unavailable'`. The `'no-datasets'` branch fires when the
+    // view compiled but exposes no addressable named datasets (e.g. an empty
+    // Vega-Lite `layer: []` whose only data source was stripped).
+    //
+    // `availableDatasets` is memoised on `[renderId, viewAvailable]` to
+    // mirror the pattern in `dataset-select.tsx` — `getAvailableDatasetNames`
+    // calls `VegaViewServices.getAllData()` (a `view.getState()` round-trip),
+    // and the same query also runs inside `DatasetSelect` and
+    // `DatasetSelectInitializer`. Without the memo, this is the third
+    // `getState` per Data-tab render.
+    const viewAvailable = VegaViewServices.getView() !== null;
+    const availableDatasets = useMemo(
+        () => (viewAvailable ? getAvailableDatasetNames() : []),
+        [renderId, viewAvailable]
+    );
+    const availableDatasetCount = availableDatasets.length;
+    const currentValues =
+        viewAvailable && datasetName !== ''
+            ? VegaViewServices.getDataByName(datasetName)
+            : undefined;
+    const reason = resolveDataTabReason(
+        viewAvailable,
+        availableDatasetCount,
+        datasetName,
+        currentValues
+    );
+
+    /**
+     * When our dataset changes, we need to send it to our web worker for processing.
+     */
+    useEffect(() => {
+        logDebug('DataTab: updating dataset state...');
+        if (window.Worker && datasetRaw) {
+            const jobId = getNewUuid();
+            setDatasetState((datasetState) => ({
+                ...datasetState,
+                jobQueue: [...datasetState.jobQueue, jobId],
+                processing: true
+            }));
+            logDebug('DataTab: using worker...', {
+                datasetState
+            });
+            /**
+             * We have to fix/prune a dataset prior to sending to the worker, as postMessage gets upset about cyclics
+             * and methods.
+             */
+            const message: IWorkerDatasetViewerMessage = {
+                canvasFontCharWidth: getDatasetViewerCharWidth(),
+                dataset: datasetRaw.values,
+                jobId,
+                translations: getDatasetViewerWorkerTranslations(),
+                valueMaxLength: DATA_TABLE_VALUE_MAX_LENGTH
+            };
+            datasetWorker.postMessage(message);
+            logDebug('DataTab: worker message sent');
+        }
+    }, [datasetRaw.hashValue]);
+
+    /**
+     * When we get a response from our worker, we need to update our state with the processed data table output.
+     *
+     * The dataset worker is a module-level singleton shared with `SourceTab`,
+     * so we attach via `addEventListener` rather than the property-assignment
+     * `onmessage = ...` (which would let the second-mounted tab silently
+     * clobber the first's handler). To stay safe under concurrent mounts
+     * (Strict Mode double-invoke, Source <-> Data toggling with a job in
+     * flight), the handler ignores responses whose `jobId` it does not own —
+     * `jobQueue` membership is the per-tab ownership filter.
+     *
+     * State reads inside the handler use the functional-updater form
+     * (`setDatasetState((prev) => ...)`) so we always observe the latest
+     * `jobQueue` rather than the closure value captured at mount.
+     */
+    useEffect(() => {
+        if (!window.Worker) return;
+        const handler = (e: MessageEvent) => {
+            const { jobId, values, maxWidths } = e.data;
+            setDatasetState((prev) => {
+                // Drop responses that belong to another tab's worker round-trip.
+                if (!prev.jobQueue.includes(jobId)) {
+                    return prev;
+                }
+                const newJobQueue = prev.jobQueue.filter((id) => id !== jobId);
+                const complete = newJobQueue.length === 0;
+                logDebug('DataTab: worker response received', {
+                    jobId,
+                    prevQueue: prev.jobQueue,
+                    nextQueue: newJobQueue,
+                    complete
+                });
+                return {
+                    columns: buildDatasetViewerColumns(values, maxWidths),
+                    jobQueue: newJobQueue,
+                    processing: !complete,
+                    values
+                };
+            });
+        };
+        datasetWorker.addEventListener('message', handler);
+        return () => {
+            datasetWorker.removeEventListener('message', handler);
+        };
+    }, [datasetWorker]);
+
+    /**
+     * Attempt to add specified data listener to the supplied Vega view.
+     *
+     * Callers pass the View explicitly so add/remove always target the same
+     * instance — `VegaViewServices.getView()` is a live singleton and may
+     * return a replacement view by the time this runs (renderId-driven view
+     * swap on spec recompile). The default falls back to the singleton for
+     * any non-effect caller.
+     */
+    const addListener = (view: View | null = VegaViewServices.getView()) => {
+        try {
+            logDebug(
+                `DataTab: attempting to add listener for dataset [${datasetName}]...`
+            );
+            view?.addDataListener(datasetName, dataListener);
+            logDebug(`DataTab: listener for dataset [${datasetName}] added.`);
+        } catch {
+            logDebug(
+                `DataTab: listener for dataset [${datasetName}] could not be added.`
+            );
+        }
+    };
+
+    /**
+     * Attempt to remove specified data listener from the supplied Vega view.
+     * See `addListener` for the rationale on the explicit `view` parameter.
+     */
+    const removeListener = (view: View | null = VegaViewServices.getView()) => {
+        try {
+            logDebug(
+                `DataTab: attempting to remove listener for dataset [${datasetName}]...`
+            );
+            view?.removeDataListener(datasetName, dataListener);
+            logDebug(`DataTab: listener for dataset [${datasetName}] removed.`);
+        } catch {
+            logDebug(
+                `DataTab: listener for dataset [${datasetName}] could not be removed.`
+            );
+        }
+    };
+
+    /**
+     * Attempt to cycle (add/remove) listeners for the specified dataset on
+     * the supplied view.
+     */
+    const cycleListeners = (view: View | null = VegaViewServices.getView()) => {
+        logDebug(`DataTab: cycling listeners for dataset: [${datasetName}]...`);
+        removeListener(view);
+        addListener(view);
+    };
+
+    /**
+     * Sync debounced value to actual state.
+     */
+    useEffect(() => {
+        if (debouncedDatasetRaw.hashValue !== datasetRaw.hashValue) {
+            setDatasetRaw(debouncedDatasetRaw);
+        }
+    }, [debouncedDatasetRaw]);
+
+    /**
+     * Track hash to avoid unnecessary updates.
+     */
+    const lastListenerHashRef = useRef<string | null>(null);
+
+    /**
+     * Pending deferred verification of an empty listener payload (see
+     * `dataListener`). Held so a superseding non-empty event, a listener
+     * cycle, or unmount can cancel it.
+     */
+    const emptyVerifyTimerRef = useRef<number | null>(null);
+
+    const cancelPendingEmptyVerify = useCallback(() => {
+        if (emptyVerifyTimerRef.current !== null) {
+            window.clearTimeout(emptyVerifyTimerRef.current);
+            emptyVerifyTimerRef.current = null;
+        }
+    }, []);
+
+    /**
+     * Handler for dataset listener events. Vega exposes the `value` parameter
+     * as `object` in its public typings, so we follow suit rather than `any`.
+     */
+    const dataListener = useCallback((name: string, value: object) => {
+        const newDataset = getPrunedObject(value);
+        const hashValue = getDataHash(newDataset);
+
+        // Skip update if hash hasn't changed - prevents looping on derived datasets
+        if (hashValue === lastListenerHashRef.current) {
+            logDebug(
+                `DataTab: dataset ${name} listener fired but hash unchanged, skipping`
+            );
+            return;
+        }
+
+        // An empty payload while we hold data is ambiguous: it can be a
+        // transient artifact of an in-flight incremental update, OR a
+        // legitimate clear (e.g. a param-driven dataset emptying on
+        // hover-out). Defer one tick and re-read the view: still empty
+        // means a real clear and the table empties; repopulated means it
+        // was transient and the non-empty listener event supersedes this.
+        if (
+            Array.isArray(newDataset) &&
+            newDataset.length === 0 &&
+            lastListenerHashRef.current !== null
+        ) {
+            logDebug(
+                `DataTab: dataset ${name} listener received empty array while we have existing data; deferring verification (incremental update vs. genuine clear)`
+            );
+            cancelPendingEmptyVerify();
+            emptyVerifyTimerRef.current = window.setTimeout(() => {
+                emptyVerifyTimerRef.current = null;
+                const latest = getPrunedObject(
+                    (VegaViewServices.getDataByName(name) as object) ?? []
+                );
+                if (Array.isArray(latest) && latest.length === 0) {
+                    const emptyHash = getDataHash(latest);
+                    logDebug(
+                        `DataTab: dataset ${name} verified empty — applying clear`
+                    );
+                    lastListenerHashRef.current = emptyHash;
+                    setDatasetRawPending(() => ({
+                        hashValue: emptyHash,
+                        values: latest
+                    }));
+                } else {
+                    logDebug(
+                        `DataTab: dataset ${name} repopulated — transient empty ignored`
+                    );
+                }
+            }, 0);
+            return;
+        }
+
+        // A non-empty event supersedes any pending empty verification.
+        cancelPendingEmptyVerify();
+
+        logDebug(`DataTab: dataset ${name} has changed`, {
+            previousHash: lastListenerHashRef.current,
+            newHash: hashValue
+        });
+
+        lastListenerHashRef.current = hashValue;
+        setDatasetRawPending(() => ({
+            hashValue,
+            values: newDataset
+        }));
+    }, []);
+
+    /**
+     * Ensure that listener is added/removed when the data might change or we re-render (new view).
+     *
+     * Dep array is `[datasetName, renderId]`. `renderId` is bumped from
+     * `vega-embed.tsx#handleEmbed` post-embed, so this effect runs only
+     * when an actual fresh `View` instance has been attached — the
+     * load-bearing "rebind on view replacement" invariant.
+     *
+     * `viewAtEntry` is captured here and threaded through `cycleListeners`
+     * (entry) and `removeListener` (cleanup) so add/remove always target
+     * the SAME View instance. Without the capture, cleanup would call
+     * `VegaViewServices.getView()` and operate on the post-replacement
+     * singleton, leaving the listener attached to the old (now garbage-
+     * collectable) View — and the cleanup itself would attempt to remove
+     * a listener that the new view never had.
+     */
+    useEffect(() => {
+        // Reset the listener hash ref when dataset or view changes to ensure first listener event is processed
+        lastListenerHashRef.current = null;
+        const viewAtEntry = VegaViewServices.getView();
+
+        try {
+            logDebug(
+                `DataTab: getting latest dataset from view (${datasetName})...`
+            );
+            // Direct read from the view — no fallback to the store's
+            // dataset. If the view isn't ready or the name doesn't resolve,
+            // `reason` (computed above) already captures that and the
+            // render branch shows `NoDataMessage`; we still try to prime
+            // the worker state so the table is populated immediately when
+            // the view catches up.
+            const datasetView = viewAvailable
+                ? VegaViewServices.getDataByName(datasetName)
+                : undefined;
+            logDebug(
+                `DataTab: dataset from view (${datasetName})`,
+                datasetView
+            );
+            // `getPrunedObject` requires an object; when the view or name
+            // isn't resolvable we fall through to an empty array so the
+            // hash pipeline stays consistent. The actual rendering branch
+            // is handled above via `reason`.
+            const datasetForHash = getPrunedObject(datasetView ?? [], {
+                maxDepth: DATA_TABLE_VALUE_MAX_DEPTH
+            });
+            logDebug(`DataTab: latest dataset retrieved (${datasetName})`, {
+                latest: datasetForHash
+            });
+            logDebug(
+                `DataTab: calculating latest dataset hash (${datasetName})...`
+            );
+            const latestHash = getDataHash(datasetForHash);
+            logDebug(
+                `DataTab: latest dataset hash calculated (${datasetName})`,
+                {
+                    latestHash
+                }
+            );
+            const latestDatasetRaw: DatasetRaw = {
+                values: datasetForHash,
+                hashValue: latestHash
+            };
+            logDebug('DataTab: checking for dataset change...', {
+                datasetName,
+                datasetRaw,
+                latestDatasetRaw
+            });
+            if (latestHash !== datasetRaw?.hashValue) {
+                logDebug(
+                    `DataTab: change necessitates dataset update. Updating...`,
+                    {
+                        datasetName,
+                        renderId
+                    }
+                );
+                setDatasetRaw(() => latestDatasetRaw);
+            } else {
+                logDebug(
+                    `DataTab: no change detected. Skipping dataset update.`
+                );
+            }
+            // Always cycle listeners when this effect runs (renderId change means new view)
+            cycleListeners(viewAtEntry);
+        } catch (e) {
+            logDebug(`DataTab: error getting latest dataset from view.`, {
+                e
+            });
+            logError(
+                `Failed to load dataset [${datasetName}] from view. Error details: ${(e as Error).message}`
+            );
+        }
+        return () => {
+            removeListener(viewAtEntry);
+            // A pending empty-verify belongs to the outgoing view/dataset;
+            // never let it fire against the successor.
+            cancelPendingEmptyVerify();
+        };
+    }, [datasetName, renderId]);
+
+    /**
+     * Keep sort persisted across renders via the debug slice's per-tab
+     * sort record (`state.debug.dataPivotSort.data`). The Source tab's
+     * sort is untouched.
+     */
+    const handleSort = (colId: string, asc: boolean) => {
+        logDebug('DataTab: setting sort columns...', { colId, asc });
+        if (!colId) {
+            setDataTabSort(null);
+            return;
+        }
+        setDataTabSort({ colId, asc });
+    };
+
+    const handleChangePage = useCallback(
+        (nextPage: number) => {
+            setDataTabPage(nextPage);
+        },
+        [setDataTabPage]
+    );
+
+    const classes = useDebugWrapperStyles();
+    // Debounce the `processing` term only — the "no rows yet" term stays
+    // raw so first-load shows the spinner immediately. See
+    // `loading-debounce-constants.ts` for the threshold rationale.
+    const debouncedProcessing = useDebounce(
+        datasetState.processing,
+        LOADING_INDICATOR_DEBOUNCE_MS
+    );
+
+    logRender('DataTab', {
+        datasetState,
+        datasetRaw,
+        renderId,
+        reason,
+        sortEntry,
+        page
+    });
+
+    if (reason) {
+        return <NoDataMessage reason={reason} />;
+    }
+
+    // 'loading' covers both "the worker is still processing" (debounced —
+    // fast round-trips don't flicker the spinner) and "no result yet"
+    // (`datasetState.values === null`). A worker result of `[]` (zero rows
+    // — e.g. a spec whose filters remove every row) is a distinct 'empty'
+    // state and falls through to `DataTableViewer` below, which renders its
+    // own zero-rows presentation rather than spinning forever (C3).
+    const renderState = resolveDataTabRenderState(
+        debouncedProcessing,
+        datasetState.values
+    );
+    if (renderState === 'loading') {
+        return <ProcessingDataMessage />;
+    }
+
+    return (
+        <div className={classes.container}>
+            <div className={classes.wrapper}>
+                <div className={classes.details}>
+                    <DataTableViewer
+                        columns={datasetState.columns ?? []}
+                        data={datasetState.values ?? []}
+                        {...getSharedDataTableViewerProps({
+                            sortEntry,
+                            onSort: handleSort,
+                            onChangePage: handleChangePage,
+                            page
+                        })}
+                    />
+                </div>
+            </div>
+        </div>
+    );
+};
+
+/**
+ * Create hash of dataset, that we can use to determine changes more cheaply within the UI.
+ */
+const getDataHash = (data: VegaDatum[]) => {
+    logTimeStart('getDataHash');
+    const result = getHashValue(data);
+    logTimeEnd('getDataHash');
+    return result;
+};

@@ -6,13 +6,7 @@ import type {
     IWorkerDatasetViewerTranslations,
     WorkerDatasetViewerValueType
 } from './types';
-import {
-    isDate,
-    isNumber,
-    isObject,
-    isBoolean,
-    isString
-} from '@deneb-viz/utils/inspection';
+import { getValueType } from './get-value-type';
 
 /**
  * Used to memoize the calculated width of a given string, so that we don't have to re-compute each time.
@@ -56,6 +50,7 @@ const getFormattedValueForTableCell = (
     switch (getValueType) {
         case 'date':
             return (<Date>value).toLocaleString();
+        case 'array':
         case 'object':
             return JSON.stringify(value);
         default:
@@ -135,25 +130,5 @@ const getRawValueForTableCell = (
             return new Date(<string | number>value);
         default:
             return value;
-    }
-};
-
-/**
- * We will need to handle specific types of values in the table, so this method will determine and flag as appropriate.
- */
-const getValueType = (value: unknown): WorkerDatasetViewerValueType => {
-    switch (true) {
-        case isDate(value):
-            return 'date';
-        case isNumber(value):
-            return 'number';
-        case isObject(value):
-            return 'object';
-        case isBoolean(value):
-            return 'boolean';
-        case isString(value):
-            return 'string';
-        default:
-            return 'invalid';
     }
 };

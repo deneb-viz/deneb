@@ -3,6 +3,7 @@ import { createWithEqualityFn } from 'zustand/traditional';
 import { shallow } from 'zustand/shallow';
 
 import { createCommandsSlice, type CommandsSlice } from './commands';
+import { createCompilationSlice, type CompilationSlice } from './compilation';
 import { createCreateSlice, type CreateSliceState } from './create';
 import { createDatasetSlice, type DatasetSlice } from './dataset';
 import { createDebugSlice, type DebugSlice } from './debug';
@@ -21,9 +22,9 @@ import { createInterfaceSlice, type InterfaceSlice } from './interface';
 import { createMigrationSlice, type MigrationSlice } from './migration';
 import { createProjectSlice, type ProjectSlice } from './project';
 import {
-    createSpecificationSlice,
-    type SpecificationSlice
-} from './specification';
+    createSettingsPaneSlice,
+    type SettingsPaneSlice
+} from './settings-pane';
 import {
     createVisualRenderSlice,
     type VisualRenderSlice
@@ -32,6 +33,7 @@ import { toBoolean } from '@deneb-viz/utils/type-conversion';
 import { APPLICATION_VERSION } from '../lib/application';
 
 export type StoreState = CommandsSlice &
+    CompilationSlice &
     CreateSliceState &
     DatasetSlice &
     DebugSlice &
@@ -43,7 +45,7 @@ export type StoreState = CommandsSlice &
     InterfaceSlice &
     MigrationSlice &
     ProjectSlice &
-    SpecificationSlice &
+    SettingsPaneSlice &
     VisualRenderSlice;
 
 export type StateDependencies = {
@@ -66,6 +68,7 @@ export const createDenebState = (dependencies: StateDependencies) =>
         devtools(
             (...a) => ({
                 ...createCommandsSlice()(...a),
+                ...createCompilationSlice()(...a),
                 ...createCreateSlice()(...a),
                 ...createDatasetSlice()(...a),
                 ...createDebugSlice()(...a),
@@ -77,7 +80,7 @@ export const createDenebState = (dependencies: StateDependencies) =>
                 ...createInterfaceSlice()(...a),
                 ...createMigrationSlice()(...a),
                 ...createProjectSlice()(...a),
-                ...createSpecificationSlice()(...a),
+                ...createSettingsPaneSlice()(...a),
                 ...createVisualRenderSlice()(...a)
             }),
             { enabled: toBoolean(process.env.ZUSTAND_DEV_TOOLS) }

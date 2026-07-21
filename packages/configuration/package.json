@@ -1,6 +1,6 @@
 {
     "name": "@deneb-viz/configuration",
-    "version": "0.1.0",
+    "version": "2.0.0",
     "author": "Deneb contributors",
     "private": true,
     "license": "MIT",
@@ -24,7 +24,7 @@
         "dev": "tsc -p tsconfig.json --watch",
         "clean": "rimraf dist",
         "typecheck": "tsc --noEmit",
-        "eslint": "eslint ."
+        "eslint": "node ../../bin/workspace-eslint.js"
     },
     "devDependencies": {
         "@deneb-viz/eslint-config": "*",

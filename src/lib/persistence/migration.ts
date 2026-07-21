@@ -15,6 +15,12 @@ import { persistProperties, resolveObjectProperties } from './persist';
 import { getDenebState } from '@deneb-viz/app-core';
 import { getDenebVisualState } from '../../state';
 import { APPLICATION_VERSION } from '../application';
+import {
+    hasProjectContent,
+    runStateManagementLoadTimeMigrations,
+    type StateManagementLoadMigrationResult,
+    type StateManagementPayload
+} from './state-management-migration';
 
 /**
  * Current visual and provider information
@@ -105,10 +111,36 @@ const getVersionChangeDetail = (
 /**
  * For updates, we need to be able to manage property migration between versions as necessary, just in case we're editing
  * a visual that hasn't caught up with the functionality we need in v-latest.
+ *
+ * Behaviour is split by mode:
+ *
+ *  - **Edit mode** (the historical default): on the first qualifying update
+ *    of the session, persist version stamps and any runtime-affecting
+ *    remaps via `persistProperties`, flip the `migrationCheckPerformed`
+ *    flag so the work doesn't re-run, and signal the version-change modal
+ *    via `updateMigrationDetails`.
+ *  - **Read mode** (`isReadMode === true`): never persist; never flip the
+ *    flag; never open the modal. Instead apply the runtime-affecting parts
+ *    of the migration directly to the in-memory settings model so the
+ *    read render still honours migrated values (e.g. the pre-2.0
+ *    `enableContextMenu` split). The `migrationCheckPerformed` flag is
+ *    intentionally NOT consulted in read mode — the flag lives in a
+ *    separate Zustand slice that is not reset between updates, so if a
+ *    prior edit-mode session flipped it the read-mode path would
+ *    otherwise become a no-op forever afterwards. Running every
+ *    read-mode update is cheap (a couple of property reads + a possible
+ *    assignment) and correct.
  */
 export const handlePropertyMigration = (
-    visualSettings: VisualFormattingSettingsModel
+    visualSettings: VisualFormattingSettingsModel,
+    isReadMode: boolean
 ) => {
+    // Schema-versioned `stateManagement` payload migrations run first, in
+    // BOTH modes, on every update: the settings model is rebuilt from the
+    // host data view each update, so in-memory application must re-run
+    // (mirroring the read-mode pattern below). With no registered
+    // load-time entries this is a cheap parse + classify.
+    runStateManagementSchemaMigrations(visualSettings);
     const {
         vega: {
             output: {
@@ -116,6 +148,13 @@ export const handlePropertyMigration = (
             }
         }
     } = visualSettings;
+    if (isReadMode) {
+        applyRuntimeAffectingMigrationsInMemory(
+            visualSettings,
+            <SpecProvider>provider
+        );
+        return;
+    }
     const {
         migration: { migrationCheckPerformed, updateMigrationDetails }
     } = getDenebState();
@@ -134,13 +173,209 @@ export const handlePropertyMigration = (
             }
             // general change
             case changeType !== 'equal': {
-                migrateWithNoChanges(<SpecProvider>provider);
+                migrateWithNoChanges(<SpecProvider>provider, visualSettings);
                 break;
             }
             default:
                 break;
         }
     }
+};
+
+/**
+ * Execution point for class `'load-time'` (payload-shape) migrations of
+ * the persisted `stateManagement` payload — see
+ * `./state-management-migration.ts`, which owns the registry and ALL
+ * version comparison for that payload.
+ *
+ * Applies pending load-time entries in registry order to the in-memory
+ * settings model (merge semantics — present keys are never wiped). The
+ * returned result carries the typed corrupt-key signals and the ids of
+ * pending first-dataview (data-dependent) entries, which execute later
+ * from the dataset mapping pass.
+ *
+ * Persistence note: application here is in-memory only, matching the
+ * settings-model lifecycle (rebuilt every update). Durable persistence of
+ * migration output — batched into a single store update so the sync layer
+ * emits one persist — is wired by the data-dependent execution point
+ * (see U3 of the audit remediation program); durable UI surfacing of
+ * corrupt-key signals lands there too.
+ */
+export const runStateManagementSchemaMigrations = (
+    visualSettings: VisualFormattingSettingsModel
+): StateManagementLoadMigrationResult => {
+    const payload = getStateManagementPayloadFromSettings(visualSettings);
+    const jsonSpec = visualSettings.vega?.output?.jsonSpec?.value ?? '';
+    const result = runStateManagementLoadTimeMigrations(payload, {
+        hasProjectContent: hasProjectContent(jsonSpec)
+    });
+    if (result.corruptKeys.length > 0) {
+        logDebug(
+            'runStateManagementSchemaMigrations: corrupt persisted key(s) detected',
+            { corruptKeys: result.corruptKeys }
+        );
+    }
+    if (result.applied.length > 0) {
+        logDebug('runStateManagementSchemaMigrations: applied migrations', {
+            applied: result.applied,
+            version: result.version
+        });
+        applyStateManagementPayloadToSettings(visualSettings, result.payload);
+    }
+    return result;
+};
+
+/**
+ * Extract the raw persisted `stateManagement` payload from the settings
+ * model. Values stay in their persisted (serialized) form — parsing and
+ * corruption detection belong to the registry.
+ */
+export const getStateManagementPayloadFromSettings = (
+    visualSettings: VisualFormattingSettingsModel
+): StateManagementPayload => {
+    const projectMetadata = visualSettings.stateManagement?.projectMetadata;
+    const viewport = visualSettings.stateManagement?.viewport;
+    return {
+        viewportHeight: viewport?.viewportHeight?.value,
+        viewportWidth: viewport?.viewportWidth?.value,
+        supportFieldConfiguration:
+            projectMetadata?.supportFieldConfiguration?.value,
+        denebMetaVersion: projectMetadata?.denebMetaVersion?.value,
+        scaleToZoom: projectMetadata?.scaleToZoom?.value,
+        consolidateFieldParameters:
+            projectMetadata?.consolidateFieldParameters?.value
+    };
+};
+
+/**
+ * Write a migrated `stateManagement` payload back onto the in-memory
+ * settings model. Only keys present on the payload are written — absent
+ * keys leave the model untouched (merge, never replace).
+ */
+export const applyStateManagementPayloadToSettings = (
+    visualSettings: VisualFormattingSettingsModel,
+    payload: StateManagementPayload
+): void => {
+    const projectMetadata = visualSettings.stateManagement?.projectMetadata;
+    const viewport = visualSettings.stateManagement?.viewport;
+    if (viewport) {
+        if (payload.viewportHeight !== undefined) {
+            viewport.viewportHeight.value = payload.viewportHeight;
+        }
+        if (payload.viewportWidth !== undefined) {
+            viewport.viewportWidth.value = payload.viewportWidth;
+        }
+    }
+    if (projectMetadata) {
+        if (payload.supportFieldConfiguration !== undefined) {
+            projectMetadata.supportFieldConfiguration.value =
+                payload.supportFieldConfiguration;
+        }
+        if (payload.denebMetaVersion !== undefined) {
+            projectMetadata.denebMetaVersion.value = payload.denebMetaVersion;
+        }
+        if (payload.scaleToZoom !== undefined) {
+            projectMetadata.scaleToZoom.value = payload.scaleToZoom;
+        }
+        if (payload.consolidateFieldParameters !== undefined) {
+            projectMetadata.consolidateFieldParameters.value =
+                payload.consolidateFieldParameters;
+        }
+    }
+};
+
+/**
+ * Apply the migration's runtime-affecting mutations directly to the
+ * in-memory `VisualFormattingSettingsModel` reference, mirroring the
+ * branching of the edit-mode path so a read-mode render honours the
+ * same values the edit-mode persist round-trip would have produced.
+ *
+ * Mutating the live settings object is intentional: consumers (e.g.
+ * `src/lib/interactivity/context-menu.ts`) read these values lazily via
+ * `getDenebVisualState().settings.<...>.value`, so the mutation is
+ * visible to whichever code reads next in the same update. The
+ * mutation does not survive into the next update — the visual store's
+ * `setVisualUpdateOptions` rebuilds the settings model on every update
+ * from the host-shipped data view — which is exactly why read-mode
+ * migration must run every update.
+ */
+const applyRuntimeAffectingMigrationsInMemory = (
+    visualSettings: VisualFormattingSettingsModel,
+    provider: SpecProvider
+): void => {
+    if (isUnversionedSpec()) {
+        // Mirrors `migrateUnversionedSpec`: stamp current versions so
+        // downstream consumers and the slice-sync mapping see the
+        // correct values. No context-menu remap on this branch — the
+        // edit-mode equivalent does not include one here either.
+        applyVersionStampsInMemory(visualSettings, provider);
+        return;
+    }
+    const versionComparator = getVersionComparatorInfo(visualSettings);
+    const changeType = getVersionChangeDetail(versionComparator);
+    if (changeType !== 'equal') {
+        // Mirrors `migrateWithNoChanges`: capture the previous version
+        // BEFORE stamping, then apply the optional context-menu remap
+        // against the captured value, then stamp the new versions.
+        const previousVersion = getLastVersionInfo(visualSettings).denebVersion;
+        applyContextMenuRemapInMemory(visualSettings, previousVersion);
+        applyVersionStampsInMemory(visualSettings, provider);
+    }
+};
+
+/**
+ * Stamp the current Deneb and provider versions onto the in-memory
+ * settings model. Idempotent — repeated application on the same model
+ * (e.g. across consecutive read-mode updates) is a no-op once the
+ * values match.
+ */
+const applyVersionStampsInMemory = (
+    visualSettings: VisualFormattingSettingsModel,
+    provider: SpecProvider
+): void => {
+    visualSettings.developer.versioning.version.value = APPLICATION_VERSION;
+    visualSettings.vega.output.version.value = getVegaVersion(provider);
+};
+
+/**
+ * Single source of truth for whether the pre-2.0 context-menu split
+ * remap applies to the current settings model. Shared between the
+ * persist-payload builder (`getContextMenuMigrationProperties`) and the
+ * in-memory mutation (`applyContextMenuRemapInMemory`) so the two
+ * cannot drift as new properties are added to the legacy remap.
+ *
+ * Legacy state qualifies when the visual was last persisted before the
+ * split version AND the persisted interactivity matches the legacy
+ * `enableContextMenu: false` / `enableContextMenuSelector: true`
+ * (default) pair.
+ */
+const isLegacyContextMenuRemapApplicable = (
+    visualSettings: VisualFormattingSettingsModel,
+    previousVersion: string
+): boolean => {
+    if (!isNewerVersion(previousVersion, CONTEXT_MENU_SPLIT_VERSION))
+        return false;
+    const { enableContextMenu, enableContextMenuSelector } =
+        visualSettings.vega.interactivity;
+    return !enableContextMenu.value && enableContextMenuSelector.value;
+};
+
+/**
+ * Apply the pre-2.0 context-menu split to the in-memory settings
+ * model when the legacy state qualifies. Mirrors the persist payload
+ * built by `getContextMenuMigrationProperties` exactly — both delegate
+ * to `isLegacyContextMenuRemapApplicable` for the decision.
+ */
+const applyContextMenuRemapInMemory = (
+    visualSettings: VisualFormattingSettingsModel,
+    previousVersion: string
+): void => {
+    if (!isLegacyContextMenuRemapApplicable(visualSettings, previousVersion))
+        return;
+    const { enableContextMenu, enableContextMenuSelector } =
+        visualSettings.vega.interactivity;
+    enableContextMenu.value = true;
+    enableContextMenuSelector.value = false;
 };
 
 /**
@@ -237,8 +472,16 @@ const migrateUnversionedSpec = (provider: SpecProvider) => {
  * the visual and provider versions, and re-flagging the "new version"
  * notification).
  */
-const migrateWithNoChanges = (provider: SpecProvider) => {
-    logDebug('Migrate to current version (no changes)');
+const migrateWithNoChanges = (
+    provider: SpecProvider,
+    visualSettings: VisualFormattingSettingsModel
+) => {
+    logDebug('Migrate to current version');
+    const previousVersion = getLastVersionInfo(visualSettings).denebVersion;
+    const contextMenuProperties = getContextMenuMigrationProperties(
+        visualSettings,
+        previousVersion
+    );
     persistProperties(
         resolveObjectProperties([
             {
@@ -251,11 +494,44 @@ const migrateWithNoChanges = (provider: SpecProvider) => {
                     {
                         name: 'version',
                         value: getVegaVersion(provider)
-                    }
+                    },
+                    ...contextMenuProperties
                 ]
             }
         ])
     );
+};
+
+/**
+ * The version that introduced the context-menu property split. Only
+ * visuals upgrading from before this version need the legacy migration.
+ *
+ * Note: this was originally targeted at 1.10 when the two-toggle split
+ * landed in #599, but the 1.10 release was skipped and the split is
+ * shipping in 2.0 — there are no 1.10 visuals in the wild. The
+ * threshold is anchored to the actual shipping version.
+ */
+const CONTEXT_MENU_SPLIT_VERSION = '2.0.0';
+
+/**
+ * Pre-migration visuals had enableContextMenu: false to disable data point
+ * resolution. The new model splits this into two properties. Detect the legacy
+ * state and remap to enableContextMenu: true + enableContextMenuSelector: false.
+ *
+ * Only runs when upgrading from a version older than CONTEXT_MENU_SPLIT_VERSION
+ * to avoid overwriting intentional post-upgrade settings on future version bumps.
+ */
+const getContextMenuMigrationProperties = (
+    visualSettings: VisualFormattingSettingsModel,
+    previousVersion: string
+): PersistenceProperty[] => {
+    if (!isLegacyContextMenuRemapApplicable(visualSettings, previousVersion)) {
+        return [];
+    }
+    return [
+        { name: 'enableContextMenu', value: true },
+        { name: 'enableContextMenuSelector', value: false }
+    ];
 };
 
 /**

@@ -62,11 +62,18 @@ export const useLogViewerStyles = makeStyles({
 });
 
 export const LogViewer = () => {
-    const { errors, logLevel, warns } = useDenebState((state) => ({
-        errors: state.specification.errors,
-        logLevel: state.project.logLevel,
-        warns: state.specification.warns
-    }));
+    const { errors, logLevel, warns } = useDenebState((state) => {
+        // Combine parse errors/warnings with runtime errors/warnings
+        const parseErrors = state.compilation.result?.errors ?? [];
+        const parseWarnings = state.compilation.result?.parsed.warnings ?? [];
+        const runtimeErrors = state.compilation.runtimeErrors;
+        const runtimeWarnings = state.compilation.runtimeWarnings;
+        return {
+            errors: [...parseErrors, ...runtimeErrors],
+            logLevel: state.project.logLevel,
+            warns: [...parseWarnings, ...runtimeWarnings]
+        };
+    });
     const translate = useDenebState((state) => state.i18n.translate);
     const classes = useLogViewerStyles();
     const wrapperClasses = useDebugWrapperStyles();

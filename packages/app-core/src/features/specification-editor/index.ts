@@ -1,4 +1,8 @@
-export { SpecificationEditorProvider } from './components/specification-editor-provider';
-export { ActiveEditorPaneRouter } from './components/active-editor-pane-router';
-export { useSpecificationEditor } from './hooks/use-specification-editor';
+export {
+    SpecificationEditorProvider,
+    useSpecificationEditor
+} from '../../context/specification-editor';
+export { SpecificationEditorSelectedOperation } from './components/specification-editor-selected-operation';
+export { SpecificationJsonEditor } from './components/specification-json-editor';
+export { SpecificationEditorStatusBar } from './components/specification-editor-status-bar';
 export type * from './types';

@@ -1,9 +1,11 @@
 import { type StateCreator } from 'zustand';
 
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
+import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 import { type DeepPath, updateDeep } from '@deneb-viz/utils/object';
 import { StateDependencies, type StoreState } from './state';
 import { getNewTemplateMetadata } from '@deneb-viz/json-processing';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 import { logDebug } from '@deneb-viz/utils/logging';
 
 /**
@@ -23,6 +25,7 @@ export type ExportSliceProperties = {
         payload: ExportSliceSetMetadataPropertyBySelector
     ) => void;
     setPreviewImage: (payload: ExportSliceSetPreviewImage) => void;
+    updateExportDataset: (dataset: UsermetaDatasetField[]) => void;
 };
 
 /**
@@ -72,6 +75,12 @@ export const createExportSlice =
                         (state) => handleSetPreviewImage(state, payload),
                         false,
                         'export.setPreviewImage'
+                    ),
+                updateExportDataset: (dataset) =>
+                    set(
+                        (state) => handleUpdateExportDataset(state, dataset),
+                        false,
+                        'export.updateExportDataset'
                     )
             }
         };
@@ -80,7 +89,13 @@ const handleSetMetadataPropertyBySelector = (
     state: StoreState,
     payload: ExportSliceSetMetadataPropertyBySelector
 ): Partial<StoreState> => {
-    // TODO: make the id/selector system better to avoid this hack
+    // TODO: make the id/selector system better to avoid this hack.
+    // Dataset-name coupling: selectors are split on '.', so path segments
+    // that represent dataset names in `usermeta.datasets` MUST NOT contain
+    // dots. Today this is safe because DATASET_DEFAULT_NAME = 'dataset'.
+    // If multi-dataset support is added with user-supplied names, this
+    // selector scheme will silently produce wrong paths for names like
+    // 'my.layer' and needs to be revisited alongside the id convention.
     const path: DeepPath = payload.selector
         .split('.')
         .map((key) => (/^\d+$/.test(key) ? Number(key) : key));
@@ -116,3 +131,22 @@ const handleSetPreviewImage = (
         } as UsermetaTemplate
     }
 });
+
+const handleUpdateExportDataset = (
+    state: StoreState,
+    dataset: UsermetaDatasetField[]
+): Partial<StoreState> => {
+    if (!state.export.metadata) return {};
+    return {
+        export: {
+            ...state.export,
+            metadata: {
+                ...state.export.metadata,
+                datasets: {
+                    ...state.export.metadata.datasets,
+                    [DATASET_DEFAULT_NAME]: dataset
+                }
+            }
+        }
+    };
+};

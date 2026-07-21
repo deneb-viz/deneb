@@ -1,7 +1,6 @@
 import {
     areAllRemapDataRequirementsMet,
-    getRemapEligibleFields,
-    isMappingDialogRequired
+    getRemapEligibleFields
 } from '@deneb-viz/json-processing';
 import {
     type TrackedDrilldownProperties,
@@ -12,7 +11,7 @@ import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 import { StoreState } from './state';
 import { isExportSpecCommandEnabled, ModalDialogRole } from '../lib';
 import { StateCreator } from 'zustand';
-import { getModalDialogRole } from '../lib/interface/state';
+import { getModalDialogRole } from '../lib/interface/modal-dialog-role';
 
 /**
  * Represents the create slice in the visual store.
@@ -175,25 +174,19 @@ const handleApplyTrackingChanges = (
         remapFields,
         drilldownProperties: trackedDrilldown
     });
-    const modalDialogRole: ModalDialogRole =
-        isMappingDialogRequired({
-            trackedFields,
-            drilldownProperties: trackedDrilldown
-        }) ||
-        (state.interface.modalDialogRole === 'Remap' &&
-            state.interface.remapState !== 'Complete')
-            ? 'Remap'
-            : getModalDialogRole(
-                  state.project.__isInitialized__,
-                  state.interface.type,
-                  state.interface.modalDialogRole
-              );
+    // Remap dialog removed (#486) — tracking is now only used for export.
+    // Never assign 'Remap' as modalDialogRole from tracking changes.
+    const modalDialogRole: ModalDialogRole = getModalDialogRole(
+        state.project.__isInitialized__,
+        state.interface.type,
+        state.interface.modalDialogRole
+    );
     return {
         commands: {
             ...state.commands,
             exportSpecification: isExportSpecCommandEnabled({
                 editorIsDirty: state.editor.isDirty,
-                specification: state.specification
+                compilationResult: state.compilation.result
             })
         },
         fieldUsage: {

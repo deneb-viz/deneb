@@ -23,8 +23,6 @@ module.exports = (env = {}) =>
         snapshot: {
             managedPaths: [/node_modules\/(?!@deneb-viz)/]
         },
-        // No alias tweaks required.
-        resolve: { alias: {} },
         // Source maps: false for fastest builds, or 'cheap-module-source-map' for debugging
         // Use IDE debugging instead of browser for best dev experience
         devtool: false,

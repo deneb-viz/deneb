@@ -54,7 +54,29 @@ class SettingsDisplayGroupScrollbars extends formattingSettings.Group {
             unitSymbol: DEFAULTS.unitSymbols.pixels
         }
     });
-    slices = [this.scrollbarColor, this.scrollbarOpacity, this.scrollbarRadius];
+    scrollbarWidth = new formattingSettings.Slider({
+        name: 'scrollbarWidth',
+        displayNameKey: 'Objects_Display_ScrollbarWidth',
+        descriptionKey: 'Objects_Display_ScrollbarWidth_Description',
+        value: VISUAL_RENDER_DEFAULTS.scrollbarWidth.default,
+        options: {
+            minValue: {
+                value: VISUAL_RENDER_DEFAULTS.scrollbarWidth.min,
+                type: 0
+            },
+            maxValue: {
+                value: VISUAL_RENDER_DEFAULTS.scrollbarWidth.max,
+                type: 1
+            },
+            unitSymbol: DEFAULTS.unitSymbols.pixels
+        }
+    });
+    slices = [
+        this.scrollbarColor,
+        this.scrollbarOpacity,
+        this.scrollbarRadius,
+        this.scrollbarWidth
+    ];
 }
 
 class SettingDisplayGroupScrollEvents extends formattingSettings.Group {

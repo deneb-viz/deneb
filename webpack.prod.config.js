@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 const { merge } = require('webpack-merge');
 const TerserPlugin = require('terser-webpack-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const { getCommonConfig } = require('./webpack.common.config');
 
@@ -24,6 +25,7 @@ module.exports = merge(
             minimize: true,
             minimizer: [
                 new TerserPlugin({
+                    minify: TerserPlugin.swcMinify,
                     parallel: true,
                     terserOptions: {
                         compress: {
@@ -39,7 +41,10 @@ module.exports = merge(
                         }
                     },
                     extractComments: false
-                })
+                }),
+                // Webpack only minifies JS by default; without this the
+                // extracted visual.css ships with full formatting intact.
+                new CssMinimizerPlugin()
             ],
             concatenateModules: true,
             usedExports: true,

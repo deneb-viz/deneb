@@ -27,7 +27,7 @@ export const TemplateDatasetRow = ({
         case 'new': {
             return (
                 <>
-                    <DataTypeColumnCell type={item.type} />
+                    <DataTypeColumnCell type={item.type} kind={item.kind} />
                     <DataNameColumnCell name={item.name} />
                     <DataAssignmentColumnCell item={item} role={role} />
                     <DataDescriptionColumnCell text={description} />
@@ -37,7 +37,7 @@ export const TemplateDatasetRow = ({
         case 'mapping': {
             return (
                 <>
-                    <DataTypeColumnCell type={item.type} />
+                    <DataTypeColumnCell type={item.type} kind={item.kind} />
                     <DataNameColumnCell name={item.name} />
                     <DataAssignmentColumnCell item={item} role={role} />
                 </>
@@ -46,7 +46,7 @@ export const TemplateDatasetRow = ({
         case 'export': {
             return (
                 <>
-                    <DataTypeColumnCell type={item.type} />
+                    <DataTypeColumnCell type={item.type} kind={item.kind} />
                     <DataNameColumnCell name={item.namePlaceholder || ''} />
                     <DataNameColumnField item={item} index={index} />
                     <DataDescriptionColumnField index={index} />

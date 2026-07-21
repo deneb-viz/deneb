@@ -6,13 +6,17 @@ import {
     Tooltip
 } from '@fluentui/react-components';
 
-import { type UsermetaDatasetFieldType } from '@deneb-viz/data-core/field';
+import {
+    type UsermetaDatasetFieldKind,
+    type UsermetaDatasetFieldType
+} from '@deneb-viz/data-core/field';
 import { DataTypeIcon } from './data-type-icon';
 import { TooltipCustomMount } from '../ui';
 import { getDenebState } from '../../state';
 
 type DataTypeColumnCellProps = {
     type: UsermetaDatasetFieldType;
+    kind?: UsermetaDatasetFieldKind;
 };
 
 export const useDataTypeColumnCellStyles = makeStyles({
@@ -25,19 +29,21 @@ export const useDataTypeColumnCellStyles = makeStyles({
 /**
  * Displays the icon for a data type, complete with tooltip.
  */
-export const DataTypeColumnCell = ({ type }: DataTypeColumnCellProps) => {
+export const DataTypeColumnCell = ({ type, kind }: DataTypeColumnCellProps) => {
     const classes = useDataTypeColumnCellStyles();
     const [ref, setRef] = useState<HTMLElement | null>();
     return (
         <>
             <Tooltip
-                content={getDataTypeIconTitle(type)}
+                content={getDataTypeIconTitle(type, kind)}
                 relationship='label'
                 withArrow
                 mountNode={ref}
             >
                 <TableCell className={classes.root}>
-                    <TableCellLayout media={<DataTypeIcon type={type} />} />
+                    <TableCellLayout
+                        media={<DataTypeIcon type={type} kind={kind} />}
+                    />
                 </TableCell>
             </Tooltip>
             <TooltipCustomMount setRef={setRef} />
@@ -49,8 +55,14 @@ export const DataTypeColumnCell = ({ type }: DataTypeColumnCellProps) => {
  * For a given column or measure (or template placeholder), resolve the UI
  * tooltip/title text for its data type.
  */
-const getDataTypeIconTitle = (type: UsermetaDatasetFieldType) => {
+const getDataTypeIconTitle = (
+    type: UsermetaDatasetFieldType,
+    kind?: UsermetaDatasetFieldKind
+) => {
     const { translate } = getDenebState().i18n;
+    if (kind === 'parameter') {
+        return translate('Template_Type_Descriptor_Parameter');
+    }
     switch (type) {
         case 'bool':
             return translate('Template_Type_Descriptor_Bool');

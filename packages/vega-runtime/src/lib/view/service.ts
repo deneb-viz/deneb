@@ -1,9 +1,5 @@
 import { falsy, truthy, View } from 'vega';
-import { getSignalPbiContainer } from '@deneb-viz/powerbi-compat/signals';
-import { logDebug, logTimeEnd } from '@deneb-viz/utils/logging';
-import { VegaPatternFillServices } from '../pattern-fill';
-import { DispatchingVegaLoggerService } from '../extensibility';
-import { HandleNewViewOptions, HandleViewErrorOptions } from './types';
+import { logDebug } from '@deneb-viz/utils/logging';
 import { type VegaDatum } from '@deneb-viz/data-core/value';
 
 let view: View | null;
@@ -84,6 +80,46 @@ export const VegaViewServices = {
         }
     },
     /**
+     * Determine whether a named dataset is present in the current view,
+     * distinguishing a genuine absence from a failed lookup.
+     *
+     * `getDataByName` cannot make this distinction: it swallows every error
+     * (including the "Unrecognized data set" throw Vega raises for a name the
+     * spec never bound) and returns `undefined` in all of those cases as well
+     * as for a legitimately-absent dataset. Callers that must treat only a true
+     * absence as "ignore this data change" — and a real failure as "fall back
+     * to a re-compile" — use this instead of `getDataByName(name) === undefined`.
+     *
+     * Reads the view's data-source keys via `getState` (which lists the
+     * datasets that exist without throwing for an individual missing name), so
+     * an absence and a failure are cleanly separable:
+     * - `'present'` — the view exposes a dataset with this name.
+     * - `'absent'`  — reading the state succeeded and there is no such dataset
+     *   (e.g. the spec uses inline or remote data).
+     * - `'error'`   — no view is bound, or reading the view's state threw. The
+     *   caller must NOT treat this as a legitimate absence.
+     */
+    getDatasetPresence: (name: string): 'present' | 'absent' | 'error' => {
+        if (!view) {
+            return 'error';
+        }
+        try {
+            const data =
+                view.getState({
+                    data: truthy,
+                    signals: falsy,
+                    recurse: true
+                })?.data ?? {};
+            return name in data ? 'present' : 'absent';
+        } catch (error) {
+            logDebug(
+                `VegaViewServices.getDatasetPresence: Error checking dataset ${name}`,
+                { error }
+            );
+            return 'error';
+        }
+    },
+    /**
      * Get specified signal from view by name. Returns undefined if an error occurs.
      */
     getSignalByName: (name: string) => {
@@ -98,14 +134,36 @@ export const VegaViewServices = {
         }
     },
     /**
-     * Set specified signal in view by name. f it does not exist, it will not be set.
+     * Set specified signal in view by name. If it does not exist, it will not
+     * be set.
+     *
+     * Writing a signal re-runs the dataflow, which can reject (e.g. a stateful
+     * transform errors on the new value). That `runAsync()` promise must not be
+     * left floating — an unhandled rejection would surface nowhere useful. The
+     * rejection is always caught and logged at debug level here; when an
+     * `onError` sink is supplied by the caller it is also routed there so the
+     * failure can reach a user-facing channel (mirroring the dual-channel
+     * handling in `incremental-update.ts`). The already-handled promise is
+     * returned so callers/tests can await settling; existing two-argument
+     * callers are unaffected and default to the internal debug-log sink.
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setSignalByName: (name: string, value: any) => {
-        if (VegaViewServices.doesSignalNameExist(name)) {
-            view?.signal(name, value);
-            view?.runAsync();
+    setSignalByName: (
+        name: string,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        value: any,
+        onError?: (error: unknown) => void
+    ): Promise<unknown> | undefined => {
+        if (!VegaViewServices.doesSignalNameExist(name)) {
+            return undefined;
         }
+        view?.signal(name, value);
+        return view?.runAsync().catch((error) => {
+            logDebug(
+                `VegaViewServices.setSignalByName: Error running view after setting signal ${name}`,
+                { error }
+            );
+            onError?.(error);
+        });
     },
     /**
      * Obtain the current Vega view.
@@ -113,76 +171,3 @@ export const VegaViewServices = {
     getView: () => view
 };
 Object.freeze(VegaViewServices);
-
-/**
- * For the supplied view, bind the custom container signals.
- */
-const bindContainerSignals = (view: View) => {
-    const update = () => {
-        const container = view.container();
-        if (container) {
-            const signal = getSignalPbiContainer({ container });
-            VegaViewServices.setSignalByName(signal.name, signal.value);
-        }
-    };
-    update();
-    view.addResizeListener(() => {
-        update();
-    });
-};
-
-/**
- * Any logic that we need to apply to a new Vega view.
- */
-export const handleNewView = (newView: View, options: HandleNewViewOptions) => {
-    logDebug('Vega view initialized.');
-    options.onRenderingStarted?.();
-    const {
-        generateRenderId,
-        logError,
-        logWarn,
-        logLevel,
-        viewEventBinders,
-        onRenderingFinished
-    } = options;
-    newView.logger(
-        new DispatchingVegaLoggerService(logLevel, logWarn, logError)
-    );
-    newView.runAfter((view) => {
-        logDebug('Running post-Vega view logic...', view);
-        logDebug('Binding view services...');
-        VegaPatternFillServices.update();
-        VegaViewServices.bind(view);
-        logDebug('View services', {
-            view: VegaViewServices.getView(),
-            signals: VegaViewServices.getAllSignals(),
-            data: VegaViewServices.getAllData()
-        });
-        bindContainerSignals(view);
-        viewEventBinders?.forEach((binder) => binder(view));
-        generateRenderId();
-        logTimeEnd('VegaRender');
-        onRenderingFinished?.();
-    });
-};
-
-/**
- * Any logic that we need to apply when the view errors.
- */
-export const handleViewError = (
-    error: Error,
-    options: HandleViewErrorOptions
-) => {
-    logDebug('Vega view error.', error);
-    const { generateRenderId, logError, onRenderingError } = options;
-    logDebug('Clearing view...');
-    VegaViewServices.clearView();
-    logDebug('View services', {
-        view: VegaViewServices.getView(),
-        signals: VegaViewServices.getAllSignals(),
-        data: VegaViewServices.getAllData()
-    });
-    logError(error.message);
-    generateRenderId();
-    onRenderingError?.(error);
-};

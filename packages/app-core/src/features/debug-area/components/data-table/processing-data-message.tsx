@@ -3,6 +3,7 @@ import { makeStyles, Spinner, tokens } from '@fluentui/react-components';
 import { StatusBarContainer } from '../../../../components/ui';
 import { useDenebState } from '../../../../state';
 import { useDebugWrapperStyles } from '../styles';
+import { PROCESSING_DATA_MESSAGE_ARIA_PROPS } from './processing-data-message-aria';
 
 const useProcessingDataMessageStyles = makeStyles({
     dataTableNoDataMessage: {
@@ -32,7 +33,10 @@ export const ProcessingDataMessage = () => {
     const translate = useDenebState((state) => state.i18n.translate);
     const message = translate('Text_Debug_Data_Processing');
     return (
-        <div className={wrapperClasses.container}>
+        <div
+            className={wrapperClasses.container}
+            {...PROCESSING_DATA_MESSAGE_ARIA_PROPS}
+        >
             <div className={wrapperClasses.wrapper}>
                 <div className={wrapperClasses.details}>
                     <div className={classes.dataTableNoDataMessage}>

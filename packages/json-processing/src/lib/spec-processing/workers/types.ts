@@ -1,19 +1,21 @@
 import {
-    type DatasetFields,
-    type FieldPatternReplacer
+    type DatasetFieldWithTemplateMetadata,
+    type FieldPatternReplacer,
+    type UsermetaDatasetField
 } from '@deneb-viz/data-core/field';
 import {
     type TrackedDrilldownProperties,
     type TrackedFields
 } from '../../field-tracking';
-import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 
 /**
  * Represents the worker that processes the JSON in a specification. Because these are typically very expensive, we
  * want to run them in a separate thread to avoid blocking the main thread.
  */
-export interface IDenebSpecJsonWorker
-    extends Omit<Worker, 'onmessage,postMessage'> {
+export interface IDenebSpecJsonWorker extends Omit<
+    Worker,
+    'onmessage' | 'postMessage'
+> {
     onmessage:
         | ((
               this: Worker,
@@ -50,7 +52,7 @@ export type IDenebJsonProcessingWorkerResponse =
 /**
  * The message format for a request to remap fields in a JSON specification.
  */
-export interface IDenebRemapRequestMessage {
+interface IDenebRemapRequestMessage {
     type: 'remapping';
     payload: IDenebRemapRequestPayload;
 }
@@ -82,7 +84,7 @@ export interface IDenebRemapResponsePayload {
 /**
  * The message format for a request to tokenize a JSON specification.
  */
-export interface IDenebTokenizationRequestMessage {
+interface IDenebTokenizationRequestMessage {
     type: 'tokenization';
     payload: IDenebTokenizationRequestPayload;
 }
@@ -116,7 +118,7 @@ export interface IDenebTokenizationResponsePayload {
  * The message format for a request to get tracking information from a JSON specification, based on the current
  * dataset.
  */
-export interface IDenebTrackingRequestMessage {
+interface IDenebTrackingRequestMessage {
     type: 'tracking';
     payload: IDenebTrackingRequestPayload;
 }
@@ -126,7 +128,7 @@ export interface IDenebTrackingRequestMessage {
  */
 export interface IDenebTrackingRequestPayload {
     spec: Uint8Array;
-    fields: DatasetFields;
+    fields: Record<string, DatasetFieldWithTemplateMetadata>;
     hasDrilldown: boolean;
     trackedFieldsCurrent: TrackedFields;
     supplementaryPatterns: string[];

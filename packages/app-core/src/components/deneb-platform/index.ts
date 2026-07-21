@@ -3,5 +3,8 @@ export { useDenebPlatformProvider } from './hooks/use-deneb-platform-provider';
 export type {
     DenebPlatformProviderProps,
     OnCreateProjectPayload,
-    ViewEventBinder
+    ViewEventBinder,
+    PlatformSearchContribution,
+    PlatformSearchRow,
+    LocalisableText
 } from './types';

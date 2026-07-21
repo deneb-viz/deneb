@@ -7,31 +7,11 @@ import {
 } from '.';
 import { getNewIncludedTemplateMetadata } from '..';
 import { INTERACTIVITY_DEFAULTS } from '@deneb-viz/powerbi-compat/interactivity';
-import {} from '@deneb-viz/template-usermeta';
-import {
-    SELECTED_ROW_FIELD_NAME,
-    type UsermetaDatasetField
-} from '@deneb-viz/data-core/field';
+import { SELECTED_ROW_FIELD_NAME } from '@deneb-viz/data-core/field';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
+import { getStandardBarDataset } from '../standard-bar-dataset';
 
-const dataset: UsermetaDatasetField[] = [
-    {
-        key: '__0__',
-        name: 'Category',
-        description:
-            "Select a column that will be displayed on the chart's Y-Axis",
-        type: 'text',
-        kind: 'column'
-    },
-    {
-        key: '__1__',
-        name: 'Measure',
-        description:
-            "Select a measure that will be displayed on the chart's X-Axis",
-        type: 'numeric',
-        kind: 'measure'
-    }
-];
+const dataset = getStandardBarDataset({ interactive: true });
 
 // eslint-disable-next-line max-lines-per-function
 export const vBarInteractive = (): Spec => ({
@@ -43,7 +23,7 @@ export const vBarInteractive = (): Spec => ({
             type: 'band',
             domain: {
                 data: DATASET_DEFAULT_NAME,
-                field: '__0__'
+                field: `__${DATASET_DEFAULT_NAME}.0__`
             },
             range: 'height',
             padding: 0.1,
@@ -53,7 +33,7 @@ export const vBarInteractive = (): Spec => ({
             name: 'xscale',
             domain: {
                 data: DATASET_DEFAULT_NAME,
-                field: '__1__'
+                field: `__${DATASET_DEFAULT_NAME}.1__`
             },
             nice: true,
             range: 'width'
@@ -63,13 +43,13 @@ export const vBarInteractive = (): Spec => ({
         {
             scale: 'xscale',
             orient: 'bottom',
-            title: '__1__',
+            title: `__${DATASET_DEFAULT_NAME}.1__`,
             tickCount: 5
         },
         {
             orient: 'left',
             scale: 'yscale',
-            title: '__0__'
+            title: `__${DATASET_DEFAULT_NAME}.0__`
         }
     ],
     marks: [
@@ -81,11 +61,11 @@ export const vBarInteractive = (): Spec => ({
             encode: {
                 enter: {
                     tooltip: {
-                        signal: "{'__0__': datum['__0__'], '__1__': datum['__1__']}"
+                        signal: `{'__${DATASET_DEFAULT_NAME}.0__': datum['__${DATASET_DEFAULT_NAME}.0__'], '__${DATASET_DEFAULT_NAME}.1__': datum['__${DATASET_DEFAULT_NAME}.1__']}`
                     },
                     x: {
                         scale: 'xscale',
-                        field: '__1__'
+                        field: `__${DATASET_DEFAULT_NAME}.1__`
                     },
                     x2: {
                         scale: 'xscale',
@@ -93,7 +73,7 @@ export const vBarInteractive = (): Spec => ({
                     },
                     y: {
                         scale: 'yscale',
-                        field: '__0__'
+                        field: `__${DATASET_DEFAULT_NAME}.0__`
                     },
                     height: {
                         scale: 'yscale',
@@ -111,11 +91,11 @@ export const vBarInteractive = (): Spec => ({
             encode: {
                 enter: {
                     tooltip: {
-                        signal: "{'__0__': datum['__0__'], '__1__': datum['__1__']}"
+                        signal: `{'__${DATASET_DEFAULT_NAME}.0__': datum['__${DATASET_DEFAULT_NAME}.0__'], '__${DATASET_DEFAULT_NAME}.1__': datum['__${DATASET_DEFAULT_NAME}.1__']}`
                     },
                     x: {
                         scale: 'xscale',
-                        field: '__1____highlight'
+                        field: `__${DATASET_DEFAULT_NAME}.1____highlight`
                     },
                     x2: {
                         scale: 'xscale',
@@ -123,7 +103,7 @@ export const vBarInteractive = (): Spec => ({
                     },
                     y: {
                         scale: 'yscale',
-                        field: '__0__'
+                        field: `__${DATASET_DEFAULT_NAME}.0__`
                     },
                     height: {
                         scale: 'yscale',
@@ -146,16 +126,14 @@ export const vBarInteractive = (): Spec => ({
             'An evolution of the simple bar chart, with tooltips, cross-filtering and cross-highlighting, compatible with Power BI.',
             'vBarInteractive'
         ),
-        ...{
-            dataset,
-            interactivity: {
-                tooltip: true,
-                contextMenu: true,
-                highlight: true,
-                selection: true,
-                dataPointLimit: INTERACTIVITY_DEFAULTS.selectionMaxDataPoints
-            },
-            config: getDenebTemplateVegaSpecificConfig()
-        }
+        datasets: { [DATASET_DEFAULT_NAME]: dataset },
+        interactivity: {
+            tooltip: true,
+            contextMenu: true,
+            highlight: true,
+            selection: true,
+            dataPointLimit: INTERACTIVITY_DEFAULTS.selectionMaxDataPoints
+        },
+        config: getDenebTemplateVegaSpecificConfig()
     }
 });

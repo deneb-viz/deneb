@@ -9,6 +9,8 @@ import { TooltipCustomMount } from '../../../components/ui';
 import { UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { TrackedFields } from '@deneb-viz/json-processing/field-tracking';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
+import { copyToClipboard } from '../../../lib/clipboard';
+import { type SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 
 /**
  * Displays download and copy template to clipboard buttons.
@@ -17,6 +19,7 @@ export const ExportButtons = () => {
     const {
         exportMetadata,
         exportProcessingState,
+        supportFieldConfiguration,
         templateName,
         tokenizedSpec,
         trackedFields,
@@ -24,7 +27,7 @@ export const ExportButtons = () => {
     } = useDenebState((state) => ({
         exportMetadata: state.export?.metadata,
         exportProcessingState: state.interface.exportProcessingState,
-        isTrackingFields: state.interface.isTrackingFields,
+        supportFieldConfiguration: state.project.supportFieldConfiguration,
         templateName: state.export?.metadata?.information?.name,
         tokenizedSpec: state.fieldUsage.tokenizedSpec,
         trackedFields: state.fieldUsage.dataset,
@@ -42,6 +45,7 @@ export const ExportButtons = () => {
             downloadJsonFile(
                 getProcessedExportTemplate(
                     exportMetadata,
+                    supportFieldConfiguration,
                     tokenizedSpec,
                     trackedFields
                 ),
@@ -52,16 +56,14 @@ export const ExportButtons = () => {
     };
     const handleCopy = () => {
         if (exportMetadata && tokenizedSpec && trackedFields) {
-            const dummy = document.createElement('textarea');
-            document.body.appendChild(dummy);
-            dummy.value = getProcessedExportTemplate(
-                exportMetadata,
-                tokenizedSpec,
-                trackedFields
+            copyToClipboard(
+                getProcessedExportTemplate(
+                    exportMetadata,
+                    supportFieldConfiguration,
+                    tokenizedSpec,
+                    trackedFields
+                )
             );
-            dummy.select();
-            document.execCommand('copy');
-            document.body.removeChild(dummy);
         }
     };
     const isDisabled = exportProcessingState !== 'Complete';
@@ -110,6 +112,7 @@ export const ExportButtons = () => {
 
 const getProcessedExportTemplate = (
     metadata: UsermetaTemplate,
+    supportFieldConfiguration: SupportFieldConfiguration | undefined,
     tokenizedSpec: string,
     trackedFields: TrackedFields
 ) => {
@@ -122,6 +125,7 @@ const getProcessedExportTemplate = (
     return getExportTemplate({
         informationTranslationPlaceholders,
         metadata,
+        supportFieldConfiguration,
         tokenizedSpec,
         trackedFields
     });

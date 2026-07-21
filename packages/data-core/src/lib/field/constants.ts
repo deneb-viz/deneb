@@ -32,6 +32,12 @@ export const FORMAT_FIELD_SUFFIX = '__format';
 export const FORMATTED_FIELD_SUFFIX = '__formatted';
 
 /**
+ * For a field parameter, this is suffixed to the parameter name to denote
+ * the array of component field display names.
+ */
+export const PARAMETER_NAMES_SUFFIX = '__names';
+
+/**
  * Denotes how we suffix fields in the dataset that contain highlight values.
  */
 export const HIGHLIGHT_FIELD_SUFFIX = '__highlight';

@@ -1,2 +1,2 @@
-export { VegaViewServices, handleNewView, handleViewError } from './service';
+export { VegaViewServices } from './service';
 export type * from './types';

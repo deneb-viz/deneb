@@ -6,7 +6,7 @@ export default defineConfig(() => [
         entry: {
             'data-viewer':
                 'src/features/debug-area/workers/data-viewer.worker.ts',
-            'json-language': 'src/components/code-editor/workers/json.worker.ts'
+            'json-language': 'src/lib/monaco/workers/json.worker.ts'
         },
         format: ['iife'], // IIFE for worker execution
         platform: 'browser',

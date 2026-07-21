@@ -22,7 +22,7 @@ import {
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { logRender } from '@deneb-viz/utils/logging';
-import { getVegaProviderI18n } from '../../../lib/vega';
+import { getVegaProviderI18n } from '../../../lib/vega/i18n';
 import { useDenebState } from '../../../state';
 import { EDITOR_DEFAULTS } from '@deneb-viz/configuration';
 

@@ -2,6 +2,7 @@ import { getHighlightRegExpAlternation } from '../highlight';
 import {
     getEscapedReplacerPattern,
     getNumberFormatRegExpAlternation,
+    getParameterRegExpAlternation,
     getPlaceholderKey,
     getTokenPatternsLiteral,
     getTokenPatternsReplacement
@@ -27,17 +28,20 @@ describe('getEscapedReplacerPattern', () => {
 });
 
 describe('getPlaceholderKey', () => {
-    it('should return a placeholder key', () => {
-        expect(getPlaceholderKey(0)).toBe('__0__');
+    it('should return a dataset-scoped placeholder key', () => {
+        expect(getPlaceholderKey('dataset', 0)).toBe('__dataset.0__');
     });
     it('should return a placeholder key with positive number', () => {
-        expect(getPlaceholderKey(5)).toBe('__5__');
+        expect(getPlaceholderKey('dataset', 5)).toBe('__dataset.5__');
     });
     it('should return a placeholder key with negative number', () => {
-        expect(getPlaceholderKey(-3)).toBe('__3__');
+        expect(getPlaceholderKey('dataset', -3)).toBe('__dataset.3__');
     });
     it('should return a placeholder key with decimal number floored down', () => {
-        expect(getPlaceholderKey(2.5)).toBe('__2__');
+        expect(getPlaceholderKey('dataset', 2.5)).toBe('__dataset.2__');
+    });
+    it('should scope placeholder to the given dataset name', () => {
+        expect(getPlaceholderKey('map_layer', 0)).toBe('__map_layer.0__');
     });
 });
 
@@ -61,7 +65,15 @@ describe('getTokenPatternsLiteral', () => {
             `(?<=datum)(.\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?=)`,
             `(?<=datum\\[')(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?='\\])`,
             `(?<=datum\\[")(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?="\\])`,
-            `(?<=_\\{)(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?=\\}_)`
+            `(?<=_\\{)(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?=\\}_)`,
+            `^(\\${fieldName})(${getParameterRegExpAlternation()})$`,
+            `(?<='.*datum)(.\\${fieldName})(${getParameterRegExpAlternation()})?(?=.*')`,
+            `(?<='.*datum\\[\\\\\\')(\\${fieldName})(${getParameterRegExpAlternation()})?(?=\\\\\\'\\].*')`,
+            `(?<=datum\\[\\\\")(\\${fieldName})(${getParameterRegExpAlternation()})?(?=\\\\"\\])`,
+            `(?<=datum)(.\\${fieldName})(${getParameterRegExpAlternation()})?(?=)`,
+            `(?<=datum\\[')(\\${fieldName})(${getParameterRegExpAlternation()})?(?='\\])`,
+            `(?<=datum\\[")(\\${fieldName})(${getParameterRegExpAlternation()})?(?="\\])`,
+            `(?<=_\\{)(\\${fieldName})(${getParameterRegExpAlternation()})?(?=\\}_)`
         ];
         expect(result).toEqual(expectedPattern);
     });
@@ -166,7 +178,94 @@ it('should return an array with the expected replacement patterns', () => {
                 fieldName
             )})(${getNumberFormatRegExpAlternation()})?(?=\\}_)`,
             replacer: `${placeholder}$2`
+        },
+        {
+            pattern: `^(${getEscapedReplacerPattern(
+                fieldName
+            )})(${getParameterRegExpAlternation()})$`,
+            replacer: `${placeholder}$2`
+        },
+        {
+            pattern: `(?<='.*datum)(.${getEscapedReplacerPattern(
+                fieldName
+            )})(${getParameterRegExpAlternation()})?(?=.*')`,
+            replacer: `[\\'${placeholder}$2\\']`
+        },
+        {
+            pattern: `(?<='.*datum\\[\\\\\\')(${getEscapedReplacerPattern(
+                fieldName
+            )})(${getParameterRegExpAlternation()})?(?=\\\\\\'\\].*')`,
+            replacer: `${placeholder}$2`
+        },
+        {
+            pattern: `(?<=datum\\[\\\\")(${getEscapedReplacerPattern(
+                fieldName
+            )})(${getParameterRegExpAlternation()})?(?=\\\\"\\])`,
+            replacer: `${placeholder}$2`
+        },
+        {
+            pattern: `(?<=datum)(.${getEscapedReplacerPattern(
+                fieldName
+            )})(${getParameterRegExpAlternation()})?(?=)`,
+            replacer: `['${placeholder}$2']`
+        },
+        {
+            pattern: `(?<=datum\\[')(${getEscapedReplacerPattern(
+                fieldName
+            )})(${getParameterRegExpAlternation()})?(?='\\])`,
+            replacer: `${placeholder}$2`
+        },
+        {
+            pattern: `(?<=datum\\[")(${getEscapedReplacerPattern(
+                fieldName
+            )})(${getParameterRegExpAlternation()})?(?="\\])`,
+            replacer: `${placeholder}$2`
+        },
+        {
+            pattern: `(?<=_\\{)(${getEscapedReplacerPattern(
+                fieldName
+            )})(${getParameterRegExpAlternation()})?(?=\\}_)`,
+            replacer: `${placeholder}$2`
         }
     ];
     expect(result).toEqual(expectedPatterns);
+});
+
+describe('getParameterRegExpAlternation', () => {
+    it('should return the __names suffix', () => {
+        expect(getParameterRegExpAlternation()).toBe('__names');
+    });
+});
+
+describe('__names suffix tokenization', () => {
+    it('getTokenPatternsLiteral should include patterns for __names suffix', () => {
+        const fieldName = 'Dynamic Category';
+        const result = getTokenPatternsLiteral(fieldName);
+        const parameterAlternation = getParameterRegExpAlternation();
+        const escapedName = getEscapedReplacerPattern(fieldName);
+        // The base exact-match pattern for __names should be present
+        expect(result).toContain(`^(${escapedName})(${parameterAlternation})$`);
+        // The double-quote accessor pattern covering datum["Dynamic Category__names"]
+        expect(result).toContain(
+            `(?<=datum\\[")(${escapedName})(${parameterAlternation})?(?="\\])`
+        );
+    });
+
+    it('getTokenPatternsReplacement should produce correct replacer for __names suffix', () => {
+        const fieldName = 'Dynamic Category';
+        const placeholder = '__dataset.0__';
+        const result = getTokenPatternsReplacement(fieldName, placeholder);
+        const parameterAlternation = getParameterRegExpAlternation();
+        const escapedName = getEscapedReplacerPattern(fieldName);
+        // Base exact-match replacer
+        expect(result).toContainEqual({
+            pattern: `^(${escapedName})(${parameterAlternation})$`,
+            replacer: `${placeholder}$2`
+        });
+        // Double-quote accessor replacer covering datum["Dynamic Category__names"]
+        expect(result).toContainEqual({
+            pattern: `(?<=datum\\[")(${escapedName})(${parameterAlternation})?(?="\\])`,
+            replacer: `${placeholder}$2`
+        });
+    });
 });

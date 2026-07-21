@@ -32,7 +32,7 @@ export const DataNameColumnField = ({
     return (
         <TableCell className={classes.root}>
             <CappedTextField
-                id={`${DATASET_DEFAULT_NAME}.${index}.name`}
+                id={`datasets.${DATASET_DEFAULT_NAME}.${index}.name`}
                 i18nLabel={`${item.name}`}
                 i18nPlaceholder={`${item?.namePlaceholder}`}
                 maxLength={TEMPLATE_DATASET_FIELD_PROPS.name.maxLength}

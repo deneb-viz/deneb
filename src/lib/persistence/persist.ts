@@ -1,14 +1,66 @@
+import { logDebug } from '@deneb-viz/utils/logging';
 import { getDenebVisualState } from '../../state';
 import { getVisualHost } from '../host';
+import { isReadModePersistSuppressed } from './read-mode-gate';
 import { type PersistenceObject } from './types';
 
 /**
  * Manage persistence of content to the visual's data view `objects`.
+ * Skips the call if the proposed changes match the current dataview values,
+ * avoiding a superfluous update cycle from the Power BI host. Also
+ * short-circuits when the read-mode persist gate is active — the visual
+ * never writes back to the host during a read-mode update, regardless of
+ * which call path produced the change (see read-mode-gate.ts).
  */
 export const persistProperties = (
     changes: powerbi.VisualObjectInstancesToPersist
 ) => {
+    if (isReadModePersistSuppressed()) {
+        logDebug('persistProperties: read-mode persist gate active, skipping');
+        return;
+    }
+    if (!hasPropertyChanges(changes)) {
+        logDebug('persistProperties: no changes detected, skipping');
+        return;
+    }
     getVisualHost()?.persistProperties(changes);
+};
+
+/**
+ * Compare proposed changes against the current dataview objects to determine
+ * if any values actually differ. Returns false if all proposed values match
+ * the currently persisted values.
+ *
+ * Only optimises `replace` operations — `merge` and `remove` are always
+ * treated as changes to avoid silently skipping them.
+ */
+const hasPropertyChanges = (
+    changes: powerbi.VisualObjectInstancesToPersist
+): boolean => {
+    if ((changes.merge?.length ?? 0) > 0 || (changes.remove?.length ?? 0) > 0) {
+        return true;
+    }
+    const currentObjects =
+        getDenebVisualState().updates.options?.dataViews?.[0]?.metadata
+            ?.objects ?? {};
+    for (const instance of changes.replace ?? []) {
+        const current = currentObjects[instance.objectName] ?? {};
+        for (const [key, value] of Object.entries(instance.properties ?? {})) {
+            if (!valuesMatch(current[key], value)) return true;
+        }
+    }
+    return false;
+};
+
+/**
+ * Compare two property values, handling reference types that may have been
+ * produced by structuredClone (e.g. Date objects from the dataview).
+ */
+const valuesMatch = (a: unknown, b: unknown): boolean => {
+    if (a === b) return true;
+    if (a instanceof Date && b instanceof Date)
+        return a.getTime() === b.getTime();
+    return false;
 };
 
 /**

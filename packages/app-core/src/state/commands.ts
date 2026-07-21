@@ -25,6 +25,7 @@ export const createCommandsSlice =
             debugPaneShowData: true,
             debugPaneShowLogs: true,
             debugPaneShowSignals: true,
+            debugPaneShowSource: true,
             debugPaneToggle: true,
             discardChanges: true,
             editorFocusOut: true,

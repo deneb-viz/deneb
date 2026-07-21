@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import {
     Caption1,
     Label,
@@ -8,8 +8,6 @@ import {
     tokens,
     useId
 } from '@fluentui/react-components';
-import { type PaginationComponentProps } from 'react-data-table-component';
-
 import { DATA_VIEWER_CONFIGURATION } from '@deneb-viz/configuration';
 import { useDenebState } from '../../../../state';
 import { handleDataTableRowsPerPageChange } from '../../../../lib';
@@ -36,26 +34,39 @@ const useDataTableStatusBarStyles = makeStyles({
 });
 
 /**
+ * Pagination contract consumed by the status bar. Field names and call
+ * signatures match what react-data-table-component's `PaginationComponentProps`
+ * exposed previously, so the component internals are unchanged; the type is now
+ * owned locally rather than imported from the (removed) table library.
+ */
+export interface DataTableStatusBarProps {
+    /** Total row count across all pages. */
+    rowCount: number;
+    /** Current (1-based) page. */
+    currentPage: number;
+    /** Navigate to a page. The second arg (total rows) is unused by callers. */
+    onChangePage: (page: number, totalRows: number) => void;
+    /** Change the rows-per-page, preserving the caller's current page arg. */
+    onChangeRowsPerPage: (
+        currentRowsPerPage: number,
+        currentPage: number
+    ) => void;
+}
+
+/**
  * Displays at the footer of the data table, and used to control pagination and other options.
  */
-// eslint-disable-next-line max-lines-per-function
 export const DataTableStatusBar = ({
     rowCount,
-    rowsPerPage,
     onChangePage,
     onChangeRowsPerPage,
     currentPage
-}: PaginationComponentProps) => {
+}: DataTableStatusBarProps) => {
     const { rowsPerPageSetting, mode, translate } = useDenebState((state) => ({
         rowsPerPageSetting: state.editorPreferences.dataViewerRowsPerPage,
         mode: state.editorPreviewAreaSelectedPivot,
         translate: state.i18n.translate
     }));
-    useEffect(() => {
-        if (rowsPerPage !== rowsPerPageSetting) {
-            onChangeRowsPerPage(rowsPerPageSetting as number, currentPage);
-        }
-    }, [rowsPerPage, rowsPerPageSetting]);
     const handleFirstPageButtonClick = () => {
         onChangePage(1, rowCount);
     };
@@ -87,58 +98,65 @@ export const DataTableStatusBar = ({
     const rowsPerPageId = useId();
     const rowsPerPageEntries = useMemo(() => getRowsPerPageValues(), []);
     const optionComponent = useMemo(() => {
-        switch (mode) {
-            case 'data':
-                return <DatasetSelect />;
-            default:
-                return null;
+        // Root-level `DatasetSelect` is only meaningful on the Data outer
+        // pivot. The Source tab reads from `state.dataset.values` directly
+        // and has no dataset-name axis to switch between, so we hide the
+        // selector everywhere except the Data tab.
+        if (mode === 'data') {
+            return <DatasetSelect />;
         }
+        return null;
     }, [mode]);
 
     return (
         <StatusBarContainer
             nearItems={<div>{optionComponent}</div>}
+            // The pagination cluster is meaningless at zero rows (rdt hid
+            // its whole bar; we keep the bar for the dataset selector and
+            // hide only this side).
             farItems={
-                <div className={classes.navigation}>
-                    <div>
-                        <Label htmlFor={rowsPerPageId} size='small'>
-                            {translate('Text_Data_Table_Navigation_Rows')}
-                        </Label>
+                rowCount === 0 ? null : (
+                    <div className={classes.navigation}>
+                        <div>
+                            <Label htmlFor={rowsPerPageId} size='small'>
+                                {translate('Text_Data_Table_Navigation_Rows')}
+                            </Label>
+                        </div>
+                        <div>
+                            <Select
+                                id={rowsPerPageId}
+                                value={rowsPerPageSetting}
+                                onChange={handleChangeRowsPerPage}
+                                size='small'
+                            >
+                                {rowsPerPageEntries}
+                            </Select>
+                        </div>
+                        <div>
+                            <Caption1>{range}</Caption1>
+                        </div>
+                        <DataTableNavigationButton
+                            type='first'
+                            onClick={handleFirstPageButtonClick}
+                            disabled={currentPage === 1}
+                        />
+                        <DataTableNavigationButton
+                            type='previous'
+                            onClick={handlePreviousButtonClick}
+                            disabled={currentPage === 1}
+                        />
+                        <DataTableNavigationButton
+                            type='next'
+                            onClick={handleNextButtonClick}
+                            disabled={currentPage === numPages}
+                        />
+                        <DataTableNavigationButton
+                            type='last'
+                            onClick={handleLastPageButtonClick}
+                            disabled={currentPage === numPages}
+                        />
                     </div>
-                    <div>
-                        <Select
-                            id={rowsPerPageId}
-                            value={rowsPerPageSetting}
-                            onChange={handleChangeRowsPerPage}
-                            size='small'
-                        >
-                            {rowsPerPageEntries}
-                        </Select>
-                    </div>
-                    <div>
-                        <Caption1>{range}</Caption1>
-                    </div>
-                    <DataTableNavigationButton
-                        type='first'
-                        onClick={handleFirstPageButtonClick}
-                        disabled={currentPage === 1}
-                    />
-                    <DataTableNavigationButton
-                        type='previous'
-                        onClick={handlePreviousButtonClick}
-                        disabled={currentPage === 1}
-                    />
-                    <DataTableNavigationButton
-                        type='next'
-                        onClick={handleNextButtonClick}
-                        disabled={currentPage === numPages}
-                    />
-                    <DataTableNavigationButton
-                        type='last'
-                        onClick={handleLastPageButtonClick}
-                        disabled={currentPage === numPages}
-                    />
-                </div>
+                )
             }
         />
     );

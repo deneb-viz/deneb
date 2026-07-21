@@ -7,6 +7,7 @@ import {
     handleDebugPaneData,
     handleDebugPaneLog,
     handleDebugPaneSignal,
+    handleDebugPaneSource,
     handleEditorPaneConfig,
     handleEditorPaneSettings,
     handleEditorPaneSpecification,
@@ -53,4 +54,5 @@ export const useEditorHotkeys = (
     hotkeyHandler('debugPaneShowData', handleDebugPaneData);
     hotkeyHandler('debugPaneShowSignals', handleDebugPaneSignal);
     hotkeyHandler('debugPaneShowLogs', handleDebugPaneLog);
+    hotkeyHandler('debugPaneShowSource', handleDebugPaneSource);
 };

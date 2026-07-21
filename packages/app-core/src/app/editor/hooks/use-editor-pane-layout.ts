@@ -2,26 +2,31 @@ import {
     createRef,
     type RefObject,
     useCallback,
-    useLayoutEffect,
     useRef,
     useState
 } from 'react';
 import { shallow } from 'zustand/shallow';
-import { usePrevious } from '@uidotdev/usehooks';
 import useResizeObserver from 'use-resize-observer';
 import type { AllotmentHandle } from 'allotment';
 
 import { logDebug } from '@deneb-viz/utils/logging';
-import {
-    DEBUG_PANE_CONFIGURATION,
-    SPLIT_PANE_CONFIGURATION
-} from '@deneb-viz/configuration';
+import { DEBUG_PANE_CONFIGURATION } from '@deneb-viz/configuration';
 import { useDenebState } from '../../../state';
+import { getDebugPaneLatchHeight } from './pane-layout-helpers';
+import { usePaneHydration } from './use-pane-hydration';
+import { usePostHydrationResizeSync } from './use-post-hydration-resize-sync';
+import { useDebugPaneToggleSync } from './use-debug-pane-toggle-sync';
 
 const LOG_PREFIX = 'useEditorPaneLayout';
 
 /**
  * Hook that manages all pane sizing, hydration, and resize logic for the editor layout.
+ *
+ * Orchestrates three side-effect sub-hooks (called in declaration order so
+ * effect execution matches the pre-split sequence):
+ *   1. `usePaneHydration` - one-shot initial hydration from container dims.
+ *   2. `usePostHydrationResizeSync` - proportional rescale on container resize.
+ *   3. `useDebugPaneToggleSync` - programmatic resize on debug-pane toggle.
  */
 export const useEditorPaneLayout = () => {
     const {
@@ -59,7 +64,17 @@ export const useEditorPaneLayout = () => {
 
     // Whether we should resize the vertical pane via API after an adjustment
     const [hasHydratedViewports, setHasHydratedViewports] = useState(false);
-    const isDebugPaneMinimizedPrev = usePrevious(isDebugPaneMinimized);
+
+    // Container size at the moment the store was last synced. Compared against
+    // the live observer values to detect post-hydration container resizes (most
+    // commonly the host's iframe expansion that follows editor open) and trigger
+    // a proportional rescale of the stored pane sizes. Without this, the
+    // one-shot hydration below captures a partial-expansion size and Fit
+    // computes against stale values for the rest of the session.
+    const prevContainerSizeRef = useRef<{
+        width: number;
+        height: number;
+    } | null>(null);
 
     // Commit vertical sizes to store (single dispatch)
     const commitVerticalSizes = useCallback(
@@ -152,121 +167,6 @@ export const useEditorPaneLayout = () => {
         [paneHandleRefVertical, commitVerticalSizes]
     );
 
-    // Work out initial dimensions for the panes
-    useLayoutEffect(() => {
-        const cw = containerWidth ?? 0;
-        const ch = containerHeight ?? 0;
-        const isValid = cw > 0 && ch > 0;
-        if (isValid && !hasHydratedViewports) {
-            const vHeights = getPreviewDebugPaneSizes(ch, isDebugPaneMinimized);
-            const hw =
-                editorPaneViewport.width || getDefaultHorizontalPaneWidth(cw);
-            const vw =
-                previewAreaViewport.width || getDefaultVerticalPaneWidth(cw);
-            const editorPaneViewportNext = {
-                height: editorPaneViewport.height || ch,
-                width: hw
-            };
-            const previewAreaViewportNext = {
-                height: previewAreaViewport.height || vHeights[0],
-                width: vw
-            };
-            const debugPaneViewportNext = {
-                height: debugPaneViewport.height || vHeights[1],
-                width: debugPaneViewport.width || vw
-            };
-            const latchHeightNext = getDebugPaneLatchHeight(
-                debugPaneViewportNext.height,
-                debugPaneLatchHeight ?? 0,
-                ch,
-                isDebugPaneMinimized
-            );
-            logDebug(`[${LOG_PREFIX}] Hydrating viewports...`, {
-                container: { width: cw, height: ch },
-                editorPaneViewport: editorPaneViewportNext,
-                previewAreaViewport: previewAreaViewportNext,
-                debugPaneViewport: debugPaneViewportNext,
-                isDebugPaneMinimized,
-                latchHeightNext
-            });
-            setHasHydratedViewports(() => true);
-            setViewports({
-                editorPaneViewport: editorPaneViewportNext,
-                previewAreaViewport: previewAreaViewportNext,
-                debugPaneViewport: debugPaneViewportNext,
-                isDebugPaneMinimized,
-                debugPaneLatchHeight: latchHeightNext
-            });
-        }
-    }, [
-        containerWidth,
-        containerHeight,
-        debugPaneLatchHeight,
-        debugPaneViewport.height,
-        debugPaneViewport.width,
-        editorPaneViewport.height,
-        editorPaneViewport.width,
-        hasHydratedViewports,
-        isDebugPaneMinimized,
-        previewAreaViewport.height,
-        previewAreaViewport.width,
-        setViewports
-    ]);
-
-    // Handle toggle events for the debug pane (which will need a programmatic resize of the vertical pane)
-    useLayoutEffect(() => {
-        const ch = containerHeight ?? 0;
-        const isValid = (containerWidth ?? 0) > 0 && ch > 0;
-        if (
-            isValid &&
-            hasHydratedViewports &&
-            isDebugPaneMinimizedPrev !== isDebugPaneMinimized &&
-            isDebugPaneMinimizedPrev !== null
-        ) {
-            if (
-                isDebugPaneMinimized &&
-                debugPaneViewport.height >
-                    DEBUG_PANE_CONFIGURATION.toolbarMinSize
-            ) {
-                logDebug(`[${LOG_PREFIX}] Triggered pane minimize`);
-                const previewDebugPaneSizesNext = getPreviewDebugPaneSizes(
-                    ch,
-                    isDebugPaneMinimized
-                );
-                logDebug(`[${LOG_PREFIX}] Minimizing debug pane...`, {
-                    debugPaneLatchHeight,
-                    previewDebugPaneSizesNext
-                });
-                resizeVertical(previewDebugPaneSizesNext);
-            }
-            if (
-                !isDebugPaneMinimized &&
-                debugPaneViewport.height ===
-                    DEBUG_PANE_CONFIGURATION.toolbarMinSize
-            ) {
-                logDebug(`[${LOG_PREFIX}] Triggered pane expansion`);
-                const previewDebugPaneSizesNext = getPreviewDebugPaneResetSizes(
-                    ch,
-                    debugPaneLatchHeight
-                );
-                logDebug(`[${LOG_PREFIX}] Resizing pane for expansion...`, {
-                    debugPaneLatchHeight,
-                    previewDebugPaneSizesNext
-                });
-                resizeVertical(previewDebugPaneSizesNext);
-            }
-        }
-    }, [
-        containerWidth,
-        containerHeight,
-        debugPaneLatchHeight,
-        debugPaneViewport.height,
-        hasHydratedViewports,
-        isDebugPaneMinimized,
-        isDebugPaneMinimizedPrev,
-        resizeVertical
-    ]);
-
     // Handle any size change (including reset) - only update the minimized flag
     const handleVerticalChange = useCallback(
         (sizes: number[]) => {
@@ -285,6 +185,44 @@ export const useEditorPaneLayout = () => {
         [isDebugPaneMinimized, setIsDebugPaneMinimized]
     );
 
+    // Sub-hooks: order matters - effect execution sequence (hydration ->
+    // resize-sync -> toggle-sync) must match the pre-split file.
+    usePaneHydration({
+        containerWidth,
+        containerHeight,
+        hasHydratedViewports,
+        setHasHydratedViewports,
+        prevContainerSizeRef,
+        editorPaneViewport,
+        previewAreaViewport,
+        debugPaneViewport,
+        debugPaneLatchHeight,
+        isDebugPaneMinimized,
+        setViewports
+    });
+
+    usePostHydrationResizeSync({
+        containerWidth,
+        containerHeight,
+        hasHydratedViewports,
+        prevContainerSizeRef,
+        editorPaneViewport,
+        previewAreaViewport,
+        debugPaneLatchHeight,
+        isDebugPaneMinimized,
+        setViewports
+    });
+
+    useDebugPaneToggleSync({
+        containerWidth,
+        containerHeight,
+        hasHydratedViewports,
+        isDebugPaneMinimized,
+        debugPaneViewportHeight: debugPaneViewport.height,
+        debugPaneLatchHeight,
+        resizeVertical
+    });
+
     return {
         containerRef,
         containerWidth,
@@ -300,93 +238,4 @@ export const useEditorPaneLayout = () => {
         previewAreaViewport,
         position
     };
-};
-
-// Helper functions
-
-const getDebugPaneLatchHeight = (
-    currentItemHeight: number,
-    currentLatchHeight: number,
-    contentHeight: number,
-    isDebugPaneMinimized: boolean
-) => {
-    if (isDebugPaneMinimized) {
-        logDebug(
-            `[${LOG_PREFIX}] getDebugPaneLatchHeight - skipping calculation, as pane is minimized`
-        );
-        return currentLatchHeight;
-    }
-    const latchHeight =
-        currentItemHeight < DEBUG_PANE_CONFIGURATION.areaMinSize
-            ? getDefaultDebugPaneHeightForContent(contentHeight)
-            : currentItemHeight;
-    logDebug(`[${LOG_PREFIX}] getDebugPaneLatchHeight`, {
-        currentHeight: currentItemHeight,
-        contentHeight,
-        latchHeight
-    });
-    return latchHeight;
-};
-
-const getDefaultDebugPaneHeightForContent = (contentHeight: number) =>
-    Math.floor(
-        contentHeight * DEBUG_PANE_CONFIGURATION.preferredHeightPercentage
-    );
-
-const getDefaultHorizontalPaneWidth = (contentWidth: number) =>
-    Math.floor(contentWidth * SPLIT_PANE_CONFIGURATION.defaultSizePercent);
-
-const getDefaultPreviewDebugPaneSizes = (contentHeight: number) => [
-    getDefaultVerticalPaneHeight(contentHeight),
-    getDefaultDebugPaneHeightForContent(contentHeight)
-];
-
-const getDefaultVerticalPaneHeight = (contentHeight: number) =>
-    Math.floor(
-        contentHeight * (1 - DEBUG_PANE_CONFIGURATION.preferredHeightPercentage)
-    );
-
-const getDefaultVerticalPaneWidth = (contentWidth: number) =>
-    Math.floor(
-        contentWidth * (1 - SPLIT_PANE_CONFIGURATION.defaultSizePercent)
-    );
-
-const getPreviewDebugPaneResetSizes = (
-    contentHeight: number,
-    latchHeight: number | null
-) => {
-    // Fallback if latch height is not yet established or is below minimum
-    const effectiveLatch =
-        !latchHeight || latchHeight < DEBUG_PANE_CONFIGURATION.toolbarMinSize
-            ? getDefaultDebugPaneHeightForContent(contentHeight)
-            : latchHeight;
-    const previewPaneSizesNext = [
-        contentHeight - effectiveLatch,
-        Math.max(effectiveLatch, DEBUG_PANE_CONFIGURATION.toolbarMinSize)
-    ];
-    logDebug(`[${LOG_PREFIX}] getPreviewDebugPaneResetSizes`, {
-        contentHeight,
-        latchHeight,
-        effectiveLatch,
-        previewPaneSizesNext
-    });
-    return previewPaneSizesNext;
-};
-
-const getPreviewDebugPaneSizes = (
-    contentHeight: number,
-    isDebugPaneMinimized: boolean
-) => {
-    const previewPaneSizesNext = isDebugPaneMinimized
-        ? [
-              contentHeight - DEBUG_PANE_CONFIGURATION.toolbarMinSize,
-              DEBUG_PANE_CONFIGURATION.toolbarMinSize
-          ]
-        : getDefaultPreviewDebugPaneSizes(contentHeight);
-    logDebug(`[${LOG_PREFIX}] getPreviewDebugPaneSizes`, {
-        contentHeight,
-        isDebugPaneMinimized,
-        previewPaneSizesNext
-    });
-    return previewPaneSizesNext;
 };

@@ -2,7 +2,7 @@ import { defineConfig, type Options } from 'tsup';
 import fs from 'fs';
 
 export default defineConfig((options: Options) => ({
-    entryPoints: ['src/index.ts'],
+    entry: ['src/index.ts', 'src/editor.ts'],
     dts: true,
     format: ['esm'],
     define: {
@@ -16,15 +16,23 @@ export default defineConfig((options: Options) => ({
         '@deneb-viz/powerbi-compat/*',
         '@deneb-viz/vega-runtime',
         '@deneb-viz/vega-runtime/*',
+        '@deneb-viz/vega-react',
+        '@deneb-viz/vega-react/*',
         '@deneb-viz/json-processing',
         '@deneb-viz/json-processing/*',
+        // Monaco - externalized so webpack can tree-shake it from viewer-only builds.
+        // Only the editor entry uses monaco at runtime; externalizing prevents esbuild
+        // from pulling it into shared chunks that the main entry also depends on.
+        /^@monaco-editor\//,
+        'monaco-editor',
+        /^monaco-editor\//,
         // Fluent UI - treat like React, consumers provide their own
         '@fluentui/react-components',
         '@fluentui/react-icons',
         /^@fluentui\//
     ],
     sourcemap: true,
-    splitting: false,
+    splitting: true,
     outDir: 'dist',
     loader: { '.png': 'dataurl' },
     esbuildPlugins: [

@@ -24,6 +24,7 @@ import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
 import { type DatasetFields } from '@deneb-viz/data-core/field';
 import { type VegaDatum } from '@deneb-viz/data-core/value';
 import { type AugmentedMetadataField } from '../dataset';
+import { getDenebVisualState } from '../../state';
 
 /**
  * In order to create suitable output for tooltips and debugging tables. Because Power BI tooltips suppress standard
@@ -38,12 +39,15 @@ const TOOLTIP_WHITESPACE_CHAR = '\u2800';
 export const tooltipHandler = (
     options: TooltipHandlerOptions
 ): TooltipHandler | undefined => {
-    const { enabled, fields, multiSelectDelay, values } = options;
+    const { enabled, multiSelectDelay } = options;
     if (!enabled) {
         return undefined;
     }
     return (_, event, item, value) => {
         if (item && value) {
+            // Access current fields/values lazily from store at invocation time; we tried doing this by passing them
+            // into the handler closure, but that caused re-render issues with view.runAsync() when they changed.
+            const { fields, values } = getDenebVisualState().dataset;
             const coordinates = resolveCoordinates(event);
             const data = resolveDatumFromItem(item);
             const rowNumbers = getResolvedRowIdentities(data, {

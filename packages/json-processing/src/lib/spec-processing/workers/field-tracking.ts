@@ -16,18 +16,19 @@ import {
     type IDenebTrackingResponsePayload
 } from './types';
 import {
-    type DatasetField,
+    type DatasetFieldWithTemplateMetadata,
     FIELD_TRACKING_TOKEN_PLACEHOLDER,
     getDatasetFieldsInclusive,
     getEscapedReplacerPattern,
     getPlaceholderKey,
     type UsermetaDatasetField
 } from '@deneb-viz/data-core/field';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 
 /**
  * For a Vega expression AST node, check if it has an occurrence of a field from the visual dataset.
  */
-export const doesExpressionContainField = (
+const doesExpressionContainField = (
     json: object,
     fieldName: string,
     supplementaryPatterns: string[]
@@ -81,7 +82,7 @@ const doesLiteralContainField = (
  * Produces a simple RegExp pattern for matching drilldown field usage.
  * TODO: should probably be in the Power BI-specific module.
  */
-export const getDrilldownFieldExpression = () =>
+const getDrilldownFieldExpression = () =>
     new RegExp(`(__drilldown(_flat)?__)`);
 
 /**
@@ -102,19 +103,18 @@ const getTemplateMetadataOriginal = (
  * they are in the current dataset.
  */
 const getTrackedFieldMapCurrent = (
-    datasetFields: Record<string, DatasetField>,
+    datasetFields: Record<string, DatasetFieldWithTemplateMetadata>,
     trackedFields: TrackedFields,
     reset = false
 ): TrackedFieldCandidates =>
     Object.values(datasetFields).reduce(
         (acc, v) => {
-            const templateMetadata = v.templateMetadata as UsermetaDatasetField;
-            acc[templateMetadata.key] = {
+            acc[v.templateMetadata.key] = {
                 isCurrent: true,
                 templateMetadata: v.templateMetadata,
                 templateMetadataOriginal: getTemplateMetadataOriginal(
                     trackedFields,
-                    templateMetadata,
+                    v.templateMetadata,
                     reset
                 )
             };
@@ -174,9 +174,10 @@ export const getTrackingDataFromSpecification = (
         reset,
         supplementaryPatterns
     } = options;
-    const datasetFields = <Record<string, DatasetField>>(
-        getDatasetFieldsInclusive(fields)
-    );
+    const datasetFields = getDatasetFieldsInclusive(fields) as Record<
+        string,
+        DatasetFieldWithTemplateMetadata
+    >;
     const trackedFields: TrackedFields = {};
     const trackedDrilldown: TrackedDrilldownProperties = {
         isCurrent: hasDrilldown,
@@ -222,13 +223,16 @@ export const getTrackingDataFromSpecification = (
             let fieldIndex = 0;
             const isExpression = isExpressionField(value);
             Object.entries(fieldMapMerged).forEach(([, f]) => {
-                const templateMetadata =
-                    f.templateMetadata as UsermetaDatasetField;
-                const templateMetadataOriginal =
-                    f.templateMetadataOriginal as UsermetaDatasetField;
+                const { templateMetadata, templateMetadataOriginal } = f as {
+                    templateMetadata: UsermetaDatasetField;
+                    templateMetadataOriginal: UsermetaDatasetField;
+                };
                 const { key } = templateMetadata;
                 const tracking: TrackedFieldProperties = trackedFields[key] || {
-                    placeholder: getPlaceholderKey(fieldIndex),
+                    placeholder: getPlaceholderKey(
+                        DATASET_DEFAULT_NAME,
+                        fieldIndex
+                    ),
                     paths: [],
                     isInDataset: f.isCurrent,
                     isInSpecification: false,
@@ -300,7 +304,7 @@ export const getTrackingDataFromSpecification = (
  * included in their declaration, so we should avoid inspecting them. This method tests the path to see if it's a
  * candidate for avoiding inspection, so that we can take note of it for later on.
  */
-export const isExpensivePath = (path: JSONPath) => {
+const isExpensivePath = (path: JSONPath) => {
     switch (true) {
         // Vega data[]/values constructor
         case path.length > 2 &&
@@ -323,7 +327,7 @@ export const isExpensivePath = (path: JSONPath) => {
 /**
  * Tests the supplied string to see if it evaluates as a valid Vega expression.
  */
-export const isExpressionField = (detail: string) => {
+const isExpressionField = (detail: string) => {
     if (!isLiteralEligibleForTesting(detail)) return false;
     try {
         const node = parseExpression(detail);
@@ -344,7 +348,7 @@ const isLiteralEligibleForTesting = (value: string) =>
  * For previous and current field candidate maps, get a merged object that should be used for testing against the
  * specification.
  */
-export const getTrackedFieldMapMerged = (
+const getTrackedFieldMapMerged = (
     fieldMapPrev: TrackedFieldCandidates,
     fieldMapCurrent: TrackedFieldCandidates
 ) => mergician(fieldMapPrev, fieldMapCurrent);
@@ -353,5 +357,5 @@ export const getTrackedFieldMapMerged = (
  * Test if a path should be avoided when inspecting a JSON object for field tracking. If a path being tested contains
  * the same elements at the start of the path as an expensive path, then we should avoid inspecting it.
  */
-export const shouldAvoidPath = (path: JSONPath, expensivePaths: JSONPath[]) =>
+const shouldAvoidPath = (path: JSONPath, expensivePaths: JSONPath[]) =>
     expensivePaths.some((p) => p.every((v, i) => v === path[i]));

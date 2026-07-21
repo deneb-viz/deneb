@@ -19,7 +19,7 @@ import {
  * Take a tokenized specification, tracked fields, and desired remapping information, and asynchronously update the
  * specification via another thread (using the necessary web worker).
  */
-export const getRemappedSpecification = async (
+export const requestRemappedSpecification = async (
     tokenizedSpecification: string | null,
     remapFields: UsermetaDatasetField[],
     trackedFields: TrackedFields

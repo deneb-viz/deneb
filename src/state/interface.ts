@@ -6,6 +6,7 @@ import { type ContainerViewport } from '@deneb-viz/app-core';
 
 export type InterfaceSlice = {
     embedViewport: ContainerViewport | undefined;
+    isInFocus: boolean;
     mode: DisplayMode;
     viewport: ContainerViewport | undefined;
     setEmbedViewport: (viewport: ContainerViewport) => void;
@@ -21,6 +22,7 @@ export const createInterfaceSlice = (): StateCreator<
 > => {
     return (set) => ({
         embedViewport: undefined,
+        isInFocus: false,
         mode: 'initializing',
         viewport: undefined,
         setEmbedViewport: (viewport) => {

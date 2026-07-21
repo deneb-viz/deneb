@@ -1,7 +1,10 @@
 export * from './app';
 export {
     useDenebPlatformProvider,
+    type LocalisableText,
     type OnCreateProjectPayload,
+    type PlatformSearchContribution,
+    type PlatformSearchRow,
     type ViewEventBinder
 } from './components/deneb-platform';
 export {
@@ -15,11 +18,23 @@ export * from './state';
 export * from './components/template-metadata';
 export * from './components/ui';
 export {
-    SettingsHeadingLabel,
-    SettingsTextSection,
-    useSettingsPaneStyles
+    SettingsAccordionItem,
+    spinButtonStyleSlots,
+    useSettingsPaneStyles,
+    useSettingsPaneTooltip
 } from './features/settings-pane';
-export { useSpecificationEditor } from './features/specification-editor';
+export {
+    specificationEditorRefs,
+    useSpecificationEditor
+} from './context/specification-editor';
+export { type SpecificationEditorRefs } from './lib/editor/specification-editor-refs';
 
 export { updateFieldTracking } from './lib/field-processing';
 export * from './lib/interface';
+export {
+    markEditorOpenStart,
+    markEditorOpenStage,
+    flushEditorOpenTimings,
+    type EditorOpenStage
+} from './lib/perf';
+export { INCREMENTAL_UPDATE_CONFIGURATION } from './lib/vega/incremental-update-configuration';

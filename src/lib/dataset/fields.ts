@@ -6,8 +6,8 @@ import {
     FORMAT_FIELD_SUFFIX,
     FORMATTED_FIELD_SUFFIX,
     HIGHLIGHT_FIELD_SUFFIX,
-    type UsermetaDatasetField,
-    type UsermetaDatasetFieldType
+    getEncodedFieldName,
+    type DatasetFieldDataType
 } from '@deneb-viz/data-core/field';
 import type { AugmentedMetadataField, DatasetFieldValueSource } from './types';
 import { isCrossHighlightPropSet } from '../interactivity';
@@ -58,33 +58,28 @@ export const getDatumFieldsFromMetadata = (
     return fields.reduce<DatasetFields<AugmentedMetadataField>>((result, c) => {
         const encodedName =
             c.encodedName ?? getEncodedFieldName(c.column.displayName);
+        const isTemplateEligible = isSourceField(c.source);
         result[`${encodedName}`] = {
-            ...{
-                id: c.column.queryName ?? c.column.displayName ?? '',
-                name: encodedName,
-                hostMetadata: c,
-                templateMetadata: isSourceField(c.source)
-                    ? getResolvedVisualMetadataToDatasetField(
-                          c.column,
-                          encodedName
+            id: c.column.queryName || c.column.displayName,
+            ...(isTemplateEligible
+                ? {
+                      role: c.column.isMeasure
+                          ? ('aggregation' as const)
+                          : ('grouping' as const),
+                      dataType: getResolvedValueDescriptor(
+                          c.column.type as powerbi.ValueTypeDescriptor
                       )
-                    : undefined
-            }
+                  }
+                : { isSupportField: true as const }),
+            hostMetadata: c
         };
         return result;
     }, {});
 };
 
-/**
- * If a Power BI column or measure contains characters that create problems in JSON or Vega/Vega-Lite expressions and
- * encodings, we will replace them with an underscore, which is much easier to educate people on than having to learn
- * all the specifics of escaping in the right context, in the right way.
- *
- *  - Vega: https://vega.github.io/vega/docs/types/#Field
- *  - Vega-Lite: https://vega.github.io/vega-lite/docs/field.html
- */
-export const getEncodedFieldName = (displayName: string) =>
-    displayName?.replace(/([\\".[\]])/g, '_') || '';
+// Re-exported from `@deneb-viz/data-core/field` so the encoding rule lives in
+// a single place. See `packages/data-core/src/lib/field/encoding.ts`.
+export { getEncodedFieldName };
 
 /**
  * Get artificial array of values first (if needed) as we'll need them when working out highlights later on.
@@ -179,7 +174,7 @@ const getResolvedArtificialIndex = (index: number | undefined) =>
  */
 export const getResolvedValueDescriptor = (
     type: powerbi.ValueTypeDescriptor
-): UsermetaDatasetFieldType => {
+): DatasetFieldDataType => {
     switch (true) {
         case type?.bool:
             return 'bool';
@@ -195,26 +190,6 @@ export const getResolvedValueDescriptor = (
 };
 
 /**
- * For a given `DataViewMetadataColumn`, and its encoded name produces a new
- * `ITemplateDatasetField` object that can be used for templating purposes.
- */
-export const getResolvedVisualMetadataToDatasetField = (
-    metadata: powerbi.DataViewMetadataColumn,
-    encodedName: string
-): UsermetaDatasetField => {
-    return {
-        key: metadata.queryName ?? metadata.displayName ?? '',
-        name: encodedName,
-        namePlaceholder: encodedName,
-        description: '',
-        kind: (metadata.isMeasure && 'measure') || 'column',
-        type: getResolvedValueDescriptor(
-            metadata.type as powerbi.ValueTypeDescriptor
-        )
-    };
-};
-
-/**
  * Test if a data view field is numeric or date/time valued. if so, then we
  * should provide formatting support fields for it.
  */
@@ -224,6 +199,11 @@ export const isFieldEligibleForFormatting = (
 
 /**
  * Allows us to test that a field should have template metadata and/or eligible for deriving selection IDs.
+ * Typed as a predicate so filters narrow `source` to the two source
+ * provenances (see `buildFieldSourceMappings`, whose parameter type
+ * enforces pre-filtering).
  */
-export const isSourceField = (source: DatasetFieldValueSource) =>
+export const isSourceField = (
+    source: DatasetFieldValueSource
+): source is 'categories' | 'values' =>
     (<DatasetFieldValueSource[]>['categories', 'values']).includes(source);

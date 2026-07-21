@@ -20,6 +20,7 @@ import {
     getProviderSchemaUrl,
     type SpecProvider
 } from '@deneb-viz/vega-runtime/embed';
+import { replaceLegacySignalReferences } from '@deneb-viz/vega-runtime/signals';
 import { getNewUuid } from '@deneb-viz/utils/crypto';
 import {
     type DenebTemplateSetImportFilePayload,
@@ -29,10 +30,12 @@ import {
 } from './lib/template-processing';
 import { omit } from '@deneb-viz/utils/object';
 import {
+    getEncodedFieldName,
     getEscapedReplacerPattern,
     getPlaceholderKey,
     type UsermetaDatasetField
 } from '@deneb-viz/data-core/field';
+import { type SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 import {
     type SelectionMode,
     INTERACTIVITY_DEFAULTS
@@ -62,17 +65,20 @@ export const getExportTemplate = (options: {
         [key: string]: string;
     };
     metadata: UsermetaTemplate;
+    supportFieldConfiguration?: SupportFieldConfiguration;
     tokenizedSpec: string;
     trackedFields: TrackedFields;
 }) => {
     const {
         informationTranslationPlaceholders,
         metadata,
+        supportFieldConfiguration,
         tokenizedSpec,
         trackedFields
     } = options;
     const newMetadata = getPublishableUsermeta(metadata, {
         informationTranslationPlaceholders,
+        supportFieldConfiguration,
         trackedFields
     });
     const withUsermeta = applyEdits(
@@ -95,8 +101,8 @@ export const getExportTemplate = (options: {
     return getTextFormattedAsJsonC(withSchema, 2);
 };
 
-const getFieldPattern = (index: number) =>
-    new RegExp(getEscapedReplacerPattern(getPlaceholderKey(index)), 'g');
+const getFieldPatternByKey = (key: string) =>
+    new RegExp(getEscapedReplacerPattern(key), 'g');
 
 /**
  * When we initialize a new template for import (or when intializing the store), this provides the default values for
@@ -140,14 +146,28 @@ export const getNewTemplateMetadata = (options: {
     interactivity: {
         tooltip: INTERACTIVITY_DEFAULTS.enableTooltips,
         contextMenu: INTERACTIVITY_DEFAULTS.enableContextMenu,
+        contextMenuSelector: INTERACTIVITY_DEFAULTS.enableContextMenuSelector,
         selection: INTERACTIVITY_DEFAULTS.enableSelection,
         selectionMode: INTERACTIVITY_DEFAULTS.selectionMode as SelectionMode,
         dataPointLimit: INTERACTIVITY_DEFAULTS.selectionMaxDataPoints,
         highlight: INTERACTIVITY_DEFAULTS.enableHighlight
     },
     config: '{}',
-    dataset: []
+    datasets: { [DATASET_DEFAULT_NAME]: [] }
 });
+
+/**
+ * Build a lookup from display name → TrackedFieldProperties. TrackedFields is keyed by
+ * `field.id` (queryName), which differs from the display name used in supportFieldConfiguration
+ * and in the export dataset array. This helper enables name-based lookups.
+ */
+const buildNameToTrackedFieldMap = (trackedFields: TrackedFields) => {
+    const map = new Map<string, { placeholder: string }>();
+    for (const tf of Object.values(trackedFields)) {
+        map.set(tf.templateMetadata.name, { placeholder: tf.placeholder });
+    }
+    return map;
+};
 
 /**
  * Ensure that usermeta is in its final, publishable state after all necessary substitutions and processing have been done.
@@ -158,6 +178,7 @@ export const getPublishableUsermeta = (
         informationTranslationPlaceholders: {
             [key: string]: string;
         };
+        supportFieldConfiguration?: SupportFieldConfiguration;
         trackedFields: TrackedFields;
     }
 ) => {
@@ -176,13 +197,39 @@ export const getPublishableUsermeta = (
                     usermeta.information.author ||
                     options.informationTranslationPlaceholders.author
             },
-            dataset: (usermeta?.[DATASET_DEFAULT_NAME] ?? []).map((d) => {
-                d.key = options.trackedFields?.[d.key]?.placeholder ?? d.key;
-                d.name = getFieldNameForExport(d);
-                return omit(d as unknown as Record<string, unknown>, [
-                    'namePlaceholder'
-                ]) as Omit<UsermetaDatasetField, 'namePlaceholder'>;
-            })
+            datasets: (() => {
+                const nameMap = buildNameToTrackedFieldMap(
+                    options.trackedFields
+                );
+                const sourceDatasets = usermeta?.datasets ?? {
+                    [DATASET_DEFAULT_NAME]: []
+                };
+                const processField = (d: UsermetaDatasetField) => {
+                    const item = { ...d };
+                    const tracked = nameMap.get(
+                        item.namePlaceholder ?? item.name
+                    );
+                    item.key = tracked?.placeholder ?? item.key;
+                    item.name = getFieldNameForExport(item);
+                    const sfcKey = getEncodedFieldName(
+                        item.namePlaceholder ?? item.name ?? ''
+                    );
+                    const fieldConfig =
+                        options.supportFieldConfiguration?.[sfcKey];
+                    if (fieldConfig) {
+                        item.supportFieldConfiguration = fieldConfig;
+                    }
+                    return omit(item as unknown as Record<string, unknown>, [
+                        'namePlaceholder'
+                    ]) as Omit<UsermetaDatasetField, 'namePlaceholder'>;
+                };
+                return Object.fromEntries(
+                    Object.entries(sourceDatasets).map(([name, fields]) => [
+                        name,
+                        (fields ?? []).map(processField)
+                    ])
+                );
+            })()
         }
     };
 };
@@ -194,16 +241,25 @@ export const getTemplateProvider = (template: string): SpecProvider =>
     getTemplateMetadata(template)?.deneb?.provider ?? DEFAULT_PROVIDER;
 
 /**
- * For all supplied template fields, perform a replace on all tokens and return the new spec.
+ * For all supplied template datasets, perform a key-based replace on all placeholder tokens
+ * and return the new spec. Each field's `key` property (e.g., `__dataset.0__`) is matched
+ * directly rather than deriving the pattern from the array index.
+ * Also migrates any legacy signal references (pbiContainer → denebContainer).
  */
 export const getTemplateReplacedForDataset = (
     spec: string,
-    dataset: UsermetaDatasetField[]
-) =>
-    dataset.reduce((result, value, index) => {
-        const pattern = getFieldPattern(index);
-        return result.replace(pattern, value.suppliedObjectName as string);
-    }, spec);
+    datasets: Record<string, UsermetaDatasetField[]>
+) => {
+    const migratedSpec = replaceLegacySignalReferences(spec).spec;
+    return Object.values(datasets).reduce(
+        (result, fields) =>
+            fields.reduce((r, field) => {
+                const pattern = getFieldPatternByKey(field.key);
+                return r.replace(pattern, field.suppliedObjectName ?? '');
+            }, result),
+        migratedSpec
+    );
+};
 
 /**
  * In v1.7, we moved the Config editor content into the `usermeta` object. Prior to this we merged the content in the
@@ -235,6 +291,54 @@ export const getTemplateResolvedForLegacyConfig = (
         return removedConfig;
     }
     return template;
+};
+
+/**
+ * V1 templates use `usermeta.dataset` (a flat array) with `__N__` placeholders. V2 uses `usermeta.datasets` (a keyed
+ * object) with `__datasetName.N__` placeholders. This migration converts the old structure to the new one, rewriting
+ * both the usermeta property and placeholder references in the spec body.
+ *
+ * If `usermeta.datasets` already exists, the template is assumed to be v2 and passed through unchanged.
+ * If both `usermeta.dataset` and `usermeta.datasets` exist, the template is passed through unchanged — schema
+ * validation will reject it via `additionalProperties: false`.
+ */
+export const getTemplateResolvedForLegacyDataset = (
+    template: string
+): string => {
+    const rawUsermeta = getJsoncStringAsObject(template)?.usermeta as
+        | Record<string, unknown>
+        | undefined;
+    if (!rawUsermeta) return template;
+
+    const hasLegacyDataset = Array.isArray(rawUsermeta['dataset']);
+    const hasNewDatasets = rawUsermeta['datasets'] !== undefined;
+
+    if (!hasLegacyDataset || hasNewDatasets) {
+        return template;
+    }
+
+    const legacyDataset = rawUsermeta['dataset'] as UsermetaDatasetField[];
+
+    const migratedFields = legacyDataset.map((field, i) => ({
+        ...field,
+        key: getPlaceholderKey(DATASET_DEFAULT_NAME, i)
+    }));
+
+    let result = getModifiedJsoncByPath(template, ['usermeta', 'datasets'], {
+        [DATASET_DEFAULT_NAME]: migratedFields
+    });
+    result = getModifiedJsoncByPath(result, ['usermeta', 'dataset'], undefined);
+
+    for (let i = 0; i < legacyDataset.length; i++) {
+        const oldPattern = new RegExp(
+            getEscapedReplacerPattern(`__${i}__`),
+            'g'
+        );
+        const newKey = getPlaceholderKey(DATASET_DEFAULT_NAME, i);
+        result = result.replace(oldPattern, newKey);
+    }
+
+    return result;
 };
 
 /**
@@ -293,13 +397,13 @@ export const getUpdatedExportMetadata = (
     metadata: UsermetaTemplate,
     options: {
         config?: string;
-        dataset?: UsermetaDatasetField[];
+        datasets?: Record<string, UsermetaDatasetField[]>;
         interactivity?: UsermetaInteractivity;
         provider?: SpecProvider;
         providerVersion?: string;
     }
 ) => {
-    const { config, dataset, interactivity, provider, providerVersion } =
+    const { config, datasets, interactivity, provider, providerVersion } =
         options;
     return {
         ...metadata,
@@ -309,7 +413,7 @@ export const getUpdatedExportMetadata = (
             providerVersion: providerVersion ?? metadata.deneb.providerVersion
         },
         interactivity: interactivity ?? metadata.interactivity,
-        dataset: dataset ?? metadata.dataset,
+        datasets: datasets ?? metadata.datasets,
         config: config ?? metadata.config
     };
 };
@@ -343,14 +447,14 @@ export const getValidatedTemplate = (
             templateResolvedLegacy,
             tabSize
         );
-        const metadata = getTemplateMetadata(templateResolvedLegacyConfig);
-        const validator = getProviderValidator({
-            provider: 'denebUserMeta'
-        });
+        const templateResolvedLegacyDataset =
+            getTemplateResolvedForLegacyDataset(templateResolvedLegacyConfig);
+        const metadata = getTemplateMetadata(templateResolvedLegacyDataset);
+        const validator = getProviderValidator();
         const valid = validator(metadata);
         if (valid) {
             const candidates = getTemplateResolvedForPlaceholderAssignment(
-                templateResolvedLegacyConfig,
+                templateResolvedLegacyDataset,
                 tabSize
             );
             return {

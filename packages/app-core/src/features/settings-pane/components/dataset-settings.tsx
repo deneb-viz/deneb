@@ -1,0 +1,576 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    Button,
+    Checkbox,
+    InfoLabel,
+    Label,
+    makeStyles,
+    MessageBar,
+    MessageBarActions,
+    MessageBarBody,
+    tokens,
+    Tooltip,
+    Tree,
+    TreeItem,
+    TreeItemLayout,
+    useId,
+    type TreeItemValue,
+    type TreeOpenChangeData,
+    type TreeOpenChangeEvent
+} from '@fluentui/react-components';
+import {
+    ArrowResetRegular,
+    Calculator16Regular,
+    TableFreezeColumn16Regular
+} from '@fluentui/react-icons';
+import FabricTableColumnQuestion16Regular from '@fabric-msft/svg-icons/dist/TableColumnQuestion16Regular';
+
+/**
+ * Wrapper for the Fabric SVG icon to match Fluent icon sizing.
+ * Fabric icons don't set explicit width/height on the SVG element.
+ */
+const TableColumnQuestion16Regular = () => (
+    <FabricTableColumnQuestion16Regular width={16} height={16} />
+);
+import { type SupportFieldFlags } from '@deneb-viz/data-core/support-fields';
+import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
+import { useDenebState } from '../../../state';
+import { useDenebPlatformProvider } from '../../../components/deneb-platform';
+import { useSettingsPaneTooltip } from './settings-pane-tooltip-context';
+import {
+    FLAG_LABELS,
+    FLAG_INFO,
+    computeToggledConfig,
+    hasAnyEnabledFlag,
+    removeFieldFromConfig,
+    resolveFieldApplicability,
+    resolveFieldFlagsForConfig
+} from './dataset-settings-utils';
+import { HighlightText } from './highlight-text';
+import { AssistivePreview } from './assistive-preview';
+import type { DatasetMatchView } from '../search/types';
+
+const useDatasetSettingsStyles = makeStyles({
+    tree: {
+        paddingLeft: tokens.spacingHorizontalNone
+    },
+    fieldItem: {
+        fontWeight: tokens.fontWeightSemibold
+    },
+    fieldNameRow: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: tokens.spacingHorizontalXS
+    },
+    enabledFlagHint: {
+        display: 'inline-block',
+        width: '6px',
+        height: '6px',
+        borderRadius: '50%',
+        backgroundColor: tokens.colorBrandForeground1,
+        flexShrink: 0
+    },
+    roleIcon: {
+        display: 'inline-flex',
+        alignItems: 'center'
+    },
+    leafLayout: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: tokens.spacingHorizontalS
+    }
+});
+
+/**
+ * Props for {@link DatasetSettings}.
+ *
+ * `datasetMatchView` is threaded in by the settings pane when a query
+ * is active. When `null | undefined`, the tree renders exactly as
+ * before — no filter, no highlights, no assistive preview. When
+ * non-null, the R4 tree-filter rule applies: only matched fields
+ * appear, and flag-match fields show only the matched flag leaves.
+ *
+ * `expandAllEpoch` / `collapseAllEpoch` are monotonically incremented
+ * by the pane's context menu actions. When they change, the dataset
+ * tree either expands all of its currently-rendered fields or
+ * collapses them. Unrelated to the outer accordion's openItems; lets
+ * Expand-all / Collapse-all reach into the inner Tree.
+ */
+export type DatasetSettingsProps = {
+    datasetMatchView?: DatasetMatchView | null;
+    expandAllEpoch?: number;
+    collapseAllEpoch?: number;
+};
+
+/**
+ * Dataset settings component for the settings pane. Renders a Fluent UI Tree
+ * showing source dataset fields and their applicable support field toggles.
+ * Each leaf renders its own checkbox; there is no field-level bulk toggle.
+ */
+export const DatasetSettings = ({
+    datasetMatchView,
+    expandAllEpoch,
+    collapseAllEpoch
+}: DatasetSettingsProps = {}) => {
+    const classes = useDatasetSettingsStyles();
+    const tooltipMountNode = useSettingsPaneTooltip();
+    const checkboxIdPrefix = useId('support-field-checkbox');
+    const { onEnableCrossHighlight, onDisableCrossHighlight } =
+        useDenebPlatformProvider();
+
+    const {
+        fields,
+        config,
+        spec,
+        denebMetaVersion,
+        interactivity,
+        consolidateFieldParameters,
+        setConfig,
+        translate
+    } = useDenebState((state) => ({
+        fields: state.dataset.fields,
+        config: state.project.supportFieldConfiguration,
+        spec: state.project.spec,
+        denebMetaVersion: state.project.denebMetaVersion,
+        interactivity: state.project.interactivity,
+        consolidateFieldParameters: state.project.consolidateFieldParameters,
+        setConfig: state.project.setSupportFieldConfiguration,
+        translate: state.i18n.translate
+    }));
+
+    // Filter to source fields only (exclude support/derived fields)
+    const sourceFields = useMemo(
+        () =>
+            Object.entries(fields).filter(
+                ([, f]) => f?.isSupportField !== true
+            ),
+        [fields]
+    );
+
+    // Open/collapse state for field tree nodes — collapsed by default.
+    // Only consulted when no search filter is active; otherwise the
+    // effective open set is derived from `datasetMatchView`.
+    const [openItems, setOpenItems] = useState<Set<TreeItemValue>>(
+        () => new Set()
+    );
+    const onOpenChange = useCallback(
+        (_event: TreeOpenChangeEvent, data: TreeOpenChangeData) => {
+            setOpenItems(data.openItems);
+        },
+        []
+    );
+
+    // During an active filter, field rows that matched should be open so
+    // the matched flags / highlights are visible immediately. Chevrons
+    // become read-only (consistent with the outer accordion's filter
+    // behaviour — users clear the query to interact manually).
+    const effectiveOpenItems = useMemo<Set<TreeItemValue>>(() => {
+        if (!datasetMatchView) return openItems;
+        return new Set<TreeItemValue>(datasetMatchView.matchedFields.keys());
+    }, [datasetMatchView, openItems]);
+
+    const effectiveOnOpenChange = useCallback(
+        (event: TreeOpenChangeEvent, data: TreeOpenChangeData) => {
+            if (datasetMatchView) return;
+            onOpenChange(event, data);
+        },
+        [datasetMatchView, onOpenChange]
+    );
+
+    // Expand-all / Collapse-all epoch listeners. The pane bumps these
+    // counters when the user picks the corresponding context-menu item;
+    // we react by opening every rendered field or collapsing them. We
+    // intentionally write to `openItems` (not `effectiveOpenItems`), so
+    // during search the change is queued: clearing the query exposes the
+    // user's Expand/Collapse-all intent post-filter.
+    //
+    // Each effect tracks the last-applied epoch via a ref so that
+    // StrictMode's unmount/remount cycle (where refs survive) does not
+    // replay the bulk toggle. A *genuine* remount — e.g. the outer
+    // accordion collapses and re-mounts the Dataset panel — resets the
+    // ref to 0 and will replay; this is idempotent in practice
+    // (re-opening already-open fields or re-clearing an already-empty
+    // set). `sourceFields` is listed as a dep so an expand-all queued
+    // before fields arrive still opens them once they do.
+    const lastExpandAllEpochRef = useRef(0);
+    useEffect(() => {
+        if (expandAllEpoch === undefined) return;
+        if (expandAllEpoch === lastExpandAllEpochRef.current) return;
+        lastExpandAllEpochRef.current = expandAllEpoch;
+        if (expandAllEpoch === 0) return;
+        setOpenItems(
+            new Set<TreeItemValue>(sourceFields.map(([name]) => name))
+        );
+    }, [expandAllEpoch, sourceFields]);
+    const lastCollapseAllEpochRef = useRef(0);
+    useEffect(() => {
+        if (collapseAllEpoch === undefined) return;
+        if (collapseAllEpoch === lastCollapseAllEpochRef.current) return;
+        lastCollapseAllEpochRef.current = collapseAllEpoch;
+        if (collapseAllEpoch === 0) return;
+        setOpenItems(new Set());
+    }, [collapseAllEpoch]);
+
+    const highlightEnabled = interactivity?.highlight ?? false;
+
+    // Master settings for default resolution
+    const masterSettings = useMemo(
+        () => ({
+            crossHighlightEnabled: highlightEnabled,
+            crossFilterEnabled: interactivity?.selection ?? false
+        }),
+        [highlightEnabled, interactivity?.selection]
+    );
+
+    const hasMeasures = useMemo(
+        () =>
+            sourceFields.some(
+                ([, f]) => (f.role ?? 'grouping') === 'aggregation'
+            ),
+        [sourceFields]
+    );
+
+    // A spec is legacy if it has non-default content but denebMetaVersion < 2.
+    // Treat an unset denebMetaVersion as 0 so this stays in sync with the
+    // pane's resolver (see settings-pane.tsx — both sides feed the same
+    // `resolveFieldDefaults`, mismatched legacy classification produces
+    // different applicable-flag sets between match view and render).
+    const isLegacy = useMemo(
+        () => spec !== PROJECT_DEFAULTS.spec && (denebMetaVersion ?? 0) < 2,
+        [spec, denebMetaVersion]
+    );
+
+    // Resolve flags for each source field (explicit config or defaults).
+    // Returns a record keyed by field name. Delegates the per-field
+    // resolution to `resolveFieldFlagsForConfig` so the search indexer
+    // shares the same contract by construction.
+    const resolvedFlags = useMemo(() => {
+        const result: Record<string, SupportFieldFlags> = {};
+        for (const [name, field] of sourceFields) {
+            result[name] = resolveFieldFlagsForConfig(
+                field,
+                config,
+                name,
+                masterSettings,
+                isLegacy
+            );
+        }
+        return result;
+    }, [sourceFields, config, masterSettings, isLegacy]);
+
+    const toggleFlag = useCallback(
+        (
+            fieldName: string,
+            flag: keyof SupportFieldFlags,
+            checked: boolean
+        ): void => {
+            const next = computeToggledConfig(
+                config,
+                resolvedFlags,
+                fieldName,
+                flag,
+                checked
+            );
+            if (next) setConfig(next);
+        },
+        [resolvedFlags, config, setConfig]
+    );
+
+    // Determine Case 2: highlight enabled but no measure fields have any
+    // highlight flags selected
+    const showNoHighlightFieldsWarning = useMemo(() => {
+        if (!highlightEnabled) return false;
+        const measureFields = sourceFields.filter(
+            ([, f]) => (f.role ?? 'grouping') === 'aggregation'
+        );
+        if (measureFields.length === 0) return false;
+        return measureFields.every(([name]) => {
+            const flags = resolvedFlags[name];
+            return (
+                !flags.highlight &&
+                !flags.highlightStatus &&
+                !flags.highlightComparator
+            );
+        });
+    }, [highlightEnabled, sourceFields, resolvedFlags]);
+
+    // When a match view is supplied, walk only the fields the engine
+    // picked. When null/undefined, fall back to the full sourceFields
+    // (behaviour is identical to pre-search renders).
+    const filterIsActive =
+        datasetMatchView !== null && datasetMatchView !== undefined;
+    const visibleFields = filterIsActive
+        ? sourceFields.filter(([name]) =>
+              datasetMatchView.matchedFields.has(name)
+          )
+        : sourceFields;
+
+    return (
+        <>
+            <Tree
+                className={classes.tree}
+                aria-label={translate('Text_Settings_Dataset')}
+                openItems={effectiveOpenItems}
+                onOpenChange={effectiveOnOpenChange}
+                data-settings-section-id='dataset'
+            >
+                {visibleFields.map(([name, field], fieldIndex) => {
+                    const fieldFlags = resolvedFlags[name];
+                    const fieldMatch = filterIsActive
+                        ? (datasetMatchView.matchedFields.get(name) ?? null)
+                        : null;
+                    const {
+                        isMeasure,
+                        isParameter,
+                        applicableFlags: allApplicableFlags
+                    } = resolveFieldApplicability({
+                        field,
+                        fieldFlags,
+                        highlightEnabled,
+                        consolidateFieldParameters
+                    });
+                    // When the field matched on its own name (or there's no
+                    // active filter), every applicable flag stays visible.
+                    // When it matched on one or more flags, only those
+                    // specific flags render — parent field retained for
+                    // context per R4.
+                    const applicableFlags =
+                        fieldMatch && fieldMatch.matchReason === 'flag'
+                            ? allApplicableFlags.filter((flag) =>
+                                  fieldMatch.visibleFlags.has(flag)
+                              )
+                            : allApplicableFlags;
+                    const fieldNameRanges =
+                        fieldMatch?.highlights.field ?? undefined;
+                    const roleTooltip = translate(
+                        isParameter
+                            ? 'Text_SupportField_RoleTooltip_Parameter'
+                            : isMeasure
+                              ? 'Text_SupportField_RoleTooltip_Measure'
+                              : 'Text_SupportField_RoleTooltip_Column'
+                    );
+                    const RoleIcon = isParameter
+                        ? TableColumnQuestion16Regular
+                        : isMeasure
+                          ? Calculator16Regular
+                          : TableFreezeColumn16Regular;
+
+                    const isExplicitlyConfigured = name in config;
+                    const hasEnabledFlags = hasAnyEnabledFlag(
+                        fieldFlags,
+                        applicableFlags
+                    );
+
+                    const handleReset = (e: React.MouseEvent) => {
+                        e.stopPropagation();
+                        setConfig(removeFieldFromConfig(config, name));
+                    };
+
+                    return (
+                        <TreeItem
+                            key={name}
+                            itemType='branch'
+                            value={name}
+                            data-settings-row-id={name}
+                        >
+                            <TreeItemLayout
+                                className={classes.fieldItem}
+                                iconBefore={
+                                    <Tooltip
+                                        content={roleTooltip}
+                                        relationship='label'
+                                        withArrow
+                                        mountNode={tooltipMountNode}
+                                    >
+                                        <span className={classes.roleIcon}>
+                                            <RoleIcon />
+                                        </span>
+                                    </Tooltip>
+                                }
+                                aside={
+                                    <Tooltip
+                                        content={translate(
+                                            'Tooltip_Setting_Reset'
+                                        )}
+                                        relationship='label'
+                                        withArrow
+                                        mountNode={tooltipMountNode}
+                                    >
+                                        <Button
+                                            icon={<ArrowResetRegular />}
+                                            appearance='subtle'
+                                            size='small'
+                                            onClick={handleReset}
+                                            disabled={!isExplicitlyConfigured}
+                                        />
+                                    </Tooltip>
+                                }
+                            >
+                                <span className={classes.fieldNameRow}>
+                                    <HighlightText
+                                        text={name}
+                                        ranges={fieldNameRanges}
+                                    />
+                                    {hasEnabledFlags && (
+                                        <span
+                                            className={classes.enabledFlagHint}
+                                            aria-hidden='true'
+                                        />
+                                    )}
+                                </span>
+                            </TreeItemLayout>
+                            <Tree>
+                                {applicableFlags.map((flag) => {
+                                    const infoKey = FLAG_INFO[flag];
+                                    const label = translate(FLAG_LABELS[flag]);
+                                    // Index-based id so collisions can't occur for field
+                                    // names that differ only by whitespace or punctuation.
+                                    const checkboxId = `${checkboxIdPrefix}-${fieldIndex}-${flag}`;
+                                    const checked = fieldFlags?.[flag] === true;
+                                    const flagHighlights =
+                                        fieldMatch?.highlights.flags.get(
+                                            flag
+                                        ) ?? null;
+                                    const labelRanges = flagHighlights?.label;
+                                    const assistiveRanges =
+                                        flagHighlights?.assistive;
+                                    // Assistive-only match: show a caption
+                                    // beneath the label so the user can see
+                                    // what matched. Label-match or no-match:
+                                    // no preview.
+                                    const showAssistivePreview =
+                                        assistiveRanges !== undefined &&
+                                        assistiveRanges.length > 0 &&
+                                        (labelRanges === undefined ||
+                                            labelRanges.length === 0) &&
+                                        infoKey !== undefined;
+                                    const labelNode = (
+                                        <HighlightText
+                                            text={label}
+                                            ranges={labelRanges}
+                                        />
+                                    );
+                                    return (
+                                        <TreeItem
+                                            key={flag}
+                                            itemType='leaf'
+                                            // Opaque identity for Fluent Tree; not decoded anywhere.
+                                            value={`${name}/${flag}`}
+                                            data-settings-row-id={`${name}/${flag}`}
+                                        >
+                                            <TreeItemLayout>
+                                                <span
+                                                    className={
+                                                        classes.leafLayout
+                                                    }
+                                                >
+                                                    <Checkbox
+                                                        id={checkboxId}
+                                                        checked={checked}
+                                                        onChange={(_, data) =>
+                                                            toggleFlag(
+                                                                name,
+                                                                flag,
+                                                                data.checked ===
+                                                                    true
+                                                            )
+                                                        }
+                                                    />
+                                                    <span>
+                                                        {infoKey ? (
+                                                            <InfoLabel
+                                                                htmlFor={
+                                                                    checkboxId
+                                                                }
+                                                                info={translate(
+                                                                    infoKey
+                                                                )}
+                                                                infoButton={{
+                                                                    inline: false,
+                                                                    popover: {
+                                                                        mountNode:
+                                                                            tooltipMountNode
+                                                                    },
+                                                                    onClick: (
+                                                                        e
+                                                                    ) =>
+                                                                        e.stopPropagation()
+                                                                }}
+                                                            >
+                                                                {labelNode}
+                                                            </InfoLabel>
+                                                        ) : (
+                                                            <Label
+                                                                htmlFor={
+                                                                    checkboxId
+                                                                }
+                                                            >
+                                                                {labelNode}
+                                                            </Label>
+                                                        )}
+                                                        {showAssistivePreview ? (
+                                                            <AssistivePreview
+                                                                text={translate(
+                                                                    infoKey
+                                                                )}
+                                                                ranges={
+                                                                    assistiveRanges
+                                                                }
+                                                            />
+                                                        ) : null}
+                                                    </span>
+                                                </span>
+                                            </TreeItemLayout>
+                                        </TreeItem>
+                                    );
+                                })}
+                            </Tree>
+                        </TreeItem>
+                    );
+                })}
+            </Tree>
+            {/* Case 1: Cross-highlighting disabled — only show if measures exist */}
+            {!highlightEnabled && hasMeasures && (
+                <MessageBar shape='rounded' intent='info'>
+                    <MessageBarBody>
+                        {translate('Text_MessageBar_CrossHighlightDisabled')}
+                    </MessageBarBody>
+                    {onEnableCrossHighlight && (
+                        <MessageBarActions>
+                            <Button
+                                appearance='transparent'
+                                size='small'
+                                onClick={onEnableCrossHighlight}
+                            >
+                                {translate(
+                                    'Text_MessageBar_CrossHighlightDisabled_Action'
+                                )}
+                            </Button>
+                        </MessageBarActions>
+                    )}
+                </MessageBar>
+            )}
+            {/* Case 2: Highlight on but no highlight fields selected */}
+            {highlightEnabled && showNoHighlightFieldsWarning && (
+                <MessageBar shape='rounded' intent='warning'>
+                    <MessageBarBody>
+                        {translate('Text_MessageBar_NoHighlightFields')}
+                    </MessageBarBody>
+                    {onDisableCrossHighlight && (
+                        <MessageBarActions>
+                            <Button
+                                appearance='transparent'
+                                size='small'
+                                onClick={onDisableCrossHighlight}
+                            >
+                                {translate(
+                                    'Text_MessageBar_NoHighlightFields_Action'
+                                )}
+                            </Button>
+                        </MessageBarActions>
+                    )}
+                </MessageBar>
+            )}
+        </>
+    );
+};

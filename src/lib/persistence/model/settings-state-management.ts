@@ -4,9 +4,61 @@ import { DEFAULTS } from './constants';
 export class SettingsStateManagement extends formattingSettings.CompositeCard {
     name = 'stateManagement';
     displayNameKey = 'Objects_StateManagement';
-    descriptionKey = 'Objects_StateManagementDisplay_Description';
+    descriptionKey = 'Objects_StateManagement_Description';
     viewport = new SettingsStateManagementGroupViewport(Object());
-    groups = [this.viewport];
+    projectMetadata = new SettingsStateManagementGroupProjectMetadata(Object());
+    groups = [this.viewport, this.projectMetadata];
+}
+
+class SettingsStateManagementGroupProjectMetadata
+    extends formattingSettings.Group
+{
+    name = 'projectMetadata';
+    displayNameKey = 'Objects_StateManagement_Group_ProjectMetadata';
+    supportFieldConfiguration = new formattingSettings.ReadOnlyText({
+        name: 'supportFieldConfiguration',
+        displayNameKey: 'Objects_StateManagement_SupportFieldConfiguration',
+        descriptionKey:
+            'Objects_StateManagement_SupportFieldConfiguration_Description',
+        value: DEFAULTS.stateManagement.supportFieldConfiguration
+    });
+    /**
+     * Schema-version stamp for the persisted `stateManagement` payload.
+     *
+     * OWNED by the ordered migration registry in
+     * `src/lib/persistence/state-management-migration.ts` — all version
+     * comparison for this payload goes through that registry
+     * (`isStateManagementMigrationPending` /
+     * `runStateManagementLoadTimeMigrations`); never compare this value
+     * directly. Empty/absent means unversioned (pre-2.0 — the last shape
+     * that ever has to be sniffed); completed migrations stamp the
+     * registry's `toVersion` for the entry that ran.
+     */
+    denebMetaVersion = new formattingSettings.ReadOnlyText({
+        name: 'denebMetaVersion',
+        displayNameKey: 'Objects_StateManagement_DenebMetaVersion',
+        descriptionKey: 'Objects_StateManagement_DenebMetaVersion_Description',
+        value: DEFAULTS.stateManagement.denebMetaVersion
+    });
+    scaleToZoom = new formattingSettings.ToggleSwitch({
+        name: 'scaleToZoom',
+        displayNameKey: 'Objects_StateManagement_ScaleToZoom',
+        descriptionKey: 'Objects_StateManagement_ScaleToZoom_Description',
+        value: DEFAULTS.stateManagement.scaleToZoom
+    });
+    consolidateFieldParameters = new formattingSettings.ToggleSwitch({
+        name: 'consolidateFieldParameters',
+        displayNameKey: 'Objects_StateManagement_ConsolidateFieldParameters',
+        descriptionKey:
+            'Objects_StateManagement_ConsolidateFieldParameters_Description',
+        value: DEFAULTS.stateManagement.consolidateFieldParameters
+    });
+    slices = [
+        this.supportFieldConfiguration,
+        this.denebMetaVersion,
+        this.scaleToZoom,
+        this.consolidateFieldParameters
+    ];
 }
 
 class SettingsStateManagementGroupViewport extends formattingSettings.Group {

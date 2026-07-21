@@ -1,11 +1,34 @@
-import { makeStyles } from '@fluentui/react-components';
-import { ArrowSortDown16Regular } from '@fluentui/react-icons';
-import { tokens } from '@fluentui/react-theme';
-import DataTable, { type TableProps } from 'react-data-table-component';
-import { StyleSheetManager } from 'styled-components';
+import { useMemo, useRef, useState } from 'react';
+import {
+    createTableColumn,
+    DataGrid,
+    DataGridBody,
+    DataGridCell,
+    DataGridHeader,
+    DataGridHeaderCell,
+    DataGridRow,
+    makeStyles,
+    tokens,
+    type DataGridProps,
+    type TableColumnDefinition
+} from '@fluentui/react-components';
 
-import { logRender } from '@deneb-viz/utils/logging';
+import { logDebug, logRender } from '@deneb-viz/utils/logging';
 import { DataTableStatusBar } from './data-table-status-bar';
+import { DataTableTooltipProvider } from './data-table-tooltip-context';
+import { DataTableInspectorProvider } from './inspector-popover-context';
+import { DataTableKeyboardProvider } from './data-table-keyboard-context';
+import { InspectorPopover } from './inspector-popover';
+import {
+    resolveNextSortState,
+    sortRows,
+    type ViewerSortState
+} from './data-table-sort';
+import { getPageSlice } from './data-table-pagination';
+import type {
+    DataTableViewerColumn,
+    DataTableViewerProps
+} from './data-table-viewer-types';
 import {
     DATA_TABLE_FONT_FAMILY,
     DATA_TABLE_FONT_SIZE,
@@ -21,107 +44,318 @@ const useDataTableStyles = makeStyles({
         height: '100%',
         overflow: 'hidden',
         width: '100%'
+    },
+    // The single scrollable region. `flexGrow: 1` + `minHeight: 0` lets it
+    // consume the space above the status bar and scroll internally; the
+    // status bar (a non-growing sibling below) stays pinned to the bottom.
+    // This is the flex contract the abandoned v8 upgrade got wrong.
+    scroll: {
+        flexGrow: 1,
+        minHeight: 0,
+        overflowY: 'auto',
+        overflowX: 'auto',
+        position: 'relative'
+    },
+    grid: {
+        fontFamily: DATA_TABLE_FONT_FAMILY,
+        fontSize: `${DATA_TABLE_FONT_SIZE}px`,
+        width: '100%'
+    },
+    // Pin the header while the body scrolls (the previous `fixedHeader`).
+    header: {
+        position: 'sticky',
+        top: 0,
+        zIndex: 1,
+        backgroundColor: tokens.colorNeutralBackground1
+    },
+    // Fluent's `extra-small` size variant drops the built-in row
+    // borderBottom that medium/small carry, so the header/body divider is
+    // restated here (mirrors the old rdt `headRow` customStyles).
+    headerRow: {
+        paddingLeft: `${DATA_TABLE_ROW_PADDING_LEFT}px`,
+        minHeight: `${DATA_TABLE_ROW_HEIGHT}px`,
+        borderBottomWidth: '1px',
+        borderBottomStyle: 'solid',
+        borderBottomColor: tokens.colorNeutralStroke3
+    },
+    headerCell: {
+        color: tokens.colorNeutralForeground1,
+        fontWeight: tokens.fontWeightBold,
+        fontSize: `${DATA_TABLE_FONT_SIZE}px`,
+        backgroundColor: tokens.colorNeutralBackground1,
+        whiteSpace: 'nowrap'
+    },
+    row: {
+        paddingLeft: `${DATA_TABLE_ROW_PADDING_LEFT}px`,
+        minHeight: `${DATA_TABLE_ROW_HEIGHT}px`,
+        color: tokens.colorNeutralForeground2,
+        borderBottomWidth: '1px',
+        borderBottomStyle: 'solid',
+        borderBottomColor: tokens.colorNeutralStroke3
+    },
+    // Single-line cells with clipping, matching rdt's built-in cell chrome
+    // (`overflow: hidden; white-space: nowrap`). Content never wraps — a
+    // column narrower than its content clips instead of growing the row.
+    cell: {
+        fontSize: `${DATA_TABLE_FONT_SIZE}px`,
+        alignItems: 'center',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden'
     }
 });
 
 /**
  * Displays a table of data, either for a dataset or the signals in the Vega
- * view.
+ * view. Built on Fluent UI's `DataGrid`, with sorting and pagination owned
+ * locally (external to the grid) so the FULL dataset is sorted before being
+ * paged — matching the previous react-data-table-component behaviour.
  */
-// eslint-disable-next-line max-lines-per-function
 export const DataTableViewer = ({
     columns,
     data,
-    ...props
+    defaultSortFieldId,
+    defaultSortAsc = false,
+    onSort,
+    onChangePage,
+    paginationDefaultPage
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-}: TableProps<any>) => {
+}: DataTableViewerProps<any>) => {
     const { debugTableRowsPerPage } = useDenebState((state) => ({
         debugTableRowsPerPage: state.editorPreferences.dataViewerRowsPerPage
     }));
     const classes = useDataTableStyles();
     logRender('DataTableViewer');
-    // Filter compact prop that RDT passes to column cells but shouldn't reach DOM
-    const shouldForwardProp = (propName: string) => propName !== 'compact';
+
+    // Look up a column definition by its id — used by the sort helper and the
+    // per-cell render path.
+    const columnsById = useMemo(() => {
+        const map = new Map<string, DataTableViewerColumn<unknown>>();
+        columns.forEach((c) => map.set(c.id, c));
+        return map;
+    }, [columns]);
+
+    const colOrder = useMemo(() => {
+        const ids = columns.map((c) => String(c.id ?? ''));
+        const filtered = ids.filter((id) => id !== '');
+        if (filtered.length !== ids.length) {
+            // Columns without an id can't participate in roving-tabindex
+            // arrow navigation (cells in them register under their field
+            // name but resolveArrowTarget can't locate the column). Warn
+            // so callers notice the gap during development.
+            logDebug(
+                `DataTableViewer: ${ids.length - filtered.length} column(s) have no id and will be excluded from arrow-key navigation.`
+            );
+        }
+        return filtered;
+    }, [columns]);
+
+    // `rowCount` reflects the FULL dataset length (not the visible page),
+    // preserving the exact value the keyboard provider received previously.
+    const rowCount = data?.length ?? 0;
+
+    // Fluent column definitions. `renderCell`/`compare` are intentionally
+    // inert: cells are rendered directly in the DataGridRow body below (so we
+    // can pass the row index), and sorting is external (see `sortedRows`).
+    // CAUTION: Fluent decides header sortability by the DECLARED ARITY of
+    // `compare` (`isColumnSortable` is `column.compare.length > 0`), so the
+    // no-op must take two parameters for sortable columns — an arity-0 no-op
+    // silently disables header clicks. Non-sortable columns get the arity-0
+    // form deliberately, which also suppresses their sort affordance.
+    const gridColumns = useMemo<TableColumnDefinition<unknown>[]>(
+        () =>
+            columns.map((column) =>
+                createTableColumn<unknown>({
+                    columnId: column.id,
+                    compare: column.sortable
+                        ? (_a: unknown, _b: unknown) => 0
+                        : () => 0,
+                    renderHeaderCell: () => column.name,
+                    renderCell: () => null
+                })
+            ),
+        [columns]
+    );
+
+    // Per-column ideal/min widths from the worker-measured sizes.
+    const sizingOptions = useMemo<
+        NonNullable<DataGridProps['columnSizingOptions']>
+    >(() => {
+        const options: NonNullable<DataGridProps['columnSizingOptions']> = {};
+        columns.forEach((column) => {
+            if (typeof column.width === 'number') {
+                options[column.id] = {
+                    idealWidth: column.width,
+                    minWidth: Math.min(column.width, 48)
+                };
+            }
+        });
+        return options;
+    }, [columns]);
+
+    // Controlled sort state, seeded once from the persisted default. Header
+    // clicks update it (and report up via `onSort`); the actual row ordering
+    // is applied by `sortRows` over the full dataset.
+    const [sortState, setSortState] = useState<ViewerSortState>(() =>
+        defaultSortFieldId
+            ? {
+                  sortColumn: defaultSortFieldId,
+                  sortDirection: defaultSortAsc ? 'ascending' : 'descending'
+              }
+            : { sortColumn: undefined, sortDirection: 'ascending' }
+    );
+
+    const handleSortChange: DataGridProps['onSortChange'] = (_e, nextSort) => {
+        if (nextSort.sortColumn === undefined) return;
+        const column = columnsById.get(String(nextSort.sortColumn));
+        // Only sortable columns participate — mirrors rdt, where the signal
+        // "value" column (no `sortable`) ignores header clicks.
+        if (!column?.sortable) return;
+        // Tri-state cycle: unsorted → ascending → descending → unsorted.
+        const resolved = resolveNextSortState(sortState, nextSort);
+        setSortState(resolved);
+        if (resolved.sortColumn === undefined) {
+            // Cleared — the tabs' handlers treat a falsy colId as "remove
+            // the persisted sort entry" (rows return to dataset order).
+            onSort?.('', false);
+            return;
+        }
+        onSort?.(
+            String(resolved.sortColumn),
+            resolved.sortDirection === 'ascending'
+        );
+    };
+
+    // External sort over the FULL dataset, before pagination. DataGrid's
+    // internal compare is a no-op, so it never re-orders the page.
+    const sortedRows = useMemo(() => {
+        const column =
+            sortState.sortColumn !== undefined
+                ? columnsById.get(String(sortState.sortColumn))
+                : null;
+        return sortRows(data, column, sortState.sortDirection === 'ascending');
+    }, [data, columnsById, sortState.sortColumn, sortState.sortDirection]);
+
+    const perPage = debugTableRowsPerPage as number;
+    const [page, setPage] = useState<number>(paginationDefaultPage ?? 1);
+
+    // A dataset shrink (or perPage growth) can leave the raw `page` beyond
+    // the last page. Deriving the effective page at render time keeps the
+    // row slice, the status bar's range display, and the nav-button
+    // disabled states mutually consistent — without a corrective effect.
+    // The raw intent self-heals on the next user navigation.
+    const numPages = Math.max(1, Math.ceil(rowCount / perPage));
+    const effectivePage = Math.min(page, numPages);
+
+    const pageRows = useMemo(
+        () => getPageSlice(sortedRows, effectivePage, perPage),
+        [sortedRows, effectivePage, perPage]
+    );
+
+    const handleChangePage = (nextPage: number) => {
+        setPage(nextPage);
+        onChangePage?.(nextPage);
+    };
+
+    // Match rdt's `recalculatePage`: clamp the current page to the new page
+    // count when rows-per-page changes (NOT first-visible-row preservation).
+    const handleChangeRowsPerPage = (
+        newPerPage: number,
+        currentPage: number
+    ) => {
+        const numPages = Math.max(1, Math.ceil(rowCount / newPerPage));
+        const nextPage = Math.min(currentPage, numPages);
+        setPage(nextPage);
+        onChangePage?.(nextPage);
+    };
+
+    // Owns the viewer-level scrollable enclosure reference so the inspector
+    // popover can scope its scroll-dismissal listener to this viewer only —
+    // scrolls in a sibling viewer no longer dismiss our popover. The listener
+    // is capture-phase, so scrolls from the inner scroll region are caught.
+    const enclosureRef = useRef<HTMLDivElement>(null);
+
     return (
-        <div className={classes.enclosure}>
-            <StyleSheetManager shouldForwardProp={shouldForwardProp}>
-                <DataTable
-                    columns={columns}
-                    data={data}
-                    fixedHeader
-                    sortIcon={<ArrowSortDown16Regular />}
-                    defaultSortFieldId={columns[0].id}
-                    pagination
-                    paginationComponent={DataTableStatusBar}
-                    paginationPerPage={debugTableRowsPerPage as number}
-                    customStyles={{
-                        head: {
-                            style: {
-                                color: tokens.colorNeutralForeground1,
-                                fontWeight: 900
-                            }
-                        },
-                        headRow: {
-                            style: {
-                                backgroundColor: tokens.colorNeutralBackground1,
-                                borderBottomColor: tokens.colorNeutralStroke3,
-                                borderBottomStyle: 'solid',
-                                borderBottomWidth: '1px',
-                                paddingLeft: `${DATA_TABLE_ROW_PADDING_LEFT}px`,
-                                minHeight: `${DATA_TABLE_ROW_HEIGHT}px`
-                            },
-                            denseStyle: {
-                                minHeight: `${DATA_TABLE_ROW_HEIGHT}px`
-                            }
-                        },
-                        rows: {
-                            style: {
-                                backgroundColor: tokens.colorNeutralBackground1,
-                                color: tokens.colorNeutralForeground2,
-                                paddingLeft: `${DATA_TABLE_ROW_PADDING_LEFT}px`,
-                                borderBottomColor: tokens.colorNeutralStroke3,
-                                borderBottomStyle: 'solid',
-                                borderBottomWidth: '1px',
-                                minHeight: `${DATA_TABLE_ROW_HEIGHT}px`,
-                                '&:not(:last-of-type)': {
-                                    borderBottomColor:
-                                        tokens.colorNeutralStroke3,
-                                    borderBottomStyle: 'solid',
-                                    borderBottomWidth: '1px'
-                                }
-                            },
-                            denseStyle: {
-                                minHeight: `${DATA_TABLE_ROW_HEIGHT}px`
-                            }
-                        },
-                        cells: {
-                            style: { fontSize: `${DATA_TABLE_FONT_SIZE}px` }
-                        },
-                        table: {
-                            style: {
-                                backgroundColor: tokens.colorNeutralBackground1,
-                                boxSizing: 'border-box',
-                                fontFamily: DATA_TABLE_FONT_FAMILY,
-                                fontSize: `${DATA_TABLE_FONT_SIZE}px`
-                            }
-                        },
-                        tableWrapper: {
-                            style: {
-                                height: '100%',
-                                backgroundColor: tokens.colorNeutralBackground1
-                            }
-                        },
-                        responsiveWrapper: {
-                            style: {
-                                flexGrow: 1,
-                                overflow: 'overlay'
-                            }
-                        }
-                    }}
-                    dense
-                    {...props}
-                />
-            </StyleSheetManager>
-        </div>
+        <DataTableInspectorProvider>
+            <DataTableKeyboardProvider colOrder={colOrder} rowCount={rowCount}>
+                <DataTableTooltipProvider>
+                    <div ref={enclosureRef} className={classes.enclosure}>
+                        <div className={classes.scroll}>
+                            <DataGrid
+                                className={classes.grid}
+                                items={pageRows}
+                                columns={gridColumns}
+                                sortable
+                                sortState={sortState}
+                                onSortChange={handleSortChange}
+                                resizableColumns
+                                // Honour the worker-measured widths instead of
+                                // compressing columns to fit the container —
+                                // cumulative overflow scrolls horizontally in
+                                // the enclosure, matching the previous rdt
+                                // behaviour.
+                                resizableColumnsOptions={{
+                                    autoFitColumns: false
+                                }}
+                                columnSizingOptions={sizingOptions}
+                                // 24px rows — matches DATA_TABLE_ROW_HEIGHT
+                                // and rdt's `dense` chrome; Fluent's default
+                                // `medium` renders 44px rows.
+                                size='extra-small'
+                                focusMode='none'
+                                // No getRowId: Fluent's default rowId is the
+                                // index within `items` (= pageRows), which is
+                                // exactly the page-relative index the cell
+                                // renderers expect (rdt parity).
+                            >
+                                <DataGridHeader className={classes.header}>
+                                    <DataGridRow className={classes.headerRow}>
+                                        {({ renderHeaderCell }) => (
+                                            <DataGridHeaderCell
+                                                className={classes.headerCell}
+                                            >
+                                                {renderHeaderCell()}
+                                            </DataGridHeaderCell>
+                                        )}
+                                    </DataGridRow>
+                                </DataGridHeader>
+                                <DataGridBody<unknown>>
+                                    {({ item, rowId }) => (
+                                        <DataGridRow<unknown>
+                                            key={rowId}
+                                            className={classes.row}
+                                        >
+                                            {({ columnId }) => (
+                                                <DataGridCell
+                                                    className={classes.cell}
+                                                >
+                                                    {columnsById
+                                                        .get(String(columnId))
+                                                        ?.cell(
+                                                            item,
+                                                            Number(rowId)
+                                                        )}
+                                                </DataGridCell>
+                                            )}
+                                        </DataGridRow>
+                                    )}
+                                </DataGridBody>
+                            </DataGrid>
+                        </div>
+                        {/* Always mounted: the status bar hosts the dataset
+                            selector, which must stay reachable even for an
+                            empty dataset (e.g. a param populated on hover)
+                            so the user can switch away. The bar itself hides
+                            its pagination cluster at zero rows. */}
+                        <DataTableStatusBar
+                            rowCount={rowCount}
+                            currentPage={effectivePage}
+                            onChangePage={handleChangePage}
+                            onChangeRowsPerPage={handleChangeRowsPerPage}
+                        />
+                    </div>
+                </DataTableTooltipProvider>
+                <InspectorPopover scrollContainerRef={enclosureRef} />
+            </DataTableKeyboardProvider>
+        </DataTableInspectorProvider>
     );
 };

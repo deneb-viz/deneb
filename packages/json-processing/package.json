@@ -1,6 +1,6 @@
 {
     "name": "@deneb-viz/json-processing",
-    "version": "0.1.0",
+    "version": "2.0.0",
     "author": "Deneb contributors",
     "private": true,
     "license": "MIT",
@@ -43,7 +43,7 @@
         "dev:worker": "tsup --watch --config tsup.worker.config.ts",
         "clean": "rimraf dist",
         "typecheck": "tsc --noEmit",
-        "eslint": "eslint .",
+        "eslint": "node ../../bin/workspace-eslint.js",
         "pretest": "node scripts/patch-powerbi-utils.mjs",
         "test": "vitest run",
         "test:watch": "vitest"
@@ -52,7 +52,7 @@
         "@deneb-viz/eslint-config": "*",
         "@deneb-viz/typescript-config": "*",
         "@types/node": "^22.15.33",
-        "concurrently": "^9.1.2",
+        "concurrently": "^9.2.1",
         "tsup": "^8.5.0",
         "typescript": "^5.6.2",
         "vitest": "^3.2.4"
@@ -65,7 +65,7 @@
         "ajv": "^8.12.0",
         "ajv-formats": "^2.1.1",
         "fast-equals": "^5.3.3",
-        "jsonc-parser": "^3.2.1",
+        "jsonc-parser": "^3.3.1",
         "mergician": "^2.0.2",
         "vega-expression": "^5.1.1",
         "vscode-json-languageservice": "^5.3.11"
@@ -73,8 +73,6 @@
     "peerDependencies": {
         "@deneb-viz/powerbi-compat": "*",
         "@deneb-viz/vega-runtime": "*",
-        "powerbi-visuals-api": "5.11.0",
-        "vega": ">=5",
-        "vega-lite": ">=5"
+        "powerbi-visuals-api": "5.11.0"
     }
 }

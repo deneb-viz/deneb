@@ -1,14 +1,10 @@
 import { getUpdatedExportMetadata } from '@deneb-viz/json-processing';
-import { monaco } from '../components/code-editor/monaco-integration';
+import type { monaco } from '../lib/monaco/types';
 import {
-    getNextApplyMode,
-    isExportSpecCommandEnabled,
-    isZoomInCommandEnabled,
-    isZoomOtherCommandsEnabled,
-    isZoomOutCommandEnabled,
-    type ZoomLevelCommandTestOptions,
-    type ZoomOtherCommandTestOptions
-} from '../lib';
+    evaluateExportSpecCommandState,
+    evaluateZoomCommandsState,
+    getNextApplyMode
+} from '../lib/commands/state';
 import {
     type ContainerViewport,
     type DebugPaneRole,
@@ -22,9 +18,11 @@ import { UsermetaTemplate } from '@deneb-viz/template-usermeta';
 
 type EditorSliceProperties = {
     applyMode: EditorApplyMode;
+    compiledVegaPaneHeight: number | null;
     debugPaneLatchHeight: number;
     debugPaneViewport: ContainerViewport;
     editorPaneViewport: ContainerViewport;
+    isCompiledVegaPaneVisible: boolean;
     isDebugPaneMinimized: boolean;
     isDirty: boolean;
     previewAreaViewport: ContainerViewport;
@@ -32,7 +30,9 @@ type EditorSliceProperties = {
     stagedSpec: string | undefined;
     viewStateConfig: monaco.editor.ICodeEditorViewState | undefined;
     viewStateSpec: monaco.editor.ICodeEditorViewState | undefined;
+    setCompiledVegaPaneHeight: (height: number) => void;
     setIsDebugPaneMinimized: (isMinimized: boolean) => void;
+    toggleCompiledVegaPane: () => void;
     setViewports: (options: {
         editorPaneViewport: ContainerViewport;
         previewAreaViewport: ContainerViewport;
@@ -43,6 +43,7 @@ type EditorSliceProperties = {
     setViewState: (
         viewState: monaco.editor.ICodeEditorViewState | undefined | null
     ) => void;
+    resetViewStates: () => void;
     toggleApplyMode: () => void;
     updateApplyMode: (applyMode: EditorApplyMode) => void;
     updateChanges: (payload: EditorSliceUpdateChangesPayload) => void;
@@ -51,9 +52,19 @@ type EditorSliceProperties = {
 
 export type EditorSlice = {
     editor: EditorSliceProperties;
+    editorFocusTick: number;
     editorPreviewAreaSelectedPivot: DebugPaneRole;
     editorSelectedOperation: EditorPaneRole;
     editorZoomLevel: number;
+    /**
+     * Increment the editor focus tick. Listeners (e.g. the active
+     * `<SpecificationJsonEditor>`) re-focus their underlying Monaco
+     * instance when this value changes. Used by `RetainedDenebEditor`
+     * to restore focus when the editor becomes visible again — the
+     * mount-time auto-focus only fires on first mount, so retained
+     * subsequent opens need an explicit re-focus signal.
+     */
+    requestEditorFocus: () => void;
     updateEditorSelectedOperation: (role: EditorPaneRole) => void;
     updateEditorSelectedPreviewRole: (role: DebugPaneRole) => void;
     updateEditorZoomLevel: (zoomLevel: number) => void;
@@ -94,6 +105,7 @@ export const createEditorSlice =
     (set) => ({
         editor: {
             applyMode: 'Manual',
+            compiledVegaPaneHeight: null,
             debugPaneLatchHeight: 0,
             debugPaneViewport: {
                 height: 0,
@@ -103,6 +115,7 @@ export const createEditorSlice =
                 height: 0,
                 width: 0
             },
+            isCompiledVegaPaneVisible: false,
             isDebugPaneMinimized: false,
             isDirty: false,
             previewAreaViewport: {
@@ -113,6 +126,17 @@ export const createEditorSlice =
             stagedSpec: undefined,
             viewStateConfig: undefined,
             viewStateSpec: undefined,
+            setCompiledVegaPaneHeight: (height) =>
+                set(
+                    (state) => ({
+                        editor: {
+                            ...state.editor,
+                            compiledVegaPaneHeight: height
+                        }
+                    }),
+                    false,
+                    'editor.setCompiledVegaPaneHeight'
+                ),
             setIsDebugPaneMinimized: (isMinimized) =>
                 set(
                     (state) => ({
@@ -123,6 +147,18 @@ export const createEditorSlice =
                     }),
                     false,
                     'editor.setIsDebugPaneMinimized'
+                ),
+            toggleCompiledVegaPane: () =>
+                set(
+                    (state) => ({
+                        editor: {
+                            ...state.editor,
+                            isCompiledVegaPaneVisible:
+                                !state.editor.isCompiledVegaPaneVisible
+                        }
+                    }),
+                    false,
+                    'editor.toggleCompiledVegaPane'
                 ),
             setViewports(options) {
                 set(
@@ -146,6 +182,20 @@ export const createEditorSlice =
                     (state) => handleSetViewState(state, viewState),
                     false,
                     'editor.setViewState'
+                ),
+            resetViewStates: () =>
+                set(
+                    (state) => ({
+                        editor: {
+                            ...state.editor,
+                            viewStateSpec: undefined,
+                            viewStateConfig: undefined,
+                            stagedSpec: undefined,
+                            stagedConfig: undefined
+                        }
+                    }),
+                    false,
+                    'editor.resetViewStates'
                 ),
             toggleApplyMode: () =>
                 set(
@@ -172,9 +222,18 @@ export const createEditorSlice =
                     'editor.updateIsDirty'
                 )
         },
-        editorPreviewAreaSelectedPivot: 'data',
+        editorFocusTick: 0,
+        editorPreviewAreaSelectedPivot: 'source',
         editorSelectedOperation: 'Spec',
         editorZoomLevel: VISUAL_PREVIEW_ZOOM_CONFIGURATION.default,
+        requestEditorFocus: () =>
+            set(
+                (state) => ({
+                    editorFocusTick: state.editorFocusTick + 1
+                }),
+                false,
+                'requestEditorFocus'
+            ),
         updateEditorSelectedOperation: (role) =>
             set(
                 (state) => handleUpdateEditorSelectedOperation(state, role),
@@ -235,23 +294,23 @@ const handleUpdateChanges = (
     payload: EditorSliceUpdateChangesPayload
 ): Partial<StoreState> => {
     const { role, text, viewState } = payload;
-    const existingViewState =
-        role === 'Spec'
-            ? state.editor.viewStateSpec
-            : state.editor.viewStateConfig;
     const isDirty =
         (role === 'Spec'
             ? state.project.spec !== text
             : state.project.config !== text) &&
         state.editor.applyMode !== 'Auto';
+    // Each role falls back to ITS OWN stored view state when no fresh one is
+    // supplied. Using the active role's view state as the fallback for the
+    // OTHER role cross-contaminates them — every Spec edit would overwrite the
+    // Config editor's saved cursor/scroll state, and vice versa.
     const viewStateConfig =
         role === 'Config'
             ? (viewState ?? state.editor.viewStateConfig)
-            : existingViewState;
+            : state.editor.viewStateConfig;
     const viewStateSpec =
         role === 'Spec'
             ? (viewState ?? state.editor.viewStateSpec)
-            : existingViewState;
+            : state.editor.viewStateSpec;
     const stagedConfig = role === 'Config' ? text : state.editor.stagedConfig;
     const stagedSpec = role === 'Spec' ? text : state.editor.stagedSpec;
     const exportMetadata = getUpdatedExportMetadata(
@@ -261,10 +320,7 @@ const handleUpdateChanges = (
     return {
         commands: {
             ...state.commands,
-            exportSpecification: isExportSpecCommandEnabled({
-                editorIsDirty: isDirty,
-                specification: state.specification
-            })
+            ...evaluateExportSpecCommandState(isDirty, state.compilation.result)
         },
         editor: {
             ...state.editor,
@@ -288,10 +344,7 @@ const handleUpdateIsDirty = (
 ): Partial<StoreState> => ({
     commands: {
         ...state.commands,
-        exportSpecification: isExportSpecCommandEnabled({
-            editorIsDirty: isDirty,
-            specification: state.specification
-        })
+        ...evaluateExportSpecCommandState(isDirty, state.compilation.result)
     },
     editor: {
         ...state.editor,
@@ -318,22 +371,10 @@ const handleUpdateEditorSelectedPreviewRole = (
 const handleUpdateEditorZoomLevel = (
     state: StoreState,
     zoomLevel: number
-): Partial<StoreState> => {
-    const zoomOtherCommandTest: ZoomOtherCommandTestOptions = {
-        specification: state.specification
-    };
-    const zoomLevelCommandTest: ZoomLevelCommandTestOptions = {
-        value: zoomLevel,
-        specification: state.specification
-    };
-    return {
-        commands: {
-            ...state.commands,
-            zoomFit: isZoomOtherCommandsEnabled(zoomOtherCommandTest),
-            zoomIn: isZoomInCommandEnabled(zoomLevelCommandTest),
-            zoomOut: isZoomOutCommandEnabled(zoomLevelCommandTest),
-            zoomReset: isZoomOtherCommandsEnabled(zoomOtherCommandTest)
-        },
-        editorZoomLevel: zoomLevel
-    };
-};
+): Partial<StoreState> => ({
+    commands: {
+        ...state.commands,
+        ...evaluateZoomCommandsState(zoomLevel, state.compilation.result)
+    },
+    editorZoomLevel: zoomLevel
+});

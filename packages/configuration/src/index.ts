@@ -82,7 +82,12 @@ export const PROJECT_DEFAULTS = {
     spec: '{}'
 };
 
-export const WEBSITE_URL = 'https://deneb-viz.github.io/';
+/**
+ * Default viewport scale factor (1 = 100% zoom, no scaling applied).
+ */
+export const DEFAULT_VIEWPORT_SCALE = 1;
+
+export const WEBSITE_URL = 'https://deneb.guide/';
 
 /**
  * Log level configuration for Vega logging and UI representation.
@@ -120,27 +125,30 @@ export const VEGA_LOG_LEVEL_CONFIGURATION = [
 export const PROVIDER_RESOURCE_CONFIGURATION = {
     deneb: {
         interactivityDocumentationUrl:
-            'https://deneb-viz.github.io/interactivity-overview',
-        changelogDocumentationUrl: 'https://deneb-viz.github.io/changelog',
-        examplesUrl: 'https://deneb-viz.github.io/community/resources',
+            'https://deneb.guide/docs/interactivity-overview',
+        interactivityTooltipUrl:
+            'https://deneb.guide/docs/interactivity-tooltips',
+        interactivityContextMenuUrl:
+            'https://deneb.guide/docs/interactivity-context-menu',
+        interactivityContextMenuSelectorUrl:
+            'https://deneb.guide/docs/interactivity-context-menu',
+        interactivitySelectionUrl:
+            'https://deneb.guide/docs/interactivity-selection',
+        interactivitySelectionSimpleUrl:
+            'https://deneb.guide/docs/interactivity-selection#additional-strategy-for-the-simple-management-mode',
+        interactivitySelectionAdvancedUrl:
+            'https://deneb.guide/docs/interactivity-selection-advanced',
+        interactivityHighlightUrl:
+            'https://deneb.guide/docs/interactivity-highlight',
+        datasetDocumentationUrl: 'https://deneb.guide/docs/dataset',
+        changelogDocumentationUrl: 'https://deneb.guide/changelog',
+        examplesUrl: 'https://deneb.guide/community/resources',
         legacyVersion: '1.0.0.57'
     },
     vega: {
         documentationUrl: 'https://vega.github.io/vega/docs/',
         examplesUrl: 'https://vega.github.io/vega/examples/',
-        legacyVersion: '5.21.0',
-        patch: {
-            signals: [
-                {
-                    name: 'pbiContainerHeight',
-                    update: 'containerSize()[1]'
-                },
-                {
-                    name: 'pbiContainerWidth',
-                    update: 'containerSize()[0]'
-                }
-            ]
-        }
+        legacyVersion: '5.21.0'
     },
     vegaLite: {
         documentationUrl: 'https://vega.github.io/vega-lite/docs/',
@@ -217,8 +225,13 @@ export const VISUAL_RENDER_DEFAULTS = {
     },
     scrollbarRadius: {
         min: 0,
-        max: 3,
+        max: 8,
         default: 0
+    },
+    scrollbarWidth: {
+        min: 8,
+        max: 16,
+        default: 10
     },
     scrollEventThrottle: {
         min: 0,

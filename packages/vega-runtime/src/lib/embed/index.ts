@@ -9,7 +9,7 @@ export type * from './types';
  * These are used to report the actual version of the runtime rather than a
  * hardcoded value from configuration.
  */
-export const RUNTIME_VERSIONS = {
+const RUNTIME_VERSIONS = {
     vega: vegaVersion,
     vegaLite: vegaLiteVersion
 } as const;

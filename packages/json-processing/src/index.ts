@@ -9,7 +9,6 @@ export {
     getJsoncStringAsObject,
     getJsoncTree,
     getModifiedJsoncByPath,
-    getParsedJsonWithResult,
     getTextFormattedAsJsonC
 } from './processing';
 export { areAllCreateDataRequirementsMet } from './template-dataset';
@@ -23,8 +22,4 @@ export {
     getUpdatedExportMetadata,
     getValidatedTemplate
 } from './template-usermeta';
-export {
-    getFriendlyValidationErrors,
-    getProviderSchema,
-    getProviderValidator
-} from './validation';
+export { getProviderValidator } from './validation';

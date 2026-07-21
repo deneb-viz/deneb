@@ -2,7 +2,8 @@ import {
     FIELD_TRACKING_METADATA_PLACEHOLDER,
     FIELD_TRACKING_TOKEN_PLACEHOLDER,
     FORMAT_FIELD_SUFFIX,
-    FORMATTED_FIELD_SUFFIX
+    FORMATTED_FIELD_SUFFIX,
+    PARAMETER_NAMES_SUFFIX
 } from './constants';
 import { getHighlightRegExpAlternation } from './highlight';
 import type { FieldPatternReplacer } from './types';
@@ -23,13 +24,19 @@ export const getNumberFormatRegExpAlternation = () =>
     `${FORMAT_FIELD_SUFFIX}|${FORMATTED_FIELD_SUFFIX}`;
 
 /**
+ * Provides all parameter field suffixes, suitable for a RegExp expression.
+ */
+export const getParameterRegExpAlternation = () => PARAMETER_NAMES_SUFFIX;
+
+/**
  * Consistently format a supplied identity into a suitable placeholder. Placeholders are used to represent dataset
  * fields in the specification, so that they can be replaced with the actual values when the dataset is accessible.
  * - Decimal values are floored to the nearest integer.
  * - Negative values are converted to positive values.
+ * - Placeholders are scoped by dataset name using a dot separator: `__datasetName.N__`
  */
-export const getPlaceholderKey = (i: number) => {
-    return `__${Math.floor(Math.abs(i))}__`;
+export const getPlaceholderKey = (datasetName: string, i: number) => {
+    return `__${datasetName}.${Math.floor(Math.abs(i))}__`;
 };
 
 /**
@@ -43,7 +50,12 @@ export const getTokenPatternsLiteral = (fieldName?: string): string[] => {
     );
     return [
         ...getTokenPatterns(namePattern, getHighlightRegExpAlternation(), ''),
-        ...getTokenPatterns(namePattern, getNumberFormatRegExpAlternation(), '')
+        ...getTokenPatterns(
+            namePattern,
+            getNumberFormatRegExpAlternation(),
+            ''
+        ),
+        ...getTokenPatterns(namePattern, getParameterRegExpAlternation(), '')
     ].map((r) => r.pattern);
 };
 
@@ -60,7 +72,8 @@ export const getTokenPatternsReplacement = (
     );
     const alternations = [
         getHighlightRegExpAlternation(),
-        getNumberFormatRegExpAlternation()
+        getNumberFormatRegExpAlternation(),
+        getParameterRegExpAlternation()
     ];
     const replacers: FieldPatternReplacer[] = [];
     for (let i = 0, n = alternations.length; i < n; i++) {

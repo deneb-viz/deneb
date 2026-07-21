@@ -13,6 +13,9 @@ type DenebPlatformProviderContextProps = Omit<
     | 'onRenderingFinished'
     | 'onRenderingError'
     | 'onCreateProject'
+    | 'onEnableCrossHighlight'
+    | 'onDisableCrossHighlight'
+    | 'settingsPaneFooter'
 > &
     Pick<
         DenebPlatformProviderProps,
@@ -21,6 +24,9 @@ type DenebPlatformProviderContextProps = Omit<
         | 'onRenderingFinished'
         | 'onRenderingError'
         | 'onCreateProject'
+        | 'onEnableCrossHighlight'
+        | 'onDisableCrossHighlight'
+        | 'settingsPaneFooter'
     >;
 
 export const DenebPlatformProviderContext =
@@ -30,10 +36,14 @@ export const DenebPlatformProvider = ({
     embedContainerSetByHost = false,
     isDownloadPermitted = true,
     onCreateProject,
+    onEnableCrossHighlight,
+    onDisableCrossHighlight,
     onRenderingError,
     onRenderingFinished,
     onRenderingStarted,
-    settingsPanePlatformComponent = <></>,
+    settingsPaneFooter,
+    settingsPanePlatformComponent = [],
+    settingsPanePlatformSearchable = [],
     tooltipHandler,
     vegaLoader = null,
     viewEventBinders = [],
@@ -46,10 +56,14 @@ export const DenebPlatformProvider = ({
             embedContainerSetByHost,
             isDownloadPermitted,
             onCreateProject,
+            onEnableCrossHighlight,
+            onDisableCrossHighlight,
             onRenderingError,
             onRenderingFinished,
             onRenderingStarted,
+            settingsPaneFooter,
             settingsPanePlatformComponent,
+            settingsPanePlatformSearchable,
             tooltipHandler,
             vegaLoader,
             viewEventBinders,
@@ -60,10 +74,14 @@ export const DenebPlatformProvider = ({
             embedContainerSetByHost,
             launchUrl,
             onCreateProject,
+            onEnableCrossHighlight,
+            onDisableCrossHighlight,
             onRenderingError,
             onRenderingFinished,
             onRenderingStarted,
+            settingsPaneFooter,
             settingsPanePlatformComponent,
+            settingsPanePlatformSearchable,
             tooltipHandler,
             vegaLoader,
             viewEventBinders

@@ -1,4 +1,4 @@
-export type DebugPaneRole = 'log' | 'data' | 'signal';
+export type DebugPaneRole = 'log' | 'source' | 'data' | 'signal';
 
 /**
  * Deneb theming variants.
@@ -46,9 +46,4 @@ export type InterfaceType = 'viewer' | 'editor';
 /**
  * Represents modal dialog display state.
  */
-export type ModalDialogRole =
-    | 'None'
-    | 'Version'
-    | 'Create'
-    | 'Remap'
-    | 'Export';
+export type ModalDialogRole = 'None' | 'Version' | 'Create' | 'Export';

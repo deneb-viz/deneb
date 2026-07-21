@@ -1,4 +1,4 @@
-import { type CompiledSpecification } from '@deneb-viz/json-processing/spec-processing';
+import { type CompilationResult } from '@deneb-viz/vega-runtime/compilation';
 
 /**
  * Available commands within the UI, which can be invoked via buttons or shortcuts.
@@ -9,6 +9,7 @@ export type Command =
     | 'debugPaneShowData'
     | 'debugPaneShowLogs'
     | 'debugPaneShowSignals'
+    | 'debugPaneShowSource'
     | 'debugPaneToggle'
     | 'discardChanges'
     | 'editorFocusOut'
@@ -28,14 +29,14 @@ export type Command =
 
 export type ExportSpecCommandTestOptions = {
     editorIsDirty: boolean;
-    specification: CompiledSpecification;
+    compilationResult: CompilationResult | null;
 };
 
 /**
  * For other zoom commands, these are the things we need to test.
  */
 export type ZoomOtherCommandTestOptions = {
-    specification: CompiledSpecification;
+    compilationResult: CompilationResult | null;
 };
 
 /**
@@ -43,5 +44,5 @@ export type ZoomOtherCommandTestOptions = {
  */
 export type ZoomLevelCommandTestOptions = {
     value: number;
-    specification: CompiledSpecification;
+    compilationResult: CompilationResult | null;
 };

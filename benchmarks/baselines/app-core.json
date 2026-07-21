@@ -1,0 +1,11 @@
+{
+    "_meta": {
+        "capturedAt": "2026-04-23T00:00:00.000Z",
+        "runnerImage": "ubuntu22-bootstrap-ci",
+        "nodeVersion": "v22.x",
+        "vitestVersion": "bootstrap",
+        "commitSha": "bootstrap",
+        "bootstrap": true
+    },
+    "benchmarks": {}
+}

@@ -64,6 +64,10 @@ export const HOTKEY_BINDINGS = {
         combination: 'ctrl|alt|7,ctrl|alt|num_7',
         functionalArea: 'other'
     },
+    debugPaneShowSource: {
+        combination: 'ctrl|alt|6,ctrl|alt|num_6',
+        functionalArea: 'other'
+    },
     debugPaneShowSignals: {
         combination: 'ctrl|alt|8,ctrl|alt|num_8',
         functionalArea: 'other'

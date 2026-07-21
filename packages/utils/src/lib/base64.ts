@@ -1,12 +1,12 @@
 /**
  * Supported encodings for base64
  */
-export type TBase64DataEncoding = 'png';
+type TBase64DataEncoding = 'png';
 
 /**
  * The base MIME-type used when creating images from data URLs.
  */
-export const BASE64_MIME_TYPE_PNG = 'image/png';
+const BASE64_MIME_TYPE_PNG = 'image/png';
 
 /**
  * Blank image data URI; used to return placeholder images when remote URIs are supplied.

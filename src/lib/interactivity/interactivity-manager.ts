@@ -86,6 +86,24 @@ const manager = (() => {
     let _cachedQueueLength: number | undefined = undefined;
 
     /**
+     * Handle for the most recently scheduled (delayed) tooltip show. Held so a subsequent hide or show can cancel a
+     * pending show and prevent a tooltip from resurrecting after it should have been dismissed.
+     * @private
+     */
+    let _tooltipTimer: ReturnType<typeof setTimeout> | undefined = undefined;
+
+    /**
+     * Cancels any pending (delayed) tooltip show.
+     * @private
+     */
+    const _clearTooltipTimer = () => {
+        if (_tooltipTimer !== undefined) {
+            clearTimeout(_tooltipTimer);
+            _tooltipTimer = undefined;
+        }
+    };
+
+    /**
      * For an individual row number, get the associated SelectionId object, if present in the store.
      * @private
      */
@@ -110,13 +128,20 @@ const manager = (() => {
     };
 
     /**
-     * Resets the selection state of all selectors in the store to neutral.
+     * Resets the selection state of all selectors in the store to neutral, and returns a status map describing the
+     * reset so callers can notify dependent state (e.g. after a failed host selection).
      * @private
      */
-    const _resetSelectionState = () => {
-        for (const [, selector] of _store.entries()) {
+    const _resetSelectionState = (): SelectorStatus => {
+        const selectorStatus: SelectorStatus = new Map<
+            number,
+            DataPointSelectionStatus
+        >();
+        for (const [rowNumber, selector] of _store.entries()) {
             selector.status = 'neutral';
+            selectorStatus.set(rowNumber, selector.status);
         }
+        return selectorStatus;
     };
 
     /**
@@ -302,22 +327,30 @@ const manager = (() => {
             multiSelect = false,
             exceedsLimit = false
         } = directive || {};
-        if (exceedsLimit) {
-            return _limitExceededCallback?.(true) ?? Promise.resolve();
-        }
-        if (rowNumbers.length === 0) {
-            return _select([]).then(() =>
+        try {
+            if (exceedsLimit) {
+                _limitExceededCallback?.(true);
+                return;
+            }
+            if (rowNumbers.length === 0) {
+                await _select([]);
                 _selectorUpdateCallback?.(
                     new Map<number, DataPointSelectionStatus>()
-                ).then(() => _limitExceededCallback?.(false))
-            );
+                );
+                _limitExceededCallback?.(false);
+                return;
+            }
+            const selectorStatus = await _select(rowNumbers, multiSelect);
+            _selectorUpdateCallback?.(selectorStatus);
+            _limitExceededCallback?.(false);
+        } catch (e) {
+            // Host selection failed. Neutralize any half-applied selector state
+            // (and notify dependent state) so the visual doesn't diverge
+            // silently, then re-throw so the caller can surface the failure via
+            // its warning channel.
+            _selectorUpdateCallback?.(_resetSelectionState());
+            throw e;
         }
-
-        return _select(rowNumbers, multiSelect).then((selectorStatus) =>
-            _selectorUpdateCallback?.(selectorStatus).then(() =>
-                _limitExceededCallback?.(false)
-            )
-        );
     };
 
     /**
@@ -338,6 +371,9 @@ const manager = (() => {
                 `${LOG_PREFIX} TooltipService has not been set in InteractivityManager.`
             );
         }
+        // Cancel any pending show so a delayed tooltip can't resurrect after
+        // it has been dismissed.
+        _clearTooltipTimer();
         _tooltipService.hide({
             immediately: true,
             isTouchEvent: IS_TOUCH_EVENT
@@ -402,7 +438,10 @@ const manager = (() => {
                 `${LOG_PREFIX} TooltipService has not been set in InteractivityManager.`
             );
         }
+        // Cancel any pending show so consecutive shows don't stack timers.
+        _clearTooltipTimer();
         const show = () => {
+            _tooltipTimer = undefined;
             _tooltipService?.show({
                 dataItems,
                 identities: _getSelectionIds(rowNumbers),
@@ -411,7 +450,7 @@ const manager = (() => {
             });
         };
         if (delay > 0) {
-            setTimeout(show, delay);
+            _tooltipTimer = setTimeout(show, delay);
         } else {
             show();
         }

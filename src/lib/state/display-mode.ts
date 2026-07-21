@@ -3,6 +3,27 @@ import powerbi from 'powerbi-visuals-api';
 import { type VisualFormattingSettingsModel } from '../../lib/persistence';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 import { logDebug } from '@deneb-viz/utils/logging';
+import { toBoolean } from '@deneb-viz/utils/type-conversion';
+
+/**
+ * Dev-only override for {@link isReportInReadMode}. When the
+ * `PBIVIZ_DEV_FORCE_READ_MODE` env flag is set, the helper unconditionally
+ * reports "read mode" regardless of `viewMode`. This is the local-test
+ * substitute for a real published-service deployment — flipping it in
+ * `.env` lets a developer exercise the read-mode persist gate and the
+ * in-memory migration mutations from Power BI Desktop (which always
+ * reports `viewMode === Edit`) without temporarily editing the helper
+ * itself.
+ *
+ * The flag is enforced to `false` in committed code by
+ * `bin/validate-config-for-commit.ts`, so a packaged build cannot
+ * accidentally ship with the override on. In production, the constant
+ * resolves to `false` at compile time via the webpack DefinePlugin
+ * substitution and the comparison short-circuits — no runtime cost.
+ */
+const IS_DEV_FORCE_READ_MODE = toBoolean(
+    process.env.PBIVIZ_DEV_FORCE_READ_MODE
+);
 
 /**
  * Resolved display mode for the Deneb visual; will dictate what UI and processing is performed.
@@ -41,13 +62,97 @@ export type GetUpdatedHistoryListPayload = {
  */
 const MAX_UPDATE_HISTORY_RETENTION = 100;
 
-export const doesModeAllowEmbedViewportSet = (mode: DisplayMode) => {
-    return (
-        mode !== 'editor' &&
-        mode !== 'transition-viewer-editor' &&
-        mode !== 'transition-editor-viewer'
-    );
+/**
+ * Whether each display mode is one where the embed viewport may be
+ * committed from the live host viewport.
+ *
+ * Modes mapped to `false` report a host viewport that does not match
+ * the canvas size the viewer should be rendered at:
+ *  - `editor` and the two `transition-*` modes report the editor's
+ *    full-screen area; committing it would resize the viewer to the
+ *    editor pane on the next viewer entry.
+ *  - `fetching` is a transient state during segmented data loads. If a
+ *    viewer↔editor transition arrives mid-fetch, the host viewport is
+ *    the editor's area, but the resolved mode is still `fetching` (the
+ *    transition detector is masked by the stuck flag). Treating
+ *    `fetching` as commit-safe pollutes `embedViewport` with the editor
+ *    viewport, which then survives into the viewer post-fetch. The
+ *    correct committed viewport is set when fetch completes and mode
+ *    resolves to `viewer`/`no-project`.
+ *
+ * The `Record<DisplayMode, boolean>` shape is a compile-time
+ * exhaustiveness guard: adding a member to the `DisplayMode` union
+ * fails compilation here, forcing an explicit commit-safe/unsafe
+ * decision for the new mode instead of a silent default.
+ */
+const EMBED_VIEWPORT_COMMIT_ALLOWED: Record<DisplayMode, boolean> = {
+    initializing: true,
+    landing: true,
+    'no-project': true,
+    fetching: false,
+    viewer: true,
+    'transition-viewer-editor': false,
+    'transition-editor-viewer': false,
+    editor: false
 };
+
+/**
+ * Whether the current display mode is one where the embed viewport may
+ * be committed from the live host viewport. See
+ * {@link EMBED_VIEWPORT_COMMIT_ALLOWED} for the per-mode rationale.
+ */
+export const doesModeAllowEmbedViewportSet = (mode: DisplayMode): boolean =>
+    EMBED_VIEWPORT_COMMIT_ALLOWED[mode];
+
+/**
+ * Numeric value of `powerbi.ViewMode.View` (the published-report
+ * consumption mode). Compared against directly rather than via the
+ * `powerbi.ViewMode.View` const-enum reference so the comparison
+ * survives test environments where the `powerbi` namespace import is
+ * shimmed and the const-enum lookup returns undefined. Matches the
+ * pattern used elsewhere in this file (e.g. `editMode === 1`).
+ *
+ * The `satisfies powerbi.ViewMode` clause is load-bearing: if a future
+ * `powerbi-visuals-api` upgrade ever reassigns `ViewMode.View` to a
+ * non-zero value, this declaration fails to compile, surfacing the
+ * drift instead of silently mismatching at runtime.
+ */
+const VIEW_MODE_VIEW = 0 satisfies powerbi.ViewMode;
+
+/**
+ * Whether the visual is being consumed in read mode (a published or
+ * embedded report being viewed, not authored). This is the gate the
+ * property-migration code uses to decide whether to persist migrated
+ * values back to the host: in read mode persistence is suppressed
+ * because (a) the reader has no intent to mutate the report, (b) host
+ * persists during read may be silently dropped or surface to the user
+ * as a stale-state warning, and (c) the snapshot/export service expects
+ * each `update()` to complete without side effects that trigger
+ * follow-up host updates.
+ *
+ * `viewMode === ViewMode.View` (the official "read" value) is the
+ * authoritative signal. The host-reported `isInFocus` flag carries
+ * separately — focus mode within a viewer (a reader clicking the
+ * "focus on this visual" control on a published report) keeps
+ * `viewMode === View`, so this helper correctly treats it as read mode.
+ * `InFocusEdit` is defined in the Power BI API but is not emitted by
+ * any real host scenario today; the gate falls through to "not read"
+ * for it, which is the symbolically-correct edit-context treatment.
+ *
+ * When the `PBIVIZ_DEV_FORCE_READ_MODE` env flag is set
+ * (see {@link IS_DEV_FORCE_READ_MODE}), the helper unconditionally
+ * reports read mode regardless of `viewMode`. The override is
+ * dev-only and is enforced to `false` in committed builds.
+ *
+ * This helper is intentionally separate from the existing `isEditMode`
+ * computation (which keys off `editMode === Advanced` and answers a
+ * different question — whether the visual itself is in advanced edit
+ * pane mode). The two coexist: `isEditMode` drives the Deneb editor
+ * UI; `isReportInReadMode` drives the persistence gate.
+ */
+export const isReportInReadMode = (
+    options: powerbi.extensibility.visual.VisualUpdateOptions
+): boolean => IS_DEV_FORCE_READ_MODE || options.viewMode === VIEW_MODE_VIEW;
 
 /**
  * Generate an updated display history list based on the current history and new update payload.

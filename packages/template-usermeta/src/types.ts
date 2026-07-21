@@ -2,9 +2,9 @@ import type { UsermetaDatasetField } from '@deneb-viz/data-core/field';
 import type { SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import type { SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
 
-
 /**
  * Main template definition.
+ * @additionalProperties false
  */
 export interface UsermetaTemplate {
     /**
@@ -16,10 +16,10 @@ export interface UsermetaTemplate {
      */
     information: UsermetaInformation;
     /**
-     * Dataset columns or measures used by the template, that the end-user will need to supply for it to work.
-     * @uniqueItems true
+     * Named datasets used by the template. Each key is a dataset name (e.g., 'dataset') and each value is
+     * an array of field definitions the end-user will need to supply for it to work.
      */
-    dataset: UsermetaDatasetField[];
+    datasets: Record<string, UsermetaDatasetField[]>;
     /**
      * Any interactivity settings that we want to explicitly set.
      */
@@ -45,6 +45,10 @@ export interface UsermetaInteractivity {
      * Enable context menu for data points.
      */
     contextMenu: boolean;
+    /**
+     * Enable data point resolution in the context menu.
+     */
+    contextMenuSelector?: boolean;
     /**
      * Enable cross-filtering from data point click events.
      */
@@ -76,7 +80,7 @@ export interface UsermetaDeneb {
     /**
      * Template metadata version. Will be capped to the version matching this definition.
      * @minimum 1
-     * @maximum 1
+     * @maximum 2
      */
     metaVersion: number;
     /**

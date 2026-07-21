@@ -1,0 +1,12 @@
+{
+    "description": "Empty objects payload: a fresh visual, or a .pbix opened under a different packaging-channel GUID (persisted formatting properties do not carry across visual GUIDs, so EVERYTHING — including vega.jsonSpec — reverts to defaults). jsonSpec null means 'the factory default template'. This must be distinguishable from a genuinely unversioned legacy payload: it is NOT legacy and no migration runs or pends.",
+    "jsonSpec": null,
+    "stateManagement": {},
+    "expected": {
+        "classification": "empty-or-cross-guid",
+        "applied": [],
+        "pendingFirstDataview": [],
+        "corruptKeys": [],
+        "payload": {}
+    }
+}

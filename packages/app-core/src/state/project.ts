@@ -7,31 +7,40 @@ import {
     type SpecRenderMode
 } from '@deneb-viz/vega-runtime/embed';
 import { isProjectInitialized, type DenebProject } from '../lib/project';
-import { getModalDialogRole } from '../lib/interface/state';
-import {
-    type ExportSpecCommandTestOptions,
-    isExportSpecCommandEnabled,
-    isZoomInCommandEnabled,
-    isZoomOtherCommandsEnabled,
-    isZoomOutCommandEnabled,
-    type ZoomLevelCommandTestOptions,
-    type ZoomOtherCommandTestOptions
-} from '../lib';
+import { getModalDialogRole } from '../lib/interface/modal-dialog-role';
 import { getUpdatedExportMetadata } from '@deneb-viz/json-processing';
-import { getParsedSpec } from '@deneb-viz/json-processing/spec-processing';
-import { getSpecificationParseOptions } from './helpers';
-import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
+import {
+    TEMPLATE_USERMETA_VERSION,
+    type UsermetaTemplate
+} from '@deneb-viz/template-usermeta';
 import { logDebug } from '@deneb-viz/utils/logging';
+import { type SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
+import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 
 /**
- * Options for updating project content with spec parsing.
+ * Project each export dataset entry's per-field support configuration into its
+ * `supportFieldConfiguration` slot, and STRIP the slot from any field that is
+ * no longer present in `config`. This is the single, canonical implementation
+ * shared by every site that embeds support-field config into export metadata
+ * (template init, setter, migration stamp, host sync). Previously duplicated
+ * four times with two divergent semantics: two variants stripped stale config,
+ * two left it embedded on removed fields — corrupting export/template
+ * integrity when a field was reconfigured to defaults or removed.
  */
-type ContentUpdateOptions = {
-    spec?: string;
-    config?: string;
-    provider?: SpecProvider;
-    logLevel?: number;
-};
+const embedSupportFieldConfig = (
+    dataset: UsermetaDatasetField[],
+    config: SupportFieldConfiguration | undefined
+): UsermetaDatasetField[] =>
+    dataset.map((d) => {
+        const fieldConfig = config?.[d.namePlaceholder ?? d.name];
+        if (fieldConfig) {
+            return { ...d, supportFieldConfiguration: fieldConfig };
+        }
+        // Remove stale config from a field that is no longer configured.
+        const { supportFieldConfiguration: _, ...rest } = d;
+        return rest as UsermetaDatasetField;
+    });
 
 export type ProjectSliceProperties = SyncableSlice &
     DenebProject & {
@@ -44,6 +53,15 @@ export type ProjectSliceProperties = SyncableSlice &
         setIsInitialized: (isInitialized: boolean) => void;
         setProvider: (provider: SpecProvider | undefined) => void;
         setRenderMode: (renderMode: SpecRenderMode) => void;
+        setSupportFieldConfiguration: (
+            config: SupportFieldConfiguration
+        ) => void;
+        setDenebMetaVersion: (version: number) => void;
+        applySupportFieldMigrationStamp: (
+            payload: SupportFieldMigrationStampPayload
+        ) => void;
+        setScaleToZoom: (scaleToZoom: boolean) => void;
+        setConsolidateFieldParameters: (value: boolean) => void;
         syncProjectData: (payload: ProjectSyncPayload) => void;
     };
 
@@ -60,11 +78,40 @@ export type InitializeFromTemplatePayload = {
     config: string;
     provider: SpecProvider;
     renderMode?: SpecRenderMode;
+    /**
+     * Support field configuration remapped from template placeholders to actual field names.
+     * Optional — when absent the project starts with an empty configuration (defaults apply).
+     */
+    supportFieldConfiguration?: SupportFieldConfiguration;
+    /**
+     * The template's deneb.metaVersion. Used to stamp the persisted
+     * denebMetaVersion so that legacy templates (metaVersion < 2) trigger
+     * migration on first dataset processing.
+     */
+    denebMetaVersion?: number;
+    /** When true, enable field parameter consolidation for this project. */
+    consolidateFieldParameters?: boolean;
 };
 
 export type SetContentPayload = {
     spec: string;
     config: string;
+};
+
+/**
+ * Payload for committing the one-time legacy support-field migration in a
+ * SINGLE store update. The dataset mapping pass (the class
+ * `'first-dataview'` execution point for the migration registry in the
+ * hosting visual) computes all three values and commits them together so
+ * the app-core → host sync subscriber observes ONE slice change and emits
+ * ONE batched persist — three separate setter calls would emit three
+ * non-atomic host persists, and a session ending between them leaves a
+ * half-committed migration (M10).
+ */
+export type SupportFieldMigrationStampPayload = {
+    supportFieldConfiguration: SupportFieldConfiguration;
+    denebMetaVersion: number;
+    consolidateFieldParameters: boolean;
 };
 
 export type ProjectSlice = {
@@ -90,6 +137,10 @@ export const createProjectSlice =
             ),
             renderMode: PROJECT_DEFAULTS.renderMode as SpecRenderMode,
             spec: PROJECT_DEFAULTS.spec,
+            supportFieldConfiguration: {},
+            denebMetaVersion: 0,
+            scaleToZoom: false,
+            consolidateFieldParameters: true,
             initializeFromTemplate: (
                 payload: InitializeFromTemplatePayload
             ) => {
@@ -109,21 +160,44 @@ export const createProjectSlice =
                             provider,
                             providerVersion,
                             renderMode,
+                            supportFieldConfiguration:
+                                payload.supportFieldConfiguration ?? {},
+                            denebMetaVersion:
+                                payload.denebMetaVersion ??
+                                TEMPLATE_USERMETA_VERSION,
+                            consolidateFieldParameters:
+                                payload.consolidateFieldParameters ??
+                                state.project.consolidateFieldParameters,
                             __hasHydrated__: state.project.__hasHydrated__,
                             __isInitialized__: true
                         };
-                        const parsedState = getStateWithParsedSpec(
-                            state,
-                            updatedProject,
+                        // Embed support field config into dataset entries for export metadata
+                        const datasetWithConfig = embedSupportFieldConfig(
+                            state.export.metadata?.datasets?.[
+                                DATASET_DEFAULT_NAME
+                            ] ?? [],
+                            updatedProject.supportFieldConfiguration
+                        );
+                        // Update export metadata for template creation
+                        const exportMetadata = getUpdatedExportMetadata(
+                            state.export.metadata as UsermetaTemplate,
                             {
-                                spec: payload.spec,
                                 config: payload.config,
-                                provider
+                                datasets: {
+                                    ...state.export.metadata?.datasets,
+                                    [DATASET_DEFAULT_NAME]: datasetWithConfig
+                                },
+                                provider,
+                                providerVersion,
+                                interactivity: updatedProject.interactivity
                             }
                         );
                         return {
-                            ...parsedState,
                             editorSelectedOperation: 'Spec',
+                            export: {
+                                ...state.export,
+                                metadata: exportMetadata
+                            },
                             interface: {
                                 ...state.interface,
                                 modalDialogRole: 'None'
@@ -153,13 +227,22 @@ export const createProjectSlice =
                             __hasHydrated__: state.project.__hasHydrated__,
                             __isInitialized__: state.project.__isInitialized__
                         };
-                        const parsedState = getStateWithParsedSpec(
-                            state,
-                            updatedProject,
-                            { spec: payload.spec, config: payload.config }
+                        // Update export metadata
+                        const exportMetadata = getUpdatedExportMetadata(
+                            state.export.metadata as UsermetaTemplate,
+                            {
+                                config: payload.config,
+                                provider:
+                                    updatedProject.provider as SpecProvider,
+                                providerVersion: updatedProject.providerVersion,
+                                interactivity: updatedProject.interactivity
+                            }
                         );
                         return {
-                            ...parsedState,
+                            export: {
+                                ...state.export,
+                                metadata: exportMetadata
+                            },
                             project: updatedProject
                         };
                     },
@@ -222,6 +305,114 @@ export const createProjectSlice =
                     false,
                     'project.setRenderMode'
                 ),
+            setSupportFieldConfiguration: (config: SupportFieldConfiguration) =>
+                set(
+                    (state) => {
+                        const updatedDataset = embedSupportFieldConfig(
+                            state.export.metadata?.datasets?.[
+                                DATASET_DEFAULT_NAME
+                            ] ?? [],
+                            config
+                        );
+                        const exportMetadata = getUpdatedExportMetadata(
+                            state.export.metadata as UsermetaTemplate,
+                            {
+                                datasets: {
+                                    ...state.export.metadata?.datasets,
+                                    [DATASET_DEFAULT_NAME]: updatedDataset
+                                }
+                            }
+                        );
+                        return {
+                            project: {
+                                ...state.project,
+                                supportFieldConfiguration: config
+                            },
+                            export: {
+                                ...state.export,
+                                metadata: exportMetadata
+                            }
+                        };
+                    },
+                    false,
+                    'project.setSupportFieldConfiguration'
+                ),
+            setDenebMetaVersion: (version: number) =>
+                set(
+                    (state) => ({
+                        project: {
+                            ...state.project,
+                            denebMetaVersion: version
+                        }
+                    }),
+                    false,
+                    'project.setDenebMetaVersion'
+                ),
+            applySupportFieldMigrationStamp: (
+                payload: SupportFieldMigrationStampPayload
+            ) =>
+                set(
+                    (state) => {
+                        // Embed support field config into dataset entries
+                        // for export metadata (same semantics as
+                        // setSupportFieldConfiguration).
+                        const updatedDataset = embedSupportFieldConfig(
+                            state.export.metadata?.datasets?.[
+                                DATASET_DEFAULT_NAME
+                            ] ?? [],
+                            payload.supportFieldConfiguration
+                        );
+                        const exportMetadata = getUpdatedExportMetadata(
+                            state.export.metadata as UsermetaTemplate,
+                            {
+                                datasets: {
+                                    ...state.export.metadata?.datasets,
+                                    [DATASET_DEFAULT_NAME]: updatedDataset
+                                }
+                            }
+                        );
+                        return {
+                            project: {
+                                ...state.project,
+                                supportFieldConfiguration:
+                                    payload.supportFieldConfiguration,
+                                denebMetaVersion: payload.denebMetaVersion,
+                                consolidateFieldParameters:
+                                    payload.consolidateFieldParameters
+                            },
+                            export: {
+                                ...state.export,
+                                metadata: exportMetadata
+                            }
+                        };
+                    },
+                    false,
+                    'project.applySupportFieldMigrationStamp'
+                ),
+            setScaleToZoom: (scaleToZoom: boolean) =>
+                set(
+                    (state) => ({
+                        project: {
+                            ...state.project,
+                            scaleToZoom
+                        }
+                    }),
+                    false,
+                    'project.setScaleToZoom'
+                ),
+            setConsolidateFieldParameters: (
+                consolidateFieldParameters: boolean
+            ) =>
+                set(
+                    (state) => ({
+                        project: {
+                            ...state.project,
+                            consolidateFieldParameters
+                        }
+                    }),
+                    false,
+                    'project.setConsolidateFieldParameters'
+                ),
             syncProjectData: (payload: ProjectSyncPayload) =>
                 set(
                     (state) => handleSyncProjectData(state, payload),
@@ -231,7 +422,11 @@ export const createProjectSlice =
         }
     });
 
-// eslint-disable-next-line max-lines-per-function
+/**
+ * Handle synchronization of project data from host application (e.g., Power BI).
+ * This updates the project slice with the incoming data and export metadata.
+ * Spec parsing is handled by the compilation slice via VisualViewer's useEffect.
+ */
 const handleSyncProjectData = (
     state: StoreState,
     payload: ProjectSyncPayload
@@ -241,111 +436,41 @@ const handleSyncProjectData = (
     const definedPayload = Object.fromEntries(
         Object.entries(payload).filter(([, value]) => value !== undefined)
     );
-    const __isInitialized__ = isProjectInitialized(payload);
+
+    // Build the updated (merged) project state FIRST, so initialization is
+    // computed on the merged result rather than the partial sync payload
+    // (M12): a partial payload leaves unrelated keys `undefined`, and
+    // `undefined !== default` made ANY partial sync (e.g. logLevel only)
+    // flip `__isInitialized__` to true on a brand-new visual, suppressing
+    // the Create-dialog auto-open.
+    const updatedProject = {
+        ...state.project,
+        ...definedPayload,
+        __hasHydrated__: true
+    };
+    const __isInitialized__ = isProjectInitialized(updatedProject);
+    updatedProject.__isInitialized__ = __isInitialized__;
     const modalDialogRole = getModalDialogRole(
         __isInitialized__,
         state.interface.type,
         state.interface.modalDialogRole
     );
 
-    // Build the updated project state
-    const updatedProject = {
-        ...state.project,
-        ...definedPayload,
-        __hasHydrated__: true,
-        __isInitialized__
-    };
+    // Embed support field config into dataset entries for export metadata
+    const datasetWithConfig = embedSupportFieldConfig(
+        state.export.metadata?.datasets?.[DATASET_DEFAULT_NAME] ?? [],
+        updatedProject.supportFieldConfiguration
+    );
 
-    // Use shared helper for spec parsing and related state updates
-    const parsedState = getStateWithParsedSpec(state, updatedProject, {
-        spec: payload.spec,
-        config: payload.config,
-        provider: payload.provider as SpecProvider,
-        logLevel: payload.logLevel
-    });
-
-    return {
-        ...parsedState,
-        interface: {
-            ...state.interface,
-            modalDialogRole
-        },
-        project: updatedProject
-    };
-};
-
-/**
- * Shared logic to parse spec/config and update related state (commands, debug, export metadata).
- * Called by both setContent and syncProjectData to ensure consistent behavior.
- */
-const getStateWithParsedSpec = (
-    state: StoreState,
-    updatedProject: DenebProject & {
-        __hasHydrated__: boolean;
-        __isInitialized__: boolean;
-    },
-    options: ContentUpdateOptions
-): Pick<StoreState, 'commands' | 'debug' | 'export' | 'specification'> => {
-    const newSpec = options.spec ?? state.project.spec;
-    const newConfig = options.config ?? state.project.config;
-
-    // Check if parsing is needed
-    const specChanged = newSpec !== state.project.spec;
-    const configChanged = newConfig !== state.project.config;
-    const needsParsing = specChanged || configChanged;
-
-    logDebug('getStateWithParsedSpec - change detection', {
-        specChanged,
-        configChanged,
-        needsParsing
-    });
-
-    // Parse spec if needed
-    const prevSpecOptions = getSpecificationParseOptions(state);
-    const nextSpecOptions: typeof prevSpecOptions = {
-        ...prevSpecOptions,
-        config: newConfig,
-        spec: newSpec,
-        provider: (options.provider ?? updatedProject.provider) as SpecProvider,
-        logLevel: options.logLevel ?? updatedProject.logLevel,
-        viewportHeight: state.interface.embedViewport?.height ?? 0,
-        viewportWidth: state.interface.embedViewport?.width ?? 0
-    };
-
-    const spec = needsParsing
-        ? getParsedSpec(state.specification, prevSpecOptions, nextSpecOptions)
-        : state.specification;
-
-    logDebug('getStateWithParsedSpec - parse result', {
-        specStatus: spec.status,
-        needsParsing
-    });
-
-    // Update commands based on specification state
-    const zoomOtherCommandTest: ZoomOtherCommandTestOptions = {
-        specification: spec
-    };
-    const zoomLevelCommandTest: ZoomLevelCommandTestOptions = {
-        value: state.editorZoomLevel,
-        specification: spec
-    };
-    const exportSpecCommandTest: ExportSpecCommandTestOptions = {
-        editorIsDirty:
-            (state.editor.stagedSpec !== null &&
-                state.editor.stagedSpec !== updatedProject.spec) ||
-            (state.editor.stagedConfig !== null &&
-                state.editor.stagedConfig !== updatedProject.config),
-        specification: spec
-    };
-
-    // Update export metadata
+    // Update export metadata for template export functionality
     const exportMetadata = getUpdatedExportMetadata(
         state.export.metadata as UsermetaTemplate,
         {
-            config:
-                spec.status === 'valid'
-                    ? updatedProject.config
-                    : state.export.metadata?.config,
+            config: payload.config ?? state.export.metadata?.config,
+            datasets: {
+                ...state.export.metadata?.datasets,
+                [DATASET_DEFAULT_NAME]: datasetWithConfig
+            },
             provider: updatedProject.provider as SpecProvider,
             providerVersion: updatedProject.providerVersion,
             interactivity: updatedProject.interactivity
@@ -353,24 +478,14 @@ const getStateWithParsedSpec = (
     );
 
     return {
-        commands: {
-            ...state.commands,
-            exportSpecification: isExportSpecCommandEnabled(
-                exportSpecCommandTest
-            ),
-            zoomFit: isZoomOtherCommandsEnabled(zoomOtherCommandTest),
-            zoomIn: isZoomInCommandEnabled(zoomLevelCommandTest),
-            zoomOut: isZoomOutCommandEnabled(zoomLevelCommandTest),
-            zoomReset: isZoomOtherCommandsEnabled(zoomLevelCommandTest)
-        },
-        debug: { ...state.debug, logAttention: spec.errors.length > 0 },
         export: {
             ...state.export,
             metadata: exportMetadata
         },
-        specification: {
-            ...state.specification,
-            ...spec
-        }
+        interface: {
+            ...state.interface,
+            modalDialogRole
+        },
+        project: updatedProject
     };
 };

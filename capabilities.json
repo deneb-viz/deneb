@@ -83,6 +83,11 @@
                         "integer": true
                     }
                 },
+                "scrollbarWidth": {
+                    "type": {
+                        "integer": true
+                    }
+                },
                 "scrollEventThrottle": {
                     "type": {
                         "numeric": true
@@ -167,6 +172,11 @@
                     }
                 },
                 "enableContextMenu": {
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "enableContextMenuSelector": {
                     "type": {
                         "bool": true
                     }
@@ -296,6 +306,16 @@
                     "type": {
                         "bool": true
                     }
+                },
+                "enableIncrementalDataUpdates": {
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "incrementalUpdateThreshold": {
+                    "type": {
+                        "numeric": true
+                    }
                 }
             }
         },
@@ -310,6 +330,18 @@
                     "type": {
                         "numeric": true
                     }
+                },
+                "supportFieldConfiguration": {
+                    "type": { "text": true }
+                },
+                "denebMetaVersion": {
+                    "type": { "text": true }
+                },
+                "scaleToZoom": {
+                    "type": { "bool": true }
+                },
+                "consolidateFieldParameters": {
+                    "type": { "bool": true }
                 }
             }
         }
@@ -327,7 +359,7 @@
                     ],
                     "dataReductionAlgorithm": {
                         "window": {
-                            "count": 10000
+                            "count": 30000
                         }
                     }
                 },
@@ -343,6 +375,7 @@
             }
         }
     ],
+    "supportsKeyboardFocus": true,
     "supportsLandingPage": true,
     "supportsMultiVisualSelection": true,
     "supportsEmptyDataView": false,

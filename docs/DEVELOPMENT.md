@@ -1,0 +1,515 @@
+# Development Guide
+
+This is the comprehensive development guide for the Deneb custom Power BI visual. It covers the complete webpack-based build system, feature flags, logging, development workflow, packaging modes, and troubleshooting.
+
+> **For AI assistants**: See [CLAUDE.md](../CLAUDE.md) for a quick-reference version of this guide.
+
+## Contents
+
+1. Overview & Goals
+2. Local Development Workflow
+3. Scripts Reference
+4. Webpack Architecture
+5. Monorepo & Turbo Integration
+6. Feature Flags
+7. Logging & Diagnostics
+8. Production Packaging
+9. Performance & Optimization Tips
+10. Troubleshooting & Known Issues
+11. Dependency Audit Summary
+12. Contributing Notes
+
+---
+
+## 1. Overview & Goals
+
+Deneb uses a custom Webpack 5 toolchain (replacing pbiviz CLI) for faster rebuilds, live reload, bundle analysis, and monorepo package collaboration. Development emphasizes small, safe increments with feature flags to reduce drift from main and simplify certification cycles.
+
+**Performance:** Dev builds optimized for speed (~22s initial, ~1-2s rebuilds). Production builds optimized for certification compliance and debugging.
+
+## 2. Local Development Workflow
+
+### Branching model
+
+Deneb uses a two-branch trunk:
+
+- **`main`** is kept as close as possible to the version currently published on AppSource. It is the safety net for production issues that need a swift hotfix without dragging along untested in-flight changes.
+- **`next`** is the active integration branch. New features, fixes, refactors, and most day-to-day work land here.
+
+**Working on a feature or fix:**
+
+1. Branch off `next`, not `main`: `git checkout next && git pull && git checkout -b <type>/<short-name>`.
+2. Open the PR against `next` (e.g. `gh pr create --base next`).
+3. When a hotfix lands on `main`, it is merged or rebased forward into `next` — moving change in that direction is cheap; pushing untested `next` work back into an AppSource release is not.
+
+**Implications:**
+
+- Rebases, `git diff` baselines, and `git rebase --exec` operations for current work should target `next` (or the feature branch's actual fork point such as `HEAD~N`), **not `main`**. `main` is typically far behind `next` and will produce a massive replay if used as the rebase base.
+- AI assistants and contributors new to the repo should treat `next` as the working trunk. Reach for `main` only when the work is genuinely a production hotfix that needs to ship to AppSource ahead of the next release cut.
+- A new release cut promotes `next` → `main` (typically via a release PR), at which point `main` once again mirrors the published AppSource state and the cycle repeats.
+
+### First-time setup
+
+Copy `.env.example` to `.env` (see ".env Setup" below) so local dev toggles like `LOG_LEVEL` are picked up.
+
+> **Note:** The `npm run dev` command performs the following steps automatically each time it runs:
+>
+> 1. **Clears `.tmp/`** for a predictable starting state. This avoids stale webpack persistent cache (which can survive branch switches and report ghost errors against source that no longer exists), plus stale prime artefacts under `.tmp/precompile` and `.tmp/drop`.
+> 2. **Builds workspace packages** via `npm run build:package` so webpack can resolve `@deneb-viz/*` imports (their `exports` map points at `dist/`). Turbo's cache makes this near-instant when packages are unchanged.
+> 3. **Primes dev assets** (`.tmp/precompile/visualPlugin.ts` and `.tmp/drop/pbiviz.json`).
+> 4. **Starts the dev server** alongside the workspace package watchers.
+>
+> Cost: ~22s first build per dev session (one-off; in-session rebuilds are still ~1–2s via webpack's in-memory cache). Benefit: no manual cache clearing, no missing-export warnings from old cache, no need to pre-build packages on a fresh clone.
+
+### Typical development
+
+```
+npm run dev
+```
+
+This does the following in parallel:
+
+- Runs each workspace package's `dev` task (usually `tsup --watch`) via Turbo
+- Starts the webpack dev server (`webpack:start`) with HTTPS on port 8080
+- Watches `packages/**/dist/**/*` and visual `src/**` for changes; triggers full page reload (not HMR) inside Power BI iframe
+
+Typical cycle:
+
+1. Run `npm run dev`
+2. Open report with the visual pointing at `https://localhost:8080/assets/visual.js`
+3. Edit code in packages or `src/`
+4. Wait for rebuild and reload iframe
+5. Verify changes
+
+## 3. Scripts Reference
+
+| Script                       | Purpose                                                    |
+| ---------------------------- | ---------------------------------------------------------- |
+| `dev`                        | Auto-prime assets + parallel package watchers + dev server |
+| `webpack:start`              | Dev server only (used by Turbo)                            |
+| `webpack:build`              | One-off dev build (no server)                              |
+| `webpack:prime`              | One-time build to generate required dev assets             |
+| `webpack:package`            | Production optimized build + `.pbiviz` packaging           |
+| `package`                    | Turbo orchestrated production package build                |
+| `webpack:analyze`            | Generates `webpack.statistics.html` (gzip size report)     |
+| `validate-config-for-commit` | Feature flag + config guardrail before packaging           |
+
+### .env Setup (recommended)
+
+An `.env.example` is provided at the repo root. Copy it to `.env` to get started and adjust values as needed. The `.env` file is loaded automatically by `@dotenvx/dotenvx` for local scripts (e.g., validation and packaging).
+
+> **Auto-creation:** The packaging scripts (`npm run package`, `package-alpha`, `package-beta`, `package-standalone`) automatically create a `.env` file from `.env.ci` if one doesn't exist. This ensures certification-safe defaults for packaging.
+
+PowerShell (only create if missing):
+
+```powershell
+if (-not (Test-Path .env)) { Copy-Item -Path .env.example -Destination .env }
+```
+
+Key toggles you'll likely set in `.env`:
+
+- `LOG_LEVEL`: numeric logging level used during dev/validation.
+- `ZUSTAND_DEV_TOOLS`: enable Redux/Zustand devtools if you have the extension.
+- `PBIVIZ_DEV_MODE`: enable developer-specific visual behaviors.
+- `PBIVIZ_DEV_OVERLAY`: enable debugging overlay to view most recent visual update information (typically used for quick debugging of this info in Power BI Desktop, where developer tools are unavailable).
+- `PBIVIZ_DEV_FORCE_READ_MODE`: dev-only override that makes `isReportInReadMode` always return `true`, regardless of `options.viewMode`. Useful for exercising the read-mode persist gate and the in-memory migration mutations from Power BI Desktop (which only ever reports `viewMode === Edit`) without temporarily editing `display-mode.ts`. Must be `false` for committed builds; enforced by `npm run validate-config-for-commit`.
+
+Validate your setup any time with:
+
+```powershell
+npm run validate-config-for-commit
+```
+
+## 4. Webpack Architecture
+
+Files:
+
+- `webpack.common.config.js`: Shared base (entry, loaders, plugin, library naming `_DEBUG` in dev)
+- `webpack.dev.config.js`: Dev-specific (filesystem cache, watch configuration, disabled WDS client)
+- `webpack.prod.config.js`: Production (Terser minification, bundle analyzer, type checking via ts-loader `transpileOnly=false`)
+
+Key points:
+
+- **Source maps**: Disabled in both dev and production builds. Source maps aren't included in .pbiviz packages, so they provide no debugging benefit in production. Use dev build (localhost:8080) for debugging. Can temporarily enable `cheap-module-source-map` in dev when browser debugging is needed.
+- **TypeScript optimizations (dev only)**: `skipLibCheck: true` (skip .d.ts type checking), `incremental: true` (faster rebuilds with build cache).
+- **Certification fix**: Disabled in dev mode (skips expensive Babel AST parsing), enabled in production to remove forbidden API calls (fetch, eval, XMLHttpRequest).
+- **Const enums**: TypeScript inlines const enum values (e.g., `VisualUpdateType`) at compile time via ts-loader. No runtime dependencies on `powerbi-visuals-api` are created; numeric literals are emitted directly.
+- **No externals**: `powerbi-visuals-api` is **not** externalized. This allows TypeScript to access the package during compilation for const enum inlining and type checking.
+- **Library name**: `_DEBUG` suffix required for constructor invocation in dev.
+- **Polyfills**: `ProvidePlugin` injects `Buffer` and `process` for dependencies expecting Node-like globals.
+- **Performance**: ~22s initial dev build, ~1-2s rebuilds (down from ~30-40s). See [WEBPACK-OPTIMIZATIONS.md](WEBPACK-OPTIMIZATIONS.md) for details.
+
+### Testing local builds of Vega and Vega-Lite
+
+When developing or verifying an in-progress Vega or Vega-Lite change (e.g. an upstream feature branch), you can point the visual's bundle at a locally-built copy of the library instead of the version in `node_modules`. This is driven entirely by `.env`, so no source changes are needed (and nothing can be accidentally committed).
+
+**How it works:** `webpack.common.config.js` reads `VEGA_LOCAL_PATH` / `VEGA_LITE_LOCAL_PATH` and, when set, adds exact-match resolve aliases (`vega$` / `vega-lite$`) targeting those paths. Because Vega and Vega-Lite are bundled at the root webpack step (workspace packages don't bundle their own copies), a single alias redirects every import across the monorepo.
+
+**Editor JSON schemas** are covered too: the editor deep-imports `vega/vega-schema.json` / `vega-lite/vega-lite-schema.json` (see `packages/app-core/src/lib/schema/schema-service.ts`), and both repos emit the schema next to the built bundle. The schema alias is derived automatically from the bundle path, so editor validation/completion reflects the local build. If the build fails with a module-not-found error for the schema path, the local library build hasn't generated its schema — re-run its full build.
+
+**Steps:**
+
+1. Clone and build the library locally, e.g. for Vega:
+
+    ```powershell
+    git clone https://github.com/vega/vega C:\Repos\vega
+    cd C:\Repos\vega
+    git checkout <feature-branch>
+    npm install
+    npm run build
+    ```
+
+2. Set the path(s) in `.env`, pointing at the built ESM bundle:
+
+    ```env
+    VEGA_LOCAL_PATH=C:/Repos/vega/packages/vega/build/vega.module.js
+    # and/or
+    VEGA_LITE_LOCAL_PATH=C:/Repos/vega-lite/build/vega-lite.js
+    ```
+
+3. Restart `npm run dev`. The build log confirms the override is active:
+
+    ```
+    [webpack] LOCAL LIBRARY OVERRIDE: vega$ -> C:/Repos/vega/packages/vega/build/vega.module.js (do not package/commit with this active)
+    ```
+
+4. After making further changes in the library repo, rebuild it there and let webpack rebuild (restart `npm run dev` if the change isn't picked up — the library repo is outside the dev server's watch scope).
+
+**Caveats:**
+
+- **Never package with an override active.** The log line above prints for packaging builds too — if you see it during `npm run package*`, comment the variable out of `.env` and re-run. A certified submission must ship the pinned npm versions.
+- Keep the local library close to the version pinned in `package.json`; a large version gap can surface type or runtime mismatches unrelated to the change under test.
+- TypeScript types still come from the installed `node_modules` package — only the bundled runtime code is swapped. New APIs on the local build may need `// @ts-expect-error` or a temporary type shim while testing.
+
+## 5. Monorepo & Turbo Integration
+
+`turbo.json` wires visual tasks to build dependency graph. Package dev tasks (tsup watchers) emit to `packages/**/dist/**`. Webpack dev server watches these outputs, enabling near-immediate refresh when shared libraries change.
+
+**Exception: `@deneb-viz/powerbi-compat`** — This package builds with TypeScript (`tsc`) instead of tsup to ensure proper const enum inlining. The TypeScript compiler accesses `powerbi-visuals-api` as a devDependency during build and inlines const enum values (like `VisualUpdateType.Data` → `2`) as numeric literals. This eliminates runtime dependencies on the API package and avoids bundling its entire codebase (which would add ~126KB).
+
+### Shared singleton packages (important)
+
+When a package exposes a singleton runtime instance (for example `@deneb-viz/powerbi-compat` exposes `VisualHostServices`), it's important to ensure the singleton isn't accidentally duplicated in different bundles.
+
+Rules to follow:
+
+- All packages that import `@deneb-viz/powerbi-compat` should add it to `peerDependencies` in `package.json` (ex: `"@deneb-viz/powerbi-compat": "*"`). This ensures the host workspace provides the package at runtime and prevents multiple versions from being pulled into nested node_modules.
+- In their `tsup.config.ts`, add the `external` flag to prevent the package being bundled into their distributions. Example:
+
+```ts
+// tsup.config.ts
+external: ['@deneb-viz/powerbi-compat', '@deneb-viz/powerbi-compat/*'];
+```
+
+- The root (visual) package should supply `@deneb-viz/powerbi-compat` in its `devDependencies` or final bundle. This allows the visual to provide the single runtime instance consumed by packages with `peerDependencies`.
+
+This pattern preserves a shared runtime instance so singletons like `VisualHostServices` remain truly singletons and aren't duplicated across package boundaries.
+
+Watch scope (dev):
+
+```
+src/**/*
+style/**/*
+config/**/*
+packages/**/dist/**/*
+node_modules/@deneb-viz/**/dist/**/*
+```
+
+Snapshot `managedPaths` ensures linked workspace packages under `node_modules/@deneb-viz` are not treated as immutable.
+
+### Support Field Configuration Engine (`data-core`)
+
+Per-field flags that control which support columns (`__highlight__`, `__format__`, `__formatted__`) are appended during dataset mapping.
+
+**Processing plan pattern** — avoids repeated flag evaluation inside the row loop:
+
+- `buildProcessingPlan(config, provider)` in `@deneb-viz/data-core/support-fields` resolves all flags once and returns a reusable plan.
+- `buildDataRow(row, plan)` executes the plan for each data row.
+- `SupportFieldValueProvider` is an interface injected at the call site, decoupling platform-specific value logic (e.g. Power BI format strings) from `data-core`.
+
+**State management** — configuration is stored in `supportFieldConfiguration` inside the visual's `stateManagement` property (alongside viewport dimensions) and is synced through the project slice in `@deneb-viz/app-core`. On first load of a pre-2.0 spec, legacy defaults are stamped in so existing specs continue to behave as before.
+
+**UI** — exposed via the Dataset accordion item in the Settings pane (`@deneb-viz/app-core`).
+
+Full API reference: [`packages/data-core/doc/support-fields.md`](../packages/data-core/doc/support-fields.md)
+
+### Feature module boundaries (`app-core`)
+
+Features in `packages/app-core/src/features/` must not cross-import from sibling features. This prevents circular dependencies and keeps features independently composable.
+
+**Rules:**
+
+- A feature may only import from shared locations: `src/components/`, `src/lib/`, `src/state/`, `src/context/`, or workspace packages.
+- A parent feature may import child feature components (e.g., `editor-area` importing from `compiled-vega`), but the child must not import back from the parent.
+- If two features need to share code, extract it to a shared location at the `src/` level.
+
+**Enforcement:**
+
+The `import-x/no-cycle` ESLint rule (via `eslint-plugin-import-x`) warns on circular import chains. Run `npm run eslint` to check for violations. Note that this rule only detects **circular** imports — the broader boundary rule (no sibling-to-sibling imports, even non-circular) is enforced by code review. Some pre-existing violations exist and are being cleaned up incrementally.
+
+## 6. Feature Flags
+
+JSON feature flags are defined in `config/features.json` and can be overridden in `config/package-custom.json` for custom builds. These are primarily used to gate visual behaviors that must remain stable and off by default in the certified build.
+
+In addition to JSON feature flags, we also use a small set of developer-focused environment toggles in a local `.env` file (loaded via `@dotenvx/dotenvx`). These are not persisted in the packaged visual; they influence local development and packaging scripts and, in one case, the runtime behavior of the standalone build:
+
+- `ZUSTAND_DEV_TOOLS`:
+    - Enables Redux/Zustand debugging if you have the browser extension installed.
+    - Accepts typical truthy/falsey values (e.g., `true/false`, `1/0`).
+- `PBIVIZ_DEV_MODE`:
+    - Enables developer-specific features for the Power BI visual.
+    - Accepts typical truthy/falsey values.
+- `LOG_LEVEL`:
+    - Sets the logging level for development and packaging validation (replaces the prior hard-coded const; behavior is unchanged, see levels below).
+    - Accepts a numeric level as described in the Logging section.
+- `ALLOW_EXTERNAL_URI`:
+    - Controls whether the Vega runtime permits external (non-`data:`) URIs.
+    - Read at bundle-build time and inlined into the visual via Webpack `DefinePlugin`.
+    - For certified/alpha/beta builds this must remain `false` in `.env`.
+    - For standalone builds, `npm run package-standalone` uses `.env.standalone`, where this is set to `true`.
+
+These `.env` values are validated by `bin/validate-config-for-commit.ts` to prevent committing with unintended developer modes, elevated logging, or an unsafe `ALLOW_EXTERNAL_URI` value for certified builds.
+
+Retention policy: Remove stale flags + tests in the next minor/major release after certified submission if stable.
+
+## 7. Logging & Diagnostics
+
+Logging utilities live in `@deneb-viz/utils` (`packages/utils/src/lib/logging.ts`). The active log level is set via the `LOG_LEVEL` environment variable in your local `.env` (loaded by `@dotenvx/dotenvx`) using numeric thresholds (see table below). Set it explicitly: if `LOG_LEVEL` is absent, empty, or unrecognized, the runtime **fails closed to `None`** (no console output) rather than defaulting to `Info`, so you must set a level to see any logs. For a committed/certified baseline the value must be pinned to `0` (`None`), and the commit validation script **fails loud** if it is missing or non-zero — logging can never be enabled by omission.
+
+| Level | Name   | Typical Use                                             |
+| ----- | ------ | ------------------------------------------------------- |
+| 0     | None   | Production certified build (no console output)          |
+| 1     | Error  | Unexpected failures (still captured if elevated in dev) |
+| 2     | Warn   | Non-critical anomalies                                  |
+| 3     | Info   | Major lifecycle checkpoints                             |
+| 10    | Host   | Host-triggered visual events                            |
+| 11    | Render | React component render traces                           |
+| 12    | Hook   | Hook execution traces                                   |
+| 50    | Debug  | Verbose detail                                          |
+| 51    | Timing | `logTimeStart` / `logTimeEnd` wrappers                  |
+
+Performance measurement: use timing level to bracket expensive operations to guide optimization / caching.
+
+Quick usage:
+
+```env
+# .env (local only; not committed)
+LOG_LEVEL=51            # Timing/Debug
+ZUSTAND_DEV_TOOLS=true  # Enable Redux/Zustand devtools integration
+PBIVIZ_DEV_MODE=false   # Disable PBIVIZ developer-only behaviors
+```
+
+Validation: `npm run validate-config-for-commit` loads `.env` and fails if `LOG_LEVEL` is **missing or non-zero** for committed baselines, or if dev-only toggles are enabled in non-standalone packaging. (`ci:local` and CI run this against `.env.ci`, which pins `LOG_LEVEL=NONE`.)
+
+## 8. Production Packaging
+
+Run:
+
+```
+npm run package
+```
+
+Outputs:
+
+- `.tmp/drop/visual.js` compiled bundle prior to packaging
+- `.pbiviz` file in `dist/` (includes capabilities, resources, locales)
+- `webpack.statistics.html` for size inspection (via bundle analyzer)
+
+Size limits enforced (`~1MB` entry). Console logs preserved (Power BI telemetry / debugging). Source maps emitted for crash triage.
+
+### Packaging Modes & Certification
+
+We support distinct packaging modes to serve different audiences:
+
+| Mode       | Script                       | Purpose / Audience                            | certificationFix | External URIs (`ALLOW_EXTERNAL_URI`) | Privileges Patch             |
+| ---------- | ---------------------------- | --------------------------------------------- | ---------------- | ------------------------------------ | ---------------------------- |
+| Certified  | `npm run package`            | Primary, submitted to Microsoft AppSource     | `true`           | `false` (blocked)                    | None                         |
+| Alpha      | `npm run package:alpha`      | Early internal validation (no external URIs)  | `true`           | `false`                              | None                         |
+| Beta       | `npm run package:beta`       | Wider pre-release testing                     | `true`           | `false`                              | None                         |
+| Standalone | `npm run package:standalone` | Developer-only, enables remote spec/resources | `false`          | `true`                               | `ExportContent`, `WebAccess` |
+
+Internally all of these invoke the custom script `bin/package-custom.ts` which:
+
+1. Reads mode config from `config/package-custom.json`.
+2. Patches `pbiviz.json`, `features.json`, and (if needed) `capabilities.json`.
+3. Sets/clears the environment variable `DENEB_PACKAGE_MODE` for the child process.
+4. Runs `npm run webpack:package` (production build + `.pbiviz`).
+5. Performs cleanup, restoring original files.
+
+### certificationFix Semantics
+
+The Power BI tooling historically exposed a `--certification-fix` flag (pbiviz) which we now replicate via the `certificationFix` option passed to `PowerBIVisualsWebpackPlugin` in `webpack.common.config.js`.
+
+Logic:
+
+```
+certificationFix = (DENEB_PACKAGE_MODE === 'standalone') ? false : true;
+```
+
+So unless you explicitly build `standalone`, certification defensive measures remain active.
+
+You can confirm behavior via the build log line:
+
+```
+[webpack] certificationFix=true (mode=unset)
+[webpack] certificationFix=false (mode=standalone)
+```
+
+### Environment Variable: DENEB_PACKAGE_MODE
+
+We intentionally scope `DENEB_PACKAGE_MODE` only to the child process started by `bin/package-custom.ts` for the selected mode. Certified (default) builds DO NOT set it, preventing stale shell leakage.
+
+If you manually export the variable in your shell, clear it before certified packaging:
+
+```powershell
+Remove-Item Env:DENEB_PACKAGE_MODE -ErrorAction SilentlyContinue
+npm run package
+```
+
+### External URI Allowance (Standalone Only)
+
+External URI behavior is now controlled by the `ALLOW_EXTERNAL_URI` environment variable, which is read and inlined at build time by Webpack and consumed by the Vega runtime loader (`@deneb-viz/vega-runtime`).
+
+- Certified / alpha / beta builds:
+    - Use `.env`, where `ALLOW_EXTERNAL_URI=false`.
+    - `bin/validate-config-for-commit.ts` enforces that this remains `false` for these modes.
+- Standalone builds:
+    - Use `.env.standalone`, where `ALLOW_EXTERNAL_URI=true`.
+    - `npm run package-standalone` sets `DOTENVX_ENV=.env.standalone` so that Webpack inlines the correct value.
+
+This opens remote specification loading / resource access that is NOT permitted for a certified visual. Use strictly for local development or experimentation.
+
+### Capabilities Privileges Patch
+
+Standalone mode also augments `capabilities.json` privileges (e.g. `ExportContent`, `WebAccess` wildcard) to unlock developer scenarios. These are reverted immediately post packaging.
+
+### Quick Usage Examples
+
+```powershell
+# Certified build (default)
+npm run package
+
+# Beta channel build
+npm run package:beta
+
+# Standalone build (enables external URIs, certificationFix disabled)
+npm run package:standalone
+```
+
+### Troubleshooting Packaging
+
+| Symptom / Log                                       | Likely Cause                                 | Fix                                           |
+| --------------------------------------------------- | -------------------------------------------- | --------------------------------------------- |
+| `[webpack] certificationFix=false` unexpectedly     | Residual `DENEB_PACKAGE_MODE=standalone`     | Clear env variable and re-run certified build |
+| Validation error: external URI not allowed          | Attempting certified build with flag enabled | Use `package:standalone` or disable flag      |
+| Missing privileges after standalone experimentation | Cleanup restored baseline                    | Re-run desired mode or inspect patch script   |
+| Large bundle warning                                | Expected (visual.js > 1MB)                   | Investigate code splitting / tree shaking     |
+
+Refer to `bin/package-custom.ts` for the authoritative implementation details.
+
+## 9. Performance & Optimization Tips
+
+| Tip                                 | Benefit                                |
+| ----------------------------------- | -------------------------------------- |
+| Keep dev server running             | Avoid cold cache penalty               |
+| Avoid unnecessary cache clears      | Preserve module build artifacts        |
+| Limit watch scope if CPU high       | Reduce rebuild triggers                |
+| Prefer const enums                  | TypeScript inlines to numeric literals |
+| Enable source maps only when needed | Dev builds are 50% faster without them |
+
+If watch misses changes on certain filesystems (WSL/network drives), enable polling in `webpack.dev.config.js` `watchFiles.options.usePolling=true`.
+
+## 10. Troubleshooting & Known Issues
+
+| Symptom                    | Cause                                    | Resolution                                                   |
+| -------------------------- | ---------------------------------------- | ------------------------------------------------------------ |
+| Constructor not firing     | Missing `_DEBUG` suffix                  | Confirm library name in `webpack.common.config.js` dev mode  |
+| Enum undefined errors      | Missing `powerbi-visuals-api` dependency | Ensure package is in root devDependencies                    |
+| WebSocket sandbox errors   | WDS client injecting in iframe           | `client: false` in dev server settings (already)             |
+| Slow first build           | Cache warm-up                            | Subsequent builds accelerate via filesystem cache            |
+| Slow rebuilds (~15s+)      | Certification fix running in dev         | Should be disabled in dev (check `webpack.common.config.js`) |
+| Type errors unnoticed      | `skipLibCheck` in dev mode               | Run `webpack:package` or `npx tsc --noEmit`                  |
+| Port 8080 conflict         | Port in use                              | Change `devServer.port`                                      |
+| Missing dependency errors  | Implicit loader/plugin usage             | Audit devDependencies (see section 11)                       |
+| Visual doesn't load in dev | Missing assets (pbiviz.json, etc.)       | Clear `.tmp` and restart `npm run dev` (auto-primes)         |
+| 404 for visual.js          | Wrong publicPath                         | Should be `/assets/` in dev (absolute path)                  |
+
+## 11. Dependency Audit Summary
+
+Explicit devDependencies added for transparency:
+
+- Core: `webpack`, `webpack-cli`, `webpack-dev-server`
+- Shared singletons: `@deneb-viz/powerbi-compat` (used across packages like `@deneb-viz/app-core`, `@deneb-viz/json-processing`, `@deneb-viz/vega-runtime`, `@deneb-viz/template-usermeta`, `@deneb-viz/dataset`). These packages should list `@deneb-viz/powerbi-compat` in `peerDependencies` and add it to their `tsup` `external` setting so that a single runtime instance is provided by the packaging root.
+- Composition: `webpack-merge`
+- Loaders: `ts-loader`, `css-loader`, `less`, `less-loader`, `json-loader`
+- Plugins: `mini-css-extract-plugin`, `terser-webpack-plugin`, `webpack-bundle-analyzer`, `extra-watch-webpack-plugin`, `powerbi-visuals-webpack-plugin`
+- Polyfills: `buffer`, `process`
+
+These align with current configuration rules and plugin usage; pbiviz tooling retained for legacy packaging tasks.
+
+## 12. Contributing Notes
+
+1. Gate new functionality behind feature flags until stable.
+2. Keep changes small and focused; prefer incremental merges.
+3. Update this document when altering build or watch behavior.
+4. Validate changes with `npm run dev` (fast loop) then `npm run package` (full check) before submitting PR.
+5. Use bundle analyzer periodically to monitor size creep.
+
+---
+
+## (Appendix) Original Feature Flag & Logging Details
+
+The following preserves prior detailed explanations for flags and logging (kept for completeness). Future contributors can prune once redundant.
+
+### Feature Flags (Detailed)
+
+Due to the nature of Deneb (being a custom visual), it's not easy to change or redeploy things quickly (due to the publication and review process), but to try to keep branches small and focused so that we don't get too far from the trunk, feature flags are used as much as possible for new development.
+
+[You can read more about the idea of feature flags here](https://www.split.io/blog/manage-feature-flags-javascript/).
+
+### Feature Flag Configuration
+
+Feature flags are stored in `config/features.json` and take the simple form of using the desired feature name as an object key, and a boolean value to represent the state of the feature when merged to the main branch. An example of this is as follows:
+
+```json
+{
+    "data_drilldown": false
+}
+```
+
+A `.json` file is used because this is easier to swap out when building other packages that might require different configuration (see: _[Feature Flag Overrides](#feature-flag-overrides-for-other-packages)_ below).
+
+### Feature Flag Usage
+
+features are exported as `const FEATURES` in `config/index.ts` and this is the import you should use, e.g.:
+
+```typescript
+import { FEATURES } from '../config';
+
+// test for flag and do necessary logic
+if (FEATURES.enable_external_uri) {
+    ...
+}
+```
+
+**Please strive as much as possible to keep feature logic behind flags and tests where you can**. This minimizes issues when merging code to the trunk and ensures continuity of the visual if we are not ready to enable these features yet.
+
+### Feature Flag Maintenance
+
+Unless there is a good reason to keep them, feature flags and their tests should be removed in the next major or minor release (whichever is sooner) after an enabled feature has been included in a certified visual submission to Microsoft and no major issues have been uncovered in production.
+
+As such, this is part of housekeeping work when commencing a new planned update.
+
+### Feature Flag Overrides (for other packages)
+
+In some cases, feature flags will be different to the visual that is submitted for certification to Microsoft. A good example of this is the `enable_external_uri` flag, which prevents loading of external resources if disabled. Certified visuals cannot do this, but the standalone version exists almost purely to allow developers to load content from remote endpoints, on the understanding that the visual isn't certified.
+
+In these cases, feature flag overrides can be applied to `config/package-custom.json` in the `features` object. These will be applied over the top of the configuration in `features.json` whenever the custom package build tasks are run.
+
+You can refer to the `standalone.features` object in this file for an example of what such an override looks like.
+
+### Current Feature Flag Process Limitations
+
+- For some features, we may need to update the `capabilities.json` file to suit what we want. There currently isn't a process for this, and we will need to come up with a suitable way of modifying this based on a specific flag or its desired behavior.
+
+- For CI purposes, feature validation is currently done in an ad-hoc manner in `bin/validate-config-for-commit.ts`. We should ideally have a slightly better process for feature whitelisting and validation, but this works _reasonably_ well at present.

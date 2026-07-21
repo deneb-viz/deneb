@@ -1,30 +1,485 @@
-import { Divider, makeStyles, tokens } from '@fluentui/react-components';
+import {
+    isValidElement,
+    useCallback,
+    useDeferredValue,
+    useMemo,
+    useRef,
+    useState
+} from 'react';
+import {
+    Accordion,
+    type AccordionToggleData,
+    type AccordionToggleEvent,
+    makeStyles
+} from '@fluentui/react-components';
 
-import { ProviderSettings } from './provider-settings';
-import { RenderModeSettings } from './render-mode-settings';
+import {
+    ProviderSettings,
+    RenderModeSettings,
+    ScaleToZoomSettings
+} from './general-settings';
+import { PerformanceSettings } from './performance-settings';
+import { DatasetSettings } from './dataset-settings';
+import { SettingsAccordionItem } from './settings-accordion-item';
+import { SettingsPaneTooltipProvider } from './settings-pane-tooltip-context';
+import {
+    SettingsSearchBox,
+    type SettingsSearchBoxHandle
+} from './settings-search-box';
+import { SettingsEmptyState } from './settings-empty-state';
+import { SettingsPaneContextMenu } from './settings-pane-context-menu';
+import { isEditableEventTarget } from './settings-pane-utils';
+import { HighlightText } from './highlight-text';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
+import { useDenebState } from '../../../state';
+import { buildMatchView } from '../search/match-engine';
+import {
+    resolvePlatformSearchables,
+    resolveQuery,
+    resolveSectionSchema
+} from '../search/resolve-descriptors';
+import { buildResolvedDatasetDescriptor } from '../search/dataset-indexer';
+import { generalSchema } from '../search/general-schema';
+import { performanceSchema } from '../search/performance-schema';
+import { computeVisibleSectionIds } from '../search/compute-visible-section-ids';
+import type { MatchView, SectionMatchView } from '../search/types';
+import { useFocusRecovery } from '../hooks/use-focus-recovery';
+import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 
-const useSettingsPaneStyles = makeStyles({
+const useSettingsPaneLayoutStyles = makeStyles({
     root: {
         overflow: 'overlay',
-        padding: tokens.spacingVerticalXS
+        width: '100%'
     }
 });
 
+/** Pick the `SectionMatchView` for a given flat section, or `null`. */
+const pickSectionView = (
+    view: MatchView,
+    id: string
+): SectionMatchView | null => view.sections.get(id) ?? null;
+
+/**
+ * Extract the React `key` prop of a platform-supplied AccordionItem
+ * element. Platforms render each platform section as a standalone
+ * element whose `key` matches the AccordionItem's `value` — we rely on
+ * that invariant to associate elements with their
+ * `PlatformSearchContribution`.
+ */
+const getElementKey = (element: unknown): string | null => {
+    if (!isValidElement(element)) return null;
+    // React keys round-trip as strings even when authored as numbers;
+    // normalise both forms so platform consumers using numeric keys
+    // participate in the filter rather than being silently dropped.
+    const key = element.key;
+    if (key === null) return null;
+    return typeof key === 'string' || typeof key === 'number'
+        ? String(key)
+        : null;
+};
+
 export const SettingsPane = () => {
-    const classes = useSettingsPaneStyles();
-    const { settingsPanePlatformComponent } = useDenebPlatformProvider();
+    const classes = useSettingsPaneLayoutStyles();
+    const {
+        settingsPaneFooter,
+        settingsPanePlatformComponent,
+        settingsPanePlatformSearchable
+    } = useDenebPlatformProvider();
+    const {
+        translate,
+        query,
+        openItems,
+        setOpenItems,
+        datasetFields,
+        supportFieldConfiguration,
+        spec,
+        denebMetaVersion,
+        interactivity,
+        consolidateFieldParameters
+    } = useDenebState((state) => ({
+        translate: state.i18n.translate,
+        query: state.settingsPane.query,
+        openItems: state.settingsPane.openItems,
+        setOpenItems: state.settingsPane.setOpenItems,
+        datasetFields: state.dataset.fields,
+        supportFieldConfiguration: state.project.supportFieldConfiguration,
+        spec: state.project.spec,
+        denebMetaVersion: state.project.denebMetaVersion,
+        interactivity: state.project.interactivity,
+        consolidateFieldParameters: state.project.consolidateFieldParameters
+    }));
+    // Accordion controlled-toggle handler delegates to the slice so that
+    // closing / reopening the pane (or remounting the visual host) within
+    // a session preserves the user's open sections. No module-level ref;
+    // the Zustand store is the module singleton here.
+    const onToggle = useCallback(
+        (_event: AccordionToggleEvent, data: AccordionToggleData<string>) => {
+            setOpenItems(data.openItems);
+        },
+        [setOpenItems]
+    );
+    const searchBoxRef = useRef<SettingsSearchBoxHandle>(null);
+    const paneRootRef = useRef<HTMLDivElement>(null);
+
+    // Context menu local state (R5). Menu is callback-driven — the Zustand
+    // slice stays out of this. `anchorRect` anchors Fluent's positioning via
+    // a virtual element.
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [menuAnchor, setMenuAnchor] = useState<DOMRect | null>(null);
+
+    // Resolve schemas + platform contribution + dataset descriptor.
+    // Deliberately excludes `query` from its dependency list:
+    // `resolveSectionSchema` / `resolvePlatformSearchables` (translate) and
+    // `buildResolvedDatasetDescriptor` (a `.toLowerCase()` per row/flag —
+    // see `resolve-descriptors.ts`'s docs) are exactly the per-render cost
+    // the search design pre-lowers surfaces to avoid paying on every
+    // keystroke. Before this split, `query` sat in the same `useMemo` deps
+    // as these translate-heavy inputs, so every keystroke rebuilt every
+    // descriptor from scratch (Important #9) even though none of them
+    // depend on the query text. The dataset indexer mirrors the
+    // render-time logic in DatasetSettings so match results line up with
+    // what the tree actually shows.
+    const descriptors = useMemo(() => {
+        const resolvedSections = [
+            resolveSectionSchema(generalSchema, translate),
+            resolveSectionSchema(performanceSchema, translate)
+        ];
+        // Each platform contribution resolves to its own sibling section
+        // descriptor. The contribution's `id` flows through verbatim and
+        // must match the React `key` of the corresponding injected
+        // AccordionItem (see `getElementKey`).
+        const resolvedPlatform = resolvePlatformSearchables(
+            settingsPanePlatformSearchable,
+            translate
+        );
+        resolvedSections.push(...resolvedPlatform);
+
+        const sourceFields = Object.entries(datasetFields).filter(
+            ([, f]) => f?.isSupportField !== true
+        );
+        const highlightEnabled = interactivity?.highlight ?? false;
+        const effectiveMetaVersion = denebMetaVersion ?? 0;
+        const isLegacy =
+            spec !== PROJECT_DEFAULTS.spec && effectiveMetaVersion < 2;
+        const datasetDescriptor = buildResolvedDatasetDescriptor({
+            sourceFields,
+            config: supportFieldConfiguration ?? {},
+            masterSettings: {
+                crossHighlightEnabled: highlightEnabled,
+                crossFilterEnabled: interactivity?.selection ?? false
+            },
+            isLegacy,
+            highlightEnabled,
+            consolidateFieldParameters: consolidateFieldParameters ?? true,
+            translate,
+            headingKey: 'Text_Settings_Dataset'
+        });
+        return { resolvedSections, datasetDescriptor };
+    }, [
+        translate,
+        settingsPanePlatformSearchable,
+        datasetFields,
+        supportFieldConfiguration,
+        spec,
+        denebMetaVersion,
+        interactivity,
+        consolidateFieldParameters
+    ]);
+
+    // Deferred so a fast typist's keystrokes commit to the input
+    // immediately while the match-view recompute below (the actual
+    // per-keystroke filtering work) trails slightly behind at lower
+    // priority — React re-renders once the deferred value catches up.
+    // `startTransition` around the store write in `settings-search-box.tsx`
+    // did not achieve this: that write flows through a Zustand
+    // `useSyncExternalStore` subscription, which transitions don't defer
+    // (see that file's updated comment).
+    const deferredQuery = useDeferredValue(query);
+
+    // Only re-runs the match engine — the actual per-keystroke filtering
+    // work — when the resolved descriptors change (rare: locale, platform
+    // contribution, dataset fields, support-field config) or the deferred
+    // query changes (every keystroke, but now doing filtering only, not
+    // re-translating/re-lowering every descriptor).
+    const matchView = useMemo<MatchView>(
+        () =>
+            buildMatchView({
+                query: resolveQuery(deferredQuery),
+                sections: descriptors.resolvedSections,
+                dataset: descriptors.datasetDescriptor
+            }),
+        [descriptors, deferredQuery]
+    );
+
+    // Platform elements are a heterogeneous list of sibling
+    // AccordionItems. Each element's React `key` is taken as its section
+    // id — `registeredPlatformIds` are those that have a matching
+    // `PlatformSearchContribution` (participate in search);
+    // `alwaysVisiblePlatformIds` are the rest (legacy always-visible
+    // fallback preserved for platforms that haven't opted in yet).
+    const platformSectionIds = useMemo<string[]>(() => {
+        const ids: string[] = [];
+        for (const element of settingsPanePlatformComponent ?? []) {
+            const key = getElementKey(element);
+            if (key !== null) ids.push(key);
+        }
+        return ids;
+    }, [settingsPanePlatformComponent]);
+    const registeredPlatformIds = useMemo<string[]>(
+        () => (settingsPanePlatformSearchable ?? []).map((c) => c.id),
+        [settingsPanePlatformSearchable]
+    );
+    const alwaysVisiblePlatformIds = useMemo<string[]>(() => {
+        const registered = new Set(registeredPlatformIds);
+        return platformSectionIds.filter((id) => !registered.has(id));
+    }, [platformSectionIds, registeredPlatformIds]);
+
+    // Accordion: when a query is active, the chevrons become read-only
+    // and openItems is derived from the match view so matched sections
+    // auto-expand. Always-visible platform elements (no searchable
+    // contribution registered) are force-included so they stay on-screen.
+    const isSearching = query.trim().length > 0;
+    const effectiveOpenItems = useMemo<string[]>(() => {
+        if (!isSearching) return openItems;
+        const items = Array.from(matchView.matchedSections);
+        for (const id of alwaysVisiblePlatformIds) {
+            if (!items.includes(id)) items.push(id);
+        }
+        return items;
+    }, [isSearching, openItems, matchView, alwaysVisiblePlatformIds]);
+    const effectiveOnToggle = isSearching ? undefined : onToggle;
+
+    // Expand-all is filter-aware via `computeVisibleSectionIds`: during
+    // an active query it expands only currently-matched sections. Both
+    // handlers drive the slice's `setOpenItems`.
+    // Monotonic counters the Dataset tree subscribes to — the pane can't
+    // reach its inner field-level open state directly, so it bumps an
+    // epoch and the tree applies the bulk toggle locally.
+    const [expandAllEpoch, setExpandAllEpoch] = useState(0);
+    const [collapseAllEpoch, setCollapseAllEpoch] = useState(0);
+
+    const handleExpandAll = useCallback(() => {
+        const ids = computeVisibleSectionIds({
+            query,
+            matchedSections: matchView.matchedSections,
+            platformSectionIds,
+            registeredPlatformIds
+        });
+        setOpenItems(ids);
+        setExpandAllEpoch((n) => n + 1);
+    }, [
+        query,
+        matchView,
+        platformSectionIds,
+        registeredPlatformIds,
+        setOpenItems
+    ]);
+    const handleCollapseAll = useCallback(() => {
+        setOpenItems([]);
+        setCollapseAllEpoch((n) => n + 1);
+    }, [setOpenItems]);
+
+    // Right-click: open menu anchored at the pointer. Skips (and lets the
+    // browser's native menu through) when the target is an editable
+    // control — the search box `<input>` needs its native cut/copy/paste
+    // menu, which the pane-wide `preventDefault()` used to suppress
+    // unconditionally (Important #10).
+    const handleContextMenu = useCallback(
+        (event: React.MouseEvent<HTMLDivElement>) => {
+            if (isEditableEventTarget(event.target)) return;
+            event.preventDefault();
+            const rect = new DOMRect(event.clientX, event.clientY, 1, 1);
+            setMenuAnchor(rect);
+            setMenuOpen(true);
+        },
+        []
+    );
+    // Keyboard equivalent: Shift+F10 / ContextMenu key. Anchor at the
+    // focused element's bounding rect, or the pane root as a fallback.
+    // Same editable-target guard as `handleContextMenu` — without it,
+    // Shift+F10 inside the search box would replace the input's own
+    // editing menu with the pane's section menu.
+    const handleKeyDown = useCallback(
+        (event: React.KeyboardEvent<HTMLDivElement>) => {
+            const isShiftF10 = event.shiftKey && event.key === 'F10';
+            const isContextMenuKey = event.key === 'ContextMenu';
+            if (!isShiftF10 && !isContextMenuKey) return;
+            if (isEditableEventTarget(event.target)) return;
+            event.preventDefault();
+            const active =
+                (document.activeElement as HTMLElement | null) ??
+                paneRootRef.current;
+            const rect =
+                active?.getBoundingClientRect() ?? new DOMRect(0, 0, 1, 1);
+            setMenuAnchor(rect);
+            setMenuOpen(true);
+        },
+        []
+    );
+
+    // Focus recovery — when the focused row vanishes, return focus to
+    // the SearchBox.
+    useFocusRecovery(matchView, searchBoxRef);
+
+    const generalView = pickSectionView(matchView, 'general');
+    const performanceView = pickSectionView(matchView, 'performance');
+
+    // When searching, sections not in `matchedSections` disappear from
+    // the accordion entirely. Each injected platform element is filtered
+    // independently based on its React `key`: it renders when either the
+    // match engine shortlisted it (registered + matched) or it is an
+    // unregistered element (always-visible fallback).
+    const showGeneral =
+        !isSearching || matchView.matchedSections.has('general');
+    const showPerformance =
+        !isSearching || matchView.matchedSections.has('performance');
+    const showDataset =
+        !isSearching || matchView.matchedSections.has('dataset');
+    const registeredPlatformIdSet = useMemo(
+        () => new Set(registeredPlatformIds),
+        [registeredPlatformIds]
+    );
+    // Platform-section heading highlighting: when a registered platform
+    // section matches on its heading, we *would* like to wrap the heading
+    // text in <HighlightText>. However, platform components render their
+    // own SettingsAccordionItem internally — the pane only sees an
+    // opaque JSX.Element and can't inject a `highlightedHeading` prop
+    // without cloneElement gymnastics. Matching a heading still
+    // shortlists the section; the heading text itself just renders
+    // without the mark for now. Future iteration: surface a data
+    // attribute / cloneElement pass to paint highlights into the
+    // platform-owned heading.
+    const visiblePlatformElements = isSearching
+        ? (settingsPanePlatformComponent ?? []).filter((element) => {
+              const key = getElementKey(element);
+              if (key === null) return true; // render unkeyed siblings defensively
+              if (matchView.matchedSections.has(key)) return true;
+              // Unregistered (opted out of search) → always-visible.
+              return !registeredPlatformIdSet.has(key);
+          })
+        : (settingsPanePlatformComponent ?? []);
+
+    const generalHeading = translate('Text_Vega_Provider_And_Rendering');
+    const performanceHeading = translate('Text_Vega_Performance');
+    const datasetHeading = translate('Text_Settings_Dataset');
+
+    // Empty state: shown only when the active query produces zero matches
+    // AND no always-visible platform element is mounted (those would
+    // otherwise remain on-screen and make the "no results" message
+    // misleading).
+    const emptyResults =
+        isSearching &&
+        matchView.matchedSections.size === 0 &&
+        alwaysVisiblePlatformIds.length === 0;
+
     return (
-        <div className={classes.root}>
-            <ProviderSettings />
-            <Divider />
-            <RenderModeSettings />
-            {settingsPanePlatformComponent ? (
-                <>
-                    <Divider />
-                    {settingsPanePlatformComponent}
-                </>
-            ) : null}
-        </div>
+        <SettingsPaneTooltipProvider>
+            <div
+                ref={paneRootRef}
+                className={classes.root}
+                onContextMenu={handleContextMenu}
+                onKeyDown={handleKeyDown}
+            >
+                <SettingsSearchBox ref={searchBoxRef} />
+                {emptyResults ? (
+                    <SettingsEmptyState query={query} />
+                ) : (
+                    <Accordion
+                        multiple
+                        collapsible
+                        openItems={effectiveOpenItems}
+                        onToggle={effectiveOnToggle}
+                    >
+                        {showGeneral ? (
+                            <div data-settings-section-id='general'>
+                                <SettingsAccordionItem
+                                    value='general'
+                                    heading={generalHeading}
+                                    highlightedHeading={
+                                        generalView?.headingHighlights ? (
+                                            <HighlightText
+                                                text={generalHeading}
+                                                ranges={
+                                                    generalView.headingHighlights
+                                                }
+                                            />
+                                        ) : undefined
+                                    }
+                                >
+                                    <ProviderSettings
+                                        sectionMatchView={generalView}
+                                    />
+                                    <RenderModeSettings
+                                        sectionMatchView={generalView}
+                                    />
+                                    <ScaleToZoomSettings
+                                        sectionMatchView={generalView}
+                                    />
+                                </SettingsAccordionItem>
+                            </div>
+                        ) : null}
+                        {showPerformance ? (
+                            <div data-settings-section-id='performance'>
+                                <SettingsAccordionItem
+                                    value='performance'
+                                    heading={performanceHeading}
+                                    highlightedHeading={
+                                        performanceView?.headingHighlights ? (
+                                            <HighlightText
+                                                text={performanceHeading}
+                                                ranges={
+                                                    performanceView.headingHighlights
+                                                }
+                                            />
+                                        ) : undefined
+                                    }
+                                >
+                                    <PerformanceSettings
+                                        sectionMatchView={performanceView}
+                                    />
+                                </SettingsAccordionItem>
+                            </div>
+                        ) : null}
+                        {showDataset ? (
+                            <SettingsAccordionItem
+                                value='dataset'
+                                heading={datasetHeading}
+                                highlightedHeading={
+                                    matchView.datasetTree?.headingHighlights ? (
+                                        <HighlightText
+                                            text={datasetHeading}
+                                            ranges={
+                                                matchView.datasetTree
+                                                    .headingHighlights
+                                            }
+                                        />
+                                    ) : undefined
+                                }
+                            >
+                                <DatasetSettings
+                                    datasetMatchView={
+                                        isSearching
+                                            ? matchView.datasetTree
+                                            : null
+                                    }
+                                    expandAllEpoch={expandAllEpoch}
+                                    collapseAllEpoch={collapseAllEpoch}
+                                />
+                            </SettingsAccordionItem>
+                        ) : null}
+                        {visiblePlatformElements}
+                    </Accordion>
+                )}
+                <SettingsPaneContextMenu
+                    open={menuOpen}
+                    anchorRect={menuAnchor}
+                    onOpenChange={setMenuOpen}
+                    onExpandAll={handleExpandAll}
+                    onCollapseAll={handleCollapseAll}
+                    translate={translate}
+                />
+                {settingsPaneFooter}
+            </div>
+        </SettingsPaneTooltipProvider>
     );
 };

@@ -3,9 +3,11 @@ import { Button } from '@fluentui/react-components';
 import { getTemplateReplacedForDataset } from '@deneb-viz/json-processing';
 import { logDebug, logRender, logWarning } from '@deneb-viz/utils/logging';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
-import { useSpecificationEditor } from '../../specification-editor';
-import { useDenebState } from '../../../state';
+import { useSpecificationEditor } from '../../../context/specification-editor';
+import { getDenebState, useDenebState } from '../../../state';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
+import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
+import { remapSupportFieldConfigurationForImport } from '../../../lib/project';
 
 /**
  * Displays the content for creating a specification using the selected
@@ -39,18 +41,55 @@ export const CreateButton = () => {
         }
         const spec = getTemplateReplacedForDataset(
             candidates?.spec ?? PROJECT_DEFAULTS.spec,
-            metadata?.dataset ?? []
+            metadata?.datasets ?? {}
         );
         const config = candidates?.config ?? PROJECT_DEFAULTS.config;
+        // Remap support field configuration keys from inline dataset entries
+        // to actual field names supplied by the user. Computed once and shared with both the
+        // platform persistence callback and the project state initialisation.
+        const supportFieldConfiguration =
+            remapSupportFieldConfigurationForImport(
+                metadata?.datasets?.[DATASET_DEFAULT_NAME] ?? []
+            );
+        // Auto-flag treatAsParameter for regular fields assigned to parameter placeholders
+        let needsConsolidation = false;
+        const datasetFields = getDenebState().dataset.fields;
+        for (const entry of metadata?.datasets?.[DATASET_DEFAULT_NAME] ?? []) {
+            if (entry.kind === 'parameter' && entry.suppliedObjectName) {
+                const suppliedField = datasetFields[entry.suppliedObjectName];
+                const suppliedRole = suppliedField?.role ?? 'grouping';
+                if (
+                    suppliedRole === 'grouping' ||
+                    suppliedRole === 'aggregation'
+                ) {
+                    // Regular field assigned to parameter slot — auto-flag
+                    supportFieldConfiguration[entry.suppliedObjectName] = {
+                        ...(supportFieldConfiguration[
+                            entry.suppliedObjectName
+                        ] ?? {
+                            highlight: false,
+                            highlightStatus: false,
+                            highlightComparator: false,
+                            format: false,
+                            formatted: false
+                        }),
+                        treatAsParameter: true
+                    };
+                    needsConsolidation = true;
+                }
+            }
+        }
         logDebug('createFromTemplate - processed candidates', {
             spec,
-            config
+            config,
+            supportFieldConfiguration
         });
         // Call platform-specific handler FIRST for persistence (avoids sync race conditions)
         if (onCreateProject && metadata) {
             try {
                 await onCreateProject({
                     metadata,
+                    supportFieldConfiguration,
                     spec,
                     config
                 });
@@ -61,11 +100,13 @@ export const CreateButton = () => {
                 );
             }
         }
-        // Initialize project state from template
         initializeFromTemplate({
             spec: spec,
             config: config,
-            provider
+            provider,
+            supportFieldConfiguration,
+            denebMetaVersion: metadata?.deneb?.metaVersion,
+            consolidateFieldParameters: needsConsolidation || undefined
         });
         // Update editor refs directly for immediate UI update
         editorSpec?.current?.setValue(spec);

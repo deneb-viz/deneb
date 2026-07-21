@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import {
     Button,
     Label,
@@ -11,7 +11,7 @@ import {
 import { ArrowResetRegular } from '@fluentui/react-icons';
 
 import { useSettingsStyles } from '../styles';
-import { TooltipCustomMount, useDenebState } from '@deneb-viz/app-core';
+import { useDenebState, useSettingsPaneTooltip } from '@deneb-viz/app-core';
 import { logDebug } from '@deneb-viz/utils/logging';
 import {
     CROSS_FILTER_LIMITS,
@@ -54,47 +54,43 @@ export const CrossFilterMaxDataPoints = () => {
     }, []);
     const id = useId();
     const classes = useSettingsStyles();
+    const tooltipMountNode = useSettingsPaneTooltip();
     const disabled = useMemo(
         () => selectionMaxDataPoints === DEFAULT_VALUE,
         [selectionMaxDataPoints]
     );
-    const [ref, setRef] = useState<HTMLElement | null>();
+    if (!isCrossFilterPropSet()) return null;
     return (
-        (isCrossFilterPropSet() && (
-            <div className={classes.spinButtonContainer}>
-                <Label htmlFor={id}>
-                    {translate('PowerBI_Objects_Vega_SelectionMaxDataPoints')}
-                </Label>
-                <div>
-                    <SpinButton
-                        className={classes.spinButtonControl}
-                        appearance='underline'
-                        value={selectionMaxDataPoints}
-                        id={id}
-                        min={CROSS_FILTER_LIMITS.minDataPointsValue}
-                        max={CROSS_FILTER_LIMITS.maxDataPointsValue}
-                        step={CROSS_FILTER_LIMITS.dataPointsStepValue}
-                        onChange={onChange}
+        <div className={classes.spinButtonContainer}>
+            <Label htmlFor={id}>
+                {translate('PowerBI_Objects_Vega_SelectionMaxDataPoints')}
+            </Label>
+            <div>
+                <SpinButton
+                    className={classes.spinButtonControl}
+                    appearance='underline'
+                    value={selectionMaxDataPoints}
+                    id={id}
+                    min={CROSS_FILTER_LIMITS.minDataPointsValue}
+                    max={CROSS_FILTER_LIMITS.maxDataPointsValue}
+                    step={CROSS_FILTER_LIMITS.dataPointsStepValue}
+                    onChange={onChange}
+                />
+                <Tooltip
+                    content={translate('PowerBI_Tooltip_Setting_Reset')}
+                    relationship='label'
+                    withArrow
+                    mountNode={tooltipMountNode}
+                >
+                    <Button
+                        icon={<ArrowResetRegular />}
+                        appearance='subtle'
+                        onClick={onReset}
+                        disabled={disabled}
                     />
-                    <>
-                        <Tooltip
-                            content={translate('PowerBI_Tooltip_Setting_Reset')}
-                            relationship='label'
-                            withArrow
-                            mountNode={ref}
-                        >
-                            <Button
-                                icon={<ArrowResetRegular />}
-                                appearance='subtle'
-                                onClick={onReset}
-                                disabled={disabled}
-                            />
-                        </Tooltip>
-                        <TooltipCustomMount setRef={setRef} />
-                    </>
-                </div>
+                </Tooltip>
             </div>
-        )) || <></>
+        </div>
     );
 };
 
@@ -110,4 +106,5 @@ const getResolvedValue = (data: SpinButtonOnChangeData): number => {
             return DEFAULT_VALUE;
         }
     }
+    return DEFAULT_VALUE;
 };
