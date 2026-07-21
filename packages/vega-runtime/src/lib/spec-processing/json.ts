@@ -64,5 +64,18 @@ const getErrorLine = (code: string, error: string): string => {
  * @returns Redacted error message
  */
 export const redactJsonFromError = (message: string): string => {
-    return message.replace(/(Invalid specification) (\{.*\})/g, '$1');
+    // Linear-time string ops instead of /(Invalid specification) (\{.*\})/g,
+    // whose greedy backtracking is polynomial on pathological input (CodeQL
+    // js/polynomial-redos). Mirrors the greedy regex: strip from the brace
+    // after the marker through the last closing brace in the message.
+    const marker = 'Invalid specification {';
+    const start = message.indexOf(marker);
+    if (start === -1) return message;
+    const end = message.lastIndexOf('}');
+    if (end <= start + marker.length - 1) return message;
+    return (
+        message.slice(0, start) +
+        'Invalid specification' +
+        message.slice(end + 1)
+    );
 };
