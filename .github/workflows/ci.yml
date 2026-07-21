@@ -1,5 +1,10 @@
 name: CI
 
+# Default the workflow token to read-only; jobs that need more (e.g.
+# alpha-release publishing) declare their own permissions block.
+permissions:
+    contents: read
+
 on:
     push:
         branches:
