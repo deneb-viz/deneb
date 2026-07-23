@@ -18,8 +18,8 @@ import { DevOverlayShell } from '../../dev-overlay-shell';
  * stored embedViewport, and the iframe's `window.innerWidth` /
  * `Height`, plus the deltas the gate predicate cares about. It also
  * shows the dimensions the last compile baked into the patched spec
- * as a compile-time seed (`ci.*`, from the `denebContainer` signal
- * init) and the Vega container element's client vs scroll box (`ct.*`)
+ * as the stored compilation's `denebContainer` init (`ci.*` —
+ * rewritten in place on settled resizes) and the Vega container element's client vs scroll box (`ct.*`)
  * — together these localise a stale-size render to either the
  * viewport→compile chain, the re-embed, or the physical iframe (#480
  * OoF residual).
@@ -94,12 +94,13 @@ export const ViewportGateDebugOverlay = () => {
     const optionsViewport = useDenebVisualState(
         (state) => state.updates.options?.viewport
     );
-    // The dimensions the last compile baked into the patched spec's
-    // `denebContainer` signal init (`ci.*` = compile init). Since the
-    // container-signal consolidation, resizes are signal-only — these
-    // values are a SEED captured at compile time and do NOT track
-    // resizes. Divergence from ev/ct after a resize is expected and
-    // healthy; only a divergence at embed time matters.
+    // The dimensions the stored compilation's `denebContainer` init
+    // currently carries (`ci.*` = compile init). Settled container
+    // resizes rewrite this init in place (geometry → cheap re-embed;
+    // see the container-signal consolidation design, Revision 2), so
+    // these track settled dimensions. Divergence from ev/ct is
+    // expected only transiently, inside the resize debounce window —
+    // a PERSISTENT divergence means the geometry channel broke.
     const compilationResult = useDenebState(
         (state) => state.compilation.result as CompilationResultShape
     );
