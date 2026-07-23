@@ -148,7 +148,11 @@ jobs:
             - name: Resolve versioned alpha tag
               id: version_tag
               run: |
-                  VERSION_TAG=$(git tag --points-at HEAD | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.alpha-[0-9]+$' | sort -V | tail -n 1)
+                  # `|| true`: keep a no-match grep from failing the
+                  # assignment if this step ever runs under pipefail
+                  # (e.g. an explicit `shell: bash`), so the guard below
+                  # prints its instructions instead of a bare exit.
+                  VERSION_TAG=$(git tag --points-at HEAD | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.alpha-[0-9]+$' | sort -V | tail -n 1 || true)
                   if [ -z "$VERSION_TAG" ]; then
                       echo "::error::No versioned alpha tag (e.g. 2.0.0.alpha-1) found on this commit. Tag the commit with '<major>.<minor>.<patch>.alpha-<n>' and re-push the 'alpha' tag to release."
                       exit 1
