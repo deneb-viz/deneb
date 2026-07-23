@@ -8,13 +8,18 @@ import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 import { VegaPatternFillServices } from '@deneb-viz/vega-runtime/pattern-fill';
 import {
     getSignalDenebContainer,
-    SIGNAL_DENEB_CONTAINER
+    SIGNAL_DENEB_CONTAINER,
+    type DenebContainerSignal
 } from '@deneb-viz/vega-runtime/signals';
 import { patchSpecWithData } from '@deneb-viz/vega-runtime/spec-processing';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
 import { useDenebState } from '../../../state';
 import { type ViewEventBinder } from '../../../components/deneb-platform';
 import { VEGA_EMBED_ROOT_STYLE } from './vega-embed-styles';
+import {
+    isSameDenebContainerValue,
+    observeContainerResize
+} from '../container-size-observer';
 import { getRestrictiveVegaLoader } from './restrictive-loader';
 import { shouldOpenEmbedWindow } from '../embed-window';
 
@@ -394,30 +399,72 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
     }, [compilation, viewportHeight, viewportWidth]);
 
     /**
-     * Update `denebContainer` signal when viewport changes.
-     * This handles responsive sizing when the container is resized.
+     * Guarded `denebContainer` refresh shared by both signal write
+     * paths (the post-embed reconcile effect and the ResizeObserver
+     * callback). Guards: no view/signal yet → nothing to update; 0×0
+     * (hidden or tearing-down container) → never write that over a
+     * live view; value-equal → skip, since Vega compares signal
+     * values by reference and an equal-but-new object would still
+     * re-run the dataflow. Stable deps — `VegaViewServices` is a
+     * module singleton.
      */
-    useEffect(() => {
-        // Don't update signal until view is ready (runAsync completed)
-        if (!embedRef.current || !viewReady) return;
-
-        if (
-            VegaViewServices.getSignalByName(SIGNAL_DENEB_CONTAINER) ===
-            undefined
-        ) {
-            return;
-        }
-
+    const refreshContainerSignal = useCallback((container: HTMLElement) => {
+        const current = VegaViewServices.getSignalByName(
+            SIGNAL_DENEB_CONTAINER
+        ) as DenebContainerSignal | undefined;
+        if (current === undefined) return;
         const signal = getSignalDenebContainer({
-            container: embedRef.current,
+            container,
             scroll: {
-                scrollTop: embedRef.current.scrollTop,
-                scrollLeft: embedRef.current.scrollLeft
+                scrollTop: container.scrollTop,
+                scrollLeft: container.scrollLeft
             }
         });
-
+        if (signal.value.width === 0 && signal.value.height === 0) return;
+        if (isSameDenebContainerValue(current, signal.value)) return;
         VegaViewServices.setSignalByName(signal.name, signal.value);
-    }, [viewportHeight, viewportWidth, viewReady]);
+    }, []);
+
+    /**
+     * Post-embed reconcile: sync `denebContainer` to the container's
+     * actual box once a fresh view is ready. A view is born from the
+     * compiled spec's INIT dimensions; if the container's physical box
+     * differed at embed time and never changes again, the
+     * ResizeObserver below has nothing to observe — this one-shot
+     * write closes that born-stale case. Ongoing size tracking is
+     * deliberately NOT handled here (no viewport deps): the observer
+     * owns physical-size truth, and viewport deps would reintroduce a
+     * second, stale-read-prone write on every committed resize (#480
+     * OoF residual).
+     */
+    useEffect(() => {
+        if (!embedRef.current || !viewReady) return;
+        refreshContainerSignal(embedRef.current);
+    }, [viewReady, refreshContainerSignal]);
+
+    /**
+     * Track the embed container's PHYSICAL box (#480 OoF residual).
+     *
+     * The host can resize the iframe AFTER reporting the new viewport
+     * in `update()` — on-object formatting's title-reserve restore
+     * does exactly this — so any update-driven effect can sample the
+     * stale pre-resize box with nothing left to observe the later
+     * physical change, leaving the view stuck at the old size. A
+     * debounced ResizeObserver on the container closes the gap:
+     * whenever the physical box settles, the `denebContainer` signal
+     * is refreshed and the signal-bound width/height follow.
+     *
+     * Only the active instance observes — the inactive twin's
+     * container must never write the shared singleton's signal
+     * (defect C1).
+     */
+    useEffect(() => {
+        const container = embedRef.current;
+        if (!isActive || !container) return;
+        return observeContainerResize(container, () =>
+            refreshContainerSignal(container)
+        );
+    }, [isActive, refreshContainerSignal]);
 
     return <div ref={embedRef} className={classes.root} />;
 };
