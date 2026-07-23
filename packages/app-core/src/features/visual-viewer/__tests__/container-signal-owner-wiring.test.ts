@@ -47,6 +47,15 @@ describe('useContainerSignalOwner wiring', () => {
         expect(viewerSource).not.toMatch(/setSignalByName/);
     });
 
+    it('compile effects do not depend on viewport dimensions (resizes are signal-only)', () => {
+        // Any dependency-array entry for viewportHeight/Width would
+        // reintroduce recompile-on-resize. The dims reach compiles via
+        // the call-time snapshot instead.
+        expect(viewerSource).not.toMatch(/viewportHeight,/);
+        expect(viewerSource).not.toMatch(/viewportWidth,?\s*\]/);
+        expect(viewerSource).toMatch(/getCompileDimensionsSnapshot/);
+    });
+
     const embedSource = readFileSync(
         resolve(__dirname, '..', 'components', 'vega-embed.tsx'),
         'utf8'
