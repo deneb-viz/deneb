@@ -91,14 +91,15 @@ export const useContainerSignalOwner = ({
      * Geometry channel: route box changes through the compilation
      * slice's cheap re-embed. The action + underlying rewrite helper are
      * identity-stable, so value-equal boxes are a no-op there — the
-     * 0x0 guard here just avoids dispatching for a hidden/tearing-down
-     * container.
+     * zero-dimension guard here just avoids dispatching for a
+     * hidden/tearing-down container or a mid-layout partial measurement
+     * (0×N / N×0); the observer fires again once layout settles.
      */
     const refreshGeometry = useCallback(() => {
         if (container === null) return;
         const width = container.clientWidth;
         const height = container.clientHeight;
-        if (width === 0 && height === 0) return;
+        if (width === 0 || height === 0) return;
         refreshContainerDimensions({ width, height });
     }, [container, refreshContainerDimensions]);
 

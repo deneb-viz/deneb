@@ -214,6 +214,23 @@ describe('getMeasuredContainerRefresh', () => {
         ).toBeNull();
     });
 
+    it('returns null for a partial-zero container (mid-layout 0×N / N×0)', () => {
+        const zeroWidth = buildMeasuredContainer({
+            clientWidth: 0,
+            clientHeight: 682
+        });
+        const zeroHeight = buildMeasuredContainer({
+            clientWidth: 949,
+            clientHeight: 0
+        });
+        expect(
+            getMeasuredContainerRefresh(zeroWidth, currentSignal)
+        ).toBeNull();
+        expect(
+            getMeasuredContainerRefresh(zeroHeight, currentSignal)
+        ).toBeNull();
+    });
+
     it('returns null when the measured value equals the current signal', () => {
         const container = buildMeasuredContainer({
             clientWidth: 949,

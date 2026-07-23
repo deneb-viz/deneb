@@ -55,10 +55,10 @@ export const observeContainerResize = (
  * current value. 1.x-parity semantics; see
  * docs/plans/2026-07-23-001-container-signal-consolidation-design.md.
  *
- * Guards: no current signal (no live view yet) → null; 0×0 container
- * (hidden or tearing-down) → null; value-equal → null (Vega compares
- * signal values by reference — an equal-but-new object still re-runs
- * the dataflow).
+ * Guards: no current signal (no live view yet) → null; zero-dimension
+ * container (hidden, tearing-down, or a mid-layout 0×N / N×0 partial
+ * measurement) → null; value-equal → null (Vega compares signal values
+ * by reference — an equal-but-new object still re-runs the dataflow).
  */
 export const getMeasuredContainerRefresh = (
     container: HTMLElement,
@@ -66,7 +66,7 @@ export const getMeasuredContainerRefresh = (
 ): { name: string; value: DenebContainerSignal } | null => {
     if (current === undefined) return null;
     const signal = getSignalDenebContainer({ container });
-    if (signal.value.width === 0 && signal.value.height === 0) return null;
+    if (signal.value.width === 0 || signal.value.height === 0) return null;
     if (isSameDenebContainerValue(current, signal.value)) return null;
     return signal;
 };
