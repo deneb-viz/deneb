@@ -16,9 +16,13 @@ describe('useContainerSignalOwner wiring', () => {
         'utf8'
     );
 
-    it('routes every write through the measured-container builder', () => {
+    it('routes scroll writes through the measured-container builder', () => {
         expect(hookSource).toMatch(/getMeasuredContainerRefresh\(/);
         expect(hookSource).toMatch(/setSignalByName\(/);
+    });
+
+    it('geometry changes route through the cheap re-embed action, not signal writes', () => {
+        expect(hookSource).toMatch(/refreshContainerDimensions\(/);
     });
 
     it('registers the debounced ResizeObserver on the measured container', () => {
