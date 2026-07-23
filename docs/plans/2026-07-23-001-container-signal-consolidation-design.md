@@ -61,6 +61,15 @@ disabled. One element supplies all six fields coherently:
 This retires the wrapper-vs-viewport measurement split that caused the #729
 scroll-clobber finding.
 
+**1.x parity (verified against tag `1.9.1.0`):** these are the same per-field
+semantics 1.x exposed. 1.x measured `view.container()` — an element explicitly
+sized to the viewport dims — for the box, its `scrollWidth/Height` for content
+extent, and the scroll wrapper's frame for offsets; the scroll wrapper enclosed
+the entire embed output. Measuring the OS viewport reproduces all of that from
+one element. (1.x also subtracted a `VEGA_VIEWPORT_ADJUST` fudge from the box —
+deliberately removed by the #480/#611 container-utilization work; not
+reintroduced.)
+
 **Triggers, merged into one guarded write path:**
 
 | Trigger                                                   | Cadence                                 | Refreshes                                                                                                           |
@@ -100,9 +109,11 @@ parse + validate + view teardown, and the view keeps its runtime state.
   no longer tracks resizes. Cosmetic; the dev overlay's `cd.*` lines are
   relabeled as "compile-time init" so they cannot mislead a future
   investigation.
-- **Parameter bindings (future):** if bound form elements ever consume space
-  inside the visual, only the _measured node_ choice changes (whatever bounds
-  the drawable area); the contract survives. Not built now.
+- **Parameter bindings (future):** bindings render inside the embed root,
+  inside the scroll container — they are scrollable content, exactly as in
+  1.x. They count toward `scrollWidth/Height` and scroll with the view; the
+  measured element stays the scroll container, with no drawable-area
+  subtraction. Keeping this consistent with 1.x is deliberate.
 - **Out of scope:** `GatedDenebViewer` / `embedViewport` commit gates,
   `stateManagement` viewport persistence (separate hardening follow-up), and the
   transient-OoF persist suppression.
