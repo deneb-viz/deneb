@@ -18,10 +18,11 @@ import { DevOverlayShell } from '../../dev-overlay-shell';
  * stored embedViewport, and the iframe's `window.innerWidth` /
  * `Height`, plus the deltas the gate predicate cares about. It also
  * shows the dimensions the last compile baked into the patched spec
- * (`cd.*`, from the `denebContainer` signal init) and the Vega
- * container element's client vs scroll box (`ct.*`) — together these
- * localise a stale-size render to either the viewport→compile chain,
- * the re-embed, or the physical iframe (#480 OoF residual).
+ * as the stored compilation's `denebContainer` init (`ci.*` —
+ * rewritten in place on settled resizes) and the Vega container element's client vs scroll box (`ct.*`)
+ * — together these localise a stale-size render to either the
+ * viewport→compile chain, the re-embed, or the physical iframe (#480
+ * OoF residual).
  */
 export const IS_OVERLAY_ENABLED = toBoolean(
     process.env.PBIVIZ_VIEWPORT_GATE_OVERLAY
@@ -93,12 +94,13 @@ export const ViewportGateDebugOverlay = () => {
     const optionsViewport = useDenebVisualState(
         (state) => state.updates.options?.viewport
     );
-    // The dimensions the LAST compile baked into the patched spec's
-    // `denebContainer` signal init. Divergence between these and
-    // `embedViewport` proves the viewport→compile chain broke;
-    // agreement (while the visual still renders at the wrong size)
-    // pushes the fault further downstream (re-embed or the physical
-    // iframe). Added for the #480 OoF residual investigation.
+    // The dimensions the stored compilation's `denebContainer` init
+    // currently carries (`ci.*` = compile init). Settled container
+    // resizes rewrite this init in place (geometry → cheap re-embed;
+    // see the container-signal consolidation design, Revision 2), so
+    // these track settled dimensions. Divergence from ev/ct is
+    // expected only transiently, inside the resize debounce window —
+    // a PERSISTENT divergence means the geometry channel broke.
     const compilationResult = useDenebState(
         (state) => state.compilation.result as CompilationResultShape
     );
@@ -190,8 +192,8 @@ export const ViewportGateDebugOverlay = () => {
         `ov.h      ${formatNumber(ovh)}    Δ ${formatDelta(ih, ovh)}`,
         `ev.w      ${formatNumber(evw)}    Δ ${formatDelta(iw, evw)}`,
         `ev.h      ${formatNumber(evh)}    Δ ${formatDelta(ih, evh)}`,
-        `cd.w      ${formatNumber(compiledDims?.width)}    Δ ${formatDelta(iw, compiledDims?.width)}`,
-        `cd.h      ${formatNumber(compiledDims?.height)}    Δ ${formatDelta(ih, compiledDims?.height)}`,
+        `ci.w      ${formatNumber(compiledDims?.width)}    Δ ${formatDelta(iw, compiledDims?.width)}`,
+        `ci.h      ${formatNumber(compiledDims?.height)}    Δ ${formatDelta(ih, compiledDims?.height)}`,
         `ct.cw/sw  ${formatNumber(containerBox?.cw)} / ${formatNumber(containerBox?.sw)}`,
         `ct.ch/sh  ${formatNumber(containerBox?.ch)} / ${formatNumber(containerBox?.sh)}`,
         `cv.w      ${formatNumber(viewBox?.w)}    Δ ${formatDelta(iw, viewBox?.w)}`,

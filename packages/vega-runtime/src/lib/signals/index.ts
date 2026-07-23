@@ -7,6 +7,7 @@ export {
     getSignalDenebContainer,
     getDenebContainerSignalFromDimensions,
     getContainerSignalReferences,
+    updateContainerInitDimensions,
     SIGNAL_DENEB_CONTAINER,
     SIGNAL_PBI_CONTAINER_LEGACY,
     type ContainerDimensions,

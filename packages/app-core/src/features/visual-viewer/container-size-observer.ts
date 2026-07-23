@@ -45,34 +45,27 @@ export const observeContainerResize = (
 };
 
 /**
- * Build the refreshed `denebContainer` signal for a size change, or
- * `null` when no write should happen.
+ * Build the refreshed `denebContainer` signal from the MEASURED SCROLL
+ * CONTAINER, or `null` when no write should happen.
+ *
+ * All six fields come from the one element: clientWidth/Height (the
+ * visible box), scrollWidth/Height (content extent), scrollTop/Left
+ * (offsets). The element's own offsets are authoritative — including a
+ * legitimate scroll back to 0 — so nothing is preserved from the
+ * current value. 1.x-parity semantics; see
+ * docs/plans/2026-07-23-001-container-signal-consolidation-design.md.
  *
  * Guards: no current signal (no live view yet) → null; 0×0 container
- * (hidden or tearing-down) → null, never write that over a live view;
- * value-equal → null, since Vega compares signal values by reference
- * and an equal-but-new object would still re-run the dataflow.
- *
- * Scroll offsets are PRESERVED from the current signal value: the
- * embed wrapper this is called with never scrolls itself (the
- * OverlayScrollbars viewport does, and the scroll path owns those
- * fields), so reading offsets from the wrapper would clobber real
- * offsets back to 0 on every size refresh. `getSignalDenebContainer`
- * prefers container-read values only when truthy, so the wrapper's 0
- * falls through to the preserved offsets passed via `scroll`.
+ * (hidden or tearing-down) → null; value-equal → null (Vega compares
+ * signal values by reference — an equal-but-new object still re-runs
+ * the dataflow).
  */
-export const getContainerSignalRefresh = (
+export const getMeasuredContainerRefresh = (
     container: HTMLElement,
     current: DenebContainerSignal | undefined
 ): { name: string; value: DenebContainerSignal } | null => {
     if (current === undefined) return null;
-    const signal = getSignalDenebContainer({
-        container,
-        scroll: {
-            scrollTop: current.scrollTop,
-            scrollLeft: current.scrollLeft
-        }
-    });
+    const signal = getSignalDenebContainer({ container });
     if (signal.value.width === 0 && signal.value.height === 0) return null;
     if (isSameDenebContainerValue(current, signal.value)) return null;
     return signal;

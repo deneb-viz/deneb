@@ -6,19 +6,11 @@ import { Handler as VegaTooltipHandler } from 'vega-tooltip';
 
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 import { VegaPatternFillServices } from '@deneb-viz/vega-runtime/pattern-fill';
-import {
-    SIGNAL_DENEB_CONTAINER,
-    type DenebContainerSignal
-} from '@deneb-viz/vega-runtime/signals';
 import { patchSpecWithData } from '@deneb-viz/vega-runtime/spec-processing';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
 import { useDenebState } from '../../../state';
 import { type ViewEventBinder } from '../../../components/deneb-platform';
 import { VEGA_EMBED_ROOT_STYLE } from './vega-embed-styles';
-import {
-    getContainerSignalRefresh,
-    observeContainerResize
-} from '../container-size-observer';
 import { getRestrictiveVegaLoader } from './restrictive-loader';
 import { shouldOpenEmbedWindow } from '../embed-window';
 
@@ -35,8 +27,6 @@ type VegaEmbedProps = {
     tooltipHandler?: TooltipHandler;
     vegaLoader?: Loader | null;
     viewEventBinders: ViewEventBinder[];
-    viewportHeight: number;
-    viewportWidth: number;
 };
 
 const useVegaEmbedStyles = makeStyles({
@@ -62,9 +52,7 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
     onRenderingStarted,
     tooltipHandler,
     vegaLoader,
-    viewEventBinders,
-    viewportHeight,
-    viewportWidth
+    viewEventBinders
 }) => {
     const classes = useVegaEmbedStyles();
     const embedRef = useRef<HTMLDivElement>(null);
@@ -88,16 +76,14 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
         logError,
         provider,
         setViewReady,
-        values,
-        viewReady
+        values
     } = useDenebState((state) => ({
         compilation: state.compilation.result,
         generateRenderId: state.interface.generateRenderId,
         logError: state.compilation.logError,
         provider: state.project.provider,
         setViewReady: state.compilation.setViewReady,
-        values: state.dataset.values,
-        viewReady: state.compilation.viewReady
+        values: state.dataset.values
     }));
 
     const { setView } = useVegaView();
@@ -391,79 +377,9 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
     useEffect(() => {
         logRender('VegaEmbed', {
             hasCompilation: !!compilation,
-            compilationStatus: compilation?.status,
-            viewportHeight,
-            viewportWidth
+            compilationStatus: compilation?.status
         });
-    }, [compilation, viewportHeight, viewportWidth]);
-
-    /**
-     * Guarded `denebContainer` refresh shared by both signal write
-     * paths (the post-embed reconcile effect and the ResizeObserver
-     * callback). Guard logic and scroll-offset preservation live in
-     * `getContainerSignalRefresh` (behaviour-tested in
-     * container-size-observer.test.ts) — this callback only supplies
-     * the live signal value and performs the write. Stable deps —
-     * `VegaViewServices` is a module singleton.
-     */
-    const refreshContainerSignal = useCallback((container: HTMLElement) => {
-        const refresh = getContainerSignalRefresh(
-            container,
-            VegaViewServices.getSignalByName(SIGNAL_DENEB_CONTAINER) as
-                | DenebContainerSignal
-                | undefined
-        );
-        if (refresh === null) return;
-        VegaViewServices.setSignalByName(refresh.name, refresh.value);
-    }, []);
-
-    /**
-     * Post-embed reconcile: sync `denebContainer` to the container's
-     * actual box once a fresh view is ready. A view is born from the
-     * compiled spec's INIT dimensions; if the container's physical box
-     * differed at embed time and never changes again, the
-     * ResizeObserver below has nothing to observe — this one-shot
-     * write closes that born-stale case. Ongoing size tracking is
-     * deliberately NOT handled here (no viewport deps): the observer
-     * owns physical-size truth, and viewport deps would reintroduce a
-     * second, stale-read-prone write on every committed resize (#480
-     * OoF residual).
-     *
-     * `isActive` guard: `viewReady` is SHARED app-core state, so the
-     * inactive viewer/editor twin's effect fires on the active
-     * instance's embed too — without the guard it would write its own
-     * (hidden, possibly non-zero) container box into the active
-     * view's singleton (defect C1, same rationale as the observer
-     * effect below).
-     */
-    useEffect(() => {
-        if (!isActive || !embedRef.current || !viewReady) return;
-        refreshContainerSignal(embedRef.current);
-    }, [isActive, viewReady, refreshContainerSignal]);
-
-    /**
-     * Track the embed container's PHYSICAL box (#480 OoF residual).
-     *
-     * The host can resize the iframe AFTER reporting the new viewport
-     * in `update()` — on-object formatting's title-reserve restore
-     * does exactly this — so any update-driven effect can sample the
-     * stale pre-resize box with nothing left to observe the later
-     * physical change, leaving the view stuck at the old size. A
-     * debounced ResizeObserver on the container closes the gap:
-     * whenever the physical box settles, the `denebContainer` signal
-     * is refreshed and the signal-bound width/height follow.
-     *
-     * Only the active instance observes — the inactive twin's
-     * container must never write the shared singleton's signal
-     * (defect C1).
-     */
-    useEffect(() => {
-        const container = embedRef.current;
-        if (!isActive || !container) return;
-        return observeContainerResize(container, () =>
-            refreshContainerSignal(container)
-        );
-    }, [isActive, refreshContainerSignal]);
+    }, [compilation]);
 
     return <div ref={embedRef} className={classes.root} />;
 };

@@ -4,6 +4,10 @@ import type {
     CompilationResult,
     CompileSpecOptions
 } from '@deneb-viz/vega-runtime/compilation';
+import {
+    updateContainerInitDimensions,
+    type ContainerDimensions
+} from '@deneb-viz/vega-runtime/signals';
 import { type StoreState, type SyncableSlice } from './state';
 import { INCREMENTAL_UPDATE_CONFIGURATION } from '../lib/vega/incremental-update-configuration';
 import {
@@ -125,6 +129,19 @@ export type CompilationSliceProperties = SyncableSlice &
         setViewReady: (ready: boolean) => void;
 
         /**
+         * Rewrite the stored compilation result's `denebContainer` init
+         * width/height (cheap re-embed path). The new result identity flows
+         * through VegaEmbed's spec memo into useVegaEmbed, which rebuilds
+         * the view from the ALREADY-COMPILED template — the compile
+         * pipeline never runs for a container resize. No-op when there is
+         * no ready result or the dims are unchanged (the underlying
+         * rewrite helper is identity-stable). See
+         * docs/plans/2026-07-23-001-container-signal-consolidation-design.md
+         * (Revision 2).
+         */
+        refreshContainerDimensions: (dimensions: ContainerDimensions) => void;
+
+        /**
          * Record a runtime error message. Deduplicates messages.
          */
         logError: (error: string) => void;
@@ -177,6 +194,7 @@ const initialState: Omit<
     | 'setEnableIncrementalDataUpdates'
     | 'setIncrementalUpdateThreshold'
     | 'setViewReady'
+    | 'refreshContainerDimensions'
     | 'logError'
     | 'logWarn'
     | 'logDurableWarn'
@@ -252,6 +270,13 @@ export const createCompilationSlice =
                     }),
                     false,
                     'compilation.setViewReady'
+                ),
+            refreshContainerDimensions: (dimensions) =>
+                set(
+                    (state) =>
+                        handleRefreshContainerDimensions(state, dimensions),
+                    false,
+                    'compilation.refreshContainerDimensions'
                 ),
             logError: (error) =>
                 set(
@@ -370,6 +395,55 @@ const handleClear = (state: StoreState): Partial<StoreState> => ({
         viewReady: false
     }
 });
+
+/**
+ * Rewrite the stored result's `denebContainer` init width/height for the
+ * cheap re-embed path (Revision 2 of
+ * docs/plans/2026-07-23-001-container-signal-consolidation-design.md).
+ *
+ * No-op (returns `state` unchanged, by reference) when:
+ * - there is no compilation result yet, or the result is not `ready`
+ *   (e.g. `error`) — there is nothing compiled to rewrite;
+ * - the parsed spec is null/not an object (a `ready` result should always
+ *   carry a spec, but this guards defensively against the type allowing
+ *   `Spec | TopLevelSpec | null`);
+ * - `updateContainerInitDimensions` returns the same spec reference,
+ *   meaning the `denebContainer` init already has these dims (or there is
+ *   no such entry to rewrite).
+ *
+ * On a real change, only `result` is replaced — `viewReady` and
+ * `lastCompiled` are left untouched, since this path does not run the
+ * compile pipeline.
+ */
+const handleRefreshContainerDimensions = (
+    state: StoreState,
+    dimensions: ContainerDimensions
+): Partial<StoreState> => {
+    const result = state.compilation.result;
+    if (result === null || result.status !== 'ready') {
+        return state;
+    }
+    const spec = result.parsed.spec;
+    if (!spec || typeof spec !== 'object') {
+        return state;
+    }
+    const newSpec = updateContainerInitDimensions(
+        spec as Parameters<typeof updateContainerInitDimensions>[0],
+        dimensions
+    );
+    if (newSpec === spec) {
+        return state;
+    }
+    return {
+        compilation: {
+            ...state.compilation,
+            result: {
+                ...result,
+                parsed: { ...result.parsed, spec: newSpec }
+            } as typeof result
+        }
+    };
+};
 
 /**
  * Sync performance settings from external source (localStorage, Power BI properties).

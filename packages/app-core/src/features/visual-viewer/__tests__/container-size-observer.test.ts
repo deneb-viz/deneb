@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
     CONTAINER_RESIZE_DEBOUNCE_MS,
-    getContainerSignalRefresh,
+    getMeasuredContainerRefresh,
     isSameDenebContainerValue,
     observeContainerResize
 } from '../container-size-observer';
@@ -99,78 +99,6 @@ describe('observeContainerResize', () => {
     });
 });
 
-describe('getContainerSignalRefresh', () => {
-    /**
-     * jsdom computes no layout, so the container's box metrics are
-     * stubbed per-test. Scroll offsets default to 0 — matching the
-     * real embed wrapper, which never scrolls itself (the
-     * OverlayScrollbars viewport does).
-     */
-    const buildContainer = (metrics: {
-        clientWidth: number;
-        clientHeight: number;
-        scrollWidth?: number;
-        scrollHeight?: number;
-    }): HTMLElement => {
-        const container = document.createElement('div');
-        Object.defineProperties(container, {
-            clientWidth: { value: metrics.clientWidth },
-            clientHeight: { value: metrics.clientHeight },
-            scrollWidth: { value: metrics.scrollWidth ?? metrics.clientWidth },
-            scrollHeight: {
-                value: metrics.scrollHeight ?? metrics.clientHeight
-            }
-        });
-        return container;
-    };
-
-    const currentSignal = {
-        width: 949,
-        height: 682,
-        scrollWidth: 949,
-        scrollHeight: 1200,
-        scrollTop: 250,
-        scrollLeft: 10
-    };
-
-    it('preserves the current scroll offsets when the container reports zero scroll', () => {
-        // The embed wrapper always reads scrollTop/scrollLeft 0; the
-        // real offsets are written by the scroll path from the
-        // OverlayScrollbars viewport. A size refresh must not clobber
-        // them back to 0.
-        const container = buildContainer({
-            clientWidth: 949,
-            clientHeight: 710
-        });
-        const refresh = getContainerSignalRefresh(container, currentSignal);
-        expect(refresh?.value.height).toBe(710);
-        expect(refresh?.value.scrollTop).toBe(250);
-        expect(refresh?.value.scrollLeft).toBe(10);
-    });
-
-    it('returns null when there is no current signal (no live view yet)', () => {
-        const container = buildContainer({
-            clientWidth: 949,
-            clientHeight: 710
-        });
-        expect(getContainerSignalRefresh(container, undefined)).toBeNull();
-    });
-
-    it('returns null for a 0×0 container (hidden or tearing down)', () => {
-        const container = buildContainer({ clientWidth: 0, clientHeight: 0 });
-        expect(getContainerSignalRefresh(container, currentSignal)).toBeNull();
-    });
-
-    it('returns null when the refreshed value equals the current signal', () => {
-        const container = buildContainer({
-            clientWidth: 949,
-            clientHeight: 682,
-            scrollHeight: 1200
-        });
-        expect(getContainerSignalRefresh(container, currentSignal)).toBeNull();
-    });
-});
-
 describe('isSameDenebContainerValue', () => {
     const base = {
         width: 949,
@@ -193,5 +121,109 @@ describe('isSameDenebContainerValue', () => {
 
     it('returns false when the current signal value is undefined', () => {
         expect(isSameDenebContainerValue(undefined, base)).toBe(false);
+    });
+});
+
+describe('getMeasuredContainerRefresh', () => {
+    /**
+     * jsdom computes no layout — box metrics and scroll offsets are
+     * stubbed. Unlike the legacy wrapper-measured builder, the
+     * measured element here IS the scroll container, so its own
+     * offsets are authoritative.
+     */
+    const buildMeasuredContainer = (metrics: {
+        clientWidth: number;
+        clientHeight: number;
+        scrollWidth?: number;
+        scrollHeight?: number;
+        scrollTop?: number;
+        scrollLeft?: number;
+    }): HTMLElement => {
+        const container = document.createElement('div');
+        Object.defineProperties(container, {
+            clientWidth: { value: metrics.clientWidth },
+            clientHeight: { value: metrics.clientHeight },
+            scrollWidth: { value: metrics.scrollWidth ?? metrics.clientWidth },
+            scrollHeight: {
+                value: metrics.scrollHeight ?? metrics.clientHeight
+            }
+        });
+        // scrollTop/scrollLeft are writable on real elements; jsdom
+        // allows plain assignment.
+        container.scrollTop = metrics.scrollTop ?? 0;
+        container.scrollLeft = metrics.scrollLeft ?? 0;
+        return container;
+    };
+
+    const currentSignal = {
+        width: 949,
+        height: 682,
+        scrollWidth: 949,
+        scrollHeight: 1200,
+        scrollTop: 250,
+        scrollLeft: 10
+    };
+
+    it('reads all six fields from the measured scroll container', () => {
+        const container = buildMeasuredContainer({
+            clientWidth: 949,
+            clientHeight: 710,
+            scrollHeight: 1400,
+            scrollTop: 300,
+            scrollLeft: 5
+        });
+        const refresh = getMeasuredContainerRefresh(container, currentSignal);
+        expect(refresh?.value).toEqual({
+            width: 949,
+            height: 710,
+            scrollWidth: 949,
+            scrollHeight: 1400,
+            scrollTop: 300,
+            scrollLeft: 5
+        });
+    });
+
+    it('a container scrolled back to 0 yields offset 0 — no stale preservation', () => {
+        const container = buildMeasuredContainer({
+            clientWidth: 949,
+            clientHeight: 682,
+            scrollHeight: 1200,
+            scrollTop: 0,
+            scrollLeft: 0
+        });
+        const refresh = getMeasuredContainerRefresh(container, currentSignal);
+        expect(refresh?.value.scrollTop).toBe(0);
+        expect(refresh?.value.scrollLeft).toBe(0);
+    });
+
+    it('returns null when there is no current signal (no live view yet)', () => {
+        const container = buildMeasuredContainer({
+            clientWidth: 949,
+            clientHeight: 710
+        });
+        expect(getMeasuredContainerRefresh(container, undefined)).toBeNull();
+    });
+
+    it('returns null for a 0×0 container (hidden or tearing down)', () => {
+        const container = buildMeasuredContainer({
+            clientWidth: 0,
+            clientHeight: 0
+        });
+        expect(
+            getMeasuredContainerRefresh(container, currentSignal)
+        ).toBeNull();
+    });
+
+    it('returns null when the measured value equals the current signal', () => {
+        const container = buildMeasuredContainer({
+            clientWidth: 949,
+            clientHeight: 682,
+            scrollHeight: 1200,
+            scrollTop: 250,
+            scrollLeft: 10
+        });
+        expect(
+            getMeasuredContainerRefresh(container, currentSignal)
+        ).toBeNull();
     });
 });

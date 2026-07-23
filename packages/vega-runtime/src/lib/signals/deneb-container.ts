@@ -140,3 +140,69 @@ export const getDenebContainerSignalFromDimensions = (
             : undefined
     });
 };
+
+/**
+ * Immutably rewrite the stored `denebContainer` entry's init width/height in a
+ * patched spec — `spec.signals` (Vega) or `spec.params` (Vega-Lite); both use
+ * the same `{ name, value }` shape. Returns the INPUT reference when there is
+ * nothing to do (no entry, non-object value, or dims already equal), so
+ * callers can use identity to suppress redundant downstream work (the
+ * re-embed path keys off object identity).
+ *
+ * Only `width`/`height` are rewritten: the init's scroll fields are the
+ * compile-time seed for a NEW view, and the live view's scroll state is owned
+ * by the signal-write path, not this helper.
+ */
+export const updateContainerInitDimensions = <
+    T extends {
+        signals?: Array<{ name?: string; value?: unknown }>;
+        params?: Array<{ name?: string; value?: unknown }>;
+    }
+>(
+    spec: T,
+    dimensions: ContainerDimensions
+): T => {
+    const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+        typeof value === 'object' && value !== null && !Array.isArray(value);
+
+    const updateArray = <E extends { name?: string; value?: unknown }>(
+        entries: E[] | undefined
+    ): E[] | undefined => {
+        if (!entries) {
+            return entries;
+        }
+        const index = entries.findIndex(
+            (entry) => entry.name === SIGNAL_DENEB_CONTAINER
+        );
+        if (index === -1) {
+            return entries;
+        }
+        const entry = entries[index] as E;
+        if (!isPlainObject(entry.value)) {
+            return entries;
+        }
+        const { width, height } = dimensions;
+        if (entry.value.width === width && entry.value.height === height) {
+            return entries;
+        }
+        const newEntries = entries.slice();
+        newEntries[index] = {
+            ...entry,
+            value: { ...entry.value, width, height }
+        } as E;
+        return newEntries;
+    };
+
+    const newSignals = updateArray(spec.signals);
+    const newParams = updateArray(spec.params);
+
+    if (newSignals === spec.signals && newParams === spec.params) {
+        return spec;
+    }
+
+    return {
+        ...spec,
+        ...(newSignals !== spec.signals ? { signals: newSignals } : {}),
+        ...(newParams !== spec.params ? { params: newParams } : {})
+    };
+};
