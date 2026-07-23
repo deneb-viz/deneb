@@ -12,7 +12,6 @@ import { DEFAULT_VIEWPORT_SCALE } from '@deneb-viz/configuration';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import type { SchemaValidator } from '@deneb-viz/vega-runtime/spec-processing';
 import type { Renderers } from 'vega';
-import { getSignalDenebContainer } from '@deneb-viz/vega-runtime/signals';
 import { logRender, logDebug } from '@deneb-viz/utils/logging';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 import { VegaEmbed } from './vega-embed';
@@ -25,6 +24,7 @@ import {
     shouldAdvancePrevValues
 } from '../incremental-update';
 import { computeEmbedActive } from '../embed-active';
+import { useContainerSignalOwner } from '../use-container-signal-owner';
 import { useDenebState } from '../../../state';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 import { INCREMENTAL_UPDATE_CONFIGURATION } from '../../../lib/vega/incremental-update-configuration';
@@ -150,7 +150,6 @@ export const VisualViewer = ({
         incrementalUpdateThreshold,
         viewReady,
         interfaceType,
-        logError,
         logDurableError,
         logDurableWarn,
         translate
@@ -182,7 +181,6 @@ export const VisualViewer = ({
             state.compilation.incrementalUpdateThreshold,
         viewReady: state.compilation.viewReady,
         interfaceType: state.interface.type,
-        logError: state.compilation.logError,
         logDurableError: state.compilation.logDurableError,
         logDurableWarn: state.compilation.logDurableWarn,
         translate: state.i18n.translate
@@ -469,6 +467,19 @@ export const VisualViewer = ({
         [isEmbeddedInEditor, previewScrollbars]
     );
 
+    // The measured scroll container for the denebContainer signal
+    // owner. Captured as STATE (not a ref) so the owner hook's effects
+    // re-run when the element appears — the scrollbars component
+    // initializes with `defer`, so the viewport element exists only
+    // after its `initialized` event.
+    const [osViewportElement, setOsViewportElement] =
+        useState<HTMLElement | null>(null);
+    const [fallbackElement, setFallbackElement] =
+        useState<HTMLDivElement | null>(null);
+    const measuredContainer = useScrollbars
+        ? osViewportElement
+        : fallbackElement;
+
     const osRef = useRef<OverlayScrollbarsComponentRef>(null);
     const [scrollPosition, setScrollPosition] = useState<ScrollPosition | null>(
         null
@@ -602,6 +613,7 @@ export const VisualViewer = ({
         () => ({
             initialized: (instance) => {
                 instance.elements().viewport.id = VEGA_CONTAINER_ID;
+                setOsViewportElement(instance.elements().viewport);
             },
             scroll: (instance) => {
                 const viewport = instance.elements().viewport;
@@ -614,30 +626,12 @@ export const VisualViewer = ({
         []
     );
 
-    useEffect(() => {
-        // Don't update scroll signal if view isn't ready or scroll position not set
-        if (!throttledScrollPosition || !viewReady) return;
-        const view = VegaViewServices.getView();
-        if (!view) return;
-        const viewport = osRef.current?.osInstance()?.elements().viewport;
-        const signal = getSignalDenebContainer({
-            scroll: {
-                height: viewport?.clientHeight ?? 0,
-                width: viewport?.clientWidth ?? 0,
-                scrollHeight: viewport?.scrollHeight ?? 0,
-                scrollWidth: viewport?.scrollWidth ?? 0,
-                scrollTop: throttledScrollPosition.scrollTop,
-                scrollLeft: throttledScrollPosition.scrollLeft
-            }
-        });
-        VegaViewServices.setSignalByName(signal.name, signal.value, (error) => {
-            logError(
-                `VisualViewer: Failed to update scroll signal: ${
-                    error instanceof Error ? error.message : String(error)
-                }`
-            );
-        });
-    }, [throttledScrollPosition, viewReady, logError]);
+    useContainerSignalOwner({
+        isActive,
+        viewReady,
+        throttledScrollPosition,
+        container: measuredContainer
+    });
 
     const scrollbarStyleVars = getScrollbarStyleVars(
         scrollbarColor,
@@ -659,6 +653,7 @@ export const VisualViewer = ({
         </OverlayScrollbarsComponent>
     ) : (
         <div
+            ref={setFallbackElement}
             className={mergeClasses(classes.container, classes.overflowVisible)}
         >
             {vegaComponent}

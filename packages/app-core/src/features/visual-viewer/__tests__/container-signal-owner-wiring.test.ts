@@ -30,4 +30,20 @@ describe('useContainerSignalOwner wiring', () => {
         const guards = hookSource.match(/if \(!isActive/g) ?? [];
         expect(guards.length).toBeGreaterThanOrEqual(3);
     });
+
+    const viewerSource = readFileSync(
+        resolve(__dirname, '..', 'components', 'visual-viewer.tsx'),
+        'utf8'
+    );
+
+    it('VisualViewer wires the owner hook', () => {
+        expect(viewerSource).toMatch(/useContainerSignalOwner\(\{/);
+    });
+
+    it('VisualViewer no longer writes the signal itself', () => {
+        // The old scroll effect built the signal directly; after
+        // consolidation the component must not touch the signal API.
+        expect(viewerSource).not.toMatch(/getSignalDenebContainer/);
+        expect(viewerSource).not.toMatch(/setSignalByName/);
+    });
 });
