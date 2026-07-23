@@ -79,6 +79,33 @@ export const getContainerSignalRefresh = (
 };
 
 /**
+ * Build the refreshed `denebContainer` signal from the MEASURED SCROLL
+ * CONTAINER, or `null` when no write should happen.
+ *
+ * All six fields come from the one element: clientWidth/Height (the
+ * visible box), scrollWidth/Height (content extent), scrollTop/Left
+ * (offsets). The element's own offsets are authoritative — including a
+ * legitimate scroll back to 0 — so nothing is preserved from the
+ * current value. 1.x-parity semantics; see
+ * docs/plans/2026-07-23-001-container-signal-consolidation-design.md.
+ *
+ * Guards: no current signal (no live view yet) → null; 0×0 container
+ * (hidden or tearing-down) → null; value-equal → null (Vega compares
+ * signal values by reference — an equal-but-new object still re-runs
+ * the dataflow).
+ */
+export const getMeasuredContainerRefresh = (
+    container: HTMLElement,
+    current: DenebContainerSignal | undefined
+): { name: string; value: DenebContainerSignal } | null => {
+    if (current === undefined) return null;
+    const signal = getSignalDenebContainer({ container });
+    if (signal.value.width === 0 && signal.value.height === 0) return null;
+    if (isSameDenebContainerValue(current, signal.value)) return null;
+    return signal;
+};
+
+/**
  * Value-equality for `denebContainer` signal payloads. Vega compares
  * signal values by reference, so writing a new-but-equal object still
  * re-runs the dataflow; callers use this to suppress those no-op
