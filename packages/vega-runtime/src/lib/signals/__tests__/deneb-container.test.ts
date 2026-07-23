@@ -3,6 +3,7 @@ import {
     getSignalDenebContainer,
     getDenebContainerSignalFromDimensions,
     getContainerSignalReferences,
+    updateContainerInitDimensions,
     SIGNAL_DENEB_CONTAINER,
     SIGNAL_PBI_CONTAINER_LEGACY,
     type DenebContainerSignal,
@@ -293,7 +294,10 @@ describe('Type Safety', () => {
 
 describe('getDenebContainerSignalFromDimensions', () => {
     it('should return signal with correct name', () => {
-        const signal = getDenebContainerSignalFromDimensions({ width: 800, height: 600 });
+        const signal = getDenebContainerSignalFromDimensions({
+            width: 800,
+            height: 600
+        });
 
         expect(signal.name).toBe(SIGNAL_DENEB_CONTAINER);
     });
@@ -333,7 +337,10 @@ describe('getDenebContainerSignalFromDimensions', () => {
     });
 
     it('should set scroll-related values to zero', () => {
-        const signal = getDenebContainerSignalFromDimensions({ width: 800, height: 600 });
+        const signal = getDenebContainerSignalFromDimensions({
+            width: 800,
+            height: 600
+        });
 
         expect(signal.value.scrollHeight).toBe(0);
         expect(signal.value.scrollWidth).toBe(0);
@@ -344,7 +351,8 @@ describe('getDenebContainerSignalFromDimensions', () => {
     it('should produce same result as getSignalDenebContainer with scroll option', () => {
         const dimensions: ContainerDimensions = { width: 1024, height: 768 };
 
-        const fromDimensions = getDenebContainerSignalFromDimensions(dimensions);
+        const fromDimensions =
+            getDenebContainerSignalFromDimensions(dimensions);
         const fromScrollOption = getSignalDenebContainer({
             scroll: { width: 1024, height: 768 }
         });
@@ -353,14 +361,20 @@ describe('getDenebContainerSignalFromDimensions', () => {
     });
 
     it('should handle zero dimensions', () => {
-        const signal = getDenebContainerSignalFromDimensions({ width: 0, height: 0 });
+        const signal = getDenebContainerSignalFromDimensions({
+            width: 0,
+            height: 0
+        });
 
         expect(signal.value.width).toBe(0);
         expect(signal.value.height).toBe(0);
     });
 
     it('should return consistent structure for spec patching', () => {
-        const signal = getDenebContainerSignalFromDimensions({ width: 800, height: 600 });
+        const signal = getDenebContainerSignalFromDimensions({
+            width: 800,
+            height: 600
+        });
 
         // Should be compatible with both Vega signals and Vega-Lite params
         expect(signal).toHaveProperty('name');
@@ -370,11 +384,144 @@ describe('getDenebContainerSignalFromDimensions', () => {
     });
 
     it('should provide numeric values suitable for signal expressions', () => {
-        const signal = getDenebContainerSignalFromDimensions({ width: 800, height: 600 });
+        const signal = getDenebContainerSignalFromDimensions({
+            width: 800,
+            height: 600
+        });
 
         Object.values(signal.value).forEach((value) => {
             expect(typeof value).toBe('number');
             expect(Number.isFinite(value)).toBe(true);
         });
+    });
+});
+
+describe('updateContainerInitDimensions', () => {
+    const originalDenebContainerValue = {
+        width: 541,
+        height: 352,
+        scrollWidth: 541,
+        scrollHeight: 352,
+        scrollTop: 0,
+        scrollLeft: 0
+    };
+    const newDimensions: ContainerDimensions = { width: 855, height: 466 };
+
+    it('should rewrite only width/height for a Vega (signals) spec, preserving other fields, other signals, and not mutating the input', () => {
+        const otherSignal = { name: 'someOtherSignal', value: 42 };
+        const denebContainerSignal = {
+            name: SIGNAL_DENEB_CONTAINER,
+            value: { ...originalDenebContainerValue }
+        };
+        const spec = {
+            signals: [otherSignal, denebContainerSignal]
+        };
+
+        const result = updateContainerInitDimensions(spec, newDimensions);
+
+        expect(result).not.toBe(spec);
+        expect(result.signals).not.toBe(spec.signals);
+
+        const updatedEntry = result.signals?.find(
+            (s) => s.name === SIGNAL_DENEB_CONTAINER
+        );
+        expect(updatedEntry?.value).toEqual({
+            width: 855,
+            height: 466,
+            scrollWidth: 541,
+            scrollHeight: 352,
+            scrollTop: 0,
+            scrollLeft: 0
+        });
+
+        // Other signals are the SAME reference (untouched)
+        const untouchedEntry = result.signals?.find(
+            (s) => s.name === 'someOtherSignal'
+        );
+        expect(untouchedEntry).toBe(otherSignal);
+
+        // Input spec is not mutated
+        expect(spec.signals[1].value).toEqual(originalDenebContainerValue);
+    });
+
+    it('should rewrite only width/height for a Vega-Lite (params) spec', () => {
+        const otherParam = { name: 'someOtherParam', value: 'foo' };
+        const denebContainerParam = {
+            name: SIGNAL_DENEB_CONTAINER,
+            value: { ...originalDenebContainerValue }
+        };
+        const spec = {
+            params: [otherParam, denebContainerParam]
+        };
+
+        const result = updateContainerInitDimensions(spec, newDimensions);
+
+        expect(result).not.toBe(spec);
+        expect(result.params).not.toBe(spec.params);
+
+        const updatedEntry = result.params?.find(
+            (p) => p.name === SIGNAL_DENEB_CONTAINER
+        );
+        expect(updatedEntry?.value).toEqual({
+            width: 855,
+            height: 466,
+            scrollWidth: 541,
+            scrollHeight: 352,
+            scrollTop: 0,
+            scrollLeft: 0
+        });
+
+        const untouchedEntry = result.params?.find(
+            (p) => p.name === 'someOtherParam'
+        );
+        expect(untouchedEntry).toBe(otherParam);
+
+        expect(spec.params[1].value).toEqual(originalDenebContainerValue);
+    });
+
+    it('should return the input reference unchanged when there is no denebContainer entry', () => {
+        const spec = {
+            signals: [{ name: 'someOtherSignal', value: 42 }]
+        };
+
+        const result = updateContainerInitDimensions(spec, newDimensions);
+
+        expect(result).toBe(spec);
+    });
+
+    it('should return the input reference unchanged when there are no signals/params at all', () => {
+        const spec = {};
+
+        const result = updateContainerInitDimensions(spec, newDimensions);
+
+        expect(result).toBe(spec);
+    });
+
+    it('should return the input reference unchanged when dims already match (identity-stable no-op)', () => {
+        const spec = {
+            signals: [
+                {
+                    name: SIGNAL_DENEB_CONTAINER,
+                    value: { ...originalDenebContainerValue }
+                }
+            ]
+        };
+
+        const result = updateContainerInitDimensions(spec, {
+            width: originalDenebContainerValue.width,
+            height: originalDenebContainerValue.height
+        });
+
+        expect(result).toBe(spec);
+    });
+
+    it('should return the input reference unchanged when the denebContainer value is not a plain object', () => {
+        const spec = {
+            signals: [{ name: SIGNAL_DENEB_CONTAINER, value: 'not-an-object' }]
+        };
+
+        const result = updateContainerInitDimensions(spec, newDimensions);
+
+        expect(result).toBe(spec);
     });
 });
