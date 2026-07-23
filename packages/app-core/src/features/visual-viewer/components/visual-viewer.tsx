@@ -555,8 +555,6 @@ export const VisualViewer = ({
                     tooltipHandler={tooltipHandler}
                     vegaLoader={vegaLoader}
                     viewEventBinders={viewEventBinders}
-                    viewportHeight={viewportHeight}
-                    viewportWidth={viewportWidth}
                 />
             </VegaEmbedErrorBoundary>
         ),
@@ -567,9 +565,7 @@ export const VisualViewer = ({
             onRenderingStarted,
             tooltipHandler,
             vegaLoader,
-            viewEventBinders,
-            viewportHeight,
-            viewportWidth
+            viewEventBinders
         ]
     );
 

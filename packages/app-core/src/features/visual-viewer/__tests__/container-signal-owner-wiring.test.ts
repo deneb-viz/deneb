@@ -46,4 +46,16 @@ describe('useContainerSignalOwner wiring', () => {
         expect(viewerSource).not.toMatch(/getSignalDenebContainer/);
         expect(viewerSource).not.toMatch(/setSignalByName/);
     });
+
+    const embedSource = readFileSync(
+        resolve(__dirname, '..', 'components', 'vega-embed.tsx'),
+        'utf8'
+    );
+
+    it('VegaEmbed is embed-lifecycle only — no signal writes, no observers', () => {
+        expect(embedSource).not.toMatch(/observeContainerResize/);
+        expect(embedSource).not.toMatch(/getContainerSignalRefresh/);
+        expect(embedSource).not.toMatch(/getMeasuredContainerRefresh/);
+        expect(embedSource).not.toMatch(/setSignalByName/);
+    });
 });
