@@ -1,5 +1,5 @@
 ---
-title: 'Single-owner container signal — element-measured truth and signal-only resizes for embedded Vega views'
+title: 'Single-owner container signal — element-measured truth, cheap re-embed geometry, signal-only scroll'
 date: 2026-07-23
 category: architecture-patterns
 module: app-core/visual-viewer
@@ -57,10 +57,24 @@ would be masked by a preserved stale offset).
 **Expensive recomputation only for inputs that need it.** The compile effect
 drops the viewport dims from its dependency array and reads dimensions as a
 call-time snapshot (identity-stable `useCallback` over a ref, falling back to
-the committed viewport pre-layout). The snapshot only seeds the signal init;
-the owner's post-embed reconcile corrects any born-stale delta. A resize now
-costs one debounced signal write instead of a recompile + view teardown, and
-the view keeps its runtime state (signals, selections).
+the committed viewport pre-layout). A resize never runs the compile pipeline.
+
+**Signal-only resizes are NOT enough for raw Vega (revision, post-UAT).**
+The signal chain provably resized the canvas, but `encode.enter` geometry ran
+once per datum and went stale — 1.x only _appeared_ to support enter-encoded
+geometry because every resize rebuilt the view. Published Power BI reports
+must never break in place, so the owner's geometry channel instead performs a
+**cheap re-embed**: it rewrites the stored compilation result's
+`denebContainer` init dims (`updateContainerInitDimensions` handles the
+`signals`/`params` shape split), the new result identity flows through the
+spec memo, and `useVegaEmbed` rebuilds the view from the already-compiled
+template. Enter encoders re-run at the correct size; OverlayScrollbars
+recalcs off the DOM replacement (in-place canvas resizes escape its change
+detection); scroll offsets remain signal-only writes. View runtime state
+resets on settled resizes — exactly 1.x, and a legitimate developer recovery
+gesture. Lesson: when a host platform guarantees in-place continuity, "the
+new semantics are more correct" does not license a breaking change; find the
+design that keeps the perf win AND the old observable behaviour.
 
 **Strangler ordering for live-state migrations.** The migration is safe at
 every intermediate commit: (1) land the new pure builder under a distinct name
