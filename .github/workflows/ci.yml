@@ -205,8 +205,12 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             - name: Fetch all tags
               run: git fetch --tags --force
-            - name: Get last versioned tag
+            - name: Get last release tag
               id: last_tag
+              # Only pure 4-part numeric tags (e.g. 1.9.1.0) are releases cut
+              # from main. Prerelease tags like 2.0.0.alpha-1 sort higher but
+              # point at (or near) the commit being released, which would
+              # produce an empty changelog range.
               run: |
                   # Exclude versioned alpha tags (x.y.z.alpha-n) so the
                   # changelog baseline stays the last full release, not
