@@ -103,11 +103,51 @@ export const VisualUpdateHistoryOverlay = () => {
                 : '')
     ].join('\n');
 
+    // Structured dump for the title-bar copy button — the update
+    // history records (type + viewport per update) are the primary
+    // evidence when diagnosing host update sequences in Desktop, where
+    // there are no DevTools to capture them any other way. `opened`
+    // events embed the full VisualUpdateOptions (dataViews + spec),
+    // which balloons the payload past what can be pasted into an
+    // issue or chat — compact them to the update-shape essentials,
+    // keeping the persisted `stateManagement` object (it evidences
+    // viewport-persistence pollution, e.g. #480's OoF residue).
+    const getClipboardText = () => {
+        const compactEvents = lifecycleEvents.map((event) =>
+            event.kind === 'opened'
+                ? {
+                      ...event,
+                      options: {
+                          type: event.options.type,
+                          viewport: event.options.viewport,
+                          editMode: event.options.editMode,
+                          viewMode: event.options.viewMode,
+                          isInFocus: event.options.isInFocus,
+                          formatMode: (
+                              event.options as { formatMode?: boolean | null }
+                          ).formatMode,
+                          updateId: (event.options as { updateId?: string })
+                              .updateId,
+                          stateManagement:
+                              event.options.dataViews?.[0]?.metadata?.objects
+                                  ?.stateManagement
+                      }
+                  }
+                : event
+        );
+        return JSON.stringify(
+            { tally, recentFailures, history, lifecycleEvents: compactEvents },
+            null,
+            2
+        );
+    };
+
     return (
         <DevOverlayShell
             title='lifecycle + history'
             position='top-left'
             maxWidth={520}
+            clipboardText={getClipboardText}
         >
             <div style={SECTION_HEADING_STYLE}>lifecycle tally</div>
             <pre style={HISTORY_PRE_STYLE}>{tallyText}</pre>
