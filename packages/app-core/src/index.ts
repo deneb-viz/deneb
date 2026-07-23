@@ -7,6 +7,7 @@ export {
     type PlatformSearchRow,
     type ViewEventBinder
 } from './components/deneb-platform';
+export { copyToClipboard } from './lib/clipboard';
 export {
     handleDiscardChanges,
     handlePersistSpecification
