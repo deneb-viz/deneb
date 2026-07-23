@@ -5,6 +5,7 @@ import { useDenebVisualState } from '../../../state';
 import { CollapsibleSection, DevOverlayShell } from '../../dev-overlay-shell';
 import { type RenderingLifecycleEvent } from '../../../lib/rendering-lifecycle';
 import { computeLifecycleTally } from '../lib/compute-tally';
+import { getOverlayClipboardPayload } from '../lib/clipboard-payload';
 
 export const IS_OVERLAY_ENABLED = toBoolean(process.env.PBIVIZ_DEV_OVERLAY);
 
@@ -106,41 +107,18 @@ export const VisualUpdateHistoryOverlay = () => {
     // Structured dump for the title-bar copy button — the update
     // history records (type + viewport per update) are the primary
     // evidence when diagnosing host update sequences in Desktop, where
-    // there are no DevTools to capture them any other way. `opened`
-    // events embed the full VisualUpdateOptions (dataViews + spec),
-    // which balloons the payload past what can be pasted into an
-    // issue or chat — compact them to the update-shape essentials,
-    // keeping the persisted `stateManagement` object (it evidences
-    // viewport-persistence pollution, e.g. #480's OoF residue).
-    const getClipboardText = () => {
-        const compactEvents = lifecycleEvents.map((event) =>
-            event.kind === 'opened'
-                ? {
-                      ...event,
-                      options: {
-                          type: event.options.type,
-                          viewport: event.options.viewport,
-                          editMode: event.options.editMode,
-                          viewMode: event.options.viewMode,
-                          isInFocus: event.options.isInFocus,
-                          formatMode: (
-                              event.options as { formatMode?: boolean | null }
-                          ).formatMode,
-                          updateId: (event.options as { updateId?: string })
-                              .updateId,
-                          stateManagement:
-                              event.options.dataViews?.[0]?.metadata?.objects
-                                  ?.stateManagement
-                      }
-                  }
-                : event
-        );
-        return JSON.stringify(
-            { tally, recentFailures, history, lifecycleEvents: compactEvents },
-            null,
-            2
-        );
-    };
+    // there are no DevTools to capture them any other way. Event
+    // compaction and error-value sanitization live in the tested
+    // builder (`lib/clipboard-payload.ts`) — it never throws, so the
+    // copy button cannot be broken by the failure payload it exists
+    // to capture.
+    const getClipboardText = () =>
+        getOverlayClipboardPayload({
+            tally,
+            recentFailures,
+            history,
+            lifecycleEvents
+        });
 
     return (
         <DevOverlayShell

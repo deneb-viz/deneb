@@ -7,7 +7,6 @@ import { Handler as VegaTooltipHandler } from 'vega-tooltip';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 import { VegaPatternFillServices } from '@deneb-viz/vega-runtime/pattern-fill';
 import {
-    getSignalDenebContainer,
     SIGNAL_DENEB_CONTAINER,
     type DenebContainerSignal
 } from '@deneb-viz/vega-runtime/signals';
@@ -17,7 +16,7 @@ import { useDenebState } from '../../../state';
 import { type ViewEventBinder } from '../../../components/deneb-platform';
 import { VEGA_EMBED_ROOT_STYLE } from './vega-embed-styles';
 import {
-    isSameDenebContainerValue,
+    getContainerSignalRefresh,
     observeContainerResize
 } from '../container-size-observer';
 import { getRestrictiveVegaLoader } from './restrictive-loader';
@@ -401,28 +400,21 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
     /**
      * Guarded `denebContainer` refresh shared by both signal write
      * paths (the post-embed reconcile effect and the ResizeObserver
-     * callback). Guards: no view/signal yet → nothing to update; 0×0
-     * (hidden or tearing-down container) → never write that over a
-     * live view; value-equal → skip, since Vega compares signal
-     * values by reference and an equal-but-new object would still
-     * re-run the dataflow. Stable deps — `VegaViewServices` is a
-     * module singleton.
+     * callback). Guard logic and scroll-offset preservation live in
+     * `getContainerSignalRefresh` (behaviour-tested in
+     * container-size-observer.test.ts) — this callback only supplies
+     * the live signal value and performs the write. Stable deps —
+     * `VegaViewServices` is a module singleton.
      */
     const refreshContainerSignal = useCallback((container: HTMLElement) => {
-        const current = VegaViewServices.getSignalByName(
-            SIGNAL_DENEB_CONTAINER
-        ) as DenebContainerSignal | undefined;
-        if (current === undefined) return;
-        const signal = getSignalDenebContainer({
+        const refresh = getContainerSignalRefresh(
             container,
-            scroll: {
-                scrollTop: container.scrollTop,
-                scrollLeft: container.scrollLeft
-            }
-        });
-        if (signal.value.width === 0 && signal.value.height === 0) return;
-        if (isSameDenebContainerValue(current, signal.value)) return;
-        VegaViewServices.setSignalByName(signal.name, signal.value);
+            VegaViewServices.getSignalByName(SIGNAL_DENEB_CONTAINER) as
+                | DenebContainerSignal
+                | undefined
+        );
+        if (refresh === null) return;
+        VegaViewServices.setSignalByName(refresh.name, refresh.value);
     }, []);
 
     /**
@@ -436,11 +428,18 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
      * owns physical-size truth, and viewport deps would reintroduce a
      * second, stale-read-prone write on every committed resize (#480
      * OoF residual).
+     *
+     * `isActive` guard: `viewReady` is SHARED app-core state, so the
+     * inactive viewer/editor twin's effect fires on the active
+     * instance's embed too — without the guard it would write its own
+     * (hidden, possibly non-zero) container box into the active
+     * view's singleton (defect C1, same rationale as the observer
+     * effect below).
      */
     useEffect(() => {
-        if (!embedRef.current || !viewReady) return;
+        if (!isActive || !embedRef.current || !viewReady) return;
         refreshContainerSignal(embedRef.current);
-    }, [viewReady, refreshContainerSignal]);
+    }, [isActive, viewReady, refreshContainerSignal]);
 
     /**
      * Track the embed container's PHYSICAL box (#480 OoF residual).

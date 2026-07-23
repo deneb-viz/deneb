@@ -19,11 +19,14 @@ describe('VegaEmbed container resize observer wiring', () => {
         'utf8'
     );
 
-    it('imports the debounced observer and its equality guard from the feature module', () => {
+    it('imports the debounced observer and the guarded refresh builder from the feature module', () => {
         expect(componentSource).toMatch(
             /import\s*\{[^}]*observeContainerResize[^}]*\}\s*from\s*'\.\.\/container-size-observer'/s
         );
-        expect(componentSource).toMatch(/\bisSameDenebContainerValue\b/);
+        // The guard logic (signal-exists, non-zero box, value-equality,
+        // scroll-offset preservation) lives in the tested module — the
+        // component must consume it rather than hand-rolling a variant.
+        expect(componentSource).toMatch(/\bgetContainerSignalRefresh\b/);
     });
 
     it('registers the observer against the embed container element', () => {
@@ -51,9 +54,13 @@ describe('VegaEmbed container resize observer wiring', () => {
             /\[viewportHeight,\s*viewportWidth,\s*viewReady\]/
         );
         // The stable refresh callback rides along per exhaustive-deps;
-        // the contract is "viewReady and nothing viewport-shaped".
+        // the contract is "isActive + viewReady and nothing
+        // viewport-shaped". `isActive` is load-bearing: `viewReady` is
+        // SHARED app-core state, so without the guard the inactive
+        // viewer/editor twin also reconciles and can write its own
+        // container's dimensions into the active view's singleton.
         expect(componentSource).toMatch(
-            /\},\s*\[viewReady,\s*refreshContainerSignal\]\);/
+            /\},\s*\[isActive,\s*viewReady,\s*refreshContainerSignal\]\);/
         );
     });
 
