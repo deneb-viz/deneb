@@ -691,3 +691,23 @@ git commit -m "docs: compound learning — single-owner container signal pattern
 - **Deviation note (documented, intentional):** the spec's trigger table says resize "preserves scroll fields" and scroll "preserves size fields". Because the consolidated design measures ONE element that owns both box and offsets, a full six-field read is always coherent and "preserve" vs "re-read" are equivalent — except in the scrolled-back-to-0 case, where preservation would be a bug (stale offset). Task 1 implements the full read and tests that case explicitly. This satisfies the spec's intent (single-element truth) while correcting a latent flaw in its mechanics table.
 - **Type consistency:** `getMeasuredContainerRefresh(container, current)` used identically in Tasks 1, 2, 4; `UseContainerSignalOwnerOptions` fields match the Task 3 call site; `getCompileDimensionsSnapshot` introduced and referenced only in Task 5 + canary.
 - **No placeholders:** every code step carries the code; every run step names the command and expected outcome.
+
+---
+
+## Addendum: Revision 2 tasks (2026-07-23, post-UAT)
+
+Per the spec's **Revision 2** section (enter-encoded Vega specs must keep
+1.x resize behaviour; published reports must never break in place):
+
+- **Task A** — `updateContainerInitDimensions(parsedSpec, dims)` pure helper +
+  tests in `packages/vega-runtime/src/lib/signals/` (handles both `signals`
+  and `params` container entries; immutable; returns the input when the entry
+  is absent or dims are unchanged).
+- **Task B** — `refreshContainerDimensions(dims)` action on the app-core
+  compilation slice (+ tests); owner hook geometry channel reroute (observer +
+  reconcile → action; scroll → signal write unchanged); canary updates.
+- **Task C** — overlay `ci.*` comment update (init now tracks settled dims;
+  divergence transient-only).
+- Verification sweep + `ci:local`; push to the open PR #730 with an updated
+  body; maintainer re-runs the #480 red-rect UAT (enter-encoded spec must
+  track resize after settle; no residual scrollbars).

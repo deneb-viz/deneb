@@ -130,3 +130,51 @@ parse + validate + view teardown, and the view keeps its runtime state.
   as-is; #729's observer/guard tests migrate with the module.
 - **Desktop manual matrix:** resize storm; OoF click-on/off; scroll-then-resize;
   editor preview resize; zoom change; a VL spec; scrollbars on and off.
+
+## Revision 2 (2026-07-23, post-UAT): geometry re-embeds; scroll stays signal-only
+
+Desktop UAT with the #480 red-rect Vega spec falsified one assumption of the
+original design. The signal chain itself works — the canvas provably tracked
+the container in both directions (`cv.* Δ +0` in every capture) — but two
+consequences of keeping the view alive across resizes surfaced:
+
+1. **`encode.enter` geometry goes stale.** Enter encoders run once per datum
+   for the life of the view (core Vega semantics). 1.x and the pre-branch flow
+   only _appeared_ to support enter-encoded geometry because every resize tore
+   down and rebuilt the view, re-running `enter`. Signal-only resizes expose
+   the real semantics — and Power BI visuals must never break in place in
+   published reports, so "document `encode.update`" is not an acceptable
+   answer. There is no Vega API to re-run enter encoders short of rebuilding
+   the view.
+2. **OverlayScrollbars chrome goes stale.** The canvas resizing in place (no
+   DOM replacement) escapes OS's change detection: measured overflow was zero
+   (`sw==cw`, `sh==ch`) with scrollbars still visible.
+
+**Decision (maintainer):** geometry changes trigger a **cheap re-embed** —
+rebuild the view from the ALREADY-COMPILED template at the new dimensions; the
+compile pipeline (parse → patch → validate → compile) still never runs for a
+resize. View runtime state resets on settled resizes, exactly as 1.x — judged
+acceptable and even preferable (resize-as-reset is a legitimate developer
+recovery gesture; reading-view resizes are rare).
+
+**Mechanics:**
+
+- New pure helper `updateContainerInitDimensions(parsedSpec, dims)` in
+  vega-runtime signals: immutably rewrites the `denebContainer` entry's
+  `value.width/height` in `spec.signals` (Vega) or `spec.params` (Vega-Lite) —
+  both store the same `{ name, value }` shape.
+- New compilation-slice action `refreshContainerDimensions(dims)`: no-op
+  unless `result.status === 'ready'` and the dims actually differ; otherwise
+  stores a new result object with the rewritten parsed spec. The new result
+  identity flows through `VegaEmbed`'s spec memo into `useVegaEmbed`, which
+  re-embeds. Enter encoders re-run at the correct dimensions; OS recalcs off
+  the DOM replacement.
+- **Owner hook channels split:** the ResizeObserver and post-embed reconcile
+  triggers route geometry through `refreshContainerDimensions`; the throttled
+  scroll trigger keeps the guarded `denebContainer` signal write (offsets
+  only — the box matches the init by construction). The reconcile loop
+  terminates: re-embed → measure → equal → no-op.
+- Everything else stands: single measured element, compile-dims snapshot, no
+  viewport deps on the compile effects, `VegaEmbed` embed-lifecycle only.
+- Overlay note: `ci.*` now tracks settled dimensions again (the init is
+  refreshed per settle); divergence from `ev/ct` is transient-only.
