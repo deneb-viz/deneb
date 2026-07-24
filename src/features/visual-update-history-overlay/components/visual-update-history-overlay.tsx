@@ -5,6 +5,7 @@ import { useDenebVisualState } from '../../../state';
 import { CollapsibleSection, DevOverlayShell } from '../../dev-overlay-shell';
 import { type RenderingLifecycleEvent } from '../../../lib/rendering-lifecycle';
 import { computeLifecycleTally } from '../lib/compute-tally';
+import { getOverlayClipboardPayload } from '../lib/clipboard-payload';
 
 export const IS_OVERLAY_ENABLED = toBoolean(process.env.PBIVIZ_DEV_OVERLAY);
 
@@ -103,11 +104,28 @@ export const VisualUpdateHistoryOverlay = () => {
                 : '')
     ].join('\n');
 
+    // Structured dump for the title-bar copy button — the update
+    // history records (type + viewport per update) are the primary
+    // evidence when diagnosing host update sequences in Desktop, where
+    // there are no DevTools to capture them any other way. Event
+    // compaction and error-value sanitization live in the tested
+    // builder (`lib/clipboard-payload.ts`) — it never throws, so the
+    // copy button cannot be broken by the failure payload it exists
+    // to capture.
+    const getClipboardText = () =>
+        getOverlayClipboardPayload({
+            tally,
+            recentFailures,
+            history,
+            lifecycleEvents
+        });
+
     return (
         <DevOverlayShell
             title='lifecycle + history'
             position='top-left'
             maxWidth={520}
+            clipboardText={getClipboardText}
         >
             <div style={SECTION_HEADING_STYLE}>lifecycle tally</div>
             <pre style={HISTORY_PRE_STYLE}>{tallyText}</pre>

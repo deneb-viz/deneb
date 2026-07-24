@@ -1,5 +1,7 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
 
+import { copyToClipboard } from '@deneb-viz/app-core';
+
 /**
  * Where the overlay anchors against the visual surface. Both
  * supported positions are corner-anchored — the visual canvas only
@@ -20,6 +22,15 @@ export type DevOverlayShellProps = {
     maxWidth?: number;
     /** Optional initial collapsed state (default: false). */
     initiallyCollapsed?: boolean;
+    /**
+     * When provided, a copy button is rendered in the title bar that
+     * places the returned text on the clipboard. Lazy (a thunk, not a
+     * string) so large payloads are only serialized on click. Uses the
+     * legacy textarea + `execCommand('copy')` path via app-core's
+     * `copyToClipboard` — the async Clipboard API is unavailable in
+     * the Power BI sandboxed iframe.
+     */
+    clipboardText?: () => string;
     children: ReactNode;
 };
 
@@ -59,9 +70,19 @@ export const DevOverlayShell = ({
     position,
     maxWidth,
     initiallyCollapsed = false,
+    clipboardText,
     children
 }: DevOverlayShellProps) => {
     const [collapsed, setCollapsed] = useState(initiallyCollapsed);
+    const [copyFeedback, setCopyFeedback] = useState<
+        'idle' | 'copied' | 'failed'
+    >('idle');
+    const handleCopy = () => {
+        if (!clipboardText) return;
+        const succeeded = copyToClipboard(clipboardText());
+        setCopyFeedback(succeeded ? 'copied' : 'failed');
+        window.setTimeout(() => setCopyFeedback('idle'), 1500);
+    };
 
     const positionStyle: CSSProperties =
         position === 'top-left'
@@ -133,24 +154,44 @@ export const DevOverlayShell = ({
         padding: '6px 8px',
         overflowY: 'auto',
         overflowX: 'hidden',
-        whiteSpace: 'pre-wrap'
+        whiteSpace: 'pre-wrap',
+        // The shell root disables selection (drag-friendly HUD chrome)
+        // but the body content must remain selectable — Desktop has no
+        // DevTools, so manual select/copy of panel data is a legitimate
+        // capture path alongside the title-bar copy button.
+        userSelect: 'text'
     };
 
     return (
         <div style={shellStyle}>
             <div style={titleBarStyle}>
                 <span>{title}</span>
-                <button
-                    type='button'
-                    style={buttonStyle}
-                    onClick={() => setCollapsed((current) => !current)}
-                    title={collapsed ? 'Restore' : 'Minimize'}
-                    aria-label={
-                        collapsed ? 'Restore overlay' : 'Minimize overlay'
-                    }
-                >
-                    {collapsed ? '+' : '−'}
-                </button>
+                <span>
+                    {clipboardText && (
+                        <button
+                            type='button'
+                            style={buttonStyle}
+                            onClick={handleCopy}
+                            title='Copy panel data to clipboard'
+                            aria-label='Copy panel data to clipboard'
+                        >
+                            {copyFeedback === 'idle' && '⧉'}
+                            {copyFeedback === 'copied' && '✓'}
+                            {copyFeedback === 'failed' && '✕'}
+                        </button>
+                    )}
+                    <button
+                        type='button'
+                        style={buttonStyle}
+                        onClick={() => setCollapsed((current) => !current)}
+                        title={collapsed ? 'Restore' : 'Minimize'}
+                        aria-label={
+                            collapsed ? 'Restore overlay' : 'Minimize overlay'
+                        }
+                    >
+                        {collapsed ? '+' : '−'}
+                    </button>
+                </span>
             </div>
             {!collapsed && <div style={bodyStyle}>{children}</div>}
         </div>

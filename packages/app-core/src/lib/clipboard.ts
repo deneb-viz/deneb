@@ -2,8 +2,11 @@
  * Copy text to the clipboard using a textarea workaround.
  *
  * The standard Clipboard API is blocked by Power BI's iframe sandbox, so we use legacy means.
+ *
+ * Returns whether the copy command reported success, so callers can
+ * surface accurate feedback (e.g. the dev-overlay copy button).
  */
-export const copyToClipboard = (text: string): void => {
+export const copyToClipboard = (text: string): boolean => {
     const textarea = document.createElement('textarea');
     textarea.style.position = 'fixed';
     textarea.style.left = '-9999px';
@@ -14,7 +17,9 @@ export const copyToClipboard = (text: string): void => {
     textarea.value = text;
     try {
         textarea.select();
-        document.execCommand('copy');
+        return document.execCommand('copy');
+    } catch {
+        return false;
     } finally {
         document.body.removeChild(textarea);
     }

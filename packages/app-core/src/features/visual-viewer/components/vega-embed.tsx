@@ -6,10 +6,6 @@ import { Handler as VegaTooltipHandler } from 'vega-tooltip';
 
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 import { VegaPatternFillServices } from '@deneb-viz/vega-runtime/pattern-fill';
-import {
-    getSignalDenebContainer,
-    SIGNAL_DENEB_CONTAINER
-} from '@deneb-viz/vega-runtime/signals';
 import { patchSpecWithData } from '@deneb-viz/vega-runtime/spec-processing';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
 import { useDenebState } from '../../../state';
@@ -31,8 +27,6 @@ type VegaEmbedProps = {
     tooltipHandler?: TooltipHandler;
     vegaLoader?: Loader | null;
     viewEventBinders: ViewEventBinder[];
-    viewportHeight: number;
-    viewportWidth: number;
 };
 
 const useVegaEmbedStyles = makeStyles({
@@ -58,9 +52,7 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
     onRenderingStarted,
     tooltipHandler,
     vegaLoader,
-    viewEventBinders,
-    viewportHeight,
-    viewportWidth
+    viewEventBinders
 }) => {
     const classes = useVegaEmbedStyles();
     const embedRef = useRef<HTMLDivElement>(null);
@@ -84,16 +76,14 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
         logError,
         provider,
         setViewReady,
-        values,
-        viewReady
+        values
     } = useDenebState((state) => ({
         compilation: state.compilation.result,
         generateRenderId: state.interface.generateRenderId,
         logError: state.compilation.logError,
         provider: state.project.provider,
         setViewReady: state.compilation.setViewReady,
-        values: state.dataset.values,
-        viewReady: state.compilation.viewReady
+        values: state.dataset.values
     }));
 
     const { setView } = useVegaView();
@@ -387,37 +377,9 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
     useEffect(() => {
         logRender('VegaEmbed', {
             hasCompilation: !!compilation,
-            compilationStatus: compilation?.status,
-            viewportHeight,
-            viewportWidth
+            compilationStatus: compilation?.status
         });
-    }, [compilation, viewportHeight, viewportWidth]);
-
-    /**
-     * Update `denebContainer` signal when viewport changes.
-     * This handles responsive sizing when the container is resized.
-     */
-    useEffect(() => {
-        // Don't update signal until view is ready (runAsync completed)
-        if (!embedRef.current || !viewReady) return;
-
-        if (
-            VegaViewServices.getSignalByName(SIGNAL_DENEB_CONTAINER) ===
-            undefined
-        ) {
-            return;
-        }
-
-        const signal = getSignalDenebContainer({
-            container: embedRef.current,
-            scroll: {
-                scrollTop: embedRef.current.scrollTop,
-                scrollLeft: embedRef.current.scrollLeft
-            }
-        });
-
-        VegaViewServices.setSignalByName(signal.name, signal.value);
-    }, [viewportHeight, viewportWidth, viewReady]);
+    }, [compilation]);
 
     return <div ref={embedRef} className={classes.root} />;
 };

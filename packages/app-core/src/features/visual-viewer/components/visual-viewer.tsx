@@ -1,4 +1,11 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+    useCallback,
+    useEffect,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+    useState
+} from 'react';
 import { useThrottle } from '@uidotdev/usehooks';
 import { makeStyles, mergeClasses } from '@fluentui/react-components';
 import {
@@ -12,7 +19,6 @@ import { DEFAULT_VIEWPORT_SCALE } from '@deneb-viz/configuration';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import type { SchemaValidator } from '@deneb-viz/vega-runtime/spec-processing';
 import type { Renderers } from 'vega';
-import { getSignalDenebContainer } from '@deneb-viz/vega-runtime/signals';
 import { logRender, logDebug } from '@deneb-viz/utils/logging';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 import { VegaEmbed } from './vega-embed';
@@ -25,7 +31,8 @@ import {
     shouldAdvancePrevValues
 } from '../incremental-update';
 import { computeEmbedActive } from '../embed-active';
-import { useDenebState } from '../../../state';
+import { useContainerSignalOwner } from '../use-container-signal-owner';
+import { getDenebState, useDenebState } from '../../../state';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
 import { INCREMENTAL_UPDATE_CONFIGURATION } from '../../../lib/vega/incremental-update-configuration';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
@@ -143,14 +150,11 @@ export const VisualViewer = ({
         scrollEventThrottle,
         lastCompiled,
         values,
-        viewportHeight,
-        viewportWidth,
         compileSpec,
         enableIncrementalDataUpdates,
         incrementalUpdateThreshold,
         viewReady,
         interfaceType,
-        logError,
         logDurableError,
         logDurableWarn,
         translate
@@ -173,8 +177,6 @@ export const VisualViewer = ({
         scrollEventThrottle: state.visualRender.scrollEventThrottle,
         lastCompiled: state.compilation.lastCompiled,
         values: state.dataset.values,
-        viewportHeight: state.interface.embedViewport?.height ?? 0,
-        viewportWidth: state.interface.embedViewport?.width ?? 0,
         compileSpec: state.compilation.compile,
         enableIncrementalDataUpdates:
             state.compilation.enableIncrementalDataUpdates,
@@ -182,7 +184,6 @@ export const VisualViewer = ({
             state.compilation.incrementalUpdateThreshold,
         viewReady: state.compilation.viewReady,
         interfaceType: state.interface.type,
-        logError: state.compilation.logError,
         logDurableError: state.compilation.logDurableError,
         logDurableWarn: state.compilation.logDurableWarn,
         translate: state.i18n.translate
@@ -250,6 +251,65 @@ export const VisualViewer = ({
                 ? originalDevicePixelRatio * embedScaleFactor
                 : originalDevicePixelRatio;
     }, [embedScaleFactor, isActive]);
+
+    const useScrollbars = useMemo(
+        () => !isEmbeddedInEditor || previewScrollbars,
+        [isEmbeddedInEditor, previewScrollbars]
+    );
+
+    // The measured scroll container for the denebContainer signal
+    // owner. Captured as STATE (not a ref) so the owner hook's effects
+    // re-run when the element appears — the scrollbars component
+    // initializes with `defer`, so the viewport element exists only
+    // after its `initialized` event.
+    const [osViewportElement, setOsViewportElement] =
+        useState<HTMLElement | null>(null);
+    const [fallbackElement, setFallbackElement] =
+        useState<HTMLDivElement | null>(null);
+    const measuredContainer = useScrollbars
+        ? osViewportElement
+        : fallbackElement;
+
+    // Snapshot source for compile-time container dimensions. A ref
+    // (synced by effect) rather than a direct closure over
+    // `measuredContainer`, so the snapshot helper stays
+    // identity-stable and never retriggers the compile effects. Declared
+    // here (above the data-change effect) — like `onRenderingFinished`
+    // above — because effect dependency arrays are evaluated
+    // synchronously during the component body, and the data-change
+    // effect below needs `getCompileDimensionsSnapshot` in its deps.
+    const measuredContainerRef = useRef<HTMLElement | null>(null);
+    useEffect(() => {
+        measuredContainerRef.current = measuredContainer;
+    }, [measuredContainer]);
+
+    /**
+     * Dimensions seed for a compile, read AT CALL TIME — deliberately
+     * not reactive; viewport-only changes are signal-only (see
+     * docs/plans/2026-07-23-001-container-signal-consolidation-design.md).
+     * Prefers the measured container when laid out; falls back to the
+     * committed embedViewport (initial mount, pre-layout). The seed
+     * only initializes the denebContainer signal — the owner's
+     * post-embed reconcile corrects any born-stale delta.
+     */
+    const getCompileDimensionsSnapshot = useCallback(() => {
+        const container = measuredContainerRef.current;
+        if (
+            container &&
+            container.clientWidth > 0 &&
+            container.clientHeight > 0
+        ) {
+            return {
+                width: container.clientWidth,
+                height: container.clientHeight
+            };
+        }
+        const embedViewport = getDenebState().interface.embedViewport;
+        return {
+            width: embedViewport?.width ?? 0,
+            height: embedViewport?.height ?? 0
+        };
+    }, []);
 
     // Track previous values reference for incremental update detection
     const prevValuesRef = useRef<unknown[] | null>(null);
@@ -352,10 +412,7 @@ export const VisualViewer = ({
                 config,
                 provider,
                 schemaValidator,
-                containerDimensions: {
-                    width: viewportWidth,
-                    height: viewportHeight
-                },
+                containerDimensions: getCompileDimensionsSnapshot(),
                 logLevel,
                 embedOptions: {
                     renderer: renderMode as Renderers,
@@ -416,10 +473,7 @@ export const VisualViewer = ({
                     config,
                     provider,
                     schemaValidator,
-                    containerDimensions: {
-                        width: viewportWidth,
-                        height: viewportHeight
-                    },
+                    containerDimensions: getCompileDimensionsSnapshot(),
                     logLevel,
                     embedOptions: {
                         renderer: renderMode as Renderers,
@@ -451,8 +505,7 @@ export const VisualViewer = ({
         spec,
         config,
         provider,
-        viewportHeight,
-        viewportWidth,
+        getCompileDimensionsSnapshot,
         logLevel,
         renderMode,
         embedScaleFactor,
@@ -463,11 +516,6 @@ export const VisualViewer = ({
         translate,
         onRenderingFinished
     ]);
-
-    const useScrollbars = useMemo(
-        () => !isEmbeddedInEditor || previewScrollbars,
-        [isEmbeddedInEditor, previewScrollbars]
-    );
 
     const osRef = useRef<OverlayScrollbarsComponentRef>(null);
     const [scrollPosition, setScrollPosition] = useState<ScrollPosition | null>(
@@ -496,8 +544,7 @@ export const VisualViewer = ({
             hasSpec: !!spec,
             hasConfig: !!config,
             provider,
-            viewportHeight,
-            viewportWidth
+            dimensions: getCompileDimensionsSnapshot()
         });
 
         compileSpec({
@@ -505,10 +552,7 @@ export const VisualViewer = ({
             config,
             provider,
             schemaValidator,
-            containerDimensions: {
-                width: viewportWidth,
-                height: viewportHeight
-            },
+            containerDimensions: getCompileDimensionsSnapshot(),
             logLevel,
             embedOptions: {
                 renderer: renderMode as Renderers,
@@ -521,8 +565,7 @@ export const VisualViewer = ({
         spec,
         config,
         provider,
-        viewportHeight,
-        viewportWidth,
+        getCompileDimensionsSnapshot,
         logLevel,
         renderMode,
         embedScaleFactor,
@@ -544,8 +587,6 @@ export const VisualViewer = ({
                     tooltipHandler={tooltipHandler}
                     vegaLoader={vegaLoader}
                     viewEventBinders={viewEventBinders}
-                    viewportHeight={viewportHeight}
-                    viewportWidth={viewportWidth}
                 />
             </VegaEmbedErrorBoundary>
         ),
@@ -556,9 +597,7 @@ export const VisualViewer = ({
             onRenderingStarted,
             tooltipHandler,
             vegaLoader,
-            viewEventBinders,
-            viewportHeight,
-            viewportWidth
+            viewEventBinders
         ]
     );
 
@@ -568,19 +607,9 @@ export const VisualViewer = ({
             config,
             spec,
             provider,
-            lastCompiled,
-            viewportHeight,
-            viewportWidth
+            lastCompiled
         });
-    }, [
-        isEmbeddedInEditor,
-        config,
-        spec,
-        provider,
-        lastCompiled,
-        viewportHeight,
-        viewportWidth
-    ]);
+    }, [isEmbeddedInEditor, config, spec, provider, lastCompiled]);
 
     // Overlayscrollbars event handlers. The `initialized` callback fires after
     // the library creates its viewport element — the only safe point to read
@@ -602,6 +631,7 @@ export const VisualViewer = ({
         () => ({
             initialized: (instance) => {
                 instance.elements().viewport.id = VEGA_CONTAINER_ID;
+                setOsViewportElement(instance.elements().viewport);
             },
             scroll: (instance) => {
                 const viewport = instance.elements().viewport;
@@ -614,30 +644,12 @@ export const VisualViewer = ({
         []
     );
 
-    useEffect(() => {
-        // Don't update scroll signal if view isn't ready or scroll position not set
-        if (!throttledScrollPosition || !viewReady) return;
-        const view = VegaViewServices.getView();
-        if (!view) return;
-        const viewport = osRef.current?.osInstance()?.elements().viewport;
-        const signal = getSignalDenebContainer({
-            scroll: {
-                height: viewport?.clientHeight ?? 0,
-                width: viewport?.clientWidth ?? 0,
-                scrollHeight: viewport?.scrollHeight ?? 0,
-                scrollWidth: viewport?.scrollWidth ?? 0,
-                scrollTop: throttledScrollPosition.scrollTop,
-                scrollLeft: throttledScrollPosition.scrollLeft
-            }
-        });
-        VegaViewServices.setSignalByName(signal.name, signal.value, (error) => {
-            logError(
-                `VisualViewer: Failed to update scroll signal: ${
-                    error instanceof Error ? error.message : String(error)
-                }`
-            );
-        });
-    }, [throttledScrollPosition, viewReady, logError]);
+    useContainerSignalOwner({
+        isActive,
+        viewReady,
+        throttledScrollPosition,
+        container: measuredContainer
+    });
 
     const scrollbarStyleVars = getScrollbarStyleVars(
         scrollbarColor,
@@ -659,6 +671,7 @@ export const VisualViewer = ({
         </OverlayScrollbarsComponent>
     ) : (
         <div
+            ref={setFallbackElement}
             className={mergeClasses(classes.container, classes.overflowVisible)}
         >
             {vegaComponent}
