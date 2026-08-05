@@ -234,10 +234,10 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 
 **Branching model (read first):**
 
-- **`next`** is the active integration branch. Base feature branches off it (`git checkout next && git pull && git checkout -b <type>/<short-name>`) and target it with PRs (`gh pr create --base next`).
-- **`main`** mirrors the version currently published on AppSource and is reserved for production hotfixes. Do **not** branch off `main`, do **not** rebase feature branches against `main`, and do **not** open feature PRs against `main` — `main` is typically far behind `next` and will produce a massive replay or huge unintended diff.
-- For re-signing or rewriting commits on a feature branch, target the actual fork point (e.g. `HEAD~N` for the last N commits on the branch), not `main`.
-- Hotfixes that ship from `main` are forward-merged into `next`. A release cut promotes `next` → `main`.
+- **`main`** is the active development branch (single trunk). Base feature branches off it (`git checkout main && git pull && git checkout -b <type>/<short-name>`) and target it with PRs (`gh pr create --base main`).
+- **`certification`** mirrors the version currently published on AppSource. Do not branch off it or target it for routine work — it is reserved for release cuts and genuine production hotfixes, which branch from it and are forward-merged into `main` after shipping.
+- For re-signing or rewriting commits on a feature branch, target the actual fork point (e.g. `HEAD~N` for the last N commits on the branch).
+- During large release cycles a separate `next` integration branch may be temporarily reinstated (as it was for 2.0). If `origin/next` exists and is ahead of `main`, check [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#2-local-development-workflow) for the active model before branching.
 
 **Quick Start:**
 

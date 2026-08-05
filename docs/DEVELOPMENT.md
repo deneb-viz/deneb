@@ -31,22 +31,19 @@ Deneb uses a custom Webpack 5 toolchain (replacing pbiviz CLI) for faster rebuil
 
 ### Branching model
 
-Deneb uses a two-branch trunk:
-
-- **`main`** is kept as close as possible to the version currently published on AppSource. It is the safety net for production issues that need a swift hotfix without dragging along untested in-flight changes.
-- **`next`** is the active integration branch. New features, fixes, refactors, and most day-to-day work land here.
+- **`main`** is the active development branch (single trunk). New features, fixes, refactors, and day-to-day work branch from it and merge back via PR.
+- **`certification`** is kept as close as possible to the version currently published on AppSource. It is the safety net for production issues that need a swift hotfix without dragging along untested in-flight changes. It only moves when a certified release ships or a hotfix must go out ahead of one; hotfixes that land there are forward-merged into `main`.
 
 **Working on a feature or fix:**
 
-1. Branch off `next`, not `main`: `git checkout next && git pull && git checkout -b <type>/<short-name>`.
-2. Open the PR against `next` (e.g. `gh pr create --base next`).
-3. When a hotfix lands on `main`, it is merged or rebased forward into `next` — moving change in that direction is cheap; pushing untested `next` work back into an AppSource release is not.
+1. Branch off `main`: `git checkout main && git pull && git checkout -b <type>/<short-name>`.
+2. Open the PR against `main` (e.g. `gh pr create --base main`).
 
 **Implications:**
 
-- Rebases, `git diff` baselines, and `git rebase --exec` operations for current work should target `next` (or the feature branch's actual fork point such as `HEAD~N`), **not `main`**. `main` is typically far behind `next` and will produce a massive replay if used as the rebase base.
-- AI assistants and contributors new to the repo should treat `next` as the working trunk. Reach for `main` only when the work is genuinely a production hotfix that needs to ship to AppSource ahead of the next release cut.
-- A new release cut promotes `next` → `main` (typically via a release PR), at which point `main` once again mirrors the published AppSource state and the cycle repeats.
+- Rebases, `git diff` baselines, and `git rebase --exec` operations target `main` (or the feature branch's actual fork point such as `HEAD~N`).
+- Do not branch off or target `certification` unless the work is genuinely a production hotfix for the AppSource-published version.
+- During large release cycles (as with 2.0), a separate `next` integration branch may be temporarily reinstated. When that model is active, this section, CONTRIBUTING.md, and CLAUDE.md are updated to describe it; otherwise treat `main` as the working trunk.
 
 ### First-time setup
 

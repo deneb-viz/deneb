@@ -25,21 +25,16 @@ Full details, including .env setup, scripts reference, webpack architecture, and
 
 ## Branching
 
-Deneb uses a two-branch trunk:
-
-- **`next`** is the active integration branch. Base your feature branch off `next` and target it with your PR.
-- **`main`** mirrors the version currently published on AppSource and is reserved for production hotfixes.
+**`main`** is the active development branch. Base your feature branch off `main` and target it with your PR.
 
 ```bash
-git checkout next && git pull
+git checkout main && git pull
 git checkout -b <type>/<short-name>     # e.g. fix/email-validation, feat/new-toolbar
 ```
 
-Do **not** branch off `main`, do **not** rebase against `main`, and do **not** open feature PRs against `main`. `main` is typically far behind `next` and will produce unintended diffs or massive replays. PRs targeted at `main` are typically parked until the next planned release from `next`, and you may be asked to rebase the work onto `next` during review.
+**`certification`** mirrors the version currently published on AppSource and is not a target for contributions. During large release cycles a separate `next` integration branch may be temporarily reinstated (as it was for 2.0). If so, this section and [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#2-local-development-workflow) will say so — otherwise `main` is the branch to use.
 
-Full rationale is in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#2-local-development-workflow) under "Branching model".
-
-Branches merged to `next` are squashed on PR acceptance, and regular merges from `next` to `main` are as-is to preserve the high-level contribution history and ensure that anyone making a PR to `next` still gets credit for their contributions.
+Branches are squash-merged on PR acceptance, so each contribution lands as a single credited commit on `main` and the high-level contribution history stays readable.
 
 ## Commits
 
@@ -94,7 +89,7 @@ This guards against shipping with `LOG_LEVEL` raised, dev toggles enabled, or ot
 
 ## Pull requests
 
-- **Target `next`.** Use `gh pr create --base next "<title>"` or set the base manually in the GitHub UI.
+- **Target `main`.** Use `gh pr create --base main "<title>"` or set the base manually in the GitHub UI.
 - **Title.** Short, descriptive, conventional prefix where natural. The PR title is what appears in the release notes.
 - **Description.** Cover the _what_ and the _why_. Reference any related issue (`Fixes #123`). For UI changes, include before/after screenshots or a short clip if it helps the reviewer.
 - **Keep the diff focused.** Drive-by formatting or unrelated cleanup belongs in its own PR — it makes review and rollback much easier.
