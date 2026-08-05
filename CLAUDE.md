@@ -235,7 +235,7 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 **Branching model (read first):**
 
 - **`main`** is the active development branch (single trunk). Base feature branches off it (`git checkout main && git pull && git checkout -b <type>/<short-name>`) and target it with PRs (`gh pr create --base main`).
-- **`certification`** mirrors the version currently published on AppSource. Do not branch off it or open PRs against it — it only moves when a certified release ships (or a production hotfix is needed).
+- **`certification`** mirrors the version currently published on AppSource. Do not branch off it or target it for routine work — it is reserved for release cuts and genuine production hotfixes, which branch from it and are forward-merged into `main` after shipping.
 - For re-signing or rewriting commits on a feature branch, target the actual fork point (e.g. `HEAD~N` for the last N commits on the branch).
 - During large release cycles a separate `next` integration branch may be temporarily reinstated (as it was for 2.0). If `origin/next` exists and is ahead of `main`, check [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#2-local-development-workflow) for the active model before branching.
 
