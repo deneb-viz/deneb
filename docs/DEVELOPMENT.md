@@ -404,6 +404,35 @@ npm run package:standalone
 
 Refer to `bin/package-custom.ts` for the authoritative implementation details.
 
+### Publishing prerelease builds (alpha / beta channels)
+
+Alpha and beta builds are published as rolling GitHub pre-releases by the `prerelease` job in [.github/workflows/ci.yml](../.github/workflows/ci.yml). They install alongside the AppSource visual (distinct GUIDs — see [Packaging Modes & Certification](#packaging-modes--certification)) and are for testing and feedback only, never production use.
+
+**Tag convention.** A publish needs two tags on the same commit:
+
+- A **versioned channel tag** — `<major>.<minor>.<patch>.alpha-<n>` or `<major>.<minor>.<patch>.beta-<n>` (e.g. `2.0.0.beta-1`). This names the published `.pbiviz` and the release title. The job fails fast (before install/build) if it is missing.
+- The **moving channel tag** — `alpha` or `beta`. Pushing this tag is what triggers the publish; it is force-moved from release to release.
+
+**To publish (example: beta):**
+
+```bash
+git checkout main && git pull
+git tag 2.0.0.beta-1                # versioned tag on the commit to release
+git tag -f beta                     # move the channel tag to the same commit
+git push origin 2.0.0.beta-1
+git push -f origin beta             # triggers the prerelease job
+```
+
+**What the job does:**
+
+1. Derives the channel (`alpha`/`beta`) from the pushed tag name, then resolves the versioned channel tag on the commit.
+2. Validates the CI configuration (`npm run validate-config-for-commit`) so anything published always carries certification-safe values. The local `package-alpha`/`package-beta` scripts deliberately skip this validation so maintainers can produce one-off debug builds for issue triage (see [#651](https://github.com/deneb-viz/deneb/issues/651)) — CI is where the invariant is enforced.
+3. Builds via `npm run package-<channel>` and renames the artifact to `deneb.<versioned-tag>.pbiviz`.
+4. Deletes and recreates the rolling "Alpha/Beta Channel: Latest Build" pre-release, attaching the artifact.
+5. Generates the release changelog from the last **regular** release (pure 4-part numeric tag, e.g. `1.9.1.0`) up to the released commit. Prerelease tags from either channel are never used as the baseline, so the listed changes always represent the drift from the last AppSource-style release.
+
+Tag pushes run **only** the `prerelease` job — the `ci` and `bench` jobs are skipped on tag refs, so publishing does not repeat the full CI cycle. The commit being released will already have been validated by the `push`/`pull_request` run that landed it on `main`.
+
 ## 9. Performance & Optimization Tips
 
 | Tip                                 | Benefit                                |
