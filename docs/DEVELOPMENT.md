@@ -325,6 +325,8 @@ We support distinct packaging modes to serve different audiences:
 | Beta       | `npm run package:beta`       | Wider pre-release testing                     | `true`           | `false`                              | None                         |
 | Standalone | `npm run package:standalone` | Developer-only, enables remote spec/resources | `false`          | `true`                               | `ExportContent`, `WebAccess` |
 
+> Alpha and beta builds are distributed to testers via CI tags, not from local builds — see [Publishing prerelease builds (alpha / beta channels)](#publishing-prerelease-builds-alpha--beta-channels).
+
 Internally all of these invoke the custom script `bin/package-custom.ts` which:
 
 1. Reads mode config from `config/package-custom.json`.
@@ -410,7 +412,7 @@ Alpha and beta builds are published as rolling GitHub pre-releases by the `prere
 
 **Tag convention.** A publish needs two tags on the same commit:
 
-- A **versioned channel tag** — `<major>.<minor>.<patch>.alpha-<n>` or `<major>.<minor>.<patch>.beta-<n>` (e.g. `2.0.0.beta-1`). This names the published `.pbiviz` and the release title. The job fails fast (before install/build) if it is missing.
+- A **versioned channel tag** — `<major>.<minor>.<patch>.alpha-<n>` or `<major>.<minor>.<patch>.beta-<n>` (e.g. `2.0.0.beta-1`). This names the published `.pbiviz` and the release title. `<n>` is a simple counter per version and channel: start at `1` and increment for each subsequent build of that version (list what already exists with `git tag -l '2.0.0.beta-*'`). The job fails fast (before install/build) if this tag is missing.
 - The **moving channel tag** — `alpha` or `beta`. Pushing this tag is what triggers the publish; it is force-moved from release to release.
 
 **To publish (example: beta):**
@@ -427,11 +429,13 @@ git push -f origin beta             # triggers the prerelease job
 
 1. Derives the channel (`alpha`/`beta`) from the pushed tag name, then resolves the versioned channel tag on the commit.
 2. Validates the CI configuration (`npm run validate-config-for-commit`) so anything published always carries certification-safe values. The local `package-alpha`/`package-beta` scripts deliberately skip this validation so maintainers can produce one-off debug builds for issue triage (see [#651](https://github.com/deneb-viz/deneb/issues/651)) — CI is where the invariant is enforced.
-3. Builds via `npm run package-<channel>` and renames the artifact to `deneb.<versioned-tag>.pbiviz`.
+3. Builds via `npm run package-<channel>` — note the hyphen: this is the full wrapper (env setup + package builds + mode patch), unlike the bare `package:<channel>` steps shown under [Quick Usage Examples](#quick-usage-examples) — and renames the artifact to `deneb.<versioned-tag>.pbiviz`.
 4. Deletes and recreates the rolling "Alpha/Beta Channel: Latest Build" pre-release, attaching the artifact.
-5. Generates the release changelog from the last **regular** release (pure 4-part numeric tag, e.g. `1.9.1.0`) up to the released commit. Prerelease tags from either channel are never used as the baseline, so the listed changes always represent the drift from the last AppSource-style release.
+5. Generates the release changelog from the last **certified** release (pure 4-part numeric tag, e.g. `1.9.1.0`) up to the released commit. Prerelease tags from either channel are never used as the baseline, so the listed changes always represent the drift from the last certified release.
 
 Tag pushes run **only** the `prerelease` job — the `ci` and `bench` jobs are skipped on tag refs, so publishing does not repeat the full CI cycle. The commit being released will already have been validated by the `push`/`pull_request` run that landed it on `main`.
+
+If a publish fails partway, fix the cause and force-push the moving channel tag again — the job is safe to re-run: it deletes and recreates the rolling release on every execution.
 
 ## 9. Performance & Optimization Tips
 
