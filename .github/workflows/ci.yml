@@ -226,7 +226,14 @@ jobs:
             - name: Rename package to versioned channel filename
               run: mv dist/${{ steps.channel.outputs.prefix }}*.pbiviz "dist/deneb.${{ steps.version_tag.outputs.tag }}.pbiviz"
             - name: Delete existing channel release
-              run: gh release delete ${{ github.ref_name }} --yes || true
+              # $GITHUB_REF_NAME (env var, quoted) rather than
+              # ${{ github.ref_name }}: expression interpolation pastes
+              # the tag name into the script as shell source, so a
+              # crafted tag matching 'alpha-*'/'beta-*' (git permits $,
+              # parens, semicolons in ref names) could execute commands
+              # with the write-capable GITHUB_TOKEN. The env var form is
+              # expanded by the shell as data, never parsed as code.
+              run: gh release delete "$GITHUB_REF_NAME" --yes || true
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             - name: Fetch all tags
