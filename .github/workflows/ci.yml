@@ -1,17 +1,23 @@
 name: CI
 
 # Default the workflow token to read-only; jobs that need more (e.g.
-# alpha-release publishing) declare their own permissions block.
+# prerelease publishing) declare their own permissions block.
 permissions:
     contents: read
 
 on:
     push:
+        # Trunk branches only. Feature branches are validated by the
+        # pull_request runs — with '**' here, every push to a branch
+        # with an open PR ran the full ci+bench cycle twice.
         branches:
-            - '**'
+            - main
+            - certification
         tags:
             - 'alpha'
             - 'alpha-*'
+            - 'beta'
+            - 'beta-*'
     pull_request:
 
 jobs:
@@ -131,8 +137,8 @@ jobs:
                   echo "::warning::Benchmark regression detected — see comparison table in the 'Run benchmarks and compare' step (data-core=${{ steps.bench.outputs.data_core_compare_exit }}, app-core=${{ steps.bench.outputs.app_core_compare_exit }}). During advisory rollout, regressions are reported but do NOT block merges."
                   exit 1
 
-    alpha-release:
-        if: startsWith(github.ref, 'refs/tags/alpha')
+    prerelease:
+        if: startsWith(github.ref, 'refs/tags/alpha') || startsWith(github.ref, 'refs/tags/beta')
         runs-on: ubuntu-latest
         permissions:
             contents: write
@@ -141,24 +147,44 @@ jobs:
               uses: actions/checkout@v4
               with:
                   fetch-depth: 0
-            # The moving `alpha` tag must be accompanied by a versioned
-            # alpha tag (e.g. `2.0.0.alpha-2`) on the same commit — it
-            # names the published .pbiviz and the release title. Fail
-            # fast (before install/build) if it is missing.
-            - name: Resolve versioned alpha tag
+            # Derive the release channel from the moving tag name
+            # ('alpha'/'beta', including 'alpha-*'/'beta-*' variants).
+            # Every later step keys off these outputs, so alpha and
+            # beta cannot drift apart.
+            - name: Resolve release channel
+              id: channel
+              run: |
+                  CHANNEL="${GITHUB_REF_NAME%%-*}"
+                  case "$CHANNEL" in
+                      alpha|beta) ;;
+                      *)
+                          echo "::error::Unsupported prerelease channel '$CHANNEL' (from tag '$GITHUB_REF_NAME')."
+                          exit 1
+                          ;;
+                  esac
+                  echo "name=$CHANNEL" >> $GITHUB_OUTPUT
+                  echo "prefix=$(echo "$CHANNEL" | tr '[:lower:]' '[:upper:]')" >> $GITHUB_OUTPUT
+                  echo "title=${CHANNEL^}" >> $GITHUB_OUTPUT
+                  echo "Channel: $CHANNEL"
+            # The moving channel tag must be accompanied by a versioned
+            # channel tag (e.g. `2.0.0.alpha-2`, `2.0.0.beta-1`) on the
+            # same commit — it names the published .pbiviz and the
+            # release title. Fail fast (before install/build) if it is
+            # missing.
+            - name: Resolve versioned channel tag
               id: version_tag
               run: |
                   # `|| true`: keep a no-match grep from failing the
                   # assignment if this step ever runs under pipefail
                   # (e.g. an explicit `shell: bash`), so the guard below
                   # prints its instructions instead of a bare exit.
-                  VERSION_TAG=$(git tag --points-at HEAD | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.alpha-[0-9]+$' | sort -V | tail -n 1 || true)
+                  VERSION_TAG=$(git tag --points-at HEAD | grep -E "^[0-9]+\.[0-9]+\.[0-9]+\.${{ steps.channel.outputs.name }}-[0-9]+$" | sort -V | tail -n 1 || true)
                   if [ -z "$VERSION_TAG" ]; then
-                      echo "::error::No versioned alpha tag (e.g. 2.0.0.alpha-1) found on this commit. Tag the commit with '<major>.<minor>.<patch>.alpha-<n>' and re-push the 'alpha' tag to release."
+                      echo "::error::No versioned ${{ steps.channel.outputs.name }} tag (e.g. 2.0.0.${{ steps.channel.outputs.name }}-1) found on this commit. Tag the commit with '<major>.<minor>.<patch>.${{ steps.channel.outputs.name }}-<n>' and re-push the '${{ steps.channel.outputs.name }}' tag to release."
                       exit 1
                   fi
                   echo "tag=$VERSION_TAG" >> $GITHUB_OUTPUT
-                  echo "Versioned alpha tag: $VERSION_TAG"
+                  echo "Versioned channel tag: $VERSION_TAG"
             - name: Use CI .env file
               run: cp .env.ci .env
             - name: Setup Node
@@ -178,44 +204,49 @@ jobs:
             - name: Build packages
               run: npm run build
             # Guard the published artifact against a tampered `.env.ci`.
-            # `package-alpha` deliberately skips the validator locally so
-            # that maintainers can produce one-off debug builds (e.g.
-            # with ALLOW_EXTERNAL_URI=true) for issue triage. CI does
-            # not need that flexibility — anything published to a
-            # GitHub release under an `alpha` tag must satisfy the same
-            # configuration invariants as the certified `package`
-            # script. Running the validator here asserts that the
-            # on-disk `.env` (copied from `.env.ci` above) holds the
-            # approved safe values before `package-alpha` bakes them
-            # into the artifact.
+            # The channel package scripts (`package-alpha`/`package-beta`)
+            # deliberately skip the validator locally so that maintainers
+            # can produce one-off debug builds (e.g. with
+            # ALLOW_EXTERNAL_URI=true) for issue triage. CI does not need
+            # that flexibility — anything published to a GitHub release
+            # under a prerelease tag must satisfy the same configuration
+            # invariants as the certified `package` script. Running the
+            # validator here asserts that the on-disk `.env` (copied from
+            # `.env.ci` above) holds the approved safe values before the
+            # package script bakes them into the artifact.
             #
             # See https://github.com/deneb-viz/deneb/issues/651.
-            - name: Validate CI configuration before alpha packaging
+            - name: Validate CI configuration before prerelease packaging
               run: npm run validate-config-for-commit
-            - name: Build Alpha Package
-              run: npm run package-alpha
+            - name: Build channel package
+              run: npm run package-${{ steps.channel.outputs.name }}
             # mv fails the job if the glob matches zero or multiple
             # files, so a missing/ambiguous build artifact is caught here
             # rather than publishing a mis-named release.
-            - name: Rename package to versioned alpha filename
-              run: mv dist/ALPHA*.pbiviz "dist/deneb.${{ steps.version_tag.outputs.tag }}.pbiviz"
-            - name: Delete existing alpha release
-              run: gh release delete ${{ github.ref_name }} --yes || true
+            - name: Rename package to versioned channel filename
+              run: mv dist/${{ steps.channel.outputs.prefix }}*.pbiviz "dist/deneb.${{ steps.version_tag.outputs.tag }}.pbiviz"
+            - name: Delete existing channel release
+              # $GITHUB_REF_NAME (env var, quoted) rather than
+              # ${{ github.ref_name }}: expression interpolation pastes
+              # the tag name into the script as shell source, so a
+              # crafted tag matching 'alpha-*'/'beta-*' (git permits $,
+              # parens, semicolons in ref names) could execute commands
+              # with the write-capable GITHUB_TOKEN. The env var form is
+              # expanded by the shell as data, never parsed as code.
+              run: gh release delete "$GITHUB_REF_NAME" --yes || true
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             - name: Fetch all tags
               run: git fetch --tags --force
             - name: Get last release tag
               id: last_tag
-              # Only pure 4-part numeric tags (e.g. 1.9.1.0) are releases cut
-              # from main. Prerelease tags like 2.0.0.alpha-1 sort higher but
-              # point at (or near) the commit being released, which would
-              # produce an empty changelog range.
+              # Only pure 4-part numeric tags (e.g. 1.9.1.0) are releases
+              # cut from main. Positively match that shape so prerelease
+              # tags from ANY channel (2.0.0.alpha-2, 2.0.0.beta-1, ...)
+              # can never become the changelog baseline — the drift is
+              # always measured from the last regular build.
               run: |
-                  # Exclude versioned alpha tags (x.y.z.alpha-n) so the
-                  # changelog baseline stays the last full release, not
-                  # the alpha tag on this very commit.
-                  LAST_TAG=$(git tag -l '[0-9]*' --sort=-v:refname | grep -v '\.alpha-' | head -n 1)
+                  LAST_TAG=$(git tag -l '[0-9]*' --sort=-v:refname | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
                   echo "tag=$LAST_TAG" >> $GITHUB_OUTPUT
                   echo "Last versioned tag: $LAST_TAG"
             - name: Generate changelog
@@ -227,13 +258,13 @@ jobs:
                   toTag: ${{ steps.last_tag.outputs.tag }}
                   excludeTypes: ''
                   writeToFile: false
-            - name: Create Alpha Channel Pre-Release
+            - name: Create channel pre-release
               uses: softprops/action-gh-release@v2
               with:
                   prerelease: true
-                  name: 'Alpha Channel: Latest Build (${{ steps.version_tag.outputs.tag }})'
+                  name: '${{ steps.channel.outputs.title }} Channel: Latest Build (${{ steps.version_tag.outputs.tag }})'
                   body: |
-                      Deneb Alpha Channel build, which is the latest release candidate for early adopters.
+                      Deneb ${{ steps.channel.outputs.title }} Channel build, which is the latest release candidate for early adopters.
 
                       Please refer to the [Early Access Builds](https://deneb-viz.github.io/community/early-access) page on the Deneb website for information on usage and installation.
 
