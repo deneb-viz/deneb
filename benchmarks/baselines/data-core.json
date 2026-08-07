@@ -1,96 +1,101 @@
 {
   "_meta": {
-    "capturedAt": "2026-04-16T06:15:40.422Z",
-    "runnerImage": "ubuntu22-bootstrap-ci",
-    "nodeVersion": "v22.x",
-    "vitestVersion": "3.2.4",
-    "commitSha": "f28a4904f26574700cb5f793555615480cf30e63"
+    "capturedAt": "2026-08-07T05:04:03.659Z",
+    "runnerImage": "ubuntu22-20260804.255.1",
+    "nodeVersion": "v22.23.2",
+    "vitestVersion": "3.2.7",
+    "commitSha": "e31912ae1e74b341f0cb8d12102892ae6be6f66a"
   },
   "benchmarks": {
     "src/lib/support-fields/__bench__/build-data-row.bench.ts > buildDataRow > field-only plan, passthrough provider > 1,000 rows": {
-      "hz": 1765.488093196396,
-      "mean_ms": 0.5664156013590051,
-      "p75_ms": 0.5652959999999894
+      "hz": 1735.3710425315726,
+      "mean_ms": 0.5762456417050686,
+      "p75_ms": 0.5385210000000598
     },
     "src/lib/support-fields/__bench__/build-data-row.bench.ts > buildDataRow > field-only plan, passthrough provider > 10,000 rows": {
-      "hz": 177.19754214744606,
-      "mean_ms": 5.643419134831453,
-      "p75_ms": 5.71818600000006
+      "hz": 182.5751372547788,
+      "mean_ms": 5.4771970326086965,
+      "p75_ms": 5.617970000000014
     },
     "src/lib/support-fields/__bench__/build-data-row.bench.ts > buildDataRow > field-only plan, passthrough provider > 100,000 rows": {
-      "hz": 17.42303430350137,
-      "mean_ms": 57.39528388571431,
-      "p75_ms": 57.164822000000186
+      "hz": 17.40924969860871,
+      "mean_ms": 57.440729342857125,
+      "p75_ms": 57.50223700000015
     },
     "src/lib/support-fields/__bench__/build-data-row.bench.ts > buildDataRow > field-only plan, realistic provider > 1,000 rows": {
-      "hz": 1587.765226682524,
-      "mean_ms": 0.6298160352644828,
-      "p75_ms": 0.6254669999998441
+      "hz": 1646.1944868107769,
+      "mean_ms": 0.6074616383495067,
+      "p75_ms": 0.5991020000001299
     },
     "src/lib/support-fields/__bench__/build-data-row.bench.ts > buildDataRow > field-only plan, realistic provider > 10,000 rows": {
-      "hz": 154.2733910289596,
-      "mean_ms": 6.481999217948634,
-      "p75_ms": 6.663717000000361
+      "hz": 158.83324718019514,
+      "mean_ms": 6.295911074999981,
+      "p75_ms": 6.757846999999856
     },
     "src/lib/support-fields/__bench__/build-data-row.bench.ts > buildDataRow > field-only plan, realistic provider > 100,000 rows": {
-      "hz": 15.320487715885184,
-      "mean_ms": 65.27207348387095,
-      "p75_ms": 65.34421999999995
+      "hz": 15.684497925186232,
+      "mean_ms": 63.75722096875003,
+      "p75_ms": 63.94463900000028
     },
     "src/lib/support-fields/__bench__/build-data-row.bench.ts > buildDataRow > parameter-heavy plan, passthrough provider > 1,000 rows": {
-      "hz": 647.0255717246841,
-      "mean_ms": 1.5455339691357826,
-      "p75_ms": 1.4939070000000356
+      "hz": 703.1398195269263,
+      "mean_ms": 1.4221922471590382,
+      "p75_ms": 1.3843839999999545
     },
     "src/lib/support-fields/__bench__/build-data-row.bench.ts > buildDataRow > parameter-heavy plan, passthrough provider > 10,000 rows": {
-      "hz": 65.304298419556,
-      "mean_ms": 15.312927696969796,
-      "p75_ms": 15.279936999999336
+      "hz": 69.94396271561578,
+      "mean_ms": 14.297159628571327,
+      "p75_ms": 14.384658999999374
     },
     "src/lib/support-fields/__bench__/build-data-row.bench.ts > buildDataRow > parameter-heavy plan, passthrough provider > 100,000 rows": {
-      "hz": 6.615696846250663,
-      "mean_ms": 151.15565650000022,
-      "p75_ms": 150.70979400000033
+      "hz": 6.9981161036458355,
+      "mean_ms": 142.89560007142867,
+      "p75_ms": 143.02475799999957
     },
     "src/lib/support-fields/__bench__/build-data-row.bench.ts > buildDataRow > parameter-heavy plan, realistic provider > 1,000 rows": {
-      "hz": 618.2769203409899,
-      "mean_ms": 1.617398235484002,
-      "p75_ms": 1.610473999999158
+      "hz": 636.3969783783458,
+      "mean_ms": 1.571346241379367,
+      "p75_ms": 1.5481110000000626
     },
     "src/lib/support-fields/__bench__/build-data-row.bench.ts > buildDataRow > parameter-heavy plan, realistic provider > 10,000 rows": {
-      "hz": 59.391043556244966,
-      "mean_ms": 16.83755563333337,
-      "p75_ms": 16.894640000000436
+      "hz": 60.305929255620796,
+      "mean_ms": 16.58211741935467,
+      "p75_ms": 16.666164000000208
     },
     "src/lib/support-fields/__bench__/build-data-row.bench.ts > buildDataRow > parameter-heavy plan, realistic provider > 100,000 rows": {
-      "hz": 5.949916715867231,
-      "mean_ms": 168.06957941666664,
-      "p75_ms": 168.47525700000006
+      "hz": 5.813205457824257,
+      "mean_ms": 172.02213258333313,
+      "p75_ms": 171.6450160000004
     },
     "src/lib/support-fields/__bench__/build-processing-plan.bench.ts > buildProcessingPlan > fields only > 2 fields": {
-      "hz": 4212383.789381836,
-      "mean_ms": 0.00023739527308045912,
-      "p75_ms": 0.00022100000001046283
+      "hz": 4039111.0306136897,
+      "mean_ms": 0.00024757923028624027,
+      "p75_ms": 0.00023000000010142685
     },
     "src/lib/support-fields/__bench__/build-processing-plan.bench.ts > buildProcessingPlan > fields only > 10 fields": {
-      "hz": 1771071.280944757,
-      "mean_ms": 0.0005646300127833149,
-      "p75_ms": 0.0005409999998846615
+      "hz": 1694561.4984103825,
+      "mean_ms": 0.0005901231681104935,
+      "p75_ms": 0.0005509999996320403
     },
     "src/lib/support-fields/__bench__/build-processing-plan.bench.ts > buildProcessingPlan > fields only > 50 fields": {
-      "hz": 421606.7807132034,
-      "mean_ms": 0.0023718783609418433,
-      "p75_ms": 0.002243999999791413
+      "hz": 384421.8769852252,
+      "mean_ms": 0.0026013087700480528,
+      "p75_ms": 0.002484000000094966
+    },
+    "src/lib/support-fields/__bench__/build-processing-plan.bench.ts > buildProcessingPlan > with parameter groups > 6 fields": {
+      "hz": 1926544.3585838822,
+      "mean_ms": 0.0005190640929415484,
+      "p75_ms": 0.0004800000006071059
     },
     "src/lib/support-fields/__bench__/build-processing-plan.bench.ts > buildProcessingPlan > with parameter groups > 10 fields": {
-      "hz": 1393814.494679489,
-      "mean_ms": 0.0007174555895474114,
-      "p75_ms": 0.0006120000007285853
+      "hz": 1603791.8877339405,
+      "mean_ms": 0.0006235222959089403,
+      "p75_ms": 0.0006009999997331761
     },
     "src/lib/support-fields/__bench__/build-processing-plan.bench.ts > buildProcessingPlan > with parameter groups > 50 fields": {
-      "hz": 343137.89637240383,
-      "mean_ms": 0.0029142802662481524,
-      "p75_ms": 0.0028360000005704933
+      "hz": 325527.1432124904,
+      "mean_ms": 0.0030719404536636197,
+      "p75_ms": 0.003004999999575375
     }
   }
 }
