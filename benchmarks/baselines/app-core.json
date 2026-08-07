@@ -1,11 +1,36 @@
 {
-    "_meta": {
-        "capturedAt": "2026-04-23T00:00:00.000Z",
-        "runnerImage": "ubuntu22-bootstrap-ci",
-        "nodeVersion": "v22.x",
-        "vitestVersion": "bootstrap",
-        "commitSha": "bootstrap",
-        "bootstrap": true
+  "_meta": {
+    "capturedAt": "2026-08-07T05:04:03.708Z",
+    "runnerImage": "ubuntu22-20260804.255.1",
+    "nodeVersion": "v22.23.2",
+    "vitestVersion": "3.2.7",
+    "commitSha": "e31912ae1e74b341f0cb8d12102892ae6be6f66a"
+  },
+  "benchmarks": {
+    "src/features/settings-pane/search/__bench__/dataset-search.bench.ts > dataset search at scale (1,000 fields × 7 flags) > field-name match (mid-list: \"field_500\")": {
+      "hz": 1997.2383331892556,
+      "mean_ms": 0.5006913713713712,
+      "p75_ms": 0.49303200000008474
     },
-    "benchmarks": {}
+    "src/features/settings-pane/search/__bench__/dataset-search.bench.ts > dataset search at scale (1,000 fields × 7 flags) > no-match query (\"zzz_nomatch_zzz\")": {
+      "hz": 2273.5758053205373,
+      "mean_ms": 0.4398357854001777,
+      "p75_ms": 0.42523099999993974
+    },
+    "src/features/settings-pane/search/__bench__/dataset-search.bench.ts > dataset search at scale (1,000 fields × 7 flags) > heading match (\"Text_Settings_Dataset\")": {
+      "hz": 5559.6900139235395,
+      "mean_ms": 0.17986614316546906,
+      "p75_ms": 0.16572899999982837
+    },
+    "src/features/settings-pane/search/__bench__/dataset-search.bench.ts > dataset search at scale (1,000 fields × 7 flags) > flag-label match (\"highlight\")": {
+      "hz": 1416.672221127408,
+      "mean_ms": 0.7058795853314507,
+      "p75_ms": 0.6427280000002611
+    },
+    "src/features/settings-pane/search/__bench__/dataset-search.bench.ts > dataset search at scale (1,000 fields × 7 flags) > field-name single-character query (\"f\")": {
+      "hz": 3084.258861854264,
+      "mean_ms": 0.3242270006476686,
+      "p75_ms": 0.2916990000003352
+    }
+  }
 }
