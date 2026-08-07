@@ -82,7 +82,7 @@
       "mean_ms": 0.0023718783609418433,
       "p75_ms": 0.002243999999791413
     },
-    "src/lib/support-fields/__bench__/build-processing-plan.bench.ts > buildProcessingPlan > with parameter groups > 2 fields": {
+    "src/lib/support-fields/__bench__/build-processing-plan.bench.ts > buildProcessingPlan > with parameter groups > 6 fields": {
       "hz": 4500915.8739816,
       "mean_ms": 0.00022217700308079302,
       "p75_ms": 0.00021100000049045775
