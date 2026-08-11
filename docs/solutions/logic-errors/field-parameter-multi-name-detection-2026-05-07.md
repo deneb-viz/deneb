@@ -142,6 +142,7 @@ The per-field `Set<string>` dedup is a small defensive guard. Power BI should no
 
 ## Related Issues
 
+- [docs/solutions/logic-errors/dynamic-format-string-field-parameter-consolidation-2026-08-11.md](dynamic-format-string-field-parameter-consolidation-2026-08-11.md) — a later, different failure mode in the same consolidation path: pre-resolved format strings bypassed per-row provider resolution, dropping `__format`/`__formatted` when Power BI strips static formats model-wide (dynamic-format-string calculation items).
 - [docs/solutions/best-practices/type-widening-requires-call-site-audit-2026-04-16.md](../best-practices/type-widening-requires-call-site-audit-2026-04-16.md) — the symmetric inverse: that doc covers write-side cardinality bugs (singular value written into a plural container, all-but-one entries lost). Together the two docs define both directions of the cardinality-of-one hazard class. The earlier doc's prevention scope is currently framed for write sites only; this fix demonstrates the same hazard on read sites and would broaden the pattern.
 - [docs/solutions/best-practices/extract-shared-semantics-to-avoid-dual-maintenance-2026-04-24.md](../best-practices/extract-shared-semantics-to-avoid-dual-maintenance-2026-04-24.md) — same subsystem (support-field flag resolution), different bug class. Useful cross-reference when reasoning about parallel field-parameter logic across detection and plan-building.
 - Plan: `docs/plans/2026-05-07-001-fix-multi-parameter-per-field-detection-plan.md`
