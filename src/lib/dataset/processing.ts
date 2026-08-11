@@ -58,7 +58,8 @@ import {
 } from '../interactivity';
 import {
     buildFieldSourceMappings,
-    createPbiSupportFieldProvider
+    createPbiSupportFieldProvider,
+    getStaticParameterFormatStrings
 } from './support-field-provider';
 import { isLegacySpec } from './support-field-migration';
 import {
@@ -376,11 +377,10 @@ export const getMappedDataset = (
                         componentFieldIndices: group.componentFieldIndices,
                         componentNames: group.componentNames,
                         componentRoles: group.componentRoles,
-                        formatStrings: group.componentFieldIndices.map(
-                            (idx) => {
-                                const col = planSourceColumns[idx];
-                                return col?.column?.format ?? '';
-                            }
+                        formatStrings: getStaticParameterFormatStrings(
+                            group.componentFieldIndices.map(
+                                (idx) => planSourceColumns[idx]?.column?.format
+                            )
                         )
                     }));
                 }
@@ -411,7 +411,9 @@ export const getMappedDataset = (
                                     ? 'aggregation'
                                     : 'grouping'
                             ],
-                            formatStrings: [col.column.format ?? '']
+                            formatStrings: getStaticParameterFormatStrings([
+                                col.column.format
+                            ])
                         });
                     }
                 }

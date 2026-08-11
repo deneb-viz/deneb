@@ -117,6 +117,25 @@ export const createPbiSupportFieldProvider = (
 };
 
 /**
+ * Pre-resolve a parameter group's format strings from static column metadata
+ * — but only when EVERY component has one. A measure with a dynamic format
+ * string carries no static `column.format` (and when any dynamic-format
+ * calculation item exists in the model, Power BI strips static formats from
+ * ALL measure columns, delivering them per-row via
+ * `objects[rowIndex].general.formatString` instead). Returning undefined
+ * makes `buildDataRow` fall back to per-row provider resolution, which
+ * handles both channels. When every component does have a static format the
+ * pre-resolved array is equivalent (the provider checks `source.format`
+ * first) and skips the per-row lookup.
+ */
+export const getStaticParameterFormatStrings = (
+    componentFormats: (string | undefined)[]
+): string[] | undefined =>
+    componentFormats.every((format) => typeof format === 'string')
+        ? (componentFormats as string[])
+        : undefined;
+
+/**
  * Build the per-field DataView source mappings the provider indexes by, one per
  * source column (categories/values) in planSourceColumns order.
  *
