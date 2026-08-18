@@ -25,6 +25,14 @@ describe('useContainerSignalOwner wiring', () => {
         expect(hookSource).toMatch(/refreshContainerDimensions\(/);
     });
 
+    it('post-embed reconcile seeds the scroll fields (scrollWidth/Height are 0 at compile time and must not wait for the first scroll)', () => {
+        // Trigger 2 must feed BOTH channels: geometry (re-embed if the box
+        // drifted) and the six-field signal write (content extent).
+        expect(hookSource).toMatch(
+            /if \(!isActive \|\| !viewReady\) return;\s*refreshGeometry\(\);\s*refreshScrollSignal\(\);/
+        );
+    });
+
     it('registers the debounced ResizeObserver on the measured container', () => {
         expect(hookSource).toMatch(/observeContainerResize\(/);
     });
