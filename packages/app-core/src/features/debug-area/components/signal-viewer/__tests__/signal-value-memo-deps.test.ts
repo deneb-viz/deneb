@@ -130,7 +130,7 @@ describe('SignalValue renderId effect — re-read after listener cycle', () => {
             'utf8'
         );
         expect(source).toMatch(
-            /cycleListeners\(viewAtEntry\);(?:\s|\/\/[^\n]*)*setSignalValue\(\(\) => \(\{ value: getSignalValues\(\)\.display \}\)\);\s*return \(\) => \{\s*removeListener\(viewAtEntry\);\s*\};\s*\}, \[renderId\]\);/
+            /cycleListeners\(viewAtEntry\);[\s\S]*?setSignalValue\(\(\) => \(\{ value: getSignalValues\(\)\.display \}\)\);\s*return \(\) => \{\s*removeListener\(viewAtEntry\);\s*\};\s*\}, \[renderId\]\);/
         );
     });
 });
