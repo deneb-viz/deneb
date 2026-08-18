@@ -56,4 +56,11 @@ export interface DataTableViewerProps<T> {
     onChangePage?: (page: number) => void;
     /** Initial (1-based) page to display. */
     paginationDefaultPage?: number;
+    /**
+     * Stretch/compress columns to fill the container (Fluent's
+     * `autoFitColumns`). Off by default so worker-measured widths are
+     * honoured and overflow scrolls horizontally; the signal viewer opts in
+     * so its value column fills the remaining width (the old `grow` weights).
+     */
+    autoFitColumns?: boolean;
 }

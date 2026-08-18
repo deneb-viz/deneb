@@ -47,6 +47,9 @@ export const SignalViewer = ({ renderId }: SignalViewerProps) => {
                             columns={columns}
                             data={values}
                             defaultSortFieldId={undefined}
+                            // Value column fills the remaining width instead
+                            // of clipping at its fixed ideal width.
+                            autoFitColumns
                         />
                     </div>
                 </div>
@@ -84,9 +87,9 @@ const getTableColumns = (
             id: 'key',
             selector: (row) => row.key,
             sortable: true,
-            // Fixed ideal widths in a ~2:5 ratio replace the previous
-            // `grow` weights (auto-fit is disabled grid-wide, so these are
-            // actual pixel sizes, user-resizable).
+            // Ideal widths in a ~2:5 ratio replace the previous `grow`
+            // weights; with `autoFitColumns` on, the last (value) column
+            // absorbs any remaining container width.
             width: SIGNAL_KEY_COLUMN_WIDTH,
             cell: (row) => (
                 <DataTableCell

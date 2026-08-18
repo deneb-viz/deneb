@@ -117,7 +117,8 @@ export const DataTableViewer = ({
     defaultSortAsc = false,
     onSort,
     onChangePage,
-    paginationDefaultPage
+    paginationDefaultPage,
+    autoFitColumns = false
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
 }: DataTableViewerProps<any>) => {
     const { debugTableRowsPerPage } = useDenebState((state) => ({
@@ -288,14 +289,21 @@ export const DataTableViewer = ({
                                 sortState={sortState}
                                 onSortChange={handleSortChange}
                                 resizableColumns
-                                // Honour the worker-measured widths instead of
-                                // compressing columns to fit the container —
-                                // cumulative overflow scrolls horizontally in
-                                // the enclosure, matching the previous rdt
-                                // behaviour.
-                                resizableColumnsOptions={{
-                                    autoFitColumns: false
-                                }}
+                                // Default: honour the worker-measured widths
+                                // instead of compressing columns to fit the
+                                // container — cumulative overflow scrolls
+                                // horizontally in the enclosure, matching the
+                                // previous rdt behaviour. Viewers with a
+                                // "fill the rest" column opt in.
+                                resizableColumnsOptions={{ autoFitColumns }}
+                                // Autofit sizes columns to the measured grid
+                                // width, but our rows carry a left padding —
+                                // without subtracting it the fitted row
+                                // overflows by exactly that much and shows a
+                                // needless horizontal scrollbar.
+                                containerWidthOffset={
+                                    -DATA_TABLE_ROW_PADDING_LEFT
+                                }
                                 columnSizingOptions={sizingOptions}
                                 // 24px rows — matches DATA_TABLE_ROW_HEIGHT
                                 // and rdt's `dense` chrome; Fluent's default
