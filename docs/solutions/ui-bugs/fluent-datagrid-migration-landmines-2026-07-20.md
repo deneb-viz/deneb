@@ -59,11 +59,11 @@ All were diagnosed by reading the installed library source under
    When sorting is handled externally (the grid only ever receives one page of rows, so its
    internal compare must not be used), the no-op must still declare two parameters:
 
-   ```ts
-   compare: column.sortable
-       ? (_a: unknown, _b: unknown) => 0 // arity 2 → header sortable
-       : () => 0 // arity 0 → suppresses the sort affordance entirely
-   ```
+    ```ts
+    compare: column.sortable
+        ? (_a: unknown, _b: unknown) => 0 // arity 2 → header sortable
+        : () => 0; // arity 0 → suppresses the sort affordance entirely
+    ```
 
 2. **The `extra-small` size variant drops the built-in row border.** `medium` and `small`
    `TableRow` variants carry `borderBottom`; `extra-small` sets only `fontSize`. Any divider
@@ -77,6 +77,11 @@ All were diagnosed by reading the installed library source under
    `resizableColumnsOptions.autoFitColumns` defaults to `true`, shrinking columns toward
    `minWidth` to fit the container. To honour pre-measured pixel widths with horizontal
    overflow (classic data-table behavior): `resizableColumnsOptions={{ autoFitColumns: false }}`.
+   Per-viewer exception (2026-08-19): a two-column "key / value" table that wants rdt's
+   `grow` fill opts back in via `DataTableViewer`'s `autoFitColumns` prop AND must pass
+   `containerWidthOffset={-DATA_TABLE_ROW_PADDING_LEFT}` or the row padding produces a
+   phantom horizontal scrollbar — see
+   `fluent-datagrid-fill-column-autofit-container-width-offset-2026-08-19.md`.
 
 ## Why This Works
 
