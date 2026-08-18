@@ -137,5 +137,16 @@ const getTokenPatterns = (
     {
         pattern: `(?<=_\\{)(${namePattern})(${alternation})?(?=\\}_)`,
         replacer: `${placeholder}$2`
+    },
+    // Bare single-quoted string literal within an expression, e.g. pluck(data('dataset'), 'Field'). The optional
+    // trailing backslash covers a literal nested inside another string (\'Field\'). Least specific, so applied last.
+    {
+        pattern: `(?<=')(${namePattern})(${alternation})?(?=\\\\?')`,
+        replacer: `${placeholder}$2`
+    },
+    // Bare double-quoted string literal within an expression, e.g. pluck(data("dataset"), "Field")
+    {
+        pattern: `(?<=")(${namePattern})(${alternation})?(?=\\\\?")`,
+        replacer: `${placeholder}$2`
     }
 ];

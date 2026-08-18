@@ -58,6 +58,8 @@ describe('getTokenPatternsLiteral', () => {
             `(?<=datum\\[')(\\${fieldName})(${getHighlightRegExpAlternation()})?(?='\\])`,
             `(?<=datum\\[")(\\${fieldName})(${getHighlightRegExpAlternation()})?(?="\\])`,
             `(?<=_\\{)(\\${fieldName})(${getHighlightRegExpAlternation()})?(?=\\}_)`,
+            `(?<=')(\\${fieldName})(${getHighlightRegExpAlternation()})?(?=\\\\?')`,
+            `(?<=")(\\${fieldName})(${getHighlightRegExpAlternation()})?(?=\\\\?")`,
             `^(\\${fieldName})(${getNumberFormatRegExpAlternation()})$`,
             `(?<='.*datum)(.\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?=.*')`,
             `(?<='.*datum\\[\\\\\\')(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?=\\\\\\'\\].*')`,
@@ -66,6 +68,8 @@ describe('getTokenPatternsLiteral', () => {
             `(?<=datum\\[')(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?='\\])`,
             `(?<=datum\\[")(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?="\\])`,
             `(?<=_\\{)(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?=\\}_)`,
+            `(?<=')(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?=\\\\?')`,
+            `(?<=")(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?=\\\\?")`,
             `^(\\${fieldName})(${getParameterRegExpAlternation()})$`,
             `(?<='.*datum)(.\\${fieldName})(${getParameterRegExpAlternation()})?(?=.*')`,
             `(?<='.*datum\\[\\\\\\')(\\${fieldName})(${getParameterRegExpAlternation()})?(?=\\\\\\'\\].*')`,
@@ -73,7 +77,9 @@ describe('getTokenPatternsLiteral', () => {
             `(?<=datum)(.\\${fieldName})(${getParameterRegExpAlternation()})?(?=)`,
             `(?<=datum\\[')(\\${fieldName})(${getParameterRegExpAlternation()})?(?='\\])`,
             `(?<=datum\\[")(\\${fieldName})(${getParameterRegExpAlternation()})?(?="\\])`,
-            `(?<=_\\{)(\\${fieldName})(${getParameterRegExpAlternation()})?(?=\\}_)`
+            `(?<=_\\{)(\\${fieldName})(${getParameterRegExpAlternation()})?(?=\\}_)`,
+            `(?<=')(\\${fieldName})(${getParameterRegExpAlternation()})?(?=\\\\?')`,
+            `(?<=")(\\${fieldName})(${getParameterRegExpAlternation()})?(?=\\\\?")`
         ];
         expect(result).toEqual(expectedPattern);
     });
@@ -132,6 +138,18 @@ it('should return an array with the expected replacement patterns', () => {
             replacer: `${placeholder}$2`
         },
         {
+            pattern: `(?<=')(${getEscapedReplacerPattern(
+                fieldName
+            )})(${getHighlightRegExpAlternation()})?(?=\\\\?')`,
+            replacer: `${placeholder}$2`
+        },
+        {
+            pattern: `(?<=")(${getEscapedReplacerPattern(
+                fieldName
+            )})(${getHighlightRegExpAlternation()})?(?=\\\\?")`,
+            replacer: `${placeholder}$2`
+        },
+        {
             pattern: `^(${getEscapedReplacerPattern(
                 fieldName
             )})(${getNumberFormatRegExpAlternation()})$`,
@@ -180,6 +198,18 @@ it('should return an array with the expected replacement patterns', () => {
             replacer: `${placeholder}$2`
         },
         {
+            pattern: `(?<=')(${getEscapedReplacerPattern(
+                fieldName
+            )})(${getNumberFormatRegExpAlternation()})?(?=\\\\?')`,
+            replacer: `${placeholder}$2`
+        },
+        {
+            pattern: `(?<=")(${getEscapedReplacerPattern(
+                fieldName
+            )})(${getNumberFormatRegExpAlternation()})?(?=\\\\?")`,
+            replacer: `${placeholder}$2`
+        },
+        {
             pattern: `^(${getEscapedReplacerPattern(
                 fieldName
             )})(${getParameterRegExpAlternation()})$`,
@@ -225,6 +255,18 @@ it('should return an array with the expected replacement patterns', () => {
             pattern: `(?<=_\\{)(${getEscapedReplacerPattern(
                 fieldName
             )})(${getParameterRegExpAlternation()})?(?=\\}_)`,
+            replacer: `${placeholder}$2`
+        },
+        {
+            pattern: `(?<=')(${getEscapedReplacerPattern(
+                fieldName
+            )})(${getParameterRegExpAlternation()})?(?=\\\\?')`,
+            replacer: `${placeholder}$2`
+        },
+        {
+            pattern: `(?<=")(${getEscapedReplacerPattern(
+                fieldName
+            )})(${getParameterRegExpAlternation()})?(?=\\\\?")`,
             replacer: `${placeholder}$2`
         }
     ];

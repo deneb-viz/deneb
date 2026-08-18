@@ -55,4 +55,89 @@ describe('getTokenizedSpec', () => {
         const result = getTokenizedSpec(options);
         expect(uint8ArrayToString(result.spec)).toEqual(expectedSpec);
     });
+    // Issue #521: field names as bare string literals inside expressions (not datum accessors) were tracked but never
+    // tokenized, so exported templates kept the original field name in e.g. pluck(data('dataset'), 'Field').
+    it('should tokenize field names used as quoted string literals within expressions', () => {
+        const spec = JSON.stringify(
+            {
+                params: [
+                    {
+                        name: 'single',
+                        expr: "pluck(data('dataset'), 'CategoryName')[1]"
+                    },
+                    {
+                        name: 'double',
+                        expr: 'pluck(data("dataset"), "CategoryName")[1]'
+                    },
+                    {
+                        name: 'nested',
+                        expr: "pbiCrossFilterApply(event, 'pluck(data(\\'dataset\\'), \\'CategoryName\\')')"
+                    },
+                    {
+                        name: 'highlight',
+                        expr: "pluck(data('dataset'), 'CategoryName__highlight')[1]"
+                    },
+                    {
+                        name: 'not-a-match',
+                        expr: "'Sales CategoryName' + 'CategoryName Total'"
+                    }
+                ]
+            },
+            null,
+            2
+        );
+        const trackedFields = {
+            'Product.CategoryName': {
+                placeholder: '__dataset.0__',
+                paths: [
+                    ['params', 0, 'expr'],
+                    ['params', 1, 'expr'],
+                    ['params', 2, 'expr'],
+                    ['params', 3, 'expr'],
+                    ['params', 4, 'expr']
+                ],
+                isInDataset: true,
+                isInSpecification: true,
+                isMappingRequired: false,
+                templateMetadata: {
+                    key: 'Product.CategoryName',
+                    name: 'CategoryName',
+                    namePlaceholder: 'CategoryName',
+                    description: '',
+                    kind: 'column',
+                    type: 'text'
+                },
+                templateMetadataOriginal: {
+                    key: 'Product.CategoryName',
+                    name: 'CategoryName',
+                    namePlaceholder: 'CategoryName',
+                    description: '',
+                    kind: 'column',
+                    type: 'text'
+                }
+            }
+        } as IDenebTokenizationRequestPayload['trackedFields'];
+        const result = getTokenizedSpec({
+            spec: stringToUint8Array(spec),
+            trackedFields,
+            supplementaryReplacers: getTokenPatternsReplacement(),
+            isRemap: false
+        });
+        const params = JSON.parse(uint8ArrayToString(result.spec)).params;
+        expect(params[0].expr).toBe(
+            "pluck(data('dataset'), '__dataset.0__')[1]"
+        );
+        expect(params[1].expr).toBe(
+            'pluck(data("dataset"), "__dataset.0__")[1]'
+        );
+        expect(params[2].expr).toBe(
+            "pbiCrossFilterApply(event, 'pluck(data(\\'dataset\\'), \\'__dataset.0__\\')')"
+        );
+        expect(params[3].expr).toBe(
+            "pluck(data('dataset'), '__dataset.0____highlight')[1]"
+        );
+        expect(params[4].expr).toBe(
+            "'Sales CategoryName' + 'CategoryName Total'"
+        );
+    });
 });
