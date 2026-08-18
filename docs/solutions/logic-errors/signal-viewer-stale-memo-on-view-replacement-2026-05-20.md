@@ -6,26 +6,26 @@ module: app-core/features/debug-area/signal-viewer
 problem_type: logic_error
 component: tooling
 symptoms:
-  - Signal Viewer table displays the previous spec's signal value after re-running a spec with a changed `params[].value`
-  - "Switching to the Data tab and back forces the cell to refresh (component unmount/remount makes `useState`'s lazy initializer re-read from the new view)"
-  - "No listener event fires for signals whose new value was baked in at View construction, so the cell stays at the prior view's value indefinitely"
-  - "No console errors, no listener exceptions, no missing renders — the cell silently caches a stale display string"
+    - Signal Viewer table displays the previous spec's signal value after re-running a spec with a changed `params[].value`
+    - "Switching to the Data tab and back forces the cell to refresh (component unmount/remount makes `useState`'s lazy initializer re-read from the new view)"
+    - "No listener event fires for signals whose new value was baked in at View construction, so the cell stays at the prior view's value indefinitely"
+    - 'No console errors, no listener exceptions, no missing renders — the cell silently caches a stale display string'
 root_cause: logic_error
 resolution_type: code_fix
 severity: medium
 related_components:
-  - vega-react (VegaViewServices.getSignalByName)
-  - app-core/components/visual-viewer/components/vega-embed.tsx (renderId bump on handleEmbed)
-  - react-data-table-component (preserves row component instances across re-renders by key)
+    - vega-react (VegaViewServices.getSignalByName)
+    - app-core/components/visual-viewer/components/vega-embed.tsx (renderId bump on handleEmbed)
+    - react-data-table-component (preserves row component instances across re-renders by key)
 tags:
-  - react-usememo
-  - stale-state
-  - render-id
-  - vega-view
-  - signal-viewer
-  - debug-pane
-  - view-replacement
-  - missing-dependency
+    - react-usememo
+    - stale-state
+    - render-id
+    - vega-view
+    - signal-viewer
+    - debug-pane
+    - view-replacement
+    - missing-dependency
 ---
 
 # Signal Viewer shows stale signal values after spec re-run due to incomplete useMemo deps
@@ -137,10 +137,35 @@ Cover at minimum: post-fix dep array has 3 slots; `renderId` change alone recomp
 
 This is the `useMemo` corollary of the `useEffect` rule in [`docs/solutions/best-practices/lifecycle-owns-effect-rebind-identity-token-2026-04-28.md`](../best-practices/lifecycle-owns-effect-rebind-identity-token-2026-04-28.md): `renderId` is owned by `handleEmbed` and consumed by every hook keyed to the current `View`, regardless of which hook variant (`useEffect`, `useMemo`, `useCallback`) the consumer happens to be.
 
+## Addendum (2026-08-19): same-commit write race — re-read after re-attaching
+
+Recomputing the memo on `renderId` was not sufficient on its own. `denebContainer` showed the
+0-seed (`scrollHeight: 0` beside a non-zero `height`) after every recompile, and remounting the
+cell showed the correct value — so the _view_ was right and the _cell_ was stale.
+
+Mechanism: `handleEmbed` batches `setViewReady(true)` + `generateRenderId()` into one commit.
+In that commit `SignalValue` renders (memo reads the fresh view's 0-seed), then passive effects
+run in tree order — `VisualViewer`'s container-signal owner effect writes the seeded signal
+first, and Vega dispatches signal listeners **synchronously** inside `runAsync` (evaluate runs
+to its first `await`); only afterwards does `SignalValue`'s `renderId` effect attach the
+new-view listener. No later event, no dep change → stale until remount.
+
+Fix (`signal-value.tsx`, `renderId` effect): after `cycleListeners(viewAtEntry)`, force a re-read
+with a fresh-reference state write:
+
+```ts
+setSignalValue(() => ({ value: getSignalValues().display }));
+```
+
+Rule: an effect that re-attaches a listener to a replaced source must also re-read the current
+value — anything written by earlier-in-tree effects in the same commit is already gone as an
+event. Canary: `signal-value-memo-deps.test.ts` ("re-read after listener cycle").
+
 ## Related Issues
 
 - [`docs/solutions/best-practices/lifecycle-owns-effect-rebind-identity-token-2026-04-28.md`](../best-practices/lifecycle-owns-effect-rebind-identity-token-2026-04-28.md) — establishes `renderId` as the single-owner identity token for `useEffect` rebinding on Vega `View` replacement. This doc extends the same rule to `useMemo` consumers.
 - [`docs/solutions/best-practices/dedup-synthetic-identity-token-rebind-trigger-2026-04-28.md`](../best-practices/dedup-synthetic-identity-token-rebind-trigger-2026-04-28.md) — companion doc on the write side of the same token; covers dedup of `renderId` bumps.
 - [`docs/solutions/best-practices/singleton-worker-addEventListener-ownership-filter-2026-04-28.md`](../best-practices/singleton-worker-addEventListener-ownership-filter-2026-04-28.md) — same family ("closure captured across lifetimes leaks stale state"), different mechanism (worker handler ownership).
 - [`docs/solutions/ui-bugs/viewer-bounce-on-editor-exit-2026-05-04.md`](../ui-bugs/viewer-bounce-on-editor-exit-2026-05-04.md) and [`docs/solutions/ui-bugs/freeze-on-viewer-editor-transition-2026-05-01.md`](../ui-bugs/freeze-on-viewer-editor-transition-2026-05-01.md) — touch the Vega `View` replacement boundary from the mount/teardown ordering angle (different symptom, same boundary).
+- [`docs/solutions/logic-errors/deneb-container-scroll-extents-zero-until-first-scroll-2026-08-19.md`](./deneb-container-scroll-extents-zero-until-first-scroll-2026-08-19.md) — the owner-side seed whose same-commit write this addendum's race missed.
 - [`docs/solutions/best-practices/local-green-is-not-ci-or-production-green-2026-07-13.md`](../best-practices/local-green-is-not-ci-or-production-green-2026-07-13.md) — the canonical node-env-vitest reference; the pure dep-array characterization approach used here (no `@testing-library/react`) is written up there as the house testing convention.

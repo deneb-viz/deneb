@@ -59,8 +59,10 @@ const buildPostFixDeps = (
  * the regression — a `renderId`-only change must NOT recompute under this
  * shape.
  */
-const buildPreFixDeps = (getSignalValues: () => unknown, signalValue: unknown) =>
-    [getSignalValues, signalValue] as const;
+const buildPreFixDeps = (
+    getSignalValues: () => unknown,
+    signalValue: unknown
+) => [getSignalValues, signalValue] as const;
 
 describe('SignalValue currentValues memo — dep-array characterization', () => {
     it('recomputes when renderId changes (view replacement on re-run — the bug case)', () => {
@@ -107,5 +109,28 @@ describe('SignalValue currentValues memo — dep-array characterization', () => 
         const prev = buildPreFixDeps(fn, 5);
         const next = buildPreFixDeps(fn, 5);
         expect(shouldMemoRecompute(prev, next)).toBe(false);
+    });
+});
+
+/**
+ * Structural canary for the renderId effect. Re-attaching the listener is not
+ * enough: the owner hook seeds `denebContainer` in the SAME commit's effect
+ * phase, and VisualViewer's effects run before the debug pane's in tree order,
+ * so the write (and Vega's synchronous listener dispatch inside `runAsync`)
+ * completes before the new-view listener is attached. The effect must
+ * therefore also re-read the value with a fresh-reference state write so the
+ * memo recomputes against the current view.
+ */
+describe('SignalValue renderId effect — re-read after listener cycle', () => {
+    it('re-reads the signal value (fresh object) after cycling listeners on renderId change', async () => {
+        const { readFileSync } = await import('node:fs');
+        const { resolve } = await import('node:path');
+        const source = readFileSync(
+            resolve(__dirname, '..', 'signal-value.tsx'),
+            'utf8'
+        );
+        expect(source).toMatch(
+            /cycleListeners\(viewAtEntry\);(?:\s|\/\/[^\n]*)*setSignalValue\(\(\) => \(\{ value: getSignalValues\(\)\.display \}\)\);\s*return \(\) => \{\s*removeListener\(viewAtEntry\);\s*\};\s*\}, \[renderId\]\);/
+        );
     });
 });

@@ -87,6 +87,12 @@ export const useContainerSignalOwner = ({
     const refreshContainerDimensions = useDenebState(
         (state) => state.compilation.refreshContainerDimensions
     );
+    // Per-view token: bumped in `handleEmbed` for EVERY fresh Vega view.
+    // `viewReady` alone is not enough — it only toggles when the spec
+    // deep-changes, but `useVegaEmbed` also re-embeds on options-only
+    // changes (zoom/embedScaleFactor, logLevel, renderMode), birthing a
+    // view with the 0-seeded scroll fields and no viewReady transition.
+    const renderId = useDenebState((state) => state.interface.renderId);
 
     /**
      * Geometry channel: route box changes through the compilation
@@ -132,12 +138,20 @@ export const useContainerSignalOwner = ({
     // fields. The compile-time init only carries width/height (scroll
     // extents are 0), so without this write `scrollWidth`/`scrollHeight`
     // would stay 0 until the user's first scroll (1.x populated all six
-    // fields on view creation).
+    // fields on view creation). Keyed on `renderId` so it re-runs for
+    // every fresh view, including options-only re-embeds that never
+    // toggle `viewReady`.
     useEffect(() => {
         if (!isActive || !viewReady) return;
         refreshGeometry();
         refreshScrollSignal();
-    }, [isActive, viewReady, refreshGeometry, refreshScrollSignal]);
+    }, [
+        isActive,
+        viewReady,
+        renderId,
+        refreshGeometry,
+        refreshScrollSignal
+    ]);
 
     // Trigger 3: throttled scroll → signal write (gated on viewReady —
     // before the view exists there is no signal to update).
