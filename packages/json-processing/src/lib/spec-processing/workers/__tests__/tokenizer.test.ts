@@ -80,6 +80,10 @@ describe('getTokenizedSpec', () => {
                     {
                         name: 'not-a-match',
                         expr: "'Sales CategoryName' + 'CategoryName Total'"
+                    },
+                    {
+                        name: 'dataset-and-scale-names-excluded',
+                        expr: "pluck(data('CategoryName'), 'CategoryName') + scale( \"CategoryName\", datum.x) + indata('CategoryName', 'CategoryName', 1)"
                     }
                 ]
             },
@@ -94,7 +98,8 @@ describe('getTokenizedSpec', () => {
                     ['params', 1, 'expr'],
                     ['params', 2, 'expr'],
                     ['params', 3, 'expr'],
-                    ['params', 4, 'expr']
+                    ['params', 4, 'expr'],
+                    ['params', 5, 'expr']
                 ],
                 isInDataset: true,
                 isInSpecification: true,
@@ -138,6 +143,9 @@ describe('getTokenizedSpec', () => {
         );
         expect(params[4].expr).toBe(
             "'Sales CategoryName' + 'CategoryName Total'"
+        );
+        expect(params[5].expr).toBe(
+            "pluck(data('CategoryName'), '__dataset.0__') + scale( \"CategoryName\", datum.x) + indata('CategoryName', '__dataset.0__', 1)"
         );
     });
 });

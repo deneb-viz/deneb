@@ -90,6 +90,28 @@ export const getTokenPatternsReplacement = (
 };
 
 /**
+ * Vega expression functions whose first string argument is a dataset or scale name rather than a field. A quoted
+ * literal in that position must not be treated as a field reference, even if it happens to match a field name.
+ */
+const NON_FIELD_ARGUMENT_FUNCTIONS = [
+    'data',
+    'indata',
+    'modify',
+    'scale',
+    'invert',
+    'copy',
+    'domain',
+    'range',
+    'bandwidth'
+];
+
+/**
+ * Negative lookbehind that rejects a quoted literal immediately following an opening call of one of the
+ * {@linkcode NON_FIELD_ARGUMENT_FUNCTIONS}, e.g. `data('` or `scale( "`. Backslash-escaped quotes are permitted.
+ */
+export const NON_FIELD_ARGUMENT_EXCLUSION = `(?<!\\b(?:${NON_FIELD_ARGUMENT_FUNCTIONS.join('|')})\\(\\s*\\\\?['"])`;
+
+/**
  * Standard find and replace patterns for dataset field names. These are in order of precedence, with the most specific
  * patterns first.
  */
@@ -140,13 +162,15 @@ const getTokenPatterns = (
     },
     // Bare single-quoted string literal within an expression, e.g. pluck(data('dataset'), 'Field'). The optional
     // trailing backslash covers a literal nested inside another string (\'Field\'). Least specific, so applied last.
+    // Excludes the first argument of Vega functions that take a dataset or scale name, so that a dataset/scale
+    // sharing a name with a field (e.g. data('Field')) is left alone.
     {
-        pattern: `(?<=')(${namePattern})(${alternation})?(?=\\\\?')`,
+        pattern: `${NON_FIELD_ARGUMENT_EXCLUSION}(?<=')(${namePattern})(${alternation})?(?=\\\\?')`,
         replacer: `${placeholder}$2`
     },
     // Bare double-quoted string literal within an expression, e.g. pluck(data("dataset"), "Field")
     {
-        pattern: `(?<=")(${namePattern})(${alternation})?(?=\\\\?")`,
+        pattern: `${NON_FIELD_ARGUMENT_EXCLUSION}(?<=")(${namePattern})(${alternation})?(?=\\\\?")`,
         replacer: `${placeholder}$2`
     }
 ];

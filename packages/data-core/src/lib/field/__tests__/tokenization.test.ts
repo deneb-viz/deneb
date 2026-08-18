@@ -1,6 +1,7 @@
 import { getHighlightRegExpAlternation } from '../highlight';
 import {
     getEscapedReplacerPattern,
+    NON_FIELD_ARGUMENT_EXCLUSION,
     getNumberFormatRegExpAlternation,
     getParameterRegExpAlternation,
     getPlaceholderKey,
@@ -58,8 +59,8 @@ describe('getTokenPatternsLiteral', () => {
             `(?<=datum\\[')(\\${fieldName})(${getHighlightRegExpAlternation()})?(?='\\])`,
             `(?<=datum\\[")(\\${fieldName})(${getHighlightRegExpAlternation()})?(?="\\])`,
             `(?<=_\\{)(\\${fieldName})(${getHighlightRegExpAlternation()})?(?=\\}_)`,
-            `(?<=')(\\${fieldName})(${getHighlightRegExpAlternation()})?(?=\\\\?')`,
-            `(?<=")(\\${fieldName})(${getHighlightRegExpAlternation()})?(?=\\\\?")`,
+            `${NON_FIELD_ARGUMENT_EXCLUSION}(?<=')(\\${fieldName})(${getHighlightRegExpAlternation()})?(?=\\\\?')`,
+            `${NON_FIELD_ARGUMENT_EXCLUSION}(?<=")(\\${fieldName})(${getHighlightRegExpAlternation()})?(?=\\\\?")`,
             `^(\\${fieldName})(${getNumberFormatRegExpAlternation()})$`,
             `(?<='.*datum)(.\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?=.*')`,
             `(?<='.*datum\\[\\\\\\')(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?=\\\\\\'\\].*')`,
@@ -68,8 +69,8 @@ describe('getTokenPatternsLiteral', () => {
             `(?<=datum\\[')(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?='\\])`,
             `(?<=datum\\[")(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?="\\])`,
             `(?<=_\\{)(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?=\\}_)`,
-            `(?<=')(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?=\\\\?')`,
-            `(?<=")(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?=\\\\?")`,
+            `${NON_FIELD_ARGUMENT_EXCLUSION}(?<=')(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?=\\\\?')`,
+            `${NON_FIELD_ARGUMENT_EXCLUSION}(?<=")(\\${fieldName})(${getNumberFormatRegExpAlternation()})?(?=\\\\?")`,
             `^(\\${fieldName})(${getParameterRegExpAlternation()})$`,
             `(?<='.*datum)(.\\${fieldName})(${getParameterRegExpAlternation()})?(?=.*')`,
             `(?<='.*datum\\[\\\\\\')(\\${fieldName})(${getParameterRegExpAlternation()})?(?=\\\\\\'\\].*')`,
@@ -78,8 +79,8 @@ describe('getTokenPatternsLiteral', () => {
             `(?<=datum\\[')(\\${fieldName})(${getParameterRegExpAlternation()})?(?='\\])`,
             `(?<=datum\\[")(\\${fieldName})(${getParameterRegExpAlternation()})?(?="\\])`,
             `(?<=_\\{)(\\${fieldName})(${getParameterRegExpAlternation()})?(?=\\}_)`,
-            `(?<=')(\\${fieldName})(${getParameterRegExpAlternation()})?(?=\\\\?')`,
-            `(?<=")(\\${fieldName})(${getParameterRegExpAlternation()})?(?=\\\\?")`
+            `${NON_FIELD_ARGUMENT_EXCLUSION}(?<=')(\\${fieldName})(${getParameterRegExpAlternation()})?(?=\\\\?')`,
+            `${NON_FIELD_ARGUMENT_EXCLUSION}(?<=")(\\${fieldName})(${getParameterRegExpAlternation()})?(?=\\\\?")`
         ];
         expect(result).toEqual(expectedPattern);
     });
@@ -138,13 +139,13 @@ it('should return an array with the expected replacement patterns', () => {
             replacer: `${placeholder}$2`
         },
         {
-            pattern: `(?<=')(${getEscapedReplacerPattern(
+            pattern: `${NON_FIELD_ARGUMENT_EXCLUSION}(?<=')(${getEscapedReplacerPattern(
                 fieldName
             )})(${getHighlightRegExpAlternation()})?(?=\\\\?')`,
             replacer: `${placeholder}$2`
         },
         {
-            pattern: `(?<=")(${getEscapedReplacerPattern(
+            pattern: `${NON_FIELD_ARGUMENT_EXCLUSION}(?<=")(${getEscapedReplacerPattern(
                 fieldName
             )})(${getHighlightRegExpAlternation()})?(?=\\\\?")`,
             replacer: `${placeholder}$2`
@@ -198,13 +199,13 @@ it('should return an array with the expected replacement patterns', () => {
             replacer: `${placeholder}$2`
         },
         {
-            pattern: `(?<=')(${getEscapedReplacerPattern(
+            pattern: `${NON_FIELD_ARGUMENT_EXCLUSION}(?<=')(${getEscapedReplacerPattern(
                 fieldName
             )})(${getNumberFormatRegExpAlternation()})?(?=\\\\?')`,
             replacer: `${placeholder}$2`
         },
         {
-            pattern: `(?<=")(${getEscapedReplacerPattern(
+            pattern: `${NON_FIELD_ARGUMENT_EXCLUSION}(?<=")(${getEscapedReplacerPattern(
                 fieldName
             )})(${getNumberFormatRegExpAlternation()})?(?=\\\\?")`,
             replacer: `${placeholder}$2`
@@ -258,13 +259,13 @@ it('should return an array with the expected replacement patterns', () => {
             replacer: `${placeholder}$2`
         },
         {
-            pattern: `(?<=')(${getEscapedReplacerPattern(
+            pattern: `${NON_FIELD_ARGUMENT_EXCLUSION}(?<=')(${getEscapedReplacerPattern(
                 fieldName
             )})(${getParameterRegExpAlternation()})?(?=\\\\?')`,
             replacer: `${placeholder}$2`
         },
         {
-            pattern: `(?<=")(${getEscapedReplacerPattern(
+            pattern: `${NON_FIELD_ARGUMENT_EXCLUSION}(?<=")(${getEscapedReplacerPattern(
                 fieldName
             )})(${getParameterRegExpAlternation()})?(?=\\\\?")`,
             replacer: `${placeholder}$2`
