@@ -73,8 +73,9 @@ export type UseContainerSignalOwnerOptions = {
  *  - Post-embed reconcile on `viewReady` — a view is born from the
  *    compiled spec's init dims; if the container differed at embed time
  *    and never changes again, the observer has nothing to see → geometry
- *    channel. Terminates: the re-embedded view's init equals the measured
- *    box, so the next reconcile is a no-op.
+ *    channel; ALSO the scroll channel, to seed `scrollWidth/Height`
+ *    (the compile-time init has them at 0). Terminates: the re-embedded
+ *    view's init equals the measured box, so the next reconcile is a no-op.
  *  - Throttled scroll → scroll channel.
  */
 export const useContainerSignalOwner = ({
@@ -127,11 +128,16 @@ export const useContainerSignalOwner = ({
     }, [isActive, container, refreshGeometry]);
 
     // Trigger 2: post-embed reconcile (born-stale case) → re-embed if the
-    // box drifted between compile-seed and layout.
+    // box drifted between compile-seed and layout, AND seed the scroll
+    // fields. The compile-time init only carries width/height (scroll
+    // extents are 0), so without this write `scrollWidth`/`scrollHeight`
+    // would stay 0 until the user's first scroll (1.x populated all six
+    // fields on view creation).
     useEffect(() => {
         if (!isActive || !viewReady) return;
         refreshGeometry();
-    }, [isActive, viewReady, refreshGeometry]);
+        refreshScrollSignal();
+    }, [isActive, viewReady, refreshGeometry, refreshScrollSignal]);
 
     // Trigger 3: throttled scroll → signal write (gated on viewReady —
     // before the view exists there is no signal to update).
