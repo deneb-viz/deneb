@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { compile } from 'vega-lite';
 import { patchVegaLiteSpec } from '../patch-vega-lite';
 import { SIGNAL_DENEB_CONTAINER } from '../../signals';
 import type { TopLevelSpec } from 'vega-lite';
@@ -54,10 +55,13 @@ describe('patchVegaLiteSpec', () => {
         expect(patched.height).toBe('container');
     });
 
-    it('should inject autosize { type: fit, contains: padding } when injecting container sizing', () => {
-        // Vega-Lite's default autosize.contains is 'content', which places padding
-        // OUTSIDE the container-specified dimensions → SVG is 2×padding larger than
-        // container on each axis. 'padding' fits padding inside. See #480.
+    it('should not inject autosize when injecting container sizing', () => {
+        // Vega-Lite infers autosize from container sizing itself, with
+        // contains: 'padding' and the correct per-dimension fit type
+        // ('fit', 'fit-x' or 'fit-y'). Injecting a full { type: 'fit' } here
+        // broke specs with one explicit dimension: the explicit value was
+        // reinterpreted as TOTAL chart size (axes included) instead of inner
+        // plot size, shrinking the width/height signal. See #480 discussion.
         const spec: TopLevelSpec = {
             $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
             data: { name: 'table' },
@@ -67,10 +71,7 @@ describe('patchVegaLiteSpec', () => {
 
         const patched = patchVegaLiteSpec(spec);
 
-        expect((patched as any).autosize).toEqual({
-            type: 'fit',
-            contains: 'padding'
-        });
+        expect((patched as any).autosize).toBeUndefined();
     });
 
     it('should preserve user-specified autosize when injecting container sizing', () => {
@@ -88,13 +89,6 @@ describe('patchVegaLiteSpec', () => {
     });
 
     it('should preserve user-specified autosize string shorthand', () => {
-        // Vega-Lite accepts `autosize` as either an object or a string shorthand
-        // (e.g. 'fit', 'none', 'pad', 'fit-x', 'fit-y'). When a user provides the
-        // string form, Deneb still treats it as "user has set autosize" and does
-        // not override — preserving the user's intent. Users who want
-        // container-fit with padding containment must set the full object form
-        // themselves; Deneb's default injection only applies when autosize is
-        // completely absent.
         const spec: TopLevelSpec = {
             $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
             autosize: 'fit',
@@ -127,22 +121,30 @@ describe('patchVegaLiteSpec', () => {
         expect((patched as any).autosize).toBeUndefined();
     });
 
-    it('should inject autosize when only width is missing', () => {
-        // When only one dimension is missing, container sizing is still being injected
-        // (just for the missing axis), so autosize should still be injected.
+    it('should preserve an explicit width as inner plot width when only height is containerized', () => {
+        // Regression: a spec with explicit width (e.g. 380) and no height gets
+        // height: 'container' injected. Vega-Lite must infer autosize 'fit-y'
+        // so the explicit width remains the INNER plot width. Injecting
+        // { type: 'fit' } reinterpreted 380 as total chart width and shrank
+        // the width signal by the y-axis space (380 → ~300).
         const spec: TopLevelSpec = {
             $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
-            height: 300,
-            data: { name: 'table' },
+            width: 380,
+            data: { values: [{ c: 'a', v: 1 }] },
             mark: 'bar',
-            encoding: {}
+            encoding: {
+                y: { field: 'c', type: 'nominal' },
+                x: { field: 'v', type: 'quantitative' }
+            }
         } as TopLevelSpec;
 
         const patched = patchVegaLiteSpec(spec);
 
-        expect(patched.width).toBe('container');
-        expect((patched as any).autosize).toEqual({
-            type: 'fit',
+        expect(patched.width).toBe(380);
+        expect(patched.height).toBe('container');
+        expect((patched as any).autosize).toBeUndefined();
+        expect(compile(patched).spec.autosize).toEqual({
+            type: 'fit-y',
             contains: 'padding'
         });
     });
