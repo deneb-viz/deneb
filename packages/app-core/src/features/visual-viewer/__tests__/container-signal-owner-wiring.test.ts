@@ -33,6 +33,17 @@ describe('useContainerSignalOwner wiring', () => {
         );
     });
 
+    it('post-embed reconcile re-fires per fresh view (renderId), not only per viewReady toggle', () => {
+        // `useVegaEmbed` re-embeds on deep change of [spec, options] but the
+        // viewReady window only opens on spec change — an options-only
+        // re-embed (zoom, log level, render mode) births a view with the
+        // 0-seeded scroll fields and no viewReady toggle. `renderId` bumps
+        // on EVERY handleEmbed, so it must be in the reconcile's deps.
+        expect(hookSource).toMatch(
+            /refreshScrollSignal\(\);\s*\}, \[\s*isActive,\s*viewReady,\s*renderId,/
+        );
+    });
+
     it('registers the debounced ResizeObserver on the measured container', () => {
         expect(hookSource).toMatch(/observeContainerResize\(/);
     });

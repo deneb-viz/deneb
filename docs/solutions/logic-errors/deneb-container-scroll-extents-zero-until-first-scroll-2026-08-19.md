@@ -75,7 +75,22 @@ useEffect(() => {
 }, [isActive, viewReady, refreshGeometry, refreshScrollSignal]);
 ```
 
-Shipped in PR #746 (`0f0ab656`).
+Shipped in PR #746 (`0f0ab656`) — **incomplete on its own**. Zeros still appeared after some
+compiles and on first editor open, because `useVegaEmbed` re-embeds on deep change of
+`[spec, options]` while the `viewReady` window (`shouldOpenEmbedWindow`) only opens on a spec
+change. An options-only re-embed (zoom/`embedScaleFactor`, `logLevel`, `renderMode`) births a
+fresh view with the 0-seed and never toggles `viewReady`, so Trigger 2 never re-fired. Second
+part of the fix (PR #747): key the reconcile on `state.interface.renderId` as well — the token
+`handleEmbed` bumps for **every** fresh view:
+
+```ts
+const renderId = useDenebState((state) => state.interface.renderId);
+useEffect(() => {
+    if (!isActive || !viewReady) return;
+    refreshGeometry();
+    refreshScrollSignal();
+}, [isActive, viewReady, renderId, refreshGeometry, refreshScrollSignal]);
+```
 
 ## Why This Works
 
@@ -99,6 +114,11 @@ scroll channels and reasoned "the box matches the init by construction, so only 
   asserts Trigger 2's effect body calls `refreshGeometry()` **and** `refreshScrollSignal()`
   back-to-back. The workspace has no `@testing-library/react`, so hook wiring is locked by
   source-regex canaries plus behaviour tests on the pure helpers.
+- Diagnostic shortcut: a _measured_ write can never yield `scrollHeight: 0` alongside a non-zero
+  `height` (an element with a box has `scrollHeight >= clientHeight`). Seeing that shape means the
+  write was **skipped**, not miscomputed — go hunt the guard/trigger, not the measurement.
+- `viewReady` is the embed-window flag, not a per-view token; `renderId` is. Anything that must
+  run "once per fresh view" keys on `renderId`.
 - Rule for this hook: **a lifecycle trigger that establishes a new view must exercise every
   write channel**, not just the one whose field it "obviously" changes. Splitting channels for
   cost reasons must be paired with an explicit "who seeds the other channel's fields on view

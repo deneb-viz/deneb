@@ -162,6 +162,14 @@ export const SignalValue = ({
         const viewAtEntry = VegaViewServices.getView();
         logDebug(`Render ID has changed to ${renderId}. Updating...`);
         cycleListeners(viewAtEntry);
+        // Re-read after attaching: signal writes made in this same commit's
+        // effect phase by earlier-in-tree effects (the container-signal owner
+        // seeding `denebContainer` on a fresh view — Vega dispatches those
+        // listeners synchronously inside `runAsync`) happened BEFORE our
+        // listener existed, and this render's memo already captured the
+        // pre-write value. Fresh object reference so `useState` cannot
+        // bail out on an equal display string.
+        setSignalValue(() => ({ value: getSignalValues().display }));
         return () => {
             removeListener(viewAtEntry);
         };
