@@ -58,6 +58,105 @@ export const formatJsoncCompactRange = (
    - **Trailing** — the comment sits on the same line as the end of a preceding value/property: attached to that node, emitted after the node (and its comma, if any) on the same line.
    - Comments after the last token of the document are emitted at the end, each on its own line.
    - Block comments (`/* */`) spanning multiple lines have their inner lines re-indented to the current indent. Line comments (`//`) and single-line block comments are emitted verbatim.
+
+   **Examples** (`tabSize: 2`, `maxLineLength: 80`)
+
+   *No comments — everything that fits is packed:*
+
+   ```jsonc
+   // input
+   {
+     "mark": {
+       "type": "bar",
+       "tooltip": true
+     },
+     "encoding": {
+       "x": { "field": "Category", "type": "nominal" },
+       "y": { "field": "Sales", "type": "quantitative", "aggregate": "sum" }
+     }
+   }
+   ```
+
+   ```jsonc
+   // output
+   {
+     "mark": {"type": "bar", "tooltip": true},
+     "encoding": {
+       "x": {"field": "Category", "type": "nominal"},
+       "y": {"field": "Sales", "type": "quantitative", "aggregate": "sum"}
+     }
+   }
+   ```
+
+   `"encoding"` does not fit on one line, so it expands; its children are decided independently and each fits.
+
+   *Leading comment — stays above the value it precedes, and forces the container to expand:*
+
+   ```jsonc
+   // input
+   {"mark": {
+     // keep bars thin
+     "type": "bar", "width": 4}, "data": {"name": "dataset"}}
+   ```
+
+   ```jsonc
+   // output
+   {
+     "mark": {
+       // keep bars thin
+       "type": "bar",
+       "width": 4
+     },
+     "data": {"name": "dataset"}
+   }
+   ```
+
+   `"mark"` would fit within 80 characters but contains a comment, so it expands (and so does the root, which contains it). `"data"` has no comments and stays compact.
+
+   *Trailing comment — stays on the same line as the value it follows:*
+
+   ```jsonc
+   // input
+   {
+     "width": 400, // matches the report page
+     "height": 300
+   }
+   ```
+
+   ```jsonc
+   // output
+   {
+     "width": 400, // matches the report page
+     "height": 300
+   }
+   ```
+
+   *Comment after the last token, and a multi-line block comment re-indented:*
+
+   ```jsonc
+   // input
+   {
+     "transform": [
+       /* Filter out
+            nulls first */
+       {"filter": "datum.Sales != null"}
+     ]
+   }
+   // TODO: add a legend
+   ```
+
+   ```jsonc
+   // output
+   {
+     "transform": [
+       /* Filter out
+          nulls first */
+       {"filter": "datum.Sales != null"}
+     ]
+   }
+   // TODO: add a legend
+   ```
+
 3. `render(node, depth)`:
    - **Scalars** (`string`, `number`, `boolean`, `null`): the raw source slice `content.substr(node.offset, node.length)`. This preserves `1.0`, `1e3`, unicode escapes, and any other lexical detail `JSON.parse` would normalise away.
    - **Property**: `render(key) + ": " + render(value)`.
