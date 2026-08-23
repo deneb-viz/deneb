@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import stringify from 'json-stringify-pretty-compact';
-import { formatJsoncCompact } from '../jsonc-format';
+import { formatJsoncCompact, formatJsoncCompactRange } from '../jsonc-format';
 
 const OPTIONS = { tabSize: 2, maxLineLength: 80 };
 
@@ -237,5 +237,184 @@ describe('formatJsoncCompact — comments', () => {
             '// header\n{"mark": {\n  // keep bars thin\n  "type": "bar"}, "w": 1 // trailing\n}';
         const once = formatJsoncCompact(source, OPTIONS);
         expect(formatJsoncCompact(once, OPTIONS)).toBe(once);
+    });
+});
+
+describe('formatJsoncCompactRange', () => {
+    const DOC = [
+        '{',
+        '  "mark": "bar",',
+        '  "encoding": {',
+        '    "x": {',
+        '      "field": "Category",',
+        '      "type": "nominal"',
+        '    },',
+        '    "y": {"field": "Sales", "type": "quantitative"}',
+        '  },',
+        '  "data": [1,2,3]',
+        '}'
+    ].join('\n');
+
+    const apply = (
+        doc: string,
+        edit: { offset: number; length: number; content: string }
+    ) =>
+        doc.slice(0, edit.offset) +
+        edit.content +
+        doc.slice(edit.offset + edit.length);
+
+    const rangeOf = (doc: string, text: string) => ({
+        offset: doc.indexOf(text),
+        length: text.length
+    });
+
+    /** Offsets spanning from the start of `from` to the end of `to`. */
+    const spanOf = (doc: string, from: string, to: string) => {
+        const offset = doc.indexOf(from);
+        return { offset, length: doc.indexOf(to) + to.length - offset };
+    };
+
+    const X_BODY = spanOf(DOC, '"field": "Category"', '"nominal"');
+
+    it('snaps a selection on a scalar value to its property (which may already be formatted)', () => {
+        const edit = formatJsoncCompactRange(
+            DOC,
+            rangeOf(DOC, '"Category"'),
+            OPTIONS
+        )!;
+        expect(DOC.slice(edit.offset, edit.offset + edit.length)).toBe(
+            '"field": "Category"'
+        );
+        expect(edit.content).toBe('"field": "Category"');
+    });
+
+    it('snaps a selection spanning the children of a nested object to the enclosing property', () => {
+        const edit = formatJsoncCompactRange(DOC, X_BODY, OPTIONS);
+        expect(edit).toBeDefined();
+        expect(DOC.slice(edit!.offset, edit!.offset + edit!.length)).toBe(
+            '"x": {\n      "field": "Category",\n      "type": "nominal"\n    }'
+        );
+        expect(edit!.content).toBe(
+            '"x": {"field": "Category", "type": "nominal"}'
+        );
+    });
+
+    it('leaves the rest of the document untouched when applying the edit', () => {
+        const edit = formatJsoncCompactRange(DOC, X_BODY, OPTIONS)!;
+        expect(apply(DOC, edit)).toBe(
+            [
+                '{',
+                '  "mark": "bar",',
+                '  "encoding": {',
+                '    "x": {"field": "Category", "type": "nominal"},',
+                '    "y": {"field": "Sales", "type": "quantitative"}',
+                '  },',
+                '  "data": [1,2,3]',
+                '}'
+            ].join('\n')
+        );
+    });
+
+    it('snaps a selection spanning two siblings to their parent', () => {
+        const start = DOC.indexOf('"x"');
+        const end = DOC.indexOf('"quantitative"}') + '"quantitative"}'.length;
+        const edit = formatJsoncCompactRange(
+            DOC,
+            { offset: start, length: end - start },
+            OPTIONS
+        )!;
+        expect(
+            DOC.slice(edit.offset, edit.offset + edit.length).startsWith(
+                '"encoding": {'
+            )
+        ).toBe(true);
+        expect(edit.content).toBe(
+            [
+                '"encoding": {',
+                '    "x": {"field": "Category", "type": "nominal"},',
+                '    "y": {"field": "Sales", "type": "quantitative"}',
+                '  }'
+            ].join('\n')
+        );
+    });
+
+    it('snaps a selection on a key to the whole property', () => {
+        const edit = formatJsoncCompactRange(
+            DOC,
+            rangeOf(DOC, '"data"'),
+            OPTIONS
+        )!;
+        expect(DOC.slice(edit.offset, edit.offset + edit.length)).toBe(
+            '"data": [1,2,3]'
+        );
+        expect(edit.content).toBe('"data": [1, 2, 3]');
+    });
+
+    it('uses structural depth for continuation-line indent', () => {
+        const narrow = { tabSize: 2, maxLineLength: 30 };
+        const edit = formatJsoncCompactRange(
+            DOC,
+            spanOf(DOC, '"field": "Sales"', '"quantitative"'),
+            narrow
+        )!;
+        // "y" sits two containers deep (root → encoding's object), so its
+        // children indent to 6 and its closer to 4.
+        expect(edit.content).toBe(
+            [
+                '"y": {',
+                '      "field": "Sales",',
+                '      "type": "quantitative"',
+                '    }'
+            ].join('\n')
+        );
+    });
+
+    it('reserves a column for the comma when the target is not the last sibling', () => {
+        // "x" + comma is exactly 1 over the limit when packed at depth 2.
+        const flat = '"x": {"field": "Category", "type": "nominal"}';
+        const limit = 2 * 2 + flat.length; // indent + flat, no room for the comma
+        const edit = formatJsoncCompactRange(DOC, X_BODY, {
+            tabSize: 2,
+            maxLineLength: limit
+        })!;
+        expect(edit.content.includes('\n')).toBe(true);
+        // One more column and it fits.
+        const roomy = formatJsoncCompactRange(DOC, X_BODY, {
+            tabSize: 2,
+            maxLineLength: limit + 1
+        })!;
+        expect(roomy.content).toBe(flat);
+    });
+
+    it('formats the whole document when the selection is outside the root', () => {
+        const doc = '{"a":1}\n\n';
+        const edit = formatJsoncCompactRange(
+            doc,
+            { offset: doc.length - 1, length: 0 },
+            OPTIONS
+        )!;
+        expect(edit).toEqual({ offset: 0, length: 7, content: '{"a": 1}' });
+    });
+
+    it('returns undefined for invalid JSON', () => {
+        expect(
+            formatJsoncCompactRange(
+                '{"a": 1,',
+                { offset: 0, length: 1 },
+                OPTIONS
+            )
+        ).toBeUndefined();
+    });
+
+    it('does not touch comments outside the target span', () => {
+        const doc = '{\n  "a": {"b":1}, // keep me\n  "c": 2\n}';
+        const edit = formatJsoncCompactRange(
+            doc,
+            rangeOf(doc, '"b"'),
+            OPTIONS
+        )!;
+        expect(apply(doc, edit)).toBe(
+            '{\n  "a": {"b": 1}, // keep me\n  "c": 2\n}'
+        );
     });
 });
