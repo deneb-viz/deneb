@@ -116,7 +116,10 @@ const getProcessedExportTemplate = (
     tokenizedSpec: string,
     trackedFields: TrackedFields
 ) => {
-    const { translate } = getDenebState().i18n;
+    const {
+        i18n: { translate },
+        editorPreferences: { jsonEditorFormattingMaxLineLength }
+    } = getDenebState();
     const informationTranslationPlaceholders = {
         name: translate('Template_Export_Information_Name_Empty'),
         description: translate('Template_Export_Information_Description_Empty'),
@@ -127,6 +130,7 @@ const getProcessedExportTemplate = (
         metadata,
         supportFieldConfiguration,
         tokenizedSpec,
-        trackedFields
+        trackedFields,
+        maxLineLength: jsonEditorFormattingMaxLineLength
     });
 };
