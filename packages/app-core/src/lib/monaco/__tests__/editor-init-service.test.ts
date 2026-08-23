@@ -287,6 +287,19 @@ describe('editor-init-service', () => {
             ).toEqual([]);
         });
 
+        it('should return no edits for invalid JSON in a CRLF document', async () => {
+            vi.resetModules();
+            mockRegisterDocumentFormattingEditProvider.mockClear();
+            const service = await import('../editor-init-service');
+            await service.initializeEditorDependencies();
+            const provider =
+                mockRegisterDocumentFormattingEditProvider.mock.calls[0][1];
+            const doc = '{\r\n  "a": 1,\r\n}';
+            expect(
+                provider.provideDocumentFormattingEdits(makeModel(doc, '\r\n'))
+            ).toEqual([]);
+        });
+
         it('should return no edits for an already formatted CRLF document', async () => {
             vi.resetModules();
             mockRegisterDocumentFormattingEditProvider.mockClear();

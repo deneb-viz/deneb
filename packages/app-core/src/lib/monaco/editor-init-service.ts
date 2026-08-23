@@ -216,11 +216,18 @@ const configureMonacoFormatting = () => {
                 const formatted = formatJsoncCompact(
                     content,
                     getFormattingOptions(model)
-                ).replace(/\n/g, model.getEOL());
+                );
                 if (formatted === content) {
+                    // Invalid JSON is echoed back unchanged, and already-
+                    // formatted LF documents match directly — no edits.
                     return [];
                 }
-                return [{ range: model.getFullModelRange(), text: formatted }];
+                const text = formatted.replace(/\n/g, model.getEOL());
+                if (text === content) {
+                    // Valid, already formatted — just authored with CRLF.
+                    return [];
+                }
+                return [{ range: model.getFullModelRange(), text }];
             }
         }),
         monaco.languages.registerDocumentRangeFormattingEditProvider('json', {
