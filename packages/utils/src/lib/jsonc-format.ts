@@ -16,6 +16,8 @@ export interface JsoncCompactFormatOptions {
      * A container (object/array) whose single-line form — including its
      * indent, key prefix and trailing comma — fits within this many characters
      * is written on one line. Anything longer is expanded one child per line.
+     * Trailing comments are appended after the fit test and may extend a line
+     * beyond this width.
      */
     maxLineLength: number;
 }

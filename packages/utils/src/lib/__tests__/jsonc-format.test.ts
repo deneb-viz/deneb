@@ -112,3 +112,130 @@ describe('formatJsoncCompact — idempotence', () => {
         expect(formatJsoncCompact(once, OPTIONS)).toBe(once);
     });
 });
+
+describe('formatJsoncCompact — comments', () => {
+    it('keeps a leading comment above its property and expands the container', () => {
+        const source =
+            '{"mark": {\n  // keep bars thin\n  "type": "bar", "width": 4}, "data": {"name": "dataset"}}';
+        expect(formatJsoncCompact(source, OPTIONS)).toBe(
+            [
+                '{',
+                '  "mark": {',
+                '    // keep bars thin',
+                '    "type": "bar",',
+                '    "width": 4',
+                '  },',
+                '  "data": {"name": "dataset"}',
+                '}'
+            ].join('\n')
+        );
+    });
+
+    it('keeps a trailing comment on the same line, after the comma', () => {
+        const source =
+            '{\n  "width": 400, // matches the report page\n  "height": 300\n}';
+        expect(formatJsoncCompact(source, OPTIONS)).toBe(source);
+    });
+
+    it('keeps a trailing comment on the last property (no comma)', () => {
+        const source = '{\n  "width": 400,\n  "height": 300 // tall\n}';
+        expect(formatJsoncCompact(source, OPTIONS)).toBe(source);
+    });
+
+    it('keeps a trailing comment after a nested container', () => {
+        const source = '{\n  "a": {"b": 1}, // nested\n  "c": 2\n}';
+        expect(formatJsoncCompact(source, OPTIONS)).toBe(source);
+    });
+
+    it('expands an array that contains a comment (same-line comment trails the preceding element)', () => {
+        const source = '{"values": [1, /* two */ 2, 3]}';
+        expect(formatJsoncCompact(source, OPTIONS)).toBe(
+            [
+                '{',
+                '  "values": [',
+                '    1, /* two */',
+                '    2,',
+                '    3',
+                '  ]',
+                '}'
+            ].join('\n')
+        );
+    });
+
+    it('places a comment on its own line above the element it precedes', () => {
+        const source = '{"values": [1,\n  // two\n  2, 3]}';
+        expect(formatJsoncCompact(source, OPTIONS)).toBe(
+            [
+                '{',
+                '  "values": [',
+                '    1,',
+                '    // two',
+                '    2,',
+                '    3',
+                '  ]',
+                '}'
+            ].join('\n')
+        );
+    });
+
+    it('keeps a comment that sits after the last child inside its container', () => {
+        const source = '{\n  "a": 1\n  // end of object\n}';
+        expect(formatJsoncCompact(source, OPTIONS)).toBe(source);
+    });
+
+    it('keeps comments inside an otherwise empty container', () => {
+        const source = '{\n  // nothing yet\n}';
+        expect(formatJsoncCompact(source, OPTIONS)).toBe(source);
+    });
+
+    it('emits comments before and after the root value on their own lines', () => {
+        const source = '// header\n{"a": 1} // same line as root\n// footer';
+        expect(formatJsoncCompact(source, OPTIONS)).toBe(source);
+    });
+
+    it('re-indents the continuation lines of a multi-line block comment', () => {
+        const source = [
+            '{',
+            '  "transform": [',
+            '    /* Filter out',
+            '            nulls first */',
+            '    {"filter": "datum.Sales != null"}',
+            '  ]',
+            '}',
+            '// TODO: add a legend'
+        ].join('\n');
+        expect(formatJsoncCompact(source, OPTIONS)).toBe(
+            [
+                '{',
+                '  "transform": [',
+                '    /* Filter out',
+                '       nulls first */',
+                '    {"filter": "datum.Sales != null"}',
+                '  ]',
+                '}',
+                '// TODO: add a legend'
+            ].join('\n')
+        );
+    });
+
+    it('moves a comment between a key and its value above the next entry (documented quirk)', () => {
+        const source = '{"a": // odd place\n  1, "b": 2}';
+        expect(formatJsoncCompact(source, OPTIONS)).toBe(
+            ['{', '  "a": 1,', '  // odd place', '  "b": 2', '}'].join('\n')
+        );
+    });
+
+    it('moves a comment between the last key and its value to the end of the object (documented quirk)', () => {
+        const source = '{"a": 1, "b": // odd place\n  2}';
+        expect(formatJsoncCompact(source, OPTIONS)).toBe(
+            ['{', '  "a": 1,', '  "b": 2', '  // odd place', '}'].join('\n')
+        );
+    });
+
+    it('is idempotent with comments present', () => {
+        const source =
+            '// header\n{"mark": {\n  // keep bars thin\n  "type": "bar"}, "w": 1 // trailing\n}';
+        const once = formatJsoncCompact(source, OPTIONS);
+        expect(formatJsoncCompact(once, OPTIONS)).toBe(once);
+    });
+});
