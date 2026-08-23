@@ -33,9 +33,6 @@ let initPromise: Promise<void> | null = null;
 let completionProviderDisposable: { dispose(): void } | null = null;
 let formattingDisposables: { dispose(): void }[] = [];
 
-/** Action id for the Ctrl+Alt+R "format selection, else document" command. */
-const FORMAT_ACTION_ID = 'deneb.formatDocumentOrSelection';
-
 /**
  * Configure Monaco JSON diagnostics with the pre-processed Vega/Vega-Lite
  * schemas. Enables schema-based validation and intellisense in the editor.
@@ -263,7 +260,7 @@ const configureMonacoFormatting = () => {
             }
         }),
         monaco.editor.addEditorAction({
-            id: FORMAT_ACTION_ID,
+            id: 'deneb.formatDocumentOrSelection',
             label: getDenebState().i18n.translate('Text_Editor_Action_Format'),
             keybindings: [
                 monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyR

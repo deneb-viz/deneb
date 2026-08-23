@@ -53,10 +53,4 @@ export const parseJsoncWithResult = (
     }
 };
 
-export {
-    formatJsoncCompact,
-    formatJsoncCompactRange,
-    type JsoncCompactFormatOptions,
-    type JsoncRange,
-    type JsoncTextEdit
-} from './jsonc-format';
+export { formatJsoncCompact, formatJsoncCompactRange } from './jsonc-format';

@@ -33,9 +33,7 @@ export interface JsoncTextEdit extends JsoncRange {
     content: string;
 }
 
-interface JsoncComment extends JsoncRange {
-    text: string;
-}
+type JsoncComment = JsoncRange;
 
 /**
  * Where every comment has been attached, keyed by AST node identity.
@@ -67,8 +65,8 @@ const nodeEnd = (span: JsoncRange) => span.offset + span.length;
 const contains = (node: Node, offset: number) =>
     node.offset <= offset && offset < nodeEnd(node);
 
-const raw = (ctx: RenderContext, node: Node) =>
-    ctx.content.slice(node.offset, nodeEnd(node));
+const raw = (ctx: RenderContext, span: JsoncRange) =>
+    ctx.content.slice(span.offset, nodeEnd(span));
 
 const indentFor = (ctx: RenderContext, depth: number) =>
     ' '.repeat(depth * ctx.options.tabSize);
@@ -86,24 +84,13 @@ const pushTo = (
     map: Map<Node, JsoncComment[]>,
     node: Node,
     comment: JsoncComment
-) => {
-    const existing = map.get(node);
-    if (existing) {
-        existing.push(comment);
-    } else {
-        map.set(node, [comment]);
-    }
-};
+) => map.set(node, [...(map.get(node) ?? []), comment]);
 
 const collectComments = (content: string): JsoncComment[] => {
     const comments: JsoncComment[] = [];
     visit(content, {
         onComment: (offset, length) => {
-            comments.push({
-                offset,
-                length,
-                text: content.slice(offset, offset + length)
-            });
+            comments.push({ offset, length });
         }
     });
     return comments;
@@ -242,9 +229,10 @@ const renderComment = (
     comment: JsoncComment,
     depth: number
 ) => {
-    const lines = comment.text.split(/\r?\n/);
+    const text = raw(ctx, comment);
+    const lines = text.split(/\r?\n/);
     if (lines.length === 1) {
-        return comment.text;
+        return text;
     }
     const continuation = `${indentFor(ctx, depth)}   `;
     return [
