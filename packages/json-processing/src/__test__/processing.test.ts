@@ -112,11 +112,18 @@ describe('getModifiedJsoncByPath', () => {
 });
 
 describe('getTextFormattedAsJsonC', () => {
-    it('should format the JSONC content with the specified tab size', () => {
+    it('should pack content that fits within the default max line length onto one line', () => {
+        const content = '{"name": "John", "age": 30}';
+        expect(getTextFormattedAsJsonC(content, 4)).toBe(
+            '{"name": "John", "age": 30}'
+        );
+    });
+
+    it('should expand content that exceeds the supplied max line length using the tab size', () => {
         const content = '{"name": "John", "age": 30}';
         const tabSize = 4;
         const indent = ' '.repeat(tabSize);
         const expected = `{\n${indent}"name": "John",\n${indent}"age": 30\n}`;
-        expect(getTextFormattedAsJsonC(content, tabSize)).toBe(expected);
+        expect(getTextFormattedAsJsonC(content, tabSize, 20)).toBe(expected);
     });
 });

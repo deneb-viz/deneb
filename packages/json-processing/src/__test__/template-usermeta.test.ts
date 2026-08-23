@@ -21,6 +21,7 @@ import {
     type UsermetaTemplate
 } from '@deneb-viz/template-usermeta';
 import { getBase64ImagePngBlank } from '@deneb-viz/utils/base64';
+import { formatJsoncCompact } from '@deneb-viz/utils/jsonc';
 import {
     getProviderSchemaUrl,
     type SpecProvider
@@ -285,7 +286,9 @@ describe('getExportTemplate', () => {
             trackedFields: TRACKED_FIELDS
         });
 
-        expect(result).toEqual(expectedJsonc);
+        expect(result).toEqual(
+            formatJsoncCompact(expectedJsonc, { tabSize: 2, maxLineLength: 80 })
+        );
     });
 });
 
@@ -519,7 +522,7 @@ describe('getTemplateResolvedForLegacyConfig', () => {
     const tabSize = 2;
     it('should return the template with resolved legacy config in the usermeta object', () => {
         const expectedTemplate =
-            '{ "usermeta": {"config": "{\\n  \\"foo\\": \\"bar\\"\\n}" } }';
+            '{ "usermeta": {"config": "{\\"foo\\": \\"bar\\"}" } }';
         const result = getTemplateResolvedForLegacyConfig(
             templateLegacy,
             tabSize
@@ -643,21 +646,11 @@ describe('getTemplateResolvedForPlaceholderAssignment', () => {
     it('should allocate the spec and config objects if config is in the usermeta object', () => {
         const expectedComponents: DenebTemplateAllocationComponents = {
             spec: `{
-  "data": {
-    "values": []
-  },
-  "mark": {
-    "type": "bar"
-  },
+  "data": {"values": []},
+  "mark": {"type": "bar"},
   "encoding": {
-    "x": {
-      "field": "__0__",
-      "type": "temporal"
-    },
-    "y": {
-      "field": "__1__",
-      "type": "quantitative"
-    }
+    "x": {"field": "__0__", "type": "temporal"},
+    "y": {"field": "__1__", "type": "quantitative"}
   }
 }`,
             config: `{\n  // Config\n  "font": "Arial"\n}`
@@ -732,21 +725,11 @@ describe('getTemplateResolvedForPlaceholderAssignment', () => {
 
         const expectedComponents: DenebTemplateAllocationComponents = {
             spec: `{
-  "data": {
-    "values": []
-  },
-  "mark": {
-    "type": "bar"
-  },
+  "data": {"values": []},
+  "mark": {"type": "bar"},
   "encoding": {
-    "x": {
-      "field": "__0__",
-      "type": "temporal"
-    },
-    "y": {
-      "field": "__1__",
-      "type": "quantitative"
-    }
+    "x": {"field": "__0__", "type": "temporal"},
+    "y": {"field": "__1__", "type": "quantitative"}
   }
 }`,
             config: `{}`

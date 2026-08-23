@@ -68,13 +68,15 @@ export const getExportTemplate = (options: {
     supportFieldConfiguration?: SupportFieldConfiguration;
     tokenizedSpec: string;
     trackedFields: TrackedFields;
+    maxLineLength?: number;
 }) => {
     const {
         informationTranslationPlaceholders,
         metadata,
         supportFieldConfiguration,
         tokenizedSpec,
-        trackedFields
+        trackedFields,
+        maxLineLength
     } = options;
     const newMetadata = getPublishableUsermeta(metadata, {
         informationTranslationPlaceholders,
@@ -98,7 +100,7 @@ export const getExportTemplate = (options: {
             }
         )
     );
-    return getTextFormattedAsJsonC(withSchema, 2);
+    return getTextFormattedAsJsonC(withSchema, 2, maxLineLength);
 };
 
 const getFieldPatternByKey = (key: string) =>
@@ -269,14 +271,16 @@ export const getTemplateReplacedForDataset = (
  */
 export const getTemplateResolvedForLegacyConfig = (
     template: string,
-    tabSize: number
+    tabSize: number,
+    maxLineLength?: number
 ) => {
     const { config } = getTemplateMetadata(template);
     if (!config) {
         const tree = getJsoncTree(template);
         const newConfig = getTextFormattedAsJsonC(
             JSON.stringify(getJsoncNodeValue(tree)?.config || {}),
-            tabSize
+            tabSize,
+            maxLineLength
         );
         const appliedConfig = getModifiedJsoncByPath(
             template,
@@ -367,7 +371,8 @@ export const getTemplateResolvedForLegacyVersions = (
  */
 export const getTemplateResolvedForPlaceholderAssignment = (
     template: string,
-    tabSize: number
+    tabSize: number,
+    maxLineLength?: number
 ): DenebTemplateAllocationComponents => {
     const config = getTemplateMetadata(template)?.config || '{}';
     const keysToRemove = ['$schema', 'usermeta'];
@@ -376,7 +381,8 @@ export const getTemplateResolvedForPlaceholderAssignment = (
             (result, key) => getModifiedJsoncByPath(result, [key], undefined),
             template
         ),
-        tabSize
+        tabSize,
+        maxLineLength
     );
     return {
         spec,
@@ -434,7 +440,8 @@ export const getUpdatedExportMetadata = (
  */
 export const getValidatedTemplate = (
     content: string,
-    tabSize: number
+    tabSize: number,
+    maxLineLength?: number
 ): DenebTemplateSetImportFilePayload => {
     try {
         if (!getJsoncStringAsObject(content)) return INVALID_TEMPLATE_OPTIONS;
@@ -445,7 +452,8 @@ export const getValidatedTemplate = (
         );
         const templateResolvedLegacyConfig = getTemplateResolvedForLegacyConfig(
             templateResolvedLegacy,
-            tabSize
+            tabSize,
+            maxLineLength
         );
         const templateResolvedLegacyDataset =
             getTemplateResolvedForLegacyDataset(templateResolvedLegacyConfig);
@@ -455,7 +463,8 @@ export const getValidatedTemplate = (
         if (valid) {
             const candidates = getTemplateResolvedForPlaceholderAssignment(
                 templateResolvedLegacyDataset,
-                tabSize
+                tabSize,
+                maxLineLength
             );
             return {
                 candidates,
