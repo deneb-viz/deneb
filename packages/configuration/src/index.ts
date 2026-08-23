@@ -54,6 +54,7 @@ export const EDITOR_DEFAULTS = {
         min: 8,
         max: 30
     },
+    formattingMaxLineLength: { default: 80, min: 40, max: 200 },
     previewAreaShowBorder: true,
     previewAreaShowScrollbarsOnOverflow: true,
     previewAreaTransparentBackground: true,
