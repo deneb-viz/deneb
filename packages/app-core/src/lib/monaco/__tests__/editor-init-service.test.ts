@@ -233,12 +233,13 @@ describe('editor-init-service', () => {
     });
 
     describe('formatting', () => {
-        const makeModel = (value: string) => ({
+        const makeModel = (value: string, eol = '\n') => ({
             getValue: () => value,
             getOptions: () => ({ tabSize: 2 }),
             getFullModelRange: () => 'FULL_RANGE',
             getOffsetAt: (position: { offset: number }) => position.offset,
-            getPositionAt: (offset: number) => ({ offset })
+            getPositionAt: (offset: number) => ({ offset }),
+            getEOL: () => eol
         });
 
         it('should disable the worker formatter but keep its other features', async () => {
@@ -284,6 +285,39 @@ describe('editor-init-service', () => {
                     makeModel('{"a": 1, "b": 2}')
                 )
             ).toEqual([]);
+        });
+
+        it('should return no edits for an already formatted CRLF document', async () => {
+            vi.resetModules();
+            mockRegisterDocumentFormattingEditProvider.mockClear();
+            const service = await import('../editor-init-service');
+            await service.initializeEditorDependencies();
+            const provider =
+                mockRegisterDocumentFormattingEditProvider.mock.calls[0][1];
+            const longValue = 'x'.repeat(90);
+            const doc = `{\r\n  "expr": "${longValue}"\r\n}`;
+            expect(
+                provider.provideDocumentFormattingEdits(makeModel(doc, '\r\n'))
+            ).toEqual([]);
+        });
+
+        it('should emit CRLF line endings when the model uses CRLF', async () => {
+            vi.resetModules();
+            mockRegisterDocumentFormattingEditProvider.mockClear();
+            const service = await import('../editor-init-service');
+            await service.initializeEditorDependencies();
+            const provider =
+                mockRegisterDocumentFormattingEditProvider.mock.calls[0][1];
+            const longValue = 'x'.repeat(90);
+            const doc = `{"expr": "${longValue}"}`;
+            expect(
+                provider.provideDocumentFormattingEdits(makeModel(doc, '\r\n'))
+            ).toEqual([
+                {
+                    range: 'FULL_RANGE',
+                    text: `{\r\n  "expr": "${longValue}"\r\n}`
+                }
+            ]);
         });
 
         it('should register a range formatting provider that snaps to the enclosing node', async () => {

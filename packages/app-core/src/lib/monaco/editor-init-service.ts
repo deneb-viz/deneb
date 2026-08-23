@@ -194,6 +194,7 @@ const getFormattingOptions = (model: monaco.editor.ITextModel) => ({
  * line-length control) with Deneb's comment-preserving compact formatter.
  * Registers document and range providers and a Ctrl+Alt+R action that
  * formats the selection when there is one, otherwise the whole document.
+ * Output line endings are normalized to the model's EOL.
  */
 const configureMonacoFormatting = () => {
     // Dispose any previous registrations before re-registering to prevent
@@ -215,7 +216,7 @@ const configureMonacoFormatting = () => {
                 const formatted = formatJsoncCompact(
                     content,
                     getFormattingOptions(model)
-                );
+                ).replace(/\n/g, model.getEOL());
                 if (formatted === content) {
                     return [];
                 }
@@ -233,10 +234,13 @@ const configureMonacoFormatting = () => {
                     { offset, length },
                     getFormattingOptions(model)
                 );
+                if (!edit) {
+                    return [];
+                }
+                const text = edit.content.replace(/\n/g, model.getEOL());
                 if (
-                    !edit ||
                     content.slice(edit.offset, edit.offset + edit.length) ===
-                        edit.content
+                    text
                 ) {
                     return [];
                 }
@@ -246,7 +250,7 @@ const configureMonacoFormatting = () => {
                             model.getPositionAt(edit.offset),
                             model.getPositionAt(edit.offset + edit.length)
                         ),
-                        text: edit.content
+                        text
                     }
                 ];
             }
