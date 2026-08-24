@@ -252,7 +252,7 @@ Behaviour to be aware of:
 
 - **Compaction rule** — a container is written on one line when its single-line form (including indent, `"key": ` prefix and trailing comma) fits within the max line length and contains no comments; otherwise one child per line. Nested containers are decided independently.
 - **Comments force expansion** — any comment inside a container expands it and every ancestor. Comments above a value stay above it; same-line trailing comments stay on the line (a comment following `1, ` on the same line trails `1`, not the next element); comments after the last entry stay before the closer. A comment between a key and its value is moved above the next entry (or to the end of the object if there is none).
-- **Range formatting snaps outward** — the smallest complete value or property containing the selection is reformatted. Selecting a key or value reformats the whole property.
+- **Range formatting snaps outward** — the smallest complete value or property containing the selection is reformatted. Selecting a key or value reformats the whole property. It widens further when the selection's span contains a comment that only an ancestor's rendering can carry (e.g. a comment between a key and its value belongs to the next entry) — the edit grows until no comment would be lost, at worst reformatting the whole document.
 - **Invalid JSON is left untouched** — nothing happens until parse errors (including trailing commas) are resolved.
 - **Layout is deterministic** — existing line breaks are not preserved; formatting is idempotent. Output adopts the editor document's existing line-ending style.
 - **Literals are copied verbatim** — `1.0` stays `1.0`; escapes are not rewritten.

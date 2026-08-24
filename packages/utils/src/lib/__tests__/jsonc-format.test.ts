@@ -417,4 +417,63 @@ describe('formatJsoncCompactRange', () => {
             '{\n  "a": {"b": 1}, // keep me\n  "c": 2\n}'
         );
     });
+
+    // A comment between a property's key and its value sits INSIDE the
+    // property's source span, but attaches to the NEXT sibling (or the
+    // enclosing container when there is none) — outside the property's
+    // subtree. Replacing only the property's span must not swallow it: the
+    // target widens until the replacement re-renders the comment.
+    describe('comments inside the target span but attached outside it', () => {
+        it('key–value gap with a following sibling: widens so the comment survives', () => {
+            const doc = '{"a" /* keep */: 1, "b": 2}';
+            const edit = formatJsoncCompactRange(
+                doc,
+                rangeOf(doc, '"a"'),
+                OPTIONS
+            )!;
+            const result = apply(doc, edit);
+            expect(result).toContain('/* keep */');
+            // Widening lands on the root object here, so the applied result
+            // matches whole-document formatting.
+            expect(result).toBe(formatJsoncCompact(doc, OPTIONS));
+        });
+
+        it('colon–value gap on the only property: widens so the comment survives', () => {
+            const doc = '{\n  "a": /* keep */ 1\n}';
+            const edit = formatJsoncCompactRange(
+                doc,
+                rangeOf(doc, '1'),
+                OPTIONS
+            )!;
+            expect(apply(doc, edit)).toContain('/* keep */');
+        });
+
+        it('does not widen when the comment lies outside the target span', () => {
+            const doc = '{"a": {\n  /* keep */ "x": 1\n}, "b": 2}';
+            const edit = formatJsoncCompactRange(
+                doc,
+                rangeOf(doc, '"x"'),
+                OPTIONS
+            )!;
+            // The comment leads "x", sitting BEFORE the property's span —
+            // the edit stays narrow and the comment survives in place.
+            expect(doc.slice(edit.offset, edit.offset + edit.length)).toBe(
+                '"x": 1'
+            );
+            expect(apply(doc, edit)).toContain('/* keep */');
+        });
+
+        it('does not widen for a gap comment elsewhere in the document', () => {
+            const doc = '{"a" /* keep */: 1, "b": {"c":1}}';
+            const edit = formatJsoncCompactRange(
+                doc,
+                rangeOf(doc, '"c"'),
+                OPTIONS
+            )!;
+            expect(doc.slice(edit.offset, edit.offset + edit.length)).toBe(
+                '"c":1'
+            );
+            expect(apply(doc, edit)).toContain('/* keep */');
+        });
+    });
 });

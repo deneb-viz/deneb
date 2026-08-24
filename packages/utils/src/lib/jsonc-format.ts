@@ -390,10 +390,60 @@ const findFormatTarget = (root: Node, range: JsoncRange): Node => {
     return ancestor.parent?.type === 'property' ? ancestor.parent : ancestor;
 };
 
+const isWithinSubtree = (node: Node, ancestor: Node): boolean => {
+    for (
+        let current: Node | undefined = node;
+        current;
+        current = current.parent
+    ) {
+        if (current === ancestor) {
+            return true;
+        }
+    }
+    return false;
+};
+
+const spanContainsComment = (span: JsoncRange, comment: JsoncComment) =>
+    comment.offset >= span.offset && nodeEnd(comment) <= nodeEnd(span);
+
+/**
+ * Whether replacing `target`'s span with `renderNode(target)` would delete a
+ * comment. A comment between a property's key and its value lies INSIDE the
+ * property's source span but attaches to the NEXT sibling (or the enclosing
+ * container when there is none) — outside the property's subtree — so the
+ * replacement would swallow its bytes without re-rendering it anywhere.
+ */
+const rangeRenderDropsComments = (
+    ctx: RenderContext,
+    target: Node
+): boolean => {
+    const maps = [
+        ctx.comments.leading,
+        ctx.comments.trailing,
+        ctx.comments.inner
+    ];
+    for (const map of maps) {
+        for (const [node, comments] of map) {
+            for (const comment of comments) {
+                if (
+                    spanContainsComment(target, comment) &&
+                    !isWithinSubtree(node, target)
+                ) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+};
+
 /**
  * Format only the smallest complete value or property that contains `range`.
  * Returns the single edit to apply, or `undefined` for invalid JSON. Comments
- * outside the target node's span are untouched.
+ * outside the target node's span are untouched. The target widens to an
+ * ancestor when its own span contains a comment the rendered replacement
+ * would not carry (see {@link rangeRenderDropsComments}) — at the root every
+ * in-span comment is attached within the subtree, so widening terminates.
  */
 export const formatJsoncCompactRange = (
     content: string,
@@ -404,7 +454,10 @@ export const formatJsoncCompactRange = (
     if (!ctx) {
         return undefined;
     }
-    const target = findFormatTarget(ctx.root, range);
+    let target = findFormatTarget(ctx.root, range);
+    while (target.parent && rangeRenderDropsComments(ctx, target)) {
+        target = target.parent;
+    }
     const siblings = target.parent?.children ?? [];
     const isLast =
         siblings.length === 0 || siblings[siblings.length - 1] === target;
