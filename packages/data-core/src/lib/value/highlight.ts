@@ -50,6 +50,8 @@ export const getHighlightStatusValue = (
             return 'off';
         case hasHighlights && fieldValue === null && comparatorValue !== null:
             return 'off';
+        case hasHighlights && fieldValue !== null && comparatorValue === null:
+            return 'off';
         default:
             return 'on';
     }
