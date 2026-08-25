@@ -78,4 +78,27 @@ describe('getHighlightComparatorValue', () => {
             getHighlightComparatorValue(asValue(100), asValue(undefined))
         ).toBe('neq');
     });
+
+    // Issue #753: a null comparator (un-highlighted row) is "no value", not
+    // zero. Without an explicit guard, JS coercion produced 'lt' for positive
+    // bases, 'gt' for negative and 'neq' for zero/text — sign-dependent noise.
+    it('returns neq for a null comparator regardless of base value sign', () => {
+        expect(getHighlightComparatorValue(asValue(8.4), asValue(null))).toBe(
+            'neq'
+        );
+        expect(getHighlightComparatorValue(asValue(-5), asValue(null))).toBe(
+            'neq'
+        );
+        expect(getHighlightComparatorValue(asValue(0), asValue(null))).toBe(
+            'neq'
+        );
+    });
+
+    // Both null stays 'eq', consistent with getHighlightStatusValue keeping
+    // the both-null shape as 'on' (a null measure inside the highlight).
+    it('returns eq when both base value and comparator are null', () => {
+        expect(getHighlightComparatorValue(asValue(null), asValue(null))).toBe(
+            'eq'
+        );
+    });
 });

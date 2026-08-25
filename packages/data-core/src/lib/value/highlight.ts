@@ -21,6 +21,12 @@ export const getHighlightComparatorValue = (
             return 'neq';
         case fieldValue == comparatorValue:
             return 'eq';
+        // A null comparator (un-highlighted row) has no value to compare
+        // against; without this guard, coercion made the result depend on the
+        // base value's sign. Ordered after the equality check so a both-null
+        // shape still resolves to 'eq'.
+        case comparatorValue === null:
+            return 'neq';
         case comparatorValue < fieldValue:
             return 'lt';
         case comparatorValue > fieldValue:
