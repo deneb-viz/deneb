@@ -143,3 +143,32 @@ describe('remapSupportFieldConfigurationForImport', () => {
         });
     });
 });
+
+describe('remapSupportFieldConfigurationForImport — partial template config (#755)', () => {
+    it('should normalize a partial config to the full flag set with missing flags off', () => {
+        const dataset: UsermetaDatasetField[] = [
+            {
+                key: '__dataset.0__',
+                name: 'Metric Fields',
+                suppliedObjectName: 'Metric Fields',
+                kind: 'parameter',
+                type: 'other',
+                supportFieldConfiguration: {
+                    format: true,
+                    formatted: true,
+                    names: true
+                }
+            }
+        ];
+        expect(remapSupportFieldConfigurationForImport(dataset)).toEqual({
+            'Metric Fields': {
+                highlight: false,
+                highlightStatus: false,
+                highlightComparator: false,
+                format: true,
+                formatted: true,
+                names: true
+            }
+        });
+    });
+});

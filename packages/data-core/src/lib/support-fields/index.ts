@@ -11,6 +11,7 @@ export type {
 export { createDefaultProvider } from './default-provider';
 export {
     resolveFieldDefaults,
+    getNormalizedSupportFieldFlags,
     type ResolveFieldDefaultsParams
 } from './resolve-defaults';
 export {

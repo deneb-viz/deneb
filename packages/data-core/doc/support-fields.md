@@ -580,7 +580,7 @@ When consolidation is enabled, users can mark a regular field as "treat as field
 
 ### Template integration
 
-Field parameters are exported with `kind: 'parameter'` in the template dataset metadata. The `__names` suffix is included in the tokenization regex alternation patterns so template export/import correctly handles `__names` references in specs. The `treatAsParameter` and `names` flags are included in `supportFieldConfiguration` when explicitly configured.
+Field parameters are exported with `kind: 'parameter'` in the template dataset metadata. The `__names` suffix is included in the tokenization regex alternation patterns so template export/import correctly handles `__names` references in specs. The `treatAsParameter` and `names` flags are included in `supportFieldConfiguration` when explicitly configured. The five core flags are optional in the template schema; a missing flag is treated as `false`. Both export and import pass the entry through `getNormalizedSupportFieldFlags()` so that Deneb always writes the complete set and always imports a complete set into state (#755).
 
 ---
 

@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { resolveFieldDefaults } from '../resolve-defaults';
+import {
+    getNormalizedSupportFieldFlags,
+    resolveFieldDefaults
+} from '../resolve-defaults';
 import type { SupportFieldMasterSettings } from '../types';
 
 const HIGHLIGHT_ON: SupportFieldMasterSettings = {
@@ -148,5 +151,42 @@ describe('resolveFieldDefaults', () => {
             expect(result.format).toBe(false);
             expect(result.formatted).toBe(false);
         });
+    });
+});
+
+describe('getNormalizedSupportFieldFlags', () => {
+    it('should fill missing core flags with false and keep provided values', () => {
+        expect(
+            getNormalizedSupportFieldFlags({ format: true, formatted: true })
+        ).toEqual({
+            highlight: false,
+            highlightStatus: false,
+            highlightComparator: false,
+            format: true,
+            formatted: true
+        });
+    });
+
+    it('should return all-false for an empty object', () => {
+        expect(getNormalizedSupportFieldFlags({})).toEqual({
+            highlight: false,
+            highlightStatus: false,
+            highlightComparator: false,
+            format: false,
+            formatted: false
+        });
+    });
+
+    it('should only carry optional flags when they were supplied', () => {
+        const result = getNormalizedSupportFieldFlags({
+            names: true,
+            treatAsParameter: false
+        });
+        expect(result.names).toBe(true);
+        expect(result.treatAsParameter).toBe(false);
+        expect(getNormalizedSupportFieldFlags({})).not.toHaveProperty('names');
+        expect(getNormalizedSupportFieldFlags({})).not.toHaveProperty(
+            'treatAsParameter'
+        );
     });
 });

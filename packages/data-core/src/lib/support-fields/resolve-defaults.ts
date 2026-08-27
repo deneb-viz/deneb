@@ -58,3 +58,22 @@ export const resolveFieldDefaults = ({
         formatted: false
     };
 };
+
+/**
+ * Fill any missing flags with `false`. Templates and PBIR-authored state may
+ * carry only the flags that are switched on (#755); the plan builder already
+ * treats an absent flag as off, so this makes that contract explicit.
+ */
+export const getNormalizedSupportFieldFlags = (
+    flags: Partial<SupportFieldFlags>
+): SupportFieldFlags => ({
+    highlight: flags.highlight ?? false,
+    highlightStatus: flags.highlightStatus ?? false,
+    highlightComparator: flags.highlightComparator ?? false,
+    format: flags.format ?? false,
+    formatted: flags.formatted ?? false,
+    ...(flags.names !== undefined && { names: flags.names }),
+    ...(flags.treatAsParameter !== undefined && {
+        treatAsParameter: flags.treatAsParameter
+    })
+});
