@@ -1593,3 +1593,126 @@ describe('getPublishableUsermeta — supportFieldConfiguration inline in dataset
         });
     });
 });
+
+describe('getValidatedTemplate — partial supportFieldConfiguration (#755)', () => {
+    const MOCK_TAB_SIZE = 2;
+    const getTemplateWithConfig = (config: Record<string, unknown>) =>
+        JSON.stringify({
+            $schema: 'https://vega.github.io/schema/vega-lite/v6.json',
+            usermeta: {
+                information: {
+                    uuid: '81573f77-e87c-4d9c-993a-d70fb28c275e',
+                    generated: '2026-08-27T19:47:37.295Z',
+                    previewImageBase64PNG: 'data:image/png;base64,',
+                    name: 'n',
+                    description: 'd',
+                    author: 'a'
+                },
+                deneb: {
+                    build: '2.0.0',
+                    metaVersion: 2,
+                    provider: 'vegaLite',
+                    providerVersion: '6.4.3'
+                },
+                interactivity: {
+                    tooltip: true,
+                    contextMenu: true,
+                    contextMenuSelector: true,
+                    selection: false,
+                    selectionMode: 'simple',
+                    highlight: false,
+                    dataPointLimit: 50
+                },
+                config: '{}',
+                datasets: {
+                    dataset: [
+                        {
+                            key: '__dataset.0__',
+                            name: 'Metric Fields',
+                            description: '',
+                            kind: 'parameter',
+                            type: 'other',
+                            supportFieldConfiguration: config
+                        }
+                    ]
+                }
+            },
+            data: { name: 'dataset' },
+            mark: 'bar'
+        });
+
+    it('should accept a config that only carries the enabled flags', () => {
+        const result = getValidatedTemplate(
+            getTemplateWithConfig({
+                format: true,
+                formatted: true,
+                names: true
+            }),
+            MOCK_TAB_SIZE
+        );
+        expect(result.importState).toBe('Success');
+    });
+
+    it('should accept an empty config object', () => {
+        const result = getValidatedTemplate(
+            getTemplateWithConfig({}),
+            MOCK_TAB_SIZE
+        );
+        expect(result.importState).toBe('Success');
+    });
+
+    it('should still reject non-boolean flag values', () => {
+        const result = getValidatedTemplate(
+            getTemplateWithConfig({ format: 'yes' }),
+            MOCK_TAB_SIZE
+        );
+        expect(result.importState).toBe('Error');
+    });
+
+    it('should still reject unknown flag names', () => {
+        const result = getValidatedTemplate(
+            getTemplateWithConfig({ format: true, bogus: true }),
+            MOCK_TAB_SIZE
+        );
+        expect(result.importState).toBe('Error');
+    });
+});
+
+describe('getPublishableUsermeta — normalizes partial supportFieldConfiguration on export (#755)', () => {
+    it('should write the complete flag set when state only carries enabled flags', () => {
+        const usermeta: UsermetaTemplate = {
+            ...EXPECTED_METADATA_BASE,
+            datasets: {
+                dataset: [
+                    {
+                        key: '__dataset.0__',
+                        name: '$ Sales',
+                        namePlaceholder: '$ Sales',
+                        description: '',
+                        kind: 'measure',
+                        type: 'numeric'
+                    }
+                ]
+            }
+        };
+        const result = getPublishableUsermeta(usermeta, {
+            informationTranslationPlaceholders: {
+                name: 'n',
+                description: 'd',
+                author: 'a'
+            },
+            supportFieldConfiguration: {
+                '$ Sales': { format: true, names: true } as never
+            },
+            trackedFields: TRACKED_FIELDS_BY_QUERYNAME
+        });
+        expect(result.datasets.dataset[0].supportFieldConfiguration).toEqual({
+            highlight: false,
+            highlightStatus: false,
+            highlightComparator: false,
+            format: true,
+            formatted: false,
+            names: true
+        });
+    });
+});

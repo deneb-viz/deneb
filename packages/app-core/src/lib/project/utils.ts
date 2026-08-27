@@ -2,7 +2,10 @@ import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 import { DenebProject } from './types';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
-import { type SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
+import {
+    getNormalizedSupportFieldFlags,
+    type SupportFieldConfiguration
+} from '@deneb-viz/data-core/support-fields';
 
 export const isProjectInitialized = (project: DenebProject): boolean => {
     const isInitialized =
@@ -29,7 +32,9 @@ export const remapSupportFieldConfigurationForImport = (
     const result: SupportFieldConfiguration = {};
     for (const field of dataset) {
         if (field.supportFieldConfiguration && field.suppliedObjectName) {
-            result[field.suppliedObjectName] = field.supportFieldConfiguration;
+            result[field.suppliedObjectName] = getNormalizedSupportFieldFlags(
+                field.supportFieldConfiguration
+            );
         }
     }
     return result;

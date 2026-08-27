@@ -144,7 +144,7 @@ export type UsermetaDatasetField = {
      * Optional — only present for fields with explicit (non-default) configuration.
      * @ignore
      */
-    supportFieldConfiguration?: SupportFieldFlags;
+    supportFieldConfiguration?: Partial<SupportFieldFlags>;
 };
 
 /**

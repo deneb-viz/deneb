@@ -35,7 +35,10 @@ import {
     getPlaceholderKey,
     type UsermetaDatasetField
 } from '@deneb-viz/data-core/field';
-import { type SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
+import {
+    getNormalizedSupportFieldFlags,
+    type SupportFieldConfiguration
+} from '@deneb-viz/data-core/support-fields';
 import {
     type SelectionMode,
     INTERACTIVITY_DEFAULTS
@@ -217,7 +220,8 @@ export const getPublishableUsermeta = (
                     const fieldConfig =
                         options.supportFieldConfiguration?.[sfcKey];
                     if (fieldConfig) {
-                        item.supportFieldConfiguration = fieldConfig;
+                        item.supportFieldConfiguration =
+                            getNormalizedSupportFieldFlags(fieldConfig);
                     }
                     return omit(item as unknown as Record<string, unknown>, [
                         'namePlaceholder'
