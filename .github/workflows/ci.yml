@@ -18,6 +18,11 @@ on:
             - 'alpha-*'
             - 'beta'
             - 'beta-*'
+            # Certification submission tags (fully numeric 4-part, e.g.
+            # 2.0.0.1). Actions glob syntax cannot express "exactly four
+            # numeric parts", so the `submission` job re-validates the
+            # shape and fails fast on anything else.
+            - '[0-9]*.[0-9]*.[0-9]*.[0-9]*'
     pull_request:
 
 jobs:
@@ -283,3 +288,65 @@ jobs:
                       dist/deneb.${{ steps.version_tag.outputs.tag }}.pbiviz
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    submission:
+        # Certified AppSource build for a certification submission tag.
+        # Uploads the .pbiviz as a workflow artifact only — deliberately
+        # no release object: submission tags are throwaway remediation
+        # iterations and the tag itself is the durable record. The
+        # approved tag is later published via the Release workflow.
+        if: ${{ startsWith(github.ref, 'refs/tags/') && !startsWith(github.ref, 'refs/tags/alpha') && !startsWith(github.ref, 'refs/tags/beta') }}
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out code
+              uses: actions/checkout@v4
+            # The tag names the artifact that gets submitted to Partner
+            # Center, so it must be the exact version baked into the
+            # package. Fail fast (before install/build) on a shape or
+            # version mismatch.
+            - name: Validate submission tag against pbiviz.json
+              run: |
+                  if ! echo "$GITHUB_REF_NAME" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
+                      echo "::error::Tag '$GITHUB_REF_NAME' is not a 4-part numeric submission tag (e.g. 2.0.0.1)."
+                      exit 1
+                  fi
+                  PBIVIZ_VERSION=$(node -p "require('./pbiviz.json').visual.version")
+                  if [ "$GITHUB_REF_NAME" != "$PBIVIZ_VERSION" ]; then
+                      echo "::error::Tag '$GITHUB_REF_NAME' does not match pbiviz.json visual.version '$PBIVIZ_VERSION'. Bump pbiviz.json, commit, and re-tag."
+                      exit 1
+                  fi
+            - name: Use CI .env file
+              run: cp .env.ci .env
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: 'npm'
+            - name: Cache turbo build setup
+              uses: actions/cache@v4
+              with:
+                  path: .turbo
+                  key: ${{ runner.os }}-turbo-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-turbo-
+            - name: Install Packages
+              run: npm ci
+            - name: Build packages
+              run: npm run build
+            # `npm run package` runs validate-config-for-commit itself,
+            # so the tampered-.env.ci guard from the prerelease job is
+            # inherent here.
+            - name: Build certified (AppSource) package
+              run: npm run package
+            # mv fails the job if the glob matches zero or multiple
+            # files, so a missing/ambiguous build artifact is caught here
+            # rather than uploading a mis-named artifact.
+            - name: Rename package to submission filename
+              run: mv dist/deneb7E15AEF80B9E4D4F8E12924291ECE89A*.pbiviz "dist/deneb.${GITHUB_REF_NAME}.pbiviz"
+            - name: Upload submission artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: deneb.${{ github.ref_name }}
+                  path: dist/deneb.${{ github.ref_name }}.pbiviz
+                  retention-days: 90
+                  if-no-files-found: error
