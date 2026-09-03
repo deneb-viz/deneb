@@ -46,7 +46,10 @@ jobs:
             - name: Check out approved tag
               uses: actions/checkout@v4
               with:
-                  ref: ${{ inputs.tag }}
+                  # Fully qualified so a same-named branch can never be
+                  # resolved instead of the tag — checkout fails outright
+                  # if the tag doesn't exist.
+                  ref: refs/tags/${{ inputs.tag }}
                   # Full history + tags: the changelog action walks
                   # commits between the baseline tag and this tag.
                   fetch-depth: 0
@@ -76,12 +79,23 @@ jobs:
             # published would flip that live release back to draft
             # (action-gh-release updates an existing release for the
             # tag in place). Fail fast instead; an existing DRAFT for
-            # the tag is fine to update on a re-run.
+            # the tag is fine to update on a re-run. This must fail
+            # closed: only a confirmed 404 (no release for the tag) may
+            # proceed. A published release fails the guard, and any
+            # other API failure (5xx, auth, rate limit) fails loudly too
+            # rather than being swallowed and treated as "no release".
             - name: Guard against already-published release
               run: |
-                  IS_DRAFT=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" --jq .draft 2>/dev/null || echo "none")
-                  if [ "$IS_DRAFT" = "false" ]; then
-                      echo "::error::A published release already exists for tag '$RELEASE_TAG'. Refusing to modify it."
+                  if OUTPUT=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" --jq .draft 2>&1); then
+                      if [ "$OUTPUT" = "false" ]; then
+                          echo "::error::A published release already exists for tag '$RELEASE_TAG'. Refusing to modify it."
+                          exit 1
+                      fi
+                      echo "Existing draft release found for '$RELEASE_TAG'; it will be updated."
+                  elif echo "$OUTPUT" | grep -q "HTTP 404"; then
+                      echo "No existing release for '$RELEASE_TAG'."
+                  else
+                      echo "::error::Could not determine release state for '$RELEASE_TAG': $OUTPUT"
                       exit 1
                   fi
               env:
@@ -130,7 +144,7 @@ jobs:
               run: mv dist/STANDALONE*.pbiviz "release-assets/deneb.standalone.${RELEASE_TAG}.pbiviz"
             - name: Generate changelog
               id: changelog
-              uses: requarks/changelog-action@v1
+              uses: requarks/changelog-action@b78a3354a01f4a1affb484b9264b506a815c46b1 # v1
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
                   fromTag: ${{ inputs.tag }}
@@ -138,7 +152,7 @@ jobs:
                   excludeTypes: ''
                   writeToFile: false
             - name: Create draft release
-              uses: softprops/action-gh-release@v2
+              uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
               with:
                   draft: true
                   tag_name: ${{ inputs.tag }}
