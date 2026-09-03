@@ -9,6 +9,10 @@ name: Release
 #      DRAFT release titled with the 3-part version (e.g. 2.0.0).
 #   3. The maintainer reviews/edits the draft body in the GitHub UI and
 #      publishes it manually.
+#
+# When dispatching, leave the "Use workflow from" selector on main —
+# the input tag only selects the code that gets built, not the workflow
+# logic.
 permissions:
     contents: read
 
@@ -19,6 +23,12 @@ on:
                 description: 'Approved submission tag to publish (e.g. 2.0.0.5)'
                 required: true
                 type: string
+
+# Serialize runs per tag so overlapping dispatches cannot race on the
+# same draft release.
+concurrency:
+    group: release-${{ github.event.inputs.tag }}
+    cancel-in-progress: false
 
 jobs:
     release:
@@ -40,6 +50,8 @@ jobs:
                   # Full history + tags: the changelog action walks
                   # commits between the baseline tag and this tag.
                   fetch-depth: 0
+            - name: Use CI .env file
+              run: cp .env.ci .env
             - name: Setup Node
               uses: actions/setup-node@v4
               with:
@@ -60,6 +72,20 @@ jobs:
                   # 3-part release title per repo convention (tag
                   # 1.9.1.0 → title 1.9.1).
                   echo "title=${RELEASE_TAG%.*}" >> $GITHUB_OUTPUT
+            # Re-dispatching against a tag whose release is already
+            # published would flip that live release back to draft
+            # (action-gh-release updates an existing release for the
+            # tag in place). Fail fast instead; an existing DRAFT for
+            # the tag is fine to update on a re-run.
+            - name: Guard against already-published release
+              run: |
+                  IS_DRAFT=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" --jq .draft 2>/dev/null || echo "none")
+                  if [ "$IS_DRAFT" = "false" ]; then
+                      echo "::error::A published release already exists for tag '$RELEASE_TAG'. Refusing to modify it."
+                      exit 1
+                  fi
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             # Changelog baseline = latest PUBLISHED release. The
             # /releases/latest endpoint excludes drafts and prereleases
             # by definition, so failed submission tags and channel
@@ -76,8 +102,6 @@ jobs:
                   echo "Baseline release tag: $BASELINE"
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            - name: Use CI .env file
-              run: cp .env.ci .env
             - name: Cache turbo build setup
               uses: actions/cache@v4
               with:
