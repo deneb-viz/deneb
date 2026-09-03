@@ -68,7 +68,11 @@ The historical flow published the GitHub release at submission time with a
   4-part tag, name = 3-part version, `draft: true`, `make_latest` left for the
   manual publish step. Body template (in the workflow file, reviewed via PR)
   mirrors the 1.9.1 release copy:
-  - Published-to-AppSource paragraph with `https://deneb.link/appsource?source=repo&mktcmpid=<3-part-version>`.
+  - Published-to-AppSource paragraph ("This is version `<3-part-version>` of Deneb,
+    as published to AppSource") linking to
+    `https://deneb.link/appsource?source=repo&mktcmpid=<approved-tag>` — the
+    `mktcmpid` is the published (4-part) tag, e.g. `2.0.0.5`, for
+    marketing/tracking.
   - Change log link (`https://deneb.guide/docs/changelog`).
   - Certified-build limitations note (external URI fetching disabled).
   - Standalone version explanation (uncertified, allows remote data).
