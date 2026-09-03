@@ -1,0 +1,142 @@
+name: Release
+
+# Publishes an APPROVED certification submission tag as a draft GitHub
+# release for maintainer review. Flow:
+#   1. Submission tags (2.0.0.N) are built by the `submission` job in
+#      ci.yml as workflow artifacts only (no releases).
+#   2. When Microsoft approves a submission, dispatch this workflow with
+#      that tag. It rebuilds both packages at the tag and creates a
+#      DRAFT release titled with the 3-part version (e.g. 2.0.0).
+#   3. The maintainer reviews/edits the draft body in the GitHub UI and
+#      publishes it manually.
+permissions:
+    contents: read
+
+on:
+    workflow_dispatch:
+        inputs:
+            tag:
+                description: 'Approved submission tag to publish (e.g. 2.0.0.5)'
+                required: true
+                type: string
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        env:
+            # Shell steps read the tag from env, never via ${{ }}
+            # interpolation inside `run:` — expression interpolation
+            # pastes the value into the script as shell source (see the
+            # injection note on the channel-release deletion step in
+            # ci.yml). `with:` blocks may use the expression form safely.
+            RELEASE_TAG: ${{ inputs.tag }}
+        steps:
+            - name: Check out approved tag
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ inputs.tag }}
+                  # Full history + tags: the changelog action walks
+                  # commits between the baseline tag and this tag.
+                  fetch-depth: 0
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: 'npm'
+            - name: Validate tag against pbiviz.json and derive title
+              id: meta
+              run: |
+                  if ! echo "$RELEASE_TAG" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
+                      echo "::error::'$RELEASE_TAG' is not a 4-part numeric submission tag (e.g. 2.0.0.5)."
+                      exit 1
+                  fi
+                  PBIVIZ_VERSION=$(node -p "require('./pbiviz.json').visual.version")
+                  if [ "$RELEASE_TAG" != "$PBIVIZ_VERSION" ]; then
+                      echo "::error::Tag '$RELEASE_TAG' does not match pbiviz.json visual.version '$PBIVIZ_VERSION' at that commit."
+                      exit 1
+                  fi
+                  # 3-part release title per repo convention (tag
+                  # 1.9.1.0 → title 1.9.1).
+                  echo "title=${RELEASE_TAG%.*}" >> $GITHUB_OUTPUT
+            # Changelog baseline = latest PUBLISHED release. The
+            # /releases/latest endpoint excludes drafts and prereleases
+            # by definition, so failed submission tags and channel
+            # prereleases can never become the baseline.
+            - name: Resolve changelog baseline
+              id: baseline
+              run: |
+                  BASELINE=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)
+                  if [ -z "$BASELINE" ]; then
+                      echo "::error::Could not resolve the latest published release."
+                      exit 1
+                  fi
+                  echo "tag=$BASELINE" >> $GITHUB_OUTPUT
+                  echo "Baseline release tag: $BASELINE"
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - name: Use CI .env file
+              run: cp .env.ci .env
+            - name: Cache turbo build setup
+              uses: actions/cache@v4
+              with:
+                  path: .turbo
+                  key: ${{ runner.os }}-turbo-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-turbo-
+            - name: Install Packages
+              run: npm ci
+            - name: Build packages
+              run: npm run build
+            # Both builds write to dist/, which webpack does not clean —
+            # stage each renamed asset into release-assets/ so the
+            # second build cannot interfere with the first. mv fails on
+            # zero/multiple glob matches, catching missing/ambiguous
+            # artifacts before a mis-named release asset is published.
+            - name: Build certified (AppSource) package
+              run: npm run package
+            - name: Stage AppSource asset
+              run: |
+                  mkdir -p release-assets
+                  mv dist/deneb7E15AEF80B9E4D4F8E12924291ECE89A*.pbiviz "release-assets/deneb.${RELEASE_TAG}.pbiviz"
+            - name: Build standalone package
+              run: npm run package-standalone
+            - name: Stage standalone asset
+              run: mv dist/STANDALONE*.pbiviz "release-assets/deneb.standalone.${RELEASE_TAG}.pbiviz"
+            - name: Generate changelog
+              id: changelog
+              uses: requarks/changelog-action@v1
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  fromTag: ${{ inputs.tag }}
+                  toTag: ${{ steps.baseline.outputs.tag }}
+                  excludeTypes: ''
+                  writeToFile: false
+            - name: Create draft release
+              uses: softprops/action-gh-release@v2
+              with:
+                  draft: true
+                  tag_name: ${{ inputs.tag }}
+                  name: ${{ steps.meta.outputs.title }}
+                  body: |
+                      This is version ${{ steps.meta.outputs.title }} of Deneb, as [published to AppSource](https://deneb.link/appsource?source=repo&mktcmpid=${{ inputs.tag }}).
+
+                      Please review the [change log](https://deneb.guide/docs/changelog) for an overview of what's new in this release.
+
+                      Note that the AppSource version has features disabled that would prevent it from being certified. Currently, this feature is limited to fetching remote data (such as images or external datasets) via URLs.
+
+                      If you need these features, you can download a standalone version from the assets below that is not tied to AppSource and will allow you to fetch remote data, provided that an external endpoint enables cross-domain requests from sandboxed iframes (which is how custom visuals are displayed in a report). Because this is not tied to AppSource, it is uncertified.
+
+                      ---
+
+                      ## Changes since ${{ steps.baseline.outputs.tag }}
+
+                      ${{ steps.changelog.outputs.changes }}
+
+                      **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.baseline.outputs.tag }}...${{ inputs.tag }}
+                  files: |
+                      release-assets/deneb.${{ inputs.tag }}.pbiviz
+                      release-assets/deneb.standalone.${{ inputs.tag }}.pbiviz
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
