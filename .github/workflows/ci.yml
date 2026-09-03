@@ -300,6 +300,11 @@ jobs:
         steps:
             - name: Check out code
               uses: actions/checkout@v4
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: 'npm'
             # The tag names the artifact that gets submitted to Partner
             # Center, so it must be the exact version baked into the
             # package. Fail fast (before install/build) on a shape or
@@ -317,11 +322,6 @@ jobs:
                   fi
             - name: Use CI .env file
               run: cp .env.ci .env
-            - name: Setup Node
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 22
-                  cache: 'npm'
             - name: Cache turbo build setup
               uses: actions/cache@v4
               with:
