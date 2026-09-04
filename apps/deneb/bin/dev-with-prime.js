@@ -22,8 +22,8 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const repoRoot = path.join(__dirname, '..');
-const tmpDir = path.join(repoRoot, '.tmp');
+const appRoot = path.join(__dirname, '..');
+const tmpDir = path.join(appRoot, '.tmp');
 
 // Distinguish clean shutdown (Ctrl+C, SIGTERM) from a real failure so outer
 // wrappers (CI gates, agent harnesses) see the genuine exit code.
@@ -38,7 +38,7 @@ const isCleanShutdown = (error) =>
 const run = (label, command) => {
     console.log(`\n→ ${label}`);
     try {
-        execSync(command, { stdio: 'inherit', cwd: repoRoot });
+        execSync(command, { stdio: 'inherit', cwd: appRoot });
     } catch (error) {
         if (isCleanShutdown(error)) {
             process.exit(0);
@@ -77,7 +77,7 @@ console.log('\n→ Starting dev server...');
 try {
     execSync(
         'npx --no turbo run dev webpack:start --parallel --concurrency=25',
-        { stdio: 'inherit', cwd: repoRoot }
+        { stdio: 'inherit', cwd: appRoot }
     );
 } catch (error) {
     if (isCleanShutdown(error)) {
