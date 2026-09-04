@@ -30,6 +30,24 @@ describe('getHighlightStatusValue', () => {
         ).toBe('off');
     });
 
+    // Issue #753: Power BI null-pads the highlights array, so a row outside
+    // an active highlight arrives as a present base value with a null
+    // comparator. It must report 'off', not 'on'.
+    it('is off for a present base value with a null comparator', () => {
+        expect(
+            getHighlightStatusValue(true, asValue(8.4), asValue(null))
+        ).toBe('off');
+    });
+
+    // Ambiguous shape (deliberate): a null base with a null comparator is
+    // indistinguishable from a null measure inside the highlight, so the
+    // long-standing 'on' result is preserved.
+    it('remains on when both base value and comparator are null', () => {
+        expect(
+            getHighlightStatusValue(true, asValue(null), asValue(null))
+        ).toBe('on');
+    });
+
     // Audit L13: a highlights array shorter than values yields an undefined
     // comparator via an out-of-bounds read; it must not be reported as 'on'.
     it('is off (not on) for an undefined out-of-bounds comparator', () => {
@@ -59,5 +77,28 @@ describe('getHighlightComparatorValue', () => {
         expect(
             getHighlightComparatorValue(asValue(100), asValue(undefined))
         ).toBe('neq');
+    });
+
+    // Issue #753: a null comparator (un-highlighted row) is "no value", not
+    // zero. Without an explicit guard, JS coercion produced 'lt' for positive
+    // bases, 'gt' for negative and 'neq' for zero/text — sign-dependent noise.
+    it('returns neq for a null comparator regardless of base value sign', () => {
+        expect(getHighlightComparatorValue(asValue(8.4), asValue(null))).toBe(
+            'neq'
+        );
+        expect(getHighlightComparatorValue(asValue(-5), asValue(null))).toBe(
+            'neq'
+        );
+        expect(getHighlightComparatorValue(asValue(0), asValue(null))).toBe(
+            'neq'
+        );
+    });
+
+    // Both null stays 'eq', consistent with getHighlightStatusValue keeping
+    // the both-null shape as 'on' (a null measure inside the highlight).
+    it('returns eq when both base value and comparator are null', () => {
+        expect(getHighlightComparatorValue(asValue(null), asValue(null))).toBe(
+            'eq'
+        );
     });
 });
