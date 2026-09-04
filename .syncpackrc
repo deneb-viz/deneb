@@ -2,7 +2,8 @@
     "$schema": "https://unpkg.com/syncpack@11.2.1/dist/schema.json",
     "source": [
         "package.json",
-        "packages/*/package.json"
+        "packages/*/package.json",
+        "apps/*/package.json"
     ],
     "indent": "    ",
     "versionGroups": [

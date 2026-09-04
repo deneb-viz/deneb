@@ -55,6 +55,8 @@ const ajvAliasPath = path.resolve(
     'node_modules',
     'ajv'
 );
+// Path is built from literal segments via path.resolve above, not external/user input.
+// eslint-disable-next-line powerbi-visuals/non-literal-fs-path
 if (!fs.existsSync(ajvAliasPath)) {
     throw new Error(
         `ajv alias target does not exist: ${ajvAliasPath}. npm hoisting has ` +

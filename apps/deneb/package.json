@@ -90,5 +90,12 @@
         "webpack-dev-server": "^5.2.2",
         "webpack-merge": "^6.0.1",
         "zustand": "^4.5.5"
-    }
+    },
+    "author": "Deneb contributors",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/deneb-viz/deneb.git"
+    },
+    "packageManager": "npm@10.3.0"
 }
