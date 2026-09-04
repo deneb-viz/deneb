@@ -36,7 +36,7 @@ Five key optimizations were made to improve dev build performance:
 
 ### 1. TypeScript Compilation Optimizations
 
-**File:** [webpack.common.config.js](../webpack.common.config.js)
+**File:** [apps/deneb/webpack.common.config.js](../apps/deneb/webpack.common.config.js)
 
 ```javascript
 compilerOptions: !isProduction
@@ -67,7 +67,7 @@ compilerOptions: !isProduction
 
 ### 2. Disabled Source Maps in Dev Mode
 
-**File:** [webpack.dev.config.js](../webpack.dev.config.js)
+**File:** [apps/deneb/webpack.dev.config.js](../apps/deneb/webpack.dev.config.js)
 
 ```javascript
 devtool: false,  // No source maps for fastest builds
@@ -83,7 +83,7 @@ devtool: false,  // No source maps for fastest builds
 **Alternative when browser debugging is needed:**
 
 ```javascript
-// Temporarily edit webpack.dev.config.js
+// Temporarily edit apps/deneb/webpack.dev.config.js
 devtool: 'cheap-module-source-map',  // ~15s slower but enables browser debugging
 ```
 
@@ -95,7 +95,7 @@ devtool: 'cheap-module-source-map',  // ~15s slower but enables browser debuggin
 
 ### 3. Disabled Certification Fix in Dev Mode
 
-**File:** [webpack.common.config.js](../webpack.common.config.js)
+**File:** [apps/deneb/webpack.common.config.js](../apps/deneb/webpack.common.config.js)
 
 ```javascript
 certificationFix: !devMode && certificationFix,
@@ -128,7 +128,7 @@ certificationFix: !devMode && certificationFix,
 
 ### 4. Fixed publicPath for Dev Server
 
-**File:** [webpack.common.config.js](../webpack.common.config.js)
+**File:** [apps/deneb/webpack.common.config.js](../apps/deneb/webpack.common.config.js)
 
 ```javascript
 publicPath: devMode ? '/assets/' : 'assets',
@@ -161,12 +161,12 @@ publicPath: devMode ? '/assets/' : 'assets',
 
 **New Files:**
 
-- [bin/dev-with-prime.js](../bin/dev-with-prime.js)
+- [apps/deneb/bin/dev-with-prime.js](../apps/deneb/bin/dev-with-prime.js)
 
 **Updated Files:**
 
 - [package.json](../package.json) - `dev` script now calls `dev-with-prime.js`
-- [webpack.dev.config.js](../webpack.dev.config.js) - Accepts `generateResources` env var
+- [apps/deneb/webpack.dev.config.js](../apps/deneb/webpack.dev.config.js) - Accepts `generateResources` env var
 
 **Behavior:**
 
@@ -186,7 +186,7 @@ npm run webpack:start    // Start dev server
 
 **How it works:**
 
-1. `npm run dev` calls `bin/dev-with-prime.js`
+1. `npm run dev` calls `apps/deneb/bin/dev-with-prime.js`
 2. Script checks if required assets exist and are valid
 3. If missing/invalid, runs `npm run webpack:prime` (one-time ~22s build)
 4. Then starts dev server normally
@@ -309,7 +309,7 @@ npm run webpack:start    // Start dev server
 
 **Problem:** Adds 10-15s to every build for no benefit
 **Symptom:** Build log shows "X entries of fetch, eval, XMLHttpRequest were removed"
-**Fix:** Ensure `certificationFix: !devMode && certificationFix` in webpack.common.config.js
+**Fix:** Ensure `certificationFix: !devMode && certificationFix` in apps/deneb/webpack.common.config.js
 
 ### ❌ Don't: Forget to validate before packaging
 

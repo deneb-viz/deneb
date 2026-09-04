@@ -105,7 +105,7 @@ Beyond formatting, [CLAUDE.md](CLAUDE.md) contains the high-level conventions (s
 
 ## Localization / string resources
 
-`stringResources/en-US/resources.resjson` is the authoritative source of truth for all localized strings in the visual. The other 44 locale directories under `stringResources/` contain intentional placeholder `{}` files, pending translation - Power BI falls back to en-US at runtime for any string missing from a locale's resource file, so those locales simply render in English for now. Do not delete the placeholder directories or files: `pbiviz` packaging expects the full locale directory set to be present, even where the resource file itself is empty. Note that `stringResources/` must contain only locale directories - the packaging toolchain's locale scanner treats every entry in that folder as a locale, so stray files there produce build noise.
+`apps/deneb/stringResources/en-US/resources.resjson` is the authoritative source of truth for all localized strings in the visual. The other 44 locale directories under `apps/deneb/stringResources/` contain intentional placeholder `{}` files, pending translation - Power BI falls back to en-US at runtime for any string missing from a locale's resource file, so those locales simply render in English for now. Do not delete the placeholder directories or files: `pbiviz` packaging expects the full locale directory set to be present, even where the resource file itself is empty. Note that `apps/deneb/stringResources/` must contain only locale directories - the packaging toolchain's locale scanner treats every entry in that folder as a locale, so stray files there produce build noise.
 
 ## Documentation
 
