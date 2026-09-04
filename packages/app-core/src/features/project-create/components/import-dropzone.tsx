@@ -204,12 +204,14 @@ const handleFileLoad = (file: FileWithPath | File) => {
  */
 const handleValidation = (content: string) => {
     const {
-        create: { setImportFile, setImportState }
+        create: { setImportFile, setImportState },
+        editorPreferences: { jsonEditorFormattingMaxLineLength }
     } = getDenebState();
     setImportState({ importState: 'Validating', refresh: true });
     const validationResult = getValidatedTemplate(
         content,
-        EDITOR_DEFAULTS.tabSize
+        EDITOR_DEFAULTS.tabSize,
+        jsonEditorFormattingMaxLineLength
     );
     setImportFile(validationResult);
 };

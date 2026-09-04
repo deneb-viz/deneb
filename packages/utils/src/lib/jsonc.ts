@@ -52,3 +52,5 @@ export const parseJsoncWithResult = (
         };
     }
 };
+
+export { formatJsoncCompact, formatJsoncCompactRange } from './jsonc-format';

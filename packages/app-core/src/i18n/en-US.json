@@ -139,6 +139,7 @@
     "Text_Compiled_Vega_Switch": "Convert my spec to Vega",
     "Text_Compiled_Vega_Switch_Confirm": "This will replace your Vega-Lite specification with the compiled Vega output. THIS CANNOT BE UNDONE.",
     "Text_Compiled_Vega_Toggle": "Show compiled Vega",
+    "Text_Editor_Action_Format": "Format Document or Selection",
     "Text_Editor_Error_Message": "An error occurred in the editor.",
     "Text_Editor_Error_Retry": "Retry",
     "Text_Export_Tokenizing": "Updating your specification with placeholders for your dataset. Please wait...",

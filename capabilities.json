@@ -292,6 +292,11 @@
                     "type": {
                         "numeric": true
                     }
+                },
+                "formattingMaxLineLength": {
+                    "type": {
+                        "numeric": true
+                    }
                 }
             }
         },

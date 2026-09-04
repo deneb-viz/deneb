@@ -244,6 +244,21 @@ Features in `packages/app-core/src/features/` must not cross-import from sibling
 
 The `import-x/no-cycle` ESLint rule (via `eslint-plugin-import-x`) warns on circular import chains. Run `npm run eslint` to check for violations. Note that this rule only detects **circular** imports — the broader boundary rule (no sibling-to-sibling imports, even non-circular) is enforced by code review. Some pre-existing violations exist and are being cleaned up incrementally.
 
+### JSON formatting (compact JSONC)
+
+All spec/config formatting — Format Document / Format Selection in the editor, and template import/export — goes through `formatJsoncCompact` / `formatJsoncCompactRange` in `@deneb-viz/utils/jsonc`. It walks the jsonc-parser AST and applies the same fit rule as `json-stringify-pretty-compact` (Vega Editor's formatter), but preserves comments. The Monaco JSON worker's own formatter is disabled in `editor-init-service.ts`; the `formattingMaxLineLength` editor property (default 80, range 40–200) sets the width.
+
+Behaviour to be aware of:
+
+- **Compaction rule** — a container is written on one line when its single-line form (including indent, `"key": ` prefix and trailing comma) fits within the max line length and contains no comments; otherwise one child per line. Nested containers are decided independently.
+- **Comments force expansion** — any comment inside a container expands it and every ancestor. Comments above a value stay above it; same-line trailing comments stay on the line (a comment following `1, ` on the same line trails `1`, not the next element); comments after the last entry stay before the closer. A comment between a key and its value is moved above the next entry (or to the end of the object if there is none).
+- **Range formatting snaps outward** — the smallest complete value or property containing the selection is reformatted. Selecting a key or value reformats the whole property. It widens further when the selection's span contains a comment that only an ancestor's rendering can carry (e.g. a comment between a key and its value belongs to the next entry) — the edit grows until no comment would be lost, at worst reformatting the whole document.
+- **Invalid JSON is left untouched** — nothing happens until parse errors (including trailing commas) are resolved.
+- **Layout is deterministic** — existing line breaks are not preserved; formatting is idempotent. Output adopts the editor document's existing line-ending style.
+- **Literals are copied verbatim** — `1.0` stays `1.0`; escapes are not rewritten.
+
+Design record: [docs/brainstorms/2026-08-21-compact-jsonc-formatting-requirements.md](brainstorms/2026-08-21-compact-jsonc-formatting-requirements.md).
+
 ## 6. Feature Flags
 
 JSON feature flags are defined in `config/features.json` and can be overridden in `config/package-custom.json` for custom builds. These are primarily used to gate visual behaviors that must remain stable and off by default in the certified build.

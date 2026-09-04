@@ -40,6 +40,14 @@ export const EDITOR_PREFERENCES_SYNC_MAPPINGS: SliceSyncMapping<EditorPreference
             }
         },
         {
+            sliceKey: 'jsonEditorFormattingMaxLineLength',
+            getVisualValue: (s) => s.editor.json.formattingMaxLineLength.value,
+            persistence: {
+                objectName: 'editor',
+                propertyName: 'formattingMaxLineLength'
+            }
+        },
+        {
             sliceKey: 'jsonEditorPosition',
             getVisualValue: (s) => s.editor.json.position.value,
             persistence: {

@@ -10,6 +10,7 @@ export type EditorPreferencesSliceProperties = {
     dataViewerRowsPerPage: number;
     jsonEditorDebouncePeriod: number;
     jsonEditorFontSize: number;
+    jsonEditorFormattingMaxLineLength: number;
     jsonEditorPosition: EditorPanePosition;
     jsonEditorShowLineNumbers: boolean;
     jsonEditorWordWrap: boolean;
@@ -45,6 +46,8 @@ export const createEditorPreferencesSlice =
                 DATA_VIEWER_CONFIGURATION.rowsPerPage.default,
             jsonEditorDebouncePeriod: EDITOR_DEFAULTS.debouncePeriod.default,
             jsonEditorFontSize: EDITOR_DEFAULTS.fontSize.default,
+            jsonEditorFormattingMaxLineLength:
+                EDITOR_DEFAULTS.formattingMaxLineLength.default,
             jsonEditorPosition: EDITOR_DEFAULTS.position as EditorPanePosition,
             jsonEditorShowLineNumbers: EDITOR_DEFAULTS.showLineNumbers,
             jsonEditorWordWrap: EDITOR_DEFAULTS.wordWrap,

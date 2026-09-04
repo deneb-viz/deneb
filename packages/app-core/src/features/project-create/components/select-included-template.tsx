@@ -23,7 +23,7 @@ import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { logRender } from '@deneb-viz/utils/logging';
 import { getVegaProviderI18n } from '../../../lib/vega/i18n';
-import { useDenebState } from '../../../state';
+import { getDenebState, useDenebState } from '../../../state';
 import { EDITOR_DEFAULTS } from '@deneb-viz/configuration';
 
 type SelectIncludedTemplateProps = {
@@ -89,7 +89,8 @@ export const SelectIncludedTemplate = ({
         const templateContent = JSON.stringify(template);
         const candidates = getTemplateResolvedForPlaceholderAssignment(
             templateContent,
-            EDITOR_DEFAULTS.tabSize
+            EDITOR_DEFAULTS.tabSize,
+            getDenebState().editorPreferences.jsonEditorFormattingMaxLineLength
         );
         setTemplate({
             metadata: getTemplateMetadata(templateContent),

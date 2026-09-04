@@ -112,12 +112,29 @@ class SettingsEditorGroupJson extends formattingSettings.Group {
         },
         value: EDITOR_DEFAULTS.debouncePeriod.default
     });
+    formattingMaxLineLength = new formattingSettings.NumUpDown({
+        name: 'formattingMaxLineLength',
+        displayNameKey: 'Objects_Editor_FormattingMaxLineLength',
+        descriptionKey: 'Objects_Editor_FormattingMaxLineLength_Description',
+        options: {
+            minValue: {
+                value: EDITOR_DEFAULTS.formattingMaxLineLength.min,
+                type: 0
+            },
+            maxValue: {
+                value: EDITOR_DEFAULTS.formattingMaxLineLength.max,
+                type: 1
+            }
+        },
+        value: EDITOR_DEFAULTS.formattingMaxLineLength.default
+    });
     slices = [
         this.position,
         this.fontSize,
         this.wordWrap,
         this.showLineNumbers,
-        this.debouncePeriod
+        this.debouncePeriod,
+        this.formattingMaxLineLength
     ];
 }
 

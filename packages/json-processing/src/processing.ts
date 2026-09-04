@@ -1,13 +1,13 @@
 import {
     applyEdits,
-    format,
     getNodeValue,
     modify,
     parseTree,
     Node
 } from 'jsonc-parser';
 import { JSONPath } from 'vscode-json-languageservice';
-import { stripJsoncComments } from '@deneb-viz/utils/jsonc';
+import { EDITOR_DEFAULTS } from '@deneb-viz/configuration';
+import { formatJsoncCompact, stripJsoncComments } from '@deneb-viz/utils/jsonc';
 
 /**
  * For the supplied JSONC tree, return the JavaScript object value of the node.
@@ -70,10 +70,8 @@ export const getModifiedJsoncByPath = (
  * debugging tables, {@link getObjectFormattedAsText} should be used instead. This doesn't have as much overhead and is
  * better for cases where we need to process many objects.
  */
-export const getTextFormattedAsJsonC = (content: string, tabSize: number) => {
-    const formatted = format(content, undefined, {
-        tabSize,
-        insertSpaces: true
-    });
-    return applyEdits(content, formatted);
-};
+export const getTextFormattedAsJsonC = (
+    content: string,
+    tabSize: number,
+    maxLineLength: number = EDITOR_DEFAULTS.formattingMaxLineLength.default
+) => formatJsoncCompact(content, { tabSize, maxLineLength });
