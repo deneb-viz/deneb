@@ -23,11 +23,15 @@
  * mismatch triggers a structural equivalence proof instead of an immediate
  * failure: both bundles are parsed (acorn), the webpack module map is
  * extracted, each module's body is hashed with its require-call IDs blinded,
- * and the module graphs are compared via iterative canonical labeling; the
- * runtime/entry glue outside the map must be identical after blinding integer
- * tokens. Only if the bundles are provably identical up to a consistent ID
- * renumbering does content.js count as a pass — any real code change still
- * fails. The flag never relaxes any other part.
+ * and the module graphs are compared via iterative canonical labeling. The
+ * runtime/entry glue outside the map must be byte-identical except at
+ * numeric-literal positions (located via the AST, so string content is never
+ * exempted), and each positional pair of numeric literals must either be
+ * EQUAL (an ordinary constant — any change to it fails) or be a pair of
+ * module IDs that reference corresponding modules under a consistent
+ * renumbering. Only if the bundles are provably identical up to a consistent
+ * ID renumbering does content.js count as a pass — any real code change
+ * still fails. The flag never relaxes any other part.
  *
  * Usage:
  *   npm run verify-package-parity -- <baseline.pbiviz> <candidate.pbiviz>
@@ -117,8 +121,14 @@ interface ModuleInfo {
 
 interface BundleShape {
     modules: Map<number, ModuleInfo>;
-    /** Bundle source outside the module map, integer tokens blinded. */
+    /**
+     * Bundle source outside the module map with every numeric literal
+     * blinded (AST-positionally, so digits inside strings are untouched);
+     * all non-numeric content must match byte-for-byte.
+     */
     blindedGlue: string;
+    /** The glue's numeric-literal values, in source order. */
+    glueNumbers: number[];
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -142,10 +152,6 @@ const walkAst = (node: any, visit: (node: any) => void): void => {
 };
 
 const MIN_MODULE_MAP_ENTRIES = 100;
-
-/** Blind every standalone integer token (including terser's 2e3 form). */
-const blindIntegerTokens = (source: string): string =>
-    source.replace(/\b\d+(?:e\d+)?\b/g, '#');
 
 /**
  * A webpack module-map entry is a numeric-keyed function. Requiring the
@@ -183,8 +189,9 @@ const extractBundleShape = (source: string, label: string): BundleShape => {
     if (!moduleMap) {
         throw new Error(`${label}: webpack module map not found in bundle`);
     }
+    const moduleEntries = moduleMap.properties.filter(isModuleEntry);
     const modules = new Map<number, ModuleInfo>();
-    for (const property of moduleMap.properties.filter(isModuleEntry)) {
+    for (const property of moduleEntries) {
         const id = property.key.value as number;
         const fn = property.value;
         // Webpack passes the require function as the module's third parameter;
@@ -221,12 +228,42 @@ const extractBundleShape = (source: string, label: string): BundleShape => {
         blinded += source.slice(position, fn.end);
         modules.set(id, { blindedHash: sha256(blinded), refs });
     }
-    const blindedGlue = blindIntegerTokens(
-        source.slice(0, moduleMap.start) +
-            '<<MODULE_MAP>>' +
-            source.slice(moduleMap.end)
-    );
-    return { modules, blindedGlue };
+    // Glue (webpack bootstrap + entry code outside the map): blind EVERY
+    // numeric literal positionally via the AST — digits inside strings are
+    // never touched, so any string change fails the byte comparison. The
+    // literal VALUES are recorded in source order; the equivalence check
+    // requires each positional pair to be equal (an ordinary constant) or a
+    // corresponding pair of module IDs. Module references here take several
+    // shapes (direct require calls, require.bind for lazy workers), so no
+    // call-shape heuristic is used — value pairing decides.
+    const glueNumbers: number[] = [];
+    const replacements: { start: number; end: number; text: string }[] = [
+        { start: moduleMap.start, end: moduleMap.end, text: '<<MODULE_MAP>>' }
+    ];
+    walkAst(ast, (node) => {
+        if (
+            node.type === 'Literal' &&
+            typeof node.value === 'number' &&
+            (node.start < moduleMap.start || node.start >= moduleMap.end)
+        ) {
+            glueNumbers.push(node.value);
+            replacements.push({
+                start: node.start,
+                end: node.end,
+                text: '#'
+            });
+        }
+    });
+    replacements.sort((a, b) => a.start - b.start);
+    let blindedGlue = '';
+    let gluePosition = 0;
+    for (const replacement of replacements) {
+        blindedGlue +=
+            source.slice(gluePosition, replacement.start) + replacement.text;
+        gluePosition = replacement.end;
+    }
+    blindedGlue += source.slice(gluePosition);
+    return { modules, blindedGlue, glueNumbers };
 };
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
@@ -238,7 +275,9 @@ const CANONICAL_LABEL_ROUNDS = 6;
  * (in call order). After a few rounds, matching label multisets mean the two
  * module graphs are identical up to a bijective renaming of module IDs.
  */
-const canonicalLabels = (modules: Map<number, ModuleInfo>): string[] => {
+const canonicalLabels = (
+    modules: Map<number, ModuleInfo>
+): Map<number, string> => {
     let labels = new Map<number, string>(
         [...modules].map(([id, info]) => [id, info.blindedHash])
     );
@@ -252,7 +291,7 @@ const canonicalLabels = (modules: Map<number, ModuleInfo>): string[] => {
         }
         labels = next;
     }
-    return [...labels.values()].sort();
+    return labels;
 };
 
 interface EquivalenceResult {
@@ -275,14 +314,52 @@ export const verifyModuleIdRenumberingOnly = (
     if (baseline.blindedGlue !== candidate.blindedGlue) {
         return {
             equivalent: false,
-            detail: 'runtime/entry code outside the module map differs beyond integer tokens'
+            detail: 'runtime/entry code outside the module map differs'
         };
     }
-    const baselineLabels = canonicalLabels(baseline.modules);
-    const candidateLabels = canonicalLabels(candidate.modules);
+    const baselineLabelMap = canonicalLabels(baseline.modules);
+    const candidateLabelMap = canonicalLabels(candidate.modules);
+    const baselineLabels = [...baselineLabelMap.values()].sort();
+    const candidateLabels = [...candidateLabelMap.values()].sort();
     const graphsMatch = baselineLabels.every(
         (labelValue, index) => labelValue === candidateLabels[index]
     );
+    // Every numeric literal in the glue was blinded positionally; require
+    // each positional value pair to be EQUAL (an ordinary constant — any
+    // change fails) or a pair of module IDs referencing corresponding
+    // modules (same canonical label) under a consistent one-to-one
+    // renumbering.
+    if (baseline.glueNumbers.length !== candidate.glueNumbers.length) {
+        return {
+            equivalent: false,
+            detail: 'numeric literals in the runtime/entry glue differ in count'
+        };
+    }
+    const forward = new Map<number, number>();
+    const reverse = new Map<number, number>();
+    for (let index = 0; index < baseline.glueNumbers.length; index++) {
+        const baselineValue = baseline.glueNumbers[index];
+        const candidateValue = candidate.glueNumbers[index];
+        if (baselineValue === candidateValue) {
+            continue;
+        }
+        const labelsCorrespond =
+            baselineLabelMap.get(baselineValue) !== undefined &&
+            baselineLabelMap.get(baselineValue) ===
+                candidateLabelMap.get(candidateValue);
+        const forwardConsistent =
+            (forward.get(baselineValue) ?? candidateValue) === candidateValue;
+        const reverseConsistent =
+            (reverse.get(candidateValue) ?? baselineValue) === baselineValue;
+        if (!labelsCorrespond || !forwardConsistent || !reverseConsistent) {
+            return {
+                equivalent: false,
+                detail: `numeric literal in the runtime/entry glue changed (${baselineValue} vs ${candidateValue}) without corresponding module-ID renumbering`
+            };
+        }
+        forward.set(baselineValue, candidateValue);
+        reverse.set(candidateValue, baselineValue);
+    }
     // Canonical labeling compares label multisets (1-WL refinement), which is
     // exact only when labels are distinct. Modules sharing a final label are
     // interchangeable "twins" (identical bodies AND reference structure to
