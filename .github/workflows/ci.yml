@@ -241,7 +241,7 @@ jobs:
             # files, so a missing/ambiguous build artifact is caught here
             # rather than publishing a mis-named release.
             - name: Rename package to versioned channel filename
-              run: mv dist/${{ steps.channel.outputs.prefix }}*.pbiviz "dist/deneb.${{ steps.version_tag.outputs.tag }}.pbiviz"
+              run: mv apps/deneb/dist/${{ steps.channel.outputs.prefix }}*.pbiviz "apps/deneb/dist/deneb.${{ steps.version_tag.outputs.tag }}.pbiviz"
             - name: Delete existing channel release
               # $GITHUB_REF_NAME (env var, quoted) rather than
               # ${{ github.ref_name }}: expression interpolation pastes
@@ -297,7 +297,7 @@ jobs:
 
                       ${{ steps.changelog.outputs.changes }}
                   files: |
-                      dist/deneb.${{ steps.version_tag.outputs.tag }}.pbiviz
+                      apps/deneb/dist/deneb.${{ steps.version_tag.outputs.tag }}.pbiviz
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -327,7 +327,7 @@ jobs:
                       echo "::error::Tag '$GITHUB_REF_NAME' is not a 4-part numeric submission tag (e.g. 2.0.0.1)."
                       exit 1
                   fi
-                  PBIVIZ_VERSION=$(node -p "require('./pbiviz.json').visual.version")
+                  PBIVIZ_VERSION=$(node -p "require('./apps/deneb/pbiviz.json').visual.version")
                   if [ "$GITHUB_REF_NAME" != "$PBIVIZ_VERSION" ]; then
                       echo "::error::Tag '$GITHUB_REF_NAME' does not match pbiviz.json visual.version '$PBIVIZ_VERSION'. Bump pbiviz.json, commit, and re-tag."
                       exit 1
@@ -354,11 +354,11 @@ jobs:
             # files, so a missing/ambiguous build artifact is caught here
             # rather than uploading a mis-named artifact.
             - name: Rename package to submission filename
-              run: mv dist/deneb7E15AEF80B9E4D4F8E12924291ECE89A*.pbiviz "dist/deneb.${GITHUB_REF_NAME}.pbiviz"
+              run: mv apps/deneb/dist/deneb7E15AEF80B9E4D4F8E12924291ECE89A*.pbiviz "apps/deneb/dist/deneb.${GITHUB_REF_NAME}.pbiviz"
             - name: Upload submission artifact
               uses: actions/upload-artifact@v4
               with:
                   name: deneb.${{ github.ref_name }}
-                  path: dist/deneb.${{ github.ref_name }}.pbiviz
+                  path: apps/deneb/dist/deneb.${{ github.ref_name }}.pbiviz
                   retention-days: 90
                   if-no-files-found: error

@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { REPO_ROOT } from './_packages';
+import { APP_ROOT, REPO_ROOT } from './_packages';
 
 /**
  * Canary: every `displayNameKey` / `descriptionKey` (and the equivalent
@@ -31,13 +31,7 @@ const RESOURCE_KEY_PATTERN =
 const extractKeys = (source: string): string[] =>
     [...source.matchAll(RESOURCE_KEY_PATTERN)].map((match) => match[1]);
 
-const SETTINGS_MODEL_DIR = join(
-    REPO_ROOT,
-    'src',
-    'lib',
-    'persistence',
-    'model'
-);
+const SETTINGS_MODEL_DIR = join(APP_ROOT, 'src', 'lib', 'persistence', 'model');
 
 const settingsModelKeys = readdirSync(SETTINGS_MODEL_DIR)
     .filter((file) => file.endsWith('.ts'))
@@ -58,7 +52,7 @@ const referencedKeys = [
 
 const enUsResources = JSON.parse(
     readFileSync(
-        join(REPO_ROOT, 'stringResources', 'en-US', 'resources.resjson'),
+        join(APP_ROOT, 'stringResources', 'en-US', 'resources.resjson'),
         'utf8'
     )
 ) as Record<string, string>;

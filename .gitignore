@@ -95,3 +95,5 @@ packages/configuration/src/generated.ts
 # This folder is created because Node.js/PowerShell doesn't expand %SystemDrive%
 # properly when Windows Shell creates icon/thumbnail cache during pbiviz:start
 %SystemDrive%/
+# Local-only planning material (never committed; review before any related commit)
+docs/private/

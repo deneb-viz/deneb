@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { REPO_ROOT } from './_packages';
+import { APP_ROOT } from './_packages';
 
 /**
  * Canary: certification and build-orchestration invariants that exist only as
@@ -12,7 +12,7 @@ import { REPO_ROOT } from './_packages';
 
 describe('safety-net bound is the certification ceiling', () => {
     it('SAFETY_NET_BOUND_MS is present and <= 10_000ms', () => {
-        const source = readFileSync(join(REPO_ROOT, 'src', 'index.ts'), 'utf8');
+        const source = readFileSync(join(APP_ROOT, 'src', 'index.ts'), 'utf8');
         const match = source.match(/SAFETY_NET_BOUND_MS\s*=\s*([\d_]+)\s*;/);
         // Fail loud if the constant is renamed/removed rather than pass vacuously.
         if (!match) {
@@ -25,7 +25,7 @@ describe('safety-net bound is the certification ceiling', () => {
 
 describe('production `package` script ordering (audit R9)', () => {
     const pkgScript = (
-        JSON.parse(readFileSync(join(REPO_ROOT, 'package.json'), 'utf8')) as {
+        JSON.parse(readFileSync(join(APP_ROOT, 'package.json'), 'utf8')) as {
             scripts: Record<string, string>;
         }
     ).scripts.package;
@@ -53,7 +53,7 @@ describe('production `package` script ordering (audit R9)', () => {
 
 describe('dev-with-prime resets .tmp and drives turbo (audit R6)', () => {
     const source = readFileSync(
-        join(REPO_ROOT, 'bin', 'dev-with-prime.js'),
+        join(APP_ROOT, 'bin', 'dev-with-prime.js'),
         'utf8'
     );
 
