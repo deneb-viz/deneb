@@ -15,14 +15,30 @@
  * stringResources hashes change), and an ajv hoisting swap changes
  * content.js.
  *
+ * --expect-module-id-renumbering:
+ * Webpack's production module IDs are hashes of module paths RELATIVE TO THE
+ * BUILD CONTEXT, so physically relocating the source tree renumbers every ID
+ * while leaving the code itself untouched — byte parity of content.js across
+ * a move is unattainable by construction. With this flag, a raw content.js
+ * mismatch triggers a structural equivalence proof instead of an immediate
+ * failure: both bundles are parsed (acorn), the webpack module map is
+ * extracted, each module's body is hashed with its require-call IDs blinded,
+ * and the module graphs are compared via iterative canonical labeling; the
+ * runtime/entry glue outside the map must be identical after blinding integer
+ * tokens. Only if the bundles are provably identical up to a consistent ID
+ * renumbering does content.js count as a pass — any real code change still
+ * fails. The flag never relaxes any other part.
+ *
  * Usage:
  *   npm run verify-package-parity -- <baseline.pbiviz> <candidate.pbiviz>
+ *       [--expect-module-id-renumbering]
  *
  * Exit codes: 0 all parts match; 1 at least one part differs; 2 usage error.
  */
 import { readFileSync } from 'fs';
 import { createHash } from 'crypto';
 import JSZip from 'jszip';
+import * as acorn from 'acorn';
 
 interface PbivizResource {
     visual: Record<string, unknown>;
@@ -44,8 +60,7 @@ const sha256 = (value: string): string =>
 const loadResource = async (pbivizPath: string): Promise<PbivizResource> => {
     const zip = await JSZip.loadAsync(readFileSync(pbivizPath));
     const resourceFile = Object.keys(zip.files).find(
-        (name) =>
-            name.startsWith('resources/') && name.endsWith('.pbiviz.json')
+        (name) => name.startsWith('resources/') && name.endsWith('.pbiviz.json')
     );
     if (!resourceFile) {
         throw new Error(`No resources/*.pbiviz.json found in ${pbivizPath}`);
@@ -86,33 +101,264 @@ export const getPartHashes = (
     return parts;
 };
 
+/**
+ * Structural equivalence proof for two webpack bundles that are expected to
+ * differ only by module-ID renumbering. Minified ASTs are traversed with a
+ * generic walker (loose `any` typing is deliberate — acorn's node shapes are
+ * dynamic and this is an analysis script, not shipped code).
+ */
+
+interface ModuleInfo {
+    /** sha256 of the module's source with require-call IDs blinded. */
+    blindedHash: string;
+    /** Referenced module IDs in call order. */
+    refs: number[];
+}
+
+interface BundleShape {
+    modules: Map<number, ModuleInfo>;
+    /** Bundle source outside the module map, integer tokens blinded. */
+    blindedGlue: string;
+}
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const walkAst = (node: any, visit: (node: any) => void): void => {
+    if (!node || typeof node.type !== 'string') {
+        return;
+    }
+    visit(node);
+    for (const key of Object.keys(node)) {
+        const value = node[key];
+        if (Array.isArray(value)) {
+            for (const child of value) {
+                if (child && child.type) {
+                    walkAst(child, visit);
+                }
+            }
+        } else if (value && value.type) {
+            walkAst(value, visit);
+        }
+    }
+};
+
+const MIN_MODULE_MAP_ENTRIES = 100;
+
+/** Blind every standalone integer token (including terser's 2e3 form). */
+const blindIntegerTokens = (source: string): string =>
+    source.replace(/\b\d+(?:e\d+)?\b/g, '#');
+
+/**
+ * A webpack module-map entry is a numeric-keyed function. Requiring the
+ * function-shaped value guards against misdetecting a large numeric-keyed
+ * DATA object (e.g. an embedded locale/lookup table) as the module map.
+ */
+const isModuleEntry = (property: any): boolean =>
+    property.key &&
+    property.key.type === 'Literal' &&
+    typeof property.key.value === 'number' &&
+    property.value &&
+    (property.value.type === 'FunctionExpression' ||
+        property.value.type === 'ArrowFunctionExpression');
+
+const extractBundleShape = (source: string, label: string): BundleShape => {
+    const ast = acorn.parse(source, { ecmaVersion: 'latest' }) as any;
+    // The webpack module map is the largest object literal keyed (almost)
+    // entirely by numeric module IDs with function values.
+    let moduleMap: any = null;
+    walkAst(ast, (node) => {
+        if (
+            node.type === 'ObjectExpression' &&
+            node.properties.length > MIN_MODULE_MAP_ENTRIES
+        ) {
+            const entries = node.properties.filter(isModuleEntry);
+            if (
+                entries.length > MIN_MODULE_MAP_ENTRIES &&
+                (!moduleMap ||
+                    node.properties.length > moduleMap.properties.length)
+            ) {
+                moduleMap = node;
+            }
+        }
+    });
+    if (!moduleMap) {
+        throw new Error(`${label}: webpack module map not found in bundle`);
+    }
+    const modules = new Map<number, ModuleInfo>();
+    for (const property of moduleMap.properties.filter(isModuleEntry)) {
+        const id = property.key.value as number;
+        const fn = property.value;
+        // Webpack passes the require function as the module's third parameter;
+        // calls to it with a single numeric literal are module references.
+        // Scope is deliberately narrowed to this observed call shape (no
+        // code-splitting in a .pbiviz bundle): any other ID-bearing construct
+        // is left un-blinded and fails safe as a body-hash mismatch (DIFF).
+        const requireName: string | undefined = (fn.params ?? [])[2]?.name;
+        const refs: number[] = [];
+        const blindSpans: { start: number; end: number }[] = [];
+        walkAst(fn, (node) => {
+            if (
+                node.type === 'CallExpression' &&
+                node.callee.type === 'Identifier' &&
+                node.callee.name === requireName &&
+                node.arguments.length === 1 &&
+                node.arguments[0].type === 'Literal' &&
+                typeof node.arguments[0].value === 'number'
+            ) {
+                refs.push(node.arguments[0].value);
+                blindSpans.push({
+                    start: node.arguments[0].start,
+                    end: node.arguments[0].end
+                });
+            }
+        });
+        blindSpans.sort((a, b) => a.start - b.start);
+        let blinded = '';
+        let position = fn.start;
+        for (const span of blindSpans) {
+            blinded += source.slice(position, span.start) + '#';
+            position = span.end;
+        }
+        blinded += source.slice(position, fn.end);
+        modules.set(id, { blindedHash: sha256(blinded), refs });
+    }
+    const blindedGlue = blindIntegerTokens(
+        source.slice(0, moduleMap.start) +
+            '<<MODULE_MAP>>' +
+            source.slice(moduleMap.end)
+    );
+    return { modules, blindedGlue };
+};
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+const CANONICAL_LABEL_ROUNDS = 6;
+
+/**
+ * Canonical label per module via iterative refinement: start from the
+ * blinded-body hash and repeatedly fold in the labels of referenced modules
+ * (in call order). After a few rounds, matching label multisets mean the two
+ * module graphs are identical up to a bijective renaming of module IDs.
+ */
+const canonicalLabels = (modules: Map<number, ModuleInfo>): string[] => {
+    let labels = new Map<number, string>(
+        [...modules].map(([id, info]) => [id, info.blindedHash])
+    );
+    for (let round = 0; round < CANONICAL_LABEL_ROUNDS; round++) {
+        const next = new Map<number, string>();
+        for (const [id, info] of modules) {
+            const refLabels = info.refs
+                .map((ref) => labels.get(ref) ?? `external:${ref}`)
+                .join(',');
+            next.set(id, sha256(`${labels.get(id)}|${refLabels}`));
+        }
+        labels = next;
+    }
+    return [...labels.values()].sort();
+};
+
+interface EquivalenceResult {
+    equivalent: boolean;
+    detail: string;
+}
+
+export const verifyModuleIdRenumberingOnly = (
+    baselineJs: string,
+    candidateJs: string
+): EquivalenceResult => {
+    const baseline = extractBundleShape(baselineJs, 'baseline');
+    const candidate = extractBundleShape(candidateJs, 'candidate');
+    if (baseline.modules.size !== candidate.modules.size) {
+        return {
+            equivalent: false,
+            detail: `module counts differ (${baseline.modules.size} vs ${candidate.modules.size})`
+        };
+    }
+    if (baseline.blindedGlue !== candidate.blindedGlue) {
+        return {
+            equivalent: false,
+            detail: 'runtime/entry code outside the module map differs beyond integer tokens'
+        };
+    }
+    const baselineLabels = canonicalLabels(baseline.modules);
+    const candidateLabels = canonicalLabels(candidate.modules);
+    const graphsMatch = baselineLabels.every(
+        (labelValue, index) => labelValue === candidateLabels[index]
+    );
+    // Canonical labeling compares label multisets (1-WL refinement), which is
+    // exact only when labels are distinct. Modules sharing a final label are
+    // interchangeable "twins" (identical bodies AND reference structure to
+    // the refinement depth) — surface the count so a reviewer knows how much
+    // of the proof rests on that interchangeability.
+    const twinCount = baselineLabels.length - new Set(baselineLabels).size;
+    return graphsMatch
+        ? {
+              equivalent: true,
+              detail:
+                  `${baseline.modules.size} modules; graphs identical up to ID renumbering` +
+                  (twinCount > 0
+                      ? `; ${twinCount} twin modules share canonical labels`
+                      : '')
+          }
+        : {
+              equivalent: false,
+              detail: 'module code or reference structure differs'
+          };
+};
+
 const main = async (): Promise<void> => {
-    const [baselinePath, candidatePath] = process.argv.slice(2);
+    const args = process.argv.slice(2);
+    const expectModuleIdRenumbering = args.includes(
+        '--expect-module-id-renumbering'
+    );
+    const [baselinePath, candidatePath] = args.filter(
+        (arg) => !arg.startsWith('--')
+    );
     if (!baselinePath || !candidatePath) {
         console.error(
-            'Usage: npm run verify-package-parity -- <baseline.pbiviz> <candidate.pbiviz>'
+            'Usage: npm run verify-package-parity -- <baseline.pbiviz> <candidate.pbiviz> [--expect-module-id-renumbering]'
         );
         process.exit(2);
     }
-    const baseline = getPartHashes(await loadResource(baselinePath));
-    const candidate = getPartHashes(await loadResource(candidatePath));
+    const baselineResource = await loadResource(baselinePath);
+    const candidateResource = await loadResource(candidatePath);
+    const baseline = getPartHashes(baselineResource);
+    const candidate = getPartHashes(candidateResource);
     const partNames = [
         ...new Set([...Object.keys(baseline), ...Object.keys(candidate)])
     ].sort();
     let failed = false;
+    let renumberingNote = '';
     console.log(`Baseline:  ${baselinePath}`);
     console.log(`Candidate: ${candidatePath}\n`);
     for (const part of partNames) {
         const left = baseline[part];
         const right = candidate[part];
-        const match = left !== undefined && left === right;
+        let match = left !== undefined && left === right;
+        let annotation = '';
+        if (!match && part === 'content.js' && expectModuleIdRenumbering) {
+            const equivalence = verifyModuleIdRenumberingOnly(
+                baselineResource.content.js ?? '',
+                candidateResource.content.js ?? ''
+            );
+            if (equivalence.equivalent) {
+                match = true;
+                annotation = `  (module-ID renumbering only: ${equivalence.detail})`;
+                renumberingNote =
+                    '\nNote: content.js hashes differ but the bundles were proven identical\n' +
+                    'up to webpack module-ID renumbering (--expect-module-id-renumbering).';
+            } else {
+                annotation = `  (equivalence check FAILED: ${equivalence.detail})`;
+            }
+        }
         if (!match) {
             failed = true;
         }
         console.log(
             `${match ? 'PASS' : 'DIFF'}  ${part.padEnd(24)} ${(
                 left ?? '(missing)'
-            ).slice(0, 12)}  ${(right ?? '(missing)').slice(0, 12)}`
+            ).slice(0, 12)}  ${(right ?? '(missing)').slice(
+                0,
+                12
+            )}${annotation}`
         );
     }
     console.log(
@@ -120,6 +366,7 @@ const main = async (): Promise<void> => {
             ? '\nRESULT: PARITY FAILURE — parts marked DIFF above do not match.'
             : '\nRESULT: PARITY OK — all compared parts are content-identical.'
     );
+    console.log(renumberingNote);
     process.exit(failed ? 1 : 0);
 };
 

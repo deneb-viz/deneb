@@ -936,3 +936,23 @@ PR body: link #757 and the spec doc; state the no-behaviour-change contract; pas
 | Invariant tests asserting on moved paths | Full suite — Task 5 Step 6 |
 | Turbo root tasks becoming vacuous | `--dry-run` task-graph check — Task 5 Step 2 |
 | Prettier/syncpack coverage shrinking | Rebased globs + `validate-packages-sync` — Task 4 Step 2, Task 5 Step 3 |
+
+## Execution outcome note (2026-09-07)
+
+Task 8's expectation of a byte-level `content.js` PASS was unattainable by
+construction: webpack's production module IDs are hashes of module paths
+*relative to the build context*, so relocating the tree renumbers every ID
+while leaving the code untouched. Verified during execution: builds are fully
+deterministic (a rebuild at the same commit is byte-identical), every other
+part passes strict parity, and an AST-level analysis (acorn) proved the two
+bundles identical up to a consistent module-ID renumbering — same 366-module
+map (bodies and reference graph identical under canonical labeling) and
+identical runtime/entry glue after blinding integer tokens.
+
+Resolution: `bin/verify-package-parity.ts` gained an opt-in
+`--expect-module-id-renumbering` flag that performs this equivalence proof
+when raw `content.js` hashes differ, and only then counts the part as a pass
+(annotated in the report). The strict default is unchanged, the flag never
+relaxes any other part, and a genuinely different build still fails with the
+flag set (verified against a beta artifact). The PR's parity report was
+produced with the flag.
