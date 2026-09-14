@@ -54,10 +54,18 @@ describe('powerbi-compat singleton contract', () => {
             existsSync(join(pkg.path, 'tsdown.config.ts'))
         )
     )('$dir (tsdown-bundled) externalizes powerbi-compat', (pkg) => {
-        const tsdown = readFileSync(join(pkg.path, 'tsdown.config.ts'), 'utf8');
+        // Strip comments up front so neither a commented-out `neverBundle`
+        // array nor a commented-out entry inside the live array can satisfy
+        // the checks. Line comments are matched only when `//` follows
+        // whitespace or starts a line: regex-literal entries such as
+        // /^@fluentui\// end in a textual `//` with no preceding whitespace
+        // and must survive the strip.
+        const tsdown = readFileSync(join(pkg.path, 'tsdown.config.ts'), 'utf8')
+            .replace(/\/\*[\s\S]*?\*\//g, '')
+            .replace(/(^|\s)\/\/[^\n]*/g, '$1');
         // Anchor to the `neverBundle` array so the check verifies placement
-        // (not a bare substring that a comment could satisfy) and extract its
-        // body for the sub-assertions below.
+        // (not a bare substring elsewhere in the file) and extract its body
+        // for the sub-assertions below.
         const neverBundleMatch = tsdown.match(
             /neverBundle\s*:\s*\[([\s\S]*?)\]/
         );

@@ -49,6 +49,8 @@ npm run sync-packages                # Sync package versions across monorepo
 
 ### First-Time Setup
 
+Requires Node `^22.18.0 || ^24.11.0 || >=26.0.0` (declared in the root `engines` field).
+
 ```bash
 npm install       # Install dependencies
 npm run dev       # Start development (clears .tmp/, builds packages, primes assets, starts server)
