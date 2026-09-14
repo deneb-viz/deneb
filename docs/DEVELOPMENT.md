@@ -51,9 +51,9 @@ Copy `.env.example` to `.env` (see ".env Setup" below) so local dev toggles like
 
 > **Note:** The `npm run dev` command performs the following steps automatically each time it runs:
 >
-> 1. **Clears `.tmp/`** for a predictable starting state. This avoids stale webpack persistent cache (which can survive branch switches and report ghost errors against source that no longer exists), plus stale prime artefacts under `.tmp/precompile` and `.tmp/drop`.
+> 1. **Clears `.tmp/`** for a predictable starting state. This avoids stale webpack persistent cache (which can survive branch switches and report ghost errors against source that no longer exists), plus stale prime artefacts under `apps/deneb/.tmp/precompile` and `apps/deneb/.tmp/drop`.
 > 2. **Builds workspace packages** via `npm run build:package` so webpack can resolve `@deneb-viz/*` imports (their `exports` map points at `dist/`). Turbo's cache makes this near-instant when packages are unchanged.
-> 3. **Primes dev assets** (`.tmp/precompile/visualPlugin.ts` and `.tmp/drop/pbiviz.json`).
+> 3. **Primes dev assets** (`apps/deneb/.tmp/precompile/visualPlugin.ts` and `apps/deneb/.tmp/drop/pbiviz.json`).
 > 4. **Starts the dev server** alongside the workspace package watchers.
 >
 > Cost: ~22s first build per dev session (one-off; in-session rebuilds are still ~1–2s via webpack's in-memory cache). Benefit: no manual cache clearing, no missing-export warnings from old cache, no need to pre-build packages on a fresh clone.
@@ -68,13 +68,13 @@ This does the following in parallel:
 
 - Runs each workspace package's `dev` task (usually `tsup --watch`) via Turbo
 - Starts the webpack dev server (`webpack:start`) with HTTPS on port 8080
-- Watches `packages/**/dist/**/*` and visual `src/**` for changes; triggers full page reload (not HMR) inside Power BI iframe
+- Watches `packages/**/dist/**/*` and visual `apps/deneb/src/**` for changes; triggers full page reload (not HMR) inside Power BI iframe
 
 Typical cycle:
 
 1. Run `npm run dev`
 2. Open report with the visual pointing at `https://localhost:8080/assets/visual.js`
-3. Edit code in packages or `src/`
+3. Edit code in packages or `apps/deneb/src/`
 4. Wait for rebuild and reload iframe
 5. Verify changes
 
@@ -121,9 +121,9 @@ npm run validate-config-for-commit
 
 Files:
 
-- `webpack.common.config.js`: Shared base (entry, loaders, plugin, library naming `_DEBUG` in dev)
-- `webpack.dev.config.js`: Dev-specific (filesystem cache, watch configuration, disabled WDS client)
-- `webpack.prod.config.js`: Production (Terser minification, bundle analyzer, type checking via ts-loader `transpileOnly=false`)
+- `apps/deneb/webpack.common.config.js`: Shared base (entry, loaders, plugin, library naming `_DEBUG` in dev)
+- `apps/deneb/webpack.dev.config.js`: Dev-specific (filesystem cache, watch configuration, disabled WDS client)
+- `apps/deneb/webpack.prod.config.js`: Production (Terser minification, bundle analyzer, type checking via ts-loader `transpileOnly=false`)
 
 Key points:
 
@@ -140,7 +140,7 @@ Key points:
 
 When developing or verifying an in-progress Vega or Vega-Lite change (e.g. an upstream feature branch), you can point the visual's bundle at a locally-built copy of the library instead of the version in `node_modules`. This is driven entirely by `.env`, so no source changes are needed (and nothing can be accidentally committed).
 
-**How it works:** `webpack.common.config.js` reads `VEGA_LOCAL_PATH` / `VEGA_LITE_LOCAL_PATH` and, when set, adds exact-match resolve aliases (`vega$` / `vega-lite$`) targeting those paths. Because Vega and Vega-Lite are bundled at the root webpack step (workspace packages don't bundle their own copies), a single alias redirects every import across the monorepo.
+**How it works:** `apps/deneb/webpack.common.config.js` reads `VEGA_LOCAL_PATH` / `VEGA_LITE_LOCAL_PATH` and, when set, adds exact-match resolve aliases (`vega$` / `vega-lite$`) targeting those paths. Because Vega and Vega-Lite are bundled at the visual's webpack step (workspace packages don't bundle their own copies), a single alias redirects every import across the monorepo.
 
 **Editor JSON schemas** are covered too: the editor deep-imports `vega/vega-schema.json` / `vega-lite/vega-lite-schema.json` (see `packages/app-core/src/lib/schema/schema-service.ts`), and both repos emit the schema next to the built bundle. The schema alias is derived automatically from the bundle path, so editor validation/completion reflects the local build. If the build fails with a module-not-found error for the schema path, the local library build hasn't generated its schema — re-run its full build.
 
@@ -198,7 +198,7 @@ Rules to follow:
 external: ['@deneb-viz/powerbi-compat', '@deneb-viz/powerbi-compat/*'];
 ```
 
-- The root (visual) package should supply `@deneb-viz/powerbi-compat` in its `devDependencies` or final bundle. This allows the visual to provide the single runtime instance consumed by packages with `peerDependencies`.
+- The `apps/deneb` visual package should supply `@deneb-viz/powerbi-compat` in its `devDependencies` or final bundle. This allows the visual to provide the single runtime instance consumed by packages with `peerDependencies`.
 
 This pattern preserves a shared runtime instance so singletons like `VisualHostServices` remain truly singletons and aren't duplicated across package boundaries.
 
@@ -208,8 +208,8 @@ Watch scope (dev):
 src/**/*
 style/**/*
 config/**/*
-packages/**/dist/**/*
-node_modules/@deneb-viz/**/dist/**/*
+../../packages/**/dist/**/*
+../../node_modules/@deneb-viz/**/dist/**/*
 ```
 
 Snapshot `managedPaths` ensures linked workspace packages under `node_modules/@deneb-viz` are not treated as immutable.
@@ -261,7 +261,7 @@ Design record: [docs/brainstorms/2026-08-21-compact-jsonc-formatting-requirement
 
 ## 6. Feature Flags
 
-JSON feature flags are defined in `config/features.json` and can be overridden in `config/package-custom.json` for custom builds. These are primarily used to gate visual behaviors that must remain stable and off by default in the certified build.
+JSON feature flags are defined in `apps/deneb/config/features.json` and can be overridden in `apps/deneb/config/package-custom.json` for custom builds. These are primarily used to gate visual behaviors that must remain stable and off by default in the certified build.
 
 In addition to JSON feature flags, we also use a small set of developer-focused environment toggles in a local `.env` file (loaded via `@dotenvx/dotenvx`). These are not persisted in the packaged visual; they influence local development and packaging scripts and, in one case, the runtime behavior of the standalone build:
 
@@ -280,7 +280,7 @@ In addition to JSON feature flags, we also use a small set of developer-focused 
     - For certified/alpha/beta builds this must remain `false` in `.env`.
     - For standalone builds, `npm run package-standalone` uses `.env.standalone`, where this is set to `true`.
 
-These `.env` values are validated by `bin/validate-config-for-commit.ts` to prevent committing with unintended developer modes, elevated logging, or an unsafe `ALLOW_EXTERNAL_URI` value for certified builds.
+These `.env` values are validated by `apps/deneb/bin/validate-config-for-commit.ts` to prevent committing with unintended developer modes, elevated logging, or an unsafe `ALLOW_EXTERNAL_URI` value for certified builds.
 
 Retention policy: Remove stale flags + tests in the next minor/major release after certified submission if stable.
 
@@ -323,8 +323,8 @@ npm run package
 
 Outputs:
 
-- `.tmp/drop/visual.js` compiled bundle prior to packaging
-- `.pbiviz` file in `dist/` (includes capabilities, resources, locales)
+- `apps/deneb/.tmp/drop/visual.js` compiled bundle prior to packaging
+- `.pbiviz` file in `apps/deneb/dist/` (includes capabilities, resources, locales)
 - `webpack.statistics.html` for size inspection (via bundle analyzer)
 
 Size limits enforced (`~1MB` entry). Console logs preserved (Power BI telemetry / debugging). Source maps emitted for crash triage.
@@ -342,17 +342,17 @@ We support distinct packaging modes to serve different audiences:
 
 > Alpha and beta builds are distributed to testers via CI tags, not from local builds — see [Publishing prerelease builds (alpha / beta channels)](#publishing-prerelease-builds-alpha--beta-channels).
 
-Internally all of these invoke the custom script `bin/package-custom.ts` which:
+Internally all of these invoke the custom script `apps/deneb/bin/package-custom.ts` which:
 
-1. Reads mode config from `config/package-custom.json`.
-2. Patches `pbiviz.json`, `features.json`, and (if needed) `capabilities.json`.
+1. Reads mode config from `apps/deneb/config/package-custom.json`.
+2. Patches `apps/deneb/pbiviz.json`, `apps/deneb/config/features.json`, and (if needed) `apps/deneb/capabilities.json`.
 3. Sets/clears the environment variable `DENEB_PACKAGE_MODE` for the child process.
 4. Runs `npm run webpack:package` (production build + `.pbiviz`).
 5. Performs cleanup, restoring original files.
 
 ### certificationFix Semantics
 
-The Power BI tooling historically exposed a `--certification-fix` flag (pbiviz) which we now replicate via the `certificationFix` option passed to `PowerBIVisualsWebpackPlugin` in `webpack.common.config.js`.
+The Power BI tooling historically exposed a `--certification-fix` flag (pbiviz) which we now replicate via the `certificationFix` option passed to `PowerBIVisualsWebpackPlugin` in `apps/deneb/webpack.common.config.js`.
 
 Logic:
 
@@ -371,7 +371,7 @@ You can confirm behavior via the build log line:
 
 ### Environment Variable: DENEB_PACKAGE_MODE
 
-We intentionally scope `DENEB_PACKAGE_MODE` only to the child process started by `bin/package-custom.ts` for the selected mode. Certified (default) builds DO NOT set it, preventing stale shell leakage.
+We intentionally scope `DENEB_PACKAGE_MODE` only to the child process started by `apps/deneb/bin/package-custom.ts` for the selected mode. Certified (default) builds DO NOT set it, preventing stale shell leakage.
 
 If you manually export the variable in your shell, clear it before certified packaging:
 
@@ -386,7 +386,7 @@ External URI behavior is now controlled by the `ALLOW_EXTERNAL_URI` environment 
 
 - Certified / alpha / beta builds:
     - Use `.env`, where `ALLOW_EXTERNAL_URI=false`.
-    - `bin/validate-config-for-commit.ts` enforces that this remains `false` for these modes.
+    - `apps/deneb/bin/validate-config-for-commit.ts` enforces that this remains `false` for these modes.
 - Standalone builds:
     - Use `.env.standalone`, where `ALLOW_EXTERNAL_URI=true`.
     - `npm run package-standalone` sets `DOTENVX_ENV=.env.standalone` so that Webpack inlines the correct value.
@@ -395,7 +395,7 @@ This opens remote specification loading / resource access that is NOT permitted 
 
 ### Capabilities Privileges Patch
 
-Standalone mode also augments `capabilities.json` privileges (e.g. `ExportContent`, `WebAccess` wildcard) to unlock developer scenarios. These are reverted immediately post packaging.
+Standalone mode also augments `apps/deneb/capabilities.json` privileges (e.g. `ExportContent`, `WebAccess` wildcard) to unlock developer scenarios. These are reverted immediately post packaging.
 
 ### Quick Usage Examples
 
@@ -419,7 +419,7 @@ npm run package:standalone
 | Missing privileges after standalone experimentation | Cleanup restored baseline                    | Re-run desired mode or inspect patch script   |
 | Large bundle warning                                | Expected (visual.js > 1MB)                   | Investigate code splitting / tree shaking     |
 
-Refer to `bin/package-custom.ts` for the authoritative implementation details.
+Refer to `apps/deneb/bin/package-custom.ts` for the authoritative implementation details.
 
 ### Publishing prerelease builds (alpha / beta channels)
 
@@ -462,22 +462,22 @@ If a publish fails partway, fix the cause and force-push the moving channel tag 
 | Prefer const enums                  | TypeScript inlines to numeric literals |
 | Enable source maps only when needed | Dev builds are 50% faster without them |
 
-If watch misses changes on certain filesystems (WSL/network drives), enable polling in `webpack.dev.config.js` `watchFiles.options.usePolling=true`.
+If watch misses changes on certain filesystems (WSL/network drives), enable polling in `apps/deneb/webpack.dev.config.js` `watchFiles.options.usePolling=true`.
 
 ## 10. Troubleshooting & Known Issues
 
-| Symptom                    | Cause                                    | Resolution                                                   |
-| -------------------------- | ---------------------------------------- | ------------------------------------------------------------ |
-| Constructor not firing     | Missing `_DEBUG` suffix                  | Confirm library name in `webpack.common.config.js` dev mode  |
-| Enum undefined errors      | Missing `powerbi-visuals-api` dependency | Ensure package is in root devDependencies                    |
-| WebSocket sandbox errors   | WDS client injecting in iframe           | `client: false` in dev server settings (already)             |
-| Slow first build           | Cache warm-up                            | Subsequent builds accelerate via filesystem cache            |
-| Slow rebuilds (~15s+)      | Certification fix running in dev         | Should be disabled in dev (check `webpack.common.config.js`) |
-| Type errors unnoticed      | `skipLibCheck` in dev mode               | Run `webpack:package` or `npx tsc --noEmit`                  |
-| Port 8080 conflict         | Port in use                              | Change `devServer.port`                                      |
-| Missing dependency errors  | Implicit loader/plugin usage             | Audit devDependencies (see section 11)                       |
-| Visual doesn't load in dev | Missing assets (pbiviz.json, etc.)       | Clear `.tmp` and restart `npm run dev` (auto-primes)         |
-| 404 for visual.js          | Wrong publicPath                         | Should be `/assets/` in dev (absolute path)                  |
+| Symptom                    | Cause                                    | Resolution                                                              |
+| -------------------------- | ---------------------------------------- | ----------------------------------------------------------------------- |
+| Constructor not firing     | Missing `_DEBUG` suffix                  | Confirm library name in `apps/deneb/webpack.common.config.js` dev mode  |
+| Enum undefined errors      | Missing `powerbi-visuals-api` dependency | Ensure package is in root devDependencies                               |
+| WebSocket sandbox errors   | WDS client injecting in iframe           | `client: false` in dev server settings (already)                        |
+| Slow first build           | Cache warm-up                            | Subsequent builds accelerate via filesystem cache                       |
+| Slow rebuilds (~15s+)      | Certification fix running in dev         | Should be disabled in dev (check `apps/deneb/webpack.common.config.js`) |
+| Type errors unnoticed      | `skipLibCheck` in dev mode               | Run `webpack:package` or `npx tsc --noEmit`                             |
+| Port 8080 conflict         | Port in use                              | Change `devServer.port`                                                 |
+| Missing dependency errors  | Implicit loader/plugin usage             | Audit devDependencies (see section 11)                                  |
+| Visual doesn't load in dev | Missing assets (pbiviz.json, etc.)       | Clear `.tmp` and restart `npm run dev` (auto-primes)                    |
+| 404 for visual.js          | Wrong publicPath                         | Should be `/assets/` in dev (absolute path)                             |
 
 ## 11. Dependency Audit Summary
 
@@ -514,7 +514,7 @@ Due to the nature of Deneb (being a custom visual), it's not easy to change or r
 
 ### Feature Flag Configuration
 
-Feature flags are stored in `config/features.json` and take the simple form of using the desired feature name as an object key, and a boolean value to represent the state of the feature when merged to the main branch. An example of this is as follows:
+Feature flags are stored in `apps/deneb/config/features.json` and take the simple form of using the desired feature name as an object key, and a boolean value to represent the state of the feature when merged to the main branch. An example of this is as follows:
 
 ```json
 {
@@ -526,7 +526,7 @@ A `.json` file is used because this is easier to swap out when building other pa
 
 ### Feature Flag Usage
 
-features are exported as `const FEATURES` in `config/index.ts` and this is the import you should use, e.g.:
+features are exported as `const FEATURES` in `apps/deneb/config/index.ts` and this is the import you should use, e.g.:
 
 ```typescript
 import { FEATURES } from '../config';
@@ -549,12 +549,12 @@ As such, this is part of housekeeping work when commencing a new planned update.
 
 In some cases, feature flags will be different to the visual that is submitted for certification to Microsoft. A good example of this is the `enable_external_uri` flag, which prevents loading of external resources if disabled. Certified visuals cannot do this, but the standalone version exists almost purely to allow developers to load content from remote endpoints, on the understanding that the visual isn't certified.
 
-In these cases, feature flag overrides can be applied to `config/package-custom.json` in the `features` object. These will be applied over the top of the configuration in `features.json` whenever the custom package build tasks are run.
+In these cases, feature flag overrides can be applied to `apps/deneb/config/package-custom.json` in the `features` object. These will be applied over the top of the configuration in `apps/deneb/config/features.json` whenever the custom package build tasks are run.
 
 You can refer to the `standalone.features` object in this file for an example of what such an override looks like.
 
 ### Current Feature Flag Process Limitations
 
-- For some features, we may need to update the `capabilities.json` file to suit what we want. There currently isn't a process for this, and we will need to come up with a suitable way of modifying this based on a specific flag or its desired behavior.
+- For some features, we may need to update the `apps/deneb/capabilities.json` file to suit what we want. There currently isn't a process for this, and we will need to come up with a suitable way of modifying this based on a specific flag or its desired behavior.
 
-- For CI purposes, feature validation is currently done in an ad-hoc manner in `bin/validate-config-for-commit.ts`. We should ideally have a slightly better process for feature whitelisting and validation, but this works _reasonably_ well at present.
+- For CI purposes, feature validation is currently done in an ad-hoc manner in `apps/deneb/bin/validate-config-for-commit.ts`. We should ideally have a slightly better process for feature whitelisting and validation, but this works _reasonably_ well at present.

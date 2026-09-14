@@ -25,6 +25,7 @@ interface PackageJson {
 
 const ROOT = path.resolve(__dirname, '..');
 const PACKAGES_DIR = path.join(ROOT, 'packages');
+const APPS_DIR = path.join(ROOT, 'apps');
 // Use custom flags (--meta-dry / --metadata-dry-run) to avoid npm consuming --dry/--dry-run itself.
 const argv = process.argv.slice(2);
 const DRY_RUN =
@@ -57,10 +58,15 @@ async function main() {
     const rootPkgPath = path.join(ROOT, 'package.json');
     const rootPkg = await readJson(rootPkgPath);
 
-    const entries = await fs.readdir(PACKAGES_DIR, { withFileTypes: true });
-    const packageDirs = entries
-        .filter((e) => e.isDirectory())
-        .map((e) => path.join(PACKAGES_DIR, e.name));
+    const packageDirs: string[] = [];
+    for (const parent of [PACKAGES_DIR, APPS_DIR]) {
+        const entries = await fs.readdir(parent, { withFileTypes: true });
+        packageDirs.push(
+            ...entries
+                .filter((e) => e.isDirectory())
+                .map((e) => path.join(parent, e.name))
+        );
+    }
 
     let changed = 0;
     for (const dir of packageDirs) {

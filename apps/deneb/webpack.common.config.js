@@ -1,5 +1,8 @@
 const path = require('path');
 const fs = require('fs');
+// The app lives at apps/deneb; the shared .env* files and the workspace
+// packages/ tree stay at the monorepo root.
+const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const webpack = require('webpack');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const {
@@ -12,8 +15,8 @@ const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
 try {
     const { config: dotenvx } = require('@dotenvx/dotenvx');
     const envPath = process.env.DOTENVX_ENV
-        ? path.resolve(__dirname, process.env.DOTENVX_ENV)
-        : path.join(__dirname, '.env');
+        ? path.resolve(REPO_ROOT, process.env.DOTENVX_ENV)
+        : path.join(REPO_ROOT, '.env');
     dotenvx({
         path: envPath,
         override: true,
@@ -39,6 +42,28 @@ const capabilities = require('./capabilities.json');
 // Plugin and visual source locations
 const pluginLocation = './.tmp/precompile/visualPlugin.ts';
 const visualSourceLocation = '../../src';
+
+// Force a single copy of ajv@8 across all workspace packages. Without this,
+// npm hoists separate copies into app-core and json-processing because root
+// node_modules has ajv@6 (ESLint). Fail loudly if the hoisting artifact this
+// points at disappears - adding a workspace can reshuffle npm hoisting and
+// silently swap ajv 8 for the root's ajv 6.
+const ajvAliasPath = path.resolve(
+    REPO_ROOT,
+    'packages',
+    'app-core',
+    'node_modules',
+    'ajv'
+);
+// Path is built from literal segments via path.resolve above, not external/user input.
+// eslint-disable-next-line powerbi-visuals/non-literal-fs-path
+if (!fs.existsSync(ajvAliasPath)) {
+    throw new Error(
+        `ajv alias target does not exist: ${ajvAliasPath}. npm hoisting has ` +
+            'changed shape - the build would silently bundle the wrong ajv. ' +
+            'Investigate before packaging.'
+    );
+}
 
 /**
  * Common webpack configuration shared between dev and prod
@@ -110,7 +135,7 @@ function getCommonConfig(options = {}) {
             extensions: ['.tsx', '.ts', '.jsx', '.js', '.css', '.less'],
             modules: [
                 'node_modules',
-                path.resolve(__dirname, 'node_modules'),
+                path.resolve(REPO_ROOT, 'node_modules'),
                 path.resolve(__dirname, 'src')
             ],
             symlinks: false,
@@ -120,18 +145,9 @@ function getCommonConfig(options = {}) {
             fallback: {
                 buffer: require.resolve('buffer/')
             },
-            // Force a single copy of ajv@8 across all workspace packages.
-            // Without this, npm hoists separate copies into app-core and
-            // json-processing because root node_modules has ajv@6 (ESLint).
             alias: {
                 ...localLibraryAliases,
-                ajv: path.resolve(
-                    __dirname,
-                    'packages',
-                    'app-core',
-                    'node_modules',
-                    'ajv'
-                )
+                ajv: ajvAliasPath
             }
         },
         // No externals for powerbi-visuals-api. TypeScript (via ts-loader) inlines const enums,

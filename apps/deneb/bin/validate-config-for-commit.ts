@@ -1,6 +1,10 @@
-import '@dotenvx/dotenvx/config';
+import { config as dotenvx } from '@dotenvx/dotenvx';
+import { resolve } from 'path';
 import { exit } from 'process';
 import { collectConfigErrors } from './config-validation';
+
+// .env lives at the monorepo root, three levels up from apps/deneb/bin.
+dotenvx({ path: resolve(__dirname, '..', '..', '..', '.env'), quiet: true });
 
 console.log('Checking visual configuration is correct...\n');
 

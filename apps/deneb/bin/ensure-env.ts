@@ -6,7 +6,9 @@
 import { existsSync, copyFileSync } from 'fs';
 import { resolve } from 'path';
 
-const ROOT_DIR = resolve(__dirname, '..');
+// .env lives at the monorepo root (shared by all apps), three levels up
+// from apps/deneb/bin.
+const ROOT_DIR = resolve(__dirname, '..', '..', '..');
 const ENV_FILE = resolve(ROOT_DIR, '.env');
 const ENV_CI_FILE = resolve(ROOT_DIR, '.env.ci');
 

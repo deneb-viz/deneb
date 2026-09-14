@@ -60,11 +60,7 @@ npm run dev       # Start development (clears .tmp/, builds packages, primes ass
 
 ### Monorepo Structure
 
-**Root Package (`@deneb-viz/deneb`):** Main Power BI custom visual
-
-- Entry: [src/index.ts](src/index.ts) exports `Deneb` class implementing `IVisual`
-- Visual GUID: `deneb7E15AEF80B9E4D4F8E12924291ECE89A`
-- Integrates all workspace packages into final `.pbiviz` bundle
+**Root (`@deneb-viz/monorepo`):** Workspace root; orchestrates builds via Turbo and delegates visual-specific scripts to `apps/deneb`
 
 **Workspace Packages (`packages/`):**
 
@@ -81,6 +77,10 @@ npm run dev       # Start development (clears .tmp/, builds packages, primes ass
 
 **Apps (`apps/`):**
 
+- **deneb** - Main Power BI custom visual
+    - Entry: [apps/deneb/src/index.ts](apps/deneb/src/index.ts) exports `Deneb` class implementing `IVisual`
+    - Visual GUID: `deneb7E15AEF80B9E4D4F8E12924291ECE89A`
+    - Integrates all workspace packages into final `.pbiviz` bundle
 - **web-client-sample** - Vite-based web integration sample
 
 **Documented Solutions (`docs/solutions/`):** Past problems diagnosed and solved, organized by category with YAML frontmatter (`module`, `tags`, `problem_type`). Relevant when debugging or implementing in documented areas.
@@ -95,14 +95,14 @@ npm run dev       # Start development (clears .tmp/, builds packages, primes ass
 
 - Packages consuming it declare it as `peerDependency` (not `dependency`)
 - Mark as `external` in tsup configs to prevent bundling
-- Root visual provides the single runtime instance
+- The `apps/deneb` visual provides the single runtime instance
 - Uses TypeScript compiler (tsc) instead of tsup to inline const enums from `powerbi-visuals-api`
 
 **When adding dependencies on `@deneb-viz/powerbi-compat`:**
 
 1. Add to `peerDependencies` in consuming package's package.json
 2. Add to `external` array in consuming package's tsup.config.ts
-3. Never bundle it - let the root visual provide the singleton instance
+3. Never bundle it - let the `apps/deneb` visual provide the singleton instance
 
 ### Compilation Architecture
 
@@ -144,7 +144,7 @@ React UI (Fluent UI components) + Vega canvas rendering
 
 ### State Management
 
-**Visual State ([src/state/state.ts](src/state/state.ts)):** Zustand-based with slices
+**Visual State ([apps/deneb/src/state/state.ts](apps/deneb/src/state/state.ts)):** Zustand-based with slices
 
 - `dataset` - Data and field state
 - `host` - Power BI host integration
@@ -170,9 +170,9 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 
 **Webpack 5 Custom Toolchain:**
 
-- [webpack.common.config.js](webpack.common.config.js) - Shared base config
-- [webpack.dev.config.js](webpack.dev.config.js) - Dev mode (optimized for speed)
-- [webpack.prod.config.js](webpack.prod.config.js) - Production (optimized for certification)
+- [apps/deneb/webpack.common.config.js](apps/deneb/webpack.common.config.js) - Shared base config
+- [apps/deneb/webpack.dev.config.js](apps/deneb/webpack.dev.config.js) - Dev mode (optimized for speed)
+- [apps/deneb/webpack.prod.config.js](apps/deneb/webpack.prod.config.js) - Production (optimized for certification)
 
 **Key Points:**
 
@@ -185,7 +185,7 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 
 ### Power BI Visual Integration
 
-**Constructor ([src/index.ts](src/index.ts)):**
+**Constructor ([apps/deneb/src/index.ts](apps/deneb/src/index.ts)):**
 
 - Binds VisualHostServices singleton
 - Initializes InteractivityManager
@@ -207,7 +207,7 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 
 ## Feature Flags & Environment Configuration
 
-**Feature Flags**: JSON-based in [config/features.json](config/features.json), imported via `FEATURES` from `config/index.ts`
+**Feature Flags**: JSON-based in [apps/deneb/config/features.json](apps/deneb/config/features.json), imported via `FEATURES` from `apps/deneb/config/index.ts`
 
 **Environment Variables** (.env - local only, NOT committed):
 
@@ -245,7 +245,7 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 2. Open Power BI pointing to `https://localhost:8080/assets/visual.js`
 3. Edit code → webpack auto-rebuilds (~1-2s) → page reloads
 
-**Package Build Order**: Config → Utils/Data-core/PowerBI-compat → Vega-runtime/JSON-processing → Vega-react → App-core → Root visual
+**Package Build Order**: Config → Utils/Data-core/PowerBI-compat → Vega-runtime/JSON-processing → Vega-react → App-core → apps/deneb
 
 > **Details**: See [Local Development Workflow](doc/DEVELOPMENT.md#2-local-development-workflow) in DEVELOPMENT.md
 
@@ -255,7 +255,7 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 
 **TypeScript Const Enums:** `powerbi-visuals-api` enums are inlined at compile time (no runtime dependency)
 
-- Root visual: ts-loader with `transpileOnly=false` in production
+- `apps/deneb`: ts-loader with `transpileOnly=false` in production
 - `@deneb-viz/powerbi-compat`: uses tsc (not tsup) to preserve inlining
 
 **Certification:** Validate with `npm run validate-config-for-commit` before packaging
@@ -270,7 +270,7 @@ Prefer readable and self-documenting code over elegant solutions even if it incr
 
 Common issues:
 
-- **Constructor not firing** → Check `_DEBUG` suffix in webpack.common.config.js
+- **Constructor not firing** → Check `_DEBUG` suffix in apps/deneb/webpack.common.config.js
 - **Slow rebuilds (>5s)** → Ensure `certificationFix: false` in dev mode
 - **Visual doesn't load** → Restart `npm run dev` (it clears `.tmp/`, rebuilds packages, and re-primes on every start)
 - **Type errors unnoticed** → Run `npm run webpack:package` or `npx tsc --noEmit`

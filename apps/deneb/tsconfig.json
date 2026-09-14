@@ -1,5 +1,5 @@
 {
-    "extends": "./packages/typescript-config/deneb-pbi.json",
+    "extends": "../../packages/typescript-config/deneb-pbi.json",
     "compilerOptions": {
         "outDir": "./.tmp/build/"
     },

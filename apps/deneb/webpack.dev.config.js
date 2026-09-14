@@ -75,8 +75,8 @@ module.exports = (env = {}) =>
                     'src/**/*',
                     'style/**/*',
                     'config/**/*',
-                    'packages/**/dist/**/*',
-                    'node_modules/@deneb-viz/**/dist/**/*'
+                    '../../packages/**/dist/**/*',
+                    '../../node_modules/@deneb-viz/**/dist/**/*'
                 ],
                 options: {
                     usePolling: false,
