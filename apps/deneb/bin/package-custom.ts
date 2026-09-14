@@ -15,6 +15,22 @@ const capabilitiesFilePath = '.';
 const pbivizOriginal = require(`../${pbivizFile}`);
 const featuresOriginal = require(`../config/${featuresFile}`);
 const capabilitiesOriginal = require(`../${capabilitiesFile}`);
+// Raw file contents, captured before any patching so cleanup can restore
+// them byte-for-byte. Re-serializing the parsed originals would expand
+// inline-formatted objects and drop the trailing newline, leaving the
+// files cosmetically modified after every custom package build.
+const pbivizOriginalRaw = fs.readFileSync(
+    `${pbivizFilePath}/${pbivizFile}`,
+    'utf8'
+);
+const featuresOriginalRaw = fs.readFileSync(
+    `${featuresFilePath}/${featuresFile}`,
+    'utf8'
+);
+const capabilitiesOriginalRaw = fs.readFileSync(
+    `${capabilitiesFilePath}/${capabilitiesFile}`,
+    'utf8'
+);
 
 const runNpmScript = (
     script: string,
@@ -46,12 +62,17 @@ const runNpmScript = (
 // Revert the modified files back to their original state
 const cleanup = () => {
     console.log('Performing cleanup...');
-    writeFile(pbivizFile, pbivizFilePath, pbivizOriginal);
+    restoreFile(pbivizFile, pbivizFilePath, pbivizOriginalRaw);
     console.log(`${pbivizFile} reverted`);
-    writeFile(featuresFile, featuresFilePath, featuresOriginal);
+    restoreFile(featuresFile, featuresFilePath, featuresOriginalRaw);
     console.log(`${featuresFile} reverted`);
-    writeFile(capabilitiesFile, capabilitiesFilePath, capabilitiesOriginal);
+    restoreFile(capabilitiesFile, capabilitiesFilePath, capabilitiesOriginalRaw);
     console.log(`${capabilitiesFile} reverted`);
+};
+
+// Restore a file's original bytes exactly as captured at startup.
+const restoreFile = (name: string, path: string, rawContent: string) => {
+    fs.writeFileSync(`${path}/${name}`, rawContent);
 };
 
 // Write a pbiviz.json to the project file system
