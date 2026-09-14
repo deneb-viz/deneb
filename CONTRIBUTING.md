@@ -14,6 +14,8 @@ This file gives you a quick intro to where to look and some basic orientation. T
 
 Firstly, [set up your environment for Power BI Development](https://learn.microsoft.com/en-us/power-bi/developer/visuals/environment-setup), if you haven't already.
 
+You'll need Node `^22.18.0 || ^24.11.0 || >=26.0.0` (the build toolchain's requirement, declared in the root `engines` field — npm warns on install if your version doesn't satisfy it).
+
 ```bash
 npm install
 npm run dev

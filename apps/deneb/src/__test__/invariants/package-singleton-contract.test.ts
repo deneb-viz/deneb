@@ -10,8 +10,8 @@ import { listWorkspacePackages } from './_packages';
  * powerbi-compat must remain a single shared runtime instance (CLAUDE.md).
  * Every workspace package that depends on it therefore declares it as a
  * peerDependency — never a regular or dev dependency, which would let the
- * package own a private copy — and every tsup-bundled consumer additionally
- * lists it in `external` so esbuild does not inline it (tsup #998: peerDeps
+ * package own a private copy — and every tsdown-bundled consumer additionally
+ * lists it in `deps.neverBundle` so Rolldown does not inline it (peerDeps
  * alone do not prevent bundling).
  *
  * Both halves broke silently in the wild: M15 (template-usermeta declared it as
@@ -50,18 +50,33 @@ describe('powerbi-compat singleton contract', () => {
     );
 
     it.each(
-        consumers.filter((pkg) => existsSync(join(pkg.path, 'tsup.config.ts')))
-    )('$dir (tsup-bundled) externalizes powerbi-compat', (pkg) => {
-        const tsup = readFileSync(join(pkg.path, 'tsup.config.ts'), 'utf8');
-        // Anchor to the `external` array and accept either quote style, so the
-        // check verifies placement (not a bare substring that a comment could
-        // satisfy) and survives a reformat between single/double quotes.
-        expect(tsup).toMatch(
-            /external\s*:\s*\[[\s\S]*?['"]@deneb-viz\/powerbi-compat['"]/
+        consumers.filter((pkg) =>
+            existsSync(join(pkg.path, 'tsdown.config.ts'))
+        )
+    )('$dir (tsdown-bundled) externalizes powerbi-compat', (pkg) => {
+        // Strip comments up front so neither a commented-out `neverBundle`
+        // array nor a commented-out entry inside the live array can satisfy
+        // the checks. Line comments are matched only when `//` follows
+        // whitespace or starts a line: regex-literal entries such as
+        // /^@fluentui\// end in a textual `//` with no preceding whitespace
+        // and must survive the strip.
+        const tsdown = readFileSync(join(pkg.path, 'tsdown.config.ts'), 'utf8')
+            .replace(/\/\*[\s\S]*?\*\//g, '')
+            .replace(/(^|\s)\/\/[^\n]*/g, '$1');
+        // Anchor to the `neverBundle` array so the check verifies placement
+        // (not a bare substring elsewhere in the file) and extract its body
+        // for the sub-assertions below.
+        const neverBundleMatch = tsdown.match(
+            /neverBundle\s*:\s*\[([\s\S]*?)\]/
         );
-        expect(tsup).toMatch(
-            /external\s*:\s*\[[\s\S]*?['"]@deneb-viz\/powerbi-compat\/\*['"]/
-        );
+        expect(neverBundleMatch).not.toBeNull();
+        const neverBundleBody = neverBundleMatch?.[1] ?? '';
+        // Accept either quote style for the plain package entry.
+        expect(neverBundleBody).toMatch(/['"]@deneb-viz\/powerbi-compat['"]/);
+        // Subpath imports (e.g. /visual-host, /signals, /theme) are covered by
+        // a regex literal - tsdown does not support tsup's wildcard string
+        // form (`'@deneb-viz/powerbi-compat/*'`).
+        expect(neverBundleBody).toContain('@deneb-viz\\/powerbi-compat(\\/|$)');
     });
 });
 

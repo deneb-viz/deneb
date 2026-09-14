@@ -47,6 +47,8 @@ Deneb uses a custom Webpack 5 toolchain (replacing pbiviz CLI) for faster rebuil
 
 ### First-time setup
 
+Node `^22.18.0 || ^24.11.0 || >=26.0.0` is required (the build toolchain's requirement, declared in the root `engines` field).
+
 Copy `.env.example` to `.env` (see ".env Setup" below) so local dev toggles like `LOG_LEVEL` are picked up.
 
 > **Note:** The `npm run dev` command performs the following steps automatically each time it runs:
