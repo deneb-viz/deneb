@@ -80,16 +80,32 @@ Typical cycle:
 
 ## 3. Scripts Reference
 
+**Script architecture:** the root `package.json` (`@deneb-viz/monorepo`)
+carries workspace orchestration (`build`, `test`, `eslint`, `bench*`,
+`sync*`, `ci:local`) plus delegating shims for the certification, CI and
+day-to-day entry points (`package`, `package-alpha|beta|standalone`,
+`validate-config-for-commit`, `dev`, `webpack:analyze`). The visual's own
+pipeline lives in `apps/deneb/package.json`; any app script is reachable
+from the root via `npm run <script> -w @deneb-viz/deneb`.
+
+Root entry points:
+
 | Script                       | Purpose                                                    |
 | ---------------------------- | ---------------------------------------------------------- |
 | `dev`                        | Auto-prime assets + parallel package watchers + dev server |
-| `webpack:start`              | Dev server only (used by Turbo)                            |
-| `webpack:build`              | One-off dev build (no server)                              |
-| `webpack:prime`              | One-time build to generate required dev assets             |
-| `webpack:package`            | Production optimized build + `.pbiviz` packaging           |
-| `package`                    | Turbo orchestrated production package build                |
+| `package`                    | Certified production package build (validates config)      |
 | `webpack:analyze`            | Generates `webpack.statistics.html` (gzip size report)     |
 | `validate-config-for-commit` | Feature flag + config guardrail before packaging           |
+
+App scripts (run via `npm run <script> -w @deneb-viz/deneb`):
+
+| Script            | Purpose                                          |
+| ----------------- | ------------------------------------------------ |
+| `webpack:start`   | Dev server only (used by Turbo)                  |
+| `webpack:build`   | One-off dev build (no server)                    |
+| `webpack:prime`   | One-time build to generate required dev assets   |
+| `webpack:package` | Production optimized build + `.pbiviz` packaging |
+| `build:package`   | Builds workspace packages (turbo filter)         |
 
 ### .env Setup (recommended)
 
@@ -473,7 +489,7 @@ If watch misses changes on certain filesystems (WSL/network drives), enable poll
 | WebSocket sandbox errors   | WDS client injecting in iframe           | `client: false` in dev server settings (already)                        |
 | Slow first build           | Cache warm-up                            | Subsequent builds accelerate via filesystem cache                       |
 | Slow rebuilds (~15s+)      | Certification fix running in dev         | Should be disabled in dev (check `apps/deneb/webpack.common.config.js`) |
-| Type errors unnoticed      | `skipLibCheck` in dev mode               | Run `webpack:package` or `npx tsc --noEmit`                             |
+| Type errors unnoticed      | `skipLibCheck` in dev mode               | Run `npm run package` or `npx tsc --noEmit`                             |
 | Port 8080 conflict         | Port in use                              | Change `devServer.port`                                                 |
 | Missing dependency errors  | Implicit loader/plugin usage             | Audit devDependencies (see section 11)                                  |
 | Visual doesn't load in dev | Missing assets (pbiviz.json, etc.)       | Clear `.tmp` and restart `npm run dev` (auto-primes)                    |
