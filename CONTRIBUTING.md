@@ -76,7 +76,7 @@ npx tsc --noEmit             # type-check
 If you touched the visual itself (not just docs or tests), also confirm a clean dev build:
 
 ```bash
-npm run webpack:build
+npm run webpack:build -w @deneb-viz/deneb
 ```
 
 Before packaging anything as a `.pbiviz` (only relevant if you are testing certified-mode behavior locally), run:

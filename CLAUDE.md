@@ -16,7 +16,7 @@ Deneb is a custom Power BI visual that enables declarative visualization using V
 
 ```bash
 npm run dev                          # Start all package watchers + webpack dev server (https://localhost:8080)
-npm run webpack:build                # One-off dev build without server
+npm run webpack:build -w @deneb-viz/deneb   # One-off dev build without server
 ```
 
 ### Testing & Linting
@@ -273,7 +273,7 @@ Common issues:
 - **Constructor not firing** → Check `_DEBUG` suffix in apps/deneb/webpack.common.config.js
 - **Slow rebuilds (>5s)** → Ensure `certificationFix: false` in dev mode
 - **Visual doesn't load** → Restart `npm run dev` (it clears `.tmp/`, rebuilds packages, and re-primes on every start)
-- **Type errors unnoticed** → Run `npm run webpack:package` or `npx tsc --noEmit`
+- **Type errors unnoticed** → Run `npm run package` or `npx tsc --noEmit`
 
 ## Known Workarounds
 
