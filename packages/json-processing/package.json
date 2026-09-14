@@ -53,7 +53,7 @@
         "@deneb-viz/typescript-config": "*",
         "@types/node": "^22.15.33",
         "concurrently": "^9.2.1",
-        "tsdown": "0.22.14",
+        "tsdown": "0.23.0",
         "typescript": "^5.6.2",
         "vitest": "^3.2.4"
     },
