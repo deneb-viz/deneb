@@ -45,13 +45,13 @@ const getInitialSignalValue = (signalName: string) => {
  * @privateRemarks [DM-P]: there is some technical debt here, where we're using `signalValue` as a triggering mechanism
  * for renders, but not for displaying its actual value (opting to go directly to the view instead).
  *
- * The listener used to call `setSignalValue(() => value)` directly with the raw value Vega handed back. `useState`
- * bails out of the re-render via `Object.is(next, prev)` — fine for primitives, but Vega signals backed by an object
- * or array can be mutated in place and re-emitted under the SAME reference (e.g. a signal whose value is a shared
- * data-derived object). `Object.is` then reports "unchanged" even though the content did change, the state update is
- * dropped, and the cell shows a stale value until some unrelated re-render happens to occur. The listener now wraps
- * the incoming value in a fresh `{ value }` object on every emit (see below) so the reference is always new and the
- * triggering re-render always fires, regardless of what Vega does with the underlying value's identity.
+ * The listener wraps the incoming value in a fresh `{ value }` object on every emit (see below) rather than passing
+ * Vega's raw value to `setSignalValue`. `useState` bails out of the re-render via `Object.is(next, prev)` — fine for
+ * primitives, but Vega signals backed by an object or array can be mutated in place and re-emitted under the SAME
+ * reference (e.g. a signal whose value is a shared data-derived object). Passing the raw value would make `Object.is`
+ * report "unchanged" even though the content did change, drop the state update, and leave the cell stale until some
+ * unrelated re-render happened to occur. The wrapper is a new reference on every call, so the triggering re-render
+ * always fires regardless of what Vega does with the underlying value's identity.
  */
 // eslint-disable-next-line max-lines-per-function
 export const SignalValue = ({

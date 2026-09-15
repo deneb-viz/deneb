@@ -18,14 +18,14 @@ const EDITABLE_TARGET_SELECTOR =
  * today, but written generically so any future editable control (e.g. a
  * contenteditable field) is covered without a follow-up fix.
  *
- * `settings-pane.tsx`'s `handleContextMenu` / `handleKeyDown` used to call
- * `preventDefault()` unconditionally on the pane root, which suppressed the
- * browser's native context menu everywhere under the pane — including
+ * `settings-pane.tsx`'s `handleContextMenu` / `handleKeyDown` must not call
+ * `preventDefault()` for these targets: doing so on the pane root suppresses
+ * the browser's native context menu everywhere under the pane — including
  * inside the search box `<input>`, where the native menu is the only way to
  * right-click-paste or reach the OS spellcheck suggestions, and where
  * Shift+F10 is expected to surface the input's own editing menu rather than
- * the pane's section menu (Important #10). Callers should return early
- * (skip `preventDefault()` and the custom menu) when this returns `true`.
+ * the pane's section menu. Callers should return early (skip
+ * `preventDefault()` and the custom menu) when this returns `true`.
  */
 export const isEditableEventTarget = (
     target: EventTarget | null | undefined

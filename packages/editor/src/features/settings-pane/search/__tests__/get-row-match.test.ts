@@ -4,8 +4,7 @@ import { getRowMatch } from '../get-row-match';
 import type { RowMatch, SectionMatchView } from '../types';
 
 /**
- * Extracted from two byte-identical copies previously colocated in
- * `general-settings.tsx` and `performance-settings.tsx` — both row
+ * Shared by `general-settings.tsx` and `performance-settings.tsx` — both row
  * components look up their own `RowMatch` from a section-level
  * `sectionMatchView` prop.
  */

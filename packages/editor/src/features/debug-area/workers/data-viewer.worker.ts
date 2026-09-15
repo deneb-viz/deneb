@@ -40,8 +40,8 @@ const getDisplayWidth = (
 /**
  * Do any specific formatting for the value, based on the type.
  *
- * @privateRemarks This was previously mostly used to handle the 'redaction' internal values, but because this is
- * common to tooltips also, this is done in the main thread now (as we can't share the logic between the two).
+ * @privateRemarks Redaction of internal values is deliberately not done here: it is also needed for tooltips, and
+ * the worker cannot share that logic with the main thread, so it runs in the main thread.
  */
 const getFormattedValueForTableCell = (
     getValueType: WorkerDatasetViewerValueType,

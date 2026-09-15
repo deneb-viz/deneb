@@ -4,7 +4,7 @@ import { splitTextIntoSegments } from '../highlight-text';
 
 /**
  * Component-tree rendering tests are deferred until `@testing-library/react`
- * lands in this workspace (see plan: Unit 4 notes). In the meantime we
+ * lands in this package. In the meantime we
  * cover the pure segmentation helper that drives every output decision
  * inside `<HighlightText>`.
  */

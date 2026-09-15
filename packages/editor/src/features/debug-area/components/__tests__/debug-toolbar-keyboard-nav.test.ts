@@ -24,12 +24,11 @@ const HOTKEY_COMMAND_BY_PIVOT: Record<
 };
 
 /**
- * Keyboard navigation verification (Unit 5 of
- * `docs/plans/2026-04-28-001-feat-debug-pane-tab-refinements-plan.md`).
+ * Keyboard navigation verification for the debug toolbar.
  *
- * The load-bearing verification for R5.3 is a manual keyboard QA pass — vitest
- * runs in node env without jsdom, so React-rendered keyboard-event tests are
- * not feasible in this workspace.
+ * The load-bearing verification is a manual keyboard QA pass: this package
+ * has no `@testing-library/react` dependency, so React-rendered
+ * keyboard-event tests are not feasible here.
  *
  * The automated cross-coverage below asserts the data feeding the toolbar's
  * `aria-keyshortcuts` and tooltip wrappers is intact. If a future change
@@ -37,7 +36,7 @@ const HOTKEY_COMMAND_BY_PIVOT: Record<
  * tooltip / hotkey announcement for that tab silently disappears — these
  * tests catch that.
  *
- * Manual QA checklist (run before merging Unit 5):
+ * Manual QA checklist (run when the toolbar's keyboard handling changes):
  *
  *   1. Open the debug pane in a real Power BI host (or the web-client-sample).
  *   2. `Tab` into the debug toolbar; the first tab (Source) receives focus

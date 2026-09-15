@@ -52,7 +52,7 @@ export const useEditorPaneLayout = () => {
         shallow
     );
 
-    // The allotment used to manage programmatic resizing of the preview area and debug panes
+    // Allotment handle for programmatic resizing of the preview area and debug panes
     const paneHandleRefVertical = createRef<AllotmentHandle>();
 
     // Track container size (used for initial sizing and toggle calculations)

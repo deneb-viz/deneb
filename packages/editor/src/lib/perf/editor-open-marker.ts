@@ -3,8 +3,8 @@ import { logDebug, logWarning } from '@deneb-viz/utils/logging';
 /**
  * Lightweight performance instrumentation for the viewer > editor open path.
  *
- * The freeze investigated under `docs/plans/2026-05-01-001-perf-resolve-freeze-on-transition-plan.md`
- * is sensitive to where time is spent between four moments:
+ * Editor-open latency is sensitive to where time is spent between four
+ * moments:
  *
  *   1. `start`           — the host transitions the visual into editor mode
  *   2. `editor-mount`    — `<DenebEditor>` commits its initial mount

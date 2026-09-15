@@ -24,7 +24,7 @@ import { LOADING_INDICATOR_DEBOUNCE_MS } from '../loading-debounce-constants';
 describe('LOADING_INDICATOR_DEBOUNCE_MS', () => {
     it('is 150ms — the baseline that suppresses the flicker observed during fast worker jobs', () => {
         // If this assertion fails because the threshold was tuned upwards
-        // post-measurement (per plan Unit 3, Step 1), update the literal —
+        // after measurement, update the literal —
         // do NOT remove the assertion. Setting it to 0 would re-introduce
         // the flicker.
         expect(LOADING_INDICATOR_DEBOUNCE_MS).toBe(150);

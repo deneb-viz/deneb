@@ -2,19 +2,18 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * Characterizes the `Object.is` bail-out semantics behind the signal
- * listener's `setSignalValue` fix in `signal-value.tsx`.
+ * listener's `{ value }` wrapper in `signal-value.tsx`.
  *
- * Bug (Important #12): the listener used to call `setSignalValue(() =>
- * value)` with the raw value Vega handed back. `useState` skips the
- * re-render when `Object.is(next, prev)` is true — correct for primitives,
- * but wrong when a Vega signal is backed by an object/array that Vega
- * mutates in place and re-emits under the SAME reference. `Object.is` then
- * reports "unchanged" even though the content changed, the state update is
- * dropped, and the inspected cell shows a stale value.
+ * `useState` skips the re-render when `Object.is(next, prev)` is true —
+ * correct for primitives, but wrong when a Vega signal is backed by an
+ * object/array that Vega mutates in place and re-emits under the SAME
+ * reference. Handing `setSignalValue` the raw value would make `Object.is`
+ * report "unchanged" even though the content changed, drop the state
+ * update, and leave the inspected cell showing a stale value.
  *
- * Fix: wrap every emitted value in a fresh `{ value }` object before handing
- * it to `setSignalValue`. The wrapper is a new reference on every call, so
- * `Object.is` never bails, and the triggering re-render always fires
+ * Wrapping every emitted value in a fresh `{ value }` object before handing
+ * it to `setSignalValue` makes the wrapper a new reference on every call, so
+ * `Object.is` never bails and the triggering re-render always fires
  * regardless of what Vega does with the underlying value's identity.
  *
  * There is no `@testing-library/react`

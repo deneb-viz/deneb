@@ -72,7 +72,7 @@ export type BuildResolvedDatasetDescriptorInput = {
  *
  * Populates the `*Lower` pre-folded variants alongside the display
  * strings so the match engine can compare without re-folding on every
- * keystroke (see P2 #3 refactor).
+ * keystroke.
  */
 const resolveFlagDescriptor = (
     key: keyof SupportFieldFlags,

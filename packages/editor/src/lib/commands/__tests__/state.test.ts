@@ -8,8 +8,8 @@ import {
 } from '../state';
 
 /**
- * Pure-helper unit tests for the two `commands` slice evaluators added in
- * Unit 2 of the recovery-on-compile plan. The helpers are the single
+ * Pure-helper unit tests for the two `commands` slice evaluators. The
+ * helpers are the single
  * source of truth shared between the user-action writers
  * (`handleUpdateEditorZoomLevel`, `handleUpdateChanges`,
  * `handleUpdateIsDirty`) and `handleCompile`'s success-branch recovery

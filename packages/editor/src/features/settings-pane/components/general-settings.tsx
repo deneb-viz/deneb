@@ -238,7 +238,7 @@ export const ScaleToZoomSettings = ({
 };
 
 /**
- * Re-exported so callers outside this module (notably `settings-pane.tsx`
- * in Unit 3) can resolve every row's i18n keys in a single pass.
+ * Re-exported so callers outside this module (notably `settings-pane.tsx`)
+ * can resolve every row's i18n keys in a single pass.
  */
 export { generalSchema };

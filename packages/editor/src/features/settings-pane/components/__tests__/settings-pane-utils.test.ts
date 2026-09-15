@@ -4,11 +4,11 @@ import { describe, expect, it } from 'vitest';
 import { isEditableEventTarget } from '../settings-pane-utils';
 
 /**
- * Important #10: `settings-pane.tsx`'s context-menu interception used to
- * call `preventDefault()` unconditionally on the pane root, suppressing the
- * browser's native context menu inside the search box `<input>` too — no
- * right-click-paste, no Shift+F10 editing menu. `isEditableEventTarget` is
- * the predicate the handlers now check before calling `preventDefault()`.
+ * `isEditableEventTarget` is the predicate `settings-pane.tsx`'s
+ * context-menu handlers check before calling `preventDefault()`. Calling it
+ * unconditionally on the pane root would suppress the browser's native
+ * context menu inside the search box `<input>` too — no right-click-paste,
+ * no Shift+F10 editing menu.
  */
 describe('isEditableEventTarget', () => {
     it('returns true for an <input> element', () => {

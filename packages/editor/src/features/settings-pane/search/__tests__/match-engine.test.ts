@@ -289,7 +289,7 @@ describe('buildMatchView: flat sections', () => {
     });
 });
 
-describe('buildMatchView: Dataset tree (R4)', () => {
+describe('buildMatchView: Dataset tree filtering', () => {
     it('field-name match keeps the field and every applicable flag visible', () => {
         // Query arrives already folded via `resolveQuery`.
         const view = buildMatchView({

@@ -3,8 +3,7 @@ import type { ReactNode } from 'react';
 /**
  * Local column contract for `DataTableViewer`, decoupled from any table
  * library. Only the fields the three debug-area viewers (Data tab, Source
- * tab, Signal viewer) genuinely use are modelled here — this replaces the
- * former dependency on react-data-table-component's `TableColumn` type.
+ * tab, Signal viewer) genuinely use are modelled here.
  */
 export interface DataTableViewerColumn<T> {
     /** Stable id — keyboard-nav registration + sort identity. */
@@ -27,8 +26,7 @@ export interface DataTableViewerColumn<T> {
     width?: number;
     /**
      * Cell renderer (JSX via `DataTableCell`). `rowIndex` is the
-     * page-relative row index (0-based within the currently visible page),
-     * matching what react-data-table-component passed previously.
+     * page-relative row index (0-based within the currently visible page).
      */
     cell: (row: T, rowIndex: number) => ReactNode;
 }

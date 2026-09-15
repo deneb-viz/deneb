@@ -9,24 +9,24 @@ import {
 import type { SectionSchema } from '../schema-types';
 
 /**
- * Characterizes the `settings-pane.tsx` fix for Important #9: descriptors
- * (`resolveSectionSchema` / `resolvePlatformSearchables` /
- * `buildResolvedDatasetDescriptor` — all translate + `.toLowerCase()` work)
- * used to sit in the same `useMemo` dependency array as `query`, so every
- * keystroke rebuilt every descriptor from scratch even though none of them
- * depend on the query text.
+ * Characterizes the descriptor/match-view split in `settings-pane.tsx`:
+ * descriptor resolution (`resolveSectionSchema` /
+ * `resolvePlatformSearchables` / `buildResolvedDatasetDescriptor` — all
+ * translate + `.toLowerCase()` work) is a separate `useMemo` with no `query`
+ * dependency, so only `buildMatchView` (the actual filtering step) re-runs
+ * per keystroke. If `query` sat in the same dependency array, every
+ * keystroke would rebuild every descriptor from scratch even though none of
+ * them depend on the query text.
  *
- * Post-fix, descriptor resolution is a separate `useMemo` with no `query`
- * dependency; only `buildMatchView` (the actual filtering step) re-runs per
- * keystroke. This test can't render the component (no
- * `@testing-library/react` / jsdom in this workspace — see
- * `data-tab-listener-rebind.test.ts` for the established precedent), so it
- * characterises the same shape directly: resolve descriptors once through a
- * spied `translate`, then run the match engine against that single resolved
- * result across N distinct queries, asserting `translate` is never called
- * again and every query still produces the correct match result.
+ * This test can't render the component (this package has no
+ * `@testing-library/react` dependency — see `data-tab-listener-rebind.test.ts`
+ * for the established precedent), so it characterises the same shape
+ * directly: resolve descriptors once through a spied `translate`, then run
+ * the match engine against that single resolved result across N distinct
+ * queries, asserting `translate` is never called again and every query
+ * still produces the correct match result.
  */
-describe('settings-pane descriptor/match-view split (Important #9)', () => {
+describe('settings-pane descriptor/match-view split', () => {
     const schema = {
         id: 'general',
         headingKey: 'HEAD_GENERAL',

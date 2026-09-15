@@ -33,10 +33,8 @@ const useDataTableStatusBarStyles = makeStyles({
 });
 
 /**
- * Pagination contract consumed by the status bar. Field names and call
- * signatures match what react-data-table-component's `PaginationComponentProps`
- * exposed previously, so the component internals are unchanged; the type is now
- * owned locally rather than imported from the (removed) table library.
+ * Pagination contract consumed by the status bar. The type is owned locally
+ * so the status bar has no dependency on a table library.
  */
 export interface DataTableStatusBarProps {
     /** Total row count across all pages. */

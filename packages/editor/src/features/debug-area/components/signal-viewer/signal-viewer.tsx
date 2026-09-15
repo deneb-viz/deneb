@@ -116,6 +116,6 @@ const getTableColumns = (
     ];
 };
 
-/** Fixed pixel widths replacing the former `grow: 2` / `grow: 5` weights. */
+/** Fixed pixel widths for the signal key and value columns. */
 const SIGNAL_KEY_COLUMN_WIDTH = 200;
 const SIGNAL_VALUE_COLUMN_WIDTH = 500;

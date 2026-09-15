@@ -13,11 +13,9 @@ import { DataTableHeaderCell } from '../data-table/data-table-header-cell';
 import type { DataTableViewerColumn } from '../data-table/data-table-viewer-types';
 
 /**
- * Shared worker + column helpers used by both the Source and Data tabs.
- * Extracted per the dual-maintenance learning — the two tabs previously
- * held near-identical copies of these helpers which is a drift hazard.
- * Kept in a `.tsx` file because `buildDatasetViewerColumns` produces JSX
- * for header/cell renderers.
+ * Shared worker + column helpers used by both the Source and Data tabs, so
+ * the two tabs cannot drift apart. Kept in a `.tsx` file because
+ * `buildDatasetViewerColumns` produces JSX for header/cell renderers.
  */
 
 /**

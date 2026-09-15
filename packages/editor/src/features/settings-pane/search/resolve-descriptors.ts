@@ -37,8 +37,8 @@ const resolveText = (text: LocalisableText, translate: TranslateFn): string =>
  * referentially stable within a single locale. Every row's
  * `labelKey` / `assistiveKey` becomes a concrete string here, and every
  * searchable surface is pre-lowered once so the match engine can compare
- * against `*Lower` fields directly (see the plan P2 #3 refactor — avoids
- * ~15k per-keystroke `.toLowerCase()` calls on constant translated text).
+ * against `*Lower` fields directly, which avoids ~15k per-keystroke
+ * `.toLowerCase()` calls on constant translated text.
  *
  * Uses plain `.toLowerCase()` to stay consistent with the engine's
  * `computeHighlightRanges` and `resolveQuery` contracts — locale-bound

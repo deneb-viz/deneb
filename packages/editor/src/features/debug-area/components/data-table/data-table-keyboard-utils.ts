@@ -53,9 +53,8 @@ export const resolveCellKeyAction = (key: string): CellKeyAction | null => {
 
 /**
  * Encode a `(rowIndex, fieldName)` pair as a stable cell identifier. The
- * separator `:` is chosen to match the plan's convention; field names in this
- * project never contain literal `:` in a way that would collide with a row
- * index prefix.
+ * `:` separator is safe because field names in this project never contain a
+ * literal `:` in a way that would collide with a row index prefix.
  */
 export const buildCellId = (rowIndex: number, fieldName: string): CellId =>
     `${rowIndex}:${fieldName}`;

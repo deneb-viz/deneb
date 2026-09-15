@@ -203,7 +203,7 @@ describe('buildResolvedDatasetDescriptor', () => {
     });
 
     it('populates pre-lowered `*Lower` fields on every surface', () => {
-        // The P2 #3 refactor exposes pre-folded counterpart fields so
+        // The indexer exposes pre-folded counterpart fields so
         // the match engine can compare without re-folding on every
         // keystroke. This test locks in the invariant that the
         // indexer is the single point of truth for the folding.

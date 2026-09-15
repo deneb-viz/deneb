@@ -151,7 +151,7 @@ export const DataTableViewer = ({
     }, [columns]);
 
     // `rowCount` reflects the FULL dataset length (not the visible page),
-    // preserving the exact value the keyboard provider received previously.
+    // which is the value the keyboard provider expects.
     const rowCount = data?.length ?? 0;
 
     // Fluent column definitions. `renderCell`/`compare` are intentionally

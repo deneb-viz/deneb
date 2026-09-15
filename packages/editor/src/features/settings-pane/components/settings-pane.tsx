@@ -120,7 +120,7 @@ export const SettingsPane = () => {
     const searchBoxRef = useRef<SettingsSearchBoxHandle>(null);
     const paneRootRef = useRef<HTMLDivElement>(null);
 
-    // Context menu local state (R5). Menu is callback-driven — the Zustand
+    // Context menu local state. Menu is callback-driven — the Zustand
     // slice stays out of this. `anchorRect` anchors Fluent's positioning via
     // a virtual element.
     const [menuOpen, setMenuOpen] = useState(false);
@@ -132,10 +132,10 @@ export const SettingsPane = () => {
     // `buildResolvedDatasetDescriptor` (a `.toLowerCase()` per row/flag —
     // see `resolve-descriptors.ts`'s docs) are exactly the per-render cost
     // the search design pre-lowers surfaces to avoid paying on every
-    // keystroke. Before this split, `query` sat in the same `useMemo` deps
-    // as these translate-heavy inputs, so every keystroke rebuilt every
-    // descriptor from scratch (Important #9) even though none of them
-    // depend on the query text. The dataset indexer mirrors the
+    // keystroke. If `query` sat in the same `useMemo` deps as these
+    // translate-heavy inputs, every keystroke would rebuild every
+    // descriptor from scratch even though none of them depend on the
+    // query text. The dataset indexer mirrors the
     // render-time logic in DatasetSettings so match results line up with
     // what the tree actually shows.
     const descriptors = useMemo(() => {
@@ -281,8 +281,7 @@ export const SettingsPane = () => {
     // Right-click: open menu anchored at the pointer. Skips (and lets the
     // browser's native menu through) when the target is an editable
     // control — the search box `<input>` needs its native cut/copy/paste
-    // menu, which the pane-wide `preventDefault()` used to suppress
-    // unconditionally (Important #10).
+    // menu, which a pane-wide `preventDefault()` would suppress.
     const handleContextMenu = useCallback(
         (event: React.MouseEvent<HTMLDivElement>) => {
             if (isEditableEventTarget(event.target)) return;

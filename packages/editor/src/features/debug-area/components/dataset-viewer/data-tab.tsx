@@ -53,16 +53,15 @@ const DATA_LISTENER_DEBOUNCE_INTERVAL = 100;
  * Reads rows from `VegaViewServices.getDataByName(datasetName)` — the
  * post-transform, Vega-view-scoped dataset. When the view is unavailable or
  * the named dataset can't be resolved, renders `NoDataMessage` with an
- * explicit reason instead of silently substituting a source-level fallback
- * (the old `getDatasetValues` behaviour, removed in Unit 6).
+ * explicit reason instead of silently substituting a source-level fallback.
  *
  * The listener rebinds on `datasetName` or `renderId` change. `renderId`
  * is bumped by `vega-embed.tsx#handleEmbed` AFTER `vegaEmbed()` resolves
  * and the new `View` instance is attached — i.e. the bump tracks actual
- * view replacement, not compile events. (Pre-P3, the bump fired at
- * compile time, which was both racy — DataTab effect ran before the view
- * existed — and noisy: every debounced keystroke compile cycled the
- * listener even when the same view was reused.)
+ * view replacement, not compile events. Bumping at compile time would be
+ * both racy — the DataTab effect would run before the view existed — and
+ * noisy: every debounced keystroke compile would cycle the listener even
+ * when the same view was reused.
  *
  * Per-tab sort and page state live under `state.debug.dataPivotSort.data` /
  * `state.debug.dataPivotPage.data`, so the Source tab's sort/page are

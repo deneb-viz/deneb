@@ -84,10 +84,10 @@ const useDatasetSettingsStyles = makeStyles({
  * Props for {@link DatasetSettings}.
  *
  * `datasetMatchView` is threaded in by the settings pane when a query
- * is active. When `null | undefined`, the tree renders exactly as
- * before — no filter, no highlights, no assistive preview. When
- * non-null, the R4 tree-filter rule applies: only matched fields
- * appear, and flag-match fields show only the matched flag leaves.
+ * is active. When `null | undefined`, the tree renders unfiltered — no
+ * filter, no highlights, no assistive preview. When non-null, the
+ * tree-filter rule applies: only matched fields appear, and flag-match
+ * fields show only the matched flag leaves.
  *
  * `expandAllEpoch` / `collapseAllEpoch` are monotonically incremented
  * by the pane's context menu actions. When they change, the dataset
@@ -331,8 +331,8 @@ export const DatasetSettings = ({
                     // When the field matched on its own name (or there's no
                     // active filter), every applicable flag stays visible.
                     // When it matched on one or more flags, only those
-                    // specific flags render — parent field retained for
-                    // context per R4.
+                    // specific flags render, with the parent field retained
+                    // for context.
                     const applicableFlags =
                         fieldMatch && fieldMatch.matchReason === 'flag'
                             ? allApplicableFlags.filter((flag) =>

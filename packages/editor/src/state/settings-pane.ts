@@ -7,9 +7,7 @@ import type { StoreState } from '@deneb-viz/app-core';
  *
  * Both `query` and `openItems` live on the Zustand store (module
  * singleton) so they survive component remount within a single visual
- * session. `openItems` was previously a module-level ref in
- * `settings-pane.tsx`; moving it here removes the cross-remount leak
- * that surfaced during code review (P2 #5). Neither is persisted across
+ * session. Neither is persisted across
  * reloads — this slice is not part of `SyncableSlice` and has no wiring
  * into project persistence.
  */

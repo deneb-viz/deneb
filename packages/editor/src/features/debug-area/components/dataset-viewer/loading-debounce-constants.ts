@@ -14,7 +14,7 @@
  * each tab's guard (`!tableState.rows` / `!datasetState.values?.length`) is
  * NOT debounced, so first-load shows the spinner immediately.
  *
- * 150ms baseline; revisit post-ship if empirical worker round-trip on a
- * 500-1000 row dataset suggests a different value (per plan Unit 3, Step 1).
+ * 150ms baseline; revisit if the empirical worker round-trip on a 500-1000
+ * row dataset suggests a different value.
  */
 export const LOADING_INDICATOR_DEBOUNCE_MS = 150;

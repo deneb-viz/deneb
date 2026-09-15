@@ -20,7 +20,7 @@ const shouldRenderAssistivePreview = (
 
 /**
  * Component-tree rendering tests are deferred until `@testing-library/react`
- * is available in this workspace (see plan: Unit 4 notes). In the meantime
+ * is available in this package. In the meantime
  * the guard + segmentation helpers together exercise every decision the
  * component makes.
  */

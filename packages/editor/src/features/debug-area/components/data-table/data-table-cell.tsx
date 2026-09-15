@@ -118,9 +118,9 @@ export const DataTableCell = ({
     // IT is the open cell flips, not on every popover state change (e.g. a
     // ticking signal's rawValue update in a DIFFERENT cell, or this cell's
     // own live-refresh dispatch while the popover targets someone else).
-    // See `inspector-popover-context.tsx` for why the predecessor
-    // full-state context caused every mounted cell to re-render on every
-    // popover state change (Important #12).
+    // See `inspector-popover-context.tsx` for why a full-state context
+    // would make every mounted cell re-render on every popover state
+    // change.
     const isInspectorOpen = useIsInspectorOpenForCell(cellId);
 
     // Register this cell with the keyboard provider for roving tabindex
