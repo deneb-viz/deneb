@@ -5,9 +5,11 @@ import { VISUAL_PREVIEW_ZOOM_CONFIGURATION } from '@deneb-viz/configuration';
 import { createDenebState } from '../../../state/state';
 import { installEditorState } from '../../../state/install-editor-state';
 import {
+    selectCommandEnabled,
     selectExportSpecificationCommandEnabled,
     selectZoomCommandsState
 } from '../selectors';
+import { type Command, type DerivedCommand } from '../types';
 
 /**
  * U4 (docs/plans/2026-09-15-001-refactor-editor-package-extraction-plan.md)
@@ -142,6 +144,153 @@ describe('selectZoomCommandsState', () => {
             zoomIn: false,
             zoomOut: false,
             zoomReset: false
+        });
+    });
+});
+
+/**
+ * `selectCommandEnabled` (lib/commands/selectors.ts) is the single
+ * dispatch point that resolves a command's enabled state regardless of
+ * whether it's derived (export/zoom, via the selectors above) or stored
+ * (`state.commands`, written by e.g. `toggleApplyMode` in
+ * `state/editor.ts`). These tests exercise that dispatch directly, rather
+ * than re-testing the derivation logic already covered above.
+ */
+describe('selectCommandEnabled', () => {
+    describe('stored commands', () => {
+        it('returns the stored boolean for a stored command (applyChanges) and reflects a change made via setState', () => {
+            const store = makeStore();
+
+            // Initial stored value (state/commands.ts).
+            expect(selectCommandEnabled(store.getState(), 'applyChanges')).toBe(
+                true
+            );
+
+            store.setState((state) => ({
+                commands: { ...state.commands, applyChanges: false }
+            }));
+
+            expect(selectCommandEnabled(store.getState(), 'applyChanges')).toBe(
+                false
+            );
+        });
+
+        it('returns the stored boolean for a stored command (applyChanges) and reflects a change made via its setter (toggleApplyMode)', () => {
+            const store = makeStore();
+
+            // `toggleApplyMode` (state/editor.ts, `handleToggleApplyMode`)
+            // flips `editor.applyMode` and writes the corresponding
+            // `commands.applyChanges` value in the same `set()` call.
+            // Default `applyMode` is 'Manual', so the first toggle moves
+            // to 'Auto' and sets `applyChanges` to false.
+            expect(selectCommandEnabled(store.getState(), 'applyChanges')).toBe(
+                true
+            );
+
+            store.getState().editor.toggleApplyMode();
+
+            expect(selectCommandEnabled(store.getState(), 'applyChanges')).toBe(
+                false
+            );
+        });
+    });
+
+    describe('derived commands', () => {
+        it('returns the selector-derived value for exportSpecification, not any value written to state.commands, and reacts to editor.isDirty/compilation.result changes', () => {
+            const store = makeStore();
+            store.setState((state) => ({
+                editor: { ...state.editor, isDirty: true },
+                compilation: { ...state.compilation, result: READY_RESULT },
+                // `exportSpecification` is a `DerivedCommand`
+                // (lib/commands/types.ts) — `CommandsSliceProperties`
+                // (state/commands.ts) excludes it, so nothing writes it
+                // there in real code. This cast simulates a stale/wrong
+                // stored value purely to prove `selectCommandEnabled`
+                // never reads it for a derived command.
+                commands: {
+                    ...state.commands,
+                    exportSpecification: true
+                } as unknown as typeof state.commands
+            }));
+
+            // Dirty editor -> derived value is false, even though the
+            // simulated stored value says true.
+            expect(
+                selectCommandEnabled(store.getState(), 'exportSpecification')
+            ).toBe(false);
+
+            store.setState((state) => ({
+                editor: { ...state.editor, isDirty: false }
+            }));
+            expect(
+                selectCommandEnabled(store.getState(), 'exportSpecification')
+            ).toBe(true);
+
+            store.setState((state) => ({
+                compilation: { ...state.compilation, result: null }
+            }));
+            expect(
+                selectCommandEnabled(store.getState(), 'exportSpecification')
+            ).toBe(false);
+        });
+
+        it('returns the selector-derived value for zoomIn, not any value written to state.commands, and reacts to editorZoomLevel changes', () => {
+            const store = makeStore();
+            store.setState((state) => ({
+                compilation: { ...state.compilation, result: READY_RESULT },
+                // Simulated stale stored value — see the comment in the
+                // exportSpecification test above.
+                commands: {
+                    ...state.commands,
+                    zoomIn: false
+                } as unknown as typeof state.commands
+            }));
+
+            store.getState().updateEditorZoomLevel(ZOOM_MID);
+            expect(selectCommandEnabled(store.getState(), 'zoomIn')).toBe(true);
+
+            store.getState().updateEditorZoomLevel(ZOOM_MAX);
+            expect(selectCommandEnabled(store.getState(), 'zoomIn')).toBe(
+                false
+            );
+        });
+    });
+
+    describe('sanity coverage over every Command', () => {
+        it('returns a boolean for every member of the Command union, on an installed store', () => {
+            const store = makeStore();
+            store.setState((state) => ({
+                compilation: { ...state.compilation, result: READY_RESULT }
+            }));
+
+            const derivedCommands: DerivedCommand[] = [
+                'exportSpecification',
+                'zoomFit',
+                'zoomIn',
+                'zoomOut',
+                'zoomReset'
+            ];
+
+            // `Command` (lib/commands/types.ts) has no runtime list.
+            // Build one from the stored-commands slice's initial keys
+            // (state/commands.ts, `createCommandsSlice`) plus the derived
+            // commands above — together these are exactly the values
+            // `selectCommandEnabled`'s switch dispatches over.
+            const storedCommands = Object.keys(
+                store.getState().commands
+            ) as Array<Exclude<Command, DerivedCommand>>;
+
+            const allCommands: Command[] = [
+                ...storedCommands,
+                ...derivedCommands
+            ];
+
+            expect(allCommands.length).toBeGreaterThan(0);
+            allCommands.forEach((command) => {
+                expect(
+                    typeof selectCommandEnabled(store.getState(), command)
+                ).toBe('boolean');
+            });
         });
     });
 });

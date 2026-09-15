@@ -15,6 +15,7 @@ import {
     updateSchemaPropertyMarkers,
     registerSchemaPropertyCodeActionProvider
 } from '../../../lib/editor/schema-property-diagnostic';
+import { resolveStagedTextForRole } from '../staged-text';
 
 type JsonEditorProps = {
     thisEditorRole: EditorPaneRole;
@@ -36,7 +37,6 @@ const useSpecificationJsonEditorStyles = makeStyles({
  * Represents an instance of Ace editor, responsible for maintaining either the JSON spec or the config for a Vega/
  * Vega-Lite visualization.
  */
-//eslint-disable-next-line max-lines-per-function
 export const SpecificationJsonEditor = ({
     thisEditorRole
 }: JsonEditorProps) => {
@@ -154,15 +154,10 @@ export const SpecificationJsonEditor = ({
             isFirstInitializationCount.current = false;
             return;
         }
-        const {
-            editor: { stagedConfig, stagedSpec },
-            project: { spec, config }
-        } = getDenebState();
-        const text =
-            thisEditorRole === 'Spec'
-                ? (stagedSpec ?? spec)
-                : (stagedConfig ?? config);
-        ref.current?.setValue(text);
+        const text = resolveStagedTextForRole(thisEditorRole, getDenebState());
+        if (text !== undefined) {
+            ref.current?.setValue(text);
+        }
     }, [initializationCount, ref, thisEditorRole]);
     // Bootstrap the editor
     const handleOnMount: OnMount = (editor) => {
@@ -288,18 +283,8 @@ const addHyperlinkOverride = (
 /**
  * Resolve the default value when instantiated, either from settings or staging as needed.
  */
-const getDefaultValue = (role: EditorPaneRole) => {
-    const {
-        editor: { stagedConfig, stagedSpec },
-        project: { spec, config }
-    } = getDenebState();
-    switch (role) {
-        case 'Spec':
-            return stagedSpec ?? spec;
-        case 'Config':
-            return stagedConfig ?? config;
-    }
-};
+const getDefaultValue = (role: EditorPaneRole) =>
+    resolveStagedTextForRole(role, getDenebState());
 
 /**
  * A very simple override of clicking link elements in the editor, to allow delegation of hyperlink handling to the
