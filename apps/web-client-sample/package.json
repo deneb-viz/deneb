@@ -21,6 +21,7 @@
     },
     "dependencies": {
         "@deneb-viz/app-core": "*",
+        "@deneb-viz/editor": "*",
         "react": "^19.2.0",
         "react-dom": "^19.2.0",
         "vega": "6.4.0",

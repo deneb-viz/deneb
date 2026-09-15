@@ -1,0 +1,79 @@
+{
+    "name": "@deneb-viz/editor",
+    "version": "2.0.0",
+    "author": "Deneb contributors",
+    "description": "The Deneb advanced editor, composed on top of @deneb-viz/app-core.",
+    "private": true,
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/deneb-viz/deneb.git"
+    },
+    "packageManager": "npm@10.3.0",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        }
+    },
+    "types": "dist/index.d.ts",
+    "type": "module",
+    "scripts": {
+        "build": "tsdown",
+        "clean": "rimraf dist",
+        "dev": "tsdown --watch",
+        "prepack": "npm run build",
+        "typecheck": "tsc --noEmit",
+        "eslint": "node ../../bin/workspace-eslint.js",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "bench": "vitest bench --run --passWithNoTests"
+    },
+    "files": [
+        "dist/**"
+    ],
+    "sideEffects": false,
+    "devDependencies": {
+        "@deneb-viz/eslint-config": "*",
+        "@deneb-viz/typescript-config": "*",
+        "@types/node": "^22.15.33",
+        "@types/react": "^19.0.0",
+        "concurrently": "^9.2.1",
+        "tsdown": "0.23.0",
+        "typescript": "^5.6.2",
+        "vitest": "^3.2.4"
+    },
+    "dependencies": {
+        "@deneb-viz/data-core": "*",
+        "@deneb-viz/json-processing": "*",
+        "@deneb-viz/template-usermeta": "*",
+        "@deneb-viz/utils": "*",
+        "@monaco-editor/react": "^4.6.0",
+        "@uidotdev/usehooks": "^2.4.1",
+        "ajv": "^8.12.0",
+        "ajv-formats": "^2.1.1",
+        "allotment": "^1.20.5",
+        "fast-equals": "^5.3.3",
+        "jsonc-parser": "^3.3.1",
+        "monaco-editor": "0.46.0",
+        "overlayscrollbars": "^2.10.1",
+        "overlayscrollbars-react": "^0.5.6",
+        "react-hotkeys-hook": "^5.2.0",
+        "use-resize-observer": "^9.1.0",
+        "zustand": "^4.5.5"
+    },
+    "peerDependencies": {
+        "@deneb-viz/app-core": "*",
+        "@deneb-viz/powerbi-compat": "*",
+        "@deneb-viz/vega-react": "*",
+        "@deneb-viz/vega-runtime": "*",
+        "@fluentui/react-components": "^9.72.6",
+        "@fluentui/react-icons": "^2.0.313",
+        "powerbi-visuals-api": "5.11.0",
+        "powerbi-visuals-utils-formattingutils": "^6.1.2",
+        "react": "^19.2.0",
+        "react-dom": "^19.2.0",
+        "vega": ">=5",
+        "vega-lite": ">=5"
+    }
+}
