@@ -40,8 +40,13 @@ const EDITOR_ONLY_FILE_PATTERNS: RegExp[] = [
     /state\/(editor|export|commands|debug|settings-pane|field-usage|install-editor-state|editor-state-access)\.ts/
 ];
 
-/** External specifiers that pull Monaco itself into the reached graph. */
-const EDITOR_ONLY_EXTERNAL_PATTERN = /^monaco-editor|^@monaco-editor\//;
+/**
+ * External specifiers that pull editor code into the reached graph: Monaco
+ * itself, or the editor package (which depends on this package, never the
+ * reverse).
+ */
+const EDITOR_ONLY_EXTERNAL_PATTERN =
+    /^monaco-editor|^@monaco-editor\/|^@deneb-viz\/editor(\/|$)/;
 
 export interface EditorOnlyReachViolation {
     /** Whether the violation is a reached source file or an external specifier. */
@@ -108,7 +113,7 @@ describe('viewer entry is editor-free', () => {
         );
     });
 
-    it('reaches no editor-only file and no value import of monaco-editor', () => {
+    it('reaches no editor-only file and no value import of monaco-editor or the editor package', () => {
         const violations = findEditorOnlyReach(files, externals);
 
         if (violations.length > 0) {
@@ -144,15 +149,24 @@ describe('viewer entry is editor-free', () => {
             });
         });
 
-        it('reports a synthetic external specifier matching monaco-editor', () => {
+        it('reports a synthetic external specifier matching monaco-editor or the editor package', () => {
             const violations = findEditorOnlyReach(
                 [],
-                ['react', 'monaco-editor', '@monaco-editor/react']
+                [
+                    'react',
+                    'monaco-editor',
+                    '@monaco-editor/react',
+                    '@deneb-viz/editor'
+                ]
             );
 
-            expect(violations).toHaveLength(2);
+            expect(violations).toHaveLength(3);
             expect(violations.map((v) => v.value).sort()).toEqual(
-                ['@monaco-editor/react', 'monaco-editor'].sort()
+                [
+                    '@deneb-viz/editor',
+                    '@monaco-editor/react',
+                    'monaco-editor'
+                ].sort()
             );
         });
 

@@ -1,12 +1,12 @@
 # app-core Architecture
 
-`@deneb-viz/app-core` is organised as a strict layered codebase: composition layers sit on top, utility layers sit on the bottom, and dependencies only ever point downward (with carefully-scoped exceptions for state and context, which are also low-level enough that lib may consume them).
+`@deneb-viz/app-core` is organised as a strict layered codebase: composition layers sit on top, utility layers sit on the bottom, and dependencies only ever point downward (with carefully-scoped exceptions for state and context, which are also low-level enough that lib may consume them). `@deneb-viz/editor` — the advanced editor, built on top of this package — uses the same layer vocabulary and the same dependency matrix, so everything below applies to both packages.
 
 ## Layers
 
-The codebase is partitioned into nine layers, each rooted at a specific path under `src/`:
+The layer vocabulary has nine layers, each rooted at a specific path under `src/`. A package only has the layers its folders exist for: app-core has entry, app, feature, components, lib, state and i18n; the editor package has entry, app, feature, components, lib, state, context and catalog.
 
-- **entry** — `src/index.ts`, `src/editor.ts`. The package's public surface. Wires everything together for consumers.
+- **entry** — `src/index.ts`. The package's public surface. Wires everything together for consumers.
 - **app** — `src/app/**`. Top-level orchestration: screens, root providers, composition of multiple features into a coherent application shell.
 - **feature** — `src/features/<name>/**`. Self-contained feature slices (e.g. `features/spec-editor`, `features/command-bar`). Each feature owns its UI, local state, and types.
 - **components** — `src/components/**`. Reusable UI primitives shared across features (buttons, panels, icons).
@@ -32,7 +32,7 @@ The table below lists, for every "from" layer, the set of layers it is allowed t
 | **i18n**               | -     | -   | -         | -          | -   | -     | -       | yes  | -       |
 | **catalog**            | -     | -   | -         | -          | yes | -     | -       | yes  | yes     |
 
-The runtime source of truth for this matrix is `packages/app-core/eslint.config.js`. If this document and the eslint config ever disagree, **the eslint config wins** — please update this doc to match.
+The runtime source of truth for this matrix is the shared factory in `packages/eslint-config/boundaries.js` (`createBoundariesConfig`), which each package's `eslint.config.js` calls with the layers it has. If this document and that file ever disagree, **the factory wins** — please update this doc to match.
 
 A few things worth noting:
 
@@ -55,7 +55,7 @@ This is configured via the `capture: ['featureName']` setting on the `feature` e
 
 ## Enforcement
 
-Layering is enforced by `eslint-plugin-boundaries` (configured in `packages/app-core/eslint.config.js`). A vitest canary at `packages/app-core/src/__tests__/architecture-boundaries.test.ts` re-runs ESLint over `src/` in test scope and fails CI if any `boundaries/element-types` violation appears.
+Layering is enforced by `eslint-plugin-boundaries`, configured through `createBoundariesConfig` from `@deneb-viz/eslint-config/boundaries.js` in each package's `eslint.config.js`. A vitest canary (`src/__tests__/architecture-boundaries.test.ts` in both app-core and the editor package) re-runs ESLint over `src/` in test scope and fails CI if any `boundaries/element-types` violation appears.
 
 Why a canary on top of ESLint? Because the repo uses `eslint-plugin-only-warn`, which downgrades all ESLint errors to warnings during `npm run eslint`. Without the canary, `boundaries/element-types` violations would be silently surfaced as warnings and never block a merge. The canary asserts zero matching messages, which makes the rule effectively `error` again at CI time.
 
@@ -65,21 +65,21 @@ A short decision guide:
 
 - New piece of UI used by only one feature → put it inside that feature's folder.
 - New piece of UI used by two or more features → promote it to `components/`.
-- New cross-cutting React context provider → `context/`. When the consumer hook should throw outside its Provider, follow the [nullable-default pattern](../../docs/solutions/design-patterns/usecontext-guard-needs-nullable-default-2026-05-26.md) so the guard actually fires.
+- New cross-cutting React context provider → `context/` (in the editor package; app-core has no contexts). When the consumer hook should throw outside its Provider, follow the [nullable-default pattern](../../docs/solutions/design-patterns/usecontext-guard-needs-nullable-default-2026-05-26.md) so the guard actually fires.
 - New pure helper or shared contract type (no React) → `lib/`.
 - New Zustand slice or store wiring → `state/`.
-- New static lookup table (operators, templates, registry entries) → `catalog/`.
+- New static lookup table (operators, templates, registry entries) → `catalog/` (in the editor package).
 - New screen, layout, or composition that wires multiple features together → `app/`.
 
 If you are unsure, default to the most-restricted layer that still works. It is always easier to relocate a file upward later than to untangle a feature that has been allowed to grow tendrils.
 
 ## Entry points
 
-`src/index.ts` is the viewer core: the provider, the viewer and gated-viewer components, state hooks and core types, the platform contract, i18n types, template import and the other viewer-safe primitives. Nothing under it reaches Monaco, the specification editor, the settings pane, or any other editor-only code.
+`src/index.ts` is the package's single entry and the viewer core: the provider, the viewer and gated-viewer components, the store (`useDenebState` / `getDenebState` / `createDenebState`) and core types, the platform contract, i18n types, template import, template metadata, the shared UI primitives and the other viewer-safe pieces the editor composes. Nothing under it reaches Monaco, the specification editor, the settings pane, or any other editor-only code.
 
-`src/editor.ts` is the editor surface: `DenebEditor`/`RetainedDenebEditor`, `installEditorState` (composes the editor slices into the shared store) and `useEditorState` (the editor-state accessor), plus the settings-pane primitives, the specification-editor context, persist/discard commands, perf markers, clipboard and field-tracking helpers that only the editor mounts.
+The editor surface lives in `@deneb-viz/editor`: `DenebEditor` / `RetainedDenebEditor`, `installEditorState` (merges the editor-only store slices into this package's singleton store and registers the editor-side subscriptions) and `useEditorState` (the guarded editor-state accessor), plus the settings-pane primitives, the specification-editor context, persist/discard commands, perf markers, clipboard and field-tracking helpers. The editor package extends this package's `StoreState` interface through a module augmentation, so both packages read one store through the same hooks. The dependency is strictly one-way: the editor depends on app-core; app-core never depends on the editor.
 
-A reachability canary (`src/__tests__/viewer-entry-is-editor-free.test.ts`) walks the value-import graph from `src/index.ts` and fails if it reaches any editor-only path or a `monaco-editor` import, so this separation is enforced in CI rather than only documented here.
+Two canaries keep that true in CI: `src/__tests__/viewer-entry-is-editor-free.test.ts` walks the value-import graph from `src/index.ts` and fails if it reaches any editor-only path, a `monaco-editor` import or the editor package; `apps/deneb/src/__test__/invariants/package-dependency-direction.test.ts` fails if app-core's manifest or sources name `@deneb-viz/editor` at all.
 
 ## Historical context
 

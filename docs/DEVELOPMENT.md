@@ -160,7 +160,7 @@ When developing or verifying an in-progress Vega or Vega-Lite change (e.g. an up
 
 **How it works:** `apps/deneb/webpack.common.config.js` reads `VEGA_LOCAL_PATH` / `VEGA_LITE_LOCAL_PATH` and, when set, adds exact-match resolve aliases (`vega$` / `vega-lite$`) targeting those paths. Because Vega and Vega-Lite are bundled at the visual's webpack step (workspace packages don't bundle their own copies), a single alias redirects every import across the monorepo.
 
-**Editor JSON schemas** are covered too: the editor deep-imports `vega/vega-schema.json` / `vega-lite/vega-lite-schema.json` (see `packages/app-core/src/lib/schema/schema-service.ts`), and both repos emit the schema next to the built bundle. The schema alias is derived automatically from the bundle path, so editor validation/completion reflects the local build. If the build fails with a module-not-found error for the schema path, the local library build hasn't generated its schema — re-run its full build.
+**Editor JSON schemas** are covered too: the editor deep-imports `vega/vega-schema.json` / `vega-lite/vega-lite-schema.json` (see `packages/editor/src/lib/schema/schema-service.ts`), and both repos emit the schema next to the built bundle. The schema alias is derived automatically from the bundle path, so editor validation/completion reflects the local build. If the build fails with a module-not-found error for the schema path, the local library build hasn't generated its schema — re-run its full build.
 
 **Steps:**
 
@@ -244,7 +244,7 @@ Per-field flags that control which support columns (`__highlight__`, `__format__
 
 **State management** — configuration is stored in `supportFieldConfiguration` inside the visual's `stateManagement` property (alongside viewport dimensions) and is synced through the project slice in `@deneb-viz/app-core`. On first load of a pre-2.0 spec, legacy defaults are stamped in so existing specs continue to behave as before.
 
-**UI** — exposed via the Dataset accordion item in the Settings pane (`@deneb-viz/app-core`).
+**UI** — exposed via the Dataset accordion item in the Settings pane (`@deneb-viz/editor`).
 
 Full API reference: [`packages/data-core/doc/support-fields.md`](../packages/data-core/doc/support-fields.md)
 
