@@ -50,6 +50,7 @@ export const ExportInformation = () => {
         includePreviewImage,
         previewImageBase64PNG,
         embedViewport,
+        setMetadataPropertyBySelector,
         setPreviewImage,
         translate
     } = useDenebState((state) => ({
@@ -57,6 +58,8 @@ export const ExportInformation = () => {
         previewImageBase64PNG:
             state.export?.metadata?.information.previewImageBase64PNG,
         embedViewport: state.interface.embedViewport,
+        setMetadataPropertyBySelector:
+            state.export.setMetadataPropertyBySelector,
         setPreviewImage: state.export.setPreviewImage,
         translate: state.i18n.translate
     }));
@@ -118,6 +121,7 @@ export const ExportInformation = () => {
                             maxLength={
                                 TEMPLATE_INFORMATION_PROPS.name.maxLength
                             }
+                            onValueChange={setMetadataPropertyBySelector}
                         />
                     </div>
                     <div className={modalClasses.paneContentField}>
@@ -128,6 +132,7 @@ export const ExportInformation = () => {
                             maxLength={
                                 TEMPLATE_INFORMATION_PROPS.description.maxLength
                             }
+                            onValueChange={setMetadataPropertyBySelector}
                             multiline
                         />
                     </div>
@@ -139,6 +144,7 @@ export const ExportInformation = () => {
                             maxLength={
                                 TEMPLATE_INFORMATION_PROPS.author.maxLength
                             }
+                            onValueChange={setMetadataPropertyBySelector}
                         />
                     </div>
                 </div>

@@ -2,7 +2,7 @@ import { makeStyles, TableCell } from '@fluentui/react-components';
 
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
-import { CappedTextField } from '../ui';
+import { CappedTextField, type CappedTextFieldChange } from '../ui';
 import {
     TEMPLATE_DATA_FIELD_COLUMN_MAX_WIDTH,
     TEMPLATE_DATA_FIELD_COLUMN_MIN_WIDTH,
@@ -12,6 +12,7 @@ import {
 type DataNameColumnFieldProps = {
     item: UsermetaDatasetField;
     index: number;
+    onValueChange: (change: CappedTextFieldChange) => void;
 };
 
 export const useDataNameColumnFieldStyles = makeStyles({
@@ -26,7 +27,8 @@ export const useDataNameColumnFieldStyles = makeStyles({
  */
 export const DataNameColumnField = ({
     item,
-    index
+    index,
+    onValueChange
 }: DataNameColumnFieldProps) => {
     const classes = useDataNameColumnFieldStyles();
     return (
@@ -36,6 +38,7 @@ export const DataNameColumnField = ({
                 i18nLabel={`${item.name}`}
                 i18nPlaceholder={`${item?.namePlaceholder}`}
                 maxLength={TEMPLATE_DATASET_FIELD_PROPS.name.maxLength}
+                onValueChange={onValueChange}
                 inline
             />
         </TableCell>

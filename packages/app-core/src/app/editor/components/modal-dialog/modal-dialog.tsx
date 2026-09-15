@@ -19,10 +19,8 @@ import {
     handleSetFocusToActiveEditor,
     ModalDialogRole
 } from '../../../../lib';
-import {
-    CreateButton,
-    VisualCreatePane
-} from '../../../../features/project-create';
+import { CreateButton } from '../../../../features/project-create';
+import { VisualCreatePane } from '../../../../features/project-create/components/visual-create-pane';
 import { ExportButtons, ExportPane } from '../../../../features/project-export';
 import { VersionChangeContent } from './version-change-content';
 

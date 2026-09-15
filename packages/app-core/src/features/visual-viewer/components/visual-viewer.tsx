@@ -112,6 +112,12 @@ const useVisualViewerStyles = makeStyles({
 type VisualViewerProps = {
     isEmbeddedInEditor?: boolean;
     /**
+     * The editor's preview zoom level (percent), supplied by the editor's
+     * preview area. Ignored unless `isEmbeddedInEditor`; the standalone
+     * viewer always renders at the default scale.
+     */
+    editorZoomLevel?: number;
+    /**
      * Optional schema validator for spec validation during compilation.
      * Only provided when embedded in the editor — viewer-only builds pass
      * no validator, which keeps schema dependencies out of the viewer bundle.
@@ -131,6 +137,7 @@ type VisualViewerProps = {
  */
 export const VisualViewer = ({
     isEmbeddedInEditor,
+    editorZoomLevel = 100,
     schemaValidator
 }: VisualViewerProps) => {
     const {
@@ -140,7 +147,6 @@ export const VisualViewer = ({
         renderMode,
         scaleToZoom,
         embedScale,
-        editorZoomLevel,
         previewScrollbars,
         provider,
         scrollbarColor,
@@ -166,7 +172,6 @@ export const VisualViewer = ({
         scaleToZoom: state.project.scaleToZoom,
         embedScale:
             state.interface.embedViewport?.scale ?? DEFAULT_VIEWPORT_SCALE,
-        editorZoomLevel: state.editorZoomLevel,
         previewScrollbars:
             state.editorPreferences.previewAreaShowScrollbarsOnOverflow,
         provider: state.project.provider as SpecProvider,

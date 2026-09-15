@@ -1,4 +1,4 @@
-export { getDenebState, useDenebState } from './state';
+export { createDenebState, getDenebState, useDenebState } from './state';
 // `export type *` already re-exports CoreStoreState, EditorStoreSlices
 // and StoreState from './state' as public types.
 export type * from './state';

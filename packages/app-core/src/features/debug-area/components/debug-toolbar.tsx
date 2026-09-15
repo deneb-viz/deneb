@@ -25,10 +25,8 @@ import {
     type DebugPaneRole
 } from '../../../lib';
 import { LogErrorIndicator } from './log-viewer/log-error-indicator';
-import {
-    ToolbarButtonStandard,
-    TooltipCustomMount
-} from '../../../components/ui';
+import { ToolbarButtonStandard } from '../../../components/ui/toolbar';
+import { TooltipCustomMount } from '../../../components/ui';
 import { ZoomSlider } from './zoom-controls/zoom-slider';
 import { ZoomLevelPopover } from './zoom-controls/zoom-level-popover';
 import { DEBUG_PANE_CONFIGURATION } from '@deneb-viz/configuration';

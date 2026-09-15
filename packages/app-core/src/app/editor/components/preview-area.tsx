@@ -155,6 +155,7 @@ export const PreviewArea = () => {
                     >
                         <VisualViewer
                             isEmbeddedInEditor
+                            editorZoomLevel={editorZoomLevel}
                             schemaValidator={schemaValidator}
                         />
                     </div>

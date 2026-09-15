@@ -1,4 +1,7 @@
-export { CappedTextField } from './capped-text-field';
+export {
+    CappedTextField,
+    type CappedTextFieldChange
+} from './capped-text-field';
 export { Hyperlink } from './hyperlink';
 export {
     FullContainerLayoutNoOverflow,
@@ -7,5 +10,4 @@ export {
 export * from './modal-dialog';
 export { StageProgressIndicator } from './modal-dialog/stage-progress-indicator';
 export { StatusBarContainer } from './status-bar-container';
-export * from './toolbar';
 export { TooltipCustomMount } from './tooltip-custom-mount';

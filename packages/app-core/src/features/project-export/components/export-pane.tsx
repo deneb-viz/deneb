@@ -28,12 +28,15 @@ export const ExportPane = () => {
         exportProcessingState,
         metadata,
         setFieldAssignment,
+        setMetadataPropertyBySelector,
         translate
     } = useDenebState((state) => ({
         datasetFields: state.dataset.fields,
         exportProcessingState: state.interface.exportProcessingState,
         metadata: state.export.metadata ?? undefined,
         setFieldAssignment: state.fieldUsage.setFieldAssignment,
+        setMetadataPropertyBySelector:
+            state.export.setMetadataPropertyBySelector,
         translate: state.i18n.translate
     }));
     useEffect(() => {
@@ -85,6 +88,9 @@ export const ExportPane = () => {
                                 datasetRole='export'
                                 metadata={metadata}
                                 setFieldAssignment={setFieldAssignment}
+                                onMetadataPropertyChange={
+                                    setMetadataPropertyBySelector
+                                }
                             />
                         </div>
                     )}

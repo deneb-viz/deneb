@@ -7,7 +7,7 @@ import {
 } from '@fluentui/react-components';
 
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
-import { type ModalDialogType } from '../ui';
+import { type CappedTextFieldChange, type ModalDialogType } from '../ui';
 import { TemplateDatasetColumns } from './template-dataset-columns';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { TemplateDatasetRow } from './template-dataset-row';
@@ -36,6 +36,12 @@ type TemplateDatasetProps = {
      * `types.ts`.
      */
     setFieldAssignment: TemplateFieldAssignmentReducer;
+    /**
+     * Receives edits to the editable name/description fields, keyed by
+     * metadata property selector. Only the `export` role renders those
+     * fields, so only the export path needs to supply this.
+     */
+    onMetadataPropertyChange?: (change: CappedTextFieldChange) => void;
 };
 
 const useTemplateDatasetStyles = makeStyles({
@@ -44,13 +50,17 @@ const useTemplateDatasetStyles = makeStyles({
     }
 });
 
+// The `new` role renders no editable metadata fields, so it never reports one.
+const ignoreMetadataPropertyChange = () => undefined;
+
 /**
  * Displays a table of dataset columns and contextual controls, based on role.
  */
 export const TemplateDataset = ({
     datasetRole,
     metadata,
-    setFieldAssignment
+    setFieldAssignment,
+    onMetadataPropertyChange = ignoreMetadataPropertyChange
 }: TemplateDatasetProps) => {
     const classes = useTemplateDatasetStyles();
     /**
@@ -69,6 +79,7 @@ export const TemplateDataset = ({
                 role={datasetRole}
                 index={index}
                 setFieldAssignment={setFieldAssignment}
+                onMetadataPropertyChange={onMetadataPropertyChange}
             />
         </TableRow>
     ));

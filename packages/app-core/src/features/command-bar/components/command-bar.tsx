@@ -24,7 +24,7 @@ import {
     PREVIEW_PANE_TOOLBAR_BUTTON_PADDING
 } from '../../../lib';
 import type { SpecificationEditorRefs } from '../../../lib/editor/specification-editor-refs';
-import { ToolbarButtonStandard } from '../../../components/ui';
+import { ToolbarButtonStandard } from '../../../components/ui/toolbar';
 import { DEBUG_PANE_CONFIGURATION } from '@deneb-viz/configuration';
 
 const useCommandBarStyles = makeStyles({
