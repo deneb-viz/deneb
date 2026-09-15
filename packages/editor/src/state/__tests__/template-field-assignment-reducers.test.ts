@@ -6,15 +6,15 @@ import { createDenebState } from '@deneb-viz/app-core';
 import { installEditorState } from '../install-editor-state';
 
 /**
- * `DataFieldDropdown` (`../data-field-dropdown.tsx`) takes a required
+ * `DataFieldDropdown` (app-core's `components/template-metadata/data-field-dropdown.tsx`) takes a required
  * `setFieldAssignment` prop, injected by the caller (`template-information.tsx`
  * passes `state.create.setFieldAssignment` for the create path;
  * `export-pane.tsx` passes `state.fieldUsage.setFieldAssignment` for the
  * export/mapping path) — the component just calls whichever reducer it was
  * given, with no `fieldUsage` reference of its own.
  *
- * Component-tree rendering tests are deferred in this workspace (vitest
- * runs in the `node` environment with no `@testing-library/react` — see
+ * Component-tree rendering tests are deferred in this workspace (no
+ * `@testing-library/react` — see
  * `no-data-message.test.tsx`). This file instead exercises the two
  * injectable reducers directly, with the exact payload shape the
  * component's effect constructs (`{ key, suppliedObjectKey,

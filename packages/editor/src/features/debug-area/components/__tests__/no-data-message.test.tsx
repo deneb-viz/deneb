@@ -9,8 +9,8 @@ import type { EmptyStateReason } from '../empty-state-reason';
 import { en_US as enUS } from '@deneb-viz/app-core';
 
 /**
- * Component-tree rendering tests are deferred in this workspace — vitest runs
- * in the `node` environment with no `@testing-library/react` available (see
+ * Component-tree rendering tests are deferred in this workspace — there is
+ * no `@testing-library/react` available (see
  * `highlight-text.test.tsx` for the established precedent). We therefore test
  * the three pure helpers that drive every rendering decision inside
  * `<NoDataMessage>`: the i18n-key dispatch, the token-substitution contract,

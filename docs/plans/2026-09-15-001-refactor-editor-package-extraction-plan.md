@@ -1,7 +1,7 @@
 ---
 title: 'refactor: extract the editor package from app-core'
 type: refactor
-status: active
+status: completed
 date: 2026-09-15
 origin: docs/brainstorms/2026-09-15-editor-package-extraction-requirements.md
 deepened: 2026-09-15

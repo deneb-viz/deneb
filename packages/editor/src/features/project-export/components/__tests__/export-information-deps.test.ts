@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest';
  * scaled the image to a stale viewport. Post-fix the deps are
  * `[embedViewport, setPreviewImage]` so the current viewport is always read.
  *
- * app-core vitest runs in the node environment with no `@testing-library/react`;
+ * this workspace has no `@testing-library/react`;
  * per the established precedent (`signal-value-memo-deps.test.ts`,
  * `data-tab-listener-rebind.test.ts`) we characterize the dep-array contract
  * as a pure model of React's `Object.is`-per-slot recreate semantics.

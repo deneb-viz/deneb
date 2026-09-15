@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest';
  * Characterizes the listener-rebind dep-array semantics of the Data tab's
  * dataset-viewing `useEffect`.
  *
- * Vitest runs in the node environment; React rendering is not feasible for
- * this test file. Per the plan (Unit 6), we capture the listener-rebind
+ * React rendering is not feasible for this test file (no
+ * `@testing-library/react` in this workspace). We capture the listener-rebind
  * contract as a pure helper that models React's `useEffect` rebind-on-dep-
  * change semantics (`Object.is`-shallow comparison per position) and assert
  * against it.

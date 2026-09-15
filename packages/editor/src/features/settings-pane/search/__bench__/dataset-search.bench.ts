@@ -1,3 +1,4 @@
+// @vitest-environment node
 /**
  * Scale benchmarks for the settings-pane dataset search path.
  *

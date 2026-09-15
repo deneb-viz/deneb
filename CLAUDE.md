@@ -97,14 +97,14 @@ npm run dev       # Start development (clears .tmp/, builds packages, primes ass
 `@deneb-viz/powerbi-compat` MUST remain a singleton to maintain shared runtime state:
 
 - Packages consuming it declare it as `peerDependency` (not `dependency`)
-- Mark as `external` in tsup configs to prevent bundling
+- Never bundle it: list it under `deps.neverBundle` in tsdown configs
 - The `apps/deneb` visual provides the single runtime instance
-- Uses TypeScript compiler (tsc) instead of tsup to inline const enums from `powerbi-visuals-api`
+- Uses TypeScript compiler (tsc) instead of tsdown to inline const enums from `powerbi-visuals-api`
 
 **When adding dependencies on `@deneb-viz/powerbi-compat`:**
 
 1. Add to `peerDependencies` in consuming package's package.json
-2. Add to `external` array in consuming package's tsup.config.ts
+2. Add it (and its subpath regex) to `deps.neverBundle` in the consuming package's tsdown.config.ts
 3. Never bundle it - let the `apps/deneb` visual provide the singleton instance
 
 ### Compilation Architecture
@@ -259,7 +259,7 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 **TypeScript Const Enums:** `powerbi-visuals-api` enums are inlined at compile time (no runtime dependency)
 
 - `apps/deneb`: ts-loader with `transpileOnly=false` in production
-- `@deneb-viz/powerbi-compat`: uses tsc (not tsup) to preserve inlining
+- `@deneb-viz/powerbi-compat`: uses tsc (not tsdown) to preserve inlining
 
 **Certification:** Validate with `npm run validate-config-for-commit` before packaging
 

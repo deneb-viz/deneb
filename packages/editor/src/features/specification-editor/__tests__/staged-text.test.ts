@@ -9,8 +9,8 @@ import { resolveStagedTextForRole } from '../staged-text';
  * text for a given editor role if present, else the persisted project
  * text. These tests exercise the function directly, against a real
  * store, mirroring the store-construction pattern used elsewhere in this
- * workspace (vitest runs in the `node` environment with no
- * `@testing-library/react`, so component-tree rendering is out of scope
+ * workspace (there is no `@testing-library/react`, so component-tree
+ * rendering is out of scope
  * here — see `lib/commands/__tests__/selectors.test.ts`,
  * `features/project-create/__tests__/create-button.test.tsx`).
  */

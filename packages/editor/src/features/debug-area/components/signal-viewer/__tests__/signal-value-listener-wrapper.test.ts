@@ -17,7 +17,7 @@ import { describe, expect, it } from 'vitest';
  * `Object.is` never bails, and the triggering re-render always fires
  * regardless of what Vega does with the underlying value's identity.
  *
- * Vitest runs in the `node` environment with no `@testing-library/react`
+ * There is no `@testing-library/react`
  * available in this workspace (see `signal-value-memo-deps.test.ts` for the
  * established precedent of characterising React internals as a pure model
  * rather than rendering).

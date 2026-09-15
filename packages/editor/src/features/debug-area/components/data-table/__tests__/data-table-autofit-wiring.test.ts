@@ -7,8 +7,8 @@ import { resolve } from 'node:path';
  * (docs/solutions/ui-bugs/fluent-datagrid-fill-column-autofit-container-width-offset-2026-08-19.md).
  *
  * Behavioural coverage of Fluent's autofit under wide/narrow containers is
- * not achievable in this workspace: vitest runs in the `node` environment
- * with no DOM/ResizeObserver and no `@testing-library/react`, and
+ * not achievable in this workspace: there is no `@testing-library/react`
+ * (and jsdom implements no ResizeObserver), and
  * `@fluentui/react-table`'s exports map hides the
  * `adjustColumnWidthsToFitContainer` reducer from a contract test. This
  * locks the wiring instead, so the two regressions it guards (value column

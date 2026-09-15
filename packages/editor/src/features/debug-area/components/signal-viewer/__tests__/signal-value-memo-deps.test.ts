@@ -19,7 +19,7 @@ import { describe, expect, it } from 'vitest';
  * array is `[getSignalValues, signalValue, renderId]` so view replacement
  * is itself a recompute trigger.
  *
- * Vitest runs in the `node` environment with no `@testing-library/react`
+ * There is no `@testing-library/react`
  * available in this workspace (see `no-data-message.test.tsx` and
  * `data-tab-listener-rebind.test.ts` for the established precedent). We
  * therefore characterise the dep-array contract as a pure helper that

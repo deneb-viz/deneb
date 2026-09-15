@@ -255,12 +255,12 @@ Features in `packages/app-core/src/features/` must not cross-import from sibling
 **Rules:**
 
 - A feature may only import from shared locations: `src/components/`, `src/lib/`, `src/state/`, `src/context/`, or workspace packages.
-- A parent feature may import child feature components (e.g., `editor-area` importing from `compiled-vega`), but the child must not import back from the parent.
+- Composing several features into a screen is the job of `src/app/` (for example the editor’s `app/editor/components/editor-area.tsx` composes `compiled-vega` and `debug-area`); a feature never imports another feature.
 - If two features need to share code, extract it to a shared location at the `src/` level.
 
 **Enforcement:**
 
-The `import-x/no-cycle` ESLint rule (via `eslint-plugin-import-x`) warns on circular import chains. Run `npm run eslint` to check for violations. Note that this rule only detects **circular** imports — the broader boundary rule (no sibling-to-sibling imports, even non-circular) is enforced by code review. Some pre-existing violations exist and are being cleaned up incrementally.
+The layer and feature boundaries are enforced by `eslint-plugin-boundaries` through the shared factory in `packages/eslint-config/boundaries.js`, and a vitest canary (`src/__tests__/architecture-boundaries.test.ts` in each package) fails CI on any violation; `import-x/no-cycle` additionally warns on circular import chains. The full dependency matrix lives in `packages/app-core/ARCHITECTURE.md`.
 
 ### JSON formatting (compact JSONC)
 
