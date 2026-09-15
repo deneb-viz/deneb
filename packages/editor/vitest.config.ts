@@ -1,22 +1,25 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+    // Resolve app-core to its source entry under test. Importing the built
+    // entry instead pulls the whole vega-runtime → powerbi-compat →
+    // powerbi-visuals-utils chain through Node's native ESM loader on Linux,
+    // which cannot resolve those utils packages' extensionless internal
+    // imports; through vite, the chain is handled the same way app-core's
+    // own tests handle it.
+    resolve: {
+        alias: {
+            '@deneb-viz/app-core': fileURLToPath(
+                new URL('../app-core/src/index.ts', import.meta.url)
+            )
+        }
+    },
     test: {
-        // Editor tests import `@deneb-viz/app-core` (its built entry), whose
-        // viewer modules touch `window` at load time, so every test file
-        // runs under jsdom rather than opting in per file.
+        // Editor tests reach app-core's viewer modules, which touch `window`
+        // at load time, so every test file runs under jsdom rather than
+        // opting in per file.
         environment: 'jsdom',
-        server: {
-            deps: {
-                // Keep the workspace packages and the powerbi-visuals-utils
-                // family inside vite's module graph: editor tests reach
-                // app-core's built entry, whose imports would otherwise be
-                // loaded by Node's native ESM resolver, which cannot resolve
-                // the utils packages' extensionless internal imports (seen on
-                // Linux CI).
-                inline: [/@deneb-viz\//, /powerbi-visuals-utils-/]
-            }
-        },
         deps: {
             optimizer: {
                 ssr: {
