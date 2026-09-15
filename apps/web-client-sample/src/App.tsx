@@ -1,5 +1,5 @@
 import { DenebProvider, getDenebState } from '@deneb-viz/app-core';
-import { DenebEditor } from '@deneb-viz/app-core/editor';
+import { DenebEditor } from '@deneb-viz/editor';
 
 /**
  * Do a simple initialization of our data "outside" app, to validate that we can assign fields.

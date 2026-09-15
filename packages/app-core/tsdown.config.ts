@@ -1,25 +1,7 @@
 import { defineConfig, type Options } from 'tsdown';
-import fs from 'fs';
-
-// Import built worker JS as a raw string (the esbuild version used the
-// 'text' loader). Matches dist/worker/*.worker.js files only.
-const rawWorkerText = {
-    name: 'raw-worker-text',
-    load(id: string) {
-        if (/[\\/]worker[\\/].*\.worker\.js$/.test(id)) {
-            return `export default ${JSON.stringify(
-                fs.readFileSync(id, 'utf8')
-            )};`;
-        }
-        return null;
-    }
-};
 
 export default defineConfig((options: Options) => ({
-    entry: ['src/index.ts', 'src/editor.ts'],
-    // Do not clean dist/ - build:worker runs first and this build reads its
-    // output (dist/worker/*.worker.js) via the rawWorkerText plugin below.
-    clean: false,
+    entry: ['src/index.ts'],
     dts: true,
     format: ['esm'],
     // tsdown's `fixedExtension` defaults to true for platform "node" (the
@@ -44,12 +26,6 @@ export default defineConfig((options: Options) => ({
             /^@deneb-viz\/vega-react(\/|$)/,
             '@deneb-viz/json-processing',
             /^@deneb-viz\/json-processing(\/|$)/,
-            // Monaco - externalized so webpack can tree-shake it from viewer-only builds.
-            // Only the editor entry uses monaco at runtime; externalizing prevents esbuild
-            // from pulling it into shared chunks that the main entry also depends on.
-            /^@monaco-editor\//,
-            'monaco-editor',
-            /^monaco-editor\//,
             // Fluent UI - treat like React, consumers provide their own
             '@fluentui/react-components',
             '@fluentui/react-icons',
@@ -58,6 +34,5 @@ export default defineConfig((options: Options) => ({
     },
     sourcemap: true,
     outDir: 'dist',
-    plugins: [rawWorkerText],
     ...options
 }));

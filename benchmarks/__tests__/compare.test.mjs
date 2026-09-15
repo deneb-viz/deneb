@@ -36,7 +36,8 @@ const sampleVitestOutput = (benches) => ({
             filepath: '/some/path/to/build-data-row.bench.ts',
             groups: [
                 {
-                    fullName: 'build-data-row.bench.ts > buildDataRow > field-only',
+                    fullName:
+                        'build-data-row.bench.ts > buildDataRow > field-only',
                     benchmarks: benches
                 }
             ]
@@ -121,32 +122,47 @@ describe('ingestVitestOutput', () => {
 
     it('extracts hz, mean_ms, p75_ms, sampleCount', () => {
         const res = ingestVitestOutput(
-            sampleVitestOutput([validBench({ hz: 42, mean: 3.5, p75: 4.1, sampleCount: 200 })])
+            sampleVitestOutput([
+                validBench({ hz: 42, mean: 3.5, p75: 4.1, sampleCount: 200 })
+            ])
         );
         const entry = [...res.entries.values()][0];
-        expect(entry).toEqual({ hz: 42, mean_ms: 3.5, p75_ms: 4.1, sampleCount: 200 });
+        expect(entry).toEqual({
+            hz: 42,
+            mean_ms: 3.5,
+            p75_ms: 4.1,
+            sampleCount: 200
+        });
     });
 
     it('rejects zero hz as an error (not silent pass)', () => {
-        const res = ingestVitestOutput(sampleVitestOutput([validBench({ hz: 0 })]));
+        const res = ingestVitestOutput(
+            sampleVitestOutput([validBench({ hz: 0 })])
+        );
         expect(res.errors.length).toBe(1);
         expect(res.errors[0]).toContain('hz');
         expect(res.entries.size).toBe(0);
     });
 
     it('rejects NaN hz as an error', () => {
-        const res = ingestVitestOutput(sampleVitestOutput([validBench({ hz: NaN })]));
+        const res = ingestVitestOutput(
+            sampleVitestOutput([validBench({ hz: NaN })])
+        );
         expect(res.errors.length).toBe(1);
         expect(res.errors[0]).toContain('NaN');
     });
 
     it('rejects negative hz', () => {
-        const res = ingestVitestOutput(sampleVitestOutput([validBench({ hz: -100 })]));
+        const res = ingestVitestOutput(
+            sampleVitestOutput([validBench({ hz: -100 })])
+        );
         expect(res.errors.length).toBe(1);
     });
 
     it('rejects Infinity hz', () => {
-        const res = ingestVitestOutput(sampleVitestOutput([validBench({ hz: Infinity })]));
+        const res = ingestVitestOutput(
+            sampleVitestOutput([validBench({ hz: Infinity })])
+        );
         expect(res.errors.length).toBe(1);
     });
 
@@ -158,13 +174,18 @@ describe('ingestVitestOutput', () => {
     });
 
     it('rejects non-number hz (string)', () => {
-        const res = ingestVitestOutput(sampleVitestOutput([validBench({ hz: '1000' })]));
+        const res = ingestVitestOutput(
+            sampleVitestOutput([validBench({ hz: '1000' })])
+        );
         expect(res.errors.length).toBe(1);
     });
 
     it('detects duplicate keys within a single run', () => {
         const res = ingestVitestOutput(
-            sampleVitestOutput([validBench({ name: 'same' }), validBench({ name: 'same', hz: 2000 })])
+            sampleVitestOutput([
+                validBench({ name: 'same' }),
+                validBench({ name: 'same', hz: 2000 })
+            ])
         );
         expect(res.errors.length).toBe(1);
         expect(res.errors[0]).toContain('duplicate key');
@@ -172,7 +193,9 @@ describe('ingestVitestOutput', () => {
 
     it('warns on low sampleCount (< MIN_SAMPLE_COUNT) without failing', () => {
         const res = ingestVitestOutput(
-            sampleVitestOutput([validBench({ sampleCount: MIN_SAMPLE_COUNT - 1 })])
+            sampleVitestOutput([
+                validBench({ sampleCount: MIN_SAMPLE_COUNT - 1 })
+            ])
         );
         expect(res.errors).toEqual([]);
         expect(res.warnings.length).toBe(1);
@@ -227,10 +250,12 @@ describe('compare', () => {
         const justUnder = makeCurrent({ a: { hz: 100 - (20 - 1e-9) } });
         const justOver = makeCurrent({ a: { hz: 100 - (20 + 1e-9) } });
         expect(
-            compare({ baseline, current: justUnder, defaultThreshold: 20 })[0]?.status
+            compare({ baseline, current: justUnder, defaultThreshold: 20 })[0]
+                ?.status
         ).toBe('PASS');
         expect(
-            compare({ baseline, current: justOver, defaultThreshold: 20 })[0]?.status
+            compare({ baseline, current: justOver, defaultThreshold: 20 })[0]
+                ?.status
         ).toBe('REGRESSION');
     });
 
@@ -282,7 +307,11 @@ describe('detectMassMismatch', () => {
     });
 
     it('returns false for normal PASS/REGRESSION mix', () => {
-        const baseline = makeBaseline({ a: { hz: 100 }, b: { hz: 200 }, c: { hz: 300 } });
+        const baseline = makeBaseline({
+            a: { hz: 100 },
+            b: { hz: 200 },
+            c: { hz: 300 }
+        });
         const results = [
             { key: 'a', status: 'PASS' },
             { key: 'b', status: 'REGRESSION' },
@@ -342,7 +371,11 @@ describe('classifyResults', () => {
 
 describe('findMissingFromCurrent', () => {
     it('returns keys in baseline but not in current', () => {
-        const baseline = makeBaseline({ a: { hz: 1 }, b: { hz: 2 }, c: { hz: 3 } });
+        const baseline = makeBaseline({
+            a: { hz: 1 },
+            b: { hz: 2 },
+            c: { hz: 3 }
+        });
         const current = makeCurrent({ a: { hz: 1 }, c: { hz: 3 } });
         expect(findMissingFromCurrent(baseline, current)).toEqual(['b']);
     });
@@ -361,7 +394,10 @@ describe('findMissingFromCurrent', () => {
 describe('runner fingerprint', () => {
     it('returns "ImageOS-ImageVersion" when both env vars are set', () => {
         expect(
-            detectRunnerImage({ ImageOS: 'ubuntu22', ImageVersion: '20240818.1.0' })
+            detectRunnerImage({
+                ImageOS: 'ubuntu22',
+                ImageVersion: '20240818.1.0'
+            })
         ).toBe('ubuntu22-20240818.1.0');
     });
 
@@ -371,12 +407,18 @@ describe('runner fingerprint', () => {
     });
 
     it('falls back to local when only one env var is present', () => {
-        expect(detectRunnerImage({ ImageOS: 'ubuntu22' }, 'linux')).toBe('local-linux');
-        expect(detectRunnerImage({ ImageVersion: '1.0' }, 'linux')).toBe('local-linux');
+        expect(detectRunnerImage({ ImageOS: 'ubuntu22' }, 'linux')).toBe(
+            'local-linux'
+        );
+        expect(detectRunnerImage({ ImageVersion: '1.0' }, 'linux')).toBe(
+            'local-linux'
+        );
     });
 
     it('isCiSource requires both ImageOS and ImageVersion', () => {
-        expect(isCiSource({ ImageOS: 'ubuntu22', ImageVersion: '1.0' })).toBe(true);
+        expect(isCiSource({ ImageOS: 'ubuntu22', ImageVersion: '1.0' })).toBe(
+            true
+        );
         expect(isCiSource({ ImageOS: 'ubuntu22' })).toBe(false);
         expect(isCiSource({})).toBe(false);
     });
@@ -418,15 +460,23 @@ describe('buildMeta', () => {
 
 describe('buildBaselinePayload', () => {
     it('wraps entries under `benchmarks` with `_meta`', () => {
-        const entries = new Map([['a', { hz: 100, mean_ms: 1, p75_ms: 1.5, sampleCount: 50 }]]);
+        const entries = new Map([
+            ['a', { hz: 100, mean_ms: 1, p75_ms: 1.5, sampleCount: 50 }]
+        ]);
         const meta = { capturedAt: 'now', runnerImage: 'x' };
         const payload = buildBaselinePayload({ entries, meta });
         expect(payload._meta).toBe(meta);
-        expect(payload.benchmarks.a).toEqual({ hz: 100, mean_ms: 1, p75_ms: 1.5 });
+        expect(payload.benchmarks.a).toEqual({
+            hz: 100,
+            mean_ms: 1,
+            p75_ms: 1.5
+        });
     });
 
     it('preserves per-benchmark threshold from previous baseline', () => {
-        const entries = new Map([['a', { hz: 100, mean_ms: 1, p75_ms: 1.5, sampleCount: 50 }]]);
+        const entries = new Map([
+            ['a', { hz: 100, mean_ms: 1, p75_ms: 1.5, sampleCount: 50 }]
+        ]);
         const previousBaseline = makeBaseline({ a: { hz: 90, threshold: 5 } });
         const payload = buildBaselinePayload({
             entries,
@@ -439,7 +489,9 @@ describe('buildBaselinePayload', () => {
     });
 
     it('drops threshold when previous baseline has no override', () => {
-        const entries = new Map([['a', { hz: 100, mean_ms: 1, p75_ms: 1.5, sampleCount: 50 }]]);
+        const entries = new Map([
+            ['a', { hz: 100, mean_ms: 1, p75_ms: 1.5, sampleCount: 50 }]
+        ]);
         const previousBaseline = makeBaseline({ a: { hz: 90 } });
         const payload = buildBaselinePayload({
             entries,
@@ -457,8 +509,20 @@ describe('buildBaselinePayload', () => {
 describe('renderTable', () => {
     it('produces a markdown table with header + divider + rows', () => {
         const results = [
-            { key: 'a', status: 'PASS', baselineHz: 100, currentHz: 102, deltaPct: -2 },
-            { key: 'b', status: 'REGRESSION', baselineHz: 200, currentHz: 150, deltaPct: 25 }
+            {
+                key: 'a',
+                status: 'PASS',
+                baselineHz: 100,
+                currentHz: 102,
+                deltaPct: -2
+            },
+            {
+                key: 'b',
+                status: 'REGRESSION',
+                baselineHz: 200,
+                currentHz: 150,
+                deltaPct: 25
+            }
         ];
         const out = renderTable(results);
         const lines = out.split('\n');
@@ -471,8 +535,20 @@ describe('renderTable', () => {
 
     it('sorts rows alphabetically by key', () => {
         const results = [
-            { key: 'z', status: 'PASS', baselineHz: 1, currentHz: 1, deltaPct: 0 },
-            { key: 'a', status: 'PASS', baselineHz: 1, currentHz: 1, deltaPct: 0 }
+            {
+                key: 'z',
+                status: 'PASS',
+                baselineHz: 1,
+                currentHz: 1,
+                deltaPct: 0
+            },
+            {
+                key: 'a',
+                status: 'PASS',
+                baselineHz: 1,
+                currentHz: 1,
+                deltaPct: 0
+            }
         ];
         const out = renderTable(results);
         const lines = out.split('\n');
@@ -482,7 +558,13 @@ describe('renderTable', () => {
 
     it('formats hz values with k/M suffixes', () => {
         const results = [
-            { key: 'a', status: 'PASS', baselineHz: 2_000_000, currentHz: 1_500, deltaPct: 0 }
+            {
+                key: 'a',
+                status: 'PASS',
+                baselineHz: 2_000_000,
+                currentHz: 1_500,
+                deltaPct: 0
+            }
         ];
         const out = renderTable(results);
         expect(out).toContain('2.00M');
@@ -492,15 +574,15 @@ describe('renderTable', () => {
 
 describe('renderSummary', () => {
     it('pluralizes "regression" correctly', () => {
-        expect(renderSummary({ pass: 10, regressions: 0, newKeys: 0, missing: 0 })).toContain(
-            '0 regressions'
-        );
-        expect(renderSummary({ pass: 10, regressions: 1, newKeys: 0, missing: 0 })).toContain(
-            '1 regression,'
-        );
-        expect(renderSummary({ pass: 10, regressions: 2, newKeys: 0, missing: 0 })).toContain(
-            '2 regressions'
-        );
+        expect(
+            renderSummary({ pass: 10, regressions: 0, newKeys: 0, missing: 0 })
+        ).toContain('0 regressions');
+        expect(
+            renderSummary({ pass: 10, regressions: 1, newKeys: 0, missing: 0 })
+        ).toContain('1 regression,');
+        expect(
+            renderSummary({ pass: 10, regressions: 2, newKeys: 0, missing: 0 })
+        ).toContain('2 regressions');
     });
 });
 
@@ -572,7 +654,13 @@ describe('handleCompare', () => {
 
     it('returns EXIT_OK when all benchmarks pass', async () => {
         const baseline = makeBaseline({ a: { hz: 100 } });
-        const current = { entries: new Map([['a', { hz: 100, mean_ms: 1, p75_ms: 1.2, sampleCount: 50 }]]), warnings: [], errors: [] };
+        const current = {
+            entries: new Map([
+                ['a', { hz: 100, mean_ms: 1, p75_ms: 1.2, sampleCount: 50 }]
+            ]),
+            warnings: [],
+            errors: []
+        };
         const result = await handleCompare({
             current,
             baseline,
@@ -584,7 +672,13 @@ describe('handleCompare', () => {
 
     it('returns EXIT_REGRESSION when a benchmark regresses', async () => {
         const baseline = makeBaseline({ a: { hz: 100 } });
-        const current = { entries: new Map([['a', { hz: 70, mean_ms: 1, p75_ms: 1.2, sampleCount: 50 }]]), warnings: [], errors: [] };
+        const current = {
+            entries: new Map([
+                ['a', { hz: 70, mean_ms: 1, p75_ms: 1.2, sampleCount: 50 }]
+            ]),
+            warnings: [],
+            errors: []
+        };
         const result = await handleCompare({
             current,
             baseline,
@@ -607,8 +701,17 @@ describe('handleCompare', () => {
     });
 
     it('returns structured JSON when format is "json"', async () => {
-        const baseline = makeBaseline({ a: { hz: 100 } }, { runnerImage: 'ci', vitestVersion: '3.2.4' });
-        const current = { entries: new Map([['a', { hz: 100, mean_ms: 1, p75_ms: 1.2, sampleCount: 50 }]]), warnings: [], errors: [] };
+        const baseline = makeBaseline(
+            { a: { hz: 100 } },
+            { runnerImage: 'ci', vitestVersion: '3.2.4' }
+        );
+        const current = {
+            entries: new Map([
+                ['a', { hz: 100, mean_ms: 1, p75_ms: 1.2, sampleCount: 50 }]
+            ]),
+            warnings: [],
+            errors: []
+        };
 
         // Capture stdout
         const logs = [];
@@ -627,10 +730,18 @@ describe('handleCompare', () => {
         }
 
         const output = JSON.parse(logs.join('\n'));
-        expect(output.summary).toEqual({ pass: 1, regressions: 0, newKeys: 0, missing: 0 });
+        expect(output.summary).toEqual({
+            pass: 1,
+            regressions: 0,
+            newKeys: 0,
+            missing: 0
+        });
         expect(output.results).toHaveLength(1);
         expect(output.results[0].status).toBe('PASS');
-        expect(output.baselineMeta).toEqual({ runnerImage: 'ci', vitestVersion: '3.2.4' });
+        expect(output.baselineMeta).toEqual({
+            runnerImage: 'ci',
+            vitestVersion: '3.2.4'
+        });
     });
 
     it('returns EXIT_SKIP JSON when format is "json" and no baseline exists', async () => {
@@ -661,7 +772,13 @@ describe('handleCompare', () => {
 
 describe('handleUpdate', () => {
     it('returns EXIT_ERROR when not on CI without --force-non-ci', async () => {
-        const current = { entries: new Map([['a', { hz: 100, mean_ms: 1, p75_ms: 1.2, sampleCount: 50 }]]), warnings: [], errors: [] };
+        const current = {
+            entries: new Map([
+                ['a', { hz: 100, mean_ms: 1, p75_ms: 1.2, sampleCount: 50 }]
+            ]),
+            warnings: [],
+            errors: []
+        };
         const result = await handleUpdate({
             current,
             baseline: null,
@@ -675,7 +792,13 @@ describe('handleUpdate', () => {
 
     it('returns EXIT_ERROR on superset violation', async () => {
         const baseline = makeBaseline({ a: { hz: 100 }, b: { hz: 200 } });
-        const current = { entries: new Map([['a', { hz: 100, mean_ms: 1, p75_ms: 1.2, sampleCount: 50 }]]), warnings: [], errors: [] };
+        const current = {
+            entries: new Map([
+                ['a', { hz: 100, mean_ms: 1, p75_ms: 1.2, sampleCount: 50 }]
+            ]),
+            warnings: [],
+            errors: []
+        };
         const result = await handleUpdate({
             current,
             baseline,
@@ -701,12 +824,12 @@ describe('resolvePackageArgs', () => {
         expect(res.baseline).toBe(PACKAGE_REGISTRY['data-core'].baseline);
     });
 
-    it('resolves --package app-core to the app-core registry paths', () => {
-        const res = resolvePackageArgs({ package: 'app-core' });
+    it('resolves --package editor to the editor registry paths', () => {
+        const res = resolvePackageArgs({ package: 'editor' });
         expect(res.ok).toBe(true);
-        expect(res.package).toBe('app-core');
-        expect(res.results).toBe(PACKAGE_REGISTRY['app-core'].results);
-        expect(res.baseline).toBe(PACKAGE_REGISTRY['app-core'].baseline);
+        expect(res.package).toBe('editor');
+        expect(res.results).toBe(PACKAGE_REGISTRY['editor'].results);
+        expect(res.baseline).toBe(PACKAGE_REGISTRY['editor'].baseline);
     });
 
     it('returns ok:false with descriptive error for unknown package', () => {
@@ -715,7 +838,7 @@ describe('resolvePackageArgs', () => {
         expect(res.error).toContain('unknown --package');
         expect(res.error).toContain('nope');
         expect(res.error).toContain('data-core');
-        expect(res.error).toContain('app-core');
+        expect(res.error).toContain('editor');
     });
 
     it('lets explicit --results override the package default', () => {
@@ -730,11 +853,11 @@ describe('resolvePackageArgs', () => {
 
     it('lets explicit --baseline override the package default', () => {
         const res = resolvePackageArgs({
-            package: 'app-core',
+            package: 'editor',
             baseline: '/custom/baseline.json'
         });
         expect(res.ok).toBe(true);
-        expect(res.results).toBe(PACKAGE_REGISTRY['app-core'].results);
+        expect(res.results).toBe(PACKAGE_REGISTRY['editor'].results);
         expect(res.baseline).toBe('/custom/baseline.json');
     });
 
@@ -748,10 +871,10 @@ describe('resolvePackageArgs', () => {
         expect(res.package).toBe(DEFAULT_PACKAGE);
     });
 
-    it('registry contains app-core alongside data-core', () => {
+    it('registry contains editor alongside data-core', () => {
         expect(Object.keys(PACKAGE_REGISTRY).sort()).toEqual([
-            'app-core',
-            'data-core'
+            'data-core',
+            'editor'
         ]);
         // Sanity: registry paths are non-empty strings.
         for (const [, paths] of Object.entries(PACKAGE_REGISTRY)) {
@@ -777,7 +900,7 @@ describe('handleCompare bootstrap sentinel', () => {
         const result = await handleCompare({
             current: { entries: current.entries, warnings: [], errors: [] },
             baseline,
-            baselinePath: 'benchmarks/baselines/app-core.json',
+            baselinePath: 'benchmarks/baselines/editor.json',
             defaultThreshold: 20
         });
         expect(result).toBe(EXIT_SKIP);
@@ -789,14 +912,16 @@ describe('handleCompare bootstrap sentinel', () => {
             benchmarks: {}
         };
         const current = {
-            entries: new Map([['a', { hz: 100, mean_ms: 1, p75_ms: 1.2, sampleCount: 50 }]]),
+            entries: new Map([
+                ['a', { hz: 100, mean_ms: 1, p75_ms: 1.2, sampleCount: 50 }]
+            ]),
             warnings: [],
             errors: []
         };
         const result = await handleCompare({
             current,
             baseline,
-            baselinePath: 'benchmarks/baselines/app-core.json',
+            baselinePath: 'benchmarks/baselines/editor.json',
             defaultThreshold: 20
         });
         expect(result).toBe(EXIT_SKIP);
@@ -805,7 +930,9 @@ describe('handleCompare bootstrap sentinel', () => {
     it('does NOT treat a baseline without the bootstrap flag as skip-worthy', async () => {
         const baseline = makeBaseline({ a: { hz: 100 } }); // no bootstrap flag
         const current = {
-            entries: new Map([['a', { hz: 100, mean_ms: 1, p75_ms: 1.2, sampleCount: 50 }]]),
+            entries: new Map([
+                ['a', { hz: 100, mean_ms: 1, p75_ms: 1.2, sampleCount: 50 }]
+            ]),
             warnings: [],
             errors: []
         };

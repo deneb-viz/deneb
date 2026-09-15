@@ -1,0 +1,56 @@
+// @vitest-environment node
+import { describe, it, expect } from 'vitest';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join, relative, sep } from 'node:path';
+import { APP_ROOT } from './_packages';
+
+/**
+ * Canary: the visual consumes the editor from `@deneb-viz/editor`.
+ *
+ * `@deneb-viz/app-core` exposes only the viewer core; its former `./editor`
+ * subpath is gone, so an import of it is an unresolved module at build time.
+ * Asserting it here names the retired specifier in the failure instead of
+ * leaving webpack to report a bare module-not-found. The scan derives the
+ * file set from disk rather than listing consumers by name, so a new
+ * editor-side import is covered automatically.
+ */
+const RETIRED_SPECIFIER = '@deneb-viz/app-core/editor';
+const EDITOR_SPECIFIER = '@deneb-viz/editor';
+const SRC_ROOT = join(APP_ROOT, 'src');
+
+const walk = (dir: string): string[] =>
+    readdirSync(dir).flatMap((entry) => {
+        const path = join(dir, entry);
+        return statSync(path).isDirectory() ? walk(path) : [path];
+    });
+
+/** Every non-test TypeScript source file under apps/deneb/src, app-relative. */
+const sourceFiles = walk(SRC_ROOT)
+    .filter((file) => /\.(ts|tsx)$/.test(file))
+    .filter((file) => !/__test__|\.test\./.test(file))
+    .map((file) => relative(APP_ROOT, file).split(sep).join('/'));
+
+const importSpecifiers = (source: string): string[] =>
+    [...source.matchAll(/from\s*['"]([^'"]+)['"]/g)].map((match) => match[1]);
+
+const filesImporting = (specifier: string): string[] =>
+    sourceFiles.filter((file) =>
+        importSpecifiers(readFileSync(join(APP_ROOT, file), 'utf8')).some(
+            (imported) =>
+                imported === specifier || imported.startsWith(`${specifier}/`)
+        )
+    );
+
+describe('editor import specifiers', () => {
+    it('scans a non-trivial number of source files (guards against a vacuous canary)', () => {
+        expect(sourceFiles.length).toBeGreaterThan(20);
+    });
+
+    it('imports the editor from @deneb-viz/editor in at least one file', () => {
+        expect(filesImporting(EDITOR_SPECIFIER).length).toBeGreaterThan(0);
+    });
+
+    it('imports nothing from the retired @deneb-viz/app-core/editor subpath', () => {
+        expect(filesImporting(RETIRED_SPECIFIER)).toEqual([]);
+    });
+});

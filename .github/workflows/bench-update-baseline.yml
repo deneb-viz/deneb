@@ -24,7 +24,7 @@ on:
                 options:
                     - all
                     - data-core
-                    - app-core
+                    - editor
 
 jobs:
     update-baseline:
@@ -67,7 +67,7 @@ jobs:
                   # list in sync with PACKAGE_REGISTRY in
                   # benchmarks/compare.mjs and the `package` input options.
                   if [ "$SELECTED_PACKAGE" = "all" ] || [ -z "$SELECTED_PACKAGE" ]; then
-                    PACKAGES=(data-core app-core)
+                    PACKAGES=(data-core editor)
                   else
                     PACKAGES=("$SELECTED_PACKAGE")
                   fi

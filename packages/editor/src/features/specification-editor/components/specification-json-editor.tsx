@@ -1,0 +1,334 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useDebounce } from '@uidotdev/usehooks';
+import { makeStyles, useUncontrolledFocus } from '@fluentui/react-components';
+import Editor, { OnChange, OnMount } from '@monaco-editor/react';
+
+import { logDebug } from '@deneb-viz/utils/logging';
+import {
+    type EditorPaneRole,
+    getDenebState,
+    useDenebState,
+    useDenebPlatformProvider
+} from '@deneb-viz/app-core';
+import { handlePersistSpecification } from '../../../lib/commands';
+import { flushEditorOpenTimings, markEditorOpenStage } from '../../../lib/perf';
+import { monaco, buildEditorProps } from '../../../lib/monaco';
+import { useSpecificationEditor } from '../../../context/specification-editor';
+import { useCursorContext } from '../../../context';
+import {
+    updateSchemaPropertyMarkers,
+    registerSchemaPropertyCodeActionProvider
+} from '../../../lib/editor/schema-property-diagnostic';
+import { resolveStagedTextForRole } from '../staged-text';
+
+type JsonEditorProps = {
+    thisEditorRole: EditorPaneRole;
+};
+
+const useSpecificationJsonEditorStyles = makeStyles({
+    container: {
+        flex: '1 1 0',
+        flexDirection: 'column',
+        overflow: 'hidden'
+    },
+    editor: {
+        flex: '1 1 auto',
+        overflow: 'hidden'
+    }
+});
+
+/**
+ * Represents an instance of Ace editor, responsible for maintaining either the JSON spec or the config for a Vega/
+ * Vega-Lite visualization.
+ */
+export const SpecificationJsonEditor = ({
+    thisEditorRole
+}: JsonEditorProps) => {
+    const {
+        applyMode,
+        current,
+        debouncePeriod,
+        focusTick,
+        fontSize,
+        initializationCount,
+        provider,
+        showLineNumbers,
+        theme,
+        viewStateConfig,
+        viewStateSpec,
+        wordWrap,
+        setViewState,
+        updateChanges
+    } = useDenebState((state) => ({
+        applyMode: state.editor.applyMode,
+        current: state.editorSelectedOperation,
+        debouncePeriod: state.editorPreferences.jsonEditorDebouncePeriod,
+        focusTick: state.editorFocusTick,
+        fontSize: state.editorPreferences.jsonEditorFontSize,
+        initializationCount: state.project.initializationCount,
+        provider: state.project.provider,
+        showLineNumbers: state.editorPreferences.jsonEditorShowLineNumbers,
+        theme: state.editorPreferences.theme,
+        viewStateConfig: state.editor.viewStateConfig,
+        viewStateSpec: state.editor.viewStateSpec,
+        wordWrap: state.editorPreferences.jsonEditorWordWrap,
+        setViewState: state.editor.setViewState,
+        updateChanges: state.editor.updateChanges
+    }));
+    const { launchUrl } = useDenebPlatformProvider();
+    const attr = useUncontrolledFocus();
+    const classes = useSpecificationJsonEditorStyles();
+    const isActiveEditor = useMemo(
+        () => current === thisEditorRole,
+        [current, thisEditorRole]
+    );
+    const display = useMemo(
+        () => (isActiveEditor ? 'flex' : 'none'),
+        [isActiveEditor]
+    );
+    const { spec, config } = useSpecificationEditor();
+    const ref = thisEditorRole === 'Spec' ? spec : config;
+    const viewState =
+        thisEditorRole === 'Spec' ? viewStateSpec : viewStateConfig;
+    const [editorText, setEditorText] = useState(ref?.current?.getValue());
+    const debouncedEditorText = useDebounce(editorText, debouncePeriod);
+    const isFirstDebounce = useRef(true);
+    const { setCursor } = useCursorContext();
+    // `pendingFocusRequestRef` is set when a focus request arrives
+    // before Monaco has mounted (no `ref.current` yet). `handleOnMount`
+    // consumes it once the editor is ready, so a focus tick fired
+    // during the gate-pending window — common on the first cold-open
+    // because gate release dispatches `requestEditorFocus` while
+    // Monaco is still bootstrapping — is not silently dropped.
+    const pendingFocusRequestRef = useRef(false);
+    const handleFocus = useCallback(() => {
+        if (!isActiveEditor) return;
+        if (ref?.current) {
+            ref.current.focus();
+            pendingFocusRequestRef.current = false;
+        } else {
+            pendingFocusRequestRef.current = true;
+        }
+    }, [isActiveEditor, ref]);
+    // Stable bound click handler for the hyperlink override. The
+    // previous implementation called `onLinkClick(launchUrl)` to
+    // build a fresh handler for both `removeEventListener` and
+    // `addEventListener` on every effect run, which meant the
+    // remove never matched (different function reference each call)
+    // and a new listener was attached on every focus-tick / provider
+    // change. With editor-tree retention the Monaco DOM node lives
+    // for the visual lifetime, so listeners accumulated indefinitely.
+    // Memoising on `launchUrl` produces a single stable reference
+    // that `addHyperlinkOverride` can correctly remove and re-add.
+    const linkClickHandler = useMemo(() => onLinkClick(launchUrl), [launchUrl]);
+    // Ensure that we update key dependencies/events if we change the editor.
+    // The `focusTick` dep lets `RetainedDenebEditor` request a re-focus
+    // when the editor becomes visible after a viewer↔editor toggle —
+    // mount-time auto-focus only fires once, and retention skips that
+    // path on subsequent opens. `handleFocus` and `linkClickHandler`
+    // are stabilised via `useCallback` / `useMemo` above so listing
+    // them here does not cause spurious re-runs — exhaustive-deps
+    // wants them in scope for refactor safety.
+    useEffect(() => {
+        handleFocus();
+        addHyperlinkOverride(ref.current, linkClickHandler);
+    }, [provider, current, focusTick, ref, linkClickHandler, handleFocus]);
+    // Push staged text into the mounted Monaco instance after a create
+    // (`project.initializationCount` change); skipped on the mount render
+    // since `defaultValue` (below) already seeded the correct text.
+    const isFirstInitializationCount = useRef(true);
+    useEffect(() => {
+        if (isFirstInitializationCount.current) {
+            isFirstInitializationCount.current = false;
+            return;
+        }
+        if (thisEditorRole === 'Settings') {
+            return;
+        }
+        const text = resolveStagedTextForRole(thisEditorRole, getDenebState());
+        ref.current?.setValue(text);
+    }, [initializationCount, ref, thisEditorRole]);
+    // Bootstrap the editor
+    const handleOnMount: OnMount = (editor) => {
+        ref.current = editor;
+        // Register $schema quick fix provider (idempotent — guarded by module-level flag)
+        registerSchemaPropertyCodeActionProvider();
+        // Check for $schema on initial load
+        const model = editor.getModel();
+        if (model) {
+            updateSchemaPropertyMarkers(model);
+        }
+        if (viewState) {
+            editor.restoreViewState(viewState);
+        }
+        // Handle view state changes for folding
+        editor.onDidChangeHiddenAreas(() => {
+            setViewState(ref.current?.saveViewState());
+        });
+        // Tracking of cursor position for status bar (via context)
+        editor.onDidChangeCursorPosition(
+            (e: monaco.editor.ICursorPositionChangedEvent) => {
+                const range = editor.getSelection();
+                const selectedText =
+                    (range && editor.getModel()?.getValueInRange(range)) || '';
+                setCursor({
+                    lineNumber: e.position.lineNumber,
+                    column: e.position.column,
+                    selectedText
+                });
+            }
+        );
+        // Process context menu
+        editor.onContextMenu(() => removeContextMenuItems(editor));
+        addHyperlinkOverride(editor, linkClickHandler);
+        handleFocus();
+        // Marker for the viewport-freeze investigation: the Spec editor is
+        // the default visible surface, so its mount marks the user-visible
+        // "editor is interactive" moment. The Config editor mounts in
+        // parallel and is intentionally not measured here.
+        if (thisEditorRole === 'Spec') {
+            markEditorOpenStage('monaco-ready');
+            flushEditorOpenTimings();
+        }
+    };
+    // Handle change events within editor
+    const handleOnChange = useCallback<OnChange>((value) => {
+        setEditorText(() => value);
+        // Refresh $schema markers on every content change
+        const model = ref.current?.getModel();
+        if (model) {
+            updateSchemaPropertyMarkers(model);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (isFirstDebounce.current) {
+            isFirstDebounce.current = false;
+            return;
+        }
+        if (debouncedEditorText === undefined) return;
+        logDebug('onChangeEditor');
+        logDebug('Staging editor value', thisEditorRole);
+        updateChanges({
+            role: thisEditorRole,
+            text: debouncedEditorText,
+            viewState: ref.current?.saveViewState()
+        });
+        if (applyMode === 'Auto') {
+            logDebug('Auto-apply changes');
+            handlePersistSpecification(spec.current, config.current);
+        }
+    }, [
+        applyMode,
+        config,
+        debouncedEditorText,
+        ref,
+        spec,
+        thisEditorRole,
+        updateChanges
+    ]);
+    return (
+        <div style={{ display }} className={classes.container} {...attr}>
+            <div className={classes.editor}>
+                <Editor
+                    {...buildEditorProps({
+                        theme,
+                        fontSize,
+                        wordWrap,
+                        showLineNumbers,
+                        quickSuggestions: true,
+                        fixedOverflowWidgets: true
+                    })}
+                    key={`${thisEditorRole}-${provider}`}
+                    onMount={handleOnMount}
+                    onChange={handleOnChange}
+                    path={`deneb://${thisEditorRole}-${provider}.json`}
+                    defaultValue={getDefaultValue(thisEditorRole)}
+                />
+            </div>
+        </div>
+    );
+};
+
+/**
+ * Intercept click events on markdown tooltips and delegate to the host.
+ *
+ * The handler must be a STABLE reference across calls — the previous
+ * implementation built a fresh closure for both `removeEventListener`
+ * and `addEventListener`, so the remove never matched and a new
+ * listener was registered every call. Browsers dedupe identical
+ * `(target, type, listener, capture)` tuples, so re-passing the same
+ * reference is a no-op even if `addEventListener` runs more than once
+ * for the same node.
+ */
+const addHyperlinkOverride = (
+    editor: monaco.editor.IStandaloneCodeEditor | null,
+    handler: (e: MouseEvent) => void
+) => {
+    editor?.getDomNode()?.removeEventListener('click', handler);
+    editor?.getDomNode()?.addEventListener('click', handler);
+};
+
+/**
+ * Resolve the default value when instantiated, either from settings or staging as needed.
+ */
+const getDefaultValue = (role: EditorPaneRole) =>
+    role === 'Settings'
+        ? undefined
+        : resolveStagedTextForRole(role, getDenebState());
+
+/**
+ * A very simple override of clicking link elements in the editor, to allow delegation of hyperlink handling to the
+ * host.
+ */
+const onLinkClick = (launchUrl: (url: string) => void) => (e: MouseEvent) => {
+    const url = (e.target as HTMLElement)
+        .closest('a')
+        ?.getAttribute('data-href');
+    if (url && url.match(/^(http|https):\/\//)) {
+        e.preventDefault();
+        e.stopPropagation();
+        launchUrl(url);
+    }
+};
+
+/**
+ * Because the Power BI visual sandbox disables the clipboard API, the standard Monaco context menu items for copy,
+ * cut and paste just throw errors. This function removes them from the context menu.
+ * @privateRemarks
+ * As Monaco doesn't have an API for this, it's a bit of a hack.
+ * This has been taken from https://github.com/microsoft/monaco-editor/issues/1567
+ *
+ * `_getMenuActions` is a private method on the contextmenu
+ * contribution (the underscore prefix is Monaco's internal-API
+ * convention) and is therefore not exposed in `IEditorContribution`.
+ * The local `MonacoContextMenuContribution` type narrows the
+ * unknown return of `getContribution` to the shape we monkey-patch
+ * — keeping the unsafe boundary localised rather than threading
+ * `any` through the implementation. The shape is unstable across
+ * Monaco major versions; if a future upgrade renames or removes
+ * the method, the runtime will throw and the type assertion will
+ * need to be revisited.
+ */
+type MonacoMenuAction = { readonly id: string };
+type MonacoGetMenuActions = (...args: unknown[]) => MonacoMenuAction[];
+type MonacoContextMenuContribution = monaco.editor.IEditorContribution & {
+    _getMenuActions: MonacoGetMenuActions;
+};
+const removeContextMenuItems = (
+    editor: monaco.editor.IStandaloneCodeEditor
+) => {
+    const contextmenu = editor.getContribution<MonacoContextMenuContribution>(
+        'editor.contrib.contextmenu'
+    );
+    if (!contextmenu) return;
+    const removableIds = [
+        'editor.action.clipboardCutAction',
+        'editor.action.clipboardPasteAction'
+    ];
+    const realMethod = contextmenu._getMenuActions;
+    contextmenu._getMenuActions = (...args) => {
+        const items = realMethod.apply(contextmenu, args);
+        return items.filter((item) => !removableIds.includes(item.id));
+    };
+};

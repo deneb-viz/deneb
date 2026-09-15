@@ -12,7 +12,7 @@ import { ArrowResetRegular } from '@fluentui/react-icons';
 
 import { useSettingsStyles } from '../styles';
 import { useDenebState } from '@deneb-viz/app-core';
-import { useSettingsPaneTooltip } from '@deneb-viz/app-core/editor';
+import { useSettingsPaneTooltip } from '@deneb-viz/editor';
 import { logDebug } from '@deneb-viz/utils/logging';
 import {
     CROSS_FILTER_LIMITS,

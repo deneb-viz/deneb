@@ -2,7 +2,7 @@ import { InteractivityToggle } from './interactivity-toggle';
 import { CrossFilterMaxDataPoints } from './cross-filter-max-data-points';
 import { CrossFilterModeSettings } from './cross-filter-mode-settings';
 import { useDenebState } from '@deneb-viz/app-core';
-import { SettingsAccordionItem } from '@deneb-viz/app-core/editor';
+import { SettingsAccordionItem } from '@deneb-viz/editor';
 import { useDenebVisualState } from '../../../state';
 
 export const TooltipSettings = () => {

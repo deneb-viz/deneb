@@ -31,7 +31,7 @@ import {
 } from '@deneb-viz/utils/logging';
 import { InteractivityManager } from './lib/interactivity';
 import { getDenebState, type I18nLocale } from '@deneb-viz/app-core';
-import { installEditorState } from '@deneb-viz/app-core/editor';
+import { installEditorState } from '@deneb-viz/editor';
 import type { SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 import { VegaExtensibilityServices } from '@deneb-viz/vega-runtime/extensibility';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';

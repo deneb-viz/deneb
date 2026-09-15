@@ -18,12 +18,6 @@ import {
     type VisualRenderSlice
 } from './visual-render';
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
-import type { CommandsSlice } from './commands';
-import type { DebugSlice } from './debug';
-import type { EditorSlice } from './editor';
-import type { ExportSliceState } from './export';
-import type { FieldUsageSliceState } from './field-usage';
-import type { SettingsPaneSlice } from './settings-pane';
 
 /**
  * The slices that are always present: viewer-live state plus the pieces
@@ -44,23 +38,15 @@ export type CoreStoreState = CompilationSlice &
     VisualRenderSlice;
 
 /**
- * The slices that only exist once `installEditorState()` has run. Not
- * present in a freshly constructed store.
- */
-export type EditorStoreSlices = CommandsSlice &
-    DebugSlice &
-    EditorSlice &
-    ExportSliceState &
-    FieldUsageSliceState &
-    SettingsPaneSlice;
-
-/**
  * The full store shape consumers see through `useDenebState` /
- * `getDenebState`. A freshly constructed store only actually satisfies
- * `CoreStoreState` at runtime until `installEditorState()` merges the
- * editor slices in — see the cast in `createDenebState` below.
+ * `getDenebState`. Deliberately an (augmentable) interface: a package
+ * that installs extra slices into the singleton store extends it with
+ * `declare module '@deneb-viz/app-core' { interface StoreState ... }`,
+ * so every consumer keeps one store and the same hooks. Inside this
+ * package it is exactly `CoreStoreState`.
  */
-export type StoreState = CoreStoreState & EditorStoreSlices;
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- augmentation target; the members are the core slices
+export interface StoreState extends CoreStoreState {}
 
 export type StateDependencies = {
     applicationVersion: string;
@@ -86,8 +72,9 @@ export const createDenebState = () =>
             (...a) =>
                 // Only core slices are assembled here, so this cast to
                 // `StoreState` — the only cast of its kind — is made
-                // true at runtime by `installEditorState()`, which merges
-                // the editor slices in before any editor read.
+                // true at runtime by whichever package augments
+                // `StoreState` and installs its slices before the first
+                // read of them (the editor's `installEditorState()`).
                 ({
                     ...createCompilationSlice()(...a),
                     ...createCreateSlice()(...a),

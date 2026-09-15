@@ -1,0 +1,364 @@
+import { getUpdatedExportMetadata } from '@deneb-viz/json-processing';
+import type { monaco } from '../lib/monaco/types';
+import { getNextApplyMode } from '../lib/commands/state';
+import {
+    type ContainerViewport,
+    type DebugPaneRole,
+    type EditorApplyMode,
+    type EditorPaneRole,
+    StoreState
+} from '@deneb-viz/app-core';
+import { StateCreator } from 'zustand';
+import { VISUAL_PREVIEW_ZOOM_CONFIGURATION } from '@deneb-viz/configuration';
+import { UsermetaTemplate } from '@deneb-viz/template-usermeta';
+
+type EditorSliceProperties = {
+    applyMode: EditorApplyMode;
+    compiledVegaPaneHeight: number | null;
+    debugPaneLatchHeight: number;
+    debugPaneViewport: ContainerViewport;
+    editorPaneViewport: ContainerViewport;
+    isCompiledVegaPaneVisible: boolean;
+    isDebugPaneMinimized: boolean;
+    isDirty: boolean;
+    previewAreaViewport: ContainerViewport;
+    stagedConfig: string | undefined;
+    stagedSpec: string | undefined;
+    viewStateConfig: monaco.editor.ICodeEditorViewState | undefined;
+    viewStateSpec: monaco.editor.ICodeEditorViewState | undefined;
+    setCompiledVegaPaneHeight: (height: number) => void;
+    setIsDebugPaneMinimized: (isMinimized: boolean) => void;
+    toggleCompiledVegaPane: () => void;
+    setViewports: (options: {
+        editorPaneViewport: ContainerViewport;
+        previewAreaViewport: ContainerViewport;
+        debugPaneViewport: ContainerViewport;
+        debugPaneLatchHeight: number;
+        isDebugPaneMinimized: boolean;
+    }) => void;
+    setViewState: (
+        viewState: monaco.editor.ICodeEditorViewState | undefined | null
+    ) => void;
+    resetViewStates: () => void;
+    toggleApplyMode: () => void;
+    updateApplyMode: (applyMode: EditorApplyMode) => void;
+    updateChanges: (payload: EditorSliceUpdateChangesPayload) => void;
+    updateIsDirty: (isDirty: boolean) => void;
+};
+
+export type EditorSlice = {
+    editor: EditorSliceProperties;
+    editorFocusTick: number;
+    editorPreviewAreaSelectedPivot: DebugPaneRole;
+    editorSelectedOperation: EditorPaneRole;
+    editorZoomLevel: number;
+    /**
+     * Increment the editor focus tick. Listeners (e.g. the active
+     * `<SpecificationJsonEditor>`) re-focus their underlying Monaco
+     * instance when this value changes. Used by `RetainedDenebEditor`
+     * to restore focus when the editor becomes visible again — the
+     * mount-time auto-focus only fires on first mount, so retained
+     * subsequent opens need an explicit re-focus signal.
+     */
+    requestEditorFocus: () => void;
+    updateEditorSelectedOperation: (role: EditorPaneRole) => void;
+    updateEditorSelectedPreviewRole: (role: DebugPaneRole) => void;
+    updateEditorZoomLevel: (zoomLevel: number) => void;
+};
+
+/**
+ * Used to update the "staging" text for a JSON editor and ensure that it can
+ * be restored (if navigating the UI), or persisted with a prompt, if the user
+ * exits without saving changes.
+ */
+export type EditorSliceUpdateChangesPayload = {
+    /**
+     * The editor that the text applies to.
+     */
+    role: EditorPaneRole;
+    /**
+     * The editor text value to stage into the store
+     */
+    text: string;
+    /**
+     * Current view state from the editor. If omitted, will use the current view state for that editor.
+     */
+    viewState?: monaco.editor.ICodeEditorViewState | undefined | null;
+};
+
+export type EditorPaneUpdatePayload = {
+    editorPaneWidth: number;
+    editorPaneExpandedWidth: number;
+};
+
+export const createEditorSlice =
+    (): StateCreator<
+        StoreState,
+        [['zustand/devtools', never]],
+        [],
+        EditorSlice
+    > =>
+    (set) => ({
+        editor: {
+            applyMode: 'Manual',
+            compiledVegaPaneHeight: null,
+            debugPaneLatchHeight: 0,
+            debugPaneViewport: {
+                height: 0,
+                width: 0
+            },
+            editorPaneViewport: {
+                height: 0,
+                width: 0
+            },
+            isCompiledVegaPaneVisible: false,
+            isDebugPaneMinimized: false,
+            isDirty: false,
+            previewAreaViewport: {
+                height: 0,
+                width: 0
+            },
+            stagedConfig: undefined,
+            stagedSpec: undefined,
+            viewStateConfig: undefined,
+            viewStateSpec: undefined,
+            setCompiledVegaPaneHeight: (height) =>
+                set(
+                    (state) => ({
+                        editor: {
+                            ...state.editor,
+                            compiledVegaPaneHeight: height
+                        }
+                    }),
+                    false,
+                    'editor.setCompiledVegaPaneHeight'
+                ),
+            setIsDebugPaneMinimized: (isMinimized) =>
+                set(
+                    (state) => ({
+                        editor: {
+                            ...state.editor,
+                            isDebugPaneMinimized: isMinimized
+                        }
+                    }),
+                    false,
+                    'editor.setIsDebugPaneMinimized'
+                ),
+            toggleCompiledVegaPane: () =>
+                set(
+                    (state) => ({
+                        editor: {
+                            ...state.editor,
+                            isCompiledVegaPaneVisible:
+                                !state.editor.isCompiledVegaPaneVisible
+                        }
+                    }),
+                    false,
+                    'editor.toggleCompiledVegaPane'
+                ),
+            setViewports(options) {
+                set(
+                    (state) => ({
+                        editor: {
+                            ...state.editor,
+                            isDebugPaneMinimized: options.isDebugPaneMinimized,
+                            debugPaneLatchHeight: options.debugPaneLatchHeight,
+                            debugPaneViewport: options.debugPaneViewport,
+                            editorPaneViewport: options.editorPaneViewport,
+                            previewAreaViewport: options.previewAreaViewport
+                        }
+                    }),
+                    undefined,
+                    'editor.setViewports'
+                );
+                //   get().setEditorPreviewAreaScaleToFit();
+            },
+            setViewState: (viewState) =>
+                set(
+                    (state) => handleSetViewState(state, viewState),
+                    false,
+                    'editor.setViewState'
+                ),
+            resetViewStates: () =>
+                set(
+                    (state) => ({
+                        editor: {
+                            ...state.editor,
+                            viewStateSpec: undefined,
+                            viewStateConfig: undefined,
+                            stagedSpec: undefined,
+                            stagedConfig: undefined
+                        }
+                    }),
+                    false,
+                    'editor.resetViewStates'
+                ),
+            toggleApplyMode: () =>
+                set(
+                    (state) => handleToggleApplyMode(state),
+                    false,
+                    'editor.toggleApplyMode'
+                ),
+            updateApplyMode: (applyMode) =>
+                set(
+                    (state) => handleUpdateApplyMode(state, applyMode),
+                    false,
+                    'editor.updateApplyMode'
+                ),
+            updateChanges: (payload) =>
+                set(
+                    (state) => handleUpdateChanges(state, payload),
+                    false,
+                    'editor.updateChanges'
+                ),
+            updateIsDirty: (isDirty) =>
+                set(
+                    (state) => handleUpdateIsDirty(state, isDirty),
+                    false,
+                    'editor.updateIsDirty'
+                )
+        },
+        editorFocusTick: 0,
+        editorPreviewAreaSelectedPivot: 'source',
+        editorSelectedOperation: 'Spec',
+        editorZoomLevel: VISUAL_PREVIEW_ZOOM_CONFIGURATION.default,
+        requestEditorFocus: () =>
+            set(
+                (state) => ({
+                    editorFocusTick: state.editorFocusTick + 1
+                }),
+                false,
+                'requestEditorFocus'
+            ),
+        updateEditorSelectedOperation: (role) =>
+            set(
+                (state) => handleUpdateEditorSelectedOperation(state, role),
+                false,
+                'updateEditorSelectedOperation'
+            ),
+        updateEditorSelectedPreviewRole: (role) =>
+            set(
+                (state) => handleUpdateEditorSelectedPreviewRole(state, role),
+                false,
+                'updateEditorSelectedPreviewRole'
+            ),
+        updateEditorZoomLevel: (zoomLevel) =>
+            set(
+                (state) => handleUpdateEditorZoomLevel(state, zoomLevel),
+                false,
+                'updateEditorZoomLevel'
+            )
+    });
+
+const handleSetViewState = (
+    state: StoreState,
+    viewState: monaco.editor.ICodeEditorViewState | undefined | null
+): Partial<StoreState> => ({
+    editor: {
+        ...state.editor,
+        [`viewState${state.editorSelectedOperation}`]: viewState
+    }
+});
+
+const handleToggleApplyMode = (state: StoreState): Partial<StoreState> => {
+    const { applyMode } = state.editor;
+    const nextApplyMode = getNextApplyMode(applyMode);
+    return {
+        commands: {
+            ...state.commands,
+            applyChanges: nextApplyMode === 'Manual'
+        },
+        editor: {
+            ...state.editor,
+            applyMode: nextApplyMode
+        }
+    };
+};
+
+const handleUpdateApplyMode = (
+    state: StoreState,
+    applyMode: EditorApplyMode
+): Partial<StoreState> => ({
+    editor: {
+        ...state.editor,
+        applyMode
+    }
+});
+
+const handleUpdateChanges = (
+    state: StoreState,
+    payload: EditorSliceUpdateChangesPayload
+): Partial<StoreState> => {
+    const { role, text, viewState } = payload;
+    const isDirty =
+        (role === 'Spec'
+            ? state.project.spec !== text
+            : state.project.config !== text) &&
+        state.editor.applyMode !== 'Auto';
+    // Each role falls back to ITS OWN stored view state when no fresh one is
+    // supplied. Using the active role's view state as the fallback for the
+    // OTHER role cross-contaminates them — every Spec edit would overwrite the
+    // Config editor's saved cursor/scroll state, and vice versa.
+    const viewStateConfig =
+        role === 'Config'
+            ? (viewState ?? state.editor.viewStateConfig)
+            : state.editor.viewStateConfig;
+    const viewStateSpec =
+        role === 'Spec'
+            ? (viewState ?? state.editor.viewStateSpec)
+            : state.editor.viewStateSpec;
+    const stagedConfig = role === 'Config' ? text : state.editor.stagedConfig;
+    const stagedSpec = role === 'Spec' ? text : state.editor.stagedSpec;
+    const exportMetadata = getUpdatedExportMetadata(
+        state.export.metadata as UsermetaTemplate,
+        {}
+    );
+    return {
+        editor: {
+            ...state.editor,
+            isDirty,
+            viewStateConfig,
+            viewStateSpec,
+            stagedConfig,
+            stagedSpec
+        },
+        export: { ...state.export, metadata: exportMetadata },
+        fieldUsage: {
+            ...state.fieldUsage,
+            editorShouldSkipRemap: false
+        }
+    };
+};
+
+const handleUpdateIsDirty = (
+    state: StoreState,
+    isDirty: boolean
+): Partial<StoreState> => ({
+    editor: {
+        ...state.editor,
+        isDirty
+    }
+});
+
+const handleUpdateEditorSelectedOperation = (
+    state: StoreState,
+    role: EditorPaneRole
+): Partial<StoreState> => ({
+    editorSelectedOperation: role
+});
+
+const handleUpdateEditorSelectedPreviewRole = (
+    state: StoreState,
+    role: DebugPaneRole
+): Partial<StoreState> => {
+    return {
+        editorPreviewAreaSelectedPivot: role
+    };
+};
+
+const handleUpdateEditorZoomLevel = (
+    state: StoreState,
+    zoomLevel: number
+): Partial<StoreState> => ({
+    editorZoomLevel: zoomLevel
+});

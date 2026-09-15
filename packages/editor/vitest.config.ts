@@ -2,7 +2,10 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
     test: {
-        environment: 'node',
+        // Editor tests import `@deneb-viz/app-core` (its built entry), whose
+        // viewer modules touch `window` at load time, so every test file
+        // runs under jsdom rather than opting in per file.
+        environment: 'jsdom',
         deps: {
             optimizer: {
                 ssr: {
