@@ -1,8 +1,8 @@
 // @vitest-environment node
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
-import { APP_ROOT } from './_packages';
+import { APP_ROOT, walkFiles } from './_packages';
 
 /**
  * Canary: the visual consumes the editor from `@deneb-viz/editor`.
@@ -16,34 +16,35 @@ import { APP_ROOT } from './_packages';
  */
 const RETIRED_SPECIFIER = '@deneb-viz/app-core/editor';
 const EDITOR_SPECIFIER = '@deneb-viz/editor';
-const SRC_ROOT = join(APP_ROOT, 'src');
 
-const walk = (dir: string): string[] =>
-    readdirSync(dir).flatMap((entry) => {
-        const path = join(dir, entry);
-        return statSync(path).isDirectory() ? walk(path) : [path];
-    });
-
-/** Every non-test TypeScript source file under apps/deneb/src, app-relative. */
-const sourceFiles = walk(SRC_ROOT)
-    .filter((file) => /\.(ts|tsx)$/.test(file))
-    .filter((file) => !/__test__|\.test\./.test(file))
-    .map((file) => relative(APP_ROOT, file).split(sep).join('/'));
+/** Every non-test TypeScript source file under apps/deneb/src: app-relative path → text. */
+const sources = new Map(
+    walkFiles(join(APP_ROOT, 'src'))
+        .filter((file) => /\.(ts|tsx)$/.test(file))
+        .filter((file) => !/__test__|\.test\./.test(file))
+        .map((file) => [
+            relative(APP_ROOT, file).split(sep).join('/'),
+            readFileSync(file, 'utf8')
+        ])
+);
 
 const importSpecifiers = (source: string): string[] =>
     [...source.matchAll(/from\s*['"]([^'"]+)['"]/g)].map((match) => match[1]);
 
 const filesImporting = (specifier: string): string[] =>
-    sourceFiles.filter((file) =>
-        importSpecifiers(readFileSync(join(APP_ROOT, file), 'utf8')).some(
-            (imported) =>
-                imported === specifier || imported.startsWith(`${specifier}/`)
+    [...sources]
+        .filter(([, text]) =>
+            importSpecifiers(text).some(
+                (imported) =>
+                    imported === specifier ||
+                    imported.startsWith(`${specifier}/`)
+            )
         )
-    );
+        .map(([file]) => file);
 
 describe('editor import specifiers', () => {
     it('scans a non-trivial number of source files (guards against a vacuous canary)', () => {
-        expect(sourceFiles.length).toBeGreaterThan(20);
+        expect(sources.size).toBeGreaterThan(20);
     });
 
     it('imports the editor from @deneb-viz/editor in at least one file', () => {

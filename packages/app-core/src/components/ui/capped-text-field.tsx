@@ -1,4 +1,4 @@
-import { type ChangeEvent, useEffect, useRef, useState } from 'react';
+import { type ChangeEvent, useEffect, useState } from 'react';
 import {
     Input,
     InputOnChangeData,
@@ -34,6 +34,8 @@ type CappedTextFieldProps = {
     /**
      * Receives the debounced value under the field's `id`. Fires once on
      * mount with the (empty) initial value, then after each debounce period.
+     * Must be referentially stable (a store action, not an inline arrow):
+     * it is an effect dependency, so a new identity re-reports the value.
      */
     onValueChange: (change: CappedTextFieldChange) => void;
 };
@@ -58,18 +60,11 @@ export const CappedTextField = (props: CappedTextFieldProps) => {
         value,
         EDITOR_DEFAULTS.debouncePeriod.default
     );
-    // Always call the latest callback without re-running the effect on
-    // callback identity: an inline arrow from the caller would otherwise
-    // re-report the same value on every render.
-    const onValueChangeRef = useRef(props.onValueChange);
-    onValueChangeRef.current = props.onValueChange;
+    const { id, onValueChange } = props;
 
     useEffect(() => {
-        onValueChangeRef.current({
-            selector: props.id,
-            value: debouncedValue
-        });
-    }, [debouncedValue, props.id]);
+        onValueChange({ selector: id, value: debouncedValue });
+    }, [debouncedValue, id, onValueChange]);
     const onChange = (
         ev: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
         data: TextareaOnChangeData | InputOnChangeData

@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
@@ -68,3 +68,10 @@ export const listWorkspaceApps = (): WorkspacePackage[] =>
                 readFileSync(join(path, 'package.json'), 'utf8')
             ) as Manifest
         }));
+
+/** Every file under `dir`, recursively, as absolute paths. */
+export const walkFiles = (dir: string): string[] =>
+    readdirSync(dir).flatMap((entry) => {
+        const path = join(dir, entry);
+        return statSync(path).isDirectory() ? walkFiles(path) : [path];
+    });

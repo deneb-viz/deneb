@@ -27,4 +27,9 @@ export {
 export { copyToClipboard } from './lib/clipboard';
 export { updateFieldTracking } from './lib/field-processing';
 
+// Load-bearing, not a convenience: the DTS bundler only keeps a module in
+// `dist/index.d.ts` when the entry's export graph reaches it, and
+// `editor-augmentation.ts` carries the `declare module '@deneb-viz/app-core'`
+// block that gives consumers the editor slices on `StoreState`. Removing
+// this export silently drops that augmentation from the emitted types.
 export type { EditorStoreSlices } from './state/editor-augmentation';

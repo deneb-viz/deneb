@@ -1,8 +1,8 @@
 // @vitest-environment node
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
-import { PACKAGES_DIR } from './_packages';
+import { PACKAGES_DIR, walkFiles } from './_packages';
 
 /**
  * Canary: the dependency between the two app packages is strictly one-way.
@@ -60,12 +60,6 @@ export const findEditorDependencyViolations = (
     return violations;
 };
 
-const walk = (dir: string): string[] =>
-    readdirSync(dir).flatMap((entry) => {
-        const path = join(dir, entry);
-        return statSync(path).isDirectory() ? walk(path) : [path];
-    });
-
 const isTestFile = (file: string): boolean =>
     /__tests__|__bench__|\.test\.|\.bench\./.test(file);
 
@@ -73,7 +67,7 @@ const readManifest = (dir: string): Manifest =>
     JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')) as Manifest;
 
 const appCoreSources = new Map(
-    walk(join(APP_CORE_DIR, 'src'))
+    walkFiles(join(APP_CORE_DIR, 'src'))
         .filter((file) => /\.(ts|tsx)$/.test(file) && !isTestFile(file))
         .map((file) => [
             relative(APP_CORE_DIR, file).split(sep).join('/'),
