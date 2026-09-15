@@ -218,8 +218,8 @@ const buildAllVisibleMatchView = (input: MatchEngineInput): MatchView => {
  *
  * When `query` is empty, returns an all-visible sentinel so render layers
  * do not need to special-case "no active filter". Otherwise applies the
- * filter semantics described by the plan's R3 (flat sections) and R4
- * (Dataset tree).
+ * flat-section and Dataset-tree filter semantics implemented by
+ * `matchSection` and `matchDataset`.
  */
 export const buildMatchView = (input: MatchEngineInput): MatchView => {
     if (input.query === '') return buildAllVisibleMatchView(input);

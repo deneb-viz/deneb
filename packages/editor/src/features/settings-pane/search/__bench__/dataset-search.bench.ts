@@ -7,9 +7,10 @@
  * module scope — per-iteration allocation would measure construction,
  * not the function under test.
  *
- * Budget note: R9 calls for p95 keystroke-to-match < 50ms at this
- * scale. Bench output is observational — don't fail CI on it, but
- * surface regressions in the baselines pipeline when available.
+ * Budget: p95 keystroke-to-match under 50ms at this scale. Bench output
+ * is observational for that budget; the baselines pipeline
+ * (`benchmarks/compare.mjs`) flags regressions against
+ * `benchmarks/baselines/editor.json`.
  */
 import { bench, describe } from 'vitest';
 

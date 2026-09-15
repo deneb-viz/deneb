@@ -7,14 +7,14 @@ import { APP_ROOT, walkFiles } from './_packages';
 /**
  * Canary: the visual consumes the editor from `@deneb-viz/editor`.
  *
- * `@deneb-viz/app-core` exposes only the viewer core; its former `./editor`
- * subpath is gone, so an import of it is an unresolved module at build time.
- * Asserting it here names the retired specifier in the failure instead of
+ * `@deneb-viz/app-core` exports a single `.` entry carrying the viewer core,
+ * so `@deneb-viz/app-core/editor` is not a resolvable module. Asserting that
+ * no consumer imports it names the specifier in the failure instead of
  * leaving webpack to report a bare module-not-found. The scan derives the
  * file set from disk rather than listing consumers by name, so a new
  * editor-side import is covered automatically.
  */
-const RETIRED_SPECIFIER = '@deneb-viz/app-core/editor';
+const UNEXPORTED_SPECIFIER = '@deneb-viz/app-core/editor';
 const EDITOR_SPECIFIER = '@deneb-viz/editor';
 
 /** Every non-test TypeScript source file under apps/deneb/src: app-relative path → text. */
@@ -51,7 +51,7 @@ describe('editor import specifiers', () => {
         expect(filesImporting(EDITOR_SPECIFIER).length).toBeGreaterThan(0);
     });
 
-    it('imports nothing from the retired @deneb-viz/app-core/editor subpath', () => {
-        expect(filesImporting(RETIRED_SPECIFIER)).toEqual([]);
+    it('imports nothing from the unexported @deneb-viz/app-core/editor subpath', () => {
+        expect(filesImporting(UNEXPORTED_SPECIFIER)).toEqual([]);
     });
 });
