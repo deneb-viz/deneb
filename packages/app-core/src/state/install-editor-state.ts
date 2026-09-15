@@ -1,4 +1,5 @@
 import { deepEqual } from 'fast-equals';
+import type { StateCreator } from 'zustand';
 import { createCommandsSlice } from './commands';
 import { createDebugSlice } from './debug';
 import { createEditorSlice } from './editor';
@@ -8,6 +9,7 @@ import { createSettingsPaneSlice } from './settings-pane';
 import { APPLICATION_VERSION } from '../lib/application';
 import {
     useDenebState,
+    type EditorStoreSlices,
     type StateDependencies,
     type StoreState
 } from './state';
@@ -64,20 +66,30 @@ export const installEditorState = (
         return;
     }
 
-    const { setState, getState } = store;
-
-    const editorSlices: Partial<StoreState> = {
-        ...createCommandsSlice()(setState, getState, store),
-        ...createDebugSlice()(setState, getState, store),
-        ...createEditorSlice()(setState, getState, store),
-        ...createExportSlice(dependencies)(setState, getState, store),
-        ...createFieldUsageSlice()(setState, getState, store),
-        ...createSettingsPaneSlice()(setState, getState, store)
-    };
+    // Assembled the same way `createDenebState` assembles the core
+    // slices: one creator that forwards the store's own set/get/api to
+    // each editor slice creator.
+    const createEditorSlices: StateCreator<
+        StoreState,
+        [['zustand/devtools', never]],
+        [],
+        EditorStoreSlices
+    > = (...a) => ({
+        ...createCommandsSlice()(...a),
+        ...createDebugSlice()(...a),
+        ...createEditorSlice()(...a),
+        ...createExportSlice(dependencies)(...a),
+        ...createFieldUsageSlice()(...a),
+        ...createSettingsPaneSlice()(...a)
+    });
 
     // Single setState call: every editor slice becomes visible to
     // subscribers and re-renders in one commit, not one per slice.
-    store.setState(editorSlices, false, 'editor.install');
+    store.setState(
+        createEditorSlices(store.setState, store.getState, store),
+        false,
+        'editor.install'
+    );
 
     // Zustand listeners fire synchronously inside the `set()` call that
     // changed the state, including nested `set()` calls made from inside
