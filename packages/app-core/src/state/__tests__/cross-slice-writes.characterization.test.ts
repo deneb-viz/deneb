@@ -5,9 +5,8 @@ import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 import type { UsermetaDatasetField } from '@deneb-viz/data-core/field';
 
 /**
- * U2 (docs/plans/2026-09-15-001-refactor-editor-package-extraction-plan.md) —
- * characterization tests for the four cross-slice writes that U4/U5 replace
- * with editor-side derived selectors and subscriptions:
+ * Characterization tests for four cross-slice writes touched by spec
+ * compilation, field-usage tracking, dataset mapping and project actions:
  *
  *  1. compilation.compile (handleCompile) -> commands (export + zoom flags)
  *  2. fieldUsage.applyTrackingChanges (handleApplyTrackingChanges) -> commands.exportSpecification
@@ -16,13 +15,13 @@ import type { UsermetaDatasetField } from '@deneb-viz/data-core/field';
  *     applySupportFieldMigrationStamp -> export.metadata + editor staged text/dirty +
  *     editorSelectedOperation + interface.modalDialogRole
  *
- * U4 removed writes 1 and 2 (`handleCompile` and `handleApplyTrackingChanges`
- * no longer write `commands` at all): flows 1 and 2 below are re-pointed to
- * assert the same enablement via `selectExportSpecificationCommandEnabled` /
- * `selectZoomCommandsState` instead of `state.commands.*`, and flow 1 adds an
- * explicit assertion that `compile()` leaves the `commands` slice object
- * reference-identical. Flows 3 and 4 are untouched — those writes are U5's
- * concern, not U4's, and still land exactly as characterized here.
+ * Neither `handleCompile` nor `handleApplyTrackingChanges` writes `commands`
+ * at all: flows 1 and 2 below assert the same enablement via
+ * `selectExportSpecificationCommandEnabled` / `selectZoomCommandsState`
+ * instead of `state.commands.*`, and flow 1 adds an explicit assertion that
+ * `compile()` leaves the `commands` slice object reference-identical. Flows
+ * 3 and 4 write into `create` / `export` / `editor` / `interface` directly,
+ * and are characterized exactly as they land.
  *
  * These tests pin exact values (not just truthiness), so a green run is
  * proof of equivalence with pre-refactor behaviour. Do not "fix" a
@@ -82,7 +81,7 @@ const makeStore = () => {
     return store;
 };
 
-describe('U2 flow 1 — compilation.compile (handleCompile) no longer writes commands', () => {
+describe('compilation.compile (handleCompile) does not write commands', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         vi.mocked(compileSpec).mockReturnValue(READY_RESULT);
@@ -185,7 +184,7 @@ describe('U2 flow 1 — compilation.compile (handleCompile) no longer writes com
     });
 });
 
-describe('U2 flow 2 — fieldUsage.applyTrackingChanges (handleApplyTrackingChanges) no longer writes commands.exportSpecification', () => {
+describe('fieldUsage.applyTrackingChanges (handleApplyTrackingChanges) does not write commands.exportSpecification', () => {
     const TRACKING_PAYLOAD = {
         trackedFields: {},
         trackedDrilldown: { isCurrent: false, isMappingRequired: false },
@@ -269,7 +268,7 @@ const seedExportMetadataDatasetEntry = (
         }
     }));
 
-describe('U2 flow 3 — dataset.updateDataset (handleUpdateDataset) writes create + export.metadata', () => {
+describe('dataset.updateDataset (handleUpdateDataset) writes create + export.metadata', () => {
     /**
      * `metadataAllDependenciesAssigned` / `metadataAllFieldsAssigned` are
      * computed from `state.create.metadata` (the CREATE dialog's own field
@@ -380,19 +379,17 @@ describe('U2 flow 3 — dataset.updateDataset (handleUpdateDataset) writes creat
 
         // Content is unchanged.
         expect(secondEntries).toEqual(firstEntries);
-        // The export-metadata subscription (`installEditorState`) now
-        // skips its `setState` entirely when the recomputed metadata is
-        // `deepEqual` to what's already there, so a second `updateDataset`
-        // call with the same payload leaves `export.metadata` (and its
-        // nested dataset entries array) reference-identical too — the
-        // previous always-write-a-fresh-object behaviour this test used to
-        // pin has been deliberately improved on.
+        // The export-metadata subscription (`installEditorState`) skips its
+        // `setState` entirely when the recomputed metadata is `deepEqual`
+        // to what's already there, so a second `updateDataset` call with
+        // the same payload leaves `export.metadata` (and its nested
+        // dataset entries array) reference-identical too.
         expect(secondMetadata).toBe(firstMetadata);
         expect(secondEntries).toBe(firstEntries);
     });
 });
 
-describe('U2 flow 4a — project.initializeFromTemplate seeds export metadata, editor staged text, selected pane and modal role', () => {
+describe('project.initializeFromTemplate seeds export metadata, editor staged text, selected pane and modal role', () => {
     it('seeds project fields, staged editor text, selects the Spec pane, closes the modal, and leaves the editor clean', () => {
         const store = makeStore();
         // Put the store into a state where every downstream field this
@@ -435,8 +432,8 @@ describe('U2 flow 4a — project.initializeFromTemplate seeds export metadata, e
         expect(
             selectExportSpecificationCommandEnabled(state).exportSpecification
         ).toBe(false);
-        // updateChanges' own write into fieldUsage (unrelated to remap
-        // dialog removal, R9 scope note: this is editor-to-editor).
+        // updateChanges' own write into fieldUsage is unrelated to remap
+        // dialog removal — this is editor-to-editor.
         expect(state.fieldUsage.editorShouldSkipRemap).toBe(false);
     });
 
@@ -466,7 +463,7 @@ describe('U2 flow 4a — project.initializeFromTemplate seeds export metadata, e
     });
 });
 
-describe('U2 flow 4b — project.setContent updates staged text for both editor roles', () => {
+describe('project.setContent updates staged text for both editor roles', () => {
     it('updates project spec/config and stages both roles in the editor slice', () => {
         const store = makeStore();
 
@@ -487,7 +484,7 @@ describe('U2 flow 4b — project.setContent updates staged text for both editor 
     });
 });
 
-describe('U2 flow 4c/4d — project.setSupportFieldConfiguration / applySupportFieldMigrationStamp write export.metadata', () => {
+describe('project.setSupportFieldConfiguration / applySupportFieldMigrationStamp write export.metadata', () => {
     it('setSupportFieldConfiguration embeds the per-field flags into export metadata dataset entries and updates project.supportFieldConfiguration', () => {
         const store = makeStore();
         seedExportMetadataDatasetEntry(store);

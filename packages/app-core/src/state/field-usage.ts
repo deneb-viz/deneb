@@ -181,12 +181,11 @@ const handleApplyTrackingChanges = (
         state.interface.type,
         state.interface.modalDialogRole
     );
-    // Does NOT write `commands.exportSpecification` any more (U4,
-    // docs/plans/2026-09-15-001-refactor-editor-package-extraction-plan.md).
-    // That enablement is now derived on read via
-    // `selectExportSpecificationCommandEnabled` (lib/commands/selectors.ts),
-    // computed fresh from `compilation.result` and `editor.isDirty` —
-    // neither of which this handler's outcome changes.
+    // Does NOT write `commands.exportSpecification`. That enablement is
+    // derived on read via `selectExportSpecificationCommandEnabled`
+    // (lib/commands/selectors.ts), computed fresh from `compilation.result`
+    // and `editor.isDirty` — neither of which this handler's outcome
+    // changes.
     return {
         fieldUsage: {
             ...state.fieldUsage,

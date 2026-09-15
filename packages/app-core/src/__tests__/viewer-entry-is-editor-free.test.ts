@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { entryFile, walkReachability } from './_reachability-walk';
 
 /**
- * Canary test (U7): proves the root barrel (`src/index.ts`) -- the
+ * Canary test: proves the root barrel (`src/index.ts`) -- the
  * viewer's public entry point -- reaches no editor-only code by value.
  *
  * Complements `architecture-boundaries.test.ts` (which enforces the
@@ -12,8 +12,8 @@ import { entryFile, walkReachability } from './_reachability-walk';
  * starting from `src/index.ts`. The boundaries lint would happily allow
  * `index.ts` (an `entry`-layer file) to import an editor feature --
  * entry is permitted to import from every layer. This canary is what
- * actually keeps the transitional root-barrel re-exports (retired in
- * U7) from creeping back in.
+ * actually keeps editor-only code from creeping into the root barrel's
+ * reachable graph.
  */
 
 /**

@@ -6,26 +6,21 @@ import { createDenebState } from '../../../state/state';
 import { installEditorState } from '../../../state/install-editor-state';
 
 /**
- * `DataFieldDropdown` (`../data-field-dropdown.tsx`) used to read BOTH
- * `state.create.setFieldAssignment` and `state.fieldUsage.setFieldAssignment`
- * from the store and switch on `dialogType` internally to pick one. U6
- * (docs/plans/2026-09-15-001-refactor-editor-package-extraction-plan.md)
- * replaced that switch with a single required `setFieldAssignment` prop,
- * injected by the caller (`template-information.tsx` passes
- * `state.create.setFieldAssignment` for the create path;
+ * `DataFieldDropdown` (`../data-field-dropdown.tsx`) takes a required
+ * `setFieldAssignment` prop, injected by the caller (`template-information.tsx`
+ * passes `state.create.setFieldAssignment` for the create path;
  * `export-pane.tsx` passes `state.fieldUsage.setFieldAssignment` for the
- * export/mapping path) — the component now just calls whichever reducer it
- * was given, with no `fieldUsage` reference of its own.
+ * export/mapping path) — the component just calls whichever reducer it was
+ * given, with no `fieldUsage` reference of its own.
  *
  * Component-tree rendering tests are deferred in this workspace (vitest
  * runs in the `node` environment with no `@testing-library/react` — see
  * `no-data-message.test.tsx`). This file instead exercises the two
  * injectable reducers directly, with the exact payload shape the
  * component's effect constructs (`{ key, suppliedObjectKey,
- * suppliedObjectName }`), proving the injection point the plan requires:
- * each reducer only touches its own slice, so `DataFieldDropdown` calling
- * whichever one it was given is safe regardless of which caller wired it
- * up.
+ * suppliedObjectName }`): each reducer only touches its own slice, so
+ * `DataFieldDropdown` calling whichever one it was given is safe regardless
+ * of which caller wired it up.
  */
 
 const makeStore = () => {

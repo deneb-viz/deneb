@@ -5,16 +5,13 @@ import { installEditorState } from '../../../state/install-editor-state';
 import { resolveStagedTextForRole } from '../staged-text';
 
 /**
- * `resolveStagedTextForRole` (`../staged-text.ts`) is the pure function
- * extracted from `specification-json-editor.tsx`'s
- * `project.initializationCount` sync effect and `getDefaultValue` — both
- * used to independently compute "staged text if present, else the
- * persisted project text" for a given editor role. These tests exercise
- * the extracted function directly, against a real store, mirroring the
- * store-construction pattern used elsewhere in this workspace (vitest
- * runs in the `node` environment with no `@testing-library/react`, so
- * component-tree rendering is out of scope here — see
- * `lib/commands/__tests__/selectors.test.ts`,
+ * `resolveStagedTextForRole` (`../staged-text.ts`) resolves the staged
+ * text for a given editor role if present, else the persisted project
+ * text. These tests exercise the function directly, against a real
+ * store, mirroring the store-construction pattern used elsewhere in this
+ * workspace (vitest runs in the `node` environment with no
+ * `@testing-library/react`, so component-tree rendering is out of scope
+ * here — see `lib/commands/__tests__/selectors.test.ts`,
  * `features/project-create/__tests__/create-button.test.tsx`).
  */
 

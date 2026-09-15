@@ -8,8 +8,7 @@ import { selectZoomCommandsState } from '../../../../lib/commands';
  * one place to keep them from drifting apart.
  *
  * `zoomFitEnabled` is derived via `selectZoomCommandsState` rather than read
- * from `state.commands.zoomFit` — see
- * docs/plans/2026-09-15-001-refactor-editor-package-extraction-plan.md U4.
+ * from `state.commands.zoomFit`.
  */
 export const useZoomControlState = () =>
     useDenebState((state) => ({

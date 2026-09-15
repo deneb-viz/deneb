@@ -5,7 +5,7 @@ import { installEditorState } from '../install-editor-state';
 import type { ProjectSyncPayload } from '../project';
 
 /**
- * U3 (audit findings M10/M12) — project slice:
+ * Audit findings M10/M12 — project slice:
  *
  *  - M12: `__isInitialized__` is computed on the MERGED project state, not
  *    the partial sync payload. A partial inbound sync of an unrelated key
@@ -122,8 +122,8 @@ describe('project slice — syncProjectData initialization (M12)', () => {
         }));
 
         // Sync a project whose supportFieldConfiguration no longer includes
-        // 'Category'. The host-sync embed variant used to leave the stale
-        // embedded config in place; it must now be stripped.
+        // 'Category': the stale embedded config on that entry must be
+        // stripped.
         store.getState().project.syncProjectData(
             partialSync({
                 spec: '{"mark":"bar"}',

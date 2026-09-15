@@ -129,35 +129,20 @@ export const SpecificationJsonEditor = ({
         handleFocus();
         addHyperlinkOverride(ref.current, linkClickHandler);
     }, [provider, current, focusTick, ref, linkClickHandler, handleFocus]);
-    // Push the freshly-created project's text into the already-mounted
-    // Monaco instance. `<Editor>`'s `defaultValue` (below) only seeds
-    // Monaco once, at mount — it does not react to later state changes.
-    // The create button (`features/project-create/components/create-button.tsx`)
-    // used to push text via a direct Monaco ref call after
-    // `initializeFromTemplate`; that responsibility moved to the
-    // editor-side staged-text subscription in
-    // `state/install-editor-state.ts`, which refreshes
-    // `editor.stagedSpec`/`stagedConfig` for both roles, and to this
-    // effect, which reacts to that refresh and pushes it into Monaco.
-    // `project.initializationCount` only changes on
-    // `initializeFromTemplate` (state/project.ts), and — because Zustand
-    // fires `store.subscribe` listeners synchronously, in registration
-    // order, within the same outer `set()` call — the staged-text
-    // subscription (registered first in `installEditorState`) has
-    // already updated `editor.stagedSpec`/`stagedConfig` by the time
-    // this effect observes the new `initializationCount`. Skipped on
-    // the first render so the mount-time `defaultValue` (already the
-    // correct text) is not redundantly reapplied.
+    // Push staged text into the mounted Monaco instance after a create
+    // (`project.initializationCount` change); skipped on the mount render
+    // since `defaultValue` (below) already seeded the correct text.
     const isFirstInitializationCount = useRef(true);
     useEffect(() => {
         if (isFirstInitializationCount.current) {
             isFirstInitializationCount.current = false;
             return;
         }
-        const text = resolveStagedTextForRole(thisEditorRole, getDenebState());
-        if (text !== undefined) {
-            ref.current?.setValue(text);
+        if (thisEditorRole === 'Settings') {
+            return;
         }
+        const text = resolveStagedTextForRole(thisEditorRole, getDenebState());
+        ref.current?.setValue(text);
     }, [initializationCount, ref, thisEditorRole]);
     // Bootstrap the editor
     const handleOnMount: OnMount = (editor) => {
@@ -284,7 +269,9 @@ const addHyperlinkOverride = (
  * Resolve the default value when instantiated, either from settings or staging as needed.
  */
 const getDefaultValue = (role: EditorPaneRole) =>
-    resolveStagedTextForRole(role, getDenebState());
+    role === 'Settings'
+        ? undefined
+        : resolveStagedTextForRole(role, getDenebState());
 
 /**
  * A very simple override of clicking link elements in the editor, to allow delegation of hyperlink handling to the

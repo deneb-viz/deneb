@@ -65,8 +65,7 @@ export const ToolbarButtonStandard = ({
 }: ToolbarButtonStandardProps) => {
     // `commandEnabled` resolves via `selectCommandEnabled`, which derives
     // exportSpecification/zoom enablement rather than trusting the stored
-    // `commands` slice for those two — see
-    // docs/plans/2026-09-15-001-refactor-editor-package-extraction-plan.md U4.
+    // `commands` slice for those two.
     const { commandEnabled, translate } = useDenebState((state) => ({
         commandEnabled: selectCommandEnabled(state, command),
         translate: state.i18n.translate

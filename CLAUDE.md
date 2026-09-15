@@ -268,6 +268,8 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 
 Prefer readable and self-documenting code over elegant solutions even if it increases verbosity.
 
+**Comments and test names describe current behaviour, not provenance.** Do not cite plan units (`U4`), requirement or acceptance IDs (`R9`, `AE3`), PR or phase numbers (`PR 1`, `Phase 2`), or `docs/plans` / `docs/brainstorms` paths in source comments, doc comments, or test names, and do not narrate what code "used to" do or where it was "moved from". Those are ledger items: the plan document and git history (with the `#issue` trailer on each commit) carry provenance, and code cites go stale the moment a plan is superseded. A comment earns its place by stating an invariant or a non-obvious constraint; a test name earns its place by naming the behaviour it pins.
+
 ## Troubleshooting
 
 Common issues:

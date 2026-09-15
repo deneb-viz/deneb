@@ -16,38 +16,16 @@ export type ProjectSliceProperties = SyncableSlice &
     DenebProject & {
         __isInitialized__: boolean;
         /**
-         * Bumped, in the SAME `set()` call, every time
-         * `initializeFromTemplate` runs — and by nothing else (not
-         * `setContent`, not host sync via `syncProjectData`). This is the
-         * only signal that distinguishes "a project was just created from
-         * a template" from "content changed by Apply or by host sync",
-         * used editor-side (U5,
-         * docs/plans/2026-09-15-001-refactor-editor-package-extraction-plan.md)
-         * to select the Spec pane and request editor focus after create,
-         * without project.ts (core) knowing anything about panes or
-         * focus. A monotonically increasing counter (rather than a
-         * boolean or timestamp) so a subscriber can detect the signal via
-         * simple inequality, the same reference-diffing pattern used for
-         * every other slice-change subscription in this store.
+         * Incremented only by `initializeFromTemplate`. The editor
+         * subscribes to it to select the Spec pane and request focus.
          */
         initializationCount: number;
         /**
-         * Bumped, in the SAME `set()` call, every time `initializeFromTemplate`
-         * OR `setContent` runs — the two actions that commit new spec/config
-         * text. Both of those actions used to call
-         * `get().editor.updateChanges(...)` for BOTH roles UNCONDITIONALLY
-         * on every call, regardless of whether the incoming text actually
-         * differed from what was already staged (e.g. a template whose
-         * config is the empty-object default, which is byte-identical to
-         * `PROJECT_DEFAULTS.config`, must still stage that text). A
-         * subscriber cannot reproduce "unconditionally, whenever this
-         * specific action ran" by diffing `project.spec`/`project.config`
-         * values — a coincidental value match (as above) would silently
-         * skip the refresh. This counter is the same reference-diffing
-         * discriminator pattern as `initializationCount`, scoped to the two
-         * actions that must always refresh staged editor text; host sync
-         * (`syncProjectData`), which never called `updateChanges`, does not
-         * touch it.
+         * Incremented by `initializeFromTemplate` and `setContent`. The
+         * editor subscribes to it to refresh staged Spec/Config text —
+         * value-diffing `spec`/`config` cannot distinguish identical text
+         * (e.g. a template's config matching the empty-object default)
+         * from text that was never staged.
          */
         contentCommitCount: number;
         initializeFromTemplate: (
@@ -179,17 +157,6 @@ export const createProjectSlice =
                             __isInitialized__: true,
                             // Bumped in this SAME set() call — see the
                             // doc comment on `initializationCount` above.
-                            // The editor-side subscription registered in
-                            // `installEditorState` (U5) reads this
-                            // transition to select the Spec pane and
-                            // request focus; it replaces the direct
-                            // `editorSelectedOperation: 'Spec'` write and
-                            // the `get().editor.updateChanges(...)` calls
-                            // that used to live in this action. Export
-                            // metadata (previously also written here) is
-                            // recomputed by the same editor-side
-                            // subscription from the updated `project`
-                            // slice, not by this core action.
                             initializationCount:
                                 state.project.initializationCount + 1,
                             // See the doc comment on `contentCommitCount`
@@ -225,13 +192,6 @@ export const createProjectSlice =
                             contentCommitCount:
                                 state.project.contentCommitCount + 1
                         };
-                        // Staged editor text and export metadata (both
-                        // previously written here) are refreshed by the
-                        // editor-side subscriptions registered in
-                        // `installEditorState` (U5): the staged-text
-                        // subscription reacts to `contentCommitCount`, the
-                        // export-metadata subscription to `project`/
-                        // `dataset` changing.
                         return {
                             project: updatedProject
                         };
@@ -288,10 +248,6 @@ export const createProjectSlice =
                     'project.setRenderMode'
                 ),
             setSupportFieldConfiguration: (config: SupportFieldConfiguration) =>
-                // Embedding `config` into export dataset entries (previously
-                // done here) is now handled by the editor-side subscription
-                // registered in `installEditorState` (U5), which reacts to
-                // `project.supportFieldConfiguration` changing.
                 set(
                     (state) => ({
                         project: {
@@ -316,11 +272,6 @@ export const createProjectSlice =
             applySupportFieldMigrationStamp: (
                 payload: SupportFieldMigrationStampPayload
             ) =>
-                // Embedding the stamped configuration into export dataset
-                // entries (previously done here, same semantics as
-                // setSupportFieldConfiguration) is now handled by the
-                // editor-side subscription registered in
-                // `installEditorState` (U5).
                 set(
                     (state) => ({
                         project: {
@@ -370,11 +321,8 @@ export const createProjectSlice =
 
 /**
  * Handle synchronization of project data from host application (e.g., Power BI).
- * This updates the project slice with the incoming data. Export metadata
- * (previously also embedded/refreshed here) is recomputed by the editor-side
- * subscription registered in `installEditorState` (U5), which reacts to the
- * `project` slice changing — this keeps `syncProjectData` core-to-core.
- * Spec parsing is handled by the compilation slice via VisualViewer's useEffect.
+ * This updates the project slice with the incoming data. Spec parsing is
+ * handled by the compilation slice via VisualViewer's useEffect.
  */
 const handleSyncProjectData = (
     state: CoreStoreState,

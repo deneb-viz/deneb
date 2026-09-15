@@ -9,10 +9,8 @@ import {
 import type { ProjectSyncPayload } from '../project';
 
 /**
- * U5 (docs/plans/2026-09-15-001-refactor-editor-package-extraction-plan.md)
- * — the editor-side subscriptions registered by `installEditorState` that
- * replace the cross-slice writes removed from `state/project.ts` and
- * `state/dataset.ts`:
+ * Tests for the editor-side subscriptions registered by
+ * `installEditorState`:
  *
  *  1. Staged-text refresh, keyed on `project.contentCommitCount`
  *     (`initializeFromTemplate` and `setContent`).
@@ -21,10 +19,9 @@ import type { ProjectSyncPayload } from '../project';
  *  3. Export-metadata recompute, keyed on `project`/`dataset` reference
  *     changes (every project write and `updateDataset`).
  *
- * The characterization tests in `cross-slice-writes.characterization.test.ts`
- * (U2) pin the exact resulting VALUES for these same flows; this file pins
- * the SUBSCRIPTION MECHANISM itself — installation, idempotency, ordering,
- * and the core/editor decoupling (AE3).
+ * `cross-slice-writes.characterization.test.ts` pins the exact resulting
+ * VALUES for these same flows; this file pins the SUBSCRIPTION MECHANISM
+ * itself — installation, idempotency, ordering, and core/editor decoupling.
  */
 
 const makeStore = () => {
@@ -150,7 +147,7 @@ describe('editor subscriptions — synchronous ordering', () => {
         expect(observedStagedSpec).toBe('{"mark":"line"}');
         // project.spec has already been updated to the incoming text by
         // the time the staged-text subscription's updateChanges call
-        // reads it (same documented quirk as the U2 characterization
+        // reads it (same documented quirk as the characterization
         // tests), so isDirty comes out false — the point of this
         // assertion is that a value was observed AT ALL (not `undefined`,
         // proving the subscriber ran synchronously before this line),
@@ -160,7 +157,7 @@ describe('editor subscriptions — synchronous ordering', () => {
     });
 });
 
-describe('editor subscriptions — core/editor decoupling (AE3)', () => {
+describe('editor subscriptions — core/editor decoupling', () => {
     it('(vi) a core-only store (no install) runs every rewritten action without throwing and without exposing any editor/export key', () => {
         const store = createDenebState();
         expect(isEditorStateInstalled(store.getState())).toBe(false);

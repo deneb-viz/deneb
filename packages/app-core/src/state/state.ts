@@ -45,11 +45,7 @@ export type CoreStoreState = CompilationSlice &
 
 /**
  * The slices that only exist once `installEditorState()` has run. Not
- * present in a freshly constructed store. In PR 2 this type moves to
- * the editor package and reaches `StoreState` via a module augmentation
- * (`declare module '@deneb-viz/app-core' { interface StoreState extends
- * EditorStoreSlices {} }`); for PR 1 both halves still live in app-core,
- * so `StoreState` below simply intersects them directly.
+ * present in a freshly constructed store.
  */
 export type EditorStoreSlices = CommandsSlice &
     DebugSlice &
@@ -88,16 +84,10 @@ export const createDenebState = () =>
     createWithEqualityFn<StoreState>()(
         devtools(
             (...a) =>
-                // The cast below is the ONE documented escape hatch in the
-                // store composition. `createDenebState` only ever assembles
-                // core slices, so the object literal only actually
-                // satisfies `CoreStoreState`, not the full `StoreState`
-                // (core ∪ editor). The cast asserts the wider type anyway
-                // because `StoreState` is what every consumer (hooks,
-                // selectors, the devtools generic) is typed against; it is
-                // `installEditorState()` — called once by every app before
-                // any editor read — that makes the cast true at runtime by
-                // merging the editor slices into this same store.
+                // Only core slices are assembled here, so this cast to
+                // `StoreState` — the only cast of its kind — is made
+                // true at runtime by `installEditorState()`, which merges
+                // the editor slices in before any editor read.
                 ({
                     ...createCompilationSlice()(...a),
                     ...createCreateSlice()(...a),

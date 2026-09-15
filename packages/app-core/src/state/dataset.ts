@@ -39,12 +39,11 @@ export const createDatasetSlice =
     });
 
 /**
- * Handle dataset updates from host application. Export metadata (previously
- * also updated here) is recomputed by the editor-side subscription
- * registered in `installEditorState` (U5), which reacts to `dataset`
- * changing — `reconcileExportDatasetFields` (the helper that used to live
- * here) moved to `state/export.ts` alongside that subscription. Normalizes
- * field input (array or record) to the internal record format.
+ * Handle dataset updates from host application. Export metadata is
+ * recomputed by the editor-side subscription registered in
+ * `installEditorState`, which reacts to `dataset` changing (see
+ * `state/export.ts`). Normalizes field input (array or record) to the
+ * internal record format.
  */
 const handleUpdateDataset = (
     state: CoreStoreState,

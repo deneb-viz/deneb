@@ -12,16 +12,13 @@ import {
 import { type Command, type DerivedCommand } from '../types';
 
 /**
- * U4 (docs/plans/2026-09-15-001-refactor-editor-package-extraction-plan.md)
- * — selector tests for the export/zoom command enablement that used to be
- * written into `commands` by `handleCompile` (state/compilation.ts) and
- * `handleApplyTrackingChanges` (state/field-usage.ts). Both selectors are
+ * Selector tests for export/zoom command enablement. Both selectors are
  * thin wrappers over the same pure helpers (`evaluateExportSpecCommandState`,
  * `evaluateZoomCommandsState` in lib/commands/state.ts) already unit-tested
  * in isolation in `__tests__/state.test.ts`; these tests exercise them
  * through the selector, against a real store, over the same input
  * combinations `state/__tests__/cross-slice-writes.characterization.test.ts`
- * (U2) and `state/__tests__/commands-recovery.test.ts` captured: dirty vs.
+ * and `state/__tests__/commands-recovery.test.ts` captured: dirty vs.
  * clean editor, a ready vs. absent compilation result, and zoom level at
  * the min/mid/max boundaries.
  */
@@ -37,7 +34,7 @@ const ZOOM_MAX = VISUAL_PREVIEW_ZOOM_CONFIGURATION.max;
 const ZOOM_MID = VISUAL_PREVIEW_ZOOM_CONFIGURATION.default;
 
 /**
- * Fresh, fully-wired store per test — same pattern as the U2 characterization
+ * Fresh, fully-wired store per test — same pattern as the characterization
  * and commands-recovery suites. `createDenebState` only assembles core
  * slices now, so `installEditorState` merges the editor-only slices
  * (`editor`, `compilation` is already core) in immediately.

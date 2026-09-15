@@ -4,14 +4,10 @@ import { createDenebState } from '../../../state/state';
 import { isEditorStateInstalled } from '../../../state/install-editor-state';
 
 /**
- * `CreateButton` (`../components/create-button.tsx`) used to read
- * `useSpecificationEditor()` and push text into the Monaco refs directly
- * after dispatching `project.initializeFromTemplate`. U6
- * (docs/plans/2026-09-15-001-refactor-editor-package-extraction-plan.md)
- * removed that — the button now ONLY dispatches
- * `project.initializeFromTemplate`; staging the text into Monaco and
- * requesting focus moved to the editor-side subscriptions registered by
- * `installEditorState` (U5, `state/install-editor-state.ts`).
+ * `CreateButton` (`../components/create-button.tsx`) only dispatches
+ * `project.initializeFromTemplate`. Staging the text into Monaco and
+ * requesting focus happens via the editor-side subscriptions registered by
+ * `installEditorState` (`state/install-editor-state.ts`).
  *
  * Component-tree rendering tests are deferred in this workspace (vitest
  * runs in the `node` environment with no `@testing-library/react` — see
@@ -19,9 +15,9 @@ import { isEditorStateInstalled } from '../../../state/install-editor-state';
  * remaining dependency directly: `project.initializeFromTemplate`, called
  * on a CORE-ONLY store (no `installEditorState`, i.e. no editor slices, no
  * Monaco, no `SpecificationEditorProvider`). Passing here proves the
- * button's create flow no longer needs any editor context mounted — AE4.
+ * button's create flow does not need any editor context mounted.
  */
-describe('CreateButton create flow — no editor context required (AE4)', () => {
+describe('CreateButton create flow — no editor context required', () => {
     it('initialises the project on a core-only store without throwing, with no editor/export/fieldUsage/commands slice present', () => {
         const store = createDenebState();
         expect(isEditorStateInstalled(store.getState())).toBe(false);
@@ -73,10 +69,9 @@ describe('CreateButton create flow — no editor context required (AE4)', () => 
         expect(project.supportFieldConfiguration).toEqual({
             Category: { highlight: true, format: false, formatted: true }
         });
-        // Bumped by exactly this action — the discriminator the U5
+        // Bumped by exactly this action — the discriminator the
         // editor-side subscription uses to select the Spec pane and
-        // request focus, replacing what CreateButton used to do itself
-        // via direct Monaco ref calls.
+        // request focus.
         expect(project.initializationCount).toBe(1);
     });
 });

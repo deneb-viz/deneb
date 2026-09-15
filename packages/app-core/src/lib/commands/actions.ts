@@ -20,8 +20,7 @@ import {} from '../../../package.json';
  *
  * Enablement resolves via `selectCommandEnabled`, which derives
  * exportSpecification/zoom enablement instead of trusting the stored
- * `commands` slice for those two — see
- * docs/plans/2026-09-15-001-refactor-editor-package-extraction-plan.md U4.
+ * `commands` slice for those two.
  */
 const executeCommand = (command: Command, callback: () => void) => {
     if (selectCommandEnabled(getDenebState(), command)) {

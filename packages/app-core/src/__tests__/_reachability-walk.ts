@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
 
 /**
- * Reachability walker for the U7 "viewer entry is editor-free" canary.
+ * Reachability walker for the "viewer entry is editor-free" canary.
  *
  * Builds the value-import graph reachable from a set of entry files by
  * parsing each reached file's top-level import/export statements and

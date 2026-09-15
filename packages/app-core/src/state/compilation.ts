@@ -131,9 +131,7 @@ export type CompilationSliceProperties = SyncableSlice &
          * the view from the ALREADY-COMPILED template — the compile
          * pipeline never runs for a container resize. No-op when there is
          * no ready result or the dims are unchanged (the underlying
-         * rewrite helper is identity-stable). See
-         * docs/plans/2026-07-23-001-container-signal-consolidation-design.md
-         * (Revision 2).
+         * rewrite helper is identity-stable).
          */
         refreshContainerDimensions: (dimensions: ContainerDimensions) => void;
 
@@ -322,17 +320,8 @@ export const createCompilationSlice =
  * us one source of truth: renderId changes iff a fresh `View` instance
  * has just been attached.
  *
- * Does NOT touch `commands` (exportSpecification/zoom flags). Those were
- * previously re-evaluated here as a "recovery write" so a stale disabled
- * flag from an earlier parse error would clear once compilation recovered.
- * As of U4 (docs/plans/2026-09-15-001-refactor-editor-package-extraction-plan.md)
- * that enablement is derived on read via `selectExportSpecificationCommandEnabled`
- * / `selectZoomCommandsState` (lib/commands/selectors.ts), computed fresh from
- * `compilation.result` on every read — there is no stored flag left to go
- * stale, so no recovery write is needed. This is also what makes
- * `compilation.ts` type-check against `CoreStoreState`: reading
- * `state.editor.isDirty` / `state.editorZoomLevel` here would not compile
- * against a core-only store.
+ * Command enablement (exportSpecification/zoom) is derived on read via
+ * `lib/commands/selectors.ts`, not stored here.
  */
 const handleCompile = (
     state: CoreStoreState,
@@ -385,8 +374,7 @@ const handleClear = (state: CoreStoreState): Partial<CoreStoreState> => ({
 
 /**
  * Rewrite the stored result's `denebContainer` init width/height for the
- * cheap re-embed path (Revision 2 of
- * docs/plans/2026-07-23-001-container-signal-consolidation-design.md).
+ * cheap re-embed path.
  *
  * No-op (returns `state` unchanged, by reference) when:
  * - there is no compilation result yet, or the result is not `ready`

@@ -4,31 +4,20 @@ import type { CompilationResult } from '@deneb-viz/vega-runtime/compilation';
 
 /**
  * Regression tests for the "compilation-gated commands stuck disabled
- * after parse-error click" bug. See
- * docs/plans/2026-04-29-001-fix-zoom-stuck-disabled-on-recovery-plan.md.
+ * after parse-error click" bug.
  *
  * Two command sets gate on `isCompilationReady`:
  *  - The four zoom controls (`zoomIn`, `zoomOut`, `zoomFit`, `zoomReset`).
  *  - `exportSpecification`.
  *
- * Originally (docs/plans/2026-04-29-001-...), the fix was a recovery write
- * inside `handleCompile` that re-evaluated both gates whenever compilation
- * reached `ready`, so a stale `false` written during a parse error would
- * clear on the next successful compile even without a fresh zoom
- * click/keystroke.
- *
- * U4 (docs/plans/2026-09-15-001-refactor-editor-package-extraction-plan.md)
- * removed that recovery write from `handleCompile`, and a later cleanup
- * pass removed the equivalent writes from `handleUpdateEditorZoomLevel` and
- * `handleUpdateChanges`/`handleUpdateIsDirty` (state/editor.ts) too — none
- * of these five commands are written into `state.commands` any more. The
- * gates are *derived on read* via `selectZoomCommandsState` /
+ * None of these five commands are written into `state.commands`. The gates
+ * are *derived on read* via `selectZoomCommandsState` /
  * `selectExportSpecificationCommandEnabled` (lib/commands/selectors.ts),
  * computed fresh from `compilation.result` / `editor.isDirty` /
  * `editorZoomLevel` every time — there is no stored flag left to go stale,
- * so the "stuck disabled" bug this file guards against is now structurally
- * impossible rather than fixed-by-write. Every test below asserts the
- * selector output instead of `state.commands.*` for that reason.
+ * so the "stuck disabled" bug this file guards against is structurally
+ * impossible. Every test below asserts the selector output instead of
+ * `state.commands.*` for that reason.
  */
 
 const READY_RESULT: CompilationResult = {
@@ -109,9 +98,8 @@ describe('commands recovery — zoom controls', () => {
     it('derives all zoom command flags disabled before any compilation has occurred', () => {
         // `isCompilationReady` gates every zoom command on
         // `compilation.result`, which is `null` until the first compile —
-        // a freshly-created store (no stored default any more) therefore
-        // derives every zoom command disabled, matching what the UI has
-        // shown since U4 made every reader go through this selector.
+        // a freshly-created store therefore derives every zoom command
+        // disabled.
         const store = makeStore();
         const commands = selectZoomCommandsState(store.getState());
         expect(commands.zoomIn).toBe(false);

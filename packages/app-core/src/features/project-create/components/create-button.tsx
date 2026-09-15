@@ -107,11 +107,10 @@ export const CreateButton = () => {
             consolidateFieldParameters: needsConsolidation || undefined
         });
         // Staging the new text into the mounted Monaco instances and
-        // requesting focus is now handled editor-side, via subscriptions
+        // requesting focus is handled editor-side, via subscriptions
         // registered in `installEditorState()` (state/install-editor-state.ts)
-        // that fire on `project.initializationCount` — see
-        // docs/plans/2026-09-15-001-refactor-editor-package-extraction-plan.md,
-        // U5/U6. This keeps the create button free of Monaco/editor refs.
+        // that fire on `project.initializationCount`. This keeps the create
+        // button free of Monaco/editor refs.
     };
     logRender('CreateButton');
     return (

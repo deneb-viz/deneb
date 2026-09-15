@@ -2,10 +2,10 @@ import { describe, expect, it, vi } from 'vitest';
 import type { CompilationResult } from '@deneb-viz/vega-runtime/compilation';
 
 /**
- * Mocked for the AE3 test below (a core-only store can run `compile()`
- * without throwing): a real `compileSpec` call is out of scope here, only
- * the fact that `handleCompile` no longer reaches into editor-only state
- * matters. Mirrors the pattern in
+ * Mocked for the core-only-store test below (a core-only store can run
+ * `compile()` without throwing): a real `compileSpec` call is out of scope
+ * here, only the fact that `handleCompile` does not reach into editor-only
+ * state matters. Mirrors the pattern in
  * `state/__tests__/commands-recovery.test.ts` and
  * `state/__tests__/cross-slice-writes.characterization.test.ts`.
  */
@@ -33,12 +33,11 @@ import {
 import { requireEditorState } from '../editor-state-access';
 
 /**
- * U3 (docs/plans/2026-09-15-001-refactor-editor-package-extraction-plan.md)
- * — store composition: `createDenebState` assembles core slices only, and
+ * Store composition: `createDenebState` assembles core slices only, and
  * `installEditorState` merges the editor-only slices into an existing
- * store. These tests pin the two behaviours the rest of the refactor
- * depends on: a core-only store never exposes an editor key, and install
- * is idempotent and additive rather than replacing state.
+ * store. These tests pin two invariants: a core-only store never exposes
+ * an editor key, and install is idempotent and additive rather than
+ * replacing state.
  */
 
 const CORE_KEYS = [
@@ -165,14 +164,14 @@ describe('requireEditorState', () => {
 });
 
 /**
- * AE3 (partial) — U4 narrowed `createCompilationSlice` to
- * `StateCreator<CoreStoreState, ...>` and removed `handleCompile`'s reads
- * of `state.editor.isDirty` / `state.editorZoomLevel`. This is the runtime
- * proof that pairs with that compile-time guarantee: a store that never
- * had `installEditorState()` called on it (no `commands`, `editor`, etc.)
- * can still run the `compile` action without throwing on a missing slice.
+ * `createCompilationSlice` is typed as `StateCreator<CoreStoreState, ...>`,
+ * so `handleCompile` cannot read `state.editor.isDirty` /
+ * `state.editorZoomLevel` — this is the runtime proof that pairs with that
+ * compile-time guarantee: a store that never had `installEditorState()`
+ * called on it (no `commands`, `editor`, etc.) can still run the `compile`
+ * action without throwing on a missing slice.
  */
-describe('compilation.compile on a core-only store (AE3 partial)', () => {
+describe('compilation.compile on a core-only store', () => {
     it('does not throw when no editor state has been installed', () => {
         const store = makeStore();
 

@@ -167,12 +167,6 @@ const handleUpdateExportDataset = (
  * properties (description, kind, type, suppliedObject*) while refreshing name/namePlaceholder/key from the current
  * dataset. Matches by `namePlaceholder` (stable field identity) rather than `key` (positional placeholder) so that
  * field reordering doesn't cause metadata to be applied to the wrong field.
- *
- * Moved here from `state/dataset.ts` by U5
- * (docs/plans/2026-09-15-001-refactor-editor-package-extraction-plan.md):
- * export-metadata reconciliation is an editor-only concern, and
- * `dataset.ts` (core) no longer writes `export` at all — see
- * `recomputeExportMetadata` below.
  */
 export const reconcileExportDatasetFields = (
     freshFields: UsermetaDatasetField[],
@@ -206,9 +200,6 @@ export const reconcileExportDatasetFields = (
  * four times with two divergent semantics: two variants stripped stale config,
  * two left it embedded on removed fields — corrupting export/template
  * integrity when a field was reconfigured to defaults or removed.
- *
- * Moved here from `state/project.ts` by U5 (see `reconcileExportDatasetFields`
- * above) — project.ts is core and must not own export-metadata shaping.
  */
 export const embedSupportFieldConfig = (
     dataset: UsermetaDatasetField[],
@@ -246,14 +237,6 @@ type ExportMetadataProjectInput = Pick<
  * spreads the existing metadata first, and `setMetadataPropertyBySelector` /
  * `setPreviewImage` write into fields this function's `options` never
  * touches, e.g. `information.previewImageBase64PNG`).
- *
- * U5 (docs/plans/2026-09-15-001-refactor-editor-package-extraction-plan.md)
- * replaces SIX separate in-action writes that used to live in project.ts
- * (`initializeFromTemplate`, `setContent`, `setSupportFieldConfiguration`,
- * `applySupportFieldMigrationStamp`, `syncProjectData`) and dataset.ts
- * (`updateDataset`) with ONE subscription (registered in
- * `installEditorState`) that calls this function whenever `project` or
- * `dataset` changes by reference.
  *
  * Deliberately refreshes `config`/`provider`/`providerVersion`/
  * `interactivity` on EVERY call, not only when `supportFieldConfiguration`
