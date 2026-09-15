@@ -17,10 +17,17 @@ import { type ModalDialogType } from '../ui';
 import { DataTypeIcon } from './data-type-icon';
 import { logDebug, logRender } from '@deneb-viz/utils/logging';
 import { useDenebState } from '../../state';
+import { type TemplateFieldAssignmentReducer } from './types';
 
 type DatasetFieldAssignmentDropdownProps = {
     datasetField: UsermetaDatasetField;
     dialogType: ModalDialogType;
+    /**
+     * Reducer invoked with the assignment payload when the user selects a
+     * field. Injected by the caller instead of switched on `dialogType`
+     * internally — see `types.ts` for why.
+     */
+    setFieldAssignment: TemplateFieldAssignmentReducer;
 };
 
 const useDataFieldDropdownStyles = makeStyles({
@@ -34,17 +41,12 @@ const useDataFieldDropdownStyles = makeStyles({
 
 export const DataFieldDropdown = ({
     datasetField,
-    dialogType
+    dialogType,
+    setFieldAssignment
 }: DatasetFieldAssignmentDropdownProps) => {
     const classes = useDataFieldDropdownStyles();
     const fields = useDenebState((state) => state.dataset.fields);
     const translate = useDenebState((state) => state.i18n.translate);
-    const createSliceReducer = useDenebState(
-        (state) => state.create.setFieldAssignment
-    );
-    const fieldUsageSliceReducer = useDenebState(
-        (state) => state.fieldUsage.setFieldAssignment
-    );
     const selectedKeyDefault = getDefaultSelectedKey(datasetField, fields);
     const [selectedKey, setSelectedKey] = useState<string | undefined>(
         selectedKeyDefault
@@ -67,28 +69,12 @@ export const DataFieldDropdown = ({
         const option = options.find(
             ([key, field]) => (field.id ?? key) === selectedKey
         );
-        let reducer:
-            | typeof createSliceReducer
-            | typeof fieldUsageSliceReducer
-            | undefined;
-        if (dialogType === 'new') {
-            reducer = createSliceReducer;
-        } else if (dialogType === 'mapping') {
-            reducer = fieldUsageSliceReducer;
-        }
-        reducer?.({
+        setFieldAssignment({
             key: datasetField.key,
             suppliedObjectKey: option ? (option[1].id ?? option[0]) : undefined,
             suppliedObjectName: option ? option[0] : undefined
         });
-    }, [
-        selectedKey,
-        options,
-        dialogType,
-        datasetField.key,
-        createSliceReducer,
-        fieldUsageSliceReducer
-    ]);
+    }, [selectedKey, options, datasetField.key, setFieldAssignment]);
     const dropdownId = useId('dataset-field');
     logRender(`DataFieldDropdown ${datasetField.key}`, {
         datasetField,
@@ -124,7 +110,6 @@ const getDatasetFieldEntryFromFields = (
 ): [string, DatasetField] | undefined => {
     switch (role) {
         case 'new':
-        case 'mapping':
             return getSourceDatasetFieldEntries(fields).find(
                 ([key, field]) => (field.id ?? key) === lookupKey
             );

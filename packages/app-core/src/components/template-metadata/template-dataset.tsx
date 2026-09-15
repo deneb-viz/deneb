@@ -15,9 +15,20 @@ import { TemplateDatasetRow } from './template-dataset-row';
 import { useCallback } from 'react';
 import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
+import { type TemplateFieldAssignmentReducer } from './types';
 
 type TemplateDatasetProps = {
     datasetRole: ModalDialogType;
+    /**
+     * Field-assignment reducer for this table, injected by the caller
+     * rather than resolved internally from `datasetRole` — the create path
+     * (`template-information.tsx`) passes `state.create.setFieldAssignment`;
+     * the export path (`export-pane.tsx`) passes
+     * `state.fieldUsage.setFieldAssignment`. Keeps `template-metadata`
+     * free of any reference to the editor-side `fieldUsage` slice. See
+     * `types.ts`.
+     */
+    setFieldAssignment: TemplateFieldAssignmentReducer;
 };
 
 const useTemplateDatasetStyles = makeStyles({
@@ -29,14 +40,16 @@ const useTemplateDatasetStyles = makeStyles({
 /**
  * Displays a table of dataset columns and contextual controls, based on role.
  */
-export const TemplateDataset = ({ datasetRole }: TemplateDatasetProps) => {
+export const TemplateDataset = ({
+    datasetRole,
+    setFieldAssignment
+}: TemplateDatasetProps) => {
     const createMetadata = useDenebState(
         (state) => state.create.metadata as UsermetaTemplate
     );
     const exportMetadata = useDenebState(
         (state) => state.export.metadata as UsermetaTemplate
     );
-    const fieldUsage = useDenebState((state) => state.fieldUsage);
     const classes = useTemplateDatasetStyles();
     /**
      * Provide content for eligible dataset fields.
@@ -51,9 +64,6 @@ export const TemplateDataset = ({ datasetRole }: TemplateDatasetProps) => {
                             DATASET_DEFAULT_NAME
                         ]?.slice() || [];
                     break;
-                case 'mapping':
-                    items = fieldUsage.remapFields.slice() || [];
-                    break;
                 case 'export':
                     items =
                         exportMetadata?.datasets?.[
@@ -67,11 +77,16 @@ export const TemplateDataset = ({ datasetRole }: TemplateDatasetProps) => {
                     key={`template-field-${item.key}-${index}`}
                     className={classes.tableRow}
                 >
-                    <TemplateDatasetRow item={item} role={role} index={index} />
+                    <TemplateDatasetRow
+                        item={item}
+                        role={role}
+                        index={index}
+                        setFieldAssignment={setFieldAssignment}
+                    />
                 </TableRow>
             ));
         },
-        [datasetRole, createMetadata, exportMetadata, fieldUsage]
+        [datasetRole, createMetadata, exportMetadata, setFieldAssignment]
     );
     const tableBody = getTableFieldRows(datasetRole);
 

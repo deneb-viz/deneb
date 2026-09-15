@@ -6,11 +6,13 @@ import { DataAssignmentColumnCell } from './data-assignment-column-cell';
 import { DataDescriptionColumnCell } from './data-description-column-cell';
 import { DataNameColumnField } from './data-name-column-field';
 import { DataDescriptionColumnField } from './data-description-column-field';
+import { type TemplateFieldAssignmentReducer } from './types';
 
 type TemplateDatasetRowProps = {
     role: ModalDialogType;
     item: UsermetaDatasetField;
     index: number;
+    setFieldAssignment: TemplateFieldAssignmentReducer;
 };
 
 /**
@@ -20,7 +22,8 @@ type TemplateDatasetRowProps = {
 export const TemplateDatasetRow = ({
     role,
     item,
-    index
+    index,
+    setFieldAssignment
 }: TemplateDatasetRowProps) => {
     const description = item?.description || '';
     switch (role) {
@@ -29,17 +32,12 @@ export const TemplateDatasetRow = ({
                 <>
                     <DataTypeColumnCell type={item.type} kind={item.kind} />
                     <DataNameColumnCell name={item.name} />
-                    <DataAssignmentColumnCell item={item} role={role} />
+                    <DataAssignmentColumnCell
+                        item={item}
+                        role={role}
+                        setFieldAssignment={setFieldAssignment}
+                    />
                     <DataDescriptionColumnCell text={description} />
-                </>
-            );
-        }
-        case 'mapping': {
-            return (
-                <>
-                    <DataTypeColumnCell type={item.type} kind={item.kind} />
-                    <DataNameColumnCell name={item.name} />
-                    <DataAssignmentColumnCell item={item} role={role} />
                 </>
             );
         }

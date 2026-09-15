@@ -46,6 +46,7 @@ export const SpecificationJsonEditor = ({
         debouncePeriod,
         focusTick,
         fontSize,
+        initializationCount,
         provider,
         showLineNumbers,
         theme,
@@ -60,6 +61,7 @@ export const SpecificationJsonEditor = ({
         debouncePeriod: state.editorPreferences.jsonEditorDebouncePeriod,
         focusTick: state.editorFocusTick,
         fontSize: state.editorPreferences.jsonEditorFontSize,
+        initializationCount: state.project.initializationCount,
         provider: state.project.provider,
         showLineNumbers: state.editorPreferences.jsonEditorShowLineNumbers,
         theme: state.editorPreferences.theme,
@@ -127,6 +129,41 @@ export const SpecificationJsonEditor = ({
         handleFocus();
         addHyperlinkOverride(ref.current, linkClickHandler);
     }, [provider, current, focusTick, ref, linkClickHandler, handleFocus]);
+    // Push the freshly-created project's text into the already-mounted
+    // Monaco instance. `<Editor>`'s `defaultValue` (below) only seeds
+    // Monaco once, at mount — it does not react to later state changes.
+    // The create button (`features/project-create/components/create-button.tsx`)
+    // used to push text via a direct Monaco ref call after
+    // `initializeFromTemplate`; that responsibility moved to the
+    // editor-side staged-text subscription in
+    // `state/install-editor-state.ts`, which refreshes
+    // `editor.stagedSpec`/`stagedConfig` for both roles, and to this
+    // effect, which reacts to that refresh and pushes it into Monaco.
+    // `project.initializationCount` only changes on
+    // `initializeFromTemplate` (state/project.ts), and — because Zustand
+    // fires `store.subscribe` listeners synchronously, in registration
+    // order, within the same outer `set()` call — the staged-text
+    // subscription (registered first in `installEditorState`) has
+    // already updated `editor.stagedSpec`/`stagedConfig` by the time
+    // this effect observes the new `initializationCount`. Skipped on
+    // the first render so the mount-time `defaultValue` (already the
+    // correct text) is not redundantly reapplied.
+    const isFirstInitializationCount = useRef(true);
+    useEffect(() => {
+        if (isFirstInitializationCount.current) {
+            isFirstInitializationCount.current = false;
+            return;
+        }
+        const {
+            editor: { stagedConfig, stagedSpec },
+            project: { spec, config }
+        } = getDenebState();
+        const text =
+            thisEditorRole === 'Spec'
+                ? (stagedSpec ?? spec)
+                : (stagedConfig ?? config);
+        ref.current?.setValue(text);
+    }, [initializationCount, ref, thisEditorRole]);
     // Bootstrap the editor
     const handleOnMount: OnMount = (editor) => {
         ref.current = editor;

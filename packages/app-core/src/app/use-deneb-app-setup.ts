@@ -1,7 +1,7 @@
 import { useLayoutEffect } from 'react';
 
 import { useDenebPlatformProvider } from '../components/deneb-platform';
-import { type InterfaceType } from '../lib';
+import { type InterfaceType } from '../lib/interface';
 import { useDenebState } from '../state';
 import { VegaExtensibilityServices } from '@deneb-viz/vega-runtime/extensibility';
 import { VegaPatternFillServices } from '@deneb-viz/vega-runtime/pattern-fill';

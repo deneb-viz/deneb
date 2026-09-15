@@ -1,6 +1,6 @@
 import { type StateCreator } from 'zustand';
 import { type SyncableSlice, type StoreState } from './state';
-import { type EditorPanePosition, type DenebTheme } from '../lib';
+import { type EditorPanePosition, type DenebTheme } from '../lib/interface';
 import {
     DATA_VIEWER_CONFIGURATION,
     EDITOR_DEFAULTS

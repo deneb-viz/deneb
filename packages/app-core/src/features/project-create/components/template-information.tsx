@@ -31,8 +31,13 @@ export const useTemplateInformationStyles = makeStyles({
  * Displays the information and placeholders for a template.
  */
 export const TemplateInformation = () => {
-    const metadata = useDenebState((state) => state.create.metadata);
-    const translate = useDenebState((state) => state.i18n.translate);
+    const { metadata, setFieldAssignment, translate } = useDenebState(
+        (state) => ({
+            metadata: state.create.metadata,
+            setFieldAssignment: state.create.setFieldAssignment,
+            translate: state.i18n.translate
+        })
+    );
     if (!metadata) return null;
     const classes = useTemplateInformationStyles();
     const { previewImageBase64PNG } = metadata?.information || {};
@@ -70,6 +75,7 @@ export const TemplateInformation = () => {
             </div>
             <TemplateDataset
                 datasetRole='new'
+                setFieldAssignment={setFieldAssignment}
                 key={metadata?.information?.uuid}
             />
         </>

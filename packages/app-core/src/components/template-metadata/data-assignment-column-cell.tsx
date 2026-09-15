@@ -3,10 +3,12 @@ import { makeStyles, TableCell } from '@fluentui/react-components';
 import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 import { type ModalDialogType } from '../ui';
 import { DataFieldDropdown } from './data-field-dropdown';
+import { type TemplateFieldAssignmentReducer } from './types';
 
 type DataAssignmentColumnCellProps = {
     item: UsermetaDatasetField;
     role: ModalDialogType;
+    setFieldAssignment: TemplateFieldAssignmentReducer;
 };
 
 export const useDataAssignmentColumnCellStyles = makeStyles({
@@ -21,7 +23,8 @@ export const useDataAssignmentColumnCellStyles = makeStyles({
  */
 export const DataAssignmentColumnCell = ({
     item,
-    role
+    role,
+    setFieldAssignment
 }: DataAssignmentColumnCellProps) => {
     const classes = useDataAssignmentColumnCellStyles();
     return (
@@ -31,6 +34,7 @@ export const DataAssignmentColumnCell = ({
                     key={item.key}
                     datasetField={item}
                     dialogType={role}
+                    setFieldAssignment={setFieldAssignment}
                 />
             }
         </TableCell>

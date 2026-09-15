@@ -3,7 +3,6 @@ import { Button } from '@fluentui/react-components';
 import { getTemplateReplacedForDataset } from '@deneb-viz/json-processing';
 import { logDebug, logRender, logWarning } from '@deneb-viz/utils/logging';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
-import { useSpecificationEditor } from '../../../context/specification-editor';
 import { getDenebState, useDenebState } from '../../../state';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
@@ -29,7 +28,6 @@ export const CreateButton = () => {
         translate: state.i18n.translate
     }));
     const { onCreateProject } = useDenebPlatformProvider();
-    const { spec: editorSpec, config: editorConfig } = useSpecificationEditor();
     const onCreate = async () => {
         logDebug('createFromTemplate', { metadata, candidates });
         const provider = metadata?.deneb?.provider;
@@ -108,10 +106,12 @@ export const CreateButton = () => {
             denebMetaVersion: metadata?.deneb?.metaVersion,
             consolidateFieldParameters: needsConsolidation || undefined
         });
-        // Update editor refs directly for immediate UI update
-        editorSpec?.current?.setValue(spec);
-        editorConfig?.current?.setValue(config ?? '');
-        editorSpec?.current?.focus();
+        // Staging the new text into the mounted Monaco instances and
+        // requesting focus is now handled editor-side, via subscriptions
+        // registered in `installEditorState()` (state/install-editor-state.ts)
+        // that fire on `project.initializationCount` — see
+        // docs/plans/2026-09-15-001-refactor-editor-package-extraction-plan.md,
+        // U5/U6. This keeps the create button free of Monaco/editor refs.
     };
     logRender('CreateButton');
     return (

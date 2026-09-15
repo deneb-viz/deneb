@@ -23,13 +23,17 @@ import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
  */
 export const ExportPane = () => {
     const classes = useModalDialogStyles();
-    const { datasetFields, exportProcessingState, translate } = useDenebState(
-        (state) => ({
-            datasetFields: state.dataset.fields,
-            exportProcessingState: state.interface.exportProcessingState,
-            translate: state.i18n.translate
-        })
-    );
+    const {
+        datasetFields,
+        exportProcessingState,
+        setFieldAssignment,
+        translate
+    } = useDenebState((state) => ({
+        datasetFields: state.dataset.fields,
+        exportProcessingState: state.interface.exportProcessingState,
+        setFieldAssignment: state.fieldUsage.setFieldAssignment,
+        translate: state.i18n.translate
+    }));
     useEffect(() => {
         const abort = new AbortController();
         handleProcessing(abort.signal);
@@ -75,7 +79,10 @@ export const ExportPane = () => {
                                     {translate('Template_Export_Dataset')}
                                 </Subtitle2>
                             </div>
-                            <TemplateDataset datasetRole='export' />
+                            <TemplateDataset
+                                datasetRole='export'
+                                setFieldAssignment={setFieldAssignment}
+                            />
                         </div>
                     )}
                 </div>
