@@ -15,20 +15,6 @@ const rawWorkerText = {
     }
 };
 
-// tsdown's `loader: { '.png': 'dataurl' }` option (a tsup/esbuild carry-over)
-// does not produce data URL output under tsdown 0.22.14, so PNG imports (the
-// catalog thumbnails) are inlined via this load-hook plugin instead.
-const pngDataUrl = {
-    name: 'png-dataurl',
-    load(id: string) {
-        if (id.endsWith('.png')) {
-            const base64 = fs.readFileSync(id).toString('base64');
-            return `export default "data:image/png;base64,${base64}";`;
-        }
-        return null;
-    }
-};
-
 export default defineConfig((options: Options) => ({
     entry: ['src/index.ts', 'src/editor.ts'],
     // Do not clean dist/ - build:worker runs first and this build reads its
@@ -72,6 +58,6 @@ export default defineConfig((options: Options) => ({
     },
     sourcemap: true,
     outDir: 'dist',
-    plugins: [rawWorkerText, pngDataUrl],
+    plugins: [rawWorkerText],
     ...options
 }));

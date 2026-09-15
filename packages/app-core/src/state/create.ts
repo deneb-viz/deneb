@@ -27,20 +27,11 @@ export type CreateSliceState = {
  * Represents the create slice properties in the visual store.
  */
 export type CreateSliceProperties = DenebTemplateImportWorkingProperties & {
-    createFromTemplate: () => void;
     setFieldAssignment: (payload: CreateSliceSetFieldAssignment) => void;
     setImportFile: (payload: DenebTemplateSetImportFilePayload) => void;
     setImportState: (payload: CreateSliceSetImportState) => void;
     setMode: (mode: DenebTemplateCreateMode) => void;
     setTemplate: (payload: ICreateSliceSetTemplate) => void;
-};
-
-/**
- * Represents the payload used to instigate creation of a new specification from a template.
- */
-export type CreateSliceCreateFromTemplate = {
-    jsonSpec: string;
-    jsonConfig: string;
 };
 
 /**
@@ -84,12 +75,6 @@ export const createCreateSlice =
     (set) => ({
         create: {
             ...getNewCreateFromTemplateSliceProperties(),
-            createFromTemplate: () =>
-                set(
-                    (state) => handleCreateFromTemplate(state),
-                    false,
-                    'create.createFromTemplate'
-                ),
             setFieldAssignment: (payload: CreateSliceSetFieldAssignment) =>
                 set(
                     (state: StoreState) =>
@@ -123,17 +108,6 @@ export const createCreateSlice =
                 )
         }
     });
-
-/**
- * Take the supplied template and process it ready for creation.
- */
-const handleCreateFromTemplate = (state: StoreState): Partial<StoreState> => {
-    const modalDialogRole = 'None';
-    return {
-        editorSelectedOperation: 'Spec',
-        interface: { ...state.interface, modalDialogRole }
-    };
-};
 
 /**
  * For the given key, set its placeholder value to match the supplied dataset
