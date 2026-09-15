@@ -1,3 +1,4 @@
+import { deepEqual } from 'fast-equals';
 import { createCommandsSlice } from './commands';
 import { createDebugSlice } from './debug';
 import { createEditorSlice } from './editor';
@@ -16,7 +17,7 @@ import {
  * `useDenebState` (and any store built by `createDenebState`) has.
  * Accepting an explicit store here — rather than reaching for the
  * singleton internally — is what lets tests install the editor slices
- * onto a fresh, isolated store (`createDenebState(deps)` followed by
+ * onto a fresh, isolated store (`createDenebState()` followed by
  * `installEditorState(store, deps)`) instead of only the module-level
  * singleton.
  */
@@ -174,6 +175,13 @@ export const installEditorState = (
             state.dataset,
             datasetChanged
         );
+        // Skip the write when the recomputed metadata is structurally
+        // identical — avoids an export-slice re-render on every
+        // project/dataset change that doesn't actually affect export
+        // metadata.
+        if (deepEqual(metadata, state.export.metadata)) {
+            return;
+        }
         store.setState(
             (current) => ({
                 export: { ...current.export, metadata }

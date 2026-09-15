@@ -5,7 +5,7 @@ import {
     type ExportSpecCommandState,
     type ZoomCommandsState
 } from './state';
-import type { Command } from './types';
+import type { Command, DerivedCommand } from './types';
 
 /**
  * Derives the `exportSpecification` command's enabled state from the
@@ -16,10 +16,11 @@ import type { Command } from './types';
  * core slices no longer write into `commands`, so callers that need this
  * value read it here instead of `state.commands.exportSpecification`.
  *
- * Reuses the same pure helper (`evaluateExportSpecCommandState`) the
- * editor slice's own writers (`handleUpdateChanges`, `handleUpdateIsDirty`
- * in state/editor.ts) still call — single source of truth for the
- * predicate, two call sites (one editor-to-editor write, one derived read).
+ * Reuses the same pure helper (`evaluateExportSpecCommandState`) that
+ * `handleCompile` (state/compilation.ts) used to call before U4, and that
+ * `handleUpdateChanges`/`handleUpdateIsDirty` (state/editor.ts) used to
+ * call before a later cleanup pass removed those writes too — this
+ * selector is now the sole caller.
  */
 export const selectExportSpecificationCommandEnabled = (
     state: StoreState
@@ -37,16 +38,12 @@ export const selectExportSpecificationCommandEnabled = (
  * {@link selectExportSpecificationCommandEnabled} for why.
  *
  * Reuses the same pure helper (`evaluateZoomCommandsState`) that
- * `handleUpdateEditorZoomLevel` (state/editor.ts) still calls.
+ * `handleUpdateEditorZoomLevel` (state/editor.ts) used to call before a
+ * later cleanup pass removed that write too — this selector is now the
+ * sole caller.
  */
 export const selectZoomCommandsState = (state: StoreState): ZoomCommandsState =>
     evaluateZoomCommandsState(state.editorZoomLevel, state.compilation.result);
-
-/**
- * The commands whose enabled state is derived (via the selectors above)
- * rather than exclusively read from the stored `commands` slice.
- */
-type DerivedCommand = keyof ExportSpecCommandState | keyof ZoomCommandsState;
 
 /**
  * Resolves whether a given command is enabled, regardless of whether its

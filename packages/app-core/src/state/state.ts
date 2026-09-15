@@ -18,7 +18,6 @@ import {
     type VisualRenderSlice
 } from './visual-render';
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
-import { APPLICATION_VERSION } from '../lib/application';
 import type { CommandsSlice } from './commands';
 import type { DebugSlice } from './debug';
 import type { EditorSlice } from './editor';
@@ -83,17 +82,9 @@ export type SyncableSlice = {
 };
 
 /**
- * Builds a fresh Deneb store from the core slices only. `dependencies`
- * is accepted but not read by any core slice today — the export slice,
- * the only current consumer of `applicationVersion`, is an editor slice
- * and is now assembled by `installEditorState()` (which takes its own
- * `dependencies` argument), not by this function. The parameter is kept
- * here so a future core slice can depend on it without a signature
- * change, and so `createDenebState({ applicationVersion })` reads the
- * same at every call site (production singleton and tests) regardless
- * of which slices currently use it.
+ * Builds a fresh Deneb store from the core slices only.
  */
-export const createDenebState = (dependencies: StateDependencies) =>
+export const createDenebState = () =>
     createWithEqualityFn<StoreState>()(
         devtools(
             (...a) =>
@@ -127,11 +118,7 @@ export const createDenebState = (dependencies: StateDependencies) =>
  * Set up a singleton Deneb state store.
  * TODO: eventually move to dependency injection pattern.
  */
-const dependencies: StateDependencies = {
-    applicationVersion: APPLICATION_VERSION
-};
-
-const useDenebState = createDenebState(dependencies);
+const useDenebState = createDenebState();
 const getDenebState = () => useDenebState.getState();
 
 export { getDenebState, useDenebState };

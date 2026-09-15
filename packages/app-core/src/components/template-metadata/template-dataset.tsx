@@ -8,7 +8,6 @@ import {
 
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { type ModalDialogType } from '../ui';
-import { useDenebState } from '../../state';
 import { TemplateDatasetColumns } from './template-dataset-columns';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { TemplateDatasetRow } from './template-dataset-row';
@@ -19,6 +18,15 @@ import { type TemplateFieldAssignmentReducer } from './types';
 
 type TemplateDatasetProps = {
     datasetRole: ModalDialogType;
+    /**
+     * The template metadata this table reads its dataset fields from,
+     * injected by the caller rather than resolved internally from
+     * `datasetRole` — the create path (`template-information.tsx`) passes
+     * `state.create.metadata`; the export path (`export-pane.tsx`) passes
+     * `state.export.metadata`. Keeps `template-metadata` free of any
+     * reference to either the create or export slice.
+     */
+    metadata: UsermetaTemplate | undefined;
     /**
      * Field-assignment reducer for this table, injected by the caller
      * rather than resolved internally from `datasetRole` — the create path
@@ -42,35 +50,17 @@ const useTemplateDatasetStyles = makeStyles({
  */
 export const TemplateDataset = ({
     datasetRole,
+    metadata,
     setFieldAssignment
 }: TemplateDatasetProps) => {
-    const createMetadata = useDenebState(
-        (state) => state.create.metadata as UsermetaTemplate
-    );
-    const exportMetadata = useDenebState(
-        (state) => state.export.metadata as UsermetaTemplate
-    );
     const classes = useTemplateDatasetStyles();
     /**
      * Provide content for eligible dataset fields.
      */
     const getTableFieldRows = useCallback(
         (role: ModalDialogType) => {
-            let items: UsermetaDatasetField[] = [];
-            switch (role) {
-                case 'new':
-                    items =
-                        createMetadata?.datasets?.[
-                            DATASET_DEFAULT_NAME
-                        ]?.slice() || [];
-                    break;
-                case 'export':
-                    items =
-                        exportMetadata?.datasets?.[
-                            DATASET_DEFAULT_NAME
-                        ]?.slice() || [];
-                    break;
-            }
+            const items: UsermetaDatasetField[] =
+                metadata?.datasets?.[DATASET_DEFAULT_NAME]?.slice() || [];
             logDebug('getTableFieldRows', { items });
             return items.map((item, index) => (
                 <TableRow
@@ -86,7 +76,7 @@ export const TemplateDataset = ({
                 </TableRow>
             ));
         },
-        [datasetRole, createMetadata, exportMetadata, setFieldAssignment]
+        [metadata, setFieldAssignment]
     );
     const tableBody = getTableFieldRows(datasetRole);
 

@@ -77,7 +77,7 @@ const ZOOM_DEFAULT = VISUAL_PREVIEW_ZOOM_CONFIGURATION.default;
  * all editor-only.
  */
 const makeStore = () => {
-    const store = createDenebState({ applicationVersion: 'test' });
+    const store = createDenebState();
     installEditorState(store, { applicationVersion: 'test' });
     return store;
 };
@@ -237,6 +237,38 @@ describe('U2 flow 2 — fieldUsage.applyTrackingChanges (handleApplyTrackingChan
     });
 });
 
+/**
+ * Seeds `export.metadata.datasets[DATASET_DEFAULT_NAME]` with a single
+ * `Category` field entry, used by flows 4a/4c/4d below as the "existing
+ * export metadata" starting point for actions that embed
+ * `supportFieldConfiguration` into it. `overrides` merges onto the base
+ * entry — e.g. to seed a pre-existing `supportFieldConfiguration` for a
+ * test that asserts it gets stripped or replaced.
+ */
+const seedExportMetadataDatasetEntry = (
+    store: ReturnType<typeof makeStore>,
+    overrides?: Partial<UsermetaDatasetField>
+) =>
+    store.setState((state) => ({
+        export: {
+            ...state.export,
+            metadata: {
+                ...state.export.metadata!,
+                datasets: {
+                    [DATASET_DEFAULT_NAME]: [
+                        {
+                            key: '__dataset.0__',
+                            name: 'Category',
+                            namePlaceholder: 'Category',
+                            type: 'text',
+                            ...overrides
+                        }
+                    ]
+                }
+            }
+        }
+    }));
+
 describe('U2 flow 3 — dataset.updateDataset (handleUpdateDataset) writes create + export.metadata', () => {
     /**
      * `metadataAllDependenciesAssigned` / `metadataAllFieldsAssigned` are
@@ -332,7 +364,7 @@ describe('U2 flow 3 — dataset.updateDataset (handleUpdateDataset) writes creat
         ]);
     });
 
-    it('edge case: an unchanged dataset leaves export.metadata.datasets.dataset structurally unchanged (but NOT the same object reference)', () => {
+    it('edge case: an unchanged dataset leaves export.metadata.datasets.dataset structurally AND referentially unchanged', () => {
         const store = makeStore();
         const payload = { dataset: { fields: ['Category'], values: [] } };
 
@@ -348,14 +380,15 @@ describe('U2 flow 3 — dataset.updateDataset (handleUpdateDataset) writes creat
 
         // Content is unchanged.
         expect(secondEntries).toEqual(firstEntries);
-        // Current implementation always spreads a fresh metadata object and
-        // reconciles each field into a fresh object literal, so identity is
-        // NOT preserved even when nothing meaningfully changed. This is the
-        // behaviour U5's upsert-style subscription is expected to improve on
-        // (see Key Technical Decisions); pinning it here so a later identity
-        // change is a deliberate, visible diff against this test.
-        expect(secondMetadata).not.toBe(firstMetadata);
-        expect(secondEntries).not.toBe(firstEntries);
+        // The export-metadata subscription (`installEditorState`) now
+        // skips its `setState` entirely when the recomputed metadata is
+        // `deepEqual` to what's already there, so a second `updateDataset`
+        // call with the same payload leaves `export.metadata` (and its
+        // nested dataset entries array) reference-identical too — the
+        // previous always-write-a-fresh-object behaviour this test used to
+        // pin has been deliberately improved on.
+        expect(secondMetadata).toBe(firstMetadata);
+        expect(secondEntries).toBe(firstEntries);
     });
 });
 
@@ -396,10 +429,12 @@ describe('U2 flow 4a — project.initializeFromTemplate seeds export metadata, e
         // created project reports as NOT dirty, even though no compile has
         // happened yet.
         expect(state.editor.isDirty).toBe(false);
-        // exportSpecification is recomputed by updateChanges too, but there
-        // is no compilation result yet, so it stays disabled regardless of
-        // the (false) dirty flag.
-        expect(state.commands.exportSpecification).toBe(false);
+        // exportSpecification is derived (selectExportSpecificationCommandEnabled),
+        // not stored, but there is no compilation result yet, so it derives
+        // disabled regardless of the (false) dirty flag.
+        expect(
+            selectExportSpecificationCommandEnabled(state).exportSpecification
+        ).toBe(false);
         // updateChanges' own write into fieldUsage (unrelated to remap
         // dialog removal, R9 scope note: this is editor-to-editor).
         expect(state.fieldUsage.editorShouldSkipRemap).toBe(false);
@@ -407,24 +442,7 @@ describe('U2 flow 4a — project.initializeFromTemplate seeds export metadata, e
 
     it('embeds the supplied supportFieldConfiguration into existing export.metadata dataset entries', () => {
         const store = makeStore();
-        store.setState((state) => ({
-            export: {
-                ...state.export,
-                metadata: {
-                    ...state.export.metadata!,
-                    datasets: {
-                        [DATASET_DEFAULT_NAME]: [
-                            {
-                                key: '__dataset.0__',
-                                name: 'Category',
-                                namePlaceholder: 'Category',
-                                type: 'text'
-                            }
-                        ]
-                    }
-                }
-            }
-        }));
+        seedExportMetadataDatasetEntry(store);
 
         store.getState().project.initializeFromTemplate({
             spec: '{"mark":"bar"}',
@@ -472,24 +490,7 @@ describe('U2 flow 4b — project.setContent updates staged text for both editor 
 describe('U2 flow 4c/4d — project.setSupportFieldConfiguration / applySupportFieldMigrationStamp write export.metadata', () => {
     it('setSupportFieldConfiguration embeds the per-field flags into export metadata dataset entries and updates project.supportFieldConfiguration', () => {
         const store = makeStore();
-        store.setState((state) => ({
-            export: {
-                ...state.export,
-                metadata: {
-                    ...state.export.metadata!,
-                    datasets: {
-                        [DATASET_DEFAULT_NAME]: [
-                            {
-                                key: '__dataset.0__',
-                                name: 'Category',
-                                namePlaceholder: 'Category',
-                                type: 'text'
-                            }
-                        ]
-                    }
-                }
-            }
-        }));
+        seedExportMetadataDatasetEntry(store);
 
         store.getState().project.setSupportFieldConfiguration({
             Category: { highlight: true, format: false, formatted: true }
@@ -510,29 +511,13 @@ describe('U2 flow 4c/4d — project.setSupportFieldConfiguration / applySupportF
 
     it('setSupportFieldConfiguration strips embedded config from a field that is no longer configured', () => {
         const store = makeStore();
-        store.setState((state) => ({
-            export: {
-                ...state.export,
-                metadata: {
-                    ...state.export.metadata!,
-                    datasets: {
-                        [DATASET_DEFAULT_NAME]: [
-                            {
-                                key: '__dataset.0__',
-                                name: 'Category',
-                                namePlaceholder: 'Category',
-                                type: 'text',
-                                supportFieldConfiguration: {
-                                    highlight: true,
-                                    format: true,
-                                    formatted: true
-                                }
-                            }
-                        ]
-                    }
-                }
+        seedExportMetadataDatasetEntry(store, {
+            supportFieldConfiguration: {
+                highlight: true,
+                format: true,
+                formatted: true
             }
-        }));
+        });
 
         store.getState().project.setSupportFieldConfiguration({});
 
@@ -545,24 +530,7 @@ describe('U2 flow 4c/4d — project.setSupportFieldConfiguration / applySupportF
 
     it('applySupportFieldMigrationStamp commits the stamped config/version/consolidate flags AND embeds config into export metadata in one update (deeper atomicity coverage lives in project.test.ts M10)', () => {
         const store = makeStore();
-        store.setState((state) => ({
-            export: {
-                ...state.export,
-                metadata: {
-                    ...state.export.metadata!,
-                    datasets: {
-                        [DATASET_DEFAULT_NAME]: [
-                            {
-                                key: '__dataset.0__',
-                                name: 'Category',
-                                namePlaceholder: 'Category',
-                                type: 'text'
-                            }
-                        ]
-                    }
-                }
-            }
-        }));
+        seedExportMetadataDatasetEntry(store);
 
         store.getState().project.applySupportFieldMigrationStamp({
             supportFieldConfiguration: {

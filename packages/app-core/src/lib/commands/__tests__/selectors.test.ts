@@ -41,7 +41,7 @@ const ZOOM_MID = VISUAL_PREVIEW_ZOOM_CONFIGURATION.default;
  * (`editor`, `compilation` is already core) in immediately.
  */
 const makeStore = () => {
-    const store = createDenebState({ applicationVersion: 'test' });
+    const store = createDenebState();
     installEditorState(store, { applicationVersion: 'test' });
     return store;
 };

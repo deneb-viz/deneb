@@ -62,7 +62,7 @@ const EDITOR_KEYS = [
     'settingsPane'
 ] as const;
 
-const makeStore = () => createDenebState({ applicationVersion: 'test' });
+const makeStore = () => createDenebState();
 
 describe('createDenebState — core slices only', () => {
     it('exposes every core slice key', () => {

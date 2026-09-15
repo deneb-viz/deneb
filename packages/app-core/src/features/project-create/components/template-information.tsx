@@ -75,6 +75,7 @@ export const TemplateInformation = () => {
             </div>
             <TemplateDataset
                 datasetRole='new'
+                metadata={metadata}
                 setFieldAssignment={setFieldAssignment}
                 key={metadata?.information?.uuid}
             />

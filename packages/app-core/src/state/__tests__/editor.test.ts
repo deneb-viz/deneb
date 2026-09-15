@@ -13,7 +13,7 @@ import type { monaco } from '../../lib/monaco/types';
  * vice versa).
  */
 const makeStore = () => {
-    const store = createDenebState({ applicationVersion: 'test' });
+    const store = createDenebState();
     installEditorState(store, { applicationVersion: 'test' });
     return store;
 };

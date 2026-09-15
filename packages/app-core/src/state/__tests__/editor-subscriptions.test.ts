@@ -28,7 +28,7 @@ import type { ProjectSyncPayload } from '../project';
  */
 
 const makeStore = () => {
-    const store = createDenebState({ applicationVersion: 'test' });
+    const store = createDenebState();
     installEditorState(store, { applicationVersion: 'test' });
     return store;
 };
@@ -162,7 +162,7 @@ describe('editor subscriptions — synchronous ordering', () => {
 
 describe('editor subscriptions — core/editor decoupling (AE3)', () => {
     it('(vi) a core-only store (no install) runs every rewritten action without throwing and without exposing any editor/export key', () => {
-        const store = createDenebState({ applicationVersion: 'test' });
+        const store = createDenebState();
         expect(isEditorStateInstalled(store.getState())).toBe(false);
 
         expect(() => {
@@ -197,9 +197,30 @@ describe('editor subscriptions — core/editor decoupling (AE3)', () => {
     });
 });
 
+describe('editor subscriptions — export metadata recompute skip', () => {
+    it('(viii) a project change that does not affect export metadata (setLogLevel) leaves state.export reference-identical', () => {
+        const store = makeStore();
+        // Seed export metadata via a change that DOES affect it, so there
+        // is a non-default object to compare identity against.
+        store.getState().updateDataset({
+            dataset: { fields: ['Category'], values: [] }
+        });
+        const exportBefore = store.getState().export;
+
+        // `logLevel` is not read by `recomputeExportMetadata`, so the
+        // recomputed metadata is structurally identical to what's already
+        // there. The guard in `installEditorState` must skip the setState
+        // entirely rather than write a fresh `export` object every time
+        // `project` changes by reference.
+        store.getState().project.setLogLevel(5);
+
+        expect(store.getState().export).toBe(exportBefore);
+    });
+});
+
 describe('editor subscriptions — install idempotency', () => {
     it('(vii) installing twice does not double-fire a subscription for one project change', () => {
-        const store = createDenebState({ applicationVersion: 'test' });
+        const store = createDenebState();
         installEditorState(store, { applicationVersion: 'test' });
         installEditorState(store, { applicationVersion: 'test' });
 

@@ -23,7 +23,7 @@ import { isEditorStateInstalled } from '../../../state/install-editor-state';
  */
 describe('CreateButton create flow — no editor context required (AE4)', () => {
     it('initialises the project on a core-only store without throwing, with no editor/export/fieldUsage/commands slice present', () => {
-        const store = createDenebState({ applicationVersion: 'test' });
+        const store = createDenebState();
         expect(isEditorStateInstalled(store.getState())).toBe(false);
 
         expect(() => {
@@ -52,7 +52,7 @@ describe('CreateButton create flow — no editor context required (AE4)', () => 
     });
 
     it('sets the expected project state and increments initializationCount', () => {
-        const store = createDenebState({ applicationVersion: 'test' });
+        const store = createDenebState();
         expect(store.getState().project.initializationCount).toBe(0);
 
         store.getState().project.initializeFromTemplate({

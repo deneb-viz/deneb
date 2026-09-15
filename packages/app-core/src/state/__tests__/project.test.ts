@@ -26,7 +26,7 @@ import type { ProjectSyncPayload } from '../project';
  * these tests read `export.metadata`, which is editor-only.
  */
 const makeStore = () => {
-    const store = createDenebState({ applicationVersion: 'test' });
+    const store = createDenebState();
     installEditorState(store, { applicationVersion: 'test' });
     return store;
 };

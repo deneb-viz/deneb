@@ -26,11 +26,13 @@ export const ExportPane = () => {
     const {
         datasetFields,
         exportProcessingState,
+        metadata,
         setFieldAssignment,
         translate
     } = useDenebState((state) => ({
         datasetFields: state.dataset.fields,
         exportProcessingState: state.interface.exportProcessingState,
+        metadata: state.export.metadata ?? undefined,
         setFieldAssignment: state.fieldUsage.setFieldAssignment,
         translate: state.i18n.translate
     }));
@@ -81,6 +83,7 @@ export const ExportPane = () => {
                             </div>
                             <TemplateDataset
                                 datasetRole='export'
+                                metadata={metadata}
                                 setFieldAssignment={setFieldAssignment}
                             />
                         </div>
