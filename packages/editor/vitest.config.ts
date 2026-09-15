@@ -6,6 +6,17 @@ export default defineConfig({
         // viewer modules touch `window` at load time, so every test file
         // runs under jsdom rather than opting in per file.
         environment: 'jsdom',
+        server: {
+            deps: {
+                // Keep the workspace packages and the powerbi-visuals-utils
+                // family inside vite's module graph: editor tests reach
+                // app-core's built entry, whose imports would otherwise be
+                // loaded by Node's native ESM resolver, which cannot resolve
+                // the utils packages' extensionless internal imports (seen on
+                // Linux CI).
+                inline: [/@deneb-viz\//, /powerbi-visuals-utils-/]
+            }
+        },
         deps: {
             optimizer: {
                 ssr: {
