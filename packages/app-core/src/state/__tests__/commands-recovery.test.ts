@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { vi } from 'vitest';
 import type { CompilationResult } from '@deneb-viz/vega-runtime/compilation';
 
 /**
@@ -12,25 +13,26 @@ import type { CompilationResult } from '@deneb-viz/vega-runtime/compilation';
  *  - `exportSpecification`, written by `handleUpdateChanges` and
  *    `handleUpdateIsDirty`.
  *
- * If the user takes a triggering action (zoom click / editor keystroke)
- * while compilation is in an error state, the writer evaluates the gate
- * with `isCompilationReady === false` and writes `false` into the
- * `commands` slice. `handleCompile` reaching `ready` does NOT currently
- * re-evaluate the gates, so the slice stays `false` until the user takes
- * the same triggering action again — at which point zoom buttons are
- * disabled, so the user can't trigger them. Deadlock.
+ * Originally (docs/plans/2026-04-29-001-...), the fix was a recovery write
+ * inside `handleCompile` that re-evaluated both gates whenever compilation
+ * reached `ready`, so a stale `false` written during a parse error would
+ * clear on the next successful compile even without a fresh zoom
+ * click/keystroke.
  *
- * Unit 2 of the plan adds a conditional recovery write to `handleCompile`
- * that re-evaluates both gates on `result.status === 'ready'`. The
- * "REGRESSION GUARD" tests below FAIL before Unit 2 and PASS after.
- *
- * Critical fixture detail: the `compileSpec` mock in
- * `compilation-render-id.test.ts` deliberately omits `status` because that
- * file is asserting `renderId` does not change regardless of result shape.
- * For the recovery-write tests below, the success-case mock MUST include
- * `status: 'ready'` and a minimal `parsed` object so `isCompilationReady`
- * actually returns `true`. Without that, every test would pass for the
- * wrong reason (the recovery write would no-op even after the fix).
+ * U4 (docs/plans/2026-09-15-001-refactor-editor-package-extraction-plan.md)
+ * removed that recovery write entirely: `handleCompile` no longer writes
+ * `commands` at all (core slices must not write into it). The gates are now
+ * *derived on read* via `selectZoomCommandsState` /
+ * `selectExportSpecificationCommandEnabled` (lib/commands/selectors.ts),
+ * computed fresh from `compilation.result` / `editor.isDirty` /
+ * `editorZoomLevel` every time — there is no stored flag left to go stale,
+ * so the "stuck disabled" bug this file guards against is now structurally
+ * impossible rather than fixed-by-write. Tests that exercise `compile()`
+ * below assert the selector output instead of `state.commands.*` for that
+ * reason. Tests that only exercise `updateEditorZoomLevel` / `updateIsDirty`
+ * (editor.ts's own writers, unchanged by U4) still assert `state.commands.*`
+ * directly, since those handlers still write it — see the "single source of
+ * truth" discussion in the U4 unit's report for why that write was kept.
  */
 
 const READY_RESULT: CompilationResult = {
@@ -59,6 +61,10 @@ import { compileSpec } from '@deneb-viz/vega-runtime/compilation';
 import { VISUAL_PREVIEW_ZOOM_CONFIGURATION } from '@deneb-viz/configuration';
 import { createDenebState } from '../state';
 import { installEditorState } from '../install-editor-state';
+import {
+    selectExportSpecificationCommandEnabled,
+    selectZoomCommandsState
+} from '../../lib/commands/selectors';
 
 // Source the boundaries from the same configuration constant the
 // predicates use. Mirrors the sibling helper-unit test in
@@ -119,7 +125,8 @@ describe('commands recovery — zoom controls', () => {
 
         // Simulating the user clicking a zoom control while compilation
         // is in error: `handleZoomIn` -> `executeCommand` -> the slice
-        // ultimately calls `updateEditorZoomLevel(level)`.
+        // ultimately calls `updateEditorZoomLevel(level)`. This still goes
+        // through `handleUpdateEditorZoomLevel`'s own (unchanged) write.
         store.getState().updateEditorZoomLevel(ZOOM_MID);
 
         const { commands } = store.getState();
@@ -129,7 +136,7 @@ describe('commands recovery — zoom controls', () => {
         expect(commands.zoomReset).toBe(false);
     });
 
-    it('REGRESSION GUARD: re-enables all zoom flags when handleCompile reaches a ready state after a parse-error click. FAILS BEFORE UNIT 2; PASSES AFTER.', () => {
+    it('REGRESSION GUARD: derives all zoom flags enabled after handleCompile reaches a ready state following a parse-error click', () => {
         const store = makeStore();
 
         // Step 1: enter error state and trigger the zoom write that
@@ -138,20 +145,21 @@ describe('commands recovery — zoom controls', () => {
         store.getState().updateEditorZoomLevel(ZOOM_MID);
         expect(store.getState().commands.zoomIn).toBe(false);
 
-        // Step 2: a successful recompile. After Unit 2, `handleCompile`
-        // re-evaluates the zoom gate and writes the four flags back.
+        // Step 2: a successful recompile. `handleCompile` does not write
+        // `commands` any more — the selector derives fresh from the new
+        // `compilation.result` and the current `editorZoomLevel`.
         vi.mocked(compileSpec).mockReturnValueOnce(READY_RESULT);
         store.getState().compilation.compile({} as never);
 
-        const { commands } = store.getState();
-        // zoom level is mid-range, so all four should recover to true.
+        const commands = selectZoomCommandsState(store.getState());
+        // zoom level is mid-range, so all four should read enabled.
         expect(commands.zoomIn).toBe(true);
         expect(commands.zoomOut).toBe(true);
         expect(commands.zoomFit).toBe(true);
         expect(commands.zoomReset).toBe(true);
     });
 
-    it('preserves zoom flags as true on recovery when no zoom click occurred during the error window', () => {
+    it('derives zoom flags enabled after recovery when no zoom click occurred during the error window', () => {
         const store = makeStore();
 
         // Error state but the user never clicked a zoom control.
@@ -160,39 +168,34 @@ describe('commands recovery — zoom controls', () => {
         vi.mocked(compileSpec).mockReturnValueOnce(READY_RESULT);
         store.getState().compilation.compile({} as never);
 
-        const { commands } = store.getState();
+        const commands = selectZoomCommandsState(store.getState());
         expect(commands.zoomIn).toBe(true);
         expect(commands.zoomOut).toBe(true);
         expect(commands.zoomFit).toBe(true);
         expect(commands.zoomReset).toBe(true);
     });
 
-    it('disables zoom flags when handleCompile produces an error result, even with no prior zoom click', () => {
-        // Symmetry with exportSpecification: editor-edit writers fire
-        // continuously and self-correct exportSpec on every keystroke during
-        // an error state, so its disable feels "automatic." Zoom has only
-        // one writer (`handleUpdateEditorZoomLevel`) which fires only on
-        // user zoom interaction, so without this symmetric write in
-        // handleCompile, zoom controls would look enabled in a known-bad
-        // state until the user clicks them. This test guards the
-        // handleCompile error-branch write that closes that gap.
+    it('derives zoom flags disabled when handleCompile produces an error result, even with no prior zoom click', () => {
+        // Symmetry with exportSpecification: since both are now purely
+        // derived from `compilation.result`, an error result disables both
+        // regardless of which writer (if any) last fired.
         const store = makeStore();
 
-        // Sanity: flags are true before any compile.
-        expect(store.getState().commands.zoomIn).toBe(true);
-
-        // Compile with an error result; no prior zoom click.
+        // Sanity: flags read enabled before any compile (default zoom
+        // level, but no result yet either — see the standalone "no
+        // compilation result" case in lib/commands/__tests__/selectors.test.ts
+        // for that edge; here we only care about the post-error state).
         vi.mocked(compileSpec).mockReturnValueOnce(ERROR_RESULT);
         store.getState().compilation.compile({} as never);
 
-        const { commands } = store.getState();
+        const commands = selectZoomCommandsState(store.getState());
         expect(commands.zoomIn).toBe(false);
         expect(commands.zoomOut).toBe(false);
         expect(commands.zoomFit).toBe(false);
         expect(commands.zoomReset).toBe(false);
     });
 
-    it('REGRESSION GUARD: zoom recovery is idempotent across repeated successful compiles. FAILS BEFORE UNIT 2; PASSES AFTER.', () => {
+    it('REGRESSION GUARD: zoom recovery is idempotent across repeated successful compiles', () => {
         const store = makeStore();
         setCompilationResult(store, ERROR_RESULT);
         store.getState().updateEditorZoomLevel(ZOOM_MID);
@@ -201,14 +204,14 @@ describe('commands recovery — zoom controls', () => {
         store.getState().compilation.compile({} as never);
         store.getState().compilation.compile({} as never);
 
-        const { commands } = store.getState();
+        const commands = selectZoomCommandsState(store.getState());
         expect(commands.zoomIn).toBe(true);
         expect(commands.zoomOut).toBe(true);
         expect(commands.zoomFit).toBe(true);
         expect(commands.zoomReset).toBe(true);
     });
 
-    it('REGRESSION GUARD: re-disables zoom flags when a second error follows recovery and the user clicks again. FAILS BEFORE UNIT 2; PASSES AFTER.', () => {
+    it('REGRESSION GUARD: derives zoom flags disabled again when a second error follows recovery and the user clicks again', () => {
         const store = makeStore();
 
         // First error -> click -> recovery cycle.
@@ -216,20 +219,22 @@ describe('commands recovery — zoom controls', () => {
         store.getState().updateEditorZoomLevel(ZOOM_MID);
         vi.mocked(compileSpec).mockReturnValueOnce(READY_RESULT);
         store.getState().compilation.compile({} as never);
-        expect(store.getState().commands.zoomIn).toBe(true);
+        expect(selectZoomCommandsState(store.getState()).zoomIn).toBe(true);
 
-        // Second error -> click. Should disable again.
+        // Second error -> click. Should read disabled again (the click
+        // still goes through `handleUpdateEditorZoomLevel`'s own write,
+        // and the selector derives the same result from the fresh error).
         setCompilationResult(store, ERROR_RESULT);
         store.getState().updateEditorZoomLevel(ZOOM_MID);
 
-        const { commands } = store.getState();
+        const commands = selectZoomCommandsState(store.getState());
         expect(commands.zoomIn).toBe(false);
         expect(commands.zoomOut).toBe(false);
         expect(commands.zoomFit).toBe(false);
         expect(commands.zoomReset).toBe(false);
     });
 
-    it('REGRESSION GUARD: respects the zoom min boundary on recovery (zoomOut stays false at min, zoomIn re-enables). FAILS BEFORE UNIT 2; PASSES AFTER.', () => {
+    it('REGRESSION GUARD: respects the zoom min boundary on recovery (zoomOut stays false at min, zoomIn re-enables)', () => {
         const store = makeStore();
 
         // Trigger the disable at the min zoom level — `isZoomOutCommandEnabled`
@@ -238,18 +243,18 @@ describe('commands recovery — zoom controls', () => {
         store.getState().updateEditorZoomLevel(ZOOM_MIN);
 
         // Recovery — the helper must apply the boundary check, not just
-        // restore everything to true.
+        // derive everything as enabled.
         vi.mocked(compileSpec).mockReturnValueOnce(READY_RESULT);
         store.getState().compilation.compile({} as never);
 
-        const { commands } = store.getState();
+        const commands = selectZoomCommandsState(store.getState());
         expect(commands.zoomOut).toBe(false); // at min, can't zoom out
         expect(commands.zoomIn).toBe(true); // not at max, can zoom in
         expect(commands.zoomFit).toBe(true);
         expect(commands.zoomReset).toBe(true);
     });
 
-    it('REGRESSION GUARD: respects the zoom max boundary on recovery (zoomIn stays false at max, zoomOut re-enables). FAILS BEFORE UNIT 2; PASSES AFTER.', () => {
+    it('REGRESSION GUARD: respects the zoom max boundary on recovery (zoomIn stays false at max, zoomOut re-enables)', () => {
         const store = makeStore();
 
         setCompilationResult(store, ERROR_RESULT);
@@ -258,7 +263,7 @@ describe('commands recovery — zoom controls', () => {
         vi.mocked(compileSpec).mockReturnValueOnce(READY_RESULT);
         store.getState().compilation.compile({} as never);
 
-        const { commands } = store.getState();
+        const commands = selectZoomCommandsState(store.getState());
         expect(commands.zoomIn).toBe(false); // at max, can't zoom in
         expect(commands.zoomOut).toBe(true); // not at min, can zoom out
         expect(commands.zoomFit).toBe(true);
@@ -283,13 +288,14 @@ describe('commands recovery — exportSpecification', () => {
 
         // Simulating a keystroke that toggles dirty during error. The
         // gate is `!editorIsDirty && isCompilationReady` — both conditions
-        // fail here, so the writer must produce false.
+        // fail here, so the writer must produce false. Still goes through
+        // `handleUpdateIsDirty`'s own (unchanged) write.
         store.getState().editor.updateIsDirty(true);
 
         expect(store.getState().commands.exportSpecification).toBe(false);
     });
 
-    it('REGRESSION GUARD: re-enables exportSpecification when handleCompile reaches ready and editor is no longer dirty. FAILS BEFORE UNIT 2; PASSES AFTER.', () => {
+    it('REGRESSION GUARD: derives exportSpecification enabled when handleCompile reaches ready and editor is no longer dirty', () => {
         const store = makeStore();
 
         // Step 1: error + dirty=true -> writer disables.
@@ -298,33 +304,39 @@ describe('commands recovery — exportSpecification', () => {
         expect(store.getState().commands.exportSpecification).toBe(false);
 
         // Step 2: editor reverts to clean (e.g. apply succeeded). The
-        // writer fires again but compilation is still in error, so
-        // exportSpec stays false. This is the deadlock window the
-        // recovery write must close.
+        // writer fires again but compilation is still in error, so the
+        // stored flag stays false.
         store.getState().editor.updateIsDirty(false);
         expect(store.getState().commands.exportSpecification).toBe(false);
 
-        // Step 3: successful recompile. With dirty=false and ready=true,
-        // the recovery write must produce exportSpecification=true.
+        // Step 3: successful recompile. `handleCompile` does not write
+        // `commands` any more — the selector derives fresh from the new
+        // `compilation.result` and the current `editor.isDirty`, so with
+        // dirty=false and ready=true it reads enabled.
         vi.mocked(compileSpec).mockReturnValueOnce(READY_RESULT);
         store.getState().compilation.compile({} as never);
 
-        expect(store.getState().commands.exportSpecification).toBe(true);
+        expect(
+            selectExportSpecificationCommandEnabled(store.getState())
+                .exportSpecification
+        ).toBe(true);
     });
 
-    it('preserves exportSpecification as true on recovery when no editor change occurred during the error window', () => {
+    it('derives exportSpecification enabled after recovery when no editor change occurred during the error window', () => {
         const store = makeStore();
 
-        // No keystroke during the error -> the writer never fires ->
-        // exportSpec stays at its initial true.
+        // No keystroke during the error -> the writer never fires.
         setCompilationResult(store, ERROR_RESULT);
         vi.mocked(compileSpec).mockReturnValueOnce(READY_RESULT);
         store.getState().compilation.compile({} as never);
 
-        expect(store.getState().commands.exportSpecification).toBe(true);
+        expect(
+            selectExportSpecificationCommandEnabled(store.getState())
+                .exportSpecification
+        ).toBe(true);
     });
 
-    it('REGRESSION GUARD: exportSpecification recovery is idempotent across repeated successful compiles. FAILS BEFORE UNIT 2; PASSES AFTER.', () => {
+    it('REGRESSION GUARD: exportSpecification recovery is idempotent across repeated successful compiles', () => {
         const store = makeStore();
         setCompilationResult(store, ERROR_RESULT);
         store.getState().editor.updateIsDirty(true);
@@ -334,10 +346,13 @@ describe('commands recovery — exportSpecification', () => {
         store.getState().compilation.compile({} as never);
         store.getState().compilation.compile({} as never);
 
-        expect(store.getState().commands.exportSpecification).toBe(true);
+        expect(
+            selectExportSpecificationCommandEnabled(store.getState())
+                .exportSpecification
+        ).toBe(true);
     });
 
-    it('REGRESSION GUARD: re-disables exportSpecification when a second error follows recovery and the editor goes dirty again. FAILS BEFORE UNIT 2; PASSES AFTER.', () => {
+    it('REGRESSION GUARD: derives exportSpecification disabled again when a second error follows recovery and the editor goes dirty again', () => {
         const store = makeStore();
 
         // First error -> dirty -> apply -> recovery cycle.
@@ -346,12 +361,20 @@ describe('commands recovery — exportSpecification', () => {
         store.getState().editor.updateIsDirty(false);
         vi.mocked(compileSpec).mockReturnValueOnce(READY_RESULT);
         store.getState().compilation.compile({} as never);
-        expect(store.getState().commands.exportSpecification).toBe(true);
+        expect(
+            selectExportSpecificationCommandEnabled(store.getState())
+                .exportSpecification
+        ).toBe(true);
 
-        // Second error -> dirty. Should disable again.
+        // Second error -> dirty. Should read disabled again (the dirty
+        // change still goes through `handleUpdateIsDirty`'s own write,
+        // and the selector derives the same result from the fresh error).
         setCompilationResult(store, ERROR_RESULT);
         store.getState().editor.updateIsDirty(true);
 
-        expect(store.getState().commands.exportSpecification).toBe(false);
+        expect(
+            selectExportSpecificationCommandEnabled(store.getState())
+                .exportSpecification
+        ).toBe(false);
     });
 });

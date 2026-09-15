@@ -8,12 +8,8 @@ import {
     updateContainerInitDimensions,
     type ContainerDimensions
 } from '@deneb-viz/vega-runtime/signals';
-import { type StoreState, type SyncableSlice } from './state';
+import { type CoreStoreState, type SyncableSlice } from './state';
 import { INCREMENTAL_UPDATE_CONFIGURATION } from '../lib/vega/incremental-update-configuration';
-import {
-    evaluateExportSpecCommandState,
-    evaluateZoomCommandsState
-} from '../lib/commands/state';
 
 /**
  * Performance settings that control compilation and rendering behavior.
@@ -217,7 +213,7 @@ const initialState: Omit<
  */
 export const createCompilationSlice =
     (): StateCreator<
-        StoreState,
+        CoreStoreState,
         [['zustand/devtools', never]],
         [],
         CompilationSlice
@@ -325,18 +321,30 @@ export const createCompilationSlice =
  * tab's point of view). Driving the bump from the embed lifecycle gives
  * us one source of truth: renderId changes iff a fresh `View` instance
  * has just been attached.
+ *
+ * Does NOT touch `commands` (exportSpecification/zoom flags). Those were
+ * previously re-evaluated here as a "recovery write" so a stale disabled
+ * flag from an earlier parse error would clear once compilation recovered.
+ * As of U4 (docs/plans/2026-09-15-001-refactor-editor-package-extraction-plan.md)
+ * that enablement is derived on read via `selectExportSpecificationCommandEnabled`
+ * / `selectZoomCommandsState` (lib/commands/selectors.ts), computed fresh from
+ * `compilation.result` on every read — there is no stored flag left to go
+ * stale, so no recovery write is needed. This is also what makes
+ * `compilation.ts` type-check against `CoreStoreState`: reading
+ * `state.editor.isDirty` / `state.editorZoomLevel` here would not compile
+ * against a core-only store.
  */
 const handleCompile = (
-    state: StoreState,
+    state: CoreStoreState,
     options: CompileSpecOptions
-): Partial<StoreState> => {
+): Partial<CoreStoreState> => {
     const result = compileSpec(options);
 
     // Merge durable errors/warnings into runtime errors/warnings (they survive this compile, then get cleared)
     const runtimeErrors = [...state.compilation.durableErrors];
     const runtimeWarnings = [...state.compilation.durableWarnings];
 
-    const compilationUpdate: Partial<StoreState> = {
+    return {
         compilation: {
             ...state.compilation,
             result,
@@ -347,27 +355,6 @@ const handleCompile = (
             // Clear durable errors/warnings - they've been merged into runtime errors/warnings
             durableErrors: [],
             durableWarnings: []
-        }
-    };
-
-    // Always re-evaluate compilation-gated commands on compile. Both
-    // helpers handle the not-ready case correctly (returning `false` for
-    // gated commands), so writing unconditionally:
-    //   - re-enables flags on success (recovery from error states)
-    //   - disables flags on error (parity with how exportSpecification
-    //     already disables via continuous editor writes; without this,
-    //     zoom would only disable after the user clicks a zoom control,
-    //     because handleUpdateEditorZoomLevel is its sole writer).
-    // The asymmetry the error-branch-skip preserved was actually the bug
-    // for zoom: editor-edit writers fire continuously and self-correct
-    // exportSpec; zoom has no parallel cadence, so the recovery-only
-    // write left zoom enabled-looking until clicked.
-    return {
-        ...compilationUpdate,
-        commands: {
-            ...state.commands,
-            ...evaluateZoomCommandsState(state.editorZoomLevel, result),
-            ...evaluateExportSpecCommandState(state.editor.isDirty, result)
         }
     };
 };
@@ -388,7 +375,7 @@ const handleCompile = (
  * calling `clear()` without a follow-up compile leaves the slice with no
  * result and `viewReady` permanently false.
  */
-const handleClear = (state: StoreState): Partial<StoreState> => ({
+const handleClear = (state: CoreStoreState): Partial<CoreStoreState> => ({
     compilation: {
         ...state.compilation,
         result: null,
@@ -416,9 +403,9 @@ const handleClear = (state: StoreState): Partial<StoreState> => ({
  * compile pipeline.
  */
 const handleRefreshContainerDimensions = (
-    state: StoreState,
+    state: CoreStoreState,
     dimensions: ContainerDimensions
-): Partial<StoreState> => {
+): Partial<CoreStoreState> => {
     const result = state.compilation.result;
     if (result === null || result.status !== 'ready') {
         return state;
@@ -450,9 +437,9 @@ const handleRefreshContainerDimensions = (
  * Filters out undefined values and marks as hydrated.
  */
 const handleSyncPerformanceSettings = (
-    state: StoreState,
+    state: CoreStoreState,
     payload: CompilationPerformanceSyncPayload
-): Partial<StoreState> => {
+): Partial<CoreStoreState> => {
     const definedPayload = Object.fromEntries(
         Object.entries(payload).filter(([, value]) => value !== undefined)
     );
@@ -482,9 +469,9 @@ const handleSyncPerformanceSettings = (
  * style append.
  */
 const handleLogError = (
-    state: StoreState,
+    state: CoreStoreState,
     message: string
-): Partial<StoreState> => {
+): Partial<CoreStoreState> => {
     const isDuplicate = state.compilation.runtimeErrors.includes(message);
     const runtimeErrors = isDuplicate
         ? state.compilation.runtimeErrors
@@ -501,9 +488,9 @@ const handleLogError = (
  * Record a runtime warning message. Deduplicates using Set.
  */
 const handleLogWarn = (
-    state: StoreState,
+    state: CoreStoreState,
     message: string
-): Partial<StoreState> => ({
+): Partial<CoreStoreState> => ({
     compilation: {
         ...state.compilation,
         runtimeWarnings: Array.from(
@@ -517,9 +504,9 @@ const handleLogWarn = (
  * Use this for warnings generated during operations that trigger a re-compile.
  */
 const handleLogDurableWarn = (
-    state: StoreState,
+    state: CoreStoreState,
     message: string
-): Partial<StoreState> => ({
+): Partial<CoreStoreState> => ({
     compilation: {
         ...state.compilation,
         durableWarnings: Array.from(
@@ -533,9 +520,9 @@ const handleLogDurableWarn = (
  * Use this for errors generated during operations that trigger a re-compile.
  */
 const handleLogDurableError = (
-    state: StoreState,
+    state: CoreStoreState,
     message: string
-): Partial<StoreState> => ({
+): Partial<CoreStoreState> => ({
     compilation: {
         ...state.compilation,
         durableErrors: Array.from(
@@ -547,7 +534,7 @@ const handleLogDurableError = (
 /**
  * Clear all runtime errors and warnings.
  */
-const handleClearLog = (state: StoreState): Partial<StoreState> => ({
+const handleClearLog = (state: CoreStoreState): Partial<CoreStoreState> => ({
     compilation: {
         ...state.compilation,
         runtimeErrors: [],

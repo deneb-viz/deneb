@@ -1,4 +1,30 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import type { CompilationResult } from '@deneb-viz/vega-runtime/compilation';
+
+/**
+ * Mocked for the AE3 test below (a core-only store can run `compile()`
+ * without throwing): a real `compileSpec` call is out of scope here, only
+ * the fact that `handleCompile` no longer reaches into editor-only state
+ * matters. Mirrors the pattern in
+ * `state/__tests__/commands-recovery.test.ts` and
+ * `state/__tests__/cross-slice-writes.characterization.test.ts`.
+ */
+vi.mock('@deneb-viz/vega-runtime/compilation', async () => {
+    const actual = await vi.importActual<
+        typeof import('@deneb-viz/vega-runtime/compilation')
+    >('@deneb-viz/vega-runtime/compilation');
+    return {
+        ...actual,
+        compileSpec: vi.fn(
+            (): CompilationResult => ({
+                status: 'ready',
+                parsed: {} as never,
+                embedOptions: {}
+            })
+        )
+    };
+});
+
 import { createDenebState } from '../state';
 import {
     installEditorState,
@@ -135,5 +161,28 @@ describe('requireEditorState', () => {
         installEditorState(store, { applicationVersion: 'test' });
         const state = store.getState();
         expect(requireEditorState(state)).toBe(state);
+    });
+});
+
+/**
+ * AE3 (partial) — U4 narrowed `createCompilationSlice` to
+ * `StateCreator<CoreStoreState, ...>` and removed `handleCompile`'s reads
+ * of `state.editor.isDirty` / `state.editorZoomLevel`. This is the runtime
+ * proof that pairs with that compile-time guarantee: a store that never
+ * had `installEditorState()` called on it (no `commands`, `editor`, etc.)
+ * can still run the `compile` action without throwing on a missing slice.
+ */
+describe('compilation.compile on a core-only store (AE3 partial)', () => {
+    it('does not throw when no editor state has been installed', () => {
+        const store = makeStore();
+
+        expect(() =>
+            store.getState().compilation.compile({} as never)
+        ).not.toThrow();
+        expect(store.getState().compilation.result).toEqual({
+            status: 'ready',
+            parsed: {},
+            embedOptions: {}
+        });
     });
 });

@@ -10,16 +10,21 @@ import { type SpecificationEditorRefs } from '../editor/specification-editor-ref
 import type { monaco } from '../monaco/types';
 import { HOTKEY_BINDINGS } from './constants';
 import { getZoomToFitScale } from '../interface/layout';
+import { selectCommandEnabled } from './selectors';
 import {} from '../../../package.json';
 
 /**
  * Executes a command if:
  * - the command is valid
  * - the command callback is defined
+ *
+ * Enablement resolves via `selectCommandEnabled`, which derives
+ * exportSpecification/zoom enablement instead of trusting the stored
+ * `commands` slice for those two — see
+ * docs/plans/2026-09-15-001-refactor-editor-package-extraction-plan.md U4.
  */
 const executeCommand = (command: Command, callback: () => void) => {
-    const { commands } = getDenebState();
-    if (commands[command]) {
+    if (selectCommandEnabled(getDenebState(), command)) {
         callback();
     }
 };

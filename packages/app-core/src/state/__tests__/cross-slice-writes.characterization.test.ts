@@ -6,8 +6,8 @@ import type { UsermetaDatasetField } from '@deneb-viz/data-core/field';
 
 /**
  * U2 (docs/plans/2026-09-15-001-refactor-editor-package-extraction-plan.md) —
- * characterization tests for the four cross-slice writes that U4/U5 will
- * replace with editor-side derived selectors and subscriptions:
+ * characterization tests for the four cross-slice writes that U4/U5 replace
+ * with editor-side derived selectors and subscriptions:
  *
  *  1. compilation.compile (handleCompile) -> commands (export + zoom flags)
  *  2. fieldUsage.applyTrackingChanges (handleApplyTrackingChanges) -> commands.exportSpecification
@@ -16,12 +16,19 @@ import type { UsermetaDatasetField } from '@deneb-viz/data-core/field';
  *     applySupportFieldMigrationStamp -> export.metadata + editor staged text/dirty +
  *     editorSelectedOperation + interface.modalDialogRole
  *
- * These tests MUST pass unmodified against the current (pre-refactor) store.
- * They pin exact values (not just truthiness) so that U4/U5 can re-point them
- * at the derived selectors/subscriptions and treat a green run as proof of
- * equivalence. Do not "fix" a surprising value here — if it looks odd, it is
- * pinning real current behaviour (see inline notes, e.g. the isDirty=false
- * outcome on template init/setContent).
+ * U4 removed writes 1 and 2 (`handleCompile` and `handleApplyTrackingChanges`
+ * no longer write `commands` at all): flows 1 and 2 below are re-pointed to
+ * assert the same enablement via `selectExportSpecificationCommandEnabled` /
+ * `selectZoomCommandsState` instead of `state.commands.*`, and flow 1 adds an
+ * explicit assertion that `compile()` leaves the `commands` slice object
+ * reference-identical. Flows 3 and 4 are untouched — those writes are U5's
+ * concern, not U4's, and still land exactly as characterized here.
+ *
+ * These tests pin exact values (not just truthiness), so a green run is
+ * proof of equivalence with pre-refactor behaviour. Do not "fix" a
+ * surprising value here — if it looks odd, it is pinning real current
+ * behaviour (see inline notes, e.g. the isDirty=false outcome on template
+ * init/setContent).
  *
  * Driving `compile()`: the smallest public action that reaches `handleCompile`
  * is `store.getState().compilation.compile(options)` on the real, fully-wired
@@ -51,6 +58,10 @@ vi.mock('@deneb-viz/vega-runtime/compilation', async () => {
 import { compileSpec } from '@deneb-viz/vega-runtime/compilation';
 import { createDenebState } from '../state';
 import { installEditorState } from '../install-editor-state';
+import {
+    selectExportSpecificationCommandEnabled,
+    selectZoomCommandsState
+} from '../../lib/commands/selectors';
 
 const ZOOM_MIN = VISUAL_PREVIEW_ZOOM_CONFIGURATION.min;
 const ZOOM_MAX = VISUAL_PREVIEW_ZOOM_CONFIGURATION.max;
@@ -71,66 +82,78 @@ const makeStore = () => {
     return store;
 };
 
-describe('U2 flow 1 — compilation.compile (handleCompile) writes commands', () => {
+describe('U2 flow 1 — compilation.compile (handleCompile) no longer writes commands', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         vi.mocked(compileSpec).mockReturnValue(READY_RESULT);
     });
 
-    it('compilation handleCompile writes commands.exportSpecification=false when the editor is dirty at a successful compile', () => {
+    it('does not touch the commands slice object at all: reference-identical before and after compile', () => {
+        const store = makeStore();
+        const commandsBefore = store.getState().commands;
+
+        store.getState().compilation.compile({} as never);
+
+        expect(store.getState().commands).toBe(commandsBefore);
+    });
+
+    it('derives exportSpecification=false when the editor is dirty at a successful compile', () => {
         const store = makeStore();
         store.getState().editor.updateIsDirty(true);
 
         store.getState().compilation.compile({} as never);
 
-        expect(store.getState().commands.exportSpecification).toBe(false);
+        expect(
+            selectExportSpecificationCommandEnabled(store.getState())
+                .exportSpecification
+        ).toBe(false);
     });
 
-    it('compilation handleCompile writes commands.exportSpecification=true when the editor is not dirty at a successful compile', () => {
+    it('derives exportSpecification=true when the editor is not dirty at a successful compile', () => {
         const store = makeStore();
         expect(store.getState().editor.isDirty).toBe(false);
 
         store.getState().compilation.compile({} as never);
 
-        expect(store.getState().commands.exportSpecification).toBe(true);
+        expect(
+            selectExportSpecificationCommandEnabled(store.getState())
+                .exportSpecification
+        ).toBe(true);
     });
 
-    it('compilation handleCompile re-evaluates zoom commands against the current editorZoomLevel at the min boundary', () => {
+    it('derives zoom commands against the current editorZoomLevel at the min boundary after compile', () => {
         const store = makeStore();
-        // No compile yet, so the level-set alone (handleUpdateEditorZoomLevel)
-        // writes commands against a null compilation result -> all false.
         store.getState().updateEditorZoomLevel(ZOOM_MIN);
-        expect(store.getState().commands.zoomIn).toBe(false);
 
         store.getState().compilation.compile({} as never);
 
-        const { commands } = store.getState();
+        const commands = selectZoomCommandsState(store.getState());
         expect(commands.zoomOut).toBe(false); // at min, can't zoom out further
-        expect(commands.zoomIn).toBe(true); // not at max, so zoom in re-enables
+        expect(commands.zoomIn).toBe(true); // not at max, so zoom in is enabled
         expect(commands.zoomFit).toBe(true);
         expect(commands.zoomReset).toBe(true);
     });
 
-    it('compilation handleCompile re-evaluates zoom commands against the current editorZoomLevel at the max boundary', () => {
+    it('derives zoom commands against the current editorZoomLevel at the max boundary after compile', () => {
         const store = makeStore();
         store.getState().updateEditorZoomLevel(ZOOM_MAX);
 
         store.getState().compilation.compile({} as never);
 
-        const { commands } = store.getState();
+        const commands = selectZoomCommandsState(store.getState());
         expect(commands.zoomIn).toBe(false); // at max, can't zoom in further
         expect(commands.zoomOut).toBe(true);
         expect(commands.zoomFit).toBe(true);
         expect(commands.zoomReset).toBe(true);
     });
 
-    it('compilation handleCompile enables all four zoom commands at a mid-range editorZoomLevel on a successful compile', () => {
+    it('derives all four zoom commands enabled at a mid-range editorZoomLevel after a successful compile', () => {
         const store = makeStore();
         store.getState().updateEditorZoomLevel(ZOOM_DEFAULT);
 
         store.getState().compilation.compile({} as never);
 
-        expect(store.getState().commands).toMatchObject({
+        expect(selectZoomCommandsState(store.getState())).toEqual({
             zoomIn: true,
             zoomOut: true,
             zoomFit: true,
@@ -138,7 +161,7 @@ describe('U2 flow 1 — compilation.compile (handleCompile) writes commands', ()
         });
     });
 
-    it('compilation handleCompile disables export + zoom commands on an error result', () => {
+    it('derives export + zoom commands disabled on an error result', () => {
         const store = makeStore();
         vi.mocked(compileSpec).mockReturnValueOnce({
             status: 'error',
@@ -149,8 +172,11 @@ describe('U2 flow 1 — compilation.compile (handleCompile) writes commands', ()
 
         store.getState().compilation.compile({} as never);
 
-        expect(store.getState().commands).toMatchObject({
-            exportSpecification: false,
+        const state = store.getState();
+        expect(selectExportSpecificationCommandEnabled(state)).toEqual({
+            exportSpecification: false
+        });
+        expect(selectZoomCommandsState(state)).toEqual({
             zoomIn: false,
             zoomOut: false,
             zoomFit: false,
@@ -159,26 +185,31 @@ describe('U2 flow 1 — compilation.compile (handleCompile) writes commands', ()
     });
 });
 
-describe('U2 flow 2 — fieldUsage.applyTrackingChanges (handleApplyTrackingChanges) writes commands.exportSpecification', () => {
+describe('U2 flow 2 — fieldUsage.applyTrackingChanges (handleApplyTrackingChanges) no longer writes commands.exportSpecification', () => {
     const TRACKING_PAYLOAD = {
         trackedFields: {},
         trackedDrilldown: { isCurrent: false, isMappingRequired: false },
         remapFields: [] as UsermetaDatasetField[]
     };
 
-    it('recomputes exportSpecification=true when the editor is clean and the compilation result is ready', () => {
+    it('does not touch the commands slice object: exportSpecification derives to true when the editor is clean and the compilation result is ready', () => {
         const store = makeStore();
         store.setState((state) => ({
             compilation: { ...state.compilation, result: READY_RESULT }
         }));
         expect(store.getState().editor.isDirty).toBe(false);
+        const commandsBefore = store.getState().commands;
 
         store.getState().fieldUsage.applyTrackingChanges(TRACKING_PAYLOAD);
 
-        expect(store.getState().commands.exportSpecification).toBe(true);
+        expect(store.getState().commands).toBe(commandsBefore);
+        expect(
+            selectExportSpecificationCommandEnabled(store.getState())
+                .exportSpecification
+        ).toBe(true);
     });
 
-    it('recomputes exportSpecification=false when the editor is dirty even though the compilation result is ready', () => {
+    it('exportSpecification derives to false when the editor is dirty even though the compilation result is ready', () => {
         const store = makeStore();
         store.setState((state) => ({
             compilation: { ...state.compilation, result: READY_RESULT },
@@ -187,16 +218,22 @@ describe('U2 flow 2 — fieldUsage.applyTrackingChanges (handleApplyTrackingChan
 
         store.getState().fieldUsage.applyTrackingChanges(TRACKING_PAYLOAD);
 
-        expect(store.getState().commands.exportSpecification).toBe(false);
+        expect(
+            selectExportSpecificationCommandEnabled(store.getState())
+                .exportSpecification
+        ).toBe(false);
     });
 
-    it('recomputes exportSpecification=false when there is no compilation result, regardless of dirty state', () => {
+    it('exportSpecification derives to false when there is no compilation result, regardless of dirty state', () => {
         const store = makeStore();
         expect(store.getState().compilation.result).toBeNull();
 
         store.getState().fieldUsage.applyTrackingChanges(TRACKING_PAYLOAD);
 
-        expect(store.getState().commands.exportSpecification).toBe(false);
+        expect(
+            selectExportSpecificationCommandEnabled(store.getState())
+                .exportSpecification
+        ).toBe(false);
     });
 });
 

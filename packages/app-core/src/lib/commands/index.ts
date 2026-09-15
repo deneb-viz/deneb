@@ -1,6 +1,11 @@
 export * from './actions';
 export { HOTKEY_OPTIONS } from './constants';
 export {
+    selectCommandEnabled,
+    selectExportSpecificationCommandEnabled,
+    selectZoomCommandsState
+} from './selectors';
+export {
     evaluateExportSpecCommandState,
     evaluateZoomCommandsState,
     getNextApplyMode,
