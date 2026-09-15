@@ -1,10 +1,17 @@
 import { type StateCreator } from 'zustand';
 
-import { type Command } from '../lib/commands';
+import { type Command, type DerivedCommand } from '../lib/commands';
 import { type StoreState } from './state';
 
+/**
+ * `exportSpecification`/`zoomFit`/`zoomIn`/`zoomOut`/`zoomReset` are
+ * excluded (`DerivedCommand`, lib/commands/types.ts): their enabled state
+ * is derived on read via `selectExportSpecificationCommandEnabled`/
+ * `selectZoomCommandsState` (lib/commands/selectors.ts) rather than stored
+ * here — nothing writes or reads them as stored flags any more.
+ */
 export type CommandsSliceProperties = {
-    [command in Command]: boolean;
+    [command in Exclude<Command, DerivedCommand>]: boolean;
 };
 
 export type CommandsSlice = {
@@ -30,7 +37,6 @@ export const createCommandsSlice =
             discardChanges: true,
             editorFocusOut: true,
             editorPaneToggle: true,
-            exportSpecification: true,
             fieldMappings: true,
             helpSite: true,
             navigateConfig: true,
@@ -38,10 +44,6 @@ export const createCommandsSlice =
             navigateSpecification: true,
             newSpecification: true,
             themeToggle: true,
-            zoomFit: true,
-            zoomIn: true,
-            zoomLevel: true,
-            zoomOut: true,
-            zoomReset: true
+            zoomLevel: true
         }
     });

@@ -8,12 +8,12 @@ import {
     TOAST_NOTIFICATION_TIMEOUT
 } from '../constants';
 import { NotificationToast } from './notification-toast';
+import { useDenebState } from '@deneb-viz/app-core';
 import {
     handleDiscardChanges,
     handlePersistSpecification,
-    specificationEditorRefs,
-    useDenebState
-} from '@deneb-viz/app-core';
+    specificationEditorRefs
+} from '@deneb-viz/app-core/editor';
 
 export const NotificationApplyChanges = ({ toasterId }: NotificationProps) => {
     const { isDirty, type, translate } = useDenebState(

@@ -6,7 +6,7 @@ import {
     type VersionInformation
 } from '@deneb-viz/utils/versioning';
 import { type StoreState } from './state';
-import { type ModalDialogRole } from '../lib';
+import { type ModalDialogRole } from '../lib/interface';
 
 export type MigrationSliceProperties = VersionComparator & {
     changeType: VersionChangeDirection;

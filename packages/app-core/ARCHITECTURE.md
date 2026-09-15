@@ -20,17 +20,17 @@ The codebase is partitioned into nine layers, each rooted at a specific path und
 
 The table below lists, for every "from" layer, the set of layers it is allowed to import from. Self-imports are always allowed and listed explicitly. Anything not in the row is rejected.
 
-| From \ may import from | entry | app | feature | components | lib | state | context | i18n | catalog |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **entry**      | yes | yes | yes | yes | yes | yes | yes | yes | yes |
-| **app**        |  -  | yes | yes | yes | yes | yes | yes | yes | yes |
-| **feature**    |  -  |  -  | self only | yes | yes | yes | yes | yes | yes |
-| **components** |  -  |  -  |  -  | yes | yes | yes | yes | yes | yes |
-| **lib**        |  -  |  -  |  -  |  -  | yes | yes | yes | yes | yes |
-| **state**      |  -  |  -  |  -  |  -  | yes | yes | yes | yes | yes |
-| **context**    |  -  |  -  |  -  |  -  | yes | yes | yes | yes | yes |
-| **i18n**       |  -  |  -  |  -  |  -  |  -  |  -  |  -  | yes |  -  |
-| **catalog**    |  -  |  -  |  -  |  -  | yes |  -  |  -  | yes | yes |
+| From \ may import from | entry | app | feature   | components | lib | state | context | i18n | catalog |
+| ---------------------- | ----- | --- | --------- | ---------- | --- | ----- | ------- | ---- | ------- |
+| **entry**              | yes   | yes | yes       | yes        | yes | yes   | yes     | yes  | yes     |
+| **app**                | -     | yes | yes       | yes        | yes | yes   | yes     | yes  | yes     |
+| **feature**            | -     | -   | self only | yes        | yes | yes   | yes     | yes  | yes     |
+| **components**         | -     | -   | -         | yes        | yes | yes   | yes     | yes  | yes     |
+| **lib**                | -     | -   | -         | -          | yes | yes   | yes     | yes  | yes     |
+| **state**              | -     | -   | -         | -          | yes | yes   | yes     | yes  | yes     |
+| **context**            | -     | -   | -         | -          | yes | yes   | yes     | yes  | yes     |
+| **i18n**               | -     | -   | -         | -          | -   | -     | -       | yes  | -       |
+| **catalog**            | -     | -   | -         | -          | yes | -     | -       | yes  | yes     |
 
 The runtime source of truth for this matrix is `packages/app-core/eslint.config.js`. If this document and the eslint config ever disagree, **the eslint config wins** — please update this doc to match.
 
@@ -73,14 +73,16 @@ A short decision guide:
 
 If you are unsure, default to the most-restricted layer that still works. It is always easier to relocate a file upward later than to untangle a feature that has been allowed to grow tendrils.
 
-## Known transitional exceptions
+## Entry points
 
-`src/index.ts` (the root barrel) currently re-exports a small number of feature primitives as a transitional API for consumers (notably the visual entry point) that have not yet been hoisted to the `app/` layer. These re-exports are marked in source with a `// TEMPORARY API WHILE WE HOIST APP OUT OF POWER BI` comment.
+`src/index.ts` is the viewer core: the provider, the viewer and gated-viewer components, state hooks and core types, the platform contract, i18n types, template import and the other viewer-safe primitives. Nothing under it reaches Monaco, the specification editor, the settings pane, or any other editor-only code.
 
-This is the only intentional layering exception in the package; it is tracked for removal as the visual entry point migrates onto the `app/` composition layer.
+`src/editor.ts` is the editor surface: `DenebEditor`/`RetainedDenebEditor`, `installEditorState` (composes the editor slices into the shared store) and `useEditorState` (the editor-state accessor), plus the settings-pane primitives, the specification-editor context, persist/discard commands, perf markers, clipboard and field-tracking helpers that only the editor mounts.
+
+A reachability canary (`src/__tests__/viewer-entry-is-editor-free.test.ts`) walks the value-import graph from `src/index.ts` and fails if it reaches any editor-only path or a `monaco-editor` import, so this separation is enforced in CI rather than only documented here.
 
 ## Historical context
 
 The layered model documented here was established by a focused refactor recorded in `docs/plans/2026-05-21-app-core-architecture-normalization.md`. That plan contains the original audit, the per-phase remediation steps (Phases A–E), and the rationale for individual decisions (for example, why `state` and `context` sit below `lib` in the dependency table, and why same-feature imports are permitted as one element instance).
 
-Readers who need to understand *why* a particular layer is where it is, or who want the full history of how the boundaries fixture and canary came to exist, should start with that plan. This file is intentionally a practical reference for everyday work, not a historical record.
+Readers who need to understand _why_ a particular layer is where it is, or who want the full history of how the boundaries fixture and canary came to exist, should start with that plan. This file is intentionally a practical reference for everyday work, not a historical record.

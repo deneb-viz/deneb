@@ -22,15 +22,6 @@ export const TemplateDatasetColumns = ({
                 </>
             );
         }
-        case 'mapping': {
-            return (
-                <>
-                    <DataColumnHeader columnRole='type' />
-                    <DataColumnHeader columnRole='originalName' />
-                    <DataColumnHeader columnRole='assignment' />
-                </>
-            );
-        }
         case 'export': {
             return (
                 <>

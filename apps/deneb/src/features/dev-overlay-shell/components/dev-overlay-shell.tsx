@@ -1,6 +1,6 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
 
-import { copyToClipboard } from '@deneb-viz/app-core';
+import { copyToClipboard } from '@deneb-viz/app-core/editor';
 
 /**
  * Where the overlay anchors against the visual surface. Both

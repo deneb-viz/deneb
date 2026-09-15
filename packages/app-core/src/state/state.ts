@@ -2,51 +2,65 @@ import { devtools } from 'zustand/middleware';
 import { createWithEqualityFn } from 'zustand/traditional';
 import { shallow } from 'zustand/shallow';
 
-import { createCommandsSlice, type CommandsSlice } from './commands';
 import { createCompilationSlice, type CompilationSlice } from './compilation';
 import { createCreateSlice, type CreateSliceState } from './create';
 import { createDatasetSlice, type DatasetSlice } from './dataset';
-import { createDebugSlice, type DebugSlice } from './debug';
-import { createEditorSlice, type EditorSlice } from './editor';
 import {
     createEditorPreferencesSlice,
     EditorPreferencesSlice
 } from './editor-preferences';
-import { createExportSlice, type ExportSliceState } from './export';
-import {
-    createFieldUsageSlice,
-    type FieldUsageSliceState
-} from './field-usage';
 import { createI18nSlice, I18nSlice } from './i18n';
 import { createInterfaceSlice, type InterfaceSlice } from './interface';
 import { createMigrationSlice, type MigrationSlice } from './migration';
 import { createProjectSlice, type ProjectSlice } from './project';
 import {
-    createSettingsPaneSlice,
-    type SettingsPaneSlice
-} from './settings-pane';
-import {
     createVisualRenderSlice,
     type VisualRenderSlice
 } from './visual-render';
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
-import { APPLICATION_VERSION } from '../lib/application';
+import type { CommandsSlice } from './commands';
+import type { DebugSlice } from './debug';
+import type { EditorSlice } from './editor';
+import type { ExportSliceState } from './export';
+import type { FieldUsageSliceState } from './field-usage';
+import type { SettingsPaneSlice } from './settings-pane';
 
-export type StoreState = CommandsSlice &
-    CompilationSlice &
+/**
+ * The slices that are always present: viewer-live state plus the pieces
+ * every app (visual and web sample) needs regardless of whether the
+ * editor is mounted. This is the generic every core slice creator and
+ * `createDenebState` are typed against, so core code cannot reference
+ * editor-only state — a missing editor slice is a compile error here,
+ * not a runtime surprise.
+ */
+export type CoreStoreState = CompilationSlice &
     CreateSliceState &
     DatasetSlice &
-    DebugSlice &
-    EditorSlice &
     EditorPreferencesSlice &
-    ExportSliceState &
-    FieldUsageSliceState &
     I18nSlice &
     InterfaceSlice &
     MigrationSlice &
     ProjectSlice &
-    SettingsPaneSlice &
     VisualRenderSlice;
+
+/**
+ * The slices that only exist once `installEditorState()` has run. Not
+ * present in a freshly constructed store.
+ */
+export type EditorStoreSlices = CommandsSlice &
+    DebugSlice &
+    EditorSlice &
+    ExportSliceState &
+    FieldUsageSliceState &
+    SettingsPaneSlice;
+
+/**
+ * The full store shape consumers see through `useDenebState` /
+ * `getDenebState`. A freshly constructed store only actually satisfies
+ * `CoreStoreState` at runtime until `installEditorState()` merges the
+ * editor slices in — see the cast in `createDenebState` below.
+ */
+export type StoreState = CoreStoreState & EditorStoreSlices;
 
 export type StateDependencies = {
     applicationVersion: string;
@@ -63,26 +77,28 @@ export type SyncableSlice = {
     __hasHydrated__: boolean;
 };
 
-export const createDenebState = (dependencies: StateDependencies) =>
+/**
+ * Builds a fresh Deneb store from the core slices only.
+ */
+export const createDenebState = () =>
     createWithEqualityFn<StoreState>()(
         devtools(
-            (...a) => ({
-                ...createCommandsSlice()(...a),
-                ...createCompilationSlice()(...a),
-                ...createCreateSlice()(...a),
-                ...createDatasetSlice()(...a),
-                ...createDebugSlice()(...a),
-                ...createEditorSlice()(...a),
-                ...createEditorPreferencesSlice()(...a),
-                ...createExportSlice(dependencies)(...a),
-                ...createFieldUsageSlice()(...a),
-                ...createI18nSlice()(...a),
-                ...createInterfaceSlice()(...a),
-                ...createMigrationSlice()(...a),
-                ...createProjectSlice()(...a),
-                ...createSettingsPaneSlice()(...a),
-                ...createVisualRenderSlice()(...a)
-            }),
+            (...a) =>
+                // Only core slices are assembled here, so this cast to
+                // `StoreState` — the only cast of its kind — is made
+                // true at runtime by `installEditorState()`, which merges
+                // the editor slices in before any editor read.
+                ({
+                    ...createCompilationSlice()(...a),
+                    ...createCreateSlice()(...a),
+                    ...createDatasetSlice()(...a),
+                    ...createEditorPreferencesSlice()(...a),
+                    ...createI18nSlice()(...a),
+                    ...createInterfaceSlice()(...a),
+                    ...createMigrationSlice()(...a),
+                    ...createProjectSlice()(...a),
+                    ...createVisualRenderSlice()(...a)
+                }) as StoreState,
             { enabled: toBoolean(process.env.ZUSTAND_DEV_TOOLS) }
         ),
         shallow
@@ -92,11 +108,7 @@ export const createDenebState = (dependencies: StateDependencies) =>
  * Set up a singleton Deneb state store.
  * TODO: eventually move to dependency injection pattern.
  */
-const dependencies: StateDependencies = {
-    applicationVersion: APPLICATION_VERSION
-};
-
-const useDenebState = createDenebState(dependencies);
+const useDenebState = createDenebState();
 const getDenebState = () => useDenebState.getState();
 
 export { getDenebState, useDenebState };

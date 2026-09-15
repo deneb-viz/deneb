@@ -15,6 +15,7 @@ import {
     updateSchemaPropertyMarkers,
     registerSchemaPropertyCodeActionProvider
 } from '../../../lib/editor/schema-property-diagnostic';
+import { resolveStagedTextForRole } from '../staged-text';
 
 type JsonEditorProps = {
     thisEditorRole: EditorPaneRole;
@@ -36,7 +37,6 @@ const useSpecificationJsonEditorStyles = makeStyles({
  * Represents an instance of Ace editor, responsible for maintaining either the JSON spec or the config for a Vega/
  * Vega-Lite visualization.
  */
-//eslint-disable-next-line max-lines-per-function
 export const SpecificationJsonEditor = ({
     thisEditorRole
 }: JsonEditorProps) => {
@@ -46,6 +46,7 @@ export const SpecificationJsonEditor = ({
         debouncePeriod,
         focusTick,
         fontSize,
+        initializationCount,
         provider,
         showLineNumbers,
         theme,
@@ -60,6 +61,7 @@ export const SpecificationJsonEditor = ({
         debouncePeriod: state.editorPreferences.jsonEditorDebouncePeriod,
         focusTick: state.editorFocusTick,
         fontSize: state.editorPreferences.jsonEditorFontSize,
+        initializationCount: state.project.initializationCount,
         provider: state.project.provider,
         showLineNumbers: state.editorPreferences.jsonEditorShowLineNumbers,
         theme: state.editorPreferences.theme,
@@ -127,6 +129,21 @@ export const SpecificationJsonEditor = ({
         handleFocus();
         addHyperlinkOverride(ref.current, linkClickHandler);
     }, [provider, current, focusTick, ref, linkClickHandler, handleFocus]);
+    // Push staged text into the mounted Monaco instance after a create
+    // (`project.initializationCount` change); skipped on the mount render
+    // since `defaultValue` (below) already seeded the correct text.
+    const isFirstInitializationCount = useRef(true);
+    useEffect(() => {
+        if (isFirstInitializationCount.current) {
+            isFirstInitializationCount.current = false;
+            return;
+        }
+        if (thisEditorRole === 'Settings') {
+            return;
+        }
+        const text = resolveStagedTextForRole(thisEditorRole, getDenebState());
+        ref.current?.setValue(text);
+    }, [initializationCount, ref, thisEditorRole]);
     // Bootstrap the editor
     const handleOnMount: OnMount = (editor) => {
         ref.current = editor;
@@ -251,18 +268,10 @@ const addHyperlinkOverride = (
 /**
  * Resolve the default value when instantiated, either from settings or staging as needed.
  */
-const getDefaultValue = (role: EditorPaneRole) => {
-    const {
-        editor: { stagedConfig, stagedSpec },
-        project: { spec, config }
-    } = getDenebState();
-    switch (role) {
-        case 'Spec':
-            return stagedSpec ?? spec;
-        case 'Config':
-            return stagedConfig ?? config;
-    }
-};
+const getDefaultValue = (role: EditorPaneRole) =>
+    role === 'Settings'
+        ? undefined
+        : resolveStagedTextForRole(role, getDenebState());
 
 /**
  * A very simple override of clicking link elements in the editor, to allow delegation of hyperlink handling to the

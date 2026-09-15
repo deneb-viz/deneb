@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 import { createDenebState } from '../state';
+import { installEditorState } from '../install-editor-state';
 import type { ProjectSyncPayload } from '../project';
 
 /**
- * U3 (audit findings M10/M12) — project slice:
+ * Audit findings M10/M12 — project slice:
  *
  *  - M12: `__isInitialized__` is computed on the MERGED project state, not
  *    the partial sync payload. A partial inbound sync of an unrelated key
@@ -20,8 +21,15 @@ import type { ProjectSyncPayload } from '../project';
  * Build a fresh, fully-wired Deneb state store per test (same pattern as
  * commands-recovery.test.ts — the real store factory avoids circular-
  * import problems and exercises cross-slice writes as at runtime).
+ * `createDenebState` only assembles core slices now, so
+ * `installEditorState` merges the editor-only slices in immediately —
+ * these tests read `export.metadata`, which is editor-only.
  */
-const makeStore = () => createDenebState({ applicationVersion: 'test' });
+const makeStore = () => {
+    const store = createDenebState();
+    installEditorState(store, { applicationVersion: 'test' });
+    return store;
+};
 
 /**
  * The sync layer passes partial payloads at runtime (only changed keys);
@@ -114,8 +122,8 @@ describe('project slice — syncProjectData initialization (M12)', () => {
         }));
 
         // Sync a project whose supportFieldConfiguration no longer includes
-        // 'Category'. The host-sync embed variant used to leave the stale
-        // embedded config in place; it must now be stripped.
+        // 'Category': the stale embedded config on that entry must be
+        // stripped.
         store.getState().project.syncProjectData(
             partialSync({
                 spec: '{"mark":"bar"}',

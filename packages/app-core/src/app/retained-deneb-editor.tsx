@@ -5,6 +5,7 @@ import { computeRetentionState } from './retained-deneb-editor-state';
 import { useViewportMatchGate } from './viewport-match-gate-state';
 import { useEditorModeSync } from './use-editor-mode-sync';
 import { useDenebState } from '../state';
+import { useEditorState } from '../state/editor-state-access';
 
 export { computeRetentionState } from './retained-deneb-editor-state';
 
@@ -116,7 +117,7 @@ export const RetainedDenebEditor = ({
     // React schedules an immediate re-render with the new state and
     // rolls discarded updates back.
     const [previousIsEditorMode, setPreviousIsEditorMode] = useState(false);
-    const requestEditorFocus = useDenebState(
+    const requestEditorFocus = useEditorState(
         (state) => state.requestEditorFocus
     );
     const placeholderMessage = useDenebState((state) =>

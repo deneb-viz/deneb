@@ -7,7 +7,7 @@ import { resolveDownloadPermitted } from './download-permission';
 import { ReportViewRouter } from './report-view-router';
 import {
     DenebProvider,
-    markEditorOpenStart,
+    GatedDenebViewer,
     useDenebState,
     type ViewEventBinder
 } from '@deneb-viz/app-core';
@@ -16,7 +16,7 @@ import {
     platformSearchContributions
 } from './platform-search-contributions';
 import {
-    GatedDenebViewer,
+    markEditorOpenStart,
     RetainedDenebEditor
 } from '@deneb-viz/app-core/editor';
 import {

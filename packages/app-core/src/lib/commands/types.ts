@@ -27,6 +27,21 @@ export type Command =
     | 'zoomOut'
     | 'zoomReset';
 
+/**
+ * The commands whose enabled state is derived on read (via the selectors
+ * in `lib/commands/selectors.ts`) rather than stored in `state.commands`.
+ * `CommandsSliceProperties` (state/commands.ts) excludes these — nothing
+ * writes or reads them as stored flags any more; `selectCommandEnabled`
+ * dispatches each to its selector instead of falling through to
+ * `state.commands[command]`.
+ */
+export type DerivedCommand =
+    | 'exportSpecification'
+    | 'zoomFit'
+    | 'zoomIn'
+    | 'zoomOut'
+    | 'zoomReset';
+
 export type ExportSpecCommandTestOptions = {
     editorIsDirty: boolean;
     compilationResult: CompilationResult | null;

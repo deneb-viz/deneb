@@ -1,10 +1,6 @@
 import { getUpdatedExportMetadata } from '@deneb-viz/json-processing';
 import type { monaco } from '../lib/monaco/types';
-import {
-    evaluateExportSpecCommandState,
-    evaluateZoomCommandsState,
-    getNextApplyMode
-} from '../lib/commands/state';
+import { getNextApplyMode } from '../lib/commands/state';
 import {
     type ContainerViewport,
     type DebugPaneRole,
@@ -318,10 +314,6 @@ const handleUpdateChanges = (
         {}
     );
     return {
-        commands: {
-            ...state.commands,
-            ...evaluateExportSpecCommandState(isDirty, state.compilation.result)
-        },
         editor: {
             ...state.editor,
             isDirty,
@@ -342,10 +334,6 @@ const handleUpdateIsDirty = (
     state: StoreState,
     isDirty: boolean
 ): Partial<StoreState> => ({
-    commands: {
-        ...state.commands,
-        ...evaluateExportSpecCommandState(isDirty, state.compilation.result)
-    },
     editor: {
         ...state.editor,
         isDirty
@@ -372,9 +360,5 @@ const handleUpdateEditorZoomLevel = (
     state: StoreState,
     zoomLevel: number
 ): Partial<StoreState> => ({
-    commands: {
-        ...state.commands,
-        ...evaluateZoomCommandsState(zoomLevel, state.compilation.result)
-    },
     editorZoomLevel: zoomLevel
 });

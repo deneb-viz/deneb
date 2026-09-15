@@ -7,11 +7,8 @@ import {
 import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
 
 import { useSettingsStyles } from '../styles';
-import {
-    Hyperlink,
-    useDenebState,
-    useSettingsPaneTooltip
-} from '@deneb-viz/app-core';
+import { Hyperlink, useDenebState } from '@deneb-viz/app-core';
+import { useSettingsPaneTooltip } from '@deneb-viz/app-core/editor';
 import { InteractivityManager } from '../../../lib/interactivity';
 import { useDenebVisualState } from '../../../state';
 import { handlePersistBooleanProperty } from '../helpers';

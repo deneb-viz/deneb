@@ -77,10 +77,8 @@ export type ExportSpecCommandState = {
 
 /**
  * Pure helper that evaluates the four zoom command enabled flags from the
- * current zoom level and compilation result. Single source of truth for
- * the zoom-gate predicates: called from `handleUpdateEditorZoomLevel`
- * (the user-action writer) and from `handleCompile`'s success branch
- * (the recovery write that re-enables zoom after a parse-error click).
+ * current zoom level and compilation result. Called from
+ * `selectZoomCommandsState` (lib/commands/selectors.ts).
  *
  * Pure: no closures over store state, no side effects.
  */
@@ -106,11 +104,8 @@ export const evaluateZoomCommandsState = (
 
 /**
  * Pure helper that evaluates the `exportSpecification` command enabled
- * flag from the editor dirty state and compilation result. Single source
- * of truth for the export-gate predicate: called from
- * `handleUpdateChanges` and `handleUpdateIsDirty` (the user-action
- * writers) and from `handleCompile`'s success branch (the recovery write
- * that re-enables export after a keystroke during a parse-error state).
+ * flag from the editor dirty state and compilation result. Called from
+ * `selectExportSpecificationCommandEnabled` (lib/commands/selectors.ts).
  *
  * Pure: no closures over store state, no side effects.
  */

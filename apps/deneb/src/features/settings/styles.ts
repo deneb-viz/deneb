@@ -1,5 +1,5 @@
 import { makeStyles } from '@fluentui/react-components';
-import { spinButtonStyleSlots } from '@deneb-viz/app-core';
+import { spinButtonStyleSlots } from '@deneb-viz/app-core/editor';
 
 export const useSettingsStyles = makeStyles({
     radioGroupLabel: {

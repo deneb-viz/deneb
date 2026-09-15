@@ -36,14 +36,15 @@ describe('NotificationApplyChanges import contract', () => {
         'utf8'
     );
 
-    it('imports `specificationEditorRefs` from `@deneb-viz/app-core`', () => {
+    it('imports `specificationEditorRefs` from `@deneb-viz/app-core/editor`', () => {
         // The module-level singleton is the correct access path for this
         // App-shell consumer — it cannot structurally live under the
         // SpecificationEditorProvider subtree. Asserting the import is
         // present (rather than absent) makes the failure message
-        // self-explanatory when someone deletes it by accident.
+        // self-explanatory when someone deletes it by accident. The
+        // symbol lives on the editor entry, not the root barrel.
         expect(source).toMatch(
-            /import\s*\{[^}]*\bspecificationEditorRefs\b[^}]*\}\s*from\s*['"]@deneb-viz\/app-core['"]/s
+            /import\s*\{[^}]*\bspecificationEditorRefs\b[^}]*\}\s*from\s*['"]@deneb-viz\/app-core\/editor['"]/s
         );
     });
 

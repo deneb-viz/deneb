@@ -9,7 +9,7 @@ import {
 } from '@deneb-viz/json-processing/field-tracking';
 import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 import { StoreState } from './state';
-import { isExportSpecCommandEnabled, ModalDialogRole } from '../lib';
+import { ModalDialogRole } from '../lib';
 import { StateCreator } from 'zustand';
 import { getModalDialogRole } from '../lib/interface/modal-dialog-role';
 
@@ -181,14 +181,12 @@ const handleApplyTrackingChanges = (
         state.interface.type,
         state.interface.modalDialogRole
     );
+    // Does NOT write `commands.exportSpecification`. That enablement is
+    // derived on read via `selectExportSpecificationCommandEnabled`
+    // (lib/commands/selectors.ts), computed fresh from `compilation.result`
+    // and `editor.isDirty` — neither of which this handler's outcome
+    // changes.
     return {
-        commands: {
-            ...state.commands,
-            exportSpecification: isExportSpecCommandEnabled({
-                editorIsDirty: state.editor.isDirty,
-                compilationResult: state.compilation.result
-            })
-        },
         fieldUsage: {
             ...state.fieldUsage,
             dataset: trackedFields,

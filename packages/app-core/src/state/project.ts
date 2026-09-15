@@ -1,5 +1,5 @@
 import { type StateCreator } from 'zustand';
-import { type SyncableSlice, type StoreState } from './state';
+import { type SyncableSlice, type CoreStoreState } from './state';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 import {
     getVegaVersion,
@@ -8,43 +8,26 @@ import {
 } from '@deneb-viz/vega-runtime/embed';
 import { isProjectInitialized, type DenebProject } from '../lib/project';
 import { getModalDialogRole } from '../lib/interface/modal-dialog-role';
-import { getUpdatedExportMetadata } from '@deneb-viz/json-processing';
-import {
-    TEMPLATE_USERMETA_VERSION,
-    type UsermetaTemplate
-} from '@deneb-viz/template-usermeta';
+import { TEMPLATE_USERMETA_VERSION } from '@deneb-viz/template-usermeta';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { type SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
-import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
-import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
-
-/**
- * Project each export dataset entry's per-field support configuration into its
- * `supportFieldConfiguration` slot, and STRIP the slot from any field that is
- * no longer present in `config`. This is the single, canonical implementation
- * shared by every site that embeds support-field config into export metadata
- * (template init, setter, migration stamp, host sync). Previously duplicated
- * four times with two divergent semantics: two variants stripped stale config,
- * two left it embedded on removed fields — corrupting export/template
- * integrity when a field was reconfigured to defaults or removed.
- */
-const embedSupportFieldConfig = (
-    dataset: UsermetaDatasetField[],
-    config: SupportFieldConfiguration | undefined
-): UsermetaDatasetField[] =>
-    dataset.map((d) => {
-        const fieldConfig = config?.[d.namePlaceholder ?? d.name];
-        if (fieldConfig) {
-            return { ...d, supportFieldConfiguration: fieldConfig };
-        }
-        // Remove stale config from a field that is no longer configured.
-        const { supportFieldConfiguration: _, ...rest } = d;
-        return rest as UsermetaDatasetField;
-    });
 
 export type ProjectSliceProperties = SyncableSlice &
     DenebProject & {
         __isInitialized__: boolean;
+        /**
+         * Incremented only by `initializeFromTemplate`. The editor
+         * subscribes to it to select the Spec pane and request focus.
+         */
+        initializationCount: number;
+        /**
+         * Incremented by `initializeFromTemplate` and `setContent`. The
+         * editor subscribes to it to refresh staged Spec/Config text —
+         * value-diffing `spec`/`config` cannot distinguish identical text
+         * (e.g. a template's config matching the empty-object default)
+         * from text that was never staged.
+         */
+        contentCommitCount: number;
         initializeFromTemplate: (
             payload: InitializeFromTemplatePayload
         ) => void;
@@ -120,12 +103,12 @@ export type ProjectSlice = {
 
 export const createProjectSlice =
     (): StateCreator<
-        StoreState,
+        CoreStoreState,
         [['zustand/devtools', never]],
         [],
         ProjectSlice
     > =>
-    (set, get) => ({
+    (set) => ({
         project: {
             __hasHydrated__: false,
             __isInitialized__: false,
@@ -141,6 +124,8 @@ export const createProjectSlice =
             denebMetaVersion: 0,
             scaleToZoom: false,
             consolidateFieldParameters: true,
+            initializationCount: 0,
+            contentCommitCount: 0,
             initializeFromTemplate: (
                 payload: InitializeFromTemplatePayload
             ) => {
@@ -169,35 +154,19 @@ export const createProjectSlice =
                                 payload.consolidateFieldParameters ??
                                 state.project.consolidateFieldParameters,
                             __hasHydrated__: state.project.__hasHydrated__,
-                            __isInitialized__: true
+                            __isInitialized__: true,
+                            // Bumped in this SAME set() call — see the
+                            // doc comment on `initializationCount` above.
+                            initializationCount:
+                                state.project.initializationCount + 1,
+                            // See the doc comment on `contentCommitCount`
+                            // above — this and `setContent` are the two
+                            // actions that must unconditionally refresh
+                            // staged editor text.
+                            contentCommitCount:
+                                state.project.contentCommitCount + 1
                         };
-                        // Embed support field config into dataset entries for export metadata
-                        const datasetWithConfig = embedSupportFieldConfig(
-                            state.export.metadata?.datasets?.[
-                                DATASET_DEFAULT_NAME
-                            ] ?? [],
-                            updatedProject.supportFieldConfiguration
-                        );
-                        // Update export metadata for template creation
-                        const exportMetadata = getUpdatedExportMetadata(
-                            state.export.metadata as UsermetaTemplate,
-                            {
-                                config: payload.config,
-                                datasets: {
-                                    ...state.export.metadata?.datasets,
-                                    [DATASET_DEFAULT_NAME]: datasetWithConfig
-                                },
-                                provider,
-                                providerVersion,
-                                interactivity: updatedProject.interactivity
-                            }
-                        );
                         return {
-                            editorSelectedOperation: 'Spec',
-                            export: {
-                                ...state.export,
-                                metadata: exportMetadata
-                            },
                             interface: {
                                 ...state.interface,
                                 modalDialogRole: 'None'
@@ -208,14 +177,6 @@ export const createProjectSlice =
                     false,
                     'project.initializeFromTemplate'
                 );
-                get().editor.updateChanges({
-                    role: 'Spec',
-                    text: payload.spec
-                });
-                get().editor.updateChanges({
-                    role: 'Config',
-                    text: payload.config
-                });
             },
             setContent: (payload: SetContentPayload) => {
                 set(
@@ -225,38 +186,19 @@ export const createProjectSlice =
                             spec: payload.spec,
                             config: payload.config,
                             __hasHydrated__: state.project.__hasHydrated__,
-                            __isInitialized__: state.project.__isInitialized__
+                            __isInitialized__: state.project.__isInitialized__,
+                            // See the doc comment on `contentCommitCount`
+                            // on the slice type above.
+                            contentCommitCount:
+                                state.project.contentCommitCount + 1
                         };
-                        // Update export metadata
-                        const exportMetadata = getUpdatedExportMetadata(
-                            state.export.metadata as UsermetaTemplate,
-                            {
-                                config: payload.config,
-                                provider:
-                                    updatedProject.provider as SpecProvider,
-                                providerVersion: updatedProject.providerVersion,
-                                interactivity: updatedProject.interactivity
-                            }
-                        );
                         return {
-                            export: {
-                                ...state.export,
-                                metadata: exportMetadata
-                            },
                             project: updatedProject
                         };
                     },
                     false,
                     'project.setContent'
                 );
-                get().editor.updateChanges({
-                    role: 'Spec',
-                    text: payload.spec
-                });
-                get().editor.updateChanges({
-                    role: 'Config',
-                    text: payload.config
-                });
             },
             setLogLevel: (logLevel: number) =>
                 set(
@@ -307,33 +249,12 @@ export const createProjectSlice =
                 ),
             setSupportFieldConfiguration: (config: SupportFieldConfiguration) =>
                 set(
-                    (state) => {
-                        const updatedDataset = embedSupportFieldConfig(
-                            state.export.metadata?.datasets?.[
-                                DATASET_DEFAULT_NAME
-                            ] ?? [],
-                            config
-                        );
-                        const exportMetadata = getUpdatedExportMetadata(
-                            state.export.metadata as UsermetaTemplate,
-                            {
-                                datasets: {
-                                    ...state.export.metadata?.datasets,
-                                    [DATASET_DEFAULT_NAME]: updatedDataset
-                                }
-                            }
-                        );
-                        return {
-                            project: {
-                                ...state.project,
-                                supportFieldConfiguration: config
-                            },
-                            export: {
-                                ...state.export,
-                                metadata: exportMetadata
-                            }
-                        };
-                    },
+                    (state) => ({
+                        project: {
+                            ...state.project,
+                            supportFieldConfiguration: config
+                        }
+                    }),
                     false,
                     'project.setSupportFieldConfiguration'
                 ),
@@ -352,40 +273,16 @@ export const createProjectSlice =
                 payload: SupportFieldMigrationStampPayload
             ) =>
                 set(
-                    (state) => {
-                        // Embed support field config into dataset entries
-                        // for export metadata (same semantics as
-                        // setSupportFieldConfiguration).
-                        const updatedDataset = embedSupportFieldConfig(
-                            state.export.metadata?.datasets?.[
-                                DATASET_DEFAULT_NAME
-                            ] ?? [],
-                            payload.supportFieldConfiguration
-                        );
-                        const exportMetadata = getUpdatedExportMetadata(
-                            state.export.metadata as UsermetaTemplate,
-                            {
-                                datasets: {
-                                    ...state.export.metadata?.datasets,
-                                    [DATASET_DEFAULT_NAME]: updatedDataset
-                                }
-                            }
-                        );
-                        return {
-                            project: {
-                                ...state.project,
-                                supportFieldConfiguration:
-                                    payload.supportFieldConfiguration,
-                                denebMetaVersion: payload.denebMetaVersion,
-                                consolidateFieldParameters:
-                                    payload.consolidateFieldParameters
-                            },
-                            export: {
-                                ...state.export,
-                                metadata: exportMetadata
-                            }
-                        };
-                    },
+                    (state) => ({
+                        project: {
+                            ...state.project,
+                            supportFieldConfiguration:
+                                payload.supportFieldConfiguration,
+                            denebMetaVersion: payload.denebMetaVersion,
+                            consolidateFieldParameters:
+                                payload.consolidateFieldParameters
+                        }
+                    }),
                     false,
                     'project.applySupportFieldMigrationStamp'
                 ),
@@ -424,13 +321,13 @@ export const createProjectSlice =
 
 /**
  * Handle synchronization of project data from host application (e.g., Power BI).
- * This updates the project slice with the incoming data and export metadata.
- * Spec parsing is handled by the compilation slice via VisualViewer's useEffect.
+ * This updates the project slice with the incoming data. Spec parsing is
+ * handled by the compilation slice via VisualViewer's useEffect.
  */
 const handleSyncProjectData = (
-    state: StoreState,
+    state: CoreStoreState,
     payload: ProjectSyncPayload
-): Partial<StoreState> => {
+): Partial<CoreStoreState> => {
     logDebug('project.syncProjectData', payload);
 
     const definedPayload = Object.fromEntries(
@@ -456,32 +353,7 @@ const handleSyncProjectData = (
         state.interface.modalDialogRole
     );
 
-    // Embed support field config into dataset entries for export metadata
-    const datasetWithConfig = embedSupportFieldConfig(
-        state.export.metadata?.datasets?.[DATASET_DEFAULT_NAME] ?? [],
-        updatedProject.supportFieldConfiguration
-    );
-
-    // Update export metadata for template export functionality
-    const exportMetadata = getUpdatedExportMetadata(
-        state.export.metadata as UsermetaTemplate,
-        {
-            config: payload.config ?? state.export.metadata?.config,
-            datasets: {
-                ...state.export.metadata?.datasets,
-                [DATASET_DEFAULT_NAME]: datasetWithConfig
-            },
-            provider: updatedProject.provider as SpecProvider,
-            providerVersion: updatedProject.providerVersion,
-            interactivity: updatedProject.interactivity
-        }
-    );
-
     return {
-        export: {
-            ...state.export,
-            metadata: exportMetadata
-        },
         interface: {
             ...state.interface,
             modalDialogRole
