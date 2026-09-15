@@ -34,7 +34,7 @@ const partialSync = (payload: Record<string, unknown>) =>
     payload as unknown as ProjectSyncPayload;
 
 describe('editor subscriptions — initializeFromTemplate', () => {
-    it('(i) seeds export metadata, stages both roles, and selects the Spec pane, matching the pre-subscription behaviour', () => {
+    it('(i) seeds export metadata, stages both roles, and selects the Spec pane', () => {
         const store = makeStore();
         store.getState().updateEditorSelectedOperation('Config');
 
@@ -49,9 +49,8 @@ describe('editor subscriptions — initializeFromTemplate', () => {
 
         const state = store.getState();
         expect(state.editor.stagedSpec).toBe('{"mark":"point"}');
-        // Regression coverage for the value-collision bug this test caught
-        // during implementation: '{}' happens to equal PROJECT_DEFAULTS.config,
-        // so a naive value-diff subscription would wrongly skip staging it.
+        // '{}' equals PROJECT_DEFAULTS.config, so staging must not depend on
+        // a value diff of the config text.
         expect(state.editor.stagedConfig).toBe('{}');
         expect(state.editorSelectedOperation).toBe('Spec');
         expect(state.export.metadata?.config).toBe('{}');

@@ -196,10 +196,8 @@ export const reconcileExportDatasetFields = (
  * `supportFieldConfiguration` slot, and STRIP the slot from any field that is
  * no longer present in `config`. This is the single, canonical implementation
  * shared by every site that embeds support-field config into export metadata
- * (template init, setter, migration stamp, host sync). Previously duplicated
- * four times with two divergent semantics: two variants stripped stale config,
- * two left it embedded on removed fields — corrupting export/template
- * integrity when a field was reconfigured to defaults or removed.
+ * (template init, setter, migration stamp, host sync); stripping stale slots
+ * keeps export/template integrity when a field is reset to defaults or removed.
  */
 export const embedSupportFieldConfig = (
     dataset: UsermetaDatasetField[],

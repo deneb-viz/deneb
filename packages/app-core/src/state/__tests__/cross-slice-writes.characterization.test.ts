@@ -23,8 +23,7 @@ import type { UsermetaDatasetField } from '@deneb-viz/data-core/field';
  * 3 and 4 write into `create` / `export` / `editor` / `interface` directly,
  * and are characterized exactly as they land.
  *
- * These tests pin exact values (not just truthiness), so a green run is
- * proof of equivalence with pre-refactor behaviour. Do not "fix" a
+ * These tests pin exact values (not just truthiness). Do not "fix" a
  * surprising value here — if it looks odd, it is pinning real current
  * behaviour (see inline notes, e.g. the isDirty=false outcome on template
  * init/setContent).
