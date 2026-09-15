@@ -8,7 +8,7 @@ import {
     type DenebTemplateCreateMode
 } from '@deneb-viz/json-processing/template-processing';
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
-import { type StoreState } from './state';
+import { type CoreStoreState } from './state';
 import {
     areAllCreateDataRequirementsMet,
     getNewCreateFromTemplateSliceProperties
@@ -67,7 +67,7 @@ interface ICreateSliceSetTemplate {
 
 export const createCreateSlice =
     (): StateCreator<
-        StoreState,
+        CoreStoreState,
         [['zustand/devtools', never]],
         [],
         CreateSliceState
@@ -77,7 +77,7 @@ export const createCreateSlice =
             ...getNewCreateFromTemplateSliceProperties(),
             setFieldAssignment: (payload: CreateSliceSetFieldAssignment) =>
                 set(
-                    (state: StoreState) =>
+                    (state: CoreStoreState) =>
                         handleSetFieldAssignment(state, payload),
                     false,
                     'create.setFieldAssignment'
@@ -114,9 +114,9 @@ export const createCreateSlice =
  * field.
  */
 const handleSetFieldAssignment = (
-    state: StoreState,
+    state: CoreStoreState,
     payload: CreateSliceSetFieldAssignment
-): Partial<StoreState> => {
+): Partial<CoreStoreState> => {
     const dataset = state.create?.metadata?.datasets?.[DATASET_DEFAULT_NAME];
     if (dataset) {
         const phIndex = dataset.findIndex((ph) => ph.key === payload.key);
@@ -158,9 +158,9 @@ const handleSetFieldAssignment = (
  * Updates the dataset and related properties, after this has been processed.
  */
 const handleSetImportFile = (
-    state: StoreState,
+    state: CoreStoreState,
     payload: DenebTemplateSetImportFilePayload
-): Partial<StoreState> => {
+): Partial<CoreStoreState> => {
     const { candidates, importFile, importState, metadata } = payload;
     const {
         metadataAllDependenciesAssigned = false,
@@ -185,9 +185,9 @@ const handleSetImportFile = (
  * Updates the current state of import file processing (for the UI).
  */
 const handleSetImportState = (
-    state: StoreState,
+    state: CoreStoreState,
     payload: CreateSliceSetImportState
-): Partial<StoreState> => {
+): Partial<CoreStoreState> => {
     const { importState, refresh } = payload;
     return refresh
         ? {
@@ -204,9 +204,9 @@ const handleSetImportState = (
  * Updates the dataset and related properties, after this has been processed.
  */
 const handleSetMode = (
-    state: StoreState,
+    state: CoreStoreState,
     mode: DenebTemplateCreateMode
-): Partial<StoreState> => {
+): Partial<CoreStoreState> => {
     return {
         create: {
             ...state.create,
@@ -225,9 +225,9 @@ const handleSetMode = (
  * Sets the template specification and metadata from the UI.
  */
 const handleSetTemplate = (
-    state: StoreState,
+    state: CoreStoreState,
     payload: ICreateSliceSetTemplate
-): Partial<StoreState> => {
+): Partial<CoreStoreState> => {
     const { metadata, candidates } = payload;
     const {
         metadataAllDependenciesAssigned = false,

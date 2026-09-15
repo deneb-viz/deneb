@@ -15,7 +15,7 @@ import {
     updateFieldTracking
 } from '../../../lib/field-processing';
 import { getDatasetTemplateFieldsFromMetadata } from '@deneb-viz/data-core/field';
-import { reconcileExportDatasetFields } from '../../../state/dataset';
+import { reconcileExportDatasetFields } from '../../../state/export';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 
 /**

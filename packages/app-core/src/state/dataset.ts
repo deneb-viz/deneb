@@ -1,22 +1,13 @@
 import { type StateCreator } from 'zustand';
 
-import { type StoreState } from './state';
+import { type CoreStoreState } from './state';
+import { normalizeFieldsInput } from '@deneb-viz/data-core/field';
+import { logDebug } from '@deneb-viz/utils/logging';
+import { areAllCreateDataRequirementsMet } from '@deneb-viz/json-processing';
 import {
-    getDatasetTemplateFieldsFromMetadata,
-    normalizeFieldsInput
-} from '@deneb-viz/data-core/field';
-import { logDebug, logTimeEnd, logTimeStart } from '@deneb-viz/utils/logging';
-import {
-    areAllCreateDataRequirementsMet,
-    getUpdatedExportMetadata
-} from '@deneb-viz/json-processing';
-import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
-import {
-    DATASET_DEFAULT_NAME,
     type TabularDataset,
     type TabularDatasetInput
 } from '@deneb-viz/data-core/dataset';
-import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 
 export type DatasetSlice = {
     dataset: TabularDataset;
@@ -29,7 +20,7 @@ export type VisualDatasetUpdatePayload = {
 
 export const createDatasetSlice =
     (): StateCreator<
-        StoreState,
+        CoreStoreState,
         [['zustand/devtools', never]],
         [],
         DatasetSlice
@@ -48,42 +39,17 @@ export const createDatasetSlice =
     });
 
 /**
- * Reconcile freshly-generated template fields with previously-stored export metadata, preserving user-edited
- * properties (description, kind, type, suppliedObject*) while refreshing name/namePlaceholder/key from the current
- * dataset. Matches by `namePlaceholder` (stable field identity) rather than `key` (positional placeholder) so that
- * field reordering doesn't cause metadata to be applied to the wrong field.
- */
-export const reconcileExportDatasetFields = (
-    freshFields: UsermetaDatasetField[],
-    previousFields: UsermetaDatasetField[] | undefined
-): UsermetaDatasetField[] =>
-    freshFields.map((d) => {
-        const match = previousFields?.find(
-            (ds) =>
-                (ds.namePlaceholder ?? ds.name) ===
-                (d.namePlaceholder ?? d.name)
-        );
-        if (match) {
-            return {
-                ...match,
-                ...{
-                    name: d.name,
-                    namePlaceholder: d.namePlaceholder,
-                    key: d.key
-                }
-            };
-        }
-        return d;
-    });
-
-/**
- * Handle dataset updates from host application, and update export metadata.
- * Normalizes field input (array or record) to the internal record format.
+ * Handle dataset updates from host application. Export metadata (previously
+ * also updated here) is recomputed by the editor-side subscription
+ * registered in `installEditorState` (U5), which reacts to `dataset`
+ * changing — `reconcileExportDatasetFields` (the helper that used to live
+ * here) moved to `state/export.ts` alongside that subscription. Normalizes
+ * field input (array or record) to the internal record format.
  */
 const handleUpdateDataset = (
-    state: StoreState,
+    state: CoreStoreState,
     payload: VisualDatasetUpdatePayload
-): Partial<StoreState> => {
+): Partial<CoreStoreState> => {
     logDebug('dataset.updateDataset', payload);
 
     // Normalize fields input (array → record)
@@ -98,20 +64,6 @@ const handleUpdateDataset = (
         metadataAllFieldsAssigned = false
     } = areAllCreateDataRequirementsMet(state.create.metadata);
 
-    logTimeStart('dataset.updateDataset.getUpdatedExportMetadata');
-    const exportMetadata = getUpdatedExportMetadata(
-        state.export.metadata as UsermetaTemplate,
-        {
-            datasets: {
-                ...state.export.metadata?.datasets,
-                [DATASET_DEFAULT_NAME]: reconcileExportDatasetFields(
-                    getDatasetTemplateFieldsFromMetadata(normalizedFields),
-                    state.export.metadata?.datasets?.[DATASET_DEFAULT_NAME]
-                )
-            }
-        }
-    );
-    logTimeEnd('dataset.updateDataset.getUpdatedExportMetadata');
     logDebug('dataset.updateDataset persisting to store...');
 
     return {
@@ -120,10 +72,6 @@ const handleUpdateDataset = (
             metadataAllDependenciesAssigned,
             metadataAllFieldsAssigned
         },
-        dataset,
-        export: {
-            ...state.export,
-            metadata: exportMetadata
-        }
+        dataset
     };
 };

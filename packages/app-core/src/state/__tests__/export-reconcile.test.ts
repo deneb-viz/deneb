@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
-import { reconcileExportDatasetFields } from '../dataset';
+import { reconcileExportDatasetFields } from '../export';
 
 /**
  * Helper to create a minimal UsermetaDatasetField for testing.
