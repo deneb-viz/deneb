@@ -11,7 +11,6 @@ import { type ModalDialogType } from '../ui';
 import { TemplateDatasetColumns } from './template-dataset-columns';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { TemplateDatasetRow } from './template-dataset-row';
-import { useCallback } from 'react';
 import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 import { type TemplateFieldAssignmentReducer } from './types';
@@ -57,28 +56,22 @@ export const TemplateDataset = ({
     /**
      * Provide content for eligible dataset fields.
      */
-    const getTableFieldRows = useCallback(
-        (role: ModalDialogType) => {
-            const items: UsermetaDatasetField[] =
-                metadata?.datasets?.[DATASET_DEFAULT_NAME]?.slice() || [];
-            logDebug('getTableFieldRows', { items });
-            return items.map((item, index) => (
-                <TableRow
-                    key={`template-field-${item.key}-${index}`}
-                    className={classes.tableRow}
-                >
-                    <TemplateDatasetRow
-                        item={item}
-                        role={role}
-                        index={index}
-                        setFieldAssignment={setFieldAssignment}
-                    />
-                </TableRow>
-            ));
-        },
-        [metadata, setFieldAssignment]
-    );
-    const tableBody = getTableFieldRows(datasetRole);
+    const items: UsermetaDatasetField[] =
+        metadata?.datasets?.[DATASET_DEFAULT_NAME]?.slice() || [];
+    logDebug('getTableFieldRows', { items });
+    const tableBody = items.map((item, index) => (
+        <TableRow
+            key={`template-field-${item.key}-${index}`}
+            className={classes.tableRow}
+        >
+            <TemplateDatasetRow
+                item={item}
+                role={datasetRole}
+                index={index}
+                setFieldAssignment={setFieldAssignment}
+            />
+        </TableRow>
+    ));
 
     if (tableBody.length === 0) {
         return <></>;

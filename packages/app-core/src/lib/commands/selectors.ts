@@ -5,7 +5,7 @@ import {
     type ExportSpecCommandState,
     type ZoomCommandsState
 } from './state';
-import type { Command, DerivedCommand } from './types';
+import type { Command } from './types';
 
 /**
  * Derives the `exportSpecification` command's enabled state from the
@@ -68,6 +68,6 @@ export const selectCommandEnabled = (
         case 'zoomReset':
             return selectZoomCommandsState(state)[command];
         default:
-            return state.commands[command as Exclude<Command, DerivedCommand>];
+            return state.commands[command];
     }
 };
