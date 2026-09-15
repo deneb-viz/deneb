@@ -5,6 +5,14 @@
         "build": {
             "dependsOn": ["^build", "@deneb-viz/app-core#build"],
             "outputs": ["dist/**"]
+        },
+        "test": {
+            "dependsOn": ["^build", "@deneb-viz/app-core#build"],
+            "outputs": ["coverage/**"]
+        },
+        "bench": {
+            "dependsOn": ["^build", "@deneb-viz/app-core#build"],
+            "cache": false
         }
     }
 }
