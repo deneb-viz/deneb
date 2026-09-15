@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createDenebState } from '../state';
+import { installEditorState } from '../install-editor-state';
 import type { monaco } from '../../lib/monaco/types';
 
 /**
@@ -11,7 +12,11 @@ import type { monaco } from '../../lib/monaco/types';
  * Spec keystroke overwrote the Config editor's saved cursor/scroll state (and
  * vice versa).
  */
-const makeStore = () => createDenebState({ applicationVersion: 'test' });
+const makeStore = () => {
+    const store = createDenebState({ applicationVersion: 'test' });
+    installEditorState(store, { applicationVersion: 'test' });
+    return store;
+};
 
 const asViewState = (id: string) =>
     ({ __id: id }) as unknown as monaco.editor.ICodeEditorViewState;

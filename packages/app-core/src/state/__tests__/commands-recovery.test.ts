@@ -58,6 +58,7 @@ vi.mock('@deneb-viz/vega-runtime/compilation', async () => {
 import { compileSpec } from '@deneb-viz/vega-runtime/compilation';
 import { VISUAL_PREVIEW_ZOOM_CONFIGURATION } from '@deneb-viz/configuration';
 import { createDenebState } from '../state';
+import { installEditorState } from '../install-editor-state';
 
 // Source the boundaries from the same configuration constant the
 // predicates use. Mirrors the sibling helper-unit test in
@@ -72,9 +73,16 @@ const ZOOM_MID = VISUAL_PREVIEW_ZOOM_CONFIGURATION.default;
  * store factory rather than hand-rolling slice composition avoids the
  * circular-import problem (`editor.ts` imports `StoreState` from
  * `./state`) and ensures cross-slice writes work the same way they do at
- * runtime.
+ * runtime. `createDenebState` only assembles core slices now, so
+ * `installEditorState` merges the editor-only slices (commands, debug,
+ * editor, export, fieldUsage, settingsPane) in immediately after —
+ * these tests exercise commands, which is editor-only.
  */
-const makeStore = () => createDenebState({ applicationVersion: 'test' });
+const makeStore = () => {
+    const store = createDenebState({ applicationVersion: 'test' });
+    installEditorState(store, { applicationVersion: 'test' });
+    return store;
+};
 
 /**
  * Force the compilation result into a non-ready state without going

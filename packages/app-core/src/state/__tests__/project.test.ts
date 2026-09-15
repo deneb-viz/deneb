@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 import { createDenebState } from '../state';
+import { installEditorState } from '../install-editor-state';
 import type { ProjectSyncPayload } from '../project';
 
 /**
@@ -20,8 +21,15 @@ import type { ProjectSyncPayload } from '../project';
  * Build a fresh, fully-wired Deneb state store per test (same pattern as
  * commands-recovery.test.ts — the real store factory avoids circular-
  * import problems and exercises cross-slice writes as at runtime).
+ * `createDenebState` only assembles core slices now, so
+ * `installEditorState` merges the editor-only slices in immediately —
+ * these tests read `export.metadata`, which is editor-only.
  */
-const makeStore = () => createDenebState({ applicationVersion: 'test' });
+const makeStore = () => {
+    const store = createDenebState({ applicationVersion: 'test' });
+    installEditorState(store, { applicationVersion: 'test' });
+    return store;
+};
 
 /**
  * The sync layer passes partial payloads at runtime (only changed keys);

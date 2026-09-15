@@ -31,6 +31,7 @@ import {
 } from '@deneb-viz/utils/logging';
 import { InteractivityManager } from './lib/interactivity';
 import { getDenebState, type I18nLocale } from '@deneb-viz/app-core';
+import { installEditorState } from '@deneb-viz/app-core/editor';
 import type { SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 import { VegaExtensibilityServices } from '@deneb-viz/vega-runtime/extensibility';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
@@ -268,6 +269,13 @@ export class Deneb implements IVisual {
                 this.#coordinator.closePendingRenderSettle();
             this.#onRenderingErrorAdapter = (error: Error) =>
                 this.#coordinator.failPendingRender(error);
+            // Merge the editor-only slices into the singleton before
+            // anything reads from it. Must run before the first
+            // `getDenebState()` call below and before `<App>` renders
+            // (the retained editor shell reads editor state on its
+            // first render, via `useEditorState`, and throws a clear
+            // error if this call is skipped or moved after it).
+            installEditorState();
             const {
                 dataset: { setSelectors },
                 host: { setHost },

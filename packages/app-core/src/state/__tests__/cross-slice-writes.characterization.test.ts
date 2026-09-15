@@ -50,6 +50,7 @@ vi.mock('@deneb-viz/vega-runtime/compilation', async () => {
 
 import { compileSpec } from '@deneb-viz/vega-runtime/compilation';
 import { createDenebState } from '../state';
+import { installEditorState } from '../install-editor-state';
 
 const ZOOM_MIN = VISUAL_PREVIEW_ZOOM_CONFIGURATION.min;
 const ZOOM_MAX = VISUAL_PREVIEW_ZOOM_CONFIGURATION.max;
@@ -59,9 +60,16 @@ const ZOOM_DEFAULT = VISUAL_PREVIEW_ZOOM_CONFIGURATION.default;
  * Build a fresh, fully-wired Deneb state store per test (same pattern as
  * project.test.ts / commands-recovery.test.ts — the real store factory
  * avoids circular-import problems and exercises cross-slice writes as at
- * runtime).
+ * runtime). `createDenebState` only assembles core slices now, so
+ * `installEditorState` merges the editor-only slices in immediately —
+ * these characterization tests exercise editor, export and commands,
+ * all editor-only.
  */
-const makeStore = () => createDenebState({ applicationVersion: 'test' });
+const makeStore = () => {
+    const store = createDenebState({ applicationVersion: 'test' });
+    installEditorState(store, { applicationVersion: 'test' });
+    return store;
+};
 
 describe('U2 flow 1 — compilation.compile (handleCompile) writes commands', () => {
     beforeEach(() => {
@@ -266,9 +274,7 @@ describe('U2 flow 3 — dataset.updateDataset (handleUpdateDataset) writes creat
         });
 
         const entries =
-            store.getState().export.metadata?.datasets?.[
-                DATASET_DEFAULT_NAME
-            ];
+            store.getState().export.metadata?.datasets?.[DATASET_DEFAULT_NAME];
         expect(entries).toEqual([
             {
                 key: '__dataset.0__',
@@ -295,16 +301,12 @@ describe('U2 flow 3 — dataset.updateDataset (handleUpdateDataset) writes creat
 
         store.getState().updateDataset(payload);
         const firstEntries =
-            store.getState().export.metadata?.datasets?.[
-                DATASET_DEFAULT_NAME
-            ];
+            store.getState().export.metadata?.datasets?.[DATASET_DEFAULT_NAME];
         const firstMetadata = store.getState().export.metadata;
 
         store.getState().updateDataset(payload);
         const secondEntries =
-            store.getState().export.metadata?.datasets?.[
-                DATASET_DEFAULT_NAME
-            ];
+            store.getState().export.metadata?.datasets?.[DATASET_DEFAULT_NAME];
         const secondMetadata = store.getState().export.metadata;
 
         // Content is unchanged.
