@@ -7,13 +7,19 @@ export {
     type PlatformSearchRow,
     type ViewEventBinder
 } from './components/deneb-platform';
-// Imported directly from the component file (not the './components/ui'
-// barrel): the barrel's `export * from './toolbar'` transitively reaches
-// `toolbar-button-standard.tsx`, which imports `useSpecificationEditor`
-// (editor-only). Going straight to the file keeps the viewer entry's
-// reachability graph clean of that coupling.
-export { Hyperlink } from './components/ui/hyperlink';
+export * from './components/template-metadata';
+export * from './components/ui';
+export {
+    CreateButton,
+    CreateFromTemplate,
+    ImportDropzone
+} from './features/project-create';
+export { VisualViewer } from './features/visual-viewer';
+export { en_US } from './i18n';
+export * from './lib/application';
 export { type I18nLocale, type Translations } from './lib/i18n';
-export * from './state';
 export * from './lib/interface';
+export { type TranslateFn } from './lib/platform-search-contract';
+export * from './lib/scrollbars';
 export { INCREMENTAL_UPDATE_CONFIGURATION } from './lib/vega/incremental-update-configuration';
+export * from './state';

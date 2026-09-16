@@ -17,7 +17,12 @@ describe('architecture-boundaries', () => {
     it('zero boundaries/element-types violations in src/', async () => {
         const eslint = new ESLint({
             cwd: path.resolve(__dirname, '..', '..'),
-            overrideConfigFile: path.resolve(__dirname, '..', '..', 'eslint.config.js')
+            overrideConfigFile: path.resolve(
+                __dirname,
+                '..',
+                '..',
+                'eslint.config.js'
+            )
         });
 
         const results = await eslint.lintFiles(['src/**/*.{ts,tsx}']);

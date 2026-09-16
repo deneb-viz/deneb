@@ -15,10 +15,7 @@ import {
     PLATFORM_SECTION_KEYS,
     platformSearchContributions
 } from './platform-search-contributions';
-import {
-    markEditorOpenStart,
-    RetainedDenebEditor
-} from '@deneb-viz/app-core/editor';
+import { markEditorOpenStart, RetainedDenebEditor } from '@deneb-viz/editor';
 import {
     FetchingMessage,
     LandingPage,

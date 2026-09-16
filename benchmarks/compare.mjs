@@ -16,7 +16,7 @@
  *
  * Usage:
  *   node benchmarks/compare.mjs \
- *     [--package data-core|app-core] \
+ *     [--package data-core|editor] \
  *     [--results <path>] \
  *     [--baseline <path>] \
  *     [--threshold 20] \
@@ -66,9 +66,9 @@ export const PACKAGE_REGISTRY = {
         results: 'packages/data-core/benchmarks/results/data-core.json',
         baseline: 'benchmarks/baselines/data-core.json'
     },
-    'app-core': {
-        results: 'packages/app-core/benchmarks/results/app-core.json',
-        baseline: 'benchmarks/baselines/app-core.json'
+    editor: {
+        results: 'packages/editor/benchmarks/results/editor.json',
+        baseline: 'benchmarks/baselines/editor.json'
     }
 };
 
@@ -149,7 +149,7 @@ export function ingestVitestOutput(raw) {
 
     if (!raw || typeof raw !== 'object' || !Array.isArray(raw.files)) {
         errors.push(
-            "unexpected JSON shape: expected { files: [...] } at the top level. Check Vitest version compatibility."
+            'unexpected JSON shape: expected { files: [...] } at the top level. Check Vitest version compatibility.'
         );
         return { entries, warnings, errors };
     }
@@ -158,7 +158,8 @@ export function ingestVitestOutput(raw) {
         if (!file || !Array.isArray(file.groups)) continue;
         for (const group of file.groups) {
             if (!group || !Array.isArray(group.benchmarks)) continue;
-            const groupFullName = typeof group.fullName === 'string' ? group.fullName : '';
+            const groupFullName =
+                typeof group.fullName === 'string' ? group.fullName : '';
             for (const bench of group.benchmarks) {
                 if (!bench || typeof bench !== 'object') continue;
                 const name = typeof bench.name === 'string' ? bench.name : '';
@@ -178,7 +179,10 @@ export function ingestVitestOutput(raw) {
                     continue;
                 }
 
-                const sampleCount = typeof bench.sampleCount === 'number' ? bench.sampleCount : 0;
+                const sampleCount =
+                    typeof bench.sampleCount === 'number'
+                        ? bench.sampleCount
+                        : 0;
                 if (sampleCount >= 0 && sampleCount < MIN_SAMPLE_COUNT) {
                     warnings.push(
                         `bench "${key}": sampleCount=${sampleCount} (< ${MIN_SAMPLE_COUNT}). Result may be statistically weak — consider raising per-bench \`time\` or reducing workload.`
@@ -213,7 +217,10 @@ export function ingestVitestOutput(raw) {
  * $ImageVersion identify the specific runner image build. Outside CI,
  * fall back to `local-<platform>`.
  */
-export function detectRunnerImage(env = process.env, platform = process.platform) {
+export function detectRunnerImage(
+    env = process.env,
+    platform = process.platform
+) {
     if (env.ImageOS && env.ImageVersion) {
         return `${env.ImageOS}-${env.ImageVersion}`;
     }
@@ -306,10 +313,14 @@ export function compare({ baseline, current, defaultThreshold }) {
         const c = current.entries.get(key);
         if (b && c) {
             const rawThreshold =
-                typeof b.threshold === 'number' ? b.threshold : defaultThreshold;
-            const effectiveThreshold = rawThreshold >= 0 ? rawThreshold : defaultThreshold;
+                typeof b.threshold === 'number'
+                    ? b.threshold
+                    : defaultThreshold;
+            const effectiveThreshold =
+                rawThreshold >= 0 ? rawThreshold : defaultThreshold;
             const deltaPct = ((b.hz - c.hz) / b.hz) * 100;
-            const status = deltaPct > effectiveThreshold ? 'REGRESSION' : 'PASS';
+            const status =
+                deltaPct > effectiveThreshold ? 'REGRESSION' : 'PASS';
             results.push({
                 key,
                 status,
@@ -465,7 +476,10 @@ export async function readVitestVersion(
 ) {
     try {
         const pkg = JSON.parse(
-            await readFile(pathResolver('node_modules/vitest/package.json'), 'utf-8')
+            await readFile(
+                pathResolver('node_modules/vitest/package.json'),
+                'utf-8'
+            )
         );
         return typeof pkg.version === 'string' ? pkg.version : 'unknown';
     } catch {
@@ -479,7 +493,10 @@ export async function readVitestVersion(
  */
 export function readCommitSha() {
     try {
-        return execSync('git rev-parse HEAD', { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+        return execSync('git rev-parse HEAD', {
+            encoding: 'utf-8',
+            stdio: ['ignore', 'pipe', 'ignore']
+        }).trim();
     } catch {
         return 'unknown';
     }
@@ -558,13 +575,21 @@ async function main(argv) {
 
     const format = values.format;
     if (format !== 'markdown' && format !== 'json') {
-        console.error(`--format must be "markdown" or "json" (got "${format}")`);
+        console.error(
+            `--format must be "markdown" or "json" (got "${format}")`
+        );
         return EXIT_ERROR;
     }
 
     const threshold = Number(values.threshold);
-    if (!Number.isFinite(threshold) || Number.isNaN(threshold) || threshold < 0) {
-        console.error(`--threshold must be a non-negative finite number (got "${values.threshold}")`);
+    if (
+        !Number.isFinite(threshold) ||
+        Number.isNaN(threshold) ||
+        threshold < 0
+    ) {
+        console.error(
+            `--threshold must be a non-negative finite number (got "${values.threshold}")`
+        );
         return EXIT_ERROR;
     }
 
@@ -627,7 +652,13 @@ async function main(argv) {
     });
 }
 
-export async function handleCompare({ current, baseline, baselinePath, defaultThreshold, format = 'markdown' }) {
+export async function handleCompare({
+    current,
+    baseline,
+    baselinePath,
+    defaultThreshold,
+    format = 'markdown'
+}) {
     // A baseline with `_meta.bootstrap: true` is a placeholder committed
     // to register the package with CI before any real data has been
     // captured. The first successful `bench-update-baseline` workflow run
@@ -669,13 +700,19 @@ export async function handleCompare({ current, baseline, baselinePath, defaultTh
     const classification = classifyResults(results);
 
     if (format === 'json') {
-        console.log(JSON.stringify({
-            summary: classification,
-            results,
-            baselineMeta: baseline._meta ?? null,
-            currentMeta,
-            driftWarnings
-        }, null, 2));
+        console.log(
+            JSON.stringify(
+                {
+                    summary: classification,
+                    results,
+                    baselineMeta: baseline._meta ?? null,
+                    currentMeta,
+                    driftWarnings
+                },
+                null,
+                2
+            )
+        );
     } else {
         console.log(renderTable(results));
         console.log('');
@@ -685,7 +722,14 @@ export async function handleCompare({ current, baseline, baselinePath, defaultTh
     return classification.regressions > 0 ? EXIT_REGRESSION : EXIT_OK;
 }
 
-export async function handleUpdate({ current, baseline, baselinePath, allowRemovedBenches, forceNonCi, env = process.env }) {
+export async function handleUpdate({
+    current,
+    baseline,
+    baselinePath,
+    allowRemovedBenches,
+    forceNonCi,
+    env = process.env
+}) {
     // CI-source enforcement
     if (!isCiSource(env) && !forceNonCi) {
         console.error(
@@ -724,10 +768,16 @@ export async function handleUpdate({ current, baseline, baselinePath, allowRemov
     await mkdir(dirname(baselinePath), { recursive: true });
     const tmpPath = baselinePath + '.tmp';
     try {
-        await writeFile(tmpPath, JSON.stringify(payload, null, 2) + '\n', 'utf-8');
+        await writeFile(
+            tmpPath,
+            JSON.stringify(payload, null, 2) + '\n',
+            'utf-8'
+        );
         await rename(tmpPath, baselinePath);
     } catch (e) {
-        console.error(`failed to write baseline to ${baselinePath}: ${e.message}`);
+        console.error(
+            `failed to write baseline to ${baselinePath}: ${e.message}`
+        );
         return EXIT_ERROR;
     }
 

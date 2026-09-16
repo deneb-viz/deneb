@@ -41,11 +41,15 @@ describe('VegaEmbed root style — descendant display normalisation', () => {
     );
 
     it('covers `& svg` in at least one nested rule (SVG renderer output)', () => {
-        expect(blockNestedRules.some(([selector]) => selector.includes('& svg'))).toBe(true);
+        expect(
+            blockNestedRules.some(([selector]) => selector.includes('& svg'))
+        ).toBe(true);
     });
 
     it('covers `& canvas` in at least one nested rule (canvas renderer output — the bug being guarded)', () => {
-        expect(blockNestedRules.some(([selector]) => selector.includes('& canvas'))).toBe(true);
+        expect(
+            blockNestedRules.some(([selector]) => selector.includes('& canvas'))
+        ).toBe(true);
     });
 
     it('root itself remains `display: block !important` (the other half of the #480 fix)', () => {

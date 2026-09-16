@@ -15,6 +15,15 @@ import { useDebounce } from '@uidotdev/usehooks';
 import { useDenebState } from '../../state';
 import { EDITOR_DEFAULTS } from '@deneb-viz/configuration';
 
+/**
+ * A debounced edit reported by `CappedTextField`: the field's `id` as the
+ * property selector, plus the current text.
+ */
+export type CappedTextFieldChange = {
+    selector: string;
+    value: string;
+};
+
 type CappedTextFieldProps = {
     id: string;
     i18nLabel: string;
@@ -22,6 +31,13 @@ type CappedTextFieldProps = {
     maxLength: number;
     multiline?: boolean;
     inline?: boolean;
+    /**
+     * Receives the debounced value under the field's `id`. Fires once on
+     * mount with the (empty) initial value, then after each debounce period.
+     * Must be referentially stable (a store action, not an inline arrow):
+     * it is an effect dependency, so a new identity re-reports the value.
+     */
+    onValueChange: (change: CappedTextFieldChange) => void;
 };
 
 const useStyles = makeStyles({
@@ -38,29 +54,17 @@ const useStyles = makeStyles({
 export const CappedTextField = (props: CappedTextFieldProps) => {
     const inputId = useId(props.id);
     const classes = useStyles();
-    const { metadata, setMetadataPropertyBySelector, translate } =
-        useDenebState((state) => ({
-            metadata: state.export.metadata,
-            setMetadataPropertyBySelector:
-                state.export.setMetadataPropertyBySelector,
-            translate: state.i18n.translate
-        }));
-    const [value, setValue] = useState<string>(
-        (metadata as unknown as Record<string, string | undefined>)?.[
-            props.id
-        ] || ''
-    );
+    const translate = useDenebState((state) => state.i18n.translate);
+    const [value, setValue] = useState('');
     const debouncedValue = useDebounce(
         value,
         EDITOR_DEFAULTS.debouncePeriod.default
     );
+    const { id, onValueChange } = props;
 
     useEffect(() => {
-        setMetadataPropertyBySelector({
-            selector: props.id,
-            value: debouncedValue
-        });
-    }, [debouncedValue, props.id, setMetadataPropertyBySelector]);
+        onValueChange({ selector: id, value: debouncedValue });
+    }, [debouncedValue, id, onValueChange]);
     const onChange = (
         ev: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
         data: TextareaOnChangeData | InputOnChangeData

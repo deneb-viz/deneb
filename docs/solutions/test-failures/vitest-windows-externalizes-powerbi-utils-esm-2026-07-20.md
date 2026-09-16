@@ -100,3 +100,20 @@ ever externalizes anything — which is why it works when `server.deps.inline` c
   clean-room evidence here.
 - If another package starts consuming `powerbi-visuals-utils-*` directly in its tests, it
   needs the same optimizer block in its own vitest config.
+
+## Update (2026-09-16): when the optimizer does not apply
+
+The `deps.optimizer.ssr` bundle is only substituted for imports that Vite resolves
+from modules inside the package's own root. When the import of
+`powerbi-visuals-utils-formattingutils` comes from a workspace package's built output
+(`packages/powerbi-compat/dist/lib/formatting/index.js`, reached through
+`@deneb-viz/app-core` → `@deneb-viz/vega-runtime/extensibility`), vite-node still hands
+the original CommonJS entry to Node, whose `require('powerbi-visuals-utils-typeutils')`
+hits the extensionless ESM imports — on every platform with a clean install. The
+`@deneb-viz/editor` package hits exactly this chain; its `vitest.config.ts` pre-bundles
+`powerbi-visuals-utils-formattingutils` with esbuild at config load and aliases the
+package to the self-contained file, which applies to every importer Vite processes.
+
+A local `node_modules` copy of `powerbi-visuals-utils-typeutils` that has been edited to
+carry `.js` extensions masks the failure entirely; reproduce with a pristine copy from an
+`npm ci` worktree before trusting a green Windows run.

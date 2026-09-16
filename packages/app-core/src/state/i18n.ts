@@ -106,9 +106,8 @@ export const createI18nSlice = (): StateCreator<
                         // and substitutes verbatim. First-occurrence-only
                         // semantics are preserved (the search arg is still
                         // a string, not a /g regex).
-                        translation = translation.replace(
-                            `{${index}}`,
-                            () => String(token)
+                        translation = translation.replace(`{${index}}`, () =>
+                            String(token)
                         );
                     });
                 }

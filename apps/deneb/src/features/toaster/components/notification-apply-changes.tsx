@@ -13,7 +13,7 @@ import {
     handleDiscardChanges,
     handlePersistSpecification,
     specificationEditorRefs
-} from '@deneb-viz/app-core/editor';
+} from '@deneb-viz/editor';
 
 export const NotificationApplyChanges = ({ toasterId }: NotificationProps) => {
     const { isDirty, type, translate } = useDenebState(

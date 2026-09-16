@@ -44,14 +44,14 @@ const pluginLocation = './.tmp/precompile/visualPlugin.ts';
 const visualSourceLocation = '../../src';
 
 // Force a single copy of ajv@8 across all workspace packages. Without this,
-// npm hoists separate copies into app-core and json-processing because root
+// npm hoists separate copies into the editor package and json-processing because root
 // node_modules has ajv@6 (ESLint). Fail loudly if the hoisting artifact this
 // points at disappears - adding a workspace can reshuffle npm hoisting and
 // silently swap ajv 8 for the root's ajv 6.
 const ajvAliasPath = path.resolve(
     REPO_ROOT,
     'packages',
-    'app-core',
+    'editor',
     'node_modules',
     'ajv'
 );

@@ -177,7 +177,10 @@ describe('performIncrementalUpdate — failure fallbacks', () => {
         await flush();
 
         expect(onSuccess).not.toHaveBeenCalled();
-        expect(onFailure).toHaveBeenCalledWith('runAsync rejected', 'async fail');
+        expect(onFailure).toHaveBeenCalledWith(
+            'runAsync rejected',
+            'async fail'
+        );
         expect(view.error).toBe(trueOriginal);
     });
 
@@ -227,7 +230,9 @@ describe('resolveDataChangeAction (L3 routing)', () => {
     });
 
     it("returns 'recompile' when the dataset lookup failed, even for a small enabled update", () => {
-        expect(resolveDataChangeAction('error', true, 1, 500)).toBe('recompile');
+        expect(resolveDataChangeAction('error', true, 1, 500)).toBe(
+            'recompile'
+        );
     });
 
     it("returns 'incremental' for a present dataset within threshold when enabled", () => {

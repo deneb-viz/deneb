@@ -145,13 +145,7 @@ export const useContainerSignalOwner = ({
         if (!isActive || !viewReady) return;
         refreshGeometry();
         refreshScrollSignal();
-    }, [
-        isActive,
-        viewReady,
-        renderId,
-        refreshGeometry,
-        refreshScrollSignal
-    ]);
+    }, [isActive, viewReady, renderId, refreshGeometry, refreshScrollSignal]);
 
     // Trigger 3: throttled scroll → signal write (gated on viewReady —
     // before the view exists there is no signal to update).

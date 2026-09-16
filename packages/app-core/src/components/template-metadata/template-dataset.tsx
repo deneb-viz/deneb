@@ -7,7 +7,7 @@ import {
 } from '@fluentui/react-components';
 
 import { type UsermetaTemplate } from '@deneb-viz/template-usermeta';
-import { type ModalDialogType } from '../ui';
+import { type CappedTextFieldChange } from '../ui';
 import { TemplateDatasetColumns } from './template-dataset-columns';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { TemplateDatasetRow } from './template-dataset-row';
@@ -16,7 +16,6 @@ import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 import { type TemplateFieldAssignmentReducer } from './types';
 
 type TemplateDatasetProps = {
-    datasetRole: ModalDialogType;
     /**
      * The template metadata this table reads its dataset fields from,
      * injected by the caller rather than resolved internally from
@@ -36,7 +35,18 @@ type TemplateDatasetProps = {
      * `types.ts`.
      */
     setFieldAssignment: TemplateFieldAssignmentReducer;
-};
+} & (
+    | { datasetRole: 'new' }
+    | {
+          datasetRole: 'export';
+          /**
+           * Receives edits to the editable name/description fields, keyed
+           * by metadata property selector. Only the export role renders
+           * those fields, so only it requires a handler.
+           */
+          onMetadataPropertyChange: (change: CappedTextFieldChange) => void;
+      }
+);
 
 const useTemplateDatasetStyles = makeStyles({
     tableRow: {
@@ -44,14 +54,18 @@ const useTemplateDatasetStyles = makeStyles({
     }
 });
 
+// The `new` role renders no editable metadata fields, so it never reports one.
+const ignoreMetadataPropertyChange = () => undefined;
+
 /**
  * Displays a table of dataset columns and contextual controls, based on role.
  */
-export const TemplateDataset = ({
-    datasetRole,
-    metadata,
-    setFieldAssignment
-}: TemplateDatasetProps) => {
+export const TemplateDataset = (props: TemplateDatasetProps) => {
+    const { datasetRole, metadata, setFieldAssignment } = props;
+    const onMetadataPropertyChange =
+        props.datasetRole === 'export'
+            ? props.onMetadataPropertyChange
+            : ignoreMetadataPropertyChange;
     const classes = useTemplateDatasetStyles();
     /**
      * Provide content for eligible dataset fields.
@@ -69,6 +83,7 @@ export const TemplateDataset = ({
                 role={datasetRole}
                 index={index}
                 setFieldAssignment={setFieldAssignment}
+                onMetadataPropertyChange={onMetadataPropertyChange}
             />
         </TableRow>
     ));

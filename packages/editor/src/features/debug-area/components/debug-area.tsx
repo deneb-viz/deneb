@@ -1,0 +1,64 @@
+import { useMemo } from 'react';
+
+import { Caption1, makeStyles, mergeClasses } from '@fluentui/react-components';
+import { logRender } from '@deneb-viz/utils/logging';
+import {
+    useDenebState,
+    FullContainerLayoutNoOverflow
+} from '@deneb-viz/app-core';
+import { LogViewer } from './log-viewer/log-viewer';
+import { DataTab } from './dataset-viewer/data-tab';
+import { SourceTab } from './dataset-viewer/source-tab';
+import { SignalViewer } from './signal-viewer/signal-viewer';
+import { DebugToolbar } from './debug-toolbar';
+import { DatasetSelectInitializer } from './dataset-viewer/dataset-select';
+
+const DEBUG_AREA_CLASS_NAME = 'deneb-debug-area';
+const DEBUG_AREA_CONTENT_CLASS_NAME = `${DEBUG_AREA_CLASS_NAME}-content`;
+
+const useDebugAreaStyles = makeStyles({
+    content: {
+        flex: '1 1 0',
+        overflow: 'hidden'
+    }
+});
+
+export const DebugArea = () => {
+    const { datasetName, editorPreviewAreaSelectedPivot, renderId, translate } =
+        useDenebState((state) => ({
+            datasetName: state.debug.datasetName,
+            editorPreviewAreaSelectedPivot:
+                state.editorPreviewAreaSelectedPivot,
+            renderId: state.interface.renderId,
+            translate: state.i18n.translate
+        }));
+    const classes = useDebugAreaStyles();
+    const contentClasses = mergeClasses(
+        DEBUG_AREA_CONTENT_CLASS_NAME,
+        classes.content
+    );
+    const content = useMemo(() => {
+        switch (editorPreviewAreaSelectedPivot) {
+            case 'log':
+                return <LogViewer />;
+            case 'source':
+                return <SourceTab />;
+            case 'data':
+                return (
+                    <DataTab datasetName={datasetName} renderId={renderId} />
+                );
+            case 'signal':
+                return <SignalViewer renderId={renderId} />;
+            default:
+                return <Caption1>{translate('Pivot_Mode_Unknown')}</Caption1>;
+        }
+    }, [datasetName, editorPreviewAreaSelectedPivot, renderId, translate]);
+    logRender('DebugAreaContent');
+    return (
+        <FullContainerLayoutNoOverflow className={DEBUG_AREA_CLASS_NAME}>
+            <DatasetSelectInitializer />
+            <DebugToolbar />
+            <div className={contentClasses}>{content}</div>
+        </FullContainerLayoutNoOverflow>
+    );
+};

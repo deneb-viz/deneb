@@ -1,5 +1,5 @@
 import { type UsermetaDatasetField } from '@deneb-viz/data-core/field';
-import { type ModalDialogType } from '../ui';
+import { type CappedTextFieldChange, type ModalDialogType } from '../ui';
 import { DataTypeColumnCell } from './data-type-column-cell';
 import { DataNameColumnCell } from './data-name-column-cell';
 import { DataAssignmentColumnCell } from './data-assignment-column-cell';
@@ -13,6 +13,7 @@ type TemplateDatasetRowProps = {
     item: UsermetaDatasetField;
     index: number;
     setFieldAssignment: TemplateFieldAssignmentReducer;
+    onMetadataPropertyChange: (change: CappedTextFieldChange) => void;
 };
 
 /**
@@ -23,7 +24,8 @@ export const TemplateDatasetRow = ({
     role,
     item,
     index,
-    setFieldAssignment
+    setFieldAssignment,
+    onMetadataPropertyChange
 }: TemplateDatasetRowProps) => {
     const description = item?.description || '';
     switch (role) {
@@ -46,8 +48,15 @@ export const TemplateDatasetRow = ({
                 <>
                     <DataTypeColumnCell type={item.type} kind={item.kind} />
                     <DataNameColumnCell name={item.namePlaceholder || ''} />
-                    <DataNameColumnField item={item} index={index} />
-                    <DataDescriptionColumnField index={index} />
+                    <DataNameColumnField
+                        item={item}
+                        index={index}
+                        onValueChange={onMetadataPropertyChange}
+                    />
+                    <DataDescriptionColumnField
+                        index={index}
+                        onValueChange={onMetadataPropertyChange}
+                    />
                 </>
             );
         }

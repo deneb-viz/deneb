@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { installEditorState } from '@deneb-viz/app-core/editor';
+import { installEditorState } from '@deneb-viz/editor';
 import './index.css';
 import App from './App';
 

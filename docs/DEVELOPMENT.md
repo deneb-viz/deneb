@@ -160,7 +160,7 @@ When developing or verifying an in-progress Vega or Vega-Lite change (e.g. an up
 
 **How it works:** `apps/deneb/webpack.common.config.js` reads `VEGA_LOCAL_PATH` / `VEGA_LITE_LOCAL_PATH` and, when set, adds exact-match resolve aliases (`vega$` / `vega-lite$`) targeting those paths. Because Vega and Vega-Lite are bundled at the visual's webpack step (workspace packages don't bundle their own copies), a single alias redirects every import across the monorepo.
 
-**Editor JSON schemas** are covered too: the editor deep-imports `vega/vega-schema.json` / `vega-lite/vega-lite-schema.json` (see `packages/app-core/src/lib/schema/schema-service.ts`), and both repos emit the schema next to the built bundle. The schema alias is derived automatically from the bundle path, so editor validation/completion reflects the local build. If the build fails with a module-not-found error for the schema path, the local library build hasn't generated its schema — re-run its full build.
+**Editor JSON schemas** are covered too: the editor deep-imports `vega/vega-schema.json` / `vega-lite/vega-lite-schema.json` (see `packages/editor/src/lib/schema/schema-service.ts`), and both repos emit the schema next to the built bundle. The schema alias is derived automatically from the bundle path, so editor validation/completion reflects the local build. If the build fails with a module-not-found error for the schema path, the local library build hasn't generated its schema — re-run its full build.
 
 **Steps:**
 
@@ -244,7 +244,7 @@ Per-field flags that control which support columns (`__highlight__`, `__format__
 
 **State management** — configuration is stored in `supportFieldConfiguration` inside the visual's `stateManagement` property (alongside viewport dimensions) and is synced through the project slice in `@deneb-viz/app-core`. On first load of a pre-2.0 spec, legacy defaults are stamped in so existing specs continue to behave as before.
 
-**UI** — exposed via the Dataset accordion item in the Settings pane (`@deneb-viz/app-core`).
+**UI** — exposed via the Dataset accordion item in the Settings pane (`@deneb-viz/editor`).
 
 Full API reference: [`packages/data-core/doc/support-fields.md`](../packages/data-core/doc/support-fields.md)
 
@@ -255,12 +255,12 @@ Features in `packages/app-core/src/features/` must not cross-import from sibling
 **Rules:**
 
 - A feature may only import from shared locations: `src/components/`, `src/lib/`, `src/state/`, `src/context/`, or workspace packages.
-- A parent feature may import child feature components (e.g., `editor-area` importing from `compiled-vega`), but the child must not import back from the parent.
+- Composing several features into a screen is the job of `src/app/` (for example the editor’s `app/editor/components/editor-area.tsx` composes `compiled-vega` and `debug-area`); a feature never imports another feature.
 - If two features need to share code, extract it to a shared location at the `src/` level.
 
 **Enforcement:**
 
-The `import-x/no-cycle` ESLint rule (via `eslint-plugin-import-x`) warns on circular import chains. Run `npm run eslint` to check for violations. Note that this rule only detects **circular** imports — the broader boundary rule (no sibling-to-sibling imports, even non-circular) is enforced by code review. Some pre-existing violations exist and are being cleaned up incrementally.
+The layer and feature boundaries are enforced by `eslint-plugin-boundaries` through the shared factory in `packages/eslint-config/boundaries.js`, and a vitest canary (`src/__tests__/architecture-boundaries.test.ts` in each package) fails CI on any violation; `import-x/no-cycle` additionally warns on circular import chains. The full dependency matrix lives in `packages/app-core/ARCHITECTURE.md`.
 
 ### JSON formatting (compact JSONC)
 

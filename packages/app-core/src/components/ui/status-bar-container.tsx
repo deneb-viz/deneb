@@ -84,9 +84,7 @@ export const StatusBarContainer = ({
                     className={mergeClasses(
                         STATUS_BAR_CONTAINER_NEAR_ITEMS_CLASS_NAME,
                         classes.nearContainer,
-                        hasCenter
-                            ? classes.nearBalanced
-                            : classes.nearCompact
+                        hasCenter ? classes.nearBalanced : classes.nearCompact
                     )}
                 >
                     {nearItems}
@@ -106,9 +104,7 @@ export const StatusBarContainer = ({
                 className={mergeClasses(
                     STATUS_BAR_CONTAINER_FAR_ITEMS_CLASS_NAME,
                     classes.farContainer,
-                    hasCenter
-                        ? classes.farBalanced
-                        : classes.farCompact
+                    hasCenter ? classes.farBalanced : classes.farCompact
                 )}
             >
                 {farItems}

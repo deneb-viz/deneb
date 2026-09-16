@@ -25,9 +25,11 @@
             "dependsOn": ["^eslint"]
         },
         "test": {
+            "dependsOn": ["^build"],
             "outputs": ["coverage/**"]
         },
         "bench": {
+            "dependsOn": ["^build"],
             "cache": false
         },
         "test:ci": {},

@@ -66,7 +66,8 @@ npm run dev       # Start development (clears .tmp/, builds packages, primes ass
 
 **Workspace Packages (`packages/`):**
 
-- **app-core** - Core UI application (React components, Monaco editor, state management)
+- **app-core** - Viewer core: provider, viewer, store, platform contract, template import (React components, Zustand state)
+- **editor** - The advanced editor (Monaco, command bar, debug area, settings pane, catalog, export), composed on top of app-core; depends on app-core, never the reverse
 - **vega-runtime** - Vega/Vega-Lite runtime integration, spec processing, and compilation
 - **vega-react** - React hooks and context for Vega embedding (useVegaEmbed, VegaViewProvider)
 - **powerbi-compat** - Power BI API compatibility layer (**SINGLETON** - see below)
@@ -89,21 +90,21 @@ npm run dev       # Start development (clears .tmp/, builds packages, primes ass
 
 ### app-core Layering
 
-`@deneb-viz/app-core` follows a strict layered model: `app/ → features/ → components/ → lib/ → state/context/i18n/catalog`. Cross-feature imports and upward imports are rejected by `eslint-plugin-boundaries` (configured in [packages/app-core/eslint.config.js](packages/app-core/eslint.config.js)) and gated by a vitest canary at [packages/app-core/src/**tests**/architecture-boundaries.test.ts](packages/app-core/src/__tests__/architecture-boundaries.test.ts). Full details — including the per-layer dependency matrix and a decision guide for where new code goes — live in [packages/app-core/ARCHITECTURE.md](packages/app-core/ARCHITECTURE.md).
+`@deneb-viz/app-core` and `@deneb-viz/editor` follow the same strict layered model: `app/ → features/ → components/ → lib/ → state/context/i18n/catalog`. Cross-feature imports and upward imports are rejected by `eslint-plugin-boundaries`, configured through the shared factory in [packages/eslint-config/boundaries.js](packages/eslint-config/boundaries.js), and gated by a vitest canary (`src/__tests__/architecture-boundaries.test.ts`) in each package. Full details — including the per-layer dependency matrix and a decision guide for where new code goes — live in [packages/app-core/ARCHITECTURE.md](packages/app-core/ARCHITECTURE.md). The editor depends on app-core and never the reverse; a reachability canary in app-core and a dependency-direction canary in the visual enforce it.
 
 ### Critical: Singleton Package Pattern
 
 `@deneb-viz/powerbi-compat` MUST remain a singleton to maintain shared runtime state:
 
 - Packages consuming it declare it as `peerDependency` (not `dependency`)
-- Mark as `external` in tsup configs to prevent bundling
+- Never bundle it: list it under `deps.neverBundle` in tsdown configs
 - The `apps/deneb` visual provides the single runtime instance
-- Uses TypeScript compiler (tsc) instead of tsup to inline const enums from `powerbi-visuals-api`
+- Uses TypeScript compiler (tsc) instead of tsdown to inline const enums from `powerbi-visuals-api`
 
 **When adding dependencies on `@deneb-viz/powerbi-compat`:**
 
 1. Add to `peerDependencies` in consuming package's package.json
-2. Add to `external` array in consuming package's tsup.config.ts
+2. Add it (and its subpath regex) to `deps.neverBundle` in the consuming package's tsdown.config.ts
 3. Never bundle it - let the `apps/deneb` visual provide the singleton instance
 
 ### Compilation Architecture
@@ -247,7 +248,7 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 2. Open Power BI pointing to `https://localhost:8080/assets/visual.js`
 3. Edit code → webpack auto-rebuilds (~1-2s) → page reloads
 
-**Package Build Order**: Config → Utils/Data-core/PowerBI-compat → Vega-runtime/JSON-processing → Vega-react → App-core → apps/deneb
+**Package Build Order**: Config → Utils/Data-core/PowerBI-compat → Vega-runtime/JSON-processing → Vega-react → App-core → Editor → apps/deneb
 
 > **Details**: See [Local Development Workflow](doc/DEVELOPMENT.md#2-local-development-workflow) in DEVELOPMENT.md
 
@@ -258,7 +259,7 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 **TypeScript Const Enums:** `powerbi-visuals-api` enums are inlined at compile time (no runtime dependency)
 
 - `apps/deneb`: ts-loader with `transpileOnly=false` in production
-- `@deneb-viz/powerbi-compat`: uses tsc (not tsup) to preserve inlining
+- `@deneb-viz/powerbi-compat`: uses tsc (not tsdown) to preserve inlining
 
 **Certification:** Validate with `npm run validate-config-for-commit` before packaging
 

@@ -1,6 +1,6 @@
-export { getDenebState, useDenebState } from './state';
-// `export type *` already re-exports CoreStoreState, EditorStoreSlices
-// and StoreState from './state' as public types.
+export { createDenebState, getDenebState, useDenebState } from './state';
+// `export type *` already re-exports CoreStoreState and StoreState from
+// './state' as public types.
 export type * from './state';
 export type {
     CompilationSliceProperties,

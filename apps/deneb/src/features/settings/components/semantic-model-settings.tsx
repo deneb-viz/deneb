@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { Field, InfoLabel, Switch } from '@fluentui/react-components';
 
 import { useDenebState } from '@deneb-viz/app-core';
-import { SettingsAccordionItem } from '@deneb-viz/app-core/editor';
+import { SettingsAccordionItem } from '@deneb-viz/editor';
 
 export const SemanticModelSettings = () => {
     const {

@@ -1,26 +1,25 @@
 import { describe, expect, it } from 'vitest';
 
 import { createDenebState } from '../../../state/state';
-import { isEditorStateInstalled } from '../../../state/install-editor-state';
 
 /**
  * `CreateButton` (`../components/create-button.tsx`) only dispatches
  * `project.initializeFromTemplate`. Staging the text into Monaco and
- * requesting focus happens via the editor-side subscriptions registered by
- * `installEditorState` (`state/install-editor-state.ts`).
+ * requesting focus happens via the editor-side subscriptions the editor
+ * package registers when it installs its slices.
  *
  * Component-tree rendering tests are deferred in this workspace (vitest
  * runs in the `node` environment with no `@testing-library/react` — see
  * `no-data-message.test.tsx`), so this test exercises the button's actual
  * remaining dependency directly: `project.initializeFromTemplate`, called
- * on a CORE-ONLY store (no `installEditorState`, i.e. no editor slices, no
- * Monaco, no `SpecificationEditorProvider`). Passing here proves the
- * button's create flow does not need any editor context mounted.
+ * on a CORE-ONLY store (no editor slices, no Monaco, no
+ * `SpecificationEditorProvider`). Passing here proves the button's create
+ * flow does not need any editor context mounted.
  */
 describe('CreateButton create flow — no editor context required', () => {
     it('initialises the project on a core-only store without throwing, with no editor/export/fieldUsage/commands slice present', () => {
         const store = createDenebState();
-        expect(isEditorStateInstalled(store.getState())).toBe(false);
+        expect('editor' in store.getState()).toBe(false);
 
         expect(() => {
             store.getState().project.initializeFromTemplate({
@@ -40,8 +39,8 @@ describe('CreateButton create flow — no editor context required', () => {
         }).not.toThrow();
 
         const state = store.getState();
-        // Editor-only slices installEditorState would have merged in are
-        // absent — nothing in the create flow required them.
+        // Editor-only slices are absent on a core-only store — nothing in
+        // the create flow required them.
         for (const key of ['editor', 'export', 'fieldUsage', 'commands']) {
             expect(key in state).toBe(false);
         }
