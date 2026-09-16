@@ -34,7 +34,11 @@ export const Hyperlink = ({ href, children, inline }: HyperlinkProps) => {
     ) => {
         event.preventDefault();
         event.stopPropagation();
-        launchUrl(href);
+        const url = new URL(href, window.location.href);
+        if (!['http:', 'https:', 'mailto:'].includes(url.protocol)) {
+            return;
+        }
+        launchUrl(url.href);
     };
     return (
         <Link
