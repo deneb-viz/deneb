@@ -2,10 +2,10 @@ import type { StateCreator } from 'zustand';
 import { DenebVisualStoreState } from './state';
 import {
     getVisualFormattingModel,
-    VisualFormattingSettingsModel
+    HostSettingsModel
 } from '../lib/persistence';
 
-export type SettingsSlice = VisualFormattingSettingsModel & {};
+export type SettingsSlice = HostSettingsModel & {};
 
 export const createSettingsSlice = (): StateCreator<
     DenebVisualStoreState,

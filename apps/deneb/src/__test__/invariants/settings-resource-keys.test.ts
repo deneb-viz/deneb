@@ -13,11 +13,13 @@ import { APP_ROOT, REPO_ROOT } from './_packages';
  * this canary converts that class of drift into a CI failure instead of a
  * user-visible "Objects_Foo_Bar" string in production.
  *
- * Scope: `src/lib/persistence/model/*.ts` (the formattingSettings classes
- * that back the formatting pane) plus `packages/configuration/src/index.ts`
- * (the log-level enum configuration consumed by the debug pane / Vega
- * logging settings). Both source string literal keys via a regex scan
- * rather than instantiating the formattingSettings classes - those extend
+ * Scope: `src/lib/persistence/model/*.ts` (the generic formattingSettings
+ * classes that back the formatting pane), `src/app/settings-editor.ts` and
+ * `src/app/visual-settings.ts` (the app-composed editor card), plus
+ * `packages/configuration/src/index.ts` (the log-level enum configuration
+ * consumed by the debug pane / Vega logging settings). All source string
+ * literal keys via a regex scan rather than instantiating the
+ * formattingSettings classes - those extend
  * `powerbi-visuals-utils-formattingmodel` types that expect a live
  * PowerBI formatting-pane object, which is out of scope for a lightweight
  * node-environment canary.
@@ -33,11 +35,25 @@ const extractKeys = (source: string): string[] =>
 
 const SETTINGS_MODEL_DIR = join(APP_ROOT, 'src', 'lib', 'persistence', 'model');
 
-const settingsModelKeys = readdirSync(SETTINGS_MODEL_DIR)
+const genericSettingsModelKeys = readdirSync(SETTINGS_MODEL_DIR)
     .filter((file) => file.endsWith('.ts'))
     .flatMap((file) =>
         extractKeys(readFileSync(join(SETTINGS_MODEL_DIR, file), 'utf8'))
     );
+
+// The editor card composes onto the generic model from the app layer (see
+// apps/deneb/src/app/visual-settings.ts) rather than living alongside the
+// generic cards in SETTINGS_MODEL_DIR, so it is scanned separately.
+const EDITOR_MODEL_FILES = [
+    join(APP_ROOT, 'src', 'app', 'settings-editor.ts'),
+    join(APP_ROOT, 'src', 'app', 'visual-settings.ts')
+];
+
+const editorModelKeys = EDITOR_MODEL_FILES.flatMap((file) =>
+    extractKeys(readFileSync(file, 'utf8'))
+);
+
+const settingsModelKeys = [...genericSettingsModelKeys, ...editorModelKeys];
 
 const configurationSource = readFileSync(
     join(REPO_ROOT, 'packages', 'configuration', 'src', 'index.ts'),
@@ -66,6 +82,13 @@ describe('settings resource keys resolve to en-US entries', () => {
         // deliberately (i.e. when keys are genuinely removed from the
         // settings models / configuration).
         expect(referencedKeys.length).toBeGreaterThanOrEqual(90);
+    });
+
+    it('counts the editor card keys composed from the app layer (guards against relocation silently shrinking coverage)', () => {
+        expect(editorModelKeys.length).toBeGreaterThan(0);
+        editorModelKeys.forEach((key) => {
+            expect(referencedKeys).toContain(key);
+        });
     });
 
     it.each(referencedKeys)('%s resolves to an en-US entry', (key) => {

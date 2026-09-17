@@ -1,13 +1,13 @@
 import powerbi from 'powerbi-visuals-api';
 
-import { VisualFormattingSettingsModel } from '../persistence';
+import { HostSettingsModel } from '../persistence';
 
 /**
  * Determines whether the visual can fetch more data, based on the feature switch and the corresponding flag in the store
  * (set by data processing methods).
  */
 export const canFetchMoreFromDataview = (
-    settings: VisualFormattingSettingsModel,
+    settings: HostSettingsModel,
     metadata: powerbi.DataViewMetadata
 ): boolean => {
     return (

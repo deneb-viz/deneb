@@ -78,7 +78,7 @@ import { setReadModePersistSuppressed } from '../read-mode-gate';
 // ─── Test fixture types ──────────────────────────────────────────────────────
 
 /**
- * Minimal shape of `VisualFormattingSettingsModel` the migration code
+ * Minimal shape of `HostSettingsModel` the migration code
  * reads from. Real Power BI formatting settings are typed via the
  * formatting-settings library; the migration code only ever touches
  * `.value` on a handful of nested fields, so a typed-cast plain-object

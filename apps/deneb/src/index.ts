@@ -10,6 +10,7 @@ import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { App } from './app';
+import { VisualFormattingSettingsModel } from './app/visual-settings';
 
 import { getDenebVisualState, useDenebVisualState } from './state';
 import {
@@ -302,7 +303,8 @@ export class Deneb implements IVisual {
                 onCrossFilterApply: createCrossFilterApplyHandler()
             });
             VisualFormattingSettingsService.bind(
-                options.host.createLocalizationManager()
+                options.host.createLocalizationManager(),
+                VisualFormattingSettingsModel
             );
             initializeStoreSynchronization();
             this.#applicationWrapper = document.createElement('div');

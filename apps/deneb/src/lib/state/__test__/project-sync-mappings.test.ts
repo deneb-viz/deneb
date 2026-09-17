@@ -57,7 +57,7 @@ vi.mock('@deneb-viz/utils/logging', () => ({
 import { PROJECT_SYNC_MAPPINGS } from '../project-sync-mappings';
 import { createSliceSync } from '../create-slice-sync';
 import { isSupportFieldMigrationPending } from '../../persistence/state-management-migration';
-import type { VisualFormattingSettingsModel } from '../../../lib/persistence';
+import type { HostSettingsModel } from '../../../lib/persistence';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -103,7 +103,7 @@ const makeVisualSettings = (
                 ...stateManagementOverrides
             }
         }
-    }) as unknown as VisualFormattingSettingsModel;
+    }) as unknown as HostSettingsModel;
 
 let mockVisualSettings = makeVisualSettings();
 

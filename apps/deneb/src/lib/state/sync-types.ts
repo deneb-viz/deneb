@@ -1,4 +1,4 @@
-import type { VisualFormattingSettingsModel } from '../../lib/persistence';
+import type { HostSettingsModel } from '../../lib/persistence';
 import type { PropertyChange } from '../persistence/types';
 
 /**
@@ -25,7 +25,7 @@ export type SliceSyncMapping<TSliceKey extends string> = {
     /** Key in the slice properties (excludes internal/method properties) */
     sliceKey: TSliceKey;
     /** Extract the value from Power BI visual settings */
-    getVisualValue: (settings: VisualFormattingSettingsModel) => unknown;
+    getVisualValue: (settings: HostSettingsModel) => unknown;
     /**
      * Power BI object/property path for persistence.
      * Optional for properties that are read-only from Power BI settings (e.g., composite objects like interactivity).
@@ -48,7 +48,7 @@ export type SliceSyncMapping<TSliceKey extends string> = {
      */
     onPersist?: (
         value: unknown,
-        settings: VisualFormattingSettingsModel
+        settings: HostSettingsModel
     ) => PropertyChange[];
 };
 
