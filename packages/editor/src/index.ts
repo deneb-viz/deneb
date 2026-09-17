@@ -24,7 +24,6 @@ export {
     flushEditorOpenTimings,
     type EditorOpenStage
 } from './lib/perf';
-export { copyToClipboard } from './lib/clipboard';
 export { updateFieldTracking } from './lib/field-processing';
 
 // Load-bearing, not a convenience: the DTS bundler only keeps a module in
