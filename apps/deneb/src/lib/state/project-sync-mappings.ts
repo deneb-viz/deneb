@@ -1,4 +1,4 @@
-import type { VisualFormattingSettingsModel } from '../../lib/persistence';
+import type { HostSettingsModel } from '../../lib/persistence';
 import {
     getDenebState,
     type ProjectSliceProperties
@@ -66,7 +66,7 @@ const surfaceCorruptStateManagementValue = (
  * Helper to extract interactivity object from visual settings.
  */
 const getInteractivityFromSettings = (
-    s: VisualFormattingSettingsModel
+    s: HostSettingsModel
 ): UsermetaInteractivity => ({
     tooltip: s.vega.interactivity.enableTooltips.value,
     contextMenu: s.vega.interactivity.enableContextMenu.value,

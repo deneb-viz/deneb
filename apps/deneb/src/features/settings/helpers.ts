@@ -8,7 +8,7 @@ import {
     type PersistenceProperty,
     persistProperties,
     resolveObjectProperties
-} from '../../lib/persistence';
+} from '../../host';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 
 /**

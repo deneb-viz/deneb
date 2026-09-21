@@ -14,7 +14,7 @@ import type {
     SafetyNetHandle,
     SafetyNetScheduler
 } from '../../lib/rendering-lifecycle/types';
-import type { VisualFormattingSettingsModel } from '../../lib/persistence';
+import type { HostSettingsModel } from '../../lib/persistence';
 import {
     createFakeVisualHost,
     type FakeVisualHostHandle,
@@ -205,14 +205,12 @@ const defaultMapDataset = (
  * which only reads `dataLimit.loading.override.value`. The cast is the
  * same structural-subset pattern the existing dataset tests use.
  */
-const buildSettingsStub = (
-    dataLimitOverride: boolean
-): VisualFormattingSettingsModel =>
+const buildSettingsStub = (dataLimitOverride: boolean): HostSettingsModel =>
     ({
         dataLimit: {
             loading: { override: { value: dataLimitOverride } }
         }
-    }) as unknown as VisualFormattingSettingsModel;
+    }) as unknown as HostSettingsModel;
 
 export const createUpdateCycleDriver = (
     config: UpdateCycleDriverConfig

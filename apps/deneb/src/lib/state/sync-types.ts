@@ -1,4 +1,4 @@
-import type { VisualFormattingSettingsModel } from '../../lib/persistence';
+import type { HostSettingsModel } from '../../lib/persistence';
 import type { PropertyChange } from '../persistence/types';
 
 /**
@@ -25,7 +25,7 @@ export type SliceSyncMapping<TSliceKey extends string> = {
     /** Key in the slice properties (excludes internal/method properties) */
     sliceKey: TSliceKey;
     /** Extract the value from Power BI visual settings */
-    getVisualValue: (settings: VisualFormattingSettingsModel) => unknown;
+    getVisualValue: (settings: HostSettingsModel) => unknown;
     /**
      * Power BI object/property path for persistence.
      * Optional for properties that are read-only from Power BI settings (e.g., composite objects like interactivity).
@@ -48,7 +48,7 @@ export type SliceSyncMapping<TSliceKey extends string> = {
      */
     onPersist?: (
         value: unknown,
-        settings: VisualFormattingSettingsModel
+        settings: HostSettingsModel
     ) => PropertyChange[];
 };
 
@@ -69,3 +69,26 @@ export type SliceSyncConfig<TSlice, TSliceKey extends string, TSyncPayload> = {
     /** Property mappings for this slice */
     mappings: SliceSyncMapping<TSliceKey>[];
 };
+
+/**
+ * A `SliceSyncConfig` with its slice/key/payload type parameters erased, so
+ * definitions targeting different app-core slices can share a single array
+ * (e.g. the contributions accepted by `initializeStoreSynchronization`).
+ */
+export type SliceSyncDefinition = SliceSyncConfig<any, string, any>;
+
+/**
+ * Identity helper that types a slice-sync definition against its own
+ * `TSlice`/`TSliceKey`/`TSyncPayload` before erasing them to `SliceSyncDefinition`.
+ *
+ * Assigning an object literal directly to a `SliceSyncDefinition[]`-typed array
+ * (or to the erased `SliceSyncDefinition` type) widens every field to `any`
+ * immediately, so `getSlice`'s return type no longer constrains `getSyncFn`,
+ * `isHydrated`, or `getSliceValue` — a typo like `slice.nonExistentMethod`
+ * inside `getSyncFn` compiles silently. Passing the literal through this
+ * generic function instead lets TypeScript infer `TSlice` from `getSlice`
+ * before erasure, so the other fields are checked against it.
+ */
+export const defineSliceSync = <TSlice, TSliceKey extends string, TSyncPayload>(
+    config: SliceSyncConfig<TSlice, TSliceKey, TSyncPayload>
+): SliceSyncDefinition => config;

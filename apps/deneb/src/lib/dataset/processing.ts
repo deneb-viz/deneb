@@ -10,6 +10,7 @@ import {
     resolveDrilldownComponents,
     resolveDrilldownFlat
 } from './drilldown';
+import type { HostFeatureFlags } from './types';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 import {
     DRILL_FIELD_FLAT,
@@ -217,7 +218,8 @@ const updatePrevReferences = (
  */
 export const getMappedDataset = (
     categorical: DataViewCategorical,
-    locale: string
+    locale: string,
+    flags: HostFeatureFlags
 ): SetDatasetPayload => {
     const rowsLoaded = getCategoricalRowCount(categorical);
     const empty = getEmptyDataset();
@@ -238,7 +240,7 @@ export const getMappedDataset = (
                 dvValues
             );
             const hasDrilldown =
-                isDrilldownFeatureEnabled() &&
+                isDrilldownFeatureEnabled(flags) &&
                 columns.filter((c) => c.column.roles?.[DRILL_FIELD_NAME])
                     ?.length > 0;
             const fieldValues = getDatumValueEntriesFromDataview(

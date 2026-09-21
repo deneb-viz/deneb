@@ -1,5 +1,9 @@
-import type { EditorPreferencesSliceProperties } from '@deneb-viz/app-core';
-import type { SliceSyncMapping } from './sync-types';
+import {
+    getDenebState,
+    type EditorPreferencesSliceProperties
+} from '@deneb-viz/app-core';
+import { getVisualSettings } from './visual-settings';
+import { defineSliceSync, type SliceSyncMapping } from '../host';
 
 /**
  * Keys that can be synced from EditorPreferencesSliceProperties
@@ -12,12 +16,13 @@ type EditorPreferencesSyncKey = keyof EditorPreferencesSliceProperties;
  *
  * Add new mappings here as editor preferences properties are added.
  */
-export const EDITOR_PREFERENCES_SYNC_MAPPINGS: SliceSyncMapping<EditorPreferencesSyncKey>[] =
+const EDITOR_PREFERENCES_SYNC_MAPPINGS: SliceSyncMapping<EditorPreferencesSyncKey>[] =
     [
         {
             sliceKey: 'dataViewerRowsPerPage',
             getVisualValue: (s) =>
-                s.editor.debugPane.debugTableRowsPerPage.value.value,
+                getVisualSettings(s).editor.debugPane.debugTableRowsPerPage
+                    .value.value,
             persistence: {
                 objectName: 'editor',
                 propertyName: 'debugTableRowsPerPage'
@@ -25,7 +30,8 @@ export const EDITOR_PREFERENCES_SYNC_MAPPINGS: SliceSyncMapping<EditorPreference
         },
         {
             sliceKey: 'jsonEditorDebouncePeriod',
-            getVisualValue: (s) => s.editor.json.debouncePeriod.value,
+            getVisualValue: (s) =>
+                getVisualSettings(s).editor.json.debouncePeriod.value,
             persistence: {
                 objectName: 'editor',
                 propertyName: 'debouncePeriod'
@@ -33,7 +39,8 @@ export const EDITOR_PREFERENCES_SYNC_MAPPINGS: SliceSyncMapping<EditorPreference
         },
         {
             sliceKey: 'jsonEditorFontSize',
-            getVisualValue: (s) => s.editor.json.fontSize.value,
+            getVisualValue: (s) =>
+                getVisualSettings(s).editor.json.fontSize.value,
             persistence: {
                 objectName: 'editor',
                 propertyName: 'fontSize'
@@ -41,7 +48,8 @@ export const EDITOR_PREFERENCES_SYNC_MAPPINGS: SliceSyncMapping<EditorPreference
         },
         {
             sliceKey: 'jsonEditorFormattingMaxLineLength',
-            getVisualValue: (s) => s.editor.json.formattingMaxLineLength.value,
+            getVisualValue: (s) =>
+                getVisualSettings(s).editor.json.formattingMaxLineLength.value,
             persistence: {
                 objectName: 'editor',
                 propertyName: 'formattingMaxLineLength'
@@ -49,7 +57,8 @@ export const EDITOR_PREFERENCES_SYNC_MAPPINGS: SliceSyncMapping<EditorPreference
         },
         {
             sliceKey: 'jsonEditorPosition',
-            getVisualValue: (s) => s.editor.json.position.value,
+            getVisualValue: (s) =>
+                getVisualSettings(s).editor.json.position.value,
             persistence: {
                 objectName: 'editor',
                 propertyName: 'editorPosition'
@@ -57,7 +66,8 @@ export const EDITOR_PREFERENCES_SYNC_MAPPINGS: SliceSyncMapping<EditorPreference
         },
         {
             sliceKey: 'jsonEditorShowLineNumbers',
-            getVisualValue: (s) => s.editor.json.showLineNumbers.value,
+            getVisualValue: (s) =>
+                getVisualSettings(s).editor.json.showLineNumbers.value,
             persistence: {
                 objectName: 'editor',
                 propertyName: 'showLineNumbers'
@@ -65,7 +75,8 @@ export const EDITOR_PREFERENCES_SYNC_MAPPINGS: SliceSyncMapping<EditorPreference
         },
         {
             sliceKey: 'jsonEditorWordWrap',
-            getVisualValue: (s) => s.editor.json.wordWrap.value,
+            getVisualValue: (s) =>
+                getVisualSettings(s).editor.json.wordWrap.value,
             persistence: {
                 objectName: 'editor',
                 propertyName: 'wordWrap'
@@ -73,7 +84,8 @@ export const EDITOR_PREFERENCES_SYNC_MAPPINGS: SliceSyncMapping<EditorPreference
         },
         {
             sliceKey: 'previewAreaShowBorder',
-            getVisualValue: (s) => s.editor.preview.showViewportMarker.value,
+            getVisualValue: (s) =>
+                getVisualSettings(s).editor.preview.showViewportMarker.value,
             persistence: {
                 objectName: 'editor',
                 propertyName: 'previewAreaShowBorder'
@@ -81,7 +93,8 @@ export const EDITOR_PREFERENCES_SYNC_MAPPINGS: SliceSyncMapping<EditorPreference
         },
         {
             sliceKey: 'previewAreaShowScrollbarsOnOverflow',
-            getVisualValue: (s) => s.editor.preview.previewScrollbars.value,
+            getVisualValue: (s) =>
+                getVisualSettings(s).editor.preview.previewScrollbars.value,
             persistence: {
                 objectName: 'editor',
                 propertyName: 'previewAreaShowScrollbarsOnOverflow'
@@ -89,7 +102,8 @@ export const EDITOR_PREFERENCES_SYNC_MAPPINGS: SliceSyncMapping<EditorPreference
         },
         {
             sliceKey: 'previewAreaTransparentBackground',
-            getVisualValue: (s) => s.editor.preview.backgroundPassThrough.value,
+            getVisualValue: (s) =>
+                getVisualSettings(s).editor.preview.backgroundPassThrough.value,
             persistence: {
                 objectName: 'editor',
                 propertyName: 'previewAreaTransparentBackground'
@@ -97,7 +111,8 @@ export const EDITOR_PREFERENCES_SYNC_MAPPINGS: SliceSyncMapping<EditorPreference
         },
         {
             sliceKey: 'theme',
-            getVisualValue: (s) => s.editor.interface.theme.value,
+            getVisualValue: (s) =>
+                getVisualSettings(s).editor.interface.theme.value,
             persistence: {
                 objectName: 'editor',
                 propertyName: 'theme'
@@ -105,3 +120,21 @@ export const EDITOR_PREFERENCES_SYNC_MAPPINGS: SliceSyncMapping<EditorPreference
         }
         // Add more mappings here as needed
     ];
+
+/**
+ * Slice-sync definition for editor preferences, contributed to
+ * `initializeStoreSynchronization` alongside the generic slice syncs.
+ */
+export const editorPreferencesSync = defineSliceSync<
+    ReturnType<typeof getDenebState>['editorPreferences'],
+    EditorPreferencesSyncKey,
+    EditorPreferencesSliceProperties
+>({
+    name: 'editorPreferences',
+    getSlice: (state) =>
+        (state as ReturnType<typeof getDenebState>).editorPreferences,
+    getSyncFn: (slice) => slice.syncPreferences,
+    isHydrated: (slice) => slice.__hasHydrated__,
+    getSliceValue: (slice, key) => slice[key as keyof typeof slice],
+    mappings: EDITOR_PREFERENCES_SYNC_MAPPINGS
+});

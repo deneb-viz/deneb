@@ -1,6 +1,6 @@
 import powerbi from 'powerbi-visuals-api';
 
-import { type VisualFormattingSettingsModel } from '../../lib/persistence';
+import { type HostSettingsModel } from '../../lib/persistence';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 import { logDebug } from '@deneb-viz/utils/logging';
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
@@ -53,7 +53,7 @@ export type DisplayHistoryRecord = {
 
 export type GetUpdatedHistoryListPayload = {
     options: powerbi.extensibility.visual.VisualUpdateOptions;
-    settings: VisualFormattingSettingsModel;
+    settings: HostSettingsModel;
     isFetchingAdditionalData: boolean;
 };
 

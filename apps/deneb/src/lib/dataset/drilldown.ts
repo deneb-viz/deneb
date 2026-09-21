@@ -1,13 +1,14 @@
 import powerbi from 'powerbi-visuals-api';
 import PrimitiveValue = powerbi.PrimitiveValue;
 
-import { FEATURES } from '../../../config';
 import { getFormattedValue } from '@deneb-viz/powerbi-compat/formatting';
+import type { HostFeatureFlags } from './types';
 
 /**
  * Convenience check for status of Drilldown feature flag.
  */
-export const isDrilldownFeatureEnabled = () => FEATURES.data_drilldown;
+export const isDrilldownFeatureEnabled = (flags: HostFeatureFlags): boolean =>
+    flags.dataDrilldown;
 
 /**
  * For the supplied column/value, process it into an array of all drilldown values for that row. Returns a formatted

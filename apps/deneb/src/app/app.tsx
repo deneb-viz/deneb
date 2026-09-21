@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { type View } from 'vega';
 
 import { logRender } from '@deneb-viz/utils/logging';
-import { resolveDownloadPermitted } from './download-permission';
 import { ReportViewRouter } from './report-view-router';
 import {
     DenebProvider,
@@ -16,11 +15,7 @@ import {
     platformSearchContributions
 } from './platform-search-contributions';
 import { markEditorOpenStart, RetainedDenebEditor } from '@deneb-viz/editor';
-import {
-    FetchingMessage,
-    LandingPage,
-    SplashInitial
-} from '../features/status';
+import { LandingPage } from '../features/status';
 import {
     InteractivityFooter,
     TooltipSettings,
@@ -31,21 +26,21 @@ import {
 } from '../features/settings';
 import { NotificationToaster } from '../features/toaster';
 import {
-    IS_OVERLAY_ENABLED as IS_VIEWPORT_GATE_OVERLAY_ENABLED,
-    ViewportGateDebugOverlay
-} from '../features/viewport-gate-debug-overlay';
-import {
-    IS_OVERLAY_ENABLED as IS_UPDATE_HISTORY_OVERLAY_ENABLED,
-    VisualUpdateHistoryOverlay
-} from '../features/visual-update-history-overlay';
-import { getVegaLoader } from '../lib/vega-embed';
-import { useDenebVisualState } from '../state';
-import {
     contextMenuHandler,
     crossFilterHandler,
-    tooltipHandler
-} from '../lib/interactivity';
-import { persistOnCreateFromTemplate } from '../lib/persistence';
+    tooltipHandler,
+    getVegaLoader,
+    persistOnCreateFromTemplate,
+    resolveDownloadPermitted,
+    useDenebVisualState,
+    FetchingMessage,
+    SplashInitial,
+    IS_VIEWPORT_GATE_OVERLAY_ENABLED,
+    ViewportGateDebugOverlay,
+    IS_VISUAL_UPDATE_HISTORY_OVERLAY_ENABLED,
+    VisualUpdateHistoryOverlay,
+    type VisualAppProps
+} from '../host';
 import { handlePersistBooleanProperty } from '../features/settings/helpers';
 
 /**
@@ -68,42 +63,13 @@ import { handlePersistBooleanProperty } from '../features/settings/helpers';
  */
 const RENDERING_MODE_SETTLE_MS = 500;
 
-type AppProps = {
-    host: powerbi.extensibility.visual.IVisualHost;
-    /**
-     * Rendering-lifecycle adapters built in `src/index.ts` and passed
-     * down through the platform provider. App-core / vega-embed call
-     * these without arguments (or with an `Error` for the error
-     * variant); the adapters route to the coordinator's
-     * `*PendingRender` methods. No `visualUpdateOptions` capture is
-     * needed here — the pending-render binding is performed
-     * synchronously in the visual's dispatch handlers BEFORE
-     * `update()` returns, so by the time these async callbacks fire
-     * the coordinator already knows which id they target.
-     */
-    onRenderingStarted: () => void;
-    onRenderingFinished: () => void;
-    /**
-     * Settle-timer close (H2 / U5). DISTINCT from
-     * {@link onRenderingFinished}: this adapter routes to the
-     * coordinator's deferring `closePendingRenderSettle`, so if the
-     * settle timer fires while a Vega render is still in flight it
-     * NO-OPS (the real embed close or the safety-net owns the terminal)
-     * instead of emitting `renderingFinished` mid-render. Used ONLY by
-     * the settle timer below — never by the embed path, which keeps the
-     * terminal {@link onRenderingFinished}.
-     */
-    onSettleClose: () => void;
-    onRenderingError: (error: Error) => void;
-};
-
 export const App = ({
     host,
     onRenderingStarted,
     onRenderingFinished,
     onSettleClose,
     onRenderingError
-}: AppProps) => {
+}: VisualAppProps) => {
     const [isDownloadPermitted, setIsDownloadPermitted] = useState<
         boolean | undefined
     >(undefined);
@@ -397,7 +363,7 @@ export const App = ({
             </GatedDenebViewer>
             {mainComponent}
             <NotificationToaster />
-            {IS_UPDATE_HISTORY_OVERLAY_ENABLED && (
+            {IS_VISUAL_UPDATE_HISTORY_OVERLAY_ENABLED && (
                 <VisualUpdateHistoryOverlay />
             )}
             {IS_VIEWPORT_GATE_OVERLAY_ENABLED && <ViewportGateDebugOverlay />}

@@ -45,7 +45,7 @@ describe('VisualUpdateHistoryOverlay call-site gating', () => {
         );
     });
 
-    it('the feature barrel re-exports IS_OVERLAY_ENABLED for app.tsx to consume', () => {
+    it('the feature barrel re-exports IS_OVERLAY_ENABLED for the host barrel to re-export under a feature-specific name', () => {
         const indexSource = readFileSync(
             resolve(__dirname, '..', '..', 'index.ts'),
             'utf8'
@@ -55,8 +55,11 @@ describe('VisualUpdateHistoryOverlay call-site gating', () => {
 
     // Prettier may wrap the gated JSX in parentheses, so the pattern
     // tolerates `{FLAG && <Overlay />}` and `{FLAG && (\n<Overlay />\n)}`.
+    // `app.tsx` consumes the flag under the feature-specific name the host
+    // barrel re-exports it as (`IS_OVERLAY_ENABLED` collides with the
+    // viewport-gate overlay's own export of the same name).
     const gatedMountPattern =
-        /\{IS_UPDATE_HISTORY_OVERLAY_ENABLED\s*&&\s*\(?\s*<VisualUpdateHistoryOverlay\s*\/>\s*\)?\s*\}/g;
+        /\{IS_VISUAL_UPDATE_HISTORY_OVERLAY_ENABLED\s*&&\s*\(?\s*<VisualUpdateHistoryOverlay\s*\/>\s*\)?\s*\}/g;
 
     it('app.tsx gates the mount with `{FLAG && <VisualUpdateHistoryOverlay />}` rather than mounting unconditionally', () => {
         expect(appSource).toMatch(gatedMountPattern);

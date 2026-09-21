@@ -4,6 +4,7 @@ import { ArrowDownloadRegular, CopyRegular } from '@fluentui/react-icons';
 
 import { getExportTemplate } from '@deneb-viz/json-processing';
 import { logRender } from '@deneb-viz/utils/logging';
+import { copyToClipboard } from '@deneb-viz/utils/clipboard';
 import {
     getDenebState,
     useDenebState,
@@ -12,7 +13,6 @@ import {
 } from '@deneb-viz/app-core';
 import { UsermetaTemplate } from '@deneb-viz/template-usermeta';
 import { TrackedFields } from '@deneb-viz/json-processing/field-tracking';
-import { copyToClipboard } from '../../../lib/clipboard';
 import { type SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 
 /**

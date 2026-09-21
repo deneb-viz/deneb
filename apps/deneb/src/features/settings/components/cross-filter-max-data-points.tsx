@@ -16,9 +16,9 @@ import { useSettingsPaneTooltip } from '@deneb-viz/editor';
 import { logDebug } from '@deneb-viz/utils/logging';
 import {
     CROSS_FILTER_LIMITS,
-    isCrossFilterPropSet
-} from '../../../lib/interactivity';
-import { useDenebVisualState } from '../../../state';
+    isCrossFilterPropSet,
+    useDenebVisualState
+} from '../../../host';
 import {
     handleResetVegaProperty,
     handleSelectionMaxDataPoints
