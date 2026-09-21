@@ -1,6 +1,9 @@
-import { getDenebState, type EditorPreferencesSliceProperties } from '@deneb-viz/app-core';
+import {
+    getDenebState,
+    type EditorPreferencesSliceProperties
+} from '@deneb-viz/app-core';
 import { getVisualSettings } from './visual-settings';
-import type { SliceSyncMapping, SliceSyncConfig } from '../lib/state/sync-types';
+import type { SliceSyncMapping, SliceSyncConfig } from '../host';
 
 /**
  * Keys that can be synced from EditorPreferencesSliceProperties

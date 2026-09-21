@@ -1,11 +1,10 @@
 import React from 'react';
 
-import { StatusContainer } from './status-container';
 import { LandingPageInfoHeader } from './landing-page-info-header';
 import { LandingPageCard } from './landing-page-card';
 import { LandingPageLearnMore } from './landing-page-learn-more';
 import { Caption1 } from '@fluentui/react-components';
-import { useStatusStyles } from '.';
+import { StatusContainer, useStatusStyles } from '../../../host';
 import {
     DataHistogram24Regular,
     Edit24Regular,

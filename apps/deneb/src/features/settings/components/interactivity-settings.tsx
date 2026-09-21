@@ -3,7 +3,7 @@ import { CrossFilterMaxDataPoints } from './cross-filter-max-data-points';
 import { CrossFilterModeSettings } from './cross-filter-mode-settings';
 import { useDenebState } from '@deneb-viz/app-core';
 import { SettingsAccordionItem } from '@deneb-viz/editor';
-import { useDenebVisualState } from '../../../state';
+import { useDenebVisualState } from '../../../host';
 
 export const TooltipSettings = () => {
     const translate = useDenebState((state) => state.i18n.translate);

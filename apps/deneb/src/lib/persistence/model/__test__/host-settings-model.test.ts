@@ -43,14 +43,13 @@ import {
     getStateManagementPayloadFromSettings,
     runStateManagementSchemaMigrations
 } from '../../migration';
-import { VisualFormattingSettingsModel } from '../../../../app/visual-settings';
 
 /**
- * Characterisation: today's composed model (`VisualFormattingSettingsModel`)
- * yields this exact card order (editor first, then the generic cards) and
- * this exact developer-mode visibility behaviour. The base/subclass split
- * is checked against these values so the split cannot silently change the
- * formatting-pane layout.
+ * Characterisation: the generic base model carries no app-contributed card
+ * and exposes its cards in this exact pane order. An app's composed model
+ * (e.g. the visual's `VisualFormattingSettingsModel`) extends this class
+ * and adds its own card ahead of these — see `app/__test__/visual-settings.test.ts`
+ * for that composition's characterisation.
  */
 describe('HostSettingsModel (base, no editor card)', () => {
     it('exposes only the generic cards, in pane order', () => {
@@ -82,39 +81,9 @@ describe('HostSettingsModel (base, no editor card)', () => {
 });
 
 describe('generic DEFAULTS', () => {
-    it('no longer carries an editor key', () => {
+    it('carries no editor key', () => {
         expect(Object.prototype.hasOwnProperty.call(DEFAULTS, 'editor')).toBe(
             false
         );
-    });
-});
-
-describe('VisualFormattingSettingsModel (composed by the app)', () => {
-    it('yields the card order: editor, display, dataLimit, stateManagement, vega, developer', () => {
-        const model = new VisualFormattingSettingsModel();
-        expect(model.cards.map((card) => card.name)).toEqual([
-            'editor',
-            'display',
-            'dataLimit',
-            'stateManagement',
-            'vega',
-            'developer'
-        ]);
-    });
-
-    it('resolveDeveloperSettings(false) hides developer, vega and stateManagement', () => {
-        const model = new VisualFormattingSettingsModel();
-        model.resolveDeveloperSettings(false);
-        expect(model.developer.visible).toBe(false);
-        expect(model.vega.visible).toBe(false);
-        expect(model.stateManagement.visible).toBe(false);
-    });
-
-    it('resolveDeveloperSettings(true) leaves developer, vega and stateManagement visible', () => {
-        const model = new VisualFormattingSettingsModel();
-        model.resolveDeveloperSettings(true);
-        expect(model.developer.visible).not.toBe(false);
-        expect(model.vega.visible).not.toBe(false);
-        expect(model.stateManagement.visible).not.toBe(false);
     });
 });

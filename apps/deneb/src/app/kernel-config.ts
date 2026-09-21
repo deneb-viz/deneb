@@ -4,7 +4,7 @@ import { VisualFormattingSettingsModel } from './visual-settings';
 import { editorPreferencesSync } from './editor-preferences-sync';
 import { I18N_TRANSLATIONS } from '../i18n';
 import { FEATURES } from '../../config';
-import type { VisualKernelConfig } from '../kernel/kernel-config';
+import type { VisualKernelConfig } from '../host';
 
 /**
  * This visual's contribution to the kernel: its settings model, root

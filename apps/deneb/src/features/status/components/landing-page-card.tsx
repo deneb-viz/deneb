@@ -6,7 +6,7 @@ import {
     CardHeaderProps,
     Subtitle2
 } from '@fluentui/react-components';
-import { useStatusStyles } from '.';
+import { useStatusStyles } from '../../../host';
 import { useDenebState } from '@deneb-viz/app-core';
 
 interface ILandingPageCardProps {

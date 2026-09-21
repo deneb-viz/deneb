@@ -1,4 +1,4 @@
-import { HostSettingsModel } from '../lib/persistence/model/host-settings-model';
+import { HostSettingsModel } from '../host';
 import { SettingsEditor } from './settings-editor';
 
 /**

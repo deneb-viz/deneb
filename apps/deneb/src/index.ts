@@ -1,7 +1,7 @@
 import powerbi from 'powerbi-visuals-api';
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 
-import { VisualKernel } from './kernel/visual-kernel';
+import { VisualKernel } from './host';
 import { KERNEL_CONFIG } from './app/kernel-config';
 
 /**

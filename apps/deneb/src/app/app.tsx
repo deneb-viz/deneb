@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { type View } from 'vega';
 
 import { logRender } from '@deneb-viz/utils/logging';
-import { resolveDownloadPermitted } from '../lib/host';
 import { ReportViewRouter } from './report-view-router';
 import {
     DenebProvider,
@@ -16,11 +15,7 @@ import {
     platformSearchContributions
 } from './platform-search-contributions';
 import { markEditorOpenStart, RetainedDenebEditor } from '@deneb-viz/editor';
-import {
-    FetchingMessage,
-    LandingPage,
-    SplashInitial
-} from '../features/status';
+import { LandingPage } from '../features/status';
 import {
     InteractivityFooter,
     TooltipSettings,
@@ -31,23 +26,22 @@ import {
 } from '../features/settings';
 import { NotificationToaster } from '../features/toaster';
 import {
-    IS_OVERLAY_ENABLED as IS_VIEWPORT_GATE_OVERLAY_ENABLED,
-    ViewportGateDebugOverlay
-} from '../features/viewport-gate-debug-overlay';
-import {
-    IS_OVERLAY_ENABLED as IS_UPDATE_HISTORY_OVERLAY_ENABLED,
-    VisualUpdateHistoryOverlay
-} from '../features/visual-update-history-overlay';
-import { getVegaLoader } from '../lib/vega-embed';
-import { useDenebVisualState } from '../state';
-import {
     contextMenuHandler,
     crossFilterHandler,
-    tooltipHandler
-} from '../lib/interactivity';
-import { persistOnCreateFromTemplate } from '../lib/persistence';
+    tooltipHandler,
+    getVegaLoader,
+    persistOnCreateFromTemplate,
+    resolveDownloadPermitted,
+    useDenebVisualState,
+    FetchingMessage,
+    SplashInitial,
+    IS_VIEWPORT_GATE_OVERLAY_ENABLED,
+    ViewportGateDebugOverlay,
+    IS_VISUAL_UPDATE_HISTORY_OVERLAY_ENABLED,
+    VisualUpdateHistoryOverlay,
+    type VisualAppProps
+} from '../host';
 import { handlePersistBooleanProperty } from '../features/settings/helpers';
-import type { VisualAppProps } from '../kernel/kernel-config';
 
 /**
  * Delay (ms) before the app-level rendering-lifecycle settle close
@@ -369,7 +363,7 @@ export const App = ({
             </GatedDenebViewer>
             {mainComponent}
             <NotificationToaster />
-            {IS_UPDATE_HISTORY_OVERLAY_ENABLED && (
+            {IS_VISUAL_UPDATE_HISTORY_OVERLAY_ENABLED && (
                 <VisualUpdateHistoryOverlay />
             )}
             {IS_VIEWPORT_GATE_OVERLAY_ENABLED && <ViewportGateDebugOverlay />}
