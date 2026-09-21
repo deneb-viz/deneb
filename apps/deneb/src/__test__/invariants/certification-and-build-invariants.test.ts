@@ -12,7 +12,10 @@ import { APP_ROOT } from './_packages';
 
 describe('safety-net bound is the certification ceiling', () => {
     it('SAFETY_NET_BOUND_MS is present and <= 10_000ms', () => {
-        const source = readFileSync(join(APP_ROOT, 'src', 'index.ts'), 'utf8');
+        const source = readFileSync(
+            join(APP_ROOT, 'src', 'kernel', 'visual-kernel.ts'),
+            'utf8'
+        );
         const match = source.match(/SAFETY_NET_BOUND_MS\s*=\s*([\d_]+)\s*;/);
         // Fail loud if the constant is renamed/removed rather than pass vacuously.
         if (!match) {
