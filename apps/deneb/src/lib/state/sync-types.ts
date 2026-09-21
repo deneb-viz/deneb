@@ -69,3 +69,10 @@ export type SliceSyncConfig<TSlice, TSliceKey extends string, TSyncPayload> = {
     /** Property mappings for this slice */
     mappings: SliceSyncMapping<TSliceKey>[];
 };
+
+/**
+ * A `SliceSyncConfig` with its slice/key/payload type parameters erased, so
+ * definitions targeting different app-core slices can share a single array
+ * (e.g. the contributions accepted by `initializeStoreSynchronization`).
+ */
+export type SliceSyncDefinition = SliceSyncConfig<any, string, any>;

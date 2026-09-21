@@ -1,6 +1,6 @@
-import type { EditorPreferencesSliceProperties } from '@deneb-viz/app-core';
-import { getVisualSettings } from '../../app/visual-settings';
-import type { SliceSyncMapping } from './sync-types';
+import { getDenebState, type EditorPreferencesSliceProperties } from '@deneb-viz/app-core';
+import { getVisualSettings } from './visual-settings';
+import type { SliceSyncMapping, SliceSyncConfig } from '../lib/state/sync-types';
 
 /**
  * Keys that can be synced from EditorPreferencesSliceProperties
@@ -13,7 +13,7 @@ type EditorPreferencesSyncKey = keyof EditorPreferencesSliceProperties;
  *
  * Add new mappings here as editor preferences properties are added.
  */
-export const EDITOR_PREFERENCES_SYNC_MAPPINGS: SliceSyncMapping<EditorPreferencesSyncKey>[] =
+const EDITOR_PREFERENCES_SYNC_MAPPINGS: SliceSyncMapping<EditorPreferencesSyncKey>[] =
     [
         {
             sliceKey: 'dataViewerRowsPerPage',
@@ -117,3 +117,21 @@ export const EDITOR_PREFERENCES_SYNC_MAPPINGS: SliceSyncMapping<EditorPreference
         }
         // Add more mappings here as needed
     ];
+
+/**
+ * Slice-sync definition for editor preferences, contributed to
+ * `initializeStoreSynchronization` alongside the generic slice syncs.
+ */
+export const editorPreferencesSync: SliceSyncConfig<
+    ReturnType<typeof getDenebState>['editorPreferences'],
+    EditorPreferencesSyncKey,
+    EditorPreferencesSliceProperties
+> = {
+    name: 'editorPreferences',
+    getSlice: (state) =>
+        (state as ReturnType<typeof getDenebState>).editorPreferences,
+    getSyncFn: (slice) => slice.syncPreferences,
+    isHydrated: (slice) => slice.__hasHydrated__,
+    getSliceValue: (slice, key) => slice[key as keyof typeof slice],
+    mappings: EDITOR_PREFERENCES_SYNC_MAPPINGS
+};

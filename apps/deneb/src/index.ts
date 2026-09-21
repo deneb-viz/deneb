@@ -47,6 +47,7 @@ import {
 } from './lib/dataset';
 import { I18N_TRANSLATIONS } from './i18n';
 import { initializeStoreSynchronization } from './lib/state';
+import { editorPreferencesSync } from './app/editor-preferences-sync';
 import {
     createCrossFilterApplyHandler,
     createCrossFilterClearHandler
@@ -306,7 +307,7 @@ export class Deneb implements IVisual {
                 options.host.createLocalizationManager(),
                 VisualFormattingSettingsModel
             );
-            initializeStoreSynchronization();
+            initializeStoreSynchronization([editorPreferencesSync]);
             this.#applicationWrapper = document.createElement('div');
             this.#applicationWrapper.id = 'deneb-application-wrapper';
             element.appendChild(this.#applicationWrapper);
