@@ -3,7 +3,7 @@ import {
     type EditorPreferencesSliceProperties
 } from '@deneb-viz/app-core';
 import { getVisualSettings } from './visual-settings';
-import type { SliceSyncMapping, SliceSyncConfig } from '../host';
+import { defineSliceSync, type SliceSyncMapping } from '../host';
 
 /**
  * Keys that can be synced from EditorPreferencesSliceProperties
@@ -125,11 +125,11 @@ const EDITOR_PREFERENCES_SYNC_MAPPINGS: SliceSyncMapping<EditorPreferencesSyncKe
  * Slice-sync definition for editor preferences, contributed to
  * `initializeStoreSynchronization` alongside the generic slice syncs.
  */
-export const editorPreferencesSync: SliceSyncConfig<
+export const editorPreferencesSync = defineSliceSync<
     ReturnType<typeof getDenebState>['editorPreferences'],
     EditorPreferencesSyncKey,
     EditorPreferencesSliceProperties
-> = {
+>({
     name: 'editorPreferences',
     getSlice: (state) =>
         (state as ReturnType<typeof getDenebState>).editorPreferences,
@@ -137,4 +137,4 @@ export const editorPreferencesSync: SliceSyncConfig<
     isHydrated: (slice) => slice.__hasHydrated__,
     getSliceValue: (slice, key) => slice[key as keyof typeof slice],
     mappings: EDITOR_PREFERENCES_SYNC_MAPPINGS
-};
+});

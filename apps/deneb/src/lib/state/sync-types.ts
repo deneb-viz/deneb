@@ -76,3 +76,19 @@ export type SliceSyncConfig<TSlice, TSliceKey extends string, TSyncPayload> = {
  * (e.g. the contributions accepted by `initializeStoreSynchronization`).
  */
 export type SliceSyncDefinition = SliceSyncConfig<any, string, any>;
+
+/**
+ * Identity helper that types a slice-sync definition against its own
+ * `TSlice`/`TSliceKey`/`TSyncPayload` before erasing them to `SliceSyncDefinition`.
+ *
+ * Assigning an object literal directly to a `SliceSyncDefinition[]`-typed array
+ * (or to the erased `SliceSyncDefinition` type) widens every field to `any`
+ * immediately, so `getSlice`'s return type no longer constrains `getSyncFn`,
+ * `isHydrated`, or `getSliceValue` — a typo like `slice.nonExistentMethod`
+ * inside `getSyncFn` compiles silently. Passing the literal through this
+ * generic function instead lets TypeScript infer `TSlice` from `getSlice`
+ * before erasure, so the other fields are checked against it.
+ */
+export const defineSliceSync = <TSlice, TSliceKey extends string, TSyncPayload>(
+    config: SliceSyncConfig<TSlice, TSliceKey, TSyncPayload>
+): SliceSyncDefinition => config;

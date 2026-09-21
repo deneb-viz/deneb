@@ -27,7 +27,10 @@ export class HostSettingsModel extends formattingSettings.Model {
      * a formatting-pane card) and excluding any app-contributed card. A
      * subclass composes its own `cards` from this list (typically
      * prepending its own cards) so the generic ordering is never
-     * hand-duplicated.
+     * hand-duplicated. Exposed as its own array (distinct from `cards`,
+     * see below) so a subclass — or this base instance — can freely
+     * reorder/mutate `cards` without that mutation reaching back into
+     * this list.
      */
     genericCards: formattingSettings.Cards[] = [
         this.display,
@@ -37,7 +40,11 @@ export class HostSettingsModel extends formattingSettings.Model {
         this.developer
     ];
 
-    cards: formattingSettings.Cards[] = this.genericCards;
+    // A copy of `genericCards`, not the same array reference — so
+    // in-place mutation of `cards` on a base `HostSettingsModel` instance
+    // (or a subclass that reassigns `cards` from a spread, as
+    // `VisualFormattingSettingsModel` does) can never alter `genericCards`.
+    cards: formattingSettings.Cards[] = [...this.genericCards];
 
     /**
      * Check/resolve card visibility based on developer settings.

@@ -14,6 +14,7 @@ import {
     bindPersistPropertiesHost,
     setReadModePersistSuppressed,
     VisualFormattingSettingsService,
+    getVisualFormattingModel,
     getVisualFormattingService
 } from '../lib/persistence';
 import { isReportInReadMode } from '../lib/state/display-mode';
@@ -160,12 +161,12 @@ logDebug(`Developer Mode: ${IS_DEVELOPER_MODE}`);
  * app-contributed slice-sync definitions, and an optional state-install
  * hook.
  *
- * Invariant: `config.installState` runs as the very first statement in
- * the constructor's try block — before host/element capture and before
- * any store is read — so an app can use it to merge state into a
- * singleton store ahead of the first read, and a throw from it still
- * degrades to the sanctioned construction-failure text rather than
- * escaping uncontained.
+ * Invariant: `config.installState` runs inside the constructor's try
+ * block immediately after the host and element captures and before any
+ * store is read, so an app can use it to merge state into a singleton
+ * store ahead of the first read, and a throw from it still degrades to
+ * the sanctioned construction-failure text with the element available
+ * to render it.
  */
 export class VisualKernel implements IVisual {
     #applicationWrapper: HTMLElement;
@@ -320,6 +321,19 @@ export class VisualKernel implements IVisual {
                 options.host.createLocalizationManager(),
                 config.settingsModel
             );
+            // The visual store's `settings` slice is seeded from
+            // `getVisualFormattingModel()` at module load time, before
+            // `bind` above has told the formatting service which model
+            // class to instantiate — so until the first `update()` it
+            // reflects the generic `HostSettingsModel` rather than
+            // `config.settingsModel`. Re-seed it now, using the same
+            // `settings: { ...getVisualFormattingModel() }` shape the
+            // update path applies in `setVisualUpdateOptions`
+            // (`state/updates.ts`), so the store's initial shape matches
+            // the bound class before anything reads it.
+            useDenebVisualState.setState({
+                settings: { ...getVisualFormattingModel() }
+            });
             initializeStoreSynchronization(config.syncSlices ?? []);
             this.#applicationWrapper = document.createElement('div');
             this.#applicationWrapper.id = 'deneb-application-wrapper';

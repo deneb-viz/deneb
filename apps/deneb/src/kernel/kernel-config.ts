@@ -54,10 +54,10 @@ export type VisualKernelConfig = {
     /** App-contributed slice-sync definitions, registered after the generic ones. */
     syncSlices?: SliceSyncDefinition[];
     /**
-     * Optional hook run as the first statement inside the kernel
-     * constructor's try block — before any store is read. This is where
-     * an app installs its own store state (e.g. the retained editor's
-     * singleton) so a throw here still degrades to the sanctioned
+     * Optional hook run inside the kernel constructor's try block, after
+     * the host and element captures and before any store is read. This is
+     * where an app installs its own store state (e.g. the retained
+     * editor's singleton); a throw here still degrades to the sanctioned
      * construction-failure text.
      */
     installState?: () => void;

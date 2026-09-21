@@ -7,7 +7,7 @@ import { COMPILATION_SYNC_MAPPINGS } from './compilation-sync-mappings';
 import { createSliceSync } from './create-slice-sync';
 import { persistProjectProperties } from '../persistence';
 import { VISUAL_RENDER_SYNC_MAPPINGS } from './visual-render-sync-mappings';
-import type { SliceSyncDefinition } from './sync-types';
+import { defineSliceSync, type SliceSyncDefinition } from './sync-types';
 
 /**
  * Initializes subscriptions to sync state from the Power BI visual store to the app-core store.
@@ -132,7 +132,7 @@ const subscribeEmbedViewport = (): (() => void) => {
  */
 const GENERIC_SLICE_SYNC_DEFINITIONS: SliceSyncDefinition[] = [
     // Project slice sync
-    {
+    defineSliceSync({
         name: 'project',
         getSlice: (state) =>
             (state as ReturnType<typeof getDenebState>).project,
@@ -140,10 +140,10 @@ const GENERIC_SLICE_SYNC_DEFINITIONS: SliceSyncDefinition[] = [
         isHydrated: (slice) => slice.__hasHydrated__,
         getSliceValue: (slice, key) => slice[key as keyof typeof slice],
         mappings: PROJECT_SYNC_MAPPINGS
-    },
+    }),
 
     // Visual render (display) slice sync
-    {
+    defineSliceSync({
         name: 'visualRender',
         getSlice: (state) =>
             (state as ReturnType<typeof getDenebState>).visualRender,
@@ -151,10 +151,10 @@ const GENERIC_SLICE_SYNC_DEFINITIONS: SliceSyncDefinition[] = [
         isHydrated: (slice) => slice.__hasHydrated__,
         getSliceValue: (slice, key) => slice[key as keyof typeof slice],
         mappings: VISUAL_RENDER_SYNC_MAPPINGS
-    },
+    }),
 
     // Compilation (performance settings) slice sync
-    {
+    defineSliceSync({
         name: 'compilation',
         getSlice: (state) =>
             (state as ReturnType<typeof getDenebState>).compilation,
@@ -162,21 +162,26 @@ const GENERIC_SLICE_SYNC_DEFINITIONS: SliceSyncDefinition[] = [
         isHydrated: (slice) => slice.__hasHydrated__,
         getSliceValue: (slice, key) => slice[key as keyof typeof slice],
         mappings: COMPILATION_SYNC_MAPPINGS
-    }
+    })
 ];
 
 /**
  * `createSliceSync` keeps no registry of which slice each definition targets — `name` is only a
  * log-message prefix — so two definitions naming the same slice would each start an independent
- * subscription and double-persist. A definition's `name` is the only field that identifies its
- * target (by convention it equals the app-core slice property its `getSlice` reads, e.g.
- * `'project'` or `'editorPreferences'`), so it doubles as that identity here. Throws before any
- * definition in `definitions` is registered if two of them share a name.
+ * subscription and double-persist. `name` collisions are still rejected (distinct definitions
+ * sharing a log label is itself a bug), but the real identity check resolves each definition's
+ * `getSlice` against the live app-core store once, up front, and compares the returned slice
+ * objects by reference: two definitions whose `getSlice` calls resolve to the same slice object
+ * are targeting the same synchronization, whatever they are named. Throws before any definition
+ * in `definitions` is registered if two of them share a name or a resolved slice.
  */
 const assertDistinctSliceSyncTargets = (
     definitions: SliceSyncDefinition[]
 ): void => {
+    const state = getDenebState();
     const seenNames = new Set<string>();
+    const seenSlicesByName = new Map<unknown, string>();
+
     for (const definition of definitions) {
         if (seenNames.has(definition.name)) {
             throw new Error(
@@ -184,6 +189,15 @@ const assertDistinctSliceSyncTargets = (
             );
         }
         seenNames.add(definition.name);
+
+        const slice = definition.getSlice(state);
+        const existingName = seenSlicesByName.get(slice);
+        if (existingName !== undefined) {
+            throw new Error(
+                `[StoreSynchronization] Slice sync '${definition.name}' targets the same app-core slice as '${existingName}'. Each app-core slice may only be synced by one definition.`
+            );
+        }
+        seenSlicesByName.set(slice, definition.name);
     }
 };
 

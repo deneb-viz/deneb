@@ -16,14 +16,24 @@ export class VisualFormattingSettingsModel extends HostSettingsModel {
  * Narrows a base `HostSettingsModel` to this app's
  * `VisualFormattingSettingsModel` so editor-card properties can be read.
  *
- * This is a type assertion, not a narrowing check: it is sound only
+ * This is a checked narrowing, not a plain assertion: it is sound only
  * because this app is the sole binder of its own model class into the
- * formatting service (`VisualFormattingSettingsService.bind` in
- * `src/index.ts` passes `VisualFormattingSettingsModel`), so every
- * settings instance the kernel-side code hands back is actually this
- * class at runtime. Changing the bound class without updating this
- * accessor breaks that invariant silently.
+ * formatting service (the kernel calls
+ * `VisualFormattingSettingsService.bind` with `config.settingsModel`, and
+ * `src/app/kernel-config.ts` supplies `VisualFormattingSettingsModel`), so
+ * every settings instance the kernel-side code hands back is actually this
+ * class at runtime. The `'editor' in settings` check exists so a mis-bound
+ * class (someone changes `config.settingsModel` without keeping the editor
+ * card) fails loudly at the first read here, instead of surfacing later as
+ * `undefined` deep inside an editor-card subscriber.
  */
 export const getVisualSettings = (
     settings: HostSettingsModel
-): VisualFormattingSettingsModel => settings as VisualFormattingSettingsModel;
+): VisualFormattingSettingsModel => {
+    if (!('editor' in settings)) {
+        throw new Error(
+            'getVisualSettings: the bound settings model is missing the editor card. The formatting service must be bound with VisualFormattingSettingsModel (see src/app/kernel-config.ts).'
+        );
+    }
+    return settings as VisualFormattingSettingsModel;
+};

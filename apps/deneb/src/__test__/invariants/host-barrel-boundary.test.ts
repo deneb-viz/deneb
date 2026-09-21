@@ -188,8 +188,26 @@ export function findHostBarrelBoundaryViolations(
     return violations;
 }
 
-const importSpecifiers = (source: string): string[] =>
-    [...source.matchAll(/from\s*['"]([^'"]+)['"]/g)].map((match) => match[1]);
+/**
+ * Extracts every import specifier from a source file's text: standard
+ * `import ... from '...'` (including type-only and re-export forms, which
+ * also contain `from`), bare side-effect imports (`import '...';`, no
+ * bindings and no `from`), and dynamic imports (`import('...')`). All three
+ * are real ways a kernel-side module could reach the host barrel — or an
+ * app-side module could reach kernel-side code — without going through a
+ * `from` clause, so a scan that only matched `from` would miss them.
+ */
+const importSpecifiers = (source: string): string[] => [
+    ...[...source.matchAll(/from\s*['"]([^'"]+)['"]/g)].map(
+        (match) => match[1]
+    ),
+    ...[...source.matchAll(/^\s*import\s*['"]([^'"]+)['"]/gm)].map(
+        (match) => match[1]
+    ),
+    ...[...source.matchAll(/import\(\s*['"]([^'"]+)['"]\s*\)/g)].map(
+        (match) => match[1]
+    )
+];
 
 /** Every non-test TypeScript source file under apps/deneb/src, as import entries. */
 const SRC_ROOT = join(APP_ROOT, 'src');
@@ -284,6 +302,38 @@ describe('host barrel boundary', () => {
             expect(violations[0]).toMatchObject({
                 file: 'lib/x.ts',
                 specifier: '../../app/visual-settings'
+            });
+        });
+
+        it('flags an app-side bare (side-effect) import of a kernel-side module', () => {
+            const violations = findHostBarrelBoundaryViolations([
+                {
+                    file: 'features/settings/x.tsx',
+                    specifiers: importSpecifiers(
+                        "import '../../lib/interactivity';\n"
+                    )
+                }
+            ]);
+            expect(violations).toHaveLength(1);
+            expect(violations[0]).toMatchObject({
+                file: 'features/settings/x.tsx',
+                specifier: '../../lib/interactivity'
+            });
+        });
+
+        it('flags a kernel-side dynamic import of the host barrel', () => {
+            const violations = findHostBarrelBoundaryViolations([
+                {
+                    file: 'lib/x.ts',
+                    specifiers: importSpecifiers(
+                        "const mod = await import('../host');\n"
+                    )
+                }
+            ]);
+            expect(violations).toHaveLength(1);
+            expect(violations[0]).toMatchObject({
+                file: 'lib/x.ts',
+                specifier: '../host'
             });
         });
 

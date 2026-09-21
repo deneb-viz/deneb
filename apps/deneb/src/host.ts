@@ -86,6 +86,7 @@ export type {
     SliceSyncConfig,
     SliceSyncDefinition
 } from './lib/state/sync-types';
+export { defineSliceSync } from './lib/state/sync-types';
 
 // The kernel base class and the types an app supplies to it.
 export { VisualKernel } from './kernel/visual-kernel';

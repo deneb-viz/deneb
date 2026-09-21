@@ -1,9 +1,10 @@
 import powerbi from 'powerbi-visuals-api';
 
 /**
- * Feature flags passed from the host (index.ts) to control dataset processing.
- * These are sourced from the app configuration and threaded through the
- * processing chain rather than being imported directly.
+ * Feature flags that control dataset processing. Supplied through the
+ * kernel config (`VisualKernelConfig.featureFlags`) and threaded into
+ * dataset processing as a parameter, rather than being imported directly
+ * by the processing code.
  */
 export type HostFeatureFlags = {
     dataDrilldown: boolean;

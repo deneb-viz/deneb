@@ -19,7 +19,9 @@ describe('safety-net bound is the certification ceiling', () => {
         const match = source.match(/SAFETY_NET_BOUND_MS\s*=\s*([\d_]+)\s*;/);
         // Fail loud if the constant is renamed/removed rather than pass vacuously.
         if (!match) {
-            throw new Error('SAFETY_NET_BOUND_MS not found in src/index.ts');
+            throw new Error(
+                'SAFETY_NET_BOUND_MS not found in src/kernel/visual-kernel.ts'
+            );
         }
         const value = Number(match[1].replace(/_/g, ''));
         expect(value).toBeLessThanOrEqual(10_000);

@@ -58,4 +58,59 @@ describe('the kernel installs config state before any store read', () => {
 
         expect(installIndex).toBeLessThan(firstStoreReadIndex);
     });
+
+    it('calls config.installState after the root element is captured, so a throw from it still leaves the construction-failure path an element to render into', () => {
+        const constructorStart = kernelSource.indexOf('constructor(');
+        expect(constructorStart).toBeGreaterThanOrEqual(0);
+
+        const hostElementCaptureIndex = kernelSource.indexOf(
+            'this.#hostElement = element;',
+            constructorStart
+        );
+        expect(hostElementCaptureIndex).toBeGreaterThan(constructorStart);
+
+        const installIndex = kernelSource.indexOf(
+            'config.installState?.()',
+            constructorStart
+        );
+        expect(installIndex).toBeGreaterThan(constructorStart);
+
+        expect(hostElementCaptureIndex).toBeLessThan(installIndex);
+    });
+
+    it('re-seeds the settings slice from the bound model class after bind and before the next store read', () => {
+        const constructorStart = kernelSource.indexOf('constructor(');
+        expect(constructorStart).toBeGreaterThanOrEqual(0);
+
+        const bindIndex = kernelSource.indexOf(
+            'VisualFormattingSettingsService.bind(',
+            constructorStart
+        );
+        expect(bindIndex).toBeGreaterThan(constructorStart);
+
+        const reseedIndex = kernelSource.indexOf(
+            'useDenebVisualState.setState({',
+            bindIndex
+        );
+        expect(reseedIndex).toBeGreaterThan(bindIndex);
+
+        // No visual-state or app-core read should sit between the bind call
+        // and the re-seed — that would read the settings slice while it
+        // still reflects the generic `HostSettingsModel` seeded at module
+        // load, before `bind` told the formatting service which class to
+        // use.
+        const nextVisualStateRead = kernelSource.indexOf(
+            'getDenebVisualState(',
+            bindIndex
+        );
+        const nextAppCoreRead = kernelSource.indexOf(
+            'getDenebState(',
+            bindIndex
+        );
+        for (const nextRead of [nextVisualStateRead, nextAppCoreRead]) {
+            if (nextRead !== -1) {
+                expect(reseedIndex).toBeLessThan(nextRead);
+            }
+        }
+    });
 });

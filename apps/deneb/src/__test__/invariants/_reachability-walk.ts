@@ -20,9 +20,8 @@ import * as path from 'node:path';
  * for this one: distinguishing `import type { Foo }` from `import { Foo }`
  * requires the parser's type-only bit, not string matching.
  *
- * Cloned from `packages/app-core/src/__tests__/_reachability-walk.ts` and
- * pointed at the visual's own tsconfig. The only structural difference is
- * `PACKAGE_ROOT`'s depth: this file lives at `src/__test__/invariants/`
+ * Resolves against the visual's own tsconfig. `PACKAGE_ROOT` accounts for
+ * this file's depth: it lives at `src/__test__/invariants/`
  * (two directories under `src/`), one level deeper than app-core's
  * `src/__tests__/` (one directory under `src/`), so reaching the app root
  * from `__dirname` takes an extra `'..'`.

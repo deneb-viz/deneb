@@ -7,12 +7,11 @@ import { entryFile, walkReachability } from './_reachability-walk';
  * code by value.
  *
  * `src/host.ts` is the only surface app-side code may use to reach
- * kernel-side code (see `host-barrel-boundary.test.ts`), and it is what
- * moves to become `packages/powerbi-host/src/index.ts`. If Monaco or
- * `@deneb-viz/editor` were reachable from it, the future package would
- * pull the editor into the viewer-only bundle it is meant to keep clear
- * of. Cloned from `packages/app-core/src/__tests__/viewer-entry-is-editor-free.test.ts`,
- * pointed at `host.ts` instead of the viewer's root barrel.
+ * kernel-side code (see `host-barrel-boundary.test.ts`) and is the
+ * kernel's public entry. If Monaco or `@deneb-viz/editor` were reachable
+ * from it, the kernel would pull the editor into any viewer-only bundle
+ * built on it. Same walk as app-core's viewer-entry canary, rooted at
+ * `host.ts`.
  */
 
 /**
@@ -24,9 +23,13 @@ const EDITOR_ONLY_EXTERNAL_PATTERN =
     /^monaco-editor|^@monaco-editor\/|^@deneb-viz\/editor(\/|$)/;
 
 export interface EditorOnlyReachViolation {
-    /** Whether the violation is a reached source file or an external specifier. */
-    kind: 'file' | 'external';
-    /** The offending file path (src/-relative) or module specifier. */
+    /**
+     * `findEditorOnlyReach` only tests external module specifiers against
+     * `EDITOR_ONLY_EXTERNAL_PATTERN` — it never inspects reached source
+     * files — so this is always `'external'`.
+     */
+    kind: 'external';
+    /** The offending module specifier. */
     value: string;
     /** The pattern (as a string) that matched. */
     matchedPattern: string;
