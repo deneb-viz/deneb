@@ -170,7 +170,7 @@ describe('getMappedDataset — legacy support-field migration integrity (U3)', (
 
     describe('happy path — legacy spec, no prior config (M10)', () => {
         it('commits legacy defaults, registry version and consolidate=false via ONE combined store update', () => {
-            const result = getMappedDataset(CATEGORICAL, 'en-US');
+            const result = getMappedDataset(CATEGORICAL, 'en-US', { dataDrilldown: false });
 
             expect(result.rowsLoaded).toBe(2);
             expect(result.values).toHaveLength(2);
@@ -195,7 +195,7 @@ describe('getMappedDataset — legacy support-field migration integrity (U3)', (
         });
 
         it('processes the pass with the migrated configuration and legacy semantics', () => {
-            getMappedDataset(CATEGORICAL, 'en-US');
+            getMappedDataset(CATEGORICAL, 'en-US', { dataDrilldown: false });
 
             expect(mockBuildProcessingPlan).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -237,7 +237,7 @@ describe('getMappedDataset — legacy support-field migration integrity (U3)', (
         });
 
         it('preserves interim user edits: existing entries win over migrated defaults', () => {
-            getMappedDataset(CATEGORICAL, 'en-US');
+            getMappedDataset(CATEGORICAL, 'en-US', { dataDrilldown: false });
 
             expect(mockApplySupportFieldMigrationStamp).toHaveBeenCalledTimes(
                 1
@@ -262,7 +262,7 @@ describe('getMappedDataset — legacy support-field migration integrity (U3)', (
                 consolidateFieldParameters: true
             });
 
-            getMappedDataset(CATEGORICAL, 'en-US');
+            getMappedDataset(CATEGORICAL, 'en-US', { dataDrilldown: false });
 
             const stamp = mockApplySupportFieldMigrationStamp.mock.calls[0][0];
             // Processing used consolidateFieldParameters=true for this pass
@@ -281,14 +281,14 @@ describe('getMappedDataset — legacy support-field migration integrity (U3)', (
                 consolidateFieldParameters: false
             });
 
-            getMappedDataset(CATEGORICAL, 'en-US');
+            getMappedDataset(CATEGORICAL, 'en-US', { dataDrilldown: false });
 
             const stamp = mockApplySupportFieldMigrationStamp.mock.calls[0][0];
             expect(stamp.consolidateFieldParameters).toBe(false);
         });
 
         it('treats a non-empty persisted configuration as non-legacy evidence: unconfigured fields get new-spec defaults', () => {
-            getMappedDataset(CATEGORICAL, 'en-US');
+            getMappedDataset(CATEGORICAL, 'en-US', { dataDrilldown: false });
 
             // The newly-seen field resolves defaults with isLegacy: false.
             expect(mockResolveFieldDefaults).toHaveBeenCalledWith(
@@ -317,7 +317,7 @@ describe('getMappedDataset — legacy support-field migration integrity (U3)', (
                 );
             });
 
-            const result = getMappedDataset(CATEGORICAL, 'en-US');
+            const result = getMappedDataset(CATEGORICAL, 'en-US', { dataDrilldown: false });
 
             // Empty dataset returned; no half-committed migration state.
             expect(result.values).toHaveLength(0);
@@ -341,7 +341,7 @@ describe('getMappedDataset — legacy support-field migration integrity (U3)', (
                 throw new Error('boom');
             });
 
-            const result = getMappedDataset(CATEGORICAL, 'en-US');
+            const result = getMappedDataset(CATEGORICAL, 'en-US', { dataDrilldown: false });
 
             expect(result.values).toHaveLength(0);
             expect(mockLogDurableError).toHaveBeenCalledWith(
@@ -354,7 +354,7 @@ describe('getMappedDataset — legacy support-field migration integrity (U3)', (
         it('does not run the migration for an already-stamped payload', () => {
             mockProject = makeProject({ denebMetaVersion: 2 });
 
-            getMappedDataset(CATEGORICAL, 'en-US');
+            getMappedDataset(CATEGORICAL, 'en-US', { dataDrilldown: false });
 
             expect(mockApplySupportFieldMigrationStamp).not.toHaveBeenCalled();
             expect(mockBuildProcessingPlan).toHaveBeenCalledWith(
@@ -370,9 +370,51 @@ describe('getMappedDataset — legacy support-field migration integrity (U3)', (
                 denebMetaVersion: 0
             });
 
-            getMappedDataset(CATEGORICAL, 'en-US');
+            getMappedDataset(CATEGORICAL, 'en-US', { dataDrilldown: false });
 
             expect(mockApplySupportFieldMigrationStamp).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('drilldown feature flag', () => {
+        it('respects dataDrilldown flag: disabled when flag is false despite drilldown roles present', async () => {
+            // Set up a column with drilldown roles
+            const columnWithDrilldown = column('Category', 0);
+            columnWithDrilldown.column.roles = { __drill__: true };
+            mockColumns = [columnWithDrilldown];
+            mockProject = makeProject();
+
+            // Import the drilldown mock dynamically and configure it
+            const drilldown = await import('../drilldown');
+            vi.mocked(drilldown.isDrilldownFeatureEnabled).mockImplementation(
+                (flags) => flags.dataDrilldown
+            );
+
+            const result = getMappedDataset(CATEGORICAL, 'en-US', {
+                dataDrilldown: false
+            });
+
+            expect(result.hasDrilldown).toBe(false);
+        });
+
+        it('respects dataDrilldown flag: enabled when flag is true with drilldown roles present', async () => {
+            // Set up a column with drilldown roles
+            const columnWithDrilldown = column('Category', 0);
+            columnWithDrilldown.column.roles = { __drill__: true };
+            mockColumns = [columnWithDrilldown];
+            mockProject = makeProject();
+
+            // Import the drilldown mock dynamically and configure it
+            const drilldown = await import('../drilldown');
+            vi.mocked(drilldown.isDrilldownFeatureEnabled).mockImplementation(
+                (flags) => flags.dataDrilldown
+            );
+
+            const result = getMappedDataset(CATEGORICAL, 'en-US', {
+                dataDrilldown: true
+            });
+
+            expect(result.hasDrilldown).toBe(true);
         });
     });
 });

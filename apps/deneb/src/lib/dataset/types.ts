@@ -1,6 +1,15 @@
 import powerbi from 'powerbi-visuals-api';
 
 /**
+ * Feature flags passed from the host (index.ts) to control dataset processing.
+ * These are sourced from the app configuration and threaded through the
+ * processing chain rather than being imported directly.
+ */
+export type HostFeatureFlags = {
+    dataDrilldown: boolean;
+};
+
+/**
  * Used to store interim data whilst the data view is being processed
  */
 export type AugmentedMetadataField = {

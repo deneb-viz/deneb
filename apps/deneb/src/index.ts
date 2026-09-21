@@ -63,6 +63,8 @@ import {
     type RenderingLifecycleId,
     type SafetyNetScheduler
 } from './lib/rendering-lifecycle';
+import { FEATURES } from '../config';
+import type { HostFeatureFlags } from './lib/dataset/types';
 
 /**
  * Centralize/report developer mode from environment.
@@ -205,6 +207,10 @@ export class Deneb implements IVisual {
     // `renderingStarted` on a torn-down visual (root unmounted, view
     // cleared).
     #destroyed = false;
+    // Feature flags threaded through dataset processing as a parameter
+    // instead of being imported directly from config. Built once in the
+    // constructor and passed to getMappedDataset.
+    #hostFeatureFlags: HostFeatureFlags;
 
     constructor(options: VisualConstructorOptions) {
         logHost('Constructor has been called.', { options });
@@ -298,6 +304,11 @@ export class Deneb implements IVisual {
                 locale: host.locale as I18nLocale,
                 translationExtensions: [I18N_TRANSLATIONS]
             });
+            // Build the feature flags object once for threading through
+            // dataset processing calls
+            this.#hostFeatureFlags = {
+                dataDrilldown: FEATURES.data_drilldown
+            };
             VegaExtensibilityServices.bind(host.colorPalette);
             VegaExtensibilityServices.setExpressionHandlers({
                 onCrossFilterClear: createCrossFilterClearHandler(),
@@ -735,7 +746,7 @@ export class Deneb implements IVisual {
             isFetchingAdditional: false,
             rowsLoaded
         });
-        setDataset(getMappedDataset(categorical, locale));
+        setDataset(getMappedDataset(categorical, locale, this.#hostFeatureFlags));
         logTimeEnd('processDataset');
         // Rendering branch: bind the pending-render id BEFORE
         // returning so the React-side `onRendering*` callbacks
@@ -848,7 +859,7 @@ export class Deneb implements IVisual {
             isFetchingAdditional: false,
             rowsLoaded
         });
-        setDataset(getMappedDataset(categorical, locale));
+        setDataset(getMappedDataset(categorical, locale, this.#hostFeatureFlags));
         logTimeEnd('processDataset');
         // Rendering branch: bind the pending-render id BEFORE
         // returning. See the matching call in `handleFetchMore`'s
