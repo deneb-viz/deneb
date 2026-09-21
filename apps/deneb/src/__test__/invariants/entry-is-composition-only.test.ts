@@ -11,10 +11,7 @@ import { APP_ROOT } from './_packages';
  */
 
 describe('the entry is composition-only', () => {
-    const entrySource = readFileSync(
-        join(APP_ROOT, 'src', 'index.ts'),
-        'utf8'
-    );
+    const entrySource = readFileSync(join(APP_ROOT, 'src', 'index.ts'), 'utf8');
 
     it('exports `class Deneb extends VisualKernel`', () => {
         expect(entrySource).toMatch(/class Deneb extends VisualKernel/);

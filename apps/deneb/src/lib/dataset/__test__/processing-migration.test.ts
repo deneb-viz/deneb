@@ -170,7 +170,9 @@ describe('getMappedDataset — legacy support-field migration integrity (U3)', (
 
     describe('happy path — legacy spec, no prior config (M10)', () => {
         it('commits legacy defaults, registry version and consolidate=false via ONE combined store update', () => {
-            const result = getMappedDataset(CATEGORICAL, 'en-US', { dataDrilldown: false });
+            const result = getMappedDataset(CATEGORICAL, 'en-US', {
+                dataDrilldown: false
+            });
 
             expect(result.rowsLoaded).toBe(2);
             expect(result.values).toHaveLength(2);
@@ -317,7 +319,9 @@ describe('getMappedDataset — legacy support-field migration integrity (U3)', (
                 );
             });
 
-            const result = getMappedDataset(CATEGORICAL, 'en-US', { dataDrilldown: false });
+            const result = getMappedDataset(CATEGORICAL, 'en-US', {
+                dataDrilldown: false
+            });
 
             // Empty dataset returned; no half-committed migration state.
             expect(result.values).toHaveLength(0);
@@ -341,7 +345,9 @@ describe('getMappedDataset — legacy support-field migration integrity (U3)', (
                 throw new Error('boom');
             });
 
-            const result = getMappedDataset(CATEGORICAL, 'en-US', { dataDrilldown: false });
+            const result = getMappedDataset(CATEGORICAL, 'en-US', {
+                dataDrilldown: false
+            });
 
             expect(result.values).toHaveLength(0);
             expect(mockLogDurableError).toHaveBeenCalledWith(

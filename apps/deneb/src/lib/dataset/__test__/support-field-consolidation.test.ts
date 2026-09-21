@@ -187,7 +187,9 @@ describe('getMappedDataset — legacy migration vs field parameter consolidation
             consolidateFieldParameters: undefined
         });
 
-        const result = getMappedDataset(makeParameterCategorical(), LOCALE, { dataDrilldown: false });
+        const result = getMappedDataset(makeParameterCategorical(), LOCALE, {
+            dataDrilldown: false
+        });
 
         expect(result.rowsLoaded).toBe(2);
         // Flat component field names, exactly as pre-2.0 rendered them
@@ -219,7 +221,9 @@ describe('getMappedDataset — legacy migration vs field parameter consolidation
                 supportFieldConfiguration: undefined,
                 consolidateFieldParameters: true
             });
-            return getMappedDataset(makeParameterCategorical(), LOCALE, { dataDrilldown: false });
+            return getMappedDataset(makeParameterCategorical(), LOCALE, {
+                dataDrilldown: false
+            });
         };
 
         const first = runPassWithStaleInboundState();
@@ -241,7 +245,9 @@ describe('getMappedDataset — legacy migration vs field parameter consolidation
             consolidateFieldParameters: true
         });
 
-        const result = getMappedDataset(makeParameterCategorical(), LOCALE, { dataDrilldown: false });
+        const result = getMappedDataset(makeParameterCategorical(), LOCALE, {
+            dataDrilldown: false
+        });
 
         expect(result.rowsLoaded).toBe(2);
         // Consolidated parameter arrays in the rows
@@ -264,7 +270,9 @@ describe('getMappedDataset — legacy migration vs field parameter consolidation
             consolidateFieldParameters: undefined
         });
 
-        const result = getMappedDataset(makePlainCategorical(), LOCALE, { dataDrilldown: false });
+        const result = getMappedDataset(makePlainCategorical(), LOCALE, {
+            dataDrilldown: false
+        });
 
         expect(result.rowsLoaded).toBe(2);
         expect(result.values[0]['Country Code']).toBe('CA');

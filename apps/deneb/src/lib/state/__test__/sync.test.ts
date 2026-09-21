@@ -20,7 +20,11 @@ vi.mock('../../../state', () => ({
         subscribe: vi.fn(() => vi.fn()),
         getState: vi.fn(() => ({
             dataset: { version: 0, fields: [], values: [] },
-            interface: { embedViewport: undefined, mode: 'viewer', isInFocus: false },
+            interface: {
+                embedViewport: undefined,
+                mode: 'viewer',
+                isInFocus: false
+            },
             updates: { __hydrated__: false },
             settings: {}
         }))
@@ -51,9 +55,7 @@ import { createSliceSync } from '../create-slice-sync';
 
 const GENERIC_SLICE_SYNC_NAMES = ['project', 'visualRender', 'compilation'];
 
-const buildContributedDefinition = (
-    name: string
-): SliceSyncDefinition => ({
+const buildContributedDefinition = (name: string): SliceSyncDefinition => ({
     name,
     getSlice: vi.fn(),
     getSyncFn: vi.fn(),
@@ -63,7 +65,9 @@ const buildContributedDefinition = (
 });
 
 const registeredNames = () =>
-    vi.mocked(createSliceSync).mock.calls.map(([definition]) => definition.name);
+    vi
+        .mocked(createSliceSync)
+        .mock.calls.map(([definition]) => definition.name);
 
 describe('initializeStoreSynchronization', () => {
     beforeEach(() => {
