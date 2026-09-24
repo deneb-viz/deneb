@@ -115,6 +115,27 @@ export interface ContainerDimensions {
 }
 
 /**
+ * Which top-level dimensions Deneb stamped into a patched spec.
+ *
+ * Deneb only sets `width`/`height` when the user has not — so once they are
+ * literal numbers, nothing in the spec distinguishes Deneb's from the user's.
+ * This travels alongside the spec so the re-stamp path can tell them apart and
+ * leave a user-authored dimension alone.
+ */
+export interface PatchedDimensions {
+    width: boolean;
+    height: boolean;
+}
+
+/**
+ * Deneb stamped neither dimension. The safe default: nothing gets re-stamped.
+ */
+export const NO_PATCHED_DIMENSIONS: PatchedDimensions = {
+    width: false,
+    height: false
+};
+
+/**
  * Get the `denebContainer` signal object from container dimensions. This is a convenience wrapper around
  * `getSignalDenebContainer` for use in spec patching where only width/height are available.
  *
