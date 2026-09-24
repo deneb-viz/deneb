@@ -28,6 +28,7 @@
 | `packages/vega-runtime/src/lib/spec-processing/parse.ts` | Parse pipeline. Populates `patchedDimensions` on every result. | Modify |
 | `packages/vega-runtime/src/lib/spec-processing/__tests__/container-dimension-stability.test.ts` | Regression test: runs a real Vega view and pins that a container signal write does not move the layout. Separate from the patch unit tests because it needs a live `View`. | Create |
 | `packages/vega-runtime/src/lib/spec-processing/__tests__/patch-vega.test.ts` | Unit tests for `patchVegaSpec`. | Modify |
+| `packages/vega-runtime/src/lib/spec-processing/__tests__/parse.test.ts` | Unit tests for `parseSpec`, which calls `patchVegaSpec` and asserts the resulting dimension shape. | Modify |
 | `packages/vega-runtime/src/lib/signals/__tests__/deneb-container.test.ts` | Unit tests for the signal helpers. | Modify |
 | `packages/app-core/src/state/compilation.ts` | Compilation slice. Passes ownership into the re-stamp helper. | Modify |
 | `pbiviz.json` | Version source of truth. | Modify |
@@ -368,18 +369,36 @@ git commit -m "fix(vega-runtime): stamp literal dimensions into patched Vega spe
 
 ---
 
-### Task 4: Update the existing `patchVegaSpec` expectations
+### Task 4: Update the existing dimension-shape expectations
 
-Four tests assert the signal-reference form and now fail. The rest of the file is unaffected.
+Six tests across two files assert the signal-reference form and now fail. The rest of both files is unaffected.
 
 **Files:**
 
 - Modify: `packages/vega-runtime/src/lib/spec-processing/__tests__/patch-vega.test.ts`
+- Modify: `packages/vega-runtime/src/lib/spec-processing/__tests__/parse.test.ts:129-130`
 
-- [ ] **Step 1: Run the suite to see exactly which fail**
+- [ ] **Step 1: Run both suites to see exactly which fail**
 
-Run: `npx vitest run src/lib/spec-processing/__tests__/patch-vega.test.ts` from `packages/vega-runtime`.
-Expected: 4 failures — `should set responsive width if not specified`, `should set responsive height if not specified`, `should not add responsive width when user has width signal with init`, `should not add responsive height when user has height signal with init`.
+Run, from `packages/vega-runtime`:
+
+```
+npx vitest run src/lib/spec-processing/__tests__/patch-vega.test.ts src/lib/spec-processing/__tests__/parse.test.ts
+```
+
+Expected: 6 failures, each reporting `expected 800 to have property "signal"` or `expected 600 to have property "signal"`.
+
+In `patch-vega.test.ts`:
+
+- `should set responsive width if not specified`
+- `should set responsive height if not specified`
+- `should not add responsive width when user has width signal with init`
+- `should not add responsive height when user has height signal with init`
+- `patchVegaSpec Integration > should work with realistic bar chart spec`
+
+In `parse.test.ts`:
+
+- `parseSpec > should apply responsive sizing when containerDimensions provided`
 
 - [ ] **Step 2: Update the four assertions**
 
@@ -439,6 +458,36 @@ with:
 ```typescript
         // Should still add responsive width since no width signal exists
         expect(patched.width).toBe(800);
+```
+
+In `patchVegaSpec Integration > should work with realistic bar chart spec`, replace:
+
+```typescript
+        expect(patched.width).toHaveProperty('signal');
+        expect(patched.height).toHaveProperty('signal');
+```
+
+with:
+
+```typescript
+        expect(patched.width).toBe(800);
+        expect(patched.height).toBe(600);
+```
+
+- [ ] **Step 2a: Update the `parseSpec` expectation**
+
+`parseSpec` calls `patchVegaSpec`, so it asserts the same shape. In `parse.test.ts`, in `should apply responsive sizing when containerDimensions provided`, replace lines 129-130:
+
+```typescript
+        expect(specObj.width).toHaveProperty('signal');
+        expect(specObj.height).toHaveProperty('signal');
+```
+
+with:
+
+```typescript
+        expect(specObj.width).toBe(800);
+        expect(specObj.height).toBe(600);
 ```
 
 - [ ] **Step 3: Add coverage for the ownership predicate**
@@ -522,15 +571,15 @@ describe('getPatchedVegaDimensions', () => {
 });
 ```
 
-- [ ] **Step 4: Run the suite to verify it passes**
+- [ ] **Step 4: Run the whole package suite to verify it passes**
 
-Run: `npx vitest run src/lib/spec-processing/__tests__/patch-vega.test.ts` from `packages/vega-runtime`.
-Expected: all pass, including the 5 new `getPatchedVegaDimensions` cases.
+Run: `npm run test -w @deneb-viz/vega-runtime`
+Expected: 0 failures, including the 5 new `getPatchedVegaDimensions` cases. Running the whole package rather than the two files catches any further site that asserts the old shape — Task 3 found two the plan had missed, so do not assume this list is complete.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add packages/vega-runtime/src/lib/spec-processing/__tests__/patch-vega.test.ts
+git add packages/vega-runtime/src/lib/spec-processing/__tests__/patch-vega.test.ts packages/vega-runtime/src/lib/spec-processing/__tests__/parse.test.ts
 git commit -m "test(vega-runtime): cover literal dimension stamping and ownership (#773)"
 ```
 
