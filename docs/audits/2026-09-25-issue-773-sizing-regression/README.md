@@ -57,7 +57,8 @@ writes**. Every write to `denebContainer` — including one that changes only
 
 `{ "autosize": { "contains": "padding", "type": "fit" } }` is the config Deneb
 stamps into every new Vega spec
-([`catalog/vega/index.ts`](../../../packages/editor/src/catalog/vega/index.ts)).
+(`getDenebTemplateVegaSpecificConfig`, in the `catalog/vega` module —
+`app-core` on the 2.0.x line, `editor` on `main`).
 Under `fit`, Vega shrinks the data rectangle so the whole scenegraph fits the
 given size, and it does so by **writing the corrected value into the `height`
 signal** — here 283 → 232.
