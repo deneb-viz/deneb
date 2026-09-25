@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getPatchedVegaDimensions, patchVegaSpec } from '../patch-vega';
+import { patchVegaSpec } from '../patch-vega';
 import { SIGNAL_DENEB_CONTAINER } from '../../signals';
 import type { Spec } from 'vega';
 
@@ -502,72 +502,5 @@ describe('patchVegaSpec Integration', () => {
         expect(patched.signals).toBeDefined();
         expect(patched.width).toBe(800);
         expect(patched.height).toBe(600);
-    });
-});
-
-describe('getPatchedVegaDimensions', () => {
-    const containerDimensions = { width: 800, height: 600 };
-
-    it('claims both dimensions when the user sets neither', () => {
-        const spec: Spec = {
-            $schema: 'https://vega.github.io/schema/vega/v5.json',
-            marks: []
-        };
-
-        expect(getPatchedVegaDimensions(spec, containerDimensions)).toEqual({
-            width: true,
-            height: true
-        });
-    });
-
-    it('yields a dimension the user set as a property', () => {
-        const spec: Spec = {
-            $schema: 'https://vega.github.io/schema/vega/v5.json',
-            width: 400,
-            marks: []
-        };
-
-        expect(getPatchedVegaDimensions(spec, containerDimensions)).toEqual({
-            width: false,
-            height: true
-        });
-    });
-
-    it('yields a dimension the user set to zero', () => {
-        const spec: Spec = {
-            $schema: 'https://vega.github.io/schema/vega/v5.json',
-            height: 0,
-            marks: []
-        };
-
-        expect(getPatchedVegaDimensions(spec, containerDimensions)).toEqual({
-            width: true,
-            height: false
-        });
-    });
-
-    it('yields a dimension the user defined as a signal', () => {
-        const spec: Spec = {
-            $schema: 'https://vega.github.io/schema/vega/v5.json',
-            signals: [{ name: 'height', value: 300 }],
-            marks: []
-        };
-
-        expect(getPatchedVegaDimensions(spec, containerDimensions)).toEqual({
-            width: true,
-            height: false
-        });
-    });
-
-    it('claims nothing without container dimensions', () => {
-        const spec: Spec = {
-            $schema: 'https://vega.github.io/schema/vega/v5.json',
-            marks: []
-        };
-
-        expect(getPatchedVegaDimensions(spec)).toEqual({
-            width: false,
-            height: false
-        });
     });
 });

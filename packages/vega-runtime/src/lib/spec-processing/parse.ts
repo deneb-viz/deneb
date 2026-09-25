@@ -2,7 +2,7 @@ import { parse as parseVega, type Spec } from 'vega';
 import { compile as compileVegaLite, type TopLevelSpec } from 'vega-lite';
 import { parseJsonWithResult, redactJsonFromError } from './json';
 import { patchConfig } from './patch-config';
-import { getPatchedVegaDimensions, patchVegaSpec } from './patch-vega';
+import { patchVegaSpec } from './patch-vega';
 import {
     patchVegaLiteSpec,
     patchVegaLiteResponsiveSizing
@@ -93,13 +93,6 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
     }
 
     // Step 3: Patch spec with denebContainer and responsive sizing
-    const patchedDimensions =
-        provider === 'vega'
-            ? getPatchedVegaDimensions(
-                  parsedSpec.result as Spec,
-                  containerDimensions
-              )
-            : NO_PATCHED_DIMENSIONS;
     const patchedSpec =
         provider === 'vega'
             ? patchVegaSpec(parsedSpec.result as Spec, {
@@ -108,6 +101,17 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
             : patchVegaLiteSpec(parsedSpec.result as TopLevelSpec, {
                   containerDimensions
               });
+
+    // A dimension is Deneb's when the patch added it. Once stamped it is a
+    // plain number, indistinguishable from a user's own, so this comparison is
+    // the only point where ownership can still be observed.
+    const stamped = (key: 'width' | 'height') =>
+        (parsedSpec.result as Spec)[key] == null &&
+        (patchedSpec as Spec)[key] != null;
+    const patchedDimensions =
+        provider === 'vega'
+            ? { width: stamped('width'), height: stamped('height') }
+            : NO_PATCHED_DIMENSIONS;
 
     // Step 4: Merge config into spec for validation
     const specWithConfig = {

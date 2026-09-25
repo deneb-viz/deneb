@@ -2,9 +2,7 @@ import type { Spec } from 'vega';
 import { mergician } from 'mergician';
 import {
     getDenebContainerSignalFromDimensions,
-    SIGNAL_DENEB_CONTAINER,
-    type ContainerDimensions,
-    type PatchedDimensions
+    SIGNAL_DENEB_CONTAINER
 } from '../signals';
 import type { PatchVegaOptions } from './types';
 
@@ -13,27 +11,6 @@ import type { PatchVegaOptions } from './types';
  */
 const hasSignalNamed = (spec: Spec, name: string): boolean => {
     return spec.signals?.some((signal) => signal.name === name) ?? false;
-};
-
-/**
- * Which top-level dimensions Deneb will stamp for this spec.
- *
- * A dimension is Deneb's only when the user has set neither the property nor a
- * signal of that name — their own definition always wins. Exported so the
- * parse pipeline can record the same answer on the result without repeating
- * the condition.
- */
-export const getPatchedVegaDimensions = (
-    spec: Spec,
-    containerDimensions?: ContainerDimensions
-): PatchedDimensions => {
-    if (!containerDimensions) {
-        return { width: false, height: false };
-    }
-    return {
-        width: spec.width == null && !hasSignalNamed(spec, 'width'),
-        height: spec.height == null && !hasSignalNamed(spec, 'height')
-    };
 };
 
 /**
@@ -81,17 +58,22 @@ export const patchVegaSpec = (
         ]
     };
 
-    if (containerDimensions) {
-        const patchedDimensions = getPatchedVegaDimensions(
-            spec,
-            containerDimensions
-        );
-        if (patchedDimensions.width) {
-            patches.width = containerDimensions.width;
-        }
-        if (patchedDimensions.height) {
-            patches.height = containerDimensions.height;
-        }
+    // Set responsive dimensions if not already specified as a top-level property
+    // or as a user-defined signal (to avoid conflicts with init/update expressions)
+    if (
+        spec.width == null &&
+        !hasSignalNamed(spec, 'width') &&
+        containerDimensions
+    ) {
+        patches.width = containerDimensions.width;
+    }
+
+    if (
+        spec.height == null &&
+        !hasSignalNamed(spec, 'height') &&
+        containerDimensions
+    ) {
+        patches.height = containerDimensions.height;
     }
 
     // Merge patches with original spec (non-mutating)

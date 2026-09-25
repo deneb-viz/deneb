@@ -57,12 +57,7 @@ export interface ParsedSpec {
     errors: string[];
     /** Array of warning messages */
     warnings: string[];
-    /**
-     * Which top-level dimensions Deneb stamped into `spec`. Only these may be
-     * re-stamped when the container changes; a user-supplied `width`/`height`
-     * is theirs to keep. Always `{ width: false, height: false }` for an error
-     * result and for Vega-Lite, which sizes with `'container'` instead.
-     */
+    /** Which top-level dimensions Deneb stamped. Both false for errors and Vega-Lite. */
     patchedDimensions: PatchedDimensions;
 }
 
