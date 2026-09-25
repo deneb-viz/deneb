@@ -917,6 +917,40 @@ git commit -m "fix(app-core): re-stamp owned dimensions on the cheap re-embed pa
 
 ---
 
+### Task 7a: Cover the app-core ownership wiring
+
+Added after a review of Tasks 2–7 found that `packages/app-core/src/state/__tests__/compilation-refresh-dimensions.test.ts` predates the fix: its `makeReadyResult` builds a `parsed` object with no `patchedDimensions` and no top-level `spec.width`/`spec.height`. The field therefore arrives `undefined`, the default parameter applies, and reading it from the wrong object would pass every test — the one production path the whole fix depends on had no coverage.
+
+**Files:**
+
+- Modify: `packages/app-core/src/state/__tests__/compilation-refresh-dimensions.test.ts`
+
+- [ ] **Step 1: Extend `makeReadyResult` and add three cases**
+
+Follow the file's existing harness rather than replacing it. Add an options parameter carrying `specDimensions` and `patchedDimensions`, keeping the existing call sites working. The three cases:
+
+1. Both dimensions owned → both re-stamped to the new size.
+2. `{ width: false, height: true }` → `width` keeps its original value, `height` is re-stamped. This is the guard against ownership being ignored.
+3. The `denebContainer` signal init already matches the new size while the owned top-level dimensions differ → the dimensions are re-stamped and `spec.signals` comes back as the same object reference, proving only the dimension branch fired.
+
+- [ ] **Step 2: Prove the coverage is real with a mutation test**
+
+Temporarily change the call in `packages/app-core/src/state/compilation.ts` to read `result.patchedDimensions` (the wrong object) instead of `result.parsed.patchedDimensions`, run the file, and confirm the new tests fail. Then `git checkout -- packages/app-core/src/state/compilation.ts` and confirm `git diff` is empty.
+
+Expected under the mutation: all three new cases fail with `expected 541 to be 1024` or `expected 352 to be 768`.
+
+- [ ] **Step 3: Verify and commit**
+
+Run: `npm run typecheck -w @deneb-viz/app-core && npm run test -w @deneb-viz/app-core`
+Expected: exit 0, all pass.
+
+```bash
+git add packages/app-core/src/state/__tests__/compilation-refresh-dimensions.test.ts
+git commit -m "test(app-core): pin the dimension-ownership wiring on the re-embed path (#773)"
+```
+
+---
+
 ### Task 8: Bump the version to 2.0.1.0
 
 `pbiviz.json` is the only version to change — the workspace root `package.json` has no `version` field, and `.syncpackrc` governs dependency ranges rather than package versions.
