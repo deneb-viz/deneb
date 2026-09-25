@@ -84,16 +84,18 @@ them (`spec.width == null && !hasSignalNamed(spec, 'width')`). Once stamped as
 literals, `updateContainerInitDimensions` can no longer tell a Deneb-owned
 literal from a user-authored one, and must not overwrite the latter.
 
-The patch step reports which dimensions it stamped, and the parse step carries
-that onto the compilation result's `parsed` object — Deneb's own structure, not
-the user's spec, so nothing leaks into what the editor shows.
+The parse step compares the spec before and after patching — a dimension absent
+before and present after is one Deneb stamped — and records that on the
+compilation result's `parsed` object: Deneb's own structure, not the user's
+spec, so nothing leaks into what the editor shows. Parse time is the only point
+where both versions exist, so it is the only point ownership can be observed.
 `refreshContainerDimensions` passes it to `updateContainerInitDimensions`,
 which re-stamps only owned dimensions alongside the `denebContainer` init it
 already rewrites.
 
-Inferring ownership by comparing the literal against the current init value was
-rejected: a user who writes `"width": 400` into a 400px-wide container would
-have it silently rewritten on the next resize.
+Inferring ownership later, by comparing a stored literal against the current
+init value, was rejected: a user who writes `"width": 400` into a 400px-wide
+container would have it silently rewritten on the next resize.
 
 ### Rejected alternative
 

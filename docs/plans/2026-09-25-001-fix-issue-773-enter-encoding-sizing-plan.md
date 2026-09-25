@@ -951,6 +951,30 @@ git commit -m "test(app-core): pin the dimension-ownership wiring on the re-embe
 
 ---
 
+### Task 7b: Simplify the ownership plumbing
+
+Added after a complexity review, and applied after the first Desktop gate
+passed. Neither change alters which dimensions are treated as Deneb's, so
+the gate result stands; a fresh alpha build re-confirms it visually.
+
+**Supersedes** the `getPatchedVegaDimensions` code shown in Tasks 3, 4 and 5.
+
+1. **Derive ownership in `parse.ts` rather than predicting it.** The parse
+   step holds the spec before and after `patchVegaSpec`, so a dimension absent
+   before and present after is one Deneb stamped. This retires the exported
+   `getPatchedVegaDimensions` predicate and its five-case suite, and returns
+   `patchVegaSpec` to the inline conditions it has on `certification` — its
+   certification diff is now the two stamped values. Checked against the
+   retired predicate across property, zero, `null`, signal-reference and
+   user-signal cases, with and without container dimensions: identical in all.
+2. **Make `updateContainerInitDimensions`'s ownership argument required.**
+   The default served no real caller, and it is what let the Task 7a fixture
+   gap pass silently. Required, a missing value throws. The
+   compilation-slice fixture now always carries the field, and a wrong-field
+   read fails five of the file's seven cases instead of three.
+
+---
+
 ### Task 8: Bump the version to 2.0.1.0
 
 `pbiviz.json` is the only version to change — the workspace root `package.json` has no `version` field, and `.syncpackrc` governs dependency ranges rather than package versions.
