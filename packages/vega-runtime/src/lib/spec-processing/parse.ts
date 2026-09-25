@@ -2,14 +2,15 @@ import { parse as parseVega, type Spec } from 'vega';
 import { compile as compileVegaLite, type TopLevelSpec } from 'vega-lite';
 import { parseJsonWithResult, redactJsonFromError } from './json';
 import { patchConfig } from './patch-config';
-import { patchVegaSpec } from './patch-vega';
+import { getPatchedVegaDimensions, patchVegaSpec } from './patch-vega';
 import {
     patchVegaLiteSpec,
     patchVegaLiteResponsiveSizing
 } from './patch-vega-lite';
 import {
     replaceLegacySignalReferences,
-    logLegacySignalWarning
+    logLegacySignalWarning,
+    NO_PATCHED_DIMENSIONS
 } from '../signals';
 import type { ParseSpecOptions, ParsedSpec } from './types';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
@@ -75,7 +76,8 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
             spec: null,
             config: null,
             errors: ['Specification JSON parse error:', ...parsedSpec.errors],
-            warnings
+            warnings,
+            patchedDimensions: NO_PATCHED_DIMENSIONS
         };
     }
 
@@ -85,11 +87,19 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
             spec: null,
             config: null,
             errors: ['Config JSON parse error:', ...parsedConfig.errors],
-            warnings
+            warnings,
+            patchedDimensions: NO_PATCHED_DIMENSIONS
         };
     }
 
     // Step 3: Patch spec with denebContainer and responsive sizing
+    const patchedDimensions =
+        provider === 'vega'
+            ? getPatchedVegaDimensions(
+                  parsedSpec.result as Spec,
+                  containerDimensions
+              )
+            : NO_PATCHED_DIMENSIONS;
     const patchedSpec =
         provider === 'vega'
             ? patchVegaSpec(parsedSpec.result as Spec, {
@@ -131,7 +141,8 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
             spec: null,
             config: parsedConfig.result,
             errors: [redactedMessage],
-            warnings
+            warnings,
+            patchedDimensions: NO_PATCHED_DIMENSIONS
         };
     }
 
@@ -140,7 +151,8 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
         spec: patchedSpec,
         config: parsedConfig.result,
         errors: [],
-        warnings
+        warnings,
+        patchedDimensions
     };
 };
 
@@ -164,9 +176,7 @@ export const compileCleanVgSpec = (
             ...sizedSpec,
             config: config || {}
         };
-        const compiled = compileVegaLite(
-            sizedSpecWithConfig as TopLevelSpec
-        );
+        const compiled = compileVegaLite(sizedSpecWithConfig as TopLevelSpec);
         return compiled.spec;
     } catch {
         return undefined;

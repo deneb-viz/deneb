@@ -1,5 +1,6 @@
 import type { Spec } from 'vega';
 import type { TopLevelSpec } from 'vega-lite';
+import type { PatchedDimensions } from '../signals';
 
 /**
  * Specification provider (Vega or Vega-Lite).
@@ -56,6 +57,13 @@ export interface ParsedSpec {
     errors: string[];
     /** Array of warning messages */
     warnings: string[];
+    /**
+     * Which top-level dimensions Deneb stamped into `spec`. Only these may be
+     * re-stamped when the container changes; a user-supplied `width`/`height`
+     * is theirs to keep. Always `{ width: false, height: false }` for an error
+     * result and for Vega-Lite, which sizes with `'container'` instead.
+     */
+    patchedDimensions: PatchedDimensions;
 }
 
 /**
