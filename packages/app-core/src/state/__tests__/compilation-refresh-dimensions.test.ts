@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { CompilationResult } from '@deneb-viz/vega-runtime/compilation';
-import type { PatchedDimensions } from '@deneb-viz/vega-runtime/signals';
+import {
+    NO_PATCHED_DIMENSIONS,
+    type PatchedDimensions
+} from '@deneb-viz/vega-runtime/signals';
 
 import { createCompilationSlice } from '../compilation';
 
@@ -65,9 +68,8 @@ const makeReadyResult = (
             config: {},
             errors: [],
             warnings: [],
-            ...(options.patchedDimensions
-                ? { patchedDimensions: options.patchedDimensions }
-                : {})
+            patchedDimensions:
+                options.patchedDimensions ?? NO_PATCHED_DIMENSIONS
         },
         embedOptions: { mode: 'vega' }
     }) as unknown as CompilationResult;

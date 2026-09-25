@@ -172,8 +172,7 @@ export const getDenebContainerSignalFromDimensions = (
  * re-embed path keys off object identity).
  *
  * `patchedDimensions` says which top-level dimensions Deneb stamped. A
- * dimension the user set is theirs and is never rewritten; the default claims
- * neither, so a caller that cannot supply ownership changes only the signal.
+ * dimension the user set is theirs and is never rewritten.
  *
  * Only `width`/`height` are rewritten: the init's scroll fields are the
  * compile-time seed for a NEW view, and the live view's scroll state is owned
@@ -189,7 +188,7 @@ export const updateContainerInitDimensions = <
 >(
     spec: T,
     dimensions: ContainerDimensions,
-    patchedDimensions: PatchedDimensions = NO_PATCHED_DIMENSIONS
+    patchedDimensions: PatchedDimensions
 ): T => {
     const isPlainObject = (value: unknown): value is Record<string, unknown> =>
         typeof value === 'object' && value !== null && !Array.isArray(value);
