@@ -525,3 +525,73 @@ describe('updateContainerInitDimensions', () => {
         expect(result).toBe(spec);
     });
 });
+
+describe('updateContainerInitDimensions with owned dimensions', () => {
+    const baseSpec = {
+        width: 800,
+        height: 600,
+        signals: [
+            {
+                name: SIGNAL_DENEB_CONTAINER,
+                value: {
+                    width: 800,
+                    height: 600,
+                    scrollWidth: 0,
+                    scrollHeight: 0,
+                    scrollTop: 0,
+                    scrollLeft: 0
+                }
+            }
+        ]
+    };
+
+    it('re-stamps both dimensions when Deneb owns them', () => {
+        const updated = updateContainerInitDimensions(
+            baseSpec,
+            { width: 1024, height: 768 },
+            { width: true, height: true }
+        );
+
+        expect(updated.width).toBe(1024);
+        expect(updated.height).toBe(768);
+    });
+
+    it('leaves a user-owned dimension alone', () => {
+        const updated = updateContainerInitDimensions(
+            baseSpec,
+            { width: 1024, height: 768 },
+            { width: false, height: true }
+        );
+
+        expect(updated.width).toBe(800);
+        expect(updated.height).toBe(768);
+    });
+
+    it('re-stamps nothing when ownership is not supplied', () => {
+        const updated = updateContainerInitDimensions(baseSpec, {
+            width: 1024,
+            height: 768
+        });
+
+        expect(updated.width).toBe(800);
+        expect(updated.height).toBe(600);
+        // The signal init is still rewritten — that is not owned by the caller.
+        expect(
+            (
+                updated.signals?.find(
+                    (signal) => signal.name === SIGNAL_DENEB_CONTAINER
+                )?.value as { width: number }
+            ).width
+        ).toBe(1024);
+    });
+
+    it('returns the input reference when an owned dimension is already correct', () => {
+        const updated = updateContainerInitDimensions(
+            baseSpec,
+            { width: 800, height: 600 },
+            { width: true, height: true }
+        );
+
+        expect(updated).toBe(baseSpec);
+    });
+});
