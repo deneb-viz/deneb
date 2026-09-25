@@ -408,8 +408,9 @@ const handleClear = (state: StoreState): Partial<StoreState> => ({
  *   carry a spec, but this guards defensively against the type allowing
  *   `Spec | TopLevelSpec | null`);
  * - `updateContainerInitDimensions` returns the same spec reference,
- *   meaning the `denebContainer` init already has these dims (or there is
- *   no such entry to rewrite).
+ *   meaning the `denebContainer` init and the Deneb-owned top-level
+ *   `width`/`height` already have these dims (or there is nothing to
+ *   rewrite).
  *
  * On a real change, only `result` is replaced — `viewReady` and
  * `lastCompiled` are left untouched, since this path does not run the
@@ -429,7 +430,8 @@ const handleRefreshContainerDimensions = (
     }
     const newSpec = updateContainerInitDimensions(
         spec as Parameters<typeof updateContainerInitDimensions>[0],
-        dimensions
+        dimensions,
+        result.parsed.patchedDimensions
     );
     if (newSpec === spec) {
         return state;
