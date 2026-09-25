@@ -176,7 +176,9 @@ export const compileCleanVgSpec = (
             ...sizedSpec,
             config: config || {}
         };
-        const compiled = compileVegaLite(sizedSpecWithConfig as TopLevelSpec);
+        const compiled = compileVegaLite(
+            sizedSpecWithConfig as TopLevelSpec
+        );
         return compiled.spec;
     } catch {
         return undefined;
