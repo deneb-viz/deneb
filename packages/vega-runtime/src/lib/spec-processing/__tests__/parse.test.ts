@@ -126,8 +126,8 @@ describe('parseSpec', () => {
 
         expect(result.status).toBe('valid');
         const specObj = result.spec as any;
-        expect(specObj.width).toHaveProperty('signal');
-        expect(specObj.height).toHaveProperty('signal');
+        expect(specObj.width).toBe(800);
+        expect(specObj.height).toBe(600);
     });
 
     it('should merge config with spec', () => {
