@@ -135,11 +135,27 @@ export const stringifyPruned = (
 };
 
 /**
- * For a given object, prune at the specified level of depth. Borrowed and adapted from vega-tooltip.
+ * Format a date as an ISO 8601 string in local time, with no zone designator. Power BI delivers dates at local
+ * wall-clock time, so this reads the same as the source data, where `toISOString` would shift it to UTC.
+ */
+const toLocalIsoString = (date: Date) =>
+    new Date(date.getTime() - date.getTimezoneOffset() * 60 * 1000)
+        .toISOString()
+        .slice(0, -1);
+
+/**
+ * For a given object, prune at the specified level of depth. Valid dates are written in local time (see
+ * `toLocalIsoString`). Borrowed and adapted from vega-tooltip.
  */
 export const prune = (maxDepth = DEFAULT_MAX_PRUNE_DEPTH) => {
     const stack: unknown[] = [];
     return function (this: unknown, key: string, value: unknown) {
+        // JSON.stringify applies `Date.toJSON` (UTC) before calling the replacer, so the date has to be read from
+        // the holder rather than from `value`.
+        const original = (this as Record<string, unknown> | undefined)?.[key];
+        if (isDate(original) && !isNaN((original as Date).getTime())) {
+            return toLocalIsoString(original as Date);
+        }
         if (value === undefined) {
             return 'undefined';
         }
