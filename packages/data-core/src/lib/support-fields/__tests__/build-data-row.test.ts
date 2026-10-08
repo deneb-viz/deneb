@@ -185,6 +185,31 @@ describe('buildDataRow', () => {
             expect(result[`Sales${HIGHLIGHT_STATUS_SUFFIX}`]).toBe('on');
         });
 
+        // Issue #753: an un-highlighted row (null-padded highlights array)
+        // must report 'off' while a highlight is active elsewhere.
+        it('should emit off when the provider returns a null highlight value', () => {
+            const provider = makeProvider({
+                getHighlightValue: vi.fn().mockReturnValue(null)
+            });
+            const plan = makePlan(
+                [
+                    makeInstruction({
+                        encodedName: 'Sales',
+                        emitHighlightStatus: true
+                    })
+                ],
+                { hasHighlights: true }
+            );
+            const result = buildDataRow({
+                plan,
+                provider,
+                baseValues: [100],
+                rowIndex: 0,
+                locale: 'en-US'
+            });
+            expect(result[`Sales${HIGHLIGHT_STATUS_SUFFIX}`]).toBe('off');
+        });
+
         it('should resolve highlight value internally even when emitHighlight is false', () => {
             const provider = makeProvider({
                 getHighlightValue: vi.fn().mockReturnValue(75)

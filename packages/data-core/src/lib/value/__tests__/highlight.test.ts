@@ -30,6 +30,24 @@ describe('getHighlightStatusValue', () => {
         ).toBe('off');
     });
 
+    // Issue #753: Power BI null-pads the highlights array, so a row outside
+    // an active highlight arrives as a present base value with a null
+    // comparator. It must report 'off', not 'on'.
+    it('is off for a present base value with a null comparator', () => {
+        expect(
+            getHighlightStatusValue(true, asValue(8.4), asValue(null))
+        ).toBe('off');
+    });
+
+    // Ambiguous shape (deliberate): a null base with a null comparator is
+    // indistinguishable from a null measure inside the highlight, so the
+    // long-standing 'on' result is preserved.
+    it('remains on when both base value and comparator are null', () => {
+        expect(
+            getHighlightStatusValue(true, asValue(null), asValue(null))
+        ).toBe('on');
+    });
+
     // Audit L13: a highlights array shorter than values yields an undefined
     // comparator via an out-of-bounds read; it must not be reported as 'on'.
     it('is off (not on) for an undefined out-of-bounds comparator', () => {
