@@ -486,6 +486,107 @@ describe('parseSpec', () => {
     });
 });
 
+describe('parseSpec patchedDimensions', () => {
+    const containerDimensions = { width: 800, height: 600 };
+
+    it('marks both dimensions as owned when Deneb stamps them into a Vega spec', () => {
+        const result = parseSpec({
+            spec: '{"marks": []}',
+            provider: 'vega',
+            containerDimensions
+        });
+
+        expect(result.status).toBe('valid');
+        expect(result.patchedDimensions).toEqual({ width: true, height: true });
+    });
+
+    it('marks only the dimension Deneb stamped when the spec supplies the other', () => {
+        const result = parseSpec({
+            spec: '{"width": 400, "marks": []}',
+            provider: 'vega',
+            containerDimensions
+        });
+
+        expect(result.patchedDimensions).toEqual({
+            width: false,
+            height: true
+        });
+    });
+
+    it('treats a user-supplied zero dimension as the user’s, not Deneb’s', () => {
+        const result = parseSpec({
+            spec: '{"width": 0, "height": 0, "marks": []}',
+            provider: 'vega',
+            containerDimensions
+        });
+
+        expect(result.patchedDimensions).toEqual({
+            width: false,
+            height: false
+        });
+    });
+
+    it('marks neither dimension as owned when the spec defines width and height signals', () => {
+        const result = parseSpec({
+            spec: `{
+                "signals": [
+                    { "name": "width", "value": 300 },
+                    { "name": "height", "value": 200 }
+                ],
+                "marks": []
+            }`,
+            provider: 'vega',
+            containerDimensions
+        });
+
+        expect(result.status).toBe('valid');
+        expect(result.patchedDimensions).toEqual({
+            width: false,
+            height: false
+        });
+    });
+
+    it('marks neither dimension as owned when no container dimensions are provided', () => {
+        const result = parseSpec({
+            spec: '{"marks": []}',
+            provider: 'vega'
+        });
+
+        expect(result.patchedDimensions).toEqual({
+            width: false,
+            height: false
+        });
+    });
+
+    it('marks neither dimension as owned for a Vega-Lite spec', () => {
+        const result = parseSpec({
+            spec: '{"mark": "bar", "data": {"values": []}}',
+            provider: 'vegaLite',
+            containerDimensions
+        });
+
+        expect(result.status).toBe('valid');
+        expect(result.patchedDimensions).toEqual({
+            width: false,
+            height: false
+        });
+    });
+
+    it('marks neither dimension as owned when the spec fails to parse', () => {
+        const result = parseSpec({
+            spec: '{"marks": [',
+            provider: 'vega',
+            containerDimensions
+        });
+
+        expect(result.status).toBe('error');
+        expect(result.patchedDimensions).toEqual({
+            width: false,
+            height: false
+        });
+    });
+});
+
 describe('validateSpec', () => {
     it('should return errors for invalid spec', () => {
         const invalidSpec = '{"marks": invalid}';
