@@ -10,9 +10,11 @@ name: Release
 #   3. The maintainer reviews/edits the draft body in the GitHub UI and
 #      publishes it manually.
 #
-# When dispatching, leave the "Use workflow from" selector on main —
-# the input tag only selects the code that gets built, not the workflow
-# logic.
+# When dispatching, set "Use workflow from" to a branch on the TAG'S line:
+# `certification` for a 2.0.x tag, `main` for 2.1 and later. The input tag
+# selects the code that gets built, but this file's own paths come from the
+# selected ref, and they moved under apps/deneb/ after 2.0.0. The guard in
+# the job below names the right ref if they disagree.
 permissions:
     contents: read
 
@@ -42,6 +44,10 @@ jobs:
             # injection note on the channel-release deletion step in
             # ci.yml). `with:` blocks may use the expression form safely.
             RELEASE_TAG: ${{ inputs.tag }}
+            # Where this branch's line keeps pbiviz.json. Kept as a variable so
+            # the guard below is identical on every branch and the only
+            # forward-merge conflict is this one value.
+            PBIVIZ_PATH: pbiviz.json
         steps:
             - name: Check out approved tag
               uses: actions/checkout@v4
@@ -60,6 +66,20 @@ jobs:
               with:
                   node-version: 22
                   cache: 'npm'
+            - name: Verify the dispatch ref matches the tag's layout
+              run: |
+                  if [ -f "$PBIVIZ_PATH" ]; then
+                      echo "Layout matches: $PBIVIZ_PATH"
+                      exit 0
+                  fi
+                  for CANDIDATE in pbiviz.json apps/deneb/pbiviz.json; do
+                      if [ -f "$CANDIDATE" ]; then
+                          echo "::error::Tag '$RELEASE_TAG' keeps pbiviz.json at '$CANDIDATE', but this workflow was dispatched from a ref that expects '$PBIVIZ_PATH'. Re-dispatch with 'Use workflow from' set to a branch on the tag's line."
+                          exit 1
+                      fi
+                  done
+                  echo "::error::Tag '$RELEASE_TAG' has no pbiviz.json at any known location."
+                  exit 1
             - name: Validate tag against pbiviz.json and derive title
               id: meta
               run: |
@@ -67,7 +87,7 @@ jobs:
                       echo "::error::'$RELEASE_TAG' is not a 4-part numeric submission tag (e.g. 2.0.0.5)."
                       exit 1
                   fi
-                  PBIVIZ_VERSION=$(node -p "require('./pbiviz.json').visual.version")
+                  PBIVIZ_VERSION=$(node -p "require('./' + process.env.PBIVIZ_PATH).visual.version")
                   if [ "$RELEASE_TAG" != "$PBIVIZ_VERSION" ]; then
                       echo "::error::Tag '$RELEASE_TAG' does not match pbiviz.json visual.version '$PBIVIZ_VERSION' at that commit."
                       exit 1

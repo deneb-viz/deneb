@@ -1,5 +1,6 @@
 import type { Spec } from 'vega';
 import type { TopLevelSpec } from 'vega-lite';
+import type { PatchedDimensions } from '../signals';
 
 /**
  * Specification provider (Vega or Vega-Lite).
@@ -56,6 +57,8 @@ export interface ParsedSpec {
     errors: string[];
     /** Array of warning messages */
     warnings: string[];
+    /** Which top-level dimensions Deneb stamped. Both false for errors and Vega-Lite. */
+    patchedDimensions: PatchedDimensions;
 }
 
 /**

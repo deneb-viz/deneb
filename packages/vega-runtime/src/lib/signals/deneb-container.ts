@@ -115,6 +115,27 @@ export interface ContainerDimensions {
 }
 
 /**
+ * Which top-level dimensions Deneb stamped into a patched spec.
+ *
+ * Deneb only sets `width`/`height` when the user has not — so once they are
+ * literal numbers, nothing in the spec distinguishes Deneb's from the user's.
+ * This travels alongside the spec so the re-stamp path can tell them apart and
+ * leave a user-authored dimension alone.
+ */
+export interface PatchedDimensions {
+    width: boolean;
+    height: boolean;
+}
+
+/**
+ * Deneb stamped neither dimension. The safe default: nothing gets re-stamped.
+ */
+export const NO_PATCHED_DIMENSIONS: PatchedDimensions = {
+    width: false,
+    height: false
+};
+
+/**
  * Get the `denebContainer` signal object from container dimensions. This is a convenience wrapper around
  * `getSignalDenebContainer` for use in spec patching where only width/height are available.
  *
@@ -144,10 +165,14 @@ export const getDenebContainerSignalFromDimensions = (
 /**
  * Immutably rewrite the stored `denebContainer` entry's init width/height in a
  * patched spec — `spec.signals` (Vega) or `spec.params` (Vega-Lite); both use
- * the same `{ name, value }` shape. Returns the INPUT reference when there is
- * nothing to do (no entry, non-object value, or dims already equal), so
+ * the same `{ name, value }` shape — and re-stamp the top-level `width`/
+ * `height` literals that Deneb owns. Returns the INPUT reference when there is
+ * nothing to do (no entry, non-object value, and dims already equal), so
  * callers can use identity to suppress redundant downstream work (the
  * re-embed path keys off object identity).
+ *
+ * `patchedDimensions` says which top-level dimensions Deneb stamped. A
+ * dimension the user set is theirs and is never rewritten.
  *
  * Only `width`/`height` are rewritten: the init's scroll fields are the
  * compile-time seed for a NEW view, and the live view's scroll state is owned
@@ -155,12 +180,15 @@ export const getDenebContainerSignalFromDimensions = (
  */
 export const updateContainerInitDimensions = <
     T extends {
+        width?: unknown;
+        height?: unknown;
         signals?: Array<{ name?: string; value?: unknown }>;
         params?: Array<{ name?: string; value?: unknown }>;
     }
 >(
     spec: T,
-    dimensions: ContainerDimensions
+    dimensions: ContainerDimensions,
+    patchedDimensions: PatchedDimensions
 ): T => {
     const isPlainObject = (value: unknown): value is Record<string, unknown> =>
         typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -196,13 +224,25 @@ export const updateContainerInitDimensions = <
     const newSignals = updateArray(spec.signals);
     const newParams = updateArray(spec.params);
 
-    if (newSignals === spec.signals && newParams === spec.params) {
+    const rewriteWidth =
+        patchedDimensions.width && spec.width !== dimensions.width;
+    const rewriteHeight =
+        patchedDimensions.height && spec.height !== dimensions.height;
+
+    if (
+        newSignals === spec.signals &&
+        newParams === spec.params &&
+        !rewriteWidth &&
+        !rewriteHeight
+    ) {
         return spec;
     }
 
     return {
         ...spec,
         ...(newSignals !== spec.signals ? { signals: newSignals } : {}),
-        ...(newParams !== spec.params ? { params: newParams } : {})
+        ...(newParams !== spec.params ? { params: newParams } : {}),
+        ...(rewriteWidth ? { width: dimensions.width } : {}),
+        ...(rewriteHeight ? { height: dimensions.height } : {})
     };
 };

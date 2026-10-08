@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { CompilationResult } from '@deneb-viz/vega-runtime/compilation';
+import {
+    NO_PATCHED_DIMENSIONS,
+    type PatchedDimensions
+} from '@deneb-viz/vega-runtime/signals';
 
 import { createCompilationSlice } from '../compilation';
 
@@ -21,15 +25,32 @@ import { createCompilationSlice } from '../compilation';
  * Build a fake "ready" compilation result whose parsed spec carries a
  * `denebContainer` Vega signal entry. Cast to `CompilationResult` — the
  * fixture only populates the fields this action reads/preserves.
+ *
+ * `options.specDimensions` seeds top-level `width`/`height` literals on the
+ * spec (the stamped-by-`patchVegaSpec` values); `options.patchedDimensions`
+ * seeds `parsed.patchedDimensions`, the ownership flags the re-embed path
+ * reads to decide which of those literals it may re-stamp. Both are omitted
+ * by default so the four pre-existing tests (which never set a top-level
+ * width/height) are unaffected.
  */
 const makeReadyResult = (
-    dims: { width: number; height: number } = { width: 541, height: 352 }
+    dims: { width: number; height: number } = { width: 541, height: 352 },
+    options: {
+        specDimensions?: { width: number; height: number };
+        patchedDimensions?: PatchedDimensions;
+    } = {}
 ): CompilationResult =>
     ({
         status: 'ready',
         parsed: {
             status: 'ready',
             spec: {
+                ...(options.specDimensions
+                    ? {
+                          width: options.specDimensions.width,
+                          height: options.specDimensions.height
+                      }
+                    : {}),
                 signals: [
                     {
                         name: 'denebContainer',
@@ -46,7 +67,9 @@ const makeReadyResult = (
             },
             config: {},
             errors: [],
-            warnings: []
+            warnings: [],
+            patchedDimensions:
+                options.patchedDimensions ?? NO_PATCHED_DIMENSIONS
         },
         embedOptions: { mode: 'vega' }
     }) as unknown as CompilationResult;
@@ -222,5 +245,115 @@ describe('compilation slice — refreshContainerDimensions (cheap re-embed path)
         // This action does not touch viewReady/lastCompiled.
         expect(after.compilation.viewReady).toBe(true);
         expect(after.compilation.lastCompiled).toBe(12345);
+    });
+
+    it('re-stamps owned top-level width/height literals on the parsed spec', () => {
+        const readyResult = makeReadyResult(
+            { width: 541, height: 352 },
+            {
+                specDimensions: { width: 541, height: 352 },
+                patchedDimensions: { width: true, height: true }
+            }
+        );
+        const harness = makeSliceHarness(
+            makeStateFixture({
+                compilation: {
+                    ...makeStateFixture().compilation,
+                    result: readyResult
+                }
+            })
+        );
+
+        harness.actions.refreshContainerDimensions({
+            width: 1024,
+            height: 768
+        });
+
+        const after = harness.getState() as {
+            compilation: { result: CompilationResult };
+        };
+        const spec = after.compilation.result.parsed.spec as {
+            width: number;
+            height: number;
+        };
+        expect(spec.width).toBe(1024);
+        expect(spec.height).toBe(768);
+    });
+
+    it('leaves a user-owned top-level dimension alone while re-stamping the owned one', () => {
+        const readyResult = makeReadyResult(
+            { width: 541, height: 352 },
+            {
+                specDimensions: { width: 400, height: 352 },
+                patchedDimensions: { width: false, height: true }
+            }
+        );
+        const harness = makeSliceHarness(
+            makeStateFixture({
+                compilation: {
+                    ...makeStateFixture().compilation,
+                    result: readyResult
+                }
+            })
+        );
+
+        harness.actions.refreshContainerDimensions({
+            width: 1024,
+            height: 768
+        });
+
+        const after = harness.getState() as {
+            compilation: { result: CompilationResult };
+        };
+        const spec = after.compilation.result.parsed.spec as {
+            width: number;
+            height: number;
+        };
+        // Deneb never owned width (patchedDimensions.width is false) — the
+        // user's own value survives the re-embed.
+        expect(spec.width).toBe(400);
+        // height is owned, so it tracks the new container size.
+        expect(spec.height).toBe(768);
+    });
+
+    it('rewrites only the top-level dimensions when the denebContainer signal init already matches the new size', () => {
+        const readyResult = makeReadyResult(
+            { width: 1024, height: 768 },
+            {
+                specDimensions: { width: 541, height: 352 },
+                patchedDimensions: { width: true, height: true }
+            }
+        );
+        const originalSignals = (
+            readyResult.parsed.spec as { signals: unknown }
+        ).signals;
+        const harness = makeSliceHarness(
+            makeStateFixture({
+                compilation: {
+                    ...makeStateFixture().compilation,
+                    result: readyResult
+                }
+            })
+        );
+
+        harness.actions.refreshContainerDimensions({
+            width: 1024,
+            height: 768
+        });
+
+        const after = harness.getState() as {
+            compilation: { result: CompilationResult };
+        };
+        const spec = after.compilation.result.parsed.spec as {
+            width: number;
+            height: number;
+            signals: unknown;
+        };
+        expect(spec.width).toBe(1024);
+        expect(spec.height).toBe(768);
+        // The signal init already matched the target dims, so only the
+        // top-level width/height rewrite fires — the signals array itself
+        // is returned unchanged.
+        expect(spec.signals).toBe(originalSignals);
     });
 });

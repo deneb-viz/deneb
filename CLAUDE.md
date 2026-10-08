@@ -235,7 +235,8 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 **Branching model (read first):**
 
 - **`main`** is the active development branch (single trunk). Base feature branches off it (`git checkout main && git pull && git checkout -b <type>/<short-name>`) and target it with PRs (`gh pr create --base main`).
-- **`certification`** mirrors the version currently published on AppSource. Do not branch off it or target it for routine work — it is reserved for release cuts and genuine production hotfixes, which branch from it and are forward-merged into `main` after shipping.
+- **`certification`** is the branch submitted to Microsoft, and the branch every AppSource release is cut from. Do not branch off it or target it for routine work — it is reserved for release cuts and genuine production hotfixes, which branch from it and are merged back into `main` after shipping. Reconcile with a **merge**, never a cherry-pick: the release tag must stay an ancestor of `main` or the next release's auto-changelog and compare link resolve against unrelated history.
+- **Patch releases off `certification`.** Bump `pbiviz.json` `visual.version` only (the workspace root `package.json` has no version). Push the 4-part tag to get a certified artifact from `ci.yml`'s `submission` job, and dispatch the `Release` workflow with **Use workflow from: `certification`** — the workflow file's own paths come from the dispatch ref, and they differ between the 2.0.x layout (root) and `main` (`apps/deneb/`).
 - For re-signing or rewriting commits on a feature branch, target the actual fork point (e.g. `HEAD~N` for the last N commits on the branch).
 - During large release cycles a separate `next` integration branch may be temporarily reinstated (as it was for 2.0). If `origin/next` exists and is ahead of `main`, check [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#2-local-development-workflow) for the active model before branching.
 

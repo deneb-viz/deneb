@@ -2,7 +2,6 @@ import type { Spec } from 'vega';
 import { mergician } from 'mergician';
 import {
     getDenebContainerSignalFromDimensions,
-    getContainerSignalReferences,
     SIGNAL_DENEB_CONTAINER
 } from '../signals';
 import type { PatchVegaOptions } from './types';
@@ -22,6 +21,13 @@ const hasSignalNamed = (spec: Spec, name: string): boolean => {
  * 2. Sets responsive width/height if not specified (and no user-defined signal exists)
  * 3. Merges additional signals if provided
  *
+ * Width and height are stamped as literal numbers rather than references to
+ * `denebContainer`. Binding them to the signal gives them an update expression
+ * over an object the runtime writes at runtime, which resets whatever
+ * `autosize: fit` computed and re-fits against a scenegraph whose
+ * `encode.enter` marks never moved. Container changes reach the view through a
+ * re-embed, not a signal write, so these do not need to be reactive.
+ *
  * @param spec The Vega specification to patch
  * @param options Patching options
  * @returns A new patched Vega specification
@@ -38,9 +44,6 @@ export const patchVegaSpec = (
     options: PatchVegaOptions = {}
 ): Spec => {
     const { containerDimensions, additionalSignals = [] } = options;
-
-    // Get container signal references for responsive sizing
-    const containerRefs = getContainerSignalReferences();
 
     // Build patches object
     const patches: Partial<Spec> = {
@@ -62,7 +65,7 @@ export const patchVegaSpec = (
         !hasSignalNamed(spec, 'width') &&
         containerDimensions
     ) {
-        patches.width = { signal: containerRefs.width };
+        patches.width = containerDimensions.width;
     }
 
     if (
@@ -70,7 +73,7 @@ export const patchVegaSpec = (
         !hasSignalNamed(spec, 'height') &&
         containerDimensions
     ) {
-        patches.height = { signal: containerRefs.height };
+        patches.height = containerDimensions.height;
     }
 
     // Merge patches with original spec (non-mutating)
