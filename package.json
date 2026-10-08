@@ -13,6 +13,7 @@
     ],
     "overrides": {
         "esbuild": "^0.28.1",
+        "handlebars": "^4.7.10",
         "qs": "^6.16.0",
         "uuid": "^11.1.1"
     },
@@ -108,6 +109,7 @@
         "powerbi-visuals-webpack-plugin": "^5.0.1",
         "prefix-style": "^2.0.1",
         "prettier": "^3.3.3",
+        "process": "^0.11.10",
         "react": "^19.2.0",
         "react-dom": "^19.2.0",
         "rimraf": "^6.0.1",
