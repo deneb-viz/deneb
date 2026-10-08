@@ -181,6 +181,34 @@ describe('prune', () => {
         });
         expect(str).toContain('-');
     });
+
+    it('should write dates in local time with no zone designator', () => {
+        const rows = [
+            { row: 0, Date: new Date(2020, 11, 1) },
+            { row: 1, Date: new Date(2020, 11, 2) }
+        ];
+        expect(getPrunedObject(rows)).toEqual([
+            { row: 0, Date: '2020-12-01T00:00:00.000' },
+            { row: 1, Date: '2020-12-02T00:00:00.000' }
+        ]);
+    });
+
+    it('should keep the local time component of a date', () => {
+        const pruned = getPrunedObject({
+            d: new Date(2020, 11, 1, 13, 45, 30, 123)
+        });
+        expect(pruned.d).toBe('2020-12-01T13:45:30.123');
+    });
+
+    it('should write nested dates in local time', () => {
+        const pruned = getPrunedObject({ a: { b: [new Date(2020, 0, 31)] } });
+        expect(pruned.a.b[0]).toBe('2020-01-31T00:00:00.000');
+    });
+
+    it('should write an invalid date as "null"', () => {
+        const pruned = getPrunedObject({ d: new Date(NaN) });
+        expect(pruned.d).toBe('null');
+    });
 });
 
 describe('getPrunedObject', () => {
