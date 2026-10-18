@@ -10,6 +10,7 @@ import {
     resolveDrilldownComponents,
     resolveDrilldownFlat
 } from './drilldown';
+import type { HostFeatureFlags } from './types';
 import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 import {
     DRILL_FIELD_FLAT,
@@ -217,7 +218,8 @@ const updatePrevReferences = (
  */
 export const getMappedDataset = (
     categorical: DataViewCategorical,
-    locale: string
+    locale: string,
+    flags: HostFeatureFlags
 ): SetDatasetPayload => {
     const rowsLoaded = getCategoricalRowCount(categorical);
     const empty = getEmptyDataset();
@@ -238,7 +240,7 @@ export const getMappedDataset = (
                 dvValues
             );
             const hasDrilldown =
-                isDrilldownFeatureEnabled() &&
+                isDrilldownFeatureEnabled(flags) &&
                 columns.filter((c) => c.column.roles?.[DRILL_FIELD_NAME])
                     ?.length > 0;
             const fieldValues = getDatumValueEntriesFromDataview(
@@ -270,7 +272,7 @@ export const getMappedDataset = (
             // A non-empty persisted configuration is evidence the visual
             // has already operated with configured (non-legacy) support
             // fields — e.g. the config half of a previous migration's
-            // persist landed but the version stamp did not (M10's
+            // persist landed but the version stamp did not (the
             // partial-persist split). In that case legacy semantics must
             // not be re-applied: existing entries win and unconfigured
             // fields resolve with new-spec defaults.
@@ -278,7 +280,7 @@ export const getMappedDataset = (
                 Object.keys(existingSupportFieldConfig).length > 0;
             const legacy = isMigrationPending && !hasExistingConfig;
 
-            // One-time migration (M10/M11): compute resolved defaults up
+            // One-time migration: compute resolved defaults up
             // front and merge any existing explicit entries OVER them, so
             // interim user edits are preserved on re-migration. The stamp
             // is COMMITTED only after row building succeeds (see the end
@@ -565,10 +567,10 @@ export const getMappedDataset = (
             }
             logTimeEnd('getMappedDataset values');
 
-            // M11: commit the migration stamp only now that row building
+            // Commit the migration stamp only now that row building
             // has succeeded — a throw above leaves persisted state
             // untouched, so the migration simply re-runs (idempotently)
-            // on the next successful pass. M10: all three properties are
+            // on the next successful pass. All three properties are
             // committed in a SINGLE store update so the sync layer
             // observes one slice change and emits one batched host
             // persist (no partial-persist split).

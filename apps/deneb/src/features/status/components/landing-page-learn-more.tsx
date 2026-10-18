@@ -1,7 +1,7 @@
 import React from 'react';
 import { Caption1 } from '@fluentui/react-components';
 
-import { useStatusStyles } from '.';
+import { useStatusStyles } from '../../../host';
 import {
     PROVIDER_RESOURCE_CONFIGURATION,
     WEBSITE_URL

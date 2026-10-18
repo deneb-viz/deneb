@@ -23,12 +23,6 @@ export const DEFAULTS = {
          */
         showCustomVisualNotes: true
     },
-    editor: {
-        /**
-         * Maximum line length for the JSON editor.
-         */
-        maxLineLength: 40
-    },
     stateManagement: {
         /**
          * Persisted height of visual viewport in view mode (should preserve height on re-init).

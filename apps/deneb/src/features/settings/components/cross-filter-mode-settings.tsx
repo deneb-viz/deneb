@@ -14,8 +14,7 @@ import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 import { Hyperlink, useDenebState } from '@deneb-viz/app-core';
 import { useSettingsPaneTooltip } from '@deneb-viz/editor';
 import { type SelectionMode } from '@deneb-viz/powerbi-compat/interactivity';
-import { InteractivityManager } from '../../../lib/interactivity';
-import { useDenebVisualState } from '../../../state';
+import { InteractivityManager, useDenebVisualState } from '../../../host';
 import { handleSelectionMode } from '../helpers';
 
 const { deneb } = PROVIDER_RESOURCE_CONFIGURATION;

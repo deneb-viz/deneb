@@ -3,7 +3,7 @@ import {
     DATA_VIEWER_CONFIGURATION,
     EDITOR_DEFAULTS
 } from '@deneb-viz/configuration';
-import { DEFAULTS } from './constants';
+import { DEFAULTS } from '../host';
 
 export class SettingsEditor extends formattingSettings.CompositeCard {
     name = 'editor';

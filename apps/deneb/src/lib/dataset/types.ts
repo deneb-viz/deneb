@@ -1,6 +1,16 @@
 import powerbi from 'powerbi-visuals-api';
 
 /**
+ * Feature flags that control dataset processing. Supplied through the
+ * kernel config (`VisualKernelConfig.featureFlags`) and threaded into
+ * dataset processing as a parameter, rather than being imported directly
+ * by the processing code.
+ */
+export type HostFeatureFlags = {
+    dataDrilldown: boolean;
+};
+
+/**
  * Used to store interim data whilst the data view is being processed
  */
 export type AugmentedMetadataField = {

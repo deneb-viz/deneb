@@ -2,7 +2,7 @@ import {
     getVegaVersion,
     type SpecProvider
 } from '@deneb-viz/vega-runtime/embed';
-import { VisualFormattingSettingsModel } from './model';
+import { HostSettingsModel } from './model';
 import {
     type VersionChangeDirection,
     type VersionComparator,
@@ -26,7 +26,7 @@ import {
  * Current visual and provider information
  */
 const getCurrentVersionInfo = (
-    visualSettings: VisualFormattingSettingsModel
+    visualSettings: HostSettingsModel
 ): VersionInformation => {
     const {
         vega: {
@@ -46,7 +46,7 @@ const getCurrentVersionInfo = (
  * Visual and provider information, according to visual properties (when changes were last persisted).
  */
 const getLastVersionInfo = (
-    visualSettings: VisualFormattingSettingsModel
+    visualSettings: HostSettingsModel
 ): VersionInformation => {
     const {
         developer: {
@@ -72,7 +72,7 @@ const getLastVersionInfo = (
  * Get previous and current version information as a single object.
  */
 const getVersionComparatorInfo = (
-    visualSettings: VisualFormattingSettingsModel
+    visualSettings: HostSettingsModel
 ): VersionComparator => ({
     current: getCurrentVersionInfo(visualSettings),
     previous: getLastVersionInfo(visualSettings)
@@ -132,7 +132,7 @@ const getVersionChangeDetail = (
  *    assignment) and correct.
  */
 export const handlePropertyMigration = (
-    visualSettings: VisualFormattingSettingsModel,
+    visualSettings: HostSettingsModel,
     isReadMode: boolean
 ) => {
     // Schema-versioned `stateManagement` payload migrations run first, in
@@ -197,12 +197,11 @@ export const handlePropertyMigration = (
  * Persistence note: application here is in-memory only, matching the
  * settings-model lifecycle (rebuilt every update). Durable persistence of
  * migration output — batched into a single store update so the sync layer
- * emits one persist — is wired by the data-dependent execution point
- * (see U3 of the audit remediation program); durable UI surfacing of
+ * emits one persist — is wired by the data-dependent execution point; durable UI surfacing of
  * corrupt-key signals lands there too.
  */
 export const runStateManagementSchemaMigrations = (
-    visualSettings: VisualFormattingSettingsModel
+    visualSettings: HostSettingsModel
 ): StateManagementLoadMigrationResult => {
     const payload = getStateManagementPayloadFromSettings(visualSettings);
     const jsonSpec = visualSettings.vega?.output?.jsonSpec?.value ?? '';
@@ -231,7 +230,7 @@ export const runStateManagementSchemaMigrations = (
  * corruption detection belong to the registry.
  */
 export const getStateManagementPayloadFromSettings = (
-    visualSettings: VisualFormattingSettingsModel
+    visualSettings: HostSettingsModel
 ): StateManagementPayload => {
     const projectMetadata = visualSettings.stateManagement?.projectMetadata;
     const viewport = visualSettings.stateManagement?.viewport;
@@ -253,7 +252,7 @@ export const getStateManagementPayloadFromSettings = (
  * keys leave the model untouched (merge, never replace).
  */
 export const applyStateManagementPayloadToSettings = (
-    visualSettings: VisualFormattingSettingsModel,
+    visualSettings: HostSettingsModel,
     payload: StateManagementPayload
 ): void => {
     const projectMetadata = visualSettings.stateManagement?.projectMetadata;
@@ -286,7 +285,7 @@ export const applyStateManagementPayloadToSettings = (
 
 /**
  * Apply the migration's runtime-affecting mutations directly to the
- * in-memory `VisualFormattingSettingsModel` reference, mirroring the
+ * in-memory `HostSettingsModel` reference, mirroring the
  * branching of the edit-mode path so a read-mode render honours the
  * same values the edit-mode persist round-trip would have produced.
  *
@@ -300,7 +299,7 @@ export const applyStateManagementPayloadToSettings = (
  * migration must run every update.
  */
 const applyRuntimeAffectingMigrationsInMemory = (
-    visualSettings: VisualFormattingSettingsModel,
+    visualSettings: HostSettingsModel,
     provider: SpecProvider
 ): void => {
     if (isUnversionedSpec()) {
@@ -330,7 +329,7 @@ const applyRuntimeAffectingMigrationsInMemory = (
  * values match.
  */
 const applyVersionStampsInMemory = (
-    visualSettings: VisualFormattingSettingsModel,
+    visualSettings: HostSettingsModel,
     provider: SpecProvider
 ): void => {
     visualSettings.developer.versioning.version.value = APPLICATION_VERSION;
@@ -350,7 +349,7 @@ const applyVersionStampsInMemory = (
  * (default) pair.
  */
 const isLegacyContextMenuRemapApplicable = (
-    visualSettings: VisualFormattingSettingsModel,
+    visualSettings: HostSettingsModel,
     previousVersion: string
 ): boolean => {
     if (!isNewerVersion(previousVersion, CONTEXT_MENU_SPLIT_VERSION))
@@ -367,7 +366,7 @@ const isLegacyContextMenuRemapApplicable = (
  * to `isLegacyContextMenuRemapApplicable` for the decision.
  */
 const applyContextMenuRemapInMemory = (
-    visualSettings: VisualFormattingSettingsModel,
+    visualSettings: HostSettingsModel,
     previousVersion: string
 ): void => {
     if (!isLegacyContextMenuRemapApplicable(visualSettings, previousVersion))
@@ -474,7 +473,7 @@ const migrateUnversionedSpec = (provider: SpecProvider) => {
  */
 const migrateWithNoChanges = (
     provider: SpecProvider,
-    visualSettings: VisualFormattingSettingsModel
+    visualSettings: HostSettingsModel
 ) => {
     logDebug('Migrate to current version');
     const previousVersion = getLastVersionInfo(visualSettings).denebVersion;
@@ -506,10 +505,8 @@ const migrateWithNoChanges = (
  * The version that introduced the context-menu property split. Only
  * visuals upgrading from before this version need the legacy migration.
  *
- * Note: this was originally targeted at 1.10 when the two-toggle split
- * landed in #599, but the 1.10 release was skipped and the split is
- * shipping in 2.0 — there are no 1.10 visuals in the wild. The
- * threshold is anchored to the actual shipping version.
+ * Note: the threshold is the shipping version of the split (2.0); there
+ * are no 1.10 visuals in the wild.
  */
 const CONTEXT_MENU_SPLIT_VERSION = '2.0.0';
 
@@ -522,7 +519,7 @@ const CONTEXT_MENU_SPLIT_VERSION = '2.0.0';
  * to avoid overwriting intentional post-upgrade settings on future version bumps.
  */
 const getContextMenuMigrationProperties = (
-    visualSettings: VisualFormattingSettingsModel,
+    visualSettings: HostSettingsModel,
     previousVersion: string
 ): PersistenceProperty[] => {
     if (!isLegacyContextMenuRemapApplicable(visualSettings, previousVersion)) {

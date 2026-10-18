@@ -1,5 +1,5 @@
 export { DEFAULTS } from './constants';
-export { VisualFormattingSettingsModel } from './visual-formatting-settings-model';
+export { HostSettingsModel } from './host-settings-model';
 export {
     getVisualFormattingModel,
     getVisualFormattingService,

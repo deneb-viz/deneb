@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { type View } from 'vega';
 
 import { logRender } from '@deneb-viz/utils/logging';
-import { resolveDownloadPermitted } from './download-permission';
 import { ReportViewRouter } from './report-view-router';
 import {
     DenebProvider,
@@ -16,11 +15,7 @@ import {
     platformSearchContributions
 } from './platform-search-contributions';
 import { markEditorOpenStart, RetainedDenebEditor } from '@deneb-viz/editor';
-import {
-    FetchingMessage,
-    LandingPage,
-    SplashInitial
-} from '../features/status';
+import { LandingPage } from '../features/status';
 import {
     InteractivityFooter,
     TooltipSettings,
@@ -31,21 +26,21 @@ import {
 } from '../features/settings';
 import { NotificationToaster } from '../features/toaster';
 import {
-    IS_OVERLAY_ENABLED as IS_VIEWPORT_GATE_OVERLAY_ENABLED,
-    ViewportGateDebugOverlay
-} from '../features/viewport-gate-debug-overlay';
-import {
-    IS_OVERLAY_ENABLED as IS_UPDATE_HISTORY_OVERLAY_ENABLED,
-    VisualUpdateHistoryOverlay
-} from '../features/visual-update-history-overlay';
-import { getVegaLoader } from '../lib/vega-embed';
-import { useDenebVisualState } from '../state';
-import {
     contextMenuHandler,
     crossFilterHandler,
-    tooltipHandler
-} from '../lib/interactivity';
-import { persistOnCreateFromTemplate } from '../lib/persistence';
+    tooltipHandler,
+    getVegaLoader,
+    persistOnCreateFromTemplate,
+    resolveDownloadPermitted,
+    useDenebVisualState,
+    FetchingMessage,
+    SplashInitial,
+    IS_VIEWPORT_GATE_OVERLAY_ENABLED,
+    ViewportGateDebugOverlay,
+    IS_VISUAL_UPDATE_HISTORY_OVERLAY_ENABLED,
+    VisualUpdateHistoryOverlay,
+    type VisualAppProps
+} from '../host';
 import { handlePersistBooleanProperty } from '../features/settings/helpers';
 
 /**
@@ -57,45 +52,16 @@ import { handlePersistBooleanProperty } from '../features/settings/helpers';
  * non-Vega-affecting property updates (which would otherwise wait
  * the full 10s safety-net bound) within half a second.
  *
- * The settle close is DEFERRING (H2 / U5): it fires through
+ * The settle close is DEFERRING: it fires through
  * `onSettleClose`, which no-ops when a render is already in flight
  * (`renderStarted === true`). So the 500ms bound is a lower bound on
  * "how long before we conclude no Vega render is coming", NOT a
  * deadline that can pre-empt a slow render — a render taking longer
  * than 500ms is closed by its own embed callback, not by this timer.
- * Idempotent against the U9/U10 close paths via the coordinator's
+ * Idempotent against the vega-embed render-finished and synchronous close paths via the coordinator's
  * exactly-once guard.
  */
 const RENDERING_MODE_SETTLE_MS = 500;
-
-type AppProps = {
-    host: powerbi.extensibility.visual.IVisualHost;
-    /**
-     * Rendering-lifecycle adapters built in `src/index.ts` and passed
-     * down through the platform provider. App-core / vega-embed call
-     * these without arguments (or with an `Error` for the error
-     * variant); the adapters route to the coordinator's
-     * `*PendingRender` methods. No `visualUpdateOptions` capture is
-     * needed here — the pending-render binding is performed
-     * synchronously in the visual's dispatch handlers BEFORE
-     * `update()` returns, so by the time these async callbacks fire
-     * the coordinator already knows which id they target.
-     */
-    onRenderingStarted: () => void;
-    onRenderingFinished: () => void;
-    /**
-     * Settle-timer close (H2 / U5). DISTINCT from
-     * {@link onRenderingFinished}: this adapter routes to the
-     * coordinator's deferring `closePendingRenderSettle`, so if the
-     * settle timer fires while a Vega render is still in flight it
-     * NO-OPS (the real embed close or the safety-net owns the terminal)
-     * instead of emitting `renderingFinished` mid-render. Used ONLY by
-     * the settle timer below — never by the embed path, which keeps the
-     * terminal {@link onRenderingFinished}.
-     */
-    onSettleClose: () => void;
-    onRenderingError: (error: Error) => void;
-};
 
 export const App = ({
     host,
@@ -103,7 +69,7 @@ export const App = ({
     onRenderingFinished,
     onSettleClose,
     onRenderingError
-}: AppProps) => {
+}: VisualAppProps) => {
     const [isDownloadPermitted, setIsDownloadPermitted] = useState<
         boolean | undefined
     >(undefined);
@@ -176,7 +142,7 @@ export const App = ({
 
         // Both handlers read the current dataset from the store at invocation
         // time, so their identity stays stable across data changes and the
-        // binder memo no longer needs fields/values (or selectionMode) as deps.
+        // binder memo does not depend on fields/values or selectionMode.
 
         // Context menu handler (right-click)
         binders.push((view: View) => {
@@ -221,18 +187,18 @@ export const App = ({
      *     updates well before the 10s safety-net would.
      *
      * **Timer cancellation semantics — important.** The settle
-     * timer is NOT cancelled when U9 (vega-embed) or U10
-     * (performIncrementalUpdate) closes the pending render first.
+     * timer is NOT cancelled when the vega-embed render-finished path or the
+     * synchronous close path (performIncrementalUpdate) closes the pending render first.
      * Those close paths run inside app-core and don't reach back
      * into this effect; the only cancellation path is React's
      * built-in effect cleanup, which fires when `visualUpdateOptions`
      * / `mode` change for the next update.
      *
-     * So the actual behavior is (H2 / U5 — the settle timer calls
+     * So the actual behavior is (the settle timer calls
      * `onSettleClose`, the coordinator's DEFERRING close variant, NOT
      * the terminal `onRenderingFinished`):
      *  - **Isolated fast render** (<{@link RENDERING_MODE_SETTLE_MS}):
-     *    Vega closes the pending render via U9/U10 within typical
+     *    Vega closes the pending render via the embed or synchronous close path within typical
      *    render time (<200ms); the settle timer fires ~300ms later and
      *    is a no-op via the coordinator's exactly-once guard (the id
      *    was already deleted from the openIds map). One wasted timer
@@ -243,9 +209,9 @@ export const App = ({
      *    DEFERS (no-op) — it does NOT emit `renderingFinished`
      *    mid-render. The terminal is owned by Vega's own
      *    `onRenderingFinished` when the embed completes (or the 10s
-     *    safety-net if it never does). This is the H2 fix: previously
-     *    the settle timer closed unconditionally here, letting Power
-     *    BI's export/snapshot capture pre-render content.
+     *    safety-net if it never does). The settle timer never closes
+     *    unconditionally mid-render, so Power BI's export/snapshot
+     *    capture cannot see pre-render content.
      *  - **Storm of N updates** (resize burst, live-data refresh):
      *    each new update's effect cleanup `clearTimeout`s the
      *    previous timer before scheduling a new one, so at most ONE
@@ -261,7 +227,7 @@ export const App = ({
      * A first-class cancellation token keyed on the coordinator's
      * observer stream would eliminate the wasted-timer-per-update
      * cost, but the perf impact is negligible and the indirection
-     * isn't worth it until U11's observer wiring is in place.
+     * isn't worth it until the dev-overlay observer wiring needs it.
      *
      * Renderless modes still use the terminal `onRenderingFinished`
      * (closed synchronously): Vega never embeds in those modes, so
@@ -397,7 +363,7 @@ export const App = ({
             </GatedDenebViewer>
             {mainComponent}
             <NotificationToaster />
-            {IS_UPDATE_HISTORY_OVERLAY_ENABLED && (
+            {IS_VISUAL_UPDATE_HISTORY_OVERLAY_ENABLED && (
                 <VisualUpdateHistoryOverlay />
             )}
             {IS_VIEWPORT_GATE_OVERLAY_ENABLED && <ViewportGateDebugOverlay />}
