@@ -40,6 +40,11 @@ export type VisualAppProps = {
  * bound by the kernel itself.
  */
 export type VisualKernelConfig = {
+    /**
+     * The visual's manifest name and version, used for the startup log
+     * heading and stamped into persisted properties by the migrations.
+     */
+    application: { name: string; version: string };
     /** Model class `VisualFormattingSettingsService.bind` populates. */
     settingsModel: new () => HostSettingsModel;
     /** The app's root component, mounted with {@link VisualAppProps}. */

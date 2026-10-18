@@ -20,11 +20,6 @@ vi.mock('@deneb-viz/vega-runtime/embed', () => ({
         provider === 'vega' ? '6.2.0' : '6.4.0'
 }));
 
-// `APPLICATION_VERSION` is the current Deneb version stamp.
-vi.mock('../../application', () => ({
-    APPLICATION_VERSION: '2.0.0'
-}));
-
 // `PROJECT_DEFAULTS` is consulted by `isNewSpec` to detect the
 // "factory-default" untouched-spec case.
 vi.mock('@deneb-viz/configuration', () => ({
@@ -184,7 +179,7 @@ describe('handlePropertyMigration — edit mode', () => {
             denebVersion: '',
             providerVersion: ''
         });
-        handlePropertyMigration(mockVisualSettings as never, false);
+        handlePropertyMigration(mockVisualSettings as never, false, '2.0.0');
 
         expect(mockUpdateMigrationDetails).toHaveBeenCalledTimes(1);
         expect(mockHostPersistProperties).toHaveBeenCalledTimes(1);
@@ -208,7 +203,7 @@ describe('handlePropertyMigration — edit mode', () => {
             enableContextMenu: false,
             enableContextMenuSelector: true
         });
-        handlePropertyMigration(mockVisualSettings as never, false);
+        handlePropertyMigration(mockVisualSettings as never, false, '2.0.0');
 
         expect(mockHostPersistProperties).toHaveBeenCalledTimes(1);
         const persistedPayload = mockHostPersistProperties.mock.calls[0][0];
@@ -219,13 +214,27 @@ describe('handlePropertyMigration — edit mode', () => {
         expect(vega?.properties?.enableContextMenuSelector).toBe(false);
     });
 
+    it('stamps the application version passed as the argument', () => {
+        mockVisualSettings = buildSettings({
+            denebVersion: '',
+            providerVersion: ''
+        });
+        handlePropertyMigration(mockVisualSettings as never, false, '3.1.4');
+
+        const persistedPayload = mockHostPersistProperties.mock.calls[0][0];
+        const developer = persistedPayload.replace.find(
+            (i: { objectName: string }) => i.objectName === 'developer'
+        );
+        expect(developer?.properties?.version).toBe('3.1.4');
+    });
+
     it('skips when migrationCheckPerformed is already true', () => {
         mockMigrationCheckPerformed = true;
         mockVisualSettings = buildSettings({
             denebVersion: '',
             providerVersion: ''
         });
-        handlePropertyMigration(mockVisualSettings as never, false);
+        handlePropertyMigration(mockVisualSettings as never, false, '2.0.0');
 
         expect(mockUpdateMigrationDetails).not.toHaveBeenCalled();
         expect(mockHostPersistProperties).not.toHaveBeenCalled();
@@ -242,7 +251,7 @@ describe('handlePropertyMigration — read mode', () => {
         // sets it; we mirror that here so the assertion sees the gated path
         // even if a persist were accidentally attempted.
         setReadModePersistSuppressed(true);
-        handlePropertyMigration(mockVisualSettings as never, true);
+        handlePropertyMigration(mockVisualSettings as never, true, '2.0.0');
 
         expect(mockUpdateMigrationDetails).not.toHaveBeenCalled();
         expect(mockHostPersistProperties).not.toHaveBeenCalled();
@@ -254,7 +263,7 @@ describe('handlePropertyMigration — read mode', () => {
             providerVersion: ''
         });
         setReadModePersistSuppressed(true);
-        handlePropertyMigration(mockVisualSettings as never, true);
+        handlePropertyMigration(mockVisualSettings as never, true, '2.0.0');
 
         expect(mockVisualSettings.developer.versioning.version.value).toBe(
             '2.0.0'
@@ -270,7 +279,7 @@ describe('handlePropertyMigration — read mode', () => {
             enableContextMenuSelector: true
         });
         setReadModePersistSuppressed(true);
-        handlePropertyMigration(mockVisualSettings as never, true);
+        handlePropertyMigration(mockVisualSettings as never, true, '2.0.0');
 
         expect(
             mockVisualSettings.vega.interactivity.enableContextMenu.value
@@ -289,7 +298,7 @@ describe('handlePropertyMigration — read mode', () => {
             enableContextMenuSelector: true
         });
         setReadModePersistSuppressed(true);
-        handlePropertyMigration(mockVisualSettings as never, true);
+        handlePropertyMigration(mockVisualSettings as never, true, '2.0.0');
 
         // Values stay unchanged — the gate condition isn't met.
         expect(
@@ -314,7 +323,7 @@ describe('handlePropertyMigration — read mode', () => {
             enableContextMenuSelector: true
         });
         setReadModePersistSuppressed(true);
-        handlePropertyMigration(mockVisualSettings as never, true);
+        handlePropertyMigration(mockVisualSettings as never, true, '2.0.0');
 
         expect(
             mockVisualSettings.vega.interactivity.enableContextMenu.value
@@ -391,7 +400,7 @@ describe('stateManagement schema migrations — load-time wiring', () => {
             stateManagement: buildStateManagement()
         };
         expect(() =>
-            handlePropertyMigration(mockVisualSettings as never, false)
+            handlePropertyMigration(mockVisualSettings as never, false, '2.0.0')
         ).not.toThrow();
     });
 

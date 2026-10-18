@@ -40,6 +40,11 @@ describe('the kernel installs config state before any store read', () => {
         'utf8'
     );
 
+    it('takes the application name and version from its config rather than importing the manifest', () => {
+        expect(kernelSource).not.toMatch(/pbiviz\.json/);
+        expect(kernelSource).not.toMatch(/lib\/application/);
+    });
+
     it('calls config.installState before the first store read in the constructor', () => {
         const constructorStart = kernelSource.indexOf('constructor(');
         expect(constructorStart).toBeGreaterThanOrEqual(0);

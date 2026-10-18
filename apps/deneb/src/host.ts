@@ -72,13 +72,6 @@ export {
     VisualUpdateHistoryOverlay
 } from './features/visual-update-history-overlay';
 
-// Application metadata, sourced from pbiviz.json.
-export {
-    APPLICATION_NAME,
-    APPLICATION_DESCRIPTION,
-    APPLICATION_VERSION
-} from './lib/application';
-
 // Slice-sync configuration types, for apps contributing their own
 // synchronized slices (see `app/editor-preferences-sync.ts`).
 export type {

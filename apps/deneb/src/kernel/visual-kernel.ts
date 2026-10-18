@@ -47,7 +47,6 @@ import {
     createCrossFilterApplyHandler,
     createCrossFilterClearHandler
 } from '../lib/vega-embed';
-import { APPLICATION_NAME, APPLICATION_VERSION } from '../lib/application';
 import {
     handleTabWrapAround,
     shouldYieldToFocusScope
@@ -149,8 +148,6 @@ type DatasetUpdateContext = {
  * Run to indicate that the visual has started.
  */
 IS_DEVELOPER_MODE && console.clear();
-logHeading(`${APPLICATION_NAME}`);
-logHeading(`Version: ${APPLICATION_VERSION}`, 12);
 logDebug(`Developer Mode: ${IS_DEVELOPER_MODE}`);
 
 /**
@@ -216,8 +213,13 @@ export class VisualKernel implements IVisual {
     // `config.featureFlags` in the constructor and passed to
     // getMappedDataset.
     #hostFeatureFlags: HostFeatureFlags;
+    // The visual's manifest version, passed to the property migrations.
+    #applicationVersion: string;
 
     constructor(options: VisualConstructorOptions, config: VisualKernelConfig) {
+        logHeading(`${config.application.name}`);
+        logHeading(`Version: ${config.application.version}`, 12);
+        this.#applicationVersion = config.application.version;
         logHost('Constructor has been called.', { options });
         try {
             const { host, element } = options;
@@ -642,7 +644,7 @@ export class VisualKernel implements IVisual {
         // code that can throw in the update body — including this
         // method itself.
         // Perform any necessary property migrations
-        handlePropertyMigration(settings, isReadMode);
+        handlePropertyMigration(settings, isReadMode, this.#applicationVersion);
         // Data change or re-processing required?
         this.resolveDataset(options);
         logTimeEnd('resolveUpdateOptions');

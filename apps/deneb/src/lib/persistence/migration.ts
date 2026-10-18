@@ -14,7 +14,6 @@ import { type PersistenceProperty } from './types';
 import { persistProperties, resolveObjectProperties } from './persist';
 import { getDenebState } from '@deneb-viz/app-core';
 import { getDenebVisualState } from '../../state';
-import { APPLICATION_VERSION } from '../application';
 import {
     hasProjectContent,
     runStateManagementLoadTimeMigrations,
@@ -26,7 +25,8 @@ import {
  * Current visual and provider information
  */
 const getCurrentVersionInfo = (
-    visualSettings: HostSettingsModel
+    visualSettings: HostSettingsModel,
+    applicationVersion: string
 ): VersionInformation => {
     const {
         vega: {
@@ -36,7 +36,7 @@ const getCurrentVersionInfo = (
         }
     } = visualSettings;
     return {
-        denebVersion: APPLICATION_VERSION,
+        denebVersion: applicationVersion,
         provider: provider as SpecProvider,
         providerVersion: getVegaVersion(provider as SpecProvider)
     };
@@ -72,9 +72,10 @@ const getLastVersionInfo = (
  * Get previous and current version information as a single object.
  */
 const getVersionComparatorInfo = (
-    visualSettings: HostSettingsModel
+    visualSettings: HostSettingsModel,
+    applicationVersion: string
 ): VersionComparator => ({
-    current: getCurrentVersionInfo(visualSettings),
+    current: getCurrentVersionInfo(visualSettings, applicationVersion),
     previous: getLastVersionInfo(visualSettings)
 });
 
@@ -133,7 +134,8 @@ const getVersionChangeDetail = (
  */
 export const handlePropertyMigration = (
     visualSettings: HostSettingsModel,
-    isReadMode: boolean
+    isReadMode: boolean,
+    applicationVersion: string
 ) => {
     // Schema-versioned `stateManagement` payload migrations run first, in
     // BOTH modes, on every update: the settings model is rebuilt from the
@@ -151,7 +153,8 @@ export const handlePropertyMigration = (
     if (isReadMode) {
         applyRuntimeAffectingMigrationsInMemory(
             visualSettings,
-            <SpecProvider>provider
+            <SpecProvider>provider,
+            applicationVersion
         );
         return;
     }
@@ -159,7 +162,10 @@ export const handlePropertyMigration = (
         migration: { migrationCheckPerformed, updateMigrationDetails }
     } = getDenebState();
     if (!migrationCheckPerformed) {
-        const versionComparator = getVersionComparatorInfo(visualSettings);
+        const versionComparator = getVersionComparatorInfo(
+            visualSettings,
+            applicationVersion
+        );
         const changeType = getVersionChangeDetail(versionComparator);
         updateMigrationDetails({
             changeType,
@@ -168,12 +174,19 @@ export const handlePropertyMigration = (
         switch (true) {
             // No spec yet, or pre 1.1
             case isUnversionedSpec(): {
-                migrateUnversionedSpec(<SpecProvider>provider);
+                migrateUnversionedSpec(
+                    <SpecProvider>provider,
+                    applicationVersion
+                );
                 break;
             }
             // general change
             case changeType !== 'equal': {
-                migrateWithNoChanges(<SpecProvider>provider, visualSettings);
+                migrateWithNoChanges(
+                    <SpecProvider>provider,
+                    visualSettings,
+                    applicationVersion
+                );
                 break;
             }
             default:
@@ -300,17 +313,25 @@ export const applyStateManagementPayloadToSettings = (
  */
 const applyRuntimeAffectingMigrationsInMemory = (
     visualSettings: HostSettingsModel,
-    provider: SpecProvider
+    provider: SpecProvider,
+    applicationVersion: string
 ): void => {
     if (isUnversionedSpec()) {
         // Mirrors `migrateUnversionedSpec`: stamp current versions so
         // downstream consumers and the slice-sync mapping see the
         // correct values. No context-menu remap on this branch — the
         // edit-mode equivalent does not include one here either.
-        applyVersionStampsInMemory(visualSettings, provider);
+        applyVersionStampsInMemory(
+            visualSettings,
+            provider,
+            applicationVersion
+        );
         return;
     }
-    const versionComparator = getVersionComparatorInfo(visualSettings);
+    const versionComparator = getVersionComparatorInfo(
+        visualSettings,
+        applicationVersion
+    );
     const changeType = getVersionChangeDetail(versionComparator);
     if (changeType !== 'equal') {
         // Mirrors `migrateWithNoChanges`: capture the previous version
@@ -318,7 +339,11 @@ const applyRuntimeAffectingMigrationsInMemory = (
         // against the captured value, then stamp the new versions.
         const previousVersion = getLastVersionInfo(visualSettings).denebVersion;
         applyContextMenuRemapInMemory(visualSettings, previousVersion);
-        applyVersionStampsInMemory(visualSettings, provider);
+        applyVersionStampsInMemory(
+            visualSettings,
+            provider,
+            applicationVersion
+        );
     }
 };
 
@@ -330,9 +355,10 @@ const applyRuntimeAffectingMigrationsInMemory = (
  */
 const applyVersionStampsInMemory = (
     visualSettings: HostSettingsModel,
-    provider: SpecProvider
+    provider: SpecProvider,
+    applicationVersion: string
 ): void => {
-    visualSettings.developer.versioning.version.value = APPLICATION_VERSION;
+    visualSettings.developer.versioning.version.value = applicationVersion;
     visualSettings.vega.output.version.value = getVegaVersion(provider);
 };
 
@@ -445,13 +471,16 @@ const isVersionedSpec = () => {
 /**
  * Handles property migration from 1.0 to 1.1
  */
-const migrateUnversionedSpec = (provider: SpecProvider) => {
+const migrateUnversionedSpec = (
+    provider: SpecProvider,
+    applicationVersion: string
+) => {
     logDebug('Migrate: initial versions for tracking');
     persistProperties(
         resolveObjectProperties([
             {
                 objectName: 'developer',
-                properties: [getDenebVersionProperty()]
+                properties: [getDenebVersionProperty(applicationVersion)]
             },
             {
                 objectName: 'vega',
@@ -473,7 +502,8 @@ const migrateUnversionedSpec = (provider: SpecProvider) => {
  */
 const migrateWithNoChanges = (
     provider: SpecProvider,
-    visualSettings: HostSettingsModel
+    visualSettings: HostSettingsModel,
+    applicationVersion: string
 ) => {
     logDebug('Migrate to current version');
     const previousVersion = getLastVersionInfo(visualSettings).denebVersion;
@@ -485,7 +515,7 @@ const migrateWithNoChanges = (
         resolveObjectProperties([
             {
                 objectName: 'developer',
-                properties: [getDenebVersionProperty()]
+                properties: [getDenebVersionProperty(applicationVersion)]
             },
             {
                 objectName: 'vega',
@@ -534,7 +564,9 @@ const getContextMenuMigrationProperties = (
 /**
  * Return the version number for Deneb as a persistable property.
  */
-const getDenebVersionProperty = (): PersistenceProperty => ({
+const getDenebVersionProperty = (
+    applicationVersion: string
+): PersistenceProperty => ({
     name: 'version',
-    value: APPLICATION_VERSION
+    value: applicationVersion
 });

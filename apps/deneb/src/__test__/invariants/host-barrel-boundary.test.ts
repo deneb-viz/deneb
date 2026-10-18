@@ -51,6 +51,13 @@ const APP_SIDE_PATTERNS: RegExp[] = [
     /^features\/status\/components\/landing-page.*(\.tsx)?$/
 ];
 
+/**
+ * App-side locations nested inside a kernel-side folder; matched before the
+ * kernel-side patterns. `lib/application` holds the visual's manifest
+ * metadata, which the kernel receives through its config.
+ */
+const APP_SIDE_OVERRIDE_PATTERNS: RegExp[] = [/^lib\/application(\/|$)/];
+
 /** The barrel itself — exempt from both rules (see file docblock). */
 const HOST_BARREL_PATTERN = /^host(\.ts)?$/;
 
@@ -59,6 +66,11 @@ export type Side = 'app' | 'kernel' | 'other';
 /** Classifies a repo-relative (or import-tail) path fragment by side. */
 export function classifySide(pathFragment: string): Side {
     const normalized = pathFragment.replace(/\\/g, '/');
+    if (
+        APP_SIDE_OVERRIDE_PATTERNS.some((pattern) => pattern.test(normalized))
+    ) {
+        return 'app';
+    }
     if (KERNEL_SIDE_PATTERNS.some((pattern) => pattern.test(normalized))) {
         return 'kernel';
     }

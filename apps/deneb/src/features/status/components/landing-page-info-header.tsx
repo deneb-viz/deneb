@@ -6,12 +6,11 @@ import {
     tokens
 } from '@fluentui/react-components';
 
+import { useStatusStyles, StatusStackItem } from '../../../host';
 import {
-    useStatusStyles,
-    StatusStackItem,
     APPLICATION_DESCRIPTION,
     APPLICATION_VERSION
-} from '../../../host';
+} from '../../../lib/application';
 
 const useInfoHeaderStyles = makeStyles({
     nameVersion: {

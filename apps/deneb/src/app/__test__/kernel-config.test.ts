@@ -23,6 +23,7 @@ import { VisualFormattingSettingsModel } from '../visual-settings';
 import { editorPreferencesSync } from '../editor-preferences-sync';
 import { I18N_TRANSLATIONS } from '../../i18n';
 import { FEATURES } from '../../../config';
+import { APPLICATION_NAME, APPLICATION_VERSION } from '../../lib/application';
 
 /**
  * Characterisation of the visual's kernel config: each field is the exact
@@ -40,6 +41,13 @@ describe("KERNEL_CONFIG (the visual's kernel composition)", () => {
 
     it('supplies the app translation extension', () => {
         expect(KERNEL_CONFIG.translations).toBe(I18N_TRANSLATIONS);
+    });
+
+    it("supplies the visual's manifest name and version", () => {
+        expect(KERNEL_CONFIG.application).toEqual({
+            name: APPLICATION_NAME,
+            version: APPLICATION_VERSION
+        });
     });
 
     it('derives the drilldown flag from the feature configuration', () => {
