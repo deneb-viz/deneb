@@ -11,7 +11,7 @@ import { resolveDownloadPermitted } from '../download-permission';
 // Stand-in for powerbi.PrivilegeStatus.Allowed (a numeric enum member).
 const ALLOWED = 0;
 
-describe('resolveDownloadPermitted (L1 — download permission deny-by-default)', () => {
+describe('resolveDownloadPermitted (download permission deny-by-default)', () => {
     it('resolves true when the host reports the allowed status', async () => {
         await expect(
             resolveDownloadPermitted(() => Promise.resolve(ALLOWED), ALLOWED)

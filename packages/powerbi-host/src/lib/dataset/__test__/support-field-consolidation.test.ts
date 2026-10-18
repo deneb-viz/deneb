@@ -57,7 +57,7 @@ vi.mock('../../interactivity', () => ({
  * the current values into a fresh object per call, mirroring Zustand's
  * snapshot semantics: a captured `state` reference does NOT observe writes
  * made by the setters after capture — which is exactly the condition that
- * produced audit finding H3.
+ * produced the stale-state defect these tests guard against.
  */
 const mockProject = vi.hoisted(() => ({
     spec: '',
@@ -172,7 +172,7 @@ const setProjectState = (overrides: Partial<typeof mockProject>) => {
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
-describe('getMappedDataset — legacy migration vs field parameter consolidation (H3)', () => {
+describe('getMappedDataset — legacy migration vs field parameter consolidation', () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });

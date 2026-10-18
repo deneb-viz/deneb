@@ -672,7 +672,7 @@ describe('createSliceSync', () => {
             );
         });
 
-        it('should emit ONE batched persistProjectProperties call when multiple keys change in a single slice update (M10)', () => {
+        it('should emit ONE batched persistProjectProperties call when multiple keys change in a single slice update', () => {
             // The legacy support-field migration commits its three
             // properties through one combined store setter — the
             // subscriber must observe one slice change and emit one
@@ -752,7 +752,7 @@ describe('createSliceSync', () => {
         });
 
         it('should short-circuit without persisting or recording pending when the read-mode persist gate is active', () => {
-            // Simulate the U5 read-mode gate being live for this
+            // Simulate the read-mode gate being live for this
             // update. Even when the app-core slice changes (here:
             // user-input-equivalent app-core mutation), the outbound
             // subscriber must not enqueue host persist work AND must

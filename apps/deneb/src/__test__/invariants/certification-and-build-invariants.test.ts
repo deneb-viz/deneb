@@ -7,10 +7,10 @@ import { APP_ROOT } from './_packages';
 /**
  * Canary: certification and build-orchestration invariants that exist only as
  * prose or as load-bearing strings inside scripts, where a well-meaning edit
- * could silently break them (audit R6/R9).
+ * could silently break them.
  */
 
-describe('production `package` script ordering (audit R9)', () => {
+describe('production `package` script ordering', () => {
     const pkgScript = (
         JSON.parse(readFileSync(join(APP_ROOT, 'package.json'), 'utf8')) as {
             scripts: Record<string, string>;
@@ -38,7 +38,7 @@ describe('production `package` script ordering (audit R9)', () => {
     });
 });
 
-describe('dev-with-prime resets .tmp and drives turbo (audit R6)', () => {
+describe('dev-with-prime resets .tmp and drives turbo', () => {
     const source = readFileSync(
         join(APP_ROOT, 'bin', 'dev-with-prime.js'),
         'utf8'

@@ -19,7 +19,7 @@ import {
 //
 //  - `calls`: ordered host-emission record (proves what the host saw and in
 //    what order — important for supersede ordering and the "loud throws" path).
-//  - `events`: ordered observer record (proves what the dev overlay / U11
+//  - `events`: ordered observer record (proves what the dev overlay
 //    surface would see, including failure reasons and via-discriminators).
 //  - `tick()`: invokes the single pending safety-net callback (the scheduler
 //    only ever holds one because each `armSafetyNet` is per-id and `close` /
@@ -500,7 +500,7 @@ describe('createRenderingLifecycleCoordinator — safety-net', () => {
         coordinator.markPendingRenderStarted();
         coordinator.armSafetyNet(id);
         // The render started but never signalled completion. At the
-        // bound the safety-net is the TRUE backstop (U5): it closes the
+        // bound the safety-net is the TRUE backstop: it closes the
         // still-open id exactly once rather than deferring forever.
         tick();
         expect(
@@ -587,7 +587,7 @@ describe('createRenderingLifecycleCoordinator — settle-timer close (closePendi
         coordinator.bindPendingRender(id);
         coordinator.markPendingRenderStarted();
         // Settle timer fires WHILE the render is in flight — must NOT
-        // emit renderingFinished mid-render (H2).
+        // emit renderingFinished mid-render.
         coordinator.closePendingRenderSettle();
         expect(
             calls.filter((c) => c.method === 'renderingFinished')

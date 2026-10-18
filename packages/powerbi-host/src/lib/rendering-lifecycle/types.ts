@@ -57,8 +57,7 @@ export type SafetyNetScheduler = {
  * Diagnostic sink for the coordinator's narrative log lines. Defaults
  * to a no-op so the coordinator is silent in tests; production wires
  * it to `logHost` from `@deneb-viz/utils/logging` to preserve the
- * existing dev-overlay narrative the relocated host emissions used to
- * carry.
+ * dev-overlay narrative of the host emissions.
  */
 export type RenderingLifecycleLogger = (
     message: string,
@@ -70,7 +69,7 @@ export type RenderingLifecycleLogger = (
  * what happened, which id it happened to, and (for failures and
  * safety-net ticks) why. Consumed by:
  *
- *  - The dev overlay added in U11 — pushed into a Zustand slice the
+ *  - The dev overlay — pushed into a Zustand slice the
  *    overlay reads, so a developer running with `LOG_LEVEL=0` can
  *    still see lifecycle transitions and the error message attached
  *    to a `renderingFailed` emission. This is the only place
@@ -86,7 +85,7 @@ export type RenderingLifecycleLogger = (
  * paid for an unused sink).
  *
  * `via` discriminators tell the consumer which code path triggered
- * the transition — important for U11's overlay (distinguishing
+ * the transition — important for the overlay (distinguishing
  * "developer right-clicked away → supersede" from "render genuinely
  * errored" from "safety-net fired") and for test assertions.
  */
@@ -262,7 +261,7 @@ export type RenderingLifecycleCoordinator = {
      * Behaves like {@link closePendingRender} EXCEPT it DEFERS (no-ops,
      * with no re-arm) when the render has already started
      * (`markPendingRenderStarted` has fired for the pending id).
-     * Rationale (audit H2): the settle timer fires on a fixed
+     * Rationale: the settle timer fires on a fixed
      * wall-clock delay shorter than a slow Vega render; closing
      * unconditionally would emit `renderingFinished` mid-render and
      * Power BI's export/snapshot service could capture pre-render

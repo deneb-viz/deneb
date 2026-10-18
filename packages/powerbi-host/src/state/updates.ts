@@ -38,7 +38,7 @@ export type UpdatesSlice = {
      */
     lifecycleEvents: RenderingLifecycleEvent[];
     /**
-     * Synchronous (M4). This setter is called from `update()`'s try (via
+     * Synchronous. This setter is called from `update()`'s try (via
      * `Deneb.resolveUpdateOptions`) and does not await anything
      * internally, so it is intentionally NOT `async`: a synchronous
      * throw inside (e.g. `getVisualFormattingModel`) must propagate into

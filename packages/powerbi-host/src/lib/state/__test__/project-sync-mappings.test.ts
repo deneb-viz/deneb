@@ -1,15 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
- * U3 (audit findings M10/L16) — project sync mappings:
+ * Project sync mappings:
  *
- *  - L16: corrupt persisted `supportFieldConfiguration` JSON degrades
+ *  - Corrupt persisted `supportFieldConfiguration` JSON degrades
  *    predictably to `{}` but surfaces a DURABLE user-visible warning
  *    (compilation-slice channel) instead of being silently swallowed; a
  *    corrupt `denebMetaVersion` stamp must NOT coerce to 0 (= unversioned
  *    legacy) — it maps to NaN, mirroring the registry's fail-safe
  *    'indeterminate' classification so no migration runs against it.
- *  - M10 (integration): the three-property migration stamp, committed as
+ *  - Integration: the three-property migration stamp, committed as
  *    ONE app-core store update, arrives at the host as a SINGLE
  *    `persistProjectProperties` call carrying all three serialized
  *    changes.
@@ -134,7 +134,7 @@ const makeProjectSlice = (overrides: Record<string, unknown> = {}) => ({
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
-describe('PROJECT_SYNC_MAPPINGS — corrupt persisted values (L16)', () => {
+describe('PROJECT_SYNC_MAPPINGS — corrupt persisted values', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockVisualSettings = makeVisualSettings();
@@ -234,7 +234,7 @@ describe('PROJECT_SYNC_MAPPINGS — corrupt persisted values (L16)', () => {
     });
 });
 
-describe('project sync — single batched migration persist (M10 integration)', () => {
+describe('project sync — single batched migration persist', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockVisualSettings = makeVisualSettings();

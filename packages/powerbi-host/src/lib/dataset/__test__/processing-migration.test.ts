@@ -2,16 +2,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
- * U3 (audit findings M10/M11) — integrity of the one-time legacy
+ * Integrity of the one-time legacy
  * support-field migration executed from `getMappedDataset`:
  *
- *  - M10: re-migration (e.g. after a partial-persist split left the config
+ *  - Re-migration (e.g. after a partial-persist split left the config
  *    stamped but the version stamp absent) MERGES existing explicit
  *    entries OVER migrated defaults instead of rebuilding from scratch —
  *    interim user edits survive. All three properties commit through the
  *    single combined store setter (`applySupportFieldMigrationStamp`) so
  *    the sync layer emits ONE batched host persist.
- *  - M11: the stamp commits only AFTER row building succeeds. A throw
+ *  - The stamp commits only AFTER row building succeeds. A throw
  *    during the mapping pass leaves persisted state untouched AND surfaces
  *    a durable (user-visible) error rather than a console-only log.
  *
@@ -160,7 +160,7 @@ const makeProject = (overrides: Record<string, unknown> = {}) => ({
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
-describe('getMappedDataset — legacy support-field migration integrity (U3)', () => {
+describe('getMappedDataset — legacy support-field migration integrity', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockBuildDataRow.mockImplementation(() => ({}));
@@ -168,7 +168,7 @@ describe('getMappedDataset — legacy support-field migration integrity (U3)', (
         mockProject = makeProject();
     });
 
-    describe('happy path — legacy spec, no prior config (M10)', () => {
+    describe('happy path — legacy spec, no prior config', () => {
         it('commits legacy defaults, registry version and consolidate=false via ONE combined store update', () => {
             const result = getMappedDataset(CATEGORICAL, 'en-US', {
                 dataDrilldown: false
@@ -211,7 +211,7 @@ describe('getMappedDataset — legacy support-field migration integrity (U3)', (
         });
     });
 
-    describe('M10 — partial-persist split (config stamped, version absent) with interim user edits', () => {
+    describe('partial-persist split (config stamped, version absent) with interim user edits', () => {
         const USER_EDIT_CATEGORY = {
             highlight: false,
             format: true,
@@ -311,7 +311,7 @@ describe('getMappedDataset — legacy support-field migration integrity (U3)', (
         });
     });
 
-    describe('M11 — transactional commit + durable error', () => {
+    describe('transactional commit + durable error', () => {
         it('does NOT commit the migration stamp when row building throws, and surfaces a durable error', () => {
             mockBuildDataRow.mockImplementation(() => {
                 throw new TypeError(

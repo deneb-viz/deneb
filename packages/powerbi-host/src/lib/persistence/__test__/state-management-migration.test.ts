@@ -72,8 +72,8 @@ describe('registry integrity', () => {
     it('the REAL registry is valid and its current version is 2', () => {
         // 2 is the first stamped version (2.0 is the last unversioned
         // shape). It deliberately coincides with the value the mapping
-        // pass currently stamps via TEMPLATE_USERMETA_VERSION — U3 routes
-        // that stamp through getStateManagementVersionToStamp.
+        // pass currently stamps via TEMPLATE_USERMETA_VERSION — the stamp is
+        // routed through getStateManagementVersionToStamp.
         expect(getCurrentStateManagementVersion()).toBe(2);
     });
 

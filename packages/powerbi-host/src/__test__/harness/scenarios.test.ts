@@ -507,18 +507,18 @@ describe('scenario: update() throws', () => {
     });
 });
 
-// ─── Scenario 6: settle-timer close defers to the render (H2) ───────────
+// ─── Scenario 6: settle-timer close defers to the render ───────────
 //
 // The app-side 500ms settle timer (`app.tsx` → `onSettleClose`) is
 // modelled by `driver.settleClose()`, which routes to the coordinator's
 // DEFERRING `closePendingRenderSettle`. `driver.completeRender()` still
-// models the embed-path terminal close. These scenarios pin the H2 fix:
+// models the embed-path terminal close. These scenarios pin this behaviour:
 // a settle firing mid-render must never emit `renderingFinished` early,
 // yet a non-Vega-affecting update must still close promptly at the
 // settle bound, and a started-but-stuck render must still reach exactly
 // one terminal at the 10s safety-net bound.
 
-describe('scenario: settle-timer close vs. in-flight render (H2)', () => {
+describe('scenario: settle-timer close vs. in-flight render', () => {
     it('(a) non-Vega-affecting update → settle closes; exactly one renderingFinished, no open ids', async () => {
         const driver = await createDriver();
         driver.update(
@@ -551,7 +551,7 @@ describe('scenario: settle-timer close vs. in-flight render (H2)', () => {
         // timer fires.
         driver.startRender();
         driver.settleClose();
-        // H2: the settle close must DEFER — no renderingFinished
+        // The settle close must DEFER — no renderingFinished
         // mid-render, rather than closing unconditionally.
         expect(driver.host.countEmitterCalls('renderingFinished')).toBe(0);
         expect(driver.getOpenLifecycleIds()).toHaveLength(1);
@@ -586,7 +586,7 @@ describe('scenario: settle-timer close vs. in-flight render (H2)', () => {
             })
         );
         driver.startRender();
-        // Settle fires mid-render → defers (H2).
+        // Settle fires mid-render → defers.
         driver.settleClose();
         expect(driver.host.countEmitterCalls('renderingFinished')).toBe(0);
         expect(driver.getOpenLifecycleIds()).toHaveLength(1);
@@ -621,7 +621,7 @@ describe('scenario: settle-timer close vs. in-flight render (H2)', () => {
     });
 });
 
-// ─── Scenario 7: construction failure (L5) ────────────────────────────────────
+// ─── Scenario 7: construction failure ────────────────────────────────────
 //
 // The Deneb class has heavy constructor side effects (React root, host
 // services, i18n, store wiring), so construction failure is DRIVEN
@@ -631,9 +631,9 @@ describe('scenario: settle-timer close vs. in-flight render (H2)', () => {
 // the driver). Reverting the mirror's guard turns these red — a
 // `renderingStarted` is emitted and a lifecycle id opens; in production
 // the reverted path additionally throws a secondary TypeError on the
-// undefined coordinator (the audit's L5 failure mode).
+// undefined coordinator (the construction-failure failure mode).
 
-describe('scenario: constructor failed → update() short-circuits (L5)', () => {
+describe('scenario: constructor failed → update() short-circuits', () => {
     it('emits a balanced renderingStarted/renderingFailed pair directly via the host without opening a lifecycle; no secondary throw', async () => {
         const driver = await createDriver();
         driver.failConstruction(new Error('bind chain exploded'));
@@ -684,7 +684,7 @@ describe('scenario: constructor failed → update() short-circuits (L5)', () => 
     });
 });
 
-// ─── Scenario 8: destroy() teardown (M8) ──────────────────────────────────────
+// ─── Scenario 8: destroy() teardown ──────────────────────────────────────
 //
 // The coordinator + safety-net are REAL in the harness, so the
 // "no orphaned id / no post-destroy emission" guarantees are genuinely
@@ -692,7 +692,7 @@ describe('scenario: constructor failed → update() short-circuits (L5)', () => 
 // production-only side effects the driver records as spy counters (a
 // faithful transcription of `Deneb.destroy`).
 
-describe('scenario: destroy() teardown (M8)', () => {
+describe('scenario: destroy() teardown', () => {
     it('after a completed render: listener removed, root unmounted, view cleared, no further emissions', async () => {
         const driver = await createDriver();
         driver.update(

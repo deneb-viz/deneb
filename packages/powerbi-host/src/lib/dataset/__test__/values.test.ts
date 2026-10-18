@@ -56,7 +56,7 @@ const cell = (v: unknown) => v as powerbi.PrimitiveValue;
 const colFmt = (values: unknown[], format: string) =>
     ({ values, source: { format } }) as unknown as powerbi.DataViewValueColumn;
 
-describe('getDatumValueEntriesFromDataview — mixed highlights (M9)', () => {
+describe('getDatumValueEntriesFromDataview — mixed highlights', () => {
     beforeEach(() => {
         isCrossHighlightPropSet.mockReturnValue(false);
         doesDataViewHaveHighlights.mockReturnValue(true);
@@ -96,7 +96,7 @@ describe('getDatumValueEntriesFromDataview — mixed highlights (M9)', () => {
     });
 });
 
-describe('getCastedPrimitiveValue — undefined dateTime cell (L14)', () => {
+describe('getCastedPrimitiveValue — undefined dateTime cell', () => {
     const dateField = {
         column: { type: { dateTime: true } }
     } as unknown as AugmentedMetadataField;

@@ -164,7 +164,7 @@ export class StateManagementRegistryError extends Error {
 /**
  * Typed signal for a persisted key whose value could not be parsed.
  * Surfaced to the caller (NOT a silent reset — the raw value is left in
- * place); U3 wires the durable UI surfacing.
+ * place); callers surface it durably in the UI.
  */
 export interface StateManagementCorruptKey {
     key: keyof StateManagementPayload;
@@ -466,7 +466,7 @@ export const isStateManagementMigrationPending = (
 
 /**
  * The version a `'first-dataview'` execution point must stamp on
- * completion of the given migration. Routing the stamp through this (U3)
+ * completion of the given migration. Routing the stamp through this
  * keeps the number owned by the registry.
  */
 export const getStateManagementVersionToStamp = (

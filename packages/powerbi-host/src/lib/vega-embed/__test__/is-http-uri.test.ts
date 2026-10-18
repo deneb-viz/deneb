@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isHttpUri } from '../is-http-uri';
 
-describe('isHttpUri (L10 — launchUrl scheme allowlist)', () => {
+describe('isHttpUri (launchUrl scheme allowlist)', () => {
     it('allows http and https links', () => {
         // eslint-disable-next-line powerbi-visuals/no-http-string -- deliberate scheme-allowlist test input, not a live reference
         expect(isHttpUri('http://example.com')).toBe(true);

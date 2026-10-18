@@ -166,7 +166,7 @@ describe('InteractivityManager.addRowSelector / crossFilter (backfill)', () => {
     });
 });
 
-describe('InteractivityManager.crossFilter error propagation (M3)', () => {
+describe('InteractivityManager.crossFilter error propagation', () => {
     it('re-throws and resets selector state when the host selection rejects', async () => {
         const err = new Error('host select failed');
         const { selectorUpdateCallback } = bindManager({ selectRejects: err });
@@ -202,7 +202,7 @@ describe('InteractivityManager.crossFilter error propagation (M3)', () => {
     });
 });
 
-describe('InteractivityManager tooltip timer (M5)', () => {
+describe('InteractivityManager tooltip timer', () => {
     it('hideTooltip cancels a pending delayed show so the tooltip does not resurrect', () => {
         vi.useFakeTimers();
         const { tooltipShow, tooltipHide } = bindManager();

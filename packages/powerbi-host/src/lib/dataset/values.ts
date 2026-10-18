@@ -91,7 +91,7 @@ const getHighlightValueEntries = (
     values: powerbi.DataViewValueColumns
 ): powerbi.PrimitiveValue[][] => {
     logTimeStart('getHighlightValueEntries');
-    // Per-column highlight fallback (M9): a mixed-highlight dataview can have
+    // Per-column highlight fallback: a mixed-highlight dataview can have
     // some value columns with a `highlights` array and some without. A column
     // without highlights yields `undefined` here, which becomes an undefined
     // entry that crashes row building and silently drops the whole dataset.
@@ -115,7 +115,7 @@ const getMeasureValueEntries = (
     values: powerbi.DataViewValueColumns
 ): powerbi.PrimitiveValue[][] => {
     logTimeStart('getMeasureValueEntries');
-    // Per-column highlight fallback (M9): see getHighlightValueEntries. When
+    // Per-column highlight fallback: see getHighlightValueEntries. When
     // Power BI supplies highlights but the creator hasn't opted into
     // cross-highlighting, we substitute highlight values — but a column that
     // has no highlights would otherwise inject `undefined` and drop the

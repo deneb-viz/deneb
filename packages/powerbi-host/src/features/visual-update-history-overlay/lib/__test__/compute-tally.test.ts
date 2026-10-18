@@ -250,21 +250,21 @@ describe('computeLifecycleTally — resilience to stale events', () => {
     });
 });
 
-// ─── End-to-end scenario the U7-U10 chain produces in production ─────────────
+// ─── End-to-end scenario the skip, render and incremental update chain produces in production ─────────────
 
 describe('computeLifecycleTally — end-to-end scenarios', () => {
-    it('U8 skip update + U9 render update + U10 incremental update → all three close discriminators populated', () => {
+    it('skip update + render update + incremental update → all three close discriminators populated', () => {
         const events: RenderingLifecycleEvent[] = [
-            // U9: full re-embed (reload)
+            // Render: full re-embed (reload)
             { kind: 'opened', id: id(1), options: FAKE_OPTIONS },
             { kind: 'safety-net-armed', id: id(1) },
             { kind: 'render-started', id: id(1) },
             { kind: 'closed', id: id(1), via: 'async-pending-render' },
-            // U8: skip path (resize)
+            // Skip: path (resize)
             { kind: 'opened', id: id(2), options: FAKE_OPTIONS },
             { kind: 'safety-net-armed', id: id(2) },
             { kind: 'closed', id: id(2), via: 'sync-current' },
-            // U10: incremental update
+            // Incremental: update
             { kind: 'opened', id: id(3), options: FAKE_OPTIONS },
             { kind: 'safety-net-armed', id: id(3) },
             { kind: 'closed', id: id(3), via: 'async-pending-render' }

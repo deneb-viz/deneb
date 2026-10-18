@@ -7,7 +7,7 @@ import type powerbi from 'powerbi-visuals-api';
 // Replays the EXACT host update sequence captured from Power BI Desktop
 // during the #480 on-object-formatting (OoF) residual investigation
 // (2026-07-23 dev-overlay trace). Unlike `updates.test.ts` (which stubs
-// the display-mode helpers to isolate the M4 synchronous-throw
+// the display-mode helpers to isolate the synchronous-throw
 // contract), this suite runs the REAL display-mode module so the
 // embed-viewport commit gate is exercised end-to-end: display-mode
 // resolution → `doesModeAllowEmbedViewportSet` → ResizeEnd bitmask →

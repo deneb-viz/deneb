@@ -210,24 +210,18 @@ export const createRenderingLifecycleCoordinator = (
             observe({ kind: 'safety-net-tick', id, result: 'inert' });
             return;
         }
-        // TRUE backstop (audit H2): the id is STILL OPEN at the bound,
+        // TRUE backstop: the id is STILL OPEN at the bound,
         // so no other terminal fired — close it now, whether the render
         // started or not. Reaching this point means either the render
         // never began (orphan) OR it began but never signalled
         // completion (started-but-stuck); both leave the host with an
         // orphaned `renderingStarted` unless closed here.
         //
-        // Before U5 an in-flight (`renderStarted === true`) id was
-        // DEFERRED here (returned without closing, no re-arm). That was
-        // only safe because the 500ms settle timer was accidentally
-        // acting as the terminal for started-but-stuck renders. Now that
-        // the settle timer itself defers on in-flight (its own H2 fix,
-        // `closePendingRenderSettle`), deferring here too would leave a
-        // stuck render's lifecycle open forever — replacing early-finish
-        // with never-finish. The bound is unchanged (R9,
-        // `SAFETY_NET_BOUND_MS = 10_000`); only the tick's decision
-        // changes from defer to terminal close. No re-arm, no longer
-        // wait.
+        // The settle timer defers on in-flight renders
+        // (`closePendingRenderSettle`), so deferring here too would leave
+        // a stuck render's lifecycle open forever — early-finish replaced
+        // with never-finish. The bound is `SAFETY_NET_BOUND_MS = 10_000`;
+        // the tick closes terminally. No re-arm, no longer wait.
         observe({ kind: 'safety-net-tick', id, result: 'closed' });
         closeInternal(id, 'safety-net');
     };
@@ -350,7 +344,7 @@ export const createRenderingLifecycleCoordinator = (
             // Already closed (exactly-once guard) or never opened —
             // no-op, exactly like `closePendingRender`.
             if (!state) return;
-            // H2 defer: a render is in flight. Closing here would emit
+            // Defer: a render is in flight. Closing here would emit
             // `renderingFinished` mid-render, and Power BI's
             // export/snapshot service could capture pre-render content.
             // Leave the id open — the embed's own `onRenderingFinished`
@@ -463,7 +457,7 @@ export const createRenderingLifecycleCoordinator = (
  * Translate the catch-clause error value into the `reason` string the
  * Power BI host's `renderingFailed` accepts. `Error` instances yield
  * their `.message`; anything else stringifies. Kept simple
- * intentionally — the dev overlay (U11) reads the original error
+ * intentionally — the dev overlay reads the original error
  * value from the observer event for richer presentation; the reason
  * string is for the host channel only.
  */

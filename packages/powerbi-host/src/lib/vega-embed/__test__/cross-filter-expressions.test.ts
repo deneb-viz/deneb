@@ -35,8 +35,8 @@ import {
 } from '../cross-filter-expressions';
 import { type CrossFilterOptions } from '../../interactivity';
 
-// These are the two audit-flagged, previously-untested hotspots in the
-// advanced cross-filter apply path: placeholder substitution (L11 — quote /
+// These are the two hotspots in the
+// advanced cross-filter apply path: placeholder substitution (quote /
 // backslash escaping) and options resolution (defaults vs. author overrides).
 
 describe('getResolvedFilterExpressionForPlaceholder', () => {
@@ -49,7 +49,7 @@ describe('getResolvedFilterExpressionForPlaceholder', () => {
         expect(() => parseExpression(expr)).not.toThrow();
     });
 
-    it("escapes single quotes so values like O'Brien parse (L11)", () => {
+    it("escapes single quotes so values like O'Brien parse", () => {
         const expr = getResolvedFilterExpressionForPlaceholder(
             'datum.name == _{name}_',
             { name: "O'Brien" }

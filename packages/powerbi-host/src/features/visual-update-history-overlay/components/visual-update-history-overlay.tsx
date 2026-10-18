@@ -44,8 +44,8 @@ const HISTORY_PRE_STYLE: CSSProperties = {
  * Three stacked sections inside one collapsible shell:
  *
  *  1. **Lifecycle tally** — live counts of opens, render-starts,
- *     closes (broken out by `via`: `sync-current` for U8 sync
- *     closes, `async-pending-render` for U9/U10, `safety-net` for
+ *     closes (broken out by `via`: `sync-current` for sync
+ *     closes, `async-pending-render` for async closes, `safety-net` for
  *     the 10s backstop), fails (also discriminated), safety-net
  *     activity, and pending ids. A sustained `pending > 1`
  *     indicates a real orphan.

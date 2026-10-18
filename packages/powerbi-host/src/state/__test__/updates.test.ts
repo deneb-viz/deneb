@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 // ─── Module mocks ─────────────────────────────────────────────────────────────
 //
-// `setVisualUpdateOptions` (the M4 target) is exercised in isolation:
+// `setVisualUpdateOptions` (the target) is exercised in isolation:
 // the slice creator only invokes `set`/`get` lazily inside the setter,
 // so structural stubs are sufficient. `getVisualFormattingModel` is the
 // synchronous throw source the audit identified; `../../lib/state`
@@ -81,7 +81,7 @@ const buildSuccessSettingsStub = () =>
 
 // ─── Tests ──────────────────────────────────────────────────────────────────
 
-describe('updates slice: setVisualUpdateOptions (M4 — truthful synchronous setter)', () => {
+describe('updates slice: setVisualUpdateOptions (truthful synchronous setter)', () => {
     it('throws SYNCHRONOUSLY when getVisualFormattingModel throws (does not swallow the throw into a rejected promise)', () => {
         // Pre-fix (async setter) this call would return a rejected
         // promise and NOT throw synchronously — `update()`'s try/catch
