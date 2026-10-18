@@ -45,6 +45,9 @@
         "test:watch": "vitest",
         "bench": "vitest bench --run --passWithNoTests"
     },
+    "dependencies": {
+        "@deneb-viz/utils": "*"
+    },
     "devDependencies": {
         "@deneb-viz/eslint-config": "*",
         "@deneb-viz/typescript-config": "*",
