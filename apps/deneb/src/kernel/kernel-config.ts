@@ -21,7 +21,7 @@ export type VisualAppProps = {
     onRenderingStarted: () => void;
     onRenderingFinished: () => void;
     /**
-     * Settle-timer close (H2). DISTINCT from {@link VisualAppProps.onRenderingFinished}:
+     * Settle-timer close. DISTINCT from {@link VisualAppProps.onRenderingFinished}:
      * this adapter routes to the coordinator's deferring
      * `closePendingRenderSettle`, so if the settle timer fires while a
      * Vega render is still in flight it NO-OPS (the real embed close or

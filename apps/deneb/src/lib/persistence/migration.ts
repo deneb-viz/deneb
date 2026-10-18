@@ -197,8 +197,7 @@ export const handlePropertyMigration = (
  * Persistence note: application here is in-memory only, matching the
  * settings-model lifecycle (rebuilt every update). Durable persistence of
  * migration output — batched into a single store update so the sync layer
- * emits one persist — is wired by the data-dependent execution point
- * (see U3 of the audit remediation program); durable UI surfacing of
+ * emits one persist — is wired by the data-dependent execution point; durable UI surfacing of
  * corrupt-key signals lands there too.
  */
 export const runStateManagementSchemaMigrations = (
@@ -506,10 +505,8 @@ const migrateWithNoChanges = (
  * The version that introduced the context-menu property split. Only
  * visuals upgrading from before this version need the legacy migration.
  *
- * Note: this was originally targeted at 1.10 when the two-toggle split
- * landed in #599, but the 1.10 release was skipped and the split is
- * shipping in 2.0 — there are no 1.10 visuals in the wild. The
- * threshold is anchored to the actual shipping version.
+ * Note: the threshold is the shipping version of the split (2.0); there
+ * are no 1.10 visuals in the wild.
  */
 const CONTEXT_MENU_SPLIT_VERSION = '2.0.0';
 

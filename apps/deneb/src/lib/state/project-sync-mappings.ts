@@ -35,7 +35,7 @@ const surfacedCorruptValues = new Set<string>();
 
 /**
  * Surface a corrupt persisted `stateManagement` value as a DURABLE,
- * user-visible warning (L16) — the same compilation-slice channel used for
+ * user-visible warning — the same compilation-slice channel used for
  * dataset mapping failures — instead of a silent degradation that is
  * invisible at certified LOG_LEVEL=0. The message is generic and
  * localized; the raw persisted value is only emitted to the debug log,
@@ -166,7 +166,7 @@ export const PROJECT_SYNC_MAPPINGS: SliceSyncMapping<ProjectSyncKey>[] = [
             try {
                 return JSON.parse(raw);
             } catch {
-                // L16: corrupt persisted JSON degrades predictably to {}
+                // Corrupt persisted JSON degrades predictably to {}
                 // (per-field defaults apply), but is surfaced as a durable
                 // warning rather than silently swallowed.
                 surfaceCorruptStateManagementValue(

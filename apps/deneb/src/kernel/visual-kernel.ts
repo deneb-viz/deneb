@@ -180,7 +180,7 @@ export class VisualKernel implements IVisual {
     // re-renders. App-core never sees the coordinator itself.
     #onRenderingStartedAdapter: () => void;
     #onRenderingFinishedAdapter: () => void;
-    // Distinct settle-close adapter (H2). The app's settle timer uses
+    // Distinct settle-close adapter. The app's settle timer uses
     // THIS one — routed to the coordinator's deferring
     // `closePendingRenderSettle` so a settle firing mid-render no-ops
     // instead of emitting `renderingFinished` early. It must NOT share
@@ -189,21 +189,21 @@ export class VisualKernel implements IVisual {
     // every real close would defer to the 10s safety-net.
     #onSettleCloseAdapter: () => void;
     #onRenderingErrorAdapter: (error: Error) => void;
-    // Root element captured up front (L5) so the construction-failure
+    // Root element captured up front so the construction-failure
     // path can still render a static error element even when a later
     // constructor step throws before `#applicationWrapper` is built.
     #hostElement: HTMLElement | undefined;
-    // Keydown handler reference retained (M8) so `destroy()` can remove
+    // Keydown handler reference retained so `destroy()` can remove
     // the document-level listener that `bindTabCycling` attaches.
     #handleTabCycleKeydown: ((event: KeyboardEvent) => void) | undefined;
-    // Construction-failure state (L5). When the constructor's catch
+    // Construction-failure state. When the constructor's catch
     // fires, `#coordinator` / `#root` may be undefined; `update()`
     // checks this flag at the top and routes to a degraded handler
     // instead of dereferencing a half-built visual.
     #constructionFailed = false;
     #constructionError: unknown;
     #constructionFailureRendered = false;
-    // Teardown state (M8). `destroy()` sets this; `update()` checks it at
+    // Teardown state. `destroy()` sets this; `update()` checks it at
     // the top and returns inertly. Power BI's contract does not call
     // `update()` after `destroy()`, but rapid re-mounts can — and the
     // coordinator object is still live (only its `openIds` map was
@@ -281,7 +281,7 @@ export class VisualKernel implements IVisual {
             this.#onRenderingFinishedAdapter = () =>
                 this.#coordinator.closePendingRender();
             // Settle-timer close (app-side) — DEFERS to the real close /
-            // safety-net when a render is in flight (H2). Separate
+            // safety-net when a render is in flight. Separate
             // reference so the embed path above stays terminal.
             this.#onSettleCloseAdapter = () =>
                 this.#coordinator.closePendingRenderSettle();
@@ -354,7 +354,7 @@ export class VisualKernel implements IVisual {
                 ev.preventDefault();
             };
         } catch (e) {
-            // Construction failed (L5). Do NOT `console.error` — it is
+            // Construction failed. Do NOT `console.error` — it is
             // banned on certified paths (see the note in `update()`'s
             // catch). Record the failure so `update()` short-circuits
             // into `handleConstructionFailure` instead of dereferencing
@@ -369,7 +369,7 @@ export class VisualKernel implements IVisual {
     }
 
     public update(options: VisualUpdateOptions) {
-        // M8: a destroyed visual is inert. `destroy()` cleared the
+        // A destroyed visual is inert. `destroy()` cleared the
         // coordinator's open-id map but the coordinator object is still
         // live, so an unguarded `update()` here would `open()` a fresh
         // id and emit `renderingStarted` on a torn-down visual. Return
@@ -379,7 +379,7 @@ export class VisualKernel implements IVisual {
         if (this.#destroyed) {
             return;
         }
-        // L5: if construction failed, the coordinator (and the React
+        // If construction failed, the coordinator (and the React
         // root) may never have been built. Short-circuit BEFORE
         // touching `#coordinator` — otherwise this update, and every
         // one after it, throws a secondary TypeError on the undefined
@@ -393,7 +393,7 @@ export class VisualKernel implements IVisual {
         }
         // The coordinator's `open()` is the FIRST statement inside the
         // try so `renderingStarted` is emitted before anything else can
-        // throw (R1). If `open()` itself throws (the host throws on
+        // throw, and the start never escapes. If `open()` itself throws (the host throws on
         // `renderingStarted` emission), the catch routes to
         // `failCurrent()` which no-ops because the id was never
         // recorded — no orphan accumulates and the safety-net is never
@@ -439,7 +439,7 @@ export class VisualKernel implements IVisual {
             //   open, the safety-net is armed, the React render
             //   eventually calls `markPendingRenderStarted()` (so
             //   the app's settle timer defers instead of closing
-            //   in-flight work — H2), then `closePendingRender()` fires
+            //   in-flight work), then `closePendingRender()` fires
             //   and cancels the safety-net handle as part of the close.
             //   If that real close never arrives, the safety-net closes
             //   the still-open id terminally at the bound.
@@ -453,7 +453,7 @@ export class VisualKernel implements IVisual {
     }
 
     /**
-     * Tear the visual down cleanly (IVisual contract, M8). Power BI does
+     * Tear the visual down cleanly (IVisual contract). Power BI does
      * not expect `destroy()` to throw, so each step is isolated: a throw
      * in one does not prevent the others and none propagates out.
      *
@@ -540,7 +540,7 @@ export class VisualKernel implements IVisual {
 
     /**
      * Degraded-mode handler invoked from the top of `update()` when the
-     * constructor failed (L5). The coordinator may never have been
+     * constructor failed. The coordinator may never have been
      * constructed, so this bypasses it entirely: it emits a balanced
      * `renderingStarted` → `renderingFailed` pair DIRECTLY through the
      * host event service (so the host sees a terminal for this update
@@ -638,9 +638,9 @@ export class VisualKernel implements IVisual {
         const { settings } = getDenebVisualState();
         // `renderingStarted` is now emitted by the coordinator at the
         // top of `update()`'s try (see `VisualKernel.update`). Keeping
-        // it out of this method satisfies R1 (start fires before any
+        // it out of this method keeps the start firing before any
         // code that can throw in the update body — including this
-        // method itself).
+        // method itself.
         // Perform any necessary property migrations
         handlePropertyMigration(settings, isReadMode);
         // Data change or re-processing required?
@@ -660,7 +660,7 @@ export class VisualKernel implements IVisual {
             // Skip is a non-rendering dispatch — no async render will
             // follow to close this update's lifecycle. Close
             // synchronously here so the host sees a balanced
-            // renderingStarted / renderingFinished pair (R2, AE1). If
+            // renderingStarted / renderingFinished pair, so every start has exactly one finish. If
             // a persist was issued earlier in this update (e.g. an
             // edit-mode migration), the host's follow-up update
             // closes on its own dispatch path — no special branch
@@ -709,9 +709,7 @@ export class VisualKernel implements IVisual {
      * Handle the `fetch-more` dispatch action: flag the visual as fetching,
      * request the next segment from the host, and either return (segment
      * accepted) or fall through to a normal-finalise with the segments we
-     * already have (host declined). Behaviour mirrors the original inline
-     * branch verbatim — the defensive try/catch around `fetchMoreData` and
-     * its rationale comment are preserved on the lines they originally sat on.
+     * already have (host declined).
      */
     private handleFetchMore(
         context: DatasetUpdateContext,
@@ -749,9 +747,8 @@ export class VisualKernel implements IVisual {
             // this update; the next segment arrives as its own
             // `update()`. Close this update's lifecycle synchronously
             // so each segment update produces its own 1:1
-            // started/finished pair (R8, AE2). Order: after the
-            // `processDataset` timing close so the existing diagnostic
-            // pairing is preserved.
+            // started/finished pair, matching the normal render path. Runs after the
+            // `processDataset` timing close so the diagnostic pairing holds.
             this.#coordinator.closeCurrent();
             return;
         }
@@ -772,7 +769,7 @@ export class VisualKernel implements IVisual {
         // the coordinator's `*PendingRender` adapters and target the
         // correct id. Without this, the coordinator's id for this
         // update stays open, and the next `update()` supersede-fails
-        // it (the U7/U8 transition behaviour).
+        // it (viewer/editor transitions rely on this).
         this.#coordinator.bindPendingRenderCurrent();
     }
 
@@ -783,8 +780,7 @@ export class VisualKernel implements IVisual {
      * dataset slice (Power BI may have re-sent a reduced categorical that
      * would overwrite a fully-loaded dataset with that reduced payload);
      * only clear the stuck `isFetchingAdditional` flag so the loading
-     * screen goes away. All inline rationale comments are preserved
-     * verbatim on the lines they originally occupied.
+     * screen goes away.
      */
     private handleRecoverInterruptedFetch(
         context: DatasetUpdateContext,
@@ -856,8 +852,8 @@ export class VisualKernel implements IVisual {
         // ran, the existing slice is preserved, and the visual will
         // re-enter the normal change-detection path on the next
         // update. Close this update's lifecycle synchronously so it
-        // doesn't orphan a renderingStarted (R2, AE1's recover
-        // variant).
+        // doesn't orphan a renderingStarted (every start is paired with
+        // exactly one finish on the recover path too).
         this.#coordinator.closeCurrent();
     }
 
@@ -992,7 +988,7 @@ export class VisualKernel implements IVisual {
      * wraps to the last. Esc is not intercepted — Power BI handles exiting the visual.
      */
     private bindTabCycling() {
-        // Retain the handler reference (M8) so `destroy()` can remove
+        // Retain the handler reference so `destroy()` can remove
         // this document-level listener; an anonymous inline handler
         // could never be removed and would leak across visual
         // teardown/re-create cycles.
