@@ -58,6 +58,24 @@ describe('the kernel installs config state before any store read', () => {
         expect(installIndex).toBeLessThan(firstStoreReadIndex);
     });
 
+    it('assigns the application version inside the constructor try block, ahead of the migration that consumes it', () => {
+        const constructorStart = kernelSource.indexOf('constructor(');
+        expect(constructorStart).toBeGreaterThanOrEqual(0);
+
+        const tryIndex = kernelSource.indexOf('try {', constructorStart);
+        expect(tryIndex).toBeGreaterThan(constructorStart);
+
+        const versionAssignIndex = kernelSource.indexOf(
+            'this.#applicationVersion = config.application.version',
+            constructorStart
+        );
+        expect(versionAssignIndex).toBeGreaterThan(tryIndex);
+
+        expect(kernelSource).toContain(
+            'handlePropertyMigration(settings, isReadMode, this.#applicationVersion)'
+        );
+    });
+
     it('calls config.installState after the root element is captured, so a throw from it still leaves the construction-failure path an element to render into', () => {
         const constructorStart = kernelSource.indexOf('constructor(');
         expect(constructorStart).toBeGreaterThanOrEqual(0);

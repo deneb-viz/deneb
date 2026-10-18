@@ -13,12 +13,11 @@ import { resolve } from 'node:path';
  * gates the mount at the JSX call site, and a disabled build never invokes
  * the component at all.
  *
- * The workspace defers component-tree render tests — vitest runs in the
- * `node` environment with no `@testing-library/react` wired up for this
- * package (see `src/features/toaster/__test__/notification-apply-changes-imports.test.ts`
- * and `packages/app-core/.../no-data-message.test.tsx` for the established
- * precedent). This is therefore a static-source check that locks in the
- * structural invariant rather than a render/subscription-count assertion.
+ * This package runs vitest under jsdom but has no React render harness wired
+ * up, so this is a static-source check that locks in the structural invariant
+ * rather than a render/subscription-count assertion. The consuming visual
+ * pins the call-site gate in its own
+ * `app/__test__/visual-update-history-overlay-gate.test.ts`.
  */
 describe('VisualUpdateHistoryOverlay call-site gating', () => {
     const componentSource = readFileSync(

@@ -7,18 +7,11 @@
         "declarationMap": true,
         "isolatedModules": false,
         "preserveConstEnums": false,
+        // Non-strict, as the visual compiles this code; tightening it is a separate change.
         "strict": false,
         "alwaysStrict": true,
         "types": ["node", "react", "react-dom"]
     },
     "include": ["src/**/*"],
-    "exclude": [
-        "node_modules",
-        "dist",
-        "**/*.test.*",
-        "**/*.spec.*",
-        "src/__test__/**",
-        "src/__tests__/**",
-        "src/**/__test__/**"
-    ]
+    "exclude": ["node_modules", "dist", "**/*.test.*", "**/*.spec.*"]
 }

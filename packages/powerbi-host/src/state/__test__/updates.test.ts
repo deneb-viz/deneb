@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 // `setVisualUpdateOptions` (the target) is exercised in isolation:
 // the slice creator only invokes `set`/`get` lazily inside the setter,
 // so structural stubs are sufficient. `getVisualFormattingModel` is the
-// synchronous throw source the audit identified; `../../lib/state`
+// synchronous throw source this test guards; `../../lib/state`
 // helpers and the configuration constant are stubbed so the module
 // loads without its heavier real dependencies.
 

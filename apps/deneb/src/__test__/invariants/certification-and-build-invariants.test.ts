@@ -52,4 +52,8 @@ describe('dev-with-prime resets .tmp and drives turbo', () => {
     it('invokes turbo via `npx --no` so resolution is PATH-independent', () => {
         expect(source).toContain('npx --no turbo');
     });
+
+    it('widens the turbo run to every workspace watcher, excluding the web sample', () => {
+        expect(source).toContain('--filter=!@deneb-viz/web-client-sample');
+    });
 });

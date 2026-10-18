@@ -102,7 +102,7 @@ npm run dev       # Start development (clears .tmp/, builds packages, primes ass
 - The `apps/deneb` visual provides the single runtime instance
 - Uses TypeScript compiler (tsc) instead of tsdown to inline const enums from `powerbi-visuals-api`
 
-`@deneb-viz/powerbi-host` is the contrast: powerbi-compat is a peer singleton, whereas powerbi-host is a plain (dev)dependency of each visual, because visuals run in separate iframes and never share a runtime.
+`@deneb-viz/powerbi-host` is the contrast: powerbi-compat is a peer singleton, whereas powerbi-host is an ordinary devDependency of the visual. It holds no runtime state that has to be shared with other packages, so it is not a peer singleton.
 
 **When adding dependencies on `@deneb-viz/powerbi-compat`:**
 

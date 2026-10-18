@@ -228,6 +228,20 @@ describe('handlePropertyMigration — edit mode', () => {
         expect(developer?.properties?.version).toBe('3.1.4');
     });
 
+    it('stamps the application version passed as the argument when only the version has changed', () => {
+        mockVisualSettings = buildSettings({
+            denebVersion: '1.9.0',
+            providerVersion: '6.0.0'
+        });
+        handlePropertyMigration(mockVisualSettings as never, false, '3.1.4');
+
+        const persistedPayload = mockHostPersistProperties.mock.calls[0][0];
+        const developer = persistedPayload.replace.find(
+            (i: { objectName: string }) => i.objectName === 'developer'
+        );
+        expect(developer?.properties?.version).toBe('3.1.4');
+    });
+
     it('skips when migrationCheckPerformed is already true', () => {
         mockMigrationCheckPerformed = true;
         mockVisualSettings = buildSettings({
@@ -269,6 +283,19 @@ describe('handlePropertyMigration — read mode', () => {
             '2.0.0'
         );
         expect(mockVisualSettings.vega.output.version.value).toBe('6.4.0');
+    });
+
+    it('applies the application version passed as the argument in-memory', () => {
+        mockVisualSettings = buildSettings({
+            denebVersion: '',
+            providerVersion: ''
+        });
+        setReadModePersistSuppressed(true);
+        handlePropertyMigration(mockVisualSettings as never, true, '3.1.4');
+
+        expect(mockVisualSettings.developer.versioning.version.value).toBe(
+            '3.1.4'
+        );
     });
 
     it('applies context-menu remap in-memory when migrating from pre-2.0 with legacy state', () => {

@@ -24,8 +24,8 @@
     ],
     "sideEffects": false,
     "scripts": {
-        "build": "npm run clean && tsc -p tsconfig.json",
-        "dev": "tsc -p tsconfig.json --watch",
+        "build": "npm run clean && tsc -p tsconfig.build.json",
+        "dev": "tsc -p tsconfig.build.json --watch",
         "clean": "rimraf dist",
         "typecheck": "tsc --noEmit",
         "eslint": "node ../../bin/workspace-eslint.js",
@@ -39,28 +39,28 @@
         "@types/react": "^19.0.0",
         "esbuild": "^0.28.1",
         "jsdom": "^25.0.1",
+        "powerbi-visuals-utils-formattingutils": "^6.1.2",
         "typescript": "^5.6.2",
         "vitest": "^4.1.11"
     },
     "dependencies": {
         "@deneb-viz/configuration": "*",
         "@deneb-viz/data-core": "*",
+        "@deneb-viz/template-usermeta": "*",
         "@deneb-viz/utils": "*",
         "fast-equals": "^5.3.3",
+        "mergician": "^2.0.2",
         "zustand": "^4.5.5"
     },
     "peerDependencies": {
         "@deneb-viz/app-core": "*",
         "@deneb-viz/powerbi-compat": "*",
-        "@deneb-viz/vega-react": "*",
         "@deneb-viz/vega-runtime": "*",
         "@fluentui/react-components": "^9.72.6",
-        "@fluentui/react-icons": "^2.0.313",
         "powerbi-visuals-api": "5.11.0",
-        "powerbi-visuals-utils-formattingutils": "^6.1.2",
+        "powerbi-visuals-utils-formattingmodel": "^6.2.2",
         "react": "^19.2.0",
         "react-dom": "^19.2.0",
-        "vega": ">=5",
-        "vega-lite": ">=5"
+        "vega": ">=5"
     }
 }

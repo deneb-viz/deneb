@@ -10,8 +10,8 @@
  * before its own definition.
  */
 
-// Visual store: hook and getter.
-export { useDenebVisualState, getDenebVisualState } from './state';
+// Visual store: hook.
+export { useDenebVisualState } from './state';
 
 // Power BI interactivity: the manager, its constants/types, and the
 // context-menu, cross-filter and tooltip event handlers.
@@ -23,7 +23,6 @@ export {
     CROSS_FILTER_LIMITS,
     isCrossFilterPropSet
 } from './lib/interactivity';
-export type * from './lib/interactivity';
 
 // Persistence: property read/write, template-create persistence, and the
 // property-change type.
@@ -76,6 +75,5 @@ export { defineSliceSync } from './lib/state/sync-types';
 
 // The kernel base class and the types an app supplies to it.
 export { VisualKernel } from './app/visual-kernel';
-export { KERNEL_I18N_TRANSLATIONS } from './i18n';
 export type { VisualKernelConfig, VisualAppProps } from './app/kernel-config';
 export type { HostFeatureFlags } from './lib/dataset/types';

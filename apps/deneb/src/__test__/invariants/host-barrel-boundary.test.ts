@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
+import { join, posix, relative, sep } from 'node:path';
 import { APP_ROOT, walkFiles } from './_packages';
 
 /**
@@ -53,21 +53,21 @@ export function levelsAboveSrc(
     fromFile: string,
     specifier: string
 ): number | undefined {
-    if (!specifier.startsWith('.')) {
+    const normalizedSpecifier = specifier.replaceAll('\\', '/');
+    if (!normalizedSpecifier.startsWith('.')) {
         return undefined;
     }
-    let depth = fromFile.split('/').length - 1;
-    let lowest = depth;
-    for (const segment of specifier.split('/')) {
-        if (segment === '..') {
-            depth -= 1;
-            lowest = Math.min(lowest, depth);
-        } else if (segment !== '' && segment !== '.') {
-            depth += 1;
-        }
-    }
-    return -lowest;
+    const resolved = posix.normalize(
+        posix.join(posix.dirname(fromFile), normalizedSpecifier)
+    );
+    return resolved.split('/').filter((segment) => segment === '..').length;
 }
+
+/** True for a specifier rooted at the filesystem (POSIX root or a drive letter). */
+const isAbsoluteSpecifier = (specifier: string): boolean =>
+    specifier.startsWith('/') ||
+    specifier.startsWith('\\') ||
+    /^[A-Za-z]:/.test(specifier);
 
 /**
  * Pure detection function: given (file, specifiers) entries, reports
@@ -88,6 +88,14 @@ export function findKernelAccessViolations(
                 });
                 continue;
             }
+            if (isAbsoluteSpecifier(specifier)) {
+                violations.push({
+                    file,
+                    specifier,
+                    reason: 'absolute import path, reaching outside the app by file system location'
+                });
+                continue;
+            }
             const levels = levelsAboveSrc(file, specifier);
             if (levels !== undefined && levels >= 2) {
                 violations.push({
@@ -105,8 +113,10 @@ export function findKernelAccessViolations(
  * Extracts every import specifier from a source file's text: standard
  * `import ... from '...'` (including type-only and re-export forms, which
  * also contain `from`), bare side-effect imports (`import '...';`, no
- * bindings and no `from`), and dynamic imports (`import('...')`). A scan
- * that only matched `from` would miss the other two forms.
+ * bindings and no `from`), dynamic imports (`import('...')`, including a
+ * template literal without substitutions), and CommonJS `require('...')`
+ * (which also covers `import x = require('...')`). A scan that only
+ * matched `from` would miss the other forms.
  */
 export const importSpecifiers = (source: string): string[] => [
     ...[...source.matchAll(/from\s*['"]([^'"]+)['"]/g)].map(
@@ -116,6 +126,12 @@ export const importSpecifiers = (source: string): string[] => [
         (match) => match[1]
     ),
     ...[...source.matchAll(/import\(\s*['"]([^'"]+)['"]\s*\)/g)].map(
+        (match) => match[1]
+    ),
+    ...[...source.matchAll(/import\(\s*`([^`]+)`\s*\)/g)].map(
+        (match) => match[1]
+    ),
+    ...[...source.matchAll(/\brequire\(\s*['"]([^'"]+)['"]\s*\)/g)].map(
         (match) => match[1]
     )
 ];
@@ -256,6 +272,56 @@ describe('kernel access boundary', () => {
             expect(violations[0]).toMatchObject({
                 specifier: '@deneb-viz/powerbi-host/state'
             });
+        });
+
+        it('flags a template-literal dynamic import that climbs out of the app root', () => {
+            const violations = findKernelAccessViolations([
+                {
+                    file: 'app/x.ts',
+                    specifiers: importSpecifiers(
+                        'const mod = await import(`../../../packages/powerbi-host/src/index`);\n'
+                    )
+                }
+            ]);
+            expect(violations).toHaveLength(1);
+        });
+
+        it('flags require calls and import-equals-require that climb out of the app root', () => {
+            const violations = findKernelAccessViolations([
+                {
+                    file: 'app/x.ts',
+                    specifiers: importSpecifiers(
+                        "const a = require('../../../packages/a');\n" +
+                            'const b = require("../../../packages/b");\n' +
+                            "import c = require('../../../packages/c');\n"
+                    )
+                }
+            ]);
+            expect(violations).toHaveLength(3);
+        });
+
+        it('flags an absolute import path', () => {
+            const violations = findKernelAccessViolations([
+                {
+                    file: 'app/x.ts',
+                    specifiers: [
+                        '/repo/packages/powerbi-host/src/index',
+                        'C:/repo/packages/powerbi-host/src/index'
+                    ]
+                }
+            ]);
+            expect(violations).toHaveLength(2);
+            expect(violations[0].reason).toContain('absolute');
+        });
+
+        it('flags a backslash-separated relative specifier that climbs out of the app root', () => {
+            const violations = findKernelAccessViolations([
+                {
+                    file: 'app/x.ts',
+                    specifiers: ['..\\..\\..\\packages\\powerbi-host']
+                }
+            ]);
+            expect(violations).toHaveLength(1);
         });
     });
 });

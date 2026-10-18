@@ -3,11 +3,19 @@
     "extends": ["//"],
     "tasks": {
         "build": {
-            "dependsOn": ["^build", "@deneb-viz/app-core#build"],
+            "dependsOn": [
+                "^build",
+                "@deneb-viz/app-core#build",
+                "@deneb-viz/template-usermeta#build"
+            ],
             "outputs": ["dist/**"]
         },
         "test": {
-            "dependsOn": ["^build", "@deneb-viz/app-core#build"],
+            "dependsOn": [
+                "^build",
+                "@deneb-viz/app-core#build",
+                "@deneb-viz/template-usermeta#build"
+            ],
             "outputs": ["coverage/**"]
         }
     }

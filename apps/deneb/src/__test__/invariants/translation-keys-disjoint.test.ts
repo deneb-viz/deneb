@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { KERNEL_I18N_TRANSLATIONS } from '@deneb-viz/powerbi-host';
+// Imported from the package source (not its entry): the invariants folder is
+// excluded from the host-barrel-boundary scan, so this relative reach is permitted.
+import { KERNEL_I18N_TRANSLATIONS } from '../../../../../packages/powerbi-host/src/i18n';
 import appTranslations from '../../i18n/en-US.json';
 
 /**
  * Canary: the kernel's translation extension (`KERNEL_I18N_TRANSLATIONS` from
- * `@deneb-viz/powerbi-host`) and the app's own catalog (`i18n/en-US.json`) declare no key in common.
+ * the package's `src/i18n`) and the app's own catalog (`i18n/en-US.json`) declare no key in common.
  *
  * `VisualKernel`'s constructor merges translations as
  * `[KERNEL_I18N_TRANSLATIONS, config.translations]` (see

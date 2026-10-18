@@ -65,7 +65,7 @@ export const findEditorDependencyViolations = (
 };
 
 const isTestFile = (file: string): boolean =>
-    /__tests__|__bench__|\.test\.|\.bench\./.test(file);
+    /__tests?__|__bench__|\.test\.|\.bench\./.test(file);
 
 const readManifest = (dir: string): Manifest =>
     JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')) as Manifest;

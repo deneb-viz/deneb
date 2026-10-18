@@ -217,11 +217,11 @@ export class VisualKernel implements IVisual {
     #applicationVersion: string;
 
     constructor(options: VisualConstructorOptions, config: VisualKernelConfig) {
-        logHeading(`${config.application.name}`);
-        logHeading(`Version: ${config.application.version}`, 12);
-        this.#applicationVersion = config.application.version;
         logHost('Constructor has been called.', { options });
         try {
+            this.#applicationVersion = config.application.version;
+            logHeading(`${config.application.name}`);
+            logHeading(`Version: ${config.application.version}`, 12);
             const { host, element } = options;
             this.#host = host;
             // Capture the root element up front so the
