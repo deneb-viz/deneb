@@ -4,6 +4,7 @@ import {
     getDenebContainerSignalFromDimensions,
     getContainerSignalReferences,
     updateContainerInitDimensions,
+    NO_PATCHED_DIMENSIONS,
     SIGNAL_DENEB_CONTAINER,
     SIGNAL_PBI_CONTAINER_LEGACY,
     type DenebContainerSignal,
@@ -417,7 +418,11 @@ describe('updateContainerInitDimensions', () => {
             signals: [otherSignal, denebContainerSignal]
         };
 
-        const result = updateContainerInitDimensions(spec, newDimensions);
+        const result = updateContainerInitDimensions(
+            spec,
+            newDimensions,
+            NO_PATCHED_DIMENSIONS
+        );
 
         expect(result).not.toBe(spec);
         expect(result.signals).not.toBe(spec.signals);
@@ -454,7 +459,11 @@ describe('updateContainerInitDimensions', () => {
             params: [otherParam, denebContainerParam]
         };
 
-        const result = updateContainerInitDimensions(spec, newDimensions);
+        const result = updateContainerInitDimensions(
+            spec,
+            newDimensions,
+            NO_PATCHED_DIMENSIONS
+        );
 
         expect(result).not.toBe(spec);
         expect(result.params).not.toBe(spec.params);
@@ -484,7 +493,11 @@ describe('updateContainerInitDimensions', () => {
             signals: [{ name: 'someOtherSignal', value: 42 }]
         };
 
-        const result = updateContainerInitDimensions(spec, newDimensions);
+        const result = updateContainerInitDimensions(
+            spec,
+            newDimensions,
+            NO_PATCHED_DIMENSIONS
+        );
 
         expect(result).toBe(spec);
     });
@@ -492,7 +505,11 @@ describe('updateContainerInitDimensions', () => {
     it('should return the input reference unchanged when there are no signals/params at all', () => {
         const spec = {};
 
-        const result = updateContainerInitDimensions(spec, newDimensions);
+        const result = updateContainerInitDimensions(
+            spec,
+            newDimensions,
+            NO_PATCHED_DIMENSIONS
+        );
 
         expect(result).toBe(spec);
     });
@@ -507,10 +524,14 @@ describe('updateContainerInitDimensions', () => {
             ]
         };
 
-        const result = updateContainerInitDimensions(spec, {
-            width: originalDenebContainerValue.width,
-            height: originalDenebContainerValue.height
-        });
+        const result = updateContainerInitDimensions(
+            spec,
+            {
+                width: originalDenebContainerValue.width,
+                height: originalDenebContainerValue.height
+            },
+            NO_PATCHED_DIMENSIONS
+        );
 
         expect(result).toBe(spec);
     });
@@ -520,8 +541,64 @@ describe('updateContainerInitDimensions', () => {
             signals: [{ name: SIGNAL_DENEB_CONTAINER, value: 'not-an-object' }]
         };
 
-        const result = updateContainerInitDimensions(spec, newDimensions);
+        const result = updateContainerInitDimensions(
+            spec,
+            newDimensions,
+            NO_PATCHED_DIMENSIONS
+        );
 
         expect(result).toBe(spec);
+    });
+});
+
+describe('updateContainerInitDimensions with owned dimensions', () => {
+    const baseSpec = {
+        width: 800,
+        height: 600,
+        signals: [
+            {
+                name: SIGNAL_DENEB_CONTAINER,
+                value: {
+                    width: 800,
+                    height: 600,
+                    scrollWidth: 0,
+                    scrollHeight: 0,
+                    scrollTop: 0,
+                    scrollLeft: 0
+                }
+            }
+        ]
+    };
+
+    it('re-stamps both dimensions when Deneb owns them', () => {
+        const updated = updateContainerInitDimensions(
+            baseSpec,
+            { width: 1024, height: 768 },
+            { width: true, height: true }
+        );
+
+        expect(updated.width).toBe(1024);
+        expect(updated.height).toBe(768);
+    });
+
+    it('leaves a user-owned dimension alone', () => {
+        const updated = updateContainerInitDimensions(
+            baseSpec,
+            { width: 1024, height: 768 },
+            { width: false, height: true }
+        );
+
+        expect(updated.width).toBe(800);
+        expect(updated.height).toBe(768);
+    });
+
+    it('returns the input reference when an owned dimension is already correct', () => {
+        const updated = updateContainerInitDimensions(
+            baseSpec,
+            { width: 800, height: 600 },
+            { width: true, height: true }
+        );
+
+        expect(updated).toBe(baseSpec);
     });
 });

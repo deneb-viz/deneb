@@ -9,7 +9,8 @@ import {
 } from './patch-vega-lite';
 import {
     replaceLegacySignalReferences,
-    logLegacySignalWarning
+    logLegacySignalWarning,
+    NO_PATCHED_DIMENSIONS
 } from '../signals';
 import type { ParseSpecOptions, ParsedSpec } from './types';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
@@ -75,7 +76,8 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
             spec: null,
             config: null,
             errors: ['Specification JSON parse error:', ...parsedSpec.errors],
-            warnings
+            warnings,
+            patchedDimensions: NO_PATCHED_DIMENSIONS
         };
     }
 
@@ -85,7 +87,8 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
             spec: null,
             config: null,
             errors: ['Config JSON parse error:', ...parsedConfig.errors],
-            warnings
+            warnings,
+            patchedDimensions: NO_PATCHED_DIMENSIONS
         };
     }
 
@@ -98,6 +101,17 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
             : patchVegaLiteSpec(parsedSpec.result as TopLevelSpec, {
                   containerDimensions
               });
+
+    // A dimension is Deneb's when the patch added it. Once stamped it is a
+    // plain number, indistinguishable from a user's own, so this comparison is
+    // the only point where ownership can still be observed.
+    const stamped = (key: 'width' | 'height') =>
+        (parsedSpec.result as Spec)[key] == null &&
+        (patchedSpec as Spec)[key] != null;
+    const patchedDimensions =
+        provider === 'vega'
+            ? { width: stamped('width'), height: stamped('height') }
+            : NO_PATCHED_DIMENSIONS;
 
     // Step 4: Merge config into spec for validation
     const specWithConfig = {
@@ -131,7 +145,8 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
             spec: null,
             config: parsedConfig.result,
             errors: [redactedMessage],
-            warnings
+            warnings,
+            patchedDimensions: NO_PATCHED_DIMENSIONS
         };
     }
 
@@ -140,7 +155,8 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
         spec: patchedSpec,
         config: parsedConfig.result,
         errors: [],
-        warnings
+        warnings,
+        patchedDimensions
     };
 };
 
