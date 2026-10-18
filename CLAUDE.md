@@ -67,6 +67,7 @@ npm run dev       # Start development (clears .tmp/, builds packages, primes ass
 **Workspace Packages (`packages/`):**
 
 - **app-core** - Viewer core: provider, viewer, store, platform contract, template import (React components, Zustand state)
+- **powerbi-host** - The Power BI host layer: `VisualKernel` lifecycle, the visual store, host libraries, generic status pieces and dev overlays; depends on app-core, never on the editor
 - **editor** - The advanced editor (Monaco, command bar, debug area, settings pane, catalog, export), composed on top of app-core; depends on app-core, never the reverse
 - **vega-runtime** - Vega/Vega-Lite runtime integration, spec processing, and compilation
 - **vega-react** - React hooks and context for Vega embedding (useVegaEmbed, VegaViewProvider)
@@ -100,6 +101,8 @@ npm run dev       # Start development (clears .tmp/, builds packages, primes ass
 - Never bundle it: list it under `deps.neverBundle` in tsdown configs
 - The `apps/deneb` visual provides the single runtime instance
 - Uses TypeScript compiler (tsc) instead of tsdown to inline const enums from `powerbi-visuals-api`
+
+`@deneb-viz/powerbi-host` is the contrast: powerbi-compat is a peer singleton, whereas powerbi-host is a plain (dev)dependency of each visual, because visuals run in separate iframes and never share a runtime.
 
 **When adding dependencies on `@deneb-viz/powerbi-compat`:**
 
@@ -147,7 +150,7 @@ React UI (Fluent UI components) + Vega canvas rendering
 
 ### State Management
 
-**Visual State ([apps/deneb/src/state/state.ts](apps/deneb/src/state/state.ts)):** Zustand-based with slices
+**Visual State ([packages/powerbi-host/src/state/state.ts](packages/powerbi-host/src/state/state.ts)):** Zustand-based with slices
 
 - `dataset` - Data and field state
 - `host` - Power BI host integration
@@ -188,7 +191,7 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 
 ### Power BI Visual Integration
 
-**Constructor ([apps/deneb/src/index.ts](apps/deneb/src/index.ts)):**
+**Constructor (`VisualKernel` in [packages/powerbi-host/src/app/visual-kernel.ts](packages/powerbi-host/src/app/visual-kernel.ts); [apps/deneb/src/index.ts](apps/deneb/src/index.ts) is the thin `Deneb extends VisualKernel` entry):**
 
 - Binds VisualHostServices singleton
 - Initializes InteractivityManager
@@ -249,7 +252,7 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 2. Open Power BI pointing to `https://localhost:8080/assets/visual.js`
 3. Edit code → webpack auto-rebuilds (~1-2s) → page reloads
 
-**Package Build Order**: Config → Utils/Data-core/PowerBI-compat → Vega-runtime/JSON-processing → Vega-react → App-core → Editor → apps/deneb
+**Package Build Order**: Config → Utils/Data-core/PowerBI-compat → Vega-runtime/JSON-processing → Vega-react → App-core → Editor / PowerBI-host → apps/deneb
 
 > **Details**: See [Local Development Workflow](doc/DEVELOPMENT.md#2-local-development-workflow) in DEVELOPMENT.md
 

@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
-import { PACKAGES_DIR, walkFiles } from './_packages';
+import { APP_ROOT, PACKAGES_DIR, walkFiles } from './_packages';
 
 /**
  * Canary: the dependency between the two app packages is strictly one-way.
@@ -15,10 +15,14 @@ import { PACKAGES_DIR, walkFiles } from './_packages';
  * package specifier. A flat text scan rather than a reachability walk: any
  * mention at all is a violation, imported or not. Test files are excluded
  * because app-core's own canaries name the specifier in assertions.
+ *
+ * `@deneb-viz/powerbi-host` is held to the same rule: it depends on app-core
+ * and never on the editor, which the visual composes on top of it.
  */
 const EDITOR_PACKAGE = '@deneb-viz/editor';
 const APP_CORE_DIR = join(PACKAGES_DIR, 'app-core');
 const EDITOR_DIR = join(PACKAGES_DIR, 'editor');
+const HOST_DIR = join(PACKAGES_DIR, 'powerbi-host');
 
 const DEPENDENCY_MAPS = [
     'dependencies',
@@ -66,14 +70,18 @@ const isTestFile = (file: string): boolean =>
 const readManifest = (dir: string): Manifest =>
     JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')) as Manifest;
 
-const appCoreSources = new Map(
-    walkFiles(join(APP_CORE_DIR, 'src'))
-        .filter((file) => /\.(ts|tsx)$/.test(file) && !isTestFile(file))
-        .map((file) => [
-            relative(APP_CORE_DIR, file).split(sep).join('/'),
-            readFileSync(file, 'utf8')
-        ])
-);
+const readSources = (packageDir: string): Map<string, string> =>
+    new Map(
+        walkFiles(join(packageDir, 'src'))
+            .filter((file) => /\.(ts|tsx)$/.test(file) && !isTestFile(file))
+            .map((file) => [
+                relative(packageDir, file).split(sep).join('/'),
+                readFileSync(file, 'utf8')
+            ])
+    );
+
+const appCoreSources = readSources(APP_CORE_DIR);
+const hostSources = readSources(HOST_DIR);
 
 describe('package dependency direction', () => {
     it('reads a non-trivial app-core source set (guards against a vacuous canary)', () => {
@@ -93,6 +101,27 @@ describe('package dependency direction', () => {
         expect(
             readManifest(EDITOR_DIR).peerDependencies?.['@deneb-viz/app-core']
         ).toBeDefined();
+    });
+
+    it('reads a non-trivial powerbi-host source set (guards against a vacuous canary)', () => {
+        expect(hostSources.size).toBeGreaterThan(20);
+    });
+
+    it('powerbi-host neither depends on nor imports @deneb-viz/editor', () => {
+        expect(
+            findEditorDependencyViolations(readManifest(HOST_DIR), hostSources)
+        ).toEqual([]);
+    });
+
+    it('the visual depends on powerbi-host (the permitted direction)', () => {
+        const visual = readManifest(APP_ROOT);
+        expect(
+            [
+                visual.dependencies,
+                visual.devDependencies,
+                visual.peerDependencies
+            ].some((map) => map && '@deneb-viz/powerbi-host' in map)
+        ).toBe(true);
     });
 
     describe('findEditorDependencyViolations (pure function)', () => {
