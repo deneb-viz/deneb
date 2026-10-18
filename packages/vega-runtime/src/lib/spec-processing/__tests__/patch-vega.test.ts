@@ -34,9 +34,7 @@ describe('patchVegaSpec', () => {
             containerDimensions: { width: 800, height: 600 }
         });
 
-        expect(patched.width).toBeDefined();
-        expect(patched.width).toHaveProperty('signal');
-        expect((patched.width as any).signal).toContain('denebContainer.width');
+        expect(patched.width).toBe(800);
     });
 
     it('should set responsive height if not specified', () => {
@@ -50,11 +48,7 @@ describe('patchVegaSpec', () => {
             containerDimensions: { width: 800, height: 600 }
         });
 
-        expect(patched.height).toBeDefined();
-        expect(patched.height).toHaveProperty('signal');
-        expect((patched.height as any).signal).toContain(
-            'denebContainer.height'
-        );
+        expect(patched.height).toBe(600);
     });
 
     it('should preserve explicit zero width instead of substituting a responsive signal', () => {
@@ -346,7 +340,7 @@ describe('patchVegaSpec', () => {
         // Should NOT add top-level width property (would conflict with signal's init)
         expect(patched.width).toBeUndefined();
         // Should still add responsive height since no height signal exists
-        expect(patched.height).toHaveProperty('signal');
+        expect(patched.height).toBe(600);
     });
 
     it('should not add responsive height when user has height signal with init', () => {
@@ -374,7 +368,7 @@ describe('patchVegaSpec', () => {
         // Should NOT add top-level height property (would conflict with signal's init)
         expect(patched.height).toBeUndefined();
         // Should still add responsive width since no width signal exists
-        expect(patched.width).toHaveProperty('signal');
+        expect(patched.width).toBe(800);
     });
 
     it('should not add responsive dimensions when user has both width and height signals', () => {
@@ -506,7 +500,7 @@ describe('patchVegaSpec Integration', () => {
         expect(patched.axes).toHaveLength(2);
         expect(patched.marks).toHaveLength(1);
         expect(patched.signals).toBeDefined();
-        expect(patched.width).toHaveProperty('signal');
-        expect(patched.height).toHaveProperty('signal');
+        expect(patched.width).toBe(800);
+        expect(patched.height).toBe(600);
     });
 });
