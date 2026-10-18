@@ -41,12 +41,16 @@ const compileMock = vi.fn(() => {
     fn.errors = null;
     return fn;
 });
+// A `function` implementation, not an arrow: the service calls `new Ajv()`,
+// and arrow functions cannot be constructed.
 vi.mock('ajv', () => ({
-    default: vi.fn(() => ({
-        addMetaSchema: vi.fn(),
-        addFormat: vi.fn(),
-        compile: compileMock
-    }))
+    default: vi.fn(function () {
+        return {
+            addMetaSchema: vi.fn(),
+            addFormat: vi.fn(),
+            compile: compileMock
+        };
+    })
 }));
 vi.mock('ajv-formats', () => ({ default: vi.fn() }));
 
