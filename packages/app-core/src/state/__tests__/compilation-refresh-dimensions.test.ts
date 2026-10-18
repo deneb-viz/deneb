@@ -29,9 +29,9 @@ import { createCompilationSlice } from '../compilation';
  * `options.specDimensions` seeds top-level `width`/`height` literals on the
  * spec (the stamped-by-`patchVegaSpec` values); `options.patchedDimensions`
  * seeds `parsed.patchedDimensions`, the ownership flags the re-embed path
- * reads to decide which of those literals it may re-stamp. Both are omitted
- * by default so the four pre-existing tests (which never set a top-level
- * width/height) are unaffected.
+ * reads to decide which of those literals it may re-stamp. Omitting both
+ * options creates a fixture without top-level dimensions and with neither
+ * dimension owned by Deneb.
  */
 const makeReadyResult = (
     dims: { width: number; height: number } = { width: 541, height: 352 },

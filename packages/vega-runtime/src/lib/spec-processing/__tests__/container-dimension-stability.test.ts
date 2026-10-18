@@ -14,9 +14,9 @@ const CONTAINER = { width: 267, height: 283 };
 const FIT_CONFIG = { autosize: { type: 'fit', contains: 'padding' } };
 
 /**
- * A text mark below the data rectangle, positioned entirely in `encode.enter`
- * — the shape from issue #773. `yscale(0)` sits below the domain minimum, so
- * the label overflows and the fit has something to correct for.
+ * A text mark below the data rectangle, positioned entirely in
+ * `encode.enter`. `yscale(0)` sits below the domain minimum, so the label
+ * overflows and the fit has something to correct for.
  */
 const OVERFLOWING_ENTER_SPEC: Spec = {
     $schema: 'https://vega.github.io/schema/vega/v5.json',
