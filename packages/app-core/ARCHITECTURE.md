@@ -81,6 +81,8 @@ The editor surface lives in `@deneb-viz/editor`: `DenebEditor` / `RetainedDenebE
 
 Two canaries keep that true in CI: `src/__tests__/viewer-entry-is-editor-free.test.ts` walks the value-import graph from `src/index.ts` and fails if it reaches any editor-only path, a `monaco-editor` import or the editor package; `apps/deneb/src/__test__/invariants/package-dependency-direction.test.ts` fails if app-core's manifest or sources name `@deneb-viz/editor` at all.
 
+`@deneb-viz/powerbi-host` is a sibling package under the same one-way rule. It holds the Power BI host layer (the `VisualKernel` lifecycle, the visual store, host libraries) and depends on app-core, never the reverse; it also never depends on the editor, which the visual composes on top of it. The dependency-direction canary in the visual enforces this for both packages.
+
 ## Historical context
 
 The layered model documented here was established by a focused refactor recorded in `docs/plans/2026-05-21-app-core-architecture-normalization.md`. That plan contains the original audit, the per-phase remediation steps (Phases A–E), and the rationale for individual decisions (for example, why `state` and `context` sit below `lib` in the dependency table, and why same-feature imports are permitted as one element instance).

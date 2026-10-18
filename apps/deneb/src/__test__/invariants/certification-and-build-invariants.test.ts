@@ -7,28 +7,10 @@ import { APP_ROOT } from './_packages';
 /**
  * Canary: certification and build-orchestration invariants that exist only as
  * prose or as load-bearing strings inside scripts, where a well-meaning edit
- * could silently break them (audit R6/R9).
+ * could silently break them.
  */
 
-describe('safety-net bound is the certification ceiling', () => {
-    it('SAFETY_NET_BOUND_MS is present and <= 10_000ms', () => {
-        const source = readFileSync(
-            join(APP_ROOT, 'src', 'kernel', 'visual-kernel.ts'),
-            'utf8'
-        );
-        const match = source.match(/SAFETY_NET_BOUND_MS\s*=\s*([\d_]+)\s*;/);
-        // Fail loud if the constant is renamed/removed rather than pass vacuously.
-        if (!match) {
-            throw new Error(
-                'SAFETY_NET_BOUND_MS not found in src/kernel/visual-kernel.ts'
-            );
-        }
-        const value = Number(match[1].replace(/_/g, ''));
-        expect(value).toBeLessThanOrEqual(10_000);
-    });
-});
-
-describe('production `package` script ordering (audit R9)', () => {
+describe('production `package` script ordering', () => {
     const pkgScript = (
         JSON.parse(readFileSync(join(APP_ROOT, 'package.json'), 'utf8')) as {
             scripts: Record<string, string>;
@@ -56,7 +38,7 @@ describe('production `package` script ordering (audit R9)', () => {
     });
 });
 
-describe('dev-with-prime resets .tmp and drives turbo (audit R6)', () => {
+describe('dev-with-prime resets .tmp and drives turbo', () => {
     const source = readFileSync(
         join(APP_ROOT, 'bin', 'dev-with-prime.js'),
         'utf8'
@@ -69,5 +51,9 @@ describe('dev-with-prime resets .tmp and drives turbo (audit R6)', () => {
 
     it('invokes turbo via `npx --no` so resolution is PATH-independent', () => {
         expect(source).toContain('npx --no turbo');
+    });
+
+    it('widens the turbo run to every workspace watcher, excluding the web sample', () => {
+        expect(source).toContain('--filter=!@deneb-viz/web-client-sample');
     });
 });

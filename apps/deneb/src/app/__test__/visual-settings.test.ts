@@ -1,18 +1,11 @@
 import type powerbi from 'powerbi-visuals-api';
 import { describe, expect, it } from 'vitest';
 
-// Imported from their leaf modules, not the `lib/persistence` barrel: that
-// barrel also re-exports `persist.ts`/`migration.ts`, which import
-// `../../state` — and `state/settings.ts` imports back from the barrel to
-// seed the settings slice. Importing the barrel here would flip which side
-// of that circular pair evaluates first and hit the classic ESM
-// live-binding trap (`getVisualFormattingModel` still unbound when
-// `state/settings.ts` runs). These two leaf modules have no such cycle.
 import {
+    HostSettingsModel,
     VisualFormattingSettingsService,
     getVisualFormattingModel
-} from '../../lib/persistence/model/visual-formatting-settings-service';
-import { HostSettingsModel } from '../../lib/persistence/model/host-settings-model';
+} from '@deneb-viz/powerbi-host';
 import {
     VisualFormattingSettingsModel,
     getVisualSettings

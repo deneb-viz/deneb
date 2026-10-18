@@ -13,7 +13,7 @@ import {
  * be linted in CI. `turbo run eslint` only runs the task in packages that
  * define it, so a package missing its `eslint` script or `eslint.config.js`
  * silently drops out of the lint gate — exactly how @deneb-viz/vega-react went
- * unlinted (audit U6 finding / handoff fact #9).
+ * unlinted.
  *
  * Apps (apps/*) are included unconditionally rather than gated on
  * `isCodePackage` — the visual app (@deneb-viz/deneb) has no `build` script by

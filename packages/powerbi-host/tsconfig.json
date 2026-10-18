@@ -1,0 +1,17 @@
+{
+    "extends": "@deneb-viz/typescript-config/react-library.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "declaration": true,
+        "declarationMap": true,
+        "isolatedModules": false,
+        "preserveConstEnums": false,
+        // Non-strict, as the visual compiles this code; tightening it is a separate change.
+        "strict": false,
+        "alwaysStrict": true,
+        "types": ["node", "react", "react-dom"]
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "dist", "**/*.test.*", "**/*.spec.*"]
+}

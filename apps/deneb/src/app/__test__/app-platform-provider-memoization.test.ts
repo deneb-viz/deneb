@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 
 /**
  * Regression canary for `App`'s `platformProvider` object passed to
- * `<DenebProvider>`. It used to be an inline object literal rebuilt on
+ * `<DenebProvider>`. It must not be an inline object literal rebuilt on
  * every `App` render, breaking reference equality for any context
  * consumer further down the tree that compares it (e.g. a `useMemo` /
  * `useEffect` dependency, or `React.memo` props equality). The fix wraps

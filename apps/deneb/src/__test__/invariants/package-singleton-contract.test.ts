@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { listWorkspacePackages } from './_packages';
 
 /**
- * Canary: the `@deneb-viz/powerbi-compat` singleton contract (audit M15/L17).
+ * Canary: the `@deneb-viz/powerbi-compat` singleton contract.
  *
  * powerbi-compat must remain a single shared runtime instance (CLAUDE.md).
  * Every workspace package that depends on it therefore declares it as a
@@ -14,8 +14,8 @@ import { listWorkspacePackages } from './_packages';
  * lists it in `deps.neverBundle` so Rolldown does not inline it (peerDeps
  * alone do not prevent bundling).
  *
- * Both halves broke silently in the wild: M15 (template-usermeta declared it as
- * a devDependency) and L17 (app-core double-declared shared packages). This
+ * Both halves broke silently in the wild: template-usermeta declaring it as a
+ * devDependency, and app-core double-declaring shared packages. This
  * canary converts that class of drift into a CI failure.
  */
 const SINGLETON = '@deneb-viz/powerbi-compat';
@@ -80,7 +80,7 @@ describe('powerbi-compat singleton contract', () => {
     });
 });
 
-describe('no @deneb-viz package is double-declared (audit L17)', () => {
+describe('no @deneb-viz package is double-declared', () => {
     it.each(packages)(
         '$dir lists no package in both dependencies and peerDependencies',
         (pkg) => {

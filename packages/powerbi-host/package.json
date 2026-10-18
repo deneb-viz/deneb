@@ -1,0 +1,66 @@
+{
+    "name": "@deneb-viz/powerbi-host",
+    "version": "2.0.0",
+    "author": "Deneb contributors",
+    "description": "The Power BI host layer for Deneb visuals.",
+    "private": true,
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/deneb-viz/deneb.git"
+    },
+    "packageManager": "npm@10.3.0",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "sideEffects": false,
+    "scripts": {
+        "build": "npm run clean && tsc -p tsconfig.build.json",
+        "dev": "tsc -p tsconfig.build.json --watch",
+        "clean": "rimraf dist",
+        "typecheck": "tsc --noEmit",
+        "eslint": "node ../../bin/workspace-eslint.js",
+        "test": "vitest run",
+        "test:watch": "vitest"
+    },
+    "devDependencies": {
+        "@deneb-viz/eslint-config": "*",
+        "@deneb-viz/typescript-config": "*",
+        "@types/node": "^22.15.33",
+        "@types/react": "^19.0.0",
+        "esbuild": "^0.28.1",
+        "jsdom": "^25.0.1",
+        "powerbi-visuals-utils-formattingutils": "^6.1.2",
+        "typescript": "^5.6.2",
+        "vitest": "^4.1.11"
+    },
+    "dependencies": {
+        "@deneb-viz/configuration": "*",
+        "@deneb-viz/data-core": "*",
+        "@deneb-viz/template-usermeta": "*",
+        "@deneb-viz/utils": "*",
+        "fast-equals": "^5.3.3",
+        "mergician": "^2.0.2",
+        "zustand": "^4.5.5"
+    },
+    "peerDependencies": {
+        "@deneb-viz/app-core": "*",
+        "@deneb-viz/powerbi-compat": "*",
+        "@deneb-viz/vega-runtime": "*",
+        "@fluentui/react-components": "^9.72.6",
+        "powerbi-visuals-api": "5.11.0",
+        "powerbi-visuals-utils-formattingmodel": "^6.2.2",
+        "react": "^19.2.0",
+        "react-dom": "^19.2.0",
+        "vega": ">=5"
+    }
+}

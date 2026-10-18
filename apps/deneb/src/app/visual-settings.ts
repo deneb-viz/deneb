@@ -1,4 +1,4 @@
-import { HostSettingsModel } from '../host';
+import { HostSettingsModel } from '@deneb-viz/powerbi-host';
 import { SettingsEditor } from './settings-editor';
 
 /**

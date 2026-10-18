@@ -3,7 +3,10 @@ import {
     type EditorPreferencesSliceProperties
 } from '@deneb-viz/app-core';
 import { getVisualSettings } from './visual-settings';
-import { defineSliceSync, type SliceSyncMapping } from '../host';
+import {
+    defineSliceSync,
+    type SliceSyncMapping
+} from '@deneb-viz/powerbi-host';
 
 /**
  * Keys that can be synced from EditorPreferencesSliceProperties
