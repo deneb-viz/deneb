@@ -65,6 +65,7 @@ vi.mock('../create-slice-sync', () => ({
 
 import { initializeStoreSynchronization } from '../sync';
 import { createSliceSync } from '../create-slice-sync';
+import { useDenebVisualState } from '../../../state';
 
 const GENERIC_SLICE_SYNC_NAMES = ['project', 'visualRender', 'compilation'];
 
@@ -99,6 +100,12 @@ describe('initializeStoreSynchronization', () => {
         expect(registeredNames()).toEqual(GENERIC_SLICE_SYNC_NAMES);
     });
 
+    it('subscribes to the dataset and embed viewport on successful setup', () => {
+        initializeStoreSynchronization();
+
+        expect(useDenebVisualState.subscribe).toHaveBeenCalledTimes(2);
+    });
+
     it('registers a contributed definition after the generic ones and tears it down together with them', () => {
         const contributed = buildContributedDefinition('editorPreferences');
 
@@ -124,6 +131,7 @@ describe('initializeStoreSynchronization', () => {
         ).toThrow(/project/);
 
         expect(createSliceSync).not.toHaveBeenCalled();
+        expect(useDenebVisualState.subscribe).not.toHaveBeenCalled();
     });
 
     it('refuses a contributed definition whose getSlice resolves to the same slice object as a generic one, even under a distinct name', () => {
@@ -137,6 +145,7 @@ describe('initializeStoreSynchronization', () => {
         ).toThrow(/project/);
 
         expect(createSliceSync).not.toHaveBeenCalled();
+        expect(useDenebVisualState.subscribe).not.toHaveBeenCalled();
     });
 });
 

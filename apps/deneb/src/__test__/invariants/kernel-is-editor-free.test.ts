@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { entryFile, walkReachability } from './_reachability-walk';
+import * as ts from 'typescript';
+import {
+    collectValueEdgeSpecifiers,
+    entryFile,
+    walkReachability
+} from './_reachability-walk';
 
 /**
  * Canary test: proves the transitional host barrel (`src/host.ts`) --
@@ -116,6 +121,55 @@ describe('kernel is editor-free', () => {
 
         it('reports nothing for a kernel-safe external list', () => {
             expect(findEditorOnlyReach(['react', 'zustand'])).toEqual([]);
+        });
+    });
+
+    describe('collectValueEdgeSpecifiers (pure function)', () => {
+        const collect = (source: string) =>
+            collectValueEdgeSpecifiers(
+                ts.createSourceFile(
+                    'synthetic.ts',
+                    source,
+                    ts.ScriptTarget.Latest,
+                    true,
+                    ts.ScriptKind.TS
+                )
+            );
+
+        it('collects a static value import', () => {
+            expect(collect(`import { a } from 'x';`)).toEqual(['x']);
+        });
+
+        it('does not collect an `import type` declaration', () => {
+            expect(collect(`import type { A } from 'x';`)).toEqual([]);
+        });
+
+        it('does not collect an import whose named specifiers are all type-only', () => {
+            expect(collect(`import { type A } from 'x';`)).toEqual([]);
+        });
+
+        it('collects a dynamic import call', () => {
+            expect(collect(`const m = import('x');`)).toEqual(['x']);
+        });
+
+        it('collects a require call', () => {
+            expect(collect(`const m = require('x');`)).toEqual(['x']);
+        });
+
+        it('collects an awaited dynamic import nested inside a function body', () => {
+            expect(
+                collect(
+                    `async function load() { if (true) { return await import('x'); } }`
+                )
+            ).toEqual(['x']);
+        });
+
+        it('collects a re-export with a module specifier', () => {
+            expect(collect(`export { a } from 'x';`)).toEqual(['x']);
+        });
+
+        it('ignores dynamic imports and requires whose argument is not a string literal', () => {
+            expect(collect(`import(name); require(name);`)).toEqual([]);
         });
     });
 

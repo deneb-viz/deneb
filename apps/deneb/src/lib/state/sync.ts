@@ -22,10 +22,17 @@ export const initializeStoreSynchronization = (
 ): (() => void) => {
     logDebug('[StoreSynchronization] Initializing store subscriptions...');
 
+    // Validate before creating any subscription so a rejected setup leaves nothing live.
+    const sliceSyncDefinitions = [
+        ...GENERIC_SLICE_SYNC_DEFINITIONS,
+        ...contributedSliceSyncs
+    ];
+    assertDistinctSliceSyncTargets(sliceSyncDefinitions);
+
     const unsubscribers: (() => void)[] = [
         subscribeDataset(),
         subscribeEmbedViewport(),
-        syncSlicesWithVisualSettings(contributedSliceSyncs)
+        syncSlicesWithVisualSettings(sliceSyncDefinitions)
     ];
 
     return () => {
@@ -203,18 +210,11 @@ const assertDistinctSliceSyncTargets = (
 
 /**
  * Bidirectional sync between app-core slices and Power BI visual settings.
- * Uses the generic createSliceSync factory to handle multiple slices; registers the generic
- * definitions first, then any app-contributed definitions, after confirming none of them collide.
+ * Uses the generic createSliceSync factory to register each (already validated) definition.
  */
 const syncSlicesWithVisualSettings = (
-    contributedSliceSyncs: SliceSyncDefinition[]
+    definitions: SliceSyncDefinition[]
 ): (() => void) => {
-    const definitions = [
-        ...GENERIC_SLICE_SYNC_DEFINITIONS,
-        ...contributedSliceSyncs
-    ];
-    assertDistinctSliceSyncTargets(definitions);
-
     const unsubscribers = definitions.map((definition) =>
         createSliceSync(definition)
     );

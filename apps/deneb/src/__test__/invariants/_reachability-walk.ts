@@ -6,9 +6,10 @@ import * as path from 'node:path';
  * Reachability walker for the "kernel is editor-free" canary.
  *
  * Builds the value-import graph reachable from a set of entry files by
- * parsing each reached file's top-level import/export statements and
- * resolving their module specifiers the same way the TypeScript compiler
- * would -- via `ts.resolveModuleName` against the visual's own
+ * parsing each reached file's import/export declarations, dynamic
+ * `import('...')` calls, and `require('...')` calls (anywhere in the
+ * file, including nested inside function bodies) and resolving their
+ * module specifiers the same way the TypeScript compiler would -- via `ts.resolveModuleName` against the visual's own
  * `tsconfig.json` compiler options and a `ts.sys`-backed resolution host.
  *
  * Only VALUE edges are followed. `import type ...`, `export type ...`,
@@ -90,7 +91,7 @@ function getStringLiteralText(expr: ts.Expression): string | undefined {
  * value (runtime) edge, or `undefined` when the statement is type-only,
  * has no module specifier, or is not an import/export declaration at all.
  */
-function valueEdgeSpecifier(statement: ts.Statement): string | undefined {
+function valueEdgeSpecifier(statement: ts.Node): string | undefined {
     if (ts.isImportDeclaration(statement)) {
         const clause = statement.importClause;
         if (!clause) {
@@ -134,6 +135,52 @@ function valueEdgeSpecifier(statement: ts.Statement): string | undefined {
 }
 
 /**
+ * Returns the module specifier of `node` when it is a dynamic
+ * `import('...')` or `require('...')` call with a string-literal (or
+ * no-substitution template) argument; otherwise `undefined`.
+ */
+function dynamicEdgeSpecifier(node: ts.Node): string | undefined {
+    if (!ts.isCallExpression(node)) {
+        return undefined;
+    }
+    // TypeScript AST property name, not the legacy function-scoped `arguments` object.
+    // eslint-disable-next-line powerbi-visuals/no-banned-terms
+    const { arguments: callArgs } = node;
+    if (callArgs.length === 0) {
+        return undefined;
+    }
+    const isDynamicImport =
+        node.expression.kind === ts.SyntaxKind.ImportKeyword;
+    const isRequire =
+        ts.isIdentifier(node.expression) && node.expression.text === 'require';
+    return isDynamicImport || isRequire
+        ? getStringLiteralText(callArgs[0])
+        : undefined;
+}
+
+/**
+ * Collects the module specifiers of every value edge in `sourceFile`:
+ * static import/export declarations that are not type-only, plus dynamic
+ * `import('...')` and `require('...')` calls at any nesting depth.
+ * Pure over the parsed AST, so it needs no filesystem.
+ */
+export function collectValueEdgeSpecifiers(
+    sourceFile: ts.SourceFile
+): string[] {
+    const specifiers: string[] = [];
+    const visit = (node: ts.Node): void => {
+        const specifier =
+            valueEdgeSpecifier(node) ?? dynamicEdgeSpecifier(node);
+        if (specifier) {
+            specifiers.push(specifier);
+        }
+        ts.forEachChild(node, visit);
+    };
+    visit(sourceFile);
+    return specifiers;
+}
+
+/**
  * Walks the value-import graph reachable from `entryFiles` (absolute
  * paths). Pure BFS over the file system / AST -- no TypeScript
  * `Program`/type-checker is created, so this stays fast even for an
@@ -168,12 +215,7 @@ export function walkReachability(entryFiles: string[]): ReachabilityResult {
             filePath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS
         );
 
-        for (const statement of sourceFile.statements) {
-            const specifierText = valueEdgeSpecifier(statement);
-            if (!specifierText) {
-                continue;
-            }
-
+        for (const specifierText of collectValueEdgeSpecifiers(sourceFile)) {
             const resolution = ts.resolveModuleName(
                 specifierText,
                 filePath,
